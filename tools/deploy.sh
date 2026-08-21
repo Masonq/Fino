@@ -17,6 +17,12 @@ cd backend
 source venv/bin/activate
 pip install -q -r requirements.txt
 
+echo "→ проверяю, не отстала ли база от моделей"
+if alembic check 2>&1 | grep -q "New upgrade operations detected"; then
+  echo "  ! модели изменились, а миграции нет — создаю"
+  alembic revision --autogenerate -m "auto: schema sync"
+fi
+
 echo "→ применяю миграции"
 alembic upgrade head
 cd ..
