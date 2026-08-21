@@ -21,9 +21,9 @@ export default function Home() {
     const update = () => {
       ticking = false
       const y = window.scrollY
-      // гистерезис: сворачиваем после 56px, разворачиваем только ниже 12px —
-      // иначе на границе шапка мигает туда-обратно при малейшем движении
-      setCollapsed((prev) => (prev ? y > 12 : y > 56))
+      // мягкий гистерезис: сворачиваем после 48px, разворачиваем ниже 30px —
+      // достаточно, чтобы не мигало, но без резкого «щелчка» при обратной прокрутке
+      setCollapsed((prev) => (prev ? y > 30 : y > 48))
     }
     const onScroll = () => {
       if (ticking) return

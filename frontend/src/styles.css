@@ -55,7 +55,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   padding:calc(9px + env(safe-area-inset-top)) 14px 10px; border-radius:0 0 22px 22px;
   margin:0;
   will-change:background-color;
-  transition:background .3s cubic-bezier(.4,0,.2,1), padding-bottom .3s cubic-bezier(.4,0,.2,1), border-radius .3s cubic-bezier(.4,0,.2,1);
+  transition:background .42s cubic-bezier(.25,.46,.45,.94), padding-bottom .42s cubic-bezier(.25,.46,.45,.94), border-radius .42s cubic-bezier(.25,.46,.45,.94);
 }
 /* схлопнутое состояние при скролле — как у Avito: промо уезжает, поиск липнет сверху */
 .avito-banner.collapsed{
@@ -67,20 +67,20 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* анимируем через grid-rows + transform: браузер не пересчитывает раскладку каждый кадр */
 .avito-banner .promo-collapse{
   display:grid; grid-template-rows:1fr;
-  transition:grid-template-rows .3s cubic-bezier(.4,0,.2,1);
+  transition:grid-template-rows .42s cubic-bezier(.25,.46,.45,.94);
 }
 .avito-banner.collapsed .promo-collapse{ grid-template-rows:0fr; }
 .avito-banner .promo-collapse > *{ overflow:hidden; min-height:0; }
 .avito-banner .avito-promo-row{
   opacity:1; transform:translateY(0);
-  transition:opacity .22s ease, transform .3s cubic-bezier(.4,0,.2,1);
+  transition:opacity .3s ease, transform .42s cubic-bezier(.25,.46,.45,.94);
   will-change:opacity, transform;
 }
-.avito-banner.collapsed .avito-promo-row{ opacity:0; transform:translateY(-8px); }
-.avito-banner .avito-toprow{ transition:margin-bottom .3s cubic-bezier(.4,0,.2,1); }
+.avito-banner.collapsed .avito-promo-row{ opacity:0; transform:translateY(-2px); }
+.avito-banner .avito-toprow{ transition:margin-bottom .42s cubic-bezier(.25,.46,.45,.94); }
 .avito-banner.collapsed .avito-toprow{ margin-bottom:0; }
 .avito-banner .avito-search,
-.avito-banner .avito-login-pill{ transition:background .3s cubic-bezier(.4,0,.2,1), box-shadow .3s ease; }
+.avito-banner .avito-login-pill{ transition:background .42s cubic-bezier(.25,.46,.45,.94), box-shadow .3s ease; }
 .avito-banner.collapsed .avito-search{ background:#F1F1EC; box-shadow:none; }
 .avito-banner.collapsed .avito-login-pill{ background:#F1F1EC; }
 .avito-toprow{ display:flex; gap:7px; margin-bottom:8px; }
@@ -338,3 +338,11 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .chat-input-row input{ flex:1; padding:12px 16px; border-radius:20px; border:1px solid var(--line); font-size:16px; font-family:inherit; }
 .chat-send-btn{ width:42px; height:42px; border-radius:50%; background:var(--primary); color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .chat-send-btn:disabled{ background:var(--line); color:var(--muted); }
+
+/* уважаем системную настройку «уменьшить движение» */
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    animation-duration:.01ms !important; animation-iteration-count:1 !important;
+    transition-duration:.01ms !important; scroll-behavior:auto !important;
+  }
+}
