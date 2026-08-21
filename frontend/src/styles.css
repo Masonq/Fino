@@ -1064,17 +1064,20 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   /* категории — сеткой вместо горизонтальной прокрутки:
      на десктопе прокручивать мышью неудобно */
   .cat-rows{ overflow:visible; padding:18px 0 6px; }
+  /* Плитки фиксированной ширины и прижаты влево — не растягиваем
+     на всю строку, иначе они разъезжаются и выглядят пустыми. */
   .cat-row{
-    display:grid; width:auto;
-    grid-template-columns:repeat(5, 1fr); gap:12px;
+    display:flex; width:auto; gap:10px;
+    grid-template-columns:none;
   }
-  .cat-row + .cat-row{ margin-top:12px; }
+  .cat-row + .cat-row{ margin-top:10px; }
   .cat-tile-2row{
-    width:auto; max-width:none; height:104px;
+    width:206px; flex:0 0 206px; max-width:none; height:86px;
     background:#F2F2F0; border-color:transparent; box-shadow:none;
+    padding:11px 76px 11px 14px;
   }
-  .cat-tile-2row-label{ font-size:13.5px; }
-  .cat-tile-2row-glyph{ width:88px; height:88px; right:2px; bottom:2px; }
+  .cat-tile-2row-label{ font-size:13.5px; white-space:normal; }
+  .cat-tile-2row-glyph{ width:70px; height:70px; right:2px; bottom:2px; }
 
   /* Лента: пять в ряд. Карточки без белой подложки — у Avito фото
      со скруглением, а текст лежит прямо на фоне страницы: так сетка
