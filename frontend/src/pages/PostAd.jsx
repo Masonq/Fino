@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { CITIES, cityLabel } from '../data/cities'
+import { shrinkImage } from '../data/shrinkImage'
 import { useAuth } from '../context/AuthContext'
 
 const STEPS = ['category', 'attributes', 'details', 'contact']
@@ -59,16 +60,34 @@ export default function PostAd() {
     const files = Array.from(e.target.files || [])
     e.target.value = '' // чтобы можно было выбрать тот же файл повторно
 
-    for (const file of files.slice(0, 10 - photos.length)) {
-      const localId = `${Date.now()}-${Math.random()}`
-      setPhotos((prev) => [...prev, { localId, uploading: true, previewUrl: URL.createObjectURL(file) }])
+    const room = 10 - photos.length
+    if (files.length > room) setError(t('post.photo_limit'))
+    const chosen = files.slice(0, room)
+    if (chosen.length === 0) return
+
+    // Показываем все превью сразу, а грузим одновременно: по очереди
+    // десять снимков с телефона занимают около минуты ожидания.
+    const entries = chosen.map((file) => ({
+      file,
+      localId: `${Date.now()}-${Math.random()}`,
+      previewUrl: URL.createObjectURL(file),
+    }))
+    setPhotos((prev) => [
+      ...prev,
+      ...entries.map(({ localId, previewUrl }) => ({ localId, previewUrl, uploading: true })),
+    ])
+
+    await Promise.all(entries.map(async ({ file, localId }) => {
       try {
-        const res = await api.uploadPhoto(file)
+        const prepared = await shrinkImage(file)
+        const res = await api.uploadPhoto(prepared)
         setPhotos((prev) => prev.map((p) => (p.localId === localId ? { ...p, ...res, uploading: false } : p)))
       } catch {
-        setPhotos((prev) => prev.filter((p) => p.localId !== localId))
+        // помечаем ошибкой, а не убираем молча — иначе непонятно,
+        // почему фото исчезло
+        setPhotos((prev) => prev.map((p) => (p.localId === localId ? { ...p, uploading: false, failed: true } : p)))
       }
-    }
+    }))
   }
 
   const removePhoto = (localId) => setPhotos((prev) => prev.filter((p) => p.localId !== localId))
@@ -95,7 +114,7 @@ export default function PostAd() {
         attributes: attrs,
         city,
         translations: [{ language: i18n.language, title, description }],
-        photos: photos.filter((p) => p.url).map((p) => ({ url: p.url, thumbnail_url: p.thumbnail_url })),
+        photos: photos.filter((p) => p.url && !p.failed).map((p) => ({ url: p.url, thumbnail_url: p.thumbnail_url })),
       })
 
       setDone(true)
@@ -209,6 +228,13 @@ export default function PostAd() {
                 {photos.map((p) => (
                   <div key={p.localId} className="photo-thumb">
                     <img src={p.thumbnail_url || p.previewUrl} alt="" />
+                    {p.failed && (
+                      <span className="photo-failed" title={t('post.photo_failed')}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+                          <path d="M12 8v5M12 16h.01" />
+                        </svg>
+                      </span>
+                    )}
                     {p.uploading && <div className="photo-thumb-loading"><span className="spinner" /></div>}
                     {!p.uploading && (
                       <button type="button" className="photo-remove" onClick={() => removePhoto(p.localId)} aria-label={t('actions.clear')}>

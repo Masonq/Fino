@@ -110,7 +110,9 @@
     "publish_failed": "Couldn't publish. Check your connection and try again.",
     "need_title": "Add a title",
     "need_city": "Choose a city",
-    "err_currency": "Unsupported currency"
+    "err_currency": "Unsupported currency",
+    "photo_limit": "Up to 10 photos",
+    "photo_failed": "Upload failed — tap to remove"
   },
   "detail": {
     "loading": "Loading…",

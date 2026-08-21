@@ -110,7 +110,9 @@
     "publish_failed": "Objavljivanje nije uspelo. Proverite vezu i pokušajte ponovo.",
     "need_title": "Unesite naslov",
     "need_city": "Izaberite grad",
-    "err_currency": "Nepodržana valuta"
+    "err_currency": "Nepodržana valuta",
+    "photo_limit": "Najviše 10 fotografija",
+    "photo_failed": "Otpremanje nije uspelo — dodirnite da uklonite"
   },
   "detail": {
     "loading": "Učitavanje…",
