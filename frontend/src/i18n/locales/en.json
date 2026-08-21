@@ -251,5 +251,8 @@
     "need_login": "Sign in to save searches",
     "empty": "No saved searches",
     "notify": "Notify"
+  },
+  "similar": {
+    "title": "Similar listings"
   }
 }

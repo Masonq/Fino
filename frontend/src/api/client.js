@@ -88,6 +88,7 @@ export const api = {
   getCategorySchema: (slug) => request(`/categories/${slug}/schema`),
   searchListings: (params) => request(`/listings?${new URLSearchParams(params)}`),
   getListing: (id) => request(`/listings/${id}`),
+  similarListings: (id, lang) => request(`/listings/${id}/similar?${new URLSearchParams({ lang })}`),
   myListings: (lang) => request(`/listings/my/list?${new URLSearchParams({ lang })}`),
   setListingStatus: (id, status) => request(`/listings/${id}/status`, {
     method: 'PATCH',

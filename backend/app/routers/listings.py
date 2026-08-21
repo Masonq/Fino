@@ -218,6 +218,71 @@ def my_listings(
     return {"total": len(items), "counts": counts, "items": [serialize(l) for l in items]}
 
 
+@router.get("/{listing_id}/similar")
+def similar_listings(
+    listing_id: uuid.UUID,
+    lang: str = Query("ru"),
+    limit: int = Query(8, le=20),
+    db: Session = Depends(get_db),
+):
+    """
+    Похожие объявления: та же категория, близкая цена, желательно тот же город.
+
+    Ранжируем по близости цены — сравнивать имеет смысл то, что в одном
+    бюджете. Объявления того же продавца показываем в последнюю очередь:
+    человеку интереснее альтернативы, а не витрина одного магазина.
+    """
+    base = db.query(Listing).get(listing_id)
+    if not base:
+        raise HTTPException(404, "not_found")
+
+    q = (
+        db.query(Listing)
+        .options(joinedload(Listing.translations), joinedload(Listing.photos))
+        .filter(
+            Listing.id != listing_id,
+            Listing.status == ListingStatus.active,
+            Listing.category_id == base.category_id,
+        )
+    )
+
+    price = float(base.price) if base.price else None
+    if price:
+        # берём вдвое шире нужного диапазона, отсортируем сами
+        q = q.filter(Listing.price.between(price * 0.4, price * 2.5))
+
+    candidates = q.limit(60).all()
+
+    def score(l: Listing) -> tuple:
+        same_city = 0 if (base.city and l.city == base.city) else 1
+        own = 1 if l.owner_id == base.owner_id else 0
+        if price and l.price:
+            diff = abs(float(l.price) - price) / price
+        else:
+            diff = 1.0
+        # сначала не свои, потом свой город, потом ближе по цене
+        return (own, same_city, diff)
+
+    candidates.sort(key=score)
+    picked = candidates[:limit]
+
+    def serialize(l: Listing):
+        tr = next((t for t in l.translations if t.language == lang), None)
+        if not tr and l.translations:
+            tr = l.translations[0]
+        cover = next((p for p in l.photos if p.is_cover), l.photos[0] if l.photos else None)
+        return {
+            "id": str(l.id),
+            "title": tr.title if tr else None,
+            "price": float(l.price) if l.price else None,
+            "currency": l.currency,
+            "city": l.city,
+            "cover_photo": cover.thumbnail_url if cover else None,
+        }
+
+    return {"items": [serialize(l) for l in picked]}
+
+
 @router.get("/{listing_id}")
 def get_listing(listing_id: uuid.UUID, db: Session = Depends(get_db)):
     listing = db.query(Listing).options(

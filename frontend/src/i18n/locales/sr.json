@@ -251,5 +251,8 @@
     "need_login": "Prijavite se da sačuvate pretragu",
     "empty": "Nema sačuvanih pretraga",
     "notify": "Obaveštavaj"
+  },
+  "similar": {
+    "title": "Slični oglasi"
   }
 }

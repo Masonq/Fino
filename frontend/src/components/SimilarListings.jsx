@@ -1,0 +1,42 @@
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
+import { api } from '../api/client'
+import { displayCity } from '../data/cities'
+
+export default function SimilarListings({ listingId }) {
+  const { t, i18n } = useTranslation()
+  const [items, setItems] = useState([])
+
+  useEffect(() => {
+    if (!listingId) return
+    api.similarListings(listingId, i18n.language)
+      .then((res) => setItems(res.items || []))
+      .catch(() => setItems([]))
+  }, [listingId, i18n.language])
+
+  if (items.length === 0) return null
+
+  return (
+    <div className="similar-block">
+      <div className="similar-title">{t('similar.title')}</div>
+
+      <div className="similar-strip">
+        {items.map((l) => (
+          <Link key={l.id} to={`/listing/${l.id}`} className="similar-card">
+            <div className="similar-photo">
+              {l.cover_photo
+                ? <img src={l.cover_photo} alt="" loading="lazy" />
+                : <div className="photo-placeholder" />}
+            </div>
+            <div className="similar-price">
+              {l.price ? `${l.price} ${l.currency === 'EUR' ? '€' : l.currency}` : t('detail.no_price')}
+            </div>
+            <div className="similar-name">{l.title}</div>
+            {l.city && <div className="similar-city">{displayCity(l.city, i18n.language)}</div>}
+          </Link>
+        ))}
+      </div>
+    </div>
+  )
+}
