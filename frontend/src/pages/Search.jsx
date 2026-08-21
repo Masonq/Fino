@@ -21,7 +21,8 @@ export default function Search() {
   const [categories, setCategories] = useState([])
   const [items, setItems] = useState([])
   const [total, setTotal] = useState(0)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [loaded, setLoaded] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   const [cols, setCols] = useState(2)
 
@@ -50,15 +51,19 @@ export default function Search() {
     return p
   }, [text, category, priceMin, priceMax, city, withPhoto, sort, i18n.language])
 
-  // поиск с задержкой, чтобы не дёргать сервер на каждую букву
+  // поиск с задержкой, чтобы не дёргать сервер на каждую букву;
+  // при первом открытии экрана ждать незачем — запрашиваем сразу
+  const firstRun = useRef(true)
   useEffect(() => {
+    const wait = firstRun.current ? 0 : 350
+    firstRun.current = false
     const id = setTimeout(() => {
       setLoading(true)
       api.searchListings(query)
         .then((res) => { setItems(res.items || []); setTotal(res.total || 0) })
         .catch(() => { setItems([]); setTotal(0) })
-        .finally(() => setLoading(false))
-    }, 350)
+        .finally(() => { setLoading(false); setLoaded(true) })
+    }, wait)
     return () => clearTimeout(id)
   }, [query])
 
@@ -175,7 +180,7 @@ export default function Search() {
 
       <div className="results-head">
         <span className="results-count">
-          {loading && items.length === 0 ? 'Ищем…' : `Найдено: ${total}`}
+          {!loaded ? 'Ищем…' : `Найдено: ${total}`}
         </span>
         <div className="col-toggle">
           <button className={cols === 2 ? 'col-btn active' : 'col-btn'} onClick={() => setCols(2)} aria-label="По 2 в ряд">
@@ -188,12 +193,20 @@ export default function Search() {
       </div>
 
       <div className={cols === 2 ? 'infinite-grid' : 'infinite-list'}>
-        {items.map((l) => (
-          <ListingCard key={l.id} listing={l} large={cols === 1} />
-        ))}
+        {!loaded
+          ? Array.from({ length: cols === 2 ? 4 : 2 }).map((_, i) => (
+              <div className="card-skeleton" key={i}>
+                <div className="sk-photo" />
+                <div className="sk-line" />
+                <div className="sk-line short" />
+              </div>
+            ))
+          : items.map((l) => (
+              <ListingCard key={l.id} listing={l} large={cols === 1} />
+            ))}
       </div>
 
-      {!loading && items.length === 0 && (
+      {loaded && !loading && items.length === 0 && (
         <p className="empty-hint">Ничего не нашлось. Попробуйте изменить запрос или сбросить фильтры.</p>
       )}
 
