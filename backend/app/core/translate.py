@@ -117,23 +117,37 @@ def translate_pending(db, limit: int = 50) -> int:
 
     Запуск:  python3 -m app.core.translate
     """
-    from app.models import Listing, ListingStatus
+    from sqlalchemy import func
+    from app.models import Listing, ListingStatus, ListingTranslation
 
-    listings = (
+    # Отбираем именно неполные — считаем языки в самой базе. Иначе при
+    # росте числа объявлений неполные оказались бы за пределами выборки
+    # и до них бы никогда не дошло.
+    incomplete = (
         db.query(Listing)
+        .join(ListingTranslation, ListingTranslation.listing_id == Listing.id)
         .filter(Listing.status == ListingStatus.active)
-        .limit(limit * 4)
+        .group_by(Listing.id)
+        .having(func.count(func.distinct(ListingTranslation.language)) < len(LANGS))
+        .order_by(Listing.published_at.desc().nullslast())
+        .limit(limit)
         .all()
     )
 
     done = 0
-    for listing in listings:
-        if len({t.language for t in listing.translations}) >= len(LANGS):
-            continue
-        if translate_listing(db, listing):
+    failures = 0
+    for listing in incomplete:
+        added = translate_listing(db, listing)
+        if added:
             done += 1
-        if done >= limit:
-            break
+            failures = 0
+        else:
+            failures += 1
+            # Сервис перевода недоступен — прекращаем, а не перебираем
+            # весь список впустую. Следующий запуск через час попробует снова.
+            if failures >= 3:
+                log.warning("Перевод недоступен, откладываем до следующего запуска")
+                break
 
     return done
 
