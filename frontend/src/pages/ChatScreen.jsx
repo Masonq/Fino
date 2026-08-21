@@ -116,6 +116,7 @@ export default function ChatScreen() {
         <div ref={bottomRef} />
       </div>
 
+      {sendError && <p className="chat-error">{sendError}</p>}
       <div className="chat-input-row">
         <input
           type="text"

@@ -124,6 +124,8 @@ export default function PostAd() {
         empty_title: t('post.need_title'),
         title_too_short: t('post.need_title'),
         bad_currency: t('post.err_currency'),
+        too_many_listings_hour: t('limits.too_many_listings_hour'),
+        too_many_listings_day: t('limits.too_many_listings_day'),
       }
       setError(map[e.code] || t('post.publish_failed'))
     } finally {

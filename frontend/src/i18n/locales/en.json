@@ -59,7 +59,8 @@
   },
   "chat": {
     "empty": "No messages yet — say hello",
-    "message_ph": "Write a message..."
+    "message_ph": "Write a message...",
+    "no_access": "You don't have access to this chat"
   },
   "promo": {
     "safe_deal": "Safe deal",
@@ -270,5 +271,11 @@
     "offline": "No internet connection",
     "load_failed": "Couldn't load. Check your connection",
     "retry": "Try again"
+  },
+  "limits": {
+    "too_many_listings_hour": "Too many listings this hour. Try again later",
+    "too_many_listings_day": "Daily listing limit reached",
+    "too_many_messages": "Too many messages at once. Wait a minute",
+    "too_many_chats": "Too many new conversations. Try again later"
   }
 }

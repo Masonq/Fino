@@ -70,6 +70,9 @@ def create_listing(
     db: Session = Depends(get_db),
 ):
     """Создаёт объявление от имени вошедшего пользователя."""
+    from app.core.rate_limit import check_listing_limit
+    check_listing_limit(db, user.id)
+
     owner_id = user.id
     category = db.query(Category).get(payload.category_id)
     if not category:

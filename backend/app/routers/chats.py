@@ -50,6 +50,9 @@ def start_chat(
     """
     buyer_id = user.id
 
+    from app.core.rate_limit import check_chat_limit
+    check_chat_limit(db, buyer_id)
+
     listing = db.query(Listing).get(payload.listing_id)
     if not listing:
         raise HTTPException(404, "listing_not_found")
@@ -131,6 +134,9 @@ def send_message(
     db: Session = Depends(get_db),
 ):
     chat = _require_participant(chat_id, user, db)
+    from app.core.rate_limit import check_message_limit
+    check_message_limit(db, user.id, chat_id)
+
     sender_id = user.id   # отправитель — всегда сам, а не кто указан в запросе
 
     message = Message(

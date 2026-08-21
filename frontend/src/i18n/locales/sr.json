@@ -59,7 +59,8 @@
   },
   "chat": {
     "empty": "Još nema poruka — započnite razgovor",
-    "message_ph": "Napišite poruku..."
+    "message_ph": "Napišite poruku...",
+    "no_access": "Nemate pristup ovom razgovoru"
   },
   "promo": {
     "safe_deal": "Sigurna kupovina",
@@ -270,5 +271,11 @@
     "offline": "Nema internet veze",
     "load_failed": "Učitavanje nije uspelo. Proverite vezu",
     "retry": "Pokušaj ponovo"
+  },
+  "limits": {
+    "too_many_listings_hour": "Previše oglasa u poslednjem satu. Pokušajte kasnije",
+    "too_many_listings_day": "Dostignut dnevni limit oglasa",
+    "too_many_messages": "Previše poruka odjednom. Sačekajte minut",
+    "too_many_chats": "Previše novih razgovora. Pokušajte kasnije"
   }
 }
