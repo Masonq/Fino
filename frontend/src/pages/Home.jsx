@@ -17,9 +17,21 @@ export default function Home() {
   const [collapsed, setCollapsed] = useState(false)
 
   useEffect(() => {
-    const onScroll = () => setCollapsed(window.scrollY > 40)
+    let ticking = false
+    const update = () => {
+      ticking = false
+      const y = window.scrollY
+      // гистерезис: сворачиваем после 56px, разворачиваем только ниже 12px —
+      // иначе на границе шапка мигает туда-обратно при малейшем движении
+      setCollapsed((prev) => (prev ? y > 12 : y > 56))
+    }
+    const onScroll = () => {
+      if (ticking) return
+      ticking = true
+      requestAnimationFrame(update)
+    }
     window.addEventListener('scroll', onScroll, { passive: true })
-    onScroll()
+    update()
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
@@ -53,7 +65,9 @@ export default function Home() {
           </Link>
         </div>
 
-        <div className="avito-promo-row">
+        <div className="promo-collapse">
+          <div>
+            <div className="avito-promo-row">
           <div className="avito-promo-left">
             <Link to="/search" className="avito-promo-text">{t('common.safe_deal')} <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="m9 6 6 6-6 6" /></svg></Link>
             <div className="banner-meta">
@@ -70,6 +84,8 @@ export default function Home() {
           </div>
           <div className="avito-promo-illustration">
             <img src="/promo-safe-deal.png" alt="" />
+          </div>
+            </div>
           </div>
         </div>
       </div>

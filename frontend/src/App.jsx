@@ -21,13 +21,24 @@ export default function App() {
   // Обходной приём для известного бага iOS 26: после закрытия клавиатуры
   // visualViewport.offsetTop иногда не сбрасывается в 0, из-за чего
   // координаты тапов расходятся с тем, что видно на экране.
-  // Микро-скролл на 1px туда-обратно заставляет Safari пересчитать это состояние.
+  // Срабатываем только когда уходил фокус с реального поля ввода И клавиатура
+  // действительно была открыта — иначе рывок прилетал прямо во время прокрутки.
   useEffect(() => {
-    const handleFocusOut = () => {
+    const isField = (el) =>
+      el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT')
+
+    const handleFocusOut = (e) => {
+      if (!isField(e.target)) return
+      const vv = window.visualViewport
+      const keyboardWasOpen = vv && window.innerHeight - vv.height > 80
+      if (!keyboardWasOpen) return
+
       setTimeout(() => {
-        window.scrollBy(0, 1)
-        window.scrollBy(0, -1)
-      }, 100)
+        if (window.visualViewport && window.visualViewport.offsetTop > 0) {
+          window.scrollBy(0, 1)
+          window.scrollBy(0, -1)
+        }
+      }, 120)
     }
     document.addEventListener('focusout', handleFocusOut, true)
     return () => document.removeEventListener('focusout', handleFocusOut, true)
