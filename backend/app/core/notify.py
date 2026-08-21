@@ -71,3 +71,22 @@ def send_code(destination: str, code: str, channel: VerifyChannel) -> None:
         _send_telegram(destination, code)
     else:
         _send_email(destination, code)
+
+def _send_email_text(to: str, subject: str, body: str) -> None:
+    """Произвольное письмо — для уведомлений, а не только для кодов."""
+    host = getattr(settings, "smtp_host", None)
+    if not host:
+        log.info("SMTP не настроен. Письмо для %s: %s — %s", to, subject, body[:120])
+        return
+
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"] = settings.smtp_from
+    msg["To"] = to
+    msg.set_content(f"{body}\n\n—\nPLONK — объявления в Сербии\nОтключить уведомления можно в настройках поиска.")
+
+    with smtplib.SMTP(host, settings.smtp_port, timeout=10) as server:
+        server.starttls()
+        if settings.smtp_user:
+            server.login(settings.smtp_user, settings.smtp_password)
+        server.send_message(msg)

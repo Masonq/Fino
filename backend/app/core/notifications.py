@@ -47,10 +47,17 @@ def _send_telegram(chat_id: str, text: str) -> bool:
         return False
 
 
-def notify(db: Session, user_id, text: str, force: bool = False) -> bool:
+def notify(db: Session, user_id, text: str, force: bool = False,
+           allow_email: bool = False, subject: str | None = None) -> bool:
     """
     Отправляет уведомление, если человек не в приложении прямо сейчас.
-    force=True — для важного, что нельзя пропустить (решение модерации).
+
+    force        — важное, отправляем даже активному (решение модерации).
+    allow_email  — можно на почту, если Telegram не привязан. Включаем там,
+                   где человек сам попросил уведомления: подписка на поиск,
+                   решение по объявлению. Для каждого сообщения в переписке
+                   почту не используем — письмо на каждую реплику уведёт
+                   нас в спам, и перестанут доходить даже коды входа.
     """
     user = db.query(User).get(user_id)
     if not user:
@@ -63,17 +70,21 @@ def notify(db: Session, user_id, text: str, force: bool = False) -> bool:
     if user.telegram_id:
         return _send_telegram(user.telegram_id, text)
 
-    # Почта — запасной канал. Отправляем только по важному:
-    # письмо о каждом сообщении быстро уведёт нас в спам.
-    if force and user.email:
+    if (allow_email or force) and user.email:
         try:
-            from app.core.notify import _send_email
-            _send_email(user.email, text)
+            from app.core.notify import _send_email_text
+            _send_email_text(user.email, subject or "PLONK", _strip_tags(text))
             return True
-        except Exception:
-            pass
+        except Exception as exc:
+            log.warning("Не доставлено на почту %s: %s", user.email, exc)
 
     return False
+
+
+def _strip_tags(text: str) -> str:
+    """Убираем разметку — в письме она ни к чему."""
+    import re
+    return re.sub(r"<[^>]+>", "", text)
 
 
 def notify_new_message(db: Session, recipient_id, sender_name: str, preview: str) -> bool:
@@ -89,7 +100,7 @@ def notify_review_request(db: Session, user_id, other_name: str) -> bool:
         f"Как прошла сделка с <b>{other_name}</b>?\n\n"
         f"Оставьте отзыв — это помогает другим покупателям."
     )
-    return notify(db, user_id, text)
+    return notify(db, user_id, text, allow_email=True, subject="PLONK — как прошла сделка?")
 
 
 def notify_moderation(db: Session, user_id, title: str, approved: bool, reason: str | None = None) -> bool:
@@ -99,4 +110,5 @@ def notify_moderation(db: Session, user_id, title: str, approved: bool, reason: 
         text = f"Объявление «{title}» отклонено"
         if reason:
             text += f"\n\nПричина: {reason}"
-    return notify(db, user_id, text, force=True)
+    return notify(db, user_id, text, force=True, allow_email=True,
+                  subject="PLONK — ваше объявление")
