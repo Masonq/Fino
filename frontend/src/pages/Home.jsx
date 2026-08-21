@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import ListingCard from '../components/ListingCard'
 import LanguageSwitcher from '../components/LanguageSwitcher'
-import { FALLBACK_ICON } from '../components/CategoryIcons'
 import { CardSkeletons, CategorySkeletons } from '../components/Skeletons'
 import PullToRefresh from '../components/PullToRefresh'
 import { CITIES, cityLabel } from '../data/cities'
@@ -212,7 +211,9 @@ export default function Home() {
         const renderTile = (cat) => cat.isAll ? (
           <Link key="__all" to="/categories" className="cat-tile-2row all">
             <div className="cat-tile-2row-label">{t('common.all')}</div>
-            <div className="cat-tile-2row-glyph">{FALLBACK_ICON}</div>
+            <div className="cat-tile-2row-glyph">
+              <img className="cat-photo all-anim" src="/cat/all.gif" alt="" />
+            </div>
           </Link>
         ) : (
           <Link key={cat.id} to={`/search?category=${cat.slug}`} className="cat-tile-2row">
