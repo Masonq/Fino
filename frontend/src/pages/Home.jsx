@@ -49,39 +49,30 @@ export default function Home() {
             <LanguageSwitcher />
           </div>
         </div>
-        <div className="search-row">
-          <Link to="/search" className="search-bar">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
-            {t('search.placeholder')}
-          </Link>
-          <Link to="/search" className="filter-fab" aria-label="Фильтры">
+
+        <Link to="/search" className="avito-search">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+          <span>{t('search.placeholder')}</span>
+          <span className="avito-search-divider" />
+          <span className="avito-search-filter" aria-label="Фильтры">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
-          </Link>
-        </div>
+          </span>
+        </Link>
       </div>
 
-      <div className="section-head">
-        <div className="section-title">Категории</div>
-        <Link to="/categories" className="section-link">{t('common.all')} →</Link>
-      </div>
-      <div className="cat-scroll">
-        {categories.slice(0, 6).map((cat) => (
-          <Link key={cat.id} to={`/search?category=${cat.slug}`} className="cat-tile">
-            <div className="cat-photo-wrap">
+      <div className="cat-scroll big">
+        <Link to="/categories" className="cat-tile-big all">
+          <div className="cat-tile-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg></div>
+          <div className="cat-tile-label">{t('common.all')}</div>
+        </Link>
+        {categories.slice(0, 8).map((cat) => (
+          <Link key={cat.id} to={`/search?category=${cat.slug}`} className="cat-tile-big">
+            <div className="cat-tile-icon">
               {cat.image_url && <img src={cat.image_url} alt="" />}
-              <div className="cat-dot" style={{ background: cat.color || '#0E9F6E' }} />
             </div>
-            <div className="cat-label">{cat.name?.[i18n.language] || cat.name?.ru}</div>
+            <div className="cat-tile-label">{cat.name?.[i18n.language] || cat.name?.ru}</div>
           </Link>
         ))}
-        {categories.length > 6 && (
-          <Link to="/categories" className="cat-tile more">
-            <div className="cat-photo-wrap more-tile">
-              <span>+{categories.length - 6}</span>
-            </div>
-            <div className="cat-label">{t('common.more')}</div>
-          </Link>
-        )}
       </div>
 
       <div className="feed-head-row">

@@ -68,16 +68,32 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .city-pill-chevron{ opacity:.5; pointer-events:none; }
 
-.search-row{ display:flex; gap:9px; }
-.search-bar{
-  flex:1; display:flex; align-items:center; gap:10px; background:#fff; border-radius:var(--r-md);
-  padding:14px 16px; box-shadow:var(--shadow); color:var(--muted); font-size:13.5px; font-weight:500;
+/* ===== Avito-style: единая капсула поиска с фильтром внутри ===== */
+.avito-search{
+  display:flex; align-items:center; gap:10px; background:#fff; border-radius:16px;
+  padding:6px 6px 6px 16px; box-shadow:var(--shadow); color:var(--muted); font-size:13.5px; font-weight:500;
 }
-.search-bar svg{ opacity:.35; flex-shrink:0; }
-.filter-fab{
-  width:46px; height:46px; border-radius:var(--r-md); background:var(--primary); color:#fff;
-  display:flex; align-items:center; justify-content:center; box-shadow:0 6px 16px rgba(14,159,110,.28); flex-shrink:0;
+.avito-search svg:first-child{ opacity:.4; flex-shrink:0; }
+.avito-search span:nth-child(2){ flex:1; }
+.avito-search-divider{ width:1px; height:22px; background:var(--line); flex-shrink:0; }
+.avito-search-filter{
+  width:36px; height:36px; border-radius:11px; background:var(--primary-soft); color:var(--primary-deep);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
 }
+
+/* ===== крупные плитки категорий (Avito-style) ===== */
+.cat-scroll.big{ gap:10px; padding:16px 18px 4px; }
+.cat-tile-big{
+  flex-shrink:0; width:92px; background:#F4F4F1; border-radius:16px; padding:12px 10px 10px;
+  display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center;
+}
+.cat-tile-icon{
+  width:52px; height:52px; border-radius:13px; overflow:hidden; background:#fff;
+  display:flex; align-items:center; justify-content:center; color:var(--primary); flex-shrink:0;
+}
+.cat-tile-icon img{ width:100%; height:100%; object-fit:cover; }
+.cat-tile-big.all .cat-tile-icon{ background:var(--primary-soft); }
+.cat-tile-label{ font-size:11px; font-weight:600; line-height:1.25; color:var(--ink-soft); }
 
 /* ===== sections ===== */
 .section-head{ display:flex; justify-content:space-between; align-items:baseline; padding:22px 18px 12px; }
@@ -87,12 +103,6 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* ===== category tiles (photo-based) ===== */
 .cat-scroll{ display:flex; gap:9px; padding:0 18px 4px; overflow-x:auto; overscroll-behavior-x:contain; -webkit-overflow-scrolling:touch; }
 .cat-scroll::-webkit-scrollbar{ display:none; }
-.cat-tile{ flex-shrink:0; width:82px; display:flex; flex-direction:column; align-items:center; gap:7px; }
-.cat-photo-wrap{ width:62px; height:62px; border-radius:19px; overflow:hidden; position:relative; box-shadow:var(--shadow); background:#ddd; }
-.cat-photo-wrap img{ width:100%; height:100%; object-fit:cover; display:block; }
-.cat-dot{ position:absolute; bottom:5px; right:5px; width:16px; height:16px; border-radius:50%; border:2px solid #fff; }
-.cat-tile.more .more-tile{ background:var(--primary-deep); display:flex; align-items:center; justify-content:center; box-shadow:none; color:#fff; font-weight:800; font-size:13px; }
-.cat-label{ font-size:11px; font-weight:700; text-align:center; line-height:1.2; }
 
 /* ===== feed header + column toggle ===== */
 .feed-head-row{ display:flex; justify-content:space-between; align-items:center; padding:20px 18px 14px; }
