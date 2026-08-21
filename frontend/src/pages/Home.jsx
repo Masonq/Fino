@@ -21,15 +21,16 @@ const PROMO_SLIDES = [
 // На картинках с несколькими предметами каждый выходит мельче, поэтому
 // показываем их крупнее — чтобы визуальный вес всех плиток был одинаковым.
 const PHOTO_SCALE = {
-  pets: 1.5,
-  beauty: 1.46,
-  electronics: 1.36,
-  jobs: 1.27,
-  auto: 1.26,
-  services: 1.22,
-  'real-estate': 1.11,
-  fashion: 1.1,
-  'home-garden': 1.03,
+  beauty: 1.42,
+  pets: 1.42,
+  electronics: 1.39,
+  jobs: 1.3,
+  auto: 1.28,
+  services: 1.26,
+  'real-estate': 1.13,
+  fashion: 1.12,
+  'home-garden': 1.06,
+  'hobby-sport': 1.01,
 }
 
 const PROMO_IMAGES = {
