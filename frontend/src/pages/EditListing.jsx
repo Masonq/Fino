@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { CITIES, cityLabel } from '../data/cities'
+import PageHeader from '../components/PageHeader'
 
 export default function EditListing() {
   const { t, i18n } = useTranslation()
@@ -25,8 +26,12 @@ export default function EditListing() {
     api.getListing(id)
       .then((l) => {
         setListing(l)
-        setTitle(l.title || '')
-        setDescription(l.description || '')
+        // переводы приходят объектом по языкам — берём язык оригинала
+        const tr = l.translations?.[l.source_language]
+          || Object.values(l.translations || {})[0]
+          || {}
+        setTitle(tr.title || '')
+        setDescription(tr.description || '')
         setPrice(l.price != null ? String(l.price) : '')
         setNegotiable(!!l.price_negotiable)
         setCity(l.city || '')
@@ -54,13 +59,13 @@ export default function EditListing() {
   }
 
   if (authLoading || !listing) {
-    return <div className="fav-page"><h2>{t('edit.title')}</h2></div>
+    return <div className="fav-page"><PageHeader title={t('edit.title')} /></div>
   }
 
   if (!user) {
     return (
       <div className="fav-page">
-        <h2>{t('edit.title')}</h2>
+        <PageHeader title={t('edit.title')} />
         <div className="fav-empty">
           <p>{t('my.need_login')}</p>
           <button className="fav-cta" onClick={() => navigate(`/login?returnTo=%2Fedit%2F${id}`)}>
@@ -88,9 +93,9 @@ export default function EditListing() {
 
   return (
     <div className="fav-page">
-      <h2>{t('edit.title')}</h2>
+      <PageHeader title={t('edit.title')} />
 
-      <div className="post-fields" style={{ padding: '0 12px' }}>
+      <div className="post-fields edit-fields">
         <div className="post-field">
           <label>{t('listing.title')}</label>
           <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -125,12 +130,14 @@ export default function EditListing() {
 
         {error && <p className="auth-error">{error}</p>}
 
-        <button className="auth-submit" disabled={busy} onClick={save}>
-          {busy ? '…' : t('edit.save')}
-        </button>
-        <button className="review-cancel" style={{ marginTop: 8, width: '100%', padding: 13, borderRadius: 13 }} onClick={() => navigate(-1)}>
-          {t('rev.cancel')}
-        </button>
+        <div className="edit-actions">
+          <button className="edit-save" disabled={busy} onClick={save}>
+            {busy ? '…' : t('edit.save')}
+          </button>
+          <button className="edit-cancel" onClick={() => navigate(-1)}>
+            {t('rev.cancel')}
+          </button>
+        </div>
       </div>
     </div>
   )

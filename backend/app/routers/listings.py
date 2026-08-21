@@ -232,6 +232,7 @@ def get_listing(listing_id: uuid.UUID, db: Session = Depends(get_db)):
     return {
         "id": str(listing.id),
         "category_slug": listing.category.slug,
+        "source_language": listing.source_language,
         "translations": {t.language: {"title": t.title, "description": t.description, "is_auto_translated": t.is_auto_translated} for t in listing.translations},
         "price": float(listing.price) if listing.price else None,
         "currency": listing.currency,
@@ -244,6 +245,7 @@ def get_listing(listing_id: uuid.UUID, db: Session = Depends(get_db)):
             "id": str(listing.owner.id),
             "display_name": listing.owner.display_name,
             "rating_avg": listing.owner.rating_avg,
+            "rating_count": listing.owner.rating_count,
             "phone_verified": listing.owner.phone_verified,
         },
         "delivery_available": listing.delivery_available,

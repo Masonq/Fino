@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { displayCity } from '../data/cities'
+import PageHeader from '../components/PageHeader'
 
 export default function Moderation() {
   const { t, i18n } = useTranslation()
@@ -62,12 +63,12 @@ export default function Moderation() {
     finally { setBusyId(null) }
   }
 
-  if (authLoading) return <div className="fav-page"><h2>{t('mod.title')}</h2></div>
+  if (authLoading) return <div className="fav-page"><PageHeader title={t('mod.title')} /></div>
 
   if (!user) {
     return (
       <div className="fav-page">
-        <h2>{t('mod.title')}</h2>
+        <PageHeader title={t('mod.title')} />
         <div className="fav-empty">
           <p>{t('mod.need_login')}</p>
           <button className="fav-cta" onClick={() => navigate('/login?returnTo=%2Fmoderation')}>
@@ -81,7 +82,7 @@ export default function Moderation() {
   if (denied) {
     return (
       <div className="fav-page">
-        <h2>{t('mod.title')}</h2>
+        <PageHeader title={t('mod.title')} />
         <p className="empty-hint">{t('mod.no_access')}</p>
       </div>
     )
@@ -89,10 +90,7 @@ export default function Moderation() {
 
   return (
     <div className="fav-page">
-      <h2>
-        {t('mod.title')}
-        {total > 0 && <span className="fav-count">{total}</span>}
-      </h2>
+      <PageHeader title={t('mod.title')} count={total} />
 
       <div className="my-tabs">
         <button className={tab === 'listings' ? 'my-tab active' : 'my-tab'} onClick={() => setTab('listings')}>

@@ -6,6 +6,7 @@ import ListingCard from '../components/ListingCard'
 import { CardSkeletons } from '../components/Skeletons'
 import { useFavorites } from '../context/FavoritesContext'
 import { useAuth } from '../context/AuthContext'
+import PageHeader from '../components/PageHeader'
 
 export default function Favorites() {
   const { t, i18n } = useTranslation()
@@ -32,7 +33,7 @@ export default function Favorites() {
   if (!userId) {
     return (
       <div className="fav-page">
-        <h2>{t('favorites.title')}</h2>
+        <PageHeader title={t('favorites.title')} back={false} />
         <div className="fav-empty">
           <div className="fav-empty-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -50,7 +51,7 @@ export default function Favorites() {
 
   return (
     <div className="fav-page">
-      <h2>{t('favorites.title')} {loaded && visible.length > 0 && <span className="fav-count">{visible.length}</span>}</h2>
+      <PageHeader title={t('favorites.title')} count={loaded ? visible.length : 0} back={false} />
 
       {!loaded ? (
         <div className="infinite-grid no-pad"><CardSkeletons count={4} /></div>

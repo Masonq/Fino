@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
+import PageHeader from '../components/PageHeader'
 
 function timeAgo(iso, t) {
   if (!iso) return ''
@@ -36,7 +37,7 @@ export default function Chats() {
   if (!userId) {
     return (
       <div className="fav-page">
-        <h2>{t('nav.chats')}</h2>
+        <PageHeader title={t('nav.chats')} back={false} />
         <div className="fav-empty">
           <div className="fav-empty-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -54,7 +55,7 @@ export default function Chats() {
 
   return (
     <div className="fav-page">
-      <h2>{t('nav.chats')}</h2>
+      <PageHeader title={t('nav.chats')} back={false} />
 
       {!loaded ? (
         <div className="chat-list">

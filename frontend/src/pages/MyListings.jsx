@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { displayCity } from '../data/cities'
+import PageHeader from '../components/PageHeader'
 
 const TABS = [
   { key: 'active', labelKey: 'my.tab_active' },
@@ -52,12 +53,12 @@ export default function MyListings() {
     finally { setBusyId(null) }
   }
 
-  if (authLoading) return <div className="fav-page"><h2>{t('my.title')}</h2></div>
+  if (authLoading) return <div className="fav-page"><PageHeader title={t('my.title')} /></div>
 
   if (!user) {
     return (
       <div className="fav-page">
-        <h2>{t('my.title')}</h2>
+        <PageHeader title={t('my.title')} />
         <div className="fav-empty">
           <p>{t('my.need_login')}</p>
           <button className="fav-cta" onClick={() => navigate('/login?returnTo=%2Fmy')}>
@@ -72,7 +73,7 @@ export default function MyListings() {
 
   return (
     <div className="fav-page">
-      <h2>{t('my.title')}</h2>
+      <PageHeader title={t('my.title')} />
 
       <div className="my-tabs">
         {TABS.map((tb) => (

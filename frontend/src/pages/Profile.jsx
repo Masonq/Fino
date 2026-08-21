@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import PageHeader from '../components/PageHeader'
 
 export default function Profile() {
   const { t } = useTranslation()
@@ -8,13 +9,13 @@ export default function Profile() {
   const { user, loading, signOut } = useAuth()
 
   if (loading) {
-    return <div className="fav-page"><h2>{t('nav.profile')}</h2></div>
+    return <div className="fav-page"><PageHeader title={t('nav.profile')} back={false} /></div>
   }
 
   if (!user) {
     return (
       <div className="fav-page">
-        <h2>{t('nav.profile')}</h2>
+        <PageHeader title={t('nav.profile')} back={false} />
         <div className="fav-empty">
           <div className="fav-empty-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -34,7 +35,7 @@ export default function Profile() {
 
   return (
     <div className="fav-page">
-      <h2>{t('nav.profile')}</h2>
+      <PageHeader title={t('nav.profile')} back={false} />
 
       <div className="profile-head">
         <div className="profile-avatar">
