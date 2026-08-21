@@ -55,6 +55,11 @@ export default function PullToRefresh({ onRefresh, children }) {
   const progress = Math.min(1, pull / THRESHOLD)
   const ready = progress >= 1
 
+  // кружки расходятся из центра по мере вытягивания
+  const spread = 5 + progress * 9
+
+  const label = refreshing ? 'Обновляем…' : ready ? 'Отпустите' : 'Потяните вниз'
+
   return (
     <div className="ptr-root">
       <div
@@ -64,16 +69,24 @@ export default function PullToRefresh({ onRefresh, children }) {
           opacity: pull > 4 ? 1 : 0,
         }}
       >
-        <div
-          className={refreshing ? 'ptr-seal spinning' : 'ptr-seal'}
-          style={{
-            transform: `scale(${0.5 + progress * 0.5}) rotate(${progress * 180}deg)`,
-            background: ready ? 'var(--primary)' : 'var(--line)',
-          }}
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20 6 9 17l-5-5" />
-          </svg>
+        <div className="ptr-inner">
+          <div className="ptr-dots-scale" style={{ transform: `scale(${0.55 + progress * 0.45})` }}>
+          <div className={refreshing ? 'ptr-dots orbiting' : 'ptr-dots'}>
+            <span
+              className="ptr-dot d1"
+              style={{ transform: `translate(${-spread}px, ${spread * 0.55}px)` }}
+            />
+            <span
+              className="ptr-dot d2"
+              style={{ transform: `translate(${spread * 0.85}px, ${spread * 0.7}px)` }}
+            />
+            <span
+              className="ptr-dot d3"
+              style={{ transform: `translate(${spread * 0.1}px, ${-spread}px)` }}
+            />
+          </div>
+          </div>
+          <span className={ready || refreshing ? 'ptr-label on' : 'ptr-label'}>{label}</span>
         </div>
       </div>
 

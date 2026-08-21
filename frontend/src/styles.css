@@ -484,12 +484,30 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   overflow:hidden; pointer-events:none;
   transition:opacity .2s ease;
 }
-.ptr-seal{
-  width:34px; height:34px; border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  box-shadow:0 4px 12px rgba(20,30,25,.16);
-  transition:background .25s ease;
+.ptr-inner{ display:flex; flex-direction:column; align-items:center; gap:7px; }
+
+/* три фирменных кружка — тот же знак, что в строке поиска */
+.ptr-dots-scale{ transition:transform .18s ease; }
+.ptr-dots{ position:relative; width:34px; height:34px; }
+.ptr-dot{
+  position:absolute; top:50%; left:50%; width:11px; height:11px; margin:-5.5px 0 0 -5.5px;
+  border-radius:50%;
+  transition:transform .18s ease;
 }
-.ptr-seal svg{ width:17px; height:17px; }
-.ptr-seal.spinning{ animation:ptr-spin .75s linear infinite; }
-@keyframes ptr-spin{ to{ transform:rotate(360deg) } }
+.ptr-dot.d1{ background:var(--primary); }
+.ptr-dot.d2{ background:var(--coral); }
+.ptr-dot.d3{ background:var(--violet); }
+
+/* при обновлении кружки вращаются по орбите вокруг общего центра */
+.ptr-dots.orbiting{ animation:ptr-orbit .9s linear infinite; }
+.ptr-dots.orbiting .ptr-dot{ animation:ptr-pulse .9s ease-in-out infinite; }
+.ptr-dots.orbiting .ptr-dot.d2{ animation-delay:.15s; }
+.ptr-dots.orbiting .ptr-dot.d3{ animation-delay:.3s; }
+@keyframes ptr-orbit{ to{ transform:rotate(360deg) } }
+@keyframes ptr-pulse{ 0%,100%{ opacity:1 } 50%{ opacity:.45 } }
+
+.ptr-label{
+  font-size:11px; font-weight:700; color:var(--muted);
+  transition:color .25s ease;
+}
+.ptr-label.on{ color:var(--primary-deep); }
