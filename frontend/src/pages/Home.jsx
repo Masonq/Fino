@@ -39,7 +39,7 @@ const PHOTO_SCALE = {
 const PHOTO_ROTATE = {}
 
 const PHOTO_SHIFT = {
-  __all: [-2, 0],
+  __all: [-8, 0],
   jobs: [0, 5],
   'hobby-sport': [0, 5],
   fashion: [0, 5],
