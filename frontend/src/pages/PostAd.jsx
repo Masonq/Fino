@@ -133,10 +133,15 @@ export default function PostAd() {
           <div className="post-cat-grid">
             {categories.map((cat) => (
               <button key={cat.id} className="post-cat-item" onClick={() => pickCategory(cat)}>
-                <div className="post-cat-photo">
-                  {cat.image_url && <img src={cat.image_url} alt="" />}
-                </div>
-                <span>{cat.name?.[i18n.language] || cat.name?.ru}</span>
+                <span className="post-cat-label">
+                  {cat.name?.[i18n.language] || cat.name?.ru}
+                </span>
+                <img
+                  className="post-cat-img"
+                  src={`/cat/${cat.slug}.png`}
+                  alt=""
+                  onError={(e) => { e.currentTarget.style.display = 'none' }}
+                />
               </button>
             ))}
           </div>
