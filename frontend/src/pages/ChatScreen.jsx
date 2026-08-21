@@ -35,8 +35,38 @@ export default function ChatScreen() {
 
   useEffect(() => { load() }, [id])
 
+  // Новые сообщения подтягиваются сами. Опрос вместо постоянного соединения:
+  // проще и надёжнее на мобильном, где связь часто рвётся. Пока вкладка скрыта —
+  // не опрашиваем, чтобы не тратить батарею и трафик.
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (!id || !myId) return
+    let timer = 0
+
+    const tick = async () => {
+      if (document.hidden) return
+      try {
+        const res = await api.getChatMessages(id)
+        setMessages((prev) => (res.length !== prev.length ? res : prev))
+        // пришло чужое — сразу помечаем прочитанным, раз чат открыт
+        if (res.some((m) => m.sender_id !== myId && !m.is_read)) {
+          api.markChatRead(id, myId).catch(() => {})
+        }
+      } catch { /* следующая попытка через интервал */ }
+    }
+
+    timer = setInterval(tick, 4000)
+    const onVisible = () => { if (!document.hidden) tick() }
+    document.addEventListener('visibilitychange', onVisible)
+
+    return () => { clearInterval(timer); document.removeEventListener('visibilitychange', onVisible) }
+  }, [id, myId])
+
+  const prevCount = useRef(0)
+  useEffect(() => {
+    if (messages.length !== prevCount.current) {
+      prevCount.current = messages.length
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
   }, [messages])
 
   const send = async () => {

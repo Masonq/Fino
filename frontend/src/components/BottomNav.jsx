@@ -1,5 +1,8 @@
 import { Link, useLocation } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { api } from '../api/client'
+import { useAuth } from '../context/AuthContext'
 
 const ITEMS = [
   {
@@ -26,7 +29,25 @@ const ITEMS = [
 
 export default function BottomNav() {
   const { pathname } = useLocation()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const { user } = useAuth()
+  const [unread, setUnread] = useState(0)
+
+  // Значок непрочитанных на «Сообщениях» — иначе о новом сообщении
+  // можно узнать, только зайдя в раздел.
+  useEffect(() => {
+    if (!user) { setUnread(0); return }
+    const tick = () => {
+      if (document.hidden) return
+      api.getChats(user.id, i18n.language)
+        .then((res) => setUnread((res.items || []).reduce((n, c) => n + (c.unread || 0), 0)))
+        .catch(() => {})
+    }
+    tick()
+    const timer = setInterval(tick, 20000)
+    document.addEventListener('visibilitychange', tick)
+    return () => { clearInterval(timer); document.removeEventListener('visibilitychange', tick) }
+  }, [user, i18n.language, pathname])
 
   return (
     <div className="bottomnav">
@@ -40,6 +61,9 @@ export default function BottomNav() {
             {item.icon}
           </svg>
           {t(item.key)}
+          {item.key === 'nav.chats' && unread > 0 && (
+            <span className="nav-badge">{unread > 9 ? '9+' : unread}</span>
+          )}
         </Link>
       ))}
     </div>

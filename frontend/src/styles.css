@@ -818,3 +818,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .my-actions button.danger{ color:var(--coral); }
 .my-actions button:disabled{ opacity:.5; }
+
+/* значок непрочитанных на пункте «Сообщения» */
+.bottomnav a{ position:relative; }
+.nav-badge{
+  position:absolute; top:-2px; left:50%; margin-left:6px;
+  min-width:16px; height:16px; padding:0 4px; border-radius:8px;
+  background:var(--coral); color:#fff;
+  font-size:10px; font-weight:800; line-height:16px; text-align:center;
+}
