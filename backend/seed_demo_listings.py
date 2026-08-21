@@ -16,7 +16,7 @@ DEMO_PHONE = "+381600000000"
 DEMO_LISTINGS = [
     {
         "category_slug": "real-estate",
-        "price": 450, "currency": Currency.eur, "city": "Београд, Врачар",
+        "price": 450, "currency": Currency.eur, "city": "beograd",
         "attributes": {"deal_type": "rent", "area_m2": 62, "rooms": 2, "floor": 4},
         "title_ru": "2-комнатная квартира с балконом, Врачар",
         "desc_ru": "Светлая квартира в центре Врачара, 5 минут пешком до Каленич пиjаце. Свежий ремонт, вся техника новая.",
@@ -24,7 +24,7 @@ DEMO_LISTINGS = [
     },
     {
         "category_slug": "auto",
-        "price": 9800, "currency": Currency.eur, "city": "Нови Сад", "price_negotiable": True,
+        "price": 9800, "currency": Currency.eur, "city": "novi-sad", "price_negotiable": True,
         "attributes": {"brand": "Volkswagen", "model": "Golf 7", "year": 2016, "mileage_km": 142000, "transmission": "automatic"},
         "title_ru": "Volkswagen Golf 7, 2016, автомат",
         "desc_ru": "Один владелец, полная сервисная история, зимняя резина в комплекте.",
@@ -32,7 +32,7 @@ DEMO_LISTINGS = [
     },
     {
         "category_slug": "real-estate",
-        "price": 185000, "currency": Currency.eur, "city": "Београд, Земун",
+        "price": 185000, "currency": Currency.eur, "city": "beograd",
         "attributes": {"deal_type": "sale", "area_m2": 145, "no_commission": True},
         "title_ru": "Дом 145 м² с участком 4 сотки, Земун",
         "desc_ru": "Отдельный дом с участком, продажа напрямую от собственника без комиссии.",
@@ -40,7 +40,7 @@ DEMO_LISTINGS = [
     },
     {
         "category_slug": "services",
-        "price": 15, "currency": Currency.eur, "city": "Београд",
+        "price": 15, "currency": Currency.eur, "city": "beograd",
         "attributes": {"service_type": "Репетитор английского", "experience_years": 6},
         "title_ru": "Репетитор английского, все уровни",
         "desc_ru": "Подготовка к IELTS, разговорный английский, онлайн и очно.",
@@ -48,7 +48,7 @@ DEMO_LISTINGS = [
     },
     {
         "category_slug": "jobs",
-        "price": 1800, "currency": Currency.eur, "city": "Београд",
+        "price": 1800, "currency": Currency.eur, "city": "beograd",
         "attributes": {"listing_kind": "vacancy", "employment_type": "full_time", "salary_min": 1800},
         "title_ru": "Frontend-разработчик, remote",
         "desc_ru": "React/TypeScript, удалённо, гибкий график.",

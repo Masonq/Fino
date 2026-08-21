@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import ListingCard from '../components/ListingCard'
 import { CardSkeletons } from '../components/Skeletons'
+import { CITIES, cityLabel } from '../data/cities'
 
 const SORTS = [
   { key: 'new', labelKey: 'search.sort_new' },
@@ -153,7 +154,10 @@ export default function Search() {
 
           <div className="post-field">
             <label>{t('search.city')}</label>
-            <input type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Београд" />
+            <select value={city} onChange={(e) => setCity(e.target.value)}>
+              <option value="">{t('search.all_cities')}</option>
+              {CITIES.map((c) => <option key={c.slug} value={c.slug}>{cityLabel(c.slug, i18n.language)}</option>)}
+            </select>
           </div>
 
           <label className="filter-check">

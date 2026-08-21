@@ -1,9 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useFavorites } from '../context/FavoritesContext'
+import { displayCity } from '../data/cities'
 
 export default function ListingCard({ listing, large = false }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { isFavorite, toggle } = useFavorites()
   const fav = isFavorite(listing.id)
@@ -41,7 +42,7 @@ export default function ListingCard({ listing, large = false }) {
       <div className="s-price">
         {listing.price != null ? `${listing.price} ${listing.currency === 'EUR' ? '€' : listing.currency}` : t('detail.no_price')}
       </div>
-      {listing.city && <div className="s-meta">{listing.city}</div>}
+      {listing.city && <div className="s-meta">{displayCity(listing.city, i18n.language)}</div>}
     </div>
   )
 }

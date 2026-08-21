@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
+import { CITIES, cityLabel } from '../data/cities'
 
 const STEPS = ['category', 'attributes', 'details', 'contact']
 
@@ -232,8 +233,11 @@ export default function PostAd() {
               {t('listing.negotiable')}
             </label>
             <div className="post-field">
-              <label>{t('listing.city')}</label>
-              <input type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Београд, Врачар" />
+              <label>{t('post.city')}</label>
+              <select value={city} onChange={(e) => setCity(e.target.value)}>
+                <option value="">{t('post.choose_city')}</option>
+                {CITIES.map((c) => <option key={c.slug} value={c.slug}>{cityLabel(c.slug, i18n.language)}</option>)}
+              </select>
             </div>
           </div>
           <button className="post-submit-btn" disabled={!title} onClick={() => setStep(3)}>{t('actions.next')}</button>

@@ -54,7 +54,8 @@
     "sort_new": "Newest first",
     "sort_cheap": "Cheapest first",
     "sort_expensive": "Most expensive first",
-    "placeholder": "What are you looking for?"
+    "placeholder": "What are you looking for?",
+    "all_cities": "All cities"
   },
   "chat": {
     "empty": "No messages yet — say hello",
@@ -102,7 +103,8 @@
     "phone": "Phone",
     "name": "Name",
     "price": "Price",
-    "negotiable": "Open to offers"
+    "negotiable": "Open to offers",
+    "choose_city": "Choose a city"
   },
   "detail": {
     "loading": "Loading…",

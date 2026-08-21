@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
+import { displayCity } from '../data/cities'
 
 export default function ListingDetail() {
   const { id } = useParams()
@@ -105,7 +106,7 @@ export default function ListingDetail() {
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" />
             </svg>
-            {listing.city}
+            {displayCity(listing.city, lang)}
           </div>
         )}
 

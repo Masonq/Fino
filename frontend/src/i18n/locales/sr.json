@@ -54,7 +54,8 @@
     "sort_new": "Najnovije prvo",
     "sort_cheap": "Najjeftinije prvo",
     "sort_expensive": "Najskuplje prvo",
-    "placeholder": "Šta tražite?"
+    "placeholder": "Šta tražite?",
+    "all_cities": "Svi gradovi"
   },
   "chat": {
     "empty": "Još nema poruka — započnite razgovor",
@@ -102,7 +103,8 @@
     "phone": "Telefon",
     "name": "Ime",
     "price": "Cena",
-    "negotiable": "Cena po dogovoru"
+    "negotiable": "Cena po dogovoru",
+    "choose_city": "Izaberite grad"
   },
   "detail": {
     "loading": "Učitavanje…",

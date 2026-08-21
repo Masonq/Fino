@@ -7,8 +7,7 @@ import LanguageSwitcher from '../components/LanguageSwitcher'
 import { CATEGORY_ICONS, FALLBACK_ICON } from '../components/CategoryIcons'
 import { CardSkeletons, CategorySkeletons } from '../components/Skeletons'
 import PullToRefresh from '../components/PullToRefresh'
-
-const CITIES = ['Београд', 'Нови Сад', 'Ниш', 'Крагујевац', 'Суботица']
+import { CITIES, cityLabel } from '../data/cities'
 
 const PROMO_SLIDES = [
   { key: 'safe_deal', to: '/search', icon: 'shield', top: '#0E9F6E', grad: 'linear-gradient(180deg, #0E9F6E 0%, #0E9F6E 22%, #1DB388 48%, #34D8A8 78%, #5CE8CC 100%)' },
@@ -52,7 +51,7 @@ export default function Home() {
   const [listings, setListings] = useState([])
   const [feedLoaded, setFeedLoaded] = useState(false)
   const [cols, setCols] = useState(2)
-  const [city, setCity] = useState(CITIES[0])
+  const [city, setCity] = useState(CITIES[0].slug)
   const [collapsed, setCollapsed] = useState(false)
   // слайд выбирается один раз при загрузке страницы (как у Avito) — без автокарусели,
   // иначе цвет статус-бара не успевает за сменой и отстаёт
@@ -166,7 +165,7 @@ export default function Home() {
                       <path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" />
                     </svg>
                     <select value={city} onChange={(e) => setCity(e.target.value)} aria-label={t('post.city')}>
-                      {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                      {CITIES.map((c) => <option key={c.slug} value={c.slug}>{cityLabel(c.slug, i18n.language)}</option>)}
                     </select>
                   </div>
                   <LanguageSwitcher />
