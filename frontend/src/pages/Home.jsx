@@ -39,11 +39,11 @@ const PHOTO_SHIFT = {
   services: [-6, -3],
   business: [-6, -3],
   'hobby-sport': [-4, -3],
-  jobs: [-3, 0],
+  jobs: [-3, 4],
   // эти опускаем ниже
-  auto: [0, 3],
-  electronics: [0, 3],
-  beauty: [0, 3],
+  auto: [0, 7],
+  electronics: [0, 7],
+  beauty: [0, 7],
 }
 
 const PROMO_IMAGES = {
