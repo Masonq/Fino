@@ -38,16 +38,7 @@ export default function Search() {
 
   const inputRef = useRef(null)
 
-  // Фокус на поле сразу при открытии экрана — иначе после нажатия на поиск
-  // приходится тапать второй раз. Но только если запрос пустой: когда открыли
-  // ссылку с готовым поиском или пришли из категории, клавиатура не нужна.
-  useEffect(() => {
-    if (params.get('q') || params.get('category')) return
-    // небольшая задержка — iOS не отдаёт фокус, пока идёт переход между экранами
-    const id = setTimeout(() => inputRef.current?.focus(), 120)
-    return () => clearTimeout(id)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+
 
   useEffect(() => {
     api.getCategories().then(setCategories).catch(() => setCategories([]))
