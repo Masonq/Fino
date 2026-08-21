@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
@@ -66,6 +67,11 @@ def approve(
     if not listing:
         raise HTTPException(404, "not_found")
     listing.status = ListingStatus.active
+    # Момент публикации — по нему сортируется лента и собирается сводка.
+    # Раньше поле оставалось пустым, из-за чего сортировка «сначала новые»
+    # работала непредсказуемо.
+    if not listing.published_at:
+        listing.published_at = datetime.utcnow()
     db.commit()
 
     try:
