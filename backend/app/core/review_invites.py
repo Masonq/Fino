@@ -117,6 +117,18 @@ def send_invite(db: Session, chat: Chat, score: int, reasons: dict) -> bool:
     if sent:
         db.commit()
         log.info("Приглашения на отзыв: чат %s, счёт %s, признаки %s", chat.id, score, reasons)
+
+        # уведомляем — иначе приглашение увидят, только зайдя в чат
+        try:
+            from app.core.notifications import notify_review_request
+            buyer = db.query(User).get(chat.buyer_id)
+            seller = db.query(User).get(chat.seller_id)
+            if buyer and seller:
+                notify_review_request(db, chat.buyer_id, seller.display_name)
+                notify_review_request(db, chat.seller_id, buyer.display_name)
+        except Exception:
+            pass
+
     return sent
 
 

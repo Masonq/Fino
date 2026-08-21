@@ -87,6 +87,14 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
         raise HTTPException(401, "user_not_found")
     if user.is_blocked:
         raise HTTPException(403, "user_blocked")
+
+    # Отмечаем активность, но не чаще раза в минуту — иначе запись в базу
+    # на каждый запрос, а их десятки в минуту.
+    now = datetime.utcnow()
+    if not user.last_seen_at or (now - user.last_seen_at).total_seconds() > 60:
+        user.last_seen_at = now
+        db.commit()
+
     return user
 
 

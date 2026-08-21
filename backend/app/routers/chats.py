@@ -107,6 +107,14 @@ def send_message(chat_id: uuid.UUID, payload: SendMessageIn, db: Session = Depen
     db.commit()
     db.refresh(message)
 
+    # уведомляем собеседника, если он не в приложении
+    try:
+        from app.core.notifications import notify_new_message
+        other_id = chat.seller_id if sender_id == chat.buyer_id else chat.buyer_id
+        sender = db.query(User).get(sender_id)
+        notify_new_message(db, other_id, sender.display_name if sender else "", payload.text or "")
+    except Exception:
+        pass
     return {"id": str(message.id), "sender_id": str(message.sender_id), "text": message.text, "created_at": message.created_at.isoformat()}
 
 @router.get("")

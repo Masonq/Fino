@@ -27,6 +27,17 @@ echo "→ применяю миграции"
 alembic upgrade head
 cd ..
 
+# Сборка ловит опечатки и ссылки на удалённые переменные до того, как
+# страница упадёт у пользователя белым экраном.
+echo "→ проверяю сборку фронтенда"
+cd frontend
+if ! npm run build > /tmp/plonk-build.log 2>&1; then
+  echo "  ✗ фронтенд не собирается — деплой остановлен:"
+  tail -20 /tmp/plonk-build.log
+  exit 1
+fi
+cd ..
+
 echo "→ перезапускаю сервисы"
 systemctl restart fino
 systemctl restart fino-frontend

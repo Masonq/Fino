@@ -59,6 +59,10 @@ class User(Base):
     rating_count: Mapped[int] = mapped_column(Integer, default=0)
 
     is_blocked: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    # Когда человек последний раз был в приложении — по этому решаем,
+    # нужно ли слать уведомление или он и так всё видит
+    last_seen_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     block_reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

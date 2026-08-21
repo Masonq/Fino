@@ -67,6 +67,14 @@ def approve(
         raise HTTPException(404, "not_found")
     listing.status = ListingStatus.active
     db.commit()
+
+    try:
+        from app.core.notifications import notify_moderation
+        tr = listing.translations[0] if listing.translations else None
+        notify_moderation(db, listing.owner_id, tr.title if tr else "", True)
+    except Exception:
+        pass
+
     return {"status": "active"}
 
 
@@ -83,4 +91,12 @@ def reject(
     listing.status = ListingStatus.rejected
     listing.rejection_reason = payload.reason
     db.commit()
+
+    try:
+        from app.core.notifications import notify_moderation
+        tr = listing.translations[0] if listing.translations else None
+        notify_moderation(db, listing.owner_id, tr.title if tr else "", False, payload.reason)
+    except Exception:
+        pass
+
     return {"status": "rejected"}
