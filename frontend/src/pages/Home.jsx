@@ -17,32 +17,20 @@ const PROMO_SLIDES = [
   { key: 'local', to: '/search', icon: 'pin', top: '#E0326B', grad: 'linear-gradient(180deg, #E0326B 0%, #E0326B 22%, #F0507F 48%, #FA7A9D 78%, #FFA8BF 100%)' },
 ]
 
-const PROMO_ICONS = {
-  shield: <img src="/promo-safe-deal.png" alt="" />,
-  tag: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20.5 13.3 13 20.8a2 2 0 0 1-2.8 0l-7-7A2 2 0 0 1 2.6 12V4.6a2 2 0 0 1 2-2H12a2 2 0 0 1 1.4.6l7.1 7.1a2 2 0 0 1 0 2.9Z" />
-      <circle cx="7.6" cy="7.6" r="1.4" />
-    </svg>
-  ),
-  globe: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="9" /><path d="M3 12h18" />
-      <path d="M12 3c2.4 2.6 3.4 5.8 3.4 9s-1 6.4-3.4 9c-2.4-2.6-3.4-5.8-3.4-9s1-6.4 3.4-9Z" />
-    </svg>
-  ),
-  check: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 3 5 6v6c0 4.2 2.9 7.6 7 9 4.1-1.4 7-4.8 7-9V6l-7-3Z" /><path d="m9 12 2.2 2.2L15.5 10" />
-    </svg>
-  ),
-  pin: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 21.5s7.2-6.6 7.2-12.3A7.2 7.2 0 1 0 4.8 9.2C4.8 14.9 12 21.5 12 21.5Z" />
-      <circle cx="12" cy="9" r="2.6" />
-    </svg>
-  ),
+// Иллюстрации слайдов. Пока картинка не готова — показываем запасную SVG-иконку.
+const PROMO_IMAGES = {
+  safe_deal: '/promo/safe_deal.png',
+  free_post: '/promo/free_post.png',
+  'три_языка': '/promo/lang.png',
+  verified: '/promo/verified.png',
+  local: '/promo/nearby.png',
 }
+
+const PROMO_FALLBACK = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 3 5 6v6c0 4.2 2.9 7.6 7 9 4.1-1.4 7-4.8 7-9V6l-7-3Z" /><path d="m9 12 2.2 2.2L15.5 10" />
+  </svg>
+)
 
 export default function Home() {
   const { t, i18n } = useTranslation()
@@ -171,7 +159,9 @@ export default function Home() {
               <div className="avito-promo-illustration">
                 {PROMO_SLIDES.map((s, i) => (
                   <div key={s.key} className={i === slide ? 'promo-glyph active' : 'promo-glyph'}>
-                    {PROMO_ICONS[s.icon]}
+                    {PROMO_IMAGES[s.key]
+                      ? <img src={PROMO_IMAGES[s.key]} alt="" onError={(e) => { e.currentTarget.style.display = 'none' }} />
+                      : PROMO_FALLBACK}
                   </div>
                 ))}
               </div>
@@ -193,7 +183,13 @@ export default function Home() {
           <Link key={cat.id} to={`/search?category=${cat.slug}`} className="cat-tile-2row">
             <div className="cat-tile-2row-label">{cat.name?.[i18n.language] || cat.name?.ru}</div>
             <div className="cat-tile-2row-glyph" style={{ color: cat.color || 'var(--primary)' }}>
-              {CATEGORY_ICONS[cat.slug] || FALLBACK_ICON}
+              <img
+                className="cat-photo"
+                src={`/cat/${cat.slug}.png`}
+                alt=""
+                onError={(e) => { e.currentTarget.remove() }}
+              />
+              <span className="cat-svg">{CATEGORY_ICONS[cat.slug] || FALLBACK_ICON}</span>
             </div>
           </Link>
         )

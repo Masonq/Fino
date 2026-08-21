@@ -181,9 +181,16 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   position:relative; z-index:1; white-space:nowrap;
 }
 .cat-tile-2row-glyph{
-  position:absolute; right:9px; bottom:8px; width:26px; height:26px; opacity:.55;
+  position:absolute; right:9px; bottom:8px; width:30px; height:30px;
 }
 .cat-tile-2row-glyph svg{ width:100%; height:100%; display:block; }
+/* картинка ложится поверх запасной иконки; если её нет — остаётся иконка */
+.cat-tile-2row-glyph .cat-photo{
+  position:absolute; inset:0; width:100%; height:100%; object-fit:contain; z-index:1;
+}
+.cat-tile-2row-glyph .cat-svg{ display:block; width:100%; height:100%; opacity:.5; }
+
+.promo-glyph img{ width:100%; height:100%; object-fit:contain; display:block; }
 
 /* ===== sections ===== */
 .section-head{ display:flex; justify-content:space-between; align-items:baseline; padding:22px 18px 12px; }
