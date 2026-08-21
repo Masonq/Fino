@@ -15,17 +15,33 @@ export default function Login() {
 
   const returnTo = params.get('returnTo') || '/'
 
-  const [step, setStep] = useState('choose')   // choose → enter → code
-  const [channel, setChannel] = useState('email')
-  const [destination, setDestination] = useState('')
+  // iOS выгружает вкладку из памяти, когда уходишь в другое приложение за кодом.
+  // Поэтому шаг и введённый адрес держим в хранилище сессии и восстанавливаем.
+  const saved = (() => {
+    try { return JSON.parse(sessionStorage.getItem('plonk_login') || '{}') } catch { return {} }
+  })()
+
+  const [step, setStep] = useState(saved.step || 'choose')   // choose → enter → code
+  const [channel, setChannel] = useState(saved.channel || 'email')
+  const [destination, setDestination] = useState(saved.destination || '')
   const [code, setCode] = useState('')
   const [name, setName] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
-  const [left, setLeft] = useState(0)
+  const [left, setLeft] = useState(() => {
+    if (!saved.sentAt) return 0
+    const passed = Math.floor((Date.now() - saved.sentAt) / 1000)
+    return Math.max(0, RESEND_SEC - passed)
+  })
 
   const destRef = useRef(null)
   const codeRef = useRef(null)
+
+  useEffect(() => {
+    if (step === 'choose') sessionStorage.removeItem('plonk_login')
+    else sessionStorage.setItem('plonk_login', JSON.stringify({ step, channel, destination, sentAt: saved.sentAt }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, channel, destination])
 
   // обратный отсчёт до повторной отправки
   useEffect(() => {
@@ -58,6 +74,8 @@ export default function Login() {
     setBusy(true); setError('')
     try {
       await api.requestCode(dest, channel)
+      const sentAt = Date.now()
+      sessionStorage.setItem('plonk_login', JSON.stringify({ step: 'code', channel, destination: dest, sentAt }))
       setStep('code')
       setLeft(RESEND_SEC)
     } catch (e) {
@@ -71,6 +89,7 @@ export default function Login() {
     setBusy(true); setError('')
     try {
       const res = await api.verifyCode(destination.trim(), value, channel, name.trim() || null)
+      sessionStorage.removeItem('plonk_login')
       signIn(res.token, res.user)
       navigate(returnTo, { replace: true })
     } catch (e) {
