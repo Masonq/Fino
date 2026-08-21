@@ -43,6 +43,7 @@ const PHOTO_SHIFT = {
   jobs: [0, 5],
   'hobby-sport': [0, 5],
   fashion: [0, 5],
+  business: [5, 0],
 }
 
 const PROMO_IMAGES = {
@@ -210,7 +211,7 @@ export default function Home() {
                 className="cat-photo"
                 src="/cat/all.png"
                 alt=""
-                style={{ transform: `translate(${PHOTO_SHIFT.__all[0]}px, ${PHOTO_SHIFT.__all[1]}px) scale(0.92)` }}
+                style={{ transform: `translate(${PHOTO_SHIFT.__all[0]}px, ${PHOTO_SHIFT.__all[1]}px) scale(0.78)` }}
               />
             </div>
           </Link>
