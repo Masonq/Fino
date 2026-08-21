@@ -15,7 +15,7 @@ export default function Categories() {
   return (
     <div className="categories-page">
       <div className="cats-head">
-        <button className="cats-back" onClick={() => navigate(-1)} aria-label="Назад">←</button>
+        <button className="cats-back" onClick={() => navigate(-1)} aria-label={t('actions.back')}>←</button>
         <div className="cats-title">{t('common.all_categories')}</div>
       </div>
 

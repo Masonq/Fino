@@ -111,9 +111,9 @@ export default function PostAd() {
         <div className="seal" style={{ width: 56, height: 56, margin: '0 auto 16px' }}>
           <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4"><path d="M20 6 9 17l-5-5" /></svg>
         </div>
-        <h2>Объявление отправлено на модерацию</h2>
-        <p className="empty-hint">Обычно проверка занимает немного времени. Оно появится в ленте, как только пройдёт модерацию.</p>
-        <button className="post-submit-btn" onClick={() => navigate('/')}>На главную</button>
+        <h2>{t('post.sent_title')}</h2>
+        <p className="empty-hint">{t('post.sent_text')}</p>
+        <button className="post-submit-btn" onClick={() => navigate('/')}>{t('actions.to_home')}</button>
       </div>
     )
   }
@@ -145,8 +145,8 @@ export default function PostAd() {
       {step === 1 && category && (
         <>
           <button className="post-back" onClick={() => setStep(0)}>← {category.name?.[i18n.language] || category.name?.ru}</button>
-          <h2>Параметры</h2>
-          {schema.length === 0 && <p className="empty-hint">У этой категории пока нет доп. параметров — переходите дальше.</p>}
+          <h2>{t('post.step_params')}</h2>
+          {schema.length === 0 && <p className="empty-hint">{t('post.no_params')}</p>}
           <div className="post-fields">
             {schema.map((field) => (
               <div key={field.key} className="post-field">
@@ -174,32 +174,32 @@ export default function PostAd() {
               </div>
             ))}
           </div>
-          <button className="post-submit-btn" disabled={!requiredAttrsFilled} onClick={() => setStep(2)}>Далее</button>
+          <button className="post-submit-btn" disabled={!requiredAttrsFilled} onClick={() => setStep(2)}>{t('actions.next')}</button>
         </>
       )}
 
       {step === 2 && (
         <>
-          <button className="post-back" onClick={() => setStep(1)}>← Назад</button>
-          <h2>Описание и фото</h2>
+          <button className="post-back" onClick={() => setStep(1)}>← {t('actions.back')}</button>
+          <h2>{t('post.step_details')}</h2>
           <div className="post-fields">
             <div className="post-field">
               <label>{t('listing.title')} *</label>
-              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Например: 2-комнатная квартира с балконом" />
+              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('post.title_ph')} />
             </div>
             <div className="post-field">
               <label>{t('listing.description')}</label>
               <textarea rows="4" value={description} onChange={(e) => setDescription(e.target.value)} />
             </div>
             <div className="post-field">
-              <label>{t('listing.photos')} · {photos.length}/10</label>
+              <label>{t('post.photos')} · {photos.length}/10</label>
               <div className="photo-grid">
                 {photos.map((p) => (
                   <div key={p.localId} className="photo-thumb">
                     <img src={p.thumbnail_url || p.previewUrl} alt="" />
                     {p.uploading && <div className="photo-thumb-loading"><span className="spinner" /></div>}
                     {!p.uploading && (
-                      <button type="button" className="photo-remove" onClick={() => removePhoto(p.localId)} aria-label="Удалить фото">
+                      <button type="button" className="photo-remove" onClick={() => removePhoto(p.localId)} aria-label={t('actions.clear')}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6"><path d="M18 6 6 18M6 6l12 12" /></svg>
                       </button>
                     )}
@@ -209,7 +209,7 @@ export default function PostAd() {
                   <label className="photo-add">
                     <input type="file" accept="image/*" multiple capture="environment" onChange={handlePhotoSelect} hidden />
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
-                    Фото
+                    {t('post.photos')}
                   </label>
                 )}
               </div>
@@ -220,7 +220,7 @@ export default function PostAd() {
                 <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} />
               </div>
               <div className="post-field" style={{ maxWidth: 90 }}>
-                <label>Валюта</label>
+                <label>{t('post.currency')}</label>
                 <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
                   <option value="EUR">EUR</option>
                   <option value="RSD">RSD</option>
@@ -236,25 +236,25 @@ export default function PostAd() {
               <input type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Београд, Врачар" />
             </div>
           </div>
-          <button className="post-submit-btn" disabled={!title} onClick={() => setStep(3)}>Далее</button>
+          <button className="post-submit-btn" disabled={!title} onClick={() => setStep(3)}>{t('actions.next')}</button>
         </>
       )}
 
       {step === 3 && (
         <>
-          <button className="post-back" onClick={() => setStep(2)}>← Назад</button>
-          <h2>Контакт</h2>
+          <button className="post-back" onClick={() => setStep(2)}>← {t('actions.back')}</button>
+          <h2>{t('post.step_contact')}</h2>
           {localStorage.getItem('fino_user_id') ? (
-            <p className="empty-hint">Вы уже публиковали объявление с этого устройства — используем тот же профиль.</p>
+            <p className="empty-hint">{t('post.same_profile')}</p>
           ) : (
             <div className="post-fields">
               <div className="post-field">
-                <label>Телефон</label>
+                <label>{t('post.phone')}</label>
                 <input type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+381 6..." />
               </div>
               <div className="post-field">
-                <label>Имя</label>
-                <input type="text" autoComplete="name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Как к вам обращаться" />
+                <label>{t('post.name')}</label>
+                <input type="text" autoComplete="name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder={t('post.name_ph')} />
               </div>
             </div>
           )}

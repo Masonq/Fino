@@ -8,14 +8,15 @@
     "find_category": "Pronađi kategoriju",
     "no_listings": "Još nema oglasa",
     "login": "Prijava",
-    "safe_deal": "Sigurna kupovina"
+    "safe_deal": "Sigurna kupovina",
+    "yes": "Da",
+    "no": "Ne"
   },
   "nav": {
     "home": "Početna",
-    "search": "Pretraga",
-    "post_ad": "Postavi oglas",
-    "favorites": "Omiljeno",
-    "messages": "Poruke",
+    "favorites": "Sačuvano",
+    "post": "Postavi",
+    "chats": "Poruke",
     "profile": "Profil"
   },
   "categories": {
@@ -40,14 +41,24 @@
     "urgent": "Hitno"
   },
   "search": {
-    "placeholder": "Šta tražite?",
-    "no_results": "Nema rezultata",
-    "filters": "Filteri"
+    "placeholder_full": "Šta tražite?",
+    "found": "Pronađeno",
+    "searching": "Tražimo…",
+    "nothing": "Ništa nije pronađeno. Promenite upit ili poništite filtere.",
+    "category": "Kategorija",
+    "all_categories": "Sve kategorije",
+    "price_from": "Cena od",
+    "price_to": "do",
+    "city": "Grad",
+    "only_photo": "Samo sa slikom",
+    "sort_new": "Najnovije prvo",
+    "sort_cheap": "Najjeftinije prvo",
+    "sort_expensive": "Najskuplje prvo",
+    "placeholder": "Šta tražite?"
   },
   "chat": {
-    "type_message": "Napišite poruku...",
-    "offer_price": "Ponudite cenu",
-    "reveal_phone": "Prikaži broj telefona"
+    "empty": "Još nema poruka — započnite razgovor",
+    "message_ph": "Napišite poruku..."
   },
   "promo": {
     "safe_deal": "Sigurna kupovina",
@@ -60,5 +71,67 @@
     "pull": "Povucite nadole",
     "release": "Pustite",
     "refreshing": "Tražimo nove oglase…"
+  },
+  "actions": {
+    "back": "Nazad",
+    "next": "Dalje",
+    "continue": "Nastavi",
+    "send": "Pošalji",
+    "publish": "Objavi",
+    "to_home": "Na početnu",
+    "to_listings": "Na oglase",
+    "show_more": "Prikaži još",
+    "loading": "Učitavanje…",
+    "reset_filters": "Poništi filtere",
+    "clear": "Obriši"
+  },
+  "post": {
+    "step_params": "Detalji",
+    "no_params": "Ova kategorija nema dodatna polja — nastavite dalje.",
+    "step_details": "Opis i fotografije",
+    "step_contact": "Kontakt",
+    "same_profile": "Već ste objavljivali sa ovog uređaja — koristimo isti profil.",
+    "sent_title": "Oglas poslat na proveru",
+    "sent_text": "Provera obično traje kratko. Pojaviće se čim bude odobren.",
+    "choose_category": "Izaberite kategoriju",
+    "title_ph": "npr. dvosoban stan sa balkonom",
+    "name_ph": "Kako da vas oslovimo",
+    "photos": "Fotografije",
+    "currency": "Valuta",
+    "city": "Grad",
+    "phone": "Telefon",
+    "name": "Ime",
+    "price": "Cena",
+    "negotiable": "Cena po dogovoru"
+  },
+  "detail": {
+    "loading": "Učitavanje…",
+    "negotiable": "Cena po dogovoru",
+    "delivery": "Dostava",
+    "safe_deal": "Sigurna kupovina",
+    "description": "Opis",
+    "auto_translated": "Prevedeno automatski",
+    "show_original": "prikaži original",
+    "write_seller": "Pošalji poruku",
+    "no_price": "Cena nije navedena",
+    "own_listing": "Ovo je vaš oglas — ne možete pisati sebi."
+  },
+  "favorites": {
+    "title": "Sačuvano",
+    "need_auth": "Predstavite se da vam sačuvani oglasi ne bi nestali.",
+    "empty": "Još ništa nije sačuvano. Dodirnite srce na oglasu da mu se vratite kasnije."
+  },
+  "identify": {
+    "title": "Kako da vas oslovimo?",
+    "subtitle": "Da prodavac zna ko piše",
+    "name_ph": "Vaše ime"
+  },
+  "misc": {
+    "coming_soon": "Ovaj deo uskoro stiže.",
+    "in_favorites": "Sačuvaj",
+    "filters": "Filteri",
+    "urgent": "Hitno",
+    "cols_2": "Dva u redu",
+    "cols_1": "Jedan u redu"
   }
 }

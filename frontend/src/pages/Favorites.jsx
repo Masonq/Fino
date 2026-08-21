@@ -7,7 +7,7 @@ import { CardSkeletons } from '../components/Skeletons'
 import { useFavorites } from '../context/FavoritesContext'
 
 export default function Favorites() {
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { ids } = useFavorites()
 
@@ -30,16 +30,16 @@ export default function Favorites() {
   if (!userId) {
     return (
       <div className="fav-page">
-        <h2>Избранное</h2>
+        <h2>{t('favorites.title')}</h2>
         <div className="fav-empty">
           <div className="fav-empty-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />
             </svg>
           </div>
-          <p>Чтобы сохранять объявления, представьтесь — так избранное не потеряется.</p>
+          <p>{t('favorites.need_auth')}</p>
           <button className="fav-cta" onClick={() => navigate('/identify?returnTo=%2Ffavorites')}>
-            Продолжить
+            {t('actions.continue')}
           </button>
         </div>
       </div>
@@ -48,7 +48,7 @@ export default function Favorites() {
 
   return (
     <div className="fav-page">
-      <h2>Избранное {loaded && visible.length > 0 && <span className="fav-count">{visible.length}</span>}</h2>
+      <h2>{t('favorites.title')} {loaded && visible.length > 0 && <span className="fav-count">{visible.length}</span>}</h2>
 
       {!loaded ? (
         <div className="infinite-grid no-pad"><CardSkeletons count={4} /></div>
@@ -59,8 +59,8 @@ export default function Favorites() {
               <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />
             </svg>
           </div>
-          <p>Пока пусто. Нажимайте на сердечко у объявлений, чтобы вернуться к ним позже.</p>
-          <Link className="fav-cta" to="/">К объявлениям</Link>
+          <p>{t('favorites.empty')}</p>
+          <Link className="fav-cta" to="/">{t('actions.to_listings')}</Link>
         </div>
       ) : (
         <div className="infinite-grid no-pad">

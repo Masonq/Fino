@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 
 export default function Identify() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const returnTo = params.get('returnTo') || '/'
@@ -24,23 +26,23 @@ export default function Identify() {
 
   return (
     <div className="post-ad-page">
-      <button className="post-back" onClick={() => navigate(-1)}>← Назад</button>
-      <h2>Как к вам обращаться?</h2>
-      <p className="empty-hint" style={{ margin: '4px 0 20px' }}>Нужно, чтобы продавец знал, кто пишет</p>
+      <button className="post-back" onClick={() => navigate(-1)}>← {t('actions.back')}</button>
+      <h2>{t('identify.title')}</h2>
+      <p className="empty-hint" style={{ margin: '4px 0 20px' }}>{t('identify.subtitle')}</p>
 
       <div className="post-fields">
         <div className="post-field">
-          <label>Телефон</label>
+          <label>{t('post.phone')}</label>
           <input type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+381 6..." />
         </div>
         <div className="post-field">
-          <label>Имя</label>
-          <input type="text" autoComplete="name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Ваше имя" />
+          <label>{t('post.name')}</label>
+          <input type="text" autoComplete="name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder={t('identify.name_ph')} />
         </div>
       </div>
 
       <button className="post-submit-btn" disabled={!phone || !displayName || loading} onClick={submit}>
-        {loading ? '...' : 'Продолжить'}
+        {loading ? '...' : t('actions.continue')}
       </button>
     </div>
   )

@@ -6,7 +6,7 @@ import { api } from '../api/client'
 export default function ListingDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [searchParams] = useSearchParams()
 
   const [listing, setListing] = useState(null)
@@ -32,7 +32,7 @@ export default function ListingDetail() {
       const chat = await api.startChat(listing.id, buyerId)
       navigate(`/chat/${chat.id}`)
     } catch (e) {
-      alert('Это ваше собственное объявление — написать себе нельзя.')
+      alert(t('detail.own_listing'))
     } finally {
       setStarting(false)
     }
@@ -47,7 +47,7 @@ export default function ListingDetail() {
   }, [listing])
 
   if (!listing) {
-    return <div className="detail-page"><p className="empty-hint">Загрузка…</p></div>
+    return <div className="detail-page"><p className="empty-hint">{t('detail.loading')}</p></div>
   }
 
   const lang = i18n.language
@@ -61,7 +61,7 @@ export default function ListingDetail() {
   }
   const attrValue = (key, value) => {
     const field = schema.find((f) => f.key === key)
-    if (field?.type === 'boolean') return value ? 'Да' : 'Нет'
+    if (field?.type === 'boolean') return value ? t('common.yes') : t('common.no')
     if (field?.type === 'select') {
       const opt = field.options?.find((o) => o.value === value)
       return opt?.label?.[lang] || opt?.label?.ru || value
@@ -83,8 +83,8 @@ export default function ListingDetail() {
       <div className="detail-photo">
         {cover ? <img src={cover.url} alt="" /> : <div className="photo-placeholder" />}
         <div className="detail-nav">
-          <button className="circle-btn" onClick={() => navigate(-1)} aria-label="Назад">←</button>
-          <button className={fav ? 'circle-btn on' : 'circle-btn'} onClick={() => setFav(!fav)} aria-label="В избранное">
+          <button className="circle-btn" onClick={() => navigate(-1)} aria-label={t('actions.back')}>←</button>
+          <button className={fav ? 'circle-btn on' : 'circle-btn'} onClick={() => setFav(!fav)} aria-label={t('misc.in_favorites')}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
               <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />
             </svg>
@@ -95,9 +95,9 @@ export default function ListingDetail() {
 
       <div className="detail-sheet">
         <div className="detail-price">
-          {listing.price != null ? `${listing.price} ${listing.currency === 'EUR' ? '€' : listing.currency}` : 'Цена не указана'}
+          {listing.price != null ? `${listing.price} ${listing.currency === 'EUR' ? '€' : listing.currency}` : t('detail.no_price')}
         </div>
-        {listing.price_negotiable && <div className="neg-pill">Торг уместен</div>}
+        {listing.price_negotiable && <div className="neg-pill">{t('detail.negotiable')}</div>}
 
         <div className="detail-title">{translation?.title}</div>
         {listing.city && (
@@ -113,10 +113,10 @@ export default function ListingDetail() {
           {listing.safe_deal_available && (
             <div className="info-badge green">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6 9 17l-5-5" /></svg>
-              Безопасная сделка
+              {t('detail.safe_deal')}
             </div>
           )}
-          {listing.delivery_available && <div className="info-badge grey">Доставка</div>}
+          {listing.delivery_available && <div className="info-badge grey">{t('detail.delivery')}</div>}
         </div>
 
         {Object.keys(listing.attributes || {}).length > 0 && (
@@ -132,10 +132,10 @@ export default function ListingDetail() {
 
         {translation?.description && (
           <div className="desc-block">
-            <div className="desc-title">Описание</div>
+            <div className="desc-title">{t('detail.description')}</div>
             <div className="desc-text">{translation.description}</div>
             {translation.is_auto_translated && (
-              <div className="translate-note">Переведено автоматически · <span>показать оригинал</span></div>
+              <div className="translate-note">{t('detail.auto_translated')} · <span>{t('detail.show_original')}</span></div>
             )}
           </div>
         )}
@@ -165,7 +165,7 @@ export default function ListingDetail() {
           </svg>
         </button>
         <button className="cta-btn primary" disabled={starting} onClick={handleWriteToSeller}>
-          {starting ? '...' : 'Написать продавцу'}
+          {starting ? '...' : t('detail.write_seller')}
         </button>
       </div>
     </div>

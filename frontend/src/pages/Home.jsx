@@ -131,7 +131,7 @@ export default function Home() {
               <span style={{ background: 'var(--coral)' }} />
             </div>
             <span>{t('search.placeholder')}</span>
-            <span className="avito-search-filter" aria-label="Фильтры">
+            <span className="avito-search-filter" aria-label={t('misc.filters')}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
             </span>
           </Link>
@@ -165,7 +165,7 @@ export default function Home() {
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
                       <path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" />
                     </svg>
-                    <select value={city} onChange={(e) => setCity(e.target.value)} aria-label="Город">
+                    <select value={city} onChange={(e) => setCity(e.target.value)} aria-label={t('post.city')}>
                       {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
@@ -221,10 +221,10 @@ export default function Home() {
       <div className="feed-head-row">
         <div className="feed-heading">{t('common.recommendations')}</div>
         <div className="col-toggle">
-          <button className={cols === 2 ? 'col-btn active' : 'col-btn'} onClick={() => setCols(2)} aria-label="По 2 в ряд">
+          <button className={cols === 2 ? 'col-btn active' : 'col-btn'} onClick={() => setCols(2)} aria-label={t('misc.cols_2')}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="3" y="4" width="7" height="16" rx="1.5" /><rect x="14" y="4" width="7" height="16" rx="1.5" /></svg>
           </button>
-          <button className={cols === 1 ? 'col-btn active' : 'col-btn'} onClick={() => setCols(1)} aria-label="По 1 в ряд">
+          <button className={cols === 1 ? 'col-btn active' : 'col-btn'} onClick={() => setCols(1)} aria-label={t('misc.cols_1')}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="4" y="4" width="16" height="16" rx="2" /></svg>
           </button>
         </div>

@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 
 export default function ChatScreen() {
+  const { t } = useTranslation()
   const { id } = useParams()
   const navigate = useNavigate()
   const myId = localStorage.getItem('fino_user_id')
@@ -45,7 +47,7 @@ export default function ChatScreen() {
   return (
     <div className="chat-page">
       <div className="chat-head">
-        <button className="cats-back" onClick={() => navigate(-1)} aria-label="Назад">←</button>
+        <button className="cats-back" onClick={() => navigate(-1)} aria-label={t('actions.back')}>←</button>
         <div>
           <div className="chat-head-name">{otherName() || '...'}</div>
           {chat?.listing_title && <div className="chat-head-listing">{chat.listing_title}</div>}
@@ -58,7 +60,7 @@ export default function ChatScreen() {
             {m.text}
           </div>
         ))}
-        {messages.length === 0 && <p className="empty-hint">Сообщений пока нет — начните разговор</p>}
+        {messages.length === 0 && <p className="empty-hint">{t('chat.empty')}</p>}
         <div ref={bottomRef} />
       </div>
 
@@ -68,9 +70,9 @@ export default function ChatScreen() {
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && send()}
-          placeholder="Написать сообщение..."
+          placeholder={t('chat.message_ph')}
         />
-        <button className="chat-send-btn" disabled={sending || !text.trim()} onClick={send} aria-label="Отправить">
+        <button className="chat-send-btn" disabled={sending || !text.trim()} onClick={send} aria-label={t('actions.send')}>
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
             <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z" />
           </svg>

@@ -6,15 +6,15 @@ import ListingCard from '../components/ListingCard'
 import { CardSkeletons } from '../components/Skeletons'
 
 const SORTS = [
-  { key: 'new', label: 'Сначала новые' },
-  { key: 'cheap', label: 'Сначала дешёвые' },
-  { key: 'expensive', label: 'Сначала дорогие' },
+  { key: 'new', labelKey: 'search.sort_new' },
+  { key: 'cheap', labelKey: 'search.sort_cheap' },
+  { key: 'expensive', labelKey: 'search.sort_expensive' },
 ]
 
 const PAGE = 20
 
 export default function Search() {
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
 
@@ -99,7 +99,7 @@ export default function Search() {
   return (
     <div className="search-page-full">
       <div className="search-topbar">
-        <button className="search-back" onClick={() => navigate(-1)} aria-label="Назад">
+        <button className="search-back" onClick={() => navigate(-1)} aria-label={t('actions.back')}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
         </button>
         <div className="search-field">
@@ -109,11 +109,11 @@ export default function Search() {
             type="search"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Что ищете?"
+            placeholder={t('search.placeholder_full')}
             autoComplete="off"
           />
           {text && (
-            <button className="search-clear" onClick={() => { setText(''); inputRef.current?.focus() }} aria-label="Очистить">
+            <button className="search-clear" onClick={() => { setText(''); inputRef.current?.focus() }} aria-label={t('actions.clear')}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M18 6 6 18M6 6l12 12" /></svg>
             </button>
           )}
@@ -121,7 +121,7 @@ export default function Search() {
         <button
           className={activeCount ? 'search-filter-btn on' : 'search-filter-btn'}
           onClick={() => setShowFilters((v) => !v)}
-          aria-label="Фильтры"
+          aria-label={t('misc.filters')}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
           {activeCount > 0 && <span className="filter-badge">{activeCount}</span>}
@@ -131,9 +131,9 @@ export default function Search() {
       {showFilters && (
         <div className="filters-panel">
           <div className="post-field">
-            <label>Категория</label>
+            <label>{t('search.category')}</label>
             <select value={category} onChange={(e) => setCategory(e.target.value)}>
-              <option value="">Все категории</option>
+              <option value="">{t('search.all_categories')}</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.slug}>{c.name?.[i18n.language] || c.name?.ru}</option>
               ))}
@@ -142,23 +142,23 @@ export default function Search() {
 
           <div className="post-field-row">
             <div className="post-field">
-              <label>Цена от</label>
+              <label>{t('search.price_from')}</label>
               <input type="number" inputMode="numeric" value={priceMin} onChange={(e) => setPriceMin(e.target.value)} placeholder="0" />
             </div>
             <div className="post-field">
-              <label>до</label>
+              <label>{t('search.price_to')}</label>
               <input type="number" inputMode="numeric" value={priceMax} onChange={(e) => setPriceMax(e.target.value)} placeholder="—" />
             </div>
           </div>
 
           <div className="post-field">
-            <label>Город</label>
+            <label>{t('search.city')}</label>
             <input type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Београд" />
           </div>
 
           <label className="filter-check">
             <input type="checkbox" checked={withPhoto} onChange={(e) => setWithPhoto(e.target.checked)} />
-            Только с фото
+            {t('search.only_photo')}
           </label>
 
           <div className="sort-row">
@@ -168,26 +168,26 @@ export default function Search() {
                 className={sort === s.key ? 'sort-chip active' : 'sort-chip'}
                 onClick={() => setSort(s.key)}
               >
-                {s.label}
+                {t(s.labelKey)}
               </button>
             ))}
           </div>
 
           {activeCount > 0 && (
-            <button className="filters-reset" onClick={resetFilters}>Сбросить фильтры</button>
+            <button className="filters-reset" onClick={resetFilters}>{t('actions.reset_filters')}</button>
           )}
         </div>
       )}
 
       <div className="results-head">
         <span className="results-count">
-          {!loaded ? 'Ищем…' : `Найдено: ${total}`}
+          {!loaded ? t('search.searching') : `${t('search.found')}: ${total}`}
         </span>
         <div className="col-toggle">
-          <button className={cols === 2 ? 'col-btn active' : 'col-btn'} onClick={() => setCols(2)} aria-label="По 2 в ряд">
+          <button className={cols === 2 ? 'col-btn active' : 'col-btn'} onClick={() => setCols(2)} aria-label={t('misc.cols_2')}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="3" y="4" width="7" height="16" rx="1.5" /><rect x="14" y="4" width="7" height="16" rx="1.5" /></svg>
           </button>
-          <button className={cols === 1 ? 'col-btn active' : 'col-btn'} onClick={() => setCols(1)} aria-label="По 1 в ряд">
+          <button className={cols === 1 ? 'col-btn active' : 'col-btn'} onClick={() => setCols(1)} aria-label={t('misc.cols_1')}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="4" y="4" width="16" height="16" rx="2" /></svg>
           </button>
         </div>
@@ -202,12 +202,12 @@ export default function Search() {
       </div>
 
       {loaded && !loading && items.length === 0 && (
-        <p className="empty-hint">Ничего не нашлось. Попробуйте изменить запрос или сбросить фильтры.</p>
+        <p className="empty-hint">{t('search.nothing')}</p>
       )}
 
       {items.length < total && (
         <button className="load-more" onClick={loadMore} disabled={loading}>
-          {loading ? 'Загружаем…' : 'Показать ещё'}
+          {loading ? t('actions.loading') : t('actions.show_more')}
         </button>
       )}
     </div>

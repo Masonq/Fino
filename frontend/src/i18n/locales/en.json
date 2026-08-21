@@ -8,14 +8,15 @@
     "find_category": "Find a category",
     "no_listings": "No listings yet",
     "login": "Log in",
-    "safe_deal": "Safe deal"
+    "safe_deal": "Safe deal",
+    "yes": "Yes",
+    "no": "No"
   },
   "nav": {
     "home": "Home",
-    "search": "Search",
-    "post_ad": "Post an ad",
-    "favorites": "Favorites",
-    "messages": "Messages",
+    "favorites": "Saved",
+    "post": "Post",
+    "chats": "Messages",
     "profile": "Profile"
   },
   "categories": {
@@ -40,14 +41,24 @@
     "urgent": "Urgent"
   },
   "search": {
-    "placeholder": "What are you looking for?",
-    "no_results": "No results found",
-    "filters": "Filters"
+    "placeholder_full": "What are you looking for?",
+    "found": "Found",
+    "searching": "Searching…",
+    "nothing": "Nothing found. Try a different query or reset the filters.",
+    "category": "Category",
+    "all_categories": "All categories",
+    "price_from": "Price from",
+    "price_to": "to",
+    "city": "City",
+    "only_photo": "With photo only",
+    "sort_new": "Newest first",
+    "sort_cheap": "Cheapest first",
+    "sort_expensive": "Most expensive first",
+    "placeholder": "What are you looking for?"
   },
   "chat": {
-    "type_message": "Type a message...",
-    "offer_price": "Make an offer",
-    "reveal_phone": "Show phone number"
+    "empty": "No messages yet — say hello",
+    "message_ph": "Write a message..."
   },
   "promo": {
     "safe_deal": "Safe deal",
@@ -60,5 +71,67 @@
     "pull": "Pull down",
     "release": "Release",
     "refreshing": "Looking for fresh listings…"
+  },
+  "actions": {
+    "back": "Back",
+    "next": "Next",
+    "continue": "Continue",
+    "send": "Send",
+    "publish": "Publish",
+    "to_home": "Go home",
+    "to_listings": "Browse listings",
+    "show_more": "Show more",
+    "loading": "Loading…",
+    "reset_filters": "Reset filters",
+    "clear": "Clear"
+  },
+  "post": {
+    "step_params": "Details",
+    "no_params": "This category has no extra fields — go ahead.",
+    "step_details": "Description and photos",
+    "step_contact": "Contact",
+    "same_profile": "You've posted from this device before — using the same profile.",
+    "sent_title": "Listing sent for review",
+    "sent_text": "Review usually takes a short while. It'll appear in the feed once approved.",
+    "choose_category": "Choose a category",
+    "title_ph": "e.g. 2-room apartment with balcony",
+    "name_ph": "How should we call you",
+    "photos": "Photos",
+    "currency": "Currency",
+    "city": "City",
+    "phone": "Phone",
+    "name": "Name",
+    "price": "Price",
+    "negotiable": "Open to offers"
+  },
+  "detail": {
+    "loading": "Loading…",
+    "negotiable": "Open to offers",
+    "delivery": "Delivery",
+    "safe_deal": "Safe deal",
+    "description": "Description",
+    "auto_translated": "Translated automatically",
+    "show_original": "show original",
+    "write_seller": "Message seller",
+    "no_price": "Price not set",
+    "own_listing": "This is your own listing — you can't message yourself."
+  },
+  "favorites": {
+    "title": "Saved",
+    "need_auth": "Introduce yourself so your saved listings don't get lost.",
+    "empty": "Nothing saved yet. Tap the heart on a listing to come back to it later."
+  },
+  "identify": {
+    "title": "What should we call you?",
+    "subtitle": "So the seller knows who's writing",
+    "name_ph": "Your name"
+  },
+  "misc": {
+    "coming_soon": "This section is coming soon.",
+    "in_favorites": "Save",
+    "filters": "Filters",
+    "urgent": "Urgent",
+    "cols_2": "Two per row",
+    "cols_1": "One per row"
   }
 }
