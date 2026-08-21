@@ -53,12 +53,15 @@ def _add_server_default(context, revision, op_directives):
                 if value is None:
                     continue
 
+                # Обычная строка, а не sa.text(): Alembic проверяет
+                # server_default на истинность, а объект text() этого не умеет
+                # и падает с «Boolean value of this clause is not defined».
                 if isinstance(value, bool):
-                    col.server_default = sa.text("true" if value else "false")
+                    col.server_default = "true" if value else "false"
                 elif isinstance(value, (int, float)):
-                    col.server_default = sa.text(str(value))
+                    col.server_default = str(value)
                 else:
-                    col.server_default = sa.text(f"'{value}'")
+                    col.server_default = str(value)
 
     for script in op_directives:
         walk(script.upgrade_ops.ops)
