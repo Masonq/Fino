@@ -106,7 +106,8 @@
     "negotiable": "Cena po dogovoru",
     "choose_city": "Izaberite grad",
     "posting_as": "Objavljujete kao",
-    "need_login": "Prijavite se da biste objavili oglas"
+    "need_login": "Prijavite se da biste objavili oglas",
+    "publish_failed": "Objavljivanje nije uspelo. Proverite vezu i pokušajte ponovo."
   },
   "detail": {
     "loading": "Učitavanje…",
@@ -212,5 +213,13 @@
     "bad": "Bilo je problema",
     "not_now": "Ne sada",
     "thanks": "Hvala na recenziji"
+  },
+  "edit": {
+    "title": "Izmena oglasa",
+    "save": "Sačuvaj",
+    "saved": "Izmene su sačuvane",
+    "not_owner": "Ovo nije vaš oglas",
+    "remoderation": "Izmena naslova, opisa ili cene vraća oglas na proveru",
+    "save_short": "Izmeni"
   }
 }

@@ -13,6 +13,7 @@ import Login from './pages/Login'
 import Profile from './pages/Profile'
 import MyListings from './pages/MyListings'
 import Moderation from './pages/Moderation'
+import EditListing from './pages/EditListing'
 import { AuthProvider } from './context/AuthContext'
 import { FavoritesProvider } from './context/FavoritesContext'
 import BottomNav from './components/BottomNav'
@@ -80,6 +81,7 @@ export default function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/my" element={<MyListings />} />
           <Route path="/moderation" element={<Moderation />} />
+          <Route path="/edit/:id" element={<EditListing />} />
         </Routes>
       </main>
       {!hideNav && <BottomNav />}

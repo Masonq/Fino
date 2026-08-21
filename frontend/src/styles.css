@@ -927,3 +927,4 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   display:flex; align-items:center; justify-content:center; flex-shrink:0;
 }
 .rr-check svg{ width:13px; height:13px; }
+.edit-note{ font-size:12px; line-height:1.45; color:var(--muted); margin-top:4px; }

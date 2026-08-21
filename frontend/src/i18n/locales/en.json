@@ -106,7 +106,8 @@
     "negotiable": "Open to offers",
     "choose_city": "Choose a city",
     "posting_as": "Posting as",
-    "need_login": "Sign in to publish a listing"
+    "need_login": "Sign in to publish a listing",
+    "publish_failed": "Couldn't publish. Check your connection and try again."
   },
   "detail": {
     "loading": "Loading…",
@@ -212,5 +213,13 @@
     "bad": "Had issues",
     "not_now": "Not now",
     "thanks": "Thanks for the review"
+  },
+  "edit": {
+    "title": "Edit listing",
+    "save": "Save",
+    "saved": "Changes saved",
+    "not_owner": "This isn't your listing",
+    "remoderation": "Changing the title, description or price sends the listing back for review",
+    "save_short": "Edit"
   }
 }

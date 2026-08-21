@@ -43,10 +43,13 @@ LISTING_TTL_DAYS = 45
 
 
 @router.post("")
-def create_listing(payload: ListingCreate, owner_id: uuid.UUID, db: Session = Depends(get_db)):
-    """Создаёт объявление в статусе pending_moderation.
-    owner_id временно передаётся параметром — заменить на auth-зависимость после подключения JWT.
-    """
+def create_listing(
+    payload: ListingCreate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Создаёт объявление от имени вошедшего пользователя."""
+    owner_id = user.id
     category = db.query(Category).get(payload.category_id)
     if not category:
         raise HTTPException(404, "category_not_found")
@@ -299,3 +302,61 @@ def delete_listing(
     db.delete(listing)
     db.commit()
     return {"status": "deleted"}
+
+class ListingUpdate(BaseModel):
+    price: float | None = None
+    currency: str | None = None
+    price_negotiable: bool | None = None
+    city: str | None = None
+    attributes: dict | None = None
+    title: str | None = None
+    description: str | None = None
+    delivery_available: bool | None = None
+    safe_deal_available: bool | None = None
+
+
+@router.patch("/{listing_id}")
+def update_listing(
+    listing_id: uuid.UUID,
+    payload: ListingUpdate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Правка своего объявления. Изменение текста или цены возвращает его
+    на проверку — иначе можно было бы опубликовать безобидное объявление,
+    дождаться одобрения и подменить содержимое.
+    """
+    listing = db.query(Listing).options(joinedload(Listing.translations)).get(listing_id)
+    if not listing:
+        raise HTTPException(404, "not_found")
+    if listing.owner_id != user.id:
+        raise HTTPException(403, "not_owner")
+
+    content_changed = False
+
+    for field in ("price", "currency", "price_negotiable", "city",
+                  "attributes", "delivery_available", "safe_deal_available"):
+        value = getattr(payload, field)
+        if value is not None:
+            setattr(listing, field, value)
+            if field in ("price", "city"):
+                content_changed = True
+
+    if payload.title is not None or payload.description is not None:
+        tr = next(
+            (t for t in listing.translations if t.language == listing.source_language),
+            listing.translations[0] if listing.translations else None,
+        )
+        if tr:
+            if payload.title is not None:
+                tr.title = payload.title.strip()[:200]
+            if payload.description is not None:
+                tr.description = payload.description.strip()
+            content_changed = True
+
+    if content_changed and listing.status == ListingStatus.active:
+        listing.status = ListingStatus.pending_moderation
+
+    db.commit()
+    return {"status": listing.status.value}

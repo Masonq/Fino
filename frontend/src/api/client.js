@@ -75,11 +75,15 @@ export const api = {
     body: JSON.stringify({ status }),
   }),
   deleteListing: (id) => request(`/listings/${id}`, { method: 'DELETE' }),
+  updateListing: (id, payload) => request(`/listings/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  }),
   quickIdentify: (phone, displayName) => request('/users/quick', {
     method: 'POST',
     body: JSON.stringify({ phone, display_name: displayName }),
   }),
-  createListing: (payload, ownerId) => request(`/listings?${new URLSearchParams({ owner_id: ownerId })}`, {
+  createListing: (payload) => request('/listings', {
     method: 'POST',
     body: JSON.stringify(payload),
   }),

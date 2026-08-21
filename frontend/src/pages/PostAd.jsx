@@ -81,8 +81,7 @@ export default function PostAd() {
     setError(null)
     setSubmitting(true)
     try {
-      const ownerId = user?.id
-      if (!ownerId) {
+      if (!user?.id) {
         navigate('/login?returnTo=%2Fpost')
         return
       }
@@ -97,11 +96,11 @@ export default function PostAd() {
         city,
         translations: [{ language: i18n.language, title, description }],
         photos: photos.filter((p) => p.url).map((p) => ({ url: p.url, thumbnail_url: p.thumbnail_url })),
-      }, ownerId)
+      })
 
       setDone(true)
     } catch (e) {
-      setError('Не удалось опубликовать. Проверьте подключение и попробуйте снова.')
+      setError(t('post.publish_failed'))
     } finally {
       setSubmitting(false)
     }
