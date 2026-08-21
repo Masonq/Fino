@@ -153,7 +153,7 @@ export default function ListingDetail() {
                   </div>
                 )}
               </div>
-              <div className="seller-meta">{listing.owner.rating_avg?.toFixed(1)} · Fino</div>
+              <div className="seller-meta">{listing.owner.rating_avg?.toFixed(1)} · PLONK</div>
             </div>
           </div>
         )}
