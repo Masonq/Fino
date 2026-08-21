@@ -51,9 +51,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .brand-word{ font-size:19px; font-weight:800; letter-spacing:-0.02em; color:var(--primary-deep); }
 
 /* ===== Avito-style: градиентная плашка (поиск + Войти + промо) ===== */
+.avito-banner-frame{
+  background:linear-gradient(155deg, #86DEB4 0%, #C9EEDC 100%);
+  padding:calc(5px + env(safe-area-inset-top)) 5px 5px; border-radius:0 0 30px 30px;
+}
 .avito-banner{
-  background:linear-gradient(155deg, #CFF0E2 0%, #F6F5EF 55%, #FAFAF9 100%);
-  padding:calc(16px + env(safe-area-inset-top)) 16px 16px; border-radius:0 0 28px 28px;
+  background:linear-gradient(155deg, #E7F6EE 0%, #F7F6F0 55%, #FDFDFB 100%);
+  padding:12px 13px 13px; border-radius:0 0 27px 27px;
 }
 .avito-toprow{ display:flex; gap:8px; margin-bottom:14px; }
 .avito-search{

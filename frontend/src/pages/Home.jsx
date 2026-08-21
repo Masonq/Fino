@@ -26,6 +26,7 @@ export default function Home() {
 
   return (
     <div className="home">
+      <div className="avito-banner-frame">
       <div className="avito-banner">
         <div className="avito-toprow">
           <Link to="/search" className="avito-search">
@@ -66,6 +67,7 @@ export default function Home() {
           </div>
           <LanguageSwitcher />
         </div>
+      </div>
       </div>
 
       <div className="cat-grid-2row">
