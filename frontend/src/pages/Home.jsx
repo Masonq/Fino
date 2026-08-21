@@ -26,7 +26,6 @@ export default function Home() {
 
   return (
     <div className="home">
-      <div className="avito-banner-frame">
       <div className="avito-banner">
         <div className="avito-toprow">
           <Link to="/search" className="avito-search">
@@ -52,7 +51,6 @@ export default function Home() {
             <img src="/promo-safe-deal.png" alt="" />
           </div>
         </Link>
-      </div>
       </div>
 
       <div className="page-meta-row">
