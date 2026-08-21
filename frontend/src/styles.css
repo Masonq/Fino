@@ -85,8 +85,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .avito-login-pill .avatar-mini{ width:24px; height:24px; font-size:10px; }
 
 .avito-promo-row{ display:flex; align-items:center; justify-content:space-between; padding:0 3px; gap:10px; }
-.avito-promo-text{ display:flex; align-items:center; gap:4px; font-size:13px; font-weight:800; color:#fff; letter-spacing:-0.01em; line-height:1.2; }
-.avito-promo-illustration{ width:46px; height:36px; flex-shrink:0; display:flex; align-items:flex-end; justify-content:flex-end; }
+.avito-promo-text{ display:flex; align-items:center; gap:4px; font-size:18px; font-weight:800; color:#fff; letter-spacing:-0.01em; line-height:1.2; }
+.avito-promo-illustration{ width:42px; height:50px; flex-shrink:0; display:flex; align-items:flex-end; justify-content:flex-end; }
 .avito-promo-illustration img{ max-width:100%; max-height:100%; object-fit:contain; }
 
 .page-meta-row{ display:flex; align-items:center; gap:6px; padding:8px 18px 0; }
