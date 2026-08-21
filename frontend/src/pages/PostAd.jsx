@@ -145,7 +145,7 @@ export default function PostAd() {
 
       {step === 1 && category && (
         <>
-          <button className="post-back" onClick={() => setStep(0)}>← {category.name?.[i18n.language] || category.name?.ru}</button>
+          <button className="post-back" onClick={() => setStep(0)}><svg className="back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>{category.name?.[i18n.language] || category.name?.ru}</button>
           <h2>{t('post.step_params')}</h2>
           {schema.length === 0 && <p className="empty-hint">{t('post.no_params')}</p>}
           <div className="post-fields">
@@ -156,7 +156,7 @@ export default function PostAd() {
                   <input type="text" value={attrs[field.key] || ''} onChange={(e) => setAttr(field.key, e.target.value)} />
                 )}
                 {field.type === 'number' && (
-                  <input type="number" value={attrs[field.key] || ''} onChange={(e) => setAttr(field.key, e.target.value)} />
+                  <input type="number" inputMode="decimal" pattern="[0-9]*" value={attrs[field.key] || ''} onChange={(e) => setAttr(field.key, e.target.value)} />
                 )}
                 {field.type === 'boolean' && (
                   <label className="post-checkbox">
@@ -181,7 +181,7 @@ export default function PostAd() {
 
       {step === 2 && (
         <>
-          <button className="post-back" onClick={() => setStep(1)}>← {t('actions.back')}</button>
+          <button className="post-back" onClick={() => setStep(1)}><svg className="back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>{t('actions.back')}</button>
           <h2>{t('post.step_details')}</h2>
           <div className="post-fields">
             <div className="post-field">
@@ -218,7 +218,7 @@ export default function PostAd() {
             <div className="post-field-row">
               <div className="post-field">
                 <label>{t('listing.price')}</label>
-                <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} />
+                <input type="number" inputMode="decimal" pattern="[0-9]*" value={price} onChange={(e) => setPrice(e.target.value)} />
               </div>
               <div className="post-field" style={{ maxWidth: 90 }}>
                 <label>{t('post.currency')}</label>
@@ -246,7 +246,7 @@ export default function PostAd() {
 
       {step === 3 && (
         <>
-          <button className="post-back" onClick={() => setStep(2)}>← {t('actions.back')}</button>
+          <button className="post-back" onClick={() => setStep(2)}><svg className="back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>{t('actions.back')}</button>
           <h2>{t('post.step_contact')}</h2>
           {user ? (
             <div className="post-fields">

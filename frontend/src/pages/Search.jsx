@@ -146,11 +146,11 @@ export default function Search() {
           <div className="post-field-row">
             <div className="post-field">
               <label>{t('search.price_from')}</label>
-              <input type="number" inputMode="numeric" value={priceMin} onChange={(e) => setPriceMin(e.target.value)} placeholder="0" />
+              <input type="number" inputMode="decimal" pattern="[0-9]*" value={priceMin} onChange={(e) => setPriceMin(e.target.value)} placeholder="0" />
             </div>
             <div className="post-field">
               <label>{t('search.price_to')}</label>
-              <input type="number" inputMode="numeric" value={priceMax} onChange={(e) => setPriceMax(e.target.value)} placeholder="—" />
+              <input type="number" inputMode="decimal" pattern="[0-9]*" value={priceMax} onChange={(e) => setPriceMax(e.target.value)} placeholder="—" />
             </div>
           </div>
 

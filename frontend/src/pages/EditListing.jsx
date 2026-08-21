@@ -104,7 +104,7 @@ export default function EditListing() {
         <div className="post-field-row">
           <div className="post-field">
             <label>{t('post.price')}</label>
-            <input type="number" inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value)} />
+            <input type="number" inputMode="decimal" pattern="[0-9]*" value={price} onChange={(e) => setPrice(e.target.value)} />
           </div>
           <div className="post-field">
             <label>{t('post.city')}</label>
