@@ -34,6 +34,10 @@ export default function PostAd() {
     api.getCategories().then(setCategories).catch(() => setCategories([]))
   }, [])
 
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [step])
+
   const pickCategory = async (cat) => {
     setCategory(cat)
     try {

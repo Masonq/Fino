@@ -16,6 +16,7 @@ CATEGORIES = [
         "color": "#0E9F6E",
         "attribute_schema": [
             {"key": "deal_type", "type": "select", "required": True,
+             "label": {"ru": "Тип сделки", "en": "Deal type", "sr": "Vrsta ponude"},
              "options": [{"value": "rent", "label": {"ru": "Аренда", "en": "Rent", "sr": "Izdavanje"}},
                          {"value": "sale", "label": {"ru": "Продажа", "en": "Sale", "sr": "Prodaja"}}]},
             {"key": "area_m2", "type": "number", "required": True,
@@ -44,6 +45,7 @@ CATEGORIES = [
             {"key": "mileage_km", "type": "number", "required": False,
              "label": {"ru": "Пробег, км", "en": "Mileage, km", "sr": "Kilometraža"}},
             {"key": "transmission", "type": "select", "required": False,
+             "label": {"ru": "Коробка передач", "en": "Transmission", "sr": "Menjač"},
              "options": [{"value": "manual", "label": {"ru": "Механика", "en": "Manual", "sr": "Manuelni"}},
                          {"value": "automatic", "label": {"ru": "Автомат", "en": "Automatic", "sr": "Automatik"}}]},
             {"key": "vin", "type": "text", "required": False,

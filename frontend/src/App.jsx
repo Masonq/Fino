@@ -1,4 +1,5 @@
 import { Routes, Route, useLocation } from 'react-router-dom'
+import { useLayoutEffect } from 'react'
 import Home from './pages/Home'
 import Search from './pages/Search'
 import PostAd from './pages/PostAd'
@@ -11,6 +12,10 @@ import BottomNav from './components/BottomNav'
 export default function App() {
   const { pathname } = useLocation()
   const hideNav = pathname.startsWith('/listing/') || pathname.startsWith('/chat/') || pathname === '/identify'
+
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
 
   return (
     <div className="app-shell">

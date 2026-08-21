@@ -51,7 +51,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .brand-word{ font-size:19px; font-weight:800; letter-spacing:-0.02em; color:var(--primary-deep); }
 
 /* ===== topbar ===== */
-.topbar{ padding:18px 18px 4px; }
+.topbar{ padding:calc(18px + env(safe-area-inset-top)) 18px 4px; }
 .topbar-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
 .header-right{ display:flex; align-items:center; gap:8px; }
 .lang-switch{ display:flex; background:#fff; border-radius:11px; padding:3px; box-shadow:var(--shadow); }
@@ -126,7 +126,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .empty-hint{ grid-column:1/-1; color:var(--muted); font-size:13px; padding:20px 0; text-align:center; }
 
 /* ===== categories page ===== */
-.cats-head{ display:flex; align-items:center; padding:16px 16px 4px; position:relative; }
+.cats-head{ display:flex; align-items:center; padding:calc(16px + env(safe-area-inset-top)) 16px 4px; position:relative; }
 .cats-back{ width:36px; height:36px; border-radius:50%; background:#fff; box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .cats-title{ position:absolute; left:0; right:0; text-align:center; font-size:16px; font-weight:800; }
 .cats-search{ margin:16px 18px 6px; background:#fff; border-radius:14px; padding:12px 15px; box-shadow:var(--shadow); display:flex; align-items:center; gap:9px; color:var(--muted); font-size:13px; font-weight:500; }
@@ -138,7 +138,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .cats-label{ font-size:11.5px; font-weight:700; text-align:center; line-height:1.25; }
 
 /* ===== stub pages ===== */
-.search-page, .post-ad-page{ padding:18px; }
+.search-page, .post-ad-page{ padding:calc(18px + env(safe-area-inset-top)) 18px 18px; }
 .search-input{ width:100%; padding:14px 16px; border-radius:14px; border:1px solid var(--line); background:#fff; font-size:16px; }
 
 /* ===== post ad form ===== */
@@ -181,7 +181,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .detail-page{ padding-bottom:100px; }
 .detail-photo{ position:relative; aspect-ratio:4/3.2; overflow:hidden; background:#ddd; }
 .detail-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
-.detail-nav{ position:absolute; top:16px; left:16px; right:16px; display:flex; justify-content:space-between; }
+.detail-nav{ position:absolute; top:calc(16px + env(safe-area-inset-top)); left:16px; right:16px; display:flex; justify-content:space-between; }
 .circle-btn{ width:37px; height:37px; border-radius:50%; background:#ffffffdd; backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; color:var(--ink); }
 .circle-btn.on{ color:var(--coral); }
 .photo-count{ position:absolute; bottom:14px; right:14px; background:#000000aa; color:#fff; font-size:10.5px; font-weight:700; padding:5px 10px; border-radius:8px; }
@@ -228,7 +228,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* ===== chat screen ===== */
 .chat-page{ display:flex; flex-direction:column; height:100vh; height:100dvh; }
-.chat-head{ display:flex; align-items:center; gap:12px; padding:14px 16px; box-shadow:var(--shadow); background:#fff; }
+.chat-head{ display:flex; align-items:center; gap:12px; padding:calc(14px + env(safe-area-inset-top)) 16px 14px; box-shadow:var(--shadow); background:#fff; }
 .chat-head-name{ font-size:14.5px; font-weight:800; }
 .chat-head-listing{ font-size:11.5px; color:var(--muted); font-weight:500; margin-top:1px; }
 .chat-messages{ flex:1; overflow-y:auto; padding:16px 16px 8px; display:flex; flex-direction:column; gap:8px; overscroll-behavior-y:contain; -webkit-overflow-scrolling:touch; }
