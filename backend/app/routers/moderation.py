@@ -75,6 +75,13 @@ def approve(
     except Exception:
         pass
 
+    # оповещаем тех, кто подписан на подходящий поиск
+    try:
+        from app.core.search_alerts import notify_subscribers
+        notify_subscribers(db, listing)
+    except Exception:
+        pass
+
     return {"status": "active"}
 
 

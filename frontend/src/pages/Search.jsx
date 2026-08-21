@@ -5,6 +5,7 @@ import { api } from '../api/client'
 import ListingCard from '../components/ListingCard'
 import { CardSkeletons } from '../components/Skeletons'
 import { CITIES, cityLabel } from '../data/cities'
+import { useAuth } from '../context/AuthContext'
 
 const SORTS = [
   { key: 'new', labelKey: 'search.sort_new' },
@@ -16,6 +17,8 @@ const PAGE = 20
 
 export default function Search() {
   const { t, i18n } = useTranslation()
+  const { user } = useAuth()
+  const [subscribed, setSubscribed] = useState(false)
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
 
@@ -189,6 +192,26 @@ export default function Search() {
         <span className="results-count">
           {!loaded ? t('search.searching') : `${t('search.found')}: ${total}`}
         </span>
+        {(text.trim() || category || priceMin || priceMax || city) && (
+          <button
+            className={subscribed ? 'save-search done' : 'save-search'}
+            onClick={async () => {
+              if (!user) { navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`); return }
+              try {
+                await api.saveSearch({
+                  q: text.trim() || undefined,
+                  category_slug: category || undefined,
+                  price_min: priceMin || undefined,
+                  price_max: priceMax || undefined,
+                  city: city || undefined,
+                })
+                setSubscribed(true)
+              } catch { /* уже сохранён или лимит */ }
+            }}
+          >
+            {subscribed ? t('saved.done') : t('saved.subscribe')}
+          </button>
+        )}
         <div className="col-toggle">
           <button className={cols === 2 ? 'col-btn active' : 'col-btn'} onClick={() => setCols(2)} aria-label={t('misc.cols_2')}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="3" y="4" width="7" height="16" rx="1.5" /><rect x="14" y="4" width="7" height="16" rx="1.5" /></svg>

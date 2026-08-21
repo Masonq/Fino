@@ -243,5 +243,13 @@
     "err_already": "You've already reported this listing",
     "err_too_many": "Too many reports today, try again tomorrow",
     "err_self": "You can't report your own listing"
+  },
+  "saved": {
+    "title": "Saved searches",
+    "subscribe": "Notify me",
+    "done": "Tracking",
+    "need_login": "Sign in to save searches",
+    "empty": "No saved searches",
+    "notify": "Notify"
   }
 }

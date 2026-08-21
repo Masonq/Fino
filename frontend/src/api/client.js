@@ -47,6 +47,16 @@ export const api = {
     body: JSON.stringify(payload),
   }),
   me: () => request('/auth/me'),
+  savedSearches: () => request('/saved-searches'),
+  saveSearch: (filters, name) => request('/saved-searches', {
+    method: 'POST',
+    body: JSON.stringify({ filters, name: name || null }),
+  }),
+  deleteSavedSearch: (id) => request(`/saved-searches/${id}`, { method: 'DELETE' }),
+  toggleSavedSearch: (id, enabled) => request(`/saved-searches/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ notify_enabled: enabled }),
+  }),
   userReviews: (userId) => request(`/reviews/user/${userId}`),
   canReview: (targetId) => request(`/reviews/can-review/${targetId}`),
   dismissInvite: (chatId) => request(`/reviews/invite/${chatId}/dismiss`, { method: 'POST' }),

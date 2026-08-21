@@ -993,3 +993,20 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .edit-save:disabled{ background:#D6DCD8; box-shadow:none; }
 .edit-cancel{ background:#F2F2EF; color:var(--ink-soft); }
+
+/* ===== сохранённые поиски ===== */
+.save-search{
+  padding:8px 13px; border-radius:11px; background:var(--primary-soft);
+  color:var(--primary-deep); font-size:12.5px; font-weight:700; margin-right:8px;
+}
+.save-search.done{ background:var(--primary); color:#fff; }
+
+.saved-list{ display:flex; flex-direction:column; }
+.saved-row{ padding:12px; border-bottom:1px solid rgba(20,30,25,.06); }
+.saved-main{ display:block; width:100%; text-align:left; }
+.saved-name{ font-size:14px; font-weight:700; color:var(--ink); }
+.saved-desc{ font-size:12.5px; color:var(--muted); margin-top:3px; }
+.saved-actions{ display:flex; align-items:center; justify-content:space-between; margin-top:10px; }
+.saved-toggle{ display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600; color:var(--ink-soft); }
+.saved-toggle input{ width:18px; height:18px; accent-color:var(--primary); }
+.saved-delete{ font-size:12.5px; font-weight:700; color:var(--coral); }

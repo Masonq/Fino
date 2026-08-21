@@ -243,5 +243,13 @@
     "err_already": "Već ste prijavili ovaj oglas",
     "err_too_many": "Previše prijava danas, pokušajte sutra",
     "err_self": "Ne možete prijaviti sopstveni oglas"
+  },
+  "saved": {
+    "title": "Sačuvane pretrage",
+    "subscribe": "Prati",
+    "done": "Pratite",
+    "need_login": "Prijavite se da sačuvate pretragu",
+    "empty": "Nema sačuvanih pretraga",
+    "notify": "Obaveštavaj"
   }
 }
