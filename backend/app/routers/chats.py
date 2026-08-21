@@ -107,11 +107,22 @@ def get_chat(
 @router.get("/{chat_id}/messages")
 def list_messages(
     chat_id: uuid.UUID,
+    limit: int = Query(60, le=200),
+    before: datetime | None = None,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     _require_participant(chat_id, user, db)
-    messages = db.query(Message).filter(Message.chat_id == chat_id).order_by(Message.created_at.asc()).all()
+
+    # Берём последние сообщения, а не всю историю: при долгой переписке
+    # это тысячи записей на каждое открытие чата, а опрос повторяет запрос
+    # каждые несколько секунд.
+    q = db.query(Message).filter(Message.chat_id == chat_id)
+    if before:
+        q = q.filter(Message.created_at < before)
+
+    rows = q.order_by(Message.created_at.desc()).limit(limit).all()
+    messages = list(reversed(rows))
     return [
         {
             "id": str(m.id),
@@ -177,6 +188,7 @@ def list_chats(
         db.query(Chat)
         .filter(or_(Chat.buyer_id == user_id, Chat.seller_id == user_id))
         .order_by(Chat.last_message_at.desc().nullslast(), Chat.created_at.desc())
+        .limit(100)
         .all()
     )
     if not chats:

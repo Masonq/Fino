@@ -47,7 +47,14 @@ export default function ChatScreen() {
       if (document.hidden) return
       try {
         const res = await api.getChatMessages(id)
-        setMessages((prev) => (res.length !== prev.length ? res : prev))
+        // Опрос возвращает только последние сообщения — дописываем новые,
+        // а не заменяем список целиком, иначе подгруженная история пропадёт.
+        setMessages((prev) => {
+          if (prev.length === 0) return res
+          const known = new Set(prev.map((m) => m.id))
+          const fresh = res.filter((m) => !known.has(m.id))
+          return fresh.length > 0 ? [...prev, ...fresh] : prev
+        })
         // пришло чужое — сразу помечаем прочитанным, раз чат открыт
         if (res.some((m) => m.sender_id !== myId && !m.is_read)) {
           api.markChatRead(id).catch(() => {})
@@ -61,6 +68,30 @@ export default function ChatScreen() {
 
     return () => { clearInterval(timer); document.removeEventListener('visibilitychange', onVisible) }
   }, [id, myId])
+
+  const [loadingOlder, setLoadingOlder] = useState(false)
+  const [hasOlder, setHasOlder] = useState(true)
+  const scrollRef = useRef(null)
+
+  // Старые сообщения подгружаются при прокрутке вверх: сразу грузим
+  // только последние, иначе длинная переписка открывается секундами.
+  const loadOlder = async () => {
+    if (loadingOlder || !hasOlder || messages.length === 0) return
+    setLoadingOlder(true)
+    const box = scrollRef.current
+    const before = messages[0]?.created_at
+    const heightBefore = box?.scrollHeight || 0
+    try {
+      const older = await api.getChatMessages(id, before)
+      if (older.length === 0) { setHasOlder(false); return }
+      setMessages((prev) => [...older, ...prev])
+      // сохраняем положение: иначе список прыгает под пальцем
+      requestAnimationFrame(() => {
+        if (box) box.scrollTop = box.scrollHeight - heightBefore
+      })
+    } catch { /* попробуем в следующий раз */ }
+    finally { setLoadingOlder(false) }
+  }
 
   const prevCount = useRef(0)
   useEffect(() => {
@@ -95,7 +126,12 @@ export default function ChatScreen() {
         </div>
       </div>
 
-      <div className="chat-messages">
+      <div
+        className="chat-messages"
+        ref={scrollRef}
+        onScroll={(e) => { if (e.currentTarget.scrollTop < 60) loadOlder() }}
+      >
+        {loadingOlder && <p className="empty-hint">{t('actions.loading')}</p>}
         {messages.map((m) => (
           m.kind === 'review_request' ? (
             <ReviewRequest

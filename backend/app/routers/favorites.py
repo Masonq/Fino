@@ -21,6 +21,7 @@ def list_favorites(
         db.query(Favorite)
         .filter(Favorite.user_id == user_id)
         .order_by(Favorite.created_at.desc())
+        .limit(200)
         .all()
     )
     listing_ids = [r.listing_id for r in rows]

@@ -129,7 +129,7 @@ export const api = {
   getChats: (lang) => request(`/chats?${new URLSearchParams({ lang })}`),
   markChatRead: (chatId) => request(`/chats/${chatId}/read`, { method: 'POST' }),
   getChat: (chatId) => request(`/chats/${chatId}`),
-  getChatMessages: (chatId) => request(`/chats/${chatId}/messages`),
+  getChatMessages: (chatId, before) => request(`/chats/${chatId}/messages${before ? `?before=${encodeURIComponent(before)}` : ''}`),
   sendMessage: (chatId, text) => request(`/chats/${chatId}/messages`, {
     method: 'POST',
     body: JSON.stringify({ text }),
