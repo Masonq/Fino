@@ -222,6 +222,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; }
 }
 .sheet-handle{ width:36px; height:4px; background:var(--line); border-radius:3px; margin:0 auto 16px; }
 .sheet h3{ font-size:16px; font-weight:800; }
+.sheet-close{
+  position:absolute; top:14px; right:14px; width:32px; height:32px; border-radius:50%;
+  background:#F3F3F1; color:var(--ink-soft); display:flex; align-items:center; justify-content:center;
+}
 
 /* ===== chat screen ===== */
 .chat-page{ display:flex; flex-direction:column; height:100vh; height:100dvh; }
