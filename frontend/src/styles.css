@@ -20,7 +20,7 @@
   --shadow-lg: 0 4px 10px rgba(20,30,25,.05), 0 18px 36px rgba(20,30,25,.11);
 }
 *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-html, body{ background:#E7E7E2; font-family:'Plus Jakarta Sans',sans-serif; color:var(--ink); }
+html, body{ background:#E7E7E2; font-family:'Plus Jakarta Sans',sans-serif; color:var(--ink); overscroll-behavior-y:none; }
 a{ text-decoration:none; color:inherit; -webkit-touch-callout:none; }
 button{ border:none; background:none; font-family:inherit; cursor:pointer; user-select:none; -webkit-touch-callout:none; touch-action:manipulation; }
 .nav-item, .nav-post, .cat-tile, .cats-item, .post-cat-item, .col-btn, .lang-btn, .chip, .qchip, .s-fav, .compact-fav{
