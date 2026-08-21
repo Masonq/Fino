@@ -37,11 +37,13 @@ const PHOTO_SCALE = {
 const PHOTO_SHIFT = {
   __all: [-2, 0],
   // высокие предметы упирались в нижний край — приподнимаем
-  services: [0, -5],
-  beauty: [0, -5],
+  services: [4, -1],
+  beauty: [0, -1],
   business: [0, -4],
   pets: [0, -3],
   kids: [0, -2],
+  auto: [0, 4],
+  fashion: [-4, 0],
 }
 
 const PROMO_IMAGES = {
