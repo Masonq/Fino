@@ -22,4 +22,14 @@ export const api = {
     method: 'POST',
     body: JSON.stringify(payload),
   }),
+  startChat: (listingId, buyerId) => request('/chats/start', {
+    method: 'POST',
+    body: JSON.stringify({ listing_id: listingId, buyer_id: buyerId }),
+  }),
+  getChat: (chatId) => request(`/chats/${chatId}`),
+  getChatMessages: (chatId) => request(`/chats/${chatId}/messages`),
+  sendMessage: (chatId, senderId, text) => request(`/chats/${chatId}/messages`, {
+    method: 'POST',
+    body: JSON.stringify({ sender_id: senderId, text }),
+  }),
 }

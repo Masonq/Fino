@@ -1,0 +1,42 @@
+import { useState } from 'react'
+import { api } from '../api/client'
+
+export default function IdentifySheet({ onDone, onClose }) {
+  const [phone, setPhone] = useState('')
+  const [displayName, setDisplayName] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const submit = async () => {
+    setLoading(true)
+    try {
+      const user = await api.quickIdentify(phone, displayName)
+      localStorage.setItem('fino_user_id', user.id)
+      onDone(user.id)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="sheet-overlay" onClick={onClose}>
+      <div className="sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="sheet-handle" />
+        <h3>Как к вам обращаться?</h3>
+        <p className="empty-hint" style={{ margin: '4px 0 16px' }}>Нужно, чтобы продавец знал, кто пишет</p>
+        <div className="post-fields">
+          <div className="post-field">
+            <label>Телефон</label>
+            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+381 6..." autoFocus />
+          </div>
+          <div className="post-field">
+            <label>Имя</label>
+            <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Ваше имя" />
+          </div>
+        </div>
+        <button className="post-submit-btn" disabled={!phone || !displayName || loading} onClick={submit}>
+          {loading ? '...' : 'Продолжить'}
+        </button>
+      </div>
+    </div>
+  )
+}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
+import IdentifySheet from '../components/IdentifySheet'
 
 export default function ListingDetail() {
   const { id } = useParams()
@@ -11,6 +12,8 @@ export default function ListingDetail() {
   const [listing, setListing] = useState(null)
   const [schema, setSchema] = useState([])
   const [fav, setFav] = useState(false)
+  const [showIdentify, setShowIdentify] = useState(false)
+  const [starting, setStarting] = useState(false)
 
   useEffect(() => {
     api.getListing(id).then(setListing).catch(() => setListing(null))
@@ -44,6 +47,27 @@ export default function ListingDetail() {
       return opt?.label?.[lang] || opt?.label?.ru || value
     }
     return value
+  }
+
+  const startChatWith = async (buyerId) => {
+    setStarting(true)
+    try {
+      const chat = await api.startChat(listing.id, buyerId)
+      navigate(`/chat/${chat.id}`)
+    } catch (e) {
+      alert('Это ваше собственное объявление — написать себе нельзя.')
+    } finally {
+      setStarting(false)
+    }
+  }
+
+  const handleWriteToSeller = () => {
+    const myId = localStorage.getItem('fino_user_id')
+    if (myId) {
+      startChatWith(myId)
+    } else {
+      setShowIdentify(true)
+    }
   }
 
   return (
@@ -132,10 +156,17 @@ export default function ListingDetail() {
             <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .7 3a2 2 0 0 1-.4 2.1L8 10.3a16 16 0 0 0 6 6l1.5-1.4a2 2 0 0 1 2.1-.4c1 .4 2 .6 3 .7a2 2 0 0 1 1.7 2Z" />
           </svg>
         </button>
-        <button className="cta-btn primary" onClick={() => alert('Чат появится в следующей итерации')}>
-          Написать продавцу
+        <button className="cta-btn primary" disabled={starting} onClick={handleWriteToSeller}>
+          {starting ? '...' : 'Написать продавцу'}
         </button>
       </div>
+
+      {showIdentify && (
+        <IdentifySheet
+          onClose={() => setShowIdentify(false)}
+          onDone={(userId) => { setShowIdentify(false); startChatWith(userId) }}
+        />
+      )}
     </div>
   )
 }
