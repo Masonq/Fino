@@ -78,12 +78,9 @@ export default function PullToRefresh({ onRefresh, children }) {
             </div>
             <div
               className={refreshing ? 'ptr-lens moving' : 'ptr-lens'}
-              style={!refreshing ? { transform: `translateX(${-26 + progress * 52}px) rotate(${-12 + progress * 12}deg)` } : undefined}
+              style={!refreshing ? { transform: `translateX(${-26 + progress * 52}px) rotate(${-10 + progress * 10}deg)` } : undefined}
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round">
-                <circle cx="10.5" cy="10.5" r="6.5" />
-                <path d="m20 20-4.7-4.7" />
-              </svg>
+              <img src="/logo-mark.png" alt="" />
             </div>
           </div>
           <span className={ready || refreshing ? 'ptr-label on' : 'ptr-label'}>{label}</span>

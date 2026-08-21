@@ -483,7 +483,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .ptr-inner{ display:flex; flex-direction:column; align-items:center; gap:8px; }
 
 /* сцена: ряд «карточек» и лупа, которая их сканирует */
-.ptr-scene{ position:relative; width:96px; height:26px; transition:opacity .2s ease; }
+.ptr-scene{ position:relative; width:104px; height:30px; transition:opacity .2s ease; }
 .ptr-shelf{
   position:absolute; inset:auto 0 2px 0; display:flex; justify-content:center; gap:7px;
 }
@@ -499,12 +499,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 
 .ptr-lens{
-  position:absolute; top:-4px; left:50%; margin-left:-11px;
-  width:22px; height:22px; color:var(--primary-deep);
-  filter:drop-shadow(0 2px 4px rgba(20,30,25,.18));
+  position:absolute; top:-5px; left:50%; margin-left:-13px;
+  width:26px; height:26px;
+  filter:drop-shadow(0 2px 5px rgba(20,30,25,.22));
   transition:transform .16s ease;
 }
-.ptr-lens svg{ width:100%; height:100%; }
+.ptr-lens img{ width:100%; height:100%; object-fit:contain; display:block; }
 /* при обновлении лупа ездит вдоль ряда */
 .ptr-lens.moving{ animation:ptr-scan 1.4s ease-in-out infinite; }
 @keyframes ptr-scan{
