@@ -59,11 +59,22 @@ export default function Home() {
     return () => clearInterval(id)
   }, [collapsed])
 
-  // статус-бар iOS перекрашиваем под текущий слайд, чтобы верх экрана сливался с баннером
+  // статус-бар iOS перекрашиваем под текущий слайд, чтобы верх экрана сливался с баннером.
+  // Safari кэширует theme-color, поэтому мета-тег пересоздаём, а не меняем значение —
+  // иначе при возврате наверх после скролла цвет не подхватывается.
   useEffect(() => {
-    const meta = document.querySelector('meta[name="theme-color"]')
-    if (!meta) return
-    meta.setAttribute('content', collapsed ? '#FAFAF9' : PROMO_SLIDES[slide].top)
+    const color = collapsed ? '#FAFAF9' : PROMO_SLIDES[slide].top
+    // ждём завершения анимации схлопывания (.42s), иначе статус-бар
+    // перекрашивается раньше, чем сам баннер — виден рассинхрон
+    const delay = collapsed ? 380 : 0
+    const id = setTimeout(() => {
+      document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.remove())
+      const meta = document.createElement('meta')
+      meta.setAttribute('name', 'theme-color')
+      meta.setAttribute('content', color)
+      document.head.appendChild(meta)
+    }, delay)
+    return () => clearTimeout(id)
   }, [slide, collapsed])
 
   useEffect(() => {

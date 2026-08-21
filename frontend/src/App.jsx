@@ -21,8 +21,11 @@ export default function App() {
   // на не-главных экранах статус-бар нейтральный (на главной им управляет карусель баннера)
   useEffect(() => {
     if (pathname === '/') return
-    const meta = document.querySelector('meta[name="theme-color"]')
-    if (meta) meta.setAttribute('content', '#FAFAF9')
+    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.remove())
+    const meta = document.createElement('meta')
+    meta.setAttribute('name', 'theme-color')
+    meta.setAttribute('content', '#FAFAF9')
+    document.head.appendChild(meta)
   }, [pathname])
 
   // Обходной приём для известного бага iOS 26: после закрытия клавиатуры
