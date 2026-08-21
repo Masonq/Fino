@@ -18,6 +18,7 @@ import SavedSearches from './pages/SavedSearches'
 import { AuthProvider } from './context/AuthContext'
 import { FavoritesProvider } from './context/FavoritesContext'
 import BottomNav from './components/BottomNav'
+import TopNav from './components/TopNav'
 
 export default function App() {
   const { pathname } = useLocation()
@@ -68,6 +69,7 @@ export default function App() {
     <AuthProvider>
     <FavoritesProvider>
     <div className="app-shell">
+      {!hideNav && <TopNav />}
       <main className={hideNav ? '' : 'has-bottomnav'}>
         <Routes>
           <Route path="/" element={<Home />} />
