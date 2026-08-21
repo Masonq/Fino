@@ -53,44 +53,44 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* ===== Avito-style: градиентная плашка (поиск + Войти + промо) ===== */
 .avito-banner{
   background:linear-gradient(155deg, #CFF0E2 0%, #F6F5EF 55%, #FAFAF9 100%);
-  padding:calc(14px + env(safe-area-inset-top)) 14px 14px; border-radius:0 0 26px 26px;
+  padding:calc(16px + env(safe-area-inset-top)) 16px 16px; border-radius:0 0 28px 28px;
 }
-.avito-toprow{ display:flex; gap:8px; margin-bottom:12px; }
+.avito-toprow{ display:flex; gap:8px; margin-bottom:14px; }
 .avito-search{
-  flex:1; display:flex; align-items:center; gap:9px; background:#FDFDFB; border-radius:16px;
-  padding:6px 6px 6px 14px; box-shadow:0 1px 2px rgba(20,30,25,.03); color:var(--muted); font-size:13px; font-weight:500;
+  flex:1; display:flex; align-items:center; gap:11px; background:#FDFDFB; border-radius:18px;
+  padding:15px 8px 15px 16px; box-shadow:0 1px 2px rgba(20,30,25,.03); color:var(--muted); font-size:15.5px; font-weight:500;
   min-width:0;
 }
-.avito-search-logo{ display:flex; flex-shrink:0; width:16px; height:16px; position:relative; }
-.avito-search-logo span{ position:absolute; width:9px; height:9px; border-radius:50%; opacity:.9; }
-.avito-search-logo span:nth-child(1){ left:0; top:2px; }
-.avito-search-logo span:nth-child(2){ left:6px; top:0; }
-.avito-search-logo span:nth-child(3){ left:5px; top:7px; }
+.avito-search-logo{ display:flex; flex-shrink:0; width:19px; height:19px; position:relative; }
+.avito-search-logo span{ position:absolute; width:11px; height:11px; border-radius:50%; opacity:.9; }
+.avito-search-logo span:nth-child(1){ left:0; top:3px; }
+.avito-search-logo span:nth-child(2){ left:7px; top:0; }
+.avito-search-logo span:nth-child(3){ left:6px; top:8px; }
 .avito-search span:nth-child(2){ flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.avito-search-divider{ width:1px; height:20px; background:var(--line); flex-shrink:0; }
+.avito-search-divider{ width:1px; height:24px; background:var(--line); flex-shrink:0; }
 .avito-search-filter{
-  width:32px; height:32px; border-radius:10px; background:#F1F1EC; color:var(--ink-soft);
+  width:38px; height:38px; border-radius:11px; background:#F1F1EC; color:var(--ink-soft);
   display:flex; align-items:center; justify-content:center; flex-shrink:0;
 }
 .avito-login-pill{
   flex-shrink:0; display:flex; align-items:center; justify-content:center; background:#F1F1EC;
-  border-radius:16px; padding:0 16px; font-size:13px; font-weight:600; color:var(--ink);
+  border-radius:18px; padding:0 20px; font-size:15px; font-weight:600; color:var(--ink);
 }
-.avito-login-pill:has(.avatar-mini){ padding:3px; border-radius:50%; }
+.avito-login-pill:has(.avatar-mini){ padding:4px; border-radius:50%; }
 .avatar-mini{
   width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,var(--violet),#9B8FFF);
   display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:12px; flex-shrink:0;
 }
-.avito-login-pill .avatar-mini{ width:28px; height:28px; font-size:11px; }
+.avito-login-pill .avatar-mini{ width:32px; height:32px; font-size:12px; }
 
-.avito-promo-row{ display:flex; align-items:center; justify-content:space-between; padding:2px 4px; }
-.avito-promo-text{ display:flex; align-items:center; gap:4px; font-size:17px; font-weight:800; color:var(--ink); letter-spacing:-0.01em; }
+.avito-promo-row{ display:flex; align-items:center; justify-content:space-between; padding:2px 6px; }
+.avito-promo-text{ display:flex; align-items:center; gap:5px; font-size:20px; font-weight:800; color:var(--ink); letter-spacing:-0.01em; }
 .avito-promo-badge{
-  width:38px; height:38px; border-radius:12px; background:var(--primary); display:flex;
+  width:44px; height:44px; border-radius:13px; background:var(--primary); display:flex;
   align-items:center; justify-content:center; box-shadow:0 6px 14px rgba(14,159,110,.3); flex-shrink:0;
 }
 
-.header-meta-row{ display:flex; align-items:center; gap:8px; margin-top:12px; }
+.header-meta-row{ display:flex; align-items:center; gap:8px; margin-top:14px; }
 .city-pill{
   position:relative; display:flex; align-items:center; gap:5px; background:#fff; border-radius:11px;
   padding:8px 10px; box-shadow:var(--shadow); color:var(--primary-deep);
@@ -106,20 +106,20 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* ===== категории — сетка в 2 ряда, подпись сверху-слева, фото снизу-справа внахлёст ===== */
 .cat-grid-2row{
-  display:grid; grid-template-rows:repeat(2, 1fr); grid-auto-flow:column; grid-auto-columns:128px;
-  gap:9px; padding:16px 18px 4px; overflow-x:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain;
+  display:grid; grid-template-rows:repeat(2, 1fr); grid-auto-flow:column; grid-auto-columns:122px;
+  gap:10px; padding:18px 18px 4px; overflow-x:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain;
 }
 .cat-grid-2row::-webkit-scrollbar{ display:none; }
 .cat-tile-2row{
-  position:relative; height:98px; border-radius:16px; padding:11px 12px;
+  position:relative; height:138px; border-radius:18px; padding:13px 14px;
   background:linear-gradient(160deg, #F2F1EB, #E7E5DC); overflow:hidden;
 }
 .cat-tile-2row.all{ background:linear-gradient(160deg, var(--primary-soft), #E2F3EB); }
 .cat-tile-2row-label{
-  font-size:12.5px; font-weight:700; line-height:1.2; color:var(--ink); max-width:64%; position:relative; z-index:1;
+  font-size:14.5px; font-weight:700; line-height:1.25; color:var(--ink); max-width:68%; position:relative; z-index:1;
 }
 .cat-tile-2row-photo{
-  position:absolute; right:-8px; bottom:-8px; width:64px; height:64px; border-radius:14px; overflow:hidden;
+  position:absolute; right:-8px; bottom:-8px; width:80px; height:80px; border-radius:16px; overflow:hidden;
   box-shadow:0 4px 10px rgba(20,30,25,.12);
 }
 .cat-tile-2row-photo img{ width:100%; height:100%; object-fit:cover; }
