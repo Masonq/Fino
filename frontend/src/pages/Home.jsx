@@ -71,9 +71,10 @@ export default function Home() {
     const update = () => {
       ticking = false
       const y = window.scrollY
-      // мягкий гистерезис: сворачиваем после 48px, разворачиваем ниже 30px —
-      // достаточно, чтобы не мигало, но без резкого «щелчка» при обратной прокрутке
-      setCollapsed((prev) => (prev ? y > 30 : y > 48))
+      // сворачиваем после 48px, а разворачиваем уже на 6px — Safari начинает
+      // перекрашивать статус-бар сразу при движении вверх, и при большом пороге
+      // шапка догоняла его с заметным опозданием
+      setCollapsed((prev) => (prev ? y > 6 : y > 48))
     }
     const onScroll = () => {
       if (ticking) return
