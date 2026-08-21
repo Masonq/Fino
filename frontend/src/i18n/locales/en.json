@@ -145,5 +145,30 @@
     "min": "min",
     "hour": "h",
     "day": "d"
+  },
+  "auth": {
+    "title": "Sign in to PLONK",
+    "subtitle": "To message sellers, post listings and save favourites",
+    "by_email": "Continue with email",
+    "by_telegram": "Continue with Telegram",
+    "or": "or",
+    "soon": "This option is coming soon",
+    "terms": "By continuing you agree to the terms of use",
+    "enter_email": "Your email",
+    "enter_email_hint": "We'll send a confirmation code to this address",
+    "enter_telegram": "Your Telegram",
+    "enter_telegram_hint": "We'll send a code on Telegram — enter your username",
+    "get_code": "Get code",
+    "enter_code": "Enter the code",
+    "code_sent": "Code sent to",
+    "resend": "Send code again",
+    "resend_in": "Resend in",
+    "err_email": "Check the email address",
+    "err_wrong_code": "Wrong code",
+    "err_expired": "Code expired, request a new one",
+    "err_too_many": "Too many attempts, request a new code",
+    "err_too_often": "Please wait a minute before requesting again",
+    "err_generic": "Something went wrong, please try again",
+    "logout": "Sign out"
   }
 }

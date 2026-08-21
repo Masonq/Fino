@@ -1,15 +1,57 @@
 const API_BASE = import.meta.env.VITE_API_BASE || '/api'
 
+export const TOKEN_KEY = 'plonk_token'
+
+export function getToken() {
+  return localStorage.getItem(TOKEN_KEY)
+}
+
 async function request(path, options = {}) {
+  const token = getToken()
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
     ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options.headers || {}),
+    },
   })
-  if (!res.ok) throw new Error(`API error ${res.status}: ${path}`)
+  if (!res.ok) {
+    // пробрасываем код ошибки от сервера — экранам нужно отличать
+    // «неверный код» от «слишком много попыток»
+    let detail = null
+    try { detail = (await res.json()).detail } catch { /* тело пустое */ }
+    const err = new Error(detail || `API error ${res.status}`)
+    err.status = res.status
+    err.code = detail
+    throw err
+  }
   return res.json()
 }
 
 export const api = {
+  requestCode: (destination, channel) => request('/auth/request-code', {
+    method: 'POST',
+    body: JSON.stringify({ destination, channel }),
+  }),
+  verifyCode: (destination, code, channel, displayName) => request('/auth/verify-code', {
+    method: 'POST',
+    body: JSON.stringify({ destination, code, channel, display_name: displayName }),
+  }),
+  loginPassword: (email, password) => request('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  }),
+  oauthLogin: (payload) => request('/auth/oauth', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }),
+  me: () => request('/auth/me'),
+  updateMe: (payload) => request('/auth/me', {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  }),
+
   getCategories: () => request('/categories'),
   getCategorySchema: (slug) => request(`/categories/${slug}/schema`),
   searchListings: (params) => request(`/listings?${new URLSearchParams(params)}`),

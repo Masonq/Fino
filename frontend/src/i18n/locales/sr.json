@@ -145,5 +145,30 @@
     "min": "min",
     "hour": "č",
     "day": "d"
+  },
+  "auth": {
+    "title": "Prijava na PLONK",
+    "subtitle": "Da biste pisali prodavcima, objavljivali oglase i čuvali omiljeno",
+    "by_email": "Nastavi preko mejla",
+    "by_telegram": "Nastavi preko Telegrama",
+    "or": "ili",
+    "soon": "Ova opcija uskoro stiže",
+    "terms": "Nastavkom prihvatate uslove korišćenja",
+    "enter_email": "Vaš mejl",
+    "enter_email_hint": "Poslaćemo kod za potvrdu na ovu adresu",
+    "enter_telegram": "Vaš Telegram",
+    "enter_telegram_hint": "Poslaćemo kod na Telegram — unesite korisničko ime",
+    "get_code": "Pošalji kod",
+    "enter_code": "Unesite kod",
+    "code_sent": "Kod je poslat na",
+    "resend": "Pošalji kod ponovo",
+    "resend_in": "Ponovo za",
+    "err_email": "Proverite mejl adresu",
+    "err_wrong_code": "Pogrešan kod",
+    "err_expired": "Kod je istekao, zatražite novi",
+    "err_too_many": "Previše pokušaja, zatražite novi kod",
+    "err_too_often": "Sačekajte minut pre ponovnog slanja",
+    "err_generic": "Nešto nije u redu, pokušajte ponovo",
+    "logout": "Odjavi se"
   }
 }

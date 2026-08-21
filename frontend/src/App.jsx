@@ -10,12 +10,14 @@ import Identify from './pages/Identify'
 import ComingSoon from './pages/ComingSoon'
 import Favorites from './pages/Favorites'
 import Chats from './pages/Chats'
+import Login from './pages/Login'
+import { AuthProvider } from './context/AuthContext'
 import { FavoritesProvider } from './context/FavoritesContext'
 import BottomNav from './components/BottomNav'
 
 export default function App() {
   const { pathname } = useLocation()
-  const hideNav = pathname.startsWith('/listing/') || pathname.startsWith('/chat/') || pathname === '/identify'
+  const hideNav = pathname.startsWith('/listing/') || pathname.startsWith('/chat/') || pathname === '/identify' || pathname === '/login'
 
   useLayoutEffect(() => {
     window.scrollTo(0, 0)
@@ -48,6 +50,7 @@ export default function App() {
   }, [])
 
   return (
+    <AuthProvider>
     <FavoritesProvider>
     <div className="app-shell">
       <main className={hideNav ? '' : 'has-bottomnav'}>
@@ -59,6 +62,7 @@ export default function App() {
           <Route path="/listing/:id" element={<ListingDetail />} />
           <Route path="/chat/:id" element={<ChatScreen />} />
           <Route path="/identify" element={<Identify />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/chats" element={<Chats />} />
           <Route path="/profile" element={<ComingSoon title="Профиль" />} />
@@ -67,5 +71,6 @@ export default function App() {
       {!hideNav && <BottomNav />}
     </div>
     </FavoritesProvider>
+    </AuthProvider>
   )
 }
