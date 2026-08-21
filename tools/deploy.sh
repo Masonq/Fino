@@ -12,9 +12,12 @@ cd /opt/fino
 echo "→ забираю код"
 git pull
 
-echo "→ применяю миграции"
+echo "→ обновляю зависимости"
 cd backend
 source venv/bin/activate
+pip install -q -r requirements.txt
+
+echo "→ применяю миграции"
 alembic upgrade head
 cd ..
 
