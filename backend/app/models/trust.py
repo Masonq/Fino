@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import ForeignKey, DateTime, Text, Integer, Enum, String
+from sqlalchemy import Boolean, ForeignKey, DateTime, Text, Integer, Enum, String
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -22,6 +22,12 @@ class Review(Base):
 
     # Отзыв допустим только если между сторонами был подтверждённый контакт (чат) — анти-накрутка
     verified_contact: Mapped[bool] = mapped_column(Integer, default=False)
+
+    # Отзывы скрыты, пока обе стороны не выскажутся (или пока не истечёт срок).
+    # Иначе первый отзыв виден второй стороне, и честно писать страшно —
+    # можно получить ответную месть.
+    is_published: Mapped[bool] = mapped_column(Boolean, default=False)
+    published_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 

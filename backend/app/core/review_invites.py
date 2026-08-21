@@ -38,6 +38,23 @@ def user_is_tired(db: Session, user_id) -> bool:
     return ignored >= IGNORE_LIMIT
 
 
+MAX_PER_WEEK = 3   # больше приглашений в неделю на человека не отправляем
+
+
+def too_many_recently(db: Session, user_id) -> bool:
+    """
+    Активный продавец может закрыть десять сделок за день. Десять приглашений
+    подряд — это спам, на который перестанут реагировать вообще.
+    """
+    week_ago = datetime.utcnow() - timedelta(days=7)
+    recent = (
+        db.query(ReviewInvite)
+        .filter(ReviewInvite.user_id == user_id, ReviewInvite.sent_at > week_ago)
+        .count()
+    )
+    return recent >= MAX_PER_WEEK
+
+
 def already_invited(db: Session, chat_id, user_id) -> bool:
     return (
         db.query(ReviewInvite)
@@ -56,38 +73,51 @@ def already_reviewed(db: Session, author_id, target_id) -> bool:
     )
 
 
-def send_invite(db: Session, chat: Chat, score: int, reasons: dict) -> bool:
-    """
-    Отправляем приглашение покупателю: системное сообщение прямо в переписку.
-    Так человек видит его в контексте — рядом видно, о какой сделке речь.
-    """
-    buyer_id, seller_id = chat.buyer_id, chat.seller_id
-
-    if already_invited(db, chat.id, buyer_id):
+def _invite_one(db: Session, chat: Chat, who, about, score: int, reasons: dict) -> bool:
+    """Одно приглашение: who оценивает about."""
+    if already_invited(db, chat.id, who):
         return False
-    if already_reviewed(db, buyer_id, seller_id):
+    if already_reviewed(db, who, about):
         return False
-    if user_is_tired(db, buyer_id):
+    if user_is_tired(db, who):
+        return False
+    if too_many_recently(db, who):
         return False
 
     db.add(Message(
         chat_id=chat.id,
-        sender_id=seller_id,      # формальный отправитель; показывается как системное
+        sender_id=about,      # формальный отправитель; показывается как системное
         text=None,
         kind="review_request",
         is_read=False,
     ))
     db.add(ReviewInvite(
         chat_id=chat.id,
-        user_id=buyer_id,
-        target_id=seller_id,
+        user_id=who,
+        target_id=about,
         listing_id=chat.listing_id,
         score=score,
         reasons=json.dumps(reasons, ensure_ascii=False)[:255],
     ))
-    db.commit()
-    log.info("Приглашение на отзыв: чат %s, счёт %s, признаки %s", chat.id, score, reasons)
     return True
+
+
+def send_invite(db: Session, chat: Chat, score: int, reasons: dict) -> bool:
+    """
+    Приглашаем обе стороны: покупатель оценивает продавца, продавец —
+    покупателя. Продавцу важно знать, надёжен ли человек: не пропал ли,
+    не сорвал ли встречу. Отзывы всё равно скрыты до взаимности.
+    """
+    sent = False
+    if _invite_one(db, chat, chat.buyer_id, chat.seller_id, score, reasons):
+        sent = True
+    if _invite_one(db, chat, chat.seller_id, chat.buyer_id, score, reasons):
+        sent = True
+
+    if sent:
+        db.commit()
+        log.info("Приглашения на отзыв: чат %s, счёт %s, признаки %s", chat.id, score, reasons)
+    return sent
 
 
 def process_listing_sold(db: Session, listing_id) -> int:

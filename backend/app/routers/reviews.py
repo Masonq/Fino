@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
@@ -24,7 +24,7 @@ def recalc_rating(db: Session, user_id: uuid.UUID) -> None:
     """Пересчитываем средний рейтинг продавца после изменения отзывов."""
     row = (
         db.query(func.avg(Review.rating), func.count(Review.id))
-        .filter(Review.target_id == user_id)
+        .filter(Review.target_id == user_id, Review.is_published.is_(True))
         .one()
     )
     user = db.query(User).get(user_id)
@@ -40,7 +40,9 @@ def user_reviews(
     offset: int = 0,
     db: Session = Depends(get_db),
 ):
-    q = db.query(Review).filter(Review.target_id == user_id).order_by(Review.created_at.desc())
+    q = (db.query(Review)
+         .filter(Review.target_id == user_id, Review.is_published.is_(True))
+         .order_by(Review.created_at.desc()))
     total = q.count()
     rows = q.offset(offset).limit(limit).all()
 
@@ -52,7 +54,7 @@ def user_reviews(
     breakdown = {i: 0 for i in range(1, 6)}
     for rating, cnt in (
         db.query(Review.rating, func.count(Review.id))
-        .filter(Review.target_id == user_id)
+        .filter(Review.target_id == user_id, Review.is_published.is_(True))
         .group_by(Review.rating)
         .all()
     ):
@@ -141,6 +143,23 @@ def create_review(
         created_at=datetime.utcnow(),
     )
     db.add(review)
+    db.flush()
+
+    # Взаимное раскрытие: если вторая сторона уже оставила отзыв по этой же
+    # сделке — публикуем оба сразу. Если нет — ждём её или истечения срока.
+    counterpart = db.query(Review).filter(
+        Review.author_id == payload.target_id,
+        Review.target_id == user.id,
+        Review.listing_id == payload.listing_id,
+        Review.is_published.is_(False),
+    ).first()
+    if counterpart:
+        now = datetime.utcnow()
+        counterpart.is_published = True
+        counterpart.published_at = now
+        review.is_published = True
+        review.published_at = now
+        recalc_rating(db, user.id)
 
     # закрываем приглашение, если отзыв оставлен по нему
     invite = db.query(ReviewInvite).filter(
@@ -172,3 +191,27 @@ def dismiss_invite(
         invite.dismissed = True
         db.commit()
     return {"status": "ok"}
+
+
+def publish_expired(db: Session, wait_days: int = 7) -> int:
+    """
+    Вторая сторона так и не ответила за неделю — публикуем односторонний отзыв.
+    Иначе честный отзыв о недобросовестном продавце никогда не увидит свет:
+    ему достаточно просто промолчать.
+    """
+    cutoff = datetime.utcnow() - timedelta(days=wait_days)
+    pending = db.query(Review).filter(
+        Review.is_published.is_(False),
+        Review.created_at < cutoff,
+    ).all()
+
+    targets = set()
+    for r in pending:
+        r.is_published = True
+        r.published_at = datetime.utcnow()
+        targets.add(r.target_id)
+
+    for t in targets:
+        recalc_rating(db, t)
+    db.commit()
+    return len(pending)

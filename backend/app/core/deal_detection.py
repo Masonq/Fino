@@ -27,6 +27,16 @@ MEET_PATTERNS = [
     r"\bi'?ll take it|i will take|deal|tomorrow|address\b",
 ]
 PHONE_RE = re.compile(r"(\+?\d[\d\s\-()]{7,}\d)")
+
+# Признаки, что сделки НЕ было. Без них длинная переписка с отказом в конце
+# набирает высокий счёт из-за одной только глубины.
+DECLINE_PATTERNS = [
+    r"\bпередума|не подош|не актуальн|нашёл друг|нашел друг|нашла друг|дешевле\b",
+    r"\bуже продал|продано друг|извините.{0,15}продан|к сожалению.{0,20}прода\b",
+    r"\bне буду брать|отказыва|не интересу|спасибо, нет\b",
+    r"\bveć prodato|prodato je|nažalost|odustajem|ne interesuje\b",
+    r"\bchanged my mind|already sold|no longer available|found another|not interested\b",
+]
 PAID_RE = re.compile(r"\bоплат|перевёл|перевел|отправил деньг|uplatio|paid|sent the money\b", re.I)
 
 
@@ -100,6 +110,15 @@ def deal_score(db: Session, chat: Chat) -> tuple[int, dict]:
         score += 25
         reasons["marked_sold"] = 25
 
+    # 9. Прямой отказ в конце переписки перевешивает всё остальное:
+    #    длинный разговор, закончившийся «передумал», сделкой не был.
+    # Смотрим только на самый хвост: если после отказа стороны продолжили
+    # общаться и договорились, сделка всё-таки состоялась.
+    tail = " ".join((m.text or "") for m in msgs[-2:]).lower()
+    if any(re.search(p, tail, re.I) for p in DECLINE_PATTERNS):
+        score -= 45
+        reasons["declined"] = -45
+
     return max(0, min(100, score)), reasons
 
 
@@ -128,4 +147,7 @@ def is_ready_to_ask(chat: Chat, now: datetime | None = None) -> bool:
     last_at = chat.last_message_at or chat.created_at
     if not last_at:
         return False
-    return now - last_at >= timedelta(hours=24)
+    passed = now - last_at
+    # Ждём сутки, но и не спрашиваем про давнее: через две недели человек
+    # уже не помнит деталей, а отзыв «на всякий случай» бесполезен.
+    return timedelta(hours=24) <= passed <= timedelta(days=14)
