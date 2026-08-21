@@ -137,7 +137,8 @@
     "filters": "Filteri",
     "urgent": "Hitno",
     "cols_2": "Dva u redu",
-    "cols_1": "Jedan u redu"
+    "cols_1": "Jedan u redu",
+    "find": "Traži"
   },
   "chats": {
     "need_auth": "Predstavite se da biste videli svoje razgovore.",

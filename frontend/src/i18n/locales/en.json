@@ -137,7 +137,8 @@
     "filters": "Filters",
     "urgent": "Urgent",
     "cols_2": "Two per row",
-    "cols_1": "One per row"
+    "cols_1": "One per row",
+    "find": "Search"
   },
   "chats": {
     "need_auth": "Introduce yourself to see your conversations.",
