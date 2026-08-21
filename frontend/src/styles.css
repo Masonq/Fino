@@ -484,27 +484,37 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   overflow:hidden; pointer-events:none;
   transition:opacity .2s ease;
 }
-.ptr-inner{ display:flex; flex-direction:column; align-items:center; gap:7px; }
+.ptr-inner{ display:flex; flex-direction:column; align-items:center; gap:8px; }
 
-/* три фирменных кружка — тот же знак, что в строке поиска */
-.ptr-dots-scale{ transition:transform .18s ease; }
-.ptr-dots{ position:relative; width:34px; height:34px; }
-.ptr-dot{
-  position:absolute; top:50%; left:50%; width:11px; height:11px; margin:-5.5px 0 0 -5.5px;
-  border-radius:50%;
-  transition:transform .18s ease;
+/* сцена: ряд «карточек» и лупа, которая их сканирует */
+.ptr-scene{ position:relative; width:96px; height:26px; transition:opacity .2s ease; }
+.ptr-shelf{
+  position:absolute; inset:auto 0 2px 0; display:flex; justify-content:center; gap:7px;
 }
-.ptr-dot.d1{ background:var(--primary); }
-.ptr-dot.d2{ background:var(--coral); }
-.ptr-dot.d3{ background:var(--violet); }
+.ptr-item{
+  width:15px; height:15px; border-radius:4px; background:var(--line);
+  transition:background .25s ease;
+}
+/* карточки «проявляются» одна за другой, пока идёт поиск */
+.ptr-item.scanning{ animation:ptr-reveal 1.4s ease-in-out infinite; }
+@keyframes ptr-reveal{
+  0%, 100%{ background:var(--line); transform:translateY(0) }
+  35%{ background:var(--primary); transform:translateY(-3px) }
+}
 
-/* при обновлении кружки вращаются по орбите вокруг общего центра */
-.ptr-dots.orbiting{ animation:ptr-orbit .9s linear infinite; }
-.ptr-dots.orbiting .ptr-dot{ animation:ptr-pulse .9s ease-in-out infinite; }
-.ptr-dots.orbiting .ptr-dot.d2{ animation-delay:.15s; }
-.ptr-dots.orbiting .ptr-dot.d3{ animation-delay:.3s; }
-@keyframes ptr-orbit{ to{ transform:rotate(360deg) } }
-@keyframes ptr-pulse{ 0%,100%{ opacity:1 } 50%{ opacity:.45 } }
+.ptr-lens{
+  position:absolute; top:-4px; left:50%; margin-left:-11px;
+  width:22px; height:22px; color:var(--primary-deep);
+  filter:drop-shadow(0 2px 4px rgba(20,30,25,.18));
+  transition:transform .16s ease;
+}
+.ptr-lens svg{ width:100%; height:100%; }
+/* при обновлении лупа ездит вдоль ряда */
+.ptr-lens.moving{ animation:ptr-scan 1.4s ease-in-out infinite; }
+@keyframes ptr-scan{
+  0%, 100%{ transform:translateX(-30px) rotate(-10deg) }
+  50%{ transform:translateX(30px) rotate(10deg) }
+}
 
 .ptr-label{
   font-size:11px; font-weight:700; color:var(--muted);

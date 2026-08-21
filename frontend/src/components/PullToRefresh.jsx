@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
-const THRESHOLD = 72   // сколько нужно протянуть, чтобы сработало
-const MAX_PULL = 110   // дальше не растягиваем
+const THRESHOLD = 86   // сколько нужно протянуть, чтобы сработало
+const MAX_PULL = 125   // дальше не растягиваем
 
 export default function PullToRefresh({ onRefresh, children }) {
   const [pull, setPull] = useState(0)
@@ -55,10 +55,7 @@ export default function PullToRefresh({ onRefresh, children }) {
   const progress = Math.min(1, pull / THRESHOLD)
   const ready = progress >= 1
 
-  // кружки расходятся из центра по мере вытягивания
-  const spread = 5 + progress * 9
-
-  const label = refreshing ? 'Обновляем…' : ready ? 'Отпустите' : 'Потяните вниз'
+  const label = refreshing ? 'Ищем свежие объявления…' : ready ? 'Отпустите' : 'Потяните вниз'
 
   return (
     <div className="ptr-root">
@@ -70,21 +67,22 @@ export default function PullToRefresh({ onRefresh, children }) {
         }}
       >
         <div className="ptr-inner">
-          <div className="ptr-dots-scale" style={{ transform: `scale(${0.55 + progress * 0.45})` }}>
-          <div className={refreshing ? 'ptr-dots orbiting' : 'ptr-dots'}>
-            <span
-              className="ptr-dot d1"
-              style={{ transform: `translate(${-spread}px, ${spread * 0.55}px)` }}
-            />
-            <span
-              className="ptr-dot d2"
-              style={{ transform: `translate(${spread * 0.85}px, ${spread * 0.7}px)` }}
-            />
-            <span
-              className="ptr-dot d3"
-              style={{ transform: `translate(${spread * 0.1}px, ${-spread}px)` }}
-            />
-          </div>
+          {/* сцена: лупа едет вдоль ряда карточек и «проявляет» их */}
+          <div className="ptr-scene" style={{ opacity: 0.35 + progress * 0.65 }}>
+            <div className="ptr-shelf">
+              {[0, 1, 2, 3].map((i) => (
+                <span key={i} className={refreshing ? 'ptr-item scanning' : 'ptr-item'} style={{ animationDelay: `${i * 0.35}s` }} />
+              ))}
+            </div>
+            <div
+              className={refreshing ? 'ptr-lens moving' : 'ptr-lens'}
+              style={!refreshing ? { transform: `translateX(${-26 + progress * 52}px) rotate(${-12 + progress * 12}deg)` } : undefined}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round">
+                <circle cx="10.5" cy="10.5" r="6.5" />
+                <path d="m20 20-4.7-4.7" />
+              </svg>
+            </div>
           </div>
           <span className={ready || refreshing ? 'ptr-label on' : 'ptr-label'}>{label}</span>
         </div>
