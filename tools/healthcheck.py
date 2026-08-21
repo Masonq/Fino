@@ -106,7 +106,8 @@ if code:
         st, _ = call("GET", "/api/auth/me")
         check("без токена профиль закрыт", st == 401, f"код {st}")
 
-        st, _ = call("GET", "/api/auth/me", token="явно-неверный-токен")
+        # только латиница: в заголовки нельзя класть кириллицу
+        st, _ = call("GET", "/api/auth/me", token="clearly.invalid.token")
         check("неверный токен отклоняется", st == 401, f"код {st}")
 
         st, res = call("GET", "/api/listings/my/list?lang=ru", token=token)
