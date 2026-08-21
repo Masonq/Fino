@@ -2,8 +2,9 @@ export function CardSkeleton() {
   return (
     <div className="card-skeleton">
       <div className="sk-photo" />
-      <div className="sk-line" />
-      <div className="sk-line short" />
+      <div className="sk-line title" />
+      <div className="sk-line price" />
+      <div className="sk-line meta" />
     </div>
   )
 }

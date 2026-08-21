@@ -424,26 +424,28 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* скелетоны карточек, пока идёт первая загрузка */
 .card-skeleton{ background:#fff; border-radius:12px; overflow:hidden; }
-.sk-photo{ width:100%; aspect-ratio:1/0.95; background:#EFEFEB; }
-.sk-line{ height:11px; margin:10px 10px 0; border-radius:5px; background:#EFEFEB; }
-.sk-line.short{ width:45%; margin-bottom:12px; }
+.sk-photo{ width:100%; aspect-ratio:1/0.95; }
+/* размеры повторяют реальную карточку: заголовок 13.5px/1.35, цена 17px, город 11px
+   с теми же паддингами 10px — иначе при подмене контент прыгает */
+.sk-line{ border-radius:5px; }
+.sk-line.title{ height:18px; margin:9px 10px 0; }
+.sk-line.price{ height:17px; width:52%; margin:8px 10px 0; }
+.sk-line.meta{ height:11px; width:38%; margin:6px 10px 11px; }
+/* мерцание через opacity — считается видеокартой, не вызывает перерисовку раскладки */
 .card-skeleton .sk-photo,
-.card-skeleton .sk-line{
-  background:linear-gradient(90deg,#EFEFEB 25%,#F7F7F4 37%,#EFEFEB 63%);
-  background-size:400% 100%;
-  animation:sk-shimmer 1.3s ease-in-out infinite;
+.card-skeleton .sk-line,
+.sk-cat-line, .sk-cat-glyph{
+  background:#EDEDE8;
+  animation:sk-pulse 1.4s ease-in-out infinite;
+  will-change:opacity;
 }
-@keyframes sk-shimmer{ 0%{ background-position:100% 0 } 100%{ background-position:0 0 } }
+@keyframes sk-pulse{ 0%,100%{ opacity:1 } 50%{ opacity:.5 } }
 
 /* скелетон плитки категории */
 .cat-skeleton{
-  position:relative; height:82px; width:104px; border-radius:14px; padding:9px 11px;
+  position:relative; height:82px; width:112px; border-radius:14px; padding:9px 38px 9px 11px;
   background:#fff; border:1px solid rgba(20,30,25,.05); flex-shrink:0;
 }
 .sk-cat-line{ width:66%; height:10px; border-radius:5px; }
 .sk-cat-glyph{ position:absolute; right:9px; bottom:8px; width:26px; height:26px; border-radius:7px; }
-.sk-cat-line, .sk-cat-glyph{
-  background:linear-gradient(90deg,#EFEFEB 25%,#F7F7F4 37%,#EFEFEB 63%);
-  background-size:400% 100%;
-  animation:sk-shimmer 1.3s ease-in-out infinite;
-}
+
