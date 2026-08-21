@@ -54,6 +54,15 @@ export const api = {
     method: 'POST',
     body: JSON.stringify(payload),
   }),
+  createReport: (payload) => request('/reports', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }),
+  reportsQueue: () => request('/reports/queue'),
+  resolveReport: (id, action) => request(`/reports/${id}/resolve`, {
+    method: 'POST',
+    body: JSON.stringify({ action }),
+  }),
   modQueue: (lang) => request(`/moderation/queue?${new URLSearchParams({ lang })}`),
   modApprove: (id) => request(`/moderation/${id}/approve`, { method: 'POST' }),
   modReject: (id, reason) => request(`/moderation/${id}/reject`, {

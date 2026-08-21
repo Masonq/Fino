@@ -196,7 +196,13 @@
     "empty": "Red je prazan — sve je pregledano",
     "approve": "Odobri",
     "reject": "Odbij",
-    "reason_prompt": "Razlog odbijanja (autor će ga videti):"
+    "reason_prompt": "Razlog odbijanja (autor će ga videti):",
+    "tab_listings": "Oglasi",
+    "tab_reports": "Prijave",
+    "no_reports": "Nema prijava",
+    "dismiss": "Odbaci",
+    "block_listing": "Ukloni oglas",
+    "block_user": "Blokiraj"
   },
   "rev": {
     "title": "Recenzije",
@@ -221,5 +227,21 @@
     "not_owner": "Ovo nije vaš oglas",
     "remoderation": "Izmena naslova, opisa ili cene vraća oglas na proveru",
     "save_short": "Izmeni"
+  },
+  "report": {
+    "button": "Prijavi",
+    "title": "Šta nije u redu sa oglasom?",
+    "send": "Pošalji",
+    "thanks": "Hvala, proverićemo",
+    "comment_ph": "Detalji (opciono)",
+    "r_fraud": "Prevara",
+    "r_prohibited_item": "Zabranjen artikal",
+    "r_spam": "Spam",
+    "r_duplicate": "Duplikat",
+    "r_wrong_category": "Pogrešna kategorija",
+    "r_other": "Drugo",
+    "err_already": "Već ste prijavili ovaj oglas",
+    "err_too_many": "Previše prijava danas, pokušajte sutra",
+    "err_self": "Ne možete prijaviti sopstveni oglas"
   }
 }

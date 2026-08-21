@@ -928,3 +928,37 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .rr-check svg{ width:13px; height:13px; }
 .edit-note{ font-size:12px; line-height:1.45; color:var(--muted); margin-top:4px; }
+
+/* ===== жалоба на объявление ===== */
+.report-link{
+  display:block; margin:22px auto 8px; padding:8px 14px;
+  font-size:12.5px; font-weight:600; color:var(--muted);
+}
+.report-sheet{
+  margin:20px 0 8px; padding:14px; border-radius:14px;
+  background:#fff; border:1px solid rgba(20,30,25,.08);
+}
+.report-title{ font-size:14px; font-weight:800; color:var(--ink); }
+.report-reasons{ display:flex; flex-wrap:wrap; gap:7px; margin-top:12px; }
+.report-reason{
+  padding:8px 12px; border-radius:10px; background:#F2F2EF;
+  font-size:12.5px; font-weight:600; color:var(--ink-soft);
+}
+.report-reason.active{ background:var(--coral); color:#fff; }
+.report-sheet textarea{
+  width:100%; margin-top:12px; padding:11px; border-radius:11px;
+  border:1px solid rgba(20,30,25,.1); background:var(--bg);
+  font-family:inherit; font-size:16px; color:var(--ink); resize:none;
+}
+.report-sheet textarea:focus{ outline:none; border-color:var(--primary); }
+.report-actions{ display:flex; gap:8px; margin-top:12px; }
+.report-actions button{ flex:1; padding:11px; border-radius:11px; font-size:13px; font-weight:700; }
+.report-send{ background:var(--coral); color:#fff; }
+.report-send:disabled{ opacity:.45; }
+.report-done{ font-size:13.5px; font-weight:700; color:var(--primary-deep); text-align:center; padding:8px; }
+.report-badge{
+  display:inline-flex; align-items:center; gap:6px; margin-bottom:8px;
+  padding:5px 10px; border-radius:8px; background:#FFF0EE;
+  font-size:11.5px; font-weight:800; color:var(--coral);
+}
+.report-count{ opacity:.75; }

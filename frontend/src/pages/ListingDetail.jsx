@@ -6,6 +6,7 @@ import { displayCity } from '../data/cities'
 import { useAuth } from '../context/AuthContext'
 import { useFavorites } from '../context/FavoritesContext'
 import SellerReviews from '../components/SellerReviews'
+import ReportButton from '../components/ReportButton'
 
 export default function ListingDetail() {
   const { id } = useParams()
@@ -233,6 +234,8 @@ export default function ListingDetail() {
         {listing.owner && (
           <SellerReviews sellerId={listing.owner.id} listingId={listing.id} />
         )}
+
+        <ReportButton listingId={listing.id} ownerId={listing.owner?.id} />
       </div>
 
       <div className="sticky-cta">

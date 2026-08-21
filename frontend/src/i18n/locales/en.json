@@ -196,7 +196,13 @@
     "empty": "Queue is empty — everything reviewed",
     "approve": "Approve",
     "reject": "Reject",
-    "reason_prompt": "Rejection reason (the author will see it):"
+    "reason_prompt": "Rejection reason (the author will see it):",
+    "tab_listings": "Listings",
+    "tab_reports": "Reports",
+    "no_reports": "No reports",
+    "dismiss": "Dismiss",
+    "block_listing": "Take down",
+    "block_user": "Block user"
   },
   "rev": {
     "title": "Reviews",
@@ -221,5 +227,21 @@
     "not_owner": "This isn't your listing",
     "remoderation": "Changing the title, description or price sends the listing back for review",
     "save_short": "Edit"
+  },
+  "report": {
+    "button": "Report",
+    "title": "What's wrong with this listing?",
+    "send": "Send",
+    "thanks": "Thanks, we'll look into it",
+    "comment_ph": "Details (optional)",
+    "r_fraud": "Fraud",
+    "r_prohibited_item": "Prohibited item",
+    "r_spam": "Spam",
+    "r_duplicate": "Duplicate",
+    "r_wrong_category": "Wrong category",
+    "r_other": "Other",
+    "err_already": "You've already reported this listing",
+    "err_too_many": "Too many reports today, try again tomorrow",
+    "err_self": "You can't report your own listing"
   }
 }

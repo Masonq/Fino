@@ -15,12 +15,29 @@ export default function Moderation() {
   const [loaded, setLoaded] = useState(false)
   const [busyId, setBusyId] = useState(null)
   const [denied, setDenied] = useState(false)
+  const [tab, setTab] = useState('listings')
+  const [reports, setReports] = useState([])
+  const [reportsTotal, setReportsTotal] = useState(0)
 
   const load = () => {
     api.modQueue(i18n.language)
       .then((res) => { setItems(res.items || []); setTotal(res.total || 0); setDenied(false) })
       .catch((e) => { if (e.status === 403) setDenied(true) })
       .finally(() => setLoaded(true))
+
+    api.reportsQueue()
+      .then((res) => { setReports(res.items || []); setReportsTotal(res.total || 0) })
+      .catch(() => {})
+  }
+
+  const resolveReport = async (id, action) => {
+    setBusyId(id)
+    try {
+      await api.resolveReport(id, action)
+      setReports((prev) => prev.filter((r) => r.id !== id))
+      setReportsTotal((n) => Math.max(0, n - 1))
+    } catch { /* оставляем в очереди */ }
+    finally { setBusyId(null) }
   }
 
   useEffect(() => {
@@ -77,7 +94,50 @@ export default function Moderation() {
         {total > 0 && <span className="fav-count">{total}</span>}
       </h2>
 
-      {!loaded ? (
+      <div className="my-tabs">
+        <button className={tab === 'listings' ? 'my-tab active' : 'my-tab'} onClick={() => setTab('listings')}>
+          {t('mod.tab_listings')}
+          {total > 0 && <span className="my-tab-count">{total}</span>}
+        </button>
+        <button className={tab === 'reports' ? 'my-tab active' : 'my-tab'} onClick={() => setTab('reports')}>
+          {t('mod.tab_reports')}
+          {reportsTotal > 0 && <span className="my-tab-count">{reportsTotal}</span>}
+        </button>
+      </div>
+
+      {tab === 'reports' ? (
+        reports.length === 0 ? (
+          <p className="empty-hint">{t('mod.no_reports')}</p>
+        ) : (
+          <div className="mod-list">
+            {reports.map((r) => (
+              <div className="mod-card" key={r.id}>
+                <div className="mod-body">
+                  <div className="report-badge">
+                    {t(`report.r_${r.reason}`)}
+                    {r.same_target_count > 1 && (
+                      <span className="report-count">×{r.same_target_count}</span>
+                    )}
+                  </div>
+                  <div className="mod-title">{r.listing_title || '—'}</div>
+                  {r.comment && <p className="mod-desc">{r.comment}</p>}
+                </div>
+                <div className="mod-actions">
+                  <button disabled={busyId === r.id} onClick={() => resolveReport(r.id, 'dismiss')}>
+                    {t('mod.dismiss')}
+                  </button>
+                  <button className="mod-reject" disabled={busyId === r.id} onClick={() => resolveReport(r.id, 'block_listing')}>
+                    {t('mod.block_listing')}
+                  </button>
+                  <button className="mod-reject" disabled={busyId === r.id} onClick={() => resolveReport(r.id, 'block_user')}>
+                    {t('mod.block_user')}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      ) : !loaded ? (
         <p className="empty-hint">{t('actions.loading')}</p>
       ) : items.length === 0 ? (
         <p className="empty-hint">{t('mod.empty')}</p>
