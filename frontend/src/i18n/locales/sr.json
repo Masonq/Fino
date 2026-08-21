@@ -206,6 +206,11 @@
     "cancel": "Otkaži",
     "err_no_contact": "Recenziju možete ostaviti samo prodavcu sa kojim ste se dopisivali",
     "err_already": "Već ste ostavili recenziju ovom prodavcu",
-    "err_self": "Ne možete oceniti sebe"
+    "err_self": "Ne možete oceniti sebe",
+    "how_was_it": "Kako je prošlo sa {{name}}?",
+    "good": "Dobro",
+    "bad": "Bilo je problema",
+    "not_now": "Ne sada",
+    "thanks": "Hvala na recenziji"
   }
 }

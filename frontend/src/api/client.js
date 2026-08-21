@@ -49,6 +49,7 @@ export const api = {
   me: () => request('/auth/me'),
   userReviews: (userId) => request(`/reviews/user/${userId}`),
   canReview: (targetId) => request(`/reviews/can-review/${targetId}`),
+  dismissInvite: (chatId) => request(`/reviews/invite/${chatId}/dismiss`, { method: 'POST' }),
   createReview: (payload) => request('/reviews', {
     method: 'POST',
     body: JSON.stringify(payload),

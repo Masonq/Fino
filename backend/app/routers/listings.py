@@ -269,8 +269,19 @@ def change_status(
     if payload.status not in allowed:
         raise HTTPException(400, "bad_status")
 
+    was_sold = listing.status == ListingStatus.sold
     listing.status = ListingStatus(payload.status)
     db.commit()
+
+    # Отметили проданным — самый надёжный момент спросить об отзыве.
+    # Приглашение уйдёт только тому, чья переписка похожа на сделку.
+    if payload.status == "sold" and not was_sold:
+        try:
+            from app.core.review_invites import process_listing_sold
+            process_listing_sold(db, listing.id)
+        except Exception:
+            pass   # приглашение не должно ломать смену статуса
+
     return {"status": listing.status.value}
 
 

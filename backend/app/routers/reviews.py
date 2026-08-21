@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.core.auth import get_current_user, get_current_user_optional
 from app.core.database import get_db
-from app.models import Review, User, Listing, Chat
+from app.models import Review, User, Listing, Chat, ReviewInvite
 
 router = APIRouter(prefix="/api/reviews", tags=["reviews"])
 
@@ -141,8 +141,34 @@ def create_review(
         created_at=datetime.utcnow(),
     )
     db.add(review)
+
+    # закрываем приглашение, если отзыв оставлен по нему
+    invite = db.query(ReviewInvite).filter(
+        ReviewInvite.user_id == user.id,
+        ReviewInvite.target_id == payload.target_id,
+        ReviewInvite.responded.is_(False),
+    ).first()
+    if invite:
+        invite.responded = True
+
     db.flush()
     recalc_rating(db, payload.target_id)
     db.commit()
 
     return {"status": "ok", "id": str(review.id)}
+
+
+@router.post("/invite/{chat_id}/dismiss")
+def dismiss_invite(
+    chat_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Человек не хочет оставлять отзыв — больше по этой сделке не спрашиваем."""
+    invite = db.query(ReviewInvite).filter(
+        ReviewInvite.chat_id == chat_id, ReviewInvite.user_id == user.id
+    ).first()
+    if invite:
+        invite.dismissed = True
+        db.commit()
+    return {"status": "ok"}

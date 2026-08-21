@@ -81,6 +81,8 @@ def list_messages(chat_id: uuid.UUID, db: Session = Depends(get_db)):
             "id": str(m.id),
             "sender_id": str(m.sender_id),
             "text": m.text,
+            "kind": m.kind or "user",
+            "is_read": m.is_read,
             "offer_price": float(m.offer_price) if m.offer_price else None,
             "created_at": m.created_at.isoformat(),
         }

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
+import ReviewRequest from '../components/ReviewRequest'
 
 export default function ChatScreen() {
   const { t } = useTranslation()
@@ -94,9 +95,20 @@ export default function ChatScreen() {
 
       <div className="chat-messages">
         {messages.map((m) => (
-          <div key={m.id} className={m.sender_id === myId ? 'chat-bubble mine' : 'chat-bubble'}>
-            {m.text}
-          </div>
+          m.kind === 'review_request' ? (
+            <ReviewRequest
+              key={m.id}
+              chatId={id}
+              targetId={chat?.buyer?.id === myId ? chat?.seller?.id : chat?.buyer?.id}
+              listingId={chat?.listing?.id}
+              targetName={otherName()}
+              onDone={load}
+            />
+          ) : (
+            <div key={m.id} className={m.sender_id === myId ? 'chat-bubble mine' : 'chat-bubble'}>
+              {m.text}
+            </div>
+          )
         ))}
         {messages.length === 0 && <p className="empty-hint">{t('chat.empty')}</p>}
         <div ref={bottomRef} />

@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import ForeignKey, DateTime, Text, Boolean, Numeric
+from sqlalchemy import String, ForeignKey, DateTime, Text, Boolean, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -37,6 +37,10 @@ class Message(Base):
 
     # Структурированное предложение цены — торг кнопкой, а не только текстом
     offer_price: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
+
+    # Системные сообщения от сервиса: приглашение оставить отзыв и т.п.
+    # Отправитель у них формальный, показываются отдельным блоком.
+    kind: Mapped[str] = mapped_column(String(24), default="user")   # user | review_request
 
     is_read: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

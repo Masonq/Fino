@@ -206,6 +206,11 @@
     "cancel": "Cancel",
     "err_no_contact": "You can only review a seller you've messaged",
     "err_already": "You've already reviewed this seller",
-    "err_self": "You can't review yourself"
+    "err_self": "You can't review yourself",
+    "how_was_it": "How did it go with {{name}}?",
+    "good": "Went well",
+    "bad": "Had issues",
+    "not_now": "Not now",
+    "thanks": "Thanks for the review"
   }
 }
