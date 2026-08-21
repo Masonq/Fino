@@ -255,5 +255,10 @@
   },
   "similar": {
     "title": "Similar listings"
+  },
+  "history": {
+    "title": "Recently viewed",
+    "clear": "Clear",
+    "empty": "Listings you open will show up here"
   }
 }

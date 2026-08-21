@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { displayCity } from '../data/cities'
+import { addToHistory } from '../data/history'
 import { useAuth } from '../context/AuthContext'
 import { useFavorites } from '../context/FavoritesContext'
 import SellerReviews from '../components/SellerReviews'
@@ -16,6 +17,11 @@ export default function ListingDetail() {
   const { user } = useAuth()
   const [scrolled, setScrolled] = useState(false)
   const [photoIdx, setPhotoIdx] = useState(0)
+
+  // запоминаем просмотр — чтобы человек мог вернуться к тому, что смотрел
+  useEffect(() => {
+    if (id) addToHistory(id)
+  }, [id])
 
   // Шапка появляется, когда фото уехало вверх — как у Avito:
   // сначала кнопки полупрозрачными кружками на фото, потом панель на белом.

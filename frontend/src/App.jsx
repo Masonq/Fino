@@ -15,6 +15,7 @@ import MyListings from './pages/MyListings'
 import Moderation from './pages/Moderation'
 import EditListing from './pages/EditListing'
 import SavedSearches from './pages/SavedSearches'
+import History from './pages/History'
 import { AuthProvider } from './context/AuthContext'
 import { FavoritesProvider } from './context/FavoritesContext'
 import BottomNav from './components/BottomNav'
@@ -86,6 +87,7 @@ export default function App() {
           <Route path="/moderation" element={<Moderation />} />
           <Route path="/edit/:id" element={<EditListing />} />
           <Route path="/saved" element={<SavedSearches />} />
+          <Route path="/history" element={<History />} />
         </Routes>
       </main>
       {!hideNav && <BottomNav />}

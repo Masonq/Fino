@@ -175,6 +175,50 @@ def search_listings(
     return {"total": total, "items": [serialize(l) for l in items]}
 
 
+@router.get("/by-ids")
+def listings_by_ids(
+    ids: str = Query(..., description="идентификаторы через запятую"),
+    lang: str = Query("ru"),
+    db: Session = Depends(get_db),
+):
+    """
+    Несколько объявлений одним запросом — для истории просмотров.
+    Порядок сохраняем тот, что передали: он означает недавность.
+    """
+    try:
+        wanted = [uuid.UUID(x) for x in ids.split(",") if x.strip()][:40]
+    except ValueError:
+        raise HTTPException(400, "bad_ids")
+
+    if not wanted:
+        return {"items": []}
+
+    rows = (
+        db.query(Listing)
+        .options(joinedload(Listing.translations), joinedload(Listing.photos))
+        .filter(Listing.id.in_(wanted), Listing.status == ListingStatus.active)
+        .all()
+    )
+    by_id = {l.id: l for l in rows}
+
+    def serialize(l: Listing):
+        tr = next((t for t in l.translations if t.language == lang), None)
+        if not tr and l.translations:
+            tr = l.translations[0]
+        cover = next((p for p in l.photos if p.is_cover), l.photos[0] if l.photos else None)
+        return {
+            "id": str(l.id),
+            "title": tr.title if tr else None,
+            "price": float(l.price) if l.price else None,
+            "currency": l.currency,
+            "city": l.city,
+            "cover_photo": cover.thumbnail_url if cover else None,
+        }
+
+    # снятые с публикации просто выпадают из списка
+    return {"items": [serialize(by_id[i]) for i in wanted if i in by_id]}
+
+
 @router.get("/my/list")
 def my_listings(
     status: str | None = None,

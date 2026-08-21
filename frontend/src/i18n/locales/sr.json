@@ -255,5 +255,10 @@
   },
   "similar": {
     "title": "Slični oglasi"
+  },
+  "history": {
+    "title": "Nedavno gledano",
+    "clear": "Obriši",
+    "empty": "Ovde će se pojaviti oglasi koje otvorite"
   }
 }
