@@ -66,22 +66,30 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="cat-grid-2row">
-        <Link to="/categories" className="cat-tile-2row all">
-          <div className="cat-tile-2row-label">{t('common.all')}</div>
-          <div className="cat-tile-2row-glyph">
-            {FALLBACK_ICON}
-          </div>
-        </Link>
-        {categories.map((cat) => (
+      {(() => {
+        const all = [{ id: '__all', slug: null, isAll: true }, ...categories]
+        const top = all.filter((_, i) => i % 2 === 0)
+        const bottom = all.filter((_, i) => i % 2 === 1)
+        const renderTile = (cat) => cat.isAll ? (
+          <Link key="__all" to="/categories" className="cat-tile-2row all">
+            <div className="cat-tile-2row-label">{t('common.all')}</div>
+            <div className="cat-tile-2row-glyph">{FALLBACK_ICON}</div>
+          </Link>
+        ) : (
           <Link key={cat.id} to={`/search?category=${cat.slug}`} className="cat-tile-2row">
             <div className="cat-tile-2row-label">{cat.name?.[i18n.language] || cat.name?.ru}</div>
             <div className="cat-tile-2row-glyph" style={{ color: cat.color || 'var(--primary)' }}>
               {CATEGORY_ICONS[cat.slug] || FALLBACK_ICON}
             </div>
           </Link>
-        ))}
-      </div>
+        )
+        return (
+          <div className="cat-rows">
+            <div className="cat-row">{top.map(renderTile)}</div>
+            <div className="cat-row">{bottom.map(renderTile)}</div>
+          </div>
+        )
+      })()}
 
       <div className="feed-head-row">
         <div className="feed-heading">{t('common.recommendations')}</div>
