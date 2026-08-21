@@ -36,15 +36,15 @@ const PHOTO_SCALE = {
 // Точная подгонка положения: [вправо, вниз] в пикселях.
 // Бизнес и хобби сидят ровно — их не двигаем.
 const PHOTO_SHIFT = {
-  beauty: [3, 4],
-  pets: [3, 4],
-  electronics: [3, 4],
+  beauty: [6, 8],
+  pets: [3, 8],
+  electronics: [6, 8],
   jobs: [3, 4],
   services: [3, 4],
   kids: [3, 4],
-  'home-garden': [3, 4],
+  'home-garden': [6, 8],
   // этим — только вниз
-  auto: [0, 4],
+  auto: [0, 8],
   'real-estate': [0, 4],
   fashion: [0, 4],
 }
