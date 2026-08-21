@@ -105,7 +105,6 @@ export default function Home() {
           backgroundImage: collapsed ? 'none' : PROMO_SLIDES[slide].grad,
         }}
       >
-        <div className="status-cover" aria-hidden="true" />
         <div className="avito-toprow">
           <Link to="/search" className="avito-search">
             <div className="avito-search-logo">

@@ -57,20 +57,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   padding:calc(9px + env(safe-area-inset-top)) 14px 10px; border-radius:0 0 22px 22px;
   margin:0;
   will-change:background-color;
-  transition:background-color .7s ease .08s, background-image .7s ease .08s, padding-bottom .65s cubic-bezier(.25,.46,.45,.94), border-radius .65s cubic-bezier(.25,.46,.45,.94);
+  transition:background-color .3s ease, background-image .3s ease, padding-bottom .5s cubic-bezier(.25,.46,.45,.94), border-radius .5s cubic-bezier(.25,.46,.45,.94);
 }
-/* белая полоса поверх области статус-бара в схлопнутом виде —
-   страховка на случай, если Safari не пересчитает цвет тулбара */
-.status-cover{
-  position:absolute; top:0; left:0; right:0; height:env(safe-area-inset-top);
-  background:#FFFFFF; opacity:0; pointer-events:none;
-  transition:opacity .7s ease;
-}
-.avito-banner.collapsed .status-cover{ opacity:1; transition:opacity .8s ease; }
 
 /* схлопнутое состояние при скролле — как у Avito: промо уезжает, поиск липнет сверху */
 .avito-banner.collapsed{
-  transition:background-color .8s ease, background-image .8s ease, padding-bottom .8s cubic-bezier(.25,.46,.45,.94), border-radius .8s cubic-bezier(.25,.46,.45,.94);
+  transition:background-color .3s ease, background-image .3s ease, padding-bottom .5s cubic-bezier(.25,.46,.45,.94), border-radius .5s cubic-bezier(.25,.46,.45,.94);
   background-color:#FFFFFF;
   background-image:none;
   border-radius:0;
