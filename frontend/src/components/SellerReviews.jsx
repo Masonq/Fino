@@ -31,7 +31,7 @@ export default function SellerReviews({ sellerId, listingId }) {
     if (!sellerId) return
     load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sellerId, user])
+  }, [sellerId])
 
   if (!data) return null
 
