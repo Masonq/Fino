@@ -86,7 +86,9 @@ export default function ChatScreen() {
   return (
     <div className="chat-page">
       <div className="chat-head">
-        <button className="cats-back" onClick={() => navigate(-1)} aria-label={t('actions.back')}>←</button>
+        <button className="cats-back" onClick={() => navigate(-1)} aria-label={t('actions.back')}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+        </button>
         <div>
           <div className="chat-head-name">{otherName() || '...'}</div>
           {chat?.listing_title && <div className="chat-head-listing">{chat.listing_title}</div>}

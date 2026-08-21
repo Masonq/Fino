@@ -77,7 +77,19 @@ export default function ListingDetail() {
   }, [listing])
 
   if (!listing) {
-    return <div className="detail-page"><p className="empty-hint">{t('detail.loading')}</p></div>
+    // Скелетон вместо надписи: страница объявления загружается заметно,
+    // и пустой экран с текстом выглядит как ошибка.
+    return (
+      <div className="detail-page">
+        <div className="detail-photo sk-block" />
+        <div className="detail-sheet">
+          <div className="sk-line" style={{ height: 26, width: '45%', marginTop: 4 }} />
+          <div className="sk-line" style={{ height: 17, width: '85%', marginTop: 14 }} />
+          <div className="sk-line" style={{ height: 17, width: '60%', marginTop: 8 }} />
+          <div className="sk-line" style={{ height: 13, width: '35%', marginTop: 18 }} />
+        </div>
+      </div>
+    )
   }
 
   const lang = i18n.language

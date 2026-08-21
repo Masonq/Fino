@@ -257,12 +257,26 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .cats-back{ width:36px; height:36px; border-radius:50%; background:#fff; box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .cats-title{ position:absolute; left:0; right:0; text-align:center; font-size:16px; font-weight:800; }
 .cats-search{ margin:16px 18px 6px; background:#fff; border-radius:14px; padding:12px 15px; box-shadow:var(--shadow); display:flex; align-items:center; gap:9px; color:var(--muted); font-size:13px; font-weight:500; }
-.cats-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px 10px; padding:14px 18px 20px; }
-.cats-item{ display:flex; flex-direction:column; align-items:center; gap:7px; }
-.cats-photo{ width:100%; aspect-ratio:1/1; border-radius:20px; overflow:hidden; position:relative; box-shadow:var(--shadow); background:#ddd; }
-.cats-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
-.cats-dot{ position:absolute; bottom:6px; right:6px; width:16px; height:16px; border-radius:50%; border:2px solid #fff; }
-.cats-label{ font-size:11.5px; font-weight:700; text-align:center; line-height:1.25; }
+/* Все категории — теми же плитками, что на главной и в форме публикации.
+   Раньше здесь была своя раскладка с картинкой из пустого поля image_url. */
+.cats-grid{
+  display:grid; grid-template-columns:repeat(2,1fr);
+  gap:10px; padding:4px 12px 20px;
+}
+.cats-item{
+  position:relative; height:86px; border-radius:14px; overflow:hidden;
+  padding:11px 62px 11px 13px;
+  background:#fff; border:1px solid rgba(20,30,25,.05);
+  box-shadow:0 1px 2px rgba(20,30,25,.04), 0 6px 18px rgba(20,30,25,.05);
+}
+.cats-label{
+  position:relative; z-index:2;
+  font-size:12.5px; font-weight:700; color:var(--ink); line-height:1.25;
+}
+.cats-img{
+  position:absolute; right:2px; bottom:-2px; width:62px; height:62px;
+  object-fit:contain; opacity:.95; z-index:0; pointer-events:none;
+}
 
 /* ===== stub pages ===== */
 .search-page, .post-ad-page{ padding:calc(18px + env(safe-area-inset-top)) 18px 18px; }
@@ -1253,3 +1267,21 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 @media (min-width: 620px) and (max-width: 899px) {
   .post-cat-grid{ grid-template-columns:repeat(3, 1fr); }
 }
+
+
+/* все категории — на широких экранах в ряд */
+@media (min-width: 900px) {
+  .cats-grid{ grid-template-columns:repeat(5, 206px); justify-content:start; }
+}
+@media (min-width: 620px) and (max-width: 899px) {
+  .cats-grid{ grid-template-columns:repeat(3, 1fr); }
+}
+
+/* скелетон плитки категории на странице «Все категории» */
+.cats-item.skeleton{
+  background:#EDEDE8; border-color:transparent; box-shadow:none;
+  animation:sk-pulse 1.4s ease-in-out infinite;
+}
+.cats-back svg{ width:20px; height:20px; }
+/* блочный скелетон — для фото объявления при загрузке */
+.sk-block{ background:#EDEDE8; animation:sk-pulse 1.4s ease-in-out infinite; }

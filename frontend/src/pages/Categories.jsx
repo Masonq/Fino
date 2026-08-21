@@ -2,20 +2,27 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
+import { CategorySkeletons } from '../components/Skeletons'
 
 export default function Categories() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const [categories, setCategories] = useState([])
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
-    api.getCategories().then(setCategories).catch(() => setCategories([]))
+    api.getCategories()
+      .then(setCategories)
+      .catch(() => setCategories([]))
+      .finally(() => setLoaded(true))
   }, [])
 
   return (
     <div className="categories-page">
       <div className="cats-head">
-        <button className="cats-back" onClick={() => navigate(-1)} aria-label={t('actions.back')}>←</button>
+        <button className="cats-back" onClick={() => navigate(-1)} aria-label={t('actions.back')}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+        </button>
         <div className="cats-title">{t('common.all_categories')}</div>
       </div>
 
@@ -27,13 +34,18 @@ export default function Categories() {
       </div>
 
       <div className="cats-grid">
-        {categories.map((cat) => (
+        {!loaded && Array.from({ length: 8 }).map((_, i) => (
+          <div className="cats-item skeleton" key={`sk${i}`} />
+        ))}
+        {loaded && categories.map((cat) => (
           <Link key={cat.id} to={`/search?category=${cat.slug}`} className="cats-item">
-            <div className="cats-photo">
-              {cat.image_url && <img src={cat.image_url} alt="" />}
-              <div className="cats-dot" style={{ background: cat.color || '#0E9F6E' }} />
-            </div>
-            <div className="cats-label">{cat.name?.[i18n.language] || cat.name?.ru}</div>
+            <span className="cats-label">{cat.name?.[i18n.language] || cat.name?.ru}</span>
+            <img
+              className="cats-img"
+              src={`/cat/${cat.slug}.png`}
+              alt=""
+              onError={(e) => { e.currentTarget.style.display = 'none' }}
+            />
           </Link>
         ))}
       </div>
