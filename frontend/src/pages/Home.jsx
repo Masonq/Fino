@@ -42,7 +42,7 @@ const PHOTO_ROTATE = {
 const PHOTO_SHIFT = {
   __all: [-2, 0],
   // высокие предметы упирались в нижний край — приподнимаем
-  services: [-4, 4],
+  services: [-4, 9],
   beauty: [0, -1],
   business: [0, -4],
   pets: [0, -3],
