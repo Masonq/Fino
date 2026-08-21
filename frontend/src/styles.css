@@ -55,7 +55,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   padding:calc(9px + env(safe-area-inset-top)) 14px 10px; border-radius:0 0 22px 22px;
   margin:0;
   will-change:background-color;
-  transition:background .42s cubic-bezier(.25,.46,.45,.94), padding-bottom .42s cubic-bezier(.25,.46,.45,.94), border-radius .42s cubic-bezier(.25,.46,.45,.94);
+  transition:background .9s ease, padding-bottom .42s cubic-bezier(.25,.46,.45,.94), border-radius .42s cubic-bezier(.25,.46,.45,.94);
 }
 /* схлопнутое состояние при скролле — как у Avito: промо уезжает, поиск липнет сверху */
 .avito-banner.collapsed{
@@ -122,12 +122,6 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .promo-slide.active{ opacity:1; transform:translateY(0); pointer-events:auto; }
 
-.promo-dots{ display:flex; align-items:center; gap:4px; margin-right:2px; }
-.promo-dot{
-  width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,.45); padding:0;
-  transition:width .3s ease, background .3s ease;
-}
-.promo-dot.active{ width:14px; border-radius:3px; background:#fff; }
 
 .avito-promo-illustration{ position:relative; }
 .promo-glyph{

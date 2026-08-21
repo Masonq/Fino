@@ -9,11 +9,11 @@ import { CATEGORY_ICONS, FALLBACK_ICON } from '../components/CategoryIcons'
 const CITIES = ['Београд', 'Нови Сад', 'Ниш', 'Крагујевац', 'Суботица']
 
 const PROMO_SLIDES = [
-  { key: 'safe_deal', to: '/search', icon: 'shield' },
-  { key: 'free_post', to: '/post', icon: 'tag' },
-  { key: 'три_языка', to: '/search', icon: 'globe' },
-  { key: 'verified', to: '/search', icon: 'check' },
-  { key: 'local', to: '/search', icon: 'pin' },
+  { key: 'safe_deal', to: '/search', icon: 'shield', grad: 'linear-gradient(150deg, #0E9F6E 0%, #1DB388 35%, #34D8A8 70%, #5CE8CC 100%)' },
+  { key: 'free_post', to: '/post', icon: 'tag', grad: 'linear-gradient(150deg, #F2860C 0%, #F5A524 40%, #FFC259 75%, #FFD98A 100%)' },
+  { key: 'три_языка', to: '/search', icon: 'globe', grad: 'linear-gradient(150deg, #3B5BF6 0%, #4F7BF7 38%, #6D9BFB 72%, #93BAFF 100%)' },
+  { key: 'verified', to: '/search', icon: 'check', grad: 'linear-gradient(150deg, #6D3DFC 0%, #8156FD 38%, #9E7BFE 72%, #BEA4FF 100%)' },
+  { key: 'local', to: '/search', icon: 'pin', grad: 'linear-gradient(150deg, #E0326B 0%, #F0507F 38%, #FA7A9D 72%, #FFA8BF 100%)' },
 ]
 
 const PROMO_ICONS = {
@@ -90,7 +90,10 @@ export default function Home() {
 
   return (
     <div className="home">
-      <div className={collapsed ? 'avito-banner collapsed' : 'avito-banner'}>
+      <div
+        className={collapsed ? 'avito-banner collapsed' : 'avito-banner'}
+        style={collapsed ? undefined : { background: PROMO_SLIDES[slide].grad }}
+      >
         <div className="avito-toprow">
           <Link to="/search" className="avito-search">
             <div className="avito-search-logo">
@@ -129,16 +132,6 @@ export default function Home() {
                 </div>
 
                 <div className="banner-meta">
-                  <div className="promo-dots">
-                    {PROMO_SLIDES.map((s, i) => (
-                      <button
-                        key={s.key}
-                        className={i === slide ? 'promo-dot active' : 'promo-dot'}
-                        onClick={() => setSlide(i)}
-                        aria-label={`Слайд ${i + 1}`}
-                      />
-                    ))}
-                  </div>
                   <div className="city-pill">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
                       <path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" />
