@@ -29,6 +29,17 @@ export const api = {
     if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
     return res.json()
   },
+  getFavorites: (userId, lang) => request(`/favorites?${new URLSearchParams({ user_id: userId, lang })}`),
+  getFavoriteIds: (userId) => request(`/favorites/ids?${new URLSearchParams({ user_id: userId })}`),
+  addFavorite: (listingId, userId) => request(`/favorites/${listingId}?${new URLSearchParams({ user_id: userId })}`, { method: 'POST' }),
+  removeFavorite: (listingId, userId) => request(`/favorites/${listingId}?${new URLSearchParams({ user_id: userId })}`, { method: 'DELETE' }),
+  uploadPhoto: async (file) => {
+    const form = new FormData()
+    form.append('file', file)
+    const res = await fetch(`${API_BASE}/media/upload`, { method: 'POST', body: form })
+    if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
+    return res.json()
+  },
   startChat: (listingId, buyerId) => request('/chats/start', {
     method: 'POST',
     body: JSON.stringify({ listing_id: listingId, buyer_id: buyerId }),

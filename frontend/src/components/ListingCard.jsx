@@ -1,8 +1,18 @@
-import { Link } from 'react-router-dom'
-import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useFavorites } from '../context/FavoritesContext'
 
 export default function ListingCard({ listing, large = false }) {
-  const [fav, setFav] = useState(false)
+  const navigate = useNavigate()
+  const { isFavorite, toggle } = useFavorites()
+  const fav = isFavorite(listing.id)
+
+  const onFavClick = async (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const res = await toggle(listing.id)
+    // не представился — отправляем знакомиться, потом вернём обратно
+    if (res?.needAuth) navigate(`/identify?returnTo=${encodeURIComponent(window.location.pathname)}`)
+  }
 
   return (
     <div className={large ? 's-card l-card' : 's-card'}>
@@ -18,7 +28,7 @@ export default function ListingCard({ listing, large = false }) {
         <Link to={`/listing/${listing.id}`} className="s-title">{listing.title}</Link>
         <button
           className={fav ? 's-fav on' : 's-fav'}
-          onClick={(e) => { e.preventDefault(); setFav(!fav) }}
+          onClick={onFavClick}
           aria-label="В избранное"
         >
           <svg width={large ? 22 : 21} height={large ? 22 : 21} viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.7">

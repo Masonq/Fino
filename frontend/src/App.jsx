@@ -8,6 +8,8 @@ import ListingDetail from './pages/ListingDetail'
 import ChatScreen from './pages/ChatScreen'
 import Identify from './pages/Identify'
 import ComingSoon from './pages/ComingSoon'
+import Favorites from './pages/Favorites'
+import { FavoritesProvider } from './context/FavoritesContext'
 import BottomNav from './components/BottomNav'
 
 export default function App() {
@@ -45,6 +47,7 @@ export default function App() {
   }, [])
 
   return (
+    <FavoritesProvider>
     <div className="app-shell">
       <main className={hideNav ? '' : 'has-bottomnav'}>
         <Routes>
@@ -55,12 +58,13 @@ export default function App() {
           <Route path="/listing/:id" element={<ListingDetail />} />
           <Route path="/chat/:id" element={<ChatScreen />} />
           <Route path="/identify" element={<Identify />} />
-          <Route path="/favorites" element={<ComingSoon title="Избранное" />} />
+          <Route path="/favorites" element={<Favorites />} />
           <Route path="/chats" element={<ComingSoon title="Сообщения" />} />
           <Route path="/profile" element={<ComingSoon title="Профиль" />} />
         </Routes>
       </main>
       {!hideNav && <BottomNav />}
     </div>
+    </FavoritesProvider>
   )
 }
