@@ -57,6 +57,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   will-change:background-color;
   transition:background .9s ease, padding-bottom .42s cubic-bezier(.25,.46,.45,.94), border-radius .42s cubic-bezier(.25,.46,.45,.94);
 }
+/* заливка области статус-бара — красится синхронно с баннером, без задержки Safari */
+.status-bar-fill{
+  position:fixed; top:0; left:0; right:0; height:env(safe-area-inset-top);
+  z-index:16; pointer-events:none;
+  transition:background .9s ease;
+}
+
 /* схлопнутое состояние при скролле — как у Avito: промо уезжает, поиск липнет сверху */
 .avito-banner.collapsed{
   background:#FAFAF9;

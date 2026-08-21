@@ -62,10 +62,12 @@ export default function Home() {
   // статус-бар iOS перекрашиваем под текущий слайд, чтобы верх экрана сливался с баннером.
   // Safari кэширует theme-color, поэтому мета-тег пересоздаём, а не меняем значение —
   // иначе при возврате наверх после скролла цвет не подхватывается.
+  // Статус-бар iOS: theme-color Safari перерисовывает с задержкой и не успевает
+  // за сменой слайдов, поэтому красим саму область статус-бара элементом страницы —
+  // цвет меняется мгновенно вместе с баннером. theme-color оставляем как запасной
+  // вариант для первой отрисовки и для Android.
   useEffect(() => {
     const color = collapsed ? '#FAFAF9' : PROMO_SLIDES[slide].top
-    // ждём завершения анимации схлопывания (.42s), иначе статус-бар
-    // перекрашивается раньше, чем сам баннер — виден рассинхрон
     const delay = collapsed ? 380 : 0
     const id = setTimeout(() => {
       document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.remove())
@@ -112,6 +114,10 @@ export default function Home() {
         className={collapsed ? 'avito-banner collapsed' : 'avito-banner'}
         style={collapsed ? undefined : { background: PROMO_SLIDES[slide].grad }}
       >
+        <div
+          className="status-bar-fill"
+          style={{ background: collapsed ? '#FAFAF9' : PROMO_SLIDES[slide].top }}
+        />
         <div className="avito-toprow">
           <Link to="/search" className="avito-search">
             <div className="avito-search-logo">
