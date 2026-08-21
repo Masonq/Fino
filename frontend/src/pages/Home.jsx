@@ -35,6 +35,8 @@ const PHOTO_SCALE = {
 // Точная подгонка положения: [вправо, вниз] в пикселях.
 // Бизнес и хобби сидят ровно — их не двигаем.
 const PHOTO_SHIFT = {
+  // кубики «Все» заполняют кадр почти целиком — им нужно меньше смещения
+  __all: [-6, -4],
   // высокие и узкие — опускаем, чтобы не висели
   'real-estate': [0, 6],
   services: [-2, 2],
@@ -212,7 +214,12 @@ export default function Home() {
           <Link key="__all" to="/categories" className="cat-tile-2row all">
             <div className="cat-tile-2row-label">{t('common.all')}</div>
             <div className="cat-tile-2row-glyph">
-              <img className="cat-photo all-anim" src="/cat/all.gif" alt="" />
+              <img
+                className="cat-photo"
+                src="/cat/all.png"
+                alt=""
+                style={{ transform: `translate(${PHOTO_SHIFT.__all[0]}px, ${PHOTO_SHIFT.__all[1]}px) scale(0.92)` }}
+              />
             </div>
           </Link>
         ) : (
