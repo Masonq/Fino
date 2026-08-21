@@ -20,11 +20,18 @@
   --shadow-lg: 0 4px 10px rgba(20,30,25,.05), 0 18px 36px rgba(20,30,25,.11);
 }
 *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-html,body{ background:#E7E7E2; font-family:'Plus Jakarta Sans',sans-serif; color:var(--ink); }
+html, body{
+  background:#E7E7E2; font-family:'Plus Jakarta Sans',sans-serif; color:var(--ink);
+  height:100%; overflow:hidden; position:fixed; inset:0; overscroll-behavior:none;
+}
 a{ text-decoration:none; color:inherit; }
 button{ border:none; background:none; font-family:inherit; cursor:pointer; }
 
-.app-shell{ max-width:480px; margin:0 auto; min-height:100vh; min-height:100dvh; background:var(--bg); padding-bottom:86px; position:relative; }
+.app-shell{
+  max-width:480px; margin:0 auto; height:100dvh; background:var(--bg); position:relative;
+  overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-y:contain;
+}
+.app-shell > main.has-bottomnav{ padding-bottom:86px; }
 
 .bottomnav{
   position:fixed; left:0; right:0; bottom:0; max-width:480px; margin:0 auto; background:#fff;

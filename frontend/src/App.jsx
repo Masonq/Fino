@@ -32,7 +32,7 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <main>
+      <main className={hideNav ? '' : 'has-bottomnav'}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/search" element={<Search />} />
