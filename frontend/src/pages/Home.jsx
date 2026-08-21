@@ -148,8 +148,8 @@ export default function Home() {
                       aria-hidden={i !== slide}
                     >
                       <span className="avito-promo-text">
-                        {t(`promo.${s.key}`)}
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="m9 6 6 6-6 6" /></svg>
+                        <span className="promo-text-label">{t(`promo.${s.key}`)}</span>
+                        <svg className="promo-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="m9 6 6 6-6 6" /></svg>
                       </span>
                     </Link>
                   ))}

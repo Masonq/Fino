@@ -113,10 +113,15 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .avito-promo-row{ display:flex; align-items:flex-end; justify-content:space-between; padding:0; gap:10px; }
 .avito-promo-left{ display:flex; flex-direction:column; gap:5px; min-width:0; }
 .avito-promo-text{ display:flex; align-items:center; gap:5px; font-size:22px; font-weight:800; color:#fff; letter-spacing:-0.015em; line-height:1.15; }
+/* стрелка не должна сжиматься и переезжать при смене длины заголовка */
+.promo-text-label{ white-space:nowrap; }
+.promo-chevron{ flex-shrink:0; }
 .banner-meta{ display:flex; align-items:center; gap:7px; }
 
 /* карусель промо-слайдов */
-.promo-slides{ position:relative; display:grid; }
+/* фиксированная высота: слайды с разной длиной заголовка не должны
+   менять высоту блока — иначе стрелка и всё под ней подпрыгивает */
+.promo-slides{ position:relative; display:grid; min-height:26px; align-items:center; }
 .promo-slide{
   grid-area:1 / 1; opacity:0; transform:translateY(6px); pointer-events:none;
   transition:opacity .45s ease, transform .45s cubic-bezier(.25,.46,.45,.94);
