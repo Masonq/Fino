@@ -28,6 +28,7 @@ const PHOTO_SCALE = {
   auto: 1.16,
   business: 1.15,
   kids: 1.08,
+  'home-garden': 1.06,
   fashion: 1.05,
 }
 
