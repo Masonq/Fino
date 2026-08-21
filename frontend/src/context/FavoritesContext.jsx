@@ -1,12 +1,14 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { api } from '../api/client'
+import { useAuth } from './AuthContext'
 
 const FavoritesContext = createContext({ ids: new Set(), toggle: () => {}, isFavorite: () => false })
 
 export function FavoritesProvider({ children }) {
   const [ids, setIds] = useState(() => new Set())
 
-  const userId = localStorage.getItem('fino_user_id')
+  const { user } = useAuth()
+  const userId = user?.id
 
   useEffect(() => {
     if (!userId) return
@@ -15,8 +17,13 @@ export function FavoritesProvider({ children }) {
       .catch(() => {})
   }, [userId])
 
+  // вышли из аккаунта — сердечки гаснут
+  useEffect(() => {
+    if (!userId) setIds(new Set())
+  }, [userId])
+
   const toggle = useCallback(async (listingId) => {
-    const uid = localStorage.getItem('fino_user_id')
+    const uid = userId
     if (!uid) return { needAuth: true }
 
     const has = ids.has(listingId)
@@ -39,7 +46,7 @@ export function FavoritesProvider({ children }) {
       })
     }
     return { needAuth: false }
-  }, [ids])
+  }, [ids, userId])
 
   const isFavorite = useCallback((id) => ids.has(id), [ids])
 

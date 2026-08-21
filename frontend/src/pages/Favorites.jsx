@@ -5,16 +5,18 @@ import { api } from '../api/client'
 import ListingCard from '../components/ListingCard'
 import { CardSkeletons } from '../components/Skeletons'
 import { useFavorites } from '../context/FavoritesContext'
+import { useAuth } from '../context/AuthContext'
 
 export default function Favorites() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { ids } = useFavorites()
+  const { user } = useAuth()
 
   const [items, setItems] = useState([])
   const [loaded, setLoaded] = useState(false)
 
-  const userId = localStorage.getItem('fino_user_id')
+  const userId = user?.id
 
   useEffect(() => {
     if (!userId) { setLoaded(true); return }
@@ -38,7 +40,7 @@ export default function Favorites() {
             </svg>
           </div>
           <p>{t('favorites.need_auth')}</p>
-          <button className="fav-cta" onClick={() => navigate('/identify?returnTo=%2Ffavorites')}>
+          <button className="fav-cta" onClick={() => navigate('/login?returnTo=%2Ffavorites')}>
             {t('actions.continue')}
           </button>
         </div>

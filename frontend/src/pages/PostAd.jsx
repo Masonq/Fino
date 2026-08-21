@@ -3,11 +3,13 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { CITIES, cityLabel } from '../data/cities'
+import { useAuth } from '../context/AuthContext'
 
 const STEPS = ['category', 'attributes', 'details', 'contact']
 
 export default function PostAd() {
   const { t, i18n } = useTranslation()
+  const { user } = useAuth()
   const navigate = useNavigate()
 
   const [step, setStep] = useState(0)
@@ -79,11 +81,10 @@ export default function PostAd() {
     setError(null)
     setSubmitting(true)
     try {
-      let ownerId = localStorage.getItem('fino_user_id')
+      const ownerId = user?.id
       if (!ownerId) {
-        const user = await api.quickIdentify(phone, displayName)
-        ownerId = user.id
-        localStorage.setItem('fino_user_id', ownerId)
+        navigate('/login?returnTo=%2Fpost')
+        return
       }
 
       await api.createListing({
@@ -248,24 +249,26 @@ export default function PostAd() {
         <>
           <button className="post-back" onClick={() => setStep(2)}>← {t('actions.back')}</button>
           <h2>{t('post.step_contact')}</h2>
-          {localStorage.getItem('fino_user_id') ? (
-            <p className="empty-hint">{t('post.same_profile')}</p>
-          ) : (
+          {user ? (
             <div className="post-fields">
+              <p className="empty-hint">{t('post.posting_as')} <b>{user.display_name}</b></p>
               <div className="post-field">
                 <label>{t('post.phone')}</label>
                 <input type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+381 6..." />
               </div>
-              <div className="post-field">
-                <label>{t('post.name')}</label>
-                <input type="text" autoComplete="name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder={t('post.name_ph')} />
-              </div>
+            </div>
+          ) : (
+            <div className="fav-empty">
+              <p>{t('post.need_login')}</p>
+              <button className="fav-cta" onClick={() => navigate('/login?returnTo=%2Fpost')}>
+                {t('common.login')}
+              </button>
             </div>
           )}
           {error && <p className="post-error">{error}</p>}
           <button
             className="post-submit-btn"
-            disabled={submitting || (!localStorage.getItem('fino_user_id') && (!phone || !displayName))}
+            disabled={submitting || !user}
             onClick={handleSubmit}
           >
             {submitting ? '...' : t('listing.publish')}

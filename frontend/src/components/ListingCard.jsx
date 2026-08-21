@@ -14,7 +14,7 @@ export default function ListingCard({ listing, large = false }) {
     e.stopPropagation()
     const res = await toggle(listing.id)
     // не представился — отправляем знакомиться, потом вернём обратно
-    if (res?.needAuth) navigate(`/identify?returnTo=${encodeURIComponent(window.location.pathname)}`)
+    if (res?.needAuth) navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`)
   }
 
   return (

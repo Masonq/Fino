@@ -7,6 +7,7 @@ import LanguageSwitcher from '../components/LanguageSwitcher'
 import { CardSkeletons, CategorySkeletons } from '../components/Skeletons'
 import PullToRefresh from '../components/PullToRefresh'
 import SearchOverlay from '../components/SearchOverlay'
+import { useAuth } from '../context/AuthContext'
 import { CITIES, cityLabel } from '../data/cities'
 
 const PROMO_SLIDES = [
@@ -73,6 +74,7 @@ export default function Home() {
   // иначе цвет статус-бара не успевает за сменой и отстаёт
   const [slide] = useState(() => Math.floor(Math.random() * PROMO_SLIDES.length))
   const [searchOpen, setSearchOpen] = useState(false)
+  const { user } = useAuth()
 
   // Статус-бар на iOS 26 Safari больше НЕ управляется theme-color: браузер берёт цвет
   // из background-color липкого элемента у края экрана (наш баннер) в момент отрисовки.
@@ -147,8 +149,10 @@ export default function Home() {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
             </span>
           </button>
-          <Link to="/identify" className="avito-login-pill">
-            {localStorage.getItem('fino_user_id') ? <div className="avatar-mini">М</div> : t('common.login')}
+          <Link to={user ? '/profile' : '/login'} className="avito-login-pill">
+            {user
+              ? <div className="avatar-mini">{(user.display_name || '?').trim().charAt(0).toUpperCase()}</div>
+              : t('common.login')}
           </Link>
         </div>
 

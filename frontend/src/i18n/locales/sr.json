@@ -104,7 +104,9 @@
     "name": "Ime",
     "price": "Cena",
     "negotiable": "Cena po dogovoru",
-    "choose_city": "Izaberite grad"
+    "choose_city": "Izaberite grad",
+    "posting_as": "Objavljujete kao",
+    "need_login": "Prijavite se da biste objavili oglas"
   },
   "detail": {
     "loading": "Učitavanje…",

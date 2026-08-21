@@ -104,7 +104,9 @@
     "name": "Name",
     "price": "Price",
     "negotiable": "Open to offers",
-    "choose_city": "Choose a city"
+    "choose_city": "Choose a city",
+    "posting_as": "Posting as",
+    "need_login": "Sign in to publish a listing"
   },
   "detail": {
     "loading": "Loading…",

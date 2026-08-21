@@ -3,11 +3,13 @@ import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { displayCity } from '../data/cities'
+import { useAuth } from '../context/AuthContext'
 
 export default function ListingDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
+  const { user } = useAuth()
   const [searchParams] = useSearchParams()
 
   const [listing, setListing] = useState(null)
@@ -41,7 +43,7 @@ export default function ListingDetail() {
 
   useEffect(() => {
     if (searchParams.get('identified') === '1' && listing) {
-      const myId = localStorage.getItem('fino_user_id')
+      const myId = user?.id
       if (myId) startChatWith(myId)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -71,11 +73,11 @@ export default function ListingDetail() {
   }
 
   const handleWriteToSeller = () => {
-    const myId = localStorage.getItem('fino_user_id')
+    const myId = user?.id
     if (myId) {
       startChatWith(myId)
     } else {
-      navigate(`/identify?returnTo=${encodeURIComponent(`/listing/${id}`)}`)
+      navigate(`/login?returnTo=${encodeURIComponent(`/listing/${id}`)}`)
     }
   }
 

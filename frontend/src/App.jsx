@@ -6,18 +6,18 @@ import PostAd from './pages/PostAd'
 import Categories from './pages/Categories'
 import ListingDetail from './pages/ListingDetail'
 import ChatScreen from './pages/ChatScreen'
-import Identify from './pages/Identify'
 import ComingSoon from './pages/ComingSoon'
 import Favorites from './pages/Favorites'
 import Chats from './pages/Chats'
 import Login from './pages/Login'
+import Profile from './pages/Profile'
 import { AuthProvider } from './context/AuthContext'
 import { FavoritesProvider } from './context/FavoritesContext'
 import BottomNav from './components/BottomNav'
 
 export default function App() {
   const { pathname } = useLocation()
-  const hideNav = pathname.startsWith('/listing/') || pathname.startsWith('/chat/') || pathname === '/identify' || pathname === '/login'
+  const hideNav = pathname.startsWith('/listing/') || pathname.startsWith('/chat/') || pathname === '/login'
 
   useLayoutEffect(() => {
     window.scrollTo(0, 0)
@@ -61,11 +61,10 @@ export default function App() {
           <Route path="/categories" element={<Categories />} />
           <Route path="/listing/:id" element={<ListingDetail />} />
           <Route path="/chat/:id" element={<ChatScreen />} />
-          <Route path="/identify" element={<Identify />} />
           <Route path="/login" element={<Login />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/chats" element={<Chats />} />
-          <Route path="/profile" element={<ComingSoon title="Профиль" />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </main>
       {!hideNav && <BottomNav />}

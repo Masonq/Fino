@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
+import { useAuth } from '../context/AuthContext'
 
 function timeAgo(iso, t) {
   if (!iso) return ''
@@ -17,11 +18,12 @@ function timeAgo(iso, t) {
 export default function Chats() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
+  const { user } = useAuth()
 
   const [items, setItems] = useState([])
   const [loaded, setLoaded] = useState(false)
 
-  const userId = localStorage.getItem('fino_user_id')
+  const userId = user?.id
 
   useEffect(() => {
     if (!userId) { setLoaded(true); return }
@@ -42,7 +44,7 @@ export default function Chats() {
             </svg>
           </div>
           <p>{t('chats.need_auth')}</p>
-          <button className="fav-cta" onClick={() => navigate('/identify?returnTo=%2Fchats')}>
+          <button className="fav-cta" onClick={() => navigate('/login?returnTo=%2Fchats')}>
             {t('actions.continue')}
           </button>
         </div>

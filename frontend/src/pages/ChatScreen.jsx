@@ -2,12 +2,14 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
+import { useAuth } from '../context/AuthContext'
 
 export default function ChatScreen() {
   const { t } = useTranslation()
+  const { user } = useAuth()
   const { id } = useParams()
   const navigate = useNavigate()
-  const myId = localStorage.getItem('fino_user_id')
+  const myId = user?.id
 
   const [chat, setChat] = useState(null)
   const [messages, setMessages] = useState([])
