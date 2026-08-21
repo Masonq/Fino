@@ -617,9 +617,11 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* ===== вход и регистрация ===== */
 .auth-page{
+  position:relative;
   min-height:100vh; display:flex; flex-direction:column; align-items:center;
   padding:calc(56px + env(safe-area-inset-top)) 24px 32px; background:var(--bg);
 }
+
 .auth-close{
   position:absolute; top:calc(14px + env(safe-area-inset-top)); left:12px;
   width:36px; height:36px; display:flex; align-items:center; justify-content:center;
@@ -713,3 +715,17 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   background:#fff; border:1px solid rgba(255,97,82,.28);
   font-size:13.5px; font-weight:700; color:var(--coral);
 }
+
+
+/* ===== цвет статус-бара на всех экранах =====
+   Safari берёт цвет верхней панели с фиксированного элемента у края экрана.
+   На главной это баннер, а на остальных экранах такого элемента нет — без этой
+   полосы верх не совпадал с фоном страницы. */
+.status-tint{
+  position:fixed; top:0; left:0; right:0;
+  height:env(safe-area-inset-top);
+  background:var(--bg);
+  z-index:70; pointer-events:none;
+}
+/* на главной цветом управляет баннер — там полоса не нужна */
+.status-tint.hidden{ display:none; }

@@ -23,6 +23,17 @@ export default function App() {
     window.scrollTo(0, 0)
   }, [pathname])
 
+  // на не-главных экранах статус-бар под цвет фона страницы;
+  // на главной им управляет баннер
+  useEffect(() => {
+    if (pathname === '/') return
+    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.remove())
+    const meta = document.createElement('meta')
+    meta.setAttribute('name', 'theme-color')
+    meta.setAttribute('content', '#FAFAF9')
+    document.head.appendChild(meta)
+  }, [pathname])
+
   // Обходной приём для известного бага iOS 26: после закрытия клавиатуры
   // visualViewport.offsetTop иногда не сбрасывается в 0, из-за чего
   // координаты тапов расходятся с тем, что видно на экране.
@@ -53,6 +64,7 @@ export default function App() {
     <AuthProvider>
     <FavoritesProvider>
     <div className="app-shell">
+      <div className={pathname === '/' ? 'status-tint hidden' : 'status-tint'} aria-hidden="true" />
       <main className={hideNav ? '' : 'has-bottomnav'}>
         <Routes>
           <Route path="/" element={<Home />} />
