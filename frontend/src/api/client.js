@@ -56,6 +56,12 @@ export const api = {
   getCategorySchema: (slug) => request(`/categories/${slug}/schema`),
   searchListings: (params) => request(`/listings?${new URLSearchParams(params)}`),
   getListing: (id) => request(`/listings/${id}`),
+  myListings: (lang) => request(`/listings/my/list?${new URLSearchParams({ lang })}`),
+  setListingStatus: (id, status) => request(`/listings/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  }),
+  deleteListing: (id) => request(`/listings/${id}`, { method: 'DELETE' }),
   quickIdentify: (phone, displayName) => request('/users/quick', {
     method: 'POST',
     body: JSON.stringify({ phone, display_name: displayName }),

@@ -11,6 +11,7 @@ import Favorites from './pages/Favorites'
 import Chats from './pages/Chats'
 import Login from './pages/Login'
 import Profile from './pages/Profile'
+import MyListings from './pages/MyListings'
 import { AuthProvider } from './context/AuthContext'
 import { FavoritesProvider } from './context/FavoritesContext'
 import BottomNav from './components/BottomNav'
@@ -76,6 +77,7 @@ export default function App() {
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/chats" element={<Chats />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/my" element={<MyListings />} />
         </Routes>
       </main>
       {!hideNav && <BottomNav />}

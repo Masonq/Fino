@@ -172,5 +172,20 @@
     "err_too_often": "Please wait a minute before requesting again",
     "err_generic": "Something went wrong, please try again",
     "logout": "Sign out"
+  },
+  "my": {
+    "title": "My listings",
+    "need_login": "Sign in to see your listings",
+    "tab_active": "Active",
+    "tab_pending": "In review",
+    "tab_sold": "Sold",
+    "tab_archived": "Archived",
+    "empty": "Nothing here yet",
+    "views": "views",
+    "mark_sold": "Mark sold",
+    "archive": "Unpublish",
+    "restore": "Publish again",
+    "delete": "Delete",
+    "confirm_delete": "Delete this listing? This can't be undone."
   }
 }

@@ -172,5 +172,20 @@
     "err_too_often": "Sačekajte minut pre ponovnog slanja",
     "err_generic": "Nešto nije u redu, pokušajte ponovo",
     "logout": "Odjavi se"
+  },
+  "my": {
+    "title": "Moji oglasi",
+    "need_login": "Prijavite se da vidite svoje oglase",
+    "tab_active": "Aktivni",
+    "tab_pending": "Na proveri",
+    "tab_sold": "Prodato",
+    "tab_archived": "Arhivirano",
+    "empty": "Ovde još nema ničega",
+    "views": "pregleda",
+    "mark_sold": "Prodato",
+    "archive": "Skloni",
+    "restore": "Objavi ponovo",
+    "delete": "Obriši",
+    "confirm_delete": "Obrisati oglas? Ovo se ne može poništiti."
   }
 }

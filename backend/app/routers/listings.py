@@ -6,8 +6,9 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel
 
+from app.core.auth import get_current_user
 from app.core.database import get_db
-from app.models import Listing, ListingStatus, ListingTranslation, ListingPhoto, Category
+from app.models import Listing, ListingStatus, ListingTranslation, ListingPhoto, Category, User
 
 router = APIRouter(prefix="/api/listings", tags=["listings"])
 
@@ -171,6 +172,49 @@ def search_listings(
     return {"total": total, "items": [serialize(l) for l in items]}
 
 
+@router.get("/my/list")
+def my_listings(
+    status: str | None = None,
+    lang: str = Query("ru"),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Объявления текущего пользователя — все статусы, включая скрытые."""
+    q = (
+        db.query(Listing)
+        .options(joinedload(Listing.translations), joinedload(Listing.photos))
+        .filter(Listing.owner_id == user.id)
+    )
+    if status:
+        q = q.filter(Listing.status == status)
+
+    items = q.order_by(Listing.created_at.desc()).all()
+
+    def serialize(l: Listing):
+        tr = next((t for t in l.translations if t.language == lang), None)
+        if not tr and l.translations:
+            tr = l.translations[0]
+        cover = next((p for p in l.photos if p.is_cover), l.photos[0] if l.photos else None)
+        return {
+            "id": str(l.id),
+            "title": tr.title if tr else None,
+            "price": float(l.price) if l.price else None,
+            "currency": l.currency,
+            "city": l.city,
+            "cover_photo": cover.thumbnail_url if cover else None,
+            "status": l.status.value,
+            "views_count": l.views_count,
+            "created_at": l.created_at.isoformat() if l.created_at else None,
+        }
+
+    # сводка по статусам — для вкладок на экране
+    counts = {}
+    for l in items:
+        counts[l.status.value] = counts.get(l.status.value, 0) + 1
+
+    return {"total": len(items), "counts": counts, "items": [serialize(l) for l in items]}
+
+
 @router.get("/{listing_id}")
 def get_listing(listing_id: uuid.UUID, db: Session = Depends(get_db)):
     listing = db.query(Listing).options(
@@ -202,3 +246,45 @@ def get_listing(listing_id: uuid.UUID, db: Session = Depends(get_db)):
         "delivery_available": listing.delivery_available,
         "safe_deal_available": listing.safe_deal_available,
     }
+
+class StatusIn(BaseModel):
+    status: str
+
+
+@router.patch("/{listing_id}/status")
+def change_status(
+    listing_id: uuid.UUID,
+    payload: StatusIn,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Снять с продажи, вернуть в продажу или отметить проданным."""
+    listing = db.query(Listing).get(listing_id)
+    if not listing:
+        raise HTTPException(404, "not_found")
+    if listing.owner_id != user.id:
+        raise HTTPException(403, "not_owner")
+
+    allowed = {"active", "sold", "archived"}
+    if payload.status not in allowed:
+        raise HTTPException(400, "bad_status")
+
+    listing.status = ListingStatus(payload.status)
+    db.commit()
+    return {"status": listing.status.value}
+
+
+@router.delete("/{listing_id}")
+def delete_listing(
+    listing_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    listing = db.query(Listing).get(listing_id)
+    if not listing:
+        raise HTTPException(404, "not_found")
+    if listing.owner_id != user.id:
+        raise HTTPException(403, "not_owner")
+    db.delete(listing)
+    db.commit()
+    return {"status": "deleted"}
