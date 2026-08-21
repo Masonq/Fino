@@ -55,5 +55,10 @@
     "три_языка": "Three languages: RU · EN · SR",
     "verified": "Verified sellers",
     "local": "Listings near you"
+  },
+  "ptr": {
+    "pull": "Pull down",
+    "release": "Release",
+    "refreshing": "Looking for fresh listings…"
   }
 }

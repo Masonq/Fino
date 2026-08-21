@@ -55,5 +55,10 @@
     "три_языка": "Tri jezika: RU · EN · SR",
     "verified": "Provereni prodavci",
     "local": "Oglasi u vašoj blizini"
+  },
+  "ptr": {
+    "pull": "Povucite nadole",
+    "release": "Pustite",
+    "refreshing": "Tražimo nove oglase…"
   }
 }

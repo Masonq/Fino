@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 const THRESHOLD = 86   // сколько нужно протянуть, чтобы сработало
 const MAX_PULL = 125   // дальше не растягиваем
 
 export default function PullToRefresh({ onRefresh, children }) {
+  const { t } = useTranslation()
   const [pull, setPull] = useState(0)
   const [refreshing, setRefreshing] = useState(false)
   const startY = useRef(0)
@@ -55,7 +57,7 @@ export default function PullToRefresh({ onRefresh, children }) {
   const progress = Math.min(1, pull / THRESHOLD)
   const ready = progress >= 1
 
-  const label = refreshing ? 'Ищем свежие объявления…' : ready ? 'Отпустите' : 'Потяните вниз'
+  const label = t(refreshing ? 'ptr.refreshing' : ready ? 'ptr.release' : 'ptr.pull')
 
   return (
     <div className="ptr-root">
