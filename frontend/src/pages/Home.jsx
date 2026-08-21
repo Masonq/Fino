@@ -34,6 +34,11 @@ const PHOTO_SCALE = {
 
 // Точная подгонка положения: [вправо, вниз] в пикселях.
 // Бизнес и хобби сидят ровно — их не двигаем.
+// Поворот в градусах: плюс — по часовой стрелке.
+const PHOTO_ROTATE = {
+  services: 14,
+}
+
 const PHOTO_SHIFT = {
   __all: [-2, 0],
   // высокие предметы упирались в нижний край — приподнимаем
@@ -226,9 +231,11 @@ export default function Home() {
                 style={(() => {
                   const scale = PHOTO_SCALE[cat.slug]
                   const [dx, dy] = PHOTO_SHIFT[cat.slug] || [0, 0]
-                  if (!scale && !dx && !dy) return undefined
+                  const rot = PHOTO_ROTATE[cat.slug]
+                  if (!scale && !dx && !dy && !rot) return undefined
                   const parts = []
                   if (dx || dy) parts.push(`translate(${dx}px, ${dy}px)`)
+                  if (rot) parts.push(`rotate(${rot}deg)`)
                   if (scale) parts.push(`scale(${scale})`)
                   return { transform: parts.join(' ') }
                 })()}
