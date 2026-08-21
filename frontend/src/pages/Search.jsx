@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
@@ -88,13 +88,30 @@ export default function Search() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [text, category, priceMin, priceMax, city, withPhoto, sort])
 
-  const loadMore = () => {
-    setLoading(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const sentinelRef = useRef(null)
+
+  const loadMore = useCallback(() => {
+    if (loadingMore) return
+    setLoadingMore(true)
     api.searchListings({ ...query, offset: items.length })
       .then((res) => setItems((prev) => [...prev, ...(res.items || [])]))
       .catch(() => {})
-      .finally(() => setLoading(false))
-  }
+      .finally(() => setLoadingMore(false))
+  }, [query, items.length, loadingMore])
+
+  // подгрузка при прокрутке вместо кнопки
+  useEffect(() => {
+    if (!loaded || items.length === 0 || items.length >= total) return
+    const el = sentinelRef.current
+    if (!el) return
+    const io = new IntersectionObserver(
+      (entries) => { if (entries[0].isIntersecting) loadMore() },
+      { rootMargin: '600px' },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [loaded, items.length, total, loadMore])
 
   const resetFilters = () => {
     setCategory(''); setPriceMin(''); setPriceMax(''); setCity(''); setWithPhoto(false); setSort('new')
@@ -234,11 +251,9 @@ export default function Search() {
         <p className="empty-hint">{t('search.nothing')}</p>
       )}
 
-      {items.length < total && (
-        <button className="load-more" onClick={loadMore} disabled={loading}>
-          {loading ? t('actions.loading') : t('actions.show_more')}
-        </button>
-      )}
+      <div ref={sentinelRef} className="feed-sentinel">
+        {loadingMore && <span className="feed-loading">{t('actions.loading')}</span>}
+      </div>
     </div>
   )
 }

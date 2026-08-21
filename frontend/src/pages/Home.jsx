@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
@@ -67,6 +67,9 @@ export default function Home() {
   const [catsLoaded, setCatsLoaded] = useState(false)
   const [listings, setListings] = useState([])
   const [feedLoaded, setFeedLoaded] = useState(false)
+  const [feedTotal, setFeedTotal] = useState(0)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const sentinelRef = useRef(null)
   const [cols, setCols] = useState(2)
   const [city, setCity] = useState(CITIES[0].slug)
   const [collapsed, setCollapsed] = useState(false)
@@ -115,12 +118,41 @@ export default function Home() {
       .finally(() => setCatsLoaded(true))
   }, [])
 
+  const PAGE = 12
+
   const loadFeed = useCallback(() => (
-    api.searchListings({ lang: i18n.language, limit: 12 })
-      .then((res) => setListings(res.items || []))
+    api.searchListings({ lang: i18n.language, limit: PAGE, offset: 0 })
+      .then((res) => {
+        setListings(res.items || [])
+        setFeedTotal(res.total || 0)
+      })
       .catch(() => setListings([]))
       .finally(() => setFeedLoaded(true))
   ), [i18n.language])
+
+  // Подгружаем следующую порцию, когда человек дочитал до низа —
+  // иначе лента обрывается на двенадцатом объявлении.
+  const loadMore = useCallback(() => {
+    if (loadingMore) return
+    setLoadingMore(true)
+    api.searchListings({ lang: i18n.language, limit: PAGE, offset: listings.length })
+      .then((res) => setListings((prev) => [...prev, ...(res.items || [])]))
+      .catch(() => {})
+      .finally(() => setLoadingMore(false))
+  }, [i18n.language, listings.length, loadingMore])
+
+  useEffect(() => {
+    if (!feedLoaded || listings.length >= feedTotal) return
+    const el = sentinelRef.current
+    if (!el) return
+
+    const io = new IntersectionObserver(
+      (entries) => { if (entries[0].isIntersecting) loadMore() },
+      { rootMargin: '600px' },   // начинаем заранее, чтобы не было паузы
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [feedLoaded, listings.length, feedTotal, loadMore])
 
   useEffect(() => { loadFeed() }, [loadFeed])
 
@@ -280,6 +312,10 @@ export default function Home() {
       {feedLoaded && listings.length === 0 && (
         <p className="empty-hint">{t('common.no_listings')}</p>
       )}
+
+      <div ref={sentinelRef} className="feed-sentinel">
+        {loadingMore && <span className="feed-loading">{t('actions.loading')}</span>}
+      </div>
     </div>
 
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
