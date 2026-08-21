@@ -4,6 +4,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { displayCity } from '../data/cities'
 import { useAuth } from '../context/AuthContext'
+import { useFavorites } from '../context/FavoritesContext'
 
 export default function ListingDetail() {
   const { id } = useParams()
@@ -11,6 +12,7 @@ export default function ListingDetail() {
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
   const [scrolled, setScrolled] = useState(false)
+  const [photoIdx, setPhotoIdx] = useState(0)
 
   // Шапка появляется, когда фото уехало вверх — как у Avito:
   // сначала кнопки полупрозрачными кружками на фото, потом панель на белом.
@@ -30,7 +32,13 @@ export default function ListingDetail() {
 
   const [listing, setListing] = useState(null)
   const [schema, setSchema] = useState([])
-  const [fav, setFav] = useState(false)
+  const { isFavorite, toggle } = useFavorites()
+  const fav = isFavorite(id)
+
+  const onFav = async () => {
+    const res = await toggle(id)
+    if (res?.needAuth) navigate(`/login?returnTo=${encodeURIComponent(`/listing/${id}`)}`)
+  }
   const [starting, setStarting] = useState(false)
 
   useEffect(() => {
@@ -71,7 +79,12 @@ export default function ListingDetail() {
 
   const lang = i18n.language
   const translation = listing.translations[lang] || Object.values(listing.translations)[0]
-  const cover = listing.photos?.find((p) => p.is_cover) || listing.photos?.[0]
+  // обложка идёт первой, остальные — следом
+  const photos = (() => {
+    const all = listing.photos || []
+    const cov = all.find((ph) => ph.is_cover)
+    return cov ? [cov, ...all.filter((ph) => ph !== cov)] : all
+  })()
 
   const attrLabel = (key) => {
     const field = schema.find((f) => f.key === key)
@@ -100,12 +113,24 @@ export default function ListingDetail() {
   return (
     <div className="detail-page">
       <div className="detail-photo">
-        {cover ? <img src={cover.url} alt="" /> : <div className="photo-placeholder" />}
+        {photos.length > 0 ? (
+          <div
+            className="photo-strip"
+            onScroll={(e) => {
+              const el = e.currentTarget
+              setPhotoIdx(Math.round(el.scrollLeft / el.clientWidth))
+            }}
+          >
+            {photos.map((ph, i) => (
+              <img key={ph.url || i} src={ph.url} alt="" loading={i === 0 ? 'eager' : 'lazy'} />
+            ))}
+          </div>
+        ) : <div className="photo-placeholder" />}
         <div className={scrolled ? 'detail-topbar shown' : 'detail-topbar'}>
           <button className="topbar-btn" onClick={() => navigate(-1)} aria-label={t('actions.back')}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
           </button>
-          <button className={fav ? 'topbar-btn on' : 'topbar-btn'} onClick={() => setFav(!fav)} aria-label={t('misc.in_favorites')}>
+          <button className={fav ? 'topbar-btn on' : 'topbar-btn'} onClick={onFav} aria-label={t('misc.in_favorites')}>
             <svg viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
               <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />
             </svg>
@@ -118,13 +143,22 @@ export default function ListingDetail() {
               <path d="m15 18-6-6 6-6" />
             </svg>
           </button>
-          <button className={fav ? 'circle-btn on' : 'circle-btn'} onClick={() => setFav(!fav)} aria-label={t('misc.in_favorites')}>
+          <button className={fav ? 'circle-btn on' : 'circle-btn'} onClick={onFav} aria-label={t('misc.in_favorites')}>
             <svg viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
               <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />
             </svg>
           </button>
         </div>
-        {listing.photos?.length > 1 && <div className="photo-count">1 / {listing.photos.length}</div>}
+        {photos.length > 1 && (
+          <>
+            <div className="photo-count">{photoIdx + 1} / {photos.length}</div>
+            <div className="photo-dots">
+              {photos.map((_, i) => (
+                <span key={i} className={i === photoIdx ? 'on' : ''} />
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
       <div className="detail-sheet">
