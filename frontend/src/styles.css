@@ -183,10 +183,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* картинка занимает нижнюю половину плитки и заметно выходит за правый и нижний
    край, где подрезается — как у Avito */
 .cat-tile-2row-glyph{
-  position:absolute; right:-10px; bottom:-10px; width:70px; height:70px;
+  position:absolute; right:2px; bottom:-12px; width:82px; height:82px;
 }
 .cat-tile-2row-glyph svg{ width:100%; height:100%; display:block; opacity:.5; }
-.cat-tile-2row-glyph .cat-photo{ width:100%; height:100%; object-fit:contain; display:block; }
+/* увеличение растёт вниз-вправо, чтобы картинка уходила за край, а не съезжала с плитки */
+.cat-tile-2row-glyph .cat-photo{
+  width:100%; height:100%; object-fit:contain; display:block; transform-origin:right bottom;
+}
 /* у категорий без картинки — компактная иконка, она не должна вылезать за край */
 .cat-tile-2row-glyph.icon-only{ right:9px; bottom:8px; width:28px; height:28px; }
 

@@ -24,6 +24,16 @@ const WITH_PHOTO = new Set([
   'business', 'beauty', 'pets', 'electronics', 'jobs',
 ])
 
+// На картинках с несколькими предметами каждый выходит мельче, поэтому
+// показываем их крупнее — чтобы визуальный вес всех плиток был одинаковым.
+const PHOTO_SCALE = {
+  beauty: 1.45,
+  pets: 1.45,
+  electronics: 1.4,
+  jobs: 1.3,
+  auto: 1.15,
+}
+
 const PROMO_IMAGES = {
   safe_deal: '/promo/safe_deal.png',
   free_post: '/promo/free_post.png',
@@ -191,7 +201,12 @@ export default function Home() {
             <div className={WITH_PHOTO.has(cat.slug) ? 'cat-tile-2row-glyph' : 'cat-tile-2row-glyph icon-only'}
                  style={WITH_PHOTO.has(cat.slug) ? undefined : { color: cat.color || 'var(--primary)' }}>
               {WITH_PHOTO.has(cat.slug)
-                ? <img className="cat-photo" src={`/cat/${cat.slug}.png`} alt="" />
+                ? <img
+                    className="cat-photo"
+                    src={`/cat/${cat.slug}.png`}
+                    alt=""
+                    style={PHOTO_SCALE[cat.slug] ? { transform: `scale(${PHOTO_SCALE[cat.slug]})` } : undefined}
+                  />
                 : (CATEGORY_ICONS[cat.slug] || FALLBACK_ICON)}
             </div>
           </Link>
