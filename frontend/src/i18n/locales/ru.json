@@ -1,0 +1,42 @@
+{
+  "app_name": "Fino",
+  "nav": {
+    "home": "Главная",
+    "search": "Поиск",
+    "post_ad": "Разместить объявление",
+    "favorites": "Избранное",
+    "messages": "Сообщения",
+    "profile": "Профиль"
+  },
+  "categories": {
+    "real-estate": "Недвижимость",
+    "auto": "Авто",
+    "services": "Услуги",
+    "jobs": "Работа"
+  },
+  "listing": {
+    "price": "Цена",
+    "negotiable": "Торг уместен",
+    "city": "Город",
+    "views": "просмотров",
+    "post_new": "Новое объявление",
+    "select_category": "Выберите категорию",
+    "title": "Заголовок",
+    "description": "Описание",
+    "photos": "Фотографии",
+    "publish": "Опубликовать",
+    "delivery_available": "Доставка доступна",
+    "safe_deal": "Безопасная сделка",
+    "urgent": "Срочно"
+  },
+  "search": {
+    "placeholder": "Что ищете?",
+    "no_results": "Ничего не найдено",
+    "filters": "Фильтры"
+  },
+  "chat": {
+    "type_message": "Написать сообщение...",
+    "offer_price": "Предложить цену",
+    "reveal_phone": "Показать номер"
+  }
+}

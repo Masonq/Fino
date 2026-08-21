@@ -1,0 +1,42 @@
+{
+  "app_name": "Fino",
+  "nav": {
+    "home": "Početna",
+    "search": "Pretraga",
+    "post_ad": "Postavi oglas",
+    "favorites": "Omiljeno",
+    "messages": "Poruke",
+    "profile": "Profil"
+  },
+  "categories": {
+    "real-estate": "Nekretnine",
+    "auto": "Automobili",
+    "services": "Usluge",
+    "jobs": "Poslovi"
+  },
+  "listing": {
+    "price": "Cena",
+    "negotiable": "Cena po dogovoru",
+    "city": "Grad",
+    "views": "pregleda",
+    "post_new": "Novi oglas",
+    "select_category": "Izaberite kategoriju",
+    "title": "Naslov",
+    "description": "Opis",
+    "photos": "Fotografije",
+    "publish": "Objavi",
+    "delivery_available": "Dostava dostupna",
+    "safe_deal": "Sigurna kupovina",
+    "urgent": "Hitno"
+  },
+  "search": {
+    "placeholder": "Šta tražite?",
+    "no_results": "Nema rezultata",
+    "filters": "Filteri"
+  },
+  "chat": {
+    "type_message": "Napišite poruku...",
+    "offer_price": "Ponudite cenu",
+    "reveal_phone": "Prikaži broj telefona"
+  }
+}

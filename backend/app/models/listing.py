@@ -1,0 +1,98 @@
+import enum
+import uuid
+from datetime import datetime
+
+from sqlalchemy import String, ForeignKey, DateTime, Numeric, Boolean, Enum, Integer, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.dialects.postgresql import UUID, JSONB
+
+from app.core.database import Base
+
+
+class ListingStatus(str, enum.Enum):
+    draft = "draft"
+    pending_moderation = "pending_moderation"
+    active = "active"
+    sold = "sold"
+    archived = "archived"
+    rejected = "rejected"
+
+
+class Currency(str, enum.Enum):
+    rsd = "RSD"
+    eur = "EUR"
+
+
+class Listing(Base):
+    __tablename__ = "listings"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    owner_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), index=True)
+    category_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("categories.id"), index=True)
+
+    # Оригинальный язык, на котором продавец создал объявление
+    source_language: Mapped[str] = mapped_column(String(8), default="ru")
+
+    price: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
+    currency: Mapped[Currency] = mapped_column(Enum(Currency), default=Currency.eur)
+    price_negotiable: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    # Динамические атрибуты по схеме категории: {"brand": "BMW", "year": 2018, ...}
+    attributes: Mapped[dict] = mapped_column(JSONB, default=dict)
+
+    city: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    location_lat: Mapped[float | None] = mapped_column(Numeric(9, 6), nullable=True)
+    location_lng: Mapped[float | None] = mapped_column(Numeric(9, 6), nullable=True)
+    hide_exact_address: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    status: Mapped[ListingStatus] = mapped_column(Enum(ListingStatus), default=ListingStatus.draft)
+    rejection_reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    is_urgent: Mapped[bool] = mapped_column(Boolean, default=False)
+    delivery_available: Mapped[bool] = mapped_column(Boolean, default=False)
+    safe_deal_available: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    views_count: Mapped[int] = mapped_column(Integer, default=0)
+    favorites_count: Mapped[int] = mapped_column(Integer, default=0)
+
+    price_history: Mapped[list] = mapped_column(JSONB, default=list)  # [{"price": 1000, "changed_at": "..."}]
+
+    published_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    owner = relationship("User", back_populates="listings")
+    category = relationship("Category", back_populates="listings")
+    translations = relationship("ListingTranslation", back_populates="listing", cascade="all, delete-orphan")
+    photos = relationship("ListingPhoto", back_populates="listing", cascade="all, delete-orphan", order_by="ListingPhoto.sort_order")
+
+
+class ListingTranslation(Base):
+    """Заголовок/описание на каждом языке — ручной перевод продавца или авто-перевод."""
+    __tablename__ = "listing_translations"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    listing_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("listings.id"), index=True)
+
+    language: Mapped[str] = mapped_column(String(8))
+    title: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str] = mapped_column(Text)
+    is_auto_translated: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    listing = relationship("Listing", back_populates="translations")
+
+
+class ListingPhoto(Base):
+    __tablename__ = "listing_photos"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    listing_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("listings.id"), index=True)
+
+    url: Mapped[str] = mapped_column(String(500))
+    thumbnail_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    is_cover: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    listing = relationship("Listing", back_populates="photos")

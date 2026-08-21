@@ -1,0 +1,42 @@
+{
+  "app_name": "Fino",
+  "nav": {
+    "home": "Home",
+    "search": "Search",
+    "post_ad": "Post an ad",
+    "favorites": "Favorites",
+    "messages": "Messages",
+    "profile": "Profile"
+  },
+  "categories": {
+    "real-estate": "Real Estate",
+    "auto": "Cars",
+    "services": "Services",
+    "jobs": "Jobs"
+  },
+  "listing": {
+    "price": "Price",
+    "negotiable": "Negotiable",
+    "city": "City",
+    "views": "views",
+    "post_new": "New listing",
+    "select_category": "Select a category",
+    "title": "Title",
+    "description": "Description",
+    "photos": "Photos",
+    "publish": "Publish",
+    "delivery_available": "Delivery available",
+    "safe_deal": "Safe deal",
+    "urgent": "Urgent"
+  },
+  "search": {
+    "placeholder": "What are you looking for?",
+    "no_results": "No results found",
+    "filters": "Filters"
+  },
+  "chat": {
+    "type_message": "Type a message...",
+    "offer_price": "Make an offer",
+    "reveal_phone": "Show phone number"
+  }
+}
