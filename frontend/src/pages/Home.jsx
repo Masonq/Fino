@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
@@ -6,6 +6,7 @@ import ListingCard from '../components/ListingCard'
 import LanguageSwitcher from '../components/LanguageSwitcher'
 import { CATEGORY_ICONS, FALLBACK_ICON } from '../components/CategoryIcons'
 import { CardSkeletons, CategorySkeletons } from '../components/Skeletons'
+import PullToRefresh from '../components/PullToRefresh'
 
 const CITIES = ['Београд', 'Нови Сад', 'Ниш', 'Крагујевац', 'Суботица']
 
@@ -96,14 +97,24 @@ export default function Home() {
       .finally(() => setCatsLoaded(true))
   }, [])
 
-  useEffect(() => {
+  const loadFeed = useCallback(() => (
     api.searchListings({ lang: i18n.language, limit: 12 })
       .then((res) => setListings(res.items || []))
       .catch(() => setListings([]))
       .finally(() => setFeedLoaded(true))
-  }, [i18n.language])
+  ), [i18n.language])
+
+  useEffect(() => { loadFeed() }, [loadFeed])
+
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([
+      loadFeed(),
+      api.getCategories().then(setCategories).catch(() => {}),
+    ])
+  }, [loadFeed])
 
   return (
+    <PullToRefresh onRefresh={handleRefresh}>
     <div className="home">
       <div
         className={collapsed ? 'avito-banner collapsed' : 'avito-banner'}
@@ -230,5 +241,6 @@ export default function Home() {
         <p className="empty-hint">{t('common.no_listings')}</p>
       )}
     </div>
+    </PullToRefresh>
   )
 }

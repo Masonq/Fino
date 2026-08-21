@@ -475,3 +475,21 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   padding:12px 24px; border-radius:13px; background:var(--primary); color:#fff;
   font-size:13.5px; font-weight:700; box-shadow:0 6px 16px rgba(14,159,110,.28);
 }
+
+/* ===== свой pull-to-refresh (штатный отключён из-за overscroll-behavior) ===== */
+.ptr-root{ position:relative; }
+.ptr-indicator{
+  position:absolute; top:0; left:0; right:0; z-index:5;
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden; pointer-events:none;
+  transition:opacity .2s ease;
+}
+.ptr-seal{
+  width:34px; height:34px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 4px 12px rgba(20,30,25,.16);
+  transition:background .25s ease;
+}
+.ptr-seal svg{ width:17px; height:17px; }
+.ptr-seal.spinning{ animation:ptr-spin .75s linear infinite; }
+@keyframes ptr-spin{ to{ transform:rotate(360deg) } }
