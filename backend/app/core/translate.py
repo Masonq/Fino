@@ -34,6 +34,33 @@ def _endpoints() -> list[str]:
     return ([own] if own else []) + FALLBACK_ENDPOINTS
 
 
+def _translate_google(text: str, source: str, target: str) -> str | None:
+    """
+    Открытый интерфейс переводчика Google — без ключа и бесплатно.
+    Качество для сербского заметно выше, чем у открытых сервисов,
+    а они к тому же почти все закрылись.
+    """
+    from urllib import parse
+    params = parse.urlencode({
+        "client": "gtx",
+        "sl": source,
+        "tl": target,
+        "dt": "t",
+        "q": text[:4000],
+    })
+    url = f"https://translate.googleapis.com/translate_a/single?{params}"
+    req = urlrequest.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    try:
+        with urlrequest.urlopen(req, timeout=TIMEOUT) as resp:
+            data = json.loads(resp.read().decode())
+            # ответ приходит кусками — собираем их вместе
+            parts = [chunk[0] for chunk in data[0] if chunk and chunk[0]]
+            return "".join(parts).strip() or None
+    except Exception as exc:
+        log.info("Перевод через Google не вышел: %s", exc)
+        return None
+
+
 def translate(text: str, source: str, target: str) -> str | None:
     """Переводит текст. None — если не получилось."""
     if not text or not text.strip():
@@ -47,6 +74,12 @@ def translate(text: str, source: str, target: str) -> str | None:
         "target": target,
         "format": "text",
     }).encode()
+
+    # Сначала пробуем Google: остальные публичные сервисы либо закрылись,
+    # либо требуют ключ.
+    result = _translate_google(text, source, target)
+    if result:
+        return result
 
     for endpoint in _endpoints():
         req = urlrequest.Request(
