@@ -21,7 +21,7 @@ export default function ListingCard({ listing, large = false }) {
           onClick={(e) => { e.preventDefault(); setFav(!fav) }}
           aria-label="В избранное"
         >
-          <svg width={large ? 18 : 17} height={large ? 18 : 17} viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8">
+          <svg width={large ? 22 : 21} height={large ? 22 : 21} viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.7">
             <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />
           </svg>
         </button>
