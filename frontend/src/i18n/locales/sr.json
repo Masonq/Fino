@@ -196,5 +196,16 @@
     "approve": "Odobri",
     "reject": "Odbij",
     "reason_prompt": "Razlog odbijanja (autor će ga videti):"
+  },
+  "rev": {
+    "title": "Recenzije",
+    "none_yet": "Još nema recenzija",
+    "write": "Napiši recenziju",
+    "comment_ph": "Recite kako je prošlo (opciono)",
+    "send": "Pošalji",
+    "cancel": "Otkaži",
+    "err_no_contact": "Recenziju možete ostaviti samo prodavcu sa kojim ste se dopisivali",
+    "err_already": "Već ste ostavili recenziju ovom prodavcu",
+    "err_self": "Ne možete oceniti sebe"
   }
 }

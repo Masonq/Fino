@@ -196,5 +196,16 @@
     "approve": "Approve",
     "reject": "Reject",
     "reason_prompt": "Rejection reason (the author will see it):"
+  },
+  "rev": {
+    "title": "Reviews",
+    "none_yet": "No reviews yet",
+    "write": "Write a review",
+    "comment_ph": "Tell us how it went (optional)",
+    "send": "Send",
+    "cancel": "Cancel",
+    "err_no_contact": "You can only review a seller you've messaged",
+    "err_already": "You've already reviewed this seller",
+    "err_self": "You can't review yourself"
   }
 }

@@ -5,6 +5,7 @@ import { api } from '../api/client'
 import { displayCity } from '../data/cities'
 import { useAuth } from '../context/AuthContext'
 import { useFavorites } from '../context/FavoritesContext'
+import SellerReviews from '../components/SellerReviews'
 
 export default function ListingDetail() {
   const { id } = useParams()
@@ -220,9 +221,17 @@ export default function ListingDetail() {
                   </div>
                 )}
               </div>
-              <div className="seller-meta">{listing.owner.rating_avg?.toFixed(1)} · PLONK</div>
+              <div className="seller-meta">
+                {listing.owner.rating_count > 0
+                  ? `${listing.owner.rating_avg?.toFixed(1)} · ${listing.owner.rating_count}`
+                  : t('rev.none_yet')}
+              </div>
             </div>
           </div>
+        )}
+
+        {listing.owner && (
+          <SellerReviews sellerId={listing.owner.id} listingId={listing.id} />
         )}
       </div>
 

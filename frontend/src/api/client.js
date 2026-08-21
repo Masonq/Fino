@@ -47,6 +47,12 @@ export const api = {
     body: JSON.stringify(payload),
   }),
   me: () => request('/auth/me'),
+  userReviews: (userId) => request(`/reviews/user/${userId}`),
+  canReview: (targetId) => request(`/reviews/can-review/${targetId}`),
+  createReview: (payload) => request('/reviews', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }),
   modQueue: (lang) => request(`/moderation/queue?${new URLSearchParams({ lang })}`),
   modApprove: (id) => request(`/moderation/${id}/approve`, { method: 'POST' }),
   modReject: (id, reason) => request(`/moderation/${id}/reject`, {
