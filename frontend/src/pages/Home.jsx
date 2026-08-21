@@ -18,6 +18,12 @@ const PROMO_SLIDES = [
 ]
 
 // Иллюстрации слайдов. Пока картинка не готова — показываем запасную SVG-иконку.
+// категории, для которых готова 3D-картинка; остальным показываем иконку
+const WITH_PHOTO = new Set([
+  'real-estate', 'auto', 'home-garden', 'fashion', 'kids',
+  'business', 'beauty', 'pets', 'electronics', 'jobs',
+])
+
 const PROMO_IMAGES = {
   safe_deal: '/promo/safe_deal.png',
   free_post: '/promo/free_post.png',
@@ -182,14 +188,11 @@ export default function Home() {
         ) : (
           <Link key={cat.id} to={`/search?category=${cat.slug}`} className="cat-tile-2row">
             <div className="cat-tile-2row-label">{cat.name?.[i18n.language] || cat.name?.ru}</div>
-            <div className="cat-tile-2row-glyph" style={{ color: cat.color || 'var(--primary)' }}>
-              <img
-                className="cat-photo"
-                src={`/cat/${cat.slug}.png`}
-                alt=""
-                onError={(e) => { e.currentTarget.remove() }}
-              />
-              <span className="cat-svg">{CATEGORY_ICONS[cat.slug] || FALLBACK_ICON}</span>
+            <div className={WITH_PHOTO.has(cat.slug) ? 'cat-tile-2row-glyph' : 'cat-tile-2row-glyph icon-only'}
+                 style={WITH_PHOTO.has(cat.slug) ? undefined : { color: cat.color || 'var(--primary)' }}>
+              {WITH_PHOTO.has(cat.slug)
+                ? <img className="cat-photo" src={`/cat/${cat.slug}.png`} alt="" />
+                : (CATEGORY_ICONS[cat.slug] || FALLBACK_ICON)}
             </div>
           </Link>
         )
