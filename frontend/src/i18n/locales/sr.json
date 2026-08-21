@@ -107,7 +107,10 @@
     "choose_city": "Izaberite grad",
     "posting_as": "Objavljujete kao",
     "need_login": "Prijavite se da biste objavili oglas",
-    "publish_failed": "Objavljivanje nije uspelo. Proverite vezu i pokušajte ponovo."
+    "publish_failed": "Objavljivanje nije uspelo. Proverite vezu i pokušajte ponovo.",
+    "need_title": "Unesite naslov",
+    "need_city": "Izaberite grad",
+    "err_currency": "Nepodržana valuta"
   },
   "detail": {
     "loading": "Učitavanje…",

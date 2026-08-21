@@ -100,7 +100,13 @@ export default function PostAd() {
 
       setDone(true)
     } catch (e) {
-      setError(t('post.publish_failed'))
+      // Показываем, что именно не так, а не общее «не получилось»
+      const map = {
+        empty_title: t('post.need_title'),
+        title_too_short: t('post.need_title'),
+        bad_currency: t('post.err_currency'),
+      }
+      setError(map[e.code] || t('post.publish_failed'))
     } finally {
       setSubmitting(false)
     }
@@ -245,7 +251,23 @@ export default function PostAd() {
               </select>
             </div>
           </div>
-          <button className="post-submit-btn" disabled={!title} onClick={() => setStep(3)}>{t('actions.next')}</button>
+          {/* Подсказываем, чего не хватает: кнопка просто серая — человек
+              не понимает, почему нельзя продолжить. */}
+          {(() => {
+            const missing = []
+            if (title.trim().length < 3) missing.push(t('post.need_title'))
+            if (!city) missing.push(t('post.need_city'))
+            return missing.length > 0 ? (
+              <p className="post-hint">{missing.join(' · ')}</p>
+            ) : null
+          })()}
+          <button
+            className="post-submit-btn"
+            disabled={title.trim().length < 3 || !city}
+            onClick={() => setStep(3)}
+          >
+            {t('actions.next')}
+          </button>
         </>
       )}
 

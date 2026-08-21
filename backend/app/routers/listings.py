@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 
 from app.core.auth import get_current_user
 from app.core.database import get_db
@@ -27,7 +27,9 @@ class PhotoIn(BaseModel):
 class ListingCreate(BaseModel):
     category_id: uuid.UUID
     source_language: str = "ru"
-    price: float | None = None
+    # Верхняя граница отсекает опечатки вроде лишних нулей, нижняя — минус.
+    # Без них в ленту попадают объявления, ломающие сортировку по цене.
+    price: float | None = Field(None, ge=0, le=100_000_000)
     currency: str = "EUR"
     price_negotiable: bool = False
     attributes: dict = {}
@@ -36,7 +38,26 @@ class ListingCreate(BaseModel):
     location_lng: float | None = None
     hide_exact_address: bool = False
     translations: list[TranslationIn]
-    photos: list[PhotoIn] = []
+    photos: list[PhotoIn] = Field(default_factory=list, max_length=10)
+
+    @field_validator("translations")
+    @classmethod
+    def check_translations(cls, v):
+        if not v:
+            raise ValueError("no_translations")
+        for t in v:
+            if not (t.title or "").strip():
+                raise ValueError("empty_title")
+            if len((t.title or "").strip()) < 3:
+                raise ValueError("title_too_short")
+        return v
+
+    @field_validator("currency")
+    @classmethod
+    def check_currency(cls, v):
+        if v not in ("EUR", "RSD", "USD"):
+            raise ValueError("bad_currency")
+        return v
 
 
 LISTING_TTL_DAYS = 45

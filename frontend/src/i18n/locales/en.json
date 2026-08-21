@@ -107,7 +107,10 @@
     "choose_city": "Choose a city",
     "posting_as": "Posting as",
     "need_login": "Sign in to publish a listing",
-    "publish_failed": "Couldn't publish. Check your connection and try again."
+    "publish_failed": "Couldn't publish. Check your connection and try again.",
+    "need_title": "Add a title",
+    "need_city": "Choose a city",
+    "err_currency": "Unsupported currency"
   },
   "detail": {
     "loading": "Loading…",
