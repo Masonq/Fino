@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel
 
 from app.core.database import get_db
-from app.models import Listing, ListingStatus, ListingTranslation, Category
+from app.models import Listing, ListingStatus, ListingTranslation, ListingPhoto, Category
 
 router = APIRouter(prefix="/api/listings", tags=["listings"])
 
@@ -15,6 +15,11 @@ class TranslationIn(BaseModel):
     language: str
     title: str
     description: str
+
+
+class PhotoIn(BaseModel):
+    url: str
+    thumbnail_url: str | None = None
 
 
 class ListingCreate(BaseModel):
@@ -29,6 +34,7 @@ class ListingCreate(BaseModel):
     location_lng: float | None = None
     hide_exact_address: bool = False
     translations: list[TranslationIn]
+    photos: list[PhotoIn] = []
 
 
 LISTING_TTL_DAYS = 45
@@ -68,6 +74,15 @@ def create_listing(payload: ListingCreate, owner_id: uuid.UUID, db: Session = De
             title=t.title,
             description=t.description,
             is_auto_translated=False,
+        ))
+
+    for idx, photo in enumerate(payload.photos):
+        db.add(ListingPhoto(
+            listing_id=listing.id,
+            url=photo.url,
+            thumbnail_url=photo.thumbnail_url or photo.url,
+            sort_order=idx,
+            is_cover=(idx == 0),
         ))
 
     db.commit()

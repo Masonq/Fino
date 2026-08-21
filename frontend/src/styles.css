@@ -156,6 +156,27 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .post-cat-item span{ font-size:11px; font-weight:700; text-align:center; line-height:1.25; }
 
 .post-fields{ display:flex; flex-direction:column; gap:14px; margin-bottom:20px; }
+
+.photo-grid{ display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; }
+.photo-thumb{ position:relative; aspect-ratio:1/1; border-radius:12px; overflow:hidden; background:#eee; }
+.photo-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+.photo-thumb-loading{
+  position:absolute; inset:0; background:rgba(0,0,0,.35); display:flex; align-items:center; justify-content:center;
+}
+.spinner{
+  width:16px; height:16px; border-radius:50%; border:2px solid #ffffff55; border-top-color:#fff;
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{ to{ transform:rotate(360deg); } }
+.photo-remove{
+  position:absolute; top:3px; right:3px; width:20px; height:20px; border-radius:50%;
+  background:rgba(0,0,0,.55); display:flex; align-items:center; justify-content:center;
+}
+.photo-add{
+  aspect-ratio:1/1; border-radius:12px; border:1.5px dashed var(--line); background:#fff;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+  color:var(--muted); font-size:10.5px; font-weight:700;
+}
 .post-field{ display:flex; flex-direction:column; gap:6px; flex:1; }
 .post-field label{ font-size:12px; font-weight:700; color:var(--ink-soft); }
 .post-field input, .post-field select, .post-field textarea{

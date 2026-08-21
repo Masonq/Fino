@@ -21,7 +21,7 @@ export default function PostAd() {
   const [currency, setCurrency] = useState('EUR')
   const [negotiable, setNegotiable] = useState(false)
   const [city, setCity] = useState('')
-  const [photoUrl, setPhotoUrl] = useState('')
+  const [photos, setPhotos] = useState([]) // [{url, thumbnail_url, uploading}]
 
   const [phone, setPhone] = useState('')
   const [displayName, setDisplayName] = useState('')
@@ -52,6 +52,24 @@ export default function PostAd() {
 
   const setAttr = (key, value) => setAttrs((prev) => ({ ...prev, [key]: value }))
 
+  const handlePhotoSelect = async (e) => {
+    const files = Array.from(e.target.files || [])
+    e.target.value = '' // чтобы можно было выбрать тот же файл повторно
+
+    for (const file of files.slice(0, 10 - photos.length)) {
+      const localId = `${Date.now()}-${Math.random()}`
+      setPhotos((prev) => [...prev, { localId, uploading: true, previewUrl: URL.createObjectURL(file) }])
+      try {
+        const res = await api.uploadPhoto(file)
+        setPhotos((prev) => prev.map((p) => (p.localId === localId ? { ...p, ...res, uploading: false } : p)))
+      } catch {
+        setPhotos((prev) => prev.filter((p) => p.localId !== localId))
+      }
+    }
+  }
+
+  const removePhoto = (localId) => setPhotos((prev) => prev.filter((p) => p.localId !== localId))
+
   const requiredAttrsFilled = schema
     .filter((f) => f.required)
     .every((f) => attrs[f.key] !== undefined && attrs[f.key] !== '')
@@ -76,6 +94,7 @@ export default function PostAd() {
         attributes: attrs,
         city,
         translations: [{ language: i18n.language, title, description }],
+        photos: photos.filter((p) => p.url).map((p) => ({ url: p.url, thumbnail_url: p.thumbnail_url })),
       }, ownerId)
 
       setDone(true)
@@ -173,8 +192,27 @@ export default function PostAd() {
               <textarea rows="4" value={description} onChange={(e) => setDescription(e.target.value)} />
             </div>
             <div className="post-field">
-              <label>Ссылка на фото (загрузка файлов появится позже)</label>
-              <input type="text" value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} placeholder="https://..." />
+              <label>{t('listing.photos')} · {photos.length}/10</label>
+              <div className="photo-grid">
+                {photos.map((p) => (
+                  <div key={p.localId} className="photo-thumb">
+                    <img src={p.thumbnail_url || p.previewUrl} alt="" />
+                    {p.uploading && <div className="photo-thumb-loading"><span className="spinner" /></div>}
+                    {!p.uploading && (
+                      <button type="button" className="photo-remove" onClick={() => removePhoto(p.localId)} aria-label="Удалить фото">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                      </button>
+                    )}
+                  </div>
+                ))}
+                {photos.length < 10 && (
+                  <label className="photo-add">
+                    <input type="file" accept="image/*" multiple capture="environment" onChange={handlePhotoSelect} hidden />
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
+                    Фото
+                  </label>
+                )}
+              </div>
             </div>
             <div className="post-field-row">
               <div className="post-field">

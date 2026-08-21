@@ -22,6 +22,13 @@ export const api = {
     method: 'POST',
     body: JSON.stringify(payload),
   }),
+  uploadPhoto: async (file) => {
+    const form = new FormData()
+    form.append('file', file)
+    const res = await fetch(`${API_BASE}/media/upload`, { method: 'POST', body: form })
+    if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
+    return res.json()
+  },
   startChat: (listingId, buyerId) => request('/chats/start', {
     method: 'POST',
     body: JSON.stringify({ listing_id: listingId, buyer_id: buyerId }),
