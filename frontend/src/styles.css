@@ -329,7 +329,32 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .detail-page{ padding-bottom:100px; }
 .detail-photo{ position:relative; aspect-ratio:4/3.2; overflow:hidden; background:#ddd; }
 .detail-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
-.detail-nav{ position:absolute; top:calc(16px + env(safe-area-inset-top)); left:16px; right:16px; display:flex; justify-content:space-between; }
+.detail-nav{
+  position:absolute; top:calc(16px + env(safe-area-inset-top)); left:16px; right:16px;
+  display:flex; justify-content:space-between; z-index:2;
+  transition:opacity .2s ease;
+}
+
+/* Липкая шапка, как у Avito: пока фото на экране — кнопки кружками поверх него,
+   после прокрутки они уезжают, а сверху выезжает белая панель. */
+.detail-topbar{
+  position:fixed; top:0; left:0; right:0; z-index:30;
+  max-width:480px; margin:0 auto;
+  display:flex; justify-content:space-between; align-items:center;
+  padding:calc(8px + env(safe-area-inset-top)) 12px 8px;
+  background:var(--bg);
+  box-shadow:0 1px 0 rgba(20,30,25,.07);
+  opacity:0; pointer-events:none;
+  transform:translateY(-6px);
+  transition:opacity .22s ease, transform .22s ease;
+}
+.detail-topbar.shown{ opacity:1; pointer-events:auto; transform:translateY(0); }
+.topbar-btn{
+  width:38px; height:38px; display:flex; align-items:center; justify-content:center;
+  color:var(--ink);
+}
+.topbar-btn svg{ width:21px; height:21px; }
+.topbar-btn.on{ color:var(--coral); }
 .circle-btn{ width:37px; height:37px; border-radius:50%; background:#ffffffdd; backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; color:var(--ink); }
 .circle-btn.on{ color:var(--coral); }
 .photo-count{ position:absolute; bottom:14px; right:14px; background:#000000aa; color:#fff; font-size:10.5px; font-weight:700; padding:5px 10px; border-radius:8px; }

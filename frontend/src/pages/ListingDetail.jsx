@@ -10,6 +10,22 @@ export default function ListingDetail() {
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
+  const [scrolled, setScrolled] = useState(false)
+
+  // Шапка появляется, когда фото уехало вверх — как у Avito:
+  // сначала кнопки полупрозрачными кружками на фото, потом панель на белом.
+  useEffect(() => {
+    let raf = 0
+    const onScroll = () => {
+      if (raf) return
+      raf = requestAnimationFrame(() => {
+        raf = 0
+        setScrolled(window.scrollY > 210)
+      })
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => { window.removeEventListener('scroll', onScroll); if (raf) cancelAnimationFrame(raf) }
+  }, [])
   const [searchParams] = useSearchParams()
 
   const [listing, setListing] = useState(null)
@@ -85,6 +101,17 @@ export default function ListingDetail() {
     <div className="detail-page">
       <div className="detail-photo">
         {cover ? <img src={cover.url} alt="" /> : <div className="photo-placeholder" />}
+        <div className={scrolled ? 'detail-topbar shown' : 'detail-topbar'}>
+          <button className="topbar-btn" onClick={() => navigate(-1)} aria-label={t('actions.back')}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+          </button>
+          <button className={fav ? 'topbar-btn on' : 'topbar-btn'} onClick={() => setFav(!fav)} aria-label={t('misc.in_favorites')}>
+            <svg viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
+              <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />
+            </svg>
+          </button>
+        </div>
+
         <div className="detail-nav">
           <button className="circle-btn" onClick={() => navigate(-1)} aria-label={t('actions.back')}>←</button>
           <button className={fav ? 'circle-btn on' : 'circle-btn'} onClick={() => setFav(!fav)} aria-label={t('misc.in_favorites')}>
