@@ -57,14 +57,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   padding:calc(9px + env(safe-area-inset-top)) 14px 10px; border-radius:0 0 22px 22px;
   margin:0;
   will-change:background-color;
-  transition:background-color .45s ease, background-image .45s ease, padding-bottom .5s cubic-bezier(.25,.46,.45,.94), border-radius .5s cubic-bezier(.25,.46,.45,.94);
+  transition:background-color .7s ease .08s, background-image .7s ease .08s, padding-bottom .65s cubic-bezier(.25,.46,.45,.94), border-radius .65s cubic-bezier(.25,.46,.45,.94);
 }
 /* белая полоса поверх области статус-бара в схлопнутом виде —
    страховка на случай, если Safari не пересчитает цвет тулбара */
 .status-cover{
   position:absolute; top:0; left:0; right:0; height:env(safe-area-inset-top);
   background:#FFFFFF; opacity:0; pointer-events:none;
-  transition:opacity .45s ease;
+  transition:opacity .7s ease;
 }
 .avito-banner.collapsed .status-cover{ opacity:1; transition:opacity .8s ease; }
 
@@ -80,20 +80,20 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* анимируем через grid-rows + transform: браузер не пересчитывает раскладку каждый кадр */
 .avito-banner .promo-collapse{
   display:grid; grid-template-rows:1fr;
-  transition:grid-template-rows .5s cubic-bezier(.25,.46,.45,.94);
+  transition:grid-template-rows .65s cubic-bezier(.25,.46,.45,.94);
 }
 .avito-banner.collapsed .promo-collapse{ grid-template-rows:0fr; transition:grid-template-rows .8s cubic-bezier(.25,.46,.45,.94); }
 .avito-banner .promo-collapse > *{ overflow:hidden; min-height:0; }
 .avito-banner .avito-promo-row{
   opacity:1; transform:translateY(0);
-  transition:opacity .4s ease, transform .5s cubic-bezier(.25,.46,.45,.94);
+  transition:opacity .6s ease, transform .65s cubic-bezier(.25,.46,.45,.94);
   will-change:opacity, transform;
 }
 .avito-banner.collapsed .avito-promo-row{ opacity:0; transform:translateY(-2px); }
-.avito-banner .avito-toprow{ transition:margin-bottom .5s cubic-bezier(.25,.46,.45,.94); }
+.avito-banner .avito-toprow{ transition:margin-bottom .65s cubic-bezier(.25,.46,.45,.94); }
 .avito-banner.collapsed .avito-toprow{ margin-bottom:0; }
 .avito-banner .avito-search,
-.avito-banner .avito-login-pill{ transition:background .45s ease, box-shadow .45s ease; }
+.avito-banner .avito-login-pill{ transition:background .7s ease, box-shadow .7s ease; }
 .avito-banner.collapsed .avito-search{ background:#F2F2EF; box-shadow:none; }
 .avito-banner.collapsed .avito-login-pill{ background:#F2F2EF; }
 .avito-toprow{ display:flex; gap:7px; margin-bottom:8px; }
