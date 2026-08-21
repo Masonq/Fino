@@ -82,24 +82,26 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .avito-login-pill .avatar-mini{ width:24px; height:24px; font-size:10px; }
 
-.avito-promo-row{ display:flex; align-items:center; justify-content:space-between; padding:0 3px; gap:10px; }
+.avito-promo-row{ display:flex; align-items:flex-end; justify-content:space-between; padding:0 3px; gap:10px; }
+.avito-promo-left{ display:flex; flex-direction:column; gap:7px; min-width:0; }
 .avito-promo-text{ display:flex; align-items:center; gap:4px; font-size:18px; font-weight:800; color:#fff; letter-spacing:-0.01em; line-height:1.2; }
+.banner-meta{ display:flex; align-items:center; gap:6px; }
 .avito-promo-illustration{ width:42px; height:50px; flex-shrink:0; display:flex; align-items:flex-end; justify-content:flex-end; }
 .avito-promo-illustration img{ max-width:100%; max-height:100%; object-fit:contain; }
 
-.page-meta-row{ display:flex; align-items:center; gap:6px; padding:8px 18px 0; }
 .city-pill{
-  position:relative; display:flex; align-items:center; gap:5px; background:#fff; border-radius:10px;
-  padding:6px 9px; box-shadow:var(--shadow); color:var(--primary-deep);
+  position:relative; display:flex; align-items:center; gap:4px; background:rgba(255,255,255,.22); border-radius:8px;
+  padding:4px 8px; color:#fff; backdrop-filter:blur(4px);
 }
 .city-pill select{
   appearance:none; -webkit-appearance:none; border:none; background:transparent; font-family:inherit;
-  font-size:10.5px; font-weight:700; color:var(--primary-deep); padding-right:2px; max-width:90px;
+  font-size:10.5px; font-weight:700; color:#fff; padding-right:2px; max-width:90px;
 }
+.city-pill select option{ color:var(--ink); }
 .city-pill-chevron{ opacity:.5; pointer-events:none; }
-.lang-switch{ display:flex; background:#fff; border-radius:10px; padding:3px; box-shadow:var(--shadow); }
-.lang-btn{ font-size:10px; font-weight:700; padding:5px 8px; border-radius:7px; color:var(--muted); }
-.lang-btn.active{ background:var(--primary); color:#fff; }
+.lang-switch{ display:flex; background:rgba(255,255,255,.22); border-radius:8px; padding:2px; backdrop-filter:blur(4px); }
+.lang-btn{ font-size:10px; font-weight:700; padding:3px 7px; border-radius:6px; color:rgba(255,255,255,.75); }
+.lang-btn.active{ background:#fff; color:var(--primary-deep); }
 
 /* ===== категории — сетка в 2 ряда, подпись сверху-слева, фото снизу-справа внахлёст ===== */
 .cat-grid-2row{
