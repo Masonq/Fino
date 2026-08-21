@@ -217,7 +217,7 @@ def search_listings(
     items = q.order_by(order).offset(offset).limit(limit).all()
 
     def serialize(listing: Listing):
-        translation = next((t for t in listing.translations if t.language == lang), None)
+        translation = pick_translation(listing, lang)
         if not translation and listing.translations:
             translation = listing.translations[0]
         cover = next((p for p in listing.photos if p.is_cover), listing.photos[0] if listing.photos else None)

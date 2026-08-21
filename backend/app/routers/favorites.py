@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.core.auth import get_current_user
 from app.core.database import get_db
+from app.routers.listings import pick_translation
 from app.models import User, Favorite, Listing, ListingStatus
 
 router = APIRouter(prefix="/api/favorites", tags=["favorites"])
@@ -37,7 +38,7 @@ def list_favorites(
     by_id = {l.id: l for l in listings}
 
     def serialize(listing: Listing):
-        translation = next((t for t in listing.translations if t.language == lang), None)
+        translation = pick_translation(listing, lang)
         if not translation and listing.translations:
             translation = listing.translations[0]
         cover = next((p for p in listing.photos if p.is_cover), listing.photos[0] if listing.photos else None)
