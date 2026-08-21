@@ -1,9 +1,9 @@
 import { Routes, Route } from 'react-router-dom'
-import LanguageSwitcher from './components/LanguageSwitcher'
 import Home from './pages/Home'
 import Search from './pages/Search'
 import PostAd from './pages/PostAd'
 import Categories from './pages/Categories'
+import BottomNav from './components/BottomNav'
 
 export default function App() {
   return (
@@ -16,6 +16,7 @@ export default function App() {
           <Route path="/categories" element={<Categories />} />
         </Routes>
       </main>
+      <BottomNav />
     </div>
   )
 }

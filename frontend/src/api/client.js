@@ -14,4 +14,12 @@ export const api = {
   getCategorySchema: (slug) => request(`/categories/${slug}/schema`),
   searchListings: (params) => request(`/listings?${new URLSearchParams(params)}`),
   getListing: (id) => request(`/listings/${id}`),
+  quickIdentify: (phone, displayName) => request('/users/quick', {
+    method: 'POST',
+    body: JSON.stringify({ phone, display_name: displayName }),
+  }),
+  createListing: (payload, ownerId) => request(`/listings?${new URLSearchParams({ owner_id: ownerId })}`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }),
 }
