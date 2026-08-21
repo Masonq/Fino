@@ -44,7 +44,7 @@ export default function Home() {
         <Link to="/categories" className="section-link">{t('common.all')} →</Link>
       </div>
       <div className="cat-scroll">
-        {categories.map((cat) => (
+        {categories.slice(0, 6).map((cat) => (
           <Link key={cat.id} to={`/search?category=${cat.slug}`} className="cat-tile">
             <div className="cat-photo-wrap">
               {cat.image_url && <img src={cat.image_url} alt="" />}
@@ -53,21 +53,23 @@ export default function Home() {
             <div className="cat-label">{cat.name?.[i18n.language] || cat.name?.ru}</div>
           </Link>
         ))}
-        <Link to="/categories" className="cat-tile more">
-          <div className="cat-photo-wrap more-tile">
-            <span>+{Math.max(categories.length - 4, 0)}</span>
-          </div>
-          <div className="cat-label">{t('common.more')}</div>
-        </Link>
+        {categories.length > 6 && (
+          <Link to="/categories" className="cat-tile more">
+            <div className="cat-photo-wrap more-tile">
+              <span>+{categories.length - 6}</span>
+            </div>
+            <div className="cat-label">{t('common.more')}</div>
+          </Link>
+        )}
       </div>
 
       <div className="feed-head-row">
         <div className="feed-heading">{t('common.recommendations')}</div>
         <div className="col-toggle">
-          <button className={cols === 2 ? 'col-btn active' : 'col-btn'} onClick={() => setCols(2)}>
+          <button className={cols === 2 ? 'col-btn active' : 'col-btn'} onClick={() => setCols(2)} aria-label="По 2 в ряд">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="3" y="4" width="7" height="16" rx="1.5" /><rect x="14" y="4" width="7" height="16" rx="1.5" /></svg>
           </button>
-          <button className={cols === 1 ? 'col-btn active' : 'col-btn'} onClick={() => setCols(1)}>
+          <button className={cols === 1 ? 'col-btn active' : 'col-btn'} onClick={() => setCols(1)} aria-label="По 1 в ряд">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="4" y="4" width="16" height="16" rx="2" /></svg>
           </button>
         </div>

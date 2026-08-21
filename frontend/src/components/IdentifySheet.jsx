@@ -21,7 +21,7 @@ export default function IdentifySheet({ onDone, onClose }) {
     <div className="sheet-overlay" onClick={onClose}>
       <div className="sheet" onClick={(e) => e.stopPropagation()}>
         <div className="sheet-handle" />
-        <button className="sheet-close" onClick={onClose}>
+        <button className="sheet-close" onClick={onClose} aria-label="Закрыть">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 6 6 18M6 6l12 12" /></svg>
         </button>
         <h3>Как к вам обращаться?</h3>
@@ -29,11 +29,11 @@ export default function IdentifySheet({ onDone, onClose }) {
         <div className="post-fields">
           <div className="post-field">
             <label>Телефон</label>
-            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+381 6..." autoFocus />
+            <input type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+381 6..." autoFocus />
           </div>
           <div className="post-field">
             <label>Имя</label>
-            <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Ваше имя" />
+            <input type="text" autoComplete="name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Ваше имя" />
           </div>
         </div>
         <button className="post-submit-btn" disabled={!phone || !displayName || loading} onClick={submit}>

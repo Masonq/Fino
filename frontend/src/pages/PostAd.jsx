@@ -208,11 +208,11 @@ export default function PostAd() {
             <div className="post-fields">
               <div className="post-field">
                 <label>Телефон</label>
-                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+381 6..." />
+                <input type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+381 6..." />
               </div>
               <div className="post-field">
                 <label>Имя</label>
-                <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Как к вам обращаться" />
+                <input type="text" autoComplete="name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Как к вам обращаться" />
               </div>
             </div>
           )}

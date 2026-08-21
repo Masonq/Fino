@@ -75,8 +75,8 @@ export default function ListingDetail() {
       <div className="detail-photo">
         {cover ? <img src={cover.url} alt="" /> : <div className="photo-placeholder" />}
         <div className="detail-nav">
-          <button className="circle-btn" onClick={() => navigate(-1)}>←</button>
-          <button className={fav ? 'circle-btn on' : 'circle-btn'} onClick={() => setFav(!fav)}>
+          <button className="circle-btn" onClick={() => navigate(-1)} aria-label="Назад">←</button>
+          <button className={fav ? 'circle-btn on' : 'circle-btn'} onClick={() => setFav(!fav)} aria-label="В избранное">
             <svg width="16" height="16" viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
               <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />
             </svg>
