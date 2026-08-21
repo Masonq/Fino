@@ -99,9 +99,9 @@ export default function Home() {
     <div className="home">
       <div
         className={collapsed ? 'avito-banner collapsed' : 'avito-banner'}
-        style={{
+        style={collapsed ? undefined : {
           backgroundColor: PROMO_SLIDES[slide].top,
-          backgroundImage: collapsed ? 'none' : PROMO_SLIDES[slide].grad,
+          backgroundImage: PROMO_SLIDES[slide].grad,
         }}
       >
         <div className="avito-toprow">
