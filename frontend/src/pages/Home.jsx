@@ -99,11 +99,12 @@ export default function Home() {
     <div className="home">
       <div
         className={collapsed ? 'avito-banner collapsed' : 'avito-banner'}
-        style={collapsed ? undefined : {
-          backgroundColor: PROMO_SLIDES[slide].top,
-          backgroundImage: PROMO_SLIDES[slide].grad,
+        style={{
+          backgroundColor: collapsed ? '#FFFFFF' : PROMO_SLIDES[slide].top,
+          backgroundImage: collapsed ? 'none' : PROMO_SLIDES[slide].grad,
         }}
       >
+        <div className="status-cover" aria-hidden="true" />
         <div className="avito-toprow">
           <Link to="/search" className="avito-search">
             <div className="avito-search-logo">
