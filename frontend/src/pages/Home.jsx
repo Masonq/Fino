@@ -33,6 +33,22 @@ const PHOTO_SCALE = {
   'hobby-sport': 1.01,
 }
 
+// Точная подгонка положения: [вправо, вниз] в пикселях.
+// Бизнес и хобби сидят ровно — их не двигаем.
+const PHOTO_SHIFT = {
+  beauty: [3, 4],
+  pets: [3, 4],
+  electronics: [3, 4],
+  jobs: [3, 4],
+  services: [3, 4],
+  kids: [3, 4],
+  'home-garden': [3, 4],
+  // этим — только вниз
+  auto: [0, 4],
+  'real-estate': [0, 4],
+  fashion: [0, 4],
+}
+
 const PROMO_IMAGES = {
   safe_deal: '/promo/safe_deal.png',
   free_post: '/promo/free_post.png',
@@ -202,7 +218,15 @@ export default function Home() {
                 className="cat-photo"
                 src={`/cat/${cat.slug}.png`}
                 alt=""
-                style={PHOTO_SCALE[cat.slug] ? { transform: `scale(${PHOTO_SCALE[cat.slug]})` } : undefined}
+                style={(() => {
+                  const scale = PHOTO_SCALE[cat.slug]
+                  const [dx, dy] = PHOTO_SHIFT[cat.slug] || [0, 0]
+                  if (!scale && !dx && !dy) return undefined
+                  const parts = []
+                  if (dx || dy) parts.push(`translate(${dx}px, ${dy}px)`)
+                  if (scale) parts.push(`scale(${scale})`)
+                  return { transform: parts.join(' ') }
+                })()}
               />
             </div>
           </Link>
