@@ -254,6 +254,10 @@ export default function ListingDetail() {
           <SellerReviews sellerId={listing.owner.id} listingId={listing.id} />
         )}
 
+        {listing.translations?.[i18n.language]?.is_auto_translated && (
+          <p className="auto-translated">{t('detail.auto_translated')}</p>
+        )}
+
         <SimilarListings listingId={listing.id} />
 
         <ReportButton listingId={listing.id} ownerId={listing.owner?.id} />

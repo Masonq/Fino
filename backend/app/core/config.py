@@ -19,6 +19,8 @@ class Settings(BaseSettings):
 
     # Telegram-бот для кодов и уведомлений
     telegram_bot_token: str | None = None
+    # свой сервер перевода — без ограничений по количеству запросов
+    translate_url: str | None = None
 
     class Config:
         env_file = ".env"

@@ -81,6 +81,15 @@ def approve(
     except Exception:
         pass
 
+    # Достраиваем недостающие языки: продавец пишет на одном, а искать
+    # объявление будут на трёх. Делаем до рассылки, чтобы подписчики
+    # получили его уже на своём языке.
+    try:
+        from app.core.translate import translate_listing
+        translate_listing(db, listing)
+    except Exception:
+        pass   # перевод не должен мешать публикации
+
     # оповещаем тех, кто подписан на подходящий поиск
     try:
         from app.core.search_alerts import notify_subscribers
