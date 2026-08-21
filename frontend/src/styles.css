@@ -113,6 +113,29 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .avito-promo-left{ display:flex; flex-direction:column; gap:5px; min-width:0; }
 .avito-promo-text{ display:flex; align-items:center; gap:5px; font-size:22px; font-weight:800; color:#fff; letter-spacing:-0.015em; line-height:1.15; }
 .banner-meta{ display:flex; align-items:center; gap:7px; }
+
+/* карусель промо-слайдов */
+.promo-slides{ position:relative; display:grid; }
+.promo-slide{
+  grid-area:1 / 1; opacity:0; transform:translateY(6px); pointer-events:none;
+  transition:opacity .45s ease, transform .45s cubic-bezier(.25,.46,.45,.94);
+}
+.promo-slide.active{ opacity:1; transform:translateY(0); pointer-events:auto; }
+
+.promo-dots{ display:flex; align-items:center; gap:4px; margin-right:2px; }
+.promo-dot{
+  width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,.45); padding:0;
+  transition:width .3s ease, background .3s ease;
+}
+.promo-dot.active{ width:14px; border-radius:3px; background:#fff; }
+
+.avito-promo-illustration{ position:relative; }
+.promo-glyph{
+  position:absolute; inset:0; display:flex; align-items:flex-end; justify-content:flex-end;
+  opacity:0; transform:scale(.9); transition:opacity .45s ease, transform .45s cubic-bezier(.25,.46,.45,.94);
+}
+.promo-glyph.active{ opacity:1; transform:scale(1); }
+.promo-glyph svg{ width:82%; height:82%; opacity:.95; }
 .avito-promo-illustration{ width:52px; height:60px; flex-shrink:0; display:flex; align-items:flex-end; justify-content:flex-end; }
 .avito-promo-illustration img{ max-width:100%; max-height:100%; object-fit:contain; }
 

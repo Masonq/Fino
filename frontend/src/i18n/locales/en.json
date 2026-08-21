@@ -48,5 +48,12 @@
     "type_message": "Type a message...",
     "offer_price": "Make an offer",
     "reveal_phone": "Show phone number"
+  },
+  "promo": {
+    "safe_deal": "Safe deal",
+    "free_post": "Post for free",
+    "три_языка": "Three languages: RU · EN · SR",
+    "verified": "Verified sellers",
+    "local": "Listings near you"
   }
 }

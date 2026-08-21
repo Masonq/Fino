@@ -48,5 +48,12 @@
     "type_message": "Napišite poruku...",
     "offer_price": "Ponudite cenu",
     "reveal_phone": "Prikaži broj telefona"
+  },
+  "promo": {
+    "safe_deal": "Sigurna kupovina",
+    "free_post": "Besplatno oglašavanje",
+    "три_языка": "Tri jezika: RU · EN · SR",
+    "verified": "Provereni prodavci",
+    "local": "Oglasi u vašoj blizini"
   }
 }

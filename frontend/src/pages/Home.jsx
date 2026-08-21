@@ -8,6 +8,41 @@ import { CATEGORY_ICONS, FALLBACK_ICON } from '../components/CategoryIcons'
 
 const CITIES = ['Београд', 'Нови Сад', 'Ниш', 'Крагујевац', 'Суботица']
 
+const PROMO_SLIDES = [
+  { key: 'safe_deal', to: '/search', icon: 'shield' },
+  { key: 'free_post', to: '/post', icon: 'tag' },
+  { key: 'три_языка', to: '/search', icon: 'globe' },
+  { key: 'verified', to: '/search', icon: 'check' },
+  { key: 'local', to: '/search', icon: 'pin' },
+]
+
+const PROMO_ICONS = {
+  shield: <img src="/promo-safe-deal.png" alt="" />,
+  tag: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.5 13.3 13 20.8a2 2 0 0 1-2.8 0l-7-7A2 2 0 0 1 2.6 12V4.6a2 2 0 0 1 2-2H12a2 2 0 0 1 1.4.6l7.1 7.1a2 2 0 0 1 0 2.9Z" />
+      <circle cx="7.6" cy="7.6" r="1.4" />
+    </svg>
+  ),
+  globe: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9" /><path d="M3 12h18" />
+      <path d="M12 3c2.4 2.6 3.4 5.8 3.4 9s-1 6.4-3.4 9c-2.4-2.6-3.4-5.8-3.4-9s1-6.4 3.4-9Z" />
+    </svg>
+  ),
+  check: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3 5 6v6c0 4.2 2.9 7.6 7 9 4.1-1.4 7-4.8 7-9V6l-7-3Z" /><path d="m9 12 2.2 2.2L15.5 10" />
+    </svg>
+  ),
+  pin: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 21.5s7.2-6.6 7.2-12.3A7.2 7.2 0 1 0 4.8 9.2C4.8 14.9 12 21.5 12 21.5Z" />
+      <circle cx="12" cy="9" r="2.6" />
+    </svg>
+  ),
+}
+
 export default function Home() {
   const { t, i18n } = useTranslation()
   const [categories, setCategories] = useState([])
@@ -15,6 +50,14 @@ export default function Home() {
   const [cols, setCols] = useState(2)
   const [city, setCity] = useState(CITIES[0])
   const [collapsed, setCollapsed] = useState(false)
+  const [slide, setSlide] = useState(0)
+
+  // авто-прокрутка промо-слайдов
+  useEffect(() => {
+    if (collapsed) return
+    const id = setInterval(() => setSlide((s) => (s + 1) % PROMO_SLIDES.length), 4500)
+    return () => clearInterval(id)
+  }, [collapsed])
 
   useEffect(() => {
     let ticking = false
@@ -68,23 +111,53 @@ export default function Home() {
         <div className="promo-collapse">
           <div>
             <div className="avito-promo-row">
-          <div className="avito-promo-left">
-            <Link to="/search" className="avito-promo-text">{t('common.safe_deal')} <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="m9 6 6 6-6 6" /></svg></Link>
-            <div className="banner-meta">
-              <div className="city-pill">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                  <path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" />
-                </svg>
-                <select value={city} onChange={(e) => setCity(e.target.value)} aria-label="Город">
-                  {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
+              <div className="avito-promo-left">
+                <div className="promo-slides">
+                  {PROMO_SLIDES.map((s, i) => (
+                    <Link
+                      key={s.key}
+                      to={s.to}
+                      className={i === slide ? 'promo-slide active' : 'promo-slide'}
+                      aria-hidden={i !== slide}
+                    >
+                      <span className="avito-promo-text">
+                        {t(`promo.${s.key}`)}
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="m9 6 6 6-6 6" /></svg>
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+
+                <div className="banner-meta">
+                  <div className="promo-dots">
+                    {PROMO_SLIDES.map((s, i) => (
+                      <button
+                        key={s.key}
+                        className={i === slide ? 'promo-dot active' : 'promo-dot'}
+                        onClick={() => setSlide(i)}
+                        aria-label={`Слайд ${i + 1}`}
+                      />
+                    ))}
+                  </div>
+                  <div className="city-pill">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+                      <path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" />
+                    </svg>
+                    <select value={city} onChange={(e) => setCity(e.target.value)} aria-label="Город">
+                      {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <LanguageSwitcher />
+                </div>
               </div>
-              <LanguageSwitcher />
-            </div>
-          </div>
-          <div className="avito-promo-illustration">
-            <img src="/promo-safe-deal.png" alt="" />
-          </div>
+
+              <div className="avito-promo-illustration">
+                {PROMO_SLIDES.map((s, i) => (
+                  <div key={s.key} className={i === slide ? 'promo-glyph active' : 'promo-glyph'}>
+                    {PROMO_ICONS[s.icon]}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
