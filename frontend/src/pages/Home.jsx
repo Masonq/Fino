@@ -23,11 +23,11 @@ const PHOTO_SCALE = {
   // умеренная подгонка: картинка живёт в нижней части плитки и не должна
   // дорастать до подписи — сильные увеличения убраны
   pets: 1.35,
-  beauty: 1.18,
-  electronics: 1.15,
-  jobs: 1.1,
+  beauty: 1.34,
+  electronics: 1.32,
+  jobs: 1.3,
   services: 1.1,
-  auto: 1.08,
+  auto: 1.16,
 }
 
 // Точная подгонка положения: [вправо, вниз] в пикселях.
@@ -39,7 +39,11 @@ const PHOTO_SHIFT = {
   services: [-6, -3],
   business: [-6, -3],
   'hobby-sport': [-4, -3],
-  jobs: [-3, -2],
+  jobs: [-3, 0],
+  // эти опускаем ниже
+  auto: [0, 3],
+  electronics: [0, 3],
+  beauty: [0, 3],
 }
 
 const PROMO_IMAGES = {
