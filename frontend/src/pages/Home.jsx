@@ -54,16 +54,22 @@ export default function Home() {
   // иначе цвет статус-бара не успевает за сменой и отстаёт
   const [slide] = useState(() => Math.floor(Math.random() * PROMO_SLIDES.length))
 
-  // Статус-бар красим один раз под выбранный слайд и при скролле НЕ трогаем:
-  // Safari перерисовывает theme-color медленно, и при переключениях туда-обратно
-  // цвет «уходил» и не возвращался при скролле наверх.
+  // Статус-бар: цветной когда шапка развёрнута, белый когда схлопнута.
+  // Safari кэширует theme-color и игнорирует setAttribute, поэтому мета-тег
+  // пересоздаём. Смену цвета при схлопывании ждём до конца анимации шапки,
+  // а при возврате наверх ставим сразу — тогда верх успевает вернуться вместе с ней.
   useEffect(() => {
-    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.remove())
-    const meta = document.createElement('meta')
-    meta.setAttribute('name', 'theme-color')
-    meta.setAttribute('content', PROMO_SLIDES[slide].top)
-    document.head.appendChild(meta)
-  }, [slide])
+    const color = collapsed ? '#FFFFFF' : PROMO_SLIDES[slide].top
+    const delay = collapsed ? 340 : 0
+    const id = setTimeout(() => {
+      document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.remove())
+      const meta = document.createElement('meta')
+      meta.setAttribute('name', 'theme-color')
+      meta.setAttribute('content', color)
+      document.head.appendChild(meta)
+    }, delay)
+    return () => clearTimeout(id)
+  }, [slide, collapsed])
 
   useEffect(() => {
     let ticking = false
@@ -98,7 +104,7 @@ export default function Home() {
     <div className="home">
       <div
         className={collapsed ? 'avito-banner collapsed' : 'avito-banner'}
-        style={{ background: collapsed ? PROMO_SLIDES[slide].top : PROMO_SLIDES[slide].grad }}
+        style={collapsed ? undefined : { background: PROMO_SLIDES[slide].grad }}
       >
         <div className="avito-toprow">
           <Link to="/search" className="avito-search">
