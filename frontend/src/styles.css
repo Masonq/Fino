@@ -108,9 +108,15 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   display:grid; grid-template-rows:repeat(2, auto); grid-auto-flow:column; grid-auto-columns:min-content;
   gap:7px; padding:10px 12px 2px; overflow-x:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain;
 }
+/* чередуем ширину, чтобы вертикальные стыки верхнего и нижнего ряда не совпадали.
+   nth-child(4n+1) — верх 1-й колонки, (4n+2) — низ 1-й, (4n+3) — верх 2-й, (4n) — низ 2-й */
+.cat-grid-2row > *:nth-child(4n+1){ padding-right:56px; }
+.cat-grid-2row > *:nth-child(4n+2){ padding-right:30px; }
+.cat-grid-2row > *:nth-child(4n+3){ padding-right:30px; }
+.cat-grid-2row > *:nth-child(4n){   padding-right:56px; }
 .cat-grid-2row::-webkit-scrollbar{ display:none; }
 .cat-tile-2row{
-  position:relative; height:82px; min-width:82px; max-width:158px; border-radius:14px; padding:9px 40px 9px 11px;
+  position:relative; height:82px; min-width:82px; max-width:170px; border-radius:14px; padding:9px 11px;
   background:#fff;
   border:1px solid rgba(20,30,25,.05);
   box-shadow:
