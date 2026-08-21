@@ -6,6 +6,7 @@ from sqlalchemy import or_, func
 from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel
 
+from app.core.auth import get_current_user
 from app.core.database import get_db
 from app.models import Chat, Message, Listing, User
 
@@ -65,16 +66,38 @@ def start_chat(payload: StartChatIn, db: Session = Depends(get_db)):
     return _serialize_chat(chat, db)
 
 
-@router.get("/{chat_id}")
-def get_chat(chat_id: uuid.UUID, db: Session = Depends(get_db)):
+def _require_participant(chat_id, user, db) -> Chat:
+    """
+    Переписка доступна только её участникам.
+
+    Раньше хватало знать номер переписки, чтобы прочитать её целиком
+    и написать туда от чужого имени.
+    """
     chat = db.query(Chat).get(chat_id)
     if not chat:
         raise HTTPException(404, "not_found")
+    if user.id not in (chat.buyer_id, chat.seller_id):
+        raise HTTPException(403, "not_participant")
+    return chat
+
+
+@router.get("/{chat_id}")
+def get_chat(
+    chat_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    chat = _require_participant(chat_id, user, db)
     return _serialize_chat(chat, db)
 
 
 @router.get("/{chat_id}/messages")
-def list_messages(chat_id: uuid.UUID, db: Session = Depends(get_db)):
+def list_messages(
+    chat_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    _require_participant(chat_id, user, db)
     messages = db.query(Message).filter(Message.chat_id == chat_id).order_by(Message.created_at.asc()).all()
     return [
         {
@@ -91,15 +114,19 @@ def list_messages(chat_id: uuid.UUID, db: Session = Depends(get_db)):
 
 
 @router.post("/{chat_id}/messages")
-def send_message(chat_id: uuid.UUID, payload: SendMessageIn, db: Session = Depends(get_db)):
-    chat = db.query(Chat).get(chat_id)
-    if not chat:
-        raise HTTPException(404, "chat_not_found")
+def send_message(
+    chat_id: uuid.UUID,
+    payload: SendMessageIn,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    chat = _require_participant(chat_id, user, db)
+    sender_id = user.id   # отправитель — всегда сам, а не кто указан в запросе
 
     message = Message(
         id=uuid.uuid4(),
         chat_id=chat_id,
-        sender_id=payload.sender_id,
+        sender_id=sender_id,
         text=payload.text,
     )
     db.add(message)
@@ -119,11 +146,17 @@ def send_message(chat_id: uuid.UUID, payload: SendMessageIn, db: Session = Depen
 
 @router.get("")
 def list_chats(
-    user_id: uuid.UUID,
     lang: str = Query("ru"),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Список переписок пользователя — и как покупателя, и как продавца."""
+    """
+    Список переписок текущего пользователя.
+
+    Раньше идентификатор приходил параметром — можно было подставить чужой
+    и прочитать чужие переписки. Теперь берётся из токена.
+    """
+    user_id = user.id
     chats = (
         db.query(Chat)
         .filter(or_(Chat.buyer_id == user_id, Chat.seller_id == user_id))
@@ -200,7 +233,12 @@ def list_chats(
 
 
 @router.post("/{chat_id}/read")
-def mark_read(chat_id: uuid.UUID, user_id: uuid.UUID, db: Session = Depends(get_db)):
+def mark_read(
+    chat_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    user_id = user.id
     """Отмечаем сообщения собеседника прочитанными."""
     db.query(Message).filter(
         Message.chat_id == chat_id,

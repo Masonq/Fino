@@ -31,7 +31,7 @@ export default function ChatScreen() {
   // помечаем сообщения собеседника прочитанными при открытии переписки
   useEffect(() => {
     if (!id || !myId) return
-    api.markChatRead(id, myId).catch(() => {})
+    api.markChatRead(id).catch(() => {})
   }, [id, myId])
 
   useEffect(() => { load() }, [id])
@@ -50,7 +50,7 @@ export default function ChatScreen() {
         setMessages((prev) => (res.length !== prev.length ? res : prev))
         // пришло чужое — сразу помечаем прочитанным, раз чат открыт
         if (res.some((m) => m.sender_id !== myId && !m.is_read)) {
-          api.markChatRead(id, myId).catch(() => {})
+          api.markChatRead(id).catch(() => {})
         }
       } catch { /* следующая попытка через интервал */ }
     }
@@ -74,7 +74,7 @@ export default function ChatScreen() {
     if (!text.trim() || !myId) return
     setSending(true)
     try {
-      await api.sendMessage(id, myId, text.trim())
+      await api.sendMessage(id, text.trim())
       setText('')
       const res = await api.getChatMessages(id)
       setMessages(res)

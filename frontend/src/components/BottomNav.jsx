@@ -39,7 +39,7 @@ export default function BottomNav() {
     if (!user) { setUnread(0); return }
     const tick = () => {
       if (document.hidden) return
-      api.getChats(user.id, i18n.language)
+      api.getChats(i18n.language)
         .then((res) => setUnread((res.items || []).reduce((n, c) => n + (c.unread || 0), 0)))
         .catch(() => {})
     }

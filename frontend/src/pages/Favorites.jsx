@@ -21,7 +21,7 @@ export default function Favorites() {
 
   useEffect(() => {
     if (!userId) { setLoaded(true); return }
-    api.getFavorites(userId, i18n.language)
+    api.getFavorites(i18n.language)
       .then((res) => setItems(res.items || []))
       .catch(() => setItems([]))
       .finally(() => setLoaded(true))

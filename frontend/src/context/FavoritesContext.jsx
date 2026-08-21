@@ -12,7 +12,7 @@ export function FavoritesProvider({ children }) {
 
   useEffect(() => {
     if (!userId) return
-    api.getFavoriteIds(userId)
+    api.getFavoriteIds()
       .then((res) => setIds(new Set(res.ids || [])))
       .catch(() => {})
   }, [userId])
@@ -35,8 +35,8 @@ export function FavoritesProvider({ children }) {
     })
 
     try {
-      if (has) await api.removeFavorite(listingId, uid)
-      else await api.addFavorite(listingId, uid)
+      if (has) await api.removeFavorite(listingId)
+      else await api.addFavorite(listingId)
     } catch {
       // не получилось — возвращаем как было
       setIds((prev) => {

@@ -28,7 +28,7 @@ export default function Chats() {
 
   useEffect(() => {
     if (!userId) { setLoaded(true); return }
-    api.getChats(userId, i18n.language)
+    api.getChats(i18n.language)
       .then((res) => setItems(res.items || []))
       .catch(() => setItems([]))
       .finally(() => setLoaded(true))

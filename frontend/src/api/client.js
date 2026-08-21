@@ -115,10 +115,10 @@ export const api = {
     if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
     return res.json()
   },
-  getFavorites: (userId, lang) => request(`/favorites?${new URLSearchParams({ user_id: userId, lang })}`),
-  getFavoriteIds: (userId) => request(`/favorites/ids?${new URLSearchParams({ user_id: userId })}`),
-  addFavorite: (listingId, userId) => request(`/favorites/${listingId}?${new URLSearchParams({ user_id: userId })}`, { method: 'POST' }),
-  removeFavorite: (listingId, userId) => request(`/favorites/${listingId}?${new URLSearchParams({ user_id: userId })}`, { method: 'DELETE' }),
+  getFavorites: (lang) => request(`/favorites?${new URLSearchParams({ lang })}`),
+  getFavoriteIds: () => request('/favorites/ids'),
+  addFavorite: (listingId) => request(`/favorites/${listingId}`, { method: 'POST' }),
+  removeFavorite: (listingId) => request(`/favorites/${listingId}`, { method: 'DELETE' }),
   uploadPhoto: async (file) => {
     const form = new FormData()
     form.append('file', file)
@@ -130,12 +130,12 @@ export const api = {
     method: 'POST',
     body: JSON.stringify({ listing_id: listingId, buyer_id: buyerId }),
   }),
-  getChats: (userId, lang) => request(`/chats?${new URLSearchParams({ user_id: userId, lang })}`),
-  markChatRead: (chatId, userId) => request(`/chats/${chatId}/read?${new URLSearchParams({ user_id: userId })}`, { method: 'POST' }),
+  getChats: (lang) => request(`/chats?${new URLSearchParams({ lang })}`),
+  markChatRead: (chatId) => request(`/chats/${chatId}/read`, { method: 'POST' }),
   getChat: (chatId) => request(`/chats/${chatId}`),
   getChatMessages: (chatId) => request(`/chats/${chatId}/messages`),
-  sendMessage: (chatId, senderId, text) => request(`/chats/${chatId}/messages`, {
+  sendMessage: (chatId, text) => request(`/chats/${chatId}/messages`, {
     method: 'POST',
-    body: JSON.stringify({ sender_id: senderId, text }),
+    body: JSON.stringify({ text }),
   }),
 }

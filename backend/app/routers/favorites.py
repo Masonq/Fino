@@ -3,18 +3,20 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
 
+from app.core.auth import get_current_user
 from app.core.database import get_db
-from app.models import Favorite, Listing, ListingStatus
+from app.models import User, Favorite, Listing, ListingStatus
 
 router = APIRouter(prefix="/api/favorites", tags=["favorites"])
 
 
 @router.get("")
 def list_favorites(
-    user_id: uuid.UUID,
     lang: str = Query("ru"),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    user_id = user.id
     rows = (
         db.query(Favorite)
         .filter(Favorite.user_id == user_id)
@@ -55,13 +57,19 @@ def list_favorites(
 
 
 @router.get("/ids")
-def favorite_ids(user_id: uuid.UUID, db: Session = Depends(get_db)):
+def favorite_ids(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    user_id = user.id
     rows = db.query(Favorite.listing_id).filter(Favorite.user_id == user_id).all()
     return {"ids": [str(r[0]) for r in rows]}
 
 
 @router.post("/{listing_id}")
-def add_favorite(listing_id: uuid.UUID, user_id: uuid.UUID, db: Session = Depends(get_db)):
+def add_favorite(
+    listing_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    user_id = user.id
     listing = db.query(Listing).get(listing_id)
     if not listing:
         raise HTTPException(404, "listing_not_found")
@@ -80,7 +88,12 @@ def add_favorite(listing_id: uuid.UUID, user_id: uuid.UUID, db: Session = Depend
 
 
 @router.delete("/{listing_id}")
-def remove_favorite(listing_id: uuid.UUID, user_id: uuid.UUID, db: Session = Depends(get_db)):
+def remove_favorite(
+    listing_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    user_id = user.id
     db.query(Favorite).filter(
         Favorite.user_id == user_id, Favorite.listing_id == listing_id
     ).delete()
