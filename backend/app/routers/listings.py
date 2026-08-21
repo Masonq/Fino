@@ -63,6 +63,29 @@ class ListingCreate(BaseModel):
 LISTING_TTL_DAYS = 45
 
 
+# Порядок запасных языков. Английский понятен почти всем, поэтому он идёт
+# сразу после родного; дальше — язык оригинала объявления.
+FALLBACK_ORDER = {
+    "ru": ["ru", "en", "sr"],
+    "en": ["en", "ru", "sr"],
+    "sr": ["sr", "en", "ru"],
+}
+
+
+def pick_translation(listing, lang: str):
+    """
+    Выбирает перевод осмысленно: сначала нужный язык, потом английский
+    как наиболее понятный, потом остальные. Раньше при отсутствии перевода
+    брался первый попавшийся — англичанину мог достаться сербский текст,
+    хотя рядом лежал русский.
+    """
+    by_lang = {t.language: t for t in listing.translations}
+    for candidate in FALLBACK_ORDER.get(lang, [lang, "en", "ru", "sr"]):
+        if candidate in by_lang:
+            return by_lang[candidate]
+    return listing.translations[0] if listing.translations else None
+
+
 @router.post("")
 def create_listing(
     payload: ListingCreate,
@@ -239,9 +262,7 @@ def listings_by_ids(
     by_id = {l.id: l for l in rows}
 
     def serialize(l: Listing):
-        tr = next((t for t in l.translations if t.language == lang), None)
-        if not tr and l.translations:
-            tr = l.translations[0]
+        tr = pick_translation(l, lang)
         cover = next((p for p in l.photos if p.is_cover), l.photos[0] if l.photos else None)
         return {
             "id": str(l.id),
@@ -275,9 +296,7 @@ def my_listings(
     items = q.order_by(Listing.created_at.desc()).all()
 
     def serialize(l: Listing):
-        tr = next((t for t in l.translations if t.language == lang), None)
-        if not tr and l.translations:
-            tr = l.translations[0]
+        tr = pick_translation(l, lang)
         cover = next((p for p in l.photos if p.is_cover), l.photos[0] if l.photos else None)
         return {
             "id": str(l.id),
@@ -348,9 +367,7 @@ def similar_listings(
     picked = candidates[:limit]
 
     def serialize(l: Listing):
-        tr = next((t for t in l.translations if t.language == lang), None)
-        if not tr and l.translations:
-            tr = l.translations[0]
+        tr = pick_translation(l, lang)
         cover = next((p for p in l.photos if p.is_cover), l.photos[0] if l.photos else None)
         return {
             "id": str(l.id),
