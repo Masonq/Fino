@@ -1,18 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
-import IdentifySheet from '../components/IdentifySheet'
 
 export default function ListingDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { i18n } = useTranslation()
+  const [searchParams] = useSearchParams()
 
   const [listing, setListing] = useState(null)
   const [schema, setSchema] = useState([])
   const [fav, setFav] = useState(false)
-  const [showIdentify, setShowIdentify] = useState(false)
   const [starting, setStarting] = useState(false)
 
   useEffect(() => {
@@ -25,6 +24,27 @@ export default function ListingDetail() {
       .then((res) => setSchema(res.attribute_schema || []))
       .catch(() => setSchema([]))
   }, [listing?.category_slug])
+
+  const startChatWith = async (buyerId) => {
+    if (!listing) return
+    setStarting(true)
+    try {
+      const chat = await api.startChat(listing.id, buyerId)
+      navigate(`/chat/${chat.id}`)
+    } catch (e) {
+      alert('Это ваше собственное объявление — написать себе нельзя.')
+    } finally {
+      setStarting(false)
+    }
+  }
+
+  useEffect(() => {
+    if (searchParams.get('identified') === '1' && listing) {
+      const myId = localStorage.getItem('fino_user_id')
+      if (myId) startChatWith(myId)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listing])
 
   if (!listing) {
     return <div className="detail-page"><p className="empty-hint">Загрузка…</p></div>
@@ -49,24 +69,12 @@ export default function ListingDetail() {
     return value
   }
 
-  const startChatWith = async (buyerId) => {
-    setStarting(true)
-    try {
-      const chat = await api.startChat(listing.id, buyerId)
-      navigate(`/chat/${chat.id}`)
-    } catch (e) {
-      alert('Это ваше собственное объявление — написать себе нельзя.')
-    } finally {
-      setStarting(false)
-    }
-  }
-
   const handleWriteToSeller = () => {
     const myId = localStorage.getItem('fino_user_id')
     if (myId) {
       startChatWith(myId)
     } else {
-      setShowIdentify(true)
+      navigate(`/identify?returnTo=${encodeURIComponent(`/listing/${id}`)}`)
     }
   }
 
@@ -160,13 +168,6 @@ export default function ListingDetail() {
           {starting ? '...' : 'Написать продавцу'}
         </button>
       </div>
-
-      {showIdentify && (
-        <IdentifySheet
-          onClose={() => setShowIdentify(false)}
-          onDone={(userId) => { setShowIdentify(false); startChatWith(userId) }}
-        />
-      )}
     </div>
   )
 }

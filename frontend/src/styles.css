@@ -20,20 +20,14 @@
   --shadow-lg: 0 4px 10px rgba(20,30,25,.05), 0 18px 36px rgba(20,30,25,.11);
 }
 *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-html, body{
-  background:#E7E7E2; font-family:'Plus Jakarta Sans',sans-serif; color:var(--ink);
-  height:100%; overflow:hidden; position:fixed; inset:0; overscroll-behavior:none;
-}
+html, body{ background:#E7E7E2; font-family:'Plus Jakarta Sans',sans-serif; color:var(--ink); }
 a{ text-decoration:none; color:inherit; -webkit-touch-callout:none; }
 button{ border:none; background:none; font-family:inherit; cursor:pointer; user-select:none; -webkit-touch-callout:none; touch-action:manipulation; }
 .nav-item, .nav-post, .cat-tile, .cats-item, .post-cat-item, .col-btn, .lang-btn, .chip, .qchip, .s-fav, .compact-fav{
   user-select:none; -webkit-touch-callout:none; touch-action:manipulation;
 }
 
-.app-shell{
-  max-width:480px; margin:0 auto; height:100dvh; background:var(--bg); position:relative;
-  overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-y:contain;
-}
+.app-shell{ max-width:480px; margin:0 auto; min-height:100vh; min-height:100dvh; background:var(--bg); position:relative; }
 .app-shell > main.has-bottomnav{ padding-bottom:86px; }
 
 .bottomnav{
@@ -215,22 +209,6 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .cta-btn{ flex:1; text-align:center; padding:14px; border-radius:15px; font-weight:800; font-size:14px; }
 .cta-btn.primary{ background:var(--primary); color:#fff; box-shadow:0 8px 18px rgba(14,159,110,.3); }
 .cta-btn.icon{ flex:0 0 50px; background:#F3F3F1; color:var(--ink); display:flex; align-items:center; justify-content:center; }
-
-/* ===== identify bottom sheet ===== */
-.sheet-overlay{
-  position:fixed; inset:0; background:rgba(20,30,25,.45); z-index:100;
-  display:flex; align-items:flex-end; overflow-y:auto; -webkit-overflow-scrolling:touch;
-}
-.sheet{
-  width:100%; max-width:480px; margin:0 auto; background:#fff; border-radius:24px 24px 0 0;
-  padding:12px 20px calc(20px + env(safe-area-inset-bottom)); position:relative; flex-shrink:0;
-}
-.sheet-handle{ width:36px; height:4px; background:var(--line); border-radius:3px; margin:0 auto 16px; }
-.sheet h3{ font-size:16px; font-weight:800; }
-.sheet-close{
-  position:absolute; top:14px; right:14px; width:32px; height:32px; border-radius:50%;
-  background:#F3F3F1; color:var(--ink-soft); display:flex; align-items:center; justify-content:center;
-}
 
 /* ===== chat screen ===== */
 .chat-page{ display:flex; flex-direction:column; height:100vh; height:100dvh; }

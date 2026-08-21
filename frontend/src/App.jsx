@@ -5,11 +5,12 @@ import PostAd from './pages/PostAd'
 import Categories from './pages/Categories'
 import ListingDetail from './pages/ListingDetail'
 import ChatScreen from './pages/ChatScreen'
+import Identify from './pages/Identify'
 import BottomNav from './components/BottomNav'
 
 export default function App() {
   const { pathname } = useLocation()
-  const hideNav = pathname.startsWith('/listing/') || pathname.startsWith('/chat/')
+  const hideNav = pathname.startsWith('/listing/') || pathname.startsWith('/chat/') || pathname === '/identify'
 
   return (
     <div className="app-shell">
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/categories" element={<Categories />} />
           <Route path="/listing/:id" element={<ListingDetail />} />
           <Route path="/chat/:id" element={<ChatScreen />} />
+          <Route path="/identify" element={<Identify />} />
         </Routes>
       </main>
       {!hideNav && <BottomNav />}
