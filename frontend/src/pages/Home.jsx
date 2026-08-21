@@ -40,7 +40,7 @@ export default function Home() {
       </div>
 
       <div className="section-head">
-        <div className="section-title">{t('nav.search')}</div>
+        <div className="section-title">Категории</div>
         <Link to="/categories" className="section-link">{t('common.all')} →</Link>
       </div>
       <div className="cat-scroll">
