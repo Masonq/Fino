@@ -61,11 +61,11 @@ export default function ListingDetail() {
       .catch(() => setSchema([]))
   }, [listing?.category_slug])
 
-  const startChatWith = async (buyerId) => {
+  const startChatWith = async () => {
     if (!listing) return
     setStarting(true)
     try {
-      const chat = await api.startChat(listing.id, buyerId)
+      const chat = await api.startChat(listing.id)
       navigate(`/chat/${chat.id}`)
     } catch (e) {
       alert(t('detail.own_listing'))
@@ -77,7 +77,7 @@ export default function ListingDetail() {
   useEffect(() => {
     if (searchParams.get('identified') === '1' && listing) {
       const myId = user?.id
-      if (myId) startChatWith(myId)
+      if (myId) startChatWith()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listing])
@@ -125,7 +125,7 @@ export default function ListingDetail() {
   const handleWriteToSeller = () => {
     const myId = user?.id
     if (myId) {
-      startChatWith(myId)
+      startChatWith()
     } else {
       navigate(`/login?returnTo=${encodeURIComponent(`/listing/${id}`)}`)
     }

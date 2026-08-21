@@ -38,25 +38,35 @@ def _serialize_chat(chat: Chat, db: Session):
 
 
 @router.post("/start")
-def start_chat(payload: StartChatIn, db: Session = Depends(get_db)):
-    """Возвращает существующий чат по этому объявлению с этим покупателем, либо создаёт новый."""
+def start_chat(
+    payload: StartChatIn,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Возвращает существующую переписку по этому объявлению либо создаёт новую.
+    Покупатель — тот, кто вошёл: раньше он приходил в запросе, и можно было
+    завести переписку от чужого имени.
+    """
+    buyer_id = user.id
+
     listing = db.query(Listing).get(payload.listing_id)
     if not listing:
         raise HTTPException(404, "listing_not_found")
 
-    if listing.owner_id == payload.buyer_id:
+    if listing.owner_id == buyer_id:
         raise HTTPException(400, "cannot_chat_with_yourself")
 
     chat = db.query(Chat).filter(
         Chat.listing_id == payload.listing_id,
-        Chat.buyer_id == payload.buyer_id,
+        Chat.buyer_id == buyer_id,
     ).first()
 
     if not chat:
         chat = Chat(
             id=uuid.uuid4(),
             listing_id=payload.listing_id,
-            buyer_id=payload.buyer_id,
+            buyer_id=buyer_id,
             seller_id=listing.owner_id,
         )
         db.add(chat)

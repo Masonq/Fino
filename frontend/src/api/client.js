@@ -100,10 +100,6 @@ export const api = {
     method: 'PATCH',
     body: JSON.stringify(payload),
   }),
-  quickIdentify: (phone, displayName) => request('/users/quick', {
-    method: 'POST',
-    body: JSON.stringify({ phone, display_name: displayName }),
-  }),
   createListing: (payload) => request('/listings', {
     method: 'POST',
     body: JSON.stringify(payload),
@@ -126,9 +122,9 @@ export const api = {
     if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
     return res.json()
   },
-  startChat: (listingId, buyerId) => request('/chats/start', {
+  startChat: (listingId) => request('/chats/start', {
     method: 'POST',
-    body: JSON.stringify({ listing_id: listingId, buyer_id: buyerId }),
+    body: JSON.stringify({ listing_id: listingId }),
   }),
   getChats: (lang) => request(`/chats?${new URLSearchParams({ lang })}`),
   markChatRead: (chatId) => request(`/chats/${chatId}/read`, { method: 'POST' }),

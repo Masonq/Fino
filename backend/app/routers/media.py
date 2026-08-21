@@ -1,9 +1,10 @@
 import os
 import uuid
 
-from fastapi import APIRouter, UploadFile, File, HTTPException, Request
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, Request
 from PIL import Image
 
+from app.core.auth import get_current_user
 from app.core.config import settings
 
 router = APIRouter(prefix="/api/media", tags=["media"])
