@@ -14,6 +14,14 @@ export default function Home() {
   const [listings, setListings] = useState([])
   const [cols, setCols] = useState(2)
   const [city, setCity] = useState(CITIES[0])
+  const [collapsed, setCollapsed] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setCollapsed(window.scrollY > 40)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   useEffect(() => {
     api.getCategories().then(setCategories).catch(() => setCategories([]))
@@ -27,7 +35,7 @@ export default function Home() {
 
   return (
     <div className="home">
-      <div className="avito-banner">
+      <div className={collapsed ? 'avito-banner collapsed' : 'avito-banner'}>
         <div className="avito-toprow">
           <Link to="/search" className="avito-search">
             <div className="avito-search-logo">

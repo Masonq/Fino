@@ -50,10 +50,27 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* ===== Avito-style: градиентная плашка (поиск + Войти + промо) ===== */
 .avito-banner{
+  position:sticky; top:0; z-index:15;
   background:linear-gradient(150deg, #0E9F6E 0%, #1DB388 30%, #2FDBAE 65%, #5CE8CC 100%);
-  padding:14px 14px 14px; border-radius:22px;
-  margin:calc(8px + env(safe-area-inset-top)) 12px 0;
+  padding:calc(12px + env(safe-area-inset-top)) 14px 14px; border-radius:0 0 22px 22px;
+  margin:0;
+  transition:background .28s ease, padding .28s ease, border-radius .28s ease;
 }
+/* схлопнутое состояние при скролле — как у Avito: промо уезжает, поиск липнет сверху */
+.avito-banner.collapsed{
+  background:#FAFAF9;
+  border-radius:0;
+  padding-bottom:8px;
+  box-shadow:0 1px 0 rgba(20,30,25,.07);
+}
+.avito-banner .avito-promo-row{
+  max-height:90px; opacity:1; overflow:hidden;
+  transition:max-height .28s ease, opacity .2s ease;
+}
+.avito-banner.collapsed .avito-promo-row{ max-height:0; opacity:0; }
+.avito-banner.collapsed .avito-toprow{ margin-bottom:0; }
+.avito-banner.collapsed .avito-search{ background:#F1F1EC; box-shadow:none; }
+.avito-banner.collapsed .avito-login-pill{ background:#F1F1EC; }
 .avito-toprow{ display:flex; gap:7px; margin-bottom:12px; }
 .avito-search{
   flex:1; display:flex; align-items:center; gap:9px; background:#FDFDFB; border-radius:15px;
