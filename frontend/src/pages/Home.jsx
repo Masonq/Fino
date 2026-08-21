@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import ListingCard from '../components/ListingCard'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+import { CATEGORY_ICONS, FALLBACK_ICON } from '../components/CategoryIcons'
 
 const CITIES = ['Београд', 'Нови Сад', 'Ниш', 'Крагујевац', 'Суботица']
 
@@ -68,16 +69,16 @@ export default function Home() {
       <div className="cat-grid-2row">
         <Link to="/categories" className="cat-tile-2row all">
           <div className="cat-tile-2row-label">{t('common.all')}</div>
-          <div className="cat-tile-2row-icon">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>
+          <div className="cat-tile-2row-glyph">
+            {FALLBACK_ICON}
           </div>
         </Link>
         {categories.map((cat) => (
           <Link key={cat.id} to={`/search?category=${cat.slug}`} className="cat-tile-2row">
             <div className="cat-tile-2row-label">{cat.name?.[i18n.language] || cat.name?.ru}</div>
-            {cat.image_url && (
-              <div className="cat-tile-2row-photo"><img src={cat.image_url} alt="" /></div>
-            )}
+            <div className="cat-tile-2row-glyph" style={{ color: cat.color || 'var(--primary)' }}>
+              {CATEGORY_ICONS[cat.slug] || FALLBACK_ICON}
+            </div>
           </Link>
         ))}
       </div>
