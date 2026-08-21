@@ -195,7 +195,7 @@ export default function Home() {
           return (
             <div className="cat-rows">
               <div className="cat-row"><CategorySkeletons count={5} /></div>
-              <div className="cat-row"><CategorySkeletons count={5} /></div>
+              <div className="cat-row"><CategorySkeletons count={5} offset={5} /></div>
             </div>
           )
         }

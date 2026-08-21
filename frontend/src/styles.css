@@ -443,8 +443,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* скелетон плитки категории */
 .cat-skeleton{
-  position:relative; height:82px; width:112px; border-radius:14px; padding:9px 38px 9px 11px;
-  background:#fff; border:1px solid rgba(20,30,25,.05); flex-shrink:0;
+  position:relative; height:82px; border-radius:14px; padding:9px 38px 9px 11px;
+  background:#fff; border:1px solid rgba(20,30,25,.05); flex-shrink:0; box-sizing:border-box;
 }
 .sk-cat-line{ width:66%; height:10px; border-radius:5px; }
 .sk-cat-glyph{ position:absolute; right:9px; bottom:8px; width:26px; height:26px; border-radius:7px; }
