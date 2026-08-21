@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import ListingCard from '../components/ListingCard'
 import LanguageSwitcher from '../components/LanguageSwitcher'
-import { CATEGORY_ICONS, FALLBACK_ICON } from '../components/CategoryIcons'
+import { FALLBACK_ICON } from '../components/CategoryIcons'
 import { CardSkeletons, CategorySkeletons } from '../components/Skeletons'
 import PullToRefresh from '../components/PullToRefresh'
 import { CITIES, cityLabel } from '../data/cities'
@@ -18,12 +18,6 @@ const PROMO_SLIDES = [
 ]
 
 // Иллюстрации слайдов. Пока картинка не готова — показываем запасную SVG-иконку.
-// категории, для которых готова 3D-картинка; остальным показываем иконку
-const WITH_PHOTO = new Set([
-  'real-estate', 'auto', 'home-garden', 'fashion', 'kids',
-  'business', 'beauty', 'pets', 'electronics', 'jobs',
-])
-
 // На картинках с несколькими предметами каждый выходит мельче, поэтому
 // показываем их крупнее — чтобы визуальный вес всех плиток был одинаковым.
 const PHOTO_SCALE = {
@@ -31,6 +25,7 @@ const PHOTO_SCALE = {
   pets: 1.45,
   electronics: 1.4,
   jobs: 1.3,
+  services: 1.22,
   auto: 1.15,
 }
 
@@ -198,16 +193,13 @@ export default function Home() {
         ) : (
           <Link key={cat.id} to={`/search?category=${cat.slug}`} className="cat-tile-2row">
             <div className="cat-tile-2row-label">{cat.name?.[i18n.language] || cat.name?.ru}</div>
-            <div className={WITH_PHOTO.has(cat.slug) ? 'cat-tile-2row-glyph' : 'cat-tile-2row-glyph icon-only'}
-                 style={WITH_PHOTO.has(cat.slug) ? undefined : { color: cat.color || 'var(--primary)' }}>
-              {WITH_PHOTO.has(cat.slug)
-                ? <img
-                    className="cat-photo"
-                    src={`/cat/${cat.slug}.png`}
-                    alt=""
-                    style={PHOTO_SCALE[cat.slug] ? { transform: `scale(${PHOTO_SCALE[cat.slug]})` } : undefined}
-                  />
-                : (CATEGORY_ICONS[cat.slug] || FALLBACK_ICON)}
+            <div className="cat-tile-2row-glyph">
+              <img
+                className="cat-photo"
+                src={`/cat/${cat.slug}.png`}
+                alt=""
+                style={PHOTO_SCALE[cat.slug] ? { transform: `scale(${PHOTO_SCALE[cat.slug]})` } : undefined}
+              />
             </div>
           </Link>
         )

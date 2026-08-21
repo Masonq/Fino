@@ -190,8 +190,6 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .cat-tile-2row-glyph .cat-photo{
   width:100%; height:100%; object-fit:contain; display:block; transform-origin:right bottom;
 }
-/* у категорий без картинки — компактная иконка, она не должна вылезать за край */
-.cat-tile-2row-glyph.icon-only{ right:9px; bottom:8px; width:28px; height:28px; }
 
 .promo-glyph img{ width:100%; height:100%; object-fit:contain; display:block; }
 
