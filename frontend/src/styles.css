@@ -52,7 +52,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .avito-banner{
   position:sticky; top:0; z-index:15;
   background:linear-gradient(150deg, #0E9F6E 0%, #1DB388 30%, #2FDBAE 65%, #5CE8CC 100%);
-  padding:calc(12px + env(safe-area-inset-top)) 14px 14px; border-radius:0 0 22px 22px;
+  padding:calc(9px + env(safe-area-inset-top)) 14px 10px; border-radius:0 0 22px 22px;
   margin:0;
   will-change:background-color;
   transition:background .3s cubic-bezier(.4,0,.2,1), padding-bottom .3s cubic-bezier(.4,0,.2,1), border-radius .3s cubic-bezier(.4,0,.2,1);
@@ -83,7 +83,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .avito-banner .avito-login-pill{ transition:background .3s cubic-bezier(.4,0,.2,1), box-shadow .3s ease; }
 .avito-banner.collapsed .avito-search{ background:#F1F1EC; box-shadow:none; }
 .avito-banner.collapsed .avito-login-pill{ background:#F1F1EC; }
-.avito-toprow{ display:flex; gap:7px; margin-bottom:12px; }
+.avito-toprow{ display:flex; gap:7px; margin-bottom:8px; }
 .avito-search{
   flex:1; display:flex; align-items:center; gap:9px; background:#FDFDFB; border-radius:15px;
   padding:14px 14px 14px 14px; box-shadow:0 1px 2px rgba(20,30,25,.03); color:var(--muted); font-size:13.5px; font-weight:500;
@@ -110,7 +110,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .avito-login-pill .avatar-mini{ width:24px; height:24px; font-size:10px; }
 
 .avito-promo-row{ display:flex; align-items:flex-end; justify-content:space-between; padding:0; gap:10px; }
-.avito-promo-left{ display:flex; flex-direction:column; gap:7px; min-width:0; }
+.avito-promo-left{ display:flex; flex-direction:column; gap:5px; min-width:0; }
 .avito-promo-text{ display:flex; align-items:center; gap:5px; font-size:22px; font-weight:800; color:#fff; letter-spacing:-0.015em; line-height:1.15; }
 .banner-meta{ display:flex; align-items:center; gap:7px; }
 .avito-promo-illustration{ width:52px; height:60px; flex-shrink:0; display:flex; align-items:flex-end; justify-content:flex-end; }
