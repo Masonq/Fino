@@ -36,17 +36,21 @@ const PHOTO_SCALE = {
 // Точная подгонка положения: [вправо, вниз] в пикселях.
 // Бизнес и хобби сидят ровно — их не двигаем.
 const PHOTO_SHIFT = {
-  beauty: [6, 8],
-  pets: [3, 8],
-  electronics: [6, 8],
-  jobs: [3, 4],
-  services: [3, 4],
-  kids: [3, 4],
-  'home-garden': [6, 8],
-  // этим — только вниз
-  auto: [0, 8],
-  'real-estate': [0, 4],
-  fashion: [0, 4],
+  // высокие и узкие — опускаем, чтобы не висели
+  'real-estate': [0, 6],
+  services: [-2, 2],
+  'hobby-sport': [-2, 2],
+  business: [-2, 0],
+  jobs: [0, 4],
+  // широкие — почти не двигаем
+  auto: [0, 4],
+  fashion: [0, 2],
+  electronics: [2, 4],
+  'home-garden': [2, 4],
+  // эти сидели низко — приподнимаем
+  kids: [0, -2],
+  pets: [0, 0],
+  beauty: [2, 4],
 }
 
 const PROMO_IMAGES = {
