@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel
 
@@ -92,10 +93,16 @@ def create_listing(payload: ListingCreate, owner_id: uuid.UUID, db: Session = De
 
 @router.get("")
 def search_listings(
+    q_text: str | None = Query(None, alias="q"),
     category_slug: str | None = None,
     city: str | None = None,
     price_min: float | None = None,
     price_max: float | None = None,
+    currency: str | None = None,
+    with_photo: bool | None = None,
+    delivery: bool | None = None,
+    safe_deal: bool | None = None,
+    sort: str = Query("new"),
     lang: str = Query("ru"),
     limit: int = Query(20, le=100),
     offset: int = 0,
@@ -105,17 +112,45 @@ def search_listings(
         joinedload(Listing.translations), joinedload(Listing.photos)
     ).filter(Listing.status == ListingStatus.active)
 
+    # текстовый поиск по заголовку и описанию на любом из языков
+    if q_text:
+        pattern = f"%{q_text.strip()}%"
+        q = q.filter(
+            Listing.translations.any(
+                or_(
+                    ListingTranslation.title.ilike(pattern),
+                    ListingTranslation.description.ilike(pattern),
+                )
+            )
+        )
+
     if category_slug:
         q = q.join(Category).filter(Category.slug == category_slug)
     if city:
-        q = q.filter(Listing.city == city)
+        q = q.filter(Listing.city.ilike(f"%{city}%"))
     if price_min is not None:
         q = q.filter(Listing.price >= price_min)
     if price_max is not None:
         q = q.filter(Listing.price <= price_max)
+    if currency:
+        q = q.filter(Listing.currency == currency)
+    if with_photo:
+        q = q.filter(Listing.photos.any())
+    if delivery:
+        q = q.filter(Listing.delivery_available.is_(True))
+    if safe_deal:
+        q = q.filter(Listing.safe_deal_available.is_(True))
 
     total = q.count()
-    items = q.order_by(Listing.published_at.desc()).offset(offset).limit(limit).all()
+
+    order = {
+        "new": Listing.published_at.desc(),
+        "old": Listing.published_at.asc(),
+        "cheap": Listing.price.asc().nullslast(),
+        "expensive": Listing.price.desc().nullslast(),
+    }.get(sort, Listing.published_at.desc())
+
+    items = q.order_by(order).offset(offset).limit(limit).all()
 
     def serialize(listing: Listing):
         translation = next((t for t in listing.translations if t.language == lang), None)
