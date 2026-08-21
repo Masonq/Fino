@@ -47,6 +47,12 @@ export const api = {
     body: JSON.stringify(payload),
   }),
   me: () => request('/auth/me'),
+  modQueue: (lang) => request(`/moderation/queue?${new URLSearchParams({ lang })}`),
+  modApprove: (id) => request(`/moderation/${id}/approve`, { method: 'POST' }),
+  modReject: (id, reason) => request(`/moderation/${id}/reject`, {
+    method: 'POST',
+    body: JSON.stringify({ reason }),
+  }),
   updateMe: (payload) => request('/auth/me', {
     method: 'PATCH',
     body: JSON.stringify(payload),

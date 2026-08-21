@@ -1,0 +1,86 @@
+import uuid
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
+from sqlalchemy.orm import Session, joinedload
+
+from app.core.auth import get_current_user
+from app.core.database import get_db
+from app.models import Listing, ListingStatus, User, UserRole
+
+router = APIRouter(prefix="/api/moderation", tags=["moderation"])
+
+
+def require_moderator(user: User = Depends(get_current_user)) -> User:
+    if user.role not in (UserRole.moderator, UserRole.admin):
+        raise HTTPException(403, "not_moderator")
+    return user
+
+
+@router.get("/queue")
+def queue(
+    lang: str = Query("ru"),
+    limit: int = Query(50, le=200),
+    moderator: User = Depends(require_moderator),
+    db: Session = Depends(get_db),
+):
+    """Объявления, ожидающие проверки — самые старые первыми."""
+    items = (
+        db.query(Listing)
+        .options(joinedload(Listing.translations), joinedload(Listing.photos), joinedload(Listing.owner))
+        .filter(Listing.status == ListingStatus.pending_moderation)
+        .order_by(Listing.created_at.asc())
+        .limit(limit)
+        .all()
+    )
+
+    def serialize(l: Listing):
+        tr = next((t for t in l.translations if t.language == lang), None) or (l.translations[0] if l.translations else None)
+        return {
+            "id": str(l.id),
+            "title": tr.title if tr else None,
+            "description": tr.description if tr else None,
+            "price": float(l.price) if l.price else None,
+            "currency": l.currency,
+            "city": l.city,
+            "photos": [p.url for p in l.photos],
+            "owner_name": l.owner.display_name if l.owner else None,
+            "created_at": l.created_at.isoformat() if l.created_at else None,
+        }
+
+    total = db.query(Listing).filter(Listing.status == ListingStatus.pending_moderation).count()
+    return {"total": total, "items": [serialize(l) for l in items]}
+
+
+class DecisionIn(BaseModel):
+    reason: str | None = None
+
+
+@router.post("/{listing_id}/approve")
+def approve(
+    listing_id: uuid.UUID,
+    moderator: User = Depends(require_moderator),
+    db: Session = Depends(get_db),
+):
+    listing = db.query(Listing).get(listing_id)
+    if not listing:
+        raise HTTPException(404, "not_found")
+    listing.status = ListingStatus.active
+    db.commit()
+    return {"status": "active"}
+
+
+@router.post("/{listing_id}/reject")
+def reject(
+    listing_id: uuid.UUID,
+    payload: DecisionIn,
+    moderator: User = Depends(require_moderator),
+    db: Session = Depends(get_db),
+):
+    listing = db.query(Listing).get(listing_id)
+    if not listing:
+        raise HTTPException(404, "not_found")
+    listing.status = ListingStatus.rejected
+    listing.rejection_reason = payload.reason
+    db.commit()
+    return {"status": "rejected"}

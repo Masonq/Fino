@@ -125,6 +125,9 @@ st, _ = call("PATCH", "/api/listings/00000000-0000-0000-0000-000000000000/status
              {"status": "sold"})
 check("смена статуса без входа закрыта", st == 401, f"код {st}")
 
+st, _ = call("GET", "/api/moderation/queue")
+check("модерация без входа закрыта", st == 401, f"код {st}")
+
 # ---------- итог ----------
 print(f"\n{'─'*44}")
 if failed == 0:

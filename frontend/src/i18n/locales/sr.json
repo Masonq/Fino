@@ -187,5 +187,14 @@
     "restore": "Objavi ponovo",
     "delete": "Obriši",
     "confirm_delete": "Obrisati oglas? Ovo se ne može poništiti."
+  },
+  "mod": {
+    "title": "Moderacija",
+    "need_login": "Prijavite se za moderaciju",
+    "no_access": "Nemate pristup moderaciji",
+    "empty": "Red je prazan — sve je pregledano",
+    "approve": "Odobri",
+    "reject": "Odbij",
+    "reason_prompt": "Razlog odbijanja (autor će ga videti):"
   }
 }

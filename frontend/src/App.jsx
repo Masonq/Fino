@@ -12,6 +12,7 @@ import Chats from './pages/Chats'
 import Login from './pages/Login'
 import Profile from './pages/Profile'
 import MyListings from './pages/MyListings'
+import Moderation from './pages/Moderation'
 import { AuthProvider } from './context/AuthContext'
 import { FavoritesProvider } from './context/FavoritesContext'
 import BottomNav from './components/BottomNav'
@@ -78,6 +79,7 @@ export default function App() {
           <Route path="/chats" element={<Chats />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/my" element={<MyListings />} />
+          <Route path="/moderation" element={<Moderation />} />
         </Routes>
       </main>
       {!hideNav && <BottomNav />}

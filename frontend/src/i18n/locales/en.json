@@ -187,5 +187,14 @@
     "restore": "Publish again",
     "delete": "Delete",
     "confirm_delete": "Delete this listing? This can't be undone."
+  },
+  "mod": {
+    "title": "Moderation",
+    "need_login": "Sign in to open moderation",
+    "no_access": "You don't have moderation access",
+    "empty": "Queue is empty — everything reviewed",
+    "approve": "Approve",
+    "reject": "Reject",
+    "reason_prompt": "Rejection reason (the author will see it):"
   }
 }
