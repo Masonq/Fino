@@ -55,20 +55,38 @@ export default function Home() {
   const [slide] = useState(() => Math.floor(Math.random() * PROMO_SLIDES.length))
 
   // Статус-бар: цветной когда шапка развёрнута, белый когда схлопнута.
-  // Safari кэширует theme-color и игнорирует setAttribute, поэтому мета-тег
-  // пересоздаём. Смену цвета при схлопывании ждём до конца анимации шапки,
-  // а при возврате наверх ставим сразу — тогда верх успевает вернуться вместе с ней.
+  // Safari часто игнорирует повторную установку того же значения и не перерисовывает
+  // верх экрана. Приём: сначала ставим цвет, отличающийся на 1/255 (глазу не видно),
+  // затем нужный — браузер видит смену значения и вынужден перерисовать статус-бар.
   useEffect(() => {
-    const color = collapsed ? '#FFFFFF' : PROMO_SLIDES[slide].top
-    const delay = collapsed ? 340 : 0
-    const id = setTimeout(() => {
+    const target = collapsed ? '#FFFFFF' : PROMO_SLIDES[slide].top
+
+    const setThemeColor = (value) => {
       document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.remove())
       const meta = document.createElement('meta')
       meta.setAttribute('name', 'theme-color')
-      meta.setAttribute('content', color)
+      meta.setAttribute('content', value)
       document.head.appendChild(meta)
+    }
+
+    // цвет, отличающийся на единицу в синем канале — визуально идентичен
+    const nudge = (hex) => {
+      const n = parseInt(hex.slice(1), 16)
+      const b = n & 0xff
+      return '#' + (((n & 0xffff00) | (b > 0 ? b - 1 : b + 1)) >>> 0).toString(16).padStart(6, '0')
+    }
+
+    const delay = collapsed ? 340 : 0
+    const id = setTimeout(() => {
+      setThemeColor(nudge(target))
+      requestAnimationFrame(() => requestAnimationFrame(() => setThemeColor(target)))
     }, delay)
-    return () => clearTimeout(id)
+    // страховка: если Safari пропустил перерисовку, повторяем ещё раз
+    const retry = setTimeout(() => {
+      setThemeColor(nudge(target))
+      requestAnimationFrame(() => setThemeColor(target))
+    }, delay + 500)
+    return () => { clearTimeout(id); clearTimeout(retry) }
   }, [slide, collapsed])
 
   useEffect(() => {
