@@ -135,5 +135,15 @@
     "urgent": "Urgent",
     "cols_2": "Two per row",
     "cols_1": "One per row"
+  },
+  "chats": {
+    "need_auth": "Introduce yourself to see your conversations.",
+    "empty": "No conversations yet. Message a seller and it'll show up here.",
+    "no_messages": "No messages yet",
+    "you": "You",
+    "just_now": "just now",
+    "min": "min",
+    "hour": "h",
+    "day": "d"
   }
 }

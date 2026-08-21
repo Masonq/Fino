@@ -44,6 +44,8 @@ export const api = {
     method: 'POST',
     body: JSON.stringify({ listing_id: listingId, buyer_id: buyerId }),
   }),
+  getChats: (userId, lang) => request(`/chats?${new URLSearchParams({ user_id: userId, lang })}`),
+  markChatRead: (chatId, userId) => request(`/chats/${chatId}/read?${new URLSearchParams({ user_id: userId })}`, { method: 'POST' }),
   getChat: (chatId) => request(`/chats/${chatId}`),
   getChatMessages: (chatId) => request(`/chats/${chatId}/messages`),
   sendMessage: (chatId, senderId, text) => request(`/chats/${chatId}/messages`, {

@@ -135,5 +135,15 @@
     "urgent": "Hitno",
     "cols_2": "Dva u redu",
     "cols_1": "Jedan u redu"
+  },
+  "chats": {
+    "need_auth": "Predstavite se da biste videli svoje razgovore.",
+    "empty": "Još nema razgovora. Pošaljite poruku prodavcu i pojaviće se ovde.",
+    "no_messages": "Još nema poruka",
+    "you": "Vi",
+    "just_now": "upravo sada",
+    "min": "min",
+    "hour": "č",
+    "day": "d"
   }
 }

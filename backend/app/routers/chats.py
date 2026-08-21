@@ -1,7 +1,8 @@
 import uuid
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import or_, func
 from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel
 
@@ -105,3 +106,96 @@ def send_message(chat_id: uuid.UUID, payload: SendMessageIn, db: Session = Depen
     db.refresh(message)
 
     return {"id": str(message.id), "sender_id": str(message.sender_id), "text": message.text, "created_at": message.created_at.isoformat()}
+
+@router.get("")
+def list_chats(
+    user_id: uuid.UUID,
+    lang: str = Query("ru"),
+    db: Session = Depends(get_db),
+):
+    """Список переписок пользователя — и как покупателя, и как продавца."""
+    chats = (
+        db.query(Chat)
+        .filter(or_(Chat.buyer_id == user_id, Chat.seller_id == user_id))
+        .order_by(Chat.last_message_at.desc().nullslast(), Chat.created_at.desc())
+        .all()
+    )
+    if not chats:
+        return {"total": 0, "items": []}
+
+    chat_ids = [c.id for c in chats]
+
+    # последнее сообщение в каждом чате
+    last_msgs = {}
+    for m in (
+        db.query(Message)
+        .filter(Message.chat_id.in_(chat_ids))
+        .order_by(Message.chat_id, Message.created_at.desc())
+        .all()
+    ):
+        last_msgs.setdefault(m.chat_id, m)
+
+    # сколько непрочитанных от собеседника
+    unread_rows = (
+        db.query(Message.chat_id, func.count(Message.id))
+        .filter(
+            Message.chat_id.in_(chat_ids),
+            Message.sender_id != user_id,
+            Message.is_read.is_(False),
+        )
+        .group_by(Message.chat_id)
+        .all()
+    )
+    unread = {cid: cnt for cid, cnt in unread_rows}
+
+    listings = {
+        l.id: l for l in db.query(Listing)
+        .options(joinedload(Listing.translations), joinedload(Listing.photos))
+        .filter(Listing.id.in_([c.listing_id for c in chats])).all()
+    }
+    user_ids = {c.buyer_id for c in chats} | {c.seller_id for c in chats}
+    users = {u.id: u for u in db.query(User).filter(User.id.in_(user_ids)).all()}
+
+    items = []
+    for c in chats:
+        listing = listings.get(c.listing_id)
+        translation = None
+        cover = None
+        if listing:
+            translation = next((t for t in listing.translations if t.language == lang), None)
+            if not translation and listing.translations:
+                translation = listing.translations[0]
+            cover = next((p for p in listing.photos if p.is_cover), listing.photos[0] if listing.photos else None)
+
+        other_id = c.seller_id if c.buyer_id == user_id else c.buyer_id
+        other = users.get(other_id)
+        msg = last_msgs.get(c.id)
+
+        items.append({
+            "id": str(c.id),
+            "listing_id": str(c.listing_id),
+            "listing_title": translation.title if translation else None,
+            "listing_photo": cover.thumbnail_url if cover else None,
+            "listing_price": float(listing.price) if listing and listing.price else None,
+            "currency": listing.currency if listing else None,
+            "other_name": other.display_name if other else None,
+            "is_seller": c.seller_id == user_id,
+            "last_text": (msg.text if msg else None),
+            "last_at": msg.created_at.isoformat() if msg else None,
+            "last_from_me": (msg.sender_id == user_id) if msg else False,
+            "unread": unread.get(c.id, 0),
+        })
+
+    return {"total": len(items), "items": items}
+
+
+@router.post("/{chat_id}/read")
+def mark_read(chat_id: uuid.UUID, user_id: uuid.UUID, db: Session = Depends(get_db)):
+    """Отмечаем сообщения собеседника прочитанными."""
+    db.query(Message).filter(
+        Message.chat_id == chat_id,
+        Message.sender_id != user_id,
+        Message.is_read.is_(False),
+    ).update({Message.is_read: True}, synchronize_session=False)
+    db.commit()
+    return {"status": "ok"}

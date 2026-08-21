@@ -25,6 +25,12 @@ export default function ChatScreen() {
     api.getChatMessages(id).then(setMessages).catch(() => setMessages([]))
   }
 
+  // помечаем сообщения собеседника прочитанными при открытии переписки
+  useEffect(() => {
+    if (!id || !myId) return
+    api.markChatRead(id, myId).catch(() => {})
+  }, [id, myId])
+
   useEffect(() => { load() }, [id])
 
   useEffect(() => {
