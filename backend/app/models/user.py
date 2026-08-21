@@ -28,10 +28,20 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    phone: Mapped[str] = mapped_column(String(32), unique=True, index=True)
-    email: Mapped[str | None] = mapped_column(String(255), unique=True, nullable=True)
-    hashed_password: Mapped[str] = mapped_column(String(255))
+    # Телефон больше не обязателен: войти можно по email или через внешний сервис
+    phone: Mapped[str | None] = mapped_column(String(32), unique=True, index=True, nullable=True)
+    email: Mapped[str | None] = mapped_column(String(255), unique=True, index=True, nullable=True)
+    hashed_password: Mapped[str | None] = mapped_column(String(255), nullable=True)
     display_name: Mapped[str] = mapped_column(String(120))
+
+    # Внешние сервисы входа — храним идентификатор в каждом
+    telegram_id: Mapped[str | None] = mapped_column(String(64), unique=True, index=True, nullable=True)
+    viber_id: Mapped[str | None] = mapped_column(String(64), unique=True, index=True, nullable=True)
+    google_id: Mapped[str | None] = mapped_column(String(64), unique=True, index=True, nullable=True)
+    apple_id: Mapped[str | None] = mapped_column(String(64), unique=True, index=True, nullable=True)
+
+    email_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+    avatar_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
 
     role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.buyer)
     default_language: Mapped[Language] = mapped_column(Enum(Language), default=Language.ru)

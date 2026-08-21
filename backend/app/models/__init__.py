@@ -2,6 +2,7 @@ from app.models.user import User, UserRole, Language
 from app.models.category import Category
 from app.models.listing import Listing, ListingTranslation, ListingPhoto, ListingStatus, Currency
 from app.models.favorites import Favorite, SavedSearch
+from app.models.verification import VerificationCode, VerifyChannel
 from app.models.chat import Chat, Message
 from app.models.trust import Review, Report, ReportReason, ReportStatus
 from app.models.promotion import Promotion, PromotionType
@@ -11,6 +12,7 @@ __all__ = [
     "Category",
     "Listing", "ListingTranslation", "ListingPhoto", "ListingStatus", "Currency",
     "Favorite", "SavedSearch",
+    "VerificationCode", "VerifyChannel",
     "Chat", "Message",
     "Review", "Report", "ReportReason", "ReportStatus",
     "Promotion", "PromotionType",
