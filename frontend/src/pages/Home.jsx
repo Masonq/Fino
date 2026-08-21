@@ -5,6 +5,7 @@ import { api } from '../api/client'
 import ListingCard from '../components/ListingCard'
 import LanguageSwitcher from '../components/LanguageSwitcher'
 import { CATEGORY_ICONS, FALLBACK_ICON } from '../components/CategoryIcons'
+import { CardSkeletons, CategorySkeletons } from '../components/Skeletons'
 
 const CITIES = ['Београд', 'Нови Сад', 'Ниш', 'Крагујевац', 'Суботица']
 
@@ -46,7 +47,9 @@ const PROMO_ICONS = {
 export default function Home() {
   const { t, i18n } = useTranslation()
   const [categories, setCategories] = useState([])
+  const [catsLoaded, setCatsLoaded] = useState(false)
   const [listings, setListings] = useState([])
+  const [feedLoaded, setFeedLoaded] = useState(false)
   const [cols, setCols] = useState(2)
   const [city, setCity] = useState(CITIES[0])
   const [collapsed, setCollapsed] = useState(false)
@@ -87,13 +90,17 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    api.getCategories().then(setCategories).catch(() => setCategories([]))
+    api.getCategories()
+      .then(setCategories)
+      .catch(() => setCategories([]))
+      .finally(() => setCatsLoaded(true))
   }, [])
 
   useEffect(() => {
     api.searchListings({ lang: i18n.language, limit: 12 })
       .then((res) => setListings(res.items || []))
       .catch(() => setListings([]))
+      .finally(() => setFeedLoaded(true))
   }, [i18n.language])
 
   return (
@@ -184,6 +191,14 @@ export default function Home() {
             </div>
           </Link>
         )
+        if (!catsLoaded) {
+          return (
+            <div className="cat-rows">
+              <div className="cat-row"><CategorySkeletons count={5} /></div>
+              <div className="cat-row"><CategorySkeletons count={5} /></div>
+            </div>
+          )
+        }
         return (
           <div className="cat-rows">
             <div className="cat-row">{top.map(renderTile)}</div>
@@ -205,13 +220,15 @@ export default function Home() {
       </div>
 
       <div className={cols === 2 ? 'infinite-grid' : 'infinite-list'}>
-        {listings.map((l) => (
-          <ListingCard key={l.id} listing={l} large={cols === 1} />
-        ))}
-        {listings.length === 0 && (
-          <p className="empty-hint">{t('common.no_listings')}</p>
-        )}
+        {!feedLoaded
+          ? <CardSkeletons count={cols === 2 ? 4 : 2} />
+          : listings.map((l) => (
+              <ListingCard key={l.id} listing={l} large={cols === 1} />
+            ))}
       </div>
+      {feedLoaded && listings.length === 0 && (
+        <p className="empty-hint">{t('common.no_listings')}</p>
+      )}
     </div>
   )
 }

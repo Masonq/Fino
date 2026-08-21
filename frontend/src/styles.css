@@ -434,3 +434,16 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   animation:sk-shimmer 1.3s ease-in-out infinite;
 }
 @keyframes sk-shimmer{ 0%{ background-position:100% 0 } 100%{ background-position:0 0 } }
+
+/* скелетон плитки категории */
+.cat-skeleton{
+  position:relative; height:82px; width:104px; border-radius:14px; padding:9px 11px;
+  background:#fff; border:1px solid rgba(20,30,25,.05); flex-shrink:0;
+}
+.sk-cat-line{ width:66%; height:10px; border-radius:5px; }
+.sk-cat-glyph{ position:absolute; right:9px; bottom:8px; width:26px; height:26px; border-radius:7px; }
+.sk-cat-line, .sk-cat-glyph{
+  background:linear-gradient(90deg,#EFEFEB 25%,#F7F7F4 37%,#EFEFEB 63%);
+  background-size:400% 100%;
+  animation:sk-shimmer 1.3s ease-in-out infinite;
+}

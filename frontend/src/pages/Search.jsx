@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import ListingCard from '../components/ListingCard'
+import { CardSkeletons } from '../components/Skeletons'
 
 const SORTS = [
   { key: 'new', label: 'Сначала новые' },
@@ -194,13 +195,7 @@ export default function Search() {
 
       <div className={cols === 2 ? 'infinite-grid' : 'infinite-list'}>
         {!loaded
-          ? Array.from({ length: cols === 2 ? 4 : 2 }).map((_, i) => (
-              <div className="card-skeleton" key={i}>
-                <div className="sk-photo" />
-                <div className="sk-line" />
-                <div className="sk-line short" />
-              </div>
-            ))
+          ? <CardSkeletons count={cols === 2 ? 4 : 2} />
           : items.map((l) => (
               <ListingCard key={l.id} listing={l} large={cols === 1} />
             ))}
