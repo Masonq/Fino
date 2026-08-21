@@ -134,7 +134,8 @@ def get_listing(listing_id: uuid.UUID, db: Session = Depends(get_db)):
 
     return {
         "id": str(listing.id),
-        "translations": {t.language: {"title": t.title, "description": t.description} for t in listing.translations},
+        "category_slug": listing.category.slug,
+        "translations": {t.language: {"title": t.title, "description": t.description, "is_auto_translated": t.is_auto_translated} for t in listing.translations},
         "price": float(listing.price) if listing.price else None,
         "currency": listing.currency,
         "price_negotiable": listing.price_negotiable,
