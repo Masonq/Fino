@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import String, ForeignKey, DateTime, Numeric, Boolean, Enum, Integer, Text
+from sqlalchemy import Index, text, String, ForeignKey, DateTime, Numeric, Boolean, Enum, Integer, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 
@@ -25,6 +25,14 @@ class Currency(str, enum.Enum):
 
 class Listing(Base):
     __tablename__ = "listings"
+    __table_args__ = (
+        # Главный запрос ленты: активные, сначала новые. Отдельные индексы
+        # тут не помогают — база сначала отберёт все активные, а их со
+        # временем будут десятки тысяч, и только потом отсортирует.
+        Index("ix_listings_feed", "status", "published_at"),
+        # То же для ленты внутри категории
+        Index("ix_listings_category_feed", "category_id", "status", "published_at"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
@@ -34,19 +42,19 @@ class Listing(Base):
     # Оригинальный язык, на котором продавец создал объявление
     source_language: Mapped[str] = mapped_column(String(8), default="ru")
 
-    price: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
+    price: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True, index=True)
     currency: Mapped[Currency] = mapped_column(Enum(Currency), default=Currency.eur)
     price_negotiable: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # Динамические атрибуты по схеме категории: {"brand": "BMW", "year": 2018, ...}
     attributes: Mapped[dict] = mapped_column(JSONB, default=dict)
 
-    city: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    city: Mapped[str | None] = mapped_column(String(120), nullable=True, index=True)
     location_lat: Mapped[float | None] = mapped_column(Numeric(9, 6), nullable=True)
     location_lng: Mapped[float | None] = mapped_column(Numeric(9, 6), nullable=True)
     hide_exact_address: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    status: Mapped[ListingStatus] = mapped_column(Enum(ListingStatus), default=ListingStatus.draft)
+    status: Mapped[ListingStatus] = mapped_column(Enum(ListingStatus), default=ListingStatus.draft, index=True)
     rejection_reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     is_urgent: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -58,7 +66,7 @@ class Listing(Base):
 
     price_history: Mapped[list] = mapped_column(JSONB, default=list)  # [{"price": 1000, "changed_at": "..."}]
 
-    published_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    published_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, index=True)
     expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -72,6 +80,15 @@ class Listing(Base):
 class ListingTranslation(Base):
     """Заголовок/описание на каждом языке — ручной перевод продавца или авто-перевод."""
     __tablename__ = "listing_translations"
+    __table_args__ = (
+        # Поиск по словам вместо перебора всех описаний подряд. Без этого
+        # каждый запрос читает всю таблицу — при тысячах объявлений заметно.
+        Index(
+            "ix_translations_search",
+            text("to_tsvector('simple', coalesce(title,'') || ' ' || coalesce(description,''))"),
+            postgresql_using="gin",
+        ),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     listing_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("listings.id"), index=True)

@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel, Field, field_validator
 
@@ -139,12 +139,22 @@ def search_listings(
 
     # текстовый поиск по заголовку и описанию на любом из языков
     if q_text:
-        pattern = f"%{q_text.strip()}%"
+        words = q_text.strip()
+        # Поиск по словам через полнотекстовый индекс. Дополнительно ищем
+        # по началу слова, чтобы «дива» находило «диван» — люди часто
+        # не дописывают.
+        tsquery = func.plainto_tsquery("simple", words)
+        haystack = func.to_tsvector(
+            "simple",
+            func.coalesce(ListingTranslation.title, "") + " " +
+            func.coalesce(ListingTranslation.description, ""),
+        )
+        prefix = f"{words}%"
         q = q.filter(
             Listing.translations.any(
                 or_(
-                    ListingTranslation.title.ilike(pattern),
-                    ListingTranslation.description.ilike(pattern),
+                    haystack.op("@@")(tsquery),
+                    ListingTranslation.title.ilike(prefix),
                 )
             )
         )
@@ -152,7 +162,10 @@ def search_listings(
     if category_slug:
         q = q.join(Category).filter(Category.slug == category_slug)
     if city:
-        q = q.filter(Listing.city.ilike(f"%{city}%"))
+        # Точное совпадение вместо поиска подстроки: город теперь хранится
+        # кодом, а не текстом, поэтому ilike с процентом впереди только
+        # мешал — он не даёт использовать индекс.
+        q = q.filter(Listing.city == city)
     if price_min is not None:
         q = q.filter(Listing.price >= price_min)
     if price_max is not None:
