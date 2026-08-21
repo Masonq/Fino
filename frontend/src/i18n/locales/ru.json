@@ -6,7 +6,9 @@
     "recommendations": "Рекомендации",
     "all_categories": "Все категории",
     "find_category": "Найти категорию",
-    "no_listings": "Объявлений пока нет"
+    "no_listings": "Объявлений пока нет",
+    "login": "Войти",
+    "safe_deal": "Безопасная сделка"
   },
   "nav": {
     "home": "Главная",

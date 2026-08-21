@@ -6,7 +6,9 @@
     "recommendations": "Recommended",
     "all_categories": "All categories",
     "find_category": "Find a category",
-    "no_listings": "No listings yet"
+    "no_listings": "No listings yet",
+    "login": "Log in",
+    "safe_deal": "Safe deal"
   },
   "nav": {
     "home": "Home",

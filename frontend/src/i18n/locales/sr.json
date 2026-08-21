@@ -6,7 +6,9 @@
     "recommendations": "Preporuke",
     "all_categories": "Sve kategorije",
     "find_category": "Pronađi kategoriju",
-    "no_listings": "Još nema oglasa"
+    "no_listings": "Još nema oglasa",
+    "login": "Prijava",
+    "safe_deal": "Sigurna kupovina"
   },
   "nav": {
     "home": "Početna",
