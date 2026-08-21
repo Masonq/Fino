@@ -147,10 +147,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .col-btn svg{ width:15px; height:15px; }
 
 /* ===== simple listing card (Avito-style) ===== */
-.infinite-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px 12px; padding:0 18px; }
+.infinite-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px 8px; padding:0 18px; }
 .infinite-list{ display:flex; flex-direction:column; gap:20px; padding:0 18px; }
 
-.s-photo-wrap{ position:relative; display:block; border-radius:16px; overflow:hidden; aspect-ratio:1/0.95; background:#ddd; }
+.s-photo-wrap{ position:relative; display:block; border-radius:12px; overflow:hidden; aspect-ratio:1/0.95; background:#ddd; }
 .l-card .s-photo-wrap{ aspect-ratio:16/10.5; border-radius:18px; }
 .s-photo-wrap img{ width:100%; height:100%; object-fit:cover; display:block; }
 .photo-placeholder{ width:100%; height:100%; background:linear-gradient(135deg,#DDE3DF,#C9D2CC); }
@@ -158,7 +158,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .badge-top{ position:absolute; top:10px; left:10px; background:#fff; font-size:10px; font-weight:800; padding:5px 9px; border-radius:8px; }
 .badge-top.urgent{ background:var(--coral); color:#fff; }
 
-.s-row{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-top:9px; }
+.s-row{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-top:7px; }
 .s-title{ font-size:13px; font-weight:500; color:var(--ink); line-height:1.4; flex:1; }
 .l-card .s-title{ font-size:15px; font-weight:600; }
 .s-fav{ flex-shrink:0; color:var(--muted); margin-top:1px; }
