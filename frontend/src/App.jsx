@@ -64,7 +64,6 @@ export default function App() {
     <AuthProvider>
     <FavoritesProvider>
     <div className="app-shell">
-      <div className={pathname === '/' ? 'status-tint hidden' : 'status-tint'} aria-hidden="true" />
       <main className={hideNav ? '' : 'has-bottomnav'}>
         <Routes>
           <Route path="/" element={<Home />} />
