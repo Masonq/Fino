@@ -22,16 +22,24 @@ uvicorn app.main:app --reload --port 8000
 ```
 cd frontend
 npm install
+cp .env.example .env   # указать реальный адрес бэкенда
 npm run dev
 ```
 
+## Демо-данные (опционально, для проверки ленты вживую)
+```
+cd backend
+python seed_demo_listings.py
+```
+
 ## Этап 1 (MVP) — что уже есть в этом коммите
-- Схема БД: users, categories, listings (+ translations, photos), favorites,
-  saved_searches, chats, messages, reviews, reports, promotions
-- 4 стартовые категории с динамическими атрибутами: недвижимость, авто, услуги, работа
+- Схема БД: users, categories (+ image_url/color для фото-плиток), listings (+ translations, photos),
+  favorites, saved_searches, chats, messages, reviews, reports, promotions
+- 12 категорий с динамическими атрибутами (4 из MVP с полной схемой атрибутов + остальные из ТЗ)
 - API: категории, создание/поиск/просмотр объявлений
-- Фронтенд-каркас: главная (категории), поиск (заглушка), публикация (заглушка),
-  переключатель языка RU/EN/SR с сохранением выбора
+- Фронтенд: главная (фото-категории, лента с переключателем 2/1 колонки), экран "Все категории",
+  переключатель языка RU/EN/SR с сохранением выбора, карточка объявления в стиле Avito
+- Systemd-сервисы для бэкенда и фронтенда (деплой в deploy/)
 
 ## Что дальше (по roadmap из ТЗ)
 - Динамическая форма публикации объявления по схеме категории

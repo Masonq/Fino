@@ -1,5 +1,13 @@
 {
   "app_name": "Fino",
+  "common": {
+    "all": "Все",
+    "more": "Ещё",
+    "recommendations": "Рекомендации",
+    "all_categories": "Все категории",
+    "find_category": "Найти категорию",
+    "no_listings": "Объявлений пока нет"
+  },
   "nav": {
     "home": "Главная",
     "search": "Поиск",

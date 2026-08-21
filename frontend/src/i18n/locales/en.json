@@ -1,5 +1,13 @@
 {
   "app_name": "Fino",
+  "common": {
+    "all": "All",
+    "more": "More",
+    "recommendations": "Recommended",
+    "all_categories": "All categories",
+    "find_category": "Find a category",
+    "no_listings": "No listings yet"
+  },
   "nav": {
     "home": "Home",
     "search": "Search",

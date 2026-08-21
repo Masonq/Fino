@@ -26,6 +26,8 @@ class Category(Base):
     attribute_schema: Mapped[list] = mapped_column(JSONB, default=list)
 
     icon: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    color: Mapped[str | None] = mapped_column(String(16), nullable=True)
 
     children = relationship("Category", backref="parent", remote_side=[id])
     listings = relationship("Listing", back_populates="category")

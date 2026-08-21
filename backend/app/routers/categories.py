@@ -18,6 +18,8 @@ def list_categories(db: Session = Depends(get_db)):
             "slug": cat.slug,
             "name": cat.name,
             "icon": cat.icon,
+            "image_url": cat.image_url,
+            "color": cat.color,
             "children": [serialize(c) for c in cat.children] if cat.children else [],
         }
 

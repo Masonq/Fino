@@ -2,36 +2,85 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
+import ListingCard from '../components/ListingCard'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 
 export default function Home() {
   const { t, i18n } = useTranslation()
   const [categories, setCategories] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [listings, setListings] = useState([])
+  const [cols, setCols] = useState(2)
 
   useEffect(() => {
-    api.getCategories()
-      .then(setCategories)
-      .catch(() => setCategories([]))
-      .finally(() => setLoading(false))
+    api.getCategories().then(setCategories).catch(() => setCategories([]))
   }, [])
+
+  useEffect(() => {
+    api.searchListings({ lang: i18n.language, limit: 12 })
+      .then((res) => setListings(res.items || []))
+      .catch(() => setListings([]))
+  }, [i18n.language])
 
   return (
     <div className="home">
-      <h1>{t('app_name')}</h1>
-
-      <div className="category-grid">
-        {loading && <p>...</p>}
-        {categories.map((cat) => (
-          <Link key={cat.id} to={`/search?category=${cat.slug}`} className="category-card">
-            <span className="category-name">{cat.name?.[i18n.language] || cat.name?.ru}</span>
-          </Link>
-        ))}
-        {!loading && categories.length === 0 && (
-          <p className="empty-hint">Категории появятся после сидирования БД (seed_categories.py)</p>
-        )}
+      <div className="topbar">
+        <div className="topbar-row">
+          <div className="brand-lockup">
+            <div className="seal">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4"><path d="M20 6 9 17l-5-5" /></svg>
+            </div>
+            <div className="brand-word">{t('app_name')}</div>
+          </div>
+          <LanguageSwitcher />
+        </div>
+        <Link to="/search" className="search-bar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+          {t('search.placeholder')}
+        </Link>
       </div>
 
-      <Link to="/post" className="post-ad-btn">{t('listing.post_new')}</Link>
+      <div className="section-head">
+        <div className="section-title">{t('nav.search')}</div>
+        <Link to="/categories" className="section-link">{t('common.all')} →</Link>
+      </div>
+      <div className="cat-scroll">
+        {categories.map((cat) => (
+          <Link key={cat.id} to={`/search?category=${cat.slug}`} className="cat-tile">
+            <div className="cat-photo-wrap">
+              {cat.image_url && <img src={cat.image_url} alt="" />}
+              <div className="cat-dot" style={{ background: cat.color || '#0E9F6E' }} />
+            </div>
+            <div className="cat-label">{cat.name?.[i18n.language] || cat.name?.ru}</div>
+          </Link>
+        ))}
+        <Link to="/categories" className="cat-tile more">
+          <div className="cat-photo-wrap more-tile">
+            <span>+{Math.max(categories.length - 4, 0)}</span>
+          </div>
+          <div className="cat-label">{t('common.more')}</div>
+        </Link>
+      </div>
+
+      <div className="feed-head-row">
+        <div className="feed-heading">{t('common.recommendations')}</div>
+        <div className="col-toggle">
+          <button className={cols === 2 ? 'col-btn active' : 'col-btn'} onClick={() => setCols(2)}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="3" y="4" width="7" height="16" rx="1.5" /><rect x="14" y="4" width="7" height="16" rx="1.5" /></svg>
+          </button>
+          <button className={cols === 1 ? 'col-btn active' : 'col-btn'} onClick={() => setCols(1)}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="4" y="4" width="16" height="16" rx="2" /></svg>
+          </button>
+        </div>
+      </div>
+
+      <div className={cols === 2 ? 'infinite-grid' : 'infinite-list'}>
+        {listings.map((l) => (
+          <ListingCard key={l.id} listing={l} large={cols === 1} />
+        ))}
+        {listings.length === 0 && (
+          <p className="empty-hint">{t('common.no_listings')}</p>
+        )}
+      </div>
     </div>
   )
 }
