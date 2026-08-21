@@ -115,18 +115,20 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .avito-promo-text{ display:flex; align-items:center; gap:5px; font-size:22px; font-weight:800; color:#fff; letter-spacing:-0.015em; line-height:1.15; }
 /* стрелка не должна сжиматься и переезжать при смене длины заголовка */
 .promo-text-label{ white-space:nowrap; }
-.promo-chevron{ flex-shrink:0; }
+.promo-chevron{ flex-shrink:0; position:relative; top:1px; }
 .banner-meta{ display:flex; align-items:center; gap:7px; }
 
 /* карусель промо-слайдов */
-/* фиксированная высота: слайды с разной длиной заголовка не должны
-   менять высоту блока — иначе стрелка и всё под ней подпрыгивает */
-.promo-slides{ position:relative; display:grid; min-height:26px; align-items:center; }
+/* высота фиксирована по самому высокому слайду: иначе блок «дышит» при смене */
+.promo-slides{ position:relative; display:grid; height:27px; }
 .promo-slide{
-  grid-area:1 / 1; opacity:0; transform:translateY(6px); pointer-events:none;
-  transition:opacity .45s ease, transform .45s cubic-bezier(.25,.46,.45,.94);
+  grid-area:1 / 1; opacity:0; pointer-events:none;
+  /* только прозрачность: сдвиг translateY заставлял ячейку сетки «дышать»,
+     и стрелка вместе с текстом подпрыгивала при каждой смене слайда */
+  transition:opacity .4s ease;
+  align-self:center;
 }
-.promo-slide.active{ opacity:1; transform:translateY(0); pointer-events:auto; }
+.promo-slide.active{ opacity:1; pointer-events:auto; }
 
 
 .avito-promo-illustration{ position:relative; }
