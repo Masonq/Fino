@@ -47,7 +47,7 @@ const PHOTO_SHIFT = {
   business: [0, -4],
   pets: [0, -3],
   kids: [0, -2],
-  auto: [0, 4],
+  auto: [0, 9],
   fashion: [-4, 0],
   'home-garden': [0, 5],
 }
