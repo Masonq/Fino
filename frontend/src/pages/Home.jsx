@@ -34,12 +34,12 @@ const PHOTO_SCALE = {
 // Бизнес и хобби сидят ровно — их не двигаем.
 const PHOTO_SHIFT = {
   __all: [-2, 0],
-  // приподнимаем те, что упирались в нижний край
-  services: [0, -2],
-  'hobby-sport': [0, -2],
-  business: [0, -2],
-  'real-estate': [0, -1],
-  jobs: [0, -1],
+  // широкие картинки уходили за правый край — держим их левее
+  'real-estate': [-6, -2],
+  services: [-6, -3],
+  business: [-6, -3],
+  'hobby-sport': [-4, -3],
+  jobs: [-3, -2],
 }
 
 const PROMO_IMAGES = {
