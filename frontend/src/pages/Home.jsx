@@ -49,7 +49,7 @@ export default function Home() {
         <Link to="/search" className="avito-promo-row">
           <span className="avito-promo-text">{t('common.safe_deal')} <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="m9 6 6 6-6 6" /></svg></span>
           <div className="avito-promo-illustration">
-            <img src="/promo-safe-deal.png" alt="" onError={(e) => { e.target.style.display = 'none' }} />
+            <img src="/promo-safe-deal.png" alt="" />
           </div>
         </Link>
       </div>
