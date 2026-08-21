@@ -52,11 +52,11 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* ===== Avito-style: градиентная плашка (поиск + Войти + промо) ===== */
 .avito-banner-frame{
-  background:linear-gradient(155deg, #86DEB4 0%, #C9EEDC 100%);
+  background:linear-gradient(135deg, #0B5C42 0%, #16A876 100%);
   padding:calc(5px + env(safe-area-inset-top)) 5px 5px; border-radius:0 0 30px 30px;
 }
 .avito-banner{
-  background:linear-gradient(155deg, #E7F6EE 0%, #F7F6F0 55%, #FDFDFB 100%);
+  background:linear-gradient(135deg, #0E9F6E 0%, #17C98C 55%, #3FE0A8 100%);
   padding:12px 13px 13px; border-radius:0 0 27px 27px;
 }
 .avito-toprow{ display:flex; gap:8px; margin-bottom:14px; }
@@ -87,14 +87,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .avito-login-pill .avatar-mini{ width:26px; height:26px; font-size:10.5px; }
 
-.avito-promo-row{ display:flex; align-items:center; justify-content:space-between; padding:2px 4px; }
-.avito-promo-text{ display:flex; align-items:center; gap:4px; font-size:14.5px; font-weight:700; color:var(--ink); letter-spacing:-0.01em; }
-.avito-promo-badge{
-  width:28px; height:28px; border-radius:9px; background:var(--primary); display:flex;
-  align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(14,159,110,.28); flex-shrink:0;
-}
+.avito-promo-row{ display:flex; align-items:center; justify-content:space-between; padding:6px 4px 2px; gap:10px; }
+.avito-promo-text{ display:flex; align-items:center; gap:4px; font-size:15px; font-weight:800; color:#fff; letter-spacing:-0.01em; line-height:1.25; }
+.avito-promo-illustration{ width:82px; height:62px; flex-shrink:0; display:flex; align-items:flex-end; justify-content:flex-end; }
+.avito-promo-illustration img{ max-width:100%; max-height:100%; object-fit:contain; }
 
-.header-meta-row{ display:flex; align-items:center; gap:8px; margin-top:14px; }
+.page-meta-row{ display:flex; align-items:center; gap:8px; padding:12px 18px 0; }
 .city-pill{
   position:relative; display:flex; align-items:center; gap:5px; background:#fff; border-radius:11px;
   padding:8px 10px; box-shadow:var(--shadow); color:var(--primary-deep);

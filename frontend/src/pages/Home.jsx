@@ -48,26 +48,26 @@ export default function Home() {
 
         <Link to="/search" className="avito-promo-row">
           <span className="avito-promo-text">{t('common.safe_deal')} <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="m9 6 6 6-6 6" /></svg></span>
-          <div className="avito-promo-badge">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><path d="M20 6 9 17l-5-5" /></svg>
+          <div className="avito-promo-illustration">
+            <img src="/promo-safe-deal.png" alt="" onError={(e) => { e.target.style.display = 'none' }} />
           </div>
         </Link>
-
-        <div className="header-meta-row">
-          <div className="city-pill">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-              <path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" />
-            </svg>
-            <select value={city} onChange={(e) => setCity(e.target.value)} aria-label="Город">
-              {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" className="city-pill-chevron">
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          </div>
-          <LanguageSwitcher />
-        </div>
       </div>
+      </div>
+
+      <div className="page-meta-row">
+        <div className="city-pill">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+            <path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" />
+          </svg>
+          <select value={city} onChange={(e) => setCity(e.target.value)} aria-label="Город">
+            {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" className="city-pill-chevron">
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </div>
+        <LanguageSwitcher />
       </div>
 
       <div className="cat-grid-2row">
