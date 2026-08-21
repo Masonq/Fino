@@ -55,7 +55,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   padding:calc(9px + env(safe-area-inset-top)) 14px 10px; border-radius:0 0 22px 22px;
   margin:0;
   will-change:background-color;
-  transition:background-color .8s ease, background-image .8s ease, padding-bottom .42s cubic-bezier(.25,.46,.45,.94), border-radius .42s cubic-bezier(.25,.46,.45,.94);
+  transition:background-color .8s ease, background-image .8s ease, padding-bottom .8s cubic-bezier(.25,.46,.45,.94), border-radius .8s cubic-bezier(.25,.46,.45,.94);
 }
 /* белая полоса поверх области статус-бара в схлопнутом виде —
    страховка на случай, если Safari не пересчитает цвет тулбара */
@@ -77,17 +77,17 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* анимируем через grid-rows + transform: браузер не пересчитывает раскладку каждый кадр */
 .avito-banner .promo-collapse{
   display:grid; grid-template-rows:1fr;
-  transition:grid-template-rows .42s cubic-bezier(.25,.46,.45,.94);
+  transition:grid-template-rows .8s cubic-bezier(.25,.46,.45,.94);
 }
 .avito-banner.collapsed .promo-collapse{ grid-template-rows:0fr; }
 .avito-banner .promo-collapse > *{ overflow:hidden; min-height:0; }
 .avito-banner .avito-promo-row{
   opacity:1; transform:translateY(0);
-  transition:opacity .3s ease, transform .42s cubic-bezier(.25,.46,.45,.94);
+  transition:opacity .55s ease, transform .8s cubic-bezier(.25,.46,.45,.94);
   will-change:opacity, transform;
 }
 .avito-banner.collapsed .avito-promo-row{ opacity:0; transform:translateY(-2px); }
-.avito-banner .avito-toprow{ transition:margin-bottom .42s cubic-bezier(.25,.46,.45,.94); }
+.avito-banner .avito-toprow{ transition:margin-bottom .8s cubic-bezier(.25,.46,.45,.94); }
 .avito-banner.collapsed .avito-toprow{ margin-bottom:0; }
 .avito-banner .avito-search,
 .avito-banner .avito-login-pill{ transition:background .8s ease, box-shadow .8s ease; }
