@@ -49,6 +49,7 @@ const PHOTO_SHIFT = {
   kids: [0, -2],
   auto: [0, 4],
   fashion: [-4, 0],
+  'home-garden': [0, 5],
 }
 
 const PROMO_IMAGES = {
