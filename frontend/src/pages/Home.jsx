@@ -50,34 +50,20 @@ export default function Home() {
   const [cols, setCols] = useState(2)
   const [city, setCity] = useState(CITIES[0])
   const [collapsed, setCollapsed] = useState(false)
-  const [slide, setSlide] = useState(0)
+  // слайд выбирается один раз при загрузке страницы (как у Avito) — без автокарусели,
+  // иначе цвет статус-бара не успевает за сменой и отстаёт
+  const [slide] = useState(() => Math.floor(Math.random() * PROMO_SLIDES.length))
 
-  // авто-прокрутка промо-слайдов
+  // Статус-бар красим один раз под выбранный слайд и при скролле НЕ трогаем:
+  // Safari перерисовывает theme-color медленно, и при переключениях туда-обратно
+  // цвет «уходил» и не возвращался при скролле наверх.
   useEffect(() => {
-    if (collapsed) return
-    const id = setInterval(() => setSlide((s) => (s + 1) % PROMO_SLIDES.length), 4500)
-    return () => clearInterval(id)
-  }, [collapsed])
-
-  // статус-бар iOS перекрашиваем под текущий слайд, чтобы верх экрана сливался с баннером.
-  // Safari кэширует theme-color, поэтому мета-тег пересоздаём, а не меняем значение —
-  // иначе при возврате наверх после скролла цвет не подхватывается.
-  // Статус-бар iOS: theme-color Safari перерисовывает с задержкой и не успевает
-  // за сменой слайдов, поэтому красим саму область статус-бара элементом страницы —
-  // цвет меняется мгновенно вместе с баннером. theme-color оставляем как запасной
-  // вариант для первой отрисовки и для Android.
-  useEffect(() => {
-    const color = collapsed ? '#FAFAF9' : PROMO_SLIDES[slide].top
-    const delay = collapsed ? 380 : 0
-    const id = setTimeout(() => {
-      document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.remove())
-      const meta = document.createElement('meta')
-      meta.setAttribute('name', 'theme-color')
-      meta.setAttribute('content', color)
-      document.head.appendChild(meta)
-    }, delay)
-    return () => clearTimeout(id)
-  }, [slide, collapsed])
+    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.remove())
+    const meta = document.createElement('meta')
+    meta.setAttribute('name', 'theme-color')
+    meta.setAttribute('content', PROMO_SLIDES[slide].top)
+    document.head.appendChild(meta)
+  }, [slide])
 
   useEffect(() => {
     let ticking = false
@@ -112,12 +98,8 @@ export default function Home() {
     <div className="home">
       <div
         className={collapsed ? 'avito-banner collapsed' : 'avito-banner'}
-        style={collapsed ? undefined : { background: PROMO_SLIDES[slide].grad }}
+        style={{ background: collapsed ? PROMO_SLIDES[slide].top : PROMO_SLIDES[slide].grad }}
       >
-        <div
-          className="status-bar-fill"
-          style={{ background: collapsed ? '#FAFAF9' : PROMO_SLIDES[slide].top }}
-        />
         <div className="avito-toprow">
           <Link to="/search" className="avito-search">
             <div className="avito-search-logo">

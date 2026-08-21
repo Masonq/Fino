@@ -57,19 +57,11 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   will-change:background-color;
   transition:background .9s ease, padding-bottom .42s cubic-bezier(.25,.46,.45,.94), border-radius .42s cubic-bezier(.25,.46,.45,.94);
 }
-/* заливка области статус-бара — красится синхронно с баннером, без задержки Safari */
-.status-bar-fill{
-  position:fixed; top:0; left:0; right:0; height:env(safe-area-inset-top);
-  z-index:16; pointer-events:none;
-  transition:background .9s ease;
-}
-
 /* схлопнутое состояние при скролле — как у Avito: промо уезжает, поиск липнет сверху */
 .avito-banner.collapsed{
-  background:#FAFAF9;
   border-radius:0;
   padding-bottom:8px;
-  box-shadow:0 1px 0 rgba(20,30,25,.07);
+  box-shadow:0 2px 10px rgba(20,30,25,.10);
 }
 /* анимируем через grid-rows + transform: браузер не пересчитывает раскладку каждый кадр */
 .avito-banner .promo-collapse{
@@ -88,8 +80,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .avito-banner.collapsed .avito-toprow{ margin-bottom:0; }
 .avito-banner .avito-search,
 .avito-banner .avito-login-pill{ transition:background .42s cubic-bezier(.25,.46,.45,.94), box-shadow .3s ease; }
-.avito-banner.collapsed .avito-search{ background:#F1F1EC; box-shadow:none; }
-.avito-banner.collapsed .avito-login-pill{ background:#F1F1EC; }
+.avito-banner.collapsed .avito-search{ background:#FDFDFB; }
 .avito-toprow{ display:flex; gap:7px; margin-bottom:8px; }
 .avito-search{
   flex:1; display:flex; align-items:center; gap:9px; background:#FDFDFB; border-radius:15px;
