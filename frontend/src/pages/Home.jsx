@@ -36,13 +36,13 @@ const PHOTO_SCALE = {
 // Бизнес и хобби сидят ровно — их не двигаем.
 // Поворот в градусах: плюс — по часовой стрелке.
 const PHOTO_ROTATE = {
-  services: 14,
+  services: 26,
 }
 
 const PHOTO_SHIFT = {
   __all: [-2, 0],
   // высокие предметы упирались в нижний край — приподнимаем
-  services: [4, -1],
+  services: [-4, 4],
   beauty: [0, -1],
   business: [0, -4],
   pets: [0, -3],
