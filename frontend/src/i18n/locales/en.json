@@ -260,5 +260,10 @@
     "title": "Recently viewed",
     "clear": "Clear",
     "empty": "Listings you open will show up here"
+  },
+  "net": {
+    "offline": "No internet connection",
+    "load_failed": "Couldn't load. Check your connection",
+    "retry": "Try again"
   }
 }

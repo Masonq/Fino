@@ -7,6 +7,7 @@ import LanguageSwitcher from '../components/LanguageSwitcher'
 import { CardSkeletons, CategorySkeletons } from '../components/Skeletons'
 import PullToRefresh from '../components/PullToRefresh'
 import SearchOverlay from '../components/SearchOverlay'
+import OfflineNotice, { LoadError } from '../components/OfflineNotice'
 import { useAuth } from '../context/AuthContext'
 import { CITIES, cityLabel } from '../data/cities'
 
@@ -67,6 +68,7 @@ export default function Home() {
   const [catsLoaded, setCatsLoaded] = useState(false)
   const [listings, setListings] = useState([])
   const [feedLoaded, setFeedLoaded] = useState(false)
+  const [feedError, setFeedError] = useState(false)
   const [feedTotal, setFeedTotal] = useState(0)
   const [loadingMore, setLoadingMore] = useState(false)
   const sentinelRef = useRef(null)
@@ -125,8 +127,9 @@ export default function Home() {
       .then((res) => {
         setListings(res.items || [])
         setFeedTotal(res.total || 0)
+        setFeedError(false)
       })
-      .catch(() => setListings([]))
+      .catch(() => { setListings([]); setFeedError(true) })
       .finally(() => setFeedLoaded(true))
   ), [i18n.language])
 
@@ -165,6 +168,7 @@ export default function Home() {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
+      <OfflineNotice onRetry={loadFeed} />
     <div className="home">
       <div
         className={collapsed ? 'avito-banner collapsed' : 'avito-banner'}
@@ -310,7 +314,9 @@ export default function Home() {
             ))}
       </div>
       {feedLoaded && listings.length === 0 && (
-        <p className="empty-hint">{t('common.no_listings')}</p>
+        feedError
+          ? <LoadError onRetry={() => { setFeedLoaded(false); loadFeed() }} />
+          : <p className="empty-hint">{t('common.no_listings')}</p>
       )}
 
       <div ref={sentinelRef} className="feed-sentinel">

@@ -260,5 +260,10 @@
     "title": "Nedavno gledano",
     "clear": "Obriši",
     "empty": "Ovde će se pojaviti oglasi koje otvorite"
+  },
+  "net": {
+    "offline": "Nema internet veze",
+    "load_failed": "Učitavanje nije uspelo. Proverite vezu",
+    "retry": "Pokušaj ponovo"
   }
 }

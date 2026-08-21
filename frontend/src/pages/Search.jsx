@@ -5,6 +5,7 @@ import { api } from '../api/client'
 import ListingCard from '../components/ListingCard'
 import { CardSkeletons } from '../components/Skeletons'
 import { CITIES, cityLabel } from '../data/cities'
+import { LoadError } from '../components/OfflineNotice'
 import { useAuth } from '../context/AuthContext'
 
 const SORTS = [
@@ -28,6 +29,8 @@ export default function Search() {
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [loaded, setLoaded] = useState(false)
+  const [error, setError] = useState(false)
+  const [retry, setRetry] = useState(0)
   const [showFilters, setShowFilters] = useState(false)
   const [cols, setCols] = useState(2)
 
@@ -67,12 +70,12 @@ export default function Search() {
     const id = setTimeout(() => {
       setLoading(true)
       api.searchListings(query)
-        .then((res) => { setItems(res.items || []); setTotal(res.total || 0) })
-        .catch(() => { setItems([]); setTotal(0) })
+        .then((res) => { setItems(res.items || []); setTotal(res.total || 0); setError(false) })
+        .catch(() => { setItems([]); setTotal(0); setError(true) })
         .finally(() => { setLoading(false); setLoaded(true) })
     }, wait)
     return () => clearTimeout(id)
-  }, [query])
+  }, [query, retry])
 
   // синхронизируем адрес страницы, чтобы результат можно было переслать ссылкой
   useEffect(() => {
@@ -248,7 +251,9 @@ export default function Search() {
       </div>
 
       {loaded && !loading && items.length === 0 && (
-        <p className="empty-hint">{t('search.nothing')}</p>
+        error
+          ? <LoadError onRetry={() => { setLoaded(false); setRetry((n) => n + 1) }} />
+          : <p className="empty-hint">{t('search.nothing')}</p>
       )}
 
       <div ref={sentinelRef} className="feed-sentinel">
