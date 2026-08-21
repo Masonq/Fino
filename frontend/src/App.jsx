@@ -18,6 +18,13 @@ export default function App() {
     window.scrollTo(0, 0)
   }, [pathname])
 
+  // на не-главных экранах статус-бар нейтральный (на главной им управляет карусель баннера)
+  useEffect(() => {
+    if (pathname === '/') return
+    const meta = document.querySelector('meta[name="theme-color"]')
+    if (meta) meta.setAttribute('content', '#FAFAF9')
+  }, [pathname])
+
   // Обходной приём для известного бага iOS 26: после закрытия клавиатуры
   // visualViewport.offsetTop иногда не сбрасывается в 0, из-за чего
   // координаты тапов расходятся с тем, что видно на экране.
