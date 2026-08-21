@@ -5,11 +5,14 @@ import { api } from '../api/client'
 import ListingCard from '../components/ListingCard'
 import LanguageSwitcher from '../components/LanguageSwitcher'
 
+const CITIES = ['Београд', 'Нови Сад', 'Ниш', 'Крагујевац', 'Суботица']
+
 export default function Home() {
   const { t, i18n } = useTranslation()
   const [categories, setCategories] = useState([])
   const [listings, setListings] = useState([])
   const [cols, setCols] = useState(2)
+  const [city, setCity] = useState(CITIES[0])
 
   useEffect(() => {
     api.getCategories().then(setCategories).catch(() => setCategories([]))
@@ -31,12 +34,30 @@ export default function Home() {
             </div>
             <div className="brand-word">{t('app_name')}</div>
           </div>
-          <LanguageSwitcher />
+          <div className="header-right">
+            <div className="city-pill">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+                <path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" />
+              </svg>
+              <select value={city} onChange={(e) => setCity(e.target.value)} aria-label="Город">
+                {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" className="city-pill-chevron">
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </div>
+            <LanguageSwitcher />
+          </div>
         </div>
-        <Link to="/search" className="search-bar">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
-          {t('search.placeholder')}
-        </Link>
+        <div className="search-row">
+          <Link to="/search" className="search-bar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+            {t('search.placeholder')}
+          </Link>
+          <Link to="/search" className="filter-fab" aria-label="Фильтры">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
+          </Link>
+        </div>
       </div>
 
       <div className="section-head">
