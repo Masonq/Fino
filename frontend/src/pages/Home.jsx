@@ -9,11 +9,11 @@ import { CATEGORY_ICONS, FALLBACK_ICON } from '../components/CategoryIcons'
 const CITIES = ['Београд', 'Нови Сад', 'Ниш', 'Крагујевац', 'Суботица']
 
 const PROMO_SLIDES = [
-  { key: 'safe_deal', to: '/search', icon: 'shield', top: '#0E9F6E', grad: 'linear-gradient(150deg, #0E9F6E 0%, #1DB388 35%, #34D8A8 70%, #5CE8CC 100%)' },
-  { key: 'free_post', to: '/post', icon: 'tag', top: '#F2860C', grad: 'linear-gradient(150deg, #F2860C 0%, #F5A524 40%, #FFC259 75%, #FFD98A 100%)' },
-  { key: 'три_языка', to: '/search', icon: 'globe', top: '#3B5BF6', grad: 'linear-gradient(150deg, #3B5BF6 0%, #4F7BF7 38%, #6D9BFB 72%, #93BAFF 100%)' },
-  { key: 'verified', to: '/search', icon: 'check', top: '#6D3DFC', grad: 'linear-gradient(150deg, #6D3DFC 0%, #8156FD 38%, #9E7BFE 72%, #BEA4FF 100%)' },
-  { key: 'local', to: '/search', icon: 'pin', top: '#E0326B', grad: 'linear-gradient(150deg, #E0326B 0%, #F0507F 38%, #FA7A9D 72%, #FFA8BF 100%)' },
+  { key: 'safe_deal', to: '/search', icon: 'shield', top: '#0E9F6E', grad: 'linear-gradient(180deg, #0E9F6E 0%, #0E9F6E 22%, #1DB388 48%, #34D8A8 78%, #5CE8CC 100%)' },
+  { key: 'free_post', to: '/post', icon: 'tag', top: '#F2860C', grad: 'linear-gradient(180deg, #F2860C 0%, #F2860C 22%, #F5A524 48%, #FFC259 78%, #FFD98A 100%)' },
+  { key: 'три_языка', to: '/search', icon: 'globe', top: '#3B5BF6', grad: 'linear-gradient(180deg, #3B5BF6 0%, #3B5BF6 22%, #4F7BF7 48%, #6D9BFB 78%, #93BAFF 100%)' },
+  { key: 'verified', to: '/search', icon: 'check', top: '#6D3DFC', grad: 'linear-gradient(180deg, #6D3DFC 0%, #6D3DFC 22%, #8156FD 48%, #9E7BFE 78%, #BEA4FF 100%)' },
+  { key: 'local', to: '/search', icon: 'pin', top: '#E0326B', grad: 'linear-gradient(180deg, #E0326B 0%, #E0326B 22%, #F0507F 48%, #FA7A9D 78%, #FFA8BF 100%)' },
 ]
 
 const PROMO_ICONS = {

@@ -51,7 +51,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* ===== Avito-style: градиентная плашка (поиск + Войти + промо) ===== */
 .avito-banner{
   position:sticky; top:0; z-index:15;
-  background:linear-gradient(150deg, #0E9F6E 0%, #1DB388 30%, #2FDBAE 65%, #5CE8CC 100%);
+  background:linear-gradient(180deg, #0E9F6E 0%, #0E9F6E 22%, #1DB388 48%, #34D8A8 78%, #5CE8CC 100%);
   padding:calc(9px + env(safe-area-inset-top)) 14px 10px; border-radius:0 0 22px 22px;
   margin:0;
   will-change:background-color;
