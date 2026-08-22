@@ -862,14 +862,26 @@ def make_title(text: str, limit: int = 70) -> str | None:
     return fallback if fallback and not rejects_as_title(fallback) else None
 
 
-_AREA_RE = re.compile(r"(\d{2,4})\s*(?:м2|м²|кв\.?\s*м|m2|m²)", re.I)
+# Площадь пишут дробной («65.5 м2») и словом («72 квадрата», «kvadrata»),
+# а иногда ставят слово впереди: «площадью 80».
+_AREA_RE = re.compile(
+    r"(?:(\d{2,4})(?:[.,]\d)?\s*(?:м2|м²|кв\.?\s*м|m2|m²|квадрат\w*|kvadrat\w*)"
+    r"|(?:площад\w*|povrsin\w*|površin\w*)\D{0,4}(\d{2,4}))", re.I)
 _ROOMS_WORD = {
     "однушк": 1, "гарсоньер": 1, "студи": 1,
     "двушк": 2, "двухкомнат": 2, "трешк": 3, "трёшк": 3, "трехкомнат": 3,
     "трёхкомнат": 3, "двухкомн": 2, "трёхкомн": 3, "трехкомн": 3,
+    # Число словом пишут не реже, чем цифрой
+    "однокомнат": 1, "однокомн": 1, "четырехкомн": 4, "четырёхкомн": 4,
+    "пятикомнат": 5, "полуторка": 1, "полуторн": 1,
+    # По-сербски число входит в само слово: «jednosoban», «trosoban»
+    "jednosoban": 1, "jednosobn": 1, "garsonjer": 1,
+    "dvosoban": 2, "dvosobn": 2, "dvoiposoban": 2,
+    "trosoban": 3, "trosobn": 3, "cetvorosoban": 4, "četvorosoban": 4,
     "четырёхкомнат": 4, "четырехкомнат": 4,
 }
-_ROOMS_NUM_RE = re.compile(r"(\d)\s*-?\s*(?:комнат|комн\.?|соб[аы])", re.I)
+_ROOMS_NUM_RE = re.compile(
+    r"(\d)\s*[-.,]?\s*(?:комнат|комн\.?|соб[аыеу]|sob[aeni]|soban)", re.I)
 _ROOMS_PLUS_RE = re.compile(r"гостин\w*\s*\+\s*(\d)\s*комнат", re.I)
 
 
@@ -1339,12 +1351,15 @@ def parse(text: str) -> dict:
     }
 
 
-_FLOOR_RE = re.compile(r"этаж\w*\s*[:\-—]?\s*(\d{1,2})", re.I)
+# Этаж пишут с любой стороны слова: «3 этаж» и «этаж 3». Первое даже
+# чаще, а ловилось только второе.
+_FLOOR_RE = re.compile(
+    r"(?:этаж\w*\s*[:\-—]?\s*(\d{1,2})|(\d{1,2})[\s-]*(?:й|ый|ой)?\s*этаж)", re.I)
 _FLOOR_OF_RE = re.compile(r"(\d{1,2})\s*/\s*\d{1,2}\s*этаж", re.I)
 # Пробег пишут и «145 000 км», и «170к пробег» — слово может стоять с любой
 # стороны числа, поэтому ловим оба порядка
 _MILEAGE_RE = re.compile(
-    r"(?:(\d{1,3}(?:[ .,\u00a0]?\d{3})|\d{1,3})\s*(тыс\.?|к|k)?\s*км"
+    r"(?:(\d{1,3}(?:[ .,\u00a0]?\d{3})|\d{1,3})\s*(тыс\.?|к|k)?\s*(?:км|километр\w*|kilometar\w*|kм)"
     r"|(\d{1,3}(?:[ .,\u00a0]?\d{3})|\d{1,3})\s*(тыс\.?|к|k)\s*(?=пробег))", re.I)
 _YEAR_RE = re.compile(r"(?<!\d)(19[89]\d|20[0-3]\d)(?!\d)\s*(?:год\w*|г\.?|\.|,|$)", re.I)
 
@@ -1393,10 +1408,12 @@ def extract_attributes(category_slug: str, text: str) -> dict:
             attrs["rooms"] = rooms
         area = _AREA_RE.search(text)
         if area:
-            attrs["area_m2"] = int(area.group(1))
+            # У правила две ветви — число до слова и после
+            attrs["area_m2"] = int(next(g for g in area.groups() if g))
         floor = _FLOOR_OF_RE.search(low) or _FLOOR_RE.search(low)
         if floor:
-            value = int(floor.group(1))
+            # У правила две ветви — до слова и после, — берём ту, что нашлась
+            value = int(next(g for g in floor.groups() if g))
             if 0 < value <= 40:
                 attrs["floor"] = value
         # «сдам» и «аренда» — это найм, «продам» — продажа. Если сказано и
@@ -1438,6 +1455,15 @@ def extract_attributes(category_slug: str, text: str) -> dict:
             if ram in (2, 4, 6, 8, 12, 16, 24, 32, 64):
                 attrs["ram_gb"] = ram
 
+        # «16/512», «8/256» — так пишут оперативную и встроенную разом.
+        pair = re.search(r"\b(\d{1,2})\s*/\s*(\d{2,4})(?:\s*(?:гб|gb))?\b", low)
+        if pair and ram is None:
+            first, second = int(pair.group(1)), int(pair.group(2))
+            if first in (2, 4, 6, 8, 12, 16, 24, 32) and second in (
+                    32, 64, 128, 256, 512, 1024, 2048):
+                attrs["ram_gb"] = ram = first
+                attrs["storage_gb"] = second
+
         for m in re.finditer(r"(\d{2,4})\s*(гб|gb|тб|tb)\b", low):
             value = int(m.group(1))
             if m.group(2) in ("тб", "tb"):
@@ -1447,7 +1473,9 @@ def extract_attributes(category_slug: str, text: str) -> dict:
             if value in (16, 32, 64, 128, 256, 512, 1024, 2048):
                 attrs["storage_gb"] = value
                 break
-        m = re.search(r"(?:аккумулятор|акб|батаре\w*|battery)\D{0,12}(\d{2,3})\s*%", low)
+        # Процент пишут и знаком, и словом: «батарея 89 процентов»
+        m = re.search(r"(?:аккумулятор|акб|батаре\w*|battery|здоровье)"
+                      r"\D{0,12}(\d{2,3})\s*(?:%|процент\w*|posto)", low)
         if m and 1 <= int(m.group(1)) <= 100:
             attrs["battery_health"] = int(m.group(1))
         m = re.search(r'(\d{1,2}(?:[.,]\d)?)\s*(?:дюйм\w*|inch|")', low)
@@ -1458,8 +1486,12 @@ def extract_attributes(category_slug: str, text: str) -> dict:
 
     elif category_slug == "fashion":
         # «р. 46», «размер 46», «размер M» — пишут и так, и так
-        m = re.search(r"(?:размер|р\.|разм\.?|size|vel\.?)\s*[:\-]?\s*"
+        m = re.search(r"(?:размер|р\.|р-р|разм\.?|size|vel\.?)\s*[:\-]?\s*"
                       r"(\d{2}(?:[-–/]\d{2})?|x{0,2}[sml]|xl|xxl)\b", low)
+        # «42 размер», «46 р-р» — число ставят и перед словом
+        if not m:
+            m = re.search(r"\b(\d{2}(?:[-–/]\d{2})?|x{0,2}[sml]|xl|xxl)\s*"
+                          r"(?:размер|р-р|разм\.)", low)
         if m:
             attrs["size"] = m.group(1).upper() if m.group(1).isalpha() else m.group(1)
         m = re.search(r"стельк\w*\D{0,8}(\d{2}(?:[.,]\d)?)", low)

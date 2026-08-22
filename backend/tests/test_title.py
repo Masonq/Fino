@@ -1354,3 +1354,57 @@ def test_city_dropped_from_title():
 def test_city_line_dropped_from_description():
     """«Нови Сад» отдельной строкой — это поле города, а не описание."""
     assert "Нови Сад" not in parse("Продам диван\nНови Сад")["description"]
+
+
+# ── Аудит характеристик ─────────────────────────────────────────────────────
+def test_number_before_the_word():
+    """
+    Этаж и размер пишут с любой стороны слова: «3 этаж» и «этаж 3»,
+    «42 размер» и «размер 42». Ловилось только второе.
+    """
+    from app.core.tg_parse import extract_attributes
+    assert extract_attributes("real-estate", "Квартира 65 м2, 3 этаж из 5")["floor"] == 3
+    assert extract_attributes("real-estate", "Квартира, этаж 4")["floor"] == 4
+    assert extract_attributes("real-estate", "Квартира 2/5 этаж")["floor"] == 2
+    assert extract_attributes("fashion", "Кроссовки 42 размер")["size"] == "42"
+    assert extract_attributes("fashion", "Джинсы 30 р-р")["size"] == "30"
+
+
+def test_rooms_in_words_and_serbian():
+    """«Однокомнатная», «trosoban», «3 собе» — так пишут не реже цифр."""
+    from app.core.tg_parse import extract_rooms
+    assert extract_rooms("Однокомнатная квартира") == 1
+    assert extract_rooms("Trosoban stan 72 m2") == 3
+    assert extract_rooms("Dvosoban stan Vracar") == 2
+    assert extract_rooms("Стан од 3 собе") == 3
+    assert extract_rooms("Полуторка 35 м2") == 1
+
+
+def test_area_written_differently():
+    """Дробная площадь, «квадраты», «kvadrata», слово впереди числа."""
+    from app.core.tg_parse import extract_attributes
+    for text in ("Квартира 65.5 м2", "65m2, Vracar"):
+        assert extract_attributes("real-estate", text)["area_m2"] == 65, text
+    assert extract_attributes("real-estate", "Stan 72 kvadrata")["area_m2"] == 72
+    assert extract_attributes("real-estate", "Квартира площадью 80 квадратов")["area_m2"] == 80
+
+
+def test_mileage_in_words():
+    from app.core.tg_parse import extract_attributes
+    assert extract_attributes("auto", "Прошёл 200 000 километров")["mileage_km"] == 200000
+    assert extract_attributes("auto", "Пробег 145.000 км")["mileage_km"] == 145000
+
+
+def test_memory_written_as_pair():
+    """«16/512» — так пишут оперативную и встроенную память разом."""
+    from app.core.tg_parse import extract_attributes
+    attrs = extract_attributes("electronics", "Ноутбук 16/512")
+    assert attrs["ram_gb"] == 16 and attrs["storage_gb"] == 512
+    attrs = extract_attributes("electronics", "iPhone 15 8/256")
+    assert attrs["ram_gb"] == 8 and attrs["storage_gb"] == 256
+
+
+def test_battery_percent_in_words():
+    from app.core.tg_parse import extract_attributes
+    assert extract_attributes("electronics", "Батарея 89 процентов")["battery_health"] == 89
+    assert extract_attributes("electronics", "Аккумулятор 100%")["battery_health"] == 100
