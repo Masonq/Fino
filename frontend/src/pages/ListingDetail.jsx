@@ -119,6 +119,11 @@ export default function ListingDetail() {
       const opt = field.options?.find((o) => o.value === value)
       return opt?.label?.[lang] || opt?.label?.ru || value
     }
+    // Атрибуты, заполненные словами («Вид услуги»), переводятся вместе с
+    // объявлением — берём перевод, если он есть на нужном языке.
+    if (field?.translatable) {
+      return listing?.attributes_i18n?.[lang]?.[key] || value
+    }
     return value
   }
 

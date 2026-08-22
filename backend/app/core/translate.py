@@ -266,11 +266,51 @@ def translate_listing(db, listing) -> int:
         ))
         added += 1
 
+    added += _translate_attributes(listing, source_lang)
+
     if added:
         db.commit()
         log.info("Объявление %s: добавлено переводов %s", listing.id, added)
 
     return added
+
+
+def _translate_attributes(listing, source_lang: str) -> int:
+    """
+    Переводит атрибуты, которые продавец пишет словами.
+
+    Часть атрибутов — выбор из списка, у них переводы уже лежат в схеме
+    категории. А «Вид услуги» и «Район обслуживания» вводятся текстом, и
+    без перевода английский интерфейс показывал «Репетитор английского».
+    Марку, модель и VIN не трогаем: их пишут одинаково на любом языке.
+    """
+    schema = (listing.category.attribute_schema or []) if listing.category else []
+    keys = [a["key"] for a in schema if a.get("translatable") and listing.attributes.get(a["key"])]
+    if not keys:
+        return 0
+
+    stored = dict(listing.attributes_i18n or {})
+    changed = 0
+    for lang in LANGS:
+        if lang == source_lang:
+            continue
+        current = dict(stored.get(lang) or {})
+        for key in keys:
+            if current.get(key):
+                continue
+            value = translate(str(listing.attributes[key]), source_lang, lang)
+            if value:
+                current[key] = value
+                changed += 1
+        if current:
+            stored[lang] = current
+
+    if changed:
+        # JSONB меняется целиком — присваиваем новый объект, иначе
+        # SQLAlchemy не заметит правку вложенного словаря.
+        listing.attributes_i18n = stored
+
+    return 1 if changed else 0
 
 
 def translate_pending(db, limit: int = 50) -> int:

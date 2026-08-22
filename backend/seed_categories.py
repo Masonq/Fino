@@ -59,9 +59,9 @@ CATEGORIES = [
         "image_url": "https://picsum.photos/seed/cat-services/220/220",
         "color": "#F2A11D",
         "attribute_schema": [
-            {"key": "service_type", "type": "text", "required": True,
+            {"key": "service_type", "type": "text", "translatable": True, "required": True,
              "label": {"ru": "Вид услуги", "en": "Service type", "sr": "Vrsta usluge"}},
-            {"key": "service_area", "type": "text", "required": False,
+            {"key": "service_area", "type": "text", "translatable": True, "required": False,
              "label": {"ru": "Район обслуживания", "en": "Service area", "sr": "Područje usluge"}},
             {"key": "experience_years", "type": "number", "required": False,
              "label": {"ru": "Опыт, лет", "en": "Experience, years", "sr": "Iskustvo, godine"}},

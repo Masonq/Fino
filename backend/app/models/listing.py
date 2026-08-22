@@ -49,6 +49,11 @@ class Listing(Base):
     # Динамические атрибуты по схеме категории: {"brand": "BMW", "year": 2018, ...}
     attributes: Mapped[dict] = mapped_column(JSONB, default=dict)
 
+    # Переводы тех атрибутов, что заполняются свободным текстом:
+    # {"en": {"service_type": "English tutor"}, "sr": {...}}.
+    # Марка, модель и VIN сюда не попадают — их не переводят.
+    attributes_i18n: Mapped[dict] = mapped_column(JSONB, default=dict)
+
     city: Mapped[str | None] = mapped_column(String(120), nullable=True, index=True)
     location_lat: Mapped[float | None] = mapped_column(Numeric(9, 6), nullable=True)
     location_lng: Mapped[float | None] = mapped_column(Numeric(9, 6), nullable=True)

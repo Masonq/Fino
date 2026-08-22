@@ -401,6 +401,9 @@ def get_listing(listing_id: uuid.UUID, db: Session = Depends(get_db)):
         "currency": listing.currency,
         "price_negotiable": listing.price_negotiable,
         "attributes": listing.attributes,
+        # Переводы свободных атрибутов; язык выбирает клиент — так же,
+        # как он уже делает с переводами заголовка и описания.
+        "attributes_i18n": listing.attributes_i18n or {},
         "city": listing.city,
         "photos": [{"url": p.url, "is_cover": p.is_cover} for p in listing.photos],
         "views_count": listing.views_count,
