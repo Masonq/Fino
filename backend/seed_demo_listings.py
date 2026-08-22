@@ -61,12 +61,13 @@ DEMO_LISTINGS = [
 # а самих отзывов не было — страница показывала оценку и пустоту под ней.
 DEMO_SELLER_NAME = "Ana M. (demo)"
 
+# (оценка, автор, язык отзыва, текст)
 DEMO_REVIEWS = [
-    (5, "Stefan V.", "Sve preporuke, brza i ljubazna komunikacija."),
-    (5, "Marko P.", "Tačno kako je opisano, bez iznenađenja."),
-    (4, "Ирина К.", "Всё хорошо, спасибо. Немного задержались со временем."),
-    (5, "Nikola S.", None),
-    (5, "Jelena T.", "Preporučujem, sve je prošlo glatko."),
+    (5, "Stefan V.", "sr", "Sve preporuke, brza i ljubazna komunikacija."),
+    (5, "Marko P.", "sr", "Tačno kako je opisano, bez iznenađenja."),
+    (4, "Ирина К.", "ru", "Всё хорошо, спасибо. Немного задержались со временем."),
+    (5, "Nikola S.", "sr", None),
+    (5, "Jelena T.", "sr", "Preporučujem, sve je prošlo glatko."),
 ]
 
 
@@ -77,7 +78,7 @@ def _seed_reviews(db, seller):
     if db.query(Review).filter(Review.target_id == seller.id).count():
         return
 
-    for rating, author_name, comment in DEMO_REVIEWS:
+    for rating, author_name, language, comment in DEMO_REVIEWS:
         author = db.query(User).filter(User.display_name == author_name).first()
         if not author:
             author = User(
@@ -97,6 +98,7 @@ def _seed_reviews(db, seller):
             target_id=seller.id,
             rating=rating,
             comment=comment,
+            language=language,
             # Отзывы показываются только опубликованные — без этого демо-продавец
             # снова остался бы с оценкой и пустым списком под ней
             verified_contact=True,
@@ -104,7 +106,17 @@ def _seed_reviews(db, seller):
             published_at=datetime.utcnow(),
         ))
 
-    ratings = [r for r, _, _ in DEMO_REVIEWS]
+    # Переводим так же, как настоящие отзывы при публикации
+    from app.routers.reviews import translate_review
+
+    db.flush()
+    for review in db.query(Review).filter(Review.target_id == seller.id).all():
+        try:
+            translate_review(review)
+        except Exception:
+            pass
+
+    ratings = [r for r, _, _, _ in DEMO_REVIEWS]
     seller.rating_count = len(ratings)
     seller.rating_avg = round(sum(ratings) / len(ratings), 2)
     print(f"created {len(ratings)} demo reviews")

@@ -20,6 +20,31 @@ class ReviewIn(BaseModel):
     comment: str | None = None
 
 
+def translate_review(review: Review) -> None:
+    """
+    Переводит комментарий на остальные языки.
+
+    Делаем в момент публикации: до неё отзыв всё равно никто не видит, а
+    после — он уже готов на языке читателя. Молчаливо пропускаем неудачу,
+    перевода просто не будет; отзыв от этого не пропадает.
+    """
+    if not review.comment or not review.comment.strip():
+        return
+
+    from app.core.translate import LANGS, translate
+
+    source = review.language or "ru"
+    done = dict(review.comment_i18n or {})
+    for lang in LANGS:
+        if lang == source or done.get(lang):
+            continue
+        text = translate(review.comment, source, lang)
+        if text:
+            done[lang] = text
+    if done:
+        review.comment_i18n = done
+
+
 def recalc_rating(db: Session, user_id: uuid.UUID) -> None:
     """Пересчитываем средний рейтинг продавца после изменения отзывов."""
     row = (
@@ -36,6 +61,7 @@ def recalc_rating(db: Session, user_id: uuid.UUID) -> None:
 @router.get("/user/{user_id}")
 def user_reviews(
     user_id: uuid.UUID,
+    lang: str = Query("ru"),
     limit: int = Query(20, le=100),
     offset: int = 0,
     db: Session = Depends(get_db),
@@ -71,7 +97,12 @@ def user_reviews(
             {
                 "id": str(r.id),
                 "rating": r.rating,
-                "comment": r.comment,
+                "comment": (r.comment_i18n or {}).get(lang) or r.comment,
+                # Помечаем машинный перевод: неловкая формулировка не должна
+                # выглядеть как небрежность самого автора
+                "is_auto_translated": bool(
+                    r.comment and r.language != lang and (r.comment_i18n or {}).get(lang)
+                ),
                 "author_name": authors.get(r.author_id).display_name if authors.get(r.author_id) else None,
                 "created_at": r.created_at.isoformat() if r.created_at else None,
             }
@@ -139,6 +170,8 @@ def create_review(
         listing_id=payload.listing_id,
         rating=payload.rating,
         comment=(payload.comment or "").strip()[:2000] or None,
+        # Язык берём из настроек автора — он же язык, на котором тот пишет
+        language=getattr(user.default_language, "value", None) or "ru",
         verified_contact=True,
         created_at=datetime.utcnow(),
     )
@@ -159,6 +192,11 @@ def create_review(
         counterpart.published_at = now
         review.is_published = True
         review.published_at = now
+        for item in (review, counterpart):
+            try:
+                translate_review(item)
+            except Exception:
+                pass   # перевод не должен мешать публикации
         recalc_rating(db, user.id)
 
     # закрываем приглашение, если отзыв оставлен по нему
@@ -209,6 +247,10 @@ def publish_expired(db: Session, wait_days: int = 7) -> int:
     for r in pending:
         r.is_published = True
         r.published_at = datetime.utcnow()
+        try:
+            translate_review(r)
+        except Exception:
+            pass
         targets.add(r.target_id)
 
     for t in targets:

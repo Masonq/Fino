@@ -19,19 +19,20 @@ function Stars({ value, size = 14, onPick }) {
 }
 
 export default function SellerReviews({ sellerId, listingId }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const [data, setData] = useState(null)
 
   const load = () => {
-    api.userReviews(sellerId).then(setData).catch(() => setData(null))
+    api.userReviews(sellerId, i18n.language).then(setData).catch(() => setData(null))
   }
 
   useEffect(() => {
     if (!sellerId) return
     load()
+    // перезагружаем при смене языка: комментарии приходят уже переведёнными
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sellerId])
+  }, [sellerId, i18n.language])
 
   if (!data) return null
 
@@ -65,6 +66,9 @@ export default function SellerReviews({ sellerId, listingId }) {
                 <Stars value={r.rating} size={12} />
               </div>
               {r.comment && <p className="review-text">{r.comment}</p>}
+              {r.is_auto_translated && (
+                <div className="review-translated">{t('detail.auto_translated')}</div>
+              )}
             </div>
           ))}
         </div>

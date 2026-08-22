@@ -57,7 +57,7 @@ export const api = {
     method: 'PATCH',
     body: JSON.stringify({ notify_enabled: enabled }),
   }),
-  userReviews: (userId) => request(`/reviews/user/${userId}`),
+  userReviews: (userId, lang) => request(`/reviews/user/${userId}${lang ? `?lang=${lang}` : ''}`),
   canReview: (targetId) => request(`/reviews/can-review/${targetId}`),
   dismissInvite: (chatId) => request(`/reviews/invite/${chatId}/dismiss`, { method: 'POST' }),
   createReview: (payload) => request('/reviews', {
