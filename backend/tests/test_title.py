@@ -1875,3 +1875,22 @@ def test_forget_photos_survives_missing_files(tmp_path, monkeypatch):
     monkeypatch.setattr(settings, "media_dir", str(tmp_path))
     importer.forget_photos({"photos": [("http://x/media/нет.jpg", "http://x/media/нет.jpg")]})
     importer.forget_photos({})
+
+
+def test_link_invites_without_colon():
+    """
+    «Больше вещей тут:» — двоеточие снимается чисткой раньше, и правило
+    переставало узнавать фразу. Обрубок оставался в конце описания.
+    """
+    text = ("Бежевый рюкзак в гранжевом стиле.\n\n"
+            "Самовывоз: Ртаньска 8\n\nБольше вещей тут:")
+    out = parse(text)["description"]
+    assert "Больше вещей" not in out
+    assert "Ртаньска 8" in out
+
+    assert "канале" not in parse("Диван IKEA.\nОстальное в моём канале")["description"]
+
+
+def test_useful_lines_not_eaten_by_link_rule():
+    """«Посмотреть можно в Земуне» — это про место встречи, а не ссылка."""
+    assert "Земуне" in parse("Продам стол. Посмотреть можно в Земуне")["description"]
