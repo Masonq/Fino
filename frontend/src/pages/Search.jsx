@@ -120,6 +120,14 @@ export default function Search() {
     setCategory(''); setPriceMin(''); setPriceMax(''); setCity(''); setWithPhoto(false); setSort('new')
   }
 
+  // Полоса подкатегорий над лентой. Отдельной страницы под категорию не
+  // заводим: так подкатегории работают одинаково и с главной, и из списка
+  // категорий, и не добавляют лишнего шага тем, кому нужна вся категория.
+  const current = categories.find((c) => c.slug === category)
+    || categories.find((c) => (c.children || []).some((s) => s.slug === category))
+  const subs = current?.children || []
+  const label = (c) => c.name?.[i18n.language] || c.name?.ru
+
   const activeCount = [category, priceMin, priceMax, city, withPhoto ? '1' : ''].filter(Boolean).length
 
   return (
@@ -160,9 +168,17 @@ export default function Search() {
             <label>{t('search.category')}</label>
             <select value={category} onChange={(e) => setCategory(e.target.value)}>
               <option value="">{t('search.all_categories')}</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.slug}>{c.name?.[i18n.language] || c.name?.ru}</option>
-              ))}
+              {/* Подкатегории отбиты отступом: в выпадающем списке вложенность
+                  иначе не видна, и «Телефоны» читались бы как ещё одна
+                  категория вровень с «Электроникой». */}
+              {categories.map((c) => [
+                <option key={c.id} value={c.slug}>{c.name?.[i18n.language] || c.name?.ru}</option>,
+                ...(c.children || []).map((sub) => (
+                  <option key={sub.id} value={sub.slug}>
+                    {'\u00A0\u00A0\u00A0'}{sub.name?.[i18n.language] || sub.name?.ru}
+                  </option>
+                )),
+              ])}
             </select>
           </div>
 
@@ -205,6 +221,26 @@ export default function Search() {
           {activeCount > 0 && (
             <button className="filters-reset" onClick={resetFilters}>{t('actions.reset_filters')}</button>
           )}
+        </div>
+      )}
+
+      {subs.length > 0 && (
+        <div className="sub-row">
+          <button
+            className={category === current.slug ? 'sub-chip active' : 'sub-chip'}
+            onClick={() => setCategory(current.slug)}
+          >
+            {t('search.all_in_category')}
+          </button>
+          {subs.map((sub) => (
+            <button
+              key={sub.id}
+              className={category === sub.slug ? 'sub-chip active' : 'sub-chip'}
+              onClick={() => setCategory(sub.slug)}
+            >
+              {label(sub)}
+            </button>
+          ))}
         </div>
       )}
 

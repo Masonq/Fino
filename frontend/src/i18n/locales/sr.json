@@ -38,7 +38,8 @@
     "publish": "Objavi",
     "delivery_available": "Dostava dostupna",
     "safe_deal": "Sigurna kupovina",
-    "urgent": "Hitno"
+    "urgent": "Hitno",
+    "select_subcategory": "Izaberite odeljak"
   },
   "search": {
     "placeholder_full": "Šta tražite?",
@@ -55,7 +56,8 @@
     "sort_cheap": "Najjeftinije prvo",
     "sort_expensive": "Najskuplje prvo",
     "placeholder": "Šta tražite?",
-    "all_cities": "Svi gradovi"
+    "all_cities": "Svi gradovi",
+    "all_in_category": "Sve"
   },
   "chat": {
     "empty": "Još nema poruka — započnite razgovor",

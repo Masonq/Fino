@@ -38,7 +38,8 @@
     "publish": "Publish",
     "delivery_available": "Delivery available",
     "safe_deal": "Safe deal",
-    "urgent": "Urgent"
+    "urgent": "Urgent",
+    "select_subcategory": "Choose a section"
   },
   "search": {
     "placeholder_full": "What are you looking for?",
@@ -55,7 +56,8 @@
     "sort_cheap": "Cheapest first",
     "sort_expensive": "Most expensive first",
     "placeholder": "What are you looking for?",
-    "all_cities": "All cities"
+    "all_cities": "All cities",
+    "all_in_category": "All"
   },
   "chat": {
     "empty": "No messages yet — say hello",

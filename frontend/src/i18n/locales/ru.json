@@ -38,7 +38,8 @@
     "publish": "Опубликовать",
     "delivery_available": "Доставка доступна",
     "safe_deal": "Безопасная сделка",
-    "urgent": "Срочно"
+    "urgent": "Срочно",
+    "select_subcategory": "Уточните раздел"
   },
   "search": {
     "placeholder_full": "Что ищете?",
@@ -55,7 +56,8 @@
     "sort_cheap": "Сначала дешёвые",
     "sort_expensive": "Сначала дорогие",
     "placeholder": "Что ищете?",
-    "all_cities": "Все города"
+    "all_cities": "Все города",
+    "all_in_category": "Все"
   },
   "chat": {
     "empty": "Сообщений пока нет — начните разговор",

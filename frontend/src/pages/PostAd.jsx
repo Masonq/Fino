@@ -43,6 +43,10 @@ export default function PostAd() {
     window.scrollTo(0, 0)
   }, [step])
 
+  // Промежуточный выбор подкатегории. Отдельным шагом не делаем — это ещё
+  // одна точка выхода из формы; показываем список прямо на первом шаге.
+  const [parent, setParent] = useState(null)
+
   const pickCategory = async (cat) => {
     setCategory(cat)
     try {
@@ -155,16 +159,39 @@ export default function PostAd() {
         ))}
       </div>
 
-      {step === 0 && (
+      {step === 0 && !parent && (
         <>
           <h2>{t('listing.select_category')}</h2>
           <div className="post-cat-grid">
             {categories.map((cat) => (
-              <button key={cat.id} className="post-cat-item" onClick={() => pickCategory(cat)}>
+              <button
+                key={cat.id}
+                className="post-cat-item"
+                onClick={() => ((cat.children || []).length ? setParent(cat) : pickCategory(cat))}
+              >
                 <span className="post-cat-label">
                   {cat.name?.[i18n.language] || cat.name?.ru}
                 </span>
                 <span className="post-cat-img"><CategoryArt slug={cat.slug} /></span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      {step === 0 && parent && (
+        <>
+          <button className="post-back" onClick={() => setParent(null)}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+            {parent.name?.[i18n.language] || parent.name?.ru}
+          </button>
+          <h2>{t('listing.select_subcategory')}</h2>
+          <div className="post-sub-list">
+            {parent.children.map((sub) => (
+              <button key={sub.id} className="post-sub-item" onClick={() => pickCategory(sub)}>
+                {sub.name?.[i18n.language] || sub.name?.ru}
               </button>
             ))}
           </div>
