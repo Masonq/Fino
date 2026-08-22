@@ -232,7 +232,54 @@ _PRICE_LABELLED_RE = re.compile(
     r"(€|\$|(?:eur|евро|е|rsd|рсд|rs|din\w*|дин\w*|usd)\b)?", re.I)
 
 
+# Про какую сумму идёт речь, видно по словам перед ней.
+# «Брал за 18000 рублей», «в магазине стоит 25 000» — это не наша цена.
+_PAST_PRICE_RE = re.compile(
+    r"(брал\w*|покупал\w*|купил\w*|стоит\w*|стоил\w*|"
+    r"в магазин\w*|новый стоит|отдавал\w*|платил\w*|"
+    r"было|раньше|изначально|при покупке)", re.I)
+# «Продаю за», «отдам за», «цена» — а вот это она
+_SELL_PRICE_RE = re.compile(
+    r"(цена|price|cena|прода[юмё]\w*|отда[юм]\w*|уступлю|заберите за)", re.I)
+# Чужая валюта: рубли и прочее к нашим ценам отношения не имеют
+_FOREIGN_RE = re.compile(r"(руб\w*|₽|грн|тенге|злот\w*)", re.I)
+
+
+def _price_candidates(text: str) -> list[tuple[int, float, str | None]]:
+    """Все суммы текста: позиция, значение, валюта."""
+    out = []
+    for m in _PRICE_RE.finditer(text):
+        value = _to_number(m.group(1))
+        if value is not None:
+            out.append((m.start(), value, CURRENCY_BY_WORD.get(m.group(2).lower())))
+    return out
+
+
 def extract_price(text: str) -> tuple[float | None, str | None]:
+    # Сначала разбираем суммы с валютой, глядя на слова перед каждой:
+    # в объявлении их бывает несколько, и первая попавшаяся — часто та,
+    # за которую вещь когда-то купили.
+    candidates = _price_candidates(text)
+    if len(candidates) > 1:
+        scored = []
+        for pos, value, currency in candidates:
+            # Смотрим только ближайшие слова: окно пошире захватывало начало
+            # фразы, и в «Покупал за 16000, продаю за 10000» обе суммы
+            # выглядели как прошлая цена.
+            before = text[max(0, pos - 40):pos]
+            before = re.split(r"[.,;!?\n]", before)[-1] or before[-18:]
+            after = text[pos:pos + 24]
+            if _FOREIGN_RE.search(after) or _FOREIGN_RE.search(before[-12:]):
+                continue          # цена в рублях — не наша
+            if _PAST_PRICE_RE.search(before):
+                continue          # столько отдали за неё раньше
+            weight = 1 if _SELL_PRICE_RE.search(before) else 0
+            scored.append((weight, -pos, value, currency))
+        if scored:
+            scored.sort(reverse=True)
+            _, _, value, currency = scored[0]
+            return value, currency
+
     m = _PRICE_LABELLED_RE.search(text)
     if m:
         value = _to_number(m.group(1))
