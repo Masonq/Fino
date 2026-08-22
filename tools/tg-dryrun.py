@@ -144,17 +144,35 @@ async def run(limit: int, mode: str, suspicious_only: bool,
     # Работаем на копии сессии: настоящая занята часовым заходом по
     # расписанию, и SQLite отдаёт «database is locked». Копия читает те же
     # чаты и ничего не пишет обратно.
-    session = Path(f"{settings.tg_session}.session")
+    # Telethon сам дописывает «.session», если имени его не хватает, —
+    # поэтому дважды дописывать нельзя: файла «tg.session.session» не
+    # существует, копия выходила пустой, и Telegram просил код заново
+    # при каждом запуске.
+    name = settings.tg_session
+    session = Path(name if name.endswith(".session") else f"{name}.session")
+    if not session.exists():
+        raise SystemExit(
+            f"Файл сессии не найден: {session.resolve()}\n"
+            "Запустите разбор обычным образом — он войдёт в Telegram и "
+            "создаст сессию, после чего прогон будет работать на её копии."
+        )
+
     tmp_dir = Path(tempfile.mkdtemp(prefix="plonk-dryrun-"))
     tmp_session = tmp_dir / "dryrun.session"
-    if session.exists():
-        shutil.copy2(session, tmp_session)
-    else:
-        print(f"! файл сессии не найден: {session}")
+    shutil.copy2(session, tmp_session)
 
-    client = TelegramClient(str(tmp_session.with_suffix("")),
-                            settings.tg_api_id, settings.tg_api_hash)
-    await client.start(phone=settings.tg_phone)
+    client = TelegramClient(str(tmp_session), settings.tg_api_id,
+                            settings.tg_api_hash)
+    # Вход уже выполнен — сессию только читаем. Просить телефон здесь
+    # нельзя: каждый ввод кода добавляет новый сеанс в список устройств.
+    await client.connect()
+    if not await client.is_user_authorized():
+        await client.disconnect()
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+        raise SystemExit(
+            "Сессия есть, но вход в Telegram недействителен. "
+            "Запустите обычный разбор, чтобы войти заново."
+        )
 
     totals: dict[str, int] = {}
     notes: dict[str, int] = {}
