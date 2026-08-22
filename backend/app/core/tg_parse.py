@@ -24,14 +24,14 @@ _PRICE_RE = re.compile(
     # половина числа, то есть 500 вместо тринадцати с половиной тысяч.
     # Второй запрет не даёт зацепиться за хвост уже начатого числа.
     r"(?<![\w])(?<![\d][ .,\u00a0])(?:от\s*)?(\d{1,3}(?:[ .,\u00a0]\d{3})+|\d{2,7})\s*"
-    r"(€|\$|(?:eur|евро|е|e|rsd|rds|рсд|rs|din(?:ara?)?|дин\.?|динар\w*|usd)\b)",
+    r"(€|\$|(?:eur|евро|evr[ao]|е|e|rsd|rds|рсд|rs|din(?:ara?)?|дин\.?|динар\w*|usd)\b)",
     re.I,
 )
 # «20к динар», «5k евро» — тысячи сокращают буквой, и без этого цена
 # читалась как двадцать динаров
 _PRICE_K_RE = re.compile(
     r"(?<![\w])(\d{1,4})\s*(?:к|k|т|тыс\.?)\s*"
-    r"(€|(?:eur|евро|е|rsd|rds|рсд|rs|din\w*|дин\w*)\b)", re.I)
+    r"(€|(?:eur|евро|evr[ao]|е|rsd|rds|рсд|rs|din\w*|дин\w*)\b)", re.I)
 
 _PRICE_AFTER_RE = re.compile(
     r"(?:цена|price|cena)\s*[:\-—]?\s*(\d{1,3}(?:[ .,\u00a0]\d{3})+|\d{2,7})",
@@ -40,6 +40,8 @@ _PRICE_AFTER_RE = re.compile(
 
 CURRENCY_BY_WORD = {
     "€": "EUR", "eur": "EUR", "евро": "EUR",
+    # По-сербски: «evra», «evro», «dinara»
+    "evra": "EUR", "evro": "EUR", "evr": "EUR",
     # «250 е» — так пишут евро одной буквой; «RS» — динары
     "е": "EUR", "e": "EUR",
     "rsd": "RSD", "rds": "RSD", "рсд": "RSD", "rs": "RSD",
@@ -406,7 +408,7 @@ _SELL_BARE_RE = re.compile(
 # стоит в фильтре «до N».
 _RANGE_RE = re.compile(
     r"(?<![\w])(\d{2,7})\s*(?:-|—|–|до)\s*(\d{2,7})\s*"
-    r"(€|\$|(?:eur|евро|е|e|rsd|рсд|rs|din\w*|дин\w*|usd)\b)", re.I)
+    r"(€|\$|(?:eur|евро|evr[ao]|е|e|rsd|рсд|rs|din\w*|дин\w*|usd)\b)", re.I)
 
 
 def _price_candidates(text: str) -> list[tuple[int, float, str | None]]:
@@ -628,6 +630,8 @@ def _is_place_word(word: str) -> bool:
 # родовое слово. Сам предмет назван ниже, моделью.
 _INTRO_PHRASE_RE = re.compile(
     r"^(в\s+добрые\s+руки|в\s+хорошие\s+руки|бесплатно|даром|"
+    # «Na prodaju:» — сербское «в продаже»
+    r"na\s+prodaju\s*:?|prodaje\s+se|"
     r"в\s+продаже|на\s+продажу|срочная\s+продажа|продается|продаётся|"
     r"имеется|есть\s+в\s+наличии|отдам|отдаю)\s+", re.I)
 
@@ -681,9 +685,22 @@ def find_model(text: str, limit: int = 60) -> str | None:
 _TAIL_JUNK_RE = re.compile(
     r"^(самовывоз\w*|торг\w*|торг\s+уместен|доставка\w*|цена\s+\w+|"
     r"недорого|срочно|возможен\s+торг|обмен\w*|без\s+торга|"
-    r"пишите\w*|звоните\w*|в\s+наличии|новое|новый|новая|б/?у)$", re.I)
+    r"пишите\w*|звоните\w*|в\s+наличии|новое|новый|новая|б/?у|"
+    # то же по-сербски: «срочно», «выгодно», «доставка», «возможен обмен»
+    r"hitno|povoljno|dostava|moguca\s+zamena|moguća\s+zamena|"
+    r"nov[ao]?|nekoriscen\w*|nekorišćen\w*|nikad\s+koriscen\w*|"
+    r"nikad\s+korišćen\w*|ispravn\w*|kao\s+nov\w*)$", re.I)
 _TAIL_PRICE_ONLY_RE = re.compile(
-    r"^\d[\d\s.,\u00a0]*\s*(€|\$|eur|евро|rsd|рсд|din\w*|дин\w*|usd)?$", re.I)
+    r"^\d[\d\s.,\u00a0]*\s*(€|\$|eur|евро|evr[ao]|e|е|rsd|рсд|din\w*|дин\w*|usd)?$", re.I)
+
+# Хвост с одной характеристикой: «200000 km», «72m2», «16 гб». Всё это
+# показывается отдельными полями, а в названии вытесняет саму вещь.
+# Память в названии техники не лишняя: «iPhone 11, 128gb» — так вещь и
+# ищут. А пробег, площадь и вес показываются полями.
+_TAIL_SPEC_RE = re.compile(
+    r"^\d[\d\s.,\u00a0]*\s*"
+    r"(км|km|kilometara|м2|м²|m2|kvadrata|см|cm|мл|ml|"
+    r"кг|kg|л\b|вт|w)\.?$", re.I)
 
 
 def _drop_place_tail(line: str) -> str:
@@ -701,7 +718,9 @@ def _drop_place_tail(line: str) -> str:
         place = (len(tail.split()) <= 3
                  and (extract_city(tail) or extract_district(tail))
                  and not any(ch.isdigit() for ch in tail))
-        if place or _TAIL_JUNK_RE.match(tail) or _TAIL_PRICE_ONLY_RE.match(tail):
+        if (place or _TAIL_JUNK_RE.match(tail)
+                or _TAIL_PRICE_ONLY_RE.match(tail)
+                or _TAIL_SPEC_RE.match(tail)):
             parts.pop()
             continue
         break

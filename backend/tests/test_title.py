@@ -1515,3 +1515,45 @@ def test_labelled_price_without_currency():
     """«Цена 3000» без валюты — тоже цена, а не просто число в тексте."""
     from app.core.tg_parse import extract_price
     assert extract_price("Стол\nЦена 3000\nДоставка 500 динар")[0] == 3000
+
+
+# ── Объявления по-сербски ───────────────────────────────────────────────────
+# Половина ленты написана латиницей: сербский для этих чатов такой же
+# рабочий язык, как русский.
+def test_serbian_currency():
+    """«1200 evra» ценой не считалось вовсе."""
+    from app.core.tg_parse import extract_price
+    assert extract_price("Prodajem stan, 1200 evra") == (1200, "EUR")
+    assert extract_price("Golf 5, 3500 evra") == (3500, "EUR")
+    assert extract_price("Prodajem sto, 3000 din") == (3000, "RSD")
+    assert extract_price("Nov ranac, 2500 rsd") == (2500, "RSD")
+
+
+def test_serbian_tails_stripped():
+    """«hitno», «nikad korišćen», «povoljno» — то же, что «срочно» и «б/у»."""
+    assert parse("Prodajem sto, 3000 din, Zemun, hitno")["title"] == "Sto"
+    assert parse("Nov ranac, nikad korišćen, 2500 rsd")["title"] == "Nov ranac"
+    assert parse("Prodajem Golf 5, 2008, 200000 km, 3500 evra")["title"] == "Golf 5"
+
+
+def test_serbian_categories():
+    from app.core.tg_classify import classify
+    for text, expected in (
+        ("Prodajem Golf 5, 2008, benzin", "auto"),
+        ("Nov ranac Nike, nikad korišćen", "fashion"),
+        ("Prodajem majicu, veličina M", "fashion"),
+        ("Dajem časove engleskog jezika", "services"),
+        ("Frizer, šišanje i farbanje kose", "services"),
+        ("Selidbe i transport, kombi", "services"),
+        ("Dečja kolica Chicco", "kids"),
+        ("Mačka traži dom, sterilisana", "pets"),
+        ("Veš mašina Bosch, ispravna", "home-garden"),
+    ):
+        assert classify(text)[0] == expected, text
+
+
+def test_memory_stays_in_the_title():
+    """«iPhone 11, 128gb» — так вещь и ищут, объём тут не лишний."""
+    assert parse("iPhone 11, 128gb")["title"] == "iPhone 11, 128gb"
+    # а пробег и площадь показываются полями
+    assert parse("Квартира, 72 m2")["title"] == "Квартира"
