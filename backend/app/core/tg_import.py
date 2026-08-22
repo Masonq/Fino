@@ -34,6 +34,7 @@ from app.core.tg_parse import (
     looks_like_ad, looks_like_spam, parse,
 )
 from app.core.tg_sources import CHATS, is_resume, topic_category
+from app.core.translate import translate_listing
 from app.core.watermark import has_watermark
 from app.models import (
     Category, Currency, Language, Listing, ListingPhoto, ListingStatus,
@@ -41,6 +42,7 @@ from app.models import (
 )
 
 MAX_PHOTOS = 5
+TRANSLATE = True
 MAX_DIM, THUMB_DIM = 1600, 400
 
 
@@ -271,6 +273,17 @@ def store(db, item: dict) -> bool:
         listing_id=listing.id, language="ru",
         title=(item["title"] or "")[:255], description=item["description"][:4000],
     ))
+    # Перевод запускается при одобрении модератором, а импорт публикует
+    # объявления сам — и они оставались только на русском: на английской
+    # странице категории были переведены, а объявления нет.
+    db.flush()
+    db.refresh(listing)
+    if TRANSLATE:
+        try:
+            translate_listing(db, listing)
+        except Exception as exc:
+            print(f"  не удалось перевести {listing.id}: {exc}")
+
     for order, (url, thumb) in enumerate(item["photos"]):
         db.add(ListingPhoto(
             id=uuid.uuid4(), listing_id=listing.id,
@@ -284,7 +297,13 @@ async def main() -> None:
     ap.add_argument("--days", type=int, default=30)
     ap.add_argument("--per-category", type=int, default=None,
                     help="взять не больше N объявлений на категорию — для пробного захода")
+    ap.add_argument("--no-translate", action="store_true",
+                    help="не переводить сразу: при большом заходе это тысячи "
+                         "обращений к переводчику. Часовой разбор переведёт позже")
     args = ap.parse_args()
+
+    global TRANSLATE
+    TRANSLATE = not args.no_translate
 
     client = TelegramClient(settings.tg_session, settings.tg_api_id, settings.tg_api_hash)
     await client.start(phone=settings.tg_phone)
