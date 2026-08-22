@@ -170,9 +170,8 @@ async def collect(client, chat_id: int, meta: dict, days: int, per_category: int
         if watermarked:
             continue
 
-        # Для недвижимости заголовок собираем из фактов: первая строка там
-        # почти всегда хэштеги или характеристика, и объявление называлось
-        # «гостиная + 2 комнаты».
+        # Заголовок из первой строки годится не всегда: у недвижимости там
+        # хэштеги или характеристика, у резюме — приветствие и знакомство.
         composed = compose_title(category_slug, parsed["searchable"])
         if composed:
             parsed["title"] = composed

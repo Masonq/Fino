@@ -244,6 +244,27 @@ def extract_district(text: str) -> str | None:
     return best[1] if best else None
 
 
+_GREETING_RE = re.compile(
+    r"^(всем\s+)?(привет\w*|здравствуйте|добрый\s+день|добрый\s+вечер|доброе\s+утро|"
+    r"здравствуй|zdravo|pozdrav)[\s,!.—-]*", re.I)
+
+
+def strip_greeting(text: str) -> str:
+    """
+    Снимает приветствие в начале.
+
+    «Всем привет. Меня зовут Кирилл, 19 лет...» — так пишут резюме в чатах,
+    но заголовком это быть не может: в ленте у всех оказывается одно и то
+    же «Всем привет», и объявления неразличимы.
+    """
+    out = _GREETING_RE.sub("", text.strip())
+    # «Меня зовут X, 19 лет» — знакомство, а не суть объявления. Возраст
+    # снимаем вместе с именем, иначе заголовок начинался с «19 лет».
+    rest = re.sub(r"^меня\s+зовут\s+[\w-]+[\s,.—-]*", "", out, flags=re.I)
+    rest = re.sub(r"^\d{2}\s*(?:лет|года?)[\s,.—-]*", "", rest, flags=re.I)
+    return (rest if len(rest) > 25 else out).strip(" ,.;:—-")
+
+
 def compose_title(category_slug: str | None, text: str) -> str | None:
     """
     Собирает заголовок из фактов, а не из первой строки.
@@ -252,6 +273,12 @@ def compose_title(category_slug: str | None, text: str) -> str | None:
     начинают с хэштегов или с характеристик, и получалось «гостиная + 2
     комнаты». Комнаты, площадь и район — то, по чему квартиру и узнают.
     """
+    if category_slug == "jobs":
+        # у резюме первая строка — приветствие и знакомство, а не суть
+        cleaned = strip_greeting(text)
+        title = make_title(cleaned)
+        return title if title and title != make_title(text) else None
+
     if category_slug != "real-estate":
         return None
 
@@ -367,6 +394,11 @@ def drop_title_line(description: str, title: str | None) -> str:
     только тратить экран.
     """
     if not title:
+        return description
+    # Заголовок с многоточием — это обрезанная строка, а не она целиком.
+    # Убирать её нельзя: у объявления, написанного одним абзацем, вместе с
+    # ней уходит весь текст, и в описании остаётся одна подпись.
+    if title.endswith("…"):
         return description
     lines = description.splitlines()
     for i, line in enumerate(lines[:3]):
