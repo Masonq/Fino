@@ -29,7 +29,10 @@ from telethon import TelegramClient
 from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.tg_classify import classify_sub, decide_for
-from app.core.tg_parse import compose_title, extract_attributes, looks_like_ad, looks_like_spam, parse
+from app.core.tg_parse import (
+    compose_title, drop_attribute_lines, extract_attributes,
+    looks_like_ad, looks_like_spam, parse,
+)
 from app.core.tg_sources import CHATS, is_resume, topic_category
 from app.core.watermark import has_watermark
 from app.models import (
@@ -180,6 +183,8 @@ async def collect(client, chat_id: int, meta: dict, days: int, per_category: int
         # объявления есть только описание, и по нему нельзя ни отфильтровать,
         # ни сравнить два варианта.
         attrs = extract_attributes(category_slug, parsed["searchable"])
+        # то, что уже разложено по полям, в описании только дублируется
+        parsed["description"] = drop_attribute_lines(parsed["description"], attrs)
         if is_resume(topic_id):
             attrs["listing_kind"] = "resume"
         elif category_slug == "jobs":

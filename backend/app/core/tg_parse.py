@@ -56,10 +56,25 @@ _MD_MARK_RE = re.compile(r"\*\*|__|`")
 # «~~500~~ 450€» после снятия одних знаков оставалось «500 450» — то есть
 # полмиллиона вместо четырёхсот пятидесяти.
 _STRIKE_RE = re.compile(r"~~.*?~~", re.S)
+# Телефон человека, который у нас не регистрировался. Связь идёт через
+# кнопку в Telegram, а номер в описании — это чужие личные данные на нашей
+# витрине, чего мы условились не делать.
+_PHONE_RE = re.compile(r"(\+?\d[\d\s().-]{7,17}\d)")
+_CONTACT_LINE_RE = re.compile(
+    r"(для записи|пишите (по|на) номер|звоните по|номер телефона|"
+    r"вайбер|viber|whatsapp|вотсап)", re.I)
 # «Стол 3000 RSD» — цена уже вынесена в поле, в заголовке она лишняя
 _TITLE_PRICE_RE = re.compile(
     r"\s*[—-]?\s*\d[\d .,\u00a0]*\s*(?:€|eur|евро|rsd|рсд|din\w*|дин\w*|\$|usd)\.?\s*$", re.I)
 _SPEC_RE = re.compile(r"^[\w \u0400-\u04ff]{3,24}\s*[:：]\s*\S")
+# Строки, которые к названию вещи отношения не имеют: сроки, призывы
+# написать, причина продажи. Заголовком становиться не должны.
+_SERVICE_LINE_RE = re.compile(
+    r"(только до|в продаже до|действует до|по причине переезда|пишите в лс|"
+    r"пишите в личку|для записи|запись на просмотр|доп информаци|"
+    r"рассмотрю обмен|самовывоз только|торг уместен|цена окончательная|"
+    r"^продаю (женские|мужские|детские) вещи$|^все вещи по|^продам всё|"
+    r"^актуально|^забронировано|^продано)", re.I)
 _EMOJI_RE = re.compile(
     "[\U0001F000-\U0001FAFF\u2190-\u21FF\u2300-\u27BF\uFE0F\u2B00-\u2BFF]+"
 )
@@ -85,6 +100,10 @@ def clean_text(text: str) -> str:
     lines = []
     for raw in text.splitlines():
         line = raw.rstrip()
+        # строка, существующая ради телефона, целиком не нужна
+        if _CONTACT_LINE_RE.search(line) and _PHONE_RE.search(line):
+            continue
+        line = _PHONE_RE.sub("", line)
         without_tags = _HASHTAG_RE.sub(" ", line)
         # строка из одних хэштегов не несёт ничего, кроме поиска в Telegram
         if line.strip() and not without_tags.strip():
@@ -176,6 +195,27 @@ def extract_city(text: str) -> str | None:
     return best[1] if best else None
 
 
+_GREETING_RE = re.compile(
+    r"^(всем\s+)?(привет\w*|здравствуйте|добрый\s+день|добрый\s+вечер|доброе\s+утро|"
+    r"здравствуй|zdravo|pozdrav)[\s,!.—-]*", re.I)
+
+
+def strip_greeting(text: str) -> str:
+    """
+    Снимает приветствие в начале.
+
+    «Всем привет. Меня зовут Кирилл, 19 лет...» — так пишут резюме в чатах,
+    но заголовком это быть не может: в ленте у всех оказывается одно и то
+    же «Всем привет», и объявления неразличимы.
+    """
+    out = _GREETING_RE.sub("", text.strip())
+    # «Меня зовут X, 19 лет» — знакомство, а не суть объявления. Возраст
+    # снимаем вместе с именем, иначе заголовок начинался с «19 лет».
+    rest = re.sub(r"^меня\s+зовут\s+[\w-]+[\s,.—-]*", "", out, flags=re.I)
+    rest = re.sub(r"^\d{2}\s*(?:лет|года?)[\s,.—-]*", "", rest, flags=re.I)
+    return (rest if len(rest) > 25 else out).strip(" ,.;:—-")
+
+
 def make_title(text: str, limit: int = 70) -> str | None:
     """
     Заголовок из первой содержательной строки.
@@ -186,6 +226,8 @@ def make_title(text: str, limit: int = 70) -> str | None:
     fallback = None
     for raw in text.splitlines():
         line = _EMOJI_RE.sub("", raw).strip(" \t•·—-*#")
+        # «Всем привет!» как заголовок делает ленту неразличимой
+        line = strip_greeting(line)
         # пропускаем строки из одних эмодзи, решёток и знаков
         if len(re.sub(r"[^\w]", "", line, flags=re.UNICODE)) < 8:
             continue
@@ -194,6 +236,9 @@ def make_title(text: str, limit: int = 70) -> str | None:
         # только если ничего лучше в тексте не нашлось
         if _SPEC_RE.match(line):
             fallback = fallback or line
+            continue
+        # «В продаже только до 24 августа» — условие сделки, не предмет
+        if _SERVICE_LINE_RE.search(line):
             continue
         line = _TITLE_PRICE_RE.sub("", line).strip(" ,.;:-—")
         if not line:
@@ -255,27 +300,6 @@ def extract_district(text: str) -> str | None:
             if best is None or len(alias) > best[0]:
                 best = (len(alias), name)
     return best[1] if best else None
-
-
-_GREETING_RE = re.compile(
-    r"^(всем\s+)?(привет\w*|здравствуйте|добрый\s+день|добрый\s+вечер|доброе\s+утро|"
-    r"здравствуй|zdravo|pozdrav)[\s,!.—-]*", re.I)
-
-
-def strip_greeting(text: str) -> str:
-    """
-    Снимает приветствие в начале.
-
-    «Всем привет. Меня зовут Кирилл, 19 лет...» — так пишут резюме в чатах,
-    но заголовком это быть не может: в ленте у всех оказывается одно и то
-    же «Всем привет», и объявления неразличимы.
-    """
-    out = _GREETING_RE.sub("", text.strip())
-    # «Меня зовут X, 19 лет» — знакомство, а не суть объявления. Возраст
-    # снимаем вместе с именем, иначе заголовок начинался с «19 лет».
-    rest = re.sub(r"^меня\s+зовут\s+[\w-]+[\s,.—-]*", "", out, flags=re.I)
-    rest = re.sub(r"^\d{2}\s*(?:лет|года?)[\s,.—-]*", "", rest, flags=re.I)
-    return (rest if len(rest) > 25 else out).strip(" ,.;:—-")
 
 
 def compose_title(category_slug: str | None, text: str) -> str | None:
@@ -355,6 +379,67 @@ def looks_like_spam(text: str) -> bool:
     return any(marker in low for marker in _SPAM_MARKERS)
 
 
+# Раз характеристика вынесена в поле, повторять её в описании незачем:
+# «Площадь: 79 м²» стоит строкой выше в своей рамке.
+_ATTR_LINE_RE = {
+    "area_m2": re.compile(r"^(площадь|kvadratura|povrsina)\b", re.I),
+    "floor": re.compile(r"^(этаж|sprat)\b", re.I),
+    "rooms": re.compile(r"^(комнат\w*|планировка|struktura)\b", re.I),
+    "mileage_km": re.compile(r"^(пробег|kilometraza)\b", re.I),
+    "year": re.compile(r"^(год выпуска|godiste)\b", re.I),
+}
+
+
+def drop_attribute_lines(description: str, attrs: dict) -> str:
+    """
+    Убирает строки, содержимое которых уже разложено по полям.
+
+    Строку убираем, только если в ней стоит ровно то значение, что мы
+    забрали: «Этаж: 2» уходит, а «Этаж 2, окна во двор» остаётся — во
+    второй половине сказано то, чего в полях нет.
+    """
+    if not attrs:
+        return description
+
+    kept = []
+    for line in description.splitlines():
+        bare = _EMOJI_RE.sub("", line).strip(" \t•·—-*")
+        drop = False
+        for key, pattern in _ATTR_LINE_RE.items():
+            if key not in attrs or not pattern.match(bare):
+                continue
+            # «Планировка: 3.0» — это одно число, а не два: дробную запись
+            # приводим к целому, иначе строка оставалась в описании
+            numbers = re.findall(r"\d+(?:[.,]\d+)?", bare)
+            if len(numbers) != 1:
+                continue
+            value = float(numbers[0].replace(",", "."))
+            if abs(value - float(attrs[key])) >= 0.01:
+                continue
+            # В строке не должно остаться ничего, кроме названия признака,
+            # числа и единиц: «Этаж 2, окна во двор» сообщает больше, чем
+            # поле, и убирать его нельзя.
+            rest = pattern.sub("", bare)
+            rest = re.sub(r"\d+(?:[.,]\d+)?", "", rest)
+            rest = re.sub(r"(м2|м²|кв\.?\s*м|m2|кв|km|км)", "", rest, flags=re.I)
+            if len(re.sub(r"[^\w]", "", rest, flags=re.UNICODE)) <= 2:
+                drop = True
+                break
+        if not drop:
+            kept.append(line)
+
+    out, blank = [], False
+    for line in kept:
+        if not line.strip():
+            if blank or not out:
+                continue
+            blank = True
+        else:
+            blank = False
+        out.append(line)
+    return "\n".join(out).strip()
+
+
 def drop_duplicates(description: str, price: float | None, city: str | None) -> str:
     """
     Убирает из описания то, что уже вынесено в поля объявления.
@@ -418,8 +503,10 @@ def drop_title_line(description: str, title: str | None) -> str:
         bare = _EMOJI_RE.sub("", line).strip(" \t•·—-*")
         stripped = _TITLE_PRICE_RE.sub("", bare).strip(" ,.;:-—")
         if stripped and (stripped == title or bare == title or title.startswith(stripped[:40])):
-            del lines[i]
-            break
+            without = "\n".join(lines[:i] + lines[i+1:]).strip()
+            # Если кроме этой строки в описании ничего нет, оставляем её:
+            # пустое описание хуже повтора заголовка.
+            return without if without else description
     return "\n".join(lines).strip()
 
 
