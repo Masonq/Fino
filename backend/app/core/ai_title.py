@@ -128,8 +128,15 @@ def _wait_turn() -> None:
 def _post(url: str, payload: dict, headers: dict,
           provider: str | None = None) -> dict | None:
     body = json.dumps(payload).encode()
+    # Без имени приложения часть провайдеров отвечает отказом: запрос без
+    # него выглядит как обращение робота. У OpenRouter это ещё и способ
+    # опознать источник.
     req = urlrequest.Request(url, data=body, headers={
-        "Content-Type": "application/json", **headers})
+        "Content-Type": "application/json",
+        "User-Agent": "PLONK/1.0 (+https://plonk.rs)",
+        "HTTP-Referer": "https://plonk.rs",
+        "X-Title": "PLONK",
+        **headers})
     try:
         with urlrequest.urlopen(req, timeout=TIMEOUT) as resp:
             return json.loads(resp.read().decode())
