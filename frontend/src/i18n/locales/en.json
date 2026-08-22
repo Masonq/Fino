@@ -89,7 +89,8 @@
     "show_more": "Show more",
     "loading": "Loading…",
     "reset_filters": "Reset filters",
-    "clear": "Clear"
+    "clear": "Clear",
+    "close": "Close"
   },
   "post": {
     "step_params": "Details",

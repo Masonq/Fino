@@ -17,6 +17,18 @@ export default function ListingDetail() {
   const { user } = useAuth()
   const [scrolled, setScrolled] = useState(false)
   const [photoIdx, setPhotoIdx] = useState(0)
+  // Просмотр во весь экран: в галерее фото вписано целиком и потому мелкое,
+  // а разглядеть вещь перед покупкой — половина смысла объявления.
+  const [fullscreen, setFullscreen] = useState(null)
+
+  // При открытом просмотре страница под ним не должна прокручиваться:
+  // иначе закрываешь снимок и оказываешься в другом месте объявления.
+  useEffect(() => {
+    if (fullscreen === null) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = prev }
+  }, [fullscreen])
 
   // запоминаем просмотр — чтобы человек мог вернуться к тому, что смотрел
   useEffect(() => {
@@ -161,7 +173,11 @@ export default function ListingDetail() {
               /* Снимок показываем целиком, а поля по бокам заполняем его же
                  размытой копией: обрезка по высоте съедала половину
                  вертикальных фото — а их в объявлениях большинство. */
-              <div className="photo-slide" key={ph.url || i}>
+              <div
+                className="photo-slide"
+                key={ph.url || i}
+                onClick={() => setFullscreen(i)}
+              >
                 <img className="photo-blur" src={ph.url} alt="" aria-hidden="true" />
                 <img className="photo-main" src={ph.url} alt="" loading={i === 0 ? 'eager' : 'lazy'} />
               </div>
@@ -318,6 +334,38 @@ export default function ListingDetail() {
           {starting ? '...' : t(isResume ? 'detail.write_person' : 'detail.write_seller')}
         </button>
       </div>
+      )}
+
+      {fullscreen !== null && (
+        <div className="lightbox" onClick={() => setFullscreen(null)}>
+          <button className="lightbox-close" aria-label={t('actions.close')}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </button>
+          <div
+            className="lightbox-strip"
+            ref={(el) => {
+              // открываем сразу на том снимке, который смотрели в ленте
+              if (el && el.dataset.ready !== '1') {
+                el.scrollLeft = fullscreen * el.clientWidth
+                el.dataset.ready = '1'
+              }
+            }}
+            onClick={(e) => e.stopPropagation()}
+            onScroll={(e) => {
+              const el = e.currentTarget
+              setPhotoIdx(Math.round(el.scrollLeft / el.clientWidth))
+            }}
+          >
+            {photos.map((ph, i) => (
+              <img key={ph.url || i} src={ph.url} alt="" />
+            ))}
+          </div>
+          {photos.length > 1 && (
+            <div className="lightbox-count">{photoIdx + 1} / {photos.length}</div>
+          )}
+        </div>
       )}
     </div>
   )

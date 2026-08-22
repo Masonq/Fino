@@ -89,7 +89,8 @@
     "show_more": "Prikaži još",
     "loading": "Učitavanje…",
     "reset_filters": "Poništi filtere",
-    "clear": "Obriši"
+    "clear": "Obriši",
+    "close": "Zatvori"
   },
   "post": {
     "step_params": "Detalji",
