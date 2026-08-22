@@ -1965,3 +1965,26 @@ def test_model_weighs_the_opening():
 
     found = features("Коляска Chicco в хорошем состоянии, много деталей")
     assert found.count("коляск") >= 2
+
+
+def test_thousands_shortcut_after_price_word():
+    """
+    «Цена: 10к динар» — слово «цена» перехватывало разбор раньше правила
+    про тысячи, и десять тысяч превращались в десять евро.
+    """
+    from app.core.tg_parse import extract_price
+
+    assert extract_price("Цена: 10к динар, район Мириево") == (10000, "RSD")
+    assert extract_price("Цена 20к рсд") == (20000, "RSD")
+    assert extract_price("Цена: 5к евро") == (5000, "EUR")
+    # обычная запись не пострадала
+    assert extract_price("Цена 1.500 евро") == (1500, "EUR")
+    assert extract_price("Цена: 15000 rds") == (15000, "RSD")
+
+
+def test_labelled_amount_is_trusted():
+    """Рядом стоит слово «цена» — значит это цена, а не случайное число."""
+    from app.core.tg_parse import extract_price
+
+    assert extract_price("Цена 3000") == (3000, "RSD")
+    assert extract_price("Цена 500") == (500, "EUR")

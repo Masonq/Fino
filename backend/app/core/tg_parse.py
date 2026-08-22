@@ -402,6 +402,9 @@ _PRICE_LABELLED_RE = re.compile(
     r"(?:цена|price|cena)\s*[:\-—]?\s*"
     # «15. 000 RS» — точку от разделителя тысяч иногда отделяют пробелом
     r"(\d{1,3}(?:[ .,\u00a0]\s?\d{3})+|\d{2,7})\s*"
+    # «Цена: 10к динар» — тысячи сокращают буквой, и без неё выходило
+    # десять динаров вместо десяти тысяч.
+    r"(к|k|т|тыс\.?)?\s*"
     r"(€|\$|(?:eur|евро|е|rsd|rds|рсд|rs|din\w*|дин\w*|usd)\b)?", re.I)
 
 
@@ -547,12 +550,15 @@ def extract_price(text: str) -> tuple[float | None, str | None]:
     if m:
         value = _to_number(m.group(1))
         if value is not None:
-            currency = CURRENCY_BY_WORD.get((m.group(2) or "").lower())
+            if m.group(2):                 # сокращение тысяч рядом с числом
+                value *= 1000
+            currency = CURRENCY_BY_WORD.get((m.group(3) or "").lower())
             if currency:
                 return value, currency
-            # валюта не названа: до тысячи это почти наверняка евро
-            if value <= 1000:
-                return value, "EUR"
+            # Валюту не написали, но слово «цена» рядом стоит — значит это
+            # точно цена, а не случайное число. До тысячи в Белграде
+            # торгуются в евро, выше — в динарах.
+            return value, "EUR" if value <= 1000 else "RSD"
 
     m = _PRICE_K_RE.search(text)
     if m:
