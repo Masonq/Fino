@@ -50,6 +50,9 @@ MIN_MARGIN = 3.0
 # высокая точность означает лишь то, что проверять было не на чем.
 MIN_ACCURACY = 0.85
 MIN_SAMPLES = 500
+# Сколько проверок нужно, чтобы судить о разделе. На трёх примерах
+# стопроцентная точность не значит ничего.
+MIN_PER_CATEGORY = 8
 
 
 # Слова, которые есть в объявлении любого раздела: по ним не отличить
@@ -92,7 +95,8 @@ class Model:
     """Наивный байес: вероятность раздела по словам объявления."""
 
     def __init__(self, weights: dict, priors: dict, vocabulary: int,
-                 accuracy: float = 0.0, samples: int = 0):
+                 accuracy: float = 0.0, samples: int = 0,
+                 by_category: dict | None = None):
         self.weights = weights          # категория → слово → вес
         self.priors = priors            # категория → доля в обучении
         self.vocabulary = vocabulary
@@ -101,9 +105,19 @@ class Model:
         # объявление от покупателя надёжнее, чем его отсутствие.
         self.accuracy = accuracy
         self.samples = samples
+        # Точность по каждому разделу отдельно. Общая цифра обманчива:
+        # одежду модель узнаёт уверенно, а детское путает с ней же —
+        # и незачем запрещать ей первое из-за второго.
+        self.by_category = by_category or {}
 
     def trustworthy(self) -> bool:
-        return self.accuracy >= MIN_ACCURACY and self.samples >= MIN_SAMPLES
+        """Есть ли хоть один раздел, которому можно доверять."""
+        return bool(self.trusted_categories()) and self.samples >= MIN_SAMPLES
+
+    def trusted_categories(self) -> set[str]:
+        """Разделы, где модель ошибается редко."""
+        return {slug for slug, (right, total) in self.by_category.items()
+                if total >= MIN_PER_CATEGORY and right / total >= MIN_ACCURACY}
 
     # ── применение ──────────────────────────────────────────────────────
     def scores(self, text: str) -> dict[str, float]:
@@ -121,6 +135,14 @@ class Model:
             out[slug] = total
         return out
 
+    def raw_predict(self, text: str) -> tuple[str | None, float]:
+        """Решение без оглядки на доверие — нужно при замере качества."""
+        scores = self.scores(text)
+        if len(scores) < 2:
+            return None, 0.0
+        best, second = sorted(scores.values(), reverse=True)[:2]
+        return max(scores, key=lambda s: scores[s]), best - second
+
     def predict(self, text: str) -> tuple[str | None, float]:
         """
         Раздел и уверенность — насколько он обошёл следующего за ним.
@@ -134,12 +156,17 @@ class Model:
             return None, 0.0
         best, second = sorted(scores.values(), reverse=True)[:2]
         slug = max(scores, key=lambda s: scores[s])
+        # Отвечаем только про те разделы, в которых модель себя показала.
+        # В остальных её догадка не лучше правил, и молчание честнее.
+        trusted = self.trusted_categories()
+        if trusted and slug not in trusted:
+            return None, 0.0
         return slug, best - second
 
     def to_json(self) -> dict:
         return {"weights": self.weights, "priors": self.priors,
-                "vocabulary": self.vocabulary,
-                "accuracy": self.accuracy, "samples": self.samples}
+                "vocabulary": self.vocabulary, "accuracy": self.accuracy,
+                "samples": self.samples, "by_category": self.by_category}
 
     # ── обучение ────────────────────────────────────────────────────────
     @classmethod
@@ -198,13 +225,13 @@ def load() -> Model | None:
     try:
         data = json.loads(MODEL_PATH.read_text(encoding="utf-8"))
         model = Model(data["weights"], data["priors"], data["vocabulary"],
-                      data.get("accuracy", 0.0), data.get("samples", 0))
+                      data.get("accuracy", 0.0), data.get("samples", 0),
+                      data.get("by_category"))
         if not model.trustworthy():
             log.warning(
-                "классификатор не допущен к работе: точность %.0f%% на %d "
-                "примерах (нужно %.0f%% и %d). Работают правила.",
-                model.accuracy * 100, model.samples,
-                MIN_ACCURACY * 100, MIN_SAMPLES)
+                "классификатор не допущен: ни один раздел не набрал %.0f%% "
+                "на %d проверках (всего примеров %d). Работают правила.",
+                MIN_ACCURACY * 100, MIN_PER_CATEGORY, model.samples)
             _loaded = None
             return _loaded
         _loaded = model

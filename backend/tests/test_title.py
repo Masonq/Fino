@@ -1712,19 +1712,25 @@ def test_no_providers_means_rules_only(monkeypatch):
 
 def test_model_must_earn_its_place():
     """
-    Модель, не доказавшая качество, к работе не допускается: неверный
-    раздел прячет объявление от покупателя надёжнее, чем его отсутствие.
+    Доверие считается по каждому разделу отдельно: одежду модель узнаёт
+    уверенно, а детское путает с ней же — и незачем запрещать ей первое
+    из-за второго.
     """
-    from app.core.category_model import MIN_ACCURACY, MIN_SAMPLES, Model
+    from app.core.category_model import MIN_SAMPLES, Model
 
-    weak = Model({}, {}, 0, accuracy=0.54, samples=217)
+    good = Model({}, {}, 0, samples=MIN_SAMPLES, by_category={
+        "fashion": (45, 50),      # 90% — доверяем
+        "kids": (20, 40),         # 50% — молчит
+        "auto": (3, 3),           # проверок мало, судить не о чем
+    })
+    assert good.trusted_categories() == {"fashion"}
+    assert good.trustworthy()
+
+    weak = Model({}, {}, 0, samples=900, by_category={"kids": (20, 40)})
     assert not weak.trustworthy()
 
-    small = Model({}, {}, 0, accuracy=0.95, samples=100)
-    assert not small.trustworthy()          # точность на пустом месте
-
-    good = Model({}, {}, 0, accuracy=MIN_ACCURACY, samples=MIN_SAMPLES)
-    assert good.trustworthy()
+    small = Model({}, {}, 0, samples=100, by_category={"fashion": (45, 50)})
+    assert not small.trustworthy()      # обучения мало, как ни считай
 
 
 def test_letter_attribute_does_not_crash_description():

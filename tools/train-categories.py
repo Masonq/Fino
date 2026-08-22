@@ -94,12 +94,19 @@ def report(model: Model, tests: list[tuple[str, str]]) -> float:
 
     right = wrong = unsure = 0
     mistakes: Counter = Counter()
+    # Считаем по каждому разделу: одежду модель узнаёт уверенно, а
+    # детское путает с ней же — общая цифра это скрывает.
+    per_category: dict[str, list[int]] = {}
     for text, expected in tests:
-        slug, margin = model.predict(text)
+        slug, margin = model.raw_predict(text)
         if slug is None or margin < MIN_MARGIN:
             unsure += 1
-        elif slug == expected:
+            continue
+        counts = per_category.setdefault(slug, [0, 0])
+        counts[1] += 1
+        if slug == expected:
             right += 1
+            counts[0] += 1
         else:
             wrong += 1
             mistakes[f"{expected} → {slug}"] += 1
@@ -113,6 +120,18 @@ def report(model: Model, tests: list[tuple[str, str]]) -> float:
         for pair, count in mistakes.most_common(8):
             print(f"    {pair:<34} {count}")
 
+    from app.core.category_model import MIN_ACCURACY, MIN_PER_CATEGORY
+
+    print("\n  по разделам:")
+    for slug, (ok, total) in sorted(per_category.items(),
+                                    key=lambda kv: -kv[1][1]):
+        share = ok * 100 // total
+        verdict = ("доверяем" if total >= MIN_PER_CATEGORY
+                   and ok / total >= MIN_ACCURACY else "молчит")
+        print(f"    {slug:<14} {ok:>3}/{total:<4} ({share:>3}%)  {verdict}")
+
+    model.by_category = {slug: tuple(counts)
+                         for slug, counts in per_category.items()}
     decided = right + wrong
     return right / decided if decided else 0.0
 
@@ -170,11 +189,13 @@ def main() -> None:
         model.samples = len(train)
         save(model)
         if model.trustworthy():
-            print("\n  модель сохранена и допущена к работе")
+            trusted = ", ".join(sorted(model.trusted_categories()))
+            print(f"\n  модель сохранена. Доверяем разделам: {trusted}")
+            print("  в остальных работают правила")
         else:
-            print(f"\n  модель сохранена, но к работе НЕ допущена:")
-            print(f"  нужно {MIN_ACCURACY * 100:.0f}% верных решений "
-                  f"и {MIN_SAMPLES} примеров обучения.")
+            print("\n  модель сохранена, но к работе НЕ допущена:")
+            print(f"  ни один раздел не набрал {MIN_ACCURACY * 100:.0f}% "
+                  f"на {MIN_PER_CATEGORY}+ проверках.")
             print("  Пока работают правила — разметьте ещё объявлений:")
             print("  python tools/label-with-ai.py --limit 500")
 
