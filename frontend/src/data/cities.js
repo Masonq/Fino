@@ -19,12 +19,36 @@ export function cityLabel(slug, lang = 'ru') {
   return city[lang] || city.ru
 }
 
+// Сербская кириллица: города приходят и в ней тоже — из старых данных,
+// из ручного ввода, из внешних источников. «Београд» не совпадал ни с
+// одним написанием в справочнике и показывался как есть, из-за чего на
+// английской странице город оставался кириллицей.
+const CYR_TO_LAT = {
+  'љ': 'lj', 'њ': 'nj', 'џ': 'dz', 'ђ': 'd', 'ћ': 'c', 'ж': 'z', 'ч': 'c', 'ш': 's',
+  'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'з': 'z', 'и': 'i',
+  'ј': 'j', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r',
+  'с': 's', 'т': 't', 'у': 'u', 'ф': 'f', 'х': 'h', 'ц': 'c', 'ы': 'i', 'э': 'e',
+  'ю': 'u', 'я': 'a', 'й': 'i', 'щ': 's', 'ъ': '', 'ь': '',
+}
+
+// Приводим написание к общему виду: строчные, без диакритики и разделителей,
+// кириллица переложена в латиницу. «Београд», «Белград», «Beograd» и
+// «beograd» дают одно и то же.
+function fold(value) {
+  return String(value)
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .split('').map((ch) => (ch in CYR_TO_LAT ? CYR_TO_LAT[ch] : ch)).join('')
+    .replace(/[^a-z]/g, '')
+}
+
 // В объявлениях город может быть сохранён как угодно (введён вручную, пришёл из старых данных).
 // Пробуем сопоставить со справочником, иначе показываем как есть.
 export function displayCity(value, lang = 'ru') {
   if (!value) return ''
+  const key = fold(value)
   const found = CITIES.find(
-    (c) => c.slug === value || [c.ru, c.en, c.sr].some((n) => n.toLowerCase() === String(value).toLowerCase())
+    (c) => fold(c.slug) === key || [c.ru, c.en, c.sr].some((n) => fold(n) === key)
   )
   return found ? (found[lang] || found.ru) : value
 }

@@ -189,7 +189,9 @@ export default function ListingDetail() {
 
       <div className="detail-sheet">
         <div className="detail-price">
-          {listing.price != null ? `${listing.price} ${listing.currency === 'EUR' ? '€' : listing.currency}` : t('detail.no_price')}
+          {listing.price != null
+            ? `${Number(listing.price).toLocaleString('sr-RS')}\u202F${listing.currency === 'EUR' ? '€' : listing.currency}`
+            : t('detail.no_price')}
         </div>
         {listing.price_negotiable && <div className="neg-pill">{t('detail.negotiable')}</div>}
 
@@ -257,10 +259,6 @@ export default function ListingDetail() {
 
         {listing.owner && (
           <SellerReviews sellerId={listing.owner.id} listingId={listing.id} />
-        )}
-
-        {listing.translations?.[i18n.language]?.is_auto_translated && (
-          <p className="auto-translated">{t('detail.auto_translated')}</p>
         )}
 
         <SimilarListings listingId={listing.id} />

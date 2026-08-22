@@ -66,7 +66,7 @@ def run():
                 id=uuid.uuid4(),
                 phone=DEMO_PHONE,
                 hashed_password="demo",
-                display_name="Ана М. (демо)",
+                display_name="Ана М. (demo)",
                 role=UserRole.seller_private,
                 default_language=Language.ru,
                 phone_verified=True,
