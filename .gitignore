@@ -15,3 +15,4 @@ media/
 # Образец водяного знака: двоичный файл, собирается на месте из снимков
 backend/app/core/wm-template.npy
 wm-template.png
+category-model.json

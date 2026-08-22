@@ -1215,3 +1215,53 @@ def test_subcategory_weight_by_root_not_phrase_length():
     """
     from app.core.tg_classify import classify_sub
     assert classify_sub("real-estate", "3-комнатная квартира 72 м2 Врачар") == "flats"
+
+
+# ── Обучаемый классификатор ─────────────────────────────────────────────────
+# Словарь ключевых слов хрупок: решение принимает одно совпавшее слово, и
+# уточнение ради одного случая ломает соседний. Модель складывает
+# свидетельства всех слов сразу.
+def test_model_separates_by_context_not_single_word():
+    """
+    «Трек гараж Hot-Wheels» и «Сдам гараж 15 м2» состоят из одинаковых
+    слов, но значат разное. Правилами это разводится вручную, моделью —
+    само собой.
+    """
+    from app.core.category_model import Model
+    samples = [
+        ("Продам 2-комнатную квартиру 48 м2 Врачар, 5 этаж, балкон", "real-estate"),
+        ("Сдаю студию 34 м2 Нови Белград, мебель, от сентября", "real-estate"),
+        ("3-комнатная квартира 72 м2, гараж в подземном паркинге", "real-estate"),
+        ("Сдам гараж на Вождовце 15 м2, охрана, парковочное место", "real-estate"),
+        ("Трек гараж Mega Hot-Wheels с винтовым подъемником игрушка", "kids"),
+        ("Много Lego duplo за все, конструктор детский", "kids"),
+        ("Коляска Chicco 2в1 состояние хорошее", "kids"),
+        ("Продам диван IKEA раскладной 25000 динар", "home-garden"),
+        ("Стол письменный IKEA MICKE 100х60 см", "home-garden"),
+    ]
+    model = Model.train(samples)
+    assert model.predict("2-комнатная квартира 46 м2, есть гараж и паркинг")[0] == "real-estate"
+    assert model.predict("Огромный трек гараж Hot-Wheels для машинок")[0] == "kids"
+
+
+def test_model_reports_low_confidence():
+    """
+    Когда два раздела рядом, объявление двусмысленно. Модель отдаёт
+    разрыв, а не «сколько процентов»: маленький разрыв — не угадываем, а
+    передаём правилам.
+    """
+    from app.core.category_model import Model
+    model = Model.train([
+        ("Продам квартиру 48 м2 Врачар этаж балкон", "real-estate"),
+        ("Сдаю студию 34 м2 мебель", "real-estate"),
+        ("Продам диван IKEA раскладной", "home-garden"),
+        ("Стол письменный IKEA MICKE", "home-garden"),
+    ])
+    _, margin = model.predict("Продам нечто совершенно неизвестное")
+    assert margin < 0.8
+
+
+def test_parser_works_without_trained_model():
+    """Модели нет — классификация идёт по правилам, как прежде."""
+    from app.core.tg_classify import classify
+    assert classify("Продам диван IKEA 25000 RSD")[0] == "home-garden"

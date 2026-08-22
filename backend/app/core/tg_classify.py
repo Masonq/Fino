@@ -13,6 +13,8 @@
 import re
 import unicodedata
 
+from app.core.category_model import MIN_MARGIN, predict as model_predict
+
 # Слова, по которым узнаётся категория. Русские и сербские вперемешку —
 # в этих чатах пишут и так, и так, часто в одном объявлении.
 KEYWORDS: dict[str, list[str]] = {
@@ -259,6 +261,14 @@ def classify(text: str) -> tuple[str | None, int]:
     # полно названий техники: у мастера по бойлерам их всегда много.
     if _SERVICE_WORK_RE.search(text) and not _SELLING_RE.search(text):
         return "services", 3
+    # Обученная модель судит по всему тексту сразу, а не по одному
+    # совпавшему слову, и потому не путает «трек гараж Hot-Wheels» с
+    # гаражом на продажу. Правила выше неё — это случаи, где мы уверены
+    # наверняка; словари ниже — страховка, когда модель сомневается.
+    guessed, margin = model_predict(text)
+    if guessed and margin >= MIN_MARGIN:
+        return guessed, 3
+
     folded = _fold(text)
     head = _fold(text[:120])
     if _HOUSEHOLD_MACHINE_RE.search(text):
