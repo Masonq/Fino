@@ -31,7 +31,7 @@ from app.core.database import SessionLocal
 from app.core.tg_classify import classify_sub, decide_for
 from app.core.tg_parse import (
     compose_title, drop_attribute_lines, extract_attributes,
-    looks_like_ad, looks_like_spam, parse,
+    looks_like_ad, looks_like_spam, looks_sold, parse,
 )
 from app.core.tg_sources import CHATS, is_resume, topic_category
 from app.core.translate import translate_listing
@@ -125,6 +125,9 @@ async def collect(client, chat_id: int, meta: dict, days: int, per_category: int
         # реклама услуги вообще, без предмета и цены: покупателю с неё
         # взять нечего, а в ленте она занимает место объявления
         if looks_like_ad(text):
+            continue
+        # «ПРОДАНО» в самом сообщении: вещи уже нет, переносить нечего
+        if looks_sold(text):
             continue
 
         sender = await msg.get_sender()
