@@ -1190,3 +1190,28 @@ def test_house_plants_recognised():
     for text in ("Ананас декоративный в горшке", "Мускари / мышиный гиацинт",
                  "Каланхоэ цветёт долго"):
         assert classify(text)[0] == "home-garden", text
+
+
+def test_garage_at_a_flat_is_an_amenity():
+    """
+    «Квартира 48 м², гараж в подземном паркинге» — это квартира. Гараж
+    при жилье удобство, а не предмет продажи. Обратное неверно: у гаража
+    квартиры не бывает.
+    """
+    from app.core.tg_classify import classify_sub
+    assert classify_sub("real-estate",
+                        "2-комнатная квартира, 48 м², гараж в подземном паркинге") == "flats"
+    assert classify_sub("real-estate", "Студия 34 м2, есть паркинг") == "flats"
+    assert classify_sub("real-estate", "Продам дом с гаражом в Земуне") == "houses"
+    # сам гараж остаётся гаражом
+    assert classify_sub("real-estate", "Сдам гараж на Вождовце, 15 м2") == "garages"
+    assert classify_sub("real-estate", "Машиноместо в подземном паркинге") == "garages"
+
+
+def test_subcategory_weight_by_root_not_phrase_length():
+    """
+    Вес считался по длине всей фразы, и «сдам гараж» тянул сильнее
+    «квартир» — квартиры уезжали в раздел гаражей.
+    """
+    from app.core.tg_classify import classify_sub
+    assert classify_sub("real-estate", "3-комнатная квартира 72 м2 Врачар") == "flats"
