@@ -78,6 +78,56 @@ _TITLE_PRICE_RE = re.compile(
 _SPEC_RE = re.compile(r"^[\w \u0400-\u04ff]{3,24}\s*[:：]\s*\S")
 # Глагол в начале ничего не добавляет: в ленте и так всё продаётся
 _SELLING_VERB_RE = re.compile(r"^(продам|продаю|продается|продаётся|prodajem|na prodaju)\s+", re.I)
+
+# Сняв «продам», остаёмся с винительным падежом: «Плёночную камеру».
+# Названием это быть не может, нужен именительный. Полного решения без
+# словаря словоформ нет, но эти окончания покрывают почти все случаи:
+# женский род на -у/-ю и прилагательное перед ним на -ую/-юю.
+_ACC_ADJ = (
+    (re.compile(r"(\w+)ую\b", re.I), "ая"),
+    (re.compile(r"(\w+)юю\b", re.I), "яя"),
+)
+# Существительные женского рода: в винительном оканчиваются на -у/-ю.
+# Согласная перед окончанием отсекает несклоняемые слова вроде «кенгуру»
+# и «меню», где перед -у стоит гласная.
+_ACC_NOUN = re.compile(r"(\w{2,}[бвгджзклмнпрстфхцчшщ])у\b", re.I)
+_ACC_NOUN_SOFT = re.compile(r"(\w{2,}[бвгджзклмнпрстфхцчшщ])ю\b", re.I)
+# Слова, которые и в именительном кончаются на -у: их не трогаем
+_INDECLINABLE = {"кенгуру", "какаду", "меню", "рагу", "интервью", "шоу", "жалюзи"}
+
+
+def to_nominative(text: str) -> str:
+    """
+    Переводит первые слова заголовка из винительного падежа в именительный.
+
+    Трогаем только начало: дальше идут уточнения, где падеж уже верный,
+    а слова вроде «камеру» встречаются и в них.
+    """
+    words = text.split()
+    if not words:
+        return text
+    # прилагательное и существительное — не больше двух слов
+    for i in range(min(2, len(words))):
+        word = words[i]
+        if word.lower() in _INDECLINABLE:
+            continue
+        changed = False
+        for pattern, ending in _ACC_ADJ:
+            m = pattern.fullmatch(word)
+            if m:
+                words[i] = m.group(1) + ending
+                changed = True
+                break
+        if changed:
+            continue
+        m = _ACC_NOUN.fullmatch(word)
+        if m:
+            words[i] = m.group(1) + "а"
+            continue
+        m = _ACC_NOUN_SOFT.fullmatch(word)
+        if m:
+            words[i] = m.group(1) + "я"
+    return " ".join(words)
 # «Срочно!», «Внимание!» — привлекают взгляд в чате, но вещь не называют
 _SHOUT_RE = re.compile(
     r"^(срочно|очень срочно|внимание|важно|только сегодня|акция|hitno|pažnja)"
@@ -287,8 +337,11 @@ def make_title(text: str, limit: int = 70) -> str | None:
             continue
         # Заглавную ставим, только если сняли глагол и слово начиналось со
         # строчной: иначе «iPhone» становился «IPhone».
-        if without_verb != line and without_verb[:1].islower():
-            without_verb = without_verb[0].upper() + without_verb[1:]
+        if without_verb != line:
+            # падеж правим только там, где сняли глагол — он его и задавал
+            without_verb = to_nominative(without_verb)
+            if without_verb[:1].islower():
+                without_verb = without_verb[0].upper() + without_verb[1:]
         line = without_verb
 
         # Обрываем по первой запятой: до неё называют предмет, после —
