@@ -7,3 +7,7 @@ dist/
 media/
 .DS_Store
 *.log
+
+# Сессия Telegram: равнозначна доступу к аккаунту, живёт только на сервере
+*.session
+*.session-journal

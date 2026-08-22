@@ -22,6 +22,14 @@ class Settings(BaseSettings):
     # свой сервер перевода — без ограничений по количеству запросов
     translate_url: str | None = None
 
+    # Чтение барахолок в Telegram. Ключи с my.telegram.org, телефон — того
+    # аккаунта, который состоит в этих чатах. Сессия лежит рядом файлом,
+    # так что код подтверждения запрашивается только при первом входе.
+    tg_api_id: int | None = None
+    tg_api_hash: str | None = None
+    tg_phone: str | None = None
+    tg_session: str = "tg.session"
+
     class Config:
         env_file = ".env"
 
