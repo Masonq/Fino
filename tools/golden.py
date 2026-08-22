@@ -117,10 +117,59 @@ def measure(show_diff: bool) -> None:
             print("  (покажет --diff)")
 
 
+def review(limit: int) -> None:
+    """
+    Сверяет эталон с разбором нейросети.
+
+    Эталон собран правилами и потому совпадает сам с собой — ошибки в нём
+    закреплены. Модель читает те же объявления заново, и расхождения
+    показывают, где правила неправы. Судить, кто прав, всё равно человеку:
+    сверка только сужает чтение с сотни объявлений до десятка спорных.
+    """
+    from app.core.ai_title import guess_category, improve
+    from app.core.tg_classify import KEYWORDS
+
+    rows = load()
+    slugs = list(KEYWORDS)
+    checked = agreed = 0
+    changes: list[dict] = []
+
+    for row in rows[:limit]:
+        text = row["text"]
+        better = improve(text, row.get("title"))
+        slug = guess_category(text, slugs)
+        checked += 1
+
+        title_differs = better.get("title") and better["title"] != row.get("title")
+        cat_differs = slug and slug != row.get("category")
+        if not title_differs and not cat_differs:
+            agreed += 1
+            continue
+
+        if title_differs:
+            print(f"  T  {str(row.get('title'))[:40]!r}")
+            print(f"  →  {better['title'][:40]!r}")
+        if cat_differs:
+            print(f"  К  {row.get('category')} → {slug}"
+                  f"   {str(row.get('title'))[:34]}")
+        changes.append({"id": row["id"], "title": better.get("title"),
+                        "category": slug})
+
+    print(f"
+сверено: {checked}, совпало с правилами: {agreed} "
+          f"({agreed * 100 // (checked or 1)}%)")
+    print(f"расхождений: {len(changes)}")
+    print("
+Посмотрите список выше. Где права модель — поправьте строки в\n"
+          f"{GOLDEN}: эталон должен быть верным, а не удобным.")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--build", type=int, metavar="N",
                     help="собрать эталон из N объявлений базы")
+    ap.add_argument("--review", type=int, metavar="N", nargs="?", const=100,
+                    help="сверить N объявлений эталона с разбором нейросети")
     ap.add_argument("--diff", action="store_true",
                     help="показать сами расхождения, а не только счёт")
     args = ap.parse_args()
@@ -133,6 +182,10 @@ def main() -> None:
         print(f"собрано: {len(rows)} → {GOLDEN}")
         print("\nПросмотрите файл и поправьте строки, где разбор неверен:\n"
               "иначе замер закрепит нынешние ошибки как эталон.")
+        return
+
+    if args.review:
+        review(args.review)
         return
 
     measure(args.diff)
