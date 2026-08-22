@@ -57,7 +57,8 @@
     "sort_expensive": "Najskuplje prvo",
     "placeholder": "Šta tražite?",
     "all_cities": "Svi gradovi",
-    "all_in_category": "Sve"
+    "all_in_category": "Sve",
+    "recent": "Nedavne pretrage"
   },
   "chat": {
     "empty": "Još nema poruka — započnite razgovor",

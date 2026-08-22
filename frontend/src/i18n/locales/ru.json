@@ -57,7 +57,8 @@
     "sort_expensive": "Сначала дорогие",
     "placeholder": "Что ищете?",
     "all_cities": "Все города",
-    "all_in_category": "Все"
+    "all_in_category": "Все",
+    "recent": "Вы искали"
   },
   "chat": {
     "empty": "Сообщений пока нет — начните разговор",

@@ -57,7 +57,8 @@
     "sort_expensive": "Most expensive first",
     "placeholder": "What are you looking for?",
     "all_cities": "All cities",
-    "all_in_category": "All"
+    "all_in_category": "All",
+    "recent": "Recent searches"
   },
   "chat": {
     "empty": "No messages yet — say hello",
