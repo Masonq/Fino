@@ -10,7 +10,8 @@
 """
 import asyncio
 
-from telethon import TelegramClient, functions
+from telethon import TelegramClient
+from telethon.tl.functions.messages import GetForumTopicsRequest
 
 from app.core.config import settings
 
@@ -29,11 +30,12 @@ async def main() -> None:
     for chat_id in CHATS:
         entity = await client.get_entity(chat_id)
         print(f"\n=== {entity.title}  ({chat_id}) ===")
-        offset_date, offset_id, offset_topic = 0, 0, 0
+        # offset_date ждёт дату или None; ноль здесь не годится
+        offset_date, offset_id, offset_topic = None, 0, 0
         seen = 0
         while True:
-            res = await client(functions.channels.GetForumTopicsRequest(
-                channel=entity, offset_date=offset_date, offset_id=offset_id,
+            res = await client(GetForumTopicsRequest(
+                peer=entity, offset_date=offset_date, offset_id=offset_id,
                 offset_topic=offset_topic, limit=100,
             ))
             topics = [t for t in res.topics if getattr(t, "title", None)]
@@ -46,7 +48,7 @@ async def main() -> None:
                 break
             last = topics[-1]
             offset_topic, offset_id = last.id, last.top_message
-            offset_date = getattr(last, "date", 0)
+            offset_date = getattr(last, "date", None)
         print(f"  — всего тем: {seen}")
 
     await client.disconnect()
