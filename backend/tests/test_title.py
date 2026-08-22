@@ -1018,3 +1018,50 @@ def test_forced_category_is_not_published_at_once():
 def test_guess_category_returns_known_slug_only():
     from app.core.ai_title import guess_category
     assert guess_category("Продам что-то", ["fashion", "auto"]) is None
+
+
+# ── Повторы объявлений ──────────────────────────────────────────────────────
+# Одно объявление кочует по чатам переписанным, часто от разных людей.
+def test_same_item_recognised_across_chats():
+    from app.core.tg_parse import fingerprint, same_thing
+    pairs = (
+        (("Диван IKEA раскладной", "Раскладной диван, Земун"),
+         ("Продам диван Икеа", "Диван раскладной в Земуне")),
+        (("MacBook Pro 16 M5 24 Gb", "Ноутбук MacBook"),
+         ("MacBook Pro 16’ M5 Pro 24 Gb / 1 Tb", "MacBook Pro 16")),
+        (("Кроссовки мужские Under Armour", "Новые кроссовки 42"),
+         ("Кроссовки Under Armour", "Кроссовки мужские 42 размер")),
+    )
+    for one, two in pairs:
+        assert same_thing(fingerprint(*one), fingerprint(*two)), one
+
+
+def test_different_items_not_merged():
+    """
+    «Платье» и «жилет» за одну цену в одном городе сходятся по словам
+    «женское» и «отличное» — но это разные вещи.
+    """
+    from app.core.tg_parse import fingerprint, same_thing
+    pairs = (
+        (("Платье H&M размер S", "Женское платье отличное"),
+         ("Женский жилет Gant", "Жилет женский отличное")),
+        (("Пиджак Mexx замшевые вставки", "Пиджак мужской"),
+         ("Пиджак Barbosa", "Пиджак размер 52")),
+        (("Куртка зимняя женская", "Тёплая куртка размер М"),
+         ("Куртка мужская кожаная", "Кожаная куртка размер L")),
+    )
+    for one, two in pairs:
+        assert not same_thing(fingerprint(*one), fingerprint(*two)), one
+
+
+def test_fingerprint_keeps_short_model_tokens():
+    """Марка и модель самые приметные, а они короткие: «m5», «16», «gb»."""
+    from app.core.tg_parse import fingerprint
+    mark = fingerprint("MacBook Pro 16 M5 24 Gb", "")
+    assert "16" in mark.split() and "m5" in mark.split()
+
+
+def test_fingerprint_ignores_common_words():
+    from app.core.tg_parse import fingerprint
+    mark = fingerprint("Продам диван", "Отличное состояние, самовывоз, торг уместен")
+    assert "prodam" not in mark and "torg" not in mark

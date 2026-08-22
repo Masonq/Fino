@@ -65,6 +65,11 @@ class Listing(Base):
     # откуда взято — для поиска дублей и разбора жалоб, покупателю не показываем
     external_chat: Mapped[str | None] = mapped_column(String(128), nullable=True)
     external_message_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # Отпечаток смысла: основы значимых слов заголовка и описания. Одно и
+    # то же объявление кочует по чатам переписанным, и по точному тексту
+    # его не поймать — а по набору основ видно, что это тот же товар.
+    external_fingerprint: Mapped[str | None] = mapped_column(
+        String(500), nullable=True)
 
     city: Mapped[str | None] = mapped_column(String(120), nullable=True, index=True)
     location_lat: Mapped[float | None] = mapped_column(Numeric(9, 6), nullable=True)

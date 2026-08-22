@@ -41,7 +41,7 @@ from app.core.ai_title import (
 from app.core.title_rules import SUBJECT_BY_CATEGORY, SUBJECT_BY_SUB
 from app.core.title_rules import looks_like_question, needs_help
 from app.core.tg_parse import (
-    build_title, drop_attribute_lines, extract_attributes, plausible_price,
+    build_title, fingerprint, same_thing, drop_attribute_lines, extract_attributes, plausible_price,
     looks_like_ad, looks_like_spam, looks_sold, parse,
 )
 from app.core.tg_sources import CHATS, is_resume, topic_category
@@ -54,6 +54,9 @@ from app.models import (
 from app.core.clock import utcnow
 
 MAX_PHOTOS = 5
+# За сколько дней ищем повтор того же товара. Дольше держать бессмысленно:
+# вещь либо продана, либо объявление уже неактуально.
+DUP_DAYS = 21
 TRANSLATE = True
 LOCK_PATH = "/tmp/plonk-tg-import.lock"
 MAX_DIM, THUMB_DIM = 1600, 400
@@ -419,6 +422,28 @@ def store(db, item: dict) -> bool:
         if twin:
             return False
 
+    # Тот же товар, но переписанный другими словами — и часто другим
+    # человеком: перекупщики выкладывают одно и то же в несколько чатов.
+    # Сравниваем по смыслу среди недавних объявлений с той же ценой и
+    # городом: таких единицы, и перебрать их в памяти дешевле, чем искать
+    # похожий текст в базе.
+    mark = fingerprint(item["title"], item.get("description"))
+    if mark and item["price"] is not None:
+        recent = (
+            db.query(Listing)
+            .filter(
+                Listing.external_source == "telegram",
+                Listing.external_fingerprint.isnot(None),
+                Listing.price == item["price"],
+                Listing.city == item["city"],
+                Listing.created_at >= utcnow() - timedelta(days=DUP_DAYS),
+            )
+            .limit(200)
+            .all()
+        )
+        if any(same_thing(mark, other.external_fingerprint) for other in recent):
+            return False
+
     slug = item["sub_slug"] or item["category_slug"]
     category = db.query(Category).filter(Category.slug == slug).first()
     if not category:
@@ -446,6 +471,7 @@ def store(db, item: dict) -> bool:
         external_author=item["username"],
         external_chat=str(item["chat_id"]),
         external_message_id=item["message_id"],
+        external_fingerprint=mark or None,
         created_at=now,
     )
     db.add(listing)
