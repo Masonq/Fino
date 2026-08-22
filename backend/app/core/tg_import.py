@@ -29,7 +29,7 @@ from telethon import TelegramClient
 
 from app.core.config import settings
 from app.core.database import SessionLocal
-from app.core.tg_classify import classify_sub, decide_for
+from app.core.tg_classify import classify, classify_sub, decide_for
 from app.core.progress import Progress
 from app.core.ai_title import improve as ai_improve
 from app.core.title_rules import SUBJECT_BY_CATEGORY, SUBJECT_BY_SUB
@@ -136,6 +136,24 @@ def last_imported_id(db, chat_id: int) -> int | None:
 # Заголовки, собранные из фактов: живой строки в объявлении не нашлось.
 COMPOSED_TITLES = frozenset(
     {*SUBJECT_BY_SUB.values(), *SUBJECT_BY_CATEGORY.values()})
+
+
+def recategorize(title: str, text: str,
+                 current: str | None) -> tuple[str | None, str | None]:
+    """
+    Пересчитывает категорию, когда предмет наконец назван.
+
+    Заголовок весит больше остального текста, поэтому ставим его первой
+    строкой: правила смотрят прежде всего на начало.
+    """
+    # Считаем по самому заголовку, а не по всему объявлению: в тексте
+    # «не подошёл для съёмной квартиры» слово «квартира» перевешивает, и
+    # держатель для бумаги остаётся в недвижимости.
+    guessed, score = classify(title)
+    if not guessed:
+        return current, classify_sub(current or "", f"{title}\n{text}")
+    combined = f"{title}\n{text}"
+    return guessed, classify_sub(guessed, title) or classify_sub(guessed, combined)
 
 
 def screen(text: str, chat_id: int, topic_id: int | None) -> tuple[str | None, dict]:
@@ -297,6 +315,18 @@ async def collect(client, chat_id: int, meta: dict, days: int,
             if better.get("title"):
                 parsed["title"] = better["title"]
                 bar.bump("заголовок от нейросети")
+                # Сухой заголовок часто означает, что и категорию правила
+                # угадали мимо: «Держатель для туалетной бумаги» лежал в
+                # недвижимости, потому что предмет опознан не был. Раз
+                # предмет теперь назван — перепроверяем по нему.
+                fixed, sub_fixed = recategorize(
+                    better["title"], parsed["searchable"], category_slug)
+                if fixed and fixed != category_slug:
+                    bar.bump("категория от нейросети")
+                    category_slug, sub_slug = fixed, sub_fixed
+                    attrs = extract_attributes(category_slug, parsed["searchable"])
+                elif sub_fixed and not sub_slug:
+                    sub_slug = sub_fixed
             if better.get("summary") and len(parsed.get("description", "")) < 40:
                 parsed["description"] = better["summary"]
             ai_budget[0] -= 1

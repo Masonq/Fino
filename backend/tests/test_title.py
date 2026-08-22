@@ -955,3 +955,26 @@ def test_parser_works_without_any_key():
     """Без ключа парсер должен работать как прежде, только на правилах."""
     from app.core.ai_title import improve
     assert improve("Продам стол 3000 RSD") == {}
+
+
+def test_category_rechecked_after_ai_titled_the_item():
+    """
+    Сухой заголовок часто означает, что и категорию правила угадали мимо:
+    «Держатель для туалетной бумаги» лежал в недвижимости, потому что
+    предмет опознан не был. Раз предмет назван — категорию перепроверяем.
+    """
+    from app.core.tg_import import recategorize
+    assert recategorize(
+        "Держатель для туалетной бумаги IKEA BROGRUND",
+        "Новый держатель из Икеи, не подошел для съемной квартиры",
+        "real-estate")[0] == "home-garden"
+    assert recategorize(
+        "Винтажные немецкие блюда и комплект тарелок",
+        "Два винтажных блюда 36 см с ручной росписью",
+        "real-estate")[0] == "home-garden"
+
+
+def test_recategorize_keeps_category_when_title_says_nothing():
+    """Если по заголовку не судить, оставляем то, что определили правила."""
+    from app.core.tg_import import recategorize
+    assert recategorize("Хорошая вещь", "Продам хорошую вещь", "fashion")[0] == "fashion"
