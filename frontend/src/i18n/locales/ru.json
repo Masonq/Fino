@@ -127,7 +127,10 @@
     "no_price": "Цена не указана",
     "own_listing": "Это ваше собственное объявление — написать себе нельзя.",
     "open_telegram": "Написать в Telegram",
-    "from_telegram": "Объявление из Telegram"
+    "from_telegram": "Объявление из Telegram",
+    "write_person": "Написать",
+    "no_salary": "Зарплата не указана",
+    "desired_salary": "Желаемая зарплата"
   },
   "favorites": {
     "title": "Избранное",

@@ -127,7 +127,10 @@
     "no_price": "Cena nije navedena",
     "own_listing": "Ovo je vaš oglas — ne možete pisati sebi.",
     "open_telegram": "Poruka na Telegramu",
-    "from_telegram": "Oglas sa Telegrama"
+    "from_telegram": "Oglas sa Telegrama",
+    "write_person": "Pošalji poruku",
+    "no_salary": "Plata nije navedena",
+    "desired_salary": "Željena plata"
   },
   "favorites": {
     "title": "Sačuvano",

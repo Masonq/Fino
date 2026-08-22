@@ -112,6 +112,11 @@ export default function ListingDetail() {
     if (!field) return key
     return field.label?.[lang] || field.label?.ru || key
   }
+  // Резюме — не товар: человек не продаёт себя, у него нет цены и он не
+  // «продавец». Отличается только подачей, поэтому отдельной категории не
+  // заводим, а правим формулировки там, где они не годятся.
+  const isResume = listing?.attributes?.listing_kind === 'resume'
+
   const attrValue = (key, value) => {
     const field = schema.find((f) => f.key === key)
     if (field?.type === 'boolean') return value ? t('common.yes') : t('common.no')
@@ -194,8 +199,13 @@ export default function ListingDetail() {
 
       <div className="detail-sheet">
         <div className="detail-price">
-          {listing.price != null ? formatPrice(listing.price, listing.currency, lang) : t('detail.no_price')}
+          {listing.price != null
+            ? formatPrice(listing.price, listing.currency, lang)
+            : t(isResume ? 'detail.no_salary' : 'detail.no_price')}
         </div>
+        {isResume && listing.price != null && (
+          <div className="price-note">{t('detail.desired_salary')}</div>
+        )}
         {listing.price_negotiable && <div className="neg-pill">{t('detail.negotiable')}</div>}
 
         <div className="detail-title">{translation?.title}</div>
@@ -299,7 +309,7 @@ export default function ListingDetail() {
           </svg>
         </button>
         <button className="cta-btn primary" disabled={starting} onClick={handleWriteToSeller}>
-          {starting ? '...' : t('detail.write_seller')}
+          {starting ? '...' : t(isResume ? 'detail.write_person' : 'detail.write_seller')}
         </button>
       </div>
       )}
