@@ -1793,3 +1793,28 @@ def same_thing(one: str | None, two: str | None) -> bool:
     if any(w.isascii() or any(c.isdigit() for c in w) for w in common):
         return True
     return len(common) * 10 >= smaller * 8
+
+
+# ── Язык объявления ─────────────────────────────────────────────────────────
+
+def source_language(text: str) -> str:
+    """
+    На каком языке написано объявление.
+
+    Раньше у всех перенесённых объявлений стоял русский, и сербский текст
+    «переводился» с русского на сербский — то есть портился на ровном
+    месте. А трёхъязычность и есть главное отличие сервиса.
+
+    Определяем по алфавиту, а не словарём языков: тот путает сербский с
+    хорватским и ошибается на коротких строках вроде «iPhone 13 Pro».
+    Здесь же правило простое и не ошибается: русский в этих чатах всегда
+    кириллицей, сербский — латиницей.
+    """
+    cyrillic = sum(1 for ch in text if "а" <= ch.lower() <= "я" or ch.lower() == "ё")
+    latin = sum(1 for ch in text if "a" <= ch.lower() <= "z")
+    # Сербские буквы, которых нет в других латиницах, — верный признак
+    if any(ch in text for ch in "čćžšđČĆŽŠĐ"):
+        return "sr"
+    if cyrillic + latin < 10:
+        return "ru"
+    return "ru" if cyrillic >= latin else "sr"

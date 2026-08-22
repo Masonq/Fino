@@ -44,7 +44,7 @@ from app.core.ai_title import (
 from app.core.title_rules import SUBJECT_BY_CATEGORY, SUBJECT_BY_SUB
 from app.core.title_rules import looks_like_question, needs_help
 from app.core.tg_parse import (
-    build_title, fingerprint, same_thing, drop_attribute_lines, extract_attributes, plausible_price,
+    build_title, fingerprint, same_thing, source_language, drop_attribute_lines, extract_attributes, plausible_price,
     looks_like_ad, looks_like_spam, looks_sold, parse,
 )
 from app.core.tg_sources import CHATS, is_resume, topic_category
@@ -233,6 +233,7 @@ def screen(text: str, chat_id: int, topic_id: int | None,
     parsed["category_slug"] = category_slug
     parsed["sub_slug"] = sub_slug
     parsed["publish"] = publish
+    parsed["language"] = source_language(text)
     return None, parsed
 
 
@@ -470,7 +471,9 @@ def store(db, item: dict) -> bool:
         id=uuid.uuid4(),
         owner_id=owner.id,
         category_id=category.id,
-        source_language="ru",
+        # Половина объявлений в этих чатах написана по-сербски, и с
+        # русским в этом поле их «перевод» портил текст на ровном месте.
+        source_language=item.get("language") or "ru",
         price=item["price"] if item["currency"] in ("EUR", "RSD") else None,
         # В базе только динары и евро. Доллары в чатах попадаются, но
         # заводить под них валюту ради единичных объявлений незачем —

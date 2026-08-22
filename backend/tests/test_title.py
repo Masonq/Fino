@@ -1819,3 +1819,26 @@ def test_parser_works_without_morphology(monkeypatch):
     assert morphology.to_nominative("вешалку с экраном") is None
     # разбор при этом продолжает работать
     assert parse("Продам:\n1. вешалку с экраном.")["title"]
+
+
+# ── Язык объявления ─────────────────────────────────────────────────────────
+def test_source_language_detected():
+    """
+    У всех перенесённых объявлений стоял русский, и сербский текст
+    «переводился» с русского на сербский — портился на ровном месте.
+    А трёхъязычность и есть главное отличие сервиса.
+    """
+    from app.core.tg_parse import source_language
+
+    assert source_language("Продам диван IKEA раскладной, 25000 динар") == "ru"
+    assert source_language("Продам iPhone 13 Pro 256gb в отличном состоянии") == "ru"
+    assert source_language("Prodajem trosoban stan 72m2, Vračar") == "sr"
+    assert source_language("Nov ranac, nikad korišćen") == "sr"
+    assert source_language("Na prodaju veš mašina Bosch") == "sr"
+
+
+def test_short_text_defaults_to_russian():
+    """На «iPhone 13» язык не определить — берём русский по умолчанию."""
+    from app.core.tg_parse import source_language
+    assert source_language("iPhone 13") == "ru"
+    assert source_language("") == "ru"
