@@ -155,13 +155,13 @@ def review(limit: int) -> None:
         changes.append({"id": row["id"], "title": better.get("title"),
                         "category": slug})
 
-    print(f"
-сверено: {checked}, совпало с правилами: {agreed} "
+    print()
+    print(f"сверено: {checked}, совпало с правилами: {agreed} "
           f"({agreed * 100 // (checked or 1)}%)")
     print(f"расхождений: {len(changes)}")
-    print("
-Посмотрите список выше. Где права модель — поправьте строки в\n"
-          f"{GOLDEN}: эталон должен быть верным, а не удобным.")
+    print()
+    print("Посмотрите список выше. Где права модель — поправьте строки")
+    print(f"в {GOLDEN}: эталон должен быть верным, а не удобным.")
 
 
 def main() -> None:
