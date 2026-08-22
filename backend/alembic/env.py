@@ -45,6 +45,17 @@ def _add_server_default(context, revision, op_directives):
                 value = None
                 if col.default is not None and not col.default.is_callable:
                     value = col.default.arg
+                elif col.default is not None and col.default.is_callable:
+                    # default=dict / default=list — вызываемые, поэтому ветка
+                    # выше их пропускала, и колонка уходила в NOT NULL без
+                    # значения. На непустой таблице такое не добавить.
+                    # SQLAlchemy оборачивает вызываемый дефолт, оригинал —
+                    # в __wrapped__.
+                    original = getattr(col.default.arg, "__wrapped__", None)
+                    if original is dict:
+                        value = {}
+                    elif original is list:
+                        value = []
                 elif isinstance(col.type, sa.Boolean):
                     value = False
                 elif isinstance(col.type, (sa.Integer, sa.Numeric, sa.Float)):
@@ -60,8 +71,12 @@ def _add_server_default(context, revision, op_directives):
                     col.server_default = "true" if value else "false"
                 elif isinstance(value, (int, float)):
                     col.server_default = str(value)
+                elif isinstance(value, (dict, list)):
+                    col.server_default = "'{}'::jsonb" if isinstance(value, dict) else "'[]'::jsonb"
                 else:
-                    col.server_default = str(value)
+                    # Строку обязательно в кавычках, иначе Postgres примет её
+                    # за имя колонки: DEFAULT ru вместо DEFAULT 'ru'
+                    col.server_default = "'" + str(value).replace("'", "''") + "'"
 
     for script in op_directives:
         walk(script.upgrade_ops.ops)
