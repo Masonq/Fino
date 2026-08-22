@@ -52,6 +52,14 @@ CURRENCY_BY_WORD = {
 _SPAM_MARKERS = (
     "подпишись", "подписывайтесь", "реклама", "розыгрыш", "казино",
     "заработок", "инвестиц", "крипт", "ставки", "промокод",
+    # Пост ради подписчиков: товара в нём нет вовсе, только приглашение в
+    # чужой канал. Такие посты приходят из тех же барахолок и раньше
+    # попадали в ленту как «объявление» с ценой «не указана».
+    "подписаться на канал", "подписка на канал", "ваша подписка",
+    "поддержите наш проект", "поддержите нас", "наш канал", "нашем канале",
+    "вступайте", "вступай", "присоединяйся", "присоединяйтесь",
+    "чем нас больше", "репост", "сделай репост", "перешли друзьям",
+    "расскажите друзьям", "ищешь работу? мы поможем",
 )
 
 
@@ -286,6 +294,14 @@ _PAST_PRICE_RE = re.compile(
     r"(брал\w*|покупал\w*|купил\w*|куплен\w*|приобрел\w*|приобрёл\w*|стоит\w*|стоил\w*|"
     r"в магазин\w*|новый стоит|отдавал\w*|платил\w*|"
     r"было|раньше|изначально|при покупке)", re.I)
+# Разбор на запчасти и обмен: «Возможна замена. От 10 евро» — это цена
+# детали или доплаты, а не вещи. Взяв её, мы показываем айфон за 10 €.
+_PARTS_CONTEXT_RE = re.compile(
+    r"(по\s+деталям|на\s+запчаст\w*|по\s+запчаст\w*|на\s+детал\w*|"
+    r"возможна\s+замена|замена\s+(экрана|стекла|аккумулятора|батаре\w*)|"
+    r"ремонт\w*\s+от|доставка\s+от|за\s+доставку|комисси\w*|"
+    r"залог|задаток|предоплат\w*|аренда\s+от)", re.I)
+
 # «Продаю за», «отдам за», «цена» — а вот это она
 _SELL_PRICE_RE = re.compile(
     r"(цена|price|cena|прода[юмё]\w*|отда[юм]\w*|уступлю|заберите за)", re.I)
@@ -301,6 +317,17 @@ def _price_candidates(text: str) -> list[tuple[int, float, str | None]]:
         if value is not None:
             out.append((m.start(), value, CURRENCY_BY_WORD.get(m.group(2).lower())))
     return out
+
+
+def _parts_only(text: str, pos: int) -> bool:
+    """
+    Сумма стоит в той части объявления, где говорят о запчастях или обмене.
+
+    Смотрим весь текст до неё: «Продается целиком или по деталям» стоит
+    абзацем выше, а «От 10 евро» — в самом конце, и по соседним словам
+    связь между ними не видна.
+    """
+    return bool(_PARTS_CONTEXT_RE.search(text[:pos]))
 
 
 def extract_price(text: str) -> tuple[float | None, str | None]:
@@ -321,6 +348,8 @@ def extract_price(text: str) -> tuple[float | None, str | None]:
                 continue          # цена в рублях — не наша
             if _PAST_PRICE_RE.search(before):
                 continue          # столько отдали за неё раньше
+            if _PARTS_CONTEXT_RE.search(before) or _PARTS_CONTEXT_RE.search(after):
+                continue          # это цена детали или доплаты
             weight = 1 if _SELL_PRICE_RE.search(before) else 0
             scored.append((weight, -pos, value, currency))
         if scored:
@@ -349,7 +378,9 @@ def extract_price(text: str) -> tuple[float | None, str | None]:
     m = _PRICE_RE.search(text)
     if m:
         value = _to_number(m.group(1))
-        if value is not None:
+        # Единственная сумма в объявлении о разборе на детали — цена детали.
+        # Пустая цена честнее: iPhone за 10 € в ленте выглядит обманом.
+        if value is not None and not _parts_only(text, m.start()):
             return value, CURRENCY_BY_WORD.get(m.group(2).lower())
     m = _PRICE_AFTER_RE.search(text)
     if m:
@@ -459,6 +490,56 @@ def _is_place_word(word: str) -> bool:
     return len(core) >= 5 and core[:5] in _PLACE_STEMS
 
 
+# «В продаже ноутбук», «На продажу диван» — оборот, за которым идёт только
+# родовое слово. Сам предмет назван ниже, моделью.
+_INTRO_PHRASE_RE = re.compile(
+    r"^(в\s+продаже|на\s+продажу|срочная\s+продажа|продается|продаётся|"
+    r"имеется|есть\s+в\s+наличии|отдам|отдаю)\s+", re.I)
+
+# Модель: латиница с цифрой рядом — «HP Omen 16-xf0xxx», «RTX 4070»,
+# «iPhone 11». Именно её ищут в ленте глазами.
+_MODEL_LINE_RE = re.compile(r"[A-Za-z][A-Za-z&.\-]{1,}(?:\s+[A-Za-z0-9][\w.\-]*){0,4}")
+
+
+def _looks_generic(title: str) -> bool:
+    """
+    Заголовок называет только род вещи: «Ноутбук», «Телефон», «Диван».
+
+    Такой заголовок верен, но в ленте бесполезен: рядом стоят десятки
+    ноутбуков, и выбирают по модели.
+    """
+    words = [w for w in title.split() if len(w) > 1]
+    if len(words) > 2:
+        return False
+    return not any(c.isdigit() for c in title) and not _LATIN_IN_RE.search(title)
+
+
+_LATIN_IN_RE = re.compile(r"[A-Za-z]{2,}")
+
+
+def find_model(text: str, limit: int = 60) -> str | None:
+    """
+    Название модели из первых строк объявления.
+
+    Автор часто пишет «В продаже ноутбук», а модель ставит следующей
+    строкой — её и берём, иначе заголовок остаётся родовым.
+    """
+    for raw in text.splitlines()[:6]:
+        line = _EMOJI_RE.sub("", raw).strip(" \t•·—-*#()")
+        if not line or _SPEC_RE.match(line):
+            continue
+        m = _MODEL_LINE_RE.search(line)
+        if not m:
+            continue
+        model = m.group(0).strip(" ,.;:-—")
+        # Одно короткое слово латиницей — это не модель, а обрывок вроде
+        # «Ram» из списка характеристик.
+        if len(model) < 4 or " " not in model and not any(c.isdigit() for c in model):
+            continue
+        return model[:limit]
+    return None
+
+
 def make_title(text: str, limit: int = 70) -> str | None:
     """
     Заголовок из первой содержательной строки.
@@ -533,6 +614,9 @@ def make_title(text: str, limit: int = 70) -> str | None:
             continue
 
         # «Продаю женские вещи» — название здесь есть, лишний только глагол
+        line = _INTRO_PHRASE_RE.sub("", line).strip(" ,.;:-—")
+        if not line:
+            continue
         without_verb = _SELLING_VERB_RE.sub("", line).strip(" ,.;:-—")
         if not without_verb:
             continue
@@ -574,6 +658,12 @@ def make_title(text: str, limit: int = 70) -> str | None:
         # прошла отбор, — проверяем итог, а не только кандидата.
         if rejects_as_title(line):
             continue
+
+        # «Ноутбук» + «HP Omen 16-xf0xxx» строкой ниже = «Ноутбук HP Omen…»
+        if _looks_generic(line):
+            model = find_model(text)
+            if model and model.lower() not in line.lower():
+                line = f"{line} {model}"
 
         if len(line) <= limit:
             return line
@@ -737,6 +827,12 @@ _PITCH_MARKERS = (
     "ждём ваших заявок", "оставьте заявку", "гарантия качества",
     "быстро и качественно", "индивидуальный подход", "лучшие цены",
     "широкий выбор", "большой опыт работы", "профессиональная команда",
+    # Пост салона про акцию: вещи в нём нет, есть повод прийти. У такого
+    # объявления ни предмета, ни цены за него — только условия акции.
+    "акция", "акцию", "скидка для новых", "только для новых клиентов",
+    "успей записаться", "успейте записаться", "запишись", "запишитесь",
+    "свободные окошки", "свободные окна", "осталось мест", "количество мест",
+    "по промокоду", "первый сеанс", "пробное занятие бесплатно",
 )
 
 
