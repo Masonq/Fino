@@ -29,7 +29,7 @@ from telethon import TelegramClient
 from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.tg_classify import classify_sub, decide_for
-from app.core.tg_parse import compose_title, looks_like_spam, parse
+from app.core.tg_parse import compose_title, looks_like_ad, looks_like_spam, parse
 from app.core.tg_sources import CHATS, is_resume, topic_category
 from app.models import (
     Category, Currency, Language, Listing, ListingPhoto, ListingStatus,
@@ -115,6 +115,10 @@ async def collect(client, chat_id: int, meta: dict, days: int, per_category: int
         if not known:
             continue
         if looks_like_spam(text):
+            continue
+        # реклама услуги вообще, без предмета и цены: покупателю с неё
+        # взять нечего, а в ленте она занимает место объявления
+        if looks_like_ad(text):
             continue
 
         sender = await msg.get_sender()
