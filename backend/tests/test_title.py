@@ -793,3 +793,57 @@ def test_request_without_question_mark():
     assert looks_like_question("Может кто-то отдает диван")
     assert looks_like_question("Подскажите хорошего стоматолога")
     assert not looks_like_question("Продам диван IKEA 15000 RSD")
+
+
+# ── Описание ────────────────────────────────────────────────────────────────
+# Заголовок и описание читаются вместе: повтор, обрывки и чужие контакты в
+# описании портят карточку не меньше, чем неверный заголовок.
+def test_currency_without_price_is_empty():
+    """У объявления без цены стоял EUR — оборванный ценник в ленте."""
+    parsed = parse("Оззик ищет дом! Сообразительный энергичный парень 2-3 года")
+    assert parsed["price"] is None
+    assert parsed["currency"] is None
+
+
+def test_title_line_dropped_even_when_reworded():
+    """
+    Заголовок мы правим — снимаем глагол и знаки, — и точным совпадением
+    строка уже не ловилась: «Оззик ищет дом!» оставался дублем.
+    """
+    parsed = parse("Оззик ищет дом!\n\nСообразительный энергичный парень 2-3 года.")
+    assert parsed["title"] == "Оззик ищет дом"
+    assert not parsed["description"].startswith("Оззик ищет дом")
+
+
+def test_contact_lines_removed_from_description():
+    """Связь идёт кнопкой в Telegram; ник в описании уводит мимо неё."""
+    text = ("Оззик ищет дом!\nПарень 2-3 года\nКонтакты:\n"
+            "Telegram: @foo\n+381 63 733 0218")
+    description = parse(text)["description"]
+    assert "@foo" not in description
+    assert "Контакты" not in description
+    assert "381" not in description
+    assert "Парень 2-3 года" in description
+
+
+def test_call_only_line_removed():
+    """После снятия ника от строки остаётся один призыв «Пишите»."""
+    description = parse("Продам диван IKEA, 15000 RSD\nПишите @masterbg\nЗемун")["description"]
+    assert "Пишите" not in description
+
+
+def test_place_line_removed_only_if_nothing_else():
+    """
+    «Белград, Стари Град» — только место, убираем. «Состояние отличное,
+    самовывоз Земун» сообщает ещё и о состоянии — оставляем.
+    """
+    assert "Стари Град" not in parse("Продам шкаф\n25000 RSD\nБелград, Стари Град")["description"]
+    kept = parse("Продам стол 3000 RSD\nСостояние отличное, самовывоз Земун")["description"]
+    assert "Состояние отличное" in kept
+
+
+def test_description_never_loses_everything():
+    """Пустое описание хуже повтора: последнюю содержательную строку держим."""
+    for text in ("Продам стол, 3000 RSD\nПишите в личку",
+                 "Диван 25000 RSD"):
+        assert parse(text)["description"].strip()

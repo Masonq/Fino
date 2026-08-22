@@ -76,6 +76,13 @@ _STRIKE_RE = re.compile(r"~~.*?~~", re.S)
 # кнопку в Telegram, а номер в описании — это чужие личные данные на нашей
 # витрине, чего мы условились не делать.
 _PHONE_RE = re.compile(r"(\+?\d[\d\s().-]{7,17}\d)")
+# Ник в тексте уводит в личку мимо кнопки, а заодно это чужие контактные
+# данные на нашей витрине. Сам ник автора у объявления уже есть отдельно.
+_USERNAME_RE = re.compile(r"(?<![\w/])@[A-Za-z][\w_]{3,31}")
+# После снятия ника от строки остаётся один призыв: «Пишите», «Звоните».
+_CALL_ONLY_RE = re.compile(
+    r"(пишите|пиши|напишите|звоните|звони|обращайтесь|контакты?|"
+    r"по всем вопросам|для связи)\s*[:\-—]?", re.I)
 _CONTACT_LINE_RE = re.compile(
     r"(для записи|пишите (по|на) номер|звоните по|номер телефона|"
     r"вайбер|viber|whatsapp|вотсап)", re.I)
@@ -234,6 +241,16 @@ def drop_link_invites(text: str) -> str:
     return re.sub(r"\n{3,}", "\n\n", out).strip(" \n:—-")
 
 
+# Строка, которая существует ради связи: ник, «Контакты:», «Пишите в
+# личку». Связь у нас идёт кнопкой в Telegram, а чужой ник в описании —
+# лишний увод на сторону.
+_CONTACT_BLOCK_RE = re.compile(
+    r"^\s*(контакты?|связь|для связи|писать|пишите|звонить)\s*[:\-—]?\s*$|"
+    r"^\s*(telegram|телеграм\w*|тг|viber|вайбер|whatsapp|вотсап|инстаграм|"
+    r"instagram|почта|email|mail)\s*[:\-—]\s*\S+\s*$|"
+    r"^\s*@[\w_]{3,}\s*$", re.I)
+
+
 def clean_text(text: str) -> str:
     """
     Приводит сообщение к виду, годному для описания.
@@ -257,7 +274,16 @@ def clean_text(text: str) -> str:
         # строка, существующая ради телефона, целиком не нужна
         if _CONTACT_LINE_RE.search(line) and _PHONE_RE.search(line):
             continue
+        # то же и со строкой ради ника или почты
+        if _CONTACT_BLOCK_RE.search(line):
+            continue
         line = _PHONE_RE.sub("", line)
+        line = _USERNAME_RE.sub("", line)
+        # от строки остался один призыв — она была ради контакта
+        if _CONTACT_LINE_RE.search(line) and len(line.strip(" ,.;:—-")) < 20:
+            continue
+        if _CALL_ONLY_RE.fullmatch(line.strip(" ,.;:—-!")):
+            continue
         without_tags = _HASHTAG_RE.sub(" ", line)
         # строка из одних хэштегов не несёт ничего, кроме поиска в Telegram
         if line.strip() and not without_tags.strip():
@@ -1070,6 +1096,18 @@ def drop_attribute_lines(description: str, attrs: dict) -> str:
     return "\n".join(out).strip()
 
 
+def _place_words_removed(line: str) -> str:
+    """Что остаётся в строке, если убрать из неё названия мест и предлоги."""
+    words = []
+    for word in re.findall(r"[\w-]+", line.lower()):
+        if len(word) <= 2 or _is_place_word(word):
+            continue
+        if word in ("г", "город", "район", "ул", "улица", "центр"):
+            continue
+        words.append(word)
+    return " ".join(words)
+
+
 def drop_duplicates(description: str, price: float | None, city: str | None) -> str:
     """
     Убирает из описания то, что уже вынесено в поля объявления.
@@ -1095,11 +1133,15 @@ def drop_duplicates(description: str, price: float | None, city: str | None) -> 
             continue
         if price is not None and price_only.match(bare):
             continue
-        # строка целиком про место: «Белград, Стари Град»
+        # Строка целиком про место: «Белград, Стари Град». А вот «Состояние
+        # отличное, самовывоз Земун» сообщает ещё и о состоянии — такую
+        # оставляем: кроме города в ней есть о чём прочитать.
         if city and extract_city(bare) == city and len(bare) <= 40 and not any(
             ch.isdigit() for ch in bare
         ):
-            continue
+            rest = _place_words_removed(bare)
+            if len(rest.split()) <= 1:
+                continue
         kept.append(line)
 
     out, blank = [], False
@@ -1112,6 +1154,21 @@ def drop_duplicates(description: str, price: float | None, city: str | None) -> 
             blank = False
         out.append(line)
     return "\n".join(out).strip()
+
+
+def _title_key(text: str) -> str:
+    """
+    Строка в виде, годном для сравнения: без глагола продажи, знаков и
+    регистра. «Продаю стильную белую худи!» и «Стильная белая худи» — одно
+    и то же, и повторять их друг под другом незачем.
+    """
+    bare = _SELLING_VERB_RE.sub("", (text or "").strip())
+    bare = _INTRO_PHRASE_RE.sub("", bare)
+    bare = re.sub(r"[^\w\s]", " ", bare.lower().replace("ё", "е"))
+    # окончания у заголовка и строки описания разные: «стильную» и
+    # «стильная» — одно слово, поэтому сравниваем по основам
+    words = [w[:5] for w in bare.split() if len(w) > 2]
+    return " ".join(words)
 
 
 def drop_title_line(description: str, title: str | None) -> str:
@@ -1129,14 +1186,25 @@ def drop_title_line(description: str, title: str | None) -> str:
     if title.endswith("…"):
         return description
     lines = description.splitlines()
+    key = _title_key(title)
     for i, line in enumerate(lines[:3]):
         bare = _EMOJI_RE.sub("", line).strip(" \t•·—-*")
         stripped = _TITLE_PRICE_RE.sub("", bare).strip(" ,.;:-—")
-        if stripped and (stripped == title or bare == title or title.startswith(stripped[:40])):
+        # Сравниваем по сути: заголовок мы правили — снимали глагол, знаки,
+        # цену, — и точным совпадением строка уже не ловилась. «Оззик ищет
+        # дом!» и «Продаю стильную белую худи» оставались дублями.
+        line_key = _title_key(stripped)
+        same = bool(key) and (line_key == key or line_key.endswith(key)
+                              or (len(key) >= 12 and key in line_key))
+        if stripped and (same or title.startswith(stripped[:40])):
             without = "\n".join(lines[:i] + lines[i+1:]).strip()
-            # Если кроме этой строки в описании ничего нет, оставляем её:
-            # пустое описание хуже повтора заголовка.
-            return without if without else description
+            # Если кроме этой строки остались одни призывы вроде «пишите в
+            # личку», описание становится бесполезным. Пустое описание — и
+            # тем более описание из одного «пишите» — хуже повтора.
+            meaningful = [ln for ln in without.splitlines()
+                          if ln.strip() and not _SERVICE_LINE_RE.search(ln)
+                          and not _CONTACT_LINE_RE.search(ln)]
+            return without if meaningful else description
     return "\n".join(lines).strip()
 
 
@@ -1150,7 +1218,9 @@ def parse(text: str) -> dict:
         "title": title,
         "description": drop_title_line(drop_duplicates(description, price, city), title),
         "price": price,
-        "currency": currency or "EUR",
+        # Валюта без цены ничего не значит: раньше у объявления без цены
+        # всё равно стоял EUR, и в ленте это выглядело оборванным ценником.
+        "currency": (currency or "EUR") if price is not None else None,
         # город и категорию ищем по тексту с раскрытыми хэштегами
         "city": city,
         "searchable": searchable_text(text),

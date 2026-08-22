@@ -19,6 +19,7 @@
 """
 import argparse
 import asyncio
+import re
 import shutil
 import sys
 import tempfile
@@ -38,11 +39,37 @@ from app.core.title_rules import SUBJECT_BY_CATEGORY, SUBJECT_BY_SUB  # noqa: E4
 COMPOSED = {*SUBJECT_BY_SUB.values(), *SUBJECT_BY_CATEGORY.values()}
 
 
+# Следы, которых в описании быть не должно: недочищенная разметка, чужие
+# ссылки, контакты в обход кнопки, повтор заголовка.
+LEFTOVER_RE = re.compile(
+    r"(\*\*|__|~~|https?://|t\.me/|@[\w_]{4,}|"
+    r"\+\d[\d\s().-]{8,}|подпишись|подписывайтесь)", re.I)
+
+
+def description_problem(parsed: dict) -> str | None:
+    """Что не так с описанием — или None, если оно в порядке."""
+    title = (parsed.get("title") or "").strip()
+    text = (parsed.get("description") or "").strip()
+    if not text:
+        return "пустое описание"
+    if LEFTOVER_RE.search(text):
+        return "мусор в описании"
+    first = text.splitlines()[0].strip(" .!?—-")
+    if title and first.lower() == title.lower():
+        return "описание повторяет заголовок"
+    if len(text) < 15:
+        return "описание слишком короткое"
+    return None
+
+
 def is_suspicious(parsed: dict) -> str | None:
     """Чем именно этот разбор подозрителен — или None, если всё в порядке."""
     title = parsed.get("title") or ""
     if not title:
         return "без заголовка"
+    problem = description_problem(parsed)
+    if problem:
+        return problem
     if title.endswith("…"):
         return "заголовок обрезан"
     head = title.split(",")[0].strip()
