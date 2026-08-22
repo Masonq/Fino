@@ -156,41 +156,44 @@ _VERB_FORMS = {
     "перевожу", "вожу", "делаю", "шью", "пеку", "готовлю", "чиню", "починю",
     "помогу", "могу", "предлагаю", "выполню", "сделаю", "привезу", "доставлю",
     "заберу", "уберу", "постираю", "погуляю", "присмотрю", "научу", "обучу",
+    "провожу", "живу", "работаю", "занимаюсь", "оказываю", "выезжаю",
+    "принимаю", "изготовлю", "сошью", "свяжу", "уложу", "подстригу",
+    "ищу", "сдаю", "снимаю", "меняю", "обменяю", "рассмотрю", "отвечу",
 }
 
 
-def to_nominative(text: str) -> str:
+def to_nominative(text: str, words: int = 2) -> str:
     """
     Переводит первые слова заголовка из винительного падежа в именительный.
 
     Трогаем только начало: дальше идут уточнения, где падеж уже верный,
     а слова вроде «камеру» встречаются и в них.
     """
-    words = text.split()
-    if not words:
+    parts = text.split()
+    if not parts:
         return text
     # прилагательное и существительное — не больше двух слов
-    for i in range(min(2, len(words))):
-        word = words[i]
+    for i in range(min(words, len(parts))):
+        word = parts[i]
         if word.lower() in _INDECLINABLE or word.lower() in _VERB_FORMS:
             continue
         changed = False
         for pattern, ending in _ACC_ADJ:
             m = pattern.fullmatch(word)
             if m:
-                words[i] = m.group(1) + ending
+                parts[i] = m.group(1) + ending
                 changed = True
                 break
         if changed:
             continue
         m = _ACC_NOUN.fullmatch(word)
         if m:
-            words[i] = m.group(1) + "а"
+            parts[i] = m.group(1) + "а"
             continue
         m = _ACC_NOUN_SOFT.fullmatch(word)
         if m:
-            words[i] = m.group(1) + "я"
-    return " ".join(words)
+            parts[i] = m.group(1) + "я"
+    return " ".join(parts)
 # «Срочно!», «Внимание!» — привлекают взгляд в чате, но вещь не называют
 _SHOUT_RE = re.compile(
     r"^(срочно|очень срочно|внимание|важно|только сегодня|акция|hitno|pažnja)"
@@ -646,8 +649,11 @@ def make_title(text: str, limit: int = 70) -> str | None:
         # Пункт нумерованного списка: номер снимаем, а падеж правим так же,
         # как после глагола, — его задавал общий «Продам:» строкой выше.
         numbered = _LIST_NUMBER_RE.sub("", line)
-        if numbered != line:
-            line = to_nominative(numbered.strip())
+        # Пункт списка стоит под общим «Продам:» — падеж задан им, и
+        # выправить его надо так же, как после снятого глагола.
+        from_list = numbered != line
+        if from_list:
+            line = numbered.strip()
 
         # «в отличном состоянии» в хвосте вытесняет само название
         line = _CONDITION_TAIL_RE.sub("", line).strip(" ,.;:-—")
@@ -658,16 +664,27 @@ def make_title(text: str, limit: int = 70) -> str | None:
             continue
 
         # «Продаю женские вещи» — название здесь есть, лишний только глагол
-        line = _INTRO_PHRASE_RE.sub("", line).strip(" ,.;:-—")
+        intro_cut = _INTRO_PHRASE_RE.sub("", line).strip(" ,.;:-—")
+        from_list = from_list or intro_cut != line
+        line = intro_cut
         if not line:
             continue
         without_verb = _SELLING_VERB_RE.sub("", line).strip(" ,.;:-—")
         if not without_verb:
             continue
-        # Падеж правим всегда, а не только после снятия глагола. Глагол
-        # бывает в другой строке — «Продам:» с нумерованным списком под ним,
-        # — и заголовок оставался винительным: «Вешалку с экраном».
-        line = to_nominative(without_verb)
+        # Падеж правим только там, где сами сняли слово, задававшее его:
+        # глагол продажи или номер пункта. Склонять что попало нельзя —
+        # «Куплю гарнитуру» превращалось в «гарнитура», «Провожу занятия»
+        # в «Провожа», «Живу и ищу работу» в «Жива».
+        if without_verb != line or from_list:
+            # Глагол сняли сами — падеж задавал он, правим и прилагательное,
+            # и существительное.
+            line = to_nominative(without_verb)
+        else:
+            # Глагола не было: строка могла начаться с пункта списка под
+            # общим «Продам:». Правим только первое слово — дальше по строке
+            # винительный падеж законный («Куплю гарнитуру Xbox»).
+            line = to_nominative(without_verb, words=1)
 
         # «Учебники по сербскому.Белград» — точку перед городом часто не
         # отделяют пробелом, и город прилипал к названию.

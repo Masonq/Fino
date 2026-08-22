@@ -677,3 +677,55 @@ def test_textbooks_are_school_supplies():
     assert classify_sub("kids", text) == "school"
     # художественные книги остаются в хобби
     assert classify("Продам книги, детективы и фантастика")[0] == "hobby-sport"
+
+
+# ── Падеж: склоняем только то, с чего сняли глагол ──────────────────────────
+def test_first_person_verbs_survive():
+    """
+    Склонение всегда портило глаголы: «Провожу занятия» → «Провожа»,
+    «Живу и ищу работу» → «Жива», «Куплю гарнитуру» → «гарнитура».
+    """
+    for text in (
+        "Провожу занятия с детьми",
+        "Живу и ищу работу в Белграде",
+        "Куплю гарнитуру Xbox mono",
+    ):
+        assert parse(text)["title"] == text, text
+
+
+def test_declension_still_works_where_verb_was_removed():
+    assert parse("Отдаю красивую одежду для девочки")["title"] \
+        == "Красивая одежда для девочки"
+    assert parse("Продам:\n1. вешалку с решетчатым экраном.")["title"] \
+        == "Вешалка с решетчатым экраном"
+
+
+# ── Услуги против товаров ───────────────────────────────────────────────────
+def test_repair_of_goods_is_a_service():
+    """«Ремонт бойлеров» — услуга, а не бойлер на продажу."""
+    from app.core.tg_classify import classify
+    for text in ("Ремонт бойлеров в Белграде, выезд",
+                 "Установка и ремонт бытовой техники",
+                 "Ремонт квартир / домов под ключ"):
+        assert classify(text)[0] == "services", text
+    # сам товар остаётся товаром
+    assert classify("Продам бойлер Ariston 80 л")[0] == "home-garden"
+
+
+def test_household_machine_is_not_a_car():
+    """«Стиральную машину» роднит с автомобилем только слово."""
+    from app.core.tg_classify import classify, classify_sub
+    assert classify("Продам стиральную машину Bosch, 20000 RSD")[0] == "home-garden"
+    assert classify_sub("home-garden", "Продам стиральную машину Bosch") == "appliances"
+    assert classify("Продам машину Volkswagen Golf, пробег 200000")[0] == "auto"
+
+
+def test_small_goods_recognised():
+    from app.core.tg_classify import classify
+    for text, expected in (
+        ("Входной коврик 300 RSD", "home-garden"),
+        ("AirPods 4 — только ЛЕВЫЙ наушник + кейс", "electronics"),
+        ("Винтажная статуэтка «Спящая девочка»", "home-garden"),
+        ("Цветочное темно-серое кашпо", "home-garden"),
+    ):
+        assert classify(text)[0] == expected, text
