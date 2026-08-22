@@ -111,7 +111,10 @@ export default function Login() {
   if (step === 'choose') {
     return (
       <div className="auth-page">
-        <button className="auth-close" onClick={() => navigate(returnTo)} aria-label={t('actions.back')}>
+        {/* replace, а не push: иначе экран входа оставался в истории, и
+            «назад» с объявления возвращал на него — получался круг, из
+            которого нельзя было выйти. Успешный вход это уже делал верно. */}
+        <button className="auth-close" onClick={() => navigate(returnTo, { replace: true })} aria-label={t('actions.back')}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
         </button>
 
