@@ -29,7 +29,7 @@ from telethon import TelegramClient
 from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.tg_classify import classify_sub, decide_for
-from app.core.tg_parse import compose_title, looks_like_ad, looks_like_spam, parse
+from app.core.tg_parse import compose_title, extract_attributes, looks_like_ad, looks_like_spam, parse
 from app.core.tg_sources import CHATS, is_resume, topic_category
 from app.models import (
     Category, Currency, Language, Listing, ListingPhoto, ListingStatus,
@@ -162,7 +162,17 @@ async def collect(client, chat_id: int, meta: dict, days: int, per_category: int
         if composed:
             parsed["title"] = composed
 
+        # Раскладываем характеристики по полям категории: без них у
+        # объявления есть только описание, и по нему нельзя ни отфильтровать,
+        # ни сравнить два варианта.
+        attrs = extract_attributes(category_slug, parsed["searchable"])
+        if is_resume(topic_id):
+            attrs["listing_kind"] = "resume"
+        elif category_slug == "jobs":
+            attrs["listing_kind"] = "vacancy"
+
         out.append({
+            "attributes": attrs,
             "chat_id": chat_id,
             "chat_title": meta["title"],
             "message_id": msg.id,
@@ -226,7 +236,7 @@ def store(db, item: dict) -> bool:
         # цену в таком случае не переносим вовсе, чтобы не соврать.
         currency=Currency.rsd if item["currency"] == "RSD" else Currency.eur,
         city=item["city"],
-        attributes={"listing_kind": "resume"} if item["is_resume"] else {},
+        attributes=item["attributes"],
         status=ListingStatus.active if published else ListingStatus.pending_moderation,
         published_at=now if published else None,
         external_source="telegram",

@@ -393,3 +393,73 @@ def parse(text: str) -> dict:
         "city": city,
         "searchable": searchable_text(text),
     }
+
+
+_FLOOR_RE = re.compile(r"этаж\w*\s*[:\-—]?\s*(\d{1,2})", re.I)
+_FLOOR_OF_RE = re.compile(r"(\d{1,2})\s*/\s*\d{1,2}\s*этаж", re.I)
+# Пробег пишут и «145 000 км», и «170к пробег» — слово может стоять с любой
+# стороны числа, поэтому ловим оба порядка
+_MILEAGE_RE = re.compile(
+    r"(?:(\d{1,3}(?:[ .,\u00a0]?\d{3})|\d{1,3})\s*(тыс\.?|к|k)?\s*км"
+    r"|(\d{1,3}(?:[ .,\u00a0]?\d{3})|\d{1,3})\s*(тыс\.?|к|k)\s*(?=пробег))", re.I)
+_YEAR_RE = re.compile(r"(?<!\d)(19[89]\d|20[0-3]\d)(?!\d)\s*(?:год\w*|г\.?|\.|,|$)", re.I)
+
+
+def extract_attributes(category_slug: str, text: str) -> dict:
+    """
+    Раскладывает то, что в тексте написано словами, по полям категории.
+
+    Без этого у перенесённого объявления заполнено одно описание, и человек
+    не может ни отфильтровать по площади, ни сравнить два варианта — а ради
+    этого поля и заводились. Берём только то, что распознаётся уверенно:
+    пустое поле лучше выдуманного.
+    """
+    low = text.lower()
+    attrs: dict = {}
+
+    if category_slug == "real-estate":
+        rooms = extract_rooms(text)
+        if rooms:
+            attrs["rooms"] = rooms
+        area = _AREA_RE.search(text)
+        if area:
+            attrs["area_m2"] = int(area.group(1))
+        floor = _FLOOR_OF_RE.search(low) or _FLOOR_RE.search(low)
+        if floor:
+            value = int(floor.group(1))
+            if 0 < value <= 40:
+                attrs["floor"] = value
+        # «сдам» и «аренда» — это найм, «продам» — продажа. Если сказано и
+        # то, и другое, не выбираем: в таком тексте обычно два объявления.
+        rent = any(w in low for w in ("сдам", "сдаю", "сдается", "сдаётся", "аренда", "izdaje", "iznajm"))
+        sale = any(w in low for w in ("продам", "продаю", "продается", "продаётся", "prodaje", "na prodaju"))
+        if rent != sale:
+            attrs["deal_type"] = "rent" if rent else "sale"
+        if any(w in low for w in ("без посредник", "без комисси", "bez provizije")):
+            attrs["no_commission"] = True
+
+    elif category_slug == "auto":
+        year = _YEAR_RE.search(text)
+        if year:
+            attrs["year"] = int(year.group(1))
+        m = _MILEAGE_RE.search(low)
+        if m:
+            number = m.group(1) or m.group(3)
+            multiplier = m.group(2) or m.group(4)
+            km = int(re.sub(r"[ .,\u00a0]", "", number))
+            if multiplier:
+                km *= 1000
+            if 100 <= km <= 1_000_000:
+                attrs["mileage_km"] = km
+        if any(w in low for w in ("автомат", "акпп", "automatik", "automatic")):
+            attrs["transmission"] = "automatic"
+        elif any(w in low for w in ("механик", "мкпп", "ручная коробка", "manuelni")):
+            attrs["transmission"] = "manual"
+
+    elif category_slug == "jobs":
+        if any(w in low for w in ("полная занятость", "полный день", "full time", "puno radno")):
+            attrs["employment_type"] = "full_time"
+        elif any(w in low for w in ("частичная занятость", "подработк", "part time", "skraceno")):
+            attrs["employment_type"] = "part_time"
+
+    return attrs
