@@ -18,6 +18,7 @@
 """
 import argparse
 import asyncio
+import fcntl
 import os
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -29,6 +30,7 @@ from telethon import TelegramClient
 from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.tg_classify import classify_sub, decide_for
+from app.core.progress import Progress
 from app.core.tg_parse import (
     compose_title, drop_attribute_lines, extract_attributes,
     looks_like_ad, looks_like_spam, looks_sold, parse,
@@ -43,6 +45,7 @@ from app.models import (
 
 MAX_PHOTOS = 5
 TRANSLATE = True
+LOCK_PATH = "/tmp/plonk-tg-import.lock"
 MAX_DIM, THUMB_DIM = 1600, 400
 
 
@@ -125,36 +128,47 @@ async def collect(client, chat_id: int, meta: dict, days: int, per_category: int
     # остальных снимков не добраться, и переносилось всегда одно.
     messages = []
     albums: dict[int, list] = {}
-    async for msg in client.iter_messages(entity, limit=3000):
+    bar = Progress(meta["title"])
+    async for msg in client.iter_messages(entity, limit=20000):
         if msg.date and msg.date < since:
             break
         messages.append(msg)
+        bar.bump("прочитано")
+        bar.show()
         gid = getattr(msg, "grouped_id", None)
         if gid:
             albums.setdefault(gid, []).append(msg)
 
     for msg in messages:
+        bar.bump("разобрано")
+        bar.show()
         text = (msg.text or "").strip()
         if len(text) < 25:
+            bar.bump("слишком коротких")
             continue
 
         topic_id = topic_of(msg)
         expected, known = topic_category(chat_id, topic_id)
         if not known:
+            bar.bump("не та тема")
             continue
         if looks_like_spam(text):
+            bar.bump("спам")
             continue
         # реклама услуги вообще, без предмета и цены: покупателю с неё
         # взять нечего, а в ленте она занимает место объявления
         if looks_like_ad(text):
+            bar.bump("реклама")
             continue
         # «ПРОДАНО» в самом сообщении: вещи уже нет, переносить нечего
         if looks_sold(text):
+            bar.bump("уже продано")
             continue
 
         sender = await msg.get_sender()
         username = getattr(sender, "username", None)
         if not username:
+            bar.bump("без ника")
             continue
 
         parsed = parse(text)
@@ -162,6 +176,7 @@ async def collect(client, chat_id: int, meta: dict, days: int, per_category: int
         # единственное упоминание предмета
         category_slug, publish = decide_for(expected, parsed["searchable"])
         if not category_slug:
+            bar.bump("без категории")
             continue
 
         if per_category is not None:
@@ -198,6 +213,7 @@ async def collect(client, chat_id: int, meta: dict, days: int, per_category: int
                 photos.append(saved)
 
         if watermarked:
+            bar.bump("чужой знак")
             continue
 
         # Заголовок из первой строки годится не всегда: у недвижимости там
@@ -217,6 +233,7 @@ async def collect(client, chat_id: int, meta: dict, days: int, per_category: int
         elif category_slug == "jobs":
             attrs["listing_kind"] = "vacancy"
 
+        bar.bump("отобрано")
         out.append({
             "attributes": attrs,
             "chat_id": chat_id,
@@ -233,6 +250,7 @@ async def collect(client, chat_id: int, meta: dict, days: int, per_category: int
             **{k: v for k, v in parsed.items() if k != "searchable"},
         })
 
+    bar.done()
     return out
 
 
@@ -317,6 +335,24 @@ def store(db, item: dict) -> bool:
     return True
 
 
+def take_lock():
+    """
+    Не даёт двум заходам работать разом.
+
+    Файл сессии Telegram — база sqlite, и второй процесс валится на
+    «database is locked» посреди работы, уже успев что-то записать. Лучше
+    сказать об этом сразу и понятно.
+    """
+    lock = open(LOCK_PATH, "w")
+    try:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        print("Заход уже идёт — второй запускать нельзя: файл сессии Telegram "
+              "занят.\nОстановить текущий: pkill -f app.core.tg_import")
+        return None
+    return lock
+
+
 async def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--days", type=int, default=30)
@@ -326,6 +362,10 @@ async def main() -> None:
                     help="не переводить сразу: при большом заходе это тысячи "
                          "обращений к переводчику. Часовой разбор переведёт позже")
     args = ap.parse_args()
+
+    lock = take_lock()
+    if lock is None:
+        return
 
     global TRANSLATE
     TRANSLATE = not args.no_translate
