@@ -89,6 +89,29 @@ def save_photo(data: bytes) -> tuple[str, str] | None:
         return None
 
 
+def topic_of(msg) -> int | None:
+    """
+    Номер темы, в которой лежит сообщение.
+
+    Раньше при отсутствии номера темы брался номер сообщения, на которое
+    отвечали, — а это совсем другое число. В чатах с мелкими номерами тем
+    оно иногда совпадало с настоящей темой, и объявление уезжало в
+    случайную категорию: люстра оказывалась в «Работе», тряпки для швабры
+    в «Недвижимости».
+
+    У ответа есть признак, находится ли он в теме. Если его нет, темы мы
+    не знаем — и лучше пропустить сообщение, чем угадать.
+    """
+    reply = getattr(msg, "reply_to", None)
+    if reply is None:
+        # сообщение вне тем — например, в общей ленте форума
+        return None
+    if not getattr(reply, "forum_topic", False):
+        # обычный ответ в чате без тем: о теме здесь ничего не сказано
+        return None
+    return getattr(reply, "reply_to_top_id", None) or getattr(reply, "reply_to_msg_id", None)
+
+
 async def collect(client, chat_id: int, meta: dict, days: int, per_category: int | None):
     """Читает чат и возвращает готовые к записи объявления."""
     entity = await client.get_entity(chat_id)
@@ -115,8 +138,7 @@ async def collect(client, chat_id: int, meta: dict, days: int, per_category: int
         if len(text) < 25:
             continue
 
-        topic_id = getattr(getattr(msg, "reply_to", None), "reply_to_top_id", None) \
-            or getattr(getattr(msg, "reply_to", None), "reply_to_msg_id", None)
+        topic_id = topic_of(msg)
         expected, known = topic_category(chat_id, topic_id)
         if not known:
             continue
