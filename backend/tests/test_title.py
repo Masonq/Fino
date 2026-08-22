@@ -1894,3 +1894,23 @@ def test_link_invites_without_colon():
 def test_useful_lines_not_eaten_by_link_rule():
     """«Посмотреть можно в Земуне» — это про место встречи, а не ссылка."""
     assert "Земуне" in parse("Продам стол. Посмотреть можно в Земуне")["description"]
+
+
+def test_ai_must_not_reword_the_title():
+    """
+    «Рюкзак в гранжевом стиле» модель сокращала до «Гранжевый рюкзак» —
+    основа та же, а по-русски получается коряво: так не говорят.
+    Требуем, чтобы слова стояли в объявлении в той же форме.
+    """
+    from app.core.ai_title import _acceptable
+
+    text = "Бежевый рюкзак в гранжевом стиле, много карманов и отделений"
+    assert _acceptable("Бежевый рюкзак в гранжевом стиле", text)
+    assert _acceptable("Рюкзак бежевый", text)      # перестановка допустима
+    assert not _acceptable("Гранжевый рюкзак", text)
+    assert not _acceptable("Мотоцикл Harley", text)
+
+    # заголовок из слов объявления по-прежнему проходит
+    assert _acceptable(
+        "Стол письменный IKEA MICKE",
+        "Продаётся стол письменный IKEA MICKE в прекрасном состоянии")
