@@ -109,7 +109,10 @@ async def collect(client, chat_id: int, meta: dict, days: int, per_category: int
         if not username:
             continue
 
-        category_slug, publish = decide_for(expected, text)
+        parsed = parse(text)
+        # категорию ищем по тексту с раскрытыми хэштегами: в них часто
+        # единственное упоминание предмета
+        category_slug, publish = decide_for(expected, parsed["searchable"])
         if not category_slug:
             continue
 
@@ -132,11 +135,13 @@ async def collect(client, chat_id: int, meta: dict, days: int, per_category: int
             "message_id": msg.id,
             "username": username,
             "category_slug": category_slug,
-            "sub_slug": classify_sub(category_slug, text),
+            "sub_slug": classify_sub(category_slug, parsed["searchable"]),
             "publish": publish,
             "is_resume": is_resume(topic_id),
             "photos": photos,
-            **parse(text),
+            # searchable нужен был только для распознавания — в объявление
+            # он не идёт
+            **{k: v for k, v in parsed.items() if k != "searchable"},
         })
 
     return out

@@ -37,6 +37,63 @@ _SPAM_MARKERS = (
 )
 
 
+_MD_LINK_RE = re.compile(r"\[([^\]]+)\]\((https?://[^)]+)\)")
+_URL_RE = re.compile(r"https?://\S+|t\.me/\S+|www\.\S+", re.I)
+_HASHTAG_RE = re.compile(r"#[\w\u0400-\u04ff]+", re.U)
+_SPEC_RE = re.compile(r"^[\w \u0400-\u04ff]{3,24}\s*[:：]\s*\S")
+_EMOJI_RE = re.compile(
+    "[\U0001F000-\U0001FAFF\u2190-\u21FF\u2300-\u27BF\uFE0F\u2B00-\u2BFF]+"
+)
+
+
+def clean_text(text: str) -> str:
+    """
+    Приводит сообщение к виду, годному для описания.
+
+    В чатах к тексту прикладывают гроздь хэштегов для поиска внутри
+    Telegram и ссылки на карты — у нас и то, и другое бесполезно: поиск
+    свой, а ссылка в описании ведёт наружу. Заодно из-за хэштегов слова
+    слипались с решёткой, и «#Vozdovac» не опознавался как район.
+    """
+    # ссылка вида [Bilećka](https://...) — оставляем подпись, адрес убираем
+    text = _MD_LINK_RE.sub(r"\1", text)
+    text = _URL_RE.sub("", text)
+
+    lines = []
+    for raw in text.splitlines():
+        line = raw.rstrip()
+        without_tags = _HASHTAG_RE.sub(" ", line)
+        # строка из одних хэштегов не несёт ничего, кроме поиска в Telegram
+        if line.strip() and not without_tags.strip():
+            continue
+        lines.append(re.sub(r"[ \t]+", " ", without_tags).strip())
+
+    # схлопываем пустые строки, оставшиеся от вырезанного
+    out, blank = [], False
+    for line in lines:
+        if not line:
+            if blank or not out:
+                continue
+            blank = True
+        else:
+            blank = False
+        out.append(line)
+    return "\n".join(out).strip()
+
+
+def searchable_text(text: str) -> str:
+    """
+    Текст для распознавания города и категории.
+
+    Отличается от описания тем, что хэштеги здесь не выбрасываются, а
+    раскрываются в слова: «#Vozdovac #квартира» — часто единственное место,
+    где названы район и предмет, и без них объявление теряет и то, и другое.
+    """
+    text = _MD_LINK_RE.sub(r"\1", text)
+    text = _URL_RE.sub("", text)
+    return re.sub(r"#(?=[\w\u0400-\u04ff])", " ", text)
+
+
 def _to_number(raw: str) -> float | None:
     """«1 200» и «1.200» — это тысяча двести, а не 1.2. Разделители убираем."""
     cleaned = re.sub(r"[ .,\u00a0]", "", raw)
@@ -59,9 +116,13 @@ def extract_price(text: str) -> tuple[float | None, str | None]:
     m = _PRICE_AFTER_RE.search(text)
     if m:
         value = _to_number(m.group(1))
-        if value is not None:
-            # валюта не названа — в Сербии по умолчанию считают в евро
-            return value, "EUR"
+        if value is None:
+            return None, None
+        # Валюта не названа. До тысячи это почти наверняка евро: в динарах
+        # такими суммами не оперируют. Выше — не угадываем: 10000 € и
+        # 10000 динаров отличаются в сто раз, и промах в любую сторону
+        # выглядит обманом. Цену не ставим, сумма остаётся в описании.
+        return (value, "EUR") if value <= 1000 else (None, None)
     return None, None
 
 
@@ -90,17 +151,23 @@ def make_title(text: str, limit: int = 70) -> str | None:
     Отдельного заголовка в чатах нет, поэтому берём начало текста —
     так же, как его читает человек в ленте чата.
     """
+    fallback = None
     for raw in text.splitlines():
-        line = raw.strip(" \t•·—-*#")
+        line = _EMOJI_RE.sub("", raw).strip(" \t•·—-*#")
         # пропускаем строки из одних эмодзи, решёток и знаков
         if len(re.sub(r"[^\w]", "", line, flags=re.UNICODE)) < 8:
             continue
         line = re.sub(r"\s+", " ", line)
+        # «Площадь: 72м2» — характеристика, а не название; заголовком берём
+        # только если ничего лучше в тексте не нашлось
+        if _SPEC_RE.match(line):
+            fallback = fallback or line
+            continue
         if len(line) <= limit:
             return line
         cut = line[:limit].rsplit(" ", 1)[0]
         return (cut or line[:limit]).rstrip(" ,.;:") + "…"
-    return None
+    return fallback
 
 
 def looks_like_spam(text: str) -> bool:
@@ -110,11 +177,14 @@ def looks_like_spam(text: str) -> bool:
 
 def parse(text: str) -> dict:
     """Сводит разбор воедино. Ничего не додумывает: не нашли — оставили пустым."""
-    price, currency = extract_price(text)
+    description = clean_text(text)
+    price, currency = extract_price(description)
     return {
-        "title": make_title(text),
-        "description": text.strip(),
+        "title": make_title(description),
+        "description": description,
         "price": price,
         "currency": currency or "EUR",
-        "city": extract_city(text),
+        # город и категорию ищем по тексту с раскрытыми хэштегами
+        "city": extract_city(searchable_text(text)),
+        "searchable": searchable_text(text),
     }
