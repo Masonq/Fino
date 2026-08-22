@@ -381,6 +381,43 @@ def similar_listings(
     return {"items": [serialize(l) for l in picked]}
 
 
+@router.get("/by-seller/{seller_id}")
+def seller_listings(
+    seller_id: uuid.UUID,
+    lang: str = Query("ru"),
+    limit: int = Query(20, le=60),
+    db: Session = Depends(get_db),
+):
+    """
+    Активные объявления продавца для его открытой страницы.
+
+    Только активные: черновики и снятые с публикации — его дело, а не
+    покупателя. Путь отдельный от «моих объявлений», где статусы видны все.
+    """
+    items = (
+        db.query(Listing)
+        .options(joinedload(Listing.translations), joinedload(Listing.photos))
+        .filter(Listing.owner_id == seller_id, Listing.status == ListingStatus.active)
+        .order_by(Listing.published_at.desc().nullslast())
+        .limit(limit)
+        .all()
+    )
+
+    def serialize(l: Listing):
+        tr = pick_translation(l, lang)
+        cover = next((p for p in l.photos if p.is_cover), l.photos[0] if l.photos else None)
+        return {
+            "id": str(l.id),
+            "title": tr.title if tr else None,
+            "price": float(l.price) if l.price else None,
+            "currency": l.currency,
+            "city": l.city,
+            "cover_photo": cover.thumbnail_url if cover else None,
+        }
+
+    return {"items": [serialize(l) for l in items]}
+
+
 @router.get("/{listing_id}")
 def get_listing(listing_id: uuid.UUID, db: Session = Depends(get_db)):
     listing = db.query(Listing).options(

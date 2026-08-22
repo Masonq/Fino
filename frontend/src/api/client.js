@@ -91,6 +91,8 @@ export const api = {
   listingsByIds: (ids, lang) => request(`/listings/by-ids?${new URLSearchParams({ ids: ids.join(','), lang })}`),
   similarListings: (id, lang) => request(`/listings/${id}/similar?${new URLSearchParams({ lang })}`),
   myListings: (lang) => request(`/listings/my/list?${new URLSearchParams({ lang })}`),
+  sellerProfile: (userId, lang) => request(`/users/${userId}/public?${new URLSearchParams({ lang })}`),
+  sellerListings: (userId, lang) => request(`/listings/by-seller/${userId}?${new URLSearchParams({ lang })}`),
   setListingStatus: (id, status) => request(`/listings/${id}/status`, {
     method: 'PATCH',
     body: JSON.stringify({ status }),

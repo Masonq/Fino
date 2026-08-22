@@ -281,5 +281,11 @@
     "too_many_listings_day": "Dostignut dnevni limit oglasa",
     "too_many_messages": "Previše poruka odjednom. Sačekajte minut",
     "too_many_chats": "Previše novih razgovora. Pokušajte kasnije"
+  },
+  "seller": {
+    "title": "Prodavac",
+    "not_found": "Profil nije dostupan",
+    "since": "Na PLONK-u od {{date}}",
+    "listings": "Oglasi"
   }
 }

@@ -11,6 +11,7 @@ import Favorites from './pages/Favorites'
 import Chats from './pages/Chats'
 import Login from './pages/Login'
 import Profile from './pages/Profile'
+import SellerProfile from './pages/SellerProfile'
 import MyListings from './pages/MyListings'
 import Moderation from './pages/Moderation'
 import EditListing from './pages/EditListing'
@@ -83,6 +84,7 @@ export default function App() {
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/chats" element={<Chats />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/seller/:id" element={<SellerProfile />} />
           <Route path="/my" element={<MyListings />} />
           <Route path="/moderation" element={<Moderation />} />
           <Route path="/edit/:id" element={<EditListing />} />

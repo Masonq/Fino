@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { api } from '../api/client'
 import { displayCity } from '../data/cities'
 import { addToHistory } from '../data/history'
 import { useAuth } from '../context/AuthContext'
 import { useFavorites } from '../context/FavoritesContext'
-import SellerReviews from '../components/SellerReviews'
 import ReportButton from '../components/ReportButton'
 import SimilarListings from '../components/SimilarListings'
 
@@ -237,7 +236,7 @@ export default function ListingDetail() {
         )}
 
         {listing.owner && (
-          <div className="seller-row">
+          <Link to={`/seller/${listing.owner.id}`} className="seller-row">
             <div className="seller-avatar">{listing.owner.display_name?.[0] || '?'}</div>
             <div>
               <div className="seller-name">
@@ -250,15 +249,15 @@ export default function ListingDetail() {
               </div>
               <div className="seller-meta">
                 {listing.owner.rating_count > 0
-                  ? `${listing.owner.rating_avg?.toFixed(1)} · ${listing.owner.rating_count}`
+                  ? `${listing.owner.rating_avg?.toFixed(1)} · ${t('rev.count', { count: listing.owner.rating_count })}`
                   : t('rev.none_yet')}
               </div>
             </div>
-          </div>
-        )}
-
-        {listing.owner && (
-          <SellerReviews sellerId={listing.owner.id} listingId={listing.id} />
+            {/* шеврон: без него строка не читается как ведущая куда-то */}
+            <svg className="seller-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          </Link>
         )}
 
         <SimilarListings listingId={listing.id} />
