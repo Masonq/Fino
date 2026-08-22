@@ -1,13 +1,17 @@
 [Unit]
-Description=Fino frontend (vite dev)
+Description=Fino frontend (собранная статика)
 After=network.target
 
 [Service]
 WorkingDirectory=/opt/fino/frontend
-ExecStart=/usr/bin/npm run dev -- --host 0.0.0.0 --port 5173
+# Раздаём то, что собрал deploy.sh. Раньше здесь работал `npm run dev`:
+# Vite держал websocket для горячей перезагрузки, iOS усыплял вкладку,
+# соединение рвалось — и при возврате на сайт Vite перезагружал страницу
+# целиком. Отсюда и мигание. Заодно dev-режим отдавал несобранные исходники.
+ExecStart=/usr/bin/npm run preview -- --host 0.0.0.0 --port 5173
 Restart=always
 User=root
-Environment=NODE_ENV=development
+Environment=NODE_ENV=production
 
 [Install]
 WantedBy=multi-user.target

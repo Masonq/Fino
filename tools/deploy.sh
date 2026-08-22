@@ -45,6 +45,10 @@ fi
 cd ..
 
 echo "→ перезапускаю сервисы"
+# Файл сервиса мог измениться в этом же обновлении
+cp deploy/fino-frontend.service /etc/systemd/system/fino-frontend.service
+cp deploy/fino.service /etc/systemd/system/fino.service
+systemctl daemon-reload
 systemctl restart fino
 systemctl restart fino-frontend
 
