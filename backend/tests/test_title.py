@@ -1464,3 +1464,54 @@ def test_question_behind_a_greeting():
     assert looks_like_question("Привет! Кто-нибудь продаёт диван недорого?")
     assert looks_like_question("Кто-нибудь знает хорошего мастера?")
     assert not looks_like_question("Добрый день! Продам стол 3000")
+
+
+# ── Аудит характеристик и цены в описании ───────────────────────────────────
+def test_floor_needs_a_whole_number():
+    """
+    Без границы слова правило хватало двойку из «65 м2» и объявляло её
+    этажом — у квартиры без этажа он всё равно появлялся.
+    """
+    from app.core.tg_parse import extract_attributes
+    assert extract_attributes("real-estate", "Квартира 65 м2\nЭтаж: 3")["floor"] == 3
+    assert extract_attributes("real-estate", "Квартира 80 м2, 5-й этаж")["floor"] == 5
+    assert "floor" not in extract_attributes("real-estate", "Квартира 100 м2 без этажа")
+
+
+def test_attribute_lines_dropped_with_units():
+    """
+    Единицы содержат цифру и считались вторым числом: «Площадь: 65 м2»
+    выглядело как два значения, и строка оставалась рядом с тем же полем.
+    """
+    from app.core.tg_parse import drop_attribute_lines, extract_attributes
+    text = "Квартира 65 м2\nПлощадь: 65 м2\nЭтаж: 3\nХорошая планировка"
+    out = drop_attribute_lines(text, extract_attributes("real-estate", text))
+    assert "Площадь:" not in out and "Этаж:" not in out
+    assert "Хорошая планировка" in out
+
+
+def test_letter_size_line_dropped():
+    """«Размер: M» чисел не содержит вовсе, и правило его не трогало."""
+    from app.core.tg_parse import drop_attribute_lines, extract_attributes
+    text = "Куртка\nРазмер: M\nЦвет чёрный"
+    out = drop_attribute_lines(text, extract_attributes("fashion", text))
+    assert "Размер:" not in out and "Цвет чёрный" in out
+    # а строка с добавкой остаётся: в ней сказано больше
+    text = "Куртка\nРазмер: M, но маломерит"
+    assert "маломерит" in drop_attribute_lines(
+        text, extract_attributes("fashion", text))
+
+
+def test_delivery_cost_is_not_the_price():
+    """«Доставка 500 динар» — цена доставки, а не вещи."""
+    from app.core.tg_parse import extract_price
+    assert extract_price("Стол\nЦена 3000\nДоставка 500 динар отдельно") == (3000, "RSD")
+    assert extract_price("Продам стол 3000 дин, доставка 500 дин") == (3000, "RSD")
+    # объявление с бесплатной доставкой свою цену не теряет
+    assert extract_price("Диван 25000 динар, доставка бесплатно") == (25000, "RSD")
+
+
+def test_labelled_price_without_currency():
+    """«Цена 3000» без валюты — тоже цена, а не просто число в тексте."""
+    from app.core.tg_parse import extract_price
+    assert extract_price("Стол\nЦена 3000\nДоставка 500 динар")[0] == 3000

@@ -372,6 +372,7 @@ _PRICE_LABELLED_RE = re.compile(
 # «Брал за 18000 рублей», «в магазине стоит 25 000» — это не наша цена.
 _PAST_PRICE_RE = re.compile(
     r"(брал\w*|покупал\w*|купил\w*|куплен\w*|приобрел\w*|приобрёл\w*|стоит\w*|стоил\w*|"
+    r"доставка|доставку|доставки|пересылк\w*|"
     r"в магазин\w*|новый стоит|отдавал\w*|платил\w*|"
     r"было|раньше|изначально|при покупке)", re.I)
 # Разбор на запчасти и обмен: «Возможна замена. От 10 евро» — это цена
@@ -411,10 +412,21 @@ _RANGE_RE = re.compile(
 def _price_candidates(text: str) -> list[tuple[int, float, str | None]]:
     """Все суммы текста: позиция, значение, валюта."""
     out = []
+    seen = set()
     for m in _PRICE_RE.finditer(text):
         value = _to_number(m.group(1))
         if value is not None:
             out.append((m.start(), value, CURRENCY_BY_WORD.get(m.group(2).lower())))
+            seen.add(m.start())
+    # Сумма с меткой «Цена», но без валюты: «Цена 3000» — тоже кандидат,
+    # иначе в объявлении со строкой доставки побеждала цена доставки.
+    for m in re.finditer(r"(?:цена|price|cena)\s*[:\-—]?\s*"
+                         r"(\d{1,3}(?:[ .,\u00a0]\d{3})+|\d{2,7})(?!\d)", text, re.I):
+        if m.start() in seen:
+            continue
+        value = _to_number(m.group(1))
+        if value is not None:
+            out.append((m.start(), value, None))
     return out
 
 
@@ -460,6 +472,10 @@ def extract_price(text: str) -> tuple[float | None, str | None]:
         if scored:
             scored.sort(reverse=True)
             _, _, value, currency = scored[0]
+            if currency is None:
+                # Валюту не написали: до тысячи в Белграде торгуются в
+                # евро, выше — в динарах.
+                currency = "EUR" if value <= 1000 else "RSD"
             return value, currency
 
     # «Покупала за 16к, продаю за 7500» — валюту не написали вовсе. Само
@@ -1203,6 +1219,13 @@ _ATTR_LINE_RE = {
     "rooms": re.compile(r"^(комнат\w*|планировка|struktura)\b", re.I),
     "mileage_km": re.compile(r"^(пробег|kilometraza)\b", re.I),
     "year": re.compile(r"^(год выпуска|godiste)\b", re.I),
+    # Характеристики техники и одежды выносятся в поля так же, как у
+    # квартир, — и точно так же не нужны второй раз в описании.
+    "storage_gb": re.compile(r"^(память|встроенная память|накопитель|memorija)\b", re.I),
+    "ram_gb": re.compile(r"^(оперативная память|озу|ram)\b", re.I),
+    "battery_health": re.compile(r"^(аккумулятор|батарея|акб|здоровье батареи)\b", re.I),
+    "screen_inch": re.compile(r"^(экран|диагональ|дисплей)\b", re.I),
+    "size": re.compile(r"^(размер|р-р|velicina|veličina)\b", re.I),
 }
 
 
@@ -1226,7 +1249,19 @@ def drop_attribute_lines(description: str, attrs: dict) -> str:
                 continue
             # «Планировка: 3.0» — это одно число, а не два: дробную запись
             # приводим к целому, иначе строка оставалась в описании
-            numbers = re.findall(r"\d+(?:[.,]\d+)?", bare)
+            # Единицы измерения содержат цифру и считались вторым числом:
+            # «Площадь: 65 м2» выглядело как два значения, и строка
+            # оставалась в описании рядом с тем же полем.
+            without_units = re.sub(r"\b(м2|м²|m2|m²|кв\.?\s*м)\b", " ", bare, flags=re.I)
+            numbers = re.findall(r"\d+(?:[.,]\d+)?", without_units)
+            # Размер бывает буквенным: «Размер: M» чисел не содержит вовсе,
+            # и правило ниже такую строку не трогало.
+            if not numbers and isinstance(attrs[key], str):
+                rest = re.sub(pattern, "", bare, count=1).strip(" :-—")
+                if rest.upper() == str(attrs[key]).upper():
+                    drop = True
+                    break
+                continue
             if len(numbers) != 1:
                 continue
             value = float(numbers[0].replace(",", "."))
@@ -1403,7 +1438,10 @@ def parse(text: str) -> dict:
 # Этаж пишут с любой стороны слова: «3 этаж» и «этаж 3». Первое даже
 # чаще, а ловилось только второе.
 _FLOOR_RE = re.compile(
-    r"(?:этаж\w*\s*[:\-—]?\s*(\d{1,2})|(\d{1,2})[\s-]*(?:й|ый|ой)?\s*этаж)", re.I)
+    # Число перед словом должно быть отдельным: без границы правило
+    # хватало двойку из «65 м2» и объявляло её этажом.
+    r"(?:этаж\w*\s*[:\-—]?\s*(\d{1,2})\b"
+    r"|(?<![\w])(\d{1,2})\s*(?:-?[йяе]|-?ый|-?ой)?\s+этаж)", re.I)
 _FLOOR_OF_RE = re.compile(r"(\d{1,2})\s*/\s*\d{1,2}\s*этаж", re.I)
 # Пробег пишут и «145 000 км», и «170к пробег» — слово может стоять с любой
 # стороны числа, поэтому ловим оба порядка
