@@ -1733,3 +1733,15 @@ def test_letter_attribute_does_not_crash_description():
     text = "Продам рубашку\nразмер xs (подходит на 42-44)\nЦвет белый"
     out = drop_attribute_lines(text, extract_attributes("fashion", text))
     assert "Цвет белый" in out
+
+
+def test_composed_flat_title_has_area():
+    """
+    У правила площади две ветви — число до слова и после. Бралась всегда
+    первая, и в заголовке оказывалось «None м²».
+    """
+    from app.core.tg_parse import compose_title
+    assert compose_title("real-estate", "#квартира\n3 комнаты, 125 м²") \
+        == "3-комнатная квартира, 125 м²"
+    assert compose_title("real-estate", "Квартира площадью 80 квадратов, 3 комнаты") \
+        == "3-комнатная квартира, 80 м²"

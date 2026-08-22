@@ -1039,7 +1039,9 @@ def compose_title(category_slug: str | None, text: str) -> str | None:
 
     parts = [head]
     if area:
-        parts.append(f"{area.group(1)} м²")
+        # У правила две ветви — число до слова и после; берём ту, что
+        # сработала, иначе в заголовке оказывалось «None м²».
+        parts.append(f"{next(g for g in area.groups() if g)} м²")
     if district:
         parts.append(district)
     return ", ".join(parts)
