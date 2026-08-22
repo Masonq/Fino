@@ -163,12 +163,12 @@ def screen(text: str, chat_id: int, topic_id: int | None) -> tuple[str | None, d
         return "без категории", parsed
 
     attrs = extract_attributes(category_slug, parsed["searchable"])
+    sub_slug = classify_sub(category_slug, parsed["searchable"])
     # Дом за 150 динар — это не цена, а площадь или этаж, попавшие под
     # разбор. Показываем «цена не указана», а не заведомую чушь.
-    if not plausible_price(category_slug, parsed.get("price"), parsed.get("currency")):
+    if not plausible_price(sub_slug, parsed.get("price"), parsed.get("currency")):
         parsed["price"] = None
         parsed["currency"] = None
-    sub_slug = classify_sub(category_slug, parsed["searchable"])
     parsed = dict(parsed)
     parsed["title"] = build_title(
         category_slug, sub_slug, parsed["searchable"], attrs,

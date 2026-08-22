@@ -930,14 +930,21 @@ def looks_sold(text: str) -> bool:
 # Нижняя граница правдоподобия по категориям: ниже неё «цена» почти всегда
 # оказывается чем-то другим — площадью, этажом, годом, весом посылки. Дом за
 # 150 динар в ленте выглядит ошибкой, каковой и является.
+# Порог привязан к подкатегории, а не к разделу: в «Транспорте» лежат и
+# автомобили, и носки на колёса за тысячу динар, и общий порог отнимал у
+# вторых цену.
 PRICE_FLOOR: dict[str, tuple[float, float]] = {
-    # категория: (минимум в EUR, минимум в RSD)
-    "real-estate": (50, 5000),
-    "auto": (100, 10000),
+    # подкатегория: (минимум в EUR, минимум в RSD)
+    "flats": (50, 5000),
+    "houses": (50, 5000),
+    "commercial": (50, 5000),
+    "cars": (100, 10000),
+    "trucks": (100, 10000),
+    "moto": (50, 5000),
 }
 
 
-def plausible_price(category_slug: str | None,
+def plausible_price(sub_slug: str | None,
                     price: float | None,
                     currency: str | None) -> bool:
     """
@@ -946,9 +953,9 @@ def plausible_price(category_slug: str | None,
     Пустая цена честнее неправильной: по неверной покупатель приходит
     разочарованным, а продавца заваливают вопросами.
     """
-    if price is None or not category_slug:
+    if price is None or not sub_slug:
         return True
-    floor = PRICE_FLOOR.get(category_slug)
+    floor = PRICE_FLOOR.get(sub_slug)
     if not floor:
         return True
     eur_floor, rsd_floor = floor

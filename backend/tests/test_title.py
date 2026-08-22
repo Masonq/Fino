@@ -653,11 +653,15 @@ def test_service_verb_beats_the_noun():
 def test_implausible_price_dropped():
     """Дом за 150 динар — это площадь или этаж, попавшие под разбор."""
     from app.core.tg_parse import plausible_price
-    assert not plausible_price("real-estate", 150, "RSD")
-    assert not plausible_price("auto", 5000, "RSD")
+    assert not plausible_price("houses", 150, "RSD")
+    assert not plausible_price("cars", 5000, "RSD")
     # настоящие цены остаются
-    assert plausible_price("real-estate", 380, "EUR")
-    assert plausible_price("fashion", 150, "RSD")
+    assert plausible_price("flats", 380, "EUR")
+    assert plausible_price("shoes", 150, "RSD")
+    # порог не трогает мелочь, лежащую в том же разделе: «носки
+    # автомобильные» за тысячу динар — нормальная цена
+    assert plausible_price("car-parts", 1000, "RSD")
+    assert plausible_price(None, 1000, "RSD")
 
 
 def test_city_glued_after_dot():
