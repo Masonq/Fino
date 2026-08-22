@@ -220,3 +220,29 @@ def test_first_person_self_description_rejected():
     text = "Всем привет!\nМеня зовут Анастасия. Я мастер массажа."
     assert build_title("services", "beauty-services", text, {},
                        fallback_title=parse(text).get("title")) == "Массаж"
+
+
+# ── Разбор объявления целиком ───────────────────────────────────────────────
+def test_ikea_desk_listing():
+    """
+    Стол IKEA: заголовок без оценки состояния, цена продажи вместо цены
+    покупки, описание без обрубка со ссылкой.
+    """
+    text = (
+        "Продаётся стол письменный IKEA MICKE в прекрасном состоянии. "
+        "Куплен за 25 000 rds, продаю за 15000 rds. Самовывоз. "
+        "Белград, Вождовац. При необходимости можем помочь разобрать. "
+        "Другие вещи для продажи можно посмотреть тут:"
+    )
+    parsed = parse(text)
+    assert parsed["title"] == "Стол письменный IKEA MICKE"
+    # «rds» — как в чатах пишут RSD; без этого цена не находилась вовсе
+    assert parsed["price"] == 15000
+    assert parsed["currency"] == "RSD"
+    assert parsed["description"].endswith("помочь разобрать.")
+    assert "посмотреть тут" not in parsed["description"]
+
+
+def test_purchase_price_not_taken_as_sale_price():
+    """«Куплен за 25 000, продаю за 15000» — наша цена вторая."""
+    assert parse("Куплен за 25 000 rds, продаю за 15000 rds").get("price") == 15000
