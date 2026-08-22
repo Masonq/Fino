@@ -386,6 +386,7 @@ def seller_listings(
     seller_id: uuid.UUID,
     lang: str = Query("ru"),
     limit: int = Query(20, le=60),
+    offset: int = 0,
     db: Session = Depends(get_db),
 ):
     """
@@ -393,12 +394,20 @@ def seller_listings(
 
     Только активные: черновики и снятые с публикации — его дело, а не
     покупателя. Путь отдельный от «моих объявлений», где статусы видны все.
+
+    Отдаём порциями: у магазина их могут быть тысячи, и без счётчика с
+    отступом страница показывала бы первые двадцать, а остальные оставались
+    бы недостижимы.
     """
-    items = (
+    q = (
         db.query(Listing)
         .options(joinedload(Listing.translations), joinedload(Listing.photos))
         .filter(Listing.owner_id == seller_id, Listing.status == ListingStatus.active)
-        .order_by(Listing.published_at.desc().nullslast())
+    )
+    total = q.count()
+    items = (
+        q.order_by(Listing.published_at.desc().nullslast())
+        .offset(offset)
         .limit(limit)
         .all()
     )
@@ -415,7 +424,7 @@ def seller_listings(
             "cover_photo": cover.thumbnail_url if cover else None,
         }
 
-    return {"items": [serialize(l) for l in items]}
+    return {"total": total, "items": [serialize(l) for l in items]}
 
 
 @router.get("/{listing_id}")

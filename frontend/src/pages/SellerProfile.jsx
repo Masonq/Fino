@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { api } from '../api/client'
@@ -20,13 +20,41 @@ export default function SellerProfile() {
 
   const [profile, setProfile] = useState(null)
   const [listings, setListings] = useState([])
+  const [total, setTotal] = useState(0)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [failed, setFailed] = useState(false)
+  const sentinelRef = useRef(null)
 
   useEffect(() => {
     if (!id) return
     api.sellerProfile(id, i18n.language).then(setProfile).catch(() => setFailed(true))
-    api.sellerListings(id, i18n.language).then((r) => setListings(r.items || [])).catch(() => setListings([]))
+    api.sellerListings(id, i18n.language)
+      .then((r) => { setListings(r.items || []); setTotal(r.total || 0) })
+      .catch(() => { setListings([]); setTotal(0) })
   }, [id, i18n.language])
+
+  const loadMore = useCallback(() => {
+    if (loadingMore) return
+    setLoadingMore(true)
+    api.sellerListings(id, i18n.language, listings.length)
+      .then((r) => setListings((prev) => [...prev, ...(r.items || [])]))
+      .catch(() => {})
+      .finally(() => setLoadingMore(false))
+  }, [id, i18n.language, listings.length, loadingMore])
+
+  // Подгрузка по мере прокрутки: у магазина объявлений могут быть тысячи,
+  // а раньше показывались только первые двадцать и упирались в тупик.
+  useEffect(() => {
+    if (listings.length === 0 || listings.length >= total) return
+    const el = sentinelRef.current
+    if (!el) return
+    const io = new IntersectionObserver(
+      (entries) => { if (entries[0].isIntersecting) loadMore() },
+      { rootMargin: '600px' },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [listings.length, total, loadMore])
 
   if (failed) {
     return (
@@ -80,10 +108,13 @@ export default function SellerProfile() {
       {listings.length > 0 && (
         <div className="seller-section">
           <div className="seller-section-title">
-            {t('seller.listings')} · {profile.active_listings}
+            {t('seller.listings')} · {total}
           </div>
           <div className="infinite-grid no-pad">
             {listings.map((l) => <ListingCard key={l.id} listing={l} />)}
+          </div>
+          <div ref={sentinelRef} className="feed-sentinel">
+            {loadingMore && <span className="feed-loading">{t('actions.loading')}</span>}
           </div>
         </div>
       )}

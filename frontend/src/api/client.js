@@ -57,7 +57,7 @@ export const api = {
     method: 'PATCH',
     body: JSON.stringify({ notify_enabled: enabled }),
   }),
-  userReviews: (userId, lang) => request(`/reviews/user/${userId}${lang ? `?lang=${lang}` : ''}`),
+  userReviews: (userId, lang, offset = 0) => request(`/reviews/user/${userId}?${new URLSearchParams({ lang: lang || 'ru', offset })}`),
   canReview: (targetId) => request(`/reviews/can-review/${targetId}`),
   dismissInvite: (chatId) => request(`/reviews/invite/${chatId}/dismiss`, { method: 'POST' }),
   createReview: (payload) => request('/reviews', {
@@ -92,7 +92,7 @@ export const api = {
   similarListings: (id, lang) => request(`/listings/${id}/similar?${new URLSearchParams({ lang })}`),
   myListings: (lang) => request(`/listings/my/list?${new URLSearchParams({ lang })}`),
   sellerProfile: (userId, lang) => request(`/users/${userId}/public?${new URLSearchParams({ lang })}`),
-  sellerListings: (userId, lang) => request(`/listings/by-seller/${userId}?${new URLSearchParams({ lang })}`),
+  sellerListings: (userId, lang, offset = 0) => request(`/listings/by-seller/${userId}?${new URLSearchParams({ lang, offset })}`),
   setListingStatus: (id, status) => request(`/listings/${id}/status`, {
     method: 'PATCH',
     body: JSON.stringify({ status }),

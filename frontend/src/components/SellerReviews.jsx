@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 
@@ -22,10 +22,35 @@ export default function SellerReviews({ sellerId, listingId }) {
   const { t, i18n } = useTranslation()
 
   const [data, setData] = useState(null)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const sentinelRef = useRef(null)
 
   const load = () => {
     api.userReviews(sellerId, i18n.language).then(setData).catch(() => setData(null))
   }
+
+  const loadMore = useCallback(() => {
+    if (loadingMore || !data) return
+    setLoadingMore(true)
+    api.userReviews(sellerId, i18n.language, data.items.length)
+      .then((r) => setData((prev) => ({ ...prev, items: [...prev.items, ...(r.items || [])] })))
+      .catch(() => {})
+      .finally(() => setLoadingMore(false))
+  }, [sellerId, i18n.language, data, loadingMore])
+
+  // У продавца с историей отзывов могут быть сотни — показывали первые
+  // двадцать, а до остальных было не добраться.
+  useEffect(() => {
+    if (!data || data.items.length === 0 || data.items.length >= data.total) return
+    const el = sentinelRef.current
+    if (!el) return
+    const io = new IntersectionObserver(
+      (entries) => { if (entries[0].isIntersecting) loadMore() },
+      { rootMargin: '400px' },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [data, loadMore])
 
   useEffect(() => {
     if (!sellerId) return
@@ -73,6 +98,10 @@ export default function SellerReviews({ sellerId, listingId }) {
           ))}
         </div>
       )}
+
+      <div ref={sentinelRef} className="feed-sentinel">
+        {loadingMore && <span className="feed-loading">{t('actions.loading')}</span>}
+      </div>
     </div>
   )
 }
