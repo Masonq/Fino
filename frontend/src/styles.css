@@ -1459,3 +1459,127 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    иначе при возврате она разворачивается и схлопывается на глазах. */
 .avito-banner.no-anim,
 .avito-banner.no-anim *{ transition:none !important; }
+
+/* ——— админка: список людей ——— */
+/* Строка списка раскрывается карточкой прямо на месте: уходить на
+   отдельную страницу и возвращаться ради одного действия утомительно. */
+.admin-search {
+  width: 100%;
+  padding: 12px 14px;
+  margin: 12px 0 8px;
+  border: 1px solid var(--line, #e6e6e6);
+  border-radius: 12px;
+  font-size: 15px;
+  background: #fff;
+}
+
+.admin-filters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  -webkit-overflow-scrolling: touch;
+}
+.admin-filters .chip {
+  flex: 0 0 auto;
+  padding: 7px 14px;
+  border: 1px solid var(--line, #e6e6e6);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 14px;
+  color: #444;
+}
+.admin-filters .chip-active {
+  background: var(--brand, #0E9F6E);
+  border-color: var(--brand, #0E9F6E);
+  color: #fff;
+}
+
+.admin-list { display: flex; flex-direction: column; gap: 8px; }
+
+.admin-row {
+  border: 1px solid var(--line, #e6e6e6);
+  border-radius: 14px;
+  background: #fff;
+  overflow: hidden;
+}
+.admin-row.blocked { border-color: #f3c2c2; background: #fffafa; }
+
+.admin-row-main {
+  width: 100%;
+  padding: 12px 14px;
+  text-align: left;
+  background: none;
+  border: 0;
+}
+.admin-row-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-weight: 600;
+  font-size: 15px;
+}
+.admin-row-meta { margin-top: 4px; font-size: 13px; color: #777; }
+
+.tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #eef4f1;
+  color: #0E7A56;
+  font-size: 12px;
+  font-weight: 500;
+}
+.tag-danger { background: #fdeaea; color: #b3261e; }
+
+.admin-card {
+  padding: 12px 14px 14px;
+  border-top: 1px solid var(--line, #f0f0f0);
+  background: #fafafa;
+}
+.admin-note { margin: 0 0 10px; font-size: 13px; color: #b3261e; }
+.admin-note-warn { color: #8a6100; }
+
+.admin-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 12px;
+}
+
+.admin-actions { display: flex; gap: 8px; margin-bottom: 12px; }
+.admin-actions select,
+.admin-actions button {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid var(--line, #e6e6e6);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 14px;
+}
+.admin-actions .danger { color: #b3261e; border-color: #f0c4c4; }
+
+.admin-listings { display: flex; flex-direction: column; gap: 6px; }
+.admin-listing {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 11px;
+  border: 1px solid var(--line, #eee);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 13px;
+  text-align: left;
+}
+.admin-listing-status { color: #888; flex: 0 0 auto; }
+
+.profile-staff { margin-top: 14px; }
+.profile-staff-title {
+  padding: 10px 14px 4px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: #999;
+}

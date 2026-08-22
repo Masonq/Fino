@@ -73,6 +73,21 @@ export const api = {
     method: 'POST',
     body: JSON.stringify({ action }),
   }),
+  // ——— админка ———
+  adminUsers: (params) => request(`/admin/users?${new URLSearchParams(params)}`),
+  adminUser: (id) => request(`/admin/users/${id}`),
+  adminUserListings: (id) => request(`/admin/users/${id}/listings`),
+  adminUserSummary: (id) => request(`/admin/users/${id}/summary`),
+  adminSetRole: (id, role) => request(`/admin/users/${id}/role`, {
+    method: 'POST',
+    body: JSON.stringify({ role }),
+  }),
+  adminBlock: (id, reason) => request(`/admin/users/${id}/block`, {
+    method: 'POST',
+    body: JSON.stringify({ reason }),
+  }),
+  adminUnblock: (id) => request(`/admin/users/${id}/unblock`, { method: 'POST' }),
+
   modQueue: (lang) => request(`/moderation/queue?${new URLSearchParams({ lang })}`),
   modApprove: (id) => request(`/moderation/${id}/approve`, { method: 'POST' }),
   modReject: (id, reason) => request(`/moderation/${id}/reject`, {

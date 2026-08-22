@@ -75,6 +75,22 @@ export default function Profile() {
         </Link>
       </div>
 
+      {/* Разделы для сотрудников. Раньше в модерацию заходили по адресу,
+          который надо было помнить наизусть. */}
+      {(user.role === 'moderator' || user.role === 'admin') && (
+        <div className="profile-menu profile-staff">
+          <div className="profile-staff-title">Служебное</div>
+          <Link className="profile-row" to="/moderation">
+            Модерация
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+          </Link>
+          <Link className="profile-row" to="/admin/users">
+            Пользователи
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+          </Link>
+        </div>
+      )}
+
       <button
         className="profile-logout"
         onClick={() => { signOut(); navigate('/') }}
