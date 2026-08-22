@@ -1756,3 +1756,24 @@ def test_size_number_is_not_junk():
     assert parse("Кроссовки, рост 170")["title"] == "Кроссовки, рост 170"
     # а остаток разметки по-прежнему убираем
     assert parse("Два брата-акробата 3\nКотята ищут дом")["title"] == "Два брата-акробата"
+
+
+def test_auto_word_needs_boundary():
+    """
+    «авто» ловило «автоматический»: косметический аппарат с автоматическим
+    режимом уезжал в автомобили, да ещё с коробкой передач.
+    """
+    from app.core.tg_classify import classify
+    from app.core.tg_parse import extract_attributes
+    text = "Косметический аппарат Medicube. Автоматический режим работы"
+    assert classify(text)[0] != "auto"
+    assert extract_attributes("auto", text) == {}
+    # настоящие машины опознаются
+    assert classify("Kia Ceed 2013, 1.6 crdi, коробка автомат")[0] == "auto"
+    assert extract_attributes("auto", "Golf 5, АКПП")["transmission"] == "automatic"
+
+
+def test_trailing_separator_dropped():
+    """«Medicube Mini Booster Pro ·» — точка-кружок от разметки поста."""
+    assert parse("Косметический аппарат Medicube Mini Booster Pro ·")["title"] \
+        == "Косметический аппарат Medicube Mini Booster Pro"

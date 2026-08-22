@@ -845,7 +845,9 @@ def make_title(text: str, limit: int = 70) -> str | None:
             meaningful = [p for p in parts if not extract_city(p) or len(p.split()) > 2]
             if meaningful:
                 line = meaningful[0]
-        line = line.strip(" |•—-")
+        # Точка-кружок и прочие разделители остаются от разметки поста и
+        # висят в конце названия: «Medicube Mini Booster Pro ·»
+        line = line.strip(" |•·—–-*~")
 
         # Пункт нумерованного списка: номер снимаем, а падеж правим так же,
         # как после глагола, — его задавал общий «Продам:» строкой выше.
@@ -1615,7 +1617,11 @@ def extract_attributes(category_slug: str, text: str) -> dict:
                 km *= 1000
             if 100 <= km <= 1_000_000:
                 attrs["mileage_km"] = km
-        if any(w in low for w in ("автомат", "акпп", "automatik", "automatic")):
+        # «Автоматический режим работы» у косметического аппарата — не
+        # коробка передач. Требуем, чтобы слово стояло само по себе или
+        # рядом с коробкой.
+        if re.search(r"\b(акпп|automatik|automatic|автомат)\b"
+                     r"|коробка[\s-]*автомат|на\s+автомате", low):
             attrs["transmission"] = "automatic"
         elif any(w in low for w in ("механик", "мкпп", "ручная коробка", "manuelni")):
             attrs["transmission"] = "manual"
