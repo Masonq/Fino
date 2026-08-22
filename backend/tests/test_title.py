@@ -1165,3 +1165,28 @@ def test_greeting_variants_stripped():
                      "Добрый день", "Dobar dan"):
         title = parse(f"{greeting}\nКуплю earpods 3 поколения")["title"]
         assert title == "Куплю earpods 3 поколения", greeting
+
+
+def test_toy_garage_is_not_property():
+    """«Трек гараж Hot-Wheels» — игрушка, а не место для машины."""
+    from app.core.tg_classify import classify, classify_sub
+    text = "Огромный трек гараж Mega Hot-Wheels с винтовым подъемником"
+    assert classify(text)[0] == "kids"
+    assert classify_sub("kids", text) == "toys"
+    # настоящий гараж остаётся недвижимостью
+    assert classify("Сдам гараж на Вождовце, 15 м2, охрана")[0] == "real-estate"
+    assert classify("Продам гараж в Земуне")[0] == "real-estate"
+
+
+def test_flat_with_fresh_repair_is_not_a_service():
+    """«Сдаю квартиру, ремонт свежий» — жильё, а не услуга мастера."""
+    from app.core.tg_classify import classify
+    assert classify("Собственник. Сдаю квартиру 60 м2, ремонт свежий")[0] == "real-estate"
+    assert classify("Ремонт квартир под ключ, выезд мастера")[0] == "services"
+
+
+def test_house_plants_recognised():
+    from app.core.tg_classify import classify
+    for text in ("Ананас декоративный в горшке", "Мускари / мышиный гиацинт",
+                 "Каланхоэ цветёт долго"):
+        assert classify(text)[0] == "home-garden", text
