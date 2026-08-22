@@ -159,7 +159,9 @@ def _apply_to(db, row: Listing, msg, chat_id: int, stats: dict, apply: bool) -> 
     slug = parsed["sub_slug"] or parsed["category_slug"]
     category = db.query(Category).filter(Category.slug == slug).first()
     if category and category.id != row.category_id:
-        print(f"  К {row_category(db, row)} → {slug}")
+        # Без названия рядом судить о смене раздела невозможно.
+        print(f"  К {row_category(db, row)} → {slug:<14} "
+              f"{(new_title or was_title)[:44]}")
         stats["категория"] += 1
         if apply:
             row.category_id = category.id

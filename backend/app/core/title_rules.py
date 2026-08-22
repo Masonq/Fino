@@ -376,6 +376,10 @@ def rejects_as_title(text: str, first_line: bool = False) -> bool:
         return True
     if _CONTACT_ONLY_RE.search(line):
         return True
+    # Строка-продолжение: «+ вторая бесплатно», «— и ещё одна». Начинается
+    # со знака, а не со слова, и сама по себе ничего не называет.
+    if not line[:1].isalnum():
+        return True
     # Вопрос — это обращение к читателю, а не название вещи.
     if line.endswith("?"):
         return True

@@ -179,7 +179,7 @@ _VERB_FORMS = {
 }
 
 
-def to_nominative(text: str, words: int = 2) -> str:
+def to_nominative(text: str, words: int = 2, known_only: bool = False) -> str:
     """
     Переводит первые слова заголовка из винительного падежа в именительный.
 
@@ -199,6 +199,11 @@ def to_nominative(text: str, words: int = 2) -> str:
         word = raw.strip(" ,.;:!?—-«»\"'()")
         tail = raw[len(word) + raw.index(word):] if word and word in raw else ""
         lead = raw[:raw.index(word)] if word and word in raw else ""
+        # Когда глагол не снимали, склоняем только то, что заведомо
+        # является вещью: «картину» → «картина», а «почему» и «хочу»
+        # остаются как есть — общее правило делало из них «почема».
+        if known_only and not has_object_word(word):
+            continue
         plural = _ACC_PLURAL.get(word.lower())
         if plural:
             fixed = plural if word.islower() else plural.capitalize()
@@ -751,7 +756,7 @@ def make_title(text: str, limit: int = 70) -> str | None:
             # Глагола не было: строка могла начаться с пункта списка под
             # общим «Продам:». Правим только первое слово — дальше по строке
             # винительный падеж законный («Куплю гарнитуру Xbox»).
-            line = to_nominative(without_verb, words=1)
+            line = to_nominative(without_verb, words=1, known_only=True)
 
         # «Учебники по сербскому.Белград» — точку перед городом часто не
         # отделяют пробелом, и город прилипал к названию.

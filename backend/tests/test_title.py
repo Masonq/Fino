@@ -1117,3 +1117,22 @@ def test_title_not_judged_twice():
     text = "Каланхоэ\nЦветёт долго\n500 RSD"
     assert build_title("home-garden", "garden", text, {},
                        fallback_title=parse(text).get("title")) == "Каланхоэ"
+
+
+def test_declension_only_for_known_things():
+    """
+    Общее правило падежа делало из «Почему» — «Почема», из «Хочу» —
+    «Хоча». Склоняем только то, что заведомо вещь.
+    """
+    assert parse("Почему творог — лучший друг продуктивности")["title"] \
+        == "Почему творог — лучший друг продуктивности"
+    assert parse("Хочу научиться электромонтажу")["title"] == "Хочу научиться электромонтажу"
+    # а вещь по-прежнему приводим в именительный
+    assert parse("Картину, размер 40х40см, холст, масло")["title"].startswith("Картина")
+
+
+def test_continuation_line_is_not_a_title():
+    """«+ вторая бесплатно» — продолжение мысли, а не название."""
+    from app.core.title_rules import rejects_as_title
+    assert rejects_as_title("+ вторая бесплатно", first_line=True)
+    assert rejects_as_title("— и ещё одна такая же", first_line=True)
