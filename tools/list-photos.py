@@ -7,6 +7,11 @@
     python3 tools/list-photos.py
 """
 import os
+import sys
+
+# Скрипт лежит в tools, а модули приложения — в backend: без этого запуск
+# из любой папки, кроме backend, падает с «No module named app».
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "backend"))
 
 from app.core.database import SessionLocal
 from app.models import Listing, ListingPhoto, ListingTranslation

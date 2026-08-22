@@ -11,6 +11,9 @@ import glob
 import os
 import sys
 
+# фотографии лежат в backend/media независимо от того, откуда запущен скрипт
+MEDIA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "backend", "media")
+
 import numpy as np
 from PIL import Image, ImageOps, ImageEnhance
 
@@ -51,7 +54,7 @@ def probe(path: str) -> dict:
 
 def main() -> None:
     limit = int(sys.argv[1]) if len(sys.argv) > 1 else 40
-    files = sorted(glob.glob("./media/*.jpg"))
+    files = sorted(glob.glob(os.path.join(MEDIA, "*.jpg")))
     files = [f for f in files if "_thumb" not in f][:limit]
     if not HAS_OCR:
         print("pytesseract не установлен — распознавание пропущено\n")
