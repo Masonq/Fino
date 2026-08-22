@@ -1661,3 +1661,47 @@ def test_service_account_cannot_be_logged_into():
     assert not verify_password("любой", "!")
     assert not verify_password("любой", None)
     assert not verify_password("", "!")
+
+
+# ── Несколько провайдеров ───────────────────────────────────────────────────
+# Лимиты у провайдеров считаются отдельно, поэтому несколько ключей
+# складываются в общий запас: кончился один — работа идёт на следующем.
+def test_providers_are_tried_in_turn(monkeypatch):
+    import app.core.ai_title as ai
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "gemini_api_key", "k1")
+    monkeypatch.setattr(settings, "groq_api_key", "k2")
+    monkeypatch.setattr(settings, "mistral_api_key", "k3")
+    monkeypatch.setattr(ai, "_exhausted", set())
+    monkeypatch.setattr(ai, "_last_call", 0)
+
+    tried = []
+
+    def fake(provider, prompt, limit, schema):
+        tried.append(provider)
+        if provider != "mistral":
+            ai._exhausted.add(provider)          # как при исчерпанном лимите
+            return None
+        return '{"title": "Стол письменный IKEA", "summary": ""}'
+
+    monkeypatch.setattr(ai, "_ask_one", fake)
+    result = ai.improve("Продам стол IKEA письменный, 15000 динар")
+
+    assert result["title"] == "Стол письменный IKEA"
+    assert tried == ["gemini", "groq", "mistral"]
+    # исчерпанных в этот заход больше не тревожим
+    assert ai.available() == ["mistral"]
+
+
+def test_no_providers_means_rules_only(monkeypatch):
+    """Ни одного ключа — парсер работает на правилах, без ошибок."""
+    import app.core.ai_title as ai
+    from app.core.config import settings
+
+    for field in ("gemini_api_key", "groq_api_key",
+                  "mistral_api_key", "openrouter_api_key"):
+        monkeypatch.setattr(settings, field, None)
+    monkeypatch.setattr(ai, "_exhausted", set())
+    assert ai.available() == []
+    assert ai.improve("Продам стол") == {}

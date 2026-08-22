@@ -27,10 +27,18 @@ class Settings(BaseSettings):
     # как прежде, только на правилах.
     gemini_api_key: str | None = None
     gemini_model: str = "gemini-3.5-flash-lite"
-    # Запасной провайдер: тоже бесплатный, но с более тесным лимитом по
-    # токенам в минуту.
+    # Запасные провайдеры. Лимиты у всех считаются отдельно, поэтому
+    # несколько ключей складываются в общий запас: кончился один — работа
+    # продолжается на следующем, а не встаёт до полуночи.
     groq_api_key: str | None = None
     groq_model: str = "llama-3.3-70b-versatile"
+    # Mistral: месячный запас большой, но не больше двух запросов в минуту —
+    # для фоновой работы это подходит, для живого ответа нет.
+    mistral_api_key: str | None = None
+    mistral_model: str = "mistral-small-latest"
+    # OpenRouter: один ключ к десяткам моделей, полсотни запросов в сутки.
+    openrouter_api_key: str | None = None
+    openrouter_model: str = "meta-llama/llama-3.3-70b-instruct:free"
     # Сколько объявлений за один заход отдаём модели: бесплатный тариф
     # ограничен по суткам, и тратить его весь на один прогон незачем.
     ai_titles_per_run: int = 120

@@ -87,13 +87,34 @@ summary — описание в 1-2 предложениях, только по 
 """
 
 
+# Порядок обхода: сначала тот, кто отвечает лучше, дальше — по убыванию.
+# Лимиты у провайдеров считаются отдельно, поэтому несколько ключей
+# складываются в общий запас: кончился один — работа идёт на следующем.
+PROVIDERS = ("gemini", "groq", "mistral", "openrouter")
+
+_KEY_FIELD = {
+    "gemini": "gemini_api_key",
+    "groq": "groq_api_key",
+    "mistral": "mistral_api_key",
+    "openrouter": "openrouter_api_key",
+}
+
+# Кто на сегодня исчерпан. Держим в памяти: заход живёт минуты, а к утру
+# процесс всё равно перезапустится с чистого листа.
+_exhausted: set[str] = set()
+
+
+def available() -> list[str]:
+    """Провайдеры с ключом, у которых ещё остался запас на сегодня."""
+    return [name for name in PROVIDERS
+            if getattr(settings, _KEY_FIELD[name], None)
+            and name not in _exhausted]
+
+
 def _ready() -> str | None:
-    """Какой провайдер настроен — или None, если нейросеть не подключена."""
-    if getattr(settings, "gemini_api_key", None):
-        return "gemini"
-    if getattr(settings, "groq_api_key", None):
-        return "groq"
-    return None
+    """Первый провайдер, готовый ответить."""
+    ready = available()
+    return ready[0] if ready else None
 
 
 def _wait_turn() -> None:
@@ -104,7 +125,8 @@ def _wait_turn() -> None:
     _last_call = time.monotonic()
 
 
-def _post(url: str, payload: dict, headers: dict) -> dict | None:
+def _post(url: str, payload: dict, headers: dict,
+          provider: str | None = None) -> dict | None:
     body = json.dumps(payload).encode()
     req = urlrequest.Request(url, data=body, headers={
         "Content-Type": "application/json", **headers})
@@ -115,7 +137,15 @@ def _post(url: str, payload: dict, headers: dict) -> dict | None:
         # 429 — упёрлись в бесплатный лимит: это не поломка, просто на
         # сегодня хватит. Объявление уйдёт с заголовком от правил.
         if exc.code == 429:
-            log.info("нейросеть: дневной лимит исчерпан")
+            # Лимит этого провайдера на сегодня. Помечаем и идём к
+            # следующему — у него счётчик свой.
+            if provider:
+                _exhausted.add(provider)
+                left = [n for n in available()]
+                log.info("нейросеть: у %s лимит исчерпан, осталось: %s",
+                         provider, ", ".join(left) or "никого")
+            else:
+                log.info("нейросеть: дневной лимит исчерпан")
         else:
             # В теле ответа лежит причина — без неё «ответ 404» ничего не
             # объясняет, а Google так сообщает и о снятых с публикации
@@ -145,7 +175,7 @@ def _ask_gemini(prompt: str, limit: int = 200,
     data = _post(url, {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": config,
-    }, {})
+    }, {}, "gemini")
     if not data:
         return None
     try:
@@ -154,13 +184,20 @@ def _ask_gemini(prompt: str, limit: int = 200,
         return None
 
 
-def _ask_groq(prompt: str, limit: int = 200) -> str | None:
-    data = _post("https://api.groq.com/openai/v1/chat/completions", {
-        "model": settings.groq_model,
+def _ask_openai_like(url: str, key: str, model: str, provider: str,
+                     prompt: str, limit: int) -> str | None:
+    """
+    Запрос к провайдеру с интерфейсом OpenAI.
+
+    Так отвечают и Groq, и Mistral, и OpenRouter — код у них общий, разнятся
+    только адрес, ключ и название модели.
+    """
+    data = _post(url, {
+        "model": model,
         "temperature": 0,
         "max_tokens": limit,
         "messages": [{"role": "user", "content": prompt}],
-    }, {"Authorization": f"Bearer {settings.groq_api_key}"})
+    }, {"Authorization": f"Bearer {key}"}, provider)
     if not data:
         return None
     try:
@@ -169,13 +206,38 @@ def _ask_groq(prompt: str, limit: int = 200) -> str | None:
         return None
 
 
-def _ask(prompt: str, limit: int = 200, schema: dict | None = None) -> str | None:
-    """Спрашивает у того провайдера, который настроен."""
-    provider = _ready()
+def _ask_one(provider: str, prompt: str, limit: int,
+             schema: dict | None) -> str | None:
     if provider == "gemini":
         return _ask_gemini(prompt, limit, schema)
     if provider == "groq":
-        return _ask_groq(prompt, limit)
+        return _ask_openai_like(
+            "https://api.groq.com/openai/v1/chat/completions",
+            settings.groq_api_key, settings.groq_model, provider, prompt, limit)
+    if provider == "mistral":
+        return _ask_openai_like(
+            "https://api.mistral.ai/v1/chat/completions",
+            settings.mistral_api_key, settings.mistral_model,
+            provider, prompt, limit)
+    if provider == "openrouter":
+        return _ask_openai_like(
+            "https://openrouter.ai/api/v1/chat/completions",
+            settings.openrouter_api_key, settings.openrouter_model,
+            provider, prompt, limit)
+    return None
+
+
+def _ask(prompt: str, limit: int = 200, schema: dict | None = None) -> str | None:
+    """
+    Обходит провайдеров по очереди, пока кто-нибудь не ответит.
+
+    Исчерпанный на сегодня помечается и в этот заход больше не тревожится:
+    следующий вопрос сразу уйдёт к тому, у кого запас остался.
+    """
+    for provider in available():
+        answer = _ask_one(provider, prompt, limit, schema)
+        if answer:
+            return answer
     return None
 
 
@@ -317,7 +379,7 @@ def _ask_gemini_photos(text: str, photos: list[bytes]) -> str | None:
             "responseMimeType": "application/json",
             "responseSchema": TITLE_SCHEMA,
         },
-    }, {})
+    }, {}, "gemini")
     if not data:
         return None
     try:
