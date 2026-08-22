@@ -111,6 +111,9 @@ def _restore_latin_tokens(original: str, translated: str) -> str:
         # звуки, которые сербский передаёт иначе: v/f/w, k/x, s/z
         for a, b in (("w", "v"), ("f", "v"), ("x", "k"), ("z", "s"), ("y", "i"), ("j", "i")):
             word = word.replace(a, b)
+        # x передаётся то как «k», то как «ks» (Galaxy → Galaki или Galaksi,
+        # в зависимости от того, вернул Google латиницу или кириллицу)
+        word = word.replace("ks", "k")
         # двойные буквы сербский не пишет
         return re.sub(r"(.)\1+", r"\1", word)
 
@@ -177,7 +180,10 @@ def _translate_google(text: str, source: str, target: str) -> str | None:
             result = "".join(parts).strip()
             if not result:
                 return None
-            return _fix_script(_restore_latin_tokens(text, result), target)
+            # Сначала в латиницу, потом бренды: Google порой отдаёт весь
+            # текст кириллицей, и латинских слов, которые надо вернуть,
+            # в нём попросту нет.
+            return _restore_latin_tokens(text, _fix_script(result, target))
     except Exception as exc:
         log.info("Перевод через Google не вышел: %s", exc)
         return None
@@ -216,7 +222,7 @@ def translate(text: str, source: str, target: str) -> str | None:
                 data = json.loads(resp.read().decode())
                 result = (data.get("translatedText") or "").strip()
                 if result:
-                    return _fix_script(_restore_latin_tokens(text, result), target)
+                    return _restore_latin_tokens(text, _fix_script(result, target))
         except Exception as exc:
             log.info("Перевод через %s не вышел: %s", endpoint, exc)
             continue
