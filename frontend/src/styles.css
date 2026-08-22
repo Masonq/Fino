@@ -63,6 +63,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   background:linear-gradient(180deg, #0E9F6E 0%, #0E9F6E 22%, #1DB388 48%, #34D8A8 78%, #5CE8CC 100%);
   padding:calc(9px + env(safe-area-inset-top)) 14px 10px; border-radius:0 0 22px 22px;
   margin:0;
+  /* фоновая иллюстрация намеренно выходит за правый нижний угол —
+     обрезаем её границей баннера, иначе она свисала бы на ленту */
+  overflow:hidden;
   will-change:background-color;
   transition:background-color .3s ease, background-image .3s ease, padding-bottom .5s cubic-bezier(.25,.46,.45,.94), border-radius .5s cubic-bezier(.25,.46,.45,.94);
 }
@@ -120,7 +123,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .avito-login-pill .avatar-mini{ width:38px; height:38px; font-size:15px; }
 
-.avito-promo-row{ display:flex; align-items:flex-end; justify-content:space-between; padding:0; gap:10px; }
+/* картинка ушла в фон, делить строку больше не с кем */
+.avito-promo-row{ display:block; padding:0; }
 .avito-promo-left{ display:flex; flex-direction:column; gap:5px; min-width:0; }
 .avito-promo-text{ display:flex; align-items:center; gap:5px; font-size:22px; font-weight:800; color:#fff; letter-spacing:-0.015em; line-height:1.15; }
 /* стрелка не должна сжиматься и переезжать при смене длины заголовка */
@@ -141,24 +145,24 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .promo-slide.active{ opacity:1; pointer-events:auto; }
 
 
-.avito-promo-illustration{ position:relative; }
+/* Иллюстрация лежит фоном в правом нижнем углу баннера и приглушена —
+   заголовок читается поверх неё, а ширину они больше не делят. Обрезается
+   границей баннера, поэтому подгонять каждую картинку не нужно. */
+.promo-backdrop{
+  position:absolute; right:-18px; bottom:-26px; width:190px; height:190px;
+  z-index:0; pointer-events:none;
+}
 .promo-glyph{
   position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-  opacity:0; transform:scale(.9); transition:opacity .45s ease, transform .45s cubic-bezier(.25,.46,.45,.94);
+  opacity:0; transform:scale(.94); transition:opacity .45s ease, transform .45s cubic-bezier(.25,.46,.45,.94);
 }
-.promo-glyph.active{ opacity:1; transform:scale(1); }
-.promo-glyph svg{ width:82%; height:82%; opacity:.95; }
-/* Отступ от угла: у баннера снизу скругление 22px, и прижатая к самому
-   краю картинка упиралась в дугу — выглядело как обрезка. Сдвигаем внутрь,
-   чтобы она стояла в прямой части, а не на повороте. */
-.avito-promo-illustration{
-  /* квадрат: при 74×76 object-fit:contain добавлял бы сверху и снизу
-     разные поля, и картинки снова стояли бы на разной высоте */
-  width:76px; height:76px; flex-shrink:0;
-  display:flex; align-items:center; justify-content:center;
-  margin:0 4px 8px 0;
-}
-.avito-promo-illustration img{ max-width:100%; max-height:100%; object-fit:contain; }
+.promo-glyph.active{ opacity:.22; transform:scale(1); }
+.promo-glyph img{ width:100%; height:100%; object-fit:contain; display:block; }
+.promo-glyph svg{ width:70%; height:70%; }
+
+/* содержимое поверх фона */
+.avito-banner .avito-toprow,
+.avito-banner .promo-collapse{ position:relative; z-index:2; }
 
 .city-pill{
   position:relative; display:flex; align-items:center; gap:5px; background:rgba(255,255,255,.24); border-radius:10px;

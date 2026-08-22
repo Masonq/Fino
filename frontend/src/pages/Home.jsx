@@ -171,6 +171,18 @@ export default function Home() {
           </Link>
         </div>
 
+        {/* Иллюстрация фоном, а не в углу: так заголовку достаётся вся ширина,
+            и картинка не спорит с ним за место при длинном тексте. */}
+        <div className="promo-backdrop" aria-hidden="true">
+          {PROMO_SLIDES.map((s, i) => (
+            <div key={s.key} className={i === slide ? 'promo-glyph active' : 'promo-glyph'}>
+              {PROMO_IMAGES[s.key]
+                ? <img src={PROMO_IMAGES[s.key]} alt="" onError={(e) => { e.currentTarget.style.display = 'none' }} />
+                : PROMO_FALLBACK}
+            </div>
+          ))}
+        </div>
+
         <div className="promo-collapse">
           <div>
             <div className="avito-promo-row">
@@ -204,15 +216,6 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="avito-promo-illustration">
-                {PROMO_SLIDES.map((s, i) => (
-                  <div key={s.key} className={i === slide ? 'promo-glyph active' : 'promo-glyph'}>
-                    {PROMO_IMAGES[s.key]
-                      ? <img src={PROMO_IMAGES[s.key]} alt="" onError={(e) => { e.currentTarget.style.display = 'none' }} />
-                      : PROMO_FALLBACK}
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         </div>
