@@ -41,7 +41,11 @@ _MD_LINK_RE = re.compile(r"\[([^\]]+)\]\((https?://[^)]+)\)")
 _URL_RE = re.compile(r"https?://\S+|t\.me/\S+|www\.\S+", re.I)
 _HASHTAG_RE = re.compile(r"#[\w\u0400-\u04ff]+", re.U)
 # разметка Telegram: **жирный**, __курсив__, `моноширинный`
-_MD_MARK_RE = re.compile(r"\*\*|__|~~|`")
+_MD_MARK_RE = re.compile(r"\*\*|__|`")
+# Зачёркнутое убираем вместе с содержимым: так помечают старую цену, и от
+# «~~500~~ 450€» после снятия одних знаков оставалось «500 450» — то есть
+# полмиллиона вместо четырёхсот пятидесяти.
+_STRIKE_RE = re.compile(r"~~.*?~~", re.S)
 # «Стол 3000 RSD» — цена уже вынесена в поле, в заголовке она лишняя
 _TITLE_PRICE_RE = re.compile(
     r"\s*[—-]?\s*\d[\d .,\u00a0]*\s*(?:€|eur|евро|rsd|рсд|дин|динар|\$|usd)\.?\s*$", re.I)
@@ -61,6 +65,7 @@ def clean_text(text: str) -> str:
     слипались с решёткой, и «#Vozdovac» не опознавался как район.
     """
     # ссылка вида [Bilećka](https://...) — оставляем подпись, адрес убираем
+    text = _STRIKE_RE.sub(" ", text)
     text = _MD_LINK_RE.sub(r"\1", text)
     text = _URL_RE.sub("", text)
     # звёздочки и подчёркивания — разметка Telegram, у нас описание обычным
@@ -97,6 +102,7 @@ def searchable_text(text: str) -> str:
     раскрываются в слова: «#Vozdovac #квартира» — часто единственное место,
     где названы район и предмет, и без них объявление теряет и то, и другое.
     """
+    text = _STRIKE_RE.sub(" ", text)
     text = _MD_LINK_RE.sub(r"\1", text)
     text = _URL_RE.sub("", text)
     text = _MD_MARK_RE.sub(" ", text)
