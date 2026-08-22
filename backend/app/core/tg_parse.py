@@ -136,6 +136,16 @@ _ACC_NOUN_SOFT = re.compile(r"(\w{2,}[бвгджзклмнпрстфхцчшщ])
 # Слова, которые и в именительном кончаются на -у: их не трогаем
 _INDECLINABLE = {"кенгуру", "какаду", "меню", "рагу", "интервью", "шоу", "жалюзи"}
 
+# Глаголы первого лица кончаются на -у/-ю так же, как винительный падеж, и
+# правило превращало «Куплю учебники» в «Купля», а «Перевожу людей» — в
+# «Перевожа». Это не существительные, склонять их нельзя.
+_VERB_FORMS = {
+    "куплю", "продаю", "отдаю", "меняю", "ищу", "beру", "беру", "сдаю",
+    "перевожу", "вожу", "делаю", "шью", "пеку", "готовлю", "чиню", "починю",
+    "помогу", "могу", "предлагаю", "выполню", "сделаю", "привезу", "доставлю",
+    "заберу", "уберу", "постираю", "погуляю", "присмотрю", "научу", "обучу",
+}
+
 
 def to_nominative(text: str) -> str:
     """
@@ -150,7 +160,7 @@ def to_nominative(text: str) -> str:
     # прилагательное и существительное — не больше двух слов
     for i in range(min(2, len(words))):
         word = words[i]
-        if word.lower() in _INDECLINABLE:
+        if word.lower() in _INDECLINABLE or word.lower() in _VERB_FORMS:
             continue
         changed = False
         for pattern, ending in _ACC_ADJ:
@@ -309,6 +319,11 @@ _SELL_PRICE_RE = re.compile(
 # Чужая валюта: рубли и прочее к нашим ценам отношения не имеют
 _FOREIGN_RE = re.compile(r"(руб\w*|₽|грн|тенге|злот\w*)", re.I)
 
+# «продаю за 7500» — цена названа, валюта опущена
+_SELL_BARE_RE = re.compile(
+    r"(?:прода[юмё]\w*|отда[юм]\w*|уступлю|заберите)\s+за\s+"
+    r"(\d{1,3}(?:[ .,\u00a0]\d{3})+|\d{2,7})(?!\s*(?:%|м2|м²|гб|kg|кг))", re.I)
+
 
 def _price_candidates(text: str) -> list[tuple[int, float, str | None]]:
     """Все суммы текста: позиция, значение, валюта."""
@@ -357,6 +372,16 @@ def extract_price(text: str) -> tuple[float | None, str | None]:
             scored.sort(reverse=True)
             _, _, value, currency = scored[0]
             return value, currency
+
+    # «Покупала за 16к, продаю за 7500» — валюту не написали вовсе. Само
+    # число после «продаю за» — это цена, и терять её обиднее всего:
+    # объявление уходит в ленту с пустым ценником.
+    m = _SELL_BARE_RE.search(text)
+    if m and not _PARTS_CONTEXT_RE.search(text[:m.start()]):
+        value = _to_number(m.group(1))
+        if value is not None:
+            # До тысячи в Белграде торгуются в евро, выше — в динарах.
+            return value, "EUR" if value <= 1000 else "RSD"
 
     m = _PRICE_LABELLED_RE.search(text)
     if m:

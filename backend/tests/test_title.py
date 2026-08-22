@@ -463,3 +463,59 @@ def test_rental_is_a_service():
     text = "компания ANTEL\nПрокат машин в Сербии\nот 490 евро"
     assert classify(text)[0] == "services"
     assert classify_sub("services", text) == "transport"
+
+
+# ── Падеж не должен трогать глаголы ─────────────────────────────────────────
+def test_verbs_are_not_declined():
+    """«Куплю учебники» превращалось в «Купля», «Перевожу» — в «Перевожа»."""
+    assert parse("Куплю учебники 8 разред. Elementary Zmaj Jova")["title"] \
+        == "Куплю учебники 8 разред"
+
+
+def test_giving_away_is_a_normal_listing():
+    """«Отдаю красивую одежду» — обычное объявление, глагол просто снимается."""
+    text = "Отдаю красивую одежду для девочки, на возраст от рождения до 1 года"
+    assert parse(text)["title"] == "Красивая одежда для девочки"
+
+
+# ── Цена без валюты ─────────────────────────────────────────────────────────
+def test_bare_price_after_selling_verb():
+    """«Покупала за 16к, продаю за 7500» — валюту не написали вовсе."""
+    parsed = parse("Продается сумка Victoria Secret, покупала за 16к, продаю за 7500")
+    assert parsed["price"] == 7500
+    assert parsed["currency"] == "RSD"
+
+
+# ── Слова, которые тянули объявления не туда ────────────────────────────────
+def test_house_word_needs_context():
+    """«Возле дома нашли котёнка», «живут у себя дома» — не недвижимость."""
+    from app.core.tg_classify import classify
+    assert classify("Возле дома нашли маленького котёнка")[0] == "pets"
+    assert classify("Продам дом в Земуне, 120 м², участок")[0] == "real-estate"
+
+
+def test_rubber_word_needs_context():
+    """«Обувь на резинке» уезжала в «Шины и диски»."""
+    from app.core.tg_classify import classify
+    assert classify("Женская обувь на резинке, 40 р-н (26 см)")[0] == "fashion"
+    assert classify("Продам зимние шины Michelin 205/55 R16")[0] == "auto"
+
+
+def test_long_term_rental_is_a_service():
+    """«Kia Stonic — долгосрочная аренда» — не продажа автомобиля."""
+    from app.core.tg_classify import classify
+    assert classify("Kia Stonic — долгосрочная аренда, кроссовер")[0] == "services"
+    assert classify("Продам Volkswagen Golf 5, пробег 200000")[0] == "auto"
+
+
+def test_master_and_movers_are_services():
+    from app.core.tg_classify import classify
+    assert classify("МАСТЕР В БЕЛГРАДЕ. Мастер на час, два или день")[0] == "services"
+    assert classify("Перевожу людей (до 7 чел.) и грузы на автомобиле")[0] == "services"
+
+
+def test_delivery_note_does_not_make_a_service():
+    """«Доставка по Белграду» стоит в половине обычных объявлений."""
+    from app.core.tg_classify import classify
+    text = "Женские куртки, размер XS -- 1500 rsd\nДоставка по Белграду"
+    assert classify(text)[0] == "fashion"
