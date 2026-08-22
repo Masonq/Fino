@@ -56,8 +56,10 @@ def show(row: dict) -> None:
     mark = row["note"] or ""
     price = (f'{row["price"]:g} {row["currency"] or ""}'.strip()
              if row["price"] is not None else "—")
-    where = row["sub"] or row["category"] or "—"
-    print(f'  {row["title"] or "(пусто)":<58.58} │ {price:>13.13} │ {where:<16.16} │ {mark}')
+    # Показываем обе: ошибка чаще в родительской, а видно её только рядом
+    # с подкатегорией — «Прокат машин» уезжал в auto/tyres.
+    where = "/".join(x for x in (row["category"], row["sub"]) if x) or "—"
+    print(f'  {row["title"] or "(пусто)":<58.58} │ {price:>13.13} │ {where:<24.24} │ {mark}')
 
 
 async def run(limit: int, mode: str, suspicious_only: bool,

@@ -392,3 +392,40 @@ def test_screen_rejects_short_message():
     chat_id = next(iter(CHATS))
     topic_id = next(iter(CHATS[chat_id]["topics"]))
     assert screen("Привет", chat_id, topic_id)[0] == "слишком короткое"
+
+
+# ── Категории ───────────────────────────────────────────────────────────────
+# Ключевое слово должно начинать слово, а не сидеть в его середине.
+def test_keyword_matches_word_start_only():
+    from app.core.tg_classify import classify
+    # «шин» внутри «машин» отправляло прокат машин в «Шины и диски»
+    assert classify("компания ANTEL Прокат машин в Сербии")[0] == "auto"
+
+
+def test_handmade_is_not_a_job():
+    """«Ручная работа» у вязаных сумочек — не вакансия."""
+    from app.core.tg_classify import classify, classify_sub
+    category = classify("Сумочки вязаные, ручная работа, 1200 динар")[0]
+    assert category == "fashion"
+    assert classify_sub(category, "Сумочки вязаные, ручная работа") == "bags"
+
+
+def test_real_vacancy_still_found():
+    from app.core.tg_classify import classify
+    assert classify("Работа в Белграде, требуется официант, зарплата")[0] == "jobs"
+    assert classify("Ищу работу барменом, опыт 3 года")[0] == "jobs"
+
+
+def test_everyday_clothing_recognised():
+    """Юбки, боди, бельё, кулоны — в ленте каждый день, в словаре не было."""
+    from app.core.tg_classify import classify, classify_sub
+    for text, expected_sub in (
+        ("Юбки по 500 RSD, тянутся, подойдут на размер m-l", "women"),
+        ("Сетчатое боди, подойдет на размер s-m", "women"),
+        ("Продам нижнее белье, кружевные комплекты", "women"),
+        ("Кулон Бездна, материалы металл и стекло", "watches"),
+        ("Сумочки вязаные, ручная работа", "bags"),
+    ):
+        category = classify(text)[0]
+        assert category == "fashion", text
+        assert classify_sub(category, text) == expected_sub, text
