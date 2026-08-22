@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { CategorySkeletons } from '../components/Skeletons'
+import { CATEGORY_ICONS, FALLBACK_ICON } from '../components/CategoryIcons'
 
 export default function Categories() {
   const { t, i18n } = useTranslation()
@@ -40,12 +41,7 @@ export default function Categories() {
         {loaded && categories.map((cat) => (
           <Link key={cat.id} to={`/search?category=${cat.slug}`} className="cats-item">
             <span className="cats-label">{cat.name?.[i18n.language] || cat.name?.ru}</span>
-            <img
-              className="cats-img"
-              src={`/cat/${cat.slug}.png`}
-              alt=""
-              onError={(e) => { e.currentTarget.style.display = 'none' }}
-            />
+            <span className="cats-img">{CATEGORY_ICONS[cat.slug] || FALLBACK_ICON}</span>
           </Link>
         ))}
       </div>
