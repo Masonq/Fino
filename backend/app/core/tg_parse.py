@@ -64,8 +64,17 @@ _CONTACT_LINE_RE = re.compile(
     r"(для записи|пишите (по|на) номер|звоните по|номер телефона|"
     r"вайбер|viber|whatsapp|вотсап)", re.I)
 # «Стол 3000 RSD» — цена уже вынесена в поле, в заголовке она лишняя
+# «Растения по 2500 динар каждое» — хвост с ценой в конце заголовка
+_TITLE_PRICE_TAIL_RE = re.compile(
+    r"\s*(?:по|за)\s+\d[\d .,\u00a0]*\s*"
+    r"(?:€|eur|евро|rsd|рсд|din\w*|дин\w*)"
+    r"(?:\s*(?:кажд\w*|штук\w*|шт\.?))?\s*$", re.I)
+
+# Предлог захватываем вместе с ценой: без него «Продам стол за 3000 дин»
+# превращалось в «Стол за».
 _TITLE_PRICE_RE = re.compile(
-    r"\s*[—-]?\s*\d[\d .,\u00a0]*\s*(?:€|eur|евро|rsd|рсд|din\w*|дин\w*|\$|usd)\.?\s*$", re.I)
+    r"\s*[—-]?\s*(?:за|по)?\s*\d[\d .,\u00a0]*\s*"
+    r"(?:€|eur|евро|rsd|рсд|din\w*|дин\w*|\$|usd)\.?\s*$", re.I)
 _SPEC_RE = re.compile(r"^[\w \u0400-\u04ff]{3,24}\s*[:：]\s*\S")
 # Глагол в начале ничего не добавляет: в ленте и так всё продаётся
 _SELLING_VERB_RE = re.compile(r"^(продам|продаю|продается|продаётся|prodajem|na prodaju)\s+", re.I)
@@ -246,7 +255,10 @@ def make_title(text: str, limit: int = 70) -> str | None:
         # «В продаже только до 24 августа» — условие сделки, не предмет
         if _SERVICE_LINE_RE.search(line):
             continue
+        # Цена и в начале, и в конце заголовка лишняя: она стоит строкой
+        # выше. В середине не трогаем — вырежется кусок фразы.
         line = _TITLE_PRICE_RE.sub("", line).strip(" ,.;:-—")
+        line = _TITLE_PRICE_TAIL_RE.sub("", line).strip(" ,.;:-—")
         if not line:
             continue
 
@@ -279,20 +291,18 @@ def make_title(text: str, limit: int = 70) -> str | None:
             without_verb = without_verb[0].upper() + without_verb[1:]
         line = without_verb
 
-        # «Растения по 2500 динар каждое» — цена стоит строкой выше, в
-        # заголовке она только занимает место
-        line = re.sub(
-            r"\s*(по|за)\s+\d[\d .,\u00a0]*\s*"
-            r"(?:€|eur|евро|rsd|рсд|din\w*|дин\w*)?\s*"
-            r"(?:кажд\w*|штук\w*|шт\.?)?\s*$", "", line, flags=re.I).strip(" ,.;:-—")
-        if not line:
-            continue
-
         # Обрываем по первой запятой: до неё называют предмет, после —
         # состояние, город и условия, которым место в описании.
         head = line.split(",", 1)[0].strip()
         if 12 <= len(head) <= limit:
             line = head
+
+        # Цену снимаем после обрезки: до неё «2500 динар каждое» стояло в
+        # середине строки, и правило для хвоста его не находило.
+        line = _TITLE_PRICE_TAIL_RE.sub("", line)
+        line = _TITLE_PRICE_RE.sub("", line).strip(" ,.;:-—")
+        if not line:
+            continue
 
         if len(line) <= limit:
             return line
