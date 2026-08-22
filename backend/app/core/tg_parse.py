@@ -40,6 +40,11 @@ _SPAM_MARKERS = (
 _MD_LINK_RE = re.compile(r"\[([^\]]+)\]\((https?://[^)]+)\)")
 _URL_RE = re.compile(r"https?://\S+|t\.me/\S+|www\.\S+", re.I)
 _HASHTAG_RE = re.compile(r"#[\w\u0400-\u04ff]+", re.U)
+# разметка Telegram: **жирный**, __курсив__, `моноширинный`
+_MD_MARK_RE = re.compile(r"\*\*|__|~~|`")
+# «Стол 3000 RSD» — цена уже вынесена в поле, в заголовке она лишняя
+_TITLE_PRICE_RE = re.compile(
+    r"\s*[—-]?\s*\d[\d .,\u00a0]*\s*(?:€|eur|евро|rsd|рсд|дин|динар|\$|usd)\.?\s*$", re.I)
 _SPEC_RE = re.compile(r"^[\w \u0400-\u04ff]{3,24}\s*[:：]\s*\S")
 _EMOJI_RE = re.compile(
     "[\U0001F000-\U0001FAFF\u2190-\u21FF\u2300-\u27BF\uFE0F\u2B00-\u2BFF]+"
@@ -58,6 +63,9 @@ def clean_text(text: str) -> str:
     # ссылка вида [Bilećka](https://...) — оставляем подпись, адрес убираем
     text = _MD_LINK_RE.sub(r"\1", text)
     text = _URL_RE.sub("", text)
+    # звёздочки и подчёркивания — разметка Telegram, у нас описание обычным
+    # текстом, и «**Стол 3000 RSD**» показывалось со звёздочками
+    text = _MD_MARK_RE.sub("", text)
 
     lines = []
     for raw in text.splitlines():
@@ -91,6 +99,7 @@ def searchable_text(text: str) -> str:
     """
     text = _MD_LINK_RE.sub(r"\1", text)
     text = _URL_RE.sub("", text)
+    text = _MD_MARK_RE.sub(" ", text)
     return re.sub(r"#(?=[\w\u0400-\u04ff])", " ", text)
 
 
@@ -163,6 +172,9 @@ def make_title(text: str, limit: int = 70) -> str | None:
         if _SPEC_RE.match(line):
             fallback = fallback or line
             continue
+        line = _TITLE_PRICE_RE.sub("", line).strip(" ,.;:-—")
+        if not line:
+            continue
         if len(line) <= limit:
             return line
         cut = line[:limit].rsplit(" ", 1)[0]
@@ -175,16 +187,81 @@ def looks_like_spam(text: str) -> bool:
     return any(marker in low for marker in _SPAM_MARKERS)
 
 
+def drop_duplicates(description: str, price: float | None, city: str | None) -> str:
+    """
+    Убирает из описания то, что уже вынесено в поля объявления.
+
+    Цена и город показываются отдельными строками наверху, и повторять их в
+    описании незачем — читателю приходится дважды разбирать одно и то же.
+    Убираем только строки, которые ничего, кроме этого, не сообщают:
+    «Цена 10 000» уходит, а «1100€ (аренда) + депозит» остаётся, потому что
+    про депозит больше нигде не сказано.
+    """
+    if price is None and not city:
+        return description
+
+    price_only = re.compile(
+        r"^(?:цена|price|cena)?\s*[:\-—]?\s*\d[\d .,\u00a0]*\s*"
+        r"(?:€|eur|евро|rsd|рсд|дин|динар|\$|usd)?\s*$", re.I)
+
+    kept = []
+    for line in description.splitlines():
+        bare = _EMOJI_RE.sub("", line).strip(" \t•·—-*📍")
+        if not bare:
+            kept.append(line)
+            continue
+        if price is not None and price_only.match(bare):
+            continue
+        # строка целиком про место: «Белград, Стари Град»
+        if city and extract_city(bare) == city and len(bare) <= 40 and not any(
+            ch.isdigit() for ch in bare
+        ):
+            continue
+        kept.append(line)
+
+    out, blank = [], False
+    for line in kept:
+        if not line.strip():
+            if blank or not out:
+                continue
+            blank = True
+        else:
+            blank = False
+        out.append(line)
+    return "\n".join(out).strip()
+
+
+def drop_title_line(description: str, title: str | None) -> str:
+    """
+    Убирает первую строку, если из неё сделан заголовок.
+
+    Заголовок стоит над описанием, и повторять его сразу под собой —
+    только тратить экран.
+    """
+    if not title:
+        return description
+    lines = description.splitlines()
+    for i, line in enumerate(lines[:3]):
+        bare = _EMOJI_RE.sub("", line).strip(" \t•·—-*")
+        stripped = _TITLE_PRICE_RE.sub("", bare).strip(" ,.;:-—")
+        if stripped and (stripped == title or bare == title or title.startswith(stripped[:40])):
+            del lines[i]
+            break
+    return "\n".join(lines).strip()
+
+
 def parse(text: str) -> dict:
     """Сводит разбор воедино. Ничего не додумывает: не нашли — оставили пустым."""
     description = clean_text(text)
     price, currency = extract_price(description)
+    city = extract_city(searchable_text(text))
+    title = make_title(description)
     return {
-        "title": make_title(description),
-        "description": description,
+        "title": title,
+        "description": drop_title_line(drop_duplicates(description, price, city), title),
         "price": price,
         "currency": currency or "EUR",
         # город и категорию ищем по тексту с раскрытыми хэштегами
-        "city": extract_city(searchable_text(text)),
+        "city": city,
         "searchable": searchable_text(text),
     }
