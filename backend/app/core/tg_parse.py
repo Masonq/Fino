@@ -20,13 +20,14 @@ _PRICE_RE = re.compile(
     # половина числа, то есть 500 вместо тринадцати с половиной тысяч.
     # Второй запрет не даёт зацепиться за хвост уже начатого числа.
     r"(?<![\w])(?<![\d][ .,\u00a0])(?:от\s*)?(\d{1,3}(?:[ .,\u00a0]\d{3})+|\d{2,7})\s*"
-    r"(€|eur|евро|rsd|рсд|din(?:ara?)?|дин\.?|динар\w*|\$|usd)",
+    r"(€|\$|(?:eur|евро|е|rsd|рсд|rs|din(?:ara?)?|дин\.?|динар\w*|usd)\b)",
     re.I,
 )
 # «20к динар», «5k евро» — тысячи сокращают буквой, и без этого цена
 # читалась как двадцать динаров
 _PRICE_K_RE = re.compile(
-    r"(?<![\w])(\d{1,4})\s*[кk]\s*(€|eur|евро|rsd|рсд|din\w*|дин\w*)", re.I)
+    r"(?<![\w])(\d{1,4})\s*(?:к|k|т|тыс\.?)\s*"
+    r"(€|(?:eur|евро|е|rsd|рсд|rs|din\w*|дин\w*)\b)", re.I)
 
 _PRICE_AFTER_RE = re.compile(
     r"(?:цена|price|cena)\s*[:\-—]?\s*(\d{1,3}(?:[ .,\u00a0]\d{3})+|\d{2,7})",
@@ -35,7 +36,10 @@ _PRICE_AFTER_RE = re.compile(
 
 CURRENCY_BY_WORD = {
     "€": "EUR", "eur": "EUR", "евро": "EUR",
-    "rsd": "RSD", "рсд": "RSD", "din": "RSD", "dinar": "RSD", "dinara": "RSD",
+    # «250 е» — так пишут евро одной буквой; «RS» — динары
+    "е": "EUR", "e": "EUR",
+    "rsd": "RSD", "рсд": "RSD", "rs": "RSD",
+    "din": "RSD", "dinar": "RSD", "dinara": "RSD",
     "дин": "RSD", "дин.": "RSD", "динар": "RSD", "динара": "RSD", "динаров": "RSD",
     "$": "USD", "usd": "USD",
 }
@@ -65,6 +69,9 @@ _CONTACT_LINE_RE = re.compile(
     r"вайбер|viber|whatsapp|вотсап)", re.I)
 # «Стол 3000 RSD» — цена уже вынесена в поле, в заголовке она лишняя
 # «Растения по 2500 динар каждое» — хвост с ценой в конце заголовка
+# «... (б/у)Цена: 15» — слово «цена» и всё после него в заголовке лишнее
+_TITLE_PRICE_WORD_RE = re.compile(r"\s*[(\[]?\s*цена\b.*$", re.I)
+
 _TITLE_PRICE_TAIL_RE = re.compile(
     r"\s*(?:по|за)\s+\d[\d .,\u00a0]*\s*"
     r"(?:€|eur|евро|rsd|рсд|din\w*|дин\w*)"
@@ -216,7 +223,27 @@ def _to_number(raw: str) -> float | None:
     return value
 
 
+# «Новый в магазине стоит 25 000, цена: 17 000» — берём ту, что названа
+# ценой, а не первую попавшуюся сумму.
+_PRICE_LABELLED_RE = re.compile(
+    r"(?:цена|price|cena)\s*[:\-—]?\s*"
+    # «15. 000 RS» — точку от разделителя тысяч иногда отделяют пробелом
+    r"(\d{1,3}(?:[ .,\u00a0]\s?\d{3})+|\d{2,7})\s*"
+    r"(€|\$|(?:eur|евро|е|rsd|рсд|rs|din\w*|дин\w*|usd)\b)?", re.I)
+
+
 def extract_price(text: str) -> tuple[float | None, str | None]:
+    m = _PRICE_LABELLED_RE.search(text)
+    if m:
+        value = _to_number(m.group(1))
+        if value is not None:
+            currency = CURRENCY_BY_WORD.get((m.group(2) or "").lower())
+            if currency:
+                return value, currency
+            # валюта не названа: до тысячи это почти наверняка евро
+            if value <= 1000:
+                return value, "EUR"
+
     m = _PRICE_K_RE.search(text)
     if m:
         value = _to_number(m.group(1))
@@ -274,11 +301,20 @@ def strip_greeting(text: str) -> str:
     же «Всем привет», и объявления неразличимы.
     """
     out = _GREETING_RE.sub("", text.strip())
-    # «Меня зовут X, 19 лет» — знакомство, а не суть объявления. Возраст
-    # снимаем вместе с именем, иначе заголовок начинался с «19 лет».
-    rest = re.sub(r"^меня\s+зовут\s+[\w-]+[\s,.—-]*", "", out, flags=re.I)
-    rest = re.sub(r"^\d{2}\s*(?:лет|года?)[\s,.—-]*", "", rest, flags=re.I)
-    return (rest if len(rest) > 25 else out).strip(" ,.;:—-")
+    # «Меня зовут X, 19 лет», «Мне 28 лет» — знакомство, а не суть
+    # объявления. Снимаем в любом порядке: имя бывает и без возраста, и
+    # возраст без имени.
+    rest = out
+    for _ in range(3):
+        before = rest
+        rest = re.sub(r"^меня\s+зовут\s+[\w-]+[\s,.—-]*", "", rest, flags=re.I)
+        rest = re.sub(r"^мне\s+\d{1,2}\s*(?:лет|года?)[\s,.—-]*", "", rest, flags=re.I)
+        rest = re.sub(r"^\d{1,2}\s*(?:лет|года?)[\s,.—-]*", "", rest, flags=re.I)
+        if rest == before:
+            break
+    # Порог только чтобы не остаться с обрывком: «Мне 28 лет, ищу работу
+    # барменом» давало 19 символов и откатывалось целиком.
+    return (rest if len(rest) >= 8 else out).strip(" ,.;:—-")
 
 
 def make_title(text: str, limit: int = 70) -> str | None:
@@ -340,8 +376,6 @@ def make_title(text: str, limit: int = 70) -> str | None:
         if without_verb != line:
             # падеж правим только там, где сняли глагол — он его и задавал
             without_verb = to_nominative(without_verb)
-            if without_verb[:1].islower():
-                without_verb = without_verb[0].upper() + without_verb[1:]
         line = without_verb
 
         # Обрываем по первой запятой: до неё называют предмет, после —
@@ -352,10 +386,19 @@ def make_title(text: str, limit: int = 70) -> str | None:
 
         # Цену снимаем после обрезки: до неё «2500 динар каждое» стояло в
         # середине строки, и правило для хвоста его не находило.
+        line = _TITLE_PRICE_WORD_RE.sub("", line)
         line = _TITLE_PRICE_TAIL_RE.sub("", line)
         line = _TITLE_PRICE_RE.sub("", line).strip(" ,.;:-—")
         if not line:
             continue
+
+        # Заглавная — только если строку правили: после снятия приветствия
+        # или глагола она начиналась со строчной. Нетронутое название не
+        # трогаем, иначе «iPhone» становится «IPhone».
+        if line != raw.strip() and line[:1].islower() and not line[:2].isupper():
+            head = line.split()[0]
+            if head.islower():
+                line = line[0].upper() + line[1:]
 
         if len(line) <= limit:
             return line
@@ -411,12 +454,9 @@ def compose_title(category_slug: str | None, text: str) -> str | None:
     начинают с хэштегов или с характеристик, и получалось «гостиная + 2
     комнаты». Комнаты, площадь и район — то, по чему квартиру и узнают.
     """
-    if category_slug == "jobs":
-        # у резюме первая строка — приветствие и знакомство, а не суть
-        cleaned = strip_greeting(text)
-        title = make_title(cleaned)
-        return title if title and title != make_title(text) else None
-
+    # Резюме отдельной ветки больше не требует: приветствие и знакомство
+    # снимает сам make_title, и особый разбор сравнивал результат сам с
+    # собой, из-за чего у резюме не оставалось заголовка вовсе.
     if category_slug != "real-estate":
         return None
 
