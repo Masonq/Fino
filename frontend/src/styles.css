@@ -227,8 +227,11 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* Иконка в правом нижнем углу. Пока это контурный SVG: он одинаково
    чёткий на любом экране и, в отличие от прежних картинок, не требует
    индивидуальной подгонки масштаба и сдвига под каждую категорию. */
+/* Картинка крупная и намеренно уходит за правый нижний угол — плитка её
+   обрезает. Так предмет читается даже в 126 пикселях ширины, а обрез
+   создаёт ощущение, что за плиткой есть продолжение. */
 .cat-tile-2row-glyph{
-  position:absolute; right:4px; bottom:3px; width:66px; height:66px;
+  position:absolute; right:-8px; bottom:-13px; width:88px; height:88px;
   color:var(--primary); z-index:0; pointer-events:none;
 }
 /* иконка — запасной вариант, поэтому приглушена; у картинки своя подача */
@@ -1146,7 +1149,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     padding:11px 62px 11px 14px;
   }
   .cat-tile-2row-label{ font-size:13.5px; white-space:normal; }
-  .cat-tile-2row-glyph{ width:72px; height:72px; right:6px; bottom:4px; }
+  .cat-tile-2row-glyph{ width:104px; height:104px; right:-8px; bottom:-16px; }
 
   /* Лента: пять в ряд. Карточки без белой подложки — у Avito фото
      со скруглением, а текст лежит прямо на фоне страницы: так сетка
