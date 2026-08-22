@@ -557,6 +557,18 @@ def extract_attributes(category_slug: str, text: str) -> dict:
     low = text.lower()
     attrs: dict = {}
 
+    # Состояние спрашивают о любой вещи, поэтому определяем его до разбора
+    # по категориям. «Новый» ищем со словом «состояние» или отдельно, но не
+    # внутри «как новый» — это другое состояние.
+    if any(w in low for w in ("на запчасти", "za delove", "не работает")):
+        attrs["condition"] = "for_parts"
+    elif any(w in low for w in ("как новый", "как новые", "как новая", "kao nov")):
+        attrs["condition"] = "like_new"
+    elif re.search(r"\b(новый|новая|новое|новые|nov[aoi]?)\b", low) and "не нов" not in low:
+        attrs["condition"] = "new"
+    elif any(w in low for w in ("б/у", "бу ", "polovn", "использовал", "ношен")):
+        attrs["condition"] = "used"
+
     if category_slug == "real-estate":
         rooms = extract_rooms(text)
         if rooms:
@@ -595,6 +607,55 @@ def extract_attributes(category_slug: str, text: str) -> dict:
             attrs["transmission"] = "automatic"
         elif any(w in low for w in ("механик", "мкпп", "ручная коробка", "manuelni")):
             attrs["transmission"] = "manual"
+
+    elif category_slug == "electronics":
+        # Оперативная память и встроенная пишутся одинаково — «16 гб».
+        # Различает их соседнее слово, поэтому сначала забираем ту, что
+        # названа явно, и только остальное считаем встроенной.
+        m = re.search(r"(\d{1,3})\s*(?:гб|gb)\s*(?:озу|оперативн\w*|ram)"
+                      r"|(?:озу|оперативн\w*|ram)\D{0,6}(\d{1,3})\s*(?:гб|gb)", low)
+        ram = None
+        if m:
+            ram = int(m.group(1) or m.group(2))
+            if ram in (2, 4, 6, 8, 12, 16, 24, 32, 64):
+                attrs["ram_gb"] = ram
+
+        for m in re.finditer(r"(\d{2,4})\s*(гб|gb|тб|tb)\b", low):
+            value = int(m.group(1))
+            if m.group(2) in ("тб", "tb"):
+                value *= 1024
+            if value == ram and "ram_gb" in attrs:
+                continue
+            if value in (16, 32, 64, 128, 256, 512, 1024, 2048):
+                attrs["storage_gb"] = value
+                break
+        m = re.search(r"(?:аккумулятор|акб|батаре\w*|battery)\D{0,12}(\d{2,3})\s*%", low)
+        if m and 1 <= int(m.group(1)) <= 100:
+            attrs["battery_health"] = int(m.group(1))
+        m = re.search(r'(\d{1,2}(?:[.,]\d)?)\s*(?:дюйм\w*|inch|")', low)
+        if m:
+            attrs["screen_inch"] = float(m.group(1).replace(",", "."))
+        if any(w in low for w in ("гарантия", "garancij", "чек есть")):
+            attrs["warranty"] = True
+
+    elif category_slug == "fashion":
+        # «р. 46», «размер 46», «размер M» — пишут и так, и так
+        m = re.search(r"(?:размер|р\.|разм\.?|size|vel\.?)\s*[:\-]?\s*"
+                      r"(\d{2}(?:[-–/]\d{2})?|x{0,2}[sml]|xl|xxl)\b", low)
+        if m:
+            attrs["size"] = m.group(1).upper() if m.group(1).isalpha() else m.group(1)
+        m = re.search(r"стельк\w*\D{0,8}(\d{2}(?:[.,]\d)?)", low)
+        if m:
+            attrs["insole_cm"] = float(m.group(1).replace(",", "."))
+        if any(w in low for w in ("женск", "zensk", "žensk")):
+            attrs["gender"] = "women"
+        elif any(w in low for w in ("мужск", "musk", "muška", "muski")):
+            attrs["gender"] = "men"
+
+    elif category_slug == "beauty":
+        m = re.search(r"(\d{2,4})\s*(?:мл|ml)\b", low)
+        if m:
+            attrs["volume_ml"] = int(m.group(1))
 
     elif category_slug == "jobs":
         if any(w in low for w in ("полная занятость", "полный день", "full time", "puno radno")):

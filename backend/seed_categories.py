@@ -7,6 +7,7 @@
 from app.core.database import SessionLocal
 from app.models import Category
 from app.data.subcategories import SUBCATEGORIES
+from app.data.schemas import SCHEMAS
 
 CATEGORIES = [
     {
@@ -160,6 +161,13 @@ CATEGORIES = [
 def run():
     db = SessionLocal()
     try:
+        # Схемы для категорий, у которых их не было: без полей блок
+        # характеристик пуст, и вещь не с чем сравнить
+        for cat_data in CATEGORIES:
+            extra = SCHEMAS.get(cat_data["slug"])
+            if extra and not cat_data.get("attribute_schema"):
+                cat_data["attribute_schema"] = extra
+
         for idx, cat_data in enumerate(CATEGORIES):
             existing = db.query(Category).filter(Category.slug == cat_data["slug"]).first()
             if existing:
@@ -167,6 +175,7 @@ def run():
                 existing.color = cat_data.get("color")
                 if cat_data.get("attribute_schema"):
                     existing.attribute_schema = cat_data["attribute_schema"]
+                existing.name = cat_data["name"]
                 print(f"updated: {cat_data['slug']}")
                 continue
             db.add(Category(sort_order=idx, **cat_data))
