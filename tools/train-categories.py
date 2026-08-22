@@ -14,6 +14,7 @@
 сторонних библиотек.
 """
 import argparse
+import json
 import random
 import sys
 from collections import Counter
@@ -57,6 +58,31 @@ def collect(db) -> list[tuple[str, str]]:
     return samples
 
 
+LABELS = Path(__file__).resolve().parents[1] / "backend" / "ai-labels.jsonl"
+
+
+def from_labels() -> list[tuple[str, str]]:
+    """
+    Пары из разметки нейросети.
+
+    Учиться на категориях из базы нельзя: их расставили те самые правила,
+    ошибки которых мы исправляем. Модель просто переняла бы их.
+    """
+    if not LABELS.exists():
+        raise SystemExit(
+            f"Нет файла разметки: {LABELS}\n"
+            "Сначала разметьте объявления: python tools/label-with-ai.py"
+        )
+    out = []
+    for line in LABELS.read_text(encoding="utf-8").splitlines():
+        try:
+            row = json.loads(line)
+            out.append((row["text"], row["category"]))
+        except (ValueError, KeyError):
+            continue
+    return out
+
+
 def report(model: Model, tests: list[tuple[str, str]]) -> None:
     """Сколько объявлений модель относит верно и где ошибается."""
     from app.core.category_model import MIN_MARGIN
@@ -85,14 +111,22 @@ def report(model: Model, tests: list[tuple[str, str]]) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
+    ap.add_argument("--labels", action="store_true",
+                    help="учиться на разметке нейросети (backend/ai-labels.jsonl), "
+                         "а не на категориях из базы — метки там чище")
     ap.add_argument("--check", action="store_true",
                     help="только проверить нынешнюю модель, не обучая заново")
     args = ap.parse_args()
 
-    with SessionLocal() as db:
-        samples = collect(db)
-
-    print(f"объявлений в базе: {len(samples)}")
+    if args.labels:
+        samples = from_labels()
+        print(f"размечено нейросетью: {len(samples)}")
+    else:
+        with SessionLocal() as db:
+            samples = collect(db)
+        print(f"объявлений в базе: {len(samples)}")
+        print("  внимание: метки здесь расставлены правилами, вместе с их\n"
+              "  ошибками. Для настоящего обучения нужен --labels.")
     by_category = Counter(slug for _, slug in samples)
     for slug, count in by_category.most_common():
         mark = "" if count >= MIN_PER_CATEGORY else "  — мало примеров"

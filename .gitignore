@@ -16,3 +16,5 @@ media/
 backend/app/core/wm-template.npy
 wm-template.png
 category-model.json
+backend/ai-labels.jsonl
+backend/category-model.json*
