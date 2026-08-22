@@ -1705,3 +1705,31 @@ def test_no_providers_means_rules_only(monkeypatch):
     monkeypatch.setattr(ai, "_exhausted", set())
     assert ai.available() == []
     assert ai.improve("Продам стол") == {}
+
+
+def test_model_must_earn_its_place():
+    """
+    Модель, не доказавшая качество, к работе не допускается: неверный
+    раздел прячет объявление от покупателя надёжнее, чем его отсутствие.
+    """
+    from app.core.category_model import MIN_ACCURACY, MIN_SAMPLES, Model
+
+    weak = Model({}, {}, 0, accuracy=0.54, samples=217)
+    assert not weak.trustworthy()
+
+    small = Model({}, {}, 0, accuracy=0.95, samples=100)
+    assert not small.trustworthy()          # точность на пустом месте
+
+    good = Model({}, {}, 0, accuracy=MIN_ACCURACY, samples=MIN_SAMPLES)
+    assert good.trustworthy()
+
+
+def test_letter_attribute_does_not_crash_description():
+    """
+    «размер xs (подходит на 42-44)»: значение поля буквенное, а числа в
+    строке есть — сравнение как чисел роняло весь разбор.
+    """
+    from app.core.tg_parse import drop_attribute_lines, extract_attributes
+    text = "Продам рубашку\nразмер xs (подходит на 42-44)\nЦвет белый"
+    out = drop_attribute_lines(text, extract_attributes("fashion", text))
+    assert "Цвет белый" in out

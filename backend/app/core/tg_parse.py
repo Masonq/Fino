@@ -1337,7 +1337,14 @@ def drop_attribute_lines(description: str, attrs: dict) -> str:
             if len(numbers) != 1:
                 continue
             value = float(numbers[0].replace(",", "."))
-            if abs(value - float(attrs[key])) >= 0.01:
+            # Значение поля бывает буквенным («размер XS»), а строка при
+            # этом содержит числа — «размер xs (подходит на 42-44)».
+            # Сравнивать их как числа нельзя: разбор падал целиком.
+            try:
+                stored = float(attrs[key])
+            except (TypeError, ValueError):
+                continue
+            if abs(value - stored) >= 0.01:
                 continue
             # В строке не должно остаться ничего, кроме названия признака,
             # числа и единиц: «Этаж 2, окна во двор» сообщает больше, чем

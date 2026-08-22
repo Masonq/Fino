@@ -22,10 +22,13 @@ scikit-learn тянет за собой numpy и scipy — сотни мегаб
 ради одной функции.
 """
 import json
+import logging
 import math
 import re
 from collections import defaultdict
 from pathlib import Path
+
+log = logging.getLogger(__name__)
 
 MODEL_PATH = Path(__file__).resolve().parents[2] / "category-model.json"
 
@@ -40,6 +43,13 @@ _WORD_RE = re.compile(r"[\w-]{3,}")
 # высокий намеренно: ошибка модели дороже её молчания — при молчании
 # работают правила, а неверный раздел прячет объявление от покупателя.
 MIN_MARGIN = 3.0
+
+# Порог допуска к работе. Модель, которая ошибается чаще, чем в одном
+# случае из восьми, хуже правил — и применять её нельзя, как бы уверенно
+# она ни отвечала. Объём обучения тоже важен: на паре сотен примеров
+# высокая точность означает лишь то, что проверять было не на чем.
+MIN_ACCURACY = 0.85
+MIN_SAMPLES = 500
 
 
 def features(text: str) -> list[str]:
@@ -61,10 +71,19 @@ def features(text: str) -> list[str]:
 class Model:
     """Наивный байес: вероятность раздела по словам объявления."""
 
-    def __init__(self, weights: dict, priors: dict, vocabulary: int):
+    def __init__(self, weights: dict, priors: dict, vocabulary: int,
+                 accuracy: float = 0.0, samples: int = 0):
         self.weights = weights          # категория → слово → вес
         self.priors = priors            # категория → доля в обучении
         self.vocabulary = vocabulary
+        # Качество на отложенной проверке и объём обучения. Модель, не
+        # доказавшая себя, применяться не должна: неверный раздел прячет
+        # объявление от покупателя надёжнее, чем его отсутствие.
+        self.accuracy = accuracy
+        self.samples = samples
+
+    def trustworthy(self) -> bool:
+        return self.accuracy >= MIN_ACCURACY and self.samples >= MIN_SAMPLES
 
     # ── применение ──────────────────────────────────────────────────────
     def scores(self, text: str) -> dict[str, float]:
@@ -99,7 +118,8 @@ class Model:
 
     def to_json(self) -> dict:
         return {"weights": self.weights, "priors": self.priors,
-                "vocabulary": self.vocabulary}
+                "vocabulary": self.vocabulary,
+                "accuracy": self.accuracy, "samples": self.samples}
 
     # ── обучение ────────────────────────────────────────────────────────
     @classmethod
@@ -157,7 +177,17 @@ def load() -> Model | None:
     _tried = True
     try:
         data = json.loads(MODEL_PATH.read_text(encoding="utf-8"))
-        _loaded = Model(data["weights"], data["priors"], data["vocabulary"])
+        model = Model(data["weights"], data["priors"], data["vocabulary"],
+                      data.get("accuracy", 0.0), data.get("samples", 0))
+        if not model.trustworthy():
+            log.warning(
+                "классификатор не допущен к работе: точность %.0f%% на %d "
+                "примерах (нужно %.0f%% и %d). Работают правила.",
+                model.accuracy * 100, model.samples,
+                MIN_ACCURACY * 100, MIN_SAMPLES)
+            _loaded = None
+            return _loaded
+        _loaded = model
     except (OSError, ValueError, KeyError):
         _loaded = None
     return _loaded

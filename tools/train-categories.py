@@ -83,8 +83,13 @@ def from_labels() -> list[tuple[str, str]]:
     return out
 
 
-def report(model: Model, tests: list[tuple[str, str]]) -> None:
-    """Сколько объявлений модель относит верно и где ошибается."""
+def report(model: Model, tests: list[tuple[str, str]]) -> float:
+    """
+    Сколько объявлений модель относит верно и где ошибается.
+
+    Возвращает долю верных среди тех, по которым она вообще решилась:
+    именно по ней решается, допускать ли её к работе.
+    """
     from app.core.category_model import MIN_MARGIN
 
     right = wrong = unsure = 0
@@ -107,6 +112,9 @@ def report(model: Model, tests: list[tuple[str, str]]) -> None:
         print("\n  чаще всего путает:")
         for pair, count in mistakes.most_common(8):
             print(f"    {pair:<34} {count}")
+
+    decided = right + wrong
+    return right / decided if decided else 0.0
 
 
 def main() -> None:
@@ -153,11 +161,22 @@ def main() -> None:
         model = Model.train(train)
         print(f"\nобучено на {len(train)}, проверка на {len(tests)}:")
 
-    report(model, tests)
+    accuracy = report(model, tests)
 
     if not args.check:
+        from app.core.category_model import MIN_ACCURACY, MIN_SAMPLES
+
+        model.accuracy = accuracy
+        model.samples = len(train)
         save(model)
-        print("\n  модель сохранена")
+        if model.trustworthy():
+            print("\n  модель сохранена и допущена к работе")
+        else:
+            print(f"\n  модель сохранена, но к работе НЕ допущена:")
+            print(f"  нужно {MIN_ACCURACY * 100:.0f}% верных решений "
+                  f"и {MIN_SAMPLES} примеров обучения.")
+            print("  Пока работают правила — разметьте ещё объявлений:")
+            print("  python tools/label-with-ai.py --limit 500")
 
 
 if __name__ == "__main__":
