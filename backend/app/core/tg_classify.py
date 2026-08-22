@@ -120,6 +120,26 @@ def classify(text: str) -> tuple[str | None, int]:
     return best, scores[best]
 
 
+def decide_for(expected: str | None, text: str) -> tuple[str | None, bool]:
+    """
+    То же решение, но категория из темы уже известна по номеру.
+
+    Возвращает (категория, публиковать ли сразу). Сразу — только когда тема
+    и текст сходятся: расхождение чаще всего значит, что человек написал не
+    в тот раздел, и разобрать это должен человек, а не догадка.
+    """
+    guessed, score = classify(text)
+
+    if expected and guessed:
+        return (expected, True) if expected == guessed else (guessed, False)
+    if expected:
+        # текст ни на что не похож — доверяем теме, но показываем человеку
+        return expected, False
+    if guessed and score >= 2:
+        return guessed, True
+    return guessed, False
+
+
 def decide(topic: str | None, text: str) -> tuple[str | None, bool]:
     """
     Итог: (категория, публиковать ли сразу).
