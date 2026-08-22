@@ -33,8 +33,10 @@ def main() -> None:
         )
         print(f"в очереди: {len(rows)}\n")
         for listing, tr, category in rows:
-            price = f"{int(listing.price)} {listing.currency.value}" if listing.price else "—"
-            print(f"{category.slug:16} {price:>12}  {(tr.title or '(без заголовка)')[:46]}")
+            parent = db.query(Category).get(category.parent_id) if category.parent_id else None
+            branch = f"{parent.slug}/{category.slug}" if parent else category.slug
+            print(f"{branch:26} чат {listing.external_chat}  "
+                  f"{(tr.title or '(без заголовка)')[:40]}")
     finally:
         db.close()
 
