@@ -608,3 +608,42 @@ def test_plural_giving_verb_removed():
     """«Отдаем добавку» — глагол снимается, падеж выправляется."""
     assert parse("Отдаем добавку Лососевое масло для кошек/собак, за шоколад")["title"] \
         == "Добавка Лососевое масло для кошек/собак"
+
+
+# ── Корень-слово в классификаторе ───────────────────────────────────────────
+def test_classifier_root_with_space_is_exact():
+    """
+    «кот » ловило «которая» и «котлета»: объявление об одежде для девочки
+    уезжало в «Кошек», потому что дальше в тексте стояло «которая».
+    """
+    from app.core.tg_classify import classify
+    assert classify("Отдаю одежду для девочки, которая ждала вторую дочку")[0] != "pets"
+    assert classify("Возле дома нашли маленького кот, есть блохи")[0] == "pets"
+
+
+def test_watches_do_not_catch_часто_и_серебристый():
+    from app.core.tg_classify import classify_sub
+    # «час» ловило «часто», «серебр» — «серебристые колготки»
+    assert classify_sub("fashion", "Женская обувь на резинке, часто носила") == "shoes"
+    assert classify_sub(
+        "fashion", "Нижнее белье и серебристые капроновые колготки") == "women"
+
+
+def test_flat_title_must_name_the_object():
+    """Хэштеги «Гостиная + 2 комнаты» — не название квартиры."""
+    text = ("#Vozdovac\n#квартира #до1000 #лифт #новыйдом #посудомойка "
+            "#балкон #трешка #арендабелград\n1100 €")
+    assert build_title("real-estate", "flats", text, {},
+                       fallback_title=parse(text).get("title")) == "3-комнатная квартира"
+    # а живое название по-прежнему в приоритете
+    live = "Трёхкомнатная квартира в Beograd na vodi"
+    assert build_title("real-estate", "flats", live, {},
+                       fallback_title=parse(live).get("title")).startswith("Трёхкомнатная")
+
+
+def test_service_verb_beats_the_noun():
+    """«Перевожу людей на автомобиле» — услуга, хотя «авто» тоже в тексте."""
+    from app.core.tg_classify import classify
+    assert classify("Перевожу людей (до 7 чел.) и грузы на автомобиле")[0] == "services"
+    assert classify("Чиню стиральные машины на дому")[0] == "services"
+    assert classify("Продам Volkswagen Golf 5, пробег 200000")[0] == "auto"

@@ -855,6 +855,12 @@ def build_title(
     # Живая строка лучше собранной, если она называет предмет: автор пишет
     # «Просторная трёхкомнатная квартира на Новом Населье», а сборка из
     # фактов даёт сухое «Квартира, 80 м²» и теряет всё остальное.
+    if category_slug == "real-estate" and fallback_title:
+        named = re.search(r"(кварти|дом|студи|комнат\w*\s+в|гараж|апартамент|"
+                          r"таунхаус|помещени|stan\b|kuca)", fallback_title, re.I)
+        if not named:
+            fallback_title = None
+
     if fallback_title and not rejects_as_title(fallback_title):
         # Услуга с длинным описанием в заголовке обрезается многоточием и
         # читается хуже, чем короткое название дела.
