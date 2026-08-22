@@ -211,11 +211,24 @@ export default function Home() {
     // пару раз в течение полусекунды — иначе положение уезжает уже после
     // того, как мы его выставили.
     let tries = 0
+    let stop = false
+    // Человек мог начать листать сразу, не дожидаясь нас. Тогда поправки
+    // дёргают ленту назад под пальцем — это выглядит поломкой. Первое же
+    // касание отменяет их: место он уже нашёл сам.
+    const giveUp = () => { stop = true }
+    window.addEventListener('touchstart', giveUp, { passive: true, once: true })
+    window.addEventListener('wheel', giveUp, { passive: true, once: true })
+
     const id = setInterval(() => {
+      if (stop) { clearInterval(id); return }
       if (Math.abs(window.scrollY - target) > 2) window.scrollTo(0, target)
       if (++tries >= 8) clearInterval(id)
     }, 60)
-    return () => clearInterval(id)
+    return () => {
+      clearInterval(id)
+      window.removeEventListener('touchstart', giveUp)
+      window.removeEventListener('wheel', giveUp)
+    }
   }, [cached, listings.length])
 
   const handleRefresh = useCallback(async () => {

@@ -1265,3 +1265,30 @@ def test_parser_works_without_trained_model():
     """Модели нет — классификация идёт по правилам, как прежде."""
     from app.core.tg_classify import classify
     assert classify("Продам диван IKEA 25000 RSD")[0] == "home-garden"
+
+
+# ── Поиск ───────────────────────────────────────────────────────────────────
+def test_brand_spellings_for_search():
+    """
+    Марку пишут и латиницей, и кириллицей. «айфон» должен находить
+    «iPhone» — иначе вещь лежит в ленте, а покупатель её не видит.
+    """
+    from app.core.search_terms import variants
+    assert "iphone" in variants("айфон")
+    assert "айфон" in [v.lower() for v in variants("iPhone")]
+    assert "iphone 13 про" in variants("айфон 13 про")
+    assert "samsung" in variants("самсунг")
+    assert "ikea стол" in variants("Икеа стол")
+
+
+def test_search_keeps_original_first():
+    """Первым идёт то, что набрал человек: по нему совпадения точнее."""
+    from app.core.search_terms import variants
+    assert variants("айфон")[0] == "айфон"
+    assert variants("диван")[0] == "диван"
+
+
+def test_search_variants_handle_empty():
+    from app.core.search_terms import variants
+    assert variants("") == []
+    assert variants("   ") == []

@@ -2,12 +2,13 @@ import uuid
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import or_, func
+from sqlalchemy import case, exists, func, or_
 from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel, Field, field_validator
 
 from app.core.auth import get_current_user
 from app.core.database import get_db
+from app.core.search_terms import variants as search_variants
 from app.models import Listing, ListingStatus, ListingTranslation, ListingPhoto, Category, User
 from app.core.clock import utcnow
 
@@ -165,25 +166,42 @@ def search_listings(
     ).filter(Listing.status == ListingStatus.active)
 
     # текстовый поиск по заголовку и описанию на любом из языков
+    title_hit = None
     if q_text:
         words = q_text.strip()
-        # Поиск по словам через полнотекстовый индекс. Дополнительно ищем
-        # по началу слова, чтобы «дива» находило «диван» — люди часто
-        # не дописывают.
-        tsquery = func.plainto_tsquery("simple", words)
+        # Марку пишут и латиницей, и кириллицей: «айфон» должен находить
+        # «iPhone», иначе вещь лежит в ленте, а покупатель её не видит.
+        spellings = search_variants(words) or [words]
+
         haystack = func.to_tsvector(
             "simple",
             func.coalesce(ListingTranslation.title, "") + " " +
             func.coalesce(ListingTranslation.description, ""),
         )
-        prefix = f"{words}%"
-        q = q.filter(
-            Listing.translations.any(
-                or_(
-                    haystack.op("@@")(tsquery),
-                    ListingTranslation.title.ilike(prefix),
-                )
-            )
+        matches = []
+        for spelling in spellings:
+            # Поиск по словам через полнотекстовый индекс. Дополнительно
+            # ищем по началу слова, чтобы «дива» находило «диван» — люди
+            # часто не дописывают.
+            matches.append(haystack.op("@@")(func.plainto_tsquery("simple", spelling)))
+            matches.append(ListingTranslation.title.ilike(f"{spelling}%"))
+        q = q.filter(Listing.translations.any(or_(*matches)))
+
+        # Название важнее описания: «стол» в заголовке — это стол, а в
+        # описании дивана — соседняя вещь, о которой упомянули вскользь.
+        # Такие объявления показываем, но ниже.
+        title_hit = case(
+            (
+                exists().where(
+                    (ListingTranslation.listing_id == Listing.id)
+                    & or_(*[
+                        ListingTranslation.title.ilike(f"%{spelling}%")
+                        for spelling in spellings
+                    ])
+                ),
+                0,
+            ),
+            else_=1,
         )
 
     if category_slug:
@@ -222,7 +240,9 @@ def search_listings(
         "expensive": Listing.price.desc().nullslast(),
     }.get(sort, Listing.published_at.desc())
 
-    items = q.order_by(order).offset(offset).limit(limit).all()
+    # При поиске сначала идут объявления, где слово стоит в названии.
+    ordering = [title_hit, order] if title_hit is not None else [order]
+    items = q.order_by(*ordering).offset(offset).limit(limit).all()
 
     def serialize(listing: Listing):
         translation = pick_translation(listing, lang)
