@@ -729,3 +729,43 @@ def test_small_goods_recognised():
         ("Цветочное темно-серое кашпо", "home-garden"),
     ):
         assert classify(text)[0] == expected, text
+
+
+# ── Услуга против товара: решает глагол продажи ─────────────────────────────
+def test_service_wins_without_selling_verb():
+    """
+    У мастера по бойлерам в тексте полно названий техники. Отличает его от
+    продавца не предмет, а отсутствие «продам».
+    """
+    from app.core.tg_classify import classify, classify_sub
+    for text in (
+        "Сантехник. Замена смесителей, подключение посудомоечных машин",
+        "🔧 Чистка и обслуживание кондиционеров с разбором",
+        "Услуги домашнего мастера в Белграде",
+        "Ремонт бойлеров, выезд по городу",
+        "Мастер по дому в Белграде",
+    ):
+        assert classify(text)[0] == "services", text
+        assert classify_sub("services", text) == "repair", text
+
+
+def test_goods_stay_goods():
+    from app.core.tg_classify import classify
+    for text in ("Продам бойлер Ariston 80 л, 15000 RSD",
+                 "Продам стиральную машину Bosch",
+                 "Продам кондиционер LG, б/у"):
+        assert classify(text)[0] == "home-garden", text
+
+
+def test_gearbox_only_for_cars():
+    """«Коробка» — это и коробка передач, и коробка от наушников."""
+    from app.core.tg_classify import classify
+    assert classify("AirPods 4 — только ЛЕВЫЙ наушник + кейс + коробка")[0] == "electronics"
+    assert classify("Продам Golf 5, коробка передач механика, пробег")[0] == "auto"
+
+
+def test_dishwasher_hashtag_is_not_a_flat_title():
+    """«#посудомойка» из перечня удобств — не название квартиры."""
+    text = "#Vracar\n#квартира #лифт #посудомойка #балкон\n1250 €"
+    assert build_title("real-estate", "flats", text, {},
+                       fallback_title=parse(text).get("title")) == "Квартира"
