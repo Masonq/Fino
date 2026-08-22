@@ -71,6 +71,7 @@ export default function Home() {
   // сколько прокрутки предстоит восстановить — до этого шапку не трогаем
   const pendingScroll = useRef(cached?.scroll || 0)
   const restored = useRef(false)
+  const lastScroll = useRef(cached?.scroll || 0)
   const [settled, setSettled] = useState(false)
   // слайд выбирается один раз при загрузке страницы (как у Avito) — без автокарусели,
   // иначе цвет статус-бара не успевает за сменой и отстаёт
@@ -99,6 +100,9 @@ export default function Home() {
       // Именно это и выглядело как рывок при возврате.
       if (pendingScroll.current && !restored.current) return
       const y = window.scrollY
+      // Запоминаем на ходу: к моменту ухода со страницы прокрутка успевает
+      // обнулиться, и в память попадал ноль — возврат открывал ленту сверху.
+      lastScroll.current = y
       // сворачиваем после 48px, а разворачиваем уже на 6px — Safari начинает
       // перекрашивать статус-бар сразу при движении вверх, и при большом пороге
       // шапка догоняла его с заметным опозданием
@@ -177,7 +181,7 @@ export default function Home() {
         lang: langRef.current,
         items: itemsRef.current,
         total: totalRef.current,
-        scroll: window.scrollY,
+        scroll: lastScroll.current || window.scrollY,
       }
     }
     window.addEventListener('pagehide', save)
@@ -200,6 +204,7 @@ export default function Home() {
     if (restored.current || !cached?.scroll || !listings.length) return
     restored.current = true
     const target = cached.scroll
+    lastScroll.current = target
     window.scrollTo(0, target)
     // Картинки и шрифты догружаются после первой отрисовки и слегка меняют
     // высоту, а iOS вдобавок правит прокрутку под свою панель. Повторяем
