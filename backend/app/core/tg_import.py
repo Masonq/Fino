@@ -20,12 +20,15 @@ import argparse
 import asyncio
 import fcntl
 import os
+import time
 import uuid
+from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from io import BytesIO
 
 from PIL import Image
 from telethon import TelegramClient
+from telethon.errors import FloodWaitError
 
 from app.core.config import settings
 from app.core.database import SessionLocal
@@ -54,6 +57,7 @@ from app.models import (
 from app.core.clock import utcnow
 
 MAX_PHOTOS = 5
+_ENTITY_CACHE: dict[int, object] = {}
 # За сколько дней ищем повтор того же товара. Дольше держать бессмысленно:
 # вещь либо продана, либо объявление уже неактуально.
 DUP_DAYS = 21
@@ -231,7 +235,12 @@ def screen(text: str, chat_id: int, topic_id: int | None,
 async def collect(client, chat_id: int, meta: dict, days: int,
                   per_category: int | None, min_id: int | None = None):
     """Читает чат и возвращает готовые к записи объявления."""
-    entity = await client.get_entity(chat_id)
+    # Разбор ссылки на чат — тоже запрос к Telegram, и повторять его
+    # каждый заход незачем: номера чатов у нас постоянные.
+    entity = _ENTITY_CACHE.get(chat_id)
+    if entity is None:
+        entity = await client.get_entity(chat_id)
+        _ENTITY_CACHE[chat_id] = entity
     since = datetime.now(timezone.utc) - timedelta(days=days)
     picked: dict[str, int] = {}
     out = []
@@ -500,6 +509,31 @@ def store(db, item: dict) -> bool:
     return True
 
 
+# Пока действует запрет Telegram, повторный запрос считается новым
+# нарушением, и ожидание растёт: с семи секунд до нескольких часов за
+# несколько попыток. Часовой заход по расписанию — ровно тот случай,
+# поэтому запоминаем срок на диске и до него не подключаемся вовсе.
+FLOOD_PATH = Path(settings.media_dir).parent / "tg-flood-until"
+
+
+def flood_wait_left() -> int:
+    """Сколько секунд ещё нельзя обращаться к Telegram."""
+    try:
+        until = float(FLOOD_PATH.read_text().strip())
+    except (OSError, ValueError):
+        return 0
+    left = until - time.time()
+    return int(left) if left > 0 else 0
+
+
+def remember_flood(seconds: int) -> None:
+    """Запоминает, до какого времени Telegram просил не беспокоить."""
+    try:
+        FLOOD_PATH.write_text(str(time.time() + seconds))
+    except OSError:
+        pass
+
+
 def take_lock():
     """
     Не даёт двум заходам работать разом.
@@ -537,7 +571,17 @@ async def main() -> None:
     global TRANSLATE
     TRANSLATE = not args.no_translate
 
-    client = TelegramClient(settings.tg_session, settings.tg_api_id, settings.tg_api_hash)
+    left = flood_wait_left()
+    if left:
+        print(f"Telegram просил подождать ещё {left // 60} мин "
+              f"({left} с) — заход пропускаем.")
+        return
+
+    client = TelegramClient(settings.tg_session, settings.tg_api_id,
+                            settings.tg_api_hash)
+    # Короткие задержки библиотека пережидает сама; длинные ловим и
+    # запоминаем, чтобы не долбиться в закрытую дверь каждый час.
+    client.flood_sleep_threshold = 60
     await client.start(phone=settings.tg_phone)
 
     db = SessionLocal()
@@ -549,8 +593,17 @@ async def main() -> None:
             min_id = last_imported_id(db, chat_id) if args.since_last else None
             if min_id:
                 print(f"{meta['title']}: читаем после сообщения {min_id}")
-            items = await collect(client, chat_id, meta, args.days,
-                                  args.per_category, min_id)
+            try:
+                items = await collect(client, chat_id, meta, args.days,
+                                      args.per_category, min_id)
+            except FloodWaitError as exc:
+                # Запрет длиннее минуты библиотека не пережидает сама.
+                # Записываем срок и уходим: следующий заход по расписанию
+                # увидит его и не станет обращаться к Telegram вовсе.
+                remember_flood(exc.seconds)
+                print(f"\nTelegram просит подождать {exc.seconds // 60} мин "
+                      f"({exc.seconds} с). Заход остановлен, срок записан.")
+                break
             print(f"{meta['title']}: отобрано {len(items)}")
             for item in items:
                 if store(db, item):

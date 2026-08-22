@@ -1606,3 +1606,31 @@ def test_ai_answer_schema_declared():
     assert set(TITLE_SCHEMA["properties"]) == {"title", "summary"}
     assert TITLE_SCHEMA["required"] == ["title", "summary"]
     assert set(CATEGORY_SCHEMA["properties"]) == {"category"}
+
+
+# ── Ограничения Telegram ────────────────────────────────────────────────────
+def test_flood_wait_is_remembered(tmp_path, monkeypatch):
+    """
+    Пока действует запрет, повторный запрос считается новым нарушением, и
+    ожидание растёт: с семи секунд до нескольких часов. Часовой заход по
+    расписанию — ровно тот случай, поэтому срок держим на диске.
+    """
+    import app.core.tg_import as importer
+
+    monkeypatch.setattr(importer, "FLOOD_PATH", tmp_path / "flood")
+    assert importer.flood_wait_left() == 0
+    importer.remember_flood(120)
+    left = importer.flood_wait_left()
+    assert 100 <= left <= 120
+    importer.FLOOD_PATH.unlink()
+    assert importer.flood_wait_left() == 0
+
+
+def test_flood_file_broken_is_not_fatal(tmp_path, monkeypatch):
+    """Испорченный файл не должен останавливать заход."""
+    import app.core.tg_import as importer
+
+    path = tmp_path / "flood"
+    path.write_text("не число")
+    monkeypatch.setattr(importer, "FLOOD_PATH", path)
+    assert importer.flood_wait_left() == 0
