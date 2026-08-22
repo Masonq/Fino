@@ -90,6 +90,45 @@ def _to_serbian_latin(text: str) -> str:
     return text.translate(_SINGLES)
 
 
+def _restore_latin_tokens(original: str, translated: str) -> str:
+    """
+    Возвращает на место латинские слова из оригинала.
+
+    Google приспосабливает бренды к сербскому произношению: Volkswagen
+    становится Volksvagen (а в другом заголовке Folksvagen), Galaxy —
+    Galaki. Для сербского текста это нормально, но по такому названию
+    объявление никто не найдёт: ищут «Volkswagen».
+
+    Сопоставляем по огрублённой форме слова, поэтому словарь брендов не
+    нужен — работает и с теми, о которых мы не знаем.
+    """
+    tokens = re.findall(r"[A-Za-z][A-Za-z0-9&.-]*", original)
+    if not tokens:
+        return translated
+
+    def key(word: str) -> str:
+        word = word.lower()
+        # звуки, которые сербский передаёт иначе: v/f/w, k/x, s/z
+        for a, b in (("w", "v"), ("f", "v"), ("x", "k"), ("z", "s"), ("y", "i"), ("j", "i")):
+            word = word.replace(a, b)
+        # двойные буквы сербский не пишет
+        return re.sub(r"(.)\1+", r"\1", word)
+
+    # Короткие слова не трогаем: сербский союз «a» или предлог «u» совпал бы
+    # с одиночной буквой из названия модели и был бы заменён на неё.
+    by_key = {key(t): t for t in tokens if len(t) >= 3}
+    if not by_key:
+        return translated
+
+    def replace(match: "re.Match") -> str:
+        word = match.group(0)
+        if word in tokens or len(word) < 3:   # уже как в оригинале
+            return word
+        return by_key.get(key(word), word)
+
+    return re.sub(r"[A-Za-z][A-Za-z0-9&.-]*", replace, translated)
+
+
 def _fix_script(text: str | None, target: str) -> str | None:
     """Сербский показываем латиницей — на ней пишут все сербские доски."""
     if not text or target != "sr":
@@ -135,7 +174,10 @@ def _translate_google(text: str, source: str, target: str) -> str | None:
             data = json.loads(resp.read().decode())
             # ответ приходит кусками — собираем их вместе
             parts = [chunk[0] for chunk in data[0] if chunk and chunk[0]]
-            return _fix_script("".join(parts).strip() or None, target)
+            result = "".join(parts).strip()
+            if not result:
+                return None
+            return _fix_script(_restore_latin_tokens(text, result), target)
     except Exception as exc:
         log.info("Перевод через Google не вышел: %s", exc)
         return None
@@ -174,7 +216,7 @@ def translate(text: str, source: str, target: str) -> str | None:
                 data = json.loads(resp.read().decode())
                 result = (data.get("translatedText") or "").strip()
                 if result:
-                    return _fix_script(result, target)
+                    return _fix_script(_restore_latin_tokens(text, result), target)
         except Exception as exc:
             log.info("Перевод через %s не вышел: %s", endpoint, exc)
             continue
