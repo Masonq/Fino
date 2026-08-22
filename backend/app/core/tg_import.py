@@ -90,9 +90,21 @@ async def collect(client, chat_id: int, meta: dict, days: int, per_category: int
     picked: dict[str, int] = {}
     out = []
 
+    # Сначала собираем сообщения, потом разбираем: несколько фото Telegram
+    # шлёт альбомом — это отдельные сообщения с общим номером группы, и
+    # текст есть только у одного из них. Без предварительного прохода до
+    # остальных снимков не добраться, и переносилось всегда одно.
+    messages = []
+    albums: dict[int, list] = {}
     async for msg in client.iter_messages(entity, limit=3000):
         if msg.date and msg.date < since:
             break
+        messages.append(msg)
+        gid = getattr(msg, "grouped_id", None)
+        if gid:
+            albums.setdefault(gid, []).append(msg)
+
+    for msg in messages:
         text = (msg.text or "").strip()
         if len(text) < 25:
             continue
@@ -122,9 +134,18 @@ async def collect(client, chat_id: int, meta: dict, days: int, per_category: int
                 continue
             picked[category_slug] = picked.get(category_slug, 0) + 1
 
+        gid = getattr(msg, "grouped_id", None)
+        # у альбома снимки лежат в соседних сообщениях, у одиночного — в самом
+        # iter_messages идёт от новых к старым, внутри альбома это обратный
+        # порядок — возвращаем исходный, чтобы обложкой стало первое фото
+        sources = sorted(albums.get(gid, [msg]), key=lambda m: m.id) if gid else [msg]
         photos = []
-        if msg.photo and len(photos) < MAX_PHOTOS:
-            data = await client.download_media(msg, file=bytes)
+        for src in sources:
+            if len(photos) >= MAX_PHOTOS:
+                break
+            if not src.photo:
+                continue
+            data = await client.download_media(src, file=bytes)
             if data:
                 saved = save_photo(data)
                 if saved:
