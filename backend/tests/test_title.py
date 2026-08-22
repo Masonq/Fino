@@ -1136,3 +1136,32 @@ def test_continuation_line_is_not_a_title():
     from app.core.title_rules import rejects_as_title
     assert rejects_as_title("+ вторая бесплатно", first_line=True)
     assert rejects_as_title("— и ещё одна такая же", first_line=True)
+
+
+def test_serbian_cat_does_not_catch_mac():
+    """«mač» — сербское «кот», но так же начинается Mac mini и MacBook."""
+    from app.core.tg_classify import classify
+    assert classify("Apple Mac mini M2 16/512 GB")[0] == "electronics"
+    assert classify("MacBook Pro 16 M5")[0] == "electronics"
+    assert classify("Mačka traži dom, sterilisana")[0] == "pets"
+
+
+def test_required_means_a_person():
+    """«Требуется небольшой ремонт» — про вещь, а не про вакансию."""
+    from app.core.tg_classify import classify
+    assert classify("Мотоцикл Kawasaki 2025, требуется небольшой ремонт")[0] != "jobs"
+    assert classify("В квартире требуется ремонт")[0] != "jobs"
+    assert classify("Требуется мойщик, зарплата 60000")[0] == "jobs"
+    assert classify("Требуется сотрудник на мойку")[0] == "jobs"
+
+
+def test_greeting_variants_stripped():
+    """
+    Приветствие сокращают и переставляют: «Добрый всем», «Доброго дня»,
+    просто «Добрый». Обрывок «Добрый» обрастал моделью со следующей
+    строки — выходило «Добрый earpods 3».
+    """
+    for greeting in ("Добрый всем", "Добрый", "Доброго дня", "Всем привет",
+                     "Добрый день", "Dobar dan"):
+        title = parse(f"{greeting}\nКуплю earpods 3 поколения")["title"]
+        assert title == "Куплю earpods 3 поколения", greeting

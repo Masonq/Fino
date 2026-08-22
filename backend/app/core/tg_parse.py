@@ -508,8 +508,11 @@ def extract_city(text: str) -> str | None:
 
 
 _GREETING_RE = re.compile(
-    r"^(всем\s+)?(привет\w*|здравствуйте|добрый\s+день|добрый\s+вечер|доброе\s+утро|"
-    r"здравствуй|zdravo|pozdrav)[\s,!.—-]*", re.I)
+    r"^(всем\s+)?(привет\w*|здравствуйте|здравствуй|"
+    # «Добрый день», «Доброго времени суток», а ещё «Добрый всем» и просто
+    # «Добрый» — приветствие часто сокращают и переставляют слова.
+    r"добр(ый|ое|ого)(\s+(день|вечер|утро|времени\s+суток|всем|дня))?|"
+    r"доброе\s+утро|zdravo|pozdrav|dobar\s+dan)[\s,!.—-]*", re.I)
 
 
 def strip_greeting(text: str) -> str:
@@ -803,7 +806,9 @@ def make_title(text: str, limit: int = 70) -> str | None:
             continue
 
         # «Ноутбук» + «HP Omen 16-xf0xxx» строкой ниже = «Ноутбук HP Omen…»
-        if _looks_generic(line):
+        # «Добрый» после снятого приветствия — не название вещи, и
+        # дописывать к нему модель нельзя: выходило «Добрый earpods 3».
+        if _looks_generic(line) and not _GREETING_RE.match(line + " "):
             model = find_model(text)
             if model and model.lower() not in line.lower():
                 line = f"{line} {model}"
