@@ -24,7 +24,7 @@ _PRICE_RE = re.compile(
     # половина числа, то есть 500 вместо тринадцати с половиной тысяч.
     # Второй запрет не даёт зацепиться за хвост уже начатого числа.
     r"(?<![\w])(?<![\d][ .,\u00a0])(?:от\s*)?(\d{1,3}(?:[ .,\u00a0]\d{3})+|\d{2,7})\s*"
-    r"(€|\$|(?:eur|евро|е|rsd|rds|рсд|rs|din(?:ara?)?|дин\.?|динар\w*|usd)\b)",
+    r"(€|\$|(?:eur|евро|е|e|rsd|rds|рсд|rs|din(?:ara?)?|дин\.?|динар\w*|usd)\b)",
     re.I,
 )
 # «20к динар», «5k евро» — тысячи сокращают буквой, и без этого цена
@@ -390,7 +390,21 @@ _FOREIGN_RE = re.compile(r"(руб\w*|₽|грн|тенге|злот\w*)", re.I)
 # «продаю за 7500» — цена названа, валюта опущена
 _SELL_BARE_RE = re.compile(
     r"(?:прода[юмё]\w*|отда[юм]\w*|уступлю|заберите)\s+за\s+"
-    r"(\d{1,3}(?:[ .,\u00a0]\d{3})+|\d{2,7})(?!\s*(?:%|м2|м²|гб|kg|кг))", re.I)
+    r"(\d{1,3}(?:[ .,\u00a0]\d{3})+|\d{2,7})"
+    # Цифру после числа запрещаем: иначе разбор отступает на меньшее
+    # число, и «100 евро» превращается в «10».
+    r"(?!\d)"
+    # Валюта названа — значит сумму разберёт правило выше, вместе с ней.
+    # Без этой оговорки «отдам за 500 дин» уходило в евро.
+    r"(?!\s*(?:%|м2|м²|гб|kg|кг|€|\$|[a-zа-яё]))", re.I)
+
+
+# «1500-2000 дин», «от 1500 до 2000»: за сколько отдадут на самом деле,
+# сказать нельзя, но ориентируется покупатель по нижней границе — она и
+# стоит в фильтре «до N».
+_RANGE_RE = re.compile(
+    r"(?<![\w])(\d{2,7})\s*(?:-|—|–|до)\s*(\d{2,7})\s*"
+    r"(€|\$|(?:eur|евро|е|e|rsd|рсд|rs|din\w*|дин\w*|usd)\b)", re.I)
 
 
 def _price_candidates(text: str) -> list[tuple[int, float, str | None]]:
@@ -415,6 +429,12 @@ def _parts_only(text: str, pos: int) -> bool:
 
 
 def extract_price(text: str) -> tuple[float | None, str | None]:
+    m = _RANGE_RE.search(text)
+    if m:
+        low, high = _to_number(m.group(1)), _to_number(m.group(2))
+        if low is not None and high is not None and low < high:
+            return low, CURRENCY_BY_WORD.get(m.group(3).lower())
+
     # Сначала разбираем суммы с валютой, глядя на слова перед каждой:
     # в объявлении их бывает несколько, и первая попавшаяся — часто та,
     # за которую вещь когда-то купили.
@@ -638,6 +658,27 @@ def find_model(text: str, limit: int = 60) -> str | None:
     return None
 
 
+def _drop_place_tail(line: str) -> str:
+    """
+    Убирает город или район в конце заголовка.
+
+    «Стол, Нови-Сад» — место показывается отдельной строкой под ценой, и
+    в названии вещи оно только занимает место. Режем лишь хвост: «Диван в
+    Новом Саде» трогать нельзя, там место — часть фразы.
+    """
+    parts = [p.strip() for p in line.split(",")]
+    while len(parts) > 1:
+        tail = parts[-1]
+        # Хвост целиком про место и без своих подробностей
+        if (len(tail.split()) <= 3
+                and (extract_city(tail) or extract_district(tail))
+                and not any(ch.isdigit() for ch in tail)):
+            parts.pop()
+            continue
+        break
+    return ", ".join(parts).strip(" ,.;:-—") or line
+
+
 def make_title(text: str, limit: int = 70) -> str | None:
     """
     Заголовок из первой содержательной строки.
@@ -728,6 +769,7 @@ def make_title(text: str, limit: int = 70) -> str | None:
         # «в отличном состоянии» в хвосте вытесняет само название
         line = _CONDITION_TAIL_RE.sub("", line).strip(" ,.;:-—")
         line = _ADDRESS_TAIL_RE.sub("", line).strip(" ,.;:-—")
+        line = _drop_place_tail(line)
         line = _BRACKET_TAIL_RE.sub("", line).strip(" ,.;:-—")
         line = _MATERIAL_TAIL_RE.sub("", line).strip(" ,.;:-—")
         if not line:
@@ -1155,14 +1197,27 @@ def drop_attribute_lines(description: str, attrs: dict) -> str:
 
 def _place_words_removed(line: str) -> str:
     """Что остаётся в строке, если убрать из неё названия мест и предлоги."""
+    rest = line.lower()
+    # Сначала снимаем названия целиком: «нови сад» состоит из коротких
+    # слов, и по отдельности ни одно из них местом не выглядит.
+    for alias in _PLACE_ALIASES:
+        rest = rest.replace(alias, " ")
     words = []
-    for word in re.findall(r"[\w-]+", line.lower()):
+    for word in re.findall(r"[\w-]+", rest):
         if len(word) <= 2 or _is_place_word(word):
             continue
         if word in ("г", "город", "район", "ул", "улица", "центр"):
             continue
         words.append(word)
     return " ".join(words)
+
+
+# Названия мест целиком, длинные вперёд: «нови сад» должно сняться раньше,
+# чем каждое слово по отдельности.
+_PLACE_ALIASES = sorted(
+    (a.lower() for a in list(DISTRICT_NAMES) + list(CITY_ALIASES)),
+    key=len, reverse=True,
+)
 
 
 def drop_duplicates(description: str, price: float | None, city: str | None) -> str:

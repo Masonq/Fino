@@ -1292,3 +1292,65 @@ def test_search_variants_handle_empty():
     from app.core.search_terms import variants
     assert variants("") == []
     assert variants("   ") == []
+
+
+# ── Аудит разбора цены ──────────────────────────────────────────────────────
+def test_currency_after_amount_wins():
+    """
+    «Отдам за 500 дин» уходило в евро: правило для суммы без валюты
+    срабатывало раньше, чем разбор самой валюты.
+    """
+    from app.core.tg_parse import extract_price
+    assert extract_price("Отдам за 500 дин") == (500, "RSD")
+    assert extract_price("Отдам за 500дин") == (500, "RSD")
+    assert extract_price("Продам за 100 евро") == (100, "EUR")
+    # без валюты правило работает как прежде
+    assert extract_price("Продаю за 7500") == (7500, "RSD")
+
+
+def test_latin_e_means_euro():
+    """«250e» — так пишут евро одной латинской буквой."""
+    from app.core.tg_parse import extract_price
+    assert extract_price("Продам телефон 250e") == (250, "EUR")
+    assert extract_price("Продам 250 e") == (250, "EUR")
+
+
+def test_price_range_takes_lower_bound():
+    """По нижней границе покупатель и ориентируется в фильтре «до N»."""
+    from app.core.tg_parse import extract_price
+    assert extract_price("Стол 1500-2000 дин") == (1500, "RSD")
+    assert extract_price("от 1500 до 2000 дин") == (1500, "RSD")
+
+
+def test_amount_not_truncated():
+    """Разбор отступал на меньшее число, и «100 евро» становилось «10»."""
+    from app.core.tg_parse import extract_price
+    assert extract_price("Продам за 100 евро")[0] == 100
+    assert extract_price("Диван 30к динар")[0] == 30000
+
+
+# ── Аудит города ────────────────────────────────────────────────────────────
+def test_city_in_any_case():
+    """Город склоняют: «в Белграде», «из Нови Сада» — так пишет половина."""
+    from app.core.tg_parse import extract_city
+    for text, expected in (
+        ("Диван в Новом Саде, 20000", "novi-sad"),
+        ("Продам стол в Белграде", "beograd"),
+        ("Живу в Нише", "nis"),
+        ("Заберите из Нови Сада", "novi-sad"),
+        ("Продам в Суботице", "subotica"),
+    ):
+        assert extract_city(text) == expected, text
+
+
+def test_city_dropped_from_title():
+    """Место показывается отдельной строкой — в названии оно лишнее."""
+    assert parse("Стол, Нови-Сад, 3000 дин")["title"] == "Стол"
+    assert parse("Продам шкаф, Земун поле")["title"] == "Шкаф"
+    # а внутри фразы место остаётся: это часть названия
+    assert parse("Диван в Новом Саде, 20000")["title"] == "Диван в Новом Саде"
+
+
+def test_city_line_dropped_from_description():
+    """«Нови Сад» отдельной строкой — это поле города, а не описание."""
+    assert "Нови Сад" not in parse("Продам диван\nНови Сад")["description"]
