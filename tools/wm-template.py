@@ -77,7 +77,9 @@ def main() -> None:
     stack = [highpass(os.path.join(MEDIA, name)) for name in marked]
     template = np.mean(stack, axis=0)
 
-    vis = np.clip((template - template.min()) / (template.ptp() + 1e-6) * 255, 0, 255)
+    # np.ptp как метод массива убрали в numpy 2 — считаем размах вручную
+    spread = float(template.max() - template.min())
+    vis = np.clip((template - template.min()) / (spread + 1e-6) * 255, 0, 255)
     Image.fromarray(vis.astype(np.uint8)).save(OUT)
     print(f"образец сохранён: {OUT}")
     print(f"выраженность образца: {template.std():.2f} "
