@@ -1914,3 +1914,26 @@ def test_ai_must_not_reword_the_title():
     assert _acceptable(
         "Стол письменный IKEA MICKE",
         "Продаётся стол письменный IKEA MICKE в прекрасном состоянии")
+
+
+def test_household_goods_recognised():
+    """
+    Смеситель и фильтр для воды правила не знали вовсе, и категория
+    бралась из темы чата — так кухонный смеситель попал в детские товары.
+    """
+    from app.core.tg_classify import classify
+    for text in ("Смеситель для кухни GAPPO G4398-19",
+                 "Система обратного осмоса Аквафор RO-101",
+                 "Обогреватель масляный 2 кВт",
+                 "Кофеварка гейзерная",
+                 "Жалюзи на окна",
+                 "Гладильная доска",
+                 "Электрочайник Bosch",
+                 "Мясорубка электрическая",
+                 "Швейная машина Brother"):
+        assert classify(text)[0] == "home-garden", text
+    # детские товары остаются детскими
+    assert classify("Присыпка детская Johnson's baby 200 g")[0] == "kids"
+    assert classify("Детская кухня ikea duktig")[0] == "kids"
+    # а автомобиль автомобилем
+    assert classify("Продам машину Volkswagen Golf, пробег 200000")[0] == "auto"
