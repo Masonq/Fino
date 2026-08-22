@@ -130,6 +130,48 @@ def last_imported_id(db, chat_id: int) -> int | None:
     return row[0] if row else None
 
 
+def screen(text: str, chat_id: int, topic_id: int | None) -> tuple[str | None, dict]:
+    """
+    Пропускать ли сообщение и что из него вышло.
+
+    Единая для настоящего захода и для сухого прогона: иначе прогон
+    показывал бы одно, а импорт делал другое, и толку от него было бы
+    меньше, чем вреда.
+
+    Возвращает причину отказа (или None, если объявление годится) и разбор.
+    """
+    if len(text) < 25:
+        return "слишком короткое", {}
+    expected, known = topic_category(chat_id, topic_id)
+    if not known:
+        return "не та тема", {}
+    if looks_like_spam(text):
+        return "спам", {}
+    if looks_like_ad(text):
+        return "реклама", {}
+    if looks_sold(text):
+        return "уже продано", {}
+
+    parsed = parse(text)
+    category_slug, publish = decide_for(expected, parsed["searchable"])
+    if not category_slug:
+        return "без категории", parsed
+
+    attrs = extract_attributes(category_slug, parsed["searchable"])
+    sub_slug = classify_sub(category_slug, parsed["searchable"])
+    parsed = dict(parsed)
+    parsed["title"] = build_title(
+        category_slug, sub_slug, parsed["searchable"], attrs,
+        fallback_title=parsed.get("title"),
+    )
+    parsed["description"] = drop_attribute_lines(parsed["description"], attrs)
+    parsed["attributes"] = attrs
+    parsed["category_slug"] = category_slug
+    parsed["sub_slug"] = sub_slug
+    parsed["publish"] = publish
+    return None, parsed
+
+
 async def collect(client, chat_id: int, meta: dict, days: int,
                   per_category: int | None, min_id: int | None = None):
     """Читает чат и возвращает готовые к записи объявления."""
@@ -167,21 +209,9 @@ async def collect(client, chat_id: int, meta: dict, days: int,
             continue
 
         topic_id = topic_of(msg)
-        expected, known = topic_category(chat_id, topic_id)
-        if not known:
-            bar.bump("не та тема")
-            continue
-        if looks_like_spam(text):
-            bar.bump("спам")
-            continue
-        # реклама услуги вообще, без предмета и цены: покупателю с неё
-        # взять нечего, а в ленте она занимает место объявления
-        if looks_like_ad(text):
-            bar.bump("реклама")
-            continue
-        # «ПРОДАНО» в самом сообщении: вещи уже нет, переносить нечего
-        if looks_sold(text):
-            bar.bump("уже продано")
+        reason, parsed = screen(text, chat_id, topic_id)
+        if reason:
+            bar.bump(reason)
             continue
 
         sender = await msg.get_sender()
@@ -190,13 +220,8 @@ async def collect(client, chat_id: int, meta: dict, days: int,
             bar.bump("без ника")
             continue
 
-        parsed = parse(text)
-        # категорию ищем по тексту с раскрытыми хэштегами: в них часто
-        # единственное упоминание предмета
-        category_slug, publish = decide_for(expected, parsed["searchable"])
-        if not category_slug:
-            bar.bump("без категории")
-            continue
+        category_slug = parsed["category_slug"]
+        publish = parsed["publish"]
 
         if per_category is not None:
             if picked.get(category_slug, 0) >= per_category:
@@ -235,21 +260,8 @@ async def collect(client, chat_id: int, meta: dict, days: int,
             bar.bump("чужой знак")
             continue
 
-        # Раскладываем характеристики по полям категории: без них у
-        # объявления есть только описание, и по нему нельзя ни отфильтровать,
-        # ни сравнить два варианта.
-        attrs = extract_attributes(category_slug, parsed["searchable"])
-
-        # Заголовок собираем последним: он опирается и на подкатегорию, и на
-        # разобранные характеристики — если в тексте предмет не назван,
-        # заголовок строится из них.
-        sub_slug = classify_sub(category_slug, parsed["searchable"])
-        parsed["title"] = build_title(
-            category_slug, sub_slug, parsed["searchable"], attrs,
-            fallback_title=parsed.get("title"),
-        )
-        # то, что уже разложено по полям, в описании только дублируется
-        parsed["description"] = drop_attribute_lines(parsed["description"], attrs)
+        attrs = parsed["attributes"]
+        sub_slug = parsed["sub_slug"]
         if is_resume(topic_id):
             attrs["listing_kind"] = "resume"
         elif category_slug == "jobs":
@@ -269,7 +281,9 @@ async def collect(client, chat_id: int, meta: dict, days: int,
             "photos": photos,
             # searchable нужен был только для распознавания — в объявление
             # он не идёт
-            **{k: v for k, v in parsed.items() if k != "searchable"},
+            **{k: v for k, v in parsed.items()
+               if k not in ("searchable", "attributes", "category_slug",
+                            "sub_slug", "publish")},
         })
 
     bar.done()

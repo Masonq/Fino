@@ -352,3 +352,43 @@ def test_normal_listing_not_flagged():
     text = "Продам диван IKEA, 15000 RSD, самовывоз Земун"
     assert not looks_like_spam(text)
     assert not looks_like_ad(text)
+
+
+# ── Сито импорта ────────────────────────────────────────────────────────────
+# Прогон и настоящий заход судят одной функцией — иначе прогон показывал бы
+# одно, а в ленту попадало другое.
+def test_screen_matches_the_pipeline():
+    from app.core.tg_import import screen
+    from app.core.tg_sources import CHATS
+
+    chat_id = next(iter(CHATS))
+    topic_id = next(iter(CHATS[chat_id]["topics"]))
+
+    reason, parsed = screen(
+        "Продам диван IKEA в хорошем состоянии, 15000 RSD, самовывоз Земун",
+        chat_id, topic_id)
+    assert reason is None
+    assert parsed["title"] == "Диван IKEA"
+    assert parsed["price"] == 15000
+    assert parsed["category_slug"] and parsed["sub_slug"]
+
+
+def test_screen_rejects_channel_promo():
+    from app.core.tg_import import screen
+    from app.core.tg_sources import CHATS
+
+    chat_id = next(iter(CHATS))
+    topic_id = next(iter(CHATS[chat_id]["topics"]))
+    reason, _ = screen(
+        "ПОДПИСАТЬСЯ НА КАНАЛ! Ваша подписка — наша поддержка, "
+        "чем нас больше тем лучше!!!", chat_id, topic_id)
+    assert reason == "спам"
+
+
+def test_screen_rejects_short_message():
+    from app.core.tg_import import screen
+    from app.core.tg_sources import CHATS
+
+    chat_id = next(iter(CHATS))
+    topic_id = next(iter(CHATS[chat_id]["topics"]))
+    assert screen("Привет", chat_id, topic_id)[0] == "слишком короткое"
