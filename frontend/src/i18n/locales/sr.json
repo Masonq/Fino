@@ -225,7 +225,10 @@
     "good": "Dobro",
     "bad": "Bilo je problema",
     "not_now": "Ne sada",
-    "thanks": "Hvala na recenziji"
+    "thanks": "Hvala na recenziji",
+    "count": "{{count}} recenzija",
+    "count_plural": "{{count}} recenzija",
+    "not_shown": "Recenzije još nisu objavljene"
   },
   "edit": {
     "title": "Izmena oglasa",

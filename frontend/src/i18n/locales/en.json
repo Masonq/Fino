@@ -225,7 +225,10 @@
     "good": "Went well",
     "bad": "Had issues",
     "not_now": "Not now",
-    "thanks": "Thanks for the review"
+    "thanks": "Thanks for the review",
+    "count": "{{count}} review",
+    "count_plural": "{{count}} reviews",
+    "not_shown": "No reviews published yet"
   },
   "edit": {
     "title": "Edit listing",

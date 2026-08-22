@@ -44,13 +44,17 @@ export default function SellerReviews({ sellerId, listingId }) {
             <Stars value={Math.round(data.rating_avg)} size={15} />
             <span className="reviews-avg">{data.rating_avg > 0 ? data.rating_avg.toFixed(1) : '—'}</span>
             <span className="reviews-count">
-              {data.rating_count > 0 ? `${data.rating_count}` : t('rev.none_yet')}
+              {data.rating_count > 0 ? t('rev.count', { count: data.rating_count }) : t('rev.none_yet')}
             </span>
           </div>
         </div>
-
-
       </div>
+
+      {/* Оценка может быть, а отзывов под ней не быть — например, все они
+          без текста. Пустой блок под звёздами выглядел как сбой загрузки. */}
+      {data.rating_count > 0 && data.items.length === 0 && (
+        <p className="reviews-empty">{t('rev.not_shown')}</p>
+      )}
 
       {data.items.length > 0 && (
         <div className="reviews-list">

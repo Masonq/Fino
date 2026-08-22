@@ -57,6 +57,52 @@ DEMO_LISTINGS = [
 ]
 
 
+# Отзывы демо-продавца. Раньше рейтинг был проставлен числом (4.8 из 23),
+# а самих отзывов не было — страница показывала оценку и пустоту под ней.
+DEMO_REVIEWS = [
+    (5, "Ана М.", "Sve preporuke, brza i ljubazna komunikacija."),
+    (5, "Marko P.", "Tačno kako je opisano, bez iznenađenja."),
+    (4, "Ирина К.", "Всё хорошо, спасибо. Немного задержались со временем."),
+    (5, "Nikola S.", None),
+    (5, "Jelena T.", "Preporučujem, sve je prošlo glatko."),
+]
+
+
+def _seed_reviews(db, seller):
+    """Создаёт отзывы и пересчитывает рейтинг продавца по ним."""
+    from app.models.trust import Review
+
+    if db.query(Review).filter(Review.target_id == seller.id).count():
+        return
+
+    for rating, author_name, comment in DEMO_REVIEWS:
+        author = db.query(User).filter(User.display_name == author_name).first()
+        if not author:
+            author = User(
+                id=uuid.uuid4(),
+                phone=f"+381{uuid.uuid4().int % 10**8:08d}",
+                hashed_password="demo",
+                display_name=author_name,
+                role=UserRole.buyer,
+                default_language=Language.ru,
+            )
+            db.add(author)
+            db.flush()
+
+        db.add(Review(
+            id=uuid.uuid4(),
+            author_id=author.id,
+            target_id=seller.id,
+            rating=rating,
+            comment=comment,
+        ))
+
+    ratings = [r for r, _, _ in DEMO_REVIEWS]
+    seller.rating_count = len(ratings)
+    seller.rating_avg = round(sum(ratings) / len(ratings), 2)
+    print(f"created {len(ratings)} demo reviews")
+
+
 def run():
     db = SessionLocal()
     try:
@@ -70,12 +116,12 @@ def run():
                 role=UserRole.seller_private,
                 default_language=Language.ru,
                 phone_verified=True,
-                rating_avg=4.8,
-                rating_count=23,
             )
             db.add(seller)
             db.flush()
             print("created demo seller")
+
+        _seed_reviews(db, seller)
 
         for item in DEMO_LISTINGS:
             category = db.query(Category).filter(Category.slug == item["category_slug"]).first()
