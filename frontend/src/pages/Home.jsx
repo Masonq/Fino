@@ -10,7 +10,7 @@ import SearchOverlay from '../components/SearchOverlay'
 import OfflineNotice, { LoadError } from '../components/OfflineNotice'
 import { useAuth } from '../context/AuthContext'
 import { CITIES, cityLabel } from '../data/cities'
-import { CATEGORY_ICONS, FALLBACK_ICON } from '../components/CategoryIcons'
+import CategoryArt from '../components/CategoryArt'
 
 const PROMO_SLIDES = [
   { key: 'safe_deal', to: '/search', icon: 'shield', top: '#0E9F6E', grad: 'linear-gradient(180deg, #0E9F6E 0%, #0E9F6E 22%, #1DB388 48%, #34D8A8 78%, #5CE8CC 100%)' },
@@ -228,14 +228,12 @@ export default function Home() {
         const renderTile = (cat) => cat.isAll ? (
           <Link key="__all" to="/categories" className="cat-tile-2row all">
             <div className="cat-tile-2row-label">{t('common.all')}</div>
-            <div className="cat-tile-2row-glyph">{FALLBACK_ICON}</div>
+            <div className="cat-tile-2row-glyph"><CategoryArt slug="all" /></div>
           </Link>
         ) : (
           <Link key={cat.id} to={`/search?category=${cat.slug}`} className="cat-tile-2row">
             <div className="cat-tile-2row-label">{cat.name?.[i18n.language] || cat.name?.ru}</div>
-            <div className="cat-tile-2row-glyph">
-              {CATEGORY_ICONS[cat.slug] || FALLBACK_ICON}
-            </div>
+            <div className="cat-tile-2row-glyph"><CategoryArt slug={cat.slug} /></div>
           </Link>
         )
         if (!catsLoaded) {

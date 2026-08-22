@@ -5,7 +5,7 @@ import { api } from '../api/client'
 import { CITIES, cityLabel } from '../data/cities'
 import { shrinkImage } from '../data/shrinkImage'
 import { useAuth } from '../context/AuthContext'
-import { CATEGORY_ICONS, FALLBACK_ICON } from '../components/CategoryIcons'
+import CategoryArt from '../components/CategoryArt'
 
 const STEPS = ['category', 'attributes', 'details', 'contact']
 
@@ -164,7 +164,7 @@ export default function PostAd() {
                 <span className="post-cat-label">
                   {cat.name?.[i18n.language] || cat.name?.ru}
                 </span>
-                <span className="post-cat-img">{CATEGORY_ICONS[cat.slug] || FALLBACK_ICON}</span>
+                <span className="post-cat-img"><CategoryArt slug={cat.slug} /></span>
               </button>
             ))}
           </div>
