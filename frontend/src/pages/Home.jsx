@@ -52,6 +52,9 @@ export default function Home() {
   const { t, i18n } = useTranslation()
   const [categories, setCategories] = useState([])
   const [catsLoaded, setCatsLoaded] = useState(false)
+  // объявляем до первого обращения: ниже с него начинается состояние ленты
+  const cached = feedCache.lang === i18n.language ? feedCache : null
+
   const [listings, setListings] = useState(() => cached?.items || [])
   const [feedLoaded, setFeedLoaded] = useState(() => Boolean(cached?.items.length))
   const [feedError, setFeedError] = useState(false)
@@ -64,7 +67,6 @@ export default function Home() {
   // развернуться и тут же схлопнуться — при возврате это читалось как рывок.
   // Берём положение прокрутки сразу, а переход включаем только после того,
   // как оно установилось.
-  const cached = feedCache.lang === i18n.language ? feedCache : null
   const [collapsed, setCollapsed] = useState(() => (cached?.scroll || window.scrollY) > 48)
   const [settled, setSettled] = useState(false)
   // слайд выбирается один раз при загрузке страницы (как у Avito) — без автокарусели,
