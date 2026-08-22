@@ -30,7 +30,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 from telethon import TelegramClient  # noqa: E402
 
 from app.core.config import settings  # noqa: E402
+from app.core.ai_title import improve as ai_improve  # noqa: E402
 from app.core.tg_classify import explain  # noqa: E402
+from app.core.title_rules import needs_help  # noqa: E402
 from app.core.tg_import import screen, topic_of  # noqa: E402
 from app.core.tg_sources import CHATS  # noqa: E402
 from app.core.title_rules import SUBJECT_BY_CATEGORY, SUBJECT_BY_SUB  # noqa: E402
@@ -94,7 +96,7 @@ def show(row: dict) -> None:
 
 async def run(limit: int, mode: str, suspicious_only: bool,
               note_filter: str | None = None, with_text: bool = False,
-              quiet: bool = False) -> None:
+              quiet: bool = False, ai_limit: int = 0) -> None:
     # Работаем на копии сессии: настоящая занята часовым заходом по
     # расписанию, и SQLite отдаёт «database is locked». Копия читает те же
     # чаты и ничего не пишет обратно.
@@ -131,6 +133,22 @@ async def run(limit: int, mode: str, suspicious_only: bool,
 
                 totals["годных"] = totals.get("годных", 0) + 1
                 note = is_suspicious(parsed)
+
+                # Проба нейросети: показываем «было → стало», ничего не
+                # записывая. Так видно, стоит ли она бесплатного лимита.
+                if ai_limit > 0 and needs_help(parsed.get("title"),
+                                               parsed.get("description")):
+                    better = ai_improve(text, parsed.get("title"))
+                    ai_limit -= 1
+                    totals["спрошено у нейросети"] = totals.get(
+                        "спрошено у нейросети", 0) + 1
+                    if better.get("title"):
+                        totals["улучшено"] = totals.get("улучшено", 0) + 1
+                        print(f'  ИИ: {parsed.get("title")!r} → {better["title"]!r}')
+                        if better.get("summary"):
+                            print(f'      {better["summary"][:90]}')
+                    else:
+                        print(f'  ИИ: {parsed.get("title")!r} → не помогло')
                 if note:
                     notes[note] = notes.get(note, 0) + 1
                 if mode == "rejected":
@@ -189,6 +207,9 @@ def main() -> None:
                     help="только то, где разбор выглядит сомнительно")
     ap.add_argument("--note", default=None,
                     help="только с этой пометкой, например: --note родовой")
+    ap.add_argument("--ai", type=int, default=0, metavar="N",
+                    help="показать, что предложит нейросеть, для N сухих "
+                         "заголовков (в базу ничего не пишется)")
     ap.add_argument("--quiet", action="store_true",
                     help="только итоговые счётчики, без построчного вывода")
     ap.add_argument("--text", action="store_true",
@@ -196,7 +217,7 @@ def main() -> None:
                          "видно, откуда взялся такой разбор")
     args = ap.parse_args()
     asyncio.run(run(args.limit, args.show, args.suspicious or bool(args.note),
-                    args.note, args.text, args.quiet))
+                    args.note, args.text, args.quiet, args.ai))
 
 
 if __name__ == "__main__":

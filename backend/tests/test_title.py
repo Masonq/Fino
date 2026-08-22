@@ -912,3 +912,46 @@ def test_consoles_and_languages_recognised():
 def test_car_traits_pick_the_subcategory():
     from app.core.tg_classify import classify_sub
     assert classify_sub("auto", "Toyota Corolla 2015, автомат, бензин, растаможена") == "cars"
+
+
+# ── Нейросеть для сухих заголовков ──────────────────────────────────────────
+# Модель зовём только там, где правила выдали сухое, и её ответ проверяем
+# теми же правилами: хуже стать не должно ни при какой её выдумке.
+def test_ai_called_only_when_rules_fall_short():
+    from app.core.title_rules import needs_help
+    # правила справились — модель не нужна
+    for title in ("Диван IKEA", "iPhone 13 Pro", "Письменный стол IKEA MICKE"):
+        assert not needs_help(title, "описание объявления"), title
+    # сухо или обрезано — нужна
+    for title in ("Стол", "Одежда", "Квартира", "Длинное название…", ""):
+        assert needs_help(title, "описание объявления"), title
+    # заголовок собран из фактов
+    assert needs_help("Кошка", "описание", composed=True)
+    # описания нет вовсе
+    assert needs_help("Хороший диван", "")
+
+
+def test_ai_answer_is_checked_by_the_same_rules():
+    """Модель может выдумать вещь, которой в объявлении нет."""
+    from app.core.ai_title import _acceptable
+    text = "Продаётся стол письменный IKEA MICKE в прекрасном состоянии"
+    assert _acceptable("Письменный стол IKEA MICKE", text)
+    assert not _acceptable("Мотоцикл Harley Davidson", text)   # выдумка
+    assert not _acceptable("Здравствуйте, вот описание", text)  # болтовня
+    assert not _acceptable("", text)
+    assert not _acceptable("Стол " * 30, text)                  # длиннее строки
+
+
+def test_ai_answer_parsed_from_markdown():
+    """Модели любят обрамлять JSON пояснениями и ```-блоками."""
+    from app.core.ai_title import _parse_answer
+    data = _parse_answer('```json\n{"title":"Стол IKEA","summary":"Хороший стол."}\n```')
+    assert data["title"] == "Стол IKEA"
+    assert _parse_answer("извините, не понял") == {}
+    assert _parse_answer(None) == {}
+
+
+def test_parser_works_without_any_key():
+    """Без ключа парсер должен работать как прежде, только на правилах."""
+    from app.core.ai_title import improve
+    assert improve("Продам стол 3000 RSD") == {}

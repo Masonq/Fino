@@ -31,7 +31,9 @@ from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.tg_classify import classify_sub, decide_for
 from app.core.progress import Progress
-from app.core.title_rules import looks_like_question
+from app.core.ai_title import improve as ai_improve
+from app.core.title_rules import SUBJECT_BY_CATEGORY, SUBJECT_BY_SUB
+from app.core.title_rules import looks_like_question, needs_help
 from app.core.tg_parse import (
     build_title, drop_attribute_lines, extract_attributes, plausible_price,
     looks_like_ad, looks_like_spam, looks_sold, parse,
@@ -131,6 +133,11 @@ def last_imported_id(db, chat_id: int) -> int | None:
     return row[0] if row else None
 
 
+# Заголовки, собранные из фактов: живой строки в объявлении не нашлось.
+COMPOSED_TITLES = frozenset(
+    {*SUBJECT_BY_SUB.values(), *SUBJECT_BY_CATEGORY.values()})
+
+
 def screen(text: str, chat_id: int, topic_id: int | None) -> tuple[str | None, dict]:
     """
     Пропускать ли сообщение и что из него вышло.
@@ -175,6 +182,13 @@ def screen(text: str, chat_id: int, topic_id: int | None) -> tuple[str | None, d
         fallback_title=parsed.get("title"),
     )
     parsed["description"] = drop_attribute_lines(parsed["description"], attrs)
+    # Правила сказали своё слово; если вышло сухо — просим модель назвать
+    # предмет. Её ответ проверяется теми же правилами, так что хуже не
+    # станет: не подойдёт — останется то, что есть.
+    parsed["ai_wanted"] = needs_help(
+        parsed["title"], parsed["description"],
+        composed=parsed["title"] in COMPOSED_TITLES,
+    )
     parsed["attributes"] = attrs
     parsed["category_slug"] = category_slug
     parsed["sub_slug"] = sub_slug
@@ -197,6 +211,8 @@ async def collect(client, chat_id: int, meta: dict, days: int,
     messages = []
     albums: dict[int, list] = {}
     bar = Progress(meta["title"])
+    # Счётчик в списке, чтобы его можно было уменьшать из тела цикла.
+    ai_budget = [settings.ai_titles_per_run]
     # Дочитываем до последнего уже перенесённого сообщения, а не до даты.
     # Эти чаты живые — три-четыре тысячи сообщений в сутки, — и часовой
     # заход по дате каждый раз перечитывал бы тысячи уже разобранных.
@@ -272,6 +288,19 @@ async def collect(client, chat_id: int, meta: dict, days: int,
 
         attrs = parsed["attributes"]
         sub_slug = parsed["sub_slug"]
+
+        # Заголовок вышел сухим — спрашиваем модель. Лимит на заход держим
+        # сами: бесплатный тариф считается за сутки, и тратить его весь на
+        # один прогон незачем.
+        if parsed.pop("ai_wanted", False) and ai_budget[0] > 0:
+            better = ai_improve(text, parsed.get("title"))
+            if better.get("title"):
+                parsed["title"] = better["title"]
+                bar.bump("заголовок от нейросети")
+            if better.get("summary") and len(parsed.get("description", "")) < 40:
+                parsed["description"] = better["summary"]
+            ai_budget[0] -= 1
+
         if is_resume(topic_id):
             attrs["listing_kind"] = "resume"
         elif category_slug == "jobs":
@@ -293,7 +322,7 @@ async def collect(client, chat_id: int, meta: dict, days: int,
             # он не идёт
             **{k: v for k, v in parsed.items()
                if k not in ("searchable", "attributes", "category_slug",
-                            "sub_slug", "publish")},
+                            "sub_slug", "publish", "ai_wanted")},
         })
 
     bar.done()

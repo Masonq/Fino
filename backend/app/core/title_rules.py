@@ -442,3 +442,34 @@ def profession(text: str) -> str | None:
 for _root in OBJECT_ROOTS:
     _key = _root.replace("ё", "е")[:3]
     _OBJECT_PREFIXES[_key] = _OBJECT_PREFIXES.get(_key, ()) + (_root.replace("ё", "е"),)
+
+
+# ── Когда звать нейросеть ───────────────────────────────────────────────────
+
+def needs_help(title: str | None, description: str | None,
+               composed: bool = False) -> bool:
+    """
+    Стоит ли отдать это объявление модели.
+
+    Зовём не на всё подряд: правила справляются с большинством объявлений
+    сами, мгновенно и бесплатно. Модель нужна там, где заголовок вышел
+    сухим или обрезанным — читать такую ленту нельзя, а бесплатных лимитов
+    хватит ровно на эту долю.
+    """
+    title = (title or "").strip()
+    if not title:
+        return True
+    if composed:                       # заголовок собран из фактов
+        return True
+    if title.endswith("…"):            # обрезан по длине
+        return True
+    # Родовое название без марки и числа: «Стол», «Одежда», «Мебель».
+    # «Диван IKEA» и «iPhone 13» — уже нормальные заголовки: в них есть
+    # то, по чему вещь узнают.
+    if (len(title.split()) <= 2
+            and not any(c.isdigit() for c in title)
+            and not _LATIN_RE.search(title)):
+        return True
+    if not (description or "").strip():
+        return True
+    return False
