@@ -638,8 +638,14 @@ def make_title(text: str, limit: int = 70) -> str | None:
     так же, как его читает человек в ленте чата.
     """
     fallback = None
+    seen_content = False
     for raw in text.splitlines():
         line = unshout(_EMOJI_RE.sub("", raw).strip(" \t•·—-*#"))
+        # Двоеточие на конце объявляет список: «Продаю пакетом:»,
+        # «Характеристики:». Сам предмет назван пунктами ниже, а знак
+        # снимается при дальнейшей чистке — смотрим строку целиком сейчас.
+        if line.rstrip().endswith(":") and len(line.split()) <= 4:
+            continue
         # «Всем привет!» и «Срочно!» как заголовок делают ленту неразличимой
         line = _SHOUT_RE.sub("", strip_greeting(line))
         # пропускаем строки из одних эмодзи, решёток и знаков
@@ -674,6 +680,8 @@ def make_title(text: str, limit: int = 70) -> str | None:
         # Даниил» и «Мечтаете о цвете волос», после которых в том же посте
         # шло название вещи.
         chosen = None
+        first_line = not seen_content
+        seen_content = True
         for part in re.split(r"(?<=[.!?])\s+", line):
             candidate = _SHOUT_RE.sub("", part).strip(" .!?,;:-—")
             # Короткое слово годится, если это название вещи: «Стол»
@@ -682,7 +690,9 @@ def make_title(text: str, limit: int = 70) -> str | None:
                 continue
             if len(candidate) < 6 and not has_object_word(candidate):
                 continue
-            if rejects_as_title(candidate):
+            # Мягче судим только самое начало объявления: там автор
+            # называет вещь, а дальше рассказывает о ней.
+            if rejects_as_title(candidate, first_line=first_line and not chosen):
                 continue
             chosen = candidate
             break
@@ -777,11 +787,14 @@ def make_title(text: str, limit: int = 70) -> str | None:
         if line[:1].islower() and not head[1:2].isupper():
             line = line[0].upper() + line[1:]
 
-        # «Два брата-акробата 3» — тройка осталась от разметки поста
-        line = strip_trailing_number(line)
+        # «Два брата-акробата 3» — тройка осталась от разметки поста.
+        # «Коляска 3 в 1» под правило не подпадает: там число — часть
+        # названия, и обрубок «3 в» читается как ошибка.
+        if not re.search(r"\b\d+\s+в\s+\d+\s*$", line):
+            line = strip_trailing_number(line)
         # Чистка могла отрезать как раз то слово, ради которого строка
         # прошла отбор, — проверяем итог, а не только кандидата.
-        if rejects_as_title(line):
+        if rejects_as_title(line, first_line=first_line):
             continue
 
         # «Ноутбук» + «HP Omen 16-xf0xxx» строкой ниже = «Ноутбук HP Omen…»
@@ -942,7 +955,10 @@ def build_title(
         if not named:
             fallback_title = None
 
-    if fallback_title and not rejects_as_title(fallback_title):
+    # Заголовок из текста уже прошёл отбор в make_title — судить его
+    # заново строгой меркой нельзя: «Каланхоэ» и «Два брата-акробата»
+    # отбраковывались повторно и объявление оставалось вовсе без названия.
+    if fallback_title and not rejects_as_title(fallback_title, first_line=True):
         # Услуга с длинным описанием в заголовке обрезается многоточием и
         # читается хуже, чем короткое название дела.
         if fallback_title.endswith("…"):

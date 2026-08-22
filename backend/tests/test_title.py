@@ -1065,3 +1065,55 @@ def test_fingerprint_ignores_common_words():
     from app.core.tg_parse import fingerprint
     mark = fingerprint("Продам диван", "Отличное состояние, самовывоз, торг уместен")
     assert "prodam" not in mark and "torg" not in mark
+
+
+# ── Найденное переразбором старых объявлений ────────────────────────────────
+# Переразбор показал, что строгое требование предметного слова выбрасывало
+# настоящие названия и подставляло случайную строку из середины текста.
+def test_first_line_trusted_without_dictionary():
+    """
+    Словарь предметов конечен, а мир вещей — нет. «Каланхоэ», «Антуриум»,
+    «Лапушка Софи» в нём не значатся, и заголовком становилось «Цветёт
+    долго» — строка из середины объявления.
+    """
+    assert parse("Каланхоэ\nЦветёт долго, неприхотливо")["title"] == "Каланхоэ"
+    assert parse("Антуриум (Мужское счастье)\nЦветёт красными цветами")["title"] == "Антуриум"
+    assert parse("Лапушка Софи в поисках семьи\nК собакам интереса нет")["title"] \
+        == "Лапушка Софи в поисках семьи"
+
+
+def test_blacklists_still_work_on_first_line():
+    """Доверие к первой строке не отменяет чёрных списков."""
+    from app.core.title_rules import rejects_as_title
+    for text in ("Мы — компания, специализирующаяся на трансферах",
+                 "Если вы хотите научиться играть джаз",
+                 "Наша команда работает 5 лет",
+                 "Меня зовут Даниил",
+                 "Мой Телеграм @masterbg"):
+        assert rejects_as_title(text, first_line=True), text
+
+
+def test_model_number_kept_at_the_end():
+    """«Bedside Lamp 2» и «3 в 1» — часть названия, а не остаток разметки."""
+    assert parse("Умная лампа Xiaomi Mi Bedside Lamp 2")["title"] \
+        == "Умная лампа Xiaomi Mi Bedside Lamp 2"
+    assert parse("Коляска Maxi-Cosi VSO 3 в 1")["title"] == "Коляска Maxi-Cosi VSO 3 в 1"
+    # а вот это по-прежнему мусор
+    assert parse("Два брата-акробата 3\nКотята ищут дом")["title"] == "Два брата-акробата"
+
+
+def test_colon_line_announces_a_list():
+    """«Продаю пакетом:» и «Характеристики:» — не названия."""
+    assert parse("Продаю пакетом:\n- ведро ИКЕА 10 л\n- таз 15 л")["title"] \
+        == "Ведро ИКЕА 10 л"
+    assert parse("Характеристики:\n- CPU AMD Ryzen 7")["title"] == "CPU AMD Ryzen 7"
+
+
+def test_title_not_judged_twice():
+    """
+    Заголовок из текста уже прошёл отбор — вторая, строгая проверка
+    оставляла объявление вовсе без названия.
+    """
+    text = "Каланхоэ\nЦветёт долго\n500 RSD"
+    assert build_title("home-garden", "garden", text, {},
+                       fallback_title=parse(text).get("title")) == "Каланхоэ"
