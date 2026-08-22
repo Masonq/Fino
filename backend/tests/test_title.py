@@ -398,8 +398,10 @@ def test_screen_rejects_short_message():
 # Ключевое слово должно начинать слово, а не сидеть в его середине.
 def test_keyword_matches_word_start_only():
     from app.core.tg_classify import classify
-    # «шин» внутри «машин» отправляло прокат машин в «Шины и диски»
-    assert classify("компания ANTEL Прокат машин в Сербии")[0] == "auto"
+    # «шин» внутри «машин» отправляло прокат машин в «Шины и диски».
+    # Сам прокат — услуга: продажу автомобилей ищет другой человек.
+    assert classify("компания ANTEL Прокат машин в Сербии")[0] == "services"
+    assert classify("Продам зимние шины Michelin 205/55")[0] == "auto"
 
 
 def test_handmade_is_not_a_job():
@@ -429,3 +431,35 @@ def test_everyday_clothing_recognised():
         category = classify(text)[0]
         assert category == "fashion", text
         assert classify_sub(category, text) == expected_sub, text
+
+
+def test_object_root_matches_word_start():
+    """«тен» внутри «толстостенная» делало прилагательное названием вещи."""
+    from app.core.title_rules import has_object_word
+    assert not has_object_word("Толстостенная")
+    assert not has_object_word("Пакетом")
+    assert has_object_word("Латунная форма с фруктовым мотивом")
+
+
+def test_head_of_text_weighs_more():
+    """
+    «Доставка по Белграду» в конце есть у половины постов — из-за неё
+    куртки уезжали в «Перевозки». Предмет назван в начале.
+    """
+    from app.core.tg_classify import classify
+    text = ("Женские куртки\n1) Осенне-весенняя куртка, размер XS -- 1500 rsd\n"
+            "Доставка по Белграду, возможна перевозка")
+    assert classify(text)[0] == "fashion"
+
+
+def test_list_first_item_becomes_title():
+    """«Продаю пакетом:» — предмет назван первым пунктом списка."""
+    text = "Продаю пакетом:\n- ведро ИКЕА, как новое, 10 л\n- таз 15 л\n1300 RSD"
+    assert parse(text)["title"].startswith("Ведро")
+
+
+def test_rental_is_a_service():
+    from app.core.tg_classify import classify, classify_sub
+    text = "компания ANTEL\nПрокат машин в Сербии\nот 490 евро"
+    assert classify(text)[0] == "services"
+    assert classify_sub("services", text) == "transport"
