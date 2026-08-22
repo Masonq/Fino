@@ -6,6 +6,7 @@
 """
 from app.core.database import SessionLocal
 from app.models import Category
+from app.data.subcategories import SUBCATEGORIES
 
 CATEGORIES = [
     {
@@ -170,6 +171,27 @@ def run():
                 continue
             db.add(Category(sort_order=idx, **cat_data))
             print(f"added: {cat_data['slug']}")
+        db.commit()
+
+        # Подкатегории. Схему атрибутов не задаём — она наследуется от
+        # родителя: «Телефоны» и «Ноутбуки» описываются одними полями.
+        for parent_slug, children in SUBCATEGORIES.items():
+            parent = db.query(Category).filter(Category.slug == parent_slug).first()
+            if not parent:
+                print(f"пропуск: нет родителя {parent_slug}")
+                continue
+            for order, child in enumerate(children):
+                exists = db.query(Category).filter(Category.slug == child["slug"]).first()
+                if exists:
+                    exists.name = child["name"]
+                    exists.parent_id = parent.id
+                    exists.sort_order = order
+                    continue
+                db.add(Category(
+                    slug=child["slug"], name=child["name"],
+                    parent_id=parent.id, sort_order=order,
+                ))
+            print(f"{parent_slug}: подкатегорий {len(children)}")
         db.commit()
     finally:
         db.close()

@@ -186,7 +186,14 @@ def search_listings(
         )
 
     if category_slug:
-        q = q.join(Category).filter(Category.slug == category_slug)
+        # По родительской категории показываем и её подкатегории — иначе
+        # «Электроника» была бы пустой, ведь объявления лежат в «Телефонах».
+        cat = db.query(Category).filter(Category.slug == category_slug).first()
+        if cat:
+            ids = [cat.id] + [c.id for c in cat.children]
+            q = q.filter(Listing.category_id.in_(ids))
+        else:
+            q = q.join(Category).filter(Category.slug == category_slug)
     if city:
         # Точное совпадение вместо поиска подстроки: город теперь хранится
         # кодом, а не текстом, поэтому ilike с процентом впереди только

@@ -1,7 +1,7 @@
 import uuid
 
 from sqlalchemy import String, ForeignKey, Integer
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship, backref
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 
 from app.core.database import Base
@@ -29,5 +29,13 @@ class Category(Base):
     image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     color: Mapped[str | None] = mapped_column(String(16), nullable=True)
 
-    children = relationship("Category", backref="parent", remote_side=[id])
+    # remote_side указывает на сторону родителя, поэтому он идёт в backref.
+    # Раньше было наоборот, и `children` на самом деле возвращал родителя —
+    # не всплывало только потому, что подкатегорий ещё не было.
+    children = relationship(
+        "Category",
+        backref=backref("parent", remote_side=[id]),
+        order_by="Category.sort_order",
+        cascade="save-update",
+    )
     listings = relationship("Listing", back_populates="category")

@@ -32,4 +32,18 @@ def get_category_schema(slug: str, db: Session = Depends(get_db)):
     cat = db.query(Category).filter(Category.slug == slug).first()
     if not cat:
         return {"error": "not_found"}
-    return {"slug": cat.slug, "name": cat.name, "attribute_schema": cat.attribute_schema}
+
+    # Подкатегория своих атрибутов не имеет и берёт схему родителя:
+    # «Телефоны» и «Ноутбуки» описываются одними и теми же полями, а
+    # отдельная схема под каждую ветку — полторы сотни схем на поддержке.
+    schema = cat.attribute_schema
+    if not schema and cat.parent_id:
+        parent = db.query(Category).get(cat.parent_id)
+        schema = parent.attribute_schema if parent else []
+
+    return {
+        "slug": cat.slug,
+        "name": cat.name,
+        "parent_slug": cat.parent.slug if cat.parent else None,
+        "attribute_schema": schema or [],
+    }
