@@ -19,6 +19,7 @@
 """
 import argparse
 import json
+import random
 import sys
 from pathlib import Path
 
@@ -27,6 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 from app.core.ai_title import guess_category  # noqa: E402
 from app.core.database import SessionLocal  # noqa: E402
 from app.core.tg_classify import KEYWORDS  # noqa: E402
+from app.models.category import Category  # noqa: E402
 from app.models.listing import Listing, ListingTranslation  # noqa: E402
 
 LABELS = Path(__file__).resolve().parents[1] / "backend" / "ai-labels.jsonl"
@@ -57,12 +59,33 @@ def main() -> None:
     with SessionLocal() as db:
         rows = (
             db.query(Listing.id, ListingTranslation.title,
-                     ListingTranslation.description)
+                     ListingTranslation.description, Category.slug,
+                     Category.parent_id)
             .join(ListingTranslation, ListingTranslation.listing_id == Listing.id)
+            .join(Category, Category.id == Listing.category_id)
             .filter(Listing.external_source == "telegram",
                     ListingTranslation.language == "ru")
             .all()
         )
+        parents = {c.id: c.slug for c in db.query(Category).all()}
+
+    # Берём по кругу из разных разделов. Подряд получается перекос: в
+    # ленте одной одежды треть, и модель учится узнавать её, а про услуги
+    # и животных не знает ничего.
+    buckets: dict[str, list] = {}
+    for listing_id, title, description, slug, parent_id in rows:
+        key = parents.get(parent_id) or slug
+        buckets.setdefault(key, []).append((listing_id, title, description))
+    for items in buckets.values():
+        random.shuffle(items)
+
+    rows = []
+    while any(buckets.values()):
+        for key in list(buckets):
+            if buckets[key]:
+                rows.append(buckets[key].pop())
+            else:
+                del buckets[key]
 
     slugs = list(KEYWORDS)
     added = skipped = 0
