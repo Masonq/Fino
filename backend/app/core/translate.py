@@ -25,6 +25,50 @@ TIMEOUT = 8
 # соответствие однозначное, ошибиться негде.
 GOOGLE_LANG = {"sr": "sr-Latn"}
 
+# Заголовки объявлений начинаются с «Продам…», «Сдам…» — для человека это
+# ясно, но переводчик читает их как обращение к читателю и выдаёт
+# повелительное наклонение: «Сдам квартиру» превращалось в «Iznajmite stan»
+# («снимите квартиру»), то есть смысл переворачивался. Убираем эти глаголы
+# перед переводом — на сербских досках заголовок и так начинается с предмета.
+# Оригинал продавца не трогаем, правка живёт только внутри перевода.
+import re
+
+_SALE = r"(?:прода(?:м|ю|\u0451тся|ется)|продаю\s+срочно|отдам)"
+_RENT = r"(?:сда(?:м|ю|\u0451тся|ется))"
+_WANT = r"(?:купл[юe]|разыскиваю)"
+
+_NORMALIZERS = [
+    # «Отдам даром» — не продажа, смысл нужно сохранить отдельно
+    (re.compile(r"^\s*отдам\s+(?:даром|бесплатно)\s*[:,-]?\s*", re.I), "Бесплатно: "),
+    (re.compile(r"^\s*" + _RENT + r"\s*[:,-]?\s*", re.I), "В аренду: "),
+    (re.compile(r"^\s*" + _SALE + r"\s*[:,-]?\s*", re.I), ""),
+    # «Куплю» — это запрос, а не предложение; без глагола смысл теряется
+    (re.compile(r"^\s*" + _WANT + r"\s*[:,-]?\s*", re.I), "Ищу "),
+    # английские аналоги
+    (re.compile(r"^\s*(?:selling|for\s+sale)\s*[:,-]?\s*", re.I), ""),
+    (re.compile(r"^\s*(?:renting\s+out|for\s+rent)\s*[:,-]?\s*", re.I), "For rent: "),
+    (re.compile(r"^\s*(?:looking\s+for|wanted)\s*[:,-]?\s*", re.I), "Looking for "),
+]
+
+
+def _normalize_for_translation(text: str) -> str:
+    """Снимает «Продам/Сдам» — иначе переводчик делает из них приказ."""
+    for pattern, replacement in _NORMALIZERS:
+        changed = pattern.sub(replacement, text, count=1)
+        if changed != text:
+            changed = changed.strip()
+            if not changed:
+                return text
+            # После снятия глагола заголовок начинается со строчной буквы.
+            # Но первое слово может быть брендом с внутренней заглавной
+            # (iPhone, eBay) — такие не трогаем, иначе выйдет «IPhone».
+            first = changed.split(" ", 1)[0]
+            if first[1:].islower() or first[1:] == "":
+                changed = changed[:1].upper() + changed[1:]
+            return changed
+    return text
+
+
 _DIGRAPHS = {"\u0409": "Lj", "\u040a": "Nj", "\u040f": "D\u017e",
              "\u0459": "lj", "\u045a": "nj", "\u045f": "d\u017e"}
 _SINGLES = str.maketrans(
@@ -97,6 +141,8 @@ def translate(text: str, source: str, target: str) -> str | None:
         return None
     if source == target:
         return text
+
+    text = _normalize_for_translation(text)
 
     payload = json.dumps({
         "q": text[:4000],          # длинные описания режем: смысл в начале
