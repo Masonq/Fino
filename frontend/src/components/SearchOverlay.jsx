@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
-import { displayCity } from '../data/cities'
-import { formatPrice } from '../utils/money'
+import ListingCard from './ListingCard'
 
 const RECENT_KEY = 'plonk_recent_searches'
 const RECENT_MAX = 6
@@ -54,7 +53,7 @@ export default function SearchOverlay({ open, onClose }) {
     if (!open || !text.trim()) { setItems([]); return }
     setLoading(true)
     const id = setTimeout(() => {
-      api.searchListings({ q: text.trim(), lang: i18n.language, limit: 8 })
+      api.searchListings({ q: text.trim(), lang: i18n.language, limit: 20 })
         .then((res) => setItems(res.items || []))
         .catch(() => setItems([]))
         .finally(() => setLoading(false))
@@ -146,29 +145,21 @@ export default function SearchOverlay({ open, onClose }) {
           <p className="empty-hint">{t('search.nothing')}</p>
         )}
 
-        {items.map((l) => (
-          <button
-            key={l.id}
-            className="suggest-row"
-            onClick={() => { onClose(); navigate(`/listing/${l.id}`) }}
-          >
-            <div className="suggest-thumb">
-              {l.cover_photo && <img src={l.cover_photo} alt="" />}
+        {/* Раньше здесь был список строчками, а привычные карточки
+            появлялись только после «Показать ещё» — то есть нормальный
+            поиск начинался со второго шага. Показываем их сразу. */}
+        {items.length > 0 && (
+          <>
+            <div className="results-head">
+              <span className="results-count">{`${t('search.found')}: ${items.length}`}</span>
             </div>
-            <div className="suggest-body">
-              <div className="suggest-title">{l.title}</div>
-              <div className="suggest-meta">
-                {formatPrice(l.price, l.currency, i18n.language) || t('detail.no_price')}
-                {l.city && ` · ${displayCity(l.city, i18n.language)}`}
-              </div>
+            <div className="infinite-grid no-pad">
+              {items.map((l) => <ListingCard key={l.id} listing={l} />)}
             </div>
-          </button>
-        ))}
-
-        {text.trim() && items.length > 0 && (
-          <button className="suggest-all" onClick={submit}>
-            {t('actions.show_more')}
-          </button>
+            <button className="suggest-all" onClick={() => submit()}>
+              {t('search.open_filters')}
+            </button>
+          </>
         )}
       </div>
     </div>

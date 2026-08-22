@@ -58,7 +58,8 @@
     "placeholder": "Šta tražite?",
     "all_cities": "Svi gradovi",
     "all_in_category": "Sve",
-    "recent": "Nedavne pretrage"
+    "recent": "Nedavne pretrage",
+    "open_filters": "Svi rezultati i filteri"
   },
   "chat": {
     "empty": "Još nema poruka — započnite razgovor",
