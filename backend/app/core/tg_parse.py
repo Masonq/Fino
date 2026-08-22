@@ -151,8 +151,18 @@ _ACC_ADJ = (
 # Согласная перед окончанием отсекает несклоняемые слова вроде «кенгуру»
 # и «меню», где перед -у стоит гласная.
 _ACC_NOUN = re.compile(r"(\w{2,}[бвгджзклмнпрстфхцчшщ])у\b", re.I)
+# Прилагательное уже стоит в именительном, а существительное за ним — нет:
+# после правки первого слова второе всё равно надо проверить.
 _ACC_NOUN_SOFT = re.compile(r"(\w{2,}[бвгджзклмнпрстфхцчшщ])ю\b", re.I)
 # Слова, которые и в именительном кончаются на -у: их не трогаем
+# Детёныши во множественном числе: «котят», «щенят» — винительный падеж
+# совпадает с родительным, и общее правило их не берёт.
+_ACC_PLURAL = {
+    "котят": "котята", "щенят": "щенята", "утят": "утята",
+    "крольчат": "крольчата", "цыплят": "цыплята", "поросят": "поросята",
+    "малышей": "малыши", "детей": "дети",
+}
+
 _INDECLINABLE = {"кенгуру", "какаду", "меню", "рагу", "интервью", "шоу", "жалюзи"}
 
 # Глаголы первого лица кончаются на -у/-ю так же, как винительный падеж, и
@@ -180,26 +190,38 @@ def to_nominative(text: str, words: int = 2) -> str:
     if not parts:
         return text
     # прилагательное и существительное — не больше двух слов
+    # Идём подряд с начала: «взрослую кошку» — два слова одной группы, и
+    # править надо оба, иначе выходит «Взрослая кошку».
     for i in range(min(words, len(parts))):
-        word = parts[i]
+        # Знак препинания прилипает к слову: «кошку,» не совпадало ни с
+        # одним правилом, и падеж оставался винительным.
+        raw = parts[i]
+        word = raw.strip(" ,.;:!?—-«»\"'()")
+        tail = raw[len(word) + raw.index(word):] if word and word in raw else ""
+        lead = raw[:raw.index(word)] if word and word in raw else ""
+        plural = _ACC_PLURAL.get(word.lower())
+        if plural:
+            fixed = plural if word.islower() else plural.capitalize()
+            parts[i] = lead + fixed + tail
+            continue
         if word.lower() in _INDECLINABLE or word.lower() in _VERB_FORMS:
             continue
         changed = False
         for pattern, ending in _ACC_ADJ:
             m = pattern.fullmatch(word)
             if m:
-                parts[i] = m.group(1) + ending
+                parts[i] = lead + m.group(1) + ending + tail
                 changed = True
                 break
         if changed:
             continue
         m = _ACC_NOUN.fullmatch(word)
         if m:
-            parts[i] = m.group(1) + "а"
+            parts[i] = lead + m.group(1) + "а" + tail
             continue
         m = _ACC_NOUN_SOFT.fullmatch(word)
         if m:
-            parts[i] = m.group(1) + "я"
+            parts[i] = lead + m.group(1) + "я" + tail
     return " ".join(parts)
 # «Срочно!», «Внимание!» — привлекают взгляд в чате, но вещь не называют
 _SHOUT_RE = re.compile(
@@ -560,7 +582,8 @@ def _is_place_word(word: str) -> bool:
 # «В продаже ноутбук», «На продажу диван» — оборот, за которым идёт только
 # родовое слово. Сам предмет назван ниже, моделью.
 _INTRO_PHRASE_RE = re.compile(
-    r"^(в\s+продаже|на\s+продажу|срочная\s+продажа|продается|продаётся|"
+    r"^(в\s+добрые\s+руки|в\s+хорошие\s+руки|бесплатно|даром|"
+    r"в\s+продаже|на\s+продажу|срочная\s+продажа|продается|продаётся|"
     r"имеется|есть\s+в\s+наличии|отдам|отдаю)\s+", re.I)
 
 # Модель: латиница с цифрой рядом — «HP Omen 16-xf0xxx», «RTX 4070»,
@@ -628,8 +651,11 @@ def make_title(text: str, limit: int = 70) -> str | None:
         if _SPEC_RE.match(line):
             fallback = fallback or line
             continue
-        # «В продаже только до 24 августа» — условие сделки, не предмет
-        if _SERVICE_LINE_RE.search(line):
+        # «В продаже только до 24 августа» — условие сделки, не предмет.
+        # Проверяем начало строки, а не всю: «торг уместен» в хвосте — это
+        # условие при названном предмете, и выбрасывать из-за него всё
+        # объявление нельзя.
+        if _SERVICE_LINE_RE.search(line[:40]):
             continue
         # Цена и в начале, и в конце заголовка лишняя: она стоит строкой
         # выше. В середине не трогаем — вырежется кусок фразы.
@@ -690,12 +716,17 @@ def make_title(text: str, limit: int = 70) -> str | None:
             continue
 
         # «Продаю женские вещи» — название здесь есть, лишний только глагол
-        intro_cut = _INTRO_PHRASE_RE.sub("", line).strip(" ,.;:-—")
-        from_list = from_list or intro_cut != line
-        line = intro_cut
-        if not line:
+        # Глагол и оборот идут парой: «Отдам в добрые руки взрослую кошку» —
+        # сначала снимаем глагол, потом оборот, поэтому проходим дважды.
+        without_verb = line
+        for _ in range(2):
+            cut = _INTRO_PHRASE_RE.sub("", without_verb).strip(" ,.;:-—")
+            cut = _SELLING_VERB_RE.sub("", cut).strip(" ,.;:-—")
+            if cut == without_verb:
+                break
+            without_verb = cut
+        if not without_verb:
             continue
-        without_verb = _SELLING_VERB_RE.sub("", line).strip(" ,.;:-—")
         if not without_verb:
             continue
         # Падеж правим только там, где сами сняли слово, задававшее его:

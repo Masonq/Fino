@@ -847,3 +847,68 @@ def test_description_never_loses_everything():
     for text in ("Продам стол, 3000 RSD\nПишите в личку",
                  "Диван 25000 RSD"):
         assert parse(text)["description"].strip()
+
+
+# ── Найденное на стресс-наборе ──────────────────────────────────────────────
+def test_deal_terms_in_the_tail_do_not_kill_the_listing():
+    """«Торг уместен» в конце строки выбрасывал всё объявление целиком."""
+    text = ("Продам iPhone 14 Pro 256gb, состояние идеал, батарея 89%. "
+            "620 евро, торг уместен. Нови Београд")
+    assert parse(text)["title"] == "iPhone 14 Pro 256gb"
+    # а строка, которая целиком про условие, заголовком по-прежнему не станет
+    assert parse("Торг уместен, пишите в лс")["title"] is None
+
+
+def test_giving_away_phrases_removed():
+    """«Отдам в добрые руки взрослую кошку» → «Взрослая кошка»."""
+    assert parse("Отдам в добрые руки взрослую кошку, стерилизована")["title"] \
+        == "Взрослая кошка"
+    assert parse("Отдам даром детские вещи 74-80 размер")["title"] \
+        == "Детские вещи 74-80 размер"
+
+
+def test_punctuation_does_not_block_declension():
+    """«кошку,» со знаком не совпадало ни с одним правилом падежа."""
+    from app.core.tg_parse import to_nominative
+    assert to_nominative("взрослую кошку, стерилизована") == "взрослая кошка, стерилизована"
+
+
+def test_animal_plural_declension():
+    assert parse("Отдам котят в добрые руки, 2 месяца")["title"] == "Котята в добрые руки"
+
+
+def test_appliance_beats_the_brand():
+    """«Микроволновка Samsung» — техника для дома, хотя Samsung и телефоны."""
+    from app.core.tg_classify import classify, classify_sub
+    assert classify("Продам микроволновку Samsung, рабочая, 6000 дин")[0] == "home-garden"
+    assert classify_sub("home-garden", "Продам микроволновку Samsung") == "appliances"
+    assert classify("Продам телефон Samsung Galaxy S21")[0] == "electronics"
+    # работа с техникой остаётся услугой
+    assert classify("Чиню стиральные машины на дому")[0] == "services"
+    assert classify("Ремонт микроволновок на дому")[0] == "services"
+
+
+def test_wanted_service_is_a_service():
+    """«Ищу репетитора», «Нужен электрик» — тот же раздел, что и предложение."""
+    from app.core.tg_classify import classify
+    assert classify("Ищу репетитора по сербскому для ребёнка 8 лет")[0] == "services"
+    assert classify("Нужен хороший электрик в Земуне")[0] == "services"
+
+
+def test_cleaning_is_a_service_not_property():
+    from app.core.tg_classify import classify, classify_sub
+    text = "Уборка квартир и офисов, свои средства, от 2000 динар"
+    assert classify(text)[0] == "services"
+    assert classify_sub("services", text) == "cleaning"
+
+
+def test_consoles_and_languages_recognised():
+    from app.core.tg_classify import classify, classify_sub
+    assert classify("Куплю PS5 в хорошем состоянии, до 400 евро")[0] == "electronics"
+    assert classify_sub("electronics", "Куплю PS5") == "gaming"
+    assert classify("Английский язык для взрослых, онлайн и очно")[0] == "services"
+
+
+def test_car_traits_pick_the_subcategory():
+    from app.core.tg_classify import classify_sub
+    assert classify_sub("auto", "Toyota Corolla 2015, автомат, бензин, растаможена") == "cars"
