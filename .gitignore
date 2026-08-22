@@ -19,3 +19,4 @@ category-model.json
 backend/ai-labels.jsonl
 backend/category-model.json*
 backend/golden-set.jsonl
+backend/ai-titles.jsonl
