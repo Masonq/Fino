@@ -7,9 +7,10 @@
   --ink-soft:#4B554E;
   --muted:#8D958E;
   --line:#EEEEE9;
-  /* Подложка плиток категорий. Чуть темнее фона страницы: картинки на них
-     бледные, перламутровые, и на белом попросту терялись. */
-  --tile:#ECECE7;
+  /* Подложка плиток категорий — чистый белый, ровно как бумага на картинках.
+     Картинки не вырезаны, и совпасть с плиткой они могут только точно:
+     любой другой оттенок проступал бы под ними квадратом. */
+  --tile:#FFFFFF;
   --primary:#0E9F6E;
   --primary-dark:#0A7A54;
   --primary-deep:#0B5C42;
@@ -199,15 +200,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .cat-tile-2row{
   position:relative; height:82px; width:126px; flex-shrink:0; border-radius:14px; padding:9px 12px 9px 11px;
   background:var(--tile);
-  /* Заливка сама отделяет плитку от фона, рамка и тень стали лишними —
-     с ними подложка выглядела грязной. */
-  border:1px solid transparent;
+  border:1px solid rgba(20,30,25,.06);
   overflow:hidden;
 }
-.cat-tile-2row.all{
-  background:linear-gradient(155deg, #F1FAF6, #E6F6EE);
-  border-color:rgba(14,159,110,.12);
-}
+/* Раньше здесь был зелёный градиент, но картинка приносит с собой белую
+   бумагу, и на градиенте она проступала квадратом. Оставляем отличие
+   только в рамке. */
+.cat-tile-2row.all{ border-color:rgba(14,159,110,.28); }
 .cat-tile-2row-label{
   font-size:11.5px; font-weight:700; line-height:1.2; color:var(--ink);
   position:relative; z-index:2; max-width:100%;
@@ -307,7 +306,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .cats-item{
   position:relative; height:86px; border-radius:14px; overflow:hidden;
   padding:11px 62px 11px 13px;
-  background:var(--tile); border:1px solid transparent;
+  background:var(--tile); border:1px solid rgba(20,30,25,.06);
 }
 .cats-label{
   position:relative; z-index:2;
@@ -341,7 +340,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .post-cat-item{
   position:relative; height:86px; border-radius:14px; overflow:hidden;
   padding:11px 62px 11px 13px; text-align:left;
-  background:var(--tile); border:1px solid transparent;
+  background:var(--tile); border:1px solid rgba(20,30,25,.06);
 }
 .post-cat-label{
   position:relative; z-index:2;
@@ -1324,7 +1323,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* скелетон плитки категории на странице «Все категории» */
 .cats-item.skeleton{
-  background:#E3E3DD; border-color:transparent; box-shadow:none;
+  background:#F0F0EC; border-color:transparent; box-shadow:none;
   animation:sk-pulse 1.4s ease-in-out infinite;
 }
 .cats-back svg{ width:20px; height:20px; }
