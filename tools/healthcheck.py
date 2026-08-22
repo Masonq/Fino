@@ -75,6 +75,10 @@ if st == 404:
     print(f"  {YELLOW}!{RESET} маршруты авторизации не найдены — вероятно, сервис не перезапущен")
     print(f"    {YELLOW}systemctl restart fino{RESET}")
 check("код запрашивается", st in (200, 429), f"код {st}: {res}")
+# 429 — это защита от частых запросов, а не поломка. Но нового кода при ней
+# не выдают, и следующие проверки взяли бы из журнала код прошлого прогона:
+# тот уже использован, и verify-code справедливо ответил бы «code_expired».
+fresh_code_issued = st == 200
 
 # достаём код из журнала — почта пока не настроена
 code = None
@@ -88,7 +92,10 @@ try:
 except Exception:
     pass
 
-if code:
+if code and not fresh_code_issued:
+    print(f"  {YELLOW}!{RESET} проверка кода пропущена: свежий код не выдан "
+          f"(запрос был меньше минуты назад)")
+elif code:
     st, res = call("POST", "/api/auth/verify-code",
                    {"destination": EMAIL, "code": "000000", "channel": "email"})
     check("неверный код отклоняется", st == 400, f"код {st}")
