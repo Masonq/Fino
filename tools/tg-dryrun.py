@@ -66,7 +66,8 @@ def show(row: dict) -> None:
 
 
 async def run(limit: int, mode: str, suspicious_only: bool,
-              note_filter: str | None = None, with_text: bool = False) -> None:
+              note_filter: str | None = None, with_text: bool = False,
+              quiet: bool = False) -> None:
     # Работаем на копии сессии: настоящая занята часовым заходом по
     # расписанию, и SQLite отдаёт «database is locked». Копия читает те же
     # чаты и ничего не пишет обратно.
@@ -86,7 +87,8 @@ async def run(limit: int, mode: str, suspicious_only: bool,
     notes: dict[str, int] = {}
     try:
         for chat_id, meta in CHATS.items():
-            print(f'\n═══ {meta["title"]} ═══')
+            if not quiet:
+                print(f'\n═══ {meta["title"]} ═══')
             entity = await client.get_entity(chat_id)
             shown = 0
             async for msg in client.iter_messages(entity, limit=limit):
@@ -105,6 +107,8 @@ async def run(limit: int, mode: str, suspicious_only: bool,
                 if note:
                     notes[note] = notes.get(note, 0) + 1
                 if mode == "rejected":
+                    continue
+                if quiet:
                     continue
                 if suspicious_only and not note:
                     continue
@@ -133,7 +137,8 @@ async def run(limit: int, mode: str, suspicious_only: bool,
                     first = " ⏎ ".join(text.splitlines()[:3])
                     print(f"      ← {first[:150]}")
                 shown += 1
-            print(f"  показано: {shown}")
+            if not quiet:
+                print(f"  показано: {shown}")
     finally:
         await client.disconnect()
         shutil.rmtree(tmp_dir, ignore_errors=True)
@@ -157,12 +162,14 @@ def main() -> None:
                     help="только то, где разбор выглядит сомнительно")
     ap.add_argument("--note", default=None,
                     help="только с этой пометкой, например: --note родовой")
+    ap.add_argument("--quiet", action="store_true",
+                    help="только итоговые счётчики, без построчного вывода")
     ap.add_argument("--text", action="store_true",
                     help="показывать начало исходного сообщения — по нему "
                          "видно, откуда взялся такой разбор")
     args = ap.parse_args()
     asyncio.run(run(args.limit, args.show, args.suspicious or bool(args.note),
-                    args.note, args.text))
+                    args.note, args.text, args.quiet))
 
 
 if __name__ == "__main__":

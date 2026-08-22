@@ -769,3 +769,27 @@ def test_dishwasher_hashtag_is_not_a_flat_title():
     text = "#Vracar\n#квартира #лифт #посудомойка #балкон\n1250 €"
     assert build_title("real-estate", "flats", text, {},
                        fallback_title=parse(text).get("title")) == "Квартира"
+
+
+def test_job_search_beats_service_words():
+    """Человек ищет работу — это «Работа», а не услуга, которую он умеет."""
+    from app.core.tg_classify import classify
+    for text in ("Живу и ищу работу в Белграде",
+                 "Опыт работы 5 лет, ищу вакансию клинера",
+                 "Также работал слесарем КИПиА, ищу работу"):
+        assert classify(text)[0] == "jobs", text
+
+
+def test_trailer_word_needs_context():
+    """«прицеп» ловило «прицепить»."""
+    from app.core.tg_classify import classify
+    assert classify("Кошелечек, за зажимчик можно прицепить")[0] != "auto"
+    assert classify("Продам автоприцеп, состояние хорошее")[0] == "auto"
+
+
+def test_request_without_question_mark():
+    """«Может кто-то отдает диван» — просьба, знак вопроса ставят не все."""
+    from app.core.title_rules import looks_like_question
+    assert looks_like_question("Может кто-то отдает диван")
+    assert looks_like_question("Подскажите хорошего стоматолога")
+    assert not looks_like_question("Продам диван IKEA 15000 RSD")
