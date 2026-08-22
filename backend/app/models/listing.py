@@ -54,6 +54,17 @@ class Listing(Base):
     # Марка, модель и VIN сюда не попадают — их не переводят.
     attributes_i18n: Mapped[dict] = mapped_column(JSONB, default=dict)
 
+    # ——— объявления, перенесённые из телеграм-чатов ———
+    # Владелец у них — служебный аккаунт чата, поэтому писать и звонить
+    # через сайт нельзя: связь только с автором в Telegram по его нику.
+    external_source: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
+    # ник автора без @; без ника объявление не переносим — иначе покупателю
+    # некуда обратиться, а это хуже, чем отсутствие объявления
+    external_author: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    # откуда взято — для поиска дублей и разбора жалоб, покупателю не показываем
+    external_chat: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    external_message_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
     city: Mapped[str | None] = mapped_column(String(120), nullable=True, index=True)
     location_lat: Mapped[float | None] = mapped_column(Numeric(9, 6), nullable=True)
     location_lng: Mapped[float | None] = mapped_column(Numeric(9, 6), nullable=True)

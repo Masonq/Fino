@@ -446,6 +446,11 @@ def get_listing(listing_id: uuid.UUID, db: Session = Depends(get_db)):
         "price": float(listing.price) if listing.price else None,
         "currency": listing.currency,
         "price_negotiable": listing.price_negotiable,
+        # Для объявлений из Telegram: связь идёт с автором напрямую, поэтому
+        # отдаём его ник. Название чата-источника наружу не выносим — оно
+        # нужно нам для дублей и жалоб, а покупателю ничего не даёт.
+        "external_source": listing.external_source,
+        "external_author": listing.external_author,
         "attributes": listing.attributes,
         # Переводы свободных атрибутов; язык выбирает клиент — так же,
         # как он уже делает с переводами заголовка и описания.

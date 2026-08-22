@@ -199,6 +199,11 @@ export default function ListingDetail() {
         {listing.price_negotiable && <div className="neg-pill">{t('detail.negotiable')}</div>}
 
         <div className="detail-title">{translation?.title}</div>
+        {/* Помечаем явно: иначе продавец с нашего сайта конкурирует с
+            перепечаткой и не понимает, почему объявление ведёт себя иначе. */}
+        {listing.external_source === 'telegram' && (
+          <div className="from-telegram">{t('detail.from_telegram')}</div>
+        )}
         {listing.city && (
           <div className="detail-loc">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -269,6 +274,24 @@ export default function ListingDetail() {
         <ReportButton listingId={listing.id} ownerId={listing.owner?.id} />
       </div>
 
+      {/* Объявление перенесено из телеграм-чата: писать и звонить через сайт
+          некому — автор у нас не зарегистрирован. Вместо двух погашенных
+          кнопок даём одну рабочую, иначе экран выглядит сломанным. */}
+      {listing.external_source === 'telegram' && listing.external_author ? (
+        <div className="sticky-cta">
+          <a
+            className="cta-btn primary telegram"
+            href={`https://t.me/${listing.external_author}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M21.9 4.3 18.8 19c-.2 1-.9 1.3-1.7.8l-4.7-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.4-4.9 9-8.1c.4-.3-.1-.5-.6-.2L7 10.7 2.4 9.2c-1-.3-1-1 .2-1.5l18-6.9c.8-.3 1.5.2 1.3 1.5Z" />
+            </svg>
+            {t('detail.open_telegram')}
+          </a>
+        </div>
+      ) : (
       <div className="sticky-cta">
         <button className="cta-btn icon">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -279,6 +302,7 @@ export default function ListingDetail() {
           {starting ? '...' : t('detail.write_seller')}
         </button>
       </div>
+      )}
     </div>
   )
 }

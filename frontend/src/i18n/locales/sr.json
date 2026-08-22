@@ -125,7 +125,9 @@
     "show_original": "prikaži original",
     "write_seller": "Pošalji poruku",
     "no_price": "Cena nije navedena",
-    "own_listing": "Ovo je vaš oglas — ne možete pisati sebi."
+    "own_listing": "Ovo je vaš oglas — ne možete pisati sebi.",
+    "open_telegram": "Poruka na Telegramu",
+    "from_telegram": "Oglas sa Telegrama"
   },
   "favorites": {
     "title": "Sačuvano",

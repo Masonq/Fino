@@ -125,7 +125,9 @@
     "show_original": "show original",
     "write_seller": "Message seller",
     "no_price": "Price not set",
-    "own_listing": "This is your own listing — you can't message yourself."
+    "own_listing": "This is your own listing — you can't message yourself.",
+    "open_telegram": "Message on Telegram",
+    "from_telegram": "Listing from Telegram"
   },
   "favorites": {
     "title": "Saved",
