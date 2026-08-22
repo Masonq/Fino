@@ -10,6 +10,10 @@
 """
 import re
 
+from app.core.title_rules import (
+    ATTR_LABELS, SUBJECT_BY_CATEGORY, SUBJECT_BY_SUB, TITLE_ATTRS,
+    profession, rejects_as_title, service_subject, strip_trailing_number,
+)
 from app.data.cities_data import CITY_ALIASES, DISTRICT_NAMES
 
 # Цена: число с необязательными разделителями и валютой рядом. Диапазоны и
@@ -400,11 +404,22 @@ def make_title(text: str, limit: int = 70) -> str | None:
         # остальное относится к описанию.
         # Берём первое предложение, в котором есть что-то кроме восклицания:
         # «Срочно! Продаю растения по 2500 динар» начинается не с названия.
+        # Берём первое предложение, которое называет предмет. Раньше брали
+        # первое подходящее по длине — так в заголовок попадали «Меня зовут
+        # Даниил» и «Мечтаете о цвете волос», после которых в том же посте
+        # шло название вещи.
+        chosen = None
         for part in re.split(r"(?<=[.!?])\s+", line):
             candidate = _SHOUT_RE.sub("", part).strip(" .!?,;:-—")
-            if len(candidate) >= 6:
-                line = candidate
-                break
+            if len(candidate) < 6:
+                continue
+            if rejects_as_title(candidate):
+                continue
+            chosen = candidate
+            break
+        if chosen is None:
+            continue
+        line = chosen
         # «Белград | Peugeot 308 | » — город и разделители в заголовке лишние:
         # город стоит отдельной строкой, а палки остаются от разметки поста
         parts = [p.strip() for p in re.split(r"\s*[|•]\s*", line) if p.strip()]
@@ -447,11 +462,18 @@ def make_title(text: str, limit: int = 70) -> str | None:
             if head.islower():
                 line = line[0].upper() + line[1:]
 
+        # «Два брата-акробата 3» — тройка осталась от разметки поста
+        line = strip_trailing_number(line)
+        # Чистка могла отрезать как раз то слово, ради которого строка
+        # прошла отбор, — проверяем итог, а не только кандидата.
+        if rejects_as_title(line):
+            continue
+
         if len(line) <= limit:
             return line
         cut = line[:limit].rsplit(" ", 1)[0]
         return (cut or line[:limit]).rstrip(" ,.;:") + "…"
-    return fallback
+    return fallback if fallback and not rejects_as_title(fallback) else None
 
 
 _AREA_RE = re.compile(r"(\d{2,4})\s*(?:м2|м²|кв\.?\s*м|m2|m²)", re.I)
@@ -501,9 +523,6 @@ def compose_title(category_slug: str | None, text: str) -> str | None:
     начинают с хэштегов или с характеристик, и получалось «гостиная + 2
     комнаты». Комнаты, площадь и район — то, по чему квартиру и узнают.
     """
-    # Резюме отдельной ветки больше не требует: приветствие и знакомство
-    # снимает сам make_title, и особый разбор сравнивал результат сам с
-    # собой, из-за чего у резюме не оставалось заголовка вовсе.
     if category_slug != "real-estate":
         return None
 
@@ -524,6 +543,79 @@ def compose_title(category_slug: str | None, text: str) -> str | None:
     if district:
         parts.append(district)
     return ", ".join(parts)
+
+
+def title_from_facts(
+    category_slug: str | None,
+    sub_slug: str | None,
+    text: str,
+    attrs: dict | None = None,
+) -> str | None:
+    """
+    Заголовок из того, что об объявлении известно наверняка.
+
+    Нужен там, где автор о предмете не написал вовсе: рассказал о себе,
+    задал вопрос читателю, начал с настроения. Такой заголовок сухой, зато
+    в ленте по нему видно, что это кошка из Нови-Сада, а не «Дом — это
+    место».
+    """
+    # У услуг предмет — это дело, а не раздел: «Услуги красоты» ничего не
+    # говорит, «Стрижка и окрашивание волос» говорит всё.
+    if category_slug in ("services", "beauty"):
+        subject = service_subject(text)
+        if subject:
+            return subject
+
+    # В резюме и вакансии предмет — профессия: по ней и ищут.
+    if category_slug == "jobs":
+        job = profession(text)
+        if job:
+            kind = "Резюме" if sub_slug == "resumes" else "Вакансия"
+            return f"{kind}: {job.lower()}"
+
+    subject = SUBJECT_BY_SUB.get(sub_slug or "")
+    if not subject:
+        subject = SUBJECT_BY_CATEGORY.get(category_slug or "")
+    if not subject:
+        return None
+
+    parts = [subject]
+    if attrs:
+        for key in TITLE_ATTRS:
+            if len(parts) >= 3:
+                break
+            value = attrs.get(key)
+            if value in (None, "", []):
+                continue
+            label = ATTR_LABELS.get(key)
+            parts.append(label.format(value) if label else str(value))
+
+    district = extract_district(text)
+    if district and len(parts) < 3:
+        parts.append(district)
+    return ", ".join(parts)
+
+
+def build_title(
+    category_slug: str | None,
+    sub_slug: str | None,
+    text: str,
+    attrs: dict | None = None,
+    fallback_title: str | None = None,
+) -> str | None:
+    """
+    Единая точка: один заголовок по одному правилу для всех объявлений.
+
+    Порядок жёсткий и одинаковый для любой категории: заголовок из фактов
+    для недвижимости (там текст почти всегда начинается хэштегами), затем
+    строка из текста, назвавшая предмет, и лишь потом — сборка из фактов.
+    """
+    composed = compose_title(category_slug, text)
+    if composed:
+        return composed
+    if fallback_title and not rejects_as_title(fallback_title):
+        return fallback_title
+    return title_from_facts(category_slug, sub_slug, text, attrs)
 
 
 # Обороты рекламных постов: обращение к читателю и предложение услуг

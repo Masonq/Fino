@@ -1,0 +1,179 @@
+"""
+Проверка правила заголовка на живых объявлениях из чатов.
+
+Каждый случай здесь — реальный пост, по которому заголовок в ленте
+получался неверным. Тест сторожит именно их: правило легко ослабить одной
+неудачной правкой регулярки, и тогда в ленту вернутся «Меня зовут Даниил» и
+«Дом — это место».
+"""
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from app.core.tg_parse import build_title, make_title, parse  # noqa: E402
+from app.core.title_rules import rejects_as_title  # noqa: E402
+
+
+# ── Заголовком быть не может ────────────────────────────────────────────────
+# Строка ничего не говорит о предмете: узнать по ней объявление нельзя.
+def test_rejects_self_introduction():
+    assert rejects_as_title("Меня зовут Даниил")
+    assert rejects_as_title("Мы — компания")
+    assert rejects_as_title("Занимаюсь климатическими системами")
+    assert rejects_as_title("Имею 10 лет опыта инженером")
+
+
+def test_rejects_rhetoric():
+    assert rejects_as_title("Мечтаете о цвете волос")
+    assert rejects_as_title("А кому здесь бесплатный")
+    assert rejects_as_title("Мечтаете о цвете волос, который выглядит дорого?")
+
+
+def test_rejects_definition():
+    assert rejects_as_title("Дом — это место")
+
+
+def test_rejects_detail_without_subject():
+    assert rejects_as_title("Спереди есть пятно")
+    assert rejects_as_title("В остальном отличная")
+
+
+# ── Заголовком быть должно ──────────────────────────────────────────────────
+# Предмет назван — правило не должно мешать хорошим заголовкам.
+def test_accepts_real_titles():
+    assert not rejects_as_title("Apple Mac mini M2 16/512 GB")
+    assert not rejects_as_title("Стильные летние шлепанцы через палец")
+    assert not rejects_as_title("Куртка зимняя, размер S")
+    assert not rejects_as_title("Двухкамерный холодильник Beko")
+
+
+# ── Заголовок из текста ─────────────────────────────────────────────────────
+def test_takes_sentence_that_names_the_thing():
+    """Знакомство пропускаем, берём предложение с предметом."""
+    text = (
+        "Добрый день!\n"
+        "Меня зовут Даниил.\n"
+        "Чистка внешнего и внутреннего блока кондиционера с разбором"
+    )
+    assert make_title(text) == "Чистка внешнего и внутреннего блока кондиционера с разбором"
+
+
+def test_drops_trailing_number():
+    """«Два брата-акробата 3» — тройка осталась от разметки поста."""
+    assert make_title("Два брата-акробата 3\nКотята ищут дом") is None or \
+        not make_title("Два брата-акробата 3\nКотята ищут дом").endswith("3")
+
+
+def test_keeps_number_with_unit():
+    """«16 ГБ» — характеристика, а не мусор: её оставляем."""
+    assert make_title("Apple Mac mini M2 16/512 GB") == "Apple Mac mini M2 16/512 GB"
+
+
+def test_no_title_when_nothing_names_the_thing():
+    assert make_title("Дом — это место, где живёт кошка!") is None
+
+
+# ── Заголовок из фактов ─────────────────────────────────────────────────────
+def test_falls_back_to_facts_for_pets():
+    title = build_title("pets", "pets-cats", "Дом — это место, где живёт кошка!", {})
+    assert title == "Кошка"
+
+
+def test_falls_back_to_facts_with_attributes():
+    title = build_title(
+        "fashion", "women", "Спереди есть пятно, в остальном отличная",
+        {"size": "S"},
+    )
+    assert title == "Женская одежда, размер S"
+
+
+def test_service_named_by_the_work_not_the_section():
+    title = build_title(
+        "services", "repair",
+        "Меня зовут Даниил. Занимаюсь климатическими системами. "
+        "Чистка кондиционера с разбором",
+        {},
+    )
+    assert "кондиционер" in title.lower()
+
+
+def test_hairdresser_service():
+    title = build_title(
+        "services", "beauty-services",
+        "Мечтаете о цвете волос? Я парикмахер-колорист и мастер стрижек",
+        {},
+    )
+    assert title == "Стрижка и окрашивание волос"
+
+
+def test_transfers_company():
+    title = build_title(
+        "services", "transport",
+        "Мы — компания, специализирующаяся на трансферах и туристических услугах",
+        {},
+    )
+    assert title == "Трансферы и перевозки"
+
+
+# ── Хорошие заголовки не портим ─────────────────────────────────────────────
+def test_good_title_survives_the_pipeline():
+    title = build_title(
+        "electronics", "laptops",
+        "Apple Mac mini M2 16/512 GB – идеальное состояние",
+        {"ram": 16},
+        fallback_title="Apple Mac mini M2 16/512 GB – идеальное состояние",
+    )
+    assert title == "Apple Mac mini M2 16/512 GB – идеальное состояние"
+
+
+def test_every_listing_gets_a_title():
+    """
+    Объявление без заголовка — дыра в ленте. Правило обязано выдать хоть
+    что-то для любой известной категории.
+    """
+    for category, sub in (
+        ("pets", "pets-dogs"), ("fashion", "shoes"), ("auto", "cars"),
+        ("electronics", "phones"), ("jobs", "resumes"), ("business", "equipment"),
+    ):
+        assert build_title(category, sub, "текст без предмета вовсе", {})
+
+
+# ── Полный проход по объявлениям со скриншотов ──────────────────────────────
+# Один тест на все известные поломки: если правило ослабнет, видно сразу,
+# какое объявление вернулось к прежнему заголовку.
+def test_real_listings_from_chats():
+    cases = [
+        (
+            "Продаю стильные летние шлепанцы через палец с элегантными ремешками.",
+            "fashion", "shoes", {},
+            "Стильные летние шлепанцы через палец с элегантными ремешками",
+        ),
+        (
+            "Куртка\nРазмер s\nСпереди есть пятно, в остальном отличная\nЗемун",
+            "fashion", "women", {"size": "S"},
+            "Женская одежда, размер S, Земун",
+        ),
+        (
+            "Дом — это место, где живёт кошка!\nХанна в свои 1-1,5 года дама.",
+            "pets", "pets-cats", {}, "Кошка",
+        ),
+        (
+            "А кому здесь бесплатный котик? Ищет дом",
+            "pets", "pets-cats", {}, "Кошка",
+        ),
+        (
+            "Здравствуйте! Меня зовут Алексей. Имею 10 лет опыта инженером.",
+            "jobs", "resumes", {}, "Резюме: инженер",
+        ),
+        (
+            "Мы — компания, специализирующаяся на трансферах в Сербии.",
+            "services", "transport", {}, "Трансферы и перевозки",
+        ),
+    ]
+    for text, category, sub, attrs, expected in cases:
+        # Так же, как в импортёре: заголовок из текста идёт кандидатом,
+        # и правило решает, годится он или собирать из фактов.
+        candidate = parse(text).get("title")
+        got = build_title(category, sub, text, attrs, fallback_title=candidate)
+        assert got == expected, text

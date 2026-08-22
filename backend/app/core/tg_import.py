@@ -32,7 +32,7 @@ from app.core.database import SessionLocal
 from app.core.tg_classify import classify_sub, decide_for
 from app.core.progress import Progress
 from app.core.tg_parse import (
-    compose_title, drop_attribute_lines, extract_attributes,
+    build_title, drop_attribute_lines, extract_attributes,
     looks_like_ad, looks_like_spam, looks_sold, parse,
 )
 from app.core.tg_sources import CHATS, is_resume, topic_category
@@ -235,16 +235,19 @@ async def collect(client, chat_id: int, meta: dict, days: int,
             bar.bump("чужой знак")
             continue
 
-        # Заголовок из первой строки годится не всегда: у недвижимости там
-        # хэштеги или характеристика, у резюме — приветствие и знакомство.
-        composed = compose_title(category_slug, parsed["searchable"])
-        if composed:
-            parsed["title"] = composed
-
         # Раскладываем характеристики по полям категории: без них у
         # объявления есть только описание, и по нему нельзя ни отфильтровать,
         # ни сравнить два варианта.
         attrs = extract_attributes(category_slug, parsed["searchable"])
+
+        # Заголовок собираем последним: он опирается и на подкатегорию, и на
+        # разобранные характеристики — если в тексте предмет не назван,
+        # заголовок строится из них.
+        sub_slug = classify_sub(category_slug, parsed["searchable"])
+        parsed["title"] = build_title(
+            category_slug, sub_slug, parsed["searchable"], attrs,
+            fallback_title=parsed.get("title"),
+        )
         # то, что уже разложено по полям, в описании только дублируется
         parsed["description"] = drop_attribute_lines(parsed["description"], attrs)
         if is_resume(topic_id):
@@ -260,7 +263,7 @@ async def collect(client, chat_id: int, meta: dict, days: int,
             "message_id": msg.id,
             "username": username,
             "category_slug": category_slug,
-            "sub_slug": classify_sub(category_slug, parsed["searchable"]),
+            "sub_slug": sub_slug,
             "publish": publish,
             "is_resume": is_resume(topic_id),
             "photos": photos,
