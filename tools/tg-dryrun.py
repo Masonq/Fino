@@ -132,10 +132,15 @@ def _looks_same(a: dict, b: dict) -> bool:
     if a.get("city") != b.get("city"):
         return False
     first, second = a["words"], b["words"]
-    if len(first) < 3 or len(second) < 3:
+    if len(first) < 4 or len(second) < 4:
         return False
-    common = len(first & second)
-    return common * 2 >= min(len(first), len(second))
+    common = first & second
+    if len(common) * 10 < min(len(first), len(second)) * 6:
+        return False
+    # Общих слов мало не бывает: «платье» и «жилет» за одну цену в одном
+    # городе сходятся по словам «женск», «отличн». Нужно совпадение по
+    # чему-то приметному — марке, модели или числу.
+    return any(w.isascii() or any(c.isdigit() for c in w) for w in common)
 
 
 async def run(limit: int, mode: str, suspicious_only: bool,
