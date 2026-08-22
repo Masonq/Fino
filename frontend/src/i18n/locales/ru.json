@@ -336,5 +336,26 @@
     "role_seller_business": "Компания",
     "role_moderator": "Модератор",
     "role_admin": "Владелец"
+  },
+  "stats": {
+    "title": "Показатели",
+    "days": "{{count}} дней",
+    "in_feed": "В ленте",
+    "added": "Добавлено",
+    "added_own": "Из них своих",
+    "pending": "На проверке",
+    "sellers": "Продавцов",
+    "new_people": "Новых людей",
+    "by_day": "По дням",
+    "all": "всего",
+    "own": "свои",
+    "quality": "Чего не хватает",
+    "no_price": "Без цены",
+    "no_photo": "Без фото",
+    "no_city": "Без города",
+    "not_translated": "Не переведено",
+    "by_category": "По разделам",
+    "by_source": "Откуда",
+    "own_source": "Свои объявления"
   }
 }

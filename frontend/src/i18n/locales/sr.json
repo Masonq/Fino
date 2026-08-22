@@ -335,5 +335,26 @@
     "role_seller_business": "Firma",
     "role_moderator": "Moderator",
     "role_admin": "Vlasnik"
+  },
+  "stats": {
+    "title": "Brojevi",
+    "days": "{{count}} dana",
+    "in_feed": "U ponudi",
+    "added": "Dodato",
+    "added_own": "Od toga svoje",
+    "pending": "Na proveri",
+    "sellers": "Prodavaca",
+    "new_people": "Novih ljudi",
+    "by_day": "Po danima",
+    "all": "ukupno",
+    "own": "svoje",
+    "quality": "Šta nedostaje",
+    "no_price": "Bez cene",
+    "no_photo": "Bez slike",
+    "no_city": "Bez grada",
+    "not_translated": "Nije prevedeno",
+    "by_category": "Po odeljcima",
+    "by_source": "Izvori",
+    "own_source": "Svoji oglasi"
   }
 }

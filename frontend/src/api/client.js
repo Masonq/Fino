@@ -87,6 +87,11 @@ export const api = {
     body: JSON.stringify({ reason }),
   }),
   adminUnblock: (id) => request(`/admin/users/${id}/unblock`, { method: 'POST' }),
+  adminStats: (days) => request(`/admin/stats?${new URLSearchParams({ days })}`),
+  adminStatsDaily: (days) => request(`/admin/stats/daily?${new URLSearchParams({ days })}`),
+  adminStatsCategories: () => request('/admin/stats/categories'),
+  adminStatsSources: () => request('/admin/stats/sources'),
+  adminStatsQuality: () => request('/admin/stats/quality'),
 
   modQueue: (lang) => request(`/moderation/queue?${new URLSearchParams({ lang })}`),
   modApprove: (id) => request(`/moderation/${id}/approve`, { method: 'POST' }),

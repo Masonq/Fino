@@ -13,6 +13,7 @@ import Login from './pages/Login'
 import Profile from './pages/Profile'
 import SellerProfile from './pages/SellerProfile'
 import MyListings from './pages/MyListings'
+import AdminStats from './pages/AdminStats'
 import AdminUsers from './pages/AdminUsers'
 import Moderation from './pages/Moderation'
 import EditListing from './pages/EditListing'
@@ -104,6 +105,7 @@ export default function App() {
           <Route path="/my" element={<MyListings />} />
           <Route path="/moderation" element={<Moderation />} />
           <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/stats" element={<AdminStats />} />
           <Route path="/edit/:id" element={<EditListing />} />
           <Route path="/saved" element={<SavedSearches />} />
           <Route path="/history" element={<History />} />

@@ -1583,3 +1583,85 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   letter-spacing: .04em;
   color: #999;
 }
+
+/* ——— админка: показатели ——— */
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.stats-card {
+  padding: 14px;
+  border: 1px solid var(--line, #e6e6e6);
+  border-radius: 14px;
+  background: #fff;
+}
+.stats-value { font-size: 24px; font-weight: 700; line-height: 1.1; }
+.stats-label { margin-top: 4px; font-size: 13px; color: #777; }
+
+.stats-block {
+  margin-bottom: 16px;
+  padding: 14px;
+  border: 1px solid var(--line, #e6e6e6);
+  border-radius: 14px;
+  background: #fff;
+}
+.stats-block-title { font-weight: 600; margin-bottom: 10px; }
+
+.stats-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #777;
+  margin-bottom: 10px;
+}
+.stats-legend .dot {
+  width: 9px; height: 9px; border-radius: 3px; display: inline-block;
+}
+.stats-legend .dot-all { background: #cfe6dc; }
+.stats-legend .dot-own { background: var(--brand, #0E9F6E); margin-left: 10px; }
+
+/* Столбики рисуем сами: ради одного графика тянуть библиотеку незачем. */
+.stats-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 130px;
+}
+.stats-bar { flex: 1; display: flex; flex-direction: column; align-items: center; }
+.stats-bar-track {
+  width: 100%;
+  height: 110px;
+  display: flex;
+  align-items: flex-end;
+}
+.stats-bar-fill {
+  width: 100%;
+  min-height: 2px;
+  background: #cfe6dc;
+  border-radius: 4px 4px 0 0;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+.stats-bar-own {
+  width: 100%;
+  background: var(--brand, #0E9F6E);
+  border-radius: 4px 4px 0 0;
+}
+.stats-bar-day { margin-top: 4px; font-size: 10px; color: #999; }
+
+.stats-rows { display: flex; flex-direction: column; }
+.stats-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid #f2f2f2;
+  font-size: 14px;
+}
+.stats-row:last-child { border-bottom: 0; }
+/* Пустой раздел — это не мелочь: человек в него заходит и уходит ни с чем */
+.stats-row-empty { color: #b3261e; }

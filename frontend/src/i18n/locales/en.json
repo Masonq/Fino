@@ -334,5 +334,26 @@
     "role_seller_business": "Company",
     "role_moderator": "Moderator",
     "role_admin": "Owner"
+  },
+  "stats": {
+    "title": "Numbers",
+    "days": "{{count}} days",
+    "in_feed": "Live",
+    "added": "Added",
+    "added_own": "Of them own",
+    "pending": "In review",
+    "sellers": "Sellers",
+    "new_people": "New people",
+    "by_day": "By day",
+    "all": "all",
+    "own": "own",
+    "quality": "What is missing",
+    "no_price": "No price",
+    "no_photo": "No photo",
+    "no_city": "No city",
+    "not_translated": "Not translated",
+    "by_category": "By section",
+    "by_source": "Sources",
+    "own_source": "Own listings"
   }
 }

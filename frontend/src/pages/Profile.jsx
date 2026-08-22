@@ -88,6 +88,10 @@ export default function Profile() {
             {t('admin.title')}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
           </Link>
+          <Link className="profile-row" to="/admin/stats">
+            {t('stats.title')}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+          </Link>
         </div>
       )}
 

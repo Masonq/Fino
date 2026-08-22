@@ -64,3 +64,26 @@ def test_admin_routes_declared():
     assert (("POST",), "/api/admin/users/{user_id}/role") in paths
     assert (("POST",), "/api/admin/users/{user_id}/block") in paths
     assert (("POST",), "/api/admin/users/{user_id}/unblock") in paths
+
+
+def test_stats_routes_declared():
+    """Показатели доступны сотрудникам и разложены по темам."""
+    from app.routers.admin_stats import router
+
+    paths = {r.path for r in router.routes}
+    assert paths == {
+        "/api/admin/stats",
+        "/api/admin/stats/daily",
+        "/api/admin/stats/categories",
+        "/api/admin/stats/sources",
+        "/api/admin/stats/quality",
+    }
+
+
+def test_stats_require_staff():
+    """Показатели — служебные данные, посторонним их видеть незачем."""
+    from app.routers.admin_stats import require_staff
+
+    assert require_staff(FakeUser(UserRole.moderator))
+    with pytest.raises(HTTPException):
+        require_staff(FakeUser(UserRole.buyer))
