@@ -19,6 +19,36 @@ log = logging.getLogger(__name__)
 LANGS = ("ru", "en", "sr")
 TIMEOUT = 8
 
+# В Сербии объявления пишут латиницей (KupujemProdajem, Polovni Automobili),
+# поэтому просим у Google именно её. Google периодически всё равно отдаёт
+# кириллицу, а LibreTranslate — всегда, так что перекладываем сами:
+# соответствие однозначное, ошибиться негде.
+GOOGLE_LANG = {"sr": "sr-Latn"}
+
+_DIGRAPHS = {"\u0409": "Lj", "\u040a": "Nj", "\u040f": "D\u017e",
+             "\u0459": "lj", "\u045a": "nj", "\u045f": "d\u017e"}
+_SINGLES = str.maketrans(
+    "\u0410\u0411\u0412\u0413\u0414\u0402\u0415\u0416\u0417\u0418\u0408\u041a\u041b\u041c\u041d\u041e\u041f\u0420\u0421\u0422\u040b\u0423\u0424\u0425\u0426\u0427\u0428"
+    "\u0430\u0431\u0432\u0433\u0434\u0452\u0435\u0436\u0437\u0438\u0458\u043a\u043b\u043c\u043d\u043e\u043f\u0440\u0441\u0442\u045b\u0443\u0444\u0445\u0446\u0447\u0448",
+    "ABVGD\u0110E\u017dZIJKLMNOPRST\u0106UFHC\u010c\u0160"
+    "abvgd\u0111e\u017ezijklmnoprst\u0107ufhc\u010d\u0161")
+
+
+def _to_serbian_latin(text: str) -> str:
+    for cyr, lat in _DIGRAPHS.items():
+        text = text.replace(cyr, lat)
+    return text.translate(_SINGLES)
+
+
+def _fix_script(text: str | None, target: str) -> str | None:
+    """Сербский показываем латиницей — на ней пишут все сербские доски."""
+    if not text or target != "sr":
+        return text
+    if any("\u0400" <= ch <= "\u04ff" for ch in text):
+        return _to_serbian_latin(text)
+    return text
+
+
 # Публичные сервисы перевода закрываются и вводят ключи, поэтому берём
 # список: обходим по очереди, пока какой-нибудь не ответит. Свой адрес,
 # указанный в настройках, пробуем первым — на своём сервере нет ограничений.
@@ -44,7 +74,7 @@ def _translate_google(text: str, source: str, target: str) -> str | None:
     params = parse.urlencode({
         "client": "gtx",
         "sl": source,
-        "tl": target,
+        "tl": GOOGLE_LANG.get(target, target),
         "dt": "t",
         "q": text[:4000],
     })
@@ -55,7 +85,7 @@ def _translate_google(text: str, source: str, target: str) -> str | None:
             data = json.loads(resp.read().decode())
             # ответ приходит кусками — собираем их вместе
             parts = [chunk[0] for chunk in data[0] if chunk and chunk[0]]
-            return "".join(parts).strip() or None
+            return _fix_script("".join(parts).strip() or None, target)
     except Exception as exc:
         log.info("Перевод через Google не вышел: %s", exc)
         return None
@@ -92,7 +122,7 @@ def translate(text: str, source: str, target: str) -> str | None:
                 data = json.loads(resp.read().decode())
                 result = (data.get("translatedText") or "").strip()
                 if result:
-                    return result
+                    return _fix_script(result, target)
         except Exception as exc:
             log.info("Перевод через %s не вышел: %s", endpoint, exc)
             continue
