@@ -130,13 +130,21 @@ def _post(url: str, payload: dict, headers: dict) -> dict | None:
     return None
 
 
-def _ask_gemini(prompt: str, limit: int = 200) -> str | None:
+def _ask_gemini(prompt: str, limit: int = 200,
+                schema: dict | None = None) -> str | None:
     url = ("https://generativelanguage.googleapis.com/v1beta/models/"
            f"{settings.gemini_model}:generateContent"
            f"?key={settings.gemini_api_key}")
+    config = {"temperature": 0, "maxOutputTokens": limit}
+    if schema:
+        # Форму ответа задаём на уровне запроса, а не просьбой в тексте.
+        # Тогда модель не может вернуть ни пояснений, ни других полей —
+        # разбирать ответ регулярками больше не нужно.
+        config["responseMimeType"] = "application/json"
+        config["responseSchema"] = schema
     data = _post(url, {
         "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {"temperature": 0, "maxOutputTokens": limit},
+        "generationConfig": config,
     }, {})
     if not data:
         return None
@@ -161,14 +169,32 @@ def _ask_groq(prompt: str, limit: int = 200) -> str | None:
         return None
 
 
-def _ask(prompt: str, limit: int = 200) -> str | None:
+def _ask(prompt: str, limit: int = 200, schema: dict | None = None) -> str | None:
     """Спрашивает у того провайдера, который настроен."""
     provider = _ready()
     if provider == "gemini":
-        return _ask_gemini(prompt, limit)
+        return _ask_gemini(prompt, limit, schema)
     if provider == "groq":
         return _ask_groq(prompt, limit)
     return None
+
+
+# Форма ответа для заголовка и описания. Пустая строка вместо пропуска
+# поля: модели проще вернуть её, чем решать, включать ли поле вообще.
+TITLE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "title": {"type": "string"},
+        "summary": {"type": "string"},
+    },
+    "required": ["title", "summary"],
+}
+
+CATEGORY_SCHEMA = {
+    "type": "object",
+    "properties": {"category": {"type": "string"}},
+    "required": ["category"],
+}
 
 
 def _parse_answer(raw: str | None) -> dict:
@@ -221,7 +247,7 @@ def improve(text: str, current_title: str | None = None) -> dict:
 
     snippet = text.strip()[:MAX_INPUT]
     _wait_turn()
-    answer = _parse_answer(_ask(PROMPT + snippet))
+    answer = _parse_answer(_ask(PROMPT + snippet, schema=TITLE_SCHEMA))
     out = {}
 
     title = (answer.get("title") or "").strip()
@@ -286,7 +312,11 @@ def _ask_gemini_photos(text: str, photos: list[bytes]) -> str | None:
            f"?key={settings.gemini_api_key}")
     data = _post(url, {
         "contents": [{"parts": parts}],
-        "generationConfig": {"temperature": 0, "maxOutputTokens": 300},
+        "generationConfig": {
+            "temperature": 0, "maxOutputTokens": 300,
+            "responseMimeType": "application/json",
+            "responseSchema": TITLE_SCHEMA,
+        },
     }, {})
     if not data:
         return None
@@ -356,6 +386,6 @@ def guess_category(text: str, slugs: list[str]) -> str | None:
         return None
     prompt = CATEGORY_PROMPT.format(slugs=", ".join(slugs)) + text.strip()[:800]
     _wait_turn()
-    answer = _parse_answer(_ask(prompt, limit=60))
+    answer = _parse_answer(_ask(prompt, limit=60, schema=CATEGORY_SCHEMA))
     category = (answer.get("category") or "").strip()
     return category if category in slugs else None

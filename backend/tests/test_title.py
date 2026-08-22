@@ -1595,3 +1595,14 @@ def test_number_kept_outside_lists():
     assert parse("iPhone 11 128")["title"] == "iPhone 11 128"
     assert parse("Умная лампа Xiaomi Mi Bedside Lamp 2")["title"] \
         == "Умная лампа Xiaomi Mi Bedside Lamp 2"
+
+
+def test_ai_answer_schema_declared():
+    """
+    Форму ответа задаём на уровне запроса, а не просьбой в тексте: тогда
+    модель не может вернуть ни пояснений, ни других полей.
+    """
+    from app.core.ai_title import CATEGORY_SCHEMA, TITLE_SCHEMA
+    assert set(TITLE_SCHEMA["properties"]) == {"title", "summary"}
+    assert TITLE_SCHEMA["required"] == ["title", "summary"]
+    assert set(CATEGORY_SCHEMA["properties"]) == {"category"}
