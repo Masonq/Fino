@@ -12,6 +12,9 @@ import { useAuth } from '../context/AuthContext'
 import { CITIES, cityLabel } from '../data/cities'
 import CategoryArt from '../components/CategoryArt'
 
+const FEED_SCROLL_KEY = 'plonk_feed_scroll'
+const FEED_COUNT_KEY = 'plonk_feed_count'
+
 const PROMO_SLIDES = [
   { key: 'safe_deal', to: '/search', icon: 'shield', top: '#0E9F6E', grad: 'linear-gradient(180deg, #0E9F6E 0%, #0E9F6E 22%, #1DB388 48%, #34D8A8 78%, #5CE8CC 100%)' },
   { key: 'free_post', to: '/post', icon: 'tag', top: '#F2860C', grad: 'linear-gradient(180deg, #F2860C 0%, #F2860C 22%, #F5A524 48%, #FFC259 78%, #FFD98A 100%)' },
@@ -53,7 +56,12 @@ export default function Home() {
   const sentinelRef = useRef(null)
   const [cols, setCols] = useState(2)
   const [city, setCity] = useState(CITIES[0].slug)
-  const [collapsed, setCollapsed] = useState(false)
+  // Браузер восстанавливает прокрутку не мгновенно, и шапка успевала
+  // развернуться и тут же схлопнуться — при возврате это читалось как рывок.
+  // Берём положение прокрутки сразу, а переход включаем только после того,
+  // как оно установилось.
+  const [collapsed, setCollapsed] = useState(() => window.scrollY > 48)
+  const [settled, setSettled] = useState(false)
   // слайд выбирается один раз при загрузке страницы (как у Avito) — без автокарусели,
   // иначе цвет статус-бара не успевает за сменой и отстаёт
   const [slide] = useState(() => Math.floor(Math.random() * PROMO_SLIDES.length))
@@ -89,7 +97,8 @@ export default function Home() {
     }
     window.addEventListener('scroll', onScroll, { passive: true })
     update()
-    return () => window.removeEventListener('scroll', onScroll)
+    const settle = setTimeout(() => { update(); setSettled(true) }, 250)
+    return () => { clearTimeout(settle); window.removeEventListener('scroll', onScroll) }
   }, [])
 
   useEffect(() => {
@@ -102,7 +111,14 @@ export default function Home() {
   const PAGE = 12
 
   const loadFeed = useCallback(() => (
-    api.searchListings({ lang: i18n.language, limit: PAGE, offset: 0 })
+    // Возвращаемся с тем же числом объявлений, что было открыто: иначе
+    // страница короче прежней, и восстановленная прокрутка упирается в её
+    // конец вместо места, где человек остановился.
+    api.searchListings({
+      lang: i18n.language,
+      limit: Math.min(Math.max(PAGE, Number(sessionStorage.getItem(FEED_COUNT_KEY) || 0)), 96),
+      offset: 0,
+    })
       .then((res) => {
         setListings(res.items || [])
         setFeedTotal(res.total || 0)
@@ -138,6 +154,33 @@ export default function Home() {
 
   useEffect(() => { loadFeed() }, [loadFeed])
 
+  // Лента подгружается порциями, поэтому к моменту, когда браузер
+  // восстанавливает прокрутку, страница ещё короткая и он прижимает её к
+  // низу — человек возвращался из объявления не туда, где был. Запоминаем
+  // место сами и возвращаемся, когда объявления отрисованы.
+  useEffect(() => {
+    const save = () => {
+      sessionStorage.setItem(FEED_SCROLL_KEY, String(window.scrollY))
+      sessionStorage.setItem(FEED_COUNT_KEY, String(listingsRef.current))
+    }
+    window.addEventListener('pagehide', save)
+    return () => { save(); window.removeEventListener('pagehide', save) }
+  }, [])
+
+  // держим длину в ref: обработчик ухода со страницы создаётся один раз
+  const listingsRef = useRef(0)
+  useEffect(() => { listingsRef.current = listings.length }, [listings.length])
+
+  const restored = useRef(false)
+  useEffect(() => {
+    if (restored.current || !feedLoaded || !listings.length) return
+    const saved = Number(sessionStorage.getItem(FEED_SCROLL_KEY) || 0)
+    restored.current = true
+    if (saved > 0) {
+      requestAnimationFrame(() => window.scrollTo(0, saved))
+    }
+  }, [feedLoaded, listings.length])
+
   const handleRefresh = useCallback(async () => {
     await Promise.all([
       loadFeed(),
@@ -150,7 +193,11 @@ export default function Home() {
       <OfflineNotice onRetry={loadFeed} />
     <div className="home">
       <div
-        className={collapsed ? 'avito-banner collapsed' : 'avito-banner'}
+        className={[
+          'avito-banner',
+          collapsed ? 'collapsed' : '',
+          settled ? '' : 'no-anim',
+        ].filter(Boolean).join(' ')}
         style={{
           backgroundColor: collapsed ? '#FFFFFF' : PROMO_SLIDES[slide].top,
           backgroundImage: collapsed ? 'none' : PROMO_SLIDES[slide].grad,

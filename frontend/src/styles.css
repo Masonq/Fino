@@ -1455,3 +1455,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   position:absolute; bottom:calc(18px + env(safe-area-inset-bottom)); left:0; right:0;
   text-align:center; color:rgba(255,255,255,.8); font-size:13px; font-weight:600;
 }
+
+/* Пока положение прокрутки не установилось, шапка меняет вид без перехода —
+   иначе при возврате она разворачивается и схлопывается на глазах. */
+.avito-banner.no-anim,
+.avito-banner.no-anim *{ transition:none !important; }
