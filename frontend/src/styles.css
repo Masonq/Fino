@@ -398,7 +398,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* ===== listing detail ===== */
 .detail-page{ padding-bottom:100px; }
 .detail-photo{ position:relative; aspect-ratio:1/1; overflow:hidden; background:#E9E9E4; }
-.detail-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
+/* Только для одиночного изображения-заглушки: у снимков в галерее свои
+   правила ниже, а это, будучи записано на все img внутри, перебивало их
+   вложенностью — и фото по-прежнему обрезалось. */
+.detail-photo > img{ width:100%; height:100%; object-fit:cover; display:block; }
 .detail-nav{
   position:absolute; top:calc(16px + env(safe-area-inset-top)); left:16px; right:16px;
   display:flex; justify-content:space-between; z-index:2;
@@ -828,12 +831,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   position:relative; flex:0 0 100%; height:100%;
   scroll-snap-align:start; overflow:hidden; background:#E9E9E4;
 }
-.photo-blur{
+.detail-photo .photo-blur{
   position:absolute; inset:0; width:100%; height:100%;
   object-fit:cover; filter:blur(22px) saturate(1.15); transform:scale(1.18);
   opacity:.6;
 }
-.photo-main{
+.detail-photo .photo-main{
   position:relative; width:100%; height:100%; object-fit:contain; display:block;
 }
 .photo-dots{
