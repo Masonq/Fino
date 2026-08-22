@@ -158,7 +158,13 @@ export default function ListingDetail() {
             }}
           >
             {photos.map((ph, i) => (
-              <img key={ph.url || i} src={ph.url} alt="" loading={i === 0 ? 'eager' : 'lazy'} />
+              /* Снимок показываем целиком, а поля по бокам заполняем его же
+                 размытой копией: обрезка по высоте съедала половину
+                 вертикальных фото — а их в объявлениях большинство. */
+              <div className="photo-slide" key={ph.url || i}>
+                <img className="photo-blur" src={ph.url} alt="" aria-hidden="true" />
+                <img className="photo-main" src={ph.url} alt="" loading={i === 0 ? 'eager' : 'lazy'} />
+              </div>
             ))}
           </div>
         ) : <div className="photo-placeholder" />}

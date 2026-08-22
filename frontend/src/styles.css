@@ -397,7 +397,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* ===== listing detail ===== */
 .detail-page{ padding-bottom:100px; }
-.detail-photo{ position:relative; aspect-ratio:4/3.2; overflow:hidden; background:#ddd; }
+.detail-photo{ position:relative; aspect-ratio:1/1; overflow:hidden; background:#E9E9E4; }
 .detail-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
 .detail-nav{
   position:absolute; top:calc(16px + env(safe-area-inset-top)); left:16px; right:16px;
@@ -824,9 +824,17 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   scrollbar-width:none;
 }
 .photo-strip::-webkit-scrollbar{ display:none; }
-.photo-strip img{
-  width:100%; height:100%; flex:0 0 100%;
-  object-fit:cover; scroll-snap-align:start;
+.photo-slide{
+  position:relative; flex:0 0 100%; height:100%;
+  scroll-snap-align:start; overflow:hidden; background:#E9E9E4;
+}
+.photo-blur{
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; filter:blur(22px) saturate(1.15); transform:scale(1.18);
+  opacity:.6;
+}
+.photo-main{
+  position:relative; width:100%; height:100%; object-fit:contain; display:block;
 }
 .photo-dots{
   position:absolute; bottom:12px; left:0; right:0;

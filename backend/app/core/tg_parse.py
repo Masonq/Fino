@@ -23,6 +23,11 @@ _PRICE_RE = re.compile(
     r"(€|eur|евро|rsd|рсд|din(?:ara?)?|дин\.?|динар\w*|\$|usd)",
     re.I,
 )
+# «20к динар», «5k евро» — тысячи сокращают буквой, и без этого цена
+# читалась как двадцать динаров
+_PRICE_K_RE = re.compile(
+    r"(?<![\w])(\d{1,4})\s*[кk]\s*(€|eur|евро|rsd|рсд|din\w*|дин\w*)", re.I)
+
 _PRICE_AFTER_RE = re.compile(
     r"(?:цена|price|cena)\s*[:\-—]?\s*(\d{1,3}(?:[ .,\u00a0]\d{3})+|\d{2,7})",
     re.I,
@@ -128,6 +133,13 @@ def _to_number(raw: str) -> float | None:
 
 
 def extract_price(text: str) -> tuple[float | None, str | None]:
+    m = _PRICE_K_RE.search(text)
+    if m:
+        value = _to_number(m.group(1))
+        if value is not None:
+            return value * 1000, CURRENCY_BY_WORD.get(
+                m.group(2).lower(), "RSD" if m.group(2).lower().startswith(("d", "д")) else None)
+
     m = _PRICE_RE.search(text)
     if m:
         value = _to_number(m.group(1))
