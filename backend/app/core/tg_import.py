@@ -31,6 +31,7 @@ from app.core.database import SessionLocal
 from app.core.tg_classify import classify_sub, decide_for
 from app.core.tg_parse import compose_title, extract_attributes, looks_like_ad, looks_like_spam, parse
 from app.core.tg_sources import CHATS, is_resume, topic_category
+from app.core.watermark import has_watermark
 from app.models import (
     Category, Currency, Language, Listing, ListingPhoto, ListingStatus,
     ListingTranslation, User, UserRole,
@@ -144,16 +145,30 @@ async def collect(client, chat_id: int, meta: dict, days: int, per_category: int
         # порядок — возвращаем исходный, чтобы обложкой стало первое фото
         sources = sorted(albums.get(gid, [msg]), key=lambda m: m.id) if gid else [msg]
         photos = []
+        watermarked = False
         for src in sources:
             if len(photos) >= MAX_PHOTOS:
                 break
             if not src.photo:
                 continue
             data = await client.download_media(src, file=bytes)
-            if data:
-                saved = save_photo(data)
-                if saved:
-                    photos.append(saved)
+            if not data:
+                continue
+            # Знак чужой площадки лежит поперёк середины кадра и снимается
+            # только вместе с картинкой под ним. Такое объявление не берём:
+            # обычно это ещё и перепечатка агентства, а не хозяин вещи.
+            try:
+                if has_watermark(Image.open(BytesIO(data))):
+                    watermarked = True
+                    break
+            except Exception:
+                pass
+            saved = save_photo(data)
+            if saved:
+                photos.append(saved)
+
+        if watermarked:
+            continue
 
         # Для недвижимости заголовок собираем из фактов: первая строка там
         # почти всегда хэштеги или характеристика, и объявление называлось

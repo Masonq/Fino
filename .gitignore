@@ -11,3 +11,7 @@ media/
 # Сессия Telegram: равнозначна доступу к аккаунту, живёт только на сервере
 *.session
 *.session-journal
+
+# Образец водяного знака: двоичный файл, собирается на месте из снимков
+backend/app/core/wm-template.npy
+wm-template.png

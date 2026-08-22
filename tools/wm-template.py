@@ -81,7 +81,11 @@ def main() -> None:
     spread = float(template.max() - template.min())
     vis = np.clip((template - template.min()) / (spread + 1e-6) * 255, 0, 255)
     Image.fromarray(vis.astype(np.uint8)).save(OUT)
+    npy = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                       "..", "backend", "app", "core", "wm-template.npy")
+    np.save(npy, template)
     print(f"образец сохранён: {OUT}")
+    print(f"для импорта: {npy}")
     print(f"выраженность образца: {template.std():.2f} "
           f"(у одиночного кадра около {stack[0].std():.2f})")
 
