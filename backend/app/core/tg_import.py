@@ -49,7 +49,7 @@ from app.core.tg_parse import (
 )
 from app.core.tg_sources import CHATS, is_resume, topic_category
 from app.core.translate import translate_listing
-from app.core.watermark import has_watermark
+from app.core.watermark import has_watermark, ready as watermark_ready
 from app.models import (
     Category, Currency, Language, Listing, ListingPhoto, ListingStatus,
     ListingTranslation, User, UserRole,
@@ -76,6 +76,10 @@ def service_account(db, chat_id: int, title: str) -> User:
     phone = f"tg{abs(chat_id)}"
     user = db.query(User).filter(User.phone == phone).first()
     if user:
+        # Чаты переименовывают, и в карточке продавца оставалось старое
+        # название — покупатель видел источник, которого уже нет.
+        if title and user.display_name != title:
+            user.display_name = title
         return user
     user = User(
         id=uuid.uuid4(),
@@ -576,6 +580,10 @@ async def main() -> None:
         print(f"Telegram просил подождать ещё {left // 60} мин "
               f"({left} с) — заход пропускаем.")
         return
+
+    if not watermark_ready():
+        print("! Образец водяного знака не найден — объявления с чужим "
+              "знаком не отсеиваются.\n  Собрать: python tools/wm-template.py")
 
     client = TelegramClient(settings.tg_session, settings.tg_api_id,
                             settings.tg_api_hash)

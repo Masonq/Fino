@@ -12,10 +12,13 @@
 проявляется. Ни яркость, ни насыщенность, ни детализация знак не выдают:
 у снимков со знаком и без эти меры полностью пересекаются.
 """
+import logging
 import os
 
 import numpy as np
 from PIL import Image
+
+log = logging.getLogger(__name__)
 
 SIZE = (800, 600)
 TEMPLATE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "wm-template.npy")
@@ -48,8 +51,23 @@ def _load() -> np.ndarray | None:
     if not _loaded:
         _loaded = True
         if os.path.exists(TEMPLATE_PATH):
-            _template = _normalized(np.load(TEMPLATE_PATH))
+            try:
+                _template = _normalized(np.load(TEMPLATE_PATH))
+            except Exception as exc:
+                log.warning("образец водяного знака не читается: %s", exc)
+        else:
+            # Без образца отсев не работает вовсе, и объявления агентств
+            # с чужим знаком идут в ленту. Молча это делать нельзя:
+            # снаружи всё выглядит исправным.
+            log.warning(
+                "образец водяного знака не найден (%s) — отсев отключён. "
+                "Собрать: python tools/wm-template.py", TEMPLATE_PATH)
     return _template
+
+
+def ready() -> bool:
+    """Готов ли отсев: без образца он пропускает всё подряд."""
+    return _load() is not None
 
 
 def score(im: Image.Image) -> float:

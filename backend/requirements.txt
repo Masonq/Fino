@@ -11,3 +11,5 @@ passlib[bcrypt]==1.7.4
 python-multipart==0.0.9
 Pillow==10.4.0
 telethon==1.44.0
+# нужен для отсева фотографий с чужим водяным знаком
+numpy==2.1.1

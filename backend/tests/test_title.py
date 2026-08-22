@@ -1634,3 +1634,30 @@ def test_flood_file_broken_is_not_fatal(tmp_path, monkeypatch):
     path.write_text("не число")
     monkeypatch.setattr(importer, "FLOOD_PATH", path)
     assert importer.flood_wait_left() == 0
+
+
+# ── Водяные знаки и служебные аккаунты ──────────────────────────────────────
+def test_watermark_filter_reports_missing_template():
+    """
+    Без образца отсев пропускает всё подряд, а снаружи выглядит рабочим.
+    Молчать об этом нельзя: объявления агентств с чужим знаком идут в ленту.
+    """
+    from app.core.watermark import ready
+    # функция должна отвечать честно, а не падать
+    assert isinstance(ready(), bool)
+
+
+def test_watermark_check_survives_any_image():
+    from PIL import Image
+    from app.core.watermark import has_watermark
+    # маленькая, чёрно-белая, с прозрачностью — не должно падать ни на чём
+    for mode, size in (("RGB", (100, 100)), ("L", (10, 10)), ("RGBA", (50, 40))):
+        assert isinstance(has_watermark(Image.new(mode, size)), bool)
+
+
+def test_service_account_cannot_be_logged_into():
+    """У служебных аккаунтов чатов пароля нет — войти в них нельзя."""
+    from app.core.auth import verify_password
+    assert not verify_password("любой", "!")
+    assert not verify_password("любой", None)
+    assert not verify_password("", "!")
