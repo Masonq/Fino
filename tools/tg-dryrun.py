@@ -19,7 +19,9 @@
 """
 import argparse
 import asyncio
+import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
@@ -64,8 +66,19 @@ def show(row: dict) -> None:
 
 async def run(limit: int, mode: str, suspicious_only: bool,
               note_filter: str | None = None, with_text: bool = False) -> None:
-    client = TelegramClient(settings.tg_session, settings.tg_api_id,
-                            settings.tg_api_hash)
+    # Работаем на копии сессии: настоящая занята часовым заходом по
+    # расписанию, и SQLite отдаёт «database is locked». Копия читает те же
+    # чаты и ничего не пишет обратно.
+    session = Path(f"{settings.tg_session}.session")
+    tmp_dir = Path(tempfile.mkdtemp(prefix="plonk-dryrun-"))
+    tmp_session = tmp_dir / "dryrun.session"
+    if session.exists():
+        shutil.copy2(session, tmp_session)
+    else:
+        print(f"! файл сессии не найден: {session}")
+
+    client = TelegramClient(str(tmp_session.with_suffix("")),
+                            settings.tg_api_id, settings.tg_api_hash)
     await client.start(phone=settings.tg_phone)
 
     totals: dict[str, int] = {}
@@ -115,6 +128,7 @@ async def run(limit: int, mode: str, suspicious_only: bool,
             print(f"  показано: {shown}")
     finally:
         await client.disconnect()
+        shutil.rmtree(tmp_dir, ignore_errors=True)
 
     print("\n─── итог ───")
     for name, count in sorted(totals.items(), key=lambda kv: -kv[1]):
