@@ -30,7 +30,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 from telethon import TelegramClient  # noqa: E402
 
 from app.core.config import settings  # noqa: E402
-from app.core.ai_title import improve as ai_improve  # noqa: E402
+from app.core.ai_title import (  # noqa: E402
+    describe_by_photo as ai_describe_by_photo,
+    guess_category as ai_guess_category,
+    improve as ai_improve,
+)
+from app.core.tg_classify import KEYWORDS  # noqa: E402
 from app.core.tg_classify import explain  # noqa: E402
 from app.core.title_rules import needs_help  # noqa: E402
 from app.core.tg_import import screen, topic_of  # noqa: E402
@@ -125,6 +130,17 @@ async def run(limit: int, mode: str, suspicious_only: bool,
                 if not text:
                     continue
                 reason, parsed = screen(text, chat_id, topic_of(msg))
+
+                # Раздел для тех, кого правила не разобрали: без него
+                # объявление не попадёт в выдачу вообще.
+                if reason == "без категории" and ai_limit > 0:
+                    slug = ai_guess_category(text, list(KEYWORDS))
+                    ai_limit -= 1
+                    print(f'  ИИ раздел: {slug or "не определил"} ← {text[:60]!r}')
+                    if slug:
+                        reason, parsed = screen(text, chat_id, topic_of(msg),
+                                                forced=slug)
+
                 if reason:
                     totals[reason] = totals.get(reason, 0) + 1
                     if mode in ("all", "rejected") and not suspicious_only:
@@ -138,13 +154,20 @@ async def run(limit: int, mode: str, suspicious_only: bool,
                 # записывая. Так видно, стоит ли она бесплатного лимита.
                 if ai_limit > 0 and needs_help(parsed.get("title"),
                                                parsed.get("description")):
-                    better = ai_improve(text, parsed.get("title"))
+                    by_photo = len(text) < 80 and bool(msg.photo)
+                    if by_photo:
+                        raw = await client.download_media(msg, file=bytes)
+                        better = (ai_describe_by_photo(text, [raw]) if raw
+                                  else {})
+                    else:
+                        better = ai_improve(text, parsed.get("title"))
                     ai_limit -= 1
                     totals["спрошено у нейросети"] = totals.get(
                         "спрошено у нейросети", 0) + 1
                     if better.get("title"):
                         totals["улучшено"] = totals.get("улучшено", 0) + 1
-                        print(f'  ИИ: {parsed.get("title")!r} → {better["title"]!r}')
+                        mark = "по фото" if by_photo else "ИИ"
+                        print(f'  {mark}: {parsed.get("title")!r} → {better["title"]!r}')
                         if better.get("summary"):
                             print(f'      {better["summary"][:90]}')
                     else:

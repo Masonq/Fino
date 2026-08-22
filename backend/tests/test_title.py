@@ -978,3 +978,43 @@ def test_recategorize_keeps_category_when_title_says_nothing():
     """Если по заголовку не судить, оставляем то, что определили правила."""
     from app.core.tg_import import recategorize
     assert recategorize("Хорошая вещь", "Продам хорошую вещь", "fashion")[0] == "fashion"
+
+
+# ── Описание по фотографии и раздел от модели ───────────────────────────────
+def test_photo_summary_rejects_invented_facts():
+    """
+    Рассказывая по снимку, модель склонна добавить то, чего знать не
+    может: цену, размер, год. Покупатель этому поверит.
+    """
+    from app.core.ai_title import _PROMISES_RE
+    for invented in ("Стол в отличном состоянии, цена 3000 динар",
+                     "Куртка, размер 46, тёплая",
+                     "Автомобиль 2015 года, ухоженный",
+                     "Диван с гарантией на год"):
+        assert _PROMISES_RE.search(invented), invented
+    assert not _PROMISES_RE.search(
+        "Керамическая ваза белого цвета с рельефным узором, без сколов")
+
+
+def test_photo_description_needs_key_and_photos():
+    from app.core.ai_title import describe_by_photo
+    assert describe_by_photo("текст", []) == {}
+
+
+def test_forced_category_is_not_published_at_once():
+    """Догадку модели о разделе смотрит человек, как и всякое расхождение."""
+    from app.core.tg_import import screen
+    from app.core.tg_sources import CHATS
+
+    chat_id = next(iter(CHATS))
+    topic_id = next(iter(CHATS[chat_id]["topics"]))
+    reason, parsed = screen("Продам штуковину непонятную и полезную в быту",
+                            chat_id, topic_id, forced="home-garden")
+    assert reason is None
+    assert parsed["category_slug"] == "home-garden"
+    assert parsed["publish"] is False
+
+
+def test_guess_category_returns_known_slug_only():
+    from app.core.ai_title import guess_category
+    assert guess_category("Продам что-то", ["fashion", "auto"]) is None

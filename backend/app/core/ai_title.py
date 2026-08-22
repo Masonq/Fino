@@ -19,6 +19,8 @@
 пополняются словари: то, что модель распознала как предмет, а правила нет,
 и есть недостающее слово.
 """
+import base64
+import io
 import json
 import logging
 import re
@@ -45,6 +47,27 @@ _last_call = 0.0
 
 # Куда складываем пары для пополнения словарей.
 LEARN_LOG = Path("ai-titles.jsonl")
+
+# Снимок отдаём уменьшенным: модель узнаёт вещь и на 768 точках, а
+# полноразмерное фото с телефона — это мегабайты и лишние токены.
+PHOTO_SIDE = 768
+PHOTO_LIMIT = 2
+
+PHOTO_PROMPT = """Ты обрабатываешь объявления с барахолки в Сербии.
+
+Даны фотографии вещи и обрывок текста объявления. Верни JSON без пояснений:
+{"title": "...", "summary": "..."}
+
+title — что за вещь на фото, до 60 знаков. Начинай с самой вещи, именительный падеж.
+Марку пиши, только если она читается на фото или есть в тексте.
+
+summary — описание в 1-2 предложениях: что за предмет, из чего, какого вида, в каком состоянии.
+Пиши только то, что видно на снимке или сказано в тексте. Ничего не додумывай:
+ни размеров, ни года, ни цены, ни причины продажи.
+Если понять по фото невозможно, верни пустые строки.
+
+Текст объявления (может быть пустым):
+"""
 
 PROMPT = """Ты обрабатываешь объявления с барахолки в Сербии.
 
@@ -107,13 +130,13 @@ def _post(url: str, payload: dict, headers: dict) -> dict | None:
     return None
 
 
-def _ask_gemini(text: str) -> str | None:
+def _ask_gemini(prompt: str, limit: int = 200) -> str | None:
     url = ("https://generativelanguage.googleapis.com/v1beta/models/"
            f"{settings.gemini_model}:generateContent"
            f"?key={settings.gemini_api_key}")
     data = _post(url, {
-        "contents": [{"parts": [{"text": PROMPT + text}]}],
-        "generationConfig": {"temperature": 0, "maxOutputTokens": 200},
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"temperature": 0, "maxOutputTokens": limit},
     }, {})
     if not data:
         return None
@@ -123,12 +146,12 @@ def _ask_gemini(text: str) -> str | None:
         return None
 
 
-def _ask_groq(text: str) -> str | None:
+def _ask_groq(prompt: str, limit: int = 200) -> str | None:
     data = _post("https://api.groq.com/openai/v1/chat/completions", {
         "model": settings.groq_model,
         "temperature": 0,
-        "max_tokens": 200,
-        "messages": [{"role": "user", "content": PROMPT + text}],
+        "max_tokens": limit,
+        "messages": [{"role": "user", "content": prompt}],
     }, {"Authorization": f"Bearer {settings.groq_api_key}"})
     if not data:
         return None
@@ -136,6 +159,16 @@ def _ask_groq(text: str) -> str | None:
         return data["choices"][0]["message"]["content"]
     except (KeyError, IndexError):
         return None
+
+
+def _ask(prompt: str, limit: int = 200) -> str | None:
+    """Спрашивает у того провайдера, который настроен."""
+    provider = _ready()
+    if provider == "gemini":
+        return _ask_gemini(prompt, limit)
+    if provider == "groq":
+        return _ask_groq(prompt, limit)
+    return None
 
 
 def _parse_answer(raw: str | None) -> dict:
@@ -188,8 +221,7 @@ def improve(text: str, current_title: str | None = None) -> dict:
 
     snippet = text.strip()[:MAX_INPUT]
     _wait_turn()
-    raw = _ask_gemini(snippet) if provider == "gemini" else _ask_groq(snippet)
-    answer = _parse_answer(raw)
+    answer = _parse_answer(_ask(PROMPT + snippet))
     out = {}
 
     title = (answer.get("title") or "").strip()
@@ -221,3 +253,109 @@ def _remember(text: str, was: str | None, now: str) -> None:
             }, ensure_ascii=False) + "\n")
     except OSError:
         pass
+
+
+# ── По фотографии ───────────────────────────────────────────────────────────
+
+def _shrink(data: bytes) -> str | None:
+    """Уменьшает снимок и кодирует его для передачи модели."""
+    try:
+        from PIL import Image
+        img = Image.open(io.BytesIO(data))
+        img = img.convert("RGB")
+        img.thumbnail((PHOTO_SIDE, PHOTO_SIDE))
+        buf = io.BytesIO()
+        img.save(buf, "JPEG", quality=80)
+        return base64.b64encode(buf.getvalue()).decode()
+    except Exception as exc:
+        log.warning("снимок не готовится: %s", exc)
+        return None
+
+
+def _ask_gemini_photos(text: str, photos: list[bytes]) -> str | None:
+    parts: list[dict] = [{"text": PHOTO_PROMPT + text}]
+    for raw in photos[:PHOTO_LIMIT]:
+        encoded = _shrink(raw)
+        if encoded:
+            parts.append({"inline_data": {"mime_type": "image/jpeg",
+                                          "data": encoded}})
+    if len(parts) == 1:                      # ни один снимок не пригодился
+        return None
+    url = ("https://generativelanguage.googleapis.com/v1beta/models/"
+           f"{settings.gemini_model}:generateContent"
+           f"?key={settings.gemini_api_key}")
+    data = _post(url, {
+        "contents": [{"parts": parts}],
+        "generationConfig": {"temperature": 0, "maxOutputTokens": 300},
+    }, {})
+    if not data:
+        return None
+    try:
+        return data["candidates"][0]["content"]["parts"][0]["text"]
+    except (KeyError, IndexError):
+        return None
+
+
+def describe_by_photo(text: str, photos: list[bytes]) -> dict:
+    """
+    Смотрит на снимки и рассказывает, что на них.
+
+    Нужно там, где продавец написал «Продаю. 600дин. Крагуевац.» — из
+    такого текста заголовок не построить никакими правилами, а фотография
+    вещь показывает. Больше нигде звать не надо: где текст есть, он
+    надёжнее снимка.
+    """
+    if not settings.gemini_api_key or not photos:
+        return {}
+
+    _wait_turn()
+    answer = _parse_answer(_ask_gemini_photos(text.strip()[:400], photos))
+    out = {}
+
+    title = (answer.get("title") or "").strip()
+    # Проверку на выдумку тут не применяем: слов из текста в заголовке по
+    # снимку может не быть вовсе — текста-то и нет. Остаются общие
+    # правила: это должно быть название вещи, а не рассуждение.
+    if 6 <= len(title) <= MAX_TITLE and not rejects_as_title(title):
+        out["title"] = title
+
+    summary = (answer.get("summary") or "").strip()
+    if 20 <= len(summary) <= 400 and not _PROMISES_RE.search(summary):
+        out["summary"] = summary
+    return out
+
+
+# Модель, рассказывая по снимку, склонна добавить то, чего знать не может:
+# цену, размеры, год. Такие описания не берём — покупатель поверит.
+_PROMISES_RE = re.compile(
+    r"(\d+\s*(€|eur|евро|rsd|дин)|цена|стоит|размер\s*\d|"
+    r"\d{4}\s*года|гаранти)", re.I)
+
+
+# ── Категория, когда правила не смогли ──────────────────────────────────────
+
+CATEGORY_PROMPT = """Отнеси объявление с барахолки к одному разделу.
+
+Разделы: {slugs}
+
+Верни JSON без пояснений: {{"category": "slug"}}
+Если объявление не подходит ни к одному, верни {{"category": ""}}.
+
+Объявление:
+"""
+
+
+def guess_category(text: str, slugs: list[str]) -> str | None:
+    """
+    Спрашивает раздел для объявления, которое правила не разобрали.
+
+    Такое объявление иначе не попадёт в выдачу вообще — для читателя его
+    просто нет.
+    """
+    if not _ready() or not text.strip():
+        return None
+    prompt = CATEGORY_PROMPT.format(slugs=", ".join(slugs)) + text.strip()[:800]
+    _wait_turn()
+    answer = _parse_answer(_ask(prompt, limit=60))
+    category = (answer.get("category") or "").strip()
+    return category if category in slugs else None

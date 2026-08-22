@@ -29,9 +29,15 @@ from telethon import TelegramClient
 
 from app.core.config import settings
 from app.core.database import SessionLocal
-from app.core.tg_classify import classify, classify_sub, decide_for
+from app.core.tg_classify import (
+    KEYWORDS, classify, classify_sub, decide_for,
+)
 from app.core.progress import Progress
-from app.core.ai_title import improve as ai_improve
+from app.core.ai_title import (
+    describe_by_photo as ai_describe_by_photo,
+    guess_category as ai_guess_category,
+    improve as ai_improve,
+)
 from app.core.title_rules import SUBJECT_BY_CATEGORY, SUBJECT_BY_SUB
 from app.core.title_rules import looks_like_question, needs_help
 from app.core.tg_parse import (
@@ -156,7 +162,8 @@ def recategorize(title: str, text: str,
     return guessed, classify_sub(guessed, title) or classify_sub(guessed, combined)
 
 
-def screen(text: str, chat_id: int, topic_id: int | None) -> tuple[str | None, dict]:
+def screen(text: str, chat_id: int, topic_id: int | None,
+           forced: str | None = None) -> tuple[str | None, dict]:
     """
     Пропускать ли сообщение и что из него вышло.
 
@@ -184,6 +191,10 @@ def screen(text: str, chat_id: int, topic_id: int | None) -> tuple[str | None, d
 
     parsed = parse(text)
     category_slug, publish = decide_for(expected, parsed["searchable"])
+    if forced:
+        # Раздел назвала модель — публикуем не сразу: её догадку смотрит
+        # человек, как и всякое расхождение с темой чата.
+        category_slug, publish = forced, False
     if not category_slug:
         return "без категории", parsed
 
@@ -254,6 +265,15 @@ async def collect(client, chat_id: int, meta: dict, days: int,
 
         topic_id = topic_of(msg)
         reason, parsed = screen(text, chat_id, topic_id)
+        # Объявление без категории не попадёт в выдачу вообще — для
+        # читателя его просто нет. Спросить раздел у модели дешевле, чем
+        # расширять словари вслепую.
+        if reason == "без категории" and ai_budget[0] > 0:
+            slug = ai_guess_category(text, list(KEYWORDS))
+            ai_budget[0] -= 1
+            if slug:
+                bar.bump("категория от нейросети")
+                reason, parsed = screen(text, chat_id, topic_id, forced=slug)
         if reason:
             bar.bump(reason)
             continue
@@ -278,6 +298,7 @@ async def collect(client, chat_id: int, meta: dict, days: int,
         # порядок — возвращаем исходный, чтобы обложкой стало первое фото
         sources = sorted(albums.get(gid, [msg]), key=lambda m: m.id) if gid else [msg]
         photos = []
+        raw_photos: list[bytes] = []
         watermarked = False
         for src in sources:
             if len(photos) >= MAX_PHOTOS:
@@ -296,6 +317,8 @@ async def collect(client, chat_id: int, meta: dict, days: int,
                     break
             except Exception:
                 pass
+            if len(raw_photos) < 2:
+                raw_photos.append(data)
             saved = save_photo(data)
             if saved:
                 photos.append(saved)
@@ -311,10 +334,19 @@ async def collect(client, chat_id: int, meta: dict, days: int,
         # сами: бесплатный тариф считается за сутки, и тратить его весь на
         # один прогон незачем.
         if parsed.pop("ai_wanted", False) and ai_budget[0] > 0:
-            better = ai_improve(text, parsed.get("title"))
+            # Текста почти нет, зато есть снимок: «Продаю. 600дин.
+            # Крагуевац.» — из такого объявления заголовок не построить
+            # никакими правилами, а фотография вещь показывает. Где текст
+            # есть, он надёжнее снимка, поэтому смотрим только сюда.
+            by_photo = (raw_photos and len(text) < 80)
+            better = (ai_describe_by_photo(text, raw_photos) if by_photo
+                      else ai_improve(text, parsed.get("title")))
+            ai_budget[0] -= 1
+
             if better.get("title"):
                 parsed["title"] = better["title"]
-                bar.bump("заголовок от нейросети")
+                bar.bump("заголовок по фото" if by_photo
+                         else "заголовок от нейросети")
                 # Сухой заголовок часто означает, что и категорию правила
                 # угадали мимо: «Держатель для туалетной бумаги» лежал в
                 # недвижимости, потому что предмет опознан не был. Раз
@@ -327,9 +359,11 @@ async def collect(client, chat_id: int, meta: dict, days: int,
                     attrs = extract_attributes(category_slug, parsed["searchable"])
                 elif sub_fixed and not sub_slug:
                     sub_slug = sub_fixed
+
+            # Описание по снимку заменяет пустое, но не вытесняет живой
+            # текст продавца: он всегда точнее.
             if better.get("summary") and len(parsed.get("description", "")) < 40:
                 parsed["description"] = better["summary"]
-            ai_budget[0] -= 1
 
         if is_resume(topic_id):
             attrs["listing_kind"] = "resume"
