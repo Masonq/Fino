@@ -31,6 +31,7 @@ from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.tg_classify import classify_sub, decide_for
 from app.core.progress import Progress
+from app.core.title_rules import looks_like_question
 from app.core.tg_parse import (
     build_title, drop_attribute_lines, extract_attributes,
     looks_like_ad, looks_like_spam, looks_sold, parse,
@@ -147,6 +148,10 @@ def screen(text: str, chat_id: int, topic_id: int | None) -> tuple[str | None, d
         return "не та тема", {}
     if looks_like_spam(text):
         return "спам", {}
+    # «Скажите, есть ли трансфер до Станишичей?» — человек спрашивает совета,
+    # а не продаёт: в ленте объявлений такому посту делать нечего.
+    if looks_like_question(text):
+        return "вопрос в чат", {}
     if looks_like_ad(text):
         return "реклама", {}
     if looks_sold(text):

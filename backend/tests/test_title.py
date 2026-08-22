@@ -519,3 +519,40 @@ def test_delivery_note_does_not_make_a_service():
     from app.core.tg_classify import classify
     text = "Женские куртки, размер XS -- 1500 rsd\nДоставка по Белграду"
     assert classify(text)[0] == "fashion"
+
+
+# ── Обрезанные заголовки ────────────────────────────────────────────────────
+def test_list_number_without_space():
+    """«1.Старинные ножницы» — точку не всегда отделяют пробелом."""
+    text = "1.Старинные портновские ножницы немецкого бренда 3Plus Solingen из кованой стали."
+    assert parse(text)["title"] == "Старинные портновские ножницы немецкого бренда 3Plus Solingen"
+
+
+def test_bracket_detail_dropped():
+    """Скобка с комплектацией вытесняла название за предел строки."""
+    text = ("квадрокоптер DJI Mini 3 Pro (с камерой на 48 МП и датчиками "
+            "препятствий) в расширенной комплектации")
+    assert parse(text)["title"] == "Квадрокоптер DJI Mini 3 Pro"
+
+
+def test_vacancy_title_from_first_line():
+    """«Требуется мойщик» — готовый заголовок, профессия и есть предмет."""
+    text = "Требуется мойщик\n\nМы ищем ответственного сотрудника для работы на мойке"
+    assert parse(text)["title"] == "Требуется мойщик"
+
+
+def test_handyman_pitch_becomes_the_work():
+    """«Готов приехать и помочь» — про автора; заголовок — само дело."""
+    text = ("Готов оперативно приехать и помочь в ремонте по дому.\n"
+            "Много лет работал в сфере ремонта стиральных машин.")
+    assert build_title("services", "repair", text, {},
+                       fallback_title=parse(text).get("title")) == "Ремонт стиральных машин"
+
+
+def test_question_post_is_not_a_listing():
+    """Вопрос в чат — не объявление."""
+    from app.core.title_rules import looks_like_question
+    assert looks_like_question(
+        "Скажите, есть ли трансфер или визаран до Станишичей (Босния) "
+        "из Белграда? Может кто-то возит?")
+    assert not looks_like_question("Продам диван IKEA, 15000 RSD")

@@ -106,13 +106,24 @@ _SELLING_VERB_RE = re.compile(
 # «1. вешалку с решетчатым экраном» — пункт списка под общим «Продам:».
 # Глагол стоит строкой выше, поэтому падеж винительный, а снять его по
 # глаголу нельзя: в самой строке его нет.
-_LIST_NUMBER_RE = re.compile(r"^\d{1,2}\s*[.)]\s+")
+_LIST_NUMBER_RE = re.compile(r"^\d{1,2}\s*[.)]\s*")
 
 # «улица Браће Дроняк» в конце заголовка — адрес, а не название объекта:
 # он есть в описании, а район у нас отдельным полем.
 _ADDRESS_TAIL_RE = re.compile(
     r"[\s,;:—–-]*(?:улиц[аы]|ул\.|адрес|ulica|"
     r"на\s+улице)\s+[^,.;]{2,40}\.?\s*$", re.I)
+
+# Скобка с уточнением в хвосте: «(с камерой на 48 МП и датчиками…)» — это
+# комплектация, из-за неё название обрезалось многоточием.
+_BRACKET_TAIL_RE = re.compile(r"\s*\([^)]{12,}\)?.*$")
+
+# «из кованой стали», «из массива дуба» — материал уточняет вещь, но в
+# заголовке вытесняет её название за предел строки.
+_MATERIAL_TAIL_RE = re.compile(
+    r"[\s,;:—–-]*из\s+(кован\w*|нержаве\w*|натуральн\w*|массив\w*|"
+    r"стали|дерева|дуба|кожи|хлопка|шерсти|льна|стекла|латуни|серебра)"
+    r"[^,.;]{0,20}\.?\s*$", re.I)
 
 # «в отличном состоянии», «б/у» — оценка вещи, а не её название. В конце
 # заголовка занимает место, из-за которого обрезается само название.
@@ -636,6 +647,8 @@ def make_title(text: str, limit: int = 70) -> str | None:
         # «в отличном состоянии» в хвосте вытесняет само название
         line = _CONDITION_TAIL_RE.sub("", line).strip(" ,.;:-—")
         line = _ADDRESS_TAIL_RE.sub("", line).strip(" ,.;:-—")
+        line = _BRACKET_TAIL_RE.sub("", line).strip(" ,.;:-—")
+        line = _MATERIAL_TAIL_RE.sub("", line).strip(" ,.;:-—")
         if not line:
             continue
 
@@ -673,10 +686,11 @@ def make_title(text: str, limit: int = 70) -> str | None:
         # Заглавная — только если строку правили: после снятия приветствия
         # или глагола она начиналась со строчной. Нетронутое название не
         # трогаем, иначе «iPhone» становится «IPhone».
-        if line != raw.strip() and line[:1].islower() and not line[:2].isupper():
-            head = line.split()[0]
-            if head.islower():
-                line = line[0].upper() + line[1:]
+        # Заголовок начинается с заглавной всегда, кроме марок вроде
+        # «iPhone»: там вторая буква заглавная, и трогать слово нельзя.
+        head = line.split()[0] if line.split() else ""
+        if line[:1].islower() and not head[1:2].isupper():
+            line = line[0].upper() + line[1:]
 
         # «Два брата-акробата 3» — тройка осталась от разметки поста
         line = strip_trailing_number(line)
@@ -837,6 +851,12 @@ def build_title(
     # «Просторная трёхкомнатная квартира на Новом Населье», а сборка из
     # фактов даёт сухое «Квартира, 80 м²» и теряет всё остальное.
     if fallback_title and not rejects_as_title(fallback_title):
+        # Услуга с длинным описанием в заголовке обрезается многоточием и
+        # читается хуже, чем короткое название дела.
+        if fallback_title.endswith("…"):
+            short = service_subject(text)
+            if short:
+                return short
         return fallback_title
     composed = compose_title(category_slug, text)
     if composed:
