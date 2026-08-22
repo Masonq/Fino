@@ -6,7 +6,10 @@
 взаимно погасятся, а знак — единственное общее — проявится. Полученный
 образец сохраняется картинкой и тут же проверяется на всей папке.
 
-    python3 tools/wm-template.py файл1.jpg файл2.jpg ...
+    python3 tools/wm-template.py <кусок заголовка объявления>
+
+Имена файлов берём из базы по объявлению: список из пяти длинных имён не
+переживает вставку в терминал с телефона — обрывается на середине.
 """
 import glob
 import os
@@ -35,10 +38,41 @@ def normalized(a: np.ndarray) -> np.ndarray:
     return (a - a.mean()) / (a.std() + 1e-6)
 
 
+def photos_of(query: str) -> list[str]:
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "backend"))
+    from app.core.database import SessionLocal
+    from app.models import Listing, ListingPhoto, ListingTranslation
+
+    db = SessionLocal()
+    try:
+        tr = (
+            db.query(ListingTranslation)
+            .join(Listing, Listing.id == ListingTranslation.listing_id)
+            .filter(Listing.external_source == "telegram")
+            .filter(ListingTranslation.title.ilike(f"%{query}%"))
+            .first()
+        )
+        if not tr:
+            return []
+        photos = (
+            db.query(ListingPhoto)
+            .filter(ListingPhoto.listing_id == tr.listing_id)
+            .order_by(ListingPhoto.sort_order)
+            .all()
+        )
+        print(f"объявление: {tr.title}")
+        return [os.path.basename(p.url) for p in photos]
+    finally:
+        db.close()
+
+
 def main() -> None:
-    marked = sys.argv[1:]
+    query = " ".join(sys.argv[1:]).strip()
+    if not query:
+        print("укажи часть заголовка объявления со знаком"); return
+    marked = photos_of(query)
     if len(marked) < 3:
-        print("нужно хотя бы три файла со знаком"); return
+        print(f"нашлось фото: {len(marked)} — нужно хотя бы три"); return
 
     stack = [highpass(os.path.join(MEDIA, name)) for name in marked]
     template = np.mean(stack, axis=0)
