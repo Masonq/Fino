@@ -198,6 +198,19 @@ def make_title(text: str, limit: int = 70) -> str | None:
         line = _TITLE_PRICE_RE.sub("", line).strip(" ,.;:-—")
         if not line:
             continue
+
+        # Заголовок — это что продают, а не рассказ о вещи. «Велосипед. На
+        # правом шатуне сорвана резьба...» — название здесь первое слово,
+        # остальное относится к описанию.
+        sentence = re.split(r"(?<=[.!?])\s+", line)[0].strip(" .!?,;:-—")
+        if len(sentence) >= 6:
+            line = sentence
+        # Обрываем по первой запятой: до неё называют предмет, после —
+        # состояние, город и условия, которым место в описании.
+        head = line.split(",", 1)[0].strip()
+        if 12 <= len(head) <= limit:
+            line = head
+
         if len(line) <= limit:
             return line
         cut = line[:limit].rsplit(" ", 1)[0]
