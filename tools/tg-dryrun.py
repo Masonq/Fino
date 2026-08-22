@@ -99,6 +99,45 @@ def show(row: dict) -> None:
     print(f'  {row["title"] or "(пусто)":<58.58} │ {price:>13.13} │ {where:<24.24} │ {mark}')
 
 
+def _fingerprint(parsed: dict) -> set[str]:
+    """
+    Смысловой отпечаток без нейросети: значимые слова заголовка и описания.
+
+    Для подсчёта повторов этого достаточно — точное сравнение по смыслу
+    нужно только если повторов окажется много и мы возьмёмся их отсеивать.
+    """
+    text = f'{parsed.get("title") or ""} {parsed.get("description") or ""}'
+    words = re.findall(r"[\w-]{4,}", text.lower().replace("ё", "е"))
+    # берём основы: «диван» и «дивана» — одно слово
+    return {w[:5] for w in words if w not in STOP_WORDS}
+
+
+STOP_WORDS = frozenset("""
+продам продаю продается продаётся отдам отдаю новый новая новое новые
+хорошем отличном идеальном состоянии состояние самовывоз торг цена
+динар динара динаров евро rsd размер размера белград beograd можно есть
+пишите очень также este более менее свой свои этот эта это
+""".split())
+
+
+def _looks_same(a: dict, b: dict) -> bool:
+    """
+    Похожи ли два объявления настолько, что читателю это один товар.
+
+    Смотрим на три вещи разом: общие слова, цену и город. Одних слов мало —
+    «Продам куртку» найдётся у десятерых; одной цены тем более.
+    """
+    if a.get("price") != b.get("price"):
+        return False
+    if a.get("city") != b.get("city"):
+        return False
+    first, second = a["words"], b["words"]
+    if len(first) < 3 or len(second) < 3:
+        return False
+    common = len(first & second)
+    return common * 2 >= min(len(first), len(second))
+
+
 async def run(limit: int, mode: str, suspicious_only: bool,
               note_filter: str | None = None, with_text: bool = False,
               quiet: bool = False, ai_limit: int = 0) -> None:
@@ -119,6 +158,9 @@ async def run(limit: int, mode: str, suspicious_only: bool,
 
     totals: dict[str, int] = {}
     notes: dict[str, int] = {}
+    # Всё отобранное складываем сюда, чтобы в конце посчитать повторы —
+    # в том числе между разными чатами: одно объявление копируют во все.
+    collected: list[dict] = []
     try:
         for chat_id, meta in CHATS.items():
             if not quiet:
@@ -148,6 +190,13 @@ async def run(limit: int, mode: str, suspicious_only: bool,
                     continue
 
                 totals["годных"] = totals.get("годных", 0) + 1
+                collected.append({
+                    "chat": meta["title"],
+                    "title": parsed.get("title"),
+                    "price": parsed.get("price"),
+                    "city": parsed.get("city"),
+                    "words": _fingerprint(parsed),
+                })
                 note = is_suspicious(parsed)
 
                 # Проба нейросети: показываем «было → стало», ничего не
@@ -210,6 +259,21 @@ async def run(limit: int, mode: str, suspicious_only: bool,
     finally:
         await client.disconnect()
         shutil.rmtree(tmp_dir, ignore_errors=True)
+
+    # ── Повторы ─────────────────────────────────────────────────────────
+    pairs = []
+    for i, one in enumerate(collected):
+        for other in collected[i + 1:]:
+            if _looks_same(one, other):
+                pairs.append((one, other))
+                break                     # хватит одной пары на объявление
+    if collected:
+        share = len(pairs) * 100 // len(collected)
+        print(f"\n─── повторы ───")
+        print(f"  похожих объявлений: {len(pairs)} из {len(collected)} ({share}%)")
+        for one, other in pairs[:12]:
+            same_chat = "внутри чата" if one["chat"] == other["chat"] else "между чатами"
+            print(f'  · {str(one["title"])[:38]:<38} ≈ {str(other["title"])[:38]:<38} {same_chat}')
 
     print("\n─── итог ───")
     for name, count in sorted(totals.items(), key=lambda kv: -kv[1]):
