@@ -173,6 +173,13 @@ _NO_SUBJECT_VERB_RE = re.compile(
 # относится. Числа с единицей («на 3 года», «16 ГБ») не трогаем.
 _TRAILING_NUMBER_RE = re.compile(r"[\s,;:—–-]+\d{1,4}\s*$")
 
+# Слова, после которых число — это характеристика вещи, а не остаток
+# разметки: «размер 37», «рост 170», «объём 2».
+_SPEC_WORD_RE = re.compile(
+    r"(размер\w*|р-р|рост|объ[её]м\w*|вес|длина|ширина|высота|диаметр|"
+    r"мощность|ёмкость|емкость|память|возраст|номер|артикул|"
+    r"velicin\w*|veličin\w*|broj)", re.I)
+
 # ── Предмет по подкатегории для собранного заголовка ────────────────────────
 # Единственное число и в том падеже, в каком слово стоит в начале заголовка.
 SUBJECT_BY_SUB: dict[str, str] = {
@@ -431,6 +438,10 @@ def strip_trailing_number(text: str) -> str:
     if last.isascii() and any(c.isalpha() for c in last):
         return text
     if any(c.isdigit() for c in last):
+        return text
+    # «размер 37», «объём 2 л», «рост 170» — число относится к слову перед
+    # ним и мусором не является: без него теряется сама характеристика.
+    if _SPEC_WORD_RE.fullmatch(last):
         return text
     return _TRAILING_NUMBER_RE.sub("", text).strip(" ,.;:—–-")
 

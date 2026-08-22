@@ -719,8 +719,16 @@ _TAIL_JUNK_RE = re.compile(
     r"hitno|povoljno|dostava|moguca\s+zamena|moguća\s+zamena|"
     r"nov[ao]?|nekoriscen\w*|nekorišćen\w*|nikad\s+koriscen\w*|"
     r"nikad\s+korišćen\w*|ispravn\w*|kao\s+nov\w*)$", re.I)
+# Хвост, состоящий только из суммы: «3000 дин», «250e». Голое число сюда
+# не входит — «Туфли Mango, размер 37» теряло размер, а «iPhone 11, 128»
+# объём памяти: без валюты понять, цена это или свойство вещи, нельзя.
 _TAIL_PRICE_ONLY_RE = re.compile(
-    r"^\d[\d\s.,\u00a0]*\s*(€|\$|eur|евро|evr[ao]|e|е|rsd|рсд|din\w*|дин\w*|usd)?$", re.I)
+    r"^\d[\d\s.,\u00a0]*\s*(€|\$|eur|евро|evr[ao]|e|е|rsd|рсд|din\w*|дин\w*|usd)$",
+    re.I)
+
+# Голое число в хвосте: год выпуска или цена без валюты. Мелкие числа не
+# трогаем — «размер 37» и «128» это свойство вещи, а не хвост.
+_TAIL_BARE_NUMBER_RE = re.compile(r"^\d{4,7}$")
 
 # Хвост с одной характеристикой: «200000 km», «72m2», «16 гб». Всё это
 # показывается отдельными полями, а в названии вытесняет саму вещь.
@@ -749,6 +757,7 @@ def _drop_place_tail(line: str) -> str:
                  and not any(ch.isdigit() for ch in tail))
         if (place or _TAIL_JUNK_RE.match(tail)
                 or _TAIL_PRICE_ONLY_RE.match(tail)
+                or _TAIL_BARE_NUMBER_RE.match(tail)
                 or _TAIL_SPEC_RE.match(tail)):
             parts.pop()
             continue
