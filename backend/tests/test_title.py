@@ -177,3 +177,46 @@ def test_real_listings_from_chats():
         candidate = parse(text).get("title")
         got = build_title(category, sub, text, attrs, fallback_title=candidate)
         assert got == expected, text
+
+
+# ── Падеж и мусор вокруг названия ───────────────────────────────────────────
+def test_pronoun_removed_with_the_verb():
+    """«Продаю свою видеокарту» — без снятия местоимения выходило
+    «Свою видеокарта»: глагол ушёл, а падеж правился только у второго слова."""
+    title = build_title(
+        "electronics", "computers",
+        "Продаю свою видеокарту Palit rtx 5070ti 16gb gaming pro-s "
+        "в отличном состоянии.",
+        {}, fallback_title=parse(
+            "Продаю свою видеокарту Palit rtx 5070ti 16gb gaming pro-s "
+            "в отличном состоянии."
+        ).get("title"),
+    )
+    assert title == "Видеокарта Palit rtx 5070ti 16gb gaming pro-s"
+
+
+def test_numbered_list_item_gets_nominative():
+    """Глагол стоит строкой выше («Продам:»), падеж всё равно именительный."""
+    text = "Продам:\n1. вешалку с решетчатым экраном в отличном состояние.\nЦена: 1500 динар."
+    title = build_title("home-garden", "furniture", text, {},
+                        fallback_title=parse(text).get("title"))
+    assert title == "Вешалка с решетчатым экраном"
+
+
+def test_condition_tail_dropped():
+    """Оценка состояния вытесняет само название и обрезает его многоточием."""
+    text = "Продаю свою видеокарту Palit rtx 5070ti в отличном состоянии"
+    assert "состоя" not in (parse(text).get("title") or "")
+
+
+def test_brand_case_untouched():
+    """Правка падежа не должна ломать марку: «iPhone», а не «IPhone»."""
+    assert parse("Продам iPhone 13 Pro 256 ГБ").get("title") == "iPhone 13 Pro 256 ГБ"
+
+
+def test_first_person_self_description_rejected():
+    """«Я мастер массажа» — про автора, а не про услугу."""
+    assert rejects_as_title("Я мастер массажа")
+    text = "Всем привет!\nМеня зовут Анастасия. Я мастер массажа."
+    assert build_title("services", "beauty-services", text, {},
+                       fallback_title=parse(text).get("title")) == "Массаж"
