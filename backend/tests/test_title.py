@@ -1557,3 +1557,41 @@ def test_memory_stays_in_the_title():
     assert parse("iPhone 11, 128gb")["title"] == "iPhone 11, 128gb"
     # а пробег и площадь показываются полями
     assert parse("Квартира, 72 m2")["title"] == "Квартира"
+
+
+# ── Объявления со списками ──────────────────────────────────────────────────
+# В чатах часто продают несколько вещей разом: перечнем через дефис или
+# по номерам. Валюту в таких списках почти никогда не пишут.
+def test_phrase_with_colon_is_not_a_spec_line():
+    """
+    «Продам вещи пакетом: футболки» принималось за характеристику вида
+    «поле: значение» и уходило в обход всех чисток — вместе с глаголом.
+    """
+    assert parse("Отдам даром: книги, посуда, игрушки")["title"] \
+        == "Книги, посуда, игрушки"
+    # настоящая характеристика по-прежнему заголовком не станет
+    assert parse("Площадь: 72м2")["title"] is None
+
+
+def test_price_from_list_line():
+    """«- диван 25000» — сумма в конце строки перечня, валюты нет."""
+    from app.core.tg_parse import extract_price
+    assert extract_price("Продам:\n- диван 25000\n- стол 3000") == (25000, "RSD")
+    assert parse("Продам:\n- диван 25000\n- стол 3000")["title"] == "Диван"
+
+
+def test_year_is_not_a_price():
+    """Год выпуска стоит в конце строки так же, как цена."""
+    from app.core.tg_parse import extract_price
+    assert extract_price("- Golf 5 2008")[0] is None
+    assert parse("- Golf 5 2008")["title"] == "Golf 5 2008"
+
+
+def test_number_kept_outside_lists():
+    """
+    Срезать число на конце можно только у строк перечня: в обычном
+    названии это объём памяти или модель.
+    """
+    assert parse("iPhone 11 128")["title"] == "iPhone 11 128"
+    assert parse("Умная лампа Xiaomi Mi Bedside Lamp 2")["title"] \
+        == "Умная лампа Xiaomi Mi Bedside Lamp 2"
