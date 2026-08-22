@@ -16,7 +16,7 @@ from app.data.cities_data import CITY_ALIASES, DISTRICT_NAMES
 # «от 500» тоже ловим — берём нижнюю границу, она и есть ориентир.
 _PRICE_RE = re.compile(
     r"(?:^|[\s(])(?:от\s*)?(\d{1,3}(?:[ .,\u00a0]\d{3})+|\d{2,7})\s*"
-    r"(€|eur|евро|rsd|рсд|дин|динар|\$|usd)",
+    r"(€|eur|евро|rsd|рсд|din(?:ara?)?|дин\.?|динар\w*|\$|usd)",
     re.I,
 )
 _PRICE_AFTER_RE = re.compile(
@@ -26,7 +26,8 @@ _PRICE_AFTER_RE = re.compile(
 
 CURRENCY_BY_WORD = {
     "€": "EUR", "eur": "EUR", "евро": "EUR",
-    "rsd": "RSD", "рсд": "RSD", "дин": "RSD", "динар": "RSD",
+    "rsd": "RSD", "рсд": "RSD", "din": "RSD", "dinar": "RSD", "dinara": "RSD",
+    "дин": "RSD", "дин.": "RSD", "динар": "RSD", "динара": "RSD", "динаров": "RSD",
     "$": "USD", "usd": "USD",
 }
 
@@ -48,7 +49,7 @@ _MD_MARK_RE = re.compile(r"\*\*|__|`")
 _STRIKE_RE = re.compile(r"~~.*?~~", re.S)
 # «Стол 3000 RSD» — цена уже вынесена в поле, в заголовке она лишняя
 _TITLE_PRICE_RE = re.compile(
-    r"\s*[—-]?\s*\d[\d .,\u00a0]*\s*(?:€|eur|евро|rsd|рсд|дин|динар|\$|usd)\.?\s*$", re.I)
+    r"\s*[—-]?\s*\d[\d .,\u00a0]*\s*(?:€|eur|евро|rsd|рсд|din\w*|дин\w*|\$|usd)\.?\s*$", re.I)
 _SPEC_RE = re.compile(r"^[\w \u0400-\u04ff]{3,24}\s*[:：]\s*\S")
 _EMOJI_RE = re.compile(
     "[\U0001F000-\U0001FAFF\u2190-\u21FF\u2300-\u27BF\uFE0F\u2B00-\u2BFF]+"
@@ -277,7 +278,7 @@ def drop_duplicates(description: str, price: float | None, city: str | None) -> 
 
     price_only = re.compile(
         r"^(?:цена|price|cena)?\s*[:\-—]?\s*\d[\d .,\u00a0]*\s*"
-        r"(?:€|eur|евро|rsd|рсд|дин|динар|\$|usd)?\s*$", re.I)
+        r"(?:€|eur|евро|rsd|рсд|din\w*|дин\w*|\$|usd)?\s*$", re.I)
 
     kept = []
     for line in description.splitlines():
