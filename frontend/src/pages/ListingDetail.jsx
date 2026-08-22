@@ -250,16 +250,26 @@ export default function ListingDetail() {
           {listing.delivery_available && <div className="info-badge grey">{t('detail.delivery')}</div>}
         </div>
 
-        {Object.keys(listing.attributes || {}).length > 0 && (
-          <div className="attr-card">
-            {Object.entries(listing.attributes).map(([key, value]) => (
-              <div className="attr-row" key={key}>
-                <span className="k">{attrLabel(key)}</span>
-                <span className="v">{String(attrValue(key, value))}</span>
-              </div>
-            ))}
-          </div>
-        )}
+        {/* Показываем только то, что описано в схеме категории. Иначе на
+            странице появлялась строка с сырым ключом вроде «condition» —
+            так и случилось, когда признак заполнили там, где поля нет. */}
+        {(() => {
+          const rows = Object.entries(listing.attributes || {})
+            .filter(([key, value]) =>
+              value !== null && value !== '' &&
+              schema.some((f) => f.key === key))
+          if (!rows.length) return null
+          return (
+            <div className="attr-card">
+              {rows.map(([key, value]) => (
+                <div className="attr-row" key={key}>
+                  <span className="k">{attrLabel(key)}</span>
+                  <span className="v">{String(attrValue(key, value))}</span>
+                </div>
+              ))}
+            </div>
+          )
+        })()}
 
         {translation?.description && (
           <div className="desc-block">

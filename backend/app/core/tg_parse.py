@@ -252,11 +252,24 @@ def make_title(text: str, limit: int = 70) -> str | None:
         sentence = re.split(r"(?<=[.!?])\s+", line)[0].strip(" .!?,;:-—")
         if len(sentence) >= 6:
             line = sentence
+        # «Белград | Peugeot 308 | » — город и разделители в заголовке лишние:
+        # город стоит отдельной строкой, а палки остаются от разметки поста
+        parts = [p.strip() for p in re.split(r"\s*[|•]\s*", line) if p.strip()]
+        if len(parts) > 1:
+            meaningful = [p for p in parts if not extract_city(p) or len(p.split()) > 2]
+            if meaningful:
+                line = meaningful[0]
+        line = line.strip(" |•—-")
+
         # «Продаю женские вещи» — название здесь есть, лишний только глагол
-        line = _SELLING_VERB_RE.sub("", line).strip(" ,.;:-—")
-        if not line:
+        without_verb = _SELLING_VERB_RE.sub("", line).strip(" ,.;:-—")
+        if not without_verb:
             continue
-        line = line[0].upper() + line[1:]
+        # Заглавную ставим, только если сняли глагол и слово начиналось со
+        # строчной: иначе «iPhone» становился «IPhone».
+        if without_verb != line and without_verb[:1].islower():
+            without_verb = without_verb[0].upper() + without_verb[1:]
+        line = without_verb
 
         # Обрываем по первой запятой: до неё называют предмет, после —
         # состояние, город и условия, которым место в описании.
@@ -545,6 +558,14 @@ _MILEAGE_RE = re.compile(
 _YEAR_RE = re.compile(r"(?<!\d)(19[89]\d|20[0-3]\d)(?!\d)\s*(?:год\w*|г\.?|\.|,|$)", re.I)
 
 
+# Категории, где спрашивают состояние вещи. У авто своя мера — год и
+# пробег, у жилья и услуг состояния не бывает вовсе.
+WITH_CONDITION = {
+    "electronics", "fashion", "home-garden", "kids",
+    "hobby-sport", "beauty", "business",
+}
+
+
 def extract_attributes(category_slug: str, text: str) -> dict:
     """
     Раскладывает то, что в тексте написано словами, по полям категории.
@@ -557,17 +578,23 @@ def extract_attributes(category_slug: str, text: str) -> dict:
     low = text.lower()
     attrs: dict = {}
 
-    # Состояние спрашивают о любой вещи, поэтому определяем его до разбора
-    # по категориям. «Новый» ищем со словом «состояние» или отдельно, но не
-    # внутри «как новый» — это другое состояние.
-    if any(w in low for w in ("на запчасти", "za delove", "не работает")):
-        attrs["condition"] = "for_parts"
-    elif any(w in low for w in ("как новый", "как новые", "как новая", "kao nov")):
-        attrs["condition"] = "like_new"
-    elif re.search(r"\b(новый|новая|новое|новые|nov[aoi]?)\b", low) and "не нов" not in low:
-        attrs["condition"] = "new"
-    elif any(w in low for w in ("б/у", "бу ", "polovn", "использовал", "ношен")):
-        attrs["condition"] = "used"
+    # Состояние определяем только там, где под него есть поле: у авто,
+    # недвижимости, услуг и работы его нет, и ключ выводился на страницу
+    # сырым, без названия.
+    #
+    # И только рядом со словом о самой вещи. В объявлении о машине
+    # перечисляют, что заменили при обслуживании — «новое моторное масло», —
+    # и машина 2014 года с пробегом 183 тысячи оказывалась новой.
+    if category_slug in WITH_CONDITION:
+        if any(w in low for w in ("на запчасти", "za delove", "не работает")):
+            attrs["condition"] = "for_parts"
+        elif re.search(r"как\s+нов\w+|kao\s+nov", low):
+            attrs["condition"] = "like_new"
+        elif re.search(r"(состояние|state)\W{0,12}нов\w+|нов\w+,?\s*(в\s+)?упаковке"
+                       r"|новый\s+в\s+коробке|не\s+использовал\w*", low):
+            attrs["condition"] = "new"
+        elif any(w in low for w in ("б/у", "б.у", "polovn", "ношен", "поношен")):
+            attrs["condition"] = "used"
 
     if category_slug == "real-estate":
         rooms = extract_rooms(text)
