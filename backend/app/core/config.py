@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     # бесплатный, берётся в Google AI Studio; без ключа парсер работает
     # как прежде, только на правилах.
     gemini_api_key: str | None = None
-    gemini_model: str = "gemini-2.5-flash-lite"
+    gemini_model: str = "gemini-3.5-flash-lite"
     # Запасной провайдер: тоже бесплатный, но с более тесным лимитом по
     # токенам в минуту.
     groq_api_key: str | None = None

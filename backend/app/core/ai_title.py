@@ -94,7 +94,14 @@ def _post(url: str, payload: dict, headers: dict) -> dict | None:
         if exc.code == 429:
             log.info("нейросеть: дневной лимит исчерпан")
         else:
-            log.warning("нейросеть: ответ %s", exc.code)
+            # В теле ответа лежит причина — без неё «ответ 404» ничего не
+            # объясняет, а Google так сообщает и о снятых с публикации
+            # моделях, и о неверном ключе.
+            try:
+                detail = exc.read().decode()[:300]
+            except Exception:
+                detail = ""
+            log.warning("нейросеть: ответ %s %s", exc.code, detail)
     except Exception as exc:                      # сеть, таймаут, разбор
         log.warning("нейросеть недоступна: %s", exc)
     return None
