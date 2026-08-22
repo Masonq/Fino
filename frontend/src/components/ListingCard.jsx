@@ -43,7 +43,9 @@ export default function ListingCard({ listing, large = false }) {
       <div className="s-price">
         {formatPrice(listing.price, listing.currency, i18n.language) || t('detail.no_price')}
       </div>
-      {listing.city && <div className="s-meta">{displayCity(listing.city, i18n.language)}</div>}
+      {/* Рисуем всегда, даже пустым: без города карточка была ниже соседней,
+          и низ ряда получался рваным. */}
+      <div className="s-meta">{listing.city ? displayCity(listing.city, i18n.language) : ''}</div>
     </div>
   )
 }
