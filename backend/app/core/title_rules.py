@@ -348,10 +348,18 @@ def looks_like_question(text: str) -> bool:
     return "?" in head
 
 
+# Строка существует ради контакта: ник, телефон, «пишите в личку».
+_CONTACT_ONLY_RE = re.compile(
+    r"^(мой|наш|мои)?\s*(телеграм|телеграмм|telegram|тг|вайбер|viber|"
+    r"whatsapp|инстаграм|instagram|номер|тел\.?|контакт\w*)\b|^@\w+", re.I)
+
+
 def rejects_as_title(text: str) -> bool:
     """Строка говорит не о предмете — заголовком быть не может."""
     line = text.strip()
     if not line:
+        return True
+    if _CONTACT_ONLY_RE.search(line):
         return True
     # Вопрос — это обращение к читателю, а не название вещи.
     if line.endswith("?"):

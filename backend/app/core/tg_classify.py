@@ -174,6 +174,28 @@ def classify(text: str) -> tuple[str | None, int]:
     return best, scores[best]
 
 
+def explain(text: str) -> dict[str, list[str]]:
+    """
+    Какие слова сработали в каждой категории.
+
+    Нужна для сухого прогона: по одному только итогу («обувь уехала в
+    Украшения») причину не найти, а список совпавших слов показывает её
+    сразу.
+    """
+    folded = _fold(text)
+    out: dict[str, list[str]] = {}
+    for slug, words in KEYWORDS.items():
+        hits = [w for w in words if _matches(w, folded)]
+        if hits:
+            out[slug] = hits
+    for parent, table in SUB_KEYWORDS.items():
+        for slug, words in table.items():
+            hits = [w for w in words if _matches(w, folded)]
+            if hits:
+                out[f"{parent}/{slug}"] = hits
+    return out
+
+
 def decide_for(expected: str | None, text: str) -> tuple[str | None, bool]:
     """
     То же решение, но категория из темы уже известна по номеру.

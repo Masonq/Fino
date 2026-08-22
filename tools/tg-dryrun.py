@@ -29,6 +29,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 from telethon import TelegramClient  # noqa: E402
 
 from app.core.config import settings  # noqa: E402
+from app.core.tg_classify import explain  # noqa: E402
 from app.core.tg_import import screen, topic_of  # noqa: E402
 from app.core.tg_sources import CHATS  # noqa: E402
 from app.core.title_rules import SUBJECT_BY_CATEGORY, SUBJECT_BY_SUB  # noqa: E402
@@ -120,6 +121,13 @@ async def run(limit: int, mode: str, suspicious_only: bool,
                     "note": note,
                 })
                 if with_text:
+                    # Слова, по которым выбрана категория: без них причину
+                    # промаха («обувь в Украшениях») не найти.
+                    hits = explain(text)
+                    if hits:
+                        top = sorted(hits.items(), key=lambda kv: -len(kv[1]))[:4]
+                        print("      ⌕ " + "; ".join(
+                            f"{slug}: {', '.join(words[:4])}" for slug, words in top))
                     # Первая строка исходника: по ней сразу видно, что автор
                     # написал на самом деле и где разбор свернул не туда.
                     first = " ⏎ ".join(text.splitlines()[:3])

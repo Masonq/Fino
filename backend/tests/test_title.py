@@ -595,3 +595,16 @@ def test_music_lessons_are_tutoring():
     assert classify_sub("services", text) == "tutoring"
     assert build_title("services", "tutoring", text, {},
                        fallback_title=parse(text).get("title")) == "Уроки фортепиано"
+
+
+def test_contact_line_is_not_a_title():
+    """«Мой Телеграм @masterSrbija» — контакт, а не название услуги."""
+    from app.core.title_rules import rejects_as_title
+    assert rejects_as_title("Мой Телеграм @masterSrbija")
+    assert rejects_as_title("@masterSrbija")
+
+
+def test_plural_giving_verb_removed():
+    """«Отдаем добавку» — глагол снимается, падеж выправляется."""
+    assert parse("Отдаем добавку Лососевое масло для кошек/собак, за шоколад")["title"] \
+        == "Добавка Лососевое масло для кошек/собак"
