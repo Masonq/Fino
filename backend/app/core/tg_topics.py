@@ -15,12 +15,9 @@ from telethon.tl.functions.messages import GetForumTopicsRequest
 
 from app.core.config import settings
 
-CHATS = [
-    -1002008099238,   # СЕРБИЯ БАРАХОЛКА (объявления купуем продаем)
-    -1001524912570,   # Сербская Барахолка
-    -1001750590723,   # Аналог Авито Сербия
-    -1002620859187,   # 🔎 Барахолка Сербии 🇷🇸
-]
+from app.core.tg_sources import CHATS as SOURCES
+
+CHATS = list(SOURCES)
 
 
 async def main() -> None:
