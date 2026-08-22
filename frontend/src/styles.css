@@ -143,12 +143,21 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 .avito-promo-illustration{ position:relative; }
 .promo-glyph{
-  position:absolute; inset:0; display:flex; align-items:flex-end; justify-content:flex-end;
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
   opacity:0; transform:scale(.9); transition:opacity .45s ease, transform .45s cubic-bezier(.25,.46,.45,.94);
 }
 .promo-glyph.active{ opacity:1; transform:scale(1); }
 .promo-glyph svg{ width:82%; height:82%; opacity:.95; }
-.avito-promo-illustration{ width:74px; height:76px; flex-shrink:0; display:flex; align-items:flex-end; justify-content:flex-end; }
+/* Отступ от угла: у баннера снизу скругление 22px, и прижатая к самому
+   краю картинка упиралась в дугу — выглядело как обрезка. Сдвигаем внутрь,
+   чтобы она стояла в прямой части, а не на повороте. */
+.avito-promo-illustration{
+  /* квадрат: при 74×76 object-fit:contain добавлял бы сверху и снизу
+     разные поля, и картинки снова стояли бы на разной высоте */
+  width:76px; height:76px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  margin:0 4px 8px 0;
+}
 .avito-promo-illustration img{ max-width:100%; max-height:100%; object-fit:contain; }
 
 .city-pill{
