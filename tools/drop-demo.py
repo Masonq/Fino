@@ -18,7 +18,9 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "backend"))
 
 from app.core.database import SessionLocal
-from app.models import Favorite, Listing, ListingPhoto, ListingTranslation, Review, User
+from app.models import (
+    Chat, Favorite, Listing, ListingPhoto, ListingTranslation, Message, Review, User,
+)
 
 
 def main() -> None:
@@ -41,13 +43,26 @@ def main() -> None:
         print(f"  объявлений: {len(listing_ids)}")
         reviews = db.query(Review).filter(Review.target_id.in_(user_ids)).count()
         print(f"  отзывов: {reviews}")
+        chats = db.query(Chat).filter(
+            (Chat.listing_id.in_(listing_ids)) | (Chat.seller_id.in_(user_ids))
+        ).all() if listing_ids or user_ids else []
+        print(f"  переписок: {len(chats)}")
 
         if not confirm:
             print("\nничего не удалено — добавь --yes")
             return
 
+        # Переписки удаляем первыми: если ты писал демо-продавцу при
+        # проверке, чат держит объявление и удалить его не даёт.
+        chat_ids = [c.id for c in chats]
+        if chat_ids:
+            db.query(Message).filter(
+                Message.chat_id.in_(chat_ids)).delete(synchronize_session=False)
+            db.query(Chat).filter(
+                Chat.id.in_(chat_ids)).delete(synchronize_session=False)
+
         if listing_ids:
-            # избранное чистим первым: иначе останутся ссылки на удалённое
+            # избранное чистим следом: иначе останутся ссылки на удалённое
             db.query(Favorite).filter(
                 Favorite.listing_id.in_(listing_ids)).delete(synchronize_session=False)
             db.query(ListingPhoto).filter(
