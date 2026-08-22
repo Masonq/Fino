@@ -1937,3 +1937,25 @@ def test_household_goods_recognised():
     assert classify("Детская кухня ikea duktig")[0] == "kids"
     # а автомобиль автомобилем
     assert classify("Продам машину Volkswagen Golf, пробег 200000")[0] == "auto"
+
+
+def test_model_features_ignore_common_tail():
+    """
+    «Самовывоз, торг уместен, цена, пишите» есть в объявлении любого
+    раздела. Из-за этого хвоста детская одежда путалась со взрослой.
+    """
+    from app.core.category_model import features
+
+    with_tail = features("Детская куртка на мальчика 5 лет. "
+                         "Самовывоз Земун, торг уместен, цена 2000 динар")
+    assert not any("самовывоз" in f for f in with_tail)
+    assert not any("торг" in f for f in with_tail)
+    assert any("детск" in f for f in with_tail)
+
+
+def test_model_weighs_the_opening():
+    """Первые слова — само название вещи, они должны весить больше."""
+    from app.core.category_model import features
+
+    found = features("Коляска Chicco в хорошем состоянии, много деталей")
+    assert found.count("коляск") >= 2
