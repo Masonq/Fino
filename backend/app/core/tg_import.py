@@ -115,7 +115,22 @@ def topic_of(msg) -> int | None:
     return getattr(reply, "reply_to_top_id", None) or getattr(reply, "reply_to_msg_id", None)
 
 
-async def collect(client, chat_id: int, meta: dict, days: int, per_category: int | None):
+def last_imported_id(db, chat_id: int) -> int | None:
+    """Номер самого свежего сообщения, которое мы уже перенесли из чата."""
+    row = (
+        db.query(Listing.external_message_id)
+        .filter(
+            Listing.external_source == "telegram",
+            Listing.external_chat == str(chat_id),
+        )
+        .order_by(Listing.external_message_id.desc())
+        .first()
+    )
+    return row[0] if row else None
+
+
+async def collect(client, chat_id: int, meta: dict, days: int,
+                  per_category: int | None, min_id: int | None = None):
     """Читает чат и возвращает готовые к записи объявления."""
     entity = await client.get_entity(chat_id)
     since = datetime.now(timezone.utc) - timedelta(days=days)
@@ -129,7 +144,10 @@ async def collect(client, chat_id: int, meta: dict, days: int, per_category: int
     messages = []
     albums: dict[int, list] = {}
     bar = Progress(meta["title"])
-    async for msg in client.iter_messages(entity, limit=20000):
+    # Дочитываем до последнего уже перенесённого сообщения, а не до даты.
+    # Эти чаты живые — три-четыре тысячи сообщений в сутки, — и часовой
+    # заход по дате каждый раз перечитывал бы тысячи уже разобранных.
+    async for msg in client.iter_messages(entity, limit=20000, min_id=min_id or 0):
         if msg.date and msg.date < since:
             break
         messages.append(msg)
@@ -358,6 +376,8 @@ async def main() -> None:
     ap.add_argument("--days", type=int, default=30)
     ap.add_argument("--per-category", type=int, default=None,
                     help="взять не больше N объявлений на категорию — для пробного захода")
+    ap.add_argument("--since-last", action="store_true",
+                    help="читать только то, что появилось после прошлого захода")
     ap.add_argument("--no-translate", action="store_true",
                     help="не переводить сразу: при большом заходе это тысячи "
                          "обращений к переводчику. Часовой разбор переведёт позже")
@@ -377,7 +397,13 @@ async def main() -> None:
     added = skipped = 0
     try:
         for chat_id, meta in CHATS.items():
-            items = await collect(client, chat_id, meta, args.days, args.per_category)
+            # При обычном заходе берём только то, что появилось после
+            # прошлого раза. --days без --since-last читает заново.
+            min_id = last_imported_id(db, chat_id) if args.since_last else None
+            if min_id:
+                print(f"{meta['title']}: читаем после сообщения {min_id}")
+            items = await collect(client, chat_id, meta, args.days,
+                                  args.per_category, min_id)
             print(f"{meta['title']}: отобрано {len(items)}")
             for item in items:
                 if store(db, item):
