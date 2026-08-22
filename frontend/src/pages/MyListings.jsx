@@ -5,6 +5,7 @@ import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { displayCity } from '../data/cities'
 import PageHeader from '../components/PageHeader'
+import { formatPrice } from '../utils/money'
 
 const TABS = [
   { key: 'active', labelKey: 'my.tab_active' },
@@ -106,7 +107,7 @@ export default function MyListings() {
                 <div className="my-body">
                   <div className="my-title">{l.title}</div>
                   <div className="my-price">
-                    {l.price ? `${l.price} ${l.currency === 'EUR' ? '€' : l.currency}` : t('detail.no_price')}
+                    {formatPrice(l.price, l.currency, i18n.language) || t('detail.no_price')}
                   </div>
                   <div className="my-meta">
                     {displayCity(l.city, i18n.language)}

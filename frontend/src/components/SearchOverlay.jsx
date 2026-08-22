@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { displayCity } from '../data/cities'
+import { formatPrice } from '../utils/money'
 
 export default function SearchOverlay({ open, onClose }) {
   const { t, i18n } = useTranslation()
@@ -85,7 +86,7 @@ export default function SearchOverlay({ open, onClose }) {
             <div className="suggest-body">
               <div className="suggest-title">{l.title}</div>
               <div className="suggest-meta">
-                {l.price ? `${l.price} ${l.currency === 'EUR' ? '€' : l.currency}` : t('detail.no_price')}
+                {formatPrice(l.price, l.currency, i18n.language) || t('detail.no_price')}
                 {l.city && ` · ${displayCity(l.city, i18n.language)}`}
               </div>
             </div>

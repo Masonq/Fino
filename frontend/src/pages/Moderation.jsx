@@ -5,6 +5,7 @@ import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { displayCity } from '../data/cities'
 import PageHeader from '../components/PageHeader'
+import { formatPrice } from '../utils/money'
 
 export default function Moderation() {
   const { t, i18n } = useTranslation()
@@ -152,7 +153,7 @@ export default function Moderation() {
               <div className="mod-body">
                 <div className="mod-title">{l.title}</div>
                 <div className="mod-price">
-                  {l.price ? `${l.price} ${l.currency === 'EUR' ? '€' : l.currency}` : t('detail.no_price')}
+                  {formatPrice(l.price, l.currency, i18n.language) || t('detail.no_price')}
                 </div>
                 {l.description && <p className="mod-desc">{l.description}</p>}
                 <div className="mod-meta">

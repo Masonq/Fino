@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext'
 import { useFavorites } from '../context/FavoritesContext'
 import ReportButton from '../components/ReportButton'
 import SimilarListings from '../components/SimilarListings'
+import { formatPrice } from '../utils/money'
 
 export default function ListingDetail() {
   const { id } = useParams()
@@ -117,8 +118,7 @@ export default function ListingDetail() {
     // Зарплата без валюты — просто число: «1800» не отличить от чего угодно.
     // Разделитель тысяч ставим только деньгам: «Год» превратился бы в «2 016».
     if (field?.unit === 'currency' && value !== '' && value != null) {
-      const money = Number(value).toLocaleString('sr-RS')
-      return `${money}\u202F${listing.currency === 'EUR' ? '€' : listing.currency}`
+      return formatPrice(value, listing.currency, lang)
     }
     if (field?.type === 'select') {
       const opt = field.options?.find((o) => o.value === value)
@@ -194,9 +194,7 @@ export default function ListingDetail() {
 
       <div className="detail-sheet">
         <div className="detail-price">
-          {listing.price != null
-            ? `${Number(listing.price).toLocaleString('sr-RS')}\u202F${listing.currency === 'EUR' ? '€' : listing.currency}`
-            : t('detail.no_price')}
+          {listing.price != null ? formatPrice(listing.price, listing.currency, lang) : t('detail.no_price')}
         </div>
         {listing.price_negotiable && <div className="neg-pill">{t('detail.negotiable')}</div>}
 

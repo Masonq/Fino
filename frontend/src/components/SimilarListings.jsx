@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import { displayCity } from '../data/cities'
+import { formatPrice } from '../utils/money'
 
 export default function SimilarListings({ listingId }) {
   const { t, i18n } = useTranslation()
@@ -30,7 +31,7 @@ export default function SimilarListings({ listingId }) {
                 : <div className="photo-placeholder" />}
             </div>
             <div className="similar-price">
-              {l.price ? `${l.price} ${l.currency === 'EUR' ? '€' : l.currency}` : t('detail.no_price')}
+              {formatPrice(l.price, l.currency, i18n.language) || t('detail.no_price')}
             </div>
             <div className="similar-name">{l.title}</div>
             {l.city && <div className="similar-city">{displayCity(l.city, i18n.language)}</div>}
