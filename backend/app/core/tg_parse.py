@@ -69,6 +69,10 @@ _TITLE_PRICE_RE = re.compile(
 _SPEC_RE = re.compile(r"^[\w \u0400-\u04ff]{3,24}\s*[:：]\s*\S")
 # Глагол в начале ничего не добавляет: в ленте и так всё продаётся
 _SELLING_VERB_RE = re.compile(r"^(продам|продаю|продается|продаётся|prodajem|na prodaju)\s+", re.I)
+# «Срочно!», «Внимание!» — привлекают взгляд в чате, но вещь не называют
+_SHOUT_RE = re.compile(
+    r"^(срочно|очень срочно|внимание|важно|только сегодня|акция|hitno|pažnja)"
+    r"[\s!.,:—-]*", re.I)
 # Строки, которые к названию вещи отношения не имеют: сроки, призывы
 # написать, причина продажи. Заголовком становиться не должны.
 _SERVICE_LINE_RE = re.compile(
@@ -228,8 +232,8 @@ def make_title(text: str, limit: int = 70) -> str | None:
     fallback = None
     for raw in text.splitlines():
         line = _EMOJI_RE.sub("", raw).strip(" \t•·—-*#")
-        # «Всем привет!» как заголовок делает ленту неразличимой
-        line = strip_greeting(line)
+        # «Всем привет!» и «Срочно!» как заголовок делают ленту неразличимой
+        line = _SHOUT_RE.sub("", strip_greeting(line))
         # пропускаем строки из одних эмодзи, решёток и знаков
         if len(re.sub(r"[^\w]", "", line, flags=re.UNICODE)) < 8:
             continue
@@ -249,9 +253,13 @@ def make_title(text: str, limit: int = 70) -> str | None:
         # Заголовок — это что продают, а не рассказ о вещи. «Велосипед. На
         # правом шатуне сорвана резьба...» — название здесь первое слово,
         # остальное относится к описанию.
-        sentence = re.split(r"(?<=[.!?])\s+", line)[0].strip(" .!?,;:-—")
-        if len(sentence) >= 6:
-            line = sentence
+        # Берём первое предложение, в котором есть что-то кроме восклицания:
+        # «Срочно! Продаю растения по 2500 динар» начинается не с названия.
+        for part in re.split(r"(?<=[.!?])\s+", line):
+            candidate = _SHOUT_RE.sub("", part).strip(" .!?,;:-—")
+            if len(candidate) >= 6:
+                line = candidate
+                break
         # «Белград | Peugeot 308 | » — город и разделители в заголовке лишние:
         # город стоит отдельной строкой, а палки остаются от разметки поста
         parts = [p.strip() for p in re.split(r"\s*[|•]\s*", line) if p.strip()]
@@ -270,6 +278,15 @@ def make_title(text: str, limit: int = 70) -> str | None:
         if without_verb != line and without_verb[:1].islower():
             without_verb = without_verb[0].upper() + without_verb[1:]
         line = without_verb
+
+        # «Растения по 2500 динар каждое» — цена стоит строкой выше, в
+        # заголовке она только занимает место
+        line = re.sub(
+            r"\s*(по|за)\s+\d[\d .,\u00a0]*\s*"
+            r"(?:€|eur|евро|rsd|рсд|din\w*|дин\w*)?\s*"
+            r"(?:кажд\w*|штук\w*|шт\.?)?\s*$", "", line, flags=re.I).strip(" ,.;:-—")
+        if not line:
+            continue
 
         # Обрываем по первой запятой: до неё называют предмет, после —
         # состояние, город и условия, которым место в описании.
