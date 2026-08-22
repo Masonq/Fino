@@ -226,9 +226,9 @@
     "bad": "Had issues",
     "not_now": "Not now",
     "thanks": "Thanks for the review",
-    "count": "{{count}} review",
-    "count_plural": "{{count}} reviews",
-    "not_shown": "No reviews published yet"
+    "not_shown": "No reviews published yet",
+    "count_one": "{{count}} review",
+    "count_other": "{{count}} reviews"
   },
   "edit": {
     "title": "Edit listing",

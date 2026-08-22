@@ -59,8 +59,10 @@ DEMO_LISTINGS = [
 
 # Отзывы демо-продавца. Раньше рейтинг был проставлен числом (4.8 из 23),
 # а самих отзывов не было — страница показывала оценку и пустоту под ней.
+DEMO_SELLER_NAME = "Ana M. (demo)"
+
 DEMO_REVIEWS = [
-    (5, "Ана М.", "Sve preporuke, brza i ljubazna komunikacija."),
+    (5, "Stefan V.", "Sve preporuke, brza i ljubazna komunikacija."),
     (5, "Marko P.", "Tačno kako je opisano, bez iznenađenja."),
     (4, "Ирина К.", "Всё хорошо, спасибо. Немного задержались со временем."),
     (5, "Nikola S.", None),
@@ -117,7 +119,7 @@ def run():
                 id=uuid.uuid4(),
                 phone=DEMO_PHONE,
                 hashed_password="demo",
-                display_name="Ана М. (demo)",
+                display_name=DEMO_SELLER_NAME,
                 role=UserRole.seller_private,
                 default_language=Language.ru,
                 phone_verified=True,
@@ -125,6 +127,11 @@ def run():
             db.add(seller)
             db.flush()
             print("created demo seller")
+
+        # Имя правим и существующему: раньше оно задавалось только при
+        # создании, и «(демо)» осталось бы на английской странице навсегда
+        if seller.display_name != DEMO_SELLER_NAME:
+            seller.display_name = DEMO_SELLER_NAME
 
         _seed_reviews(db, seller)
 

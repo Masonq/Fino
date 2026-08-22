@@ -187,9 +187,22 @@ def flatten(data, prefix=""):
     return out
 
 
-ru_keys = flatten(ru)
+# Число форм множественного числа у языков разное: в английском их две,
+# в русском четыре. Сравниваем по базовому ключу, иначе честный перевод выглядит
+# как пробел.
+PLURAL_SUFFIXES = ("_zero", "_one", "_two", "_few", "_many", "_other")
+
+
+def base_key(key):
+    for suffix in PLURAL_SUFFIXES:
+        if key.endswith(suffix):
+            return key[: -len(suffix)]
+    return key
+
+
+ru_keys = {base_key(k) for k in flatten(ru)}
 for lang in ("en", "sr"):
-    other = flatten(json.load(open(os.path.join(locales, f"{lang}.json"), encoding="utf-8")))
+    other = {base_key(k) for k in flatten(json.load(open(os.path.join(locales, f"{lang}.json"), encoding="utf-8")))}
     gap = ru_keys - other
     check(f"перевод {lang} полный", not gap, f"не переведено: {sorted(gap)[:5]}" if gap else "")
 

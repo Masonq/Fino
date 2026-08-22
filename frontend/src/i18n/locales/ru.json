@@ -226,9 +226,11 @@
     "bad": "Были проблемы",
     "not_now": "Не сейчас",
     "thanks": "Спасибо за отзыв",
-    "count": "{{count}} отзыв",
-    "count_plural": "{{count}} отзывов",
-    "not_shown": "Отзывы пока не опубликованы"
+    "not_shown": "Отзывы пока не опубликованы",
+    "count_one": "{{count}} отзыв",
+    "count_few": "{{count}} отзыва",
+    "count_many": "{{count}} отзывов",
+    "count_other": "{{count}} отзыва"
   },
   "edit": {
     "title": "Редактирование",
