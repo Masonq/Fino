@@ -28,6 +28,15 @@ export default function App() {
 
   const navType = useNavigationType()
 
+  // Браузер восстанавливает прокрутку сам и делает это после нашего кода,
+  // причём считает её для страницы, которая ещё не догрузилась. Он
+  // перезаписывал верное положение — берём восстановление на себя.
+  useLayoutEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual'
+    }
+  }, [])
+
   useLayoutEffect(() => {
     // Наверх прокручиваем только при переходе вперёд. При возврате экран
     // сам восстанавливает своё положение, и этот сброс отменял его — из-за

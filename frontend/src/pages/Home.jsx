@@ -68,6 +68,9 @@ export default function Home() {
   // Берём положение прокрутки сразу, а переход включаем только после того,
   // как оно установилось.
   const [collapsed, setCollapsed] = useState(() => (cached?.scroll || window.scrollY) > 48)
+  // сколько прокрутки предстоит восстановить — до этого шапку не трогаем
+  const pendingScroll = useRef(cached?.scroll || 0)
+  const restored = useRef(false)
   const [settled, setSettled] = useState(false)
   // слайд выбирается один раз при загрузке страницы (как у Avito) — без автокарусели,
   // иначе цвет статус-бара не успевает за сменой и отстаёт
@@ -91,6 +94,10 @@ export default function Home() {
     let ticking = false
     const update = () => {
       ticking = false
+      // Пока положение не восстановлено, прокрутка равна нулю, и шапка
+      // разворачивалась — а сразу после восстановления схлопывалась обратно.
+      // Именно это и выглядело как рывок при возврате.
+      if (pendingScroll.current && !restored.current) return
       const y = window.scrollY
       // сворачиваем после 48px, а разворачиваем уже на 6px — Safari начинает
       // перекрашивать статус-бар сразу при движении вверх, и при большом пороге
@@ -189,11 +196,21 @@ export default function Home() {
   // Прокрутку выставляем до первой отрисовки — из useLayoutEffect. Через
   // requestAnimationFrame страница успевала показаться сверху и лишь потом
   // прыгала на место.
-  const restored = useRef(false)
   useLayoutEffect(() => {
     if (restored.current || !cached?.scroll || !listings.length) return
     restored.current = true
-    window.scrollTo(0, cached.scroll)
+    const target = cached.scroll
+    window.scrollTo(0, target)
+    // Картинки и шрифты догружаются после первой отрисовки и слегка меняют
+    // высоту, а iOS вдобавок правит прокрутку под свою панель. Повторяем
+    // пару раз в течение полусекунды — иначе положение уезжает уже после
+    // того, как мы его выставили.
+    let tries = 0
+    const id = setInterval(() => {
+      if (Math.abs(window.scrollY - target) > 2) window.scrollTo(0, target)
+      if (++tries >= 8) clearInterval(id)
+    }, 60)
+    return () => clearInterval(id)
   }, [cached, listings.length])
 
   const handleRefresh = useCallback(async () => {
