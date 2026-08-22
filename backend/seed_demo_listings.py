@@ -95,6 +95,11 @@ def _seed_reviews(db, seller):
             target_id=seller.id,
             rating=rating,
             comment=comment,
+            # Отзывы показываются только опубликованные — без этого демо-продавец
+            # снова остался бы с оценкой и пустым списком под ней
+            verified_contact=True,
+            is_published=True,
+            published_at=datetime.utcnow(),
         ))
 
     ratings = [r for r, _, _ in DEMO_REVIEWS]

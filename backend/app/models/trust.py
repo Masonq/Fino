@@ -21,7 +21,7 @@ class Review(Base):
     comment: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Отзыв допустим только если между сторонами был подтверждённый контакт (чат) — анти-накрутка
-    verified_contact: Mapped[bool] = mapped_column(Integer, default=False)
+    verified_contact: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # Отзывы скрыты, пока обе стороны не выскажутся (или пока не истечёт срок).
     # Иначе первый отзыв виден второй стороне, и честно писать страшно —
