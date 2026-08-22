@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.database import get_db
 from app.models import User
+from app.core.clock import utcnow
 
 ALGORITHM = "HS256"
 ACCESS_TTL = timedelta(days=30)
@@ -51,8 +52,8 @@ def verify_code(code: str, stored_hash: str) -> bool:
 def create_access_token(user_id: uuid.UUID) -> str:
     payload = {
         "sub": str(user_id),
-        "exp": datetime.utcnow() + ACCESS_TTL,
-        "iat": datetime.utcnow(),
+        "exp": utcnow() + ACCESS_TTL,
+        "iat": utcnow(),
     }
     return jwt.encode(payload, settings.secret_key, algorithm=ALGORITHM)
 
@@ -90,7 +91,7 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
 
     # Отмечаем активность, но не чаще раза в минуту — иначе запись в базу
     # на каждый запрос, а их десятки в минуту.
-    now = datetime.utcnow()
+    now = utcnow()
     if not user.last_seen_at or (now - user.last_seen_at).total_seconds() > 60:
         user.last_seen_at = now
         db.commit()

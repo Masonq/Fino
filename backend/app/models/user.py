@@ -7,6 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
+from app.core.clock import utcnow
 
 
 class UserRole(str, enum.Enum):
@@ -65,7 +66,7 @@ class User(Base):
     last_seen_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     block_reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
 
     listings = relationship("Listing", back_populates="owner")

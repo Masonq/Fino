@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field, field_validator
 from app.core.auth import get_current_user
 from app.core.database import get_db
 from app.models import Listing, ListingStatus, ListingTranslation, ListingPhoto, Category, User
+from app.core.clock import utcnow
 
 router = APIRouter(prefix="/api/listings", tags=["listings"])
 
@@ -114,7 +115,7 @@ def create_listing(
         location_lng=payload.location_lng,
         hide_exact_address=payload.hide_exact_address,
         status=ListingStatus.pending_moderation,
-        expires_at=datetime.utcnow() + timedelta(days=LISTING_TTL_DAYS),
+        expires_at=utcnow() + timedelta(days=LISTING_TTL_DAYS),
     )
     db.add(listing)
     db.flush()

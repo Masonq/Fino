@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 
 from app.models import SavedSearch, Listing, ListingTranslation
+from app.core.clock import utcnow
 
 log = logging.getLogger(__name__)
 
@@ -64,7 +65,7 @@ def notify_subscribers(db: Session, listing: Listing) -> int:
     searches = db.query(SavedSearch).filter(SavedSearch.notify_enabled.is_(True)).all()
 
     sent = 0
-    now = datetime.utcnow()
+    now = utcnow()
 
     for s in searches:
         # себе не уведомляем

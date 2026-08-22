@@ -19,6 +19,7 @@ from app.models import (
     User, Chat, Message, Listing, ListingStatus,
     SavedSearch, ReviewInvite,
 )
+from app.core.clock import utcnow
 
 log = logging.getLogger(__name__)
 
@@ -121,8 +122,8 @@ def render(data: dict) -> tuple[str, str] | None:
 
 def send_digests(db: Session) -> int:
     """Проходит по всем, кому есть что сказать, и отправляет сводку."""
-    since = datetime.utcnow() - PERIOD
-    active_cutoff = datetime.utcnow() - SEEN_RECENTLY
+    since = utcnow() - PERIOD
+    active_cutoff = utcnow() - SEEN_RECENTLY
 
     # только те, у кого есть почта и нет Telegram: у кого есть Telegram,
     # уже получили уведомления мгновенно

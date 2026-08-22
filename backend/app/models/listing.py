@@ -7,6 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 
 from app.core.database import Base
+from app.core.clock import utcnow
 
 
 class ListingStatus(str, enum.Enum):
@@ -84,8 +85,8 @@ class Listing(Base):
 
     published_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, index=True)
     expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
 
     owner = relationship("User", back_populates="listings")
     category = relationship("Category", back_populates="listings")

@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 
 from app.core.deal_detection import deal_score, is_ready_to_ask, THRESHOLD
 from app.models import Chat, Message, Review, ReviewInvite, User
+from app.core.clock import utcnow
 
 log = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ def user_is_tired(db: Session, user_id) -> bool:
         .filter(
             ReviewInvite.user_id == user_id,
             ReviewInvite.responded.is_(False),
-            ReviewInvite.sent_at < datetime.utcnow() - REMIND_AFTER,
+            ReviewInvite.sent_at < utcnow() - REMIND_AFTER,
         )
         .count()
     )
@@ -46,7 +47,7 @@ def too_many_recently(db: Session, user_id) -> bool:
     Активный продавец может закрыть десять сделок за день. Десять приглашений
     подряд — это спам, на который перестанут реагировать вообще.
     """
-    week_ago = datetime.utcnow() - timedelta(days=7)
+    week_ago = utcnow() - timedelta(days=7)
     recent = (
         db.query(ReviewInvite)
         .filter(ReviewInvite.user_id == user_id, ReviewInvite.sent_at > week_ago)
@@ -158,7 +159,7 @@ def scan_recent_deals(db: Session, hours_back: int = 72) -> int:
     состоявшейся, даже если объявление не отметили проданным — многие
     продавцы этого просто не делают.
     """
-    since = datetime.utcnow() - timedelta(hours=hours_back)
+    since = utcnow() - timedelta(hours=hours_back)
     chats = (
         db.query(Chat)
         .filter(Chat.last_message_at.isnot(None), Chat.last_message_at > since)
@@ -187,7 +188,7 @@ def scan_recent_deals(db: Session, hours_back: int = 72) -> int:
 
 def send_reminders(db: Session) -> int:
     """Одно напоминание через три дня — и на этом всё."""
-    cutoff = datetime.utcnow() - REMIND_AFTER
+    cutoff = utcnow() - REMIND_AFTER
     invites = (
         db.query(ReviewInvite)
         .filter(
@@ -211,7 +212,7 @@ def send_reminders(db: Session) -> int:
             kind="review_request",
             is_read=False,
         ))
-        inv.reminded_at = datetime.utcnow()
+        inv.reminded_at = utcnow()
         sent += 1
 
     db.commit()

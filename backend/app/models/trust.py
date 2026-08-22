@@ -7,6 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 
 from app.core.database import Base
+from app.core.clock import utcnow
 
 
 class Review(Base):
@@ -38,7 +39,7 @@ class Review(Base):
     is_published: Mapped[bool] = mapped_column(Boolean, default=False)
     published_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
 class ReportReason(str, enum.Enum):
@@ -72,5 +73,5 @@ class Report(Base):
     comment: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[ReportStatus] = mapped_column(Enum(ReportStatus), default=ReportStatus.pending)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     resolved_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

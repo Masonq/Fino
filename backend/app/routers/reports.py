@@ -12,6 +12,7 @@ from app.models import (
     Report, ReportReason, ReportStatus,
     Listing, ListingStatus, User, UserRole,
 )
+from app.core.clock import utcnow
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
 
@@ -61,7 +62,7 @@ def create_report(
         raise HTTPException(400, "already_reported")
 
     # ограничение, чтобы жалобами нельзя было воевать с конкурентами
-    today = datetime.utcnow() - timedelta(days=1)
+    today = utcnow() - timedelta(days=1)
     recent = db.query(Report).filter(
         Report.reporter_id == user.id, Report.created_at > today
     ).count()
@@ -157,7 +158,7 @@ def resolve(
     if not report:
         raise HTTPException(404, "not_found")
 
-    now = datetime.utcnow()
+    now = utcnow()
 
     if payload.action == "dismiss":
         # Отклоняем все жалобы на этот объект: раз объект в порядке,

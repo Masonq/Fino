@@ -42,6 +42,7 @@ from app.models import (
     Category, Currency, Language, Listing, ListingPhoto, ListingStatus,
     ListingTranslation, User, UserRole,
 )
+from app.core.clock import utcnow
 
 MAX_PHOTOS = 5
 TRANSLATE = True
@@ -304,7 +305,7 @@ def store(db, item: dict) -> bool:
         return False
 
     owner = service_account(db, item["chat_id"], item["chat_title"])
-    now = datetime.utcnow()
+    now = utcnow()
     published = item["publish"]
 
     listing = Listing(

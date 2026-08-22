@@ -10,6 +10,7 @@ from app.core.auth import get_current_user
 from app.core.database import get_db
 from app.routers.listings import pick_translation
 from app.models import Chat, Message, Listing, User
+from app.core.clock import utcnow
 
 router = APIRouter(prefix="/api/chats", tags=["chats"])
 
@@ -158,7 +159,7 @@ def send_message(
         text=payload.text,
     )
     db.add(message)
-    chat.last_message_at = datetime.utcnow()
+    chat.last_message_at = utcnow()
     db.commit()
     db.refresh(message)
 

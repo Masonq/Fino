@@ -7,6 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
+from app.core.clock import utcnow
 
 
 class VerifyChannel(str, enum.Enum):
@@ -30,4 +31,4 @@ class VerificationCode(Base):
 
     used: Mapped[bool] = mapped_column(Boolean, default=False)
     expires_at: Mapped[datetime] = mapped_column(DateTime, index=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)

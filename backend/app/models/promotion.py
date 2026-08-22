@@ -7,6 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
+from app.core.clock import utcnow
 
 
 class PromotionType(str, enum.Enum):
@@ -26,5 +27,5 @@ class Promotion(Base):
     price_paid: Mapped[float] = mapped_column(Numeric(10, 2))
     currency: Mapped[str] = mapped_column(String(3), default="EUR")
 
-    starts_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    starts_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
+from app.core.clock import utcnow
 
 
 class ReviewInvite(Base):
@@ -32,7 +33,7 @@ class ReviewInvite(Base):
     score: Mapped[int] = mapped_column(Integer, default=0)
     reasons: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
-    sent_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    sent_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     reminded_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     responded: Mapped[bool] = mapped_column(Boolean, default=False)
     dismissed: Mapped[bool] = mapped_column(Boolean, default=False)

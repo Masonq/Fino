@@ -12,6 +12,7 @@ from app.core.auth import (
 from app.core.database import get_db
 from app.core.notify import send_code
 from app.models import User, VerificationCode, VerifyChannel
+from app.core.clock import utcnow
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -81,7 +82,7 @@ def request_code(payload: RequestCodeIn, db: Session = Depends(get_db)):
         db.query(VerificationCode)
         .filter(
             VerificationCode.destination == destination,
-            VerificationCode.created_at > datetime.utcnow() - RESEND_COOLDOWN,
+            VerificationCode.created_at > utcnow() - RESEND_COOLDOWN,
         )
         .first()
     )
@@ -93,7 +94,7 @@ def request_code(payload: RequestCodeIn, db: Session = Depends(get_db)):
         destination=destination,
         channel=payload.channel,
         code_hash=hash_code(code),
-        expires_at=datetime.utcnow() + CODE_TTL,
+        expires_at=utcnow() + CODE_TTL,
     ))
     db.commit()
 
@@ -110,7 +111,7 @@ def verify_code_endpoint(payload: VerifyCodeIn, db: Session = Depends(get_db)):
         .filter(
             VerificationCode.destination == destination,
             VerificationCode.used.is_(False),
-            VerificationCode.expires_at > datetime.utcnow(),
+            VerificationCode.expires_at > utcnow(),
         )
         .order_by(VerificationCode.created_at.desc())
         .first()

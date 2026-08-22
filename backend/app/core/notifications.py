@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.models import User
+from app.core.clock import utcnow
 
 log = logging.getLogger(__name__)
 
@@ -64,7 +65,7 @@ def notify(db: Session, user_id, text: str, force: bool = False,
         return False
 
     if not force and user.last_seen_at:
-        if datetime.utcnow() - user.last_seen_at < ACTIVE_WINDOW:
+        if utcnow() - user.last_seen_at < ACTIVE_WINDOW:
             return False   # он в приложении, увидит сам
 
     if user.telegram_id:

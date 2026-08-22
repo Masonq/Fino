@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.core.auth import get_current_user
 from app.core.database import get_db
 from app.models import Listing, ListingStatus, User, UserRole
+from app.core.clock import utcnow
 
 router = APIRouter(prefix="/api/moderation", tags=["moderation"])
 
@@ -71,7 +72,7 @@ def approve(
     # Раньше поле оставалось пустым, из-за чего сортировка «сначала новые»
     # работала непредсказуемо.
     if not listing.published_at:
-        listing.published_at = datetime.utcnow()
+        listing.published_at = utcnow()
     db.commit()
 
     try:

@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
+from app.core.clock import utcnow
 
 
 class Chat(Base):
@@ -19,7 +20,7 @@ class Chat(Base):
     # Раскрыт ли телефон друг другу (защита от спама до обоюдного согласия)
     phone_revealed: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     last_message_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     messages = relationship("Message", back_populates="chat", cascade="all, delete-orphan")
@@ -43,6 +44,6 @@ class Message(Base):
     kind: Mapped[str] = mapped_column(String(24), default="user")   # user | review_request
 
     is_read: Mapped[bool] = mapped_column(Boolean, default=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     chat = relationship("Chat", back_populates="messages")

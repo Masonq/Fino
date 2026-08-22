@@ -21,6 +21,7 @@ from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.tg_parse import looks_sold
 from app.models import Listing, ListingStatus
+from app.core.clock import utcnow
 
 # Сколько последних сообщений чата просматриваем ради ответов. Пометку
 # «продано» пишут вскоре после объявления, а не спустя тысячу сообщений.
@@ -127,7 +128,7 @@ async def main() -> None:
             # Сначала возраст: старое объявление можно снять, не тревожа
             # Telegram лишним запросом.
             if args.days and listing.published_at:
-                age = datetime.utcnow() - listing.published_at
+                age = utcnow() - listing.published_at
                 if age > timedelta(days=args.days):
                     print(f"  {listing.id}: старше {args.days} дней")
                     if not args.dry_run:

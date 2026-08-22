@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 
 from app.models import Chat, Message, Listing, ListingStatus
+from app.core.clock import utcnow
 
 # Порог, начиная с которого считаем сделку вероятной
 THRESHOLD = 55
@@ -143,7 +144,7 @@ def is_ready_to_ask(chat: Chat, now: datetime | None = None) -> bool:
     Не спрашиваем сразу: сделка часто происходит через день-два после
     переписки. Ждём сутки с последнего сообщения.
     """
-    now = now or datetime.utcnow()
+    now = now or utcnow()
     last_at = chat.last_message_at or chat.created_at
     if not last_at:
         return False

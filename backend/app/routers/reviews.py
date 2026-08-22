@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.core.auth import get_current_user, get_current_user_optional
 from app.core.database import get_db
 from app.models import Review, User, Listing, Chat, ReviewInvite
+from app.core.clock import utcnow
 
 router = APIRouter(prefix="/api/reviews", tags=["reviews"])
 
@@ -173,7 +174,7 @@ def create_review(
         # Язык берём из настроек автора — он же язык, на котором тот пишет
         language=getattr(user.default_language, "value", None) or "ru",
         verified_contact=True,
-        created_at=datetime.utcnow(),
+        created_at=utcnow(),
     )
     db.add(review)
     db.flush()
@@ -187,7 +188,7 @@ def create_review(
         Review.is_published.is_(False),
     ).first()
     if counterpart:
-        now = datetime.utcnow()
+        now = utcnow()
         counterpart.is_published = True
         counterpart.published_at = now
         review.is_published = True
@@ -237,7 +238,7 @@ def publish_expired(db: Session, wait_days: int = 7) -> int:
     Иначе честный отзыв о недобросовестном продавце никогда не увидит свет:
     ему достаточно просто промолчать.
     """
-    cutoff = datetime.utcnow() - timedelta(days=wait_days)
+    cutoff = utcnow() - timedelta(days=wait_days)
     pending = db.query(Review).filter(
         Review.is_published.is_(False),
         Review.created_at < cutoff,
@@ -246,7 +247,7 @@ def publish_expired(db: Session, wait_days: int = 7) -> int:
     targets = set()
     for r in pending:
         r.is_published = True
-        r.published_at = datetime.utcnow()
+        r.published_at = utcnow()
         try:
             translate_review(r)
         except Exception:
