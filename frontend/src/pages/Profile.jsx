@@ -79,13 +79,13 @@ export default function Profile() {
           который надо было помнить наизусть. */}
       {(user.role === 'moderator' || user.role === 'admin') && (
         <div className="profile-menu profile-staff">
-          <div className="profile-staff-title">Служебное</div>
+          <div className="profile-staff-title">{t('admin.staff')}</div>
           <Link className="profile-row" to="/moderation">
-            Модерация
+            {t('admin.moderation')}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
           </Link>
           <Link className="profile-row" to="/admin/users">
-            Пользователи
+            {t('admin.title')}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
           </Link>
         </div>

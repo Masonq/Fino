@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
@@ -6,23 +7,19 @@ import PageHeader from '../components/PageHeader'
 
 // Роли показываем словами: «seller_private» в списке ничего не говорит
 // тому, кто не писал этот код.
-const ROLE_NAMES = {
-  guest: 'Гость',
-  buyer: 'Покупатель',
-  seller_private: 'Продавец',
-  seller_business: 'Компания',
-  moderator: 'Модератор',
-  admin: 'Владелец',
-}
+const ROLES = [
+  'guest', 'buyer', 'seller_private', 'seller_business', 'moderator', 'admin',
+]
 
 const FILTERS = [
-  { key: 'all', title: 'Все' },
-  { key: 'blocked', title: 'Заблокированные' },
-  { key: 'moderator', title: 'Модераторы' },
-  { key: 'seller_business', title: 'Компании' },
+  { key: 'all', label: 'admin.all' },
+  { key: 'blocked', label: 'admin.blocked' },
+  { key: 'moderator', label: 'admin.moderators' },
+  { key: 'seller_business', label: 'admin.companies' },
 ]
 
 export default function AdminUsers() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()
 
@@ -37,6 +34,7 @@ export default function AdminUsers() {
   const [busy, setBusy] = useState(false)
 
   const canEdit = user?.role === 'admin'
+  const roleName = (role) => t(`admin.role_${role}`, role)
 
   const load = useCallback(() => {
     const params = { limit: 50 }
@@ -84,12 +82,12 @@ export default function AdminUsers() {
       setItems((prev) => prev.map((u) => (u.id === id ? { ...u, role } : u)))
       setCard((c) => (c && c.id === id ? { ...c, role } : c))
     } catch (e) {
-      alert(e.status === 400 ? 'Себя понизить нельзя' : 'Не удалось изменить роль')
+      alert(e.status === 400 ? t('admin.err_self') : t('admin.err_role'))
     } finally { setBusy(false) }
   }
 
   const block = async (id) => {
-    const reason = prompt('За что блокируем? Причина будет видна в карточке.')
+    const reason = prompt(t('admin.block_prompt'))
     if (!reason || !reason.trim()) return
     setBusy(true)
     try {
@@ -98,9 +96,9 @@ export default function AdminUsers() {
         u.id === id ? { ...u, is_blocked: true, block_reason: reason.trim() } : u
       )))
       if (res.hidden_listings) {
-        alert(`Объявлений снято с публикации: ${res.hidden_listings}`)
+        alert(t('admin.hidden', { count: res.hidden_listings }))
       }
-    } catch { alert('Не удалось заблокировать') }
+    } catch { alert(t('admin.err_block')) }
     finally { setBusy(false) }
   }
 
@@ -111,28 +109,28 @@ export default function AdminUsers() {
       setItems((prev) => prev.map((u) => (
         u.id === id ? { ...u, is_blocked: false, block_reason: null } : u
       )))
-    } catch { alert('Не удалось снять блокировку') }
+    } catch { alert(t('admin.err_unblock')) }
     finally { setBusy(false) }
   }
 
   if (denied) {
     return (
       <div className="page">
-        <PageHeader title="Пользователи" />
-        <p className="empty">Этот раздел доступен только сотрудникам.</p>
+        <PageHeader title={t('admin.title')} />
+        <p className="empty">{t('admin.no_access')}</p>
       </div>
     )
   }
 
   return (
     <div className="page admin-users">
-      <PageHeader title="Пользователи" subtitle={loaded ? `${total}` : null} />
+      <PageHeader title={t('admin.title')} subtitle={loaded ? `${total}` : null} />
 
       <input
         className="admin-search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Имя, почта, телефон или компания"
+        placeholder={t('admin.search')}
       />
 
       <div className="admin-filters">
@@ -142,52 +140,65 @@ export default function AdminUsers() {
             className={`chip ${filter === f.key ? 'chip-active' : ''}`}
             onClick={() => setFilter(f.key)}
           >
-            {f.title}
+            {t(f.label)}
           </button>
         ))}
       </div>
 
-      {!loaded && <p className="empty">Загружаем…</p>}
-      {loaded && !items.length && <p className="empty">Никого не нашлось.</p>}
+      {!loaded && <p className="empty">{t('admin.loading')}</p>}
+      {loaded && !items.length && <p className="empty">{t('admin.empty')}</p>}
 
       <div className="admin-list">
         {items.map((u) => (
           <div key={u.id} className={`admin-row ${u.is_blocked ? 'blocked' : ''}`}>
             <button className="admin-row-main" onClick={() => openCard(u.id)}>
               <div className="admin-row-name">
-                {u.display_name || 'Без имени'}
-                {u.is_blocked && <span className="tag tag-danger">заблокирован</span>}
+                {u.display_name || t('admin.no_name')}
+                {u.is_blocked && <span className="tag tag-danger">{t('admin.tag_blocked')}</span>}
                 {u.role !== 'buyer' && (
-                  <span className="tag">{ROLE_NAMES[u.role] || u.role}</span>
+                  <span className="tag">{roleName(u.role)}</span>
                 )}
               </div>
               <div className="admin-row-meta">
-                {u.email || u.phone || '—'} · объявлений {u.listings}
-                {u.listings_active ? ` (в ленте ${u.listings_active})` : ''}
+                {u.email || u.phone || '—'}
+                {' · '}
+                {t('admin.listings', { count: u.listings })}
+                {u.listings_active
+                  ? ` (${t('admin.in_feed', { count: u.listings_active })})`
+                  : ''}
               </div>
             </button>
 
             {openId === u.id && (
               <div className="admin-card">
-                {!card && <p className="empty">Загружаем…</p>}
-                {card?.error && <p className="empty">Не удалось открыть карточку.</p>}
+                {!card && <p className="empty">{t('admin.loading')}</p>}
+                {card?.error && <p className="empty">{t('admin.card_error')}</p>}
                 {card && !card.error && (
                   <>
                     {card.block_reason && (
-                      <p className="admin-note">Причина блокировки: {card.block_reason}</p>
+                      <p className="admin-note">
+                        {t('admin.block_reason', { reason: card.block_reason })}
+                      </p>
                     )}
                     {card.summary?.suspicious && (
                       <p className="admin-note admin-note-warn">
-                        За сутки {card.summary.listings_last_day} объявлений,
-                        учётной записи {card.summary.account_age_days} дн. —
-                        стоит посмотреть внимательнее.
+                        {t('admin.suspicious', {
+                          count: card.summary.listings_last_day,
+                          days: card.summary.account_age_days,
+                        })}
                       </p>
                     )}
 
                     <div className="admin-facts">
-                      <span>Рейтинг: {card.rating_avg} ({card.rating_count})</span>
-                      {card.company_name && <span>Компания: {card.company_name}</span>}
-                      {card.email_verified && <span>Почта подтверждена</span>}
+                      <span>
+                        {t('admin.rating', {
+                          value: card.rating_avg, count: card.rating_count,
+                        })}
+                      </span>
+                      {card.company_name && (
+                        <span>{t('admin.company', { name: card.company_name })}</span>
+                      )}
+                      {card.email_verified && <span>{t('admin.email_ok')}</span>}
                     </div>
 
                     {canEdit && (
@@ -197,17 +208,17 @@ export default function AdminUsers() {
                           disabled={busy}
                           onChange={(e) => changeRole(u.id, e.target.value)}
                         >
-                          {Object.entries(ROLE_NAMES).map(([key, title]) => (
-                            <option key={key} value={key}>{title}</option>
+                          {ROLES.map((role) => (
+                            <option key={role} value={role}>{roleName(role)}</option>
                           ))}
                         </select>
                         {u.is_blocked ? (
                           <button disabled={busy} onClick={() => unblock(u.id)}>
-                            Разблокировать
+                            {t('admin.unblock')}
                           </button>
                         ) : (
                           <button className="danger" disabled={busy} onClick={() => block(u.id)}>
-                            Заблокировать
+                            {t('admin.block')}
                           </button>
                         )}
                       </div>
@@ -221,7 +232,7 @@ export default function AdminUsers() {
                             className="admin-listing"
                             onClick={() => navigate(`/listing/${l.id}`)}
                           >
-                            <span>{l.title || 'Без названия'}</span>
+                            <span>{l.title || t('admin.untitled')}</span>
                             <span className="admin-listing-status">{l.status}</span>
                           </button>
                         ))}
