@@ -60,7 +60,8 @@ def show(row: dict) -> None:
     print(f'  {row["title"] or "(пусто)":<58.58} │ {price:>13.13} │ {where:<16.16} │ {mark}')
 
 
-async def run(limit: int, mode: str, suspicious_only: bool) -> None:
+async def run(limit: int, mode: str, suspicious_only: bool,
+              note_filter: str | None = None, with_text: bool = False) -> None:
     client = TelegramClient(settings.tg_session, settings.tg_api_id,
                             settings.tg_api_hash)
     await client.start(phone=settings.tg_phone)
@@ -91,6 +92,10 @@ async def run(limit: int, mode: str, suspicious_only: bool) -> None:
                     continue
                 if suspicious_only and not note:
                     continue
+                # Отбор по пометке: за раз разбираем одну поломку, иначе
+                # вывод не помещается на экран и тонет.
+                if note_filter and (not note or note_filter.lower() not in note.lower()):
+                    continue
                 show({
                     "title": parsed.get("title"),
                     "price": parsed.get("price"),
@@ -99,6 +104,11 @@ async def run(limit: int, mode: str, suspicious_only: bool) -> None:
                     "sub": parsed.get("sub_slug"),
                     "note": note,
                 })
+                if with_text:
+                    # Первая строка исходника: по ней сразу видно, что автор
+                    # написал на самом деле и где разбор свернул не туда.
+                    first = " ⏎ ".join(text.splitlines()[:3])
+                    print(f"      ← {first[:150]}")
                 shown += 1
             print(f"  показано: {shown}")
     finally:
@@ -121,8 +131,14 @@ def main() -> None:
                     help="что печатать: годные, всё или только отсеянные")
     ap.add_argument("--suspicious", action="store_true",
                     help="только то, где разбор выглядит сомнительно")
+    ap.add_argument("--note", default=None,
+                    help="только с этой пометкой, например: --note родовой")
+    ap.add_argument("--text", action="store_true",
+                    help="показывать начало исходного сообщения — по нему "
+                         "видно, откуда взялся такой разбор")
     args = ap.parse_args()
-    asyncio.run(run(args.limit, args.show, args.suspicious))
+    asyncio.run(run(args.limit, args.show, args.suspicious or bool(args.note),
+                    args.note, args.text))
 
 
 if __name__ == "__main__":
