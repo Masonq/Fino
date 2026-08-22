@@ -669,6 +669,12 @@ def make_title(text: str, limit: int = 70) -> str | None:
         # — и заголовок оставался винительным: «Вешалку с экраном».
         line = to_nominative(without_verb)
 
+        # «Учебники по сербскому.Белград» — точку перед городом часто не
+        # отделяют пробелом, и город прилипал к названию.
+        glued = re.split(r"(?<=[а-яё])\.(?=[А-ЯЁ])", line)
+        if len(glued) > 1 and len(glued[0]) >= 8:
+            line = glued[0].strip()
+
         # Обрываем по первой запятой: до неё называют предмет, после —
         # состояние, город и условия, которым место в описании.
         head = line.split(",", 1)[0].strip()
@@ -919,6 +925,34 @@ def looks_sold(text: str) -> bool:
     if tail[:6].lower() in ("будет ", "тольк", "если ", "при "):
         return False
     return True
+
+
+# Нижняя граница правдоподобия по категориям: ниже неё «цена» почти всегда
+# оказывается чем-то другим — площадью, этажом, годом, весом посылки. Дом за
+# 150 динар в ленте выглядит ошибкой, каковой и является.
+PRICE_FLOOR: dict[str, tuple[float, float]] = {
+    # категория: (минимум в EUR, минимум в RSD)
+    "real-estate": (50, 5000),
+    "auto": (100, 10000),
+}
+
+
+def plausible_price(category_slug: str | None,
+                    price: float | None,
+                    currency: str | None) -> bool:
+    """
+    Похоже ли это на настоящую цену для такой категории.
+
+    Пустая цена честнее неправильной: по неверной покупатель приходит
+    разочарованным, а продавца заваливают вопросами.
+    """
+    if price is None or not category_slug:
+        return True
+    floor = PRICE_FLOOR.get(category_slug)
+    if not floor:
+        return True
+    eur_floor, rsd_floor = floor
+    return price >= (rsd_floor if currency == "RSD" else eur_floor)
 
 
 def looks_like_ad(text: str) -> bool:

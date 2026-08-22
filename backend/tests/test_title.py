@@ -647,3 +647,29 @@ def test_service_verb_beats_the_noun():
     assert classify("Перевожу людей (до 7 чел.) и грузы на автомобиле")[0] == "services"
     assert classify("Чиню стиральные машины на дому")[0] == "services"
     assert classify("Продам Volkswagen Golf 5, пробег 200000")[0] == "auto"
+
+
+# ── Правдоподобие цены и мелочи разбора ─────────────────────────────────────
+def test_implausible_price_dropped():
+    """Дом за 150 динар — это площадь или этаж, попавшие под разбор."""
+    from app.core.tg_parse import plausible_price
+    assert not plausible_price("real-estate", 150, "RSD")
+    assert not plausible_price("auto", 5000, "RSD")
+    # настоящие цены остаются
+    assert plausible_price("real-estate", 380, "EUR")
+    assert plausible_price("fashion", 150, "RSD")
+
+
+def test_city_glued_after_dot():
+    """«Учебники по сербскому.Белград» — точку перед городом не отделяют."""
+    assert parse("Отдам учебники по сербскому.Белград. Стари Град")["title"] \
+        == "Учебники по сербскому"
+
+
+def test_textbooks_are_school_supplies():
+    from app.core.tg_classify import classify, classify_sub
+    text = "Отдам учебники по сербскому.Белград"
+    assert classify(text)[0] == "kids"
+    assert classify_sub("kids", text) == "school"
+    # художественные книги остаются в хобби
+    assert classify("Продам книги, детективы и фантастика")[0] == "hobby-sport"

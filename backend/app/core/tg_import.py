@@ -33,7 +33,7 @@ from app.core.tg_classify import classify_sub, decide_for
 from app.core.progress import Progress
 from app.core.title_rules import looks_like_question
 from app.core.tg_parse import (
-    build_title, drop_attribute_lines, extract_attributes,
+    build_title, drop_attribute_lines, extract_attributes, plausible_price,
     looks_like_ad, looks_like_spam, looks_sold, parse,
 )
 from app.core.tg_sources import CHATS, is_resume, topic_category
@@ -163,6 +163,11 @@ def screen(text: str, chat_id: int, topic_id: int | None) -> tuple[str | None, d
         return "без категории", parsed
 
     attrs = extract_attributes(category_slug, parsed["searchable"])
+    # Дом за 150 динар — это не цена, а площадь или этаж, попавшие под
+    # разбор. Показываем «цена не указана», а не заведомую чушь.
+    if not plausible_price(category_slug, parsed.get("price"), parsed.get("currency")):
+        parsed["price"] = None
+        parsed["currency"] = None
     sub_slug = classify_sub(category_slug, parsed["searchable"])
     parsed = dict(parsed)
     parsed["title"] = build_title(
