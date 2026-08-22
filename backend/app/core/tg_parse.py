@@ -10,7 +10,7 @@
 """
 import re
 
-from app.data.cities_data import CITY_ALIASES
+from app.data.cities_data import CITY_ALIASES, DISTRICT_NAMES
 
 # Цена: число с необязательными разделителями и валютой рядом. Диапазоны и
 # «от 500» тоже ловим — берём нижнюю границу, она и есть ориентир.
@@ -180,6 +180,75 @@ def make_title(text: str, limit: int = 70) -> str | None:
         cut = line[:limit].rsplit(" ", 1)[0]
         return (cut or line[:limit]).rstrip(" ,.;:") + "…"
     return fallback
+
+
+_AREA_RE = re.compile(r"(\d{2,4})\s*(?:м2|м²|кв\.?\s*м|m2|m²)", re.I)
+_ROOMS_WORD = {
+    "однушк": 1, "гарсоньер": 1, "студи": 1,
+    "двушк": 2, "двухкомнат": 2, "трешк": 3, "трёшк": 3, "трехкомнат": 3,
+    "четырёхкомнат": 4, "четырехкомнат": 4,
+}
+_ROOMS_NUM_RE = re.compile(r"(\d)\s*-?\s*(?:комнат|комн\.?|соб[аы])", re.I)
+_ROOMS_PLUS_RE = re.compile(r"гостин\w*\s*\+\s*(\d)\s*комнат", re.I)
+
+
+def extract_rooms(text: str) -> int | None:
+    """
+    Число комнат. «Гостиная + 2 комнаты» — это трёшка: так считают в
+    объявлениях, и покупатель ищет именно по этому числу.
+    """
+    low = text.lower()
+    m = _ROOMS_PLUS_RE.search(low)
+    if m:
+        return int(m.group(1)) + 1
+    for word, count in _ROOMS_WORD.items():
+        if word in low:
+            return count
+    m = _ROOMS_NUM_RE.search(low)
+    if m:
+        n = int(m.group(1))
+        return n if 1 <= n <= 9 else None
+    return None
+
+
+def extract_district(text: str) -> str | None:
+    low = " " + re.sub(r"\s+", " ", text.lower()) + " "
+    best = None
+    for alias, name in DISTRICT_NAMES.items():
+        if f" {alias} " in low or f" {alias}," in low or f" {alias}." in low or f" {alias}/" in low:
+            if best is None or len(alias) > best[0]:
+                best = (len(alias), name)
+    return best[1] if best else None
+
+
+def compose_title(category_slug: str | None, text: str) -> str | None:
+    """
+    Собирает заголовок из фактов, а не из первой строки.
+
+    Для недвижимости строка из текста почти всегда бесполезна: люди
+    начинают с хэштегов или с характеристик, и получалось «гостиная + 2
+    комнаты». Комнаты, площадь и район — то, по чему квартиру и узнают.
+    """
+    if category_slug != "real-estate":
+        return None
+
+    rooms = extract_rooms(text)
+    area = _AREA_RE.search(text)
+    district = extract_district(text)
+
+    if rooms:
+        head = "Студия" if rooms == 1 and "студи" in text.lower() else f"{rooms}-комнатная квартира"
+    elif area:
+        head = "Квартира"
+    else:
+        return None
+
+    parts = [head]
+    if area:
+        parts.append(f"{area.group(1)} м²")
+    if district:
+        parts.append(district)
+    return ", ".join(parts)
 
 
 def looks_like_spam(text: str) -> bool:

@@ -29,7 +29,7 @@ from telethon import TelegramClient
 from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.tg_classify import classify_sub, decide_for
-from app.core.tg_parse import looks_like_spam, parse
+from app.core.tg_parse import compose_title, looks_like_spam, parse
 from app.core.tg_sources import CHATS, is_resume, topic_category
 from app.models import (
     Category, Currency, Language, Listing, ListingPhoto, ListingStatus,
@@ -128,6 +128,13 @@ async def collect(client, chat_id: int, meta: dict, days: int, per_category: int
                 saved = save_photo(data)
                 if saved:
                     photos.append(saved)
+
+        # Для недвижимости заголовок собираем из фактов: первая строка там
+        # почти всегда хэштеги или характеристика, и объявление называлось
+        # «гостиная + 2 комнаты».
+        composed = compose_title(category_slug, parsed["searchable"])
+        if composed:
+            parsed["title"] = composed
 
         out.append({
             "chat_id": chat_id,
