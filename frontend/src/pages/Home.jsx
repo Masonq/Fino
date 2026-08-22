@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
@@ -12,8 +12,12 @@ import { useAuth } from '../context/AuthContext'
 import { CITIES, cityLabel } from '../data/cities'
 import CategoryArt from '../components/CategoryArt'
 
-const FEED_SCROLL_KEY = 'plonk_feed_scroll'
-const FEED_COUNT_KEY = 'plonk_feed_count'
+// Лента живёт в памяти между заходами на страницу. Иначе при возврате из
+// объявления она загружается заново: страница успевает отрисоваться пустой,
+// потом появляются карточки, потом прыгает прокрутка — это и был рывок.
+// Восстановить положение после отрисовки недостаточно, нужно чтобы к первой
+// же отрисовке лента была той же, что была.
+let feedCache = { lang: null, items: [], total: 0, scroll: 0 }
 
 const PROMO_SLIDES = [
   { key: 'safe_deal', to: '/search', icon: 'shield', top: '#0E9F6E', grad: 'linear-gradient(180deg, #0E9F6E 0%, #0E9F6E 22%, #1DB388 48%, #34D8A8 78%, #5CE8CC 100%)' },
@@ -48,10 +52,10 @@ export default function Home() {
   const { t, i18n } = useTranslation()
   const [categories, setCategories] = useState([])
   const [catsLoaded, setCatsLoaded] = useState(false)
-  const [listings, setListings] = useState([])
-  const [feedLoaded, setFeedLoaded] = useState(false)
+  const [listings, setListings] = useState(() => cached?.items || [])
+  const [feedLoaded, setFeedLoaded] = useState(() => Boolean(cached?.items.length))
   const [feedError, setFeedError] = useState(false)
-  const [feedTotal, setFeedTotal] = useState(0)
+  const [feedTotal, setFeedTotal] = useState(() => cached?.total || 0)
   const [loadingMore, setLoadingMore] = useState(false)
   const sentinelRef = useRef(null)
   const [cols, setCols] = useState(2)
@@ -60,7 +64,8 @@ export default function Home() {
   // развернуться и тут же схлопнуться — при возврате это читалось как рывок.
   // Берём положение прокрутки сразу, а переход включаем только после того,
   // как оно установилось.
-  const [collapsed, setCollapsed] = useState(() => window.scrollY > 48)
+  const cached = feedCache.lang === i18n.language ? feedCache : null
+  const [collapsed, setCollapsed] = useState(() => (cached?.scroll || window.scrollY) > 48)
   const [settled, setSettled] = useState(false)
   // слайд выбирается один раз при загрузке страницы (как у Avito) — без автокарусели,
   // иначе цвет статус-бара не успевает за сменой и отстаёт
@@ -111,14 +116,7 @@ export default function Home() {
   const PAGE = 12
 
   const loadFeed = useCallback(() => (
-    // Возвращаемся с тем же числом объявлений, что было открыто: иначе
-    // страница короче прежней, и восстановленная прокрутка упирается в её
-    // конец вместо места, где человек остановился.
-    api.searchListings({
-      lang: i18n.language,
-      limit: Math.min(Math.max(PAGE, Number(sessionStorage.getItem(FEED_COUNT_KEY) || 0)), 96),
-      offset: 0,
-    })
+    api.searchListings({ lang: i18n.language, limit: PAGE, offset: 0 })
       .then((res) => {
         setListings(res.items || [])
         setFeedTotal(res.total || 0)
@@ -152,7 +150,13 @@ export default function Home() {
     return () => io.disconnect()
   }, [feedLoaded, listings.length, feedTotal, loadMore])
 
-  useEffect(() => { loadFeed() }, [loadFeed])
+  useEffect(() => {
+    // при возврате лента уже есть — перезагрузка сбросила бы её к двенадцати
+    // объявлениям и снова уронила прокрутку
+    if (cached?.items.length) return
+    loadFeed()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadFeed])
 
   // Лента подгружается порциями, поэтому к моменту, когда браузер
   // восстанавливает прокрутку, страница ещё короткая и он прижимает её к
@@ -160,26 +164,35 @@ export default function Home() {
   // место сами и возвращаемся, когда объявления отрисованы.
   useEffect(() => {
     const save = () => {
-      sessionStorage.setItem(FEED_SCROLL_KEY, String(window.scrollY))
-      sessionStorage.setItem(FEED_COUNT_KEY, String(listingsRef.current))
+      feedCache = {
+        lang: langRef.current,
+        items: itemsRef.current,
+        total: totalRef.current,
+        scroll: window.scrollY,
+      }
     }
     window.addEventListener('pagehide', save)
     return () => { save(); window.removeEventListener('pagehide', save) }
   }, [])
 
-  // держим длину в ref: обработчик ухода со страницы создаётся один раз
-  const listingsRef = useRef(0)
-  useEffect(() => { listingsRef.current = listings.length }, [listings.length])
+  // обработчик ухода со страницы создаётся один раз, поэтому свежие
+  // значения держим в ref
+  const itemsRef = useRef(listings)
+  const totalRef = useRef(feedTotal)
+  const langRef = useRef(i18n.language)
+  useEffect(() => { itemsRef.current = listings }, [listings])
+  useEffect(() => { totalRef.current = feedTotal }, [feedTotal])
+  useEffect(() => { langRef.current = i18n.language }, [i18n.language])
 
+  // Прокрутку выставляем до первой отрисовки — из useLayoutEffect. Через
+  // requestAnimationFrame страница успевала показаться сверху и лишь потом
+  // прыгала на место.
   const restored = useRef(false)
-  useEffect(() => {
-    if (restored.current || !feedLoaded || !listings.length) return
-    const saved = Number(sessionStorage.getItem(FEED_SCROLL_KEY) || 0)
+  useLayoutEffect(() => {
+    if (restored.current || !cached?.scroll || !listings.length) return
     restored.current = true
-    if (saved > 0) {
-      requestAnimationFrame(() => window.scrollTo(0, saved))
-    }
-  }, [feedLoaded, listings.length])
+    window.scrollTo(0, cached.scroll)
+  }, [cached, listings.length])
 
   const handleRefresh = useCallback(async () => {
     await Promise.all([

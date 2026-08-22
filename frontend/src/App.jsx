@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from 'react-router-dom'
+import { Routes, Route, useLocation, useNavigationType } from 'react-router-dom'
 import { useEffect, useLayoutEffect } from 'react'
 import Home from './pages/Home'
 import Search from './pages/Search'
@@ -26,9 +26,15 @@ export default function App() {
   const { pathname } = useLocation()
   const hideNav = pathname.startsWith('/listing/') || pathname.startsWith('/chat/') || pathname === '/login'
 
+  const navType = useNavigationType()
+
   useLayoutEffect(() => {
+    // Наверх прокручиваем только при переходе вперёд. При возврате экран
+    // сам восстанавливает своё положение, и этот сброс отменял его — из-за
+    // чего лента дёргалась: сначала прыгала наверх, потом на место.
+    if (navType === 'POP') return
     window.scrollTo(0, 0)
-  }, [pathname])
+  }, [pathname, navType])
 
   // на не-главных экранах статус-бар под цвет фона страницы;
   // на главной им управляет баннер
