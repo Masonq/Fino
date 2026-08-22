@@ -100,6 +100,12 @@ _SELLING_VERB_RE = re.compile(
 # глаголу нельзя: в самой строке его нет.
 _LIST_NUMBER_RE = re.compile(r"^\d{1,2}\s*[.)]\s+")
 
+# «улица Браће Дроняк» в конце заголовка — адрес, а не название объекта:
+# он есть в описании, а район у нас отдельным полем.
+_ADDRESS_TAIL_RE = re.compile(
+    r"[\s,;:—–-]*(?:улиц[аы]|ул\.|адрес|ulica|"
+    r"на\s+улице)\s+[^,.;]{2,40}\.?\s*$", re.I)
+
 # «в отличном состоянии», «б/у» — оценка вещи, а не её название. В конце
 # заголовка занимает место, из-за которого обрезается само название.
 _CONDITION_TAIL_RE = re.compile(
@@ -406,6 +412,53 @@ def strip_greeting(text: str) -> str:
     return (rest if len(rest) >= 8 else out).strip(" ,.;:—-")
 
 
+def unshout(text: str) -> str:
+    """
+    Возвращает КАПС к обычному виду.
+
+    Заглавными в чатах привлекают внимание, но в ленте такой заголовок
+    кричит на остальные и читается хуже. Аббревиатуры и марки из двух-трёх
+    букв (IKEA, LG, BMW) оставляем как есть.
+    """
+    letters = [c for c in text if c.isalpha()]
+    if not letters:
+        return text
+    upper = sum(1 for c in letters if c.isupper())
+    if upper / len(letters) < 0.7:
+        return text
+    words = []
+    for word in text.split():
+        core = "".join(c for c in word if c.isalpha())
+        # Марку оставляем как написана: IKEA, LG, RTX. Короткие слова
+        # кириллицей — это предлоги («НА», «ИЗ»), их опускаем в нижний.
+        if core and core.isascii() and core.isupper() and len(core) <= 5:
+            words.append(word)
+            continue
+        words.append(word.lower())
+    out = " ".join(words)
+    out = out[:1].upper() + out[1:]
+    # Названиям районов и городов возвращаем заглавную букву: после
+    # опускания регистра «НОВОМ НАСЕЛЬЕ» читалось как «новом населье».
+    # Подменять слово целиком нельзя — в справочнике оно в именительном, а
+    # в заголовке стоит в предложном: вышло бы «на Ново Насеље».
+    return " ".join(
+        w[:1].upper() + w[1:] if _is_place_word(w) else w
+        for w in out.split()
+    )
+
+
+# Корни названий мест: по ним узнаём слово в любом падеже.
+_PLACE_STEMS = frozenset(
+    part[:5] for alias in list(DISTRICT_NAMES) + list(CITY_ALIASES)
+    for part in alias.lower().split() if len(part) >= 5
+)
+
+
+def _is_place_word(word: str) -> bool:
+    core = "".join(c for c in word if c.isalpha()).lower()
+    return len(core) >= 5 and core[:5] in _PLACE_STEMS
+
+
 def make_title(text: str, limit: int = 70) -> str | None:
     """
     Заголовок из первой содержательной строки.
@@ -415,7 +468,7 @@ def make_title(text: str, limit: int = 70) -> str | None:
     """
     fallback = None
     for raw in text.splitlines():
-        line = _EMOJI_RE.sub("", raw).strip(" \t•·—-*#")
+        line = unshout(_EMOJI_RE.sub("", raw).strip(" \t•·—-*#"))
         # «Всем привет!» и «Срочно!» как заголовок делают ленту неразличимой
         line = _SHOUT_RE.sub("", strip_greeting(line))
         # пропускаем строки из одних эмодзи, решёток и знаков
@@ -475,6 +528,7 @@ def make_title(text: str, limit: int = 70) -> str | None:
 
         # «в отличном состоянии» в хвосте вытесняет само название
         line = _CONDITION_TAIL_RE.sub("", line).strip(" ,.;:-—")
+        line = _ADDRESS_TAIL_RE.sub("", line).strip(" ,.;:-—")
         if not line:
             continue
 
@@ -532,6 +586,7 @@ _AREA_RE = re.compile(r"(\d{2,4})\s*(?:м2|м²|кв\.?\s*м|m2|m²)", re.I)
 _ROOMS_WORD = {
     "однушк": 1, "гарсоньер": 1, "студи": 1,
     "двушк": 2, "двухкомнат": 2, "трешк": 3, "трёшк": 3, "трехкомнат": 3,
+    "трёхкомнат": 3, "двухкомн": 2, "трёхкомн": 3, "трехкомн": 3,
     "четырёхкомнат": 4, "четырехкомнат": 4,
 }
 _ROOMS_NUM_RE = re.compile(r"(\d)\s*-?\s*(?:комнат|комн\.?|соб[аы])", re.I)
@@ -662,11 +717,14 @@ def build_title(
     для недвижимости (там текст почти всегда начинается хэштегами), затем
     строка из текста, назвавшая предмет, и лишь потом — сборка из фактов.
     """
+    # Живая строка лучше собранной, если она называет предмет: автор пишет
+    # «Просторная трёхкомнатная квартира на Новом Населье», а сборка из
+    # фактов даёт сухое «Квартира, 80 м²» и теряет всё остальное.
+    if fallback_title and not rejects_as_title(fallback_title):
+        return fallback_title
     composed = compose_title(category_slug, text)
     if composed:
         return composed
-    if fallback_title and not rejects_as_title(fallback_title):
-        return fallback_title
     return title_from_facts(category_slug, sub_slug, text, attrs)
 
 

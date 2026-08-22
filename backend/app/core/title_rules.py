@@ -140,6 +140,13 @@ _DEFINITION_RE = re.compile(r"^[\w\s]{2,20}\s*[—–]\s*это\b", re.I)
 
 # Строка начинается с частности: дефекта, замечания, продолжения мысли.
 # «Спереди есть пятно» — правда о куртке, но не куртка.
+# Строка, начатая числом с единицей: «70 м², 2 комнаты» — это характеристики,
+# заголовок из них собирается отдельно и по порядку, а как есть они читаются
+# как обрывок таблицы.
+_SPEC_FIRST_RE = re.compile(
+    r"^\d+[\d\s.,]*\s*(?:м2|м²|кв\.?\s*м|m2|m²|комнат\w*|соб[аы]|"
+    r"гб|gb|тб|tb|мл|ml|см|cm|кг|kg|шт\.?)\b", re.I)
+
 _DETAIL_FIRST_RE = re.compile(
     r"^(спереди|сзади|сбоку|снизу|сверху|внутри|снаружи|"
     r"в\s+остальном|в\s+целом|есть\s+(пятно|дефект|царапин|потертост)|"
@@ -283,7 +290,7 @@ def rejects_as_title(text: str) -> bool:
     if line.endswith("?"):
         return True
     for pattern in (_SELF_INTRO_RE, _RHETORIC_RE, _DEFINITION_RE,
-                    _DETAIL_FIRST_RE, _NO_SUBJECT_VERB_RE):
+                    _DETAIL_FIRST_RE, _NO_SUBJECT_VERB_RE, _SPEC_FIRST_RE):
         if pattern.search(line):
             return True
     return not has_object_word(line)

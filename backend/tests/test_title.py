@@ -246,3 +246,47 @@ def test_ikea_desk_listing():
 def test_purchase_price_not_taken_as_sale_price():
     """«Куплен за 25 000, продаю за 15000» — наша цена вторая."""
     assert parse("Куплен за 25 000 rds, продаю за 15000 rds").get("price") == 15000
+
+
+# ── КАПС, живая строка против сборки, характеристики ────────────────────────
+def test_caps_lock_title_normalised():
+    """КАПС кричит на всю ленту; марки при этом не трогаем."""
+    text = "✨ ПРОСТОРНАЯ ТРЁХКОМНАТНАЯ КВАРТИРА НА НОВОМ НАСЕЛЬЕ – 80 м² ✨ улица Браће Дроняк."
+    title = build_title("real-estate", "flats", text, {"area": 80},
+                        fallback_title=parse(text).get("title"))
+    assert title == "Просторная трёхкомнатная квартира на Новом Населье – 80 м²"
+
+
+def test_brand_survives_caps_normalisation():
+    assert parse("СРОЧНО ПРОДАМ ДИВАН IKEA").get("title") == "Диван IKEA"
+
+
+def test_live_line_beats_composed_title():
+    """
+    Автор сам назвал квартиру — эта строка лучше сухой сборки «Квартира,
+    80 м²», в которой теряются комнаты и район.
+    """
+    text = "Просторная трёхкомнатная квартира на Новом Населье – 80 м²"
+    title = build_title("real-estate", "flats", text, {"area": 80},
+                        fallback_title=parse(text).get("title"))
+    assert title.startswith("Просторная трёхкомнатная")
+
+
+def test_spec_line_is_not_a_title():
+    """«70 м², 2 комнаты» — обрывок таблицы; собираем заголовок сами."""
+    text = "#stan\n70 м², 2 комнаты, Вождовац\n120000 €"
+    title = build_title("real-estate", "flats", text, {},
+                        fallback_title=parse(text).get("title"))
+    assert title == "2-комнатная квартира, 70 м², Вождовац"
+
+
+def test_rooms_with_yo():
+    """«ТРЁХКОМНАТНАЯ» через ё раньше не опознавалась вовсе."""
+    from app.core.tg_parse import extract_rooms
+    assert extract_rooms("ПРОСТОРНАЯ ТРЁХКОМНАТНАЯ КВАРТИРА") == 3
+
+
+def test_address_tail_dropped():
+    """Улица в заголовке лишняя: она есть в описании."""
+    text = "Квартира на Новом Населье – 80 м², улица Браће Дроняк."
+    assert "улица" not in (parse(text).get("title") or "")
