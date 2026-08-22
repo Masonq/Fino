@@ -10,6 +10,7 @@ import SearchOverlay from '../components/SearchOverlay'
 import OfflineNotice, { LoadError } from '../components/OfflineNotice'
 import { useAuth } from '../context/AuthContext'
 import { CITIES, cityLabel } from '../data/cities'
+import { CATEGORY_ICONS, FALLBACK_ICON } from '../components/CategoryIcons'
 
 const PROMO_SLIDES = [
   { key: 'safe_deal', to: '/search', icon: 'shield', top: '#0E9F6E', grad: 'linear-gradient(180deg, #0E9F6E 0%, #0E9F6E 22%, #1DB388 48%, #34D8A8 78%, #5CE8CC 100%)' },
@@ -26,28 +27,6 @@ const PROMO_SLIDES = [
 // поэтому индивидуальная подгонка масштаба больше не нужна.
 // Точная подгонка отдельных категорий поверх общего выравнивания.
 // Точная подгонка отдельных категорий поверх общего выравнивания.
-const PHOTO_SCALE = {
-  jobs: 0.9,
-  'hobby-sport': 0.88,
-  pets: 0.85,
-  beauty: 0.93,
-  auto: 1.18,
-}
-
-// Точная подгонка положения: [вправо, вниз] в пикселях.
-// Бизнес и хобби сидят ровно — их не двигаем.
-// Поворот в градусах: плюс — по часовой стрелке.
-// Поворот применён прямо в файлах при выравнивании.
-const PHOTO_ROTATE = {}
-
-const PHOTO_SHIFT = {
-  __all: [-8, 0],
-  jobs: [0, 5],
-  'hobby-sport': [0, 5],
-  fashion: [0, 5],
-  business: [5, 0],
-}
-
 const PROMO_IMAGES = {
   safe_deal: '/promo/safe_deal.png',
   free_post: '/promo/free_post.png',
@@ -246,35 +225,13 @@ export default function Home() {
         const renderTile = (cat) => cat.isAll ? (
           <Link key="__all" to="/categories" className="cat-tile-2row all">
             <div className="cat-tile-2row-label">{t('common.all')}</div>
-            <div className="cat-tile-2row-glyph">
-              <img
-                className="cat-photo"
-                src="/cat/all.png"
-                alt=""
-                style={{ transform: `translate(${PHOTO_SHIFT.__all[0]}px, ${PHOTO_SHIFT.__all[1]}px) scale(0.78)` }}
-              />
-            </div>
+            <div className="cat-tile-2row-glyph">{FALLBACK_ICON}</div>
           </Link>
         ) : (
           <Link key={cat.id} to={`/search?category=${cat.slug}`} className="cat-tile-2row">
             <div className="cat-tile-2row-label">{cat.name?.[i18n.language] || cat.name?.ru}</div>
             <div className="cat-tile-2row-glyph">
-              <img
-                className="cat-photo"
-                src={`/cat/${cat.slug}.png`}
-                alt=""
-                style={(() => {
-                  const scale = PHOTO_SCALE[cat.slug]
-                  const [dx, dy] = PHOTO_SHIFT[cat.slug] || [0, 0]
-                  const rot = PHOTO_ROTATE[cat.slug]
-                  if (!scale && !dx && !dy && !rot) return undefined
-                  const parts = []
-                  if (dx || dy) parts.push(`translate(${dx}px, ${dy}px)`)
-                  if (rot) parts.push(`rotate(${rot}deg)`)
-                  if (scale) parts.push(`scale(${scale})`)
-                  return { transform: parts.join(' ') }
-                })()}
-              />
+              {CATEGORY_ICONS[cat.slug] || FALLBACK_ICON}
             </div>
           </Link>
         )
