@@ -185,6 +185,23 @@ def store(db, item: dict) -> bool:
     if dup:
         return False
 
+    # То же объявление тот же человек часто выкладывает сразу в несколько
+    # чатов. Номер сообщения там свой, поэтому проверка выше их не ловит —
+    # сверяем по автору и заголовку.
+    if item["title"]:
+        twin = (
+            db.query(Listing)
+            .join(ListingTranslation, ListingTranslation.listing_id == Listing.id)
+            .filter(
+                Listing.external_source == "telegram",
+                Listing.external_author == item["username"],
+                ListingTranslation.title == item["title"][:255],
+            )
+            .first()
+        )
+        if twin:
+            return False
+
     slug = item["sub_slug"] or item["category_slug"]
     category = db.query(Category).filter(Category.slug == slug).first()
     if not category:
