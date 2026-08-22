@@ -92,6 +92,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   will-change:opacity, transform;
 }
 .avito-banner.collapsed .avito-promo-row{ opacity:0; transform:translateY(-2px); }
+/* Фон живёт отдельным слоем от промо-строки, поэтому про схлопывание
+   не знал и оставался висеть в свёрнутой шапке. Гасим вместе с текстом,
+   тем же временем — иначе картинка «отстаёт» от заголовка. */
+.avito-banner .promo-backdrop{
+  opacity:1; transition:opacity .6s ease;
+}
+.avito-banner.collapsed .promo-backdrop{ opacity:0; }
 .avito-banner .avito-toprow{ transition:margin-bottom .65s cubic-bezier(.25,.46,.45,.94); }
 .avito-banner.collapsed .avito-toprow{ margin-bottom:0; }
 .avito-banner .avito-search,
