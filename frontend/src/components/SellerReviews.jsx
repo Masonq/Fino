@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
+import { monthYear } from '../utils/time'
 
 function Stars({ value, size = 14, onPick }) {
   return (
@@ -89,6 +90,7 @@ export default function SellerReviews({ sellerId, listingId }) {
               <div className="review-top">
                 <span className="review-author">{r.author_name || '—'}</span>
                 <Stars value={r.rating} size={12} />
+                <span className="review-date">{monthYear(r.created_at, i18n.language)}</span>
               </div>
               {r.comment && <p className="review-text">{r.comment}</p>}
               {r.is_auto_translated && (

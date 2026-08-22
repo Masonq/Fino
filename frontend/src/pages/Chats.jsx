@@ -4,17 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
-
-function timeAgo(iso, t) {
-  if (!iso) return ''
-  const diff = (Date.now() - new Date(iso + 'Z').getTime()) / 1000
-  if (diff < 60) return t('chats.just_now')
-  if (diff < 3600) return `${Math.floor(diff / 60)} ${t('chats.min')}`
-  if (diff < 86400) return `${Math.floor(diff / 3600)} ${t('chats.hour')}`
-  const days = Math.floor(diff / 86400)
-  if (days < 7) return `${days} ${t('chats.day')}`
-  return new Date(iso + 'Z').toLocaleDateString()
-}
+import { timeAgo } from '../utils/time'
 
 export default function Chats() {
   const { t, i18n } = useTranslation()
@@ -91,7 +81,7 @@ export default function Chats() {
               <div className="chat-row-body">
                 <div className="chat-row-top">
                   <span className="chat-name">{c.other_name || '—'}</span>
-                  <span className="chat-time">{timeAgo(c.last_at, t)}</span>
+                  <span className="chat-time">{timeAgo(c.last_at, t, i18n.language)}</span>
                 </div>
                 <div className="chat-listing">{c.listing_title}</div>
                 <div className="chat-row-bottom">

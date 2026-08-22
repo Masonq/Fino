@@ -114,6 +114,12 @@ export default function ListingDetail() {
   const attrValue = (key, value) => {
     const field = schema.find((f) => f.key === key)
     if (field?.type === 'boolean') return value ? t('common.yes') : t('common.no')
+    // Зарплата без валюты — просто число: «1800» не отличить от чего угодно.
+    // Разделитель тысяч ставим только деньгам: «Год» превратился бы в «2 016».
+    if (field?.unit === 'currency' && value !== '' && value != null) {
+      const money = Number(value).toLocaleString('sr-RS')
+      return `${money}\u202F${listing.currency === 'EUR' ? '€' : listing.currency}`
+    }
     if (field?.type === 'select') {
       const opt = field.options?.find((o) => o.value === value)
       return opt?.label?.[lang] || opt?.label?.ru || value
