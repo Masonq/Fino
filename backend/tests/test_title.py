@@ -1842,3 +1842,36 @@ def test_short_text_defaults_to_russian():
     from app.core.tg_parse import source_language
     assert source_language("iPhone 13") == "ru"
     assert source_language("") == "ru"
+
+
+# ── Уборка за отсеянными объявлениями ───────────────────────────────────────
+def test_photos_removed_when_listing_rejected(tmp_path, monkeypatch):
+    """
+    Фотографии скачиваются раньше, чем становится ясно, возьмём ли
+    объявление: дубль виден только при записи. Без уборки на диске
+    оседают файлы, на которые никто никогда не сошлётся.
+    """
+    import os
+
+    from app.core.config import settings
+    import app.core.tg_import as importer
+
+    monkeypatch.setattr(settings, "media_dir", str(tmp_path))
+    kept = tmp_path / "abc.jpg"
+    thumb = tmp_path / "abc_thumb.jpg"
+    kept.touch()
+    thumb.touch()
+
+    importer.forget_photos({"photos": [
+        ("http://x/media/abc.jpg", "http://x/media/abc_thumb.jpg")]})
+    assert not kept.exists() and not thumb.exists()
+
+
+def test_forget_photos_survives_missing_files(tmp_path, monkeypatch):
+    """Файла уже нет — уборка не должна падать."""
+    from app.core.config import settings
+    import app.core.tg_import as importer
+
+    monkeypatch.setattr(settings, "media_dir", str(tmp_path))
+    importer.forget_photos({"photos": [("http://x/media/нет.jpg", "http://x/media/нет.jpg")]})
+    importer.forget_photos({})

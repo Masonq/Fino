@@ -341,6 +341,9 @@ async def collect(client, chat_id: int, meta: dict, days: int,
                 photos.append(saved)
 
         if watermarked:
+            # Часть снимков успели сохраниться до того, как знак нашёлся
+            # на следующем кадре: убираем их, иначе останутся мусором.
+            forget_photos({"photos": photos})
             bar.bump("чужой знак")
             continue
 
@@ -410,6 +413,24 @@ async def collect(client, chat_id: int, meta: dict, days: int,
     return out
 
 
+def forget_photos(item: dict) -> None:
+    """
+    Удаляет снимки объявления, которое не попало в ленту.
+
+    Фотографии скачиваются и сохраняются раньше, чем становится ясно,
+    возьмём ли объявление: дубль виден только при записи. Без уборки на
+    диске оседают файлы, на которые никто никогда не сошлётся — за один
+    заход это сотни картинок.
+    """
+    for url, thumb in item.get("photos") or ():
+        for link in (url, thumb):
+            name = link.rsplit("/", 1)[-1]
+            try:
+                os.remove(os.path.join(settings.media_dir, name))
+            except OSError:
+                pass
+
+
 def store(db, item: dict) -> bool:
     """Записывает объявление. False — если такое уже переносили."""
     dup = db.query(Listing).filter(
@@ -417,6 +438,7 @@ def store(db, item: dict) -> bool:
         Listing.external_message_id == item["message_id"],
     ).first()
     if dup:
+        forget_photos(item)
         return False
 
     # То же объявление тот же человек часто выкладывает сразу в несколько
@@ -434,6 +456,7 @@ def store(db, item: dict) -> bool:
             .first()
         )
         if twin:
+            forget_photos(item)
             return False
 
     # Тот же товар, но переписанный другими словами — и часто другим
@@ -456,11 +479,13 @@ def store(db, item: dict) -> bool:
             .all()
         )
         if any(same_thing(mark, other.external_fingerprint) for other in recent):
+            forget_photos(item)
             return False
 
     slug = item["sub_slug"] or item["category_slug"]
     category = db.query(Category).filter(Category.slug == slug).first()
     if not category:
+        forget_photos(item)
         return False
 
     owner = service_account(db, item["chat_id"], item["chat_title"])
@@ -493,8 +518,11 @@ def store(db, item: dict) -> bool:
     db.add(listing)
     db.flush()
 
+    # Текст сохраняем под тем языком, на котором он написан. Иначе
+    # перевод ищет исходник по языку объявления, не находит его и берёт
+    # первый попавшийся — то есть переводит сербский текст как русский.
     db.add(ListingTranslation(
-        listing_id=listing.id, language="ru",
+        listing_id=listing.id, language=listing.source_language or "ru",
         title=(item["title"] or "")[:255], description=item["description"][:4000],
     ))
     # Перевод запускается при одобрении модератором, а импорт публикует
