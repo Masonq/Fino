@@ -207,15 +207,10 @@ export default function ListingDetail() {
             </svg>
           </button>
         </div>
+        {/* Один указатель, а не два: счётчик в углу и точки по центру
+            показывали одно и то же, и оба упирались в край карточки. */}
         {photos.length > 1 && (
-          <>
-            <div className="photo-count">{photoIdx + 1} / {photos.length}</div>
-            <div className="photo-dots">
-              {photos.map((_, i) => (
-                <span key={i} className={i === photoIdx ? 'on' : ''} />
-              ))}
-            </div>
-          </>
+          <div className="photo-count">{photoIdx + 1} / {photos.length}</div>
         )}
       </div>
 
