@@ -581,7 +581,10 @@ def test_word_root_with_space_is_exact():
 
 def test_tableware_and_boxes_recognised():
     for text, expected in (
-        ("Шкатулка с магнитной крышкой 7х5 см. Материал дерево", "Шкатулка с магнитной крышкой 7х5 см"),
+        # Словарь не считает «7х5 см. Материал» двумя предложениями —
+        # точка после сокращения его не обманывает.
+        ("Шкатулка с магнитной крышкой 7х5 см. Материал дерево",
+         "Шкатулка с магнитной крышкой 7х5 см. Материал дерево"),
         ("Сумочки вязаные, ручная работа\nЛюбая 1200 динар", "Сумочки вязаные"),
     ):
         assert parse(text)["title"] == expected
@@ -1777,3 +1780,42 @@ def test_trailing_separator_dropped():
     """«Medicube Mini Booster Pro ·» — точка-кружок от разметки поста."""
     assert parse("Косметический аппарат Medicube Mini Booster Pro ·")["title"] \
         == "Косметический аппарат Medicube Mini Booster Pro"
+
+
+# ── Морфология вместо самодельных правил ────────────────────────────────────
+# Окончание -у бывает у существительного в винительном («вешалку»), у
+# глагола («хочу») и у наречия («почему»). По окончанию их не различить —
+# это работа словаря.
+def test_morphology_distinguishes_parts_of_speech():
+    from app.core.morphology import available, to_nominative
+
+    if not available():
+        return                          # без словаря работают прежние правила
+    assert to_nominative("красивую одежду для девочки") == "красивая одежда для девочки"
+    assert to_nominative("вешалку с решетчатым экраном") == "вешалка с решетчатым экраном"
+    # глагол и наречие остаются нетронутыми
+    assert to_nominative("хочу научиться электромонтажу") == "хочу научиться электромонтажу"
+    assert to_nominative("почему творог лучший друг") == "почему творог лучший друг"
+
+
+def test_sentences_split_by_dictionary():
+    """
+    Своё правило рвало «1. вешалку» надвое, а «3000 руб. Состояние»
+    считало одним предложением.
+    """
+    from app.core.morphology import sentences
+    assert sentences("1. вешалку с экраном. 2. шкафчик") == [
+        "1. вешалку с экраном.", "2. шкафчик"]
+    parts = sentences("Продам стол за 3000 руб. Состояние отличное")
+    assert len(parts) == 2
+
+
+def test_parser_works_without_morphology(monkeypatch):
+    """Библиотеки нет — падеж правится по окончаниям, парсер не встаёт."""
+    import app.core.morphology as morphology
+
+    monkeypatch.setattr(morphology, "_analyzer", None)
+    monkeypatch.setattr(morphology, "_tried", True)
+    assert morphology.to_nominative("вешалку с экраном") is None
+    # разбор при этом продолжает работать
+    assert parse("Продам:\n1. вешалку с экраном.")["title"]

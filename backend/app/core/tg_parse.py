@@ -10,6 +10,9 @@
 """
 import re
 
+from app.core.morphology import (
+    sentences as split_sentences, to_nominative as morph_nominative,
+)
 from app.core.title_rules import (
     ATTR_LABELS, has_object_word, SUBJECT_BY_CATEGORY, SUBJECT_BY_SUB, TITLE_ATTRS,
     profession, rejects_as_title, service_subject, strip_trailing_number,
@@ -194,6 +197,21 @@ _VERB_FORMS = {
 
 
 def to_nominative(text: str, words: int = 2, known_only: bool = False) -> str:
+    """
+    Приводит начало строки к именительному падежу.
+
+    Сначала пробуем словарь: он знает часть речи и падеж, а потому не
+    путает «вешалку» с «хочу». Если словаря нет — работает прежнее
+    правило по окончаниям, оно грубее, но лучше, чем ничего.
+    """
+    by_dictionary = morph_nominative(text, words)
+    if by_dictionary is not None:
+        return by_dictionary
+    return _to_nominative_by_endings(text, words, known_only)
+
+
+def _to_nominative_by_endings(text: str, words: int = 2,
+                              known_only: bool = False) -> str:
     """
     Переводит первые слова заголовка из винительного падежа в именительный.
 
@@ -821,7 +839,9 @@ def make_title(text: str, limit: int = 70) -> str | None:
         chosen = None
         first_line = not seen_content
         seen_content = True
-        for part in re.split(r"(?<=[.!?])\s+", line):
+        # Делим строку словарём: своё правило рвало «1. вешалку» надвое,
+        # а «3000 руб. Состояние» считало одним предложением.
+        for part in split_sentences(line):
             candidate = _SHOUT_RE.sub("", part).strip(" .!?,;:-—")
             # Короткое слово годится, если это название вещи: «Стол»
             # после снятия цены — ровно четыре буквы.
