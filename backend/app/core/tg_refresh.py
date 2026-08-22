@@ -27,14 +27,17 @@ from app.models import Listing, ListingStatus
 MAX_REPLIES = 20
 
 
-async def check(client, chat_id: int, message_id: int) -> str | None:
+async def check(client, chat_id: int, message_id: int, verbose: bool = False) -> str | None:
     """
     Возвращает причину закрытия объявления или None, если оно живо.
     """
     try:
         entity = await client.get_entity(chat_id)
         msg = await client.get_messages(entity, ids=message_id)
-    except Exception:
+    except Exception as exc:
+        # Молчать нельзя: без этого не отличить «всё живо» от «ничего не
+        # прочиталось», и проверка выглядела бы работающей, ничего не делая.
+        print(f"    не удалось прочитать сообщение {message_id}: {exc}")
         return None
 
     if msg is None:
@@ -45,18 +48,22 @@ async def check(client, chat_id: int, message_id: int) -> str | None:
         return "в сообщении пометка о продаже"
 
     # Пометку часто пишут ответом, а не правкой
+    replies = own = 0
     try:
-        count = 0
         async for reply in client.iter_messages(entity, reply_to=message_id, limit=MAX_REPLIES):
-            count += 1
+            replies += 1
             # чужие «а сколько отдадите?» не в счёт — верим только автору
             if reply.sender_id != msg.sender_id:
                 continue
+            own += 1
             if looks_sold(reply.text or ""):
                 return "автор ответил, что продано"
-    except Exception:
-        pass
+    except Exception as exc:
+        print(f"    ответы к {message_id} прочитать не вышло: {exc}")
 
+    if verbose:
+        head = " ".join((msg.text or "").split())[:56]
+        print(f"    {message_id}: живо | ответов {replies} (автора {own}) | {head}")
     return None
 
 
@@ -66,6 +73,8 @@ async def main() -> None:
     ap.add_argument("--days", type=int, default=None,
                     help="снять объявления старше указанного числа дней")
     ap.add_argument("--limit", type=int, default=300)
+    ap.add_argument("--verbose", action="store_true",
+                    help="показывать каждое проверенное объявление")
     args = ap.parse_args()
 
     client = TelegramClient(settings.tg_session, settings.tg_api_id, settings.tg_api_hash)
@@ -101,7 +110,8 @@ async def main() -> None:
             if not listing.external_chat or not listing.external_message_id:
                 continue
 
-            reason = await check(client, int(listing.external_chat), listing.external_message_id)
+            reason = await check(client, int(listing.external_chat),
+                                 listing.external_message_id, args.verbose)
             if reason:
                 print(f"  {listing.id}: {reason}")
                 if not args.dry_run:
