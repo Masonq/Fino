@@ -22,12 +22,34 @@ from app.core.database import SessionLocal
 from app.core.tg_parse import looks_sold
 from app.models import Listing, ListingStatus
 
-# Сколько ответов в ветке смотрим: пометку ставят сразу под объявлением,
-# а не через сотню сообщений.
-MAX_REPLIES = 20
+# Сколько последних сообщений чата просматриваем ради ответов. Пометку
+# «продано» пишут вскоре после объявления, а не спустя тысячу сообщений.
+SCAN_DEPTH = 800
 
 
-async def check(client, chat_id: int, message_id: int, verbose: bool = False) -> str | None:
+async def collect_replies(client, chat_id: int) -> dict[int, list]:
+    """
+    Собирает ответы разом по всему чату.
+
+    Спрашивать ответы к каждому сообщению по отдельности не выходит: в
+    чатах с темами Telegram понимает такой запрос как номер темы и отвечает
+    TOPIC_ID_INVALID. Зато один проход по последним сообщениям даёт все
+    ответы сразу и обходится одним обращением вместо сотни.
+    """
+    replies: dict[int, list] = {}
+    try:
+        entity = await client.get_entity(chat_id)
+        async for msg in client.iter_messages(entity, limit=SCAN_DEPTH):
+            parent = getattr(getattr(msg, "reply_to", None), "reply_to_msg_id", None)
+            if parent:
+                replies.setdefault(parent, []).append(msg)
+    except Exception as exc:
+        print(f"  чат {chat_id}: ответы прочитать не вышло: {exc}")
+    return replies
+
+
+async def check(client, chat_id: int, message_id: int, replies: dict,
+                verbose: bool = False) -> str | None:
     """
     Возвращает причину закрытия объявления или None, если оно живо.
     """
@@ -48,22 +70,19 @@ async def check(client, chat_id: int, message_id: int, verbose: bool = False) ->
         return "в сообщении пометка о продаже"
 
     # Пометку часто пишут ответом, а не правкой
-    replies = own = 0
-    try:
-        async for reply in client.iter_messages(entity, reply_to=message_id, limit=MAX_REPLIES):
-            replies += 1
-            # чужие «а сколько отдадите?» не в счёт — верим только автору
-            if reply.sender_id != msg.sender_id:
-                continue
-            own += 1
-            if looks_sold(reply.text or ""):
-                return "автор ответил, что продано"
-    except Exception as exc:
-        print(f"    ответы к {message_id} прочитать не вышло: {exc}")
+    own = 0
+    for reply in replies.get(message_id, []):
+        # чужие «а сколько отдадите?» не в счёт — верим только автору
+        if reply.sender_id != msg.sender_id:
+            continue
+        own += 1
+        if looks_sold(reply.text or ""):
+            return "автор ответил, что продано"
 
     if verbose:
         head = " ".join((msg.text or "").split())[:56]
-        print(f"    {message_id}: живо | ответов {replies} (автора {own}) | {head}")
+        print(f"    {message_id}: живо | ответов {len(replies.get(message_id, []))} "
+              f"(автора {own}) | {head}")
     return None
 
 
@@ -95,6 +114,15 @@ async def main() -> None:
         )
         print(f"проверяем: {len(listings)}")
 
+        # ответы собираем по одному разу на чат, а не на каждое объявление
+        by_chat: dict[int, dict] = {}
+        for listing in listings:
+            if listing.external_chat:
+                by_chat.setdefault(int(listing.external_chat), {})
+        for chat_id in by_chat:
+            by_chat[chat_id] = await collect_replies(client, chat_id)
+            print(f"  чат {chat_id}: ответов найдено {len(by_chat[chat_id])}")
+
         for listing in listings:
             # Сначала возраст: старое объявление можно снять, не тревожа
             # Telegram лишним запросом.
@@ -110,8 +138,9 @@ async def main() -> None:
             if not listing.external_chat or not listing.external_message_id:
                 continue
 
-            reason = await check(client, int(listing.external_chat),
-                                 listing.external_message_id, args.verbose)
+            chat_id = int(listing.external_chat)
+            reason = await check(client, chat_id, listing.external_message_id,
+                                 by_chat.get(chat_id, {}), args.verbose)
             if reason:
                 print(f"  {listing.id}: {reason}")
                 if not args.dry_run:
