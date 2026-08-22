@@ -131,7 +131,7 @@ def review(limit: int) -> None:
 
     rows = load()
     slugs = list(KEYWORDS)
-    checked = agreed = 0
+    checked = agreed = silent = 0
     changes: list[dict] = []
 
     for row in rows[:limit]:
@@ -139,6 +139,17 @@ def review(limit: int) -> None:
         better = improve(text, row.get("title"))
         slug = guess_category(text, slugs)
         checked += 1
+
+        # Модель могла не ответить: кончился дневной лимит, оборвалась
+        # сеть. Молчание — это не согласие, и считать его совпадением
+        # нельзя: сверка отрапортует сто процентов, ничего не проверив.
+        if not better and slug is None:
+            silent += 1
+            if silent >= 5 and silent == checked:
+                print("Модель не отвечает — проверьте лимит и ключ.")
+                print("Сверка без ответов бессмысленна, останавливаюсь.")
+                return
+            continue
 
         title_differs = better.get("title") and better["title"] != row.get("title")
         cat_differs = slug and slug != row.get("category")
@@ -156,8 +167,13 @@ def review(limit: int) -> None:
                         "category": slug})
 
     print()
-    print(f"сверено: {checked}, совпало с правилами: {agreed} "
-          f"({agreed * 100 // (checked or 1)}%)")
+    answered = checked - silent
+    print(f"ответов от модели: {answered} из {checked}")
+    if silent:
+        print(f"промолчала: {silent} — эти объявления не проверены")
+    if answered:
+        print(f"совпало с правилами: {agreed} "
+              f"({agreed * 100 // answered}%)")
     print(f"расхождений: {len(changes)}")
     print()
     print("Посмотрите список выше. Где права модель — поправьте строки")
