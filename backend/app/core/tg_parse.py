@@ -11,7 +11,7 @@
 import re
 
 from app.core.title_rules import (
-    ATTR_LABELS, SUBJECT_BY_CATEGORY, SUBJECT_BY_SUB, TITLE_ATTRS,
+    ATTR_LABELS, has_object_word, SUBJECT_BY_CATEGORY, SUBJECT_BY_SUB, TITLE_ATTRS,
     profession, rejects_as_title, service_subject, strip_trailing_number,
 )
 from app.data.cities_data import CITY_ALIASES, DISTRICT_NAMES
@@ -620,7 +620,11 @@ def make_title(text: str, limit: int = 70) -> str | None:
         chosen = None
         for part in re.split(r"(?<=[.!?])\s+", line):
             candidate = _SHOUT_RE.sub("", part).strip(" .!?,;:-—")
-            if len(candidate) < 6:
+            # Короткое слово годится, если это название вещи: «Стол»
+            # после снятия цены — ровно четыре буквы.
+            if len(candidate) < 4:
+                continue
+            if len(candidate) < 6 and not has_object_word(candidate):
                 continue
             if rejects_as_title(candidate):
                 continue

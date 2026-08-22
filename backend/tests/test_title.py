@@ -556,3 +556,42 @@ def test_question_post_is_not_a_listing():
         "Скажите, есть ли трансфер или визаран до Станишичей (Босния) "
         "из Белграда? Может кто-то возит?")
     assert not looks_like_question("Продам диван IKEA, 15000 RSD")
+
+
+# ── Живая строка вместо сборки из фактов ────────────────────────────────────
+def test_short_object_name_is_a_title():
+    """«Стол 3000 RSD» — после снятия цены остаётся четыре буквы."""
+    assert parse("**Стол 3000 RSD**\n100х60см, ножки откручиваются")["title"] == "Стол"
+
+
+def test_counted_goods_are_not_a_spec_line():
+    """«4шт бокалы» — товар со счётом, а не обрывок таблицы."""
+    assert parse("Продам 4шт бокалы для коньяка. 700 динар")["title"] \
+        == "4шт бокалы для коньяка"
+    # а вот это по-прежнему характеристики
+    assert parse("#stan\n70 м², 2 комнаты, Вождовац\n120000 €")["title"] is None
+
+
+def test_word_root_with_space_is_exact():
+    """Корень «топ » — слово целиком: он не должен ловить «топор»."""
+    from app.core.title_rules import has_object_word
+    assert has_object_word("Спортивный топ в хорошем состоянии")
+    assert not has_object_word("Наточил топор вчера")
+
+
+def test_tableware_and_boxes_recognised():
+    for text, expected in (
+        ("Шкатулка с магнитной крышкой 7х5 см. Материал дерево", "Шкатулка с магнитной крышкой 7х5 см"),
+        ("Сумочки вязаные, ручная работа\nЛюбая 1200 динар", "Сумочки вязаные"),
+    ):
+        assert parse(text)["title"] == expected
+
+
+def test_music_lessons_are_tutoring():
+    from app.core.tg_classify import classify, classify_sub
+    text = ("Меня зовут Константин, я - джазовый пианист, педагог по ф-но. "
+            "Если вы хотите научиться играть джаз")
+    assert classify(text)[0] == "services"
+    assert classify_sub("services", text) == "tutoring"
+    assert build_title("services", "tutoring", text, {},
+                       fallback_title=parse(text).get("title")) == "Уроки фортепиано"
