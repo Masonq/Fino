@@ -1408,3 +1408,59 @@ def test_battery_percent_in_words():
     from app.core.tg_parse import extract_attributes
     assert extract_attributes("electronics", "Батарея 89 процентов")["battery_health"] == 89
     assert extract_attributes("electronics", "Аккумулятор 100%")["battery_health"] == 100
+
+
+# ── Аудит отсева и хвостов заголовка ────────────────────────────────────────
+def test_negation_before_sold_mark():
+    """
+    «Не продано», «ещё актуально» — вещь на месте. Метка рядом ничего не
+    меняет, а объявление снималось с публикации.
+    """
+    from app.core.tg_parse import looks_sold
+    assert not looks_sold("Продам стол, не продано")
+    assert not looks_sold("Ещё не продано")
+    assert not looks_sold("Продаю, ещё актуально")
+    assert not looks_sold("Продам диван (актуально)")
+    assert not looks_sold("В наличии, пишите")
+    # настоящие метки работают
+    assert looks_sold("ПРОДАНО")
+    assert looks_sold("Товар продан")
+    assert looks_sold("Не актуально")
+    assert looks_sold("неактуально")
+    assert looks_sold("Забрали, спасибо")
+
+
+def test_weak_spam_words_need_company():
+    """
+    Спам-фильтр удаляет объявление целиком, поэтому ошибка тут дороже
+    всего. «Промокод на доставку» и «ставки не принимаю» — не спам.
+    """
+    from app.core.tg_parse import looks_like_spam
+    assert not looks_like_spam("Продам велосипед, есть промокод на доставку")
+    assert not looks_like_spam("Продам билеты на концерт, ставки не принимаю")
+    assert not looks_like_spam("Продам стол, акция до конца недели")
+    # а вместе — уже спам
+    assert looks_like_spam("Заработок в интернете, инвестиции в крипту, бонус")
+    assert looks_like_spam("ПОДПИСАТЬСЯ НА КАНАЛ, ваша подписка наша поддержка")
+
+
+def test_all_tails_stripped_from_title():
+    """
+    Цена, место и условия сделки идут через запятую после названия — и
+    вытесняли его за предел строки.
+    """
+    assert parse("Продам диван IKEA, 25000 динар, Земун, самовывоз, торг уместен")["title"] \
+        == "Диван IKEA"
+    assert parse("Продам стол, 3000 дин, недорого")["title"] == "Стол"
+    assert parse("Куртка зимняя, размер S, Земун, срочно")["title"] == "Куртка зимняя"
+    # то, что относится к вещи, остаётся
+    assert parse("Стол письменный IKEA MICKE, отличное состояние")["title"] \
+        == "Стол письменный IKEA MICKE"
+
+
+def test_question_behind_a_greeting():
+    """«Привет! Кто-нибудь продаёт диван?» — тот же вопрос в чат."""
+    from app.core.title_rules import looks_like_question
+    assert looks_like_question("Привет! Кто-нибудь продаёт диван недорого?")
+    assert looks_like_question("Кто-нибудь знает хорошего мастера?")
+    assert not looks_like_question("Добрый день! Продам стол 3000")
