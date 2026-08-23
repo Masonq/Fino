@@ -2090,3 +2090,30 @@ def test_bare_machine_is_a_car():
     assert classify("Швейная машина Brother")[0] == "home-garden"
     assert classify("Кофемашина Delonghi")[0] == "home-garden"
     assert classify("Машинка детская игрушечная")[0] == "kids"
+
+
+def test_dollars_recognised():
+    """
+    «13000 долларов» уходило в динары — то есть в сто раз мимо. В
+    словаре были только «usd» и знак.
+    """
+    from app.core.tg_parse import extract_price
+
+    assert extract_price("Цена 13000 долларов") == (13000, "USD")
+    assert extract_price("13000 долларов") == (13000, "USD")
+    assert extract_price("Цена 500 долл") == (500, "USD")
+    assert extract_price("500 баксов") == (500, "USD")
+    # остальные валюты не задеты
+    assert extract_price("Цена 3000 динар") == (3000, "RSD")
+    assert extract_price("Цена 500 евро") == (500, "EUR")
+
+
+def test_dangling_word_removed():
+    """
+    Правило сняло «в хорошем состоянии», а перед ним осталось «очень» —
+    «Машина очень» читается как обрыв на полуслове.
+    """
+    assert parse("Машина очень в хорошем состоянии\nЦена 13000 долларов")["title"] == "Машина"
+    # осмысленные хвосты остаются
+    assert parse("Диван почти новый в отличном состоянии")["title"] == "Диван почти новый"
+    assert parse("Куртка очень тёплая")["title"] == "Куртка очень тёплая"
