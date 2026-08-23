@@ -98,6 +98,10 @@ published_count: dict[int, int] = {}
 # Кому уже предлагали. Второй раз не зовём: назойливость раздражает
 # сильнее, чем польза от входа.
 invited: set[int] = set()
+# Объявление → номер его сообщения в чате. Держим в памяти: перезапуск
+# бота теряет связь, и тогда пост придётся править вручную — редкость,
+# ради которой заводить таблицу незачем.
+posted_messages: dict[str, int] = {}
 
 
 def within_limit(user_id: int) -> bool:
@@ -402,6 +406,7 @@ async def close_listing(call: CallbackQuery) -> None:
 
     from app.models import Listing, ListingStatus
 
+    fields = None
     try:
         with SessionLocal() as db:
             listing = (
@@ -415,11 +420,48 @@ async def close_listing(call: CallbackQuery) -> None:
                 await call.answer("Это не ваше объявление", show_alert=True)
                 return
             listing.status = ListingStatus.sold
+
+            from app.models import ListingTranslation
+
+            translation = (
+                db.query(ListingTranslation)
+                .filter(ListingTranslation.listing_id == listing.id)
+                .first()
+            )
+            fields = {
+                # Номер поста берём из базы: память бота могла его
+                # потерять при перезапуске.
+                "message_id": listing.external_message_id,
+                "title": translation.title if translation else "",
+                "description": translation.description if translation else "",
+                "price": float(listing.price) if listing.price else None,
+                "currency": listing.currency.value if listing.currency else None,
+                "is_free": bool(listing.is_free),
+                "city": listing.city,
+            }
             db.commit()
     except Exception:                            # noqa: BLE001
         log.exception("не удалось закрыть объявление из списка")
         await call.answer("Не получилось, попробуйте позже", show_alert=True)
         return
+
+    # Правим и сам пост: покупатель смотрит в чат, а не в нашу базу.
+    message_id = posted_messages.get(listing_id) or (fields or {}).pop(
+        "message_id", None)
+    if message_id and fields:
+        sold_text = build_sold_caption(
+            **fields, site_url=settings.public_base_url.rstrip("/"))
+        for edit in (call.bot.edit_message_caption,
+                     call.bot.edit_message_text):
+            try:
+                await edit(chat_id=TARGET_CHAT, message_id=message_id,
+                           **({"caption": sold_text}
+                              if edit is call.bot.edit_message_caption
+                              else {"text": sold_text}),
+                           reply_markup=None)
+                break
+            except Exception:                    # noqa: BLE001
+                continue
 
     await call.answer("Снял с продажи")
 
@@ -848,6 +890,25 @@ async def publish(call: CallbackQuery, bot: Bot) -> None:
             "Не получилось опубликовать в чат.\n\n"
             f"<code>{escape(str(exc))[:400]}</code>")
         return
+
+    # Запоминаем, где объявление лежит в чате: без этого пометка
+    # «продано» из списка меняет только запись в базе, а пост в чате
+    # остаётся зазывать покупателей на проданную вещь.
+    if listing_id:
+        posted_messages[listing_id] = posted.message_id
+        # И в базу: память живёт до перезапуска бота, а объявление —
+        # неделями. Без записи пометка «продано» через месяц не найдёт,
+        # какой пост править.
+        try:
+            from app.models import Listing
+
+            with SessionLocal() as db:
+                saved = db.query(Listing).filter(Listing.id == listing_id).first()
+                if saved:
+                    saved.external_message_id = posted.message_id
+                    db.commit()
+        except Exception:                        # noqa: BLE001
+            log.warning("не удалось запомнить номер поста")
 
     published_today.setdefault(call.from_user.id, []).append(utcnow())
     published_count[call.from_user.id] = published_count.get(

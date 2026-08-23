@@ -231,3 +231,22 @@ def test_listings_come_as_one_message():
     # названия — ссылками, кнопки — по номеру из списка
     assert '{number}. <a href=' in source
     assert 'f"{number} продано"' in source
+
+
+def test_sold_mark_reaches_the_chat():
+    """
+    Пометка из списка меняла только запись в базе, а пост в чате
+    оставался зазывать покупателей на проданную вещь.
+    """
+    import inspect
+    from app.bot.publisher import close_listing, publish
+
+    # номер поста запоминается при публикации — и в памяти, и в базе
+    published = inspect.getsource(publish)
+    assert "posted_messages[listing_id]" in published
+    assert "external_message_id = posted.message_id" in published
+
+    # и используется при закрытии
+    closing = inspect.getsource(close_listing)
+    assert "build_sold_caption" in closing
+    assert "edit_message_caption" in closing
