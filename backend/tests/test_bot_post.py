@@ -192,3 +192,26 @@ def test_sold_post_keeps_links_and_drops_the_seller():
     assert 'href="https://plonk.rs"' in caption        # ссылка цела
     assert "<s>Утюг philips azur</s>" in caption       # название зачёркнуто
     assert "Белград" in caption
+
+
+def test_my_listings_work_without_registration():
+    """
+    Человек публиковал через бота и нигде не регистрировался — ссылка на
+    сайт ему ничего не даёт: там он никто. Список должен работать в
+    переписке, по имени в телеграме.
+    """
+    import inspect
+    from app.bot.publisher import my_listings
+
+    source = inspect.getsource(my_listings)
+    assert "external_author" in source
+    assert "username" in source
+
+
+def test_closing_someone_elses_listing_is_refused():
+    """Зная номер объявления, чужое закрыть всё равно нельзя."""
+    import inspect
+    from app.bot.publisher import close_listing
+
+    source = inspect.getsource(close_listing)
+    assert "Listing.external_author == author" in source

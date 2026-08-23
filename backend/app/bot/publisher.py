@@ -306,13 +306,100 @@ async def start(message: Message) -> None:
 
 @dp.message(Command("my"))
 async def my_listings(message: Message) -> None:
-    """Свои объявления — чтобы человек видел, что уже опубликовал."""
+    """
+    Свои объявления прямо в переписке.
+
+    Человек публиковал через бота и нигде не регистрировался — ссылка на
+    сайт ему ничего не даёт: там он никто. Поэтому показываем список
+    здесь, где он уже узнан.
+    """
+    author = message.from_user.username or str(message.from_user.id)
+
+    from app.models import Listing, ListingStatus, ListingTranslation
+
+    with SessionLocal() as db:
+        rows = (
+            db.query(Listing, ListingTranslation.title)
+            .join(ListingTranslation, ListingTranslation.listing_id == Listing.id)
+            .filter(Listing.external_author == author,
+                    Listing.status != ListingStatus.archived)
+            .order_by(Listing.created_at.desc())
+            .limit(20)
+            .all()
+        )
+        items = [{
+            "id": str(listing.id),
+            "title": title or "Без названия",
+            "sold": listing.status == ListingStatus.sold,
+            "price": float(listing.price) if listing.price else None,
+            "currency": listing.currency.value if listing.currency else None,
+            "is_free": bool(listing.is_free),
+        } for listing, title in rows]
+
+    if not items:
+        await message.answer(
+            "У вас пока нет объявлений. Пришлите мне фотографии и описание "
+            "— опубликую в барахолку."
+        )
+        return
+
     site = settings.public_base_url.rstrip("/")
+    live = [i for i in items if not i["sold"]]
+
     await message.answer(
-        "Ваши объявления на сайте:\n"
-        f"{site}/my\n\n"
-        "Там же их можно поправить или снять с публикации."
+        f"<b>Ваши объявления</b> — {len(live)} в продаже"
+        + (f", {len(items) - len(live)} продано" if len(items) > len(live) else "")
     )
+
+    for item in items:
+        mark = "🔴 " if item["sold"] else ""
+        text = (f"{mark}<b>{escape(item['title'])}</b>\n"
+                f"{money(item['price'], item['currency'], item['is_free'])}")
+
+        buttons = [[InlineKeyboardButton(
+            text="Открыть на PLONK", url=f"{site}/listing/{item['id']}")]]
+        if not item["sold"]:
+            # Снять с продажи — то, ради чего список и открывают.
+            buttons.append([InlineKeyboardButton(
+                text="Продано", callback_data=f"close:{item['id']}")])
+
+        await message.answer(
+            text, reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons))
+
+
+@dp.callback_query(F.data.startswith("close:"))
+async def close_listing(call: CallbackQuery) -> None:
+    """Снимает объявление с продажи из списка в боте."""
+    listing_id = call.data.split(":", 1)[1]
+    author = call.from_user.username or str(call.from_user.id)
+
+    from app.models import Listing, ListingStatus
+
+    try:
+        with SessionLocal() as db:
+            listing = (
+                db.query(Listing)
+                .filter(Listing.id == listing_id,
+                        # Чужое закрыть нельзя, даже зная номер.
+                        Listing.external_author == author)
+                .first()
+            )
+            if not listing:
+                await call.answer("Это не ваше объявление", show_alert=True)
+                return
+            listing.status = ListingStatus.sold
+            db.commit()
+    except Exception:                            # noqa: BLE001
+        log.exception("не удалось закрыть объявление из списка")
+        await call.answer("Не получилось, попробуйте позже", show_alert=True)
+        return
+
+    try:
+        await call.message.edit_text(
+            "🔴 " + (call.message.text or ""), reply_markup=None)
+    except Exception:                            # noqa: BLE001
+        pass
+    await call.answer("Снял с продажи")
 
 
 @dp.message(Command("cancel"))
@@ -799,7 +886,10 @@ def save_listing(draft: Draft, author) -> str | None:
             item = {
                 "attributes": {},
                 "chat_id": TARGET_CHAT,
-                "chat_title": "Опубликовано через бота",
+                # Имя владельца объявления в карточке продавца. Раньше
+                # там стояло «Опубликовано через бота» — покупатель видел
+                # робота вместо человека, у которого хочет купить.
+                "chat_title": author.full_name or "Продавец",
                 # Номер сообщения ещё не известен: публикация идёт после
                 # записи. Берём случайный — от заголовка нельзя, иначе
                 # второе объявление о том же утюге сочтётся повтором
