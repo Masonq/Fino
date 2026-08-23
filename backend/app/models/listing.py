@@ -71,6 +71,11 @@ class Listing(Base):
     external_fingerprint: Mapped[str | None] = mapped_column(
         String(500), nullable=True)
 
+    # Вещь отдают даром. Отдельно от пустой цены: «цена не указана» и
+    # «бесплатно» — разные вещи, и читатель проходит мимо первого, хотя
+    # второе ему бы подошло.
+    is_free: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+
     city: Mapped[str | None] = mapped_column(String(120), nullable=True, index=True)
     location_lat: Mapped[float | None] = mapped_column(Numeric(9, 6), nullable=True)
     location_lng: Mapped[float | None] = mapped_column(Numeric(9, 6), nullable=True)

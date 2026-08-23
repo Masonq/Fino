@@ -135,7 +135,8 @@
     "from_telegram": "Listing from Telegram",
     "write_person": "Message",
     "no_salary": "Salary not stated",
-    "desired_salary": "Desired salary"
+    "desired_salary": "Desired salary",
+    "free": "Free"
   },
   "favorites": {
     "title": "Saved",

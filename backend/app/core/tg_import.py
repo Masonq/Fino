@@ -518,6 +518,7 @@ def store(db, item: dict) -> bool:
         external_chat=str(item["chat_id"]),
         external_message_id=item["message_id"],
         external_fingerprint=mark or None,
+        is_free=bool(item.get("is_free")),
         created_at=now,
     )
     db.add(listing)

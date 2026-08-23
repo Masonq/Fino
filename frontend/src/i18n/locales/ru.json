@@ -135,7 +135,8 @@
     "from_telegram": "Объявление из Telegram",
     "write_person": "Написать",
     "no_salary": "Зарплата не указана",
-    "desired_salary": "Желаемая зарплата"
+    "desired_salary": "Желаемая зарплата",
+    "free": "Бесплатно"
   },
   "favorites": {
     "title": "Избранное",

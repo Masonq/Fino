@@ -41,7 +41,11 @@ export default function ListingCard({ listing, large = false }) {
         </button>
       </div>
       <div className="s-price">
-        {formatPrice(listing.price, listing.currency, i18n.language) || t('detail.no_price')}
+        {/* «Бесплатно» и «цена не указана» — разные вещи: мимо второго
+            читатель проходит, а первое как раз и ищут. */}
+        {listing.is_free
+          ? <span className="price-free">{t('detail.free')}</span>
+          : formatPrice(listing.price, listing.currency, i18n.language) || t('detail.no_price')}
       </div>
       {/* Рисуем всегда, даже пустым: без города карточка была ниже соседней,
           и низ ряда получался рваным. */}

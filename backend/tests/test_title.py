@@ -2037,3 +2037,40 @@ def test_thumbnail_big_enough_for_dense_screens():
     assert THUMB_DIM >= 570
     # оба пути дают одинаковые снимки: и перенос из чатов, и загрузка
     assert THUMB_DIM == UPLOAD_DIM
+
+
+# ── Отдают даром ────────────────────────────────────────────────────────────
+def test_free_listings_recognised():
+    """
+    «Цена не указана» и «бесплатно» — разные вещи: мимо первого читатель
+    проходит, а второе как раз и ищут.
+    """
+    from app.core.tg_parse import looks_free
+
+    for text in ("Отдам даром детские вещи 74-80 размер",
+                 "Диван в добрые руки, самовывоз Земун",
+                 "Сарафан, за упаковку пива (4 шт)",
+                 "Три платья, размер XS, за донат",
+                 "Держатель для туалетной бумаги за дыню или лимон",
+                 "Poklanjam mačiće"):
+        assert looks_free(text), text
+
+
+def test_free_offers_are_not_free_things():
+    """
+    «Доставка бесплатно» и «первое занятие бесплатно» — там бесплатна
+    услуга при покупке, а сама вещь продаётся.
+    """
+    from app.core.tg_parse import looks_free
+
+    for text in ("Продам диван 25000 динар, доставка бесплатно",
+                 "Массаж, первый сеанс бесплатно",
+                 "Чехол в подарок к телефону",
+                 "Продам стол 3000 дин"):
+        assert not looks_free(text), text
+
+
+def test_price_beats_the_free_words():
+    """«Цена символическая: 800 RSD» — всё-таки продажа за восемьсот."""
+    assert parse("Цена символическая: 800 RSD")["is_free"] is False
+    assert parse("Отдам даром детские вещи")["is_free"] is True

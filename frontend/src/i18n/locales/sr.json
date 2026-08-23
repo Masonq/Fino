@@ -135,7 +135,8 @@
     "from_telegram": "Oglas sa Telegrama",
     "write_person": "Pošalji poruku",
     "no_salary": "Plata nije navedena",
-    "desired_salary": "Željena plata"
+    "desired_salary": "Željena plata",
+    "free": "Besplatno"
   },
   "favorites": {
     "title": "Sačuvano",

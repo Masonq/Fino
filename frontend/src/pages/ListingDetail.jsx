@@ -218,7 +218,9 @@ export default function ListingDetail() {
         <div className="detail-price">
           {listing.price != null
             ? formatPrice(listing.price, listing.currency, lang)
-            : t(isResume ? 'detail.no_salary' : 'detail.no_price')}
+            : listing.is_free
+              ? <span className="price-free">{t('detail.free')}</span>
+              : t(isResume ? 'detail.no_salary' : 'detail.no_price')}
         </div>
         {isResume && listing.price != null && (
           <div className="price-note">{t('detail.desired_salary')}</div>

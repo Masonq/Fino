@@ -31,7 +31,9 @@ export default function SimilarListings({ listingId }) {
                 : <div className="photo-placeholder" />}
             </div>
             <div className="similar-price">
-              {formatPrice(l.price, l.currency, i18n.language) || t('detail.no_price')}
+              {l.is_free
+                ? t('detail.free')
+                : formatPrice(l.price, l.currency, i18n.language) || t('detail.no_price')}
             </div>
             <div className="similar-name">{l.title}</div>
             {l.city && <div className="similar-city">{displayCity(l.city, i18n.language)}</div>}
