@@ -47,7 +47,7 @@ async def peek(link: str) -> None:
             # Запрос лежит в messages, а не в channels: в channels
             # остались только переключатели самого режима веток.
             found = await client(functions.messages.GetForumTopicsRequest(
-                channel=chat, offset_date=0, offset_id=0,
+                peer=chat, offset_date=None, offset_id=0,
                 offset_topic=0, limit=100))
             print(f"\n{'номер':<10} название")
             for topic in found.topics:
