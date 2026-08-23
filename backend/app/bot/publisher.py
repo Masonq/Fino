@@ -33,6 +33,7 @@ from aiogram.types import (
 )
 from PIL import Image
 
+from app.core.chat_rules import check as check_rules, rules_for
 from app.core.clock import utcnow
 from app.core.config import settings
 from app.core.database import SessionLocal
@@ -41,6 +42,7 @@ from app.core.partner_chats import (
 )
 from app.core.tg_classify import classify, classify_sub
 from app.core.tg_parse import parse
+from app.bot.digest import build as build_digest
 from app.bot.post_format import (
     build_caption, build_preview, build_sold_caption, money,
 )
@@ -95,7 +97,7 @@ def within_limit(user_id: int) -> bool:
     day_ago = utcnow() - timedelta(days=1)
     recent = [t for t in published_today.get(user_id, []) if t >= day_ago]
     published_today[user_id] = recent
-    return len(recent) < DAILY_LIMIT
+    return len(recent) < rules_for(TARGET_CHAT).daily_limit
 
 
 def understand(text: str, draft: Draft) -> Draft:
@@ -217,6 +219,22 @@ async def cancel_cmd(message: Message) -> None:
     )
 
 
+@dp.message(Command("stats"))
+async def stats(message: Message) -> None:
+    """
+    Сводка по чату. Владельцу и сотрудникам, остальным незачем.
+
+    Владелец пустил бота в свой чат — значит вправе знать, что тот
+    делает. Иначе он видит только поток постов.
+    """
+    owner_id = rules_for(TARGET_CHAT).owner_id
+    if owner_id and message.from_user.id != owner_id:
+        await message.answer("Эта команда для владельца чата.")
+        return
+
+    await message.answer(build_digest(TARGET_CHAT, days=7))
+
+
 @dp.message(Command("help"))
 async def help_cmd(message: Message) -> None:
     await message.answer(
@@ -225,7 +243,8 @@ async def help_cmd(message: Message) -> None:
         "• что за вещь — маркой и моделью, если есть\n"
         "• цену (или напишите «отдам даром»)\n"
         "• район или город\n\n"
-        f"В сутки можно опубликовать {DAILY_LIMIT} объявлений."
+        f"В сутки можно опубликовать "
+        f"{rules_for(TARGET_CHAT).daily_limit} объявлений."
     )
 
 
@@ -250,8 +269,8 @@ async def handle_listing(message: Message, photos: list[bytes], text: str) -> No
 
     if not within_limit(message.from_user.id):
         await message.answer(
-            f"На сегодня хватит: {DAILY_LIMIT} объявлений в сутки. "
-            "Приходите завтра."
+            f"На сегодня хватит: {rules_for(TARGET_CHAT).daily_limit} "
+            "объявлений в сутки. Приходите завтра."
         )
         return
 
@@ -261,6 +280,16 @@ async def handle_listing(message: Message, photos: list[bytes], text: str) -> No
             "Не понял, что за вещь. Напишите в первой строке, что продаёте — "
             "например «Стол письменный IKEA MICKE»."
         )
+        return
+
+    # Правила чата смотрим до карточки: показать объявление и отказать
+    # после нажатия «Опубликовать» — обидно и непонятно.
+    complaint = check_rules(
+        TARGET_CHAT, price=draft.price, currency=draft.currency,
+        is_free=draft.is_free, category=draft.category,
+    )
+    if complaint:
+        await message.answer(complaint)
         return
 
     drafts[message.from_user.id] = draft
@@ -723,6 +752,7 @@ async def main() -> None:
         BotCommand(command="start", description="Как опубликовать объявление"),
         BotCommand(command="my", description="Мои объявления"),
         BotCommand(command="cancel", description="Отменить начатое"),
+        BotCommand(command="stats", description="Сводка по чату"),
         BotCommand(command="help", description="Помощь"),
     ])
     await bot.set_chat_menu_button(menu_button=MenuButtonCommands())

@@ -1,0 +1,90 @@
+"""
+Правила чата: что владелец разрешает публиковать через бота.
+
+Барахолки живут по-разному: где-то не хотят объявлений без цены, где-то
+не пускают услуги, где-то боятся спама от новичков. Без настроек бот
+пришлось бы переписывать под каждого партнёра — а с ними хватает одной
+записи.
+
+Правила хранятся здесь, а не в базе, потому что меняются редко и всегда
+вместе с договорённостью: партнёр написал, что не хочет услуг, — мы
+поправили запись. Заводить ради этого раздел в админке пока незачем.
+"""
+from dataclasses import dataclass, field
+
+from app.core.partner_chats import BARAHOLKA_BELGRAD, BARAHOLKA_TEST
+
+
+@dataclass
+class ChatRules:
+    """Что можно и нельзя в конкретном чате."""
+
+    # Сколько объявлений в сутки с человека. Без предела один продавец
+    # забивает ленту, и владелец попросит убрать бота.
+    daily_limit: int = 5
+
+    # Объявления без цены раздражают больше всего: «пишите в личку» —
+    # это не объявление. Но у услуг и подарков цены не бывает, и им
+    # запрет не годится.
+    price_required: bool = False
+    # Ниже этой цены объявление не пропускаем: обычно так отсекают
+    # мелочёвку, ради которой не стоит поднимать ленту.
+    min_price_rsd: int | None = None
+
+    # Разделы, которых владелец не хочет видеть.
+    blocked_categories: set[str] = field(default_factory=set)
+
+    # Первое объявление новичка показывать владельцу до публикации.
+    # Спасает от спама, но замедляет: включать стоит, если донимают.
+    review_newcomers: bool = False
+    # Сколько объявлений человек должен опубликовать, чтобы перестать
+    # считаться новичком.
+    newcomer_after: int = 1
+
+    # Кому уходит сводка и объявления на проверку.
+    owner_id: int | None = None
+
+
+RULES: dict[int, ChatRules] = {
+    # Тестовый чат: предел повыше, чтобы проверки ничего не упирали.
+    BARAHOLKA_TEST: ChatRules(daily_limit=20),
+    BARAHOLKA_BELGRAD: ChatRules(
+        daily_limit=5,
+        min_price_rsd=None,
+        review_newcomers=False,
+    ),
+}
+
+
+def rules_for(chat_id: int) -> ChatRules:
+    """Правила чата. Незнакомому — осторожные значения по умолчанию."""
+    return RULES.get(chat_id, ChatRules())
+
+
+def check(chat_id: int, *, price: float | None, currency: str | None,
+          is_free: bool, category: str | None) -> str | None:
+    """
+    Проверяет объявление по правилам чата.
+
+    Возвращает объяснение для человека — или None, если всё в порядке.
+    Объяснение пишем словами, а не кодом ошибки: человек должен понять,
+    что поправить, и опубликовать заново.
+    """
+    rules = rules_for(chat_id)
+
+    if category and category in rules.blocked_categories:
+        return "В этом чате такие объявления не публикуют."
+
+    if rules.price_required and price is None and not is_free:
+        return ("Укажите цену — в этом чате объявления без неё не "
+                "публикуют. Если отдаёте даром, так и напишите.")
+
+    if rules.min_price_rsd and price is not None and not is_free:
+        # Сравниваем в динарах: евро в этих чатах примерно в сто раз
+        # дороже, и без пересчёта порог не имеет смысла.
+        in_rsd = price * 117 if (currency or "").upper() == "EUR" else price
+        if in_rsd < rules.min_price_rsd:
+            return (f"Слишком мелкое объявление: в этом чате публикуют "
+                    f"от {rules.min_price_rsd} динаров.")
+
+    return None
