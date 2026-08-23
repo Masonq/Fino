@@ -250,3 +250,24 @@ def test_sold_mark_reaches_the_chat():
     closing = inspect.getsource(close_listing)
     assert "build_sold_caption" in closing
     assert "edit_message_caption" in closing
+
+
+def test_sold_caption_gets_only_what_it_expects():
+    """
+    Номер поста нужен, чтобы найти сообщение в чате, — но сборке текста
+    он не нужен и ломает вызов. Держим его отдельно от полей объявления.
+    """
+    import inspect
+    from app.bot.post_format import build_sold_caption
+    from app.bot.publisher import close_listing
+
+    expected = set(inspect.signature(build_sold_caption).parameters)
+    source = inspect.getsource(close_listing)
+
+    # всё, что кладётся в fields, должно быть среди полей сборки
+    block = source[source.index("fields = {"):source.index("db.commit()")]
+    for line in block.splitlines():
+        line = line.strip()
+        if line.startswith('"') and '":' in line:
+            key = line.split('"')[1]
+            assert key in expected, f"лишнее поле в fields: {key}"

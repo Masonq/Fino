@@ -407,6 +407,7 @@ async def close_listing(call: CallbackQuery) -> None:
     from app.models import Listing, ListingStatus
 
     fields = None
+    saved_message_id = None
     try:
         with SessionLocal() as db:
             listing = (
@@ -428,10 +429,11 @@ async def close_listing(call: CallbackQuery) -> None:
                 .filter(ListingTranslation.listing_id == listing.id)
                 .first()
             )
+            # Номер поста берём из базы: память бота могла его потерять
+            # при перезапуске. Держим отдельно от полей объявления —
+            # сборка текста о нём ничего не знает.
+            saved_message_id = listing.external_message_id
             fields = {
-                # Номер поста берём из базы: память бота могла его
-                # потерять при перезапуске.
-                "message_id": listing.external_message_id,
                 "title": translation.title if translation else "",
                 "description": translation.description if translation else "",
                 "price": float(listing.price) if listing.price else None,
@@ -446,8 +448,7 @@ async def close_listing(call: CallbackQuery) -> None:
         return
 
     # Правим и сам пост: покупатель смотрит в чат, а не в нашу базу.
-    message_id = posted_messages.get(listing_id) or (fields or {}).pop(
-        "message_id", None)
+    message_id = posted_messages.get(listing_id) or saved_message_id
     if message_id and fields:
         sold_text = build_sold_caption(
             **fields, site_url=settings.public_base_url.rstrip("/"))
