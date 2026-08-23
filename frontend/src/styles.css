@@ -1129,16 +1129,18 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
   /* категории — сеткой вместо горизонтальной прокрутки:
      на десктопе прокручивать мышью неудобно */
-  .cat-rows{ overflow:visible; padding:18px 0 6px; }
-  /* Плитки фиксированной ширины и прижаты влево — не растягиваем
-     на всю строку, иначе они разъезжаются и выглядят пустыми. */
-  .cat-row{
-    display:flex; width:auto; gap:10px;
-    grid-template-columns:none;
+  /* Одна общая сетка вместо двух рядов: рядов на широком экране может
+     не хватить, и плитки уезжали за правый край — обрезки тут нет.
+     Сетка сама переносит их, сколько бы категорий ни было. */
+  .cat-rows{
+    display:grid; overflow:visible; padding:18px 0 6px;
+    grid-template-columns:repeat(auto-fill, minmax(190px, 1fr));
+    gap:10px;
   }
-  .cat-row + .cat-row{ margin-top:10px; }
+  /* Ряды перестают быть отдельными полосами и отдают плитки общей сетке */
+  .cat-row{ display:contents; }
   .cat-tile-2row{
-    width:206px; flex:0 0 206px; max-width:none; height:86px;
+    width:auto; max-width:none; height:86px;
     /* цвет теперь общий с мобильной версией */
     background:var(--tile); border-color:transparent; box-shadow:none;
     padding:11px 62px 11px 14px;
