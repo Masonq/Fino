@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session, joinedload
 
+from app.core.audit import record
 from app.core.auth import get_current_user
 from app.core.database import get_db
 from app.models import Listing, ListingStatus, User, UserRole
@@ -73,6 +74,8 @@ def approve(
     # работала непредсказуемо.
     if not listing.published_at:
         listing.published_at = utcnow()
+    record(db, moderator, "listing.approve", target_type="listing",
+           target_id=listing.id, owner=str(listing.owner_id))
     db.commit()
 
     try:
@@ -113,6 +116,9 @@ def reject(
         raise HTTPException(404, "not_found")
     listing.status = ListingStatus.rejected
     listing.rejection_reason = payload.reason
+    record(db, moderator, "listing.reject", target_type="listing",
+           target_id=listing.id, reason=payload.reason,
+           owner=str(listing.owner_id))
     db.commit()
 
     try:

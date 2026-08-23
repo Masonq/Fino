@@ -92,6 +92,8 @@ export const api = {
   adminStatsCategories: () => request('/admin/stats/categories'),
   adminStatsSources: () => request('/admin/stats/sources'),
   adminStatsQuality: () => request('/admin/stats/quality'),
+  adminAudit: (params) => request(`/admin/audit?${new URLSearchParams(params)}`),
+  adminAuditSummary: (days) => request(`/admin/audit/summary?${new URLSearchParams({ days })}`),
 
   modQueue: (lang) => request(`/moderation/queue?${new URLSearchParams({ lang })}`),
   modApprove: (id) => request(`/moderation/${id}/approve`, { method: 'POST' }),

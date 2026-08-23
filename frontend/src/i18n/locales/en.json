@@ -355,5 +355,22 @@
     "by_category": "By section",
     "by_source": "Sources",
     "own_source": "Own listings"
+  },
+  "audit": {
+    "title": "Action log",
+    "all": "All",
+    "about_people": "People",
+    "about_listings": "Listings",
+    "who": "Who — staff name",
+    "week": "This week",
+    "empty": "Nothing has happened yet.",
+    "hidden": "listings taken down: {{count}}",
+    "act": {
+      "user.block": "Blocked",
+      "user.unblock": "Unblocked",
+      "user.role": "Changed role",
+      "listing.approve": "Approved listing",
+      "listing.reject": "Rejected listing"
+    }
   }
 }

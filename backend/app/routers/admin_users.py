@@ -17,6 +17,7 @@ from pydantic import BaseModel
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
+from app.core.audit import record
 from app.core.auth import get_current_user
 from app.core.clock import utcnow
 from app.core.database import get_db
@@ -168,7 +169,10 @@ def change_role(
     if user.id == admin.id and payload.role != UserRole.admin:
         raise HTTPException(400, "cannot_demote_self")
 
+    was = user.role.value
     user.role = payload.role
+    record(db, admin, "user.role", target_type="user", target_id=user.id,
+           was=was, became=payload.role.value, about=user.display_name)
     db.commit()
     return {"ok": True, "role": user.role.value}
 
@@ -202,6 +206,9 @@ def block(
                 Listing.status == ListingStatus.active)
         .update({"status": ListingStatus.archived}, synchronize_session=False)
     )
+    record(db, admin, "user.block", target_type="user", target_id=user.id,
+           reason=payload.reason, about=user.display_name,
+           hidden_listings=hidden)
     db.commit()
     return {"ok": True, "hidden_listings": hidden}
 
@@ -225,6 +232,8 @@ def unblock(
 
     user.is_blocked = False
     user.block_reason = None
+    record(db, admin, "user.unblock", target_type="user", target_id=user.id,
+           about=user.display_name)
     db.commit()
     return {"ok": True}
 

@@ -356,5 +356,22 @@
     "by_category": "Po odeljcima",
     "by_source": "Izvori",
     "own_source": "Svoji oglasi"
+  },
+  "audit": {
+    "title": "Dnevnik radnji",
+    "all": "Sve",
+    "about_people": "Ljudi",
+    "about_listings": "Oglasi",
+    "who": "Ko — ime zaposlenog",
+    "week": "Ove nedelje",
+    "empty": "Još se ništa nije desilo.",
+    "hidden": "skinuto oglasa: {{count}}",
+    "act": {
+      "user.block": "Blokirao",
+      "user.unblock": "Odblokirao",
+      "user.role": "Promenio ulogu",
+      "listing.approve": "Odobrio oglas",
+      "listing.reject": "Odbio oglas"
+    }
   }
 }
