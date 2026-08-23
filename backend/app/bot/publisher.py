@@ -71,6 +71,10 @@ class Draft:
     sub: str | None = None
     topic_id: int | None = None
     created_at: datetime = field(default_factory=utcnow)
+    # Что мы уже показали человеку: карточка и снимки альбома. Нужно,
+    # чтобы убрать их при следующем показе, а не копить в переписке.
+    card_id: int | None = None
+    album_ids: list[int] = field(default_factory=list)
 
 
 # Черновики держим в памяти: они живут минуты, и заводить ради них
@@ -232,12 +236,16 @@ async def handle_listing(message: Message, photos: list[bytes], text: str) -> No
     await show_draft(message, draft)
 
 
-async def show_draft(message: Message, draft: Draft, edit: CallbackQuery | None = None):
+async def show_draft(message: Message, draft: Draft,
+                     edit: CallbackQuery | None = None) -> None:
     """
-    Показывает карточку перед публикацией — со снимком.
+    Показывает объявление ровно так, как оно встанет в чат.
 
-    Без фотографии человек не понимает, та ли она уйдёт в чат и сколько
-    их всего: он прислал пять, а видит только текст.
+    Не одну фотографию из пяти, а все — альбомом: человек должен видеть
+    то же, что увидят читатели, иначе подтверждение бессмысленно.
+
+    Кнопки к альбому не прикрепляются — это ограничение Telegram, — так
+    что они идут отдельным сообщением следом.
     """
     text = build_preview(
         title=draft.title, price=draft.price, currency=draft.currency,
@@ -248,11 +256,11 @@ async def show_draft(message: Message, draft: Draft, edit: CallbackQuery | None 
     )
     keyboard = confirm_keyboard(draft)
 
+    # Правку показываем на месте: новое сообщение на каждое нажатие
+    # засыпает переписку.
     if edit is not None:
-        # Правку показываем на месте: новое сообщение на каждое нажатие
-        # засыпает переписку. Со снимком меняется только подпись.
         try:
-            if draft.photos:
+            if draft.card_id and len(draft.photos) <= 1 and draft.photos:
                 await edit.message.edit_caption(caption=text, reply_markup=keyboard)
             else:
                 await edit.message.edit_text(text, reply_markup=keyboard)
@@ -260,11 +268,37 @@ async def show_draft(message: Message, draft: Draft, edit: CallbackQuery | None 
         except Exception:                        # noqa: BLE001
             pass                                 # не вышло — отправим заново
 
-    if draft.photos:
-        await message.answer_photo(_file(draft.photos[0]), caption=text,
-                                   reply_markup=keyboard)
+    await _drop_old_card(message, draft)
+
+    if len(draft.photos) > 1:
+        media = [InputMediaPhoto(media=_file(p)) for p in draft.photos]
+        sent = await message.answer_media_group(media)
+        draft.album_ids = [m.message_id for m in sent]
+        card = await message.answer(text, reply_markup=keyboard)
+    elif draft.photos:
+        card = await message.answer_photo(_file(draft.photos[0]), caption=text,
+                                          reply_markup=keyboard)
     else:
-        await message.answer(text, reply_markup=keyboard)
+        card = await message.answer(text, reply_markup=keyboard)
+    draft.card_id = card.message_id
+
+
+async def _drop_old_card(message: Message, draft: Draft) -> None:
+    """
+    Убирает прежнюю карточку.
+
+    Иначе после добавления пятой фотографии в переписке висят пять
+    карточек подряд, и непонятно, какая из них настоящая.
+    """
+    for message_id in [*draft.album_ids, draft.card_id]:
+        if not message_id:
+            continue
+        try:
+            await message.bot.delete_message(message.chat.id, message_id)
+        except Exception:                        # noqa: BLE001
+            pass
+    draft.album_ids = []
+    draft.card_id = None
 
 
 @dp.message(F.photo & F.media_group_id)
@@ -355,7 +389,13 @@ async def apply_edit(message: Message, draft: Draft) -> None:
 
 @dp.callback_query(F.data == "cancel")
 async def cancel(call: CallbackQuery) -> None:
-    drafts.pop(call.from_user.id, None)
+    draft = drafts.pop(call.from_user.id, None)
+    if draft:
+        for message_id in draft.album_ids:
+            try:
+                await call.bot.delete_message(call.message.chat.id, message_id)
+            except Exception:                    # noqa: BLE001
+                pass
     text = "Отменил. Пришлите объявление заново, когда будете готовы."
     try:
         if call.message.photo:
@@ -456,6 +496,13 @@ async def publish(call: CallbackQuery, bot: Bot) -> None:
         return
 
     published_today.setdefault(call.from_user.id, []).append(utcnow())
+    # Снимки-образцы убираем: объявление уже в чате, и держать их копию
+    # в переписке незачем.
+    for message_id in draft.album_ids:
+        try:
+            await bot.delete_message(call.message.chat.id, message_id)
+        except Exception:                        # noqa: BLE001
+            pass
     drafts.pop(call.from_user.id, None)
 
     link = _post_link(posted)

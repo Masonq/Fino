@@ -137,10 +137,10 @@ def build_preview(*, title: str, price: float | None, currency: str | None,
         lines += ["", escape(body)]
     if topic_title:
         lines += ["", f"Ветка: <b>{escape(topic_title)}</b>"]
-    # Снимков может быть несколько, а показываем мы первый: без счётчика
-    # человек не поймёт, ушли ли остальные.
+    # Снимки показываются рядом целиком, поэтому счётчик нужен только
+    # чтобы подтвердить: столько и уйдёт.
     if photo_count > 1:
-        lines.append(f"Фотографий: <b>{photo_count}</b>")
+        lines.append(f"Фотографий: <b>{photo_count}</b> — все уйдут в чат")
     elif photo_count == 0:
         lines.append("Без фотографии — такие объявления почти не смотрят")
     return "\n".join(lines)
