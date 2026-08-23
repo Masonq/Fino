@@ -1766,3 +1766,66 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   background: #fff;
   font-size: 14px;
 }
+
+/* ===== админка и поддержка на большом экране ===== */
+@media (min-width: 900px) {
+  /* Список людей и обращений — в два столбца: строки короткие, и на
+     широком экране колонка в 1300 пикселей выглядит пустой. */
+  .admin-list{
+    display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:start;
+  }
+  /* Раскрытая карточка занимает всю ширину: в половине она не помещается
+     и ломает соседнюю колонку. */
+  .admin-row:has(.admin-card){ grid-column:1/-1; }
+
+  .admin-search{ max-width:520px; }
+
+  /* Показатели: числа в ряд, а не столбиком */
+  .stats-cards{ grid-template-columns:repeat(6, 1fr); }
+  .stats-value{ font-size:26px; }
+  /* График шире — по дням видно лучше */
+  .stats-bars{ height:190px; }
+  .stats-bar-track{ height:165px; }
+  .stats-bar-day{ font-size:11px; }
+
+  /* Три блока подряд в ряд: разделы, источники и качество читаются
+     вместе, а не через прокрутку. */
+  .admin-stats .stats-block:nth-of-type(n+2){
+    display:inline-block; width:calc(50% - 8px); vertical-align:top;
+  }
+  .admin-stats .stats-block:nth-of-type(even){ margin-right:12px; }
+
+  /* Журнал: записи короткие, тоже в две колонки */
+  .audit-list{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+
+  /* Поддержка: форма не на всю ширину — длинная строка ввода неудобна */
+  .support-form{ max-width:640px; }
+  .support-mine{ max-width:760px; }
+  .support-msg{ max-width:70%; }
+}
+
+/* Промежуточная ширина */
+@media (min-width: 620px) and (max-width: 899px) {
+  .stats-cards{ grid-template-columns:repeat(3, 1fr); }
+  .admin-list{ display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:start; }
+  .admin-row:has(.admin-card){ grid-column:1/-1; }
+}
+
+@media (min-width: 900px) {
+  /* Профиль: разделы в две колонки. Их стало вдвое больше — обычные,
+     служебные, поддержка, — и в один столбец список уходит за экран. */
+  .profile-head{ padding:18px 0 24px; }
+  .profile-menu{
+    display:grid; grid-template-columns:1fr 1fr;
+    border-radius:16px; border:1px solid rgba(20,30,25,.07);
+    border-top:1px solid rgba(20,30,25,.07);
+    overflow:hidden;
+  }
+  /* Разделительная линия только между соседями по строке, иначе снизу
+     у последнего ряда висит лишняя черта. */
+  .profile-menu .profile-row:nth-child(odd){
+    border-right:1px solid rgba(20,30,25,.06);
+  }
+  .profile-staff{ margin-top:18px; }
+  .profile-staff-title{ padding:0 0 8px; }
+}
