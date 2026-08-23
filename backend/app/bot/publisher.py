@@ -28,8 +28,8 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
 from aiogram.filters import Command
 from aiogram.types import (
-    CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup,
-    InputMediaPhoto, Message,
+    BotCommand, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup,
+    InputMediaPhoto, Message, MenuButtonCommands,
 )
 from PIL import Image
 
@@ -184,6 +184,27 @@ async def start(message: Message) -> None:
         "Пример:\n"
         "<i>Продам стол письменный IKEA MICKE, 6000 динар, Земун. "
         "Состояние отличное, самовывоз.</i>"
+    )
+
+
+@dp.message(Command("my"))
+async def my_listings(message: Message) -> None:
+    """Свои объявления — чтобы человек видел, что уже опубликовал."""
+    site = settings.public_base_url.rstrip("/")
+    await message.answer(
+        "Ваши объявления на сайте:\n"
+        f"{site}/my\n\n"
+        "Там же их можно поправить или снять с публикации."
+    )
+
+
+@dp.message(Command("cancel"))
+async def cancel_cmd(message: Message) -> None:
+    """Бросить начатое: человек передумал на полпути."""
+    had = drafts.pop(message.from_user.id, None)
+    waiting_photos.pop(message.from_user.id, None)
+    await message.answer(
+        "Отменил, начнём заново." if had else "Ничего не начато."
     )
 
 
@@ -609,6 +630,17 @@ async def main() -> None:
         raise SystemExit("Нет TELEGRAM_BOT_TOKEN в backend/.env")
 
     bot = Bot(token, default=DefaultBotProperties(parse_mode="HTML"))
+
+    # Меню команд слева от поля ввода. Без него человек не знает, что
+    # боту вообще можно сказать, кроме как прислать объявление.
+    await bot.set_my_commands([
+        BotCommand(command="start", description="Как опубликовать объявление"),
+        BotCommand(command="my", description="Мои объявления"),
+        BotCommand(command="cancel", description="Отменить начатое"),
+        BotCommand(command="help", description="Помощь"),
+    ])
+    await bot.set_chat_menu_button(menu_button=MenuButtonCommands())
+
     me = await bot.get_me()
     log.info("бот @%s готов, публикует в чат %s", me.username, TARGET_CHAT)
     await dp.start_polling(bot)
