@@ -201,9 +201,9 @@ def test_my_listings_work_without_registration():
     переписке, по имени в телеграме.
     """
     import inspect
-    from app.bot.publisher import my_listings
+    from app.bot.publisher import send_my_listings
 
-    source = inspect.getsource(my_listings)
+    source = inspect.getsource(send_my_listings)
     assert "external_author" in source
     assert "username" in source
 
