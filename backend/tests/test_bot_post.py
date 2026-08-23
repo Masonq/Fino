@@ -230,7 +230,7 @@ def test_listings_come_as_one_message():
     assert source.count("await message.answer(") <= 2
     # названия — ссылками, кнопки — по номеру из списка
     assert '{number}. <a href=' in source
-    assert 'f"{number} продано"' in source
+    assert 'f"✅ {number}"' in source
 
 
 def test_sold_mark_reaches_the_chat():
