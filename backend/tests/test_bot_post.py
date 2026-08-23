@@ -157,3 +157,16 @@ def test_bot_publication_is_never_a_duplicate():
 
     source = inspect.getsource(store)
     assert 'item.get("from_bot")' in source
+
+
+def test_write_computes_its_own_fingerprint():
+    """
+    Отпечаток считается и при проверке повторов, и при записи. Когда
+    публикация идёт через бота, проверок не бывает вовсе — значит запись
+    должна считать его сама, а не рассчитывать на чужую переменную.
+    """
+    import inspect
+    from app.core.tg_import import _write
+
+    source = inspect.getsource(_write)
+    assert "mark = fingerprint(" in source

@@ -500,7 +500,13 @@ def store(db, item: dict) -> bool:
 
 
 def _write(db, item: dict) -> bool:
-    """Сама запись — без проверок на повтор."""
+    """
+    Сама запись — без проверок на повтор.
+
+    Отпечаток считаем здесь: проверки его тоже считают, но при публикации
+    через бота их не бывает вовсе, и переменной неоткуда взяться.
+    """
+    mark = fingerprint(item["title"], item.get("description"))
     slug = item["sub_slug"] or item["category_slug"]
     category = db.query(Category).filter(Category.slug == slug).first()
     if not category:
