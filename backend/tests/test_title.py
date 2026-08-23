@@ -2117,3 +2117,30 @@ def test_dangling_word_removed():
     # осмысленные хвосты остаются
     assert parse("Диван почти новый в отличном состоянии")["title"] == "Диван почти новый"
     assert parse("Куртка очень тёплая")["title"] == "Куртка очень тёплая"
+
+
+def test_common_currency_typos():
+    """
+    «2000 dir» вместо «din» — соседние клавиши. Без этого цена терялась
+    целиком, и объявление выходило «без цены».
+    """
+    from app.core.tg_parse import extract_price
+
+    assert extract_price("Отдам за 2000 dir крышку со сковородой") == (2000, "RSD")
+    assert extract_price("Цена 3000 дир") == (3000, "RSD")
+    # правильные написания не задеты
+    assert extract_price("Продам стол 3000 dinara") == (3000, "RSD")
+    assert extract_price("Цена 500 евро") == (500, "EUR")
+
+
+def test_purchase_story_is_not_part_of_the_name():
+    """
+    «Купленную месяц назад» — это про покупку, а не про вещь: в названии
+    такой хвост только занимает место.
+    """
+    assert parse("Качественная сковорода купленную месяц назад")["title"] \
+        == "Качественная сковорода"
+    assert parse("Диван, купленный в прошлом году")["title"] == "Диван"
+    assert parse("Куртка почти не ношеная")["title"] == "Куртка"
+    # а название с моделью не трогаем
+    assert parse("Велосипед Merida 27.5")["title"] == "Велосипед Merida 27.5"
