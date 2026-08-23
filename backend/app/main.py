@@ -6,7 +6,8 @@ from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.routers import (
-    admin_audit, admin_stats, admin_users, auth, categories, chats,
+    admin_audit, admin_stats, admin_users, auth, auth_telegram,
+    categories, chats,
     favorites, listings,
     media,
     moderation, preview, reports, reviews, saved_searches, support, users,
@@ -41,6 +42,7 @@ app.include_router(admin_users.router)
 app.include_router(admin_stats.router)
 app.include_router(admin_audit.router)
 app.include_router(support.router)
+app.include_router(auth_telegram.router)
 
 
 @app.get("/api/health")

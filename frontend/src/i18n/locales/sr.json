@@ -403,5 +403,10 @@
       "answered": "Odgovoreno",
       "closed": "Zatvoreno"
     }
+  },
+  "enter": {
+    "working": "Prijavljujemo vas…",
+    "expired": "Link je istekao. Otvorite ga ponovo iz bota — daće vam novi.",
+    "to_home": "Na početnu"
   }
 }

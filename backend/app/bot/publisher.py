@@ -92,6 +92,12 @@ drafts: dict[int, Draft] = {}
 waiting_photos: dict[int, list[bytes]] = {}
 albums: dict[str, list[Message]] = {}
 published_today: dict[int, list[datetime]] = {}
+# Сколько человек опубликовал всего. Нужно, чтобы предложить войти на
+# сайт не сразу, а когда объявлений накопится и в этом появится смысл.
+published_count: dict[int, int] = {}
+# Кому уже предлагали. Второй раз не зовём: назойливость раздражает
+# сильнее, чем польза от входа.
+invited: set[int] = set()
 
 
 def within_limit(user_id: int) -> bool:
@@ -820,6 +826,8 @@ async def publish(call: CallbackQuery, bot: Bot) -> None:
         return
 
     published_today.setdefault(call.from_user.id, []).append(utcnow())
+    published_count[call.from_user.id] = published_count.get(
+        call.from_user.id, 0) + 1
     # Снимки-образцы убираем: объявление уже в чате, и держать их копию
     # в переписке незачем.
     for message_id in draft.album_ids:
@@ -844,6 +852,48 @@ async def publish(call: CallbackQuery, bot: Bot) -> None:
             await call.message.edit_text(done, disable_web_page_preview=True)
     except Exception:                            # noqa: BLE001
         await call.message.answer(done, disable_web_page_preview=True)
+
+    await maybe_invite(call.message, call.from_user)
+
+
+# С третьего объявления человеку становится что смотреть на сайте: там
+# видно, кто открывал, лежит переписка, и объявления можно править.
+INVITE_AFTER = 3
+
+
+async def maybe_invite(message: Message, user) -> None:
+    """
+    Ненавязчиво предлагает войти на сайт.
+
+    Не сразу после первой публикации: человек только что сделал дело, и
+    звать его куда-то — значит мешать. Зовём, когда объявлений
+    накопилось и в сайте появился смысл, и зовём один раз.
+    """
+    if user.id in invited:
+        return
+    if published_count.get(user.id, 0) < INVITE_AFTER:
+        return
+
+    invited.add(user.id)
+    site = settings.public_base_url.rstrip("/")
+    try:
+        from app.routers.auth_telegram import issue
+
+        key = issue(user.id, user.full_name)
+    except Exception:                            # noqa: BLE001
+        log.exception("не удалось выдать ссылку для входа")
+        return
+
+    await message.answer(
+        f"Кстати, у вас уже {published_count[user.id]} объявления. "
+        "На сайте их удобнее вести: видно, сколько раз открывали, "
+        "можно поправить описание и ответить покупателям.\n\n"
+        "Вход по этой кнопке — ни пароля, ни регистрации.",
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+            InlineKeyboardButton(text="Открыть свои объявления",
+                                 url=f"{site}/enter?key={key}"),
+        ]]),
+    )
 
 
 def _file(data: bytes):

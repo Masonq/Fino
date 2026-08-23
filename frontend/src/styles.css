@@ -1833,3 +1833,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* «Бесплатно» выделяем цветом: это и есть то, ради чего такое
    объявление открывают, а серым оно теряется рядом с ценами. */
 .price-free{ color: var(--brand, #0E9F6E); }
+
+/* Вход по ссылке из бота: короткая страница, человек тут не задерживается */
+.enter-page{ display:flex; flex-direction:column; align-items:center;
+  justify-content:center; gap:16px; min-height:60vh; text-align:center; }
+.enter-page .support-send{ max-width:260px; }

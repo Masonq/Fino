@@ -402,5 +402,10 @@
       "answered": "Answered",
       "closed": "Closed"
     }
+  },
+  "enter": {
+    "working": "Signing you in…",
+    "expired": "The link has expired. Open it again from the bot — it will issue a new one.",
+    "to_home": "To the feed"
   }
 }

@@ -109,6 +109,9 @@ export const api = {
     method: 'POST', body: JSON.stringify({ body }),
   }),
   supportClose: (id) => request(`/support/${id}/close`, { method: 'POST' }),
+  enterByTelegram: (key) => request('/auth/telegram/enter', {
+    method: 'POST', body: JSON.stringify({ key }),
+  }),
 
   modQueue: (lang) => request(`/moderation/queue?${new URLSearchParams({ lang })}`),
   modApprove: (id) => request(`/moderation/${id}/approve`, { method: 'POST' }),
