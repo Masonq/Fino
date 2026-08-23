@@ -12,7 +12,10 @@ router = APIRouter(prefix="/api/media", tags=["media"])
 ALLOWED_EXT = {".jpg", ".jpeg", ".png", ".webp", ".heic"}
 MAX_UPLOAD_BYTES = 15 * 1024 * 1024  # 15MB — приходит с телефона, до сжатия
 MAX_DIM = 1600
-THUMB_DIM = 480
+# Столько же, сколько у переноса из чатов: карточка в ленте на плотном
+# экране просит около 570 настоящих пикселей, и меньшая миниатюра
+# растягивается — фотография выглядит мыльной.
+THUMB_DIM = 640
 
 
 @router.post("/upload")
@@ -42,7 +45,7 @@ async def upload_photo(request: Request, file: UploadFile = File(...)):
         thumb_path = os.path.join(settings.media_dir, f"{name}_thumb.jpg")
         thumb = img.copy()
         thumb.thumbnail((THUMB_DIM, THUMB_DIM))
-        thumb.save(thumb_path, "JPEG", quality=80, optimize=True)
+        thumb.save(thumb_path, "JPEG", quality=82, optimize=True)
 
         full_name, thumb_name = f"{name}.jpg", f"{name}_thumb.jpg"
     except Exception:

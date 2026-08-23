@@ -63,7 +63,12 @@ _ENTITY_CACHE: dict[int, object] = {}
 DUP_DAYS = 21
 TRANSLATE = True
 LOCK_PATH = "/tmp/plonk-tg-import.lock"
-MAX_DIM, THUMB_DIM = 1600, 400
+# Миниатюра в ленте занимает около 190 точек экрана, но на телефоне с
+# плотным дисплеем это 570 настоящих пикселей — прежние 400 растягивались
+# в полтора раза, и фотография выглядела мыльной. 640 закрывает и это, и
+# крупную карточку в одну колонку, прибавляя к весу всего треть: 800
+# точек были бы вчетверо тяжелее прежнего, а разницы на глаз уже нет.
+MAX_DIM, THUMB_DIM = 1600, 640
 
 
 def service_account(db, chat_id: int, title: str) -> User:
@@ -106,7 +111,7 @@ def save_photo(data: bytes) -> tuple[str, str] | None:
         full.save(os.path.join(settings.media_dir, f"{name}.jpg"), "JPEG", quality=85, optimize=True)
         thumb = img.copy()
         thumb.thumbnail((THUMB_DIM, THUMB_DIM))
-        thumb.save(os.path.join(settings.media_dir, f"{name}_thumb.jpg"), "JPEG", quality=80, optimize=True)
+        thumb.save(os.path.join(settings.media_dir, f"{name}_thumb.jpg"), "JPEG", quality=82, optimize=True)
         base = settings.public_base_url.rstrip("/")
         return f"{base}/media/{name}.jpg", f"{base}/media/{name}_thumb.jpg"
     except Exception:

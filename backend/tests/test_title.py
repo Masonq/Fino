@@ -2023,3 +2023,17 @@ def test_translation_schema_declared():
 def test_translation_needs_a_provider():
     from app.core.ai_title import translate_text
     assert translate_text("Диван раскладной", "sr") is None
+
+
+def test_thumbnail_big_enough_for_dense_screens():
+    """
+    Карточка в ленте занимает около 190 точек экрана, а на плотном
+    дисплее это 570 настоящих пикселей. Миниатюра меньше растягивается —
+    отсюда мыльная фотография.
+    """
+    from app.core.tg_import import THUMB_DIM
+    from app.routers.media import THUMB_DIM as UPLOAD_DIM
+
+    assert THUMB_DIM >= 570
+    # оба пути дают одинаковые снимки: и перенос из чатов, и загрузка
+    assert THUMB_DIM == UPLOAD_DIM
