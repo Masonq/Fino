@@ -151,8 +151,10 @@ def build_sold_caption(*, title: str, price: float | None,
     Автора убираем: писать ему больше незачем, а имя в проданном
     объявлении только собирает лишние сообщения.
     """
+    from app.bot.emoji import emoji
+
     lines = [
-        "🔴 <b>ПРОДАНО</b>",
+        f"{emoji('done')} <b>ПРОДАНО</b>",
         "",
         f"<s>{escape(title)}</s>",
         f"<s>{escape(money(price, currency, is_free))}</s>"

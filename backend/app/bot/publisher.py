@@ -43,6 +43,7 @@ from app.core.partner_chats import (
 from app.core.tg_classify import classify, classify_sub
 from app.core.tg_parse import parse
 from app.bot.digest import build as build_digest
+from app.bot.emoji import emoji
 from app.bot.sweeper import looks_like_listing, rescued, sweep
 from app.bot.post_format import (
     build_caption, build_preview, build_sold_caption, money,
@@ -365,7 +366,7 @@ async def send_my_listings(message: Message, user) -> None:
     # Одним сообщением, а не семью подряд: список из отдельных сообщений
     # с кнопкой у каждого выглядит как спам от самого себя и занимает
     # весь экран.
-    lines = ["🗂 <b>Ваши объявления</b>", ""]
+    lines = [f"{emoji('listings')} <b>Ваши объявления</b>", ""]
     for number, item in enumerate(live, 1):
         price = money(item["price"], item["currency"], item["is_free"])
         lines.append(
@@ -373,7 +374,7 @@ async def send_my_listings(message: Message, user) -> None:
             f'{escape(item["title"])}</a> — {price}'
         )
     if sold:
-        lines += ["", "✅ <i>Продано</i>"]
+        lines += ["", f"{emoji('sold')} <i>Продано</i>"]
         for item in sold[:5]:
             lines.append(f"  · <s>{escape(item['title'])}</s>")
 
@@ -484,6 +485,34 @@ async def cancel_cmd(message: Message) -> None:
     await message.answer(
         "Отменил, начнём заново." if had else "Ничего не начато."
     )
+
+
+@dp.message(F.text == "/emoji")
+async def show_emoji_id(message: Message) -> None:
+    """
+    Подсказывает номер премиум-эмодзи.
+
+    Номера неоткуда взять, кроме как из самого сообщения: человек
+    присылает нужный значок, а Telegram отмечает его в разметке.
+    """
+    await message.answer(
+        "Пришлите мне премиум-эмодзи — покажу его номер, чтобы поставить "
+        "его в сообщения бота.\n\n"
+        "Нужна подписка Premium: без неё в поле ввода их нет."
+    )
+
+
+@dp.message(F.entities.func(
+    lambda entities: any(e.type == "custom_emoji" for e in (entities or []))))
+async def catch_emoji_id(message: Message) -> None:
+    """Показывает номера присланных премиум-эмодзи."""
+    found = [e for e in (message.entities or []) if e.type == "custom_emoji"]
+    lines = ["Номера присланных значков:", ""]
+    for entity in found:
+        sign = message.text[entity.offset:entity.offset + entity.length]
+        lines.append(f"{sign} — <code>{entity.custom_emoji_id}</code>")
+    lines += ["", "Скажите, какой значок куда поставить, — впишу в бота."]
+    await message.answer("\n".join(lines))
 
 
 @dp.message(Command("stats"))

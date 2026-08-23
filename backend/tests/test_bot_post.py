@@ -286,3 +286,34 @@ def test_long_actions_show_progress():
     assert "reply_markup=None" in inspect.getsource(mark_busy)
     assert "mark_busy(call" in inspect.getsource(publish)
     assert "mark_busy(call" in inspect.getsource(close_listing)
+
+
+def test_plain_emoji_when_premium_is_not_set():
+    """
+    Пока номера не заданы, всё работает на обычных значках — сообщения
+    выглядят как раньше, ничего не ломается.
+    """
+    from app.bot.emoji import EMOJI, emoji
+
+    assert emoji("listings") == "🗂"
+    assert emoji("нет такого") == ""
+    # у каждого значка есть обычный запасной
+    for key, (plain, _) in EMOJI.items():
+        assert plain, key
+
+
+def test_premium_emoji_keeps_a_fallback():
+    """
+    Запасной значок показывается там, где премиум отрисовать нельзя: в
+    уведомлениях, у пересланных сообщений, в старых приложениях. Без него
+    человек увидит пустое место.
+    """
+    from app.bot.emoji import emoji, set_custom
+
+    set_custom("sold", "5456140449875156202")
+    try:
+        out = emoji("sold")
+        assert 'emoji-id="5456140449875156202"' in out
+        assert "✅" in out                    # запасной внутри разметки
+    finally:
+        set_custom("sold", None)
