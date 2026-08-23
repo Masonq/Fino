@@ -51,6 +51,33 @@ def _shorten(text: str, limit: int) -> str:
     return cut.rsplit(" ", 1)[0].strip() + "…"
 
 
+def _useful_body(title: str, description: str | None) -> str:
+    """
+    Что из описания стоит показывать под заголовком.
+
+    В посте заголовок и так стоит сверху крупным, а цена — второй
+    строкой. Если в описании нет ничего сверх этого — «Рюкзак 500
+    динар» под заголовком «Рюкзак» и ценой «500 RSD», — показывать его
+    незачем: строка занимает место и выглядит небрежно.
+    """
+    body = (description or "").strip()
+    if not body:
+        return ""
+
+    # Сравниваем по существу: убираем цену, знаки и регистр. Останется
+    # ли что-то, чего нет в заголовке?
+    import re
+
+    def bare(text: str) -> set[str]:
+        clean = re.sub(r"\d[\d\s.,]*\s*"
+                       r"(€|\$|eur|евро|evr[ao]|rsd|рсд|дин\w*|din\w*)?",
+                       " ", text.lower().replace("ё", "е"))
+        return {w[:5] for w in re.findall(r"[\w-]{3,}", clean)}
+
+    extra = bare(body) - bare(title)
+    return body if extra else ""
+
+
 def build_caption(*, title: str, price: float | None, currency: str | None,
                   is_free: bool, city: str | None, description: str | None,
                   author_name: str, author_id: int | None,
@@ -68,7 +95,7 @@ def build_caption(*, title: str, price: float | None, currency: str | None,
         second += f" · {escape(city)}"
     lines.append(second)
 
-    body = _shorten(description or "", BODY_LIMIT)
+    body = _shorten(_useful_body(title, description), BODY_LIMIT)
     if body:
         lines.append("")
         lines.append(escape(body))
@@ -105,7 +132,7 @@ def build_preview(*, title: str, price: float | None, currency: str | None,
         f"<b>{escape(money(price, currency, is_free))}</b>"
         + (f" · {escape(city)}" if city else ""),
     ]
-    body = _shorten(description or "", BODY_LIMIT)
+    body = _shorten(_useful_body(title, description), BODY_LIMIT)
     if body:
         lines += ["", escape(body)]
     if topic_title:

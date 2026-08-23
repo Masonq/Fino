@@ -89,3 +89,22 @@ def test_preview_shows_the_topic():
         title="Диван IKEA", price=25000, currency="RSD", is_free=False,
         city="Земун", description="Раскладной.", topic_title="МЕБЕЛЬ и всё для ДОМА")
     assert "МЕБЕЛЬ и всё для ДОМА" in preview
+
+
+def test_body_dropped_when_it_repeats_the_title():
+    """
+    «Рюкзак 500 динар» под заголовком «Рюкзак» и ценой «500 RSD» —
+    третья строка ничего не добавляет и выглядит небрежно.
+    """
+    caption = build_caption(
+        title="Рюкзак", price=500, currency="RSD", is_free=False, city=None,
+        description="Рюкзак 500 динар", author_name="А", author_id=1,
+        site_url="https://plonk.rs")
+    assert caption.count("Рюкзак") == 1
+
+    # а описание с подробностями остаётся
+    caption = build_caption(
+        title="Рюкзак", price=500, currency="RSD", is_free=False, city="Земун",
+        description="Бежевый, много карманов, почти новый",
+        author_name="А", author_id=1, site_url="https://plonk.rs")
+    assert "много карманов" in caption
