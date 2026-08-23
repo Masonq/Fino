@@ -95,3 +95,20 @@ def test_rescued_listing_is_shown_ready():
     source = inspect.getsource(offer_rescued)
     assert "understand(" in source        # разбираем текст
     assert "show_draft(" in source        # показываем карточку
+
+
+def test_chat_note_appears_in_both_cases():
+    """
+    Человек написал объявление и видит пустое место. Без пометки в чате
+    он не поймёт, куда всё делось, и не догадается заглянуть в личку —
+    даже если бот ему уже написал.
+    """
+    import inspect
+    from app.bot.sweeper import HINT_SECONDS, sweep
+
+    source = inspect.getsource(sweep)
+    # пометка отправляется без оглядки на то, дошли ли мы в личку
+    assert "if not sent_privately:\n        hint" not in source
+    assert "Открыть переписку" in source
+    # и висит достаточно, чтобы её заметили
+    assert HINT_SECONDS >= 90

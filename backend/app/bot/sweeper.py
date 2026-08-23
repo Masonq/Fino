@@ -27,9 +27,10 @@ log = logging.getLogger(__name__)
 # Держим в памяти: объявление живёт минуты, до первого прихода.
 rescued: dict[int, tuple[str, str | None]] = {}
 
-# Сколько висит подсказка в чате. Достаточно, чтобы человек её увидел,
-# и мало, чтобы она не превратилась в мусор рядом с объявлениями.
-HINT_SECONDS = 60
+# Сколько висит пометка в чате. Полминуты мало: человек мог отложить
+# телефон сразу после отправки и вернуться через минуту — и увидеть
+# пустое место, не поняв, куда делось объявление.
+HINT_SECONDS = 120
 
 
 def looks_like_listing(message: Message) -> bool:
@@ -107,27 +108,37 @@ async def sweep(message: Message, bot: Bot, bot_username: str) -> bool:
     except Exception:                            # noqa: BLE001
         pass                                     # переписки с ботом ещё нет
 
-    if not sent_privately:
-        # Имя бывает пустым, и «No Name, объявления…» звучит нелепо.
-        name = (author.full_name or "").strip()
-        greeting = f"{name}, о" if name and name.lower() != "no name" else "О"
+    # Пометка в чате нужна в обоих случаях. Человек написал объявление и
+    # видит пустое место: без пометки он не поймёт, куда всё делось, и
+    # не догадается заглянуть в личку.
+    name = (author.full_name or "").strip()
+    # Имя бывает пустым, и «No Name, объявления…» звучит нелепо.
+    greeting = f"{name}, " if name and name.lower() != "no name" else ""
 
-        hint = await bot.send_message(
-            message.chat.id,
-            f"{greeting}бъявления в этом чате публикуются через бота — "
-            "так они попадают в свою ветку и не теряются. "
-            "Нажмите кнопку, это займёт полминуты.",
-            message_thread_id=message.message_thread_id,
-            disable_web_page_preview=True,
-            # Кнопка, а не ссылка словом: по ней человек попадает в бота
-            # одним касанием, а ссылку в тексте ещё надо разглядеть.
-            reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
-                InlineKeyboardButton(text="Опубликовать объявление", url=link),
-            ]]),
-        )
-        # Подсказка своё дело сделала — дальше она только мешает читать
-        # ленту объявлений.
-        asyncio.create_task(_remove_later(bot, hint.chat.id, hint.message_id))
+    if sent_privately:
+        words = (f"{greeting}объявление ушло ко мне в личку — "
+                 "оно уже разобрано и ждёт вашего «Опубликовать».")
+        button = "Открыть переписку"
+    else:
+        words = (f"{greeting}объявления в этом чате публикуются через бота — "
+                 "так они попадают в свою ветку и не теряются. "
+                 "Нажмите кнопку, объявление уже ждёт вас там.")
+        button = "Опубликовать объявление"
+
+    hint = await bot.send_message(
+        message.chat.id,
+        words,
+        message_thread_id=message.message_thread_id,
+        disable_web_page_preview=True,
+        # Кнопка, а не ссылка словом: по ней человек попадает в бота
+        # одним касанием, а ссылку в тексте ещё надо разглядеть.
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+            InlineKeyboardButton(text=button, url=link),
+        ]]),
+    )
+    # Пометка своё дело сделала — дальше она только мешает читать ленту
+    # объявлений.
+    asyncio.create_task(_remove_later(bot, hint.chat.id, hint.message_id))
 
     log.info("убрано объявление мимо бота от %s: %r", author.id, text[:60])
     return sent_privately
