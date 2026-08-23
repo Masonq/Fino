@@ -33,6 +33,10 @@ python ../tools/train-categories.py --labels
 # часть из них лежит не в своём разделе.
 python ../tools/tg-reimport.py --apply
 
+# Догоняем перевод: публичные переводчики отвечают через раз, и часть
+# объявлений остаётся одноязычной. Двести за ночь — по силам лимитам.
+python ../tools/translate-missing.py --limit 200
+
 # Заодно убираем снимки, оставшиеся от отсеянных объявлений.
 python ../tools/clean-media.py --apply
 

@@ -205,7 +205,17 @@ def translate(text: str, source: str, target: str) -> str | None:
         "format": "text",
     }).encode()
 
-    # Сначала пробуем Google: остальные публичные сервисы либо закрылись,
+    # Сначала нейросеть: она понимает, что перед ней объявление, и не
+    # переводит «IKEA MICKE» как слова. Запас у неё складывается из
+    # четырёх бесплатных тарифов, тогда как машинные переводчики то
+    # закрываются, то упираются в лимит — и лента остаётся одноязычной.
+    from app.core.ai_title import translate_text
+
+    result = translate_text(text, target)
+    if result:
+        return result
+
+    # Дальше Google: остальные публичные сервисы либо закрылись,
     # либо требуют ключ.
     result = _translate_google(text, source, target)
     if result:

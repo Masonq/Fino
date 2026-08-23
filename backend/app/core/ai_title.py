@@ -466,3 +466,54 @@ def guess_category(text: str, slugs: list[str]) -> str | None:
     answer = _parse_answer(_ask(prompt, limit=60, schema=CATEGORY_SCHEMA))
     category = (answer.get("category") or "").strip()
     return category if category in slugs else None
+
+
+# ── Перевод ─────────────────────────────────────────────────────────────────
+
+LANGUAGE_NAMES = {"ru": "русский", "en": "английский", "sr": "сербский (латиницей)"}
+
+TRANSLATE_SCHEMA = {
+    "type": "object",
+    "properties": {"text": {"type": "string"}},
+    "required": ["text"],
+}
+
+TRANSLATE_PROMPT = """Переведи текст объявления с барахолки на {target}.
+
+Верни только перевод, без пояснений.
+- Марки, модели и числа оставь как есть: «IKEA MICKE», «iPhone 13», «256gb».
+- Названия районов и городов не переводи.
+- Не пересказывай и не сокращай: сколько сказано, столько и переводи.
+- Если переводить нечего (одна марка или число), верни текст без изменений.
+
+Текст:
+"""
+
+
+def translate_text(text: str, target: str) -> str | None:
+    """
+    Переводит объявление нейросетью.
+
+    Машинные переводчики для этой задачи слабы: они не знают, что перед
+    ними объявление, и переводят «IKEA MICKE» как слова. А ещё публичные
+    сервисы то закрываются, то упираются в лимит — и лента остаётся
+    одноязычной, хотя три языка и есть главное отличие сервиса.
+
+    Здесь запас складывается из четырёх бесплатных тарифов, и вероятность
+    остаться совсем без перевода куда меньше.
+    """
+    if not _ready() or not text or not text.strip():
+        return None
+
+    name = LANGUAGE_NAMES.get(target, target)
+    prompt = TRANSLATE_PROMPT.format(target=name) + text.strip()[:2000]
+
+    _wait_turn()
+    answer = _parse_answer(_ask(prompt, limit=800, schema=TRANSLATE_SCHEMA))
+    out = (answer.get("text") or "").strip()
+
+    # Пустой ответ или подозрительно короткий: перевод не может быть
+    # втрое короче исходника — значит модель пересказала или сдалась.
+    if not out or len(out) * 3 < len(text.strip()):
+        return None
+    return out

@@ -1988,3 +1988,38 @@ def test_labelled_amount_is_trusted():
 
     assert extract_price("Цена 3000") == (3000, "RSD")
     assert extract_price("Цена 500") == (500, "EUR")
+
+
+# ── Перевод нейросетью ──────────────────────────────────────────────────────
+def test_translation_rejects_a_retelling():
+    """
+    Перевод не может быть втрое короче исходника: значит модель
+    пересказала или сдалась, и такой ответ хуже отсутствия перевода.
+    """
+    import app.core.ai_title as ai
+
+    long_text = "Продам письменный стол IKEA MICKE в отличном состоянии, " \
+                "ножки откручиваются, высота регулируется"
+
+    def short_answer(prompt, limit=200, schema=None):
+        return '{"text": "Sto"}'
+
+    ai._ask = short_answer
+    ai._exhausted = set()
+    ai._last_call = 0
+    from app.core.config import settings
+    settings.gemini_api_key = "k"
+    try:
+        assert ai.translate_text(long_text, "sr") is None
+    finally:
+        settings.gemini_api_key = None
+
+
+def test_translation_schema_declared():
+    from app.core.ai_title import TRANSLATE_SCHEMA
+    assert TRANSLATE_SCHEMA["required"] == ["text"]
+
+
+def test_translation_needs_a_provider():
+    from app.core.ai_title import translate_text
+    assert translate_text("Диван раскладной", "sr") is None
