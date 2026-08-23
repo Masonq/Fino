@@ -43,7 +43,7 @@ from app.core.partner_chats import (
 from app.core.tg_classify import classify, classify_sub
 from app.core.tg_parse import parse
 from app.bot.digest import build as build_digest
-from app.bot.sweeper import looks_like_listing, sweep
+from app.bot.sweeper import looks_like_listing, rescued, sweep
 from app.bot.post_format import (
     build_caption, build_preview, build_sold_caption, money,
 )
@@ -222,10 +222,23 @@ async def start_from_chat(message: Message) -> None:
     Долгое приветствие здесь только мешает: он хотел опубликовать, ему
     помешали, и теперь нужно как можно быстрее вернуть его к делу.
     """
+    # Текст, который у него убрали, мы придержали — отдаём обратно.
+    saved = rescued.pop(message.from_user.id, None)
+    if saved:
+        text, photo_id = saved
+        await message.answer(
+            "Вот объявление, которое вы писали в чат.\n"
+            "Скопируйте текст — нажмите на него — и пришлите мне:\n\n"
+            f"<pre>{escape(text)}</pre>"
+        )
+        if photo_id:
+            await message.answer_photo(
+                photo_id, caption="И фотография из него.")
+        return
+
     await message.answer(
         "Пришлите объявление сюда — то же самое, что писали в чат.\n\n"
-        "Можно просто переслать своё сообщение: я разберу его, подберу "
-        "ветку и опубликую."
+        "Я разберу его, подберу ветку и опубликую."
     )
 
 

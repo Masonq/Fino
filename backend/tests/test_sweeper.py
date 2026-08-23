@@ -67,3 +67,18 @@ def test_sweeping_is_off_by_default():
     from app.core.chat_rules import ChatRules
 
     assert ChatRules().sweep_direct_posts is False
+
+
+def test_text_is_given_back():
+    """
+    Сообщение удалено — пересылать нечего, а набирать заново человек не
+    станет. Текст возвращаем ему обратно, чтобы он его скопировал.
+    """
+    import inspect
+    from app.bot.sweeper import sweep
+
+    source = inspect.getsource(sweep)
+    # текст отдаётся блоком: по нажатию копируется целиком
+    assert "<pre>" in source
+    # и придерживается, если в личку написать не дали
+    assert "rescued[author.id]" in source

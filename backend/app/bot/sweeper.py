@@ -15,11 +15,17 @@
 """
 import asyncio
 import logging
+from html import escape
 
 from aiogram import Bot
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 log = logging.getLogger(__name__)
+
+# Что мы убрали у человека, которому не смогли написать в личку. Он
+# придёт по кнопке — и получит свой текст обратно, а не начнёт с нуля.
+# Держим в памяти: объявление живёт минуты, до первого прихода.
+rescued: dict[int, tuple[str, str | None]] = {}
 
 # Сколько висит подсказка в чате. Достаточно, чтобы человек её увидел,
 # и мало, чтобы она не превратилась в мусор рядом с объявлениями.
@@ -80,23 +86,36 @@ async def sweep(message: Message, bot: Bot, bot_username: str) -> bool:
         log.warning("не удалось убрать сообщение %s", message.message_id)
         return False
 
-    # Сначала пробуем в личку: там можно показать готовую карточку и
-    # кнопку, а в чате — только короткую подсказку.
+    # Сначала пробуем в личку: там можно вернуть человеку его же текст.
     link = f"https://t.me/{bot_username}?start=from_chat"
     sent_privately = False
     try:
+        # Сообщение уже удалено — пересылать нечего, набирать заново
+        # человек не станет. Возвращаем текст одним блоком: по нажатию
+        # он копируется целиком.
+        again = (f"\n\nВот ваш текст, скопируйте его — нажмите на него "
+                 f"и пришлите мне:\n<pre>{escape(text)}</pre>") if text else ""
         await bot.send_message(
             author.id,
             "Ваше объявление убрано из чата — там публикуют через меня, "
-            "чтобы всё попадало в свою ветку.\n\n"
-            "Пришлите его сюда, и я всё сделаю: разберу, подберу ветку и "
-            "опубликую. Можно просто переслать то, что вы уже написали.",
+            "чтобы всё попадало в свою ветку." + again,
         )
+        if message.photo:
+            # Снимок тоже пропал вместе с сообщением: возвращаем и его.
+            await bot.send_photo(
+                author.id, message.photo[-1].file_id,
+                caption="Эта фотография была в объявлении — пришлите её "
+                        "вместе с текстом.")
         sent_privately = True
     except Exception:                            # noqa: BLE001
         pass                                     # переписки с ботом ещё нет
 
     if not sent_privately:
+        # В личку не пустили — придержим текст до прихода человека,
+        # иначе он потеряется совсем.
+        rescued[author.id] = (text, message.photo[-1].file_id
+                              if message.photo else None)
+
         # Имя бывает пустым, и «No Name, объявления…» звучит нелепо.
         name = (author.full_name or "").strip()
         greeting = f"{name}, о" if name and name.lower() != "no name" else "О"
