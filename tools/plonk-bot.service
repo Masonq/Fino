@@ -1,0 +1,24 @@
+# Служба бота-публикатора.
+#
+# Ставится один раз:
+#   cp tools/plonk-bot.service /etc/systemd/system/
+#   systemctl daemon-reload && systemctl enable --now plonk-bot
+#
+# Смотреть работу:
+#   journalctl -u plonk-bot -f
+[Unit]
+Description=PLONK: бот-публикатор объявлений
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/fino/backend
+ExecStart=/opt/fino/backend/venv/bin/python -m app.bot.publisher
+Restart=always
+RestartSec=5
+# Бот держит связь с Telegram постоянно: обрыв сети не должен его валить
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
