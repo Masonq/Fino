@@ -215,3 +215,19 @@ def test_closing_someone_elses_listing_is_refused():
 
     source = inspect.getsource(close_listing)
     assert "Listing.external_author == author" in source
+
+
+def test_listings_come_as_one_message():
+    """
+    Список из отдельных сообщений с кнопкой у каждого выглядит как спам
+    от самого себя и занимает весь экран. Отправляем одним.
+    """
+    import inspect
+    from app.bot.publisher import send_my_listings
+
+    source = inspect.getsource(send_my_listings)
+    # ровно одна отправка в конце, а не по сообщению на объявление
+    assert source.count("await message.answer(") <= 2
+    # названия — ссылками, кнопки — по номеру из списка
+    assert '{number}. <a href=' in source
+    assert 'f"{number} продано"' in source

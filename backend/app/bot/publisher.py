@@ -312,6 +312,11 @@ async def start(message: Message) -> None:
 
 @dp.message(Command("my"))
 async def my_listings(message: Message) -> None:
+    """Свои объявления по команде."""
+    await send_my_listings(message, message.from_user)
+
+
+async def send_my_listings(message: Message, user) -> None:
     """
     Свои объявления прямо в переписке.
 
@@ -319,7 +324,7 @@ async def my_listings(message: Message) -> None:
     сайт ему ничего не даёт: там он никто. Поэтому показываем список
     здесь, где он уже узнан.
     """
-    author = message.from_user.username or str(message.from_user.id)
+    author = user.username or str(user.id)
 
     from app.models import Listing, ListingStatus, ListingTranslation
 
@@ -351,26 +356,42 @@ async def my_listings(message: Message) -> None:
 
     site = settings.public_base_url.rstrip("/")
     live = [i for i in items if not i["sold"]]
+    sold = [i for i in items if i["sold"]]
+
+    # Одним сообщением, а не семью подряд: список из отдельных сообщений
+    # с кнопкой у каждого выглядит как спам от самого себя и занимает
+    # весь экран.
+    lines = ["<b>Ваши объявления</b>", ""]
+    for number, item in enumerate(live, 1):
+        price = money(item["price"], item["currency"], item["is_free"])
+        lines.append(
+            f'{number}. <a href="{site}/listing/{item["id"]}">'
+            f'{escape(item["title"])}</a> — {price}'
+        )
+    if sold:
+        lines += ["", "<i>Продано</i>"]
+        for item in sold[:5]:
+            lines.append(f"  · <s>{escape(item['title'])}</s>")
+
+    # Кнопки только для того, что ещё продаётся, и по номеру из списка:
+    # так они помещаются в два ряда вместо семи.
+    buttons = []
+    row = []
+    for number, item in enumerate(live, 1):
+        row.append(InlineKeyboardButton(
+            text=f"{number} продано", callback_data=f"close:{item['id']}"))
+        if len(row) == 3:
+            buttons.append(row)
+            row = []
+    if row:
+        buttons.append(row)
 
     await message.answer(
-        f"<b>Ваши объявления</b> — {len(live)} в продаже"
-        + (f", {len(items) - len(live)} продано" if len(items) > len(live) else "")
+        "\n".join(lines),
+        disable_web_page_preview=True,
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons)
+        if buttons else None,
     )
-
-    for item in items:
-        mark = "🔴 " if item["sold"] else ""
-        text = (f"{mark}<b>{escape(item['title'])}</b>\n"
-                f"{money(item['price'], item['currency'], item['is_free'])}")
-
-        buttons = [[InlineKeyboardButton(
-            text="Открыть на PLONK", url=f"{site}/listing/{item['id']}")]]
-        if not item["sold"]:
-            # Снять с продажи — то, ради чего список и открывают.
-            buttons.append([InlineKeyboardButton(
-                text="Продано", callback_data=f"close:{item['id']}")])
-
-        await message.answer(
-            text, reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons))
 
 
 @dp.callback_query(F.data.startswith("close:"))
@@ -400,12 +421,15 @@ async def close_listing(call: CallbackQuery) -> None:
         await call.answer("Не получилось, попробуйте позже", show_alert=True)
         return
 
+    await call.answer("Снял с продажи")
+
+    # Перерисовываем список: нумерация сдвинулась, и старые кнопки
+    # указывали бы не на те объявления.
     try:
-        await call.message.edit_text(
-            "🔴 " + (call.message.text or ""), reply_markup=None)
+        await call.message.delete()
     except Exception:                            # noqa: BLE001
         pass
-    await call.answer("Снял с продажи")
+    await send_my_listings(call.message, call.from_user)
 
 
 @dp.message(Command("cancel"))
