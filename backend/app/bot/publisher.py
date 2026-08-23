@@ -146,14 +146,21 @@ def topics_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
-def post_keyboard(listing_id: str | None) -> InlineKeyboardMarkup:
-    """Кнопки под опубликованным постом."""
+def post_keyboard(listing_id: str | None, author_id: int) -> InlineKeyboardMarkup:
+    """
+    Кнопки под опубликованным постом.
+
+    Скрыть кнопку от посторонних Telegram не даёт — она видна всем
+    одинаково. Поэтому в неё зашит номер автора, и нажатие чужого просто
+    ничего не делает: пометить чужую вещь проданной нельзя.
+    """
     rows = []
     if listing_id:
         site = settings.public_base_url.rstrip("/")
         rows.append([InlineKeyboardButton(
             text="Открыть на PLONK", url=f"{site}/listing/{listing_id}")])
-    rows.append([InlineKeyboardButton(text="Продано", callback_data="sold")])
+    rows.append([InlineKeyboardButton(
+        text="Продано", callback_data=f"sold:{author_id}:{listing_id or ''}")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
@@ -409,6 +416,45 @@ async def apply_edit(message: Message, draft: Draft) -> None:
     await show_draft(message, draft)
 
 
+@dp.callback_query(F.data.startswith("sold:"))
+async def mark_sold(call: CallbackQuery) -> None:
+    """
+    Помечает объявление проданным — в чате и у нас.
+
+    То, ради чего владелец чата и соглашается на бота: барахолки тонут в
+    объявлениях о вещах, которых давно нет.
+    """
+    _, author_id, listing_id = call.data.split(":", 2)
+
+    if str(call.from_user.id) != author_id:
+        await call.answer("Это чужое объявление", show_alert=True)
+        return
+
+    if listing_id:
+        try:
+            from app.models import Listing, ListingStatus
+
+            with SessionLocal() as db:
+                listing = db.query(Listing).filter(Listing.id == listing_id).first()
+                if listing:
+                    listing.status = ListingStatus.sold
+                    db.commit()
+        except Exception:                        # noqa: BLE001
+            log.exception("не удалось закрыть объявление")
+
+    # Пост не удаляем: по нему ищут, за сколько ушла похожая вещь.
+    try:
+        text = call.message.caption or call.message.text or ""
+        marked = "🔴 <b>ПРОДАНО</b>\n\n" + text
+        if call.message.caption:
+            await call.message.edit_caption(caption=marked[:1024], reply_markup=None)
+        else:
+            await call.message.edit_text(marked[:4096], reply_markup=None)
+    except Exception:                            # noqa: BLE001
+        pass
+    await call.answer("Отметил проданным")
+
+
 @dp.callback_query(F.data == "cancel")
 async def cancel(call: CallbackQuery) -> None:
     draft = drafts.pop(call.from_user.id, None)
@@ -478,6 +524,10 @@ async def publish(call: CallbackQuery, bot: Bot) -> None:
 
     await call.answer("Публикую…")
     listing_id = save_listing(draft, call.from_user)
+    if not listing_id:
+        # Пост в чат уйдёт всё равно — человеку важнее, чтобы объявление
+        # увидели. Но знать об этом стоит: в журнале будет причина.
+        log.warning("объявление не сохранено на сайте: %s", draft.title)
 
     caption = build_caption(
         title=draft.title, price=draft.price, currency=draft.currency,
@@ -499,16 +549,16 @@ async def publish(call: CallbackQuery, bot: Bot) -> None:
                 TARGET_CHAT, "Объявление выше",
                 message_thread_id=draft.topic_id,
                 reply_to_message_id=posted.message_id,
-                reply_markup=post_keyboard(listing_id))
+                reply_markup=post_keyboard(listing_id, call.from_user.id))
         elif draft.photos:
             posted = await bot.send_photo(
                 TARGET_CHAT, _file(draft.photos[0]), caption=caption,
                 message_thread_id=draft.topic_id,
-                reply_markup=post_keyboard(listing_id))
+                reply_markup=post_keyboard(listing_id, call.from_user.id))
         else:
             posted = await bot.send_message(
                 TARGET_CHAT, caption, message_thread_id=draft.topic_id,
-                reply_markup=post_keyboard(listing_id),
+                reply_markup=post_keyboard(listing_id, call.from_user.id),
                 disable_web_page_preview=True)
     except Exception as exc:                     # noqa: BLE001
         # Причин у неудачи много — права, закрытая ветка, слишком длинная

@@ -129,3 +129,17 @@ def test_preview_tells_about_photos():
         title="Стол", price=3000, currency="RSD", is_free=False, city=None,
         description="", topic_title="Мебель", photo_count=1)
     assert "Фотографий" not in one and "Без фотографии" not in one
+
+
+def test_city_shown_in_words():
+    """
+    Город хранится ключом «beograd», а в объявлении латиница выглядит
+    чужеродно: людям показываем «Белград».
+    """
+    from app.bot.post_format import city_title
+
+    assert city_title("beograd") == "Белград"
+    assert city_title("novi-sad") == "Нови Сад"
+    assert city_title(None) == ""
+    # незнакомый ключ хотя бы приводим в приличный вид
+    assert city_title("some-place") == "Some Place"

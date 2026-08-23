@@ -22,6 +22,28 @@ MAX_CAPTION = 1024
 BODY_LIMIT = 600
 
 
+# Город хранится ключом («beograd»), а показывать его надо так, как
+# люди пишут: латиница в русском объявлении выглядит чужеродно.
+CITY_TITLES = {
+    "beograd": "Белград",
+    "novi-sad": "Нови Сад",
+    "nis": "Ниш",
+    "kragujevac": "Крагуевац",
+    "subotica": "Суботица",
+    "zrenjanin": "Зренянин",
+    "pancevo": "Панчево",
+    "cacak": "Чачак",
+    "novi-pazar": "Нови Пазар",
+    "kraljevo": "Кралево",
+}
+
+
+def city_title(city: str | None) -> str:
+    if not city:
+        return ""
+    return CITY_TITLES.get(city, city.replace("-", " ").title())
+
+
 def money(price: float | None, currency: str | None, is_free: bool) -> str:
     """Цена так, как её читают: без копеек и с пробелом между тысячами."""
     if is_free:
@@ -92,7 +114,7 @@ def build_caption(*, title: str, price: float | None, currency: str | None,
 
     second = f"<b>{escape(money(price, currency, is_free))}</b>"
     if city:
-        second += f" · {escape(city)}"
+        second += f" · {escape(city_title(city))}"
     lines.append(second)
 
     body = _shorten(_useful_body(title, description), BODY_LIMIT)
@@ -130,7 +152,7 @@ def build_preview(*, title: str, price: float | None, currency: str | None,
         "",
         f"<b>{escape(title)}</b>",
         f"<b>{escape(money(price, currency, is_free))}</b>"
-        + (f" · {escape(city)}" if city else ""),
+        + (f" · {escape(city_title(city))}" if city else ""),
     ]
     body = _shorten(_useful_body(title, description), BODY_LIMIT)
     if body:
