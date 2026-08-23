@@ -112,7 +112,10 @@ def save_photo(data: bytes) -> tuple[str, str] | None:
         thumb = img.copy()
         thumb.thumbnail((THUMB_DIM, THUMB_DIM))
         thumb.save(os.path.join(settings.media_dir, f"{name}_thumb.jpg"), "JPEG", quality=82, optimize=True)
-        base = settings.public_base_url.rstrip("/")
+        # Снимки живут там, где их отдаёт приложение, — это может быть
+        # не тот адрес, по которому открывается сайт.
+        base = (settings.media_base_url
+                or settings.public_base_url).rstrip("/")
         return f"{base}/media/{name}.jpg", f"{base}/media/{name}_thumb.jpg"
     except Exception:
         return None
