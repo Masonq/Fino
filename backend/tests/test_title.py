@@ -2074,3 +2074,19 @@ def test_price_beats_the_free_words():
     """«Цена символическая: 800 RSD» — всё-таки продажа за восемьсот."""
     assert parse("Цена символическая: 800 RSD")["is_free"] is False
     assert parse("Отдам даром детские вещи")["is_free"] is True
+
+
+def test_bare_machine_is_a_car():
+    """
+    «Машина очень хорошая» — автомобиль. Бытовую технику отсекает
+    правило выше, поэтому одинокая «машина» почти всегда про транспорт.
+    """
+    from app.core.tg_classify import classify
+
+    assert classify("Машина очень хорошая 5000 динар")[0] == "auto"
+    assert classify("Продам машину, пробег 200000")[0] == "auto"
+    # техника и игрушки остаются при своём
+    assert classify("Стиральная машина Bosch")[0] == "home-garden"
+    assert classify("Швейная машина Brother")[0] == "home-garden"
+    assert classify("Кофемашина Delonghi")[0] == "home-garden"
+    assert classify("Машинка детская игрушечная")[0] == "kids"

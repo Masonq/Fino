@@ -77,6 +77,9 @@ class Draft:
 # таблицу незачем. Перезапуск бота их теряет — не беда, человек пришлёт
 # объявление заново.
 drafts: dict[int, Draft] = {}
+# Снимки, присланные без описания. Люди часто шлют фото, а текст следом
+# отдельным сообщением — без этого объявление выходило без фотографии.
+waiting_photos: dict[int, list[bytes]] = {}
 albums: dict[str, list[Message]] = {}
 published_today: dict[int, list[datetime]] = {}
 
@@ -194,11 +197,21 @@ async def help_cmd(message: Message) -> None:
 async def handle_listing(message: Message, photos: list[bytes], text: str) -> None:
     """Общий путь для одиночного сообщения и альбома."""
     if not text.strip():
+        # Придержим снимки: описание, скорее всего, идёт следующим
+        # сообщением — так люди и пишут.
+        kept = waiting_photos.setdefault(message.from_user.id, [])
+        kept.extend(photos)
+        del kept[MAX_PHOTOS:]
         await message.answer(
-            "Добавьте описание: что продаёте, за сколько и в каком районе. "
-            "По одной фотографии объявление не составить."
+            f"Снимков принято: {len(kept)}. Теперь напишите, что продаёте, "
+            "за сколько и в каком районе — одним сообщением."
         )
         return
+
+    # К тексту подклеиваем снимки, присланные перед ним.
+    kept = waiting_photos.pop(message.from_user.id, [])
+    if kept and not photos:
+        photos = kept
 
     if not within_limit(message.from_user.id):
         await message.answer(
@@ -281,7 +294,17 @@ async def album_part(message: Message, bot: Bot) -> None:
 @dp.message(F.photo)
 async def single_photo(message: Message, bot: Bot) -> None:
     raw = await bot.download(message.photo[-1])
-    await handle_listing(message, [shrink(raw.read())], message.caption or "")
+    photo = shrink(raw.read())
+
+    # Объявление уже разобрано и ждёт подтверждения — значит снимок к
+    # нему: человек прислал текст, а фотографию следом.
+    draft = drafts.get(message.from_user.id)
+    if draft and not message.caption and len(draft.photos) < MAX_PHOTOS:
+        draft.photos.append(photo)
+        await show_draft(message, draft)
+        return
+
+    await handle_listing(message, [photo], message.caption or "")
 
 
 @dp.message(F.text & ~F.text.startswith("/"))
@@ -297,10 +320,11 @@ async def plain_text(message: Message) -> None:
         return
 
     await handle_listing(message, [], message.text)
-    if message.from_user.id in drafts:
+    draft = drafts.get(message.from_user.id)
+    if draft and not draft.photos:
         await message.answer(
-            "Кстати, добавьте фотографию — без неё объявление почти не смотрят. "
-            "Пришлите её вместе с текстом одним сообщением."
+            "Добавить фотографию? Пришлите её следующим сообщением — "
+            "я подставлю её в это же объявление."
         )
 
 
