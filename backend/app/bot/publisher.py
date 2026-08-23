@@ -365,7 +365,7 @@ async def send_my_listings(message: Message, user) -> None:
     # Одним сообщением, а не семью подряд: список из отдельных сообщений
     # с кнопкой у каждого выглядит как спам от самого себя и занимает
     # весь экран.
-    lines = ["<b>Ваши объявления</b>", ""]
+    lines = ["🗂 <b>Ваши объявления</b>", ""]
     for number, item in enumerate(live, 1):
         price = money(item["price"], item["currency"], item["is_free"])
         lines.append(
@@ -373,7 +373,7 @@ async def send_my_listings(message: Message, user) -> None:
             f'{escape(item["title"])}</a> — {price}'
         )
     if sold:
-        lines += ["", "<i>Продано</i>"]
+        lines += ["", "✅ <i>Продано</i>"]
         for item in sold[:5]:
             lines.append(f"  · <s>{escape(item['title'])}</s>")
 
@@ -383,7 +383,7 @@ async def send_my_listings(message: Message, user) -> None:
     row = []
     for number, item in enumerate(live, 1):
         row.append(InlineKeyboardButton(
-            text=f"{number} продано", callback_data=f"close:{item['id']}"))
+            text=f"✅ {number}", callback_data=f"close:{item['id']}"))
         if len(row) == 3:
             buttons.append(row)
             row = []
@@ -403,6 +403,7 @@ async def close_listing(call: CallbackQuery) -> None:
     """Снимает объявление с продажи из списка в боте."""
     listing_id = call.data.split(":", 1)[1]
     author = call.from_user.username or str(call.from_user.id)
+    await mark_busy(call, "Снимаю с продажи…")
 
     from app.models import Listing, ListingStatus
 
@@ -540,7 +541,16 @@ async def handle_listing(message: Message, photos: list[bytes], text: str) -> No
         )
         return
 
-    draft = understand(text, Draft(photos=photos[:MAX_PHOTOS]))
+    # Разбор занимает секунду-другую, а со снимками и дольше. Показываем,
+    # что дело идёт: иначе человек думает, что бот не ответил.
+    working = await message.answer("Разбираю объявление…")
+    try:
+        draft = understand(text, Draft(photos=photos[:MAX_PHOTOS]))
+    finally:
+        try:
+            await working.delete()
+        except Exception:                        # noqa: BLE001
+            pass
     if not draft.title:
         await message.answer(
             "Не понял, что за вещь. Напишите в первой строке, что продаёте — "
@@ -845,6 +855,12 @@ async def publish(call: CallbackQuery, bot: Bot) -> None:
         return
 
     await call.answer("Публикую…")
+
+    # Публикация занимает несколько секунд: снимок уходит в чат,
+    # объявление пишется в базу. Без отметки человек не понимает, идёт ли
+    # дело, и жмёт кнопку второй раз — тогда объявление уходит дважды.
+    await mark_busy(call, "Публикую…")
+
     listing_id = save_listing(draft, call.from_user)
     if not listing_id:
         # Пост в чат уйдёт всё равно — человеку важнее, чтобы объявление
@@ -940,6 +956,28 @@ async def publish(call: CallbackQuery, bot: Bot) -> None:
         await call.message.answer(done, disable_web_page_preview=True)
 
     await maybe_invite(call.message, call.from_user)
+
+
+async def mark_busy(call: CallbackQuery, what: str) -> None:
+    """
+    Показывает, что действие пошло.
+
+    Кнопки убираем сразу: они больше не нужны, а нажатие второй раз
+    отправило бы объявление дважды. Вместо них — строка о том, что
+    происходит, чтобы человек не смотрел на замерший экран.
+    """
+    try:
+        if call.message.caption is not None:
+            await call.message.edit_caption(
+                caption=f"{call.message.caption}\n\n<i>{what}</i>",
+                reply_markup=None)
+        else:
+            await call.message.edit_text(
+                f"{call.message.html_text}\n\n<i>{what}</i>",
+                reply_markup=None, disable_web_page_preview=True)
+    except Exception:                            # noqa: BLE001
+        # Не вышло — не беда: дальше карточка всё равно перерисуется.
+        pass
 
 
 # С третьего объявления человеку становится что смотреть на сайте: там

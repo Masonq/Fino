@@ -271,3 +271,18 @@ def test_sold_caption_gets_only_what_it_expects():
         if line.startswith('"') and '":' in line:
             key = line.split('"')[1]
             assert key in expected, f"лишнее поле в fields: {key}"
+
+
+def test_long_actions_show_progress():
+    """
+    Публикация занимает несколько секунд. Без отметки человек не
+    понимает, идёт ли дело, и жмёт кнопку второй раз — тогда объявление
+    уходит дважды.
+    """
+    import inspect
+    from app.bot.publisher import close_listing, mark_busy, publish
+
+    # кнопки убираются сразу, чтобы второе нажатие было невозможно
+    assert "reply_markup=None" in inspect.getsource(mark_busy)
+    assert "mark_busy(call" in inspect.getsource(publish)
+    assert "mark_busy(call" in inspect.getsource(close_listing)
