@@ -214,6 +214,21 @@ async def watch_chat(message: Message, bot: Bot) -> None:
         await sweep(message, bot, BOT_USERNAME)
 
 
+@dp.message(Command("start"), F.text.contains("from_chat"))
+async def start_from_chat(message: Message) -> None:
+    """
+    Человек пришёл по кнопке из чата — у него объявление уже написано.
+
+    Долгое приветствие здесь только мешает: он хотел опубликовать, ему
+    помешали, и теперь нужно как можно быстрее вернуть его к делу.
+    """
+    await message.answer(
+        "Пришлите объявление сюда — то же самое, что писали в чат.\n\n"
+        "Можно просто переслать своё сообщение: я разберу его, подберу "
+        "ветку и опубликую."
+    )
+
+
 @dp.message(Command("start"))
 async def start(message: Message) -> None:
     await message.answer(

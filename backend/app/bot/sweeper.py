@@ -17,7 +17,7 @@ import asyncio
 import logging
 
 from aiogram import Bot
-from aiogram.types import Message
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 log = logging.getLogger(__name__)
 
@@ -97,13 +97,22 @@ async def sweep(message: Message, bot: Bot, bot_username: str) -> bool:
         pass                                     # переписки с ботом ещё нет
 
     if not sent_privately:
+        # Имя бывает пустым, и «No Name, объявления…» звучит нелепо.
+        name = (author.full_name or "").strip()
+        greeting = f"{name}, о" if name and name.lower() != "no name" else "О"
+
         hint = await bot.send_message(
             message.chat.id,
-            f'{author.full_name}, объявления в этом чате публикуются '
-            f'через <a href="{link}">бота</a> — так они попадают в свою '
-            f'ветку и не теряются. Напишите ему, это займёт полминуты.',
+            f"{greeting}бъявления в этом чате публикуются через бота — "
+            "так они попадают в свою ветку и не теряются. "
+            "Нажмите кнопку, это займёт полминуты.",
             message_thread_id=message.message_thread_id,
             disable_web_page_preview=True,
+            # Кнопка, а не ссылка словом: по ней человек попадает в бота
+            # одним касанием, а ссылку в тексте ещё надо разглядеть.
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+                InlineKeyboardButton(text="Опубликовать объявление", url=link),
+            ]]),
         )
         # Подсказка своё дело сделала — дальше она только мешает читать
         # ленту объявлений.
