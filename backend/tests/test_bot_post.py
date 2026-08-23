@@ -143,3 +143,17 @@ def test_city_shown_in_words():
     assert city_title(None) == ""
     # незнакомый ключ хотя бы приводим в приличный вид
     assert city_title("some-place") == "Some Place"
+
+
+def test_bot_publication_is_never_a_duplicate():
+    """
+    Отсев повторов нужен переносу из чатов: одно объявление кочует по
+    трём барахолкам. Но когда человек публикует сам, он делает это
+    осознанно — и отказывать ему нельзя, даже если он второй раз
+    выставляет тот же утюг.
+    """
+    import inspect
+    from app.core.tg_import import store
+
+    source = inspect.getsource(store)
+    assert 'item.get("from_bot")' in source

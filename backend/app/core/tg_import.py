@@ -437,7 +437,16 @@ def forget_photos(item: dict) -> None:
 
 
 def store(db, item: dict) -> bool:
-    """Записывает объявление. False — если такое уже переносили."""
+    """
+    Записывает объявление. False — если такое уже переносили.
+
+    Отсев повторов нужен переносу из чатов: одно объявление кочует по
+    трём барахолкам, и в ленте оно должно быть одно. Но когда человек
+    публикует сам через бота, он делает это осознанно — и отказывать ему
+    нельзя, даже если он второй раз выставляет тот же утюг.
+    """
+    if item.get("from_bot"):
+        return _write(db, item)
     dup = db.query(Listing).filter(
         Listing.external_chat == str(item["chat_id"]),
         Listing.external_message_id == item["message_id"],
@@ -487,6 +496,11 @@ def store(db, item: dict) -> bool:
             forget_photos(item)
             return False
 
+    return _write(db, item)
+
+
+def _write(db, item: dict) -> bool:
+    """Сама запись — без проверок на повтор."""
     slug = item["sub_slug"] or item["category_slug"]
     category = db.query(Category).filter(Category.slug == slug).first()
     if not category:

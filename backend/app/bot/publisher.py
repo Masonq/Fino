@@ -638,10 +638,11 @@ def save_listing(draft: Draft, author) -> str | None:
                 "attributes": {},
                 "chat_id": TARGET_CHAT,
                 "chat_title": "Опубликовано через бота",
-                # Номер сообщения ещё не известен — публикация идёт после
-                # записи. Своего номера хватает, чтобы объявление не
-                # считалось повтором.
-                "message_id": -abs(hash((author.id, draft.title))) % 10**9,
+                # Номер сообщения ещё не известен: публикация идёт после
+                # записи. Берём случайный — от заголовка нельзя, иначе
+                # второе объявление о том же утюге сочтётся повтором
+                # первого и не сохранится вовсе.
+                "message_id": -(uuid.uuid4().int % 10**9),
                 "username": author.username or str(author.id),
                 "title": draft.title,
                 "description": draft.description or draft.text,
@@ -655,8 +656,16 @@ def save_listing(draft: Draft, author) -> str | None:
                 "publish": True,
                 "language": "ru",
                 "searchable": draft.text,
+                # Человек публикует осознанно — отсев повторов, нужный
+                # переносу из чатов, здесь только мешает.
+                "from_bot": True,
             }
             if not store(db, item):
+                # store отказывает молча: повтор, нет такого раздела,
+                # объявление уже продано. Разбирать это по журналу
+                # невозможно, поэтому пишем причину сразу.
+                log.warning("store отказал: раздел=%s подраздел=%s заголовок=%r",
+                            draft.category, draft.sub, draft.title)
                 return None
             db.commit()
 
