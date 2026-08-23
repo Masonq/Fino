@@ -21,6 +21,7 @@ import os
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from html import escape
 from io import BytesIO
 
 from aiogram import Bot, Dispatcher, F
@@ -489,10 +490,13 @@ async def publish(call: CallbackQuery, bot: Bot) -> None:
                 reply_markup=post_keyboard(listing_id),
                 disable_web_page_preview=True)
     except Exception as exc:                     # noqa: BLE001
+        # Причин у неудачи много — права, закрытая ветка, слишком длинная
+        # подпись. Общая фраза «нет прав» уводит не туда, поэтому
+        # показываем, что именно ответил Telegram.
         log.exception("не удалось опубликовать")
         await call.message.answer(
-            "Не получилось опубликовать в чат. Похоже, у бота нет прав — "
-            "напишите владельцу чата.")
+            "Не получилось опубликовать в чат.\n\n"
+            f"<code>{escape(str(exc))[:400]}</code>")
         return
 
     published_today.setdefault(call.from_user.id, []).append(utcnow())
