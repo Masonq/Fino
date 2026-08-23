@@ -69,16 +69,29 @@ def test_sweeping_is_off_by_default():
     assert ChatRules().sweep_direct_posts is False
 
 
-def test_text_is_given_back():
+def test_listing_is_kept_for_the_author():
     """
     Сообщение удалено — пересылать нечего, а набирать заново человек не
-    станет. Текст возвращаем ему обратно, чтобы он его скопировал.
+    станет. Придерживаем объявление, чтобы показать его готовым, когда
+    он придёт в бота.
     """
     import inspect
     from app.bot.sweeper import sweep
 
     source = inspect.getsource(sweep)
-    # текст отдаётся блоком: по нажатию копируется целиком
-    assert "<pre>" in source
-    # и придерживается, если в личку написать не дали
     assert "rescued[author.id]" in source
+    # придерживаем всегда, а не только когда в личку не пустили
+    assert source.index("rescued[author.id]") < source.index("sent_privately = False")
+
+
+def test_rescued_listing_is_shown_ready():
+    """
+    Человек уже написал объявление, мы его убрали — меньшее, что можно
+    сделать, это показать его разобранным, а не просить набрать заново.
+    """
+    import inspect
+    from app.bot.publisher import offer_rescued
+
+    source = inspect.getsource(offer_rescued)
+    assert "understand(" in source        # разбираем текст
+    assert "show_draft(" in source        # показываем карточку

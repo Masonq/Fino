@@ -86,36 +86,28 @@ async def sweep(message: Message, bot: Bot, bot_username: str) -> bool:
         log.warning("не удалось убрать сообщение %s", message.message_id)
         return False
 
-    # Сначала пробуем в личку: там можно вернуть человеку его же текст.
+    # Придерживаем объявление в любом случае: человек придёт в бота, и
+    # там оно должно ждать его готовым — не текстом для копирования, а
+    # разобранной карточкой с кнопкой «Опубликовать».
+    photo_id = message.photo[-1].file_id if message.photo else None
+    rescued[author.id] = (text, photo_id)
+
     link = f"https://t.me/{bot_username}?start=from_chat"
     sent_privately = False
     try:
-        # Сообщение уже удалено — пересылать нечего, набирать заново
-        # человек не станет. Возвращаем текст одним блоком: по нажатию
-        # он копируется целиком.
-        again = (f"\n\nВот ваш текст, скопируйте его — нажмите на него "
-                 f"и пришлите мне:\n<pre>{escape(text)}</pre>") if text else ""
+        # Пробуем достучаться в личку: если переписка уже была, покажем
+        # готовое объявление прямо сейчас, не заставляя никуда ходить.
         await bot.send_message(
             author.id,
             "Ваше объявление убрано из чата — там публикуют через меня, "
-            "чтобы всё попадало в свою ветку." + again,
+            "чтобы всё попадало в свою ветку.\n\n"
+            "Ничего не пропало, сейчас покажу его готовым.",
         )
-        if message.photo:
-            # Снимок тоже пропал вместе с сообщением: возвращаем и его.
-            await bot.send_photo(
-                author.id, message.photo[-1].file_id,
-                caption="Эта фотография была в объявлении — пришлите её "
-                        "вместе с текстом.")
         sent_privately = True
     except Exception:                            # noqa: BLE001
         pass                                     # переписки с ботом ещё нет
 
     if not sent_privately:
-        # В личку не пустили — придержим текст до прихода человека,
-        # иначе он потеряется совсем.
-        rescued[author.id] = (text, message.photo[-1].file_id
-                              if message.photo else None)
-
         # Имя бывает пустым, и «No Name, объявления…» звучит нелепо.
         name = (author.full_name or "").strip()
         greeting = f"{name}, о" if name and name.lower() != "no name" else "О"
@@ -138,7 +130,7 @@ async def sweep(message: Message, bot: Bot, bot_username: str) -> bool:
         asyncio.create_task(_remove_later(bot, hint.chat.id, hint.message_id))
 
     log.info("убрано объявление мимо бота от %s: %r", author.id, text[:60])
-    return True
+    return sent_privately
 
 
 async def _remove_later(bot: Bot, chat_id: int, message_id: int) -> None:

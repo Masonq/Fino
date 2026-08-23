@@ -210,36 +210,84 @@ async def watch_chat(message: Message, bot: Bot) -> None:
     except Exception:                            # noqa: BLE001
         pass
 
-    if looks_like_listing(message):
-        await sweep(message, bot, BOT_USERNAME)
+    if not looks_like_listing(message):
+        return
+
+    reachable = await sweep(message, bot, BOT_USERNAME)
+    if reachable:
+        # Переписка с ботом уже была — показываем готовое объявление
+        # сразу, человеку никуда ходить не нужно.
+        class _Direct:
+            """Отправка в личку от имени того же человека."""
+            from_user = message.from_user
+            chat = type("Chat", (), {"id": message.from_user.id})()
+            bot = bot
+
+            async def answer(self, text, **kwargs):
+                return await bot.send_message(
+                    message.from_user.id, text, **kwargs)
+
+            async def answer_photo(self, photo, **kwargs):
+                return await bot.send_photo(
+                    message.from_user.id, photo, **kwargs)
+
+            async def answer_media_group(self, media, **kwargs):
+                return await bot.send_media_group(
+                    message.from_user.id, media, **kwargs)
+
+        await offer_rescued(_Direct(), bot)
 
 
 @dp.message(Command("start"), F.text.contains("from_chat"))
-async def start_from_chat(message: Message) -> None:
+async def start_from_chat(message: Message, bot: Bot) -> None:
     """
-    Человек пришёл по кнопке из чата — у него объявление уже написано.
+    Человек пришёл по кнопке из чата — его объявление ждёт разобранным.
 
-    Долгое приветствие здесь только мешает: он хотел опубликовать, ему
-    помешали, и теперь нужно как можно быстрее вернуть его к делу.
+    Заставлять его набирать всё заново или копировать текст было бы
+    издевательством: он уже написал объявление, мы его убрали, и меньшее,
+    что можно сделать, — показать готовым.
     """
-    # Текст, который у него убрали, мы придержали — отдаём обратно.
-    saved = rescued.pop(message.from_user.id, None)
-    if saved:
-        text, photo_id = saved
-        await message.answer(
-            "Вот объявление, которое вы писали в чат.\n"
-            "Скопируйте текст — нажмите на него — и пришлите мне:\n\n"
-            f"<pre>{escape(text)}</pre>"
-        )
-        if photo_id:
-            await message.answer_photo(
-                photo_id, caption="И фотография из него.")
+    if await offer_rescued(message, bot):
         return
 
     await message.answer(
         "Пришлите объявление сюда — то же самое, что писали в чат.\n\n"
         "Я разберу его, подберу ветку и опубликую."
     )
+
+
+async def offer_rescued(message: Message, bot: Bot) -> bool:
+    """
+    Показывает объявление, убранное у человека из чата.
+
+    Возвращает True, если было что показать.
+    """
+    saved = rescued.pop(message.from_user.id, None)
+    if not saved:
+        return False
+
+    text, photo_id = saved
+    photos: list[bytes] = []
+    if photo_id:
+        try:
+            raw = await bot.download(photo_id)
+            photos.append(shrink(raw.read()))
+        except Exception:                        # noqa: BLE001
+            log.warning("не удалось забрать снимок убранного объявления")
+
+    draft = understand(text, Draft(photos=photos))
+    if not draft.title:
+        await message.answer(
+            "Вот что вы писали в чат:\n\n"
+            f"<pre>{escape(text)}</pre>\n"
+            "Не понял, что за вещь — допишите название и пришлите мне."
+        )
+        return True
+
+    drafts[message.from_user.id] = draft
+    await message.answer("Ваше объявление из чата — вот оно, готовое:")
+    await show_draft(message, draft)
+    return True
 
 
 @dp.message(Command("start"))
