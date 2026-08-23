@@ -138,6 +138,33 @@ def build_caption(*, title: str, price: float | None, currency: str | None,
     return caption
 
 
+def build_sold_caption(*, title: str, price: float | None,
+                       currency: str | None, is_free: bool,
+                       city: str | None, description: str | None,
+                       site_url: str) -> str:
+    """
+    Пост после пометки «продано».
+
+    Собираем заново, а не правим готовый: разметка в тексте уже
+    развёрнута, и попытка приписать строку сверху рвала ссылки.
+
+    Автора убираем: писать ему больше незачем, а имя в проданном
+    объявлении только собирает лишние сообщения.
+    """
+    lines = [
+        "🔴 <b>ПРОДАНО</b>",
+        "",
+        f"<s>{escape(title)}</s>",
+        f"<s>{escape(money(price, currency, is_free))}</s>"
+        + (f" · {escape(city_title(city))}" if city else ""),
+    ]
+    body = _shorten(_useful_body(title, description), BODY_LIMIT // 2)
+    if body:
+        lines += ["", escape(body)]
+    lines += ["", SIGNATURE.format(site=escape(site_url))]
+    return "\n".join(lines)
+
+
 def build_preview(*, title: str, price: float | None, currency: str | None,
                   is_free: bool, city: str | None, description: str | None,
                   topic_title: str | None, photo_count: int = 0) -> str:

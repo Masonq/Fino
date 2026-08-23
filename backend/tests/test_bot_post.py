@@ -170,3 +170,25 @@ def test_write_computes_its_own_fingerprint():
 
     source = inspect.getsource(_write)
     assert "mark = fingerprint(" in source
+
+
+def test_sold_post_keeps_links_and_drops_the_seller():
+    """
+    Проданный пост собираем заново, а не правим готовый: разметка в нём
+    уже развёрнута, и приписка сверху рвала ссылки.
+
+    Имя продавца убираем — писать ему больше незачем, а в проданном
+    объявлении оно только собирает лишние сообщения.
+    """
+    from app.bot.post_format import build_sold_caption
+
+    caption = build_sold_caption(
+        title="Утюг philips azur", price=3000, currency="RSD", is_free=False,
+        city="beograd", description="мощность: 2600w",
+        site_url="https://plonk.rs")
+
+    assert "ПРОДАНО" in caption
+    assert "Продаёт" not in caption
+    assert 'href="https://plonk.rs"' in caption        # ссылка цела
+    assert "<s>Утюг philips azur</s>" in caption       # название зачёркнуто
+    assert "Белград" in caption

@@ -41,7 +41,9 @@ from app.core.partner_chats import (
 )
 from app.core.tg_classify import classify, classify_sub
 from app.core.tg_parse import parse
-from app.bot.post_format import build_caption, build_preview, money
+from app.bot.post_format import (
+    build_caption, build_preview, build_sold_caption, money,
+)
 
 log = logging.getLogger(__name__)
 
@@ -430,28 +432,53 @@ async def mark_sold(call: CallbackQuery) -> None:
         await call.answer("Это чужое объявление", show_alert=True)
         return
 
+    draft_title = draft_body = ""
+    draft_price = draft_currency = draft_city = None
+    draft_free = False
+
     if listing_id:
         try:
-            from app.models import Listing, ListingStatus
+            from app.models import Listing, ListingStatus, ListingTranslation
 
             with SessionLocal() as db:
                 listing = db.query(Listing).filter(Listing.id == listing_id).first()
                 if listing:
                     listing.status = ListingStatus.sold
+                    # Забираем поля до закрытия сессии: пост собираем из
+                    # них, а черновика к этому времени уже нет.
+                    translation = (
+                        db.query(ListingTranslation)
+                        .filter(ListingTranslation.listing_id == listing.id)
+                        .first()
+                    )
+                    draft_title = translation.title if translation else ""
+                    draft_body = translation.description if translation else ""
+                    draft_price = float(listing.price) if listing.price else None
+                    draft_currency = (listing.currency.value
+                                      if listing.currency else None)
+                    draft_city = listing.city
+                    draft_free = bool(listing.is_free)
                     db.commit()
         except Exception:                        # noqa: BLE001
             log.exception("не удалось закрыть объявление")
 
     # Пост не удаляем: по нему ищут, за сколько ушла похожая вещь.
+    # Но собираем заново — правка готового текста рвёт ссылки, а имя
+    # продавца в проданном объявлении только собирает лишние сообщения.
     try:
-        text = call.message.caption or call.message.text or ""
-        marked = "🔴 <b>ПРОДАНО</b>\n\n" + text
+        sold_text = build_sold_caption(
+            title=draft_title, price=draft_price, currency=draft_currency,
+            is_free=draft_free, city=draft_city, description=draft_body,
+            site_url=settings.public_base_url.rstrip("/"),
+        )
         if call.message.caption:
-            await call.message.edit_caption(caption=marked[:1024], reply_markup=None)
+            await call.message.edit_caption(caption=sold_text, reply_markup=None)
         else:
-            await call.message.edit_text(marked[:4096], reply_markup=None)
+            await call.message.edit_text(sold_text, reply_markup=None,
+                                         disable_web_page_preview=True)
     except Exception:                            # noqa: BLE001
-        pass
+        log.exception("не удалось пометить пост проданным")
+
     await call.answer("Отметил проданным")
 
 
