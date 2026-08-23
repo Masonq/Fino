@@ -118,7 +118,7 @@ def build_caption(*, title: str, price: float | None, currency: str | None,
 
 def build_preview(*, title: str, price: float | None, currency: str | None,
                   is_free: bool, city: str | None, description: str | None,
-                  topic_title: str | None) -> str:
+                  topic_title: str | None, photo_count: int = 0) -> str:
     """
     Что бот показывает человеку перед публикацией.
 
@@ -137,4 +137,10 @@ def build_preview(*, title: str, price: float | None, currency: str | None,
         lines += ["", escape(body)]
     if topic_title:
         lines += ["", f"Ветка: <b>{escape(topic_title)}</b>"]
+    # Снимков может быть несколько, а показываем мы первый: без счётчика
+    # человек не поймёт, ушли ли остальные.
+    if photo_count > 1:
+        lines.append(f"Фотографий: <b>{photo_count}</b>")
+    elif photo_count == 0:
+        lines.append("Без фотографии — такие объявления почти не смотрят")
     return "\n".join(lines)

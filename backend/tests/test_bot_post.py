@@ -108,3 +108,24 @@ def test_body_dropped_when_it_repeats_the_title():
         description="Бежевый, много карманов, почти новый",
         author_name="А", author_id=1, site_url="https://plonk.rs")
     assert "много карманов" in caption
+
+
+def test_preview_tells_about_photos():
+    """
+    Показываем первый снимок, а прислать могли пять: без счётчика человек
+    не поймёт, ушли ли остальные.
+    """
+    many = build_preview(
+        title="Рюкзак", price=500, currency="RSD", is_free=False, city=None,
+        description="", topic_title="Одежда • Обувь", photo_count=3)
+    assert "Фотографий" in many and "3" in many
+
+    none = build_preview(
+        title="Стол", price=3000, currency="RSD", is_free=False, city=None,
+        description="", topic_title="Мебель", photo_count=0)
+    assert "Без фотографии" in none
+
+    one = build_preview(
+        title="Стол", price=3000, currency="RSD", is_free=False, city=None,
+        description="", topic_title="Мебель", photo_count=1)
+    assert "Фотографий" not in one and "Без фотографии" not in one

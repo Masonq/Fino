@@ -216,15 +216,42 @@ async def handle_listing(message: Message, photos: list[bytes], text: str) -> No
         return
 
     drafts[message.from_user.id] = draft
-    await message.answer(
-        build_preview(
-            title=draft.title, price=draft.price, currency=draft.currency,
-            is_free=draft.is_free, city=draft.city,
-            description=draft.description,
-            topic_title=topic_name(TARGET_CHAT, draft.topic_id),
-        ),
-        reply_markup=confirm_keyboard(draft),
+    await show_draft(message, draft)
+
+
+async def show_draft(message: Message, draft: Draft, edit: CallbackQuery | None = None):
+    """
+    Показывает карточку перед публикацией — со снимком.
+
+    Без фотографии человек не понимает, та ли она уйдёт в чат и сколько
+    их всего: он прислал пять, а видит только текст.
+    """
+    text = build_preview(
+        title=draft.title, price=draft.price, currency=draft.currency,
+        is_free=draft.is_free, city=draft.city,
+        description=draft.description,
+        topic_title=topic_name(TARGET_CHAT, draft.topic_id),
+        photo_count=len(draft.photos),
     )
+    keyboard = confirm_keyboard(draft)
+
+    if edit is not None:
+        # Правку показываем на месте: новое сообщение на каждое нажатие
+        # засыпает переписку. Со снимком меняется только подпись.
+        try:
+            if draft.photos:
+                await edit.message.edit_caption(caption=text, reply_markup=keyboard)
+            else:
+                await edit.message.edit_text(text, reply_markup=keyboard)
+            return
+        except Exception:                        # noqa: BLE001
+            pass                                 # не вышло — отправим заново
+
+    if draft.photos:
+        await message.answer_photo(_file(draft.photos[0]), caption=text,
+                                   reply_markup=keyboard)
+    else:
+        await message.answer(text, reply_markup=keyboard)
 
 
 @dp.message(F.photo & F.media_group_id)
@@ -299,21 +326,20 @@ async def apply_edit(message: Message, draft: Draft) -> None:
             draft.is_free = False
 
     draft.awaiting = None
-    await message.answer(
-        build_preview(
-            title=draft.title, price=draft.price, currency=draft.currency,
-            is_free=draft.is_free, city=draft.city,
-            description=draft.description,
-            topic_title=topic_name(TARGET_CHAT, draft.topic_id),
-        ),
-        reply_markup=confirm_keyboard(draft),
-    )
+    await show_draft(message, draft)
 
 
 @dp.callback_query(F.data == "cancel")
 async def cancel(call: CallbackQuery) -> None:
     drafts.pop(call.from_user.id, None)
-    await call.message.edit_text("Отменил. Пришлите объявление заново, когда будете готовы.")
+    text = "Отменил. Пришлите объявление заново, когда будете готовы."
+    try:
+        if call.message.photo:
+            await call.message.edit_caption(caption=text, reply_markup=None)
+        else:
+            await call.message.edit_text(text)
+    except Exception:                            # noqa: BLE001
+        await call.message.answer(text)
     await call.answer()
 
 
@@ -338,15 +364,7 @@ async def set_topic(call: CallbackQuery) -> None:
         await call.answer("Объявление устарело, пришлите заново", show_alert=True)
         return
     draft.topic_id = int(call.data.split(":", 1)[1])
-    await call.message.edit_text(
-        build_preview(
-            title=draft.title, price=draft.price, currency=draft.currency,
-            is_free=draft.is_free, city=draft.city,
-            description=draft.description,
-            topic_title=topic_name(TARGET_CHAT, draft.topic_id),
-        ),
-        reply_markup=confirm_keyboard(draft),
-    )
+    await show_draft(call.message, draft, edit=call)
     await call.answer()
 
 
@@ -418,13 +436,19 @@ async def publish(call: CallbackQuery, bot: Bot) -> None:
 
     link = _post_link(posted)
     site = settings.public_base_url.rstrip("/")
-    await call.message.edit_text(
+    done = (
         "Опубликовано!\n\n"
         + (f'<a href="{link}">Посмотреть в чате</a>\n' if link else "")
         + (f'<a href="{site}/listing/{listing_id}">Открыть на PLONK</a>'
-           if listing_id else ""),
-        disable_web_page_preview=True,
+           if listing_id else "")
     )
+    try:
+        if draft.photos:
+            await call.message.edit_caption(caption=done, reply_markup=None)
+        else:
+            await call.message.edit_text(done, disable_web_page_preview=True)
+    except Exception:                            # noqa: BLE001
+        await call.message.answer(done, disable_web_page_preview=True)
 
 
 def _file(data: bytes):
