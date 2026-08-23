@@ -43,6 +43,7 @@ from app.core.partner_chats import (
 from app.core.tg_classify import classify, classify_sub
 from app.core.tg_parse import parse
 from app.bot.digest import build as build_digest
+from app.bot.sweeper import looks_like_listing, sweep
 from app.bot.post_format import (
     build_caption, build_preview, build_sold_caption, money,
 )
@@ -182,6 +183,35 @@ def shrink(data: bytes, side: int = 1600) -> bytes:
 
 
 dp = Dispatcher()
+
+
+# Имя бота нужно для ссылки в подсказке; узнаём его один раз при запуске.
+BOT_USERNAME = ""
+
+
+@dp.message(F.chat.id == TARGET_CHAT)
+async def watch_chat(message: Message, bot: Bot) -> None:
+    """
+    Следит за чатом и убирает объявления, написанные мимо бота.
+
+    Работает, только если владелец это включил: без разрешения хозяйничать
+    в чужом чате нельзя.
+    """
+    if not rules_for(TARGET_CHAT).sweep_direct_posts:
+        return
+    # Свои же посты не трогаем, и сообщения администраторов тоже: они
+    # пишут правила и объявления чата.
+    if message.from_user and message.from_user.is_bot:
+        return
+    try:
+        member = await bot.get_chat_member(TARGET_CHAT, message.from_user.id)
+        if member.status in ("administrator", "creator"):
+            return
+    except Exception:                            # noqa: BLE001
+        pass
+
+    if looks_like_listing(message):
+        await sweep(message, bot, BOT_USERNAME)
 
 
 @dp.message(Command("start"))
@@ -757,8 +787,12 @@ async def main() -> None:
     ])
     await bot.set_chat_menu_button(menu_button=MenuButtonCommands())
 
+    global BOT_USERNAME
     me = await bot.get_me()
+    BOT_USERNAME = me.username
     log.info("бот @%s готов, публикует в чат %s", me.username, TARGET_CHAT)
+    if rules_for(TARGET_CHAT).sweep_direct_posts:
+        log.info("уборка объявлений мимо бота включена")
     await dp.start_polling(bot)
 
 
