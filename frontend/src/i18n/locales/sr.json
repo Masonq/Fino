@@ -373,5 +373,34 @@
       "listing.approve": "Odobrio oglas",
       "listing.reject": "Odbio oglas"
     }
+  },
+  "support": {
+    "title": "Pišite podršci",
+    "queue": "Prijave",
+    "subject": "Ukratko o čemu se radi",
+    "body": "Šta se desilo? Opišite detaljno.",
+    "contact": "Gde da odgovorimo — mejl ili telefon",
+    "send": "Pošalji",
+    "sent": "Poslato. Odgovorićemo na dati kontakt.",
+    "failed": "Slanje nije uspelo. Pokušajte ponovo.",
+    "too_many": "Previše prijava zaredom. Sačekajte malo.",
+    "mine": "Moje prijave",
+    "your_reply": "Vaš odgovor",
+    "answer": "Odgovor osobi",
+    "close": "Zatvori",
+    "queue_empty": "Nema prijava.",
+    "open_listing": "Otvori oglas",
+    "topic": {
+      "listing": "Oglas",
+      "account": "Prijava i profil",
+      "payment": "Plaćanje",
+      "abuse": "Prevara",
+      "other": "Ostalo"
+    },
+    "status": {
+      "open": "Čeka odgovor",
+      "answered": "Odgovoreno",
+      "closed": "Zatvoreno"
+    }
   }
 }

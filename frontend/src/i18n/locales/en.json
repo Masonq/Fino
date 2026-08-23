@@ -372,5 +372,34 @@
       "listing.approve": "Approved listing",
       "listing.reject": "Rejected listing"
     }
+  },
+  "support": {
+    "title": "Contact support",
+    "queue": "Tickets",
+    "subject": "Briefly, what is it about",
+    "body": "What happened? Please describe.",
+    "contact": "Where to reply — email or phone",
+    "send": "Send",
+    "sent": "Sent. We will reply to the contact you gave.",
+    "failed": "Could not send. Please try again.",
+    "too_many": "Too many tickets in a row. Please wait a little.",
+    "mine": "My tickets",
+    "your_reply": "Your reply",
+    "answer": "Reply to the person",
+    "close": "Close",
+    "queue_empty": "The queue is empty.",
+    "open_listing": "Open the listing",
+    "topic": {
+      "listing": "Listing",
+      "account": "Login and profile",
+      "payment": "Payment",
+      "abuse": "Fraud",
+      "other": "Other"
+    },
+    "status": {
+      "open": "Waiting",
+      "answered": "Answered",
+      "closed": "Closed"
+    }
   }
 }

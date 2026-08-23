@@ -14,6 +14,8 @@ import Profile from './pages/Profile'
 import SellerProfile from './pages/SellerProfile'
 import MyListings from './pages/MyListings'
 import AdminAudit from './pages/AdminAudit'
+import AdminSupport from './pages/AdminSupport'
+import Support from './pages/Support'
 import AdminStats from './pages/AdminStats'
 import AdminUsers from './pages/AdminUsers'
 import Moderation from './pages/Moderation'
@@ -108,6 +110,8 @@ export default function App() {
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/stats" element={<AdminStats />} />
           <Route path="/admin/audit" element={<AdminAudit />} />
+          <Route path="/admin/support" element={<AdminSupport />} />
+          <Route path="/support" element={<Support />} />
           <Route path="/edit/:id" element={<EditListing />} />
           <Route path="/saved" element={<SavedSearches />} />
           <Route path="/history" element={<History />} />

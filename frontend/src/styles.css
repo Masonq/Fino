@@ -1692,3 +1692,75 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   font-size: 13px;
   color: #444;
 }
+
+/* ——— техподдержка ——— */
+.support-form { display: flex; flex-direction: column; gap: 8px; }
+.support-body {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line, #e6e6e6);
+  border-radius: 12px;
+  font-size: 16px;      /* меньше — и телефон приближает страницу при вводе */
+  font-family: inherit;
+  resize: vertical;
+  background: #fff;
+}
+.support-send {
+  padding: 14px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--brand, #0E9F6E);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+}
+.support-send:disabled { opacity: .6; }
+.support-sent {
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: #eaf6f1;
+  color: #0E7A56;
+  font-size: 14px;
+}
+
+.support-mine { margin-top: 22px; }
+.support-ticket {
+  margin-top: 8px;
+  padding: 12px 13px;
+  border: 1px solid var(--line, #eee);
+  border-radius: 12px;
+  background: #fff;
+}
+.tag-muted { background: #f0f0f0; color: #777; }
+
+/* Ответы сотрудника прижаты вправо: так видно, где чей голос */
+.support-thread { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
+.support-msg {
+  padding: 9px 11px;
+  border-radius: 12px;
+  background: #f4f4f4;
+  font-size: 14px;
+  max-width: 85%;
+  white-space: pre-wrap;
+}
+.support-msg.from-staff {
+  align-self: flex-end;
+  background: #eaf6f1;
+}
+.support-author { display: block; margin-top: 4px; font-size: 11px; color: #888; }
+
+.support-reply { display: flex; gap: 8px; }
+.support-reply input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--line, #e6e6e6);
+  border-radius: 10px;
+  font-size: 16px;
+}
+.support-reply button {
+  padding: 10px 14px;
+  border: 1px solid var(--line, #e6e6e6);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 14px;
+}

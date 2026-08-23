@@ -95,6 +95,21 @@ export const api = {
   adminAudit: (params) => request(`/admin/audit?${new URLSearchParams(params)}`),
   adminAuditSummary: (days) => request(`/admin/audit/summary?${new URLSearchParams({ days })}`),
 
+  // ——— техподдержка ———
+  supportCreate: (payload) => request('/support', {
+    method: 'POST', body: JSON.stringify(payload),
+  }),
+  supportMine: () => request('/support/mine'),
+  supportReply: (id, body) => request(`/support/${id}/reply`, {
+    method: 'POST', body: JSON.stringify({ body }),
+  }),
+  supportQueue: (params) => request(`/support/queue?${new URLSearchParams(params)}`),
+  supportTicket: (id) => request(`/support/${id}`),
+  supportAnswer: (id, body) => request(`/support/${id}/answer`, {
+    method: 'POST', body: JSON.stringify({ body }),
+  }),
+  supportClose: (id) => request(`/support/${id}/close`, { method: 'POST' }),
+
   modQueue: (lang) => request(`/moderation/queue?${new URLSearchParams({ lang })}`),
   modApprove: (id) => request(`/moderation/${id}/approve`, { method: 'POST' }),
   modReject: (id, reason) => request(`/moderation/${id}/reject`, {

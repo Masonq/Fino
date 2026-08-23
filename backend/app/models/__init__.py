@@ -8,6 +8,9 @@ from app.models.chat import Chat, Message
 from app.models.trust import Review, Report, ReportReason, ReportStatus
 from app.models.promotion import Promotion, PromotionType
 from app.models.audit import AuditEntry
+from app.models.support import (
+    Ticket, TicketMessage, TicketStatus, TicketTopic,
+)
 
 __all__ = [
     "User", "UserRole", "Language",
@@ -20,4 +23,5 @@ __all__ = [
     "Review", "Report", "ReportReason", "ReportStatus",
     "Promotion", "PromotionType",
     "AuditEntry",
+    "Ticket", "TicketMessage", "TicketStatus", "TicketTopic",
 ]

@@ -9,7 +9,7 @@ from app.routers import (
     admin_audit, admin_stats, admin_users, auth, categories, chats,
     favorites, listings,
     media,
-    moderation, preview, reports, reviews, saved_searches, users,
+    moderation, preview, reports, reviews, saved_searches, support, users,
 )
 
 app = FastAPI(title=settings.app_name)
@@ -40,6 +40,7 @@ app.include_router(preview.router)
 app.include_router(admin_users.router)
 app.include_router(admin_stats.router)
 app.include_router(admin_audit.router)
+app.include_router(support.router)
 
 
 @app.get("/api/health")

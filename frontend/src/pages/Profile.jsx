@@ -73,6 +73,10 @@ export default function Profile() {
           {t('nav.post')}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
         </Link>
+        <Link className="profile-row" to="/support">
+          {t('support.title')}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+        </Link>
       </div>
 
       {/* Разделы для сотрудников. Раньше в модерацию заходили по адресу,
@@ -94,6 +98,10 @@ export default function Profile() {
           </Link>
           <Link className="profile-row" to="/admin/audit">
             {t('audit.title')}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+          </Link>
+          <Link className="profile-row" to="/admin/support">
+            {t('support.queue')}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
           </Link>
         </div>
