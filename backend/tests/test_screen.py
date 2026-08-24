@@ -60,3 +60,38 @@ def test_unchanged_text_is_not_an_error():
     from app.bot.screen import show
 
     assert '"not modified" in str(exc)' in inspect.getsource(show)
+
+
+def test_user_messages_are_cleaned_too():
+    """
+    Половина переписки — это сообщения человека: нажатия кнопок меню,
+    тексты объявлений, правки. Без уборки они копятся, и одно живое
+    сообщение бота тонет между ними.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "bot" / "publisher.py").read_text()
+
+    # убираем и команды, и присланные объявления, и правки
+    assert source.count("await erase(") >= 8
+
+
+def test_album_parts_all_erased():
+    """Альбом приходит несколькими сообщениями — убрать надо все."""
+    import inspect
+    from app.bot.publisher import album_part
+
+    source = inspect.getsource(album_part)
+    assert "for part in parts:" in source
+    assert "await erase(part)" in source
+
+
+def test_erasing_never_breaks_the_flow():
+    """
+    Telegram даёт удалять чужие сообщения только двое суток. Более
+    старые остаются — это не беда, и падать из-за этого нельзя.
+    """
+    import inspect
+    from app.bot.screen import erase
+
+    source = inspect.getsource(erase)
+    assert "except Exception" in source

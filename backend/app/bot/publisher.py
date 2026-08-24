@@ -46,7 +46,9 @@ from app.core.tg_classify import classify, classify_sub
 from app.core.tg_parse import parse
 from app.bot.digest import build as build_digest
 from app.bot.emoji import digit, digit_icon, emoji, icon
-from app.bot.screen import forget as forget_screen, release, show
+from app.bot.screen import (
+    erase, forget as forget_screen, release, show,
+)
 from app.bot.sweeper import looks_like_listing, rescued, sweep
 from app.bot.post_format import (
     build_caption, build_preview, build_sold_caption, money,
@@ -418,6 +420,7 @@ async def start(message: Message) -> None:
     Человек пришёл опубликовать объявление, а не читать. Поэтому коротко
     и по шагам: что сделать сейчас, что будет дальше, сколько это займёт.
     """
+    await erase(message)
     known = message.from_user.id in site_allowed
 
     await show(message.bot, message.chat.id,
@@ -489,6 +492,7 @@ async def remember_site_choice(call: CallbackQuery) -> None:
 @dp.message(Command("site"))
 async def change_site_choice(message: Message) -> None:
     """Даёт передумать: решение принимали один раз, но не навсегда."""
+    await erase(message)
     site_allowed.pop(message.from_user.id, None)
     await ask_about_site(message)
 
@@ -508,6 +512,7 @@ async def send_my_listings(message: Message, user) -> None:
     сайт ему ничего не даёт: там он никто. Поэтому показываем список
     здесь, где он уже узнан.
     """
+    await erase(message)
     author = user.username or str(user.id)
 
     from app.models import Listing, ListingStatus, ListingTranslation
@@ -669,6 +674,7 @@ async def close_listing(call: CallbackQuery) -> None:
 @dp.message(Command("cancel"))
 async def cancel_cmd(message: Message) -> None:
     """Бросить начатое: человек передумал на полпути."""
+    await erase(message)
     had = drafts.pop(message.from_user.id, None)
     waiting_photos.pop(message.from_user.id, None)
     await message.answer(
@@ -713,6 +719,7 @@ async def stats(message: Message) -> None:
     Владелец пустил бота в свой чат — значит вправе знать, что тот
     делает. Иначе он видит только поток постов.
     """
+    await erase(message)
     owner_id = rules_for(TARGET_CHAT).owner_id
     if owner_id and message.from_user.id != owner_id:
         await show(message.bot, message.chat.id,
@@ -731,6 +738,7 @@ async def help_cmd(message: Message) -> None:
     В приветствии им не место: там человек хочет опубликовать, а не
     изучать правила.
     """
+    await erase(message)
     rules = rules_for(TARGET_CHAT)
     await show(message.bot, message.chat.id,
         f"{emoji('edit')} <b>Что написать</b>\n"
@@ -754,7 +762,14 @@ async def help_cmd(message: Message) -> None:
 
 
 async def handle_listing(message: Message, photos: list[bytes], text: str) -> None:
-    """Общий путь для одиночного сообщения и альбома."""
+    """
+    Общий путь для одиночного сообщения и альбома.
+
+    Присланное убираем: оно уже превратилось в карточку, а объявления
+    живут в «Моих объявлениях». Держать исходники значит копить ленту, в
+    которой ничего не найти.
+    """
+    await erase(message)
     if not text.strip():
         # Придержим снимки: описание, скорее всего, идёт следующим
         # сообщением — так люди и пишут.
@@ -874,6 +889,9 @@ async def album_part(message: Message, bot: Bot) -> None:
         raw = await bot.download(part.photo[-1])
         photos.append(shrink(raw.read()))
     text = next((p.caption for p in parts if p.caption), "") or ""
+    # Альбом пришёл несколькими сообщениями — убрать надо все.
+    for part in parts:
+        await erase(part)
     await handle_listing(message, photos, text)
 
 
@@ -912,6 +930,7 @@ async def plain_text(message: Message) -> None:
 
 async def apply_edit(message: Message, draft: Draft) -> None:
     """Человек прислал исправление названия или цены."""
+    await erase(message)
     what = getattr(draft, "awaiting", None)
     value = message.text.strip()
 
