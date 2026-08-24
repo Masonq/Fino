@@ -17,6 +17,7 @@ from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 PUBLISH = "Опубликовать"
 TOPIC = "Другая ветка"
 TITLE = "Название"
+DESCRIPTION = "Описание"
 PRICE = "Цена"
 CANCEL = "Отмена"
 BACK = "Назад"
@@ -54,13 +55,14 @@ def draft(is_owner: bool = False) -> ReplyKeyboardMarkup:
     его с правками нельзя.
     """
     return _menu(
-        [[PUBLISH], [TOPIC, TITLE], [PRICE, CANCEL], [MY, HELP]],
+        [[PUBLISH], [TOPIC, TITLE], [PRICE, DESCRIPTION], [CANCEL], [MY, HELP]],
         "Или пришлите объявление заново",
     )
 
 
-# Пометка «продано» в списке: «1 продано», «2 продано»…
+# Пометки в списке: «1 продано», «1 удалить»…
 SOLD_SUFFIX = " продано"
+DROP_SUFFIX = " удалить"
 
 
 def listings(count: int, is_owner: bool = False) -> ReplyKeyboardMarkup:
@@ -79,6 +81,11 @@ def listings(count: int, is_owner: bool = False) -> ReplyKeyboardMarkup:
             row = []
     if row:
         rows.append(row)
+
+    if count:
+        # Удаление отдельной строкой: рядом с «продано» легко промахнуться,
+        # а вернуть удалённое нельзя.
+        rows.append([f"{n}{DROP_SUFFIX}" for n in range(1, min(count, 3) + 1)])
 
     rows.append([MY, HELP])
     if is_owner:

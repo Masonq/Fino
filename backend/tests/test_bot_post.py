@@ -514,3 +514,23 @@ def test_listing_appears_once_per_ad():
 
     source = inspect.getsource(send_my_listings)
     assert "ListingTranslation.language == Listing.source_language" in source
+
+
+def test_listing_can_be_removed_not_only_sold():
+    """
+    Проданное полезно оставить — по нему смотрят, за сколько ушла
+    похожая вещь. А ошибочное только мешает, и его нужно убрать совсем.
+    """
+    import inspect
+    from app.bot import keyboards as kb
+    from app.bot.publisher import drop_listing
+
+    words = [b.text for row in kb.listings(2).keyboard for b in row]
+    assert "1 удалить" in words
+    assert "1 продано" in words
+
+    source = inspect.getsource(drop_listing)
+    # в архив, а не из базы: человек мог промахнуться кнопкой
+    assert "ListingStatus.archived" in source
+    # и пост в чате убирается
+    assert "delete_message" in source

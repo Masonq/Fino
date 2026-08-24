@@ -556,6 +556,51 @@ def _listing_by_number(author: str, number: int) -> str | None:
     return str(live[number - 1][0]) if 1 <= number <= len(live) else None
 
 
+@dp.message(F.text.regexp(r"^\d+ удалить$"))
+async def drop_listing(message: Message) -> None:
+    """
+    Убирает объявление совсем — и с сайта, и из чата.
+
+    В отличие от «продано», это для ошибочных и передумавших: проданное
+    полезно оставить, а лишнее только мешает.
+    """
+    await erase(message)
+    number = int(message.text.split()[0])
+    author = message.from_user.username or str(message.from_user.id)
+    listing_id = _listing_by_number(author, number)
+    if not listing_id:
+        await show(message.bot, message.chat.id,
+                   "Такого объявления нет — откройте список заново.",
+                   keyboard=kb.idle(is_chat_owner(message.from_user.id)))
+        return
+
+    from app.models import Listing, ListingStatus
+
+    post_id = None
+    try:
+        with SessionLocal() as db:
+            listing = db.query(Listing).filter(Listing.id == listing_id).first()
+            if listing:
+                post_id = listing.external_message_id
+                # В архив, а не из базы: человек мог ошибиться кнопкой, и
+                # объявление ещё можно вернуть руками.
+                listing.status = ListingStatus.archived
+                db.commit()
+    except Exception:                            # noqa: BLE001
+        log.exception("не удалось убрать объявление")
+        return
+
+    # Пост в чате удаляем: объявления больше нет, и держать его незачем.
+    post_id = posted_messages.pop(listing_id, None) or post_id
+    if post_id:
+        try:
+            await message.bot.delete_message(TARGET_CHAT, post_id)
+        except Exception as exc:                 # noqa: BLE001
+            log.info("пост %s не удалён: %s", post_id, exc)
+
+    await send_my_listings(message, message.from_user)
+
+
 @dp.message(F.text.regexp(r"^\d+ продано$"))
 async def close_listing(message: Message) -> None:
     """
@@ -919,17 +964,22 @@ async def set_topic(message: Message) -> None:
     await show_draft(message, draft)
 
 
-@dp.message(F.text.in_({kb.TITLE, kb.PRICE}))
+@dp.message(F.text.in_({kb.TITLE, kb.PRICE, kb.DESCRIPTION}))
 async def ask_edit(message: Message) -> None:
     draft = drafts.get(message.from_user.id)
     if not draft:
         await show(message.bot, message.chat.id, "Объявление устарело, пришлите заново")
         return
-    draft.awaiting = "title" if call.data == "edit_title" else "price"
-    await message.answer(
+    draft.awaiting = {kb.TITLE: "title", kb.PRICE: "price",
+                      kb.DESCRIPTION: "description"}[message.text]
+    await show(
+        message.bot, message.chat.id,
         "Напишите новое название одной строкой."
         if draft.awaiting == "title" else
         "Напишите цену: «3000 динар», «50 евро» или «даром»."
+        if draft.awaiting == "price" else
+        "Напишите описание — что важно знать о вещи.",
+        keyboard=kb.draft(),
     )
     
 
@@ -1300,6 +1350,10 @@ async def apply_edit(message: Message, draft: Draft) -> None:
 
     if what == "title":
         draft.title = value[:120]
+    elif what == "description":
+        # Длину режем по тому же пределу, что и в посте: иначе человек
+        # напишет вдвое больше, а увидит обрезанное.
+        draft.description = value[:2000]
     elif what == "price":
         cleaned = value.lower().replace(" ", "")
         if cleaned in ("даром", "бесплатно", "0"):

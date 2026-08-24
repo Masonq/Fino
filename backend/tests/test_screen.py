@@ -207,9 +207,10 @@ def test_every_menu_word_has_a_handler():
     for name in dir(kb):
         if not name.isupper():
             continue
-        if name == "SOLD_SUFFIX":
-            # пометка «продано» разбирается по образцу «<номер> продано»
-            assert 'r"^\\d+ продано$"' in source
+        if name.endswith("_SUFFIX"):
+            # пометки списка разбираются по образцу «<номер> слово»
+            word = getattr(kb, name).strip()
+            assert f'r"^\\d+ {word}$"' in source, name
             continue
         assert f"kb.{name}" in source, f"нет обработчика для {name}"
 
