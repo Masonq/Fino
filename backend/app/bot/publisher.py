@@ -73,6 +73,10 @@ class Draft:
     """Объявление, которое человек прислал и ещё не подтвердил."""
     text: str = ""
     photos: list[bytes] = field(default_factory=list)
+    # Публиковать ли на сайте. По умолчанию да — там объявление найдут
+    # поиском, и большинству это нужно. Но человек публикует в чат, и
+    # отказаться должен уметь одним нажатием.
+    to_site: bool = True
     # Что мы поправили в названии — показываем человеку: молча менять
     # чужие слова нельзя, он должен успеть возразить.
     fixes: list[tuple[str, str]] = field(default_factory=list)
@@ -247,6 +251,12 @@ def confirm_keyboard(draft: Draft) -> InlineKeyboardMarkup:
         InlineKeyboardButton(text="Отмена", callback_data="cancel",
                              icon_custom_emoji_id=icon("cancel")),
     ])
+    # Показываем не состояние, а действие: «Только в чат» понятнее, чем
+    # «На сайте: да».
+    rows.append([InlineKeyboardButton(
+        text="Только в чат" if draft.to_site else "Публиковать и на сайте",
+        callback_data="toggle_site",
+        icon_custom_emoji_id=icon("open"))])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
@@ -760,6 +770,7 @@ async def show_draft(message: Message, draft: Draft,
         topic_title=topic_name(TARGET_CHAT, draft.topic_id),
         photo_count=len(draft.photos),
         fixes=draft.fixes,
+        to_site=draft.to_site,
     )
     keyboard = confirm_keyboard(draft)
 
@@ -894,6 +905,20 @@ async def apply_edit(message: Message, draft: Draft) -> None:
     await show_draft(message, draft)
 
 
+@dp.callback_query(F.data == "toggle_site")
+async def toggle_site(call: CallbackQuery) -> None:
+    """Публиковать объявление на сайте или только в чат."""
+    draft = drafts.get(call.from_user.id)
+    if not draft:
+        await call.answer("Объявление устарело, пришлите заново", show_alert=True)
+        return
+
+    draft.to_site = not draft.to_site
+    await show_draft(call.message, draft, edit=call)
+    await call.answer("Только в чат" if not draft.to_site
+                      else "И в чат, и на сайт")
+
+
 @dp.callback_query(F.data == "cancel")
 async def cancel(call: CallbackQuery) -> None:
     draft = drafts.pop(call.from_user.id, None)
@@ -968,8 +993,8 @@ async def publish(call: CallbackQuery, bot: Bot) -> None:
     # дело, и жмёт кнопку второй раз — тогда объявление уходит дважды.
     await mark_busy(call, "Публикую…")
 
-    listing_id = save_listing(draft, call.from_user)
-    if not listing_id:
+    listing_id = save_listing(draft, call.from_user) if draft.to_site else None
+    if draft.to_site and not listing_id:
         # Пост в чат уйдёт всё равно — человеку важнее, чтобы объявление
         # увидели. Но знать об этом стоит: в журнале будет причина.
         log.warning("объявление не сохранено на сайте: %s", draft.title)
@@ -1054,9 +1079,10 @@ async def publish(call: CallbackQuery, bot: Bot) -> None:
         + (f'<a href="{site}/listing/{listing_id}">Открыть на PLONK</a>\n'
            if listing_id else "")
         # Кнопки «Продано» под постом нет — она была бы видна всем.
-        # Подсказываем, где отметить, чтобы человек не искал.
-        + "\nПродадите — отметьте в «Мои объявления», объявление снимется "
-          "и здесь, и в чате."
+        # Подсказываем, где отметить, чтобы человек не искал. Но только
+        # если объявление вообще есть на сайте: иначе совет бессмыслен.
+        + ("\nПродадите — отметьте в «Мои объявления», объявление снимется "
+           "и здесь, и в чате." if listing_id else "")
     )
     try:
         if draft.photos:

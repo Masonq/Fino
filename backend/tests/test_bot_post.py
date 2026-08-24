@@ -455,3 +455,33 @@ def test_preview_says_where_it_goes():
     assert "Посуда и кухня" in out
     assert "PLONK" in out
     assert "двух местах" in out
+
+
+def test_site_publication_can_be_declined():
+    """
+    Человек публикует в чат — на сайт объявление идёт по умолчанию, но
+    отказаться он должен уметь одним нажатием. Раз предупреждаем, надо и
+    спрашивать.
+    """
+    from app.bot.post_format import build_preview
+    from app.bot.publisher import Draft, confirm_keyboard
+
+    assert Draft().to_site is True             # по умолчанию — да
+
+    # кнопка показывает действие, а не состояние
+    labels = [b.text for row in confirm_keyboard(Draft()).inline_keyboard
+              for b in row]
+    assert "Только в чат" in labels
+
+    declined = Draft()
+    declined.to_site = False
+    labels = [b.text for row in confirm_keyboard(declined).inline_keyboard
+              for b in row]
+    assert "Публиковать и на сайте" in labels
+
+    # и карточка честно говорит, куда уйдёт
+    out = build_preview(
+        title="Стол", price=3000, currency="RSD", is_free=False, city=None,
+        description="", topic_title="Мебель", photo_count=1, to_site=False)
+    assert "только в чат" in out.lower()
+    assert "PLONK" not in out

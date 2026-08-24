@@ -170,7 +170,7 @@ def build_sold_caption(*, title: str, price: float | None,
 def build_preview(*, title: str, price: float | None, currency: str | None,
                   is_free: bool, city: str | None, description: str | None,
                   topic_title: str | None, photo_count: int = 0,
-                  fixes: list | None = None) -> str:
+                  fixes: list | None = None, to_site: bool = True) -> str:
     """
     Что бот показывает человеку перед публикацией.
 
@@ -196,10 +196,13 @@ def build_preview(*, title: str, price: float | None, currency: str | None,
     # Куда уйдёт объявление, человек должен знать до нажатия, а не
     # после: он публикует в чат, а оно попадает ещё и на сайт — узнать
     # об этом задним числом неприятно.
-    if topic_title:
-        lines += ["", f"<b>Опубликую в двух местах:</b>",
+    if topic_title and to_site:
+        lines += ["", "<b>Опубликую в двух местах:</b>",
                   f"├ чат — ветка «{escape(topic_title)}»",
                   "└ сайт PLONK — там объявление найдут поиском"]
+    elif topic_title:
+        lines += ["", "<b>Опубликую только в чат</b>",
+                  f"└ ветка «{escape(topic_title)}»"]
     # Снимки показываются рядом целиком, поэтому счётчик нужен только
     # чтобы подтвердить: столько и уйдёт.
     if photo_count > 1:
