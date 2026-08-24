@@ -143,6 +143,11 @@ def main_menu(is_owner: bool = False) -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=rows,
         resize_keyboard=True,
+        # Меню держим на виду постоянно: оно не прячется после нажатия и
+        # не исчезает вместе с сообщением, которым отправлено. Человек в
+        # любой миг видит, что можно сделать.
+        one_time_keyboard=False,
+        is_persistent=True,
         # Поле ввода остаётся главным: объявление присылают туда, а
         # кнопки — вспомогательные.
         input_field_placeholder="Пришлите объявление сюда",
@@ -849,18 +854,20 @@ async def show_draft(message: Message, draft: Draft,
         sent = await message.bot.send_media_group(chat_id, media)
         draft.album_ids = [m.message_id for m in sent]
 
-    single = draft.photos[0] if len(draft.photos) == 1 else None
-    await show(message.bot, chat_id, text, photo=single, keyboard=keyboard)
-
-    # Человек мог начать сразу с объявления, минуя приветствие, — тогда
-    # меню он ещё не видел. Показываем один раз: дальше Telegram держит
-    # его сам, пока не отменим.
+    # Меню и кнопки карточки в одно сообщение не вложить: поле у них
+    # общее. Меню донесём отдельно — оно постоянное, и делать это нужно
+    # один раз.
     if message.from_user and message.from_user.id not in menu_shown:
         menu_shown.add(message.from_user.id)
         await fade(await message.answer(
-            "Кнопки внизу — на случай, если понадобятся.",
+            "Кнопки внизу всегда под рукой.",
             reply_markup=main_menu(is_chat_owner(message.from_user.id))),
             seconds=20)
+
+    single = draft.photos[0] if len(draft.photos) == 1 else None
+    await show(message.bot, chat_id, text, photo=single, keyboard=keyboard)
+
+
 
 
 async def _drop_album(message: Message, draft: Draft) -> None:

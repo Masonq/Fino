@@ -110,3 +110,15 @@ def test_menu_survives_message_cleanup():
     assert "menu=main_menu(" in inspect.getsource(start)
     # и живое сообщение умеет его нести
     assert "menu=None" in inspect.getsource(show)
+
+
+def test_menu_is_persistent():
+    """
+    Меню не должно прятаться после нажатия и исчезать вместе с
+    сообщением: человек в любой миг видит, что можно сделать.
+    """
+    from app.bot.publisher import main_menu
+
+    menu = main_menu(False)
+    assert menu.is_persistent is True
+    assert not menu.one_time_keyboard
