@@ -347,8 +347,8 @@ def test_chatter_fades_but_results_stay():
 
     assert 240 <= CHATTER_SECONDS <= 600      # около пяти минут
 
-    # приветствие исчезает
-    assert "await fade(" in inspect.getsource(start)
+    # приветствие переписывается живым сообщением, а не копится
+    assert "await show(" in inspect.getsource(start)
 
     # а итог публикации — нет
     published = inspect.getsource(publish)

@@ -433,16 +433,11 @@ async def start(message: Message) -> None:
         f"{emoji('publish')} <b>3. Вы нажмёте «Опубликовать»</b>\n"
         "Или поправите, что не так.\n\n"
         "<i>Например: Продам стол письменный IKEA MICKE, 6000 динар, "
-        "Земун. Состояние отличное, самовывоз.</i>")
-
-    # Меню — отдельным сообщением: оно живёт под полем ввода, а не в
-    # переписке, и в живое сообщение его не вложить.
-    if message.from_user.id not in menu_shown:
-        menu_shown.add(message.from_user.id)
-        await fade(await message.answer(
-            "Кнопки внизу — на случай, если понадобятся.",
-            reply_markup=main_menu(is_chat_owner(message.from_user.id))),
-            seconds=30)
+        "Земун. Состояние отличное, самовывоз.</i>",
+        # Меню под полем ввода остаётся в чате, пока его не отменят —
+        # удаление сообщения его не снимает. Поэтому шлём с приветствием
+        # и больше не трогаем.
+        menu=main_menu(is_chat_owner(message.from_user.id)))
 
     if not known:
         await ask_about_site(message)
@@ -856,6 +851,16 @@ async def show_draft(message: Message, draft: Draft,
 
     single = draft.photos[0] if len(draft.photos) == 1 else None
     await show(message.bot, chat_id, text, photo=single, keyboard=keyboard)
+
+    # Человек мог начать сразу с объявления, минуя приветствие, — тогда
+    # меню он ещё не видел. Показываем один раз: дальше Telegram держит
+    # его сам, пока не отменим.
+    if message.from_user and message.from_user.id not in menu_shown:
+        menu_shown.add(message.from_user.id)
+        await fade(await message.answer(
+            "Кнопки внизу — на случай, если понадобятся.",
+            reply_markup=main_menu(is_chat_owner(message.from_user.id))),
+            seconds=20)
 
 
 async def _drop_album(message: Message, draft: Draft) -> None:

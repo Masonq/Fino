@@ -95,3 +95,18 @@ def test_erasing_never_breaks_the_flow():
 
     source = inspect.getsource(erase)
     assert "except Exception" in source
+
+
+def test_menu_survives_message_cleanup():
+    """
+    Меню под полем ввода остаётся в чате, пока его не отменят: удаление
+    сообщения его не снимает. Поэтому шлём с приветствием и больше не
+    трогаем — иначе человек остаётся без кнопок.
+    """
+    import inspect
+    from app.bot.publisher import start
+    from app.bot.screen import show
+
+    assert "menu=main_menu(" in inspect.getsource(start)
+    # и живое сообщение умеет его нести
+    assert "menu=None" in inspect.getsource(show)
