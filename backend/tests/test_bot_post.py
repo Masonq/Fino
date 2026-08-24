@@ -457,31 +457,47 @@ def test_preview_says_where_it_goes():
     assert "двух местах" in out
 
 
-def test_site_publication_can_be_declined():
+def test_site_permission_asked_once():
     """
-    Человек публикует в чат — на сайт объявление идёт по умолчанию, но
-    отказаться он должен уметь одним нажатием. Раз предупреждаем, надо и
-    спрашивать.
+    Спрашиваем один раз при знакомстве, а не у каждого объявления:
+    решение у человека одно на всех, и переспрашивать — навязчиво.
     """
-    from app.bot.post_format import build_preview
-    from app.bot.publisher import Draft, confirm_keyboard
+    import inspect
+    from app.bot.publisher import (
+        Draft, ask_about_site, confirm_keyboard, site_allowed,
+    )
 
-    assert Draft().to_site is True             # по умолчанию — да
-
-    # кнопка показывает действие, а не состояние
+    # у карточки переключателя нет — вопрос задан раньше
     labels = [b.text for row in confirm_keyboard(Draft()).inline_keyboard
               for b in row]
-    assert "Только в чат" in labels
+    assert "Только в чат" not in labels
 
-    declined = Draft()
-    declined.to_site = False
-    labels = [b.text for row in confirm_keyboard(declined).inline_keyboard
-              for b in row]
-    assert "Публиковать и на сайте" in labels
+    # спрашиваем при знакомстве и запоминаем
+    assert "site:yes" in inspect.getsource(ask_about_site)
+    assert isinstance(site_allowed, dict)
 
-    # и карточка честно говорит, куда уйдёт
-    out = build_preview(
+
+def test_choice_is_not_forever():
+    """Решение принимали один раз, но передумать человек вправе."""
+    import inspect
+    from app.bot.publisher import change_site_choice
+
+    source = inspect.getsource(change_site_choice)
+    assert "site_allowed.pop" in source
+    assert "ask_about_site" in source
+
+
+def test_preview_reflects_the_choice():
+    """Карточка честно говорит, куда уйдёт объявление."""
+    from app.bot.post_format import build_preview
+
+    both = build_preview(
+        title="Стол", price=3000, currency="RSD", is_free=False, city=None,
+        description="", topic_title="Мебель", photo_count=1, to_site=True)
+    assert "PLONK" in both
+
+    only_chat = build_preview(
         title="Стол", price=3000, currency="RSD", is_free=False, city=None,
         description="", topic_title="Мебель", photo_count=1, to_site=False)
-    assert "только в чат" in out.lower()
-    assert "PLONK" not in out
+    assert "только в чат" in only_chat.lower()
+    assert "PLONK" not in only_chat

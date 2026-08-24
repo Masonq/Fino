@@ -111,6 +111,10 @@ published_count: dict[int, int] = {}
 # Кому уже предлагали. Второй раз не зовём: назойливость раздражает
 # сильнее, чем польза от входа.
 invited: set[int] = set()
+# Кто разрешил публиковать на сайте. Спрашиваем один раз при знакомстве:
+# у каждого объявления это переспрашивать — навязчиво, а решение у
+# человека всё равно одно на всех.
+site_allowed: dict[int, bool] = {}
 # Кому уже показали меню: второй раз незачем, Telegram держит его сам.
 menu_shown: set[int] = set()
 # Подписи кнопок постоянного меню. Держим здесь, чтобы нажатие и
@@ -251,12 +255,6 @@ def confirm_keyboard(draft: Draft) -> InlineKeyboardMarkup:
         InlineKeyboardButton(text="Отмена", callback_data="cancel",
                              icon_custom_emoji_id=icon("cancel")),
     ])
-    # Показываем не состояние, а действие: «Только в чат» понятнее, чем
-    # «На сайте: да».
-    rows.append([InlineKeyboardButton(
-        text="Только в чат" if draft.to_site else "Публиковать и на сайте",
-        callback_data="toggle_site",
-        icon_custom_emoji_id=icon("open"))])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
@@ -419,11 +417,12 @@ async def start(message: Message) -> None:
 
     Человек пришёл опубликовать объявление, а не читать. Поэтому коротко
     и по шагам: что сделать сейчас, что будет дальше, сколько это займёт.
-    Всё остальное — в /help, за ним придут, если понадобится.
     """
+    known = message.from_user.id in site_allowed
+
     await fade(await message.answer(
         "<b>Публикую объявления в барахолку Белграда.</b>\n"
-        "Полминуты — и оно в нужной ветке чата и на сайте.\n\n"
+        "Полминуты — и оно в нужной ветке чата.\n\n"
         f"{emoji('listings')} <b>1. Пришлите объявление</b>\n"
         "Фотографии и текст — одним сообщением, как написали бы в чат.\n\n"
         f"{emoji('topic')} <b>2. Я его разберу</b>\n"
@@ -434,6 +433,56 @@ async def start(message: Message) -> None:
         "Земун. Состояние отличное, самовывоз.</i>",
         reply_markup=main_menu(is_chat_owner(message.from_user.id)),
     ))
+
+    if not known:
+        await ask_about_site(message)
+
+
+async def ask_about_site(message: Message) -> None:
+    """
+    Спрашивает разрешение публиковать и на сайте.
+
+    Один раз при знакомстве, а не у каждого объявления: решение у
+    человека одно на всех, и переспрашивать — навязчиво.
+    """
+    await message.answer(
+        f"{emoji('open')} <b>Ещё одно место</b>\n\n"
+        "Кроме чата я могу класть объявления на сайт PLONK — там их "
+        "находят поиском и смотрят те, кто в чат не заходит.\n\n"
+        "Публиковать в обоих местах?",
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+            InlineKeyboardButton(text="Да, и в чат, и на сайт",
+                                 callback_data="site:yes",
+                                 icon_custom_emoji_id=icon("publish")),
+        ], [
+            InlineKeyboardButton(text="Только в чат",
+                                 callback_data="site:no"),
+        ]]),
+    )
+
+
+@dp.callback_query(F.data.startswith("site:"))
+async def remember_site_choice(call: CallbackQuery) -> None:
+    """Запоминает выбор, чтобы больше не спрашивать."""
+    allowed = call.data.endswith("yes")
+    site_allowed[call.from_user.id] = allowed
+
+    await call.message.edit_text(
+        f"{emoji('open')} <b>Ещё одно место</b>\n\n"
+        + ("Буду публиковать и в чат, и на сайт.\n\n"
+           if allowed else "Буду публиковать только в чат.\n\n")
+        + "<i>Передумаете — напишите /site.</i>",
+        reply_markup=None,
+    )
+    await call.answer()
+    await fade(call.message)
+
+
+@dp.message(Command("site"))
+async def change_site_choice(message: Message) -> None:
+    """Даёт передумать: решение принимали один раз, но не навсегда."""
+    site_allowed.pop(message.from_user.id, None)
+    await ask_about_site(message)
 
 
 @dp.message(Command("my"))
@@ -691,6 +740,9 @@ async def help_cmd(message: Message) -> None:
         f"{emoji('listings')} <b>Свои объявления</b>\n"
         "└ кнопка «Мои объявления» внизу\n"
         "\n"
+        f"{emoji('open')} <b>Где публикуется</b>\n"
+        "└ в чате и на сайте PLONK; поменять — /site\n"
+        "\n"
         f"<i>В сутки — до {rules.daily_limit} объявлений.</i>"
     ))
 
@@ -725,7 +777,12 @@ async def handle_listing(message: Message, photos: list[bytes], text: str) -> No
     # что дело идёт: иначе человек думает, что бот не ответил.
     working = await message.answer("Разбираю объявление…")
     try:
-        draft = understand(text, Draft(photos=photos[:MAX_PHOTOS]))
+        draft = understand(text, Draft(
+        photos=photos[:MAX_PHOTOS],
+        # Что человек выбрал при знакомстве. Не выбирал — публикуем в оба
+        # места: так делает большинство, и объявление не потеряется.
+        to_site=site_allowed.get(message.from_user.id, True),
+    ))
     finally:
         try:
             await working.delete()
@@ -903,20 +960,6 @@ async def apply_edit(message: Message, draft: Draft) -> None:
 
     draft.awaiting = None
     await show_draft(message, draft)
-
-
-@dp.callback_query(F.data == "toggle_site")
-async def toggle_site(call: CallbackQuery) -> None:
-    """Публиковать объявление на сайте или только в чат."""
-    draft = drafts.get(call.from_user.id)
-    if not draft:
-        await call.answer("Объявление устарело, пришлите заново", show_alert=True)
-        return
-
-    draft.to_site = not draft.to_site
-    await show_draft(call.message, draft, edit=call)
-    await call.answer("Только в чат" if not draft.to_site
-                      else "И в чат, и на сайт")
 
 
 @dp.callback_query(F.data == "cancel")
@@ -1265,6 +1308,7 @@ async def main() -> None:
     await bot.set_my_commands([
         BotCommand(command="start", description="Начать сначала"),
         BotCommand(command="cancel", description="Отменить начатое"),
+        BotCommand(command="site", description="Публиковать ли на сайте"),
     ])
     await bot.set_chat_menu_button(menu_button=MenuButtonCommands())
 
