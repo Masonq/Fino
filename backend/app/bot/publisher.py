@@ -29,7 +29,8 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.filters import Command
 from aiogram.types import (
     BotCommand, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup,
-    InputMediaPhoto, Message, MenuButtonCommands,
+    InputMediaPhoto, KeyboardButton, Message, MenuButtonCommands,
+    ReplyKeyboardMarkup,
 )
 from PIL import Image
 
@@ -99,6 +100,42 @@ published_count: dict[int, int] = {}
 # Кому уже предлагали. Второй раз не зовём: назойливость раздражает
 # сильнее, чем польза от входа.
 invited: set[int] = set()
+# Кому уже показали меню: второй раз незачем, Telegram держит его сам.
+menu_shown: set[int] = set()
+# Подписи кнопок постоянного меню. Держим здесь, чтобы нажатие и
+# отправка одного и того же слова вели в одно место.
+MENU_LISTINGS = "Мои объявления"
+MENU_HELP = "Как это работает"
+MENU_STATS = "Сводка по чату"
+
+
+def main_menu(is_owner: bool = False) -> ReplyKeyboardMarkup:
+    """
+    Постоянное меню внизу.
+
+    Команды со слэшем надо помнить, а кнопки видно — человек открывает
+    бота и сразу понимает, что тут можно делать.
+
+    Сводка только владельцу: иначе каждый увидит, кто сколько публикует
+    и кого бот считает слишком частым.
+    """
+    rows = [[KeyboardButton(text=MENU_LISTINGS),
+             KeyboardButton(text=MENU_HELP)]]
+    if is_owner:
+        rows.append([KeyboardButton(text=MENU_STATS)])
+    return ReplyKeyboardMarkup(
+        keyboard=rows,
+        resize_keyboard=True,
+        # Поле ввода остаётся главным: объявление присылают туда, а
+        # кнопки — вспомогательные.
+        input_field_placeholder="Пришлите объявление сюда",
+    )
+
+
+def is_chat_owner(user_id: int) -> bool:
+    return rules_for(TARGET_CHAT).owner_id == user_id
+
+
 # Сколько живут служебные сообщения бота в переписке. Приветствия,
 # подсказки и промежуточные ответы через несколько минут только мешают
 # искать нужное — а итог публикации остаётся навсегда.
@@ -356,11 +393,13 @@ async def start(message: Message) -> None:
         f"{emoji('publish')} <b>3. Вы нажмёте «Опубликовать»</b>\n"
         "Или поправите, что не так.\n\n"
         "<i>Например: Продам стол письменный IKEA MICKE, 6000 динар, "
-        "Земун. Состояние отличное, самовывоз.</i>"
+        "Земун. Состояние отличное, самовывоз.</i>",
+        reply_markup=main_menu(is_chat_owner(message.from_user.id)),
     ))
 
 
 @dp.message(Command("my"))
+@dp.message(F.text == MENU_LISTINGS)
 async def my_listings(message: Message) -> None:
     """Свои объявления по команде."""
     await send_my_listings(message, message.from_user)
@@ -566,6 +605,7 @@ async def catch_emoji_id(message: Message) -> None:
 
 
 @dp.message(Command("stats"))
+@dp.message(F.text == MENU_STATS)
 async def stats(message: Message) -> None:
     """
     Сводка по чату. Владельцу и сотрудникам, остальным незачем.
@@ -582,6 +622,7 @@ async def stats(message: Message) -> None:
 
 
 @dp.message(Command("help"))
+@dp.message(F.text == MENU_HELP)
 async def help_cmd(message: Message) -> None:
     """
     Подробности для тех, кто за ними пришёл.
@@ -1213,12 +1254,13 @@ async def main() -> None:
 
     # Меню команд слева от поля ввода. Без него человек не знает, что
     # боту вообще можно сказать, кроме как прислать объявление.
+    # Команды оставляем: кто-то привык к ним, да и меню слева Telegram
+    # показывает сам. Но главное теперь — кнопки внизу.
     await bot.set_my_commands([
-        BotCommand(command="start", description="Как опубликовать объявление"),
+        BotCommand(command="start", description="Начать сначала"),
         BotCommand(command="my", description="Мои объявления"),
+        BotCommand(command="help", description="Как это работает"),
         BotCommand(command="cancel", description="Отменить начатое"),
-        BotCommand(command="stats", description="Сводка по чату"),
-        BotCommand(command="help", description="Помощь"),
     ])
     await bot.set_chat_menu_button(menu_button=MenuButtonCommands())
 

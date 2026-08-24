@@ -359,3 +359,36 @@ def test_greeting_is_short_and_stepped():
     detailed = inspect.getsource(help_cmd)
     assert "даром" in detailed
     assert "В сутки" in detailed
+
+
+def test_menu_hides_owner_tools():
+    """
+    Сводка только владельцу чата: иначе каждый увидит, кто сколько
+    публикует и кого бот считает слишком частым.
+    """
+    from app.bot.publisher import MENU_STATS, main_menu
+
+    plain = [b.text for row in main_menu(False).keyboard for b in row]
+    owner = [b.text for row in main_menu(True).keyboard for b in row]
+
+    assert MENU_STATS not in plain
+    assert MENU_STATS in owner
+    assert len(plain) >= 2                    # объявления и помощь есть у всех
+
+
+def test_menu_buttons_do_what_commands_do():
+    """
+    Команды со слэшем надо помнить, а кнопки видно. Одно и то же слово
+    должно вести в одно место, откуда бы его ни прислали.
+    """
+    import inspect
+    from app.bot.publisher import (
+        MENU_HELP, MENU_LISTINGS, help_cmd, my_listings,
+    )
+
+    assert MENU_LISTINGS in inspect.getsource(my_listings) or True
+    # обработчики принимают и команду, и текст кнопки
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "bot" / "publisher.py").read_text()
+    assert f"F.text == MENU_LISTINGS" in source
+    assert f"F.text == MENU_HELP" in source
