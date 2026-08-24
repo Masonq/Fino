@@ -178,7 +178,7 @@ def build_preview(*, title: str, price: float | None, currency: str | None,
     до того как нажмёт «Опубликовать», а не после.
     """
     lines = [
-        "<b>Так это будет выглядеть в чате:</b>",
+        "<b>Вот что получилось:</b>",
         "",
         f"<b>{escape(title)}</b>",
         f"<b>{escape(money(price, currency, is_free))}</b>"
@@ -193,12 +193,17 @@ def build_preview(*, title: str, price: float | None, currency: str | None,
         shown = ", ".join(f"{was} → <b>{now}</b>" for was, now in fixes[:3])
         lines += ["", f"Поправил опечатку: {shown}"]
 
+    # Куда уйдёт объявление, человек должен знать до нажатия, а не
+    # после: он публикует в чат, а оно попадает ещё и на сайт — узнать
+    # об этом задним числом неприятно.
     if topic_title:
-        lines += ["", f"Ветка: <b>{escape(topic_title)}</b>"]
+        lines += ["", f"<b>Опубликую в двух местах:</b>",
+                  f"├ чат — ветка «{escape(topic_title)}»",
+                  "└ сайт PLONK — там объявление найдут поиском"]
     # Снимки показываются рядом целиком, поэтому счётчик нужен только
     # чтобы подтвердить: столько и уйдёт.
     if photo_count > 1:
-        lines.append(f"Фотографий: <b>{photo_count}</b> — все уйдут в чат")
+        lines.append(f"\nФотографий: <b>{photo_count}</b> — уйдут все")
     elif photo_count == 0:
-        lines.append("Без фотографии — такие объявления почти не смотрят")
+        lines.append("\nБез фотографии — такие объявления почти не смотрят")
     return "\n".join(lines)

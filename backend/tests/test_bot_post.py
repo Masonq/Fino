@@ -438,3 +438,20 @@ def test_post_edit_tries_caption_then_text():
     assert "text=sold_text" in source
     # никаких словарей с угадыванием поля
     assert "**({" not in source
+
+
+def test_preview_says_where_it_goes():
+    """
+    Человек публикует в чат, а объявление попадает ещё и на сайт. Узнать
+    об этом задним числом неприятно — говорим до нажатия.
+    """
+    from app.bot.post_format import build_preview
+
+    out = build_preview(
+        title="Сковорода", price=2000, currency="RSD", is_free=False,
+        city="beograd", description="", topic_title="Посуда и кухня",
+        photo_count=1)
+
+    assert "Посуда и кухня" in out
+    assert "PLONK" in out
+    assert "двух местах" in out
