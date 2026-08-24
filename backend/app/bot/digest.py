@@ -45,7 +45,9 @@ def build(chat_id: int, days: int = 7) -> str:
             .join(Listing, Listing.category_id == Category.id)
             .filter(Listing.external_chat == str(chat_id),
                     Listing.created_at >= since)
-            .group_by(Category.slug)
+            # Группируем по тому же полю, что и выбираем: иначе база
+            # справедливо не понимает, какое из названий показать.
+            .group_by(Category.name)
             .order_by(func.count(Listing.id).desc())
             .limit(6)
             .all()
