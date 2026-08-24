@@ -42,7 +42,7 @@ from app.core.partner_chats import (
     BARAHOLKA_TEST, topic_for, topic_name, topics_of,
 )
 from app.core.tg_classify import classify, classify_sub
-from app.core.tg_parse import parse
+from app.core.tg_parse import looks_wanted, parse
 from app.bot.digest import build as build_digest
 from app.bot import keyboards as kb
 from app.bot.emoji import digit, digit_icon, emoji, icon
@@ -202,7 +202,9 @@ def understand(text: str, draft: Draft) -> Draft:
     if not draft.category:
         draft.category = FALLBACK_CATEGORY
 
-    wanted = text.strip().lower().startswith(("куплю", "ищу", "куплю ", "kupujem"))
+    # Объявления о покупке пишут по-разному: «куплю», «нужен», «возьму
+    # даром». По первому слову их не поймать.
+    wanted = looks_wanted(text)
     draft.topic_id = topic_for(TARGET_CHAT, category, sub=sub,
                                is_free=draft.is_free, is_wanted=wanted)
     return draft
@@ -833,9 +835,19 @@ async def handle_listing(message: Message, photos: list[bytes], text: str) -> No
         to_site=site_allowed.get(message.from_user.id, True),
     ))
     if not draft.title:
-        await show(message.bot, message.chat.id,
-                   "Не понял, что за вещь. Напишите в первой строке, что "
-                   "продаёте — например «Стол письменный IKEA MICKE».")
+        # Человек мог не объявление прислать, а просто написать боту.
+        # Тогда объяснять про первую строку бессмысленно — он не понял,
+        # куда попал.
+        from app.bot.sweeper import looks_like_listing
+
+        chatting = not looks_like_listing(message)
+        await show(
+            message.bot, message.chat.id,
+            greeting_text() if chatting else
+            "Не понял, что за вещь. Напишите в первой строке, что "
+            "продаёте — например «Стол письменный IKEA MICKE».",
+            keyboard=kb.idle(is_chat_owner(message.from_user.id)),
+        )
         return
 
     # Правила чата смотрим до карточки: показать объявление и отказать

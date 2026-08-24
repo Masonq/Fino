@@ -2144,3 +2144,36 @@ def test_purchase_story_is_not_part_of_the_name():
     assert parse("Куртка почти не ношеная")["title"] == "Куртка"
     # а название с моделью не трогаем
     assert parse("Велосипед Merida 27.5")["title"] == "Велосипед Merida 27.5"
+
+
+def test_wanted_ads_recognised():
+    """
+    Объявления о покупке пишут по-разному: «куплю», «нужен», «возьму
+    даром». По первому слову их не поймать, а в барахолках под них своя
+    ветка.
+    """
+    from app.core.tg_parse import looks_wanted
+
+    for text in ("Куплю earpods 3 поколения",
+                 "Ищу коляску до 10000 динар",
+                 "Нужен холодильник б/у",
+                 "Разыскиваю стол IKEA",
+                 "Возьму даром детские вещи",
+                 "Приму в дар коляску",
+                 "Кто продаёт велосипед?",
+                 "Kupujem bicikl"):
+        assert looks_wanted(text), text
+
+
+def test_selling_beats_buying_words():
+    """
+    «Покупала за 16к, продаю за 7500» — это продажа, хотя начинается с
+    покупки. Решает то, что стоит раньше.
+    """
+    from app.core.tg_parse import looks_wanted
+
+    assert not looks_wanted("покупала за 16к, продаю за 7500")
+    assert not looks_wanted("Продам стол письменный IKEA")
+    assert not looks_wanted("Отдам даром детские вещи")
+    # а поиск с упоминанием продажи остаётся поиском
+    assert looks_wanted("Ищу няню, продам коляску")
