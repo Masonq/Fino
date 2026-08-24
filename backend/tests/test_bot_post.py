@@ -229,8 +229,8 @@ def test_listings_come_as_one_message():
     # ровно одна отправка в конце, а не по сообщению на объявление
     assert source.count("await message.answer(") <= 2
     # названия — ссылками, кнопки — по номеру из списка
-    assert '{number}. <a href=' in source
-    assert 'f"✅ {number}"' in source
+    assert '{digit(number)} <a href=' in source
+    assert 'digit_icon(number)' in source
 
 
 def test_sold_mark_reaches_the_chat():
@@ -288,18 +288,19 @@ def test_long_actions_show_progress():
     assert "mark_busy(call" in inspect.getsource(close_listing)
 
 
-def test_plain_emoji_when_premium_is_not_set():
+def test_every_emoji_has_a_plain_fallback():
     """
-    Пока номера не заданы, всё работает на обычных значках — сообщения
-    выглядят как раньше, ничего не ломается.
+    Запасной значок показывается там, где премиум отрисовать нельзя: в
+    уведомлениях, у пересланных сообщений, в старых приложениях. Без него
+    человек увидит пустое место.
     """
-    from app.bot.emoji import EMOJI, emoji
+    from app.bot.emoji import DIGITS, EMOJI, emoji
 
-    assert emoji("listings") == "🗂"
     assert emoji("нет такого") == ""
-    # у каждого значка есть обычный запасной
     for key, (plain, _) in EMOJI.items():
         assert plain, key
+    for number, (plain, _) in DIGITS.items():
+        assert plain, number
 
 
 def test_premium_emoji_keeps_a_fallback():
@@ -308,12 +309,8 @@ def test_premium_emoji_keeps_a_fallback():
     уведомлениях, у пересланных сообщений, в старых приложениях. Без него
     человек увидит пустое место.
     """
-    from app.bot.emoji import emoji, set_custom
+    from app.bot.emoji import emoji
 
-    set_custom("sold", "5456140449875156202")
-    try:
-        out = emoji("sold")
-        assert 'emoji-id="5456140449875156202"' in out
-        assert "✅" in out                    # запасной внутри разметки
-    finally:
-        set_custom("sold", None)
+    out = emoji("sold")
+    assert "emoji-id=" in out
+    assert "🔴" in out                        # запасной внутри разметки

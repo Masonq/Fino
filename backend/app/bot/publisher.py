@@ -43,7 +43,7 @@ from app.core.partner_chats import (
 from app.core.tg_classify import classify, classify_sub
 from app.core.tg_parse import parse
 from app.bot.digest import build as build_digest
-from app.bot.emoji import emoji
+from app.bot.emoji import digit, digit_icon, emoji, icon
 from app.bot.sweeper import looks_like_listing, rescued, sweep
 from app.bot.post_format import (
     build_caption, build_preview, build_sold_caption, money,
@@ -142,14 +142,23 @@ def understand(text: str, draft: Draft) -> Draft:
 
 
 def confirm_keyboard(draft: Draft) -> InlineKeyboardMarkup:
-    rows = [[InlineKeyboardButton(text="✅ Опубликовать", callback_data="publish")]]
+    # Значок задаётся отдельным полем: в подписи кнопки разметка не
+    # работает, а обычный значок из подписи мы убираем — иначе рядом
+    # окажутся два.
+    rows = [[InlineKeyboardButton(
+        text="Опубликовать", callback_data="publish",
+        icon_custom_emoji_id=icon("publish"))]]
     rows.append([
-        InlineKeyboardButton(text="🗂 Другая ветка", callback_data="topic"),
-        InlineKeyboardButton(text="✏️ Название", callback_data="edit_title"),
+        InlineKeyboardButton(text="Другая ветка", callback_data="topic",
+                             icon_custom_emoji_id=icon("topic")),
+        InlineKeyboardButton(text="Название", callback_data="edit_title",
+                             icon_custom_emoji_id=icon("edit")),
     ])
     rows.append([
-        InlineKeyboardButton(text="💰 Цена", callback_data="edit_price"),
-        InlineKeyboardButton(text="✖️ Отмена", callback_data="cancel"),
+        InlineKeyboardButton(text="Цена", callback_data="edit_price",
+                             icon_custom_emoji_id=icon("money")),
+        InlineKeyboardButton(text="Отмена", callback_data="cancel",
+                             icon_custom_emoji_id=icon("cancel")),
     ])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -158,7 +167,9 @@ def topics_keyboard() -> InlineKeyboardMarkup:
     """Ветки чата — настоящими названиями, как их видят в чате."""
     rows = [[InlineKeyboardButton(text=name, callback_data=f"topic:{tid}")]
             for tid, name in topics_of(TARGET_CHAT)]
-    rows.append([InlineKeyboardButton(text="← Назад", callback_data="back")])
+    rows.append([InlineKeyboardButton(
+        text="Назад", callback_data="back",
+        icon_custom_emoji_id=icon("back"))])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
@@ -174,9 +185,11 @@ def post_keyboard(listing_id: str | None, author_id: int) -> InlineKeyboardMarku
     if listing_id:
         site = settings.public_base_url.rstrip("/")
         rows.append([InlineKeyboardButton(
-            text="Открыть на PLONK", url=f"{site}/listing/{listing_id}")])
+            text="Открыть на PLONK", url=f"{site}/listing/{listing_id}",
+            icon_custom_emoji_id=icon("open"))])
     rows.append([InlineKeyboardButton(
-        text="Продано", callback_data=f"sold:{author_id}:{listing_id or ''}")])
+        text="Продано", callback_data=f"sold:{author_id}:{listing_id or ''}",
+        icon_custom_emoji_id=icon("sold"))])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
@@ -370,7 +383,7 @@ async def send_my_listings(message: Message, user) -> None:
     for number, item in enumerate(live, 1):
         price = money(item["price"], item["currency"], item["is_free"])
         lines.append(
-            f'{number}. <a href="{site}/listing/{item["id"]}">'
+            f'{digit(number)} <a href="{site}/listing/{item["id"]}">'
             f'{escape(item["title"])}</a> — {price}'
         )
     if sold:
@@ -384,7 +397,8 @@ async def send_my_listings(message: Message, user) -> None:
     row = []
     for number, item in enumerate(live, 1):
         row.append(InlineKeyboardButton(
-            text=f"✅ {number}", callback_data=f"close:{item['id']}"))
+            text=f"{number} продано", callback_data=f"close:{item['id']}",
+            icon_custom_emoji_id=digit_icon(number)))
         if len(row) == 3:
             buttons.append(row)
             row = []
