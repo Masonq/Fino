@@ -493,6 +493,7 @@ async def close_listing(call: CallbackQuery) -> None:
     """Снимает объявление с продажи из списка в боте."""
     listing_id = call.data.split(":", 1)[1]
     author = call.from_user.username or str(call.from_user.id)
+    log.info("закрываю объявление %s по просьбе %s", listing_id, author)
     await mark_busy(call, "Снимаю с продажи…")
 
     from app.models import Listing, ListingStatus
@@ -540,6 +541,7 @@ async def close_listing(call: CallbackQuery) -> None:
 
     # Правим и сам пост: покупатель смотрит в чат, а не в нашу базу.
     message_id = posted_messages.get(listing_id) or saved_message_id
+    log.info("правлю пост %s в чате %s", message_id, TARGET_CHAT)
     if message_id and fields:
         sold_text = build_sold_caption(
             **fields, site_url=settings.public_base_url.rstrip("/"))
@@ -552,7 +554,8 @@ async def close_listing(call: CallbackQuery) -> None:
                               else {"text": sold_text}),
                            reply_markup=None)
                 break
-            except Exception:                    # noqa: BLE001
+            except Exception as exc:             # noqa: BLE001
+                log.info("не вышло этим способом: %s", exc)
                 continue
 
     await call.answer("Снял с продажи")
