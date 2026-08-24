@@ -358,19 +358,7 @@ async def start(message: Message) -> None:
     """
     await erase(message)
     known = message.from_user.id in site_allowed
-
-    greeting = (
-        "<b>Публикую объявления в барахолку Белграда.</b>\n"
-        "Полминуты — и оно в нужной ветке чата.\n\n"
-        f"{emoji('listings')} <b>1. Пришлите объявление</b>\n"
-        "Фотографии и текст — одним сообщением, как написали бы в чат.\n\n"
-        f"{emoji('topic')} <b>2. Я его разберу</b>\n"
-        "Найду название, цену и район, подберу ветку.\n\n"
-        f"{emoji('publish')} <b>3. Вы нажмёте «Опубликовать»</b>\n"
-        "Или поправите, что не так.\n\n"
-        "<i>Например: Продам стол письменный IKEA MICKE, 6000 динар, "
-        "Земун. Состояние отличное, самовывоз.</i>"
-    )
+    greeting = greeting_text()
 
     if known:
         await show(message.bot, message.chat.id, greeting,
@@ -394,6 +382,28 @@ async def start(message: Message) -> None:
             InlineKeyboardButton(text="Только в чат",
                                  callback_data="site:no"),
         ]]),
+    )
+
+
+def greeting_text() -> str:
+    """
+    Приветствие с шагами.
+
+    Отдельной функцией: оно нужно и при знакомстве, и после ответа про
+    сайт — там человек должен увидеть, что делать, а не отчёт о своём
+    выборе.
+    """
+    return (
+        "<b>Публикую объявления в барахолку Белграда.</b>\n"
+        "Полминуты — и оно в нужной ветке чата.\n\n"
+        f"{emoji('listings')} <b>1. Пришлите объявление</b>\n"
+        "Фотографии и текст — одним сообщением, как написали бы в чат.\n\n"
+        f"{emoji('topic')} <b>2. Я его разберу</b>\n"
+        "Найду название, цену и район, подберу ветку.\n\n"
+        f"{emoji('publish')} <b>3. Вы нажмёте «Опубликовать»</b>\n"
+        "Или поправите, что не так.\n\n"
+        "<i>Например: Продам стол письменный IKEA MICKE, 6000 динар, "
+        "Земун. Состояние отличное, самовывоз.</i>"
     )
 
 
@@ -427,13 +437,13 @@ async def remember_site_choice(call: CallbackQuery) -> None:
     allowed = call.data.endswith("yes")
     site_allowed[call.from_user.id] = allowed
 
+    # Показываем приветствие, а не отчёт о выборе: человеку нужно знать,
+    # что делать дальше. Где публикуется — строкой внизу и кнопкой в меню.
     await show(
         call.bot, call.message.chat.id,
-        f"{emoji('open')} <b>Ещё одно место</b>\n\n"
-        + ("Буду публиковать и в чат, и на сайт.\n\n"
-           if allowed else "Буду публиковать только в чат.\n\n")
-        + "<i>Передумаете — напишите /site.</i>\n\n"
-        "Пришлите объявление, когда будете готовы.",
+        greeting_text() + "\n\n"
+        + (f"{emoji('open')} <i>Публикую и в чат, и на сайт.</i>"
+           if allowed else f"{emoji('open')} <i>Публикую только в чат.</i>"),
         keyboard=kb.idle(is_chat_owner(call.from_user.id)),
     )
     await call.answer()

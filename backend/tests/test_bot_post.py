@@ -363,9 +363,9 @@ def test_greeting_is_short_and_stepped():
     если понадобится.
     """
     import inspect
-    from app.bot.publisher import start
+    from app.bot.publisher import greeting_text
 
-    greeting = inspect.getsource(start)
+    greeting = greeting_text()
     assert "1. Пришлите объявление" in greeting
     assert "2. Я его разберу" in greeting
     assert "3. Вы нажмёте" in greeting

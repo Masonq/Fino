@@ -179,3 +179,15 @@ def test_greeting_and_question_come_together():
     # оба текста собираются в одну отправку
     assert "greeting +" in source
     assert source.count("await show(") == 2      # знакомому и новичку
+
+
+def test_choice_answer_shows_the_greeting():
+    """
+    После ответа человек должен увидеть, что делать дальше, а не отчёт о
+    своём выборе. Где публикуется — строкой внизу.
+    """
+    import inspect
+    from app.bot.publisher import remember_site_choice
+
+    source = inspect.getsource(remember_site_choice)
+    assert "greeting_text()" in source
