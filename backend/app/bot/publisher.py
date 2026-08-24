@@ -29,8 +29,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.filters import Command
 from aiogram.types import (
     BotCommand, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup,
-    InputMediaPhoto, KeyboardButton, Message, MenuButtonCommands,
-    ReplyKeyboardMarkup,
+    InputMediaPhoto, Message, MenuButtonCommands,
 )
 from PIL import Image
 
@@ -117,39 +116,30 @@ invited: set[int] = set()
 # у каждого объявления это переспрашивать — навязчиво, а решение у
 # человека всё равно одно на всех.
 site_allowed: dict[int, bool] = {}
-# Подписи кнопок постоянного меню. Держим здесь, чтобы нажатие и
-# отправка одного и того же слова вели в одно место.
+# Подписи, по которым узнаём нажатие: человек мог написать их руками
+# или нажать кнопку в старом сообщении.
 MENU_LISTINGS = "Мои объявления"
 MENU_HELP = "Как это работает"
 MENU_STATS = "Сводка по чату"
 
 
-def main_menu(is_owner: bool = False) -> ReplyKeyboardMarkup:
+def bottom_row(is_owner: bool = False) -> list[InlineKeyboardButton]:
     """
-    Постоянное меню внизу.
+    Общие действия — строкой в самом сообщении.
 
-    Команды со слэшем надо помнить, а кнопки видно — человек открывает
-    бота и сразу понимает, что тут можно делать.
-
-    Сводка только владельцу: иначе каждый увидит, кто сколько публикует
-    и кого бот считает слишком частым.
+    От меню под полем ввода отказались: Telegram держит либо его, либо
+    кнопки сообщения, и на объявлениях оно всегда проигрывало. Кнопки в
+    сообщении видны везде и одинаково.
     """
-    rows = [[KeyboardButton(text=MENU_LISTINGS),
-             KeyboardButton(text=MENU_HELP)]]
+    row = [
+        InlineKeyboardButton(text="Мои объявления", callback_data="menu:my",
+                             icon_custom_emoji_id=icon("listings")),
+        InlineKeyboardButton(text="Помощь", callback_data="menu:help"),
+    ]
     if is_owner:
-        rows.append([KeyboardButton(text=MENU_STATS)])
-    return ReplyKeyboardMarkup(
-        keyboard=rows,
-        resize_keyboard=True,
-        # Меню держим на виду постоянно: оно не прячется после нажатия и
-        # не исчезает вместе с сообщением, которым отправлено. Человек в
-        # любой миг видит, что можно сделать.
-        one_time_keyboard=False,
-        is_persistent=True,
-        # Поле ввода остаётся главным: объявление присылают туда, а
-        # кнопки — вспомогательные.
-        input_field_placeholder="Пришлите объявление сюда",
-    )
+        row.append(InlineKeyboardButton(text="Сводка",
+                                        callback_data="menu:stats"))
+    return row
 
 
 def is_chat_owner(user_id: int) -> bool:
@@ -262,14 +252,8 @@ def confirm_keyboard(draft: Draft) -> InlineKeyboardMarkup:
         InlineKeyboardButton(text="Отмена", callback_data="cancel",
                              icon_custom_emoji_id=icon("cancel")),
     ])
-    # Меню под полем ввода вытесняется кнопками сообщения — Telegram
-    # держит что-то одно. Поэтому общие действия кладём сюда же: так они
-    # видны всегда, а не через раз.
-    rows.append([
-        InlineKeyboardButton(text="Мои объявления", callback_data="menu:my",
-                             icon_custom_emoji_id=icon("listings")),
-        InlineKeyboardButton(text="Помощь", callback_data="menu:help"),
-    ])
+    # Общие действия — той же строкой, что и везде.
+    rows.append(bottom_row())
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
@@ -445,10 +429,8 @@ async def start(message: Message) -> None:
         "Или поправите, что не так.\n\n"
         "<i>Например: Продам стол письменный IKEA MICKE, 6000 динар, "
         "Земун. Состояние отличное, самовывоз.</i>",
-        # Меню под полем ввода остаётся в чате, пока его не отменят —
-        # удаление сообщения его не снимает. Поэтому шлём с приветствием
-        # и больше не трогаем.
-        menu=main_menu(is_chat_owner(message.from_user.id)))
+        keyboard=InlineKeyboardMarkup(inline_keyboard=[
+            bottom_row(is_chat_owner(message.from_user.id))]))
 
     if not known:
         await ask_about_site(message)
@@ -491,6 +473,8 @@ async def remember_site_choice(call: CallbackQuery) -> None:
            if allowed else "Буду публиковать только в чат.\n\n")
         + "<i>Передумаете — напишите /site.</i>\n\n"
         "Пришлите объявление, когда будете готовы.",
+        keyboard=InlineKeyboardMarkup(inline_keyboard=[
+            bottom_row(is_chat_owner(call.from_user.id))]),
     )
     await call.answer()
 
@@ -584,8 +568,7 @@ async def send_my_listings(message: Message, user) -> None:
             row = []
     if row:
         buttons.append(row)
-    buttons.append([InlineKeyboardButton(
-        text="Помощь", callback_data="menu:help")])
+    buttons.append(bottom_row(is_chat_owner(user.id)))
 
     await show(
         message.bot, message.chat.id, "\n".join(lines),
@@ -772,7 +755,9 @@ async def send_help(bot: Bot, chat_id: int, user_id: int) -> None:
         f"{emoji('open')} <b>Где публикуется</b>\n"
         "└ в чате и на сайте PLONK; поменять — /site\n"
         "\n"
-        f"<i>В сутки — до {rules.daily_limit} объявлений.</i>")
+        f"<i>В сутки — до {rules.daily_limit} объявлений.</i>",
+        keyboard=InlineKeyboardMarkup(inline_keyboard=[
+            bottom_row(is_chat_owner(user_id))]))
 
 
 async def handle_listing(message: Message, photos: list[bytes], text: str) -> None:
@@ -982,6 +967,11 @@ async def menu_action(call: CallbackQuery) -> None:
         await send_my_listings(call.message, call.from_user)
     elif what == "help":
         await send_help(call.bot, call.message.chat.id, call.from_user.id)
+    elif what == "stats" and is_chat_owner(call.from_user.id):
+        await show(call.bot, call.message.chat.id,
+                   build_digest(TARGET_CHAT, days=7),
+                   keyboard=InlineKeyboardMarkup(inline_keyboard=[
+                       bottom_row(True)]))
 
 
 @dp.callback_query(F.data == "cancel")
@@ -1145,7 +1135,8 @@ async def publish(call: CallbackQuery, bot: Bot) -> None:
     await forget_screen(call.bot, call.message.chat.id)
     await _drop_album(call.message, draft)
     await show(call.bot, call.message.chat.id, done, fresh=True,
-               menu=main_menu(is_chat_owner(call.from_user.id)))
+               keyboard=InlineKeyboardMarkup(inline_keyboard=[
+                   bottom_row(is_chat_owner(call.from_user.id))]))
 
     await maybe_invite(call.message, call.from_user)
 

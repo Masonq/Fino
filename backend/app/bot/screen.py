@@ -26,7 +26,6 @@ _current: dict[int, tuple[int, bool]] = {}
 async def show(bot: Bot, chat_id: int, text: str, *,
                photo: bytes | None = None,
                keyboard: InlineKeyboardMarkup | None = None,
-               menu=None,
                fresh: bool = False) -> Message | None:
     """
     Показывает текст в живом сообщении бота.
@@ -36,17 +35,6 @@ async def show(bot: Bot, chat_id: int, text: str, *,
     объявление, за ними человек возвращается).
     """
     known = _current.get(chat_id)
-
-    # Меню под полем ввода живёт, пока висит сообщение, которым его
-    # отправили: переписать его на месте нельзя, нужно новое.
-    if menu is not None:
-        # Меню под полем ввода нельзя переписать на месте — оно приходит
-        # только с новым сообщением. Прежнее живое убираем, чтобы в
-        # переписке не осталось двух.
-        if not fresh:
-            await forget(bot, chat_id)
-        return await _send_new(bot, chat_id, text, photo, keyboard,
-                               forget=fresh, menu=menu)
 
     if fresh or known is None:
         return await _send_new(bot, chat_id, text, photo, keyboard,
@@ -85,20 +73,16 @@ async def show(bot: Bot, chat_id: int, text: str, *,
 
 async def _send_new(bot: Bot, chat_id: int, text: str, photo: bytes | None,
                     keyboard: InlineKeyboardMarkup | None,
-                    forget: bool = False, menu=None) -> Message:
+                    forget: bool = False) -> Message:
     from aiogram.types import BufferedInputFile
-
-    # Меню и кнопки под сообщением — разные вещи, но поле у них одно.
-    # Меню важнее: без него человек не найдёт, что делать дальше.
-    markup = menu if menu is not None else keyboard
 
     if photo:
         sent = await bot.send_photo(
             chat_id, BufferedInputFile(photo, filename="photo.jpg"),
-            caption=text, reply_markup=markup)
+            caption=text, reply_markup=keyboard)
     else:
         sent = await bot.send_message(
-            chat_id, text, reply_markup=markup,
+            chat_id, text, reply_markup=keyboard,
             disable_web_page_preview=True)
 
     if forget:

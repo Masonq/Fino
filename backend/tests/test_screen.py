@@ -97,43 +97,17 @@ def test_erasing_never_breaks_the_flow():
     assert "except Exception" in source
 
 
-def test_menu_survives_message_cleanup():
+def test_no_reply_menu_at_all():
     """
-    Меню под полем ввода остаётся в чате, пока его не отменят: удаление
-    сообщения его не снимает. Поэтому шлём с приветствием и больше не
-    трогаем — иначе человек остаётся без кнопок.
-    """
-    import inspect
-    from app.bot.publisher import start
-    from app.bot.screen import show
-
-    assert "menu=main_menu(" in inspect.getsource(start)
-    # и живое сообщение умеет его нести
-    assert "menu=None" in inspect.getsource(show)
-
-
-def test_menu_is_persistent():
-    """
-    Меню не должно прятаться после нажатия и исчезать вместе с
-    сообщением: человек в любой миг видит, что можно сделать.
-    """
-    from app.bot.publisher import main_menu
-
-    menu = main_menu(False)
-    assert menu.is_persistent is True
-    assert not menu.one_time_keyboard
-
-
-def test_menu_sent_sparingly():
-    """
-    Сообщение, отправленное с меню под полем ввода, Telegram править не
-    даёт. Слать меню на каждом шаге значит плодить неправимые сообщения,
-    и они копятся в переписке. Достаточно знакомства и итога.
+    От меню под полем ввода отказались: Telegram держит либо его, либо
+    кнопки сообщения, и на объявлениях оно всегда проигрывало. Плюс
+    сообщение с ним нельзя переписать — они копились в переписке.
     """
     source = (Path(__file__).resolve().parents[1]
               / "app" / "bot" / "publisher.py").read_text()
 
-    assert 1 <= source.count("menu=main_menu(") <= 3
+    assert "ReplyKeyboardMarkup" not in source
+    assert "menu=main_menu(" not in source
 
 
 def test_unfixable_message_is_replaced():
@@ -162,3 +136,21 @@ def test_common_actions_live_in_the_message():
               for b in row]
     assert "Мои объявления" in labels
     assert "Помощь" in labels
+
+
+def test_actions_are_always_in_the_message():
+    """
+    Кнопки в сообщении видны везде и одинаково — в отличие от меню под
+    полем ввода, которое Telegram прячет, как только у сообщения
+    появляются свои кнопки.
+    """
+    from app.bot.publisher import Draft, bottom_row, confirm_keyboard
+
+    everywhere = {b.text for b in bottom_row()}
+    assert "Мои объявления" in everywhere
+    assert "Помощь" in everywhere
+
+    # и та же строка стоит под карточкой объявления
+    card = [b.text for row in confirm_keyboard(Draft()).inline_keyboard
+            for b in row]
+    assert everywhere <= set(card)

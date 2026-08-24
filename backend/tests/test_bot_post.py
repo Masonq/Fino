@@ -385,13 +385,13 @@ def test_menu_hides_owner_tools():
     Сводка только владельцу чата: иначе каждый увидит, кто сколько
     публикует и кого бот считает слишком частым.
     """
-    from app.bot.publisher import MENU_STATS, main_menu
+    from app.bot.publisher import bottom_row
 
-    plain = [b.text for row in main_menu(False).keyboard for b in row]
-    owner = [b.text for row in main_menu(True).keyboard for b in row]
+    plain = [b.text for b in bottom_row(False)]
+    owner = [b.text for b in bottom_row(True)]
 
-    assert MENU_STATS not in plain
-    assert MENU_STATS in owner
+    assert "Сводка" not in plain
+    assert "Сводка" in owner
     assert len(plain) >= 2                    # объявления и помощь есть у всех
 
 
