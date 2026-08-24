@@ -311,9 +311,12 @@ def test_premium_emoji_keeps_a_fallback():
     """
     from app.bot.emoji import emoji
 
+    from app.bot.emoji import EMOJI
+
+    plain, _ = EMOJI["sold"]
     out = emoji("sold")
     assert "emoji-id=" in out
-    assert "🔴" in out                        # запасной внутри разметки
+    assert plain in out                       # запасной внутри разметки
 
 
 def test_chatter_fades_but_results_stay():
