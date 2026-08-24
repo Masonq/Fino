@@ -2177,3 +2177,30 @@ def test_selling_beats_buying_words():
     assert not looks_wanted("Отдам даром детские вещи")
     # а поиск с упоминанием продажи остаётся поиском
     assert looks_wanted("Ищу няню, продам коляску")
+
+
+def test_vacancy_and_resume_are_told_apart():
+    """
+    В барахолках это разные потоки: ищущий работу читает вакансии,
+    работодатель — резюме. Вперемешку они мешают обоим.
+    """
+    from app.core.tg_parse import job_kind
+
+    assert job_kind("Ищу работу водителем, есть личное авто") == "resume"
+    assert job_kind("Резюме: повар, опыт 10 лет") == "resume"
+    assert job_kind("Требуется официант в кафе, график 2/2") == "vacancy"
+    assert job_kind("В команду нужен сотрудник, зарплата 800 евро") == "vacancy"
+    # не про работу
+    assert job_kind("Продам стол письменный IKEA") is None
+    assert job_kind("Ищу няню на неполный день") is None
+
+
+def test_hiring_help_at_home_is_a_service():
+    """
+    «Ищу няню» — заказ услуги: платит частное лицо частному, а не
+    работодатель работнику.
+    """
+    from app.core.tg_classify import classify
+
+    assert classify("Ищу няню на неполный день")[0] == "services"
+    assert classify("Нужна уборщица раз в неделю")[0] == "services"

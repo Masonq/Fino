@@ -42,7 +42,7 @@ from app.core.partner_chats import (
     BARAHOLKA_TEST, topic_for, topic_name, topics_of,
 )
 from app.core.tg_classify import classify, classify_sub
-from app.core.tg_parse import looks_wanted, parse
+from app.core.tg_parse import job_kind, looks_wanted, parse
 from app.bot.digest import build as build_digest
 from app.bot import keyboards as kb
 from app.bot.emoji import digit, digit_icon, emoji, icon
@@ -192,6 +192,13 @@ def understand(text: str, draft: Draft) -> Draft:
     draft.currency = parsed["currency"]
     draft.city = parsed["city"]
     draft.is_free = parsed["is_free"]
+    # Работа перебивает раздел: «требуются грузчики» правила относят к
+    # услугам по слову «грузоперевозки», хотя это вакансия. И «ищу
+    # работу» — резюме, а не поиск вещи.
+    kind = job_kind(text)
+    if kind:
+        category, sub = "jobs", kind
+
     draft.category = category
     draft.sub = sub
 
@@ -204,8 +211,13 @@ def understand(text: str, draft: Draft) -> Draft:
 
     # Объявления о покупке пишут по-разному: «куплю», «нужен», «возьму
     # даром». По первому слову их не поймать.
-    wanted = looks_wanted(text)
-    draft.topic_id = topic_for(TARGET_CHAT, category, sub=sub,
+    # «Ищу работу» — резюме, «ищу няню» — заказ услуги. Ни то, ни другое
+    # не поиск вещи, и в ветке «Куплю/ищу» им не место: туда идут за
+    # товарами.
+    wanted = (looks_wanted(text) and not kind
+              and draft.category not in ("jobs", "services"))
+
+    draft.topic_id = topic_for(TARGET_CHAT, draft.category, sub=draft.sub,
                                is_free=draft.is_free, is_wanted=wanted)
     return draft
 

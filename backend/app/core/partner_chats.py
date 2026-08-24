@@ -112,6 +112,9 @@ TOPIC_NAMES: dict[int, dict[int, str]] = {
 TOPIC_BY_SUBCATEGORY: dict[int, dict[str, int]] = {
     BARAHOLKA_TEST: {
         "beauty-services": 16,      # Красота и здоровье
+        # Вакансии и резюме — разные потоки: ищущий работу читает одно,
+        # работодатель другое. Когда у чата будут отдельные ветки,
+        # номера встанут сюда.
     },
     BARAHOLKA_BELGRAD: {
         "beauty-services": 1406,    # Услуги красоты
