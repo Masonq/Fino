@@ -46,6 +46,7 @@ from app.core.tg_classify import classify, classify_sub
 from app.core.tg_parse import parse
 from app.bot.digest import build as build_digest
 from app.bot.emoji import digit, digit_icon, emoji, icon
+from app.bot.screen import forget as forget_screen, release, show
 from app.bot.sweeper import looks_like_listing, rescued, sweep
 from app.bot.post_format import (
     build_caption, build_preview, build_sold_caption, money,
@@ -90,9 +91,8 @@ class Draft:
     sub: str | None = None
     topic_id: int | None = None
     created_at: datetime = field(default_factory=utcnow)
-    # Что мы уже показали человеку: карточка и снимки альбома. Нужно,
-    # чтобы убрать их при следующем показе, а не копить в переписке.
-    card_id: int | None = None
+    # Снимки-альбом, показанные рядом с карточкой: живым сообщением
+    # ведает screen, а их надо убрать отдельно.
     album_ids: list[int] = field(default_factory=list)
 
 
@@ -399,15 +399,13 @@ async def offer_rescued(message: Message, bot: Bot) -> bool:
 
     draft = understand(text, Draft(photos=photos))
     if not draft.title:
-        await message.answer(
-            "Вот что вы писали в чат:\n\n"
-            f"<pre>{escape(text)}</pre>\n"
-            "Не понял, что за вещь — допишите название и пришлите мне."
-        )
+        await show(message.bot, message.chat.id,
+                   "Вот что вы писали в чат:\n\n"
+                   f"<pre>{escape(text)}</pre>\n"
+                   "Не понял, что за вещь — допишите название и пришлите мне.")
         return True
 
     drafts[message.from_user.id] = draft
-    await message.answer("Ваше объявление из чата — вот оно, готовое:")
     await show_draft(message, draft)
     return True
 
@@ -422,7 +420,7 @@ async def start(message: Message) -> None:
     """
     known = message.from_user.id in site_allowed
 
-    await fade(await message.answer(
+    await show(message.bot, message.chat.id,
         "<b>Публикую объявления в барахолку Белграда.</b>\n"
         "Полминуты — и оно в нужной ветке чата.\n\n"
         f"{emoji('listings')} <b>1. Пришлите объявление</b>\n"
@@ -432,9 +430,16 @@ async def start(message: Message) -> None:
         f"{emoji('publish')} <b>3. Вы нажмёте «Опубликовать»</b>\n"
         "Или поправите, что не так.\n\n"
         "<i>Например: Продам стол письменный IKEA MICKE, 6000 динар, "
-        "Земун. Состояние отличное, самовывоз.</i>",
-        reply_markup=main_menu(is_chat_owner(message.from_user.id)),
-    ))
+        "Земун. Состояние отличное, самовывоз.</i>")
+
+    # Меню — отдельным сообщением: оно живёт под полем ввода, а не в
+    # переписке, и в живое сообщение его не вложить.
+    if message.from_user.id not in menu_shown:
+        menu_shown.add(message.from_user.id)
+        await fade(await message.answer(
+            "Кнопки внизу — на случай, если понадобятся.",
+            reply_markup=main_menu(is_chat_owner(message.from_user.id))),
+            seconds=30)
 
     if not known:
         await ask_about_site(message)
@@ -447,12 +452,13 @@ async def ask_about_site(message: Message) -> None:
     Один раз при знакомстве, а не у каждого объявления: решение у
     человека одно на всех, и переспрашивать — навязчиво.
     """
-    await message.answer(
+    await show(
+        message.bot, message.chat.id,
         f"{emoji('open')} <b>Ещё одно место</b>\n\n"
         "Кроме чата я могу класть объявления на сайт PLONK — там их "
         "находят поиском и смотрят те, кто в чат не заходит.\n\n"
         "Публиковать в обоих местах?",
-        reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+        keyboard=InlineKeyboardMarkup(inline_keyboard=[[
             InlineKeyboardButton(text="Да, и в чат, и на сайт",
                                  callback_data="site:yes",
                                  icon_custom_emoji_id=icon("publish")),
@@ -469,17 +475,15 @@ async def remember_site_choice(call: CallbackQuery) -> None:
     allowed = call.data.endswith("yes")
     site_allowed[call.from_user.id] = allowed
 
-    await call.message.edit_text(
+    await show(
+        call.bot, call.message.chat.id,
         f"{emoji('open')} <b>Ещё одно место</b>\n\n"
         + ("Буду публиковать и в чат, и на сайт.\n\n"
            if allowed else "Буду публиковать только в чат.\n\n")
-        + "<i>Передумаете — напишите /site.</i>",
-        reply_markup=None,
+        + "<i>Передумаете — напишите /site.</i>\n\n"
+        "Пришлите объявление, когда будете готовы.",
     )
     await call.answer()
-    # Вопрос отвечен — держать его в переписке незачем. Полминуты, чтобы
-    # человек успел прочитать, что именно выбрал.
-    await fade(call.message, seconds=30)
 
 
 @dp.message(Command("site"))
@@ -528,10 +532,9 @@ async def send_my_listings(message: Message, user) -> None:
         } for listing, title in rows]
 
     if not items:
-        await message.answer(
-            "У вас пока нет объявлений. Пришлите мне фотографии и описание "
-            "— опубликую в чат."
-        )
+        await show(message.bot, message.chat.id,
+                   "У вас пока нет объявлений. Пришлите мне фотографии и "
+                   "описание — опубликую в чат.")
         return
 
     site = settings.public_base_url.rstrip("/")
@@ -571,10 +574,9 @@ async def send_my_listings(message: Message, user) -> None:
     if row:
         buttons.append(row)
 
-    await message.answer(
-        "\n".join(lines),
-        disable_web_page_preview=True,
-        reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons)
+    await show(
+        message.bot, message.chat.id, "\n".join(lines),
+        keyboard=InlineKeyboardMarkup(inline_keyboard=buttons)
         if buttons else None,
     )
 
@@ -713,10 +715,11 @@ async def stats(message: Message) -> None:
     """
     owner_id = rules_for(TARGET_CHAT).owner_id
     if owner_id and message.from_user.id != owner_id:
-        await message.answer("Эта команда для владельца чата.")
+        await show(message.bot, message.chat.id,
+                   "Эта команда для владельца чата.")
         return
 
-    await message.answer(build_digest(TARGET_CHAT, days=7))
+    await show(message.bot, message.chat.id, build_digest(TARGET_CHAT, days=7))
 
 
 @dp.message(Command("help"))
@@ -729,7 +732,7 @@ async def help_cmd(message: Message) -> None:
     изучать правила.
     """
     rules = rules_for(TARGET_CHAT)
-    await fade(await message.answer(
+    await show(message.bot, message.chat.id,
         f"{emoji('edit')} <b>Что написать</b>\n"
         "├ что за вещь — с маркой и моделью\n"
         "├ цену или «отдам даром»\n"
@@ -747,8 +750,7 @@ async def help_cmd(message: Message) -> None:
         f"{emoji('open')} <b>Где публикуется</b>\n"
         "└ в чате и на сайте PLONK; поменять — /site\n"
         "\n"
-        f"<i>В сутки — до {rules.daily_limit} объявлений.</i>"
-    ))
+        f"<i>В сутки — до {rules.daily_limit} объявлений.</i>")
 
 
 async def handle_listing(message: Message, photos: list[bytes], text: str) -> None:
@@ -759,10 +761,10 @@ async def handle_listing(message: Message, photos: list[bytes], text: str) -> No
         kept = waiting_photos.setdefault(message.from_user.id, [])
         kept.extend(photos)
         del kept[MAX_PHOTOS:]
-        await fade(await message.answer(
-            f"Снимков принято: {len(kept)}. Теперь напишите, что продаёте, "
-            "за сколько и в каком районе — одним сообщением."
-        ))
+        await show(message.bot, message.chat.id,
+                   f"Снимков принято: {len(kept)}. Теперь напишите, что "
+                   "продаёте, за сколько и в каком районе — одним "
+                   "сообщением.")
         return
 
     # К тексту подклеиваем снимки, присланные перед ним.
@@ -777,26 +779,19 @@ async def handle_listing(message: Message, photos: list[bytes], text: str) -> No
         )
         return
 
-    # Разбор занимает секунду-другую, а со снимками и дольше. Показываем,
-    # что дело идёт: иначе человек думает, что бот не ответил.
-    working = await message.answer("Разбираю объявление…")
-    try:
-        draft = understand(text, Draft(
+    # Разбор занимает секунду-другую, а со снимками и дольше. Пишем это
+    # в живое сообщение — новых в переписке не появляется.
+    await show(message.bot, message.chat.id, "Разбираю объявление…")
+    draft = understand(text, Draft(
         photos=photos[:MAX_PHOTOS],
         # Что человек выбрал при знакомстве. Не выбирал — публикуем в оба
         # места: так делает большинство, и объявление не потеряется.
         to_site=site_allowed.get(message.from_user.id, True),
     ))
-    finally:
-        try:
-            await working.delete()
-        except Exception:                        # noqa: BLE001
-            pass
     if not draft.title:
-        await fade(await message.answer(
-            "Не понял, что за вещь. Напишите в первой строке, что продаёте — "
-            "например «Стол письменный IKEA MICKE»."
-        ))
+        await show(message.bot, message.chat.id,
+                   "Не понял, что за вещь. Напишите в первой строке, что "
+                   "продаёте — например «Стол письменный IKEA MICKE».")
         return
 
     # Правила чата смотрим до карточки: показать объявление и отказать
@@ -806,7 +801,7 @@ async def handle_listing(message: Message, photos: list[bytes], text: str) -> No
         is_free=draft.is_free, category=draft.category,
     )
     if complaint:
-        await fade(await message.answer(complaint))
+        await show(message.bot, message.chat.id, complaint)
         return
 
     drafts[message.from_user.id] = draft
@@ -816,13 +811,14 @@ async def handle_listing(message: Message, photos: list[bytes], text: str) -> No
 async def show_draft(message: Message, draft: Draft,
                      edit: CallbackQuery | None = None) -> None:
     """
-    Показывает объявление ровно так, как оно встанет в чат.
+    Показывает объявление так, как оно встанет в чат.
 
-    Не одну фотографию из пяти, а все — альбомом: человек должен видеть
-    то же, что увидят читатели, иначе подтверждение бессмысленно.
+    Всё в одном живом сообщении: карточка правится на месте, когда
+    человек меняет ветку или цену, а переписка не растёт.
 
-    Кнопки к альбому не прикрепляются — это ограничение Telegram, — так
-    что они идут отдельным сообщением следом.
+    Снимки-альбом шлём отдельно, только если их несколько: к живому
+    сообщению больше одной фотографии не прикрепить, а видеть человек
+    должен все.
     """
     text = build_preview(
         title=draft.title, price=draft.price, currency=draft.currency,
@@ -834,50 +830,27 @@ async def show_draft(message: Message, draft: Draft,
         to_site=draft.to_site,
     )
     keyboard = confirm_keyboard(draft)
+    chat_id = message.chat.id
 
-    # Правку показываем на месте: новое сообщение на каждое нажатие
-    # засыпает переписку.
-    if edit is not None:
-        try:
-            if draft.card_id and len(draft.photos) <= 1 and draft.photos:
-                await edit.message.edit_caption(caption=text, reply_markup=keyboard)
-            else:
-                await edit.message.edit_text(text, reply_markup=keyboard)
-            return
-        except Exception:                        # noqa: BLE001
-            pass                                 # не вышло — отправим заново
-
-    await _drop_old_card(message, draft)
-
-    if len(draft.photos) > 1:
+    # Больше одного снимка — показываем альбомом рядом. Он живёт своей
+    # жизнью и убирается вместе с карточкой.
+    if len(draft.photos) > 1 and not draft.album_ids:
         media = [InputMediaPhoto(media=_file(p)) for p in draft.photos]
-        sent = await message.answer_media_group(media)
+        sent = await message.bot.send_media_group(chat_id, media)
         draft.album_ids = [m.message_id for m in sent]
-        card = await message.answer(text, reply_markup=keyboard)
-    elif draft.photos:
-        card = await message.answer_photo(_file(draft.photos[0]), caption=text,
-                                          reply_markup=keyboard)
-    else:
-        card = await message.answer(text, reply_markup=keyboard)
-    draft.card_id = card.message_id
+
+    single = draft.photos[0] if len(draft.photos) == 1 else None
+    await show(message.bot, chat_id, text, photo=single, keyboard=keyboard)
 
 
-async def _drop_old_card(message: Message, draft: Draft) -> None:
-    """
-    Убирает прежнюю карточку.
-
-    Иначе после добавления пятой фотографии в переписке висят пять
-    карточек подряд, и непонятно, какая из них настоящая.
-    """
-    for message_id in [*draft.album_ids, draft.card_id]:
-        if not message_id:
-            continue
+async def _drop_album(message: Message, draft: Draft) -> None:
+    """Убирает снимки-образцы: объявление уже в чате."""
+    for message_id in draft.album_ids:
         try:
             await message.bot.delete_message(message.chat.id, message_id)
         except Exception:                        # noqa: BLE001
             pass
     draft.album_ids = []
-    draft.card_id = None
 
 
 @dp.message(F.photo & F.media_group_id)
@@ -933,12 +906,8 @@ async def plain_text(message: Message) -> None:
         return
 
     await handle_listing(message, [], message.text)
-    draft = drafts.get(message.from_user.id)
-    if draft and not draft.photos:
-        await fade(await message.answer(
-            "Добавить фотографию? Пришлите её следующим сообщением — "
-            "я подставлю её в это же объявление."
-        ))
+    # Про фотографию не напоминаем отдельным сообщением: об этом уже
+    # сказано в самой карточке, а лишний ответ засоряет переписку.
 
 
 async def apply_edit(message: Message, draft: Draft) -> None:
@@ -955,8 +924,9 @@ async def apply_edit(message: Message, draft: Draft) -> None:
         else:
             parsed = parse(f"Цена {value}")
             if parsed["price"] is None:
-                await message.answer("Не понял цену. Напишите числом: «3000 динар» "
-                                     "или «50 евро». Либо «даром».")
+                await show(message.bot, message.chat.id,
+                           "Не понял цену. Напишите числом: «3000 динар» "
+                           "или «50 евро». Либо «даром».")
                 return
             draft.price = parsed["price"]
             draft.currency = parsed["currency"]
@@ -970,19 +940,9 @@ async def apply_edit(message: Message, draft: Draft) -> None:
 async def cancel(call: CallbackQuery) -> None:
     draft = drafts.pop(call.from_user.id, None)
     if draft:
-        for message_id in draft.album_ids:
-            try:
-                await call.bot.delete_message(call.message.chat.id, message_id)
-            except Exception:                    # noqa: BLE001
-                pass
-    text = "Отменил. Пришлите объявление заново, когда будете готовы."
-    try:
-        if call.message.photo:
-            await call.message.edit_caption(caption=text, reply_markup=None)
-        else:
-            await call.message.edit_text(text)
-    except Exception:                            # noqa: BLE001
-        await call.message.answer(text)
+        await _drop_album(call.message, draft)
+    await show(call.bot, call.message.chat.id,
+               "Отменил. Пришлите объявление заново, когда будете готовы.")
     await call.answer()
 
 
@@ -1131,17 +1091,12 @@ async def publish(call: CallbackQuery, bot: Bot) -> None:
         + ("\nПродадите — отметьте в «Мои объявления», объявление снимется "
            "и здесь, и в чате." if listing_id else "")
     )
-    try:
-        if draft.photos:
-            await call.message.edit_caption(caption=done, reply_markup=None)
-        else:
-            await call.message.edit_text(done, disable_web_page_preview=True)
-    except Exception:                            # noqa: BLE001
-        await call.message.answer(done, disable_web_page_preview=True)
-
-    # Карточка подтверждения своё отслужила: итог с ссылками остаётся,
-    # а разобранное объявление с кнопками уже не нужно.
-    await fade(call.message)
+    # Итог остаётся в переписке навсегда: за ссылками на объявление
+    # человек сюда и возвращается. Поэтому новое сообщение, а не правка
+    # живого — следующий шаг начнёт своё.
+    await forget_screen(call.bot, call.message.chat.id)
+    await _drop_album(call.message, draft)
+    await show(call.bot, call.message.chat.id, done, fresh=True)
 
     await maybe_invite(call.message, call.from_user)
 
