@@ -1257,12 +1257,11 @@ async def main() -> None:
 
     # Меню команд слева от поля ввода. Без него человек не знает, что
     # боту вообще можно сказать, кроме как прислать объявление.
-    # Команды оставляем: кто-то привык к ним, да и меню слева Telegram
-    # показывает сам. Но главное теперь — кнопки внизу.
+    # Всё, что есть на кнопках внизу, из списка команд убираем: два
+    # одинаковых меню рядом сбивают с толку. Остаётся только то, чему
+    # кнопки нет — начать сначала и бросить начатое.
     await bot.set_my_commands([
         BotCommand(command="start", description="Начать сначала"),
-        BotCommand(command="my", description="Мои объявления"),
-        BotCommand(command="help", description="Как это работает"),
         BotCommand(command="cancel", description="Отменить начатое"),
     ])
     await bot.set_chat_menu_button(menu_button=MenuButtonCommands())
