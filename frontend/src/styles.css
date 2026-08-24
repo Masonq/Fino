@@ -594,6 +594,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 
 /* ===== избранное ===== */
+/* Общая страница. Класс использовали восемь экранов, а описания у него
+   не было вовсе — поля и списки упирались в края телефона. */
+.page{
+  padding:calc(14px + env(safe-area-inset-top)) 16px
+          calc(20px + env(safe-area-inset-bottom));
+}
+
 .fav-page{ padding:calc(14px + env(safe-area-inset-top)) 0 20px; }
 .fav-page h2{
   display:flex; align-items:center; gap:8px;
