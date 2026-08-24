@@ -571,19 +571,23 @@ async def close_listing(call: CallbackQuery) -> None:
     log.info("правлю пост %s в чате %s", message_id, TARGET_CHAT)
     if message_id and fields:
         sold_text = build_sold_caption(
-            **fields, site_url=settings.public_base_url.rstrip("/"))
-        for edit in (call.bot.edit_message_caption,
-                     call.bot.edit_message_text):
+            **fields, site_url=settings.public_base_url.rstrip("/"),
+        )
+        # У поста со снимком правится подпись, у обычного — текст. Гадать
+        # перебором нельзя: подпись и текст принимают разные поля, и
+        # ошибка в одном не значит, что сработает другой.
+        try:
+            await call.bot.edit_message_caption(
+                chat_id=TARGET_CHAT, message_id=message_id,
+                caption=sold_text, reply_markup=None)
+        except Exception:                        # noqa: BLE001
             try:
-                await edit(chat_id=TARGET_CHAT, message_id=message_id,
-                           **({"caption": sold_text}
-                              if edit is call.bot.edit_message_caption
-                              else {"text": sold_text}),
-                           reply_markup=None)
-                break
+                await call.bot.edit_message_text(
+                    chat_id=TARGET_CHAT, message_id=message_id,
+                    text=sold_text, reply_markup=None,
+                    disable_web_page_preview=True)
             except Exception as exc:             # noqa: BLE001
-                log.info("не вышло этим способом: %s", exc)
-                continue
+                log.warning("пост %s не поправлен: %s", message_id, exc)
 
     await call.answer("Снял с продажи")
 

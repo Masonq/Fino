@@ -404,3 +404,20 @@ def test_listing_is_never_lost_without_a_category():
 
     draft = understand("Абракадабра непонятная вещь 500 динар", Draft())
     assert draft.category == FALLBACK_CATEGORY
+
+
+def test_post_edit_tries_caption_then_text():
+    """
+    У поста со снимком правится подпись, у обычного — текст. Перебором
+    гадать нельзя: поля разные, и ошибка в одном не значит, что
+    сработает другой — прежний перебор слал подпись с полем текста.
+    """
+    import inspect
+    from app.bot.publisher import close_listing
+
+    source = inspect.getsource(close_listing)
+    assert "edit_message_caption(" in source
+    assert "caption=sold_text" in source
+    assert "text=sold_text" in source
+    # никаких словарей с угадыванием поля
+    assert "**({" not in source
