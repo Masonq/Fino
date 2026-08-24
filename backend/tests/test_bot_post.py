@@ -252,6 +252,23 @@ def test_sold_mark_reaches_the_chat():
     assert "edit_message_caption" in closing
 
 
+def test_post_has_no_sold_button():
+    """
+    Скрыть кнопку от посторонних Telegram не даёт — она видна всем
+    одинаково, и объявление выглядит служебным, а не обычным постом
+    продавца. Пометка живёт в переписке с ботом, где кнопка только его.
+    """
+    from app.bot.publisher import post_keyboard
+
+    keyboard = post_keyboard("abc-123", 42)
+    labels = [b.text for row in keyboard.inline_keyboard for b in row]
+    assert "Продано" not in labels
+    assert any("PLONK" in label for label in labels)
+
+    # без объявления кнопок нет вовсе — пустая строка кнопок ни к чему
+    assert post_keyboard(None, 42) is None
+
+
 def test_sold_caption_gets_only_what_it_expects():
     """
     Номер поста нужен, чтобы найти сообщение в чате, — но сборке текста
