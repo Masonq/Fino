@@ -40,8 +40,13 @@ async def show(bot: Bot, chat_id: int, text: str, *,
     # Меню под полем ввода живёт, пока висит сообщение, которым его
     # отправили: переписать его на месте нельзя, нужно новое.
     if menu is not None:
-        await forget(bot, chat_id)
-        return await _send_new(bot, chat_id, text, photo, keyboard, menu=menu)
+        # Меню под полем ввода нельзя переписать на месте — оно приходит
+        # только с новым сообщением. Прежнее живое убираем, чтобы в
+        # переписке не осталось двух.
+        if not fresh:
+            await forget(bot, chat_id)
+        return await _send_new(bot, chat_id, text, photo, keyboard,
+                               forget=fresh, menu=menu)
 
     if fresh or known is None:
         return await _send_new(bot, chat_id, text, photo, keyboard,

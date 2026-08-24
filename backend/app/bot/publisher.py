@@ -117,8 +117,6 @@ invited: set[int] = set()
 # у каждого объявления это переспрашивать — навязчиво, а решение у
 # человека всё равно одно на всех.
 site_allowed: dict[int, bool] = {}
-# Кому уже показали меню: второй раз незачем, Telegram держит его сам.
-menu_shown: set[int] = set()
 # Подписи кнопок постоянного меню. Держим здесь, чтобы нажатие и
 # отправка одного и того же слова вели в одно место.
 MENU_LISTINGS = "Мои объявления"
@@ -485,6 +483,7 @@ async def remember_site_choice(call: CallbackQuery) -> None:
            if allowed else "Буду публиковать только в чат.\n\n")
         + "<i>Передумаете — напишите /site.</i>\n\n"
         "Пришлите объявление, когда будете готовы.",
+        menu=main_menu(is_chat_owner(call.from_user.id)),
     )
     await call.answer()
 
@@ -583,7 +582,10 @@ async def send_my_listings(message: Message, user) -> None:
         message.bot, message.chat.id, "\n".join(lines),
         keyboard=InlineKeyboardMarkup(inline_keyboard=buttons)
         if buttons else None,
+        # Если кнопок нет, меню несёт само сообщение: лишнего не будет.
+        menu=None if buttons else main_menu(is_chat_owner(user.id)),
     )
+
 
 
 @dp.callback_query(F.data.startswith("close:"))
@@ -758,7 +760,8 @@ async def help_cmd(message: Message) -> None:
         f"{emoji('open')} <b>Где публикуется</b>\n"
         "└ в чате и на сайте PLONK; поменять — /site\n"
         "\n"
-        f"<i>В сутки — до {rules.daily_limit} объявлений.</i>")
+        f"<i>В сутки — до {rules.daily_limit} объявлений.</i>",
+        menu=main_menu(is_chat_owner(message.from_user.id)))
 
 
 async def handle_listing(message: Message, photos: list[bytes], text: str) -> None:
@@ -795,8 +798,10 @@ async def handle_listing(message: Message, photos: list[bytes], text: str) -> No
         return
 
     # Разбор занимает секунду-другую, а со снимками и дольше. Пишем это
-    # в живое сообщение — новых в переписке не появляется.
-    await show(message.bot, message.chat.id, "Разбираю объявление…")
+    # в живое сообщение — новых в переписке не появляется. Заодно доносим
+    # меню: у самой карточки свои кнопки, и меню в неё не вложить.
+    await show(message.bot, message.chat.id, "Разбираю объявление…",
+               menu=main_menu(is_chat_owner(message.from_user.id)))
     draft = understand(text, Draft(
         photos=photos[:MAX_PHOTOS],
         # Что человек выбрал при знакомстве. Не выбирал — публикуем в оба
@@ -853,16 +858,6 @@ async def show_draft(message: Message, draft: Draft,
         media = [InputMediaPhoto(media=_file(p)) for p in draft.photos]
         sent = await message.bot.send_media_group(chat_id, media)
         draft.album_ids = [m.message_id for m in sent]
-
-    # Меню и кнопки карточки в одно сообщение не вложить: поле у них
-    # общее. Меню донесём отдельно — оно постоянное, и делать это нужно
-    # один раз.
-    if message.from_user and message.from_user.id not in menu_shown:
-        menu_shown.add(message.from_user.id)
-        await fade(await message.answer(
-            "Кнопки внизу всегда под рукой.",
-            reply_markup=main_menu(is_chat_owner(message.from_user.id))),
-            seconds=20)
 
     single = draft.photos[0] if len(draft.photos) == 1 else None
     await show(message.bot, chat_id, text, photo=single, keyboard=keyboard)
@@ -1127,7 +1122,8 @@ async def publish(call: CallbackQuery, bot: Bot) -> None:
     # живого — следующий шаг начнёт своё.
     await forget_screen(call.bot, call.message.chat.id)
     await _drop_album(call.message, draft)
-    await show(call.bot, call.message.chat.id, done, fresh=True)
+    await show(call.bot, call.message.chat.id, done, fresh=True,
+               menu=main_menu(is_chat_owner(call.from_user.id)))
 
     await maybe_invite(call.message, call.from_user)
 

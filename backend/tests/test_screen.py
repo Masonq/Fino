@@ -122,3 +122,15 @@ def test_menu_is_persistent():
     menu = main_menu(False)
     assert menu.is_persistent is True
     assert not menu.one_time_keyboard
+
+
+def test_menu_comes_with_every_plain_step():
+    """
+    Меню и кнопки под сообщением делят одно поле: где есть кнопки, меню
+    не вложить. Поэтому доносим его на каждом шаге без кнопок —
+    приветствие, разбор, помощь, итог, — и человек не остаётся без него.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "bot" / "publisher.py").read_text()
+
+    assert source.count("menu=main_menu(") >= 5
