@@ -44,6 +44,7 @@ from app.core.partner_chats import (
 from app.core.tg_classify import classify, classify_sub
 from app.core.tg_parse import parse
 from app.bot.digest import build as build_digest
+from app.bot import keyboards as kb
 from app.bot.emoji import digit, digit_icon, emoji, icon
 from app.bot.screen import (
     erase, forget as forget_screen, release, show,
@@ -116,32 +117,6 @@ invited: set[int] = set()
 # у каждого объявления это переспрашивать — навязчиво, а решение у
 # человека всё равно одно на всех.
 site_allowed: dict[int, bool] = {}
-# Подписи, по которым узнаём нажатие: человек мог написать их руками
-# или нажать кнопку в старом сообщении.
-MENU_LISTINGS = "Мои объявления"
-MENU_HELP = "Как это работает"
-MENU_STATS = "Сводка по чату"
-
-
-def bottom_row(is_owner: bool = False) -> list[InlineKeyboardButton]:
-    """
-    Общие действия — строкой в самом сообщении.
-
-    От меню под полем ввода отказались: Telegram держит либо его, либо
-    кнопки сообщения, и на объявлениях оно всегда проигрывало. Кнопки в
-    сообщении видны везде и одинаково.
-    """
-    row = [
-        InlineKeyboardButton(text="Мои объявления", callback_data="menu:my",
-                             icon_custom_emoji_id=icon("listings")),
-        InlineKeyboardButton(text="Помощь", callback_data="menu:help"),
-    ]
-    if is_owner:
-        row.append(InlineKeyboardButton(text="Сводка",
-                                        callback_data="menu:stats"))
-    return row
-
-
 def is_chat_owner(user_id: int) -> bool:
     return rules_for(TARGET_CHAT).owner_id == user_id
 
@@ -231,40 +206,6 @@ def understand(text: str, draft: Draft) -> Draft:
     draft.topic_id = topic_for(TARGET_CHAT, category, sub=sub,
                                is_free=draft.is_free, is_wanted=wanted)
     return draft
-
-
-def confirm_keyboard(draft: Draft) -> InlineKeyboardMarkup:
-    # Значок задаётся отдельным полем: в подписи кнопки разметка не
-    # работает, а обычный значок из подписи мы убираем — иначе рядом
-    # окажутся два.
-    rows = [[InlineKeyboardButton(
-        text="Опубликовать", callback_data="publish",
-        icon_custom_emoji_id=icon("publish"))]]
-    rows.append([
-        InlineKeyboardButton(text="Другая ветка", callback_data="topic",
-                             icon_custom_emoji_id=icon("topic")),
-        InlineKeyboardButton(text="Название", callback_data="edit_title",
-                             icon_custom_emoji_id=icon("edit")),
-    ])
-    rows.append([
-        InlineKeyboardButton(text="Цена", callback_data="edit_price",
-                             icon_custom_emoji_id=icon("money")),
-        InlineKeyboardButton(text="Отмена", callback_data="cancel",
-                             icon_custom_emoji_id=icon("cancel")),
-    ])
-    # Общие действия — той же строкой, что и везде.
-    rows.append(bottom_row())
-    return InlineKeyboardMarkup(inline_keyboard=rows)
-
-
-def topics_keyboard() -> InlineKeyboardMarkup:
-    """Ветки чата — настоящими названиями, как их видят в чате."""
-    rows = [[InlineKeyboardButton(text=name, callback_data=f"topic:{tid}")]
-            for tid, name in topics_of(TARGET_CHAT)]
-    rows.append([InlineKeyboardButton(
-        text="Назад", callback_data="back",
-        icon_custom_emoji_id=icon("back"))])
-    return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
 def post_keyboard(listing_id: str | None, author_id: int) -> InlineKeyboardMarkup | None:
@@ -429,8 +370,7 @@ async def start(message: Message) -> None:
         "Или поправите, что не так.\n\n"
         "<i>Например: Продам стол письменный IKEA MICKE, 6000 динар, "
         "Земун. Состояние отличное, самовывоз.</i>",
-        keyboard=InlineKeyboardMarkup(inline_keyboard=[
-            bottom_row(is_chat_owner(message.from_user.id))]))
+        keyboard=kb.idle(is_chat_owner(message.from_user.id)))
 
     if not known:
         await ask_about_site(message)
@@ -473,8 +413,7 @@ async def remember_site_choice(call: CallbackQuery) -> None:
            if allowed else "Буду публиковать только в чат.\n\n")
         + "<i>Передумаете — напишите /site.</i>\n\n"
         "Пришлите объявление, когда будете готовы.",
-        keyboard=InlineKeyboardMarkup(inline_keyboard=[
-            bottom_row(is_chat_owner(call.from_user.id))]),
+        keyboard=kb.idle(is_chat_owner(call.from_user.id)),
     )
     await call.answer()
 
@@ -488,7 +427,6 @@ async def change_site_choice(message: Message) -> None:
 
 
 @dp.message(Command("my"))
-@dp.message(F.text == MENU_LISTINGS)
 async def my_listings(message: Message) -> None:
     """Свои объявления по команде."""
     await send_my_listings(message, message.from_user)
@@ -568,7 +506,7 @@ async def send_my_listings(message: Message, user) -> None:
             row = []
     if row:
         buttons.append(row)
-    buttons.append(bottom_row(is_chat_owner(user.id)))
+
 
     await show(
         message.bot, message.chat.id, "\n".join(lines),
@@ -703,7 +641,6 @@ async def catch_emoji_id(message: Message) -> None:
 
 
 @dp.message(Command("stats"))
-@dp.message(F.text == MENU_STATS)
 async def stats(message: Message) -> None:
     """
     Сводка по чату. Владельцу и сотрудникам, остальным незачем.
@@ -722,7 +659,7 @@ async def stats(message: Message) -> None:
 
 
 @dp.message(Command("help"))
-@dp.message(F.text == MENU_HELP)
+@dp.message(F.text == kb.HELP)
 async def help_cmd(message: Message) -> None:
     """Помощь по команде или кнопке меню."""
     await erase(message)
@@ -756,8 +693,7 @@ async def send_help(bot: Bot, chat_id: int, user_id: int) -> None:
         "└ в чате и на сайте PLONK; поменять — /site\n"
         "\n"
         f"<i>В сутки — до {rules.daily_limit} объявлений.</i>",
-        keyboard=InlineKeyboardMarkup(inline_keyboard=[
-            bottom_row(is_chat_owner(user_id))]))
+        keyboard=kb.idle(is_chat_owner(user_id)))
 
 
 async def handle_listing(message: Message, photos: list[bytes], text: str) -> None:
@@ -844,7 +780,6 @@ async def show_draft(message: Message, draft: Draft,
         fixes=draft.fixes,
         to_site=draft.to_site,
     )
-    keyboard = confirm_keyboard(draft)
     chat_id = message.chat.id
 
     # Больше одного снимка — показываем альбомом рядом. Он живёт своей
@@ -855,7 +790,8 @@ async def show_draft(message: Message, draft: Draft,
         draft.album_ids = [m.message_id for m in sent]
 
     single = draft.photos[0] if len(draft.photos) == 1 else None
-    await show(message.bot, chat_id, text, photo=single, keyboard=keyboard)
+    await show(message.bot, chat_id, text, photo=single,
+               keyboard=kb.draft(is_chat_owner(chat_id)))
 
 
 
@@ -957,88 +893,99 @@ async def apply_edit(message: Message, draft: Draft) -> None:
     await show_draft(message, draft)
 
 
-@dp.callback_query(F.data.startswith("menu:"))
-async def menu_action(call: CallbackQuery) -> None:
-    """Общие действия из кнопок под сообщением."""
-    what = call.data.split(":", 1)[1]
-    await call.answer()
-
-    if what == "my":
-        await send_my_listings(call.message, call.from_user)
-    elif what == "help":
-        await send_help(call.bot, call.message.chat.id, call.from_user.id)
-    elif what == "stats" and is_chat_owner(call.from_user.id):
-        await show(call.bot, call.message.chat.id,
-                   build_digest(TARGET_CHAT, days=7),
-                   keyboard=InlineKeyboardMarkup(inline_keyboard=[
-                       bottom_row(True)]))
+@dp.message(F.text == kb.MY)
+@dp.message(Command("my"))
+async def my_listings(message: Message) -> None:
+    """Свои объявления по кнопке или команде."""
+    await erase(message)
+    await send_my_listings(message, message.from_user)
 
 
-@dp.callback_query(F.data == "cancel")
-async def cancel(call: CallbackQuery) -> None:
-    draft = drafts.pop(call.from_user.id, None)
-    if draft:
-        await _drop_album(call.message, draft)
-    await show(call.bot, call.message.chat.id,
-               "Отменил. Пришлите объявление заново, когда будете готовы.")
-    await call.answer()
-
-
-@dp.callback_query(F.data == "topic")
-async def choose_topic(call: CallbackQuery) -> None:
-    await call.message.edit_reply_markup(reply_markup=topics_keyboard())
-    await call.answer()
-
-
-@dp.callback_query(F.data == "back")
-async def back(call: CallbackQuery) -> None:
-    draft = drafts.get(call.from_user.id)
-    if draft:
-        await call.message.edit_reply_markup(reply_markup=confirm_keyboard(draft))
-    await call.answer()
-
-
-@dp.callback_query(F.data.startswith("topic:"))
-async def set_topic(call: CallbackQuery) -> None:
-    draft = drafts.get(call.from_user.id)
-    if not draft:
-        await call.answer("Объявление устарело, пришлите заново", show_alert=True)
+@dp.message(F.text == kb.STATS)
+async def stats_button(message: Message) -> None:
+    """Сводка — только владельцу чата."""
+    await erase(message)
+    if not is_chat_owner(message.from_user.id):
         return
-    draft.topic_id = int(call.data.split(":", 1)[1])
-    await show_draft(call.message, draft, edit=call)
-    await call.answer()
+    await show(message.bot, message.chat.id, build_digest(TARGET_CHAT, days=7),
+               keyboard=kb.idle(True))
 
 
-@dp.callback_query(F.data.in_({"edit_title", "edit_price"}))
-async def ask_edit(call: CallbackQuery) -> None:
-    draft = drafts.get(call.from_user.id)
+@dp.message(F.text == kb.CANCEL)
+async def cancel(message: Message) -> None:
+    draft = drafts.pop(message.from_user.id, None)
+    if draft:
+        await _drop_album(message, draft)
+    await show(message.bot, message.chat.id,
+               "Отменил. Пришлите объявление заново, когда будете готовы.")
+    
+
+@dp.message(F.text == kb.TOPIC)
+async def choose_topic(message: Message) -> None:
+    """Показывает ветки чата — списком в меню."""
+    await erase(message)
+    draft = drafts.get(message.from_user.id)
     if not draft:
-        await call.answer("Объявление устарело, пришлите заново", show_alert=True)
+        return
+    names = [name for _, name in topics_of(TARGET_CHAT)]
+    await show(message.bot, message.chat.id,
+               "В какую ветку положить объявление?",
+               keyboard=kb.topics(names))
+
+
+@dp.message(F.text == kb.BACK)
+async def back(message: Message) -> None:
+    """Возврат от выбора ветки к объявлению."""
+    await erase(message)
+    draft = drafts.get(message.from_user.id)
+    if draft:
+        await show_draft(message, draft)
+
+
+@dp.message(F.text.func(
+    lambda text: text in {name for _, name in topics_of(TARGET_CHAT)}))
+async def set_topic(message: Message) -> None:
+    """Человек выбрал ветку из меню."""
+    await erase(message)
+    draft = drafts.get(message.from_user.id)
+    if not draft:
+        return
+
+    for topic_id, name in topics_of(TARGET_CHAT):
+        if name == message.text:
+            draft.topic_id = topic_id
+            break
+    await show_draft(message, draft)
+
+
+@dp.message(F.text.in_({kb.TITLE, kb.PRICE}))
+async def ask_edit(message: Message) -> None:
+    draft = drafts.get(message.from_user.id)
+    if not draft:
+        await show(message.bot, message.chat.id, "Объявление устарело, пришлите заново")
         return
     draft.awaiting = "title" if call.data == "edit_title" else "price"
-    await call.message.answer(
+    await message.answer(
         "Напишите новое название одной строкой."
         if draft.awaiting == "title" else
         "Напишите цену: «3000 динар», «50 евро» или «даром»."
     )
-    await call.answer()
+    
 
-
-@dp.callback_query(F.data == "publish")
-async def publish(call: CallbackQuery, bot: Bot) -> None:
-    draft = drafts.get(call.from_user.id)
+@dp.message(F.text == kb.PUBLISH)
+async def publish(message: Message, bot: Bot) -> None:
+    draft = drafts.get(message.from_user.id)
     if not draft:
-        await call.answer("Объявление устарело, пришлите заново", show_alert=True)
+        await show(message.bot, message.chat.id, "Объявление устарело, пришлите заново")
         return
 
-    await call.answer("Публикую…")
-
+    
     # Публикация занимает несколько секунд: снимок уходит в чат,
     # объявление пишется в базу. Без отметки человек не понимает, идёт ли
     # дело, и жмёт кнопку второй раз — тогда объявление уходит дважды.
     await mark_busy(call, "Публикую…")
 
-    listing_id = save_listing(draft, call.from_user) if draft.to_site else None
+    listing_id = save_listing(draft, message.from_user) if draft.to_site else None
     if draft.to_site and not listing_id:
         # Пост в чат уйдёт всё равно — человеку важнее, чтобы объявление
         # увидели. Но знать об этом стоит: в журнале будет причина.
@@ -1047,7 +994,7 @@ async def publish(call: CallbackQuery, bot: Bot) -> None:
     caption = build_caption(
         title=draft.title, price=draft.price, currency=draft.currency,
         is_free=draft.is_free, city=draft.city, description=draft.description,
-        author_name=call.from_user.full_name, author_id=call.from_user.id,
+        author_name=message.from_user.full_name, author_id=message.from_user.id,
         site_url=settings.public_base_url.rstrip("/"),
     )
 
@@ -1064,23 +1011,23 @@ async def publish(call: CallbackQuery, bot: Bot) -> None:
                 TARGET_CHAT, "Объявление выше",
                 message_thread_id=draft.topic_id,
                 reply_to_message_id=posted.message_id,
-                reply_markup=post_keyboard(listing_id, call.from_user.id))
+                reply_markup=post_keyboard(listing_id, message.from_user.id))
         elif draft.photos:
             posted = await bot.send_photo(
                 TARGET_CHAT, _file(draft.photos[0]), caption=caption,
                 message_thread_id=draft.topic_id,
-                reply_markup=post_keyboard(listing_id, call.from_user.id))
+                reply_markup=post_keyboard(listing_id, message.from_user.id))
         else:
             posted = await bot.send_message(
                 TARGET_CHAT, caption, message_thread_id=draft.topic_id,
-                reply_markup=post_keyboard(listing_id, call.from_user.id),
+                reply_markup=post_keyboard(listing_id, message.from_user.id),
                 disable_web_page_preview=True)
     except Exception as exc:                     # noqa: BLE001
         # Причин у неудачи много — права, закрытая ветка, слишком длинная
         # подпись. Общая фраза «нет прав» уводит не туда, поэтому
         # показываем, что именно ответил Telegram.
         log.exception("не удалось опубликовать")
-        await call.message.answer(
+        await message.answer(
             "Не получилось опубликовать в чат.\n\n"
             f"<code>{escape(str(exc))[:400]}</code>")
         return
@@ -1104,17 +1051,17 @@ async def publish(call: CallbackQuery, bot: Bot) -> None:
         except Exception:                        # noqa: BLE001
             log.warning("не удалось запомнить номер поста")
 
-    published_today.setdefault(call.from_user.id, []).append(utcnow())
-    published_count[call.from_user.id] = published_count.get(
-        call.from_user.id, 0) + 1
+    published_today.setdefault(message.from_user.id, []).append(utcnow())
+    published_count[message.from_user.id] = published_count.get(
+        message.from_user.id, 0) + 1
     # Снимки-образцы убираем: объявление уже в чате, и держать их копию
     # в переписке незачем.
     for message_id in draft.album_ids:
         try:
-            await bot.delete_message(call.message.chat.id, message_id)
+            await bot.delete_message(message.chat.id, message_id)
         except Exception:                        # noqa: BLE001
             pass
-    drafts.pop(call.from_user.id, None)
+    drafts.pop(message.from_user.id, None)
 
     link = _post_link(posted)
     site = settings.public_base_url.rstrip("/")
@@ -1132,13 +1079,12 @@ async def publish(call: CallbackQuery, bot: Bot) -> None:
     # Итог остаётся в переписке навсегда: за ссылками на объявление
     # человек сюда и возвращается. Поэтому новое сообщение, а не правка
     # живого — следующий шаг начнёт своё.
-    await forget_screen(call.bot, call.message.chat.id)
-    await _drop_album(call.message, draft)
-    await show(call.bot, call.message.chat.id, done, fresh=True,
-               keyboard=InlineKeyboardMarkup(inline_keyboard=[
-                   bottom_row(is_chat_owner(call.from_user.id))]))
+    await forget_screen(message.bot, message.chat.id)
+    await _drop_album(message, draft)
+    await show(message.bot, message.chat.id, done, fresh=True,
+               keyboard=kb.idle(is_chat_owner(message.from_user.id)))
 
-    await maybe_invite(call.message, call.from_user)
+    await maybe_invite(message, message.from_user)
 
 
 async def mark_busy(call: CallbackQuery, what: str) -> None:

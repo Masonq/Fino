@@ -25,15 +25,20 @@ _current: dict[int, tuple[int, bool]] = {}
 
 async def show(bot: Bot, chat_id: int, text: str, *,
                photo: bytes | None = None,
-               keyboard: InlineKeyboardMarkup | None = None,
+               keyboard=None,
                fresh: bool = False) -> Message | None:
     """
     Показывает текст в живом сообщении бота.
+
+    Меню под полем ввода передаётся здесь же — оно и есть управление
+    ботом. Сообщение с меню Telegram править не даёт, поэтому при смене
+    меню старое убирается и шлётся новое.
 
     fresh=True — оставить прежнее и начать новое: так помечаем итоги,
     которые должны остаться в переписке (ссылки на опубликованное
     объявление, за ними человек возвращается).
     """
+
     known = _current.get(chat_id)
 
     if fresh or known is None:
@@ -41,6 +46,12 @@ async def show(bot: Bot, chat_id: int, text: str, *,
                                forget=fresh)
 
     message_id, had_photo = known
+
+    # С меню сообщение неправимо — сразу шлём новое, не пробуя.
+    if keyboard is not None:
+        await forget(bot, chat_id)
+        return await _send_new(bot, chat_id, text, photo, keyboard,
+                               forget=fresh)
 
     # Вид не поменялся — переписываем на месте.
     if bool(photo) == had_photo:

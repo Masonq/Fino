@@ -97,18 +97,6 @@ def test_erasing_never_breaks_the_flow():
     assert "except Exception" in source
 
 
-def test_no_reply_menu_at_all():
-    """
-    От меню под полем ввода отказались: Telegram держит либо его, либо
-    кнопки сообщения, и на объявлениях оно всегда проигрывало. Плюс
-    сообщение с ним нельзя переписать — они копились в переписке.
-    """
-    source = (Path(__file__).resolve().parents[1]
-              / "app" / "bot" / "publisher.py").read_text()
-
-    assert "ReplyKeyboardMarkup" not in source
-    assert "menu=main_menu(" not in source
-
 
 def test_unfixable_message_is_replaced():
     """
@@ -124,33 +112,41 @@ def test_unfixable_message_is_replaced():
     assert source.count("_send_new(") >= 3
 
 
-def test_common_actions_live_in_the_message():
+
+
+
+def test_menu_is_the_only_control():
     """
-    Меню под полем ввода вытесняется кнопками сообщения — Telegram
-    держит что-то одно. Поэтому общие действия кладём в саму карточку:
-    так они видны всегда, а не через раз.
+    Telegram не показывает меню под полем ввода вместе с кнопками
+    сообщения. Раз кнопки должны быть видны всегда, управление живёт в
+    меню — а в сообщениях своих кнопок нет.
     """
-    from app.bot.publisher import Draft, confirm_keyboard
+    from app.bot import keyboards as kb
 
-    labels = [b.text for row in confirm_keyboard(Draft()).inline_keyboard
-              for b in row]
-    assert "Мои объявления" in labels
-    assert "Помощь" in labels
+    idle = [b.text for row in kb.idle(False).keyboard for b in row]
+    assert kb.MY in idle and kb.HELP in idle
+
+    over_draft = [b.text for row in kb.draft().keyboard for b in row]
+    assert kb.PUBLISH in over_draft
+    assert kb.TOPIC in over_draft and kb.PRICE in over_draft
+    # общие действия под рукой и здесь
+    assert kb.MY in over_draft
 
 
-def test_actions_are_always_in_the_message():
-    """
-    Кнопки в сообщении видны везде и одинаково — в отличие от меню под
-    полем ввода, которое Telegram прячет, как только у сообщения
-    появляются свои кнопки.
-    """
-    from app.bot.publisher import Draft, bottom_row, confirm_keyboard
+def test_menu_never_hides():
+    """Меню не сворачивается после нажатия и не пропадает само."""
+    from app.bot import keyboards as kb
 
-    everywhere = {b.text for b in bottom_row()}
-    assert "Мои объявления" in everywhere
-    assert "Помощь" in everywhere
+    for menu in (kb.idle(), kb.draft(), kb.topics(["Электроника"])):
+        assert menu.is_persistent is True
+        assert menu.resize_keyboard is True
 
-    # и та же строка стоит под карточкой объявления
-    card = [b.text for row in confirm_keyboard(Draft()).inline_keyboard
-            for b in row]
-    assert everywhere <= set(card)
+
+def test_owner_tools_hidden():
+    """Сводка — дело владельца чата, не посетителей."""
+    from app.bot import keyboards as kb
+
+    plain = [b.text for row in kb.idle(False).keyboard for b in row]
+    owner = [b.text for row in kb.idle(True).keyboard for b in row]
+    assert kb.STATS not in plain
+    assert kb.STATS in owner

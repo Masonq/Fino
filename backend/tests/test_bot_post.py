@@ -385,32 +385,33 @@ def test_menu_hides_owner_tools():
     Сводка только владельцу чата: иначе каждый увидит, кто сколько
     публикует и кого бот считает слишком частым.
     """
-    from app.bot.publisher import bottom_row
+    from app.bot import keyboards as kb
 
-    plain = [b.text for b in bottom_row(False)]
-    owner = [b.text for b in bottom_row(True)]
+    plain = [b.text for row in kb.idle(False).keyboard for b in row]
+    owner = [b.text for row in kb.idle(True).keyboard for b in row]
 
-    assert "Сводка" not in plain
-    assert "Сводка" in owner
+    assert kb.STATS not in plain
+    assert kb.STATS in owner
     assert len(plain) >= 2                    # объявления и помощь есть у всех
 
 
-def test_menu_buttons_do_what_commands_do():
+def test_menu_words_do_what_commands_do():
     """
-    Команды со слэшем надо помнить, а кнопки видно. Одно и то же слово
-    должно вести в одно место, откуда бы его ни прислали.
+    Нажатие кнопки приходит текстом. Подпись и обработчик должны
+    сходиться слово в слово — иначе кнопка просто не работает.
     """
-    import inspect
-    from app.bot.publisher import (
-        MENU_HELP, MENU_LISTINGS, help_cmd, my_listings,
-    )
+    from app.bot import keyboards as kb
 
-    assert MENU_LISTINGS in inspect.getsource(my_listings) or True
-    # обработчики принимают и команду, и текст кнопки
     source = (Path(__file__).resolve().parents[1]
               / "app" / "bot" / "publisher.py").read_text()
-    assert f"F.text == MENU_LISTINGS" in source
-    assert f"F.text == MENU_HELP" in source
+
+    for word in (kb.MY, kb.HELP, kb.PUBLISH, kb.TOPIC, kb.CANCEL):
+        assert f'F.text == kb.{_name_of(kb, word)}' in source, word
+
+
+def _name_of(module, value: str) -> str:
+    return next(name for name in dir(module)
+                if not name.startswith("_") and getattr(module, name) == value)
 
 
 def test_listing_is_never_lost_without_a_category():
@@ -465,13 +466,11 @@ def test_site_permission_asked_once():
     решение у человека одно на всех, и переспрашивать — навязчиво.
     """
     import inspect
-    from app.bot.publisher import (
-        Draft, ask_about_site, confirm_keyboard, site_allowed,
-    )
+    from app.bot import keyboards as kb
+    from app.bot.publisher import ask_about_site, site_allowed
 
-    # у карточки переключателя нет — вопрос задан раньше
-    labels = [b.text for row in confirm_keyboard(Draft()).inline_keyboard
-              for b in row]
+    # в меню над объявлением переключателя нет — вопрос задан раньше
+    labels = [b.text for row in kb.draft().keyboard for b in row]
     assert "Только в чат" not in labels
 
     # спрашиваем при знакомстве и запоминаем
