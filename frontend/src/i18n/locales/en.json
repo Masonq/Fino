@@ -407,5 +407,20 @@
     "working": "Signing you in…",
     "expired": "The link has expired. Open it again from the bot — it will issue a new one.",
     "to_home": "To the feed"
+  },
+  "edit_profile": {
+    "title": "My details",
+    "name": "Name",
+    "name_hint": "Your name",
+    "company": "Company",
+    "company_hint": "If you sell as a business",
+    "photo": "Choose a photo",
+    "save": "Save",
+    "saved": "Saved",
+    "failed": "Could not save",
+    "photo_failed": "Could not upload the photo",
+    "edit": "Edit details",
+    "rating": "Rating {{value}} · {{count}} reviews",
+    "no_rating": "No reviews yet"
   }
 }

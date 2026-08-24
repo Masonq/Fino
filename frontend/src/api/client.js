@@ -109,6 +109,10 @@ export const api = {
     method: 'POST', body: JSON.stringify({ body }),
   }),
   supportClose: (id) => request(`/support/${id}/close`, { method: 'POST' }),
+  myProfile: () => request('/users/me'),
+  editProfile: (payload) => request('/users/me', {
+    method: 'PATCH', body: JSON.stringify(payload),
+  }),
   enterByTelegram: (key) => request('/auth/telegram/enter', {
     method: 'POST', body: JSON.stringify({ key }),
   }),
@@ -157,13 +161,6 @@ export const api = {
   getFavoriteIds: () => request('/favorites/ids'),
   addFavorite: (listingId) => request(`/favorites/${listingId}`, { method: 'POST' }),
   removeFavorite: (listingId) => request(`/favorites/${listingId}`, { method: 'DELETE' }),
-  uploadPhoto: async (file) => {
-    const form = new FormData()
-    form.append('file', file)
-    const res = await fetch(`${API_BASE}/media/upload`, { method: 'POST', body: form })
-    if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
-    return res.json()
-  },
   startChat: (listingId) => request('/chats/start', {
     method: 'POST',
     body: JSON.stringify({ listing_id: listingId }),

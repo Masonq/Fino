@@ -408,5 +408,20 @@
     "working": "Prijavljujemo vas…",
     "expired": "Link je istekao. Otvorite ga ponovo iz bota — daće vam novi.",
     "to_home": "Na početnu"
+  },
+  "edit_profile": {
+    "title": "Moji podaci",
+    "name": "Ime",
+    "name_hint": "Vaše ime",
+    "company": "Firma",
+    "company_hint": "Ako prodajete kao firma",
+    "photo": "Izaberite sliku",
+    "save": "Sačuvaj",
+    "saved": "Sačuvano",
+    "failed": "Čuvanje nije uspelo",
+    "photo_failed": "Slika nije poslata",
+    "edit": "Izmeni podatke",
+    "rating": "Ocena {{value}} · recenzija {{count}}",
+    "no_rating": "Još nema recenzija"
   }
 }

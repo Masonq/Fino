@@ -45,10 +45,24 @@ export default function Profile() {
           <div className="profile-name">{user.display_name}</div>
           {user.email && <div className="profile-contact">{user.email}</div>}
           {user.phone && <div className="profile-contact">{user.phone}</div>}
+          {/* Рейтинг — то, по чему покупатель судит о продавце. Прятать
+              его от самого продавца странно: он должен видеть, как
+              выглядит со стороны. */}
+          <div className="profile-rating">
+            {user.rating_count
+              ? t('edit_profile.rating', {
+                value: user.rating_avg, count: user.rating_count,
+              })
+              : t('edit_profile.no_rating')}
+          </div>
         </div>
       </div>
 
       <div className="profile-menu">
+        <Link className="profile-row" to="/profile/edit">
+          {t('edit_profile.edit')}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+        </Link>
         <Link className="profile-row" to="/favorites">
           {t('nav.favorites')}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>

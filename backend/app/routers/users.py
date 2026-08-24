@@ -2,8 +2,9 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
+from app.core.auth import get_current_user
 from app.core.database import get_db
 from app.models import User, UserRole, Language
 
@@ -52,3 +53,63 @@ def public_profile(user_id: uuid.UUID, lang: str = "ru", db: Session = Depends(g
         "created_at": user.created_at.isoformat() if user.created_at else None,
         "last_seen_at": user.last_seen_at.isoformat() if user.last_seen_at else None,
     }
+
+
+class ProfileEdit(BaseModel):
+    """Что человек может поменять о себе сам."""
+    display_name: str | None = Field(default=None, min_length=2, max_length=120)
+    avatar_url: str | None = Field(default=None, max_length=500)
+    default_language: Language | None = None
+    # Компания — для тех, кто продаёт как бизнес. Проверку по реестру
+    # это не отменяет: название человек пишет сам, а галочку ставим мы.
+    company_name: str | None = Field(default=None, max_length=255)
+
+
+@router.get("/me")
+def my_profile(user: User = Depends(get_current_user)):
+    """Свои данные — для страницы профиля."""
+    return {
+        "id": str(user.id),
+        "display_name": user.display_name,
+        "email": user.email,
+        "phone": user.phone,
+        "avatar_url": user.avatar_url,
+        "role": user.role.value,
+        "default_language": user.default_language.value,
+        "email_verified": user.email_verified,
+        "phone_verified": user.phone_verified,
+        "company_name": user.company_name,
+        "company_verified": user.company_verified,
+        "rating_avg": round(user.rating_avg or 0, 2),
+        "rating_count": user.rating_count,
+        "created_at": user.created_at.isoformat() if user.created_at else None,
+    }
+
+
+@router.patch("/me")
+def edit_profile(
+    payload: ProfileEdit,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Правка своих данных.
+
+    Меняем только то, что прислали: пустое поле означает «не трогать», а
+    не «стереть» — иначе правка имени обнулила бы всё остальное.
+    """
+    if payload.display_name is not None:
+        user.display_name = payload.display_name.strip()
+    if payload.avatar_url is not None:
+        user.avatar_url = payload.avatar_url or None
+    if payload.default_language is not None:
+        user.default_language = payload.default_language
+    if payload.company_name is not None:
+        name = payload.company_name.strip()
+        # Название поменяли — прежняя проверка к нему не относится.
+        if name != (user.company_name or ""):
+            user.company_verified = False
+        user.company_name = name or None
+
+    db.commit()
+    return my_profile(user)
