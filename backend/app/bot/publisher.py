@@ -359,7 +359,7 @@ async def start(message: Message) -> None:
     await erase(message)
     known = message.from_user.id in site_allowed
 
-    await show(message.bot, message.chat.id,
+    greeting = (
         "<b>Публикую объявления в барахолку Белграда.</b>\n"
         "Полминуты — и оно в нужной ветке чата.\n\n"
         f"{emoji('listings')} <b>1. Пришлите объявление</b>\n"
@@ -369,11 +369,32 @@ async def start(message: Message) -> None:
         f"{emoji('publish')} <b>3. Вы нажмёте «Опубликовать»</b>\n"
         "Или поправите, что не так.\n\n"
         "<i>Например: Продам стол письменный IKEA MICKE, 6000 динар, "
-        "Земун. Состояние отличное, самовывоз.</i>",
-        keyboard=kb.idle(is_chat_owner(message.from_user.id)))
+        "Земун. Состояние отличное, самовывоз.</i>"
+    )
 
-    if not known:
-        await ask_about_site(message)
+    if known:
+        await show(message.bot, message.chat.id, greeting,
+                   keyboard=kb.idle(is_chat_owner(message.from_user.id)))
+        return
+
+    # Приветствие и вопрос — одним сообщением: они идут в одно живое
+    # место, и по отдельности второе стирает первое.
+    await show(
+        message.bot, message.chat.id,
+        greeting + "\n\n"
+        f"{emoji('open')} <b>Ещё одно место</b>\n"
+        "Кроме чата я могу класть объявления на сайт PLONK — там их "
+        "находят поиском и смотрят те, кто в чат не заходит.\n\n"
+        "<b>Публиковать в обоих местах?</b>",
+        keyboard=InlineKeyboardMarkup(inline_keyboard=[[
+            InlineKeyboardButton(text="Да, и в чат, и на сайт",
+                                 callback_data="site:yes",
+                                 icon_custom_emoji_id=icon("publish")),
+        ], [
+            InlineKeyboardButton(text="Только в чат",
+                                 callback_data="site:no"),
+        ]]),
+    )
 
 
 async def ask_about_site(message: Message) -> None:

@@ -164,3 +164,18 @@ def test_menu_words_handled_before_listings():
     menu_at = source.index('@dp.message(F.text == kb.MY)')
     listings_at = source.index('@dp.message(F.text & ~F.text.startswith("/"))')
     assert menu_at < listings_at
+
+
+def test_greeting_and_question_come_together():
+    """
+    Приветствие и вопрос про сайт идут в одно живое сообщение. По
+    отдельности второе стирало первое, и человек видел только вопрос,
+    не понимая, куда попал.
+    """
+    import inspect
+    from app.bot.publisher import start
+
+    source = inspect.getsource(start)
+    # оба текста собираются в одну отправку
+    assert "greeting +" in source
+    assert source.count("await show(") == 2      # знакомому и новичку
