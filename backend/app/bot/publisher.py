@@ -57,6 +57,9 @@ log = logging.getLogger(__name__)
 TARGET_CHAT = int(os.getenv("BOT_TARGET_CHAT", BARAHOLKA_TEST))
 
 MAX_PHOTOS = 5
+# Куда класть объявление, если раздел не опознан. Лучше общий раздел,
+# чем потерянное объявление.
+FALLBACK_CATEGORY = "home-garden"
 # Сколько объявлений с человека в сутки. Не от недоверия: без предела
 # один продавец забивает ленту чата, и владелец попросит убрать бота.
 DAILY_LIMIT = 5
@@ -194,6 +197,13 @@ def understand(text: str, draft: Draft) -> Draft:
     draft.is_free = parsed["is_free"]
     draft.category = category
     draft.sub = sub
+
+    # Раздел не определился — объявление всё равно должно попасть в
+    # ленту: человек написал с опечаткой или назвал вещь непривычно, и
+    # терять его из-за этого нельзя. Отправляем в общий раздел, а ветку
+    # чата человек поправит кнопкой, если что.
+    if not draft.category:
+        draft.category = FALLBACK_CATEGORY
 
     wanted = text.strip().lower().startswith(("куплю", "ищу", "куплю ", "kupujem"))
     draft.topic_id = topic_for(TARGET_CHAT, category, sub=sub,

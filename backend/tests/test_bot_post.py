@@ -392,3 +392,15 @@ def test_menu_buttons_do_what_commands_do():
               / "app" / "bot" / "publisher.py").read_text()
     assert f"F.text == MENU_LISTINGS" in source
     assert f"F.text == MENU_HELP" in source
+
+
+def test_listing_is_never_lost_without_a_category():
+    """
+    Раздел не определился — объявление всё равно должно попасть в ленту.
+    Человек написал с опечаткой или назвал вещь непривычно, и терять его
+    из-за этого нельзя: запись без раздела просто отказывала.
+    """
+    from app.bot.publisher import Draft, FALLBACK_CATEGORY, understand
+
+    draft = understand("Абракадабра непонятная вещь 500 динар", Draft())
+    assert draft.category == FALLBACK_CATEGORY
