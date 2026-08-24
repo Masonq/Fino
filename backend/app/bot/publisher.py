@@ -480,7 +480,11 @@ async def send_my_listings(message: Message, user) -> None:
     with SessionLocal() as db:
         rows = (
             db.query(Listing, ListingTranslation.title)
-            .join(ListingTranslation, ListingTranslation.listing_id == Listing.id)
+            # Язык обязателен: у объявления их три, и без этого условия
+            # каждое попадает в список трижды — по разу на перевод.
+            .join(ListingTranslation,
+                  (ListingTranslation.listing_id == Listing.id)
+                  & (ListingTranslation.language == Listing.source_language))
             .filter(Listing.external_author == author,
                     Listing.status != ListingStatus.archived)
             .order_by(Listing.created_at.desc())

@@ -501,3 +501,16 @@ def test_preview_reflects_the_choice():
         description="", topic_title="Мебель", photo_count=1, to_site=False)
     assert "только в чат" in only_chat.lower()
     assert "PLONK" not in only_chat
+
+
+def test_listing_appears_once_per_ad():
+    """
+    У объявления три перевода. Без условия по языку соединение даёт по
+    строке на каждый — и одна вещь показывалась в списке трижды, под
+    разными названиями: «Шорты Lacoste» и «Lacoste shorts».
+    """
+    import inspect
+    from app.bot.publisher import send_my_listings
+
+    source = inspect.getsource(send_my_listings)
+    assert "ListingTranslation.language == Listing.source_language" in source
