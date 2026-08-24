@@ -39,7 +39,9 @@ def build(chat_id: int, days: int = 7) -> str:
 
         # По разделам — так видно, чего в чате больше всего
         by_category = (
-            db.query(Category.slug, func.count(Listing.id))
+            # Название, а не код: «home-garden» владельцу чата ничего не
+            # говорит, он такого слова не выбирал.
+            db.query(Category.name, func.count(Listing.id))
             .join(Listing, Listing.category_id == Category.id)
             .filter(Listing.external_chat == str(chat_id),
                     Listing.created_at >= since)
@@ -77,8 +79,8 @@ def build(chat_id: int, days: int = 7) -> str:
 
     if by_category:
         lines += ["", "<b>Чего больше всего</b>"]
-        for slug, count in by_category:
-            lines.append(f"  {slug} — {count}")
+        for name, count in by_category:
+            lines.append(f"  {name} — {count}")
 
     if by_author:
         lines += ["", "<b>Кто публикует чаще</b>"]

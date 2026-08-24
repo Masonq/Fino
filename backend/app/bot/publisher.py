@@ -99,6 +99,29 @@ published_count: dict[int, int] = {}
 # Кому уже предлагали. Второй раз не зовём: назойливость раздражает
 # сильнее, чем польза от входа.
 invited: set[int] = set()
+# Сколько живут служебные сообщения бота в переписке. Приветствия,
+# подсказки и промежуточные ответы через несколько минут только мешают
+# искать нужное — а итог публикации остаётся навсегда.
+CHATTER_SECONDS = 300
+
+
+async def fade(message: Message, seconds: int = CHATTER_SECONDS) -> None:
+    """
+    Убирает служебное сообщение через несколько минут.
+
+    Главное — итог публикации, ссылки на объявление и список — не
+    трогаем: за ними человек и возвращается в переписку.
+    """
+    async def later() -> None:
+        await asyncio.sleep(seconds)
+        try:
+            await message.delete()
+        except Exception:                        # noqa: BLE001
+            pass
+
+    asyncio.create_task(later())
+
+
 # Объявление → номер его сообщения в чате. Держим в памяти: перезапуск
 # бота теряет связь, и тогда пост придётся править вручную — редкость,
 # ради которой заводить таблицу незачем.
@@ -274,10 +297,10 @@ async def start_from_chat(message: Message, bot: Bot) -> None:
     if await offer_rescued(message, bot):
         return
 
-    await message.answer(
+    await fade(await message.answer(
         "Пришлите объявление сюда — то же самое, что писали в чат.\n\n"
         "Я разберу его, подберу ветку и опубликую."
-    )
+    ))
 
 
 async def offer_rescued(message: Message, bot: Bot) -> bool:
@@ -316,7 +339,7 @@ async def offer_rescued(message: Message, bot: Bot) -> bool:
 
 @dp.message(Command("start"))
 async def start(message: Message) -> None:
-    await message.answer(
+    await fade(await message.answer(
         "Здравствуйте! Я публикую объявления в барахолку.\n\n"
         "<b>Пришлите объявление так, как написали бы его в чат</b> — "
         "фотографии и текст одним сообщением.\n\n"
@@ -325,7 +348,7 @@ async def start(message: Message) -> None:
         "Пример:\n"
         "<i>Продам стол письменный IKEA MICKE, 6000 динар, Земун. "
         "Состояние отличное, самовывоз.</i>"
-    )
+    ))
 
 
 @dp.message(Command("my"))
@@ -566,10 +589,10 @@ async def handle_listing(message: Message, photos: list[bytes], text: str) -> No
         kept = waiting_photos.setdefault(message.from_user.id, [])
         kept.extend(photos)
         del kept[MAX_PHOTOS:]
-        await message.answer(
+        await fade(await message.answer(
             f"Снимков принято: {len(kept)}. Теперь напишите, что продаёте, "
             "за сколько и в каком районе — одним сообщением."
-        )
+        ))
         return
 
     # К тексту подклеиваем снимки, присланные перед ним.
@@ -595,10 +618,10 @@ async def handle_listing(message: Message, photos: list[bytes], text: str) -> No
         except Exception:                        # noqa: BLE001
             pass
     if not draft.title:
-        await message.answer(
+        await fade(await message.answer(
             "Не понял, что за вещь. Напишите в первой строке, что продаёте — "
             "например «Стол письменный IKEA MICKE»."
-        )
+        ))
         return
 
     # Правила чата смотрим до карточки: показать объявление и отказать
@@ -608,7 +631,7 @@ async def handle_listing(message: Message, photos: list[bytes], text: str) -> No
         is_free=draft.is_free, category=draft.category,
     )
     if complaint:
-        await message.answer(complaint)
+        await fade(await message.answer(complaint))
         return
 
     drafts[message.from_user.id] = draft
@@ -735,10 +758,10 @@ async def plain_text(message: Message) -> None:
     await handle_listing(message, [], message.text)
     draft = drafts.get(message.from_user.id)
     if draft and not draft.photos:
-        await message.answer(
+        await fade(await message.answer(
             "Добавить фотографию? Пришлите её следующим сообщением — "
             "я подставлю её в это же объявление."
-        )
+        ))
 
 
 async def apply_edit(message: Message, draft: Draft) -> None:
@@ -997,6 +1020,10 @@ async def publish(call: CallbackQuery, bot: Bot) -> None:
             await call.message.edit_text(done, disable_web_page_preview=True)
     except Exception:                            # noqa: BLE001
         await call.message.answer(done, disable_web_page_preview=True)
+
+    # Карточка подтверждения своё отслужила: итог с ссылками остаётся,
+    # а разобранное объявление с кнопками уже не нужно.
+    await fade(call.message)
 
     await maybe_invite(call.message, call.from_user)
 

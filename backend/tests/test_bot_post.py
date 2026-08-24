@@ -314,3 +314,23 @@ def test_premium_emoji_keeps_a_fallback():
     out = emoji("sold")
     assert "emoji-id=" in out
     assert "🔴" in out                        # запасной внутри разметки
+
+
+def test_chatter_fades_but_results_stay():
+    """
+    Приветствия и подсказки через несколько минут только мешают искать
+    нужное. А итог публикации со ссылками остаётся навсегда: за ним
+    человек и возвращается в переписку.
+    """
+    import inspect
+    from app.bot.publisher import CHATTER_SECONDS, publish, start
+
+    assert 240 <= CHATTER_SECONDS <= 600      # около пяти минут
+
+    # приветствие исчезает
+    assert "await fade(" in inspect.getsource(start)
+
+    # а итог публикации — нет
+    published = inspect.getsource(publish)
+    done_block = published[published.index('done = ('):]
+    assert "fade(await call.message.answer" not in done_block
