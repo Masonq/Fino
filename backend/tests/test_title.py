@@ -2204,3 +2204,16 @@ def test_hiring_help_at_home_is_a_service():
 
     assert classify("Ищу няню на неполный день")[0] == "services"
     assert classify("Нужна уборщица раз в неделю")[0] == "services"
+
+
+def test_animals_looking_for_a_home_are_not_wanted_ads():
+    """
+    «Котята ищут дом» — их отдают, а не ищут купить. Оборот устойчивый,
+    и без оговорки объявление уходило в ветку «Куплю/ищу».
+    """
+    from app.core.tg_parse import looks_wanted
+
+    assert not looks_wanted("Котята ищут дом, к лотку приучены")
+    assert not looks_wanted("Щенки ищут хозяев, 2 месяца")
+    # а настоящий поиск остаётся поиском
+    assert looks_wanted("Ищу коляску до 10000 динар")

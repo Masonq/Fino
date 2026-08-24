@@ -1933,6 +1933,12 @@ def looks_wanted(text: str) -> bool:
     продажа, хотя начинается с покупки.
     """
     body = (text or "")[:400]
+
+    # «Котята ищут дом», «щенки ищут хозяев» — это отдают, а не ищут
+    # купить. Оборот устойчивый, и без оговорки он ломает разбор.
+    if re.search(r"ищ[уею]т\w*\s+(дом|хозя|семью|дома)", body, re.I):
+        return False
+
     wanted = _WANTED_RE.search(body)
     selling = _SELLING_RE.search(body)
 
