@@ -36,6 +36,7 @@ from PIL import Image
 
 from app.core.chat_rules import check as check_rules, rules_for
 from app.core.clock import utcnow
+from app.core.spellfix import fix as spellfix
 from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.partner_chats import (
@@ -72,6 +73,9 @@ class Draft:
     """Объявление, которое человек прислал и ещё не подтвердил."""
     text: str = ""
     photos: list[bytes] = field(default_factory=list)
+    # Что мы поправили в названии — показываем человеку: молча менять
+    # чужие слова нельзя, он должен успеть возразить.
+    fixes: list[tuple[str, str]] = field(default_factory=list)
     title: str = ""
     description: str = ""
     price: float | None = None
@@ -190,6 +194,19 @@ def understand(text: str, draft: Draft) -> Draft:
 
     draft.text = text
     draft.title = parsed["title"] or ""
+
+    # Опечатка в названии стоит дороже всех прочих: вещь не найдут
+    # поиском и пролистают в ленте. При этом человек её не видит — он
+    # написал и отправил.
+    if draft.title:
+        fixed, changes = spellfix(draft.title)
+        if changes:
+            draft.title = fixed
+            draft.fixes = changes
+            # Раздел считаем заново по исправленному: из-за опечатки он
+            # мог не определиться вовсе.
+            category, _ = classify(f"{fixed}\n{text}")
+            sub = classify_sub(category or "", f"{fixed}\n{text}")
     draft.description = parsed["description"] or ""
     draft.price = parsed["price"]
     draft.currency = parsed["currency"]
@@ -737,6 +754,7 @@ async def show_draft(message: Message, draft: Draft,
         description=draft.description,
         topic_title=topic_name(TARGET_CHAT, draft.topic_id),
         photo_count=len(draft.photos),
+        fixes=draft.fixes,
     )
     keyboard = confirm_keyboard(draft)
 

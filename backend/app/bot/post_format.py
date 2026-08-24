@@ -169,7 +169,8 @@ def build_sold_caption(*, title: str, price: float | None,
 
 def build_preview(*, title: str, price: float | None, currency: str | None,
                   is_free: bool, city: str | None, description: str | None,
-                  topic_title: str | None, photo_count: int = 0) -> str:
+                  topic_title: str | None, photo_count: int = 0,
+                  fixes: list | None = None) -> str:
     """
     Что бот показывает человеку перед публикацией.
 
@@ -186,6 +187,12 @@ def build_preview(*, title: str, price: float | None, currency: str | None,
     body = _shorten(_useful_body(title, description), BODY_LIMIT)
     if body:
         lines += ["", escape(body)]
+    if fixes:
+        # Показываем, что поправили: человек должен видеть, что
+        # получилось, и успеть возразить.
+        shown = ", ".join(f"{was} → <b>{now}</b>" for was, now in fixes[:3])
+        lines += ["", f"Поправил опечатку: {shown}"]
+
     if topic_title:
         lines += ["", f"Ветка: <b>{escape(topic_title)}</b>"]
     # Снимки показываются рядом целиком, поэтому счётчик нужен только
