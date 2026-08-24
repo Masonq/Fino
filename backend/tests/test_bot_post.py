@@ -534,3 +534,16 @@ def test_listing_can_be_removed_not_only_sold():
     assert "ListingStatus.archived" in source
     # и пост в чате убирается
     assert "delete_message" in source
+
+
+def test_only_own_chat_listings_in_the_list():
+    """
+    Имя в телеграме не уникально и меняется. Объявление тёзки из другого
+    чата попадало в чужой список — вместе с кнопкой «удалить».
+    """
+    import inspect
+    from app.bot.publisher import _listing_by_number, send_my_listings
+
+    for func in (send_my_listings, _listing_by_number):
+        source = inspect.getsource(func)
+        assert "external_chat == str(TARGET_CHAT)" in source, func.__name__

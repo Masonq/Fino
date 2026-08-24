@@ -488,6 +488,10 @@ async def send_my_listings(message: Message, user) -> None:
                   (ListingTranslation.listing_id == Listing.id)
                   & (ListingTranslation.language == Listing.source_language))
             .filter(Listing.external_author == author,
+                    # Только своё: имя в телеграме не уникально, и
+                    # объявление тёзки из другого чата попадало в чужой
+                    # список — вместе с кнопкой «удалить».
+                    Listing.external_chat == str(TARGET_CHAT),
                     Listing.status != ListingStatus.archived)
             .order_by(Listing.created_at.desc())
             .limit(20)
@@ -551,6 +555,7 @@ def _listing_by_number(author: str, number: int) -> str | None:
         live = (
             db.query(Listing.id)
             .filter(Listing.external_author == author,
+                    Listing.external_chat == str(TARGET_CHAT),
                     Listing.status == ListingStatus.active)
             .order_by(Listing.created_at.desc())
             .all()
