@@ -134,3 +134,17 @@ def test_menu_comes_with_every_plain_step():
               / "app" / "bot" / "publisher.py").read_text()
 
     assert source.count("menu=main_menu(") >= 5
+
+
+def test_common_actions_live_in_the_message():
+    """
+    Меню под полем ввода вытесняется кнопками сообщения — Telegram
+    держит что-то одно. Поэтому общие действия кладём в саму карточку:
+    так они видны всегда, а не через раз.
+    """
+    from app.bot.publisher import Draft, confirm_keyboard
+
+    labels = [b.text for row in confirm_keyboard(Draft()).inline_keyboard
+              for b in row]
+    assert "Мои объявления" in labels
+    assert "Помощь" in labels

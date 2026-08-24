@@ -262,6 +262,14 @@ def confirm_keyboard(draft: Draft) -> InlineKeyboardMarkup:
         InlineKeyboardButton(text="Отмена", callback_data="cancel",
                              icon_custom_emoji_id=icon("cancel")),
     ])
+    # Меню под полем ввода вытесняется кнопками сообщения — Telegram
+    # держит что-то одно. Поэтому общие действия кладём сюда же: так они
+    # видны всегда, а не через раз.
+    rows.append([
+        InlineKeyboardButton(text="Мои объявления", callback_data="menu:my",
+                             icon_custom_emoji_id=icon("listings")),
+        InlineKeyboardButton(text="Помощь", callback_data="menu:help"),
+    ])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
@@ -577,6 +585,8 @@ async def send_my_listings(message: Message, user) -> None:
             row = []
     if row:
         buttons.append(row)
+    buttons.append([InlineKeyboardButton(
+        text="Помощь", callback_data="menu:help")])
 
     await show(
         message.bot, message.chat.id, "\n".join(lines),
@@ -734,15 +744,20 @@ async def stats(message: Message) -> None:
 @dp.message(Command("help"))
 @dp.message(F.text == MENU_HELP)
 async def help_cmd(message: Message) -> None:
+    """Помощь по команде или кнопке меню."""
+    await erase(message)
+    await send_help(message.bot, message.chat.id, message.from_user.id)
+
+
+async def send_help(bot: Bot, chat_id: int, user_id: int) -> None:
     """
     Подробности для тех, кто за ними пришёл.
 
     В приветствии им не место: там человек хочет опубликовать, а не
     изучать правила.
     """
-    await erase(message)
     rules = rules_for(TARGET_CHAT)
-    await show(message.bot, message.chat.id,
+    await show(bot, chat_id,
         f"{emoji('edit')} <b>Что написать</b>\n"
         "├ что за вещь — с маркой и моделью\n"
         "├ цену или «отдам даром»\n"
@@ -761,7 +776,7 @@ async def help_cmd(message: Message) -> None:
         "└ в чате и на сайте PLONK; поменять — /site\n"
         "\n"
         f"<i>В сутки — до {rules.daily_limit} объявлений.</i>",
-        menu=main_menu(is_chat_owner(message.from_user.id)))
+        menu=main_menu(is_chat_owner(user_id)))
 
 
 async def handle_listing(message: Message, photos: list[bytes], text: str) -> None:
@@ -960,6 +975,18 @@ async def apply_edit(message: Message, draft: Draft) -> None:
 
     draft.awaiting = None
     await show_draft(message, draft)
+
+
+@dp.callback_query(F.data.startswith("menu:"))
+async def menu_action(call: CallbackQuery) -> None:
+    """Общие действия из кнопок под сообщением."""
+    what = call.data.split(":", 1)[1]
+    await call.answer()
+
+    if what == "my":
+        await send_my_listings(call.message, call.from_user)
+    elif what == "help":
+        await send_help(call.bot, call.message.chat.id, call.from_user.id)
 
 
 @dp.callback_query(F.data == "cancel")

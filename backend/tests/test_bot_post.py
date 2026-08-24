@@ -363,7 +363,7 @@ def test_greeting_is_short_and_stepped():
     если понадобится.
     """
     import inspect
-    from app.bot.publisher import help_cmd, start
+    from app.bot.publisher import start
 
     greeting = inspect.getsource(start)
     assert "1. Пришлите объявление" in greeting
@@ -373,7 +373,9 @@ def test_greeting_is_short_and_stepped():
     assert "даром" not in greeting
     assert "В сутки" not in greeting
 
-    detailed = inspect.getsource(help_cmd)
+    from app.bot.publisher import send_help
+
+    detailed = inspect.getsource(send_help)
     assert "даром" in detailed
     assert "В сутки" in detailed
 
