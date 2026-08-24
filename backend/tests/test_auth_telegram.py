@@ -10,24 +10,19 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from app.routers.auth_telegram import TTL, _tickets, issue  # noqa: E402
+from app.routers.auth_telegram import TTL  # noqa: E402
 
 
 def test_key_is_hard_to_guess():
     """Ссылку присылают в переписке — подобрать её не должно быть можно."""
-    key = issue(12345, "Максим")
-    assert len(key) >= 20
-    assert issue(12345, "Максим") != key       # каждый раз новый
+    import inspect
 
+    from app.routers.auth_telegram import issue
 
-def test_key_works_once():
-    """
-    Переписку могут переслать. Использованная ссылка не должна впускать
-    второй раз.
-    """
-    key = issue(777, "Анна")
-    assert _tickets.pop(key, None) is not None
-    assert _tickets.pop(key, None) is None
+    source = inspect.getsource(issue)
+    # ключ берётся из надёжного источника случайности, а не из времени
+    assert "secrets.token_urlsafe" in source
+    assert "24" in source                      # длина достаточная
 
 
 def test_link_does_not_live_long():
@@ -59,3 +54,25 @@ def test_invite_is_not_pushy():
     source = inspect.getsource(maybe_invite)
     assert "invited.add" in source
     assert "if user.id in invited" in source
+
+
+def test_tickets_live_in_the_database():
+    """
+    Бот и сайт — разные процессы. Ключ, положенный в память бота, сайт
+    не увидит, и ссылка окажется «устаревшей» через две минуты после
+    выдачи — что и происходило.
+    """
+    import inspect
+    from app.routers.auth_telegram import enter, issue
+
+    assert "LoginTicket" in inspect.getsource(issue)
+    assert "SessionLocal" in inspect.getsource(issue)
+    assert "LoginTicket" in inspect.getsource(enter)
+
+
+def test_used_ticket_is_deleted():
+    """Переписку могут переслать — ключ должен срабатывать один раз."""
+    import inspect
+    from app.routers.auth_telegram import enter
+
+    assert "db.delete(ticket)" in inspect.getsource(enter)

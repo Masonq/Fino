@@ -31,24 +31,33 @@ router = APIRouter(prefix="/api/auth/telegram", tags=["auth"])
 # ссылка не осталась рабочей в истории переписки навсегда.
 TTL = timedelta(minutes=5)
 
-# Выданные ссылки: ключ → кто и когда. Держим в памяти, потому что они
-# живут минуты, и заводить ради них таблицу незачем. Перезапуск сервера
-# их теряет — человек просто нажмёт кнопку ещё раз.
-_tickets: dict[str, tuple[str, object, str]] = {}
-
-
+# Ключи храним в базе, а не в памяти. Бот и сайт — разные процессы: то,
+# что бот положил себе в память, сайт не увидит, и ссылка окажется
+# «устаревшей» через две минуты после выдачи.
 def issue(telegram_id: int, display_name: str | None = None) -> str:
     """Выдаёт одноразовый ключ для входа. Зовётся из бота."""
-    _forget_stale()
+    from app.core.database import SessionLocal
+    from app.models import LoginTicket
+
     key = secrets.token_urlsafe(24)
-    _tickets[key] = (str(telegram_id), utcnow(), display_name or "")
+    with SessionLocal() as db:
+        _forget_stale(db)
+        db.add(LoginTicket(
+            key=key,
+            telegram_id=str(telegram_id),
+            display_name=(display_name or "")[:120],
+        ))
+        db.commit()
     return key
 
 
-def _forget_stale() -> None:
-    edge = utcnow() - TTL
-    for key in [k for k, v in _tickets.items() if v[1] < edge]:
-        _tickets.pop(key, None)
+def _forget_stale(db: Session) -> None:
+    """Прибирает просроченные ключи, чтобы таблица не росла без конца."""
+    from app.models import LoginTicket
+
+    db.query(LoginTicket).filter(
+        LoginTicket.created_at < utcnow() - TTL
+    ).delete(synchronize_session=False)
 
 
 class Ticket(BaseModel):
@@ -63,12 +72,21 @@ def enter(payload: Ticket, db: Session = Depends(get_db)):
     Учётную запись заводим сами, если её ещё нет: человек и так уже
     подтвердил, кто он, — переписка с ботом идёт от его телеграма.
     """
-    _forget_stale()
-    ticket = _tickets.pop(payload.key, None)     # одноразовый
+    from app.models import LoginTicket
+
+    ticket = db.query(LoginTicket).filter(LoginTicket.key == payload.key).first()
     if not ticket:
         raise HTTPException(400, "link_expired")
 
-    telegram_id, issued_at, display_name = ticket
+    telegram_id = ticket.telegram_id
+    display_name = ticket.display_name
+    issued_at = ticket.created_at
+
+    # Ключ одноразовый: переписку могут переслать, и вечно рабочая
+    # ссылка была бы дырой.
+    db.delete(ticket)
+    db.flush()
+
     if utcnow() - issued_at > TTL:
         raise HTTPException(400, "link_expired")
 
