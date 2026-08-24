@@ -337,3 +337,25 @@ def test_chatter_fades_but_results_stay():
     published = inspect.getsource(publish)
     done_block = published[published.index('done = ('):]
     assert "fade(await call.message.answer" not in done_block
+
+
+def test_greeting_is_short_and_stepped():
+    """
+    Человек пришёл опубликовать объявление, а не читать. Приветствие
+    даёт три шага и пример — остальное живёт в /help, за ним придут,
+    если понадобится.
+    """
+    import inspect
+    from app.bot.publisher import help_cmd, start
+
+    greeting = inspect.getsource(start)
+    assert "1. Пришлите объявление" in greeting
+    assert "2. Я его разберу" in greeting
+    assert "3. Вы нажмёте" in greeting
+    # подробности про цену и правила — не здесь
+    assert "даром" not in greeting
+    assert "В сутки" not in greeting
+
+    detailed = inspect.getsource(help_cmd)
+    assert "даром" in detailed
+    assert "В сутки" in detailed
