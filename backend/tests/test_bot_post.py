@@ -230,7 +230,7 @@ def test_listings_come_as_one_message():
     assert source.count("await message.answer(") <= 2
     # названия — ссылками, кнопки — по номеру из списка
     assert '{digit(number)} <a href=' in source
-    assert 'digit_icon(number)' in source
+    assert 'kb.listings(' in source
 
 
 def test_sold_mark_reaches_the_chat():
@@ -297,12 +297,11 @@ def test_long_actions_show_progress():
     уходит дважды.
     """
     import inspect
-    from app.bot.publisher import close_listing, mark_busy, publish
+    from app.bot.publisher import mark_busy, publish
 
     # кнопки убираются сразу, чтобы второе нажатие было невозможно
     assert "reply_markup=None" in inspect.getsource(mark_busy)
     assert "mark_busy(call" in inspect.getsource(publish)
-    assert "mark_busy(call" in inspect.getsource(close_listing)
 
 
 def test_every_emoji_has_a_plain_fallback():

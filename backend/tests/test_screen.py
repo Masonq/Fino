@@ -207,4 +207,20 @@ def test_every_menu_word_has_a_handler():
     for name in dir(kb):
         if not name.isupper():
             continue
+        if name == "SOLD_SUFFIX":
+            # пометка «продано» разбирается по образцу «<номер> продано»
+            assert 'r"^\\d+ продано$"' in source
+            continue
         assert f"kb.{name}" in source, f"нет обработчика для {name}"
+
+
+def test_listings_menu_keeps_all_actions():
+    """
+    Кнопки сообщения вытесняют меню. Пометка «продано» тоже живёт в
+    меню, поэтому остальные действия остаются на виду.
+    """
+    from app.bot import keyboards as kb
+
+    words = [b.text for row in kb.listings(2, False).keyboard for b in row]
+    assert "1 продано" in words and "2 продано" in words
+    assert kb.MY in words and kb.HELP in words

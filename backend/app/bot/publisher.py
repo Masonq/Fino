@@ -525,36 +525,51 @@ async def send_my_listings(message: Message, user) -> None:
         for item in sold[:5]:
             lines.append(f"  · <s>{escape(item['title'])}</s>")
 
-    # Кнопки только для того, что ещё продаётся, и по номеру из списка:
-    # так они помещаются в два ряда вместо семи.
-    buttons = []
-    row = []
-    for number, item in enumerate(live, 1):
-        row.append(InlineKeyboardButton(
-            text=f"{number} продано", callback_data=f"close:{item['id']}",
-            icon_custom_emoji_id=digit_icon(number)))
-        if len(row) == 3:
-            buttons.append(row)
-            row = []
-    if row:
-        buttons.append(row)
-
-
-    await show(
-        message.bot, message.chat.id, "\n".join(lines),
-        keyboard=InlineKeyboardMarkup(inline_keyboard=buttons)
-        if buttons else None,
-    )
+    # Пометка «продано» — в меню, а не кнопками сообщения: иначе они
+    # вытесняют меню, и остальные действия пропадают.
+    await show(message.bot, message.chat.id, "\n".join(lines),
+               keyboard=kb.listings(len(live), is_chat_owner(user.id)))
 
 
 
-@dp.callback_query(F.data.startswith("close:"))
-async def close_listing(call: CallbackQuery) -> None:
-    """Снимает объявление с продажи из списка в боте."""
-    listing_id = call.data.split(":", 1)[1]
-    author = call.from_user.username or str(call.from_user.id)
+def _listing_by_number(author: str, number: int) -> str | None:
+    """
+    Находит объявление по его месту в списке.
+
+    Список свой, поэтому чужое так не закрыть: в нём только объявления
+    этого человека, и порядок тот же, что он видел.
+    """
+    from app.models import Listing, ListingStatus
+
+    with SessionLocal() as db:
+        live = (
+            db.query(Listing.id)
+            .filter(Listing.external_author == author,
+                    Listing.status == ListingStatus.active)
+            .order_by(Listing.created_at.desc())
+            .all()
+        )
+    return str(live[number - 1][0]) if 1 <= number <= len(live) else None
+
+
+@dp.message(F.text.regexp(r"^\d+ продано$"))
+async def close_listing(message: Message) -> None:
+    """
+    Снимает объявление с продажи по номеру из списка.
+
+    Номер, а не внутренний ключ: человек нажимает строку, которую только
+    что прочитал. Чужое так не закрыть — список свой.
+    """
+    await erase(message)
+    number = int(message.text.split()[0])
+    author = message.from_user.username or str(message.from_user.id)
+    listing_id = _listing_by_number(author, number)
+    if not listing_id:
+        await show(message.bot, message.chat.id,
+                   "Такого объявления нет — откройте список заново.",
+                   keyboard=kb.idle(is_chat_owner(message.from_user.id)))
+        return
     log.info("закрываю объявление %s по просьбе %s", listing_id, author)
-    await mark_busy(call, "Снимаю с продажи…")
 
     from app.models import Listing, ListingStatus
 
@@ -570,7 +585,6 @@ async def close_listing(call: CallbackQuery) -> None:
                 .first()
             )
             if not listing:
-                await call.answer("Это не ваше объявление", show_alert=True)
                 return
             listing.status = ListingStatus.sold
 
@@ -596,7 +610,6 @@ async def close_listing(call: CallbackQuery) -> None:
             db.commit()
     except Exception:                            # noqa: BLE001
         log.exception("не удалось закрыть объявление из списка")
-        await call.answer("Не получилось, попробуйте позже", show_alert=True)
         return
 
     # Правим и сам пост: покупатель смотрит в чат, а не в нашу базу.
@@ -610,27 +623,26 @@ async def close_listing(call: CallbackQuery) -> None:
         # перебором нельзя: подпись и текст принимают разные поля, и
         # ошибка в одном не значит, что сработает другой.
         try:
-            await call.bot.edit_message_caption(
+            await message.bot.edit_message_caption(
                 chat_id=TARGET_CHAT, message_id=message_id,
                 caption=sold_text, reply_markup=None)
         except Exception:                        # noqa: BLE001
             try:
-                await call.bot.edit_message_text(
+                await message.bot.edit_message_text(
                     chat_id=TARGET_CHAT, message_id=message_id,
                     text=sold_text, reply_markup=None,
                     disable_web_page_preview=True)
             except Exception as exc:             # noqa: BLE001
                 log.warning("пост %s не поправлен: %s", message_id, exc)
 
-    await call.answer("Снял с продажи")
 
     # Перерисовываем список: нумерация сдвинулась, и старые кнопки
     # указывали бы не на те объявления.
     try:
-        await call.message.delete()
+        await message.delete()
     except Exception:                            # noqa: BLE001
         pass
-    await send_my_listings(call.message, call.from_user)
+    await send_my_listings(message, message.from_user)
 
 
 @dp.message(Command("cancel"))

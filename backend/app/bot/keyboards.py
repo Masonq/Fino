@@ -59,6 +59,35 @@ def draft(is_owner: bool = False) -> ReplyKeyboardMarkup:
     )
 
 
+# Пометка «продано» в списке: «1 продано», «2 продано»…
+SOLD_SUFFIX = " продано"
+
+
+def listings(count: int, is_owner: bool = False) -> ReplyKeyboardMarkup:
+    """
+    Меню над списком объявлений.
+
+    Пометка «продано» тоже здесь, а не кнопками сообщения: иначе они
+    вытесняют меню, и человек остаётся без остальных действий.
+    """
+    rows = []
+    row = []
+    for number in range(1, count + 1):
+        row.append(f"{number}{SOLD_SUFFIX}")
+        if len(row) == 3:
+            rows.append(row)
+            row = []
+    if row:
+        rows.append(row)
+
+    rows.append([MY, HELP])
+    if is_owner:
+        rows.append([STATS, SITE])
+    else:
+        rows.append([SITE])
+    return _menu(rows, "Пришлите объявление сюда")
+
+
 def topics(names: list[str]) -> ReplyKeyboardMarkup:
     """Выбор ветки чата — по две в ряд, чтобы влезали названия."""
     rows = [names[i:i + 2] for i in range(0, len(names), 2)]
