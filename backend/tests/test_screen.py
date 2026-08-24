@@ -191,3 +191,20 @@ def test_choice_answer_shows_the_greeting():
 
     source = inspect.getsource(remember_site_choice)
     assert "greeting_text()" in source
+
+
+def test_every_menu_word_has_a_handler():
+    """
+    Нажатие кнопки приходит текстом. Если обработчика нет, слово
+    проваливается дальше — в разбор объявлений или в соседнюю кнопку, и
+    человек видит совсем не то, что нажал.
+    """
+    from app.bot import keyboards as kb
+
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "bot" / "publisher.py").read_text()
+
+    for name in dir(kb):
+        if not name.isupper():
+            continue
+        assert f"kb.{name}" in source, f"нет обработчика для {name}"

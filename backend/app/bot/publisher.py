@@ -450,6 +450,7 @@ async def remember_site_choice(call: CallbackQuery) -> None:
 
 
 @dp.message(Command("site"))
+@dp.message(F.text == kb.SITE)
 async def change_site_choice(message: Message) -> None:
     """Даёт передумать: решение принимали один раз, но не навсегда."""
     await erase(message)
