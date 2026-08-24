@@ -150,3 +150,17 @@ def test_owner_tools_hidden():
     owner = [b.text for row in kb.idle(True).keyboard for b in row]
     assert kb.STATS not in plain
     assert kb.STATS in owner
+
+
+def test_menu_words_handled_before_listings():
+    """
+    Нажатие кнопки приходит обычным текстом. Если разбор объявлений
+    стоит раньше, «Мои объявления» принимается за товар и разбирается
+    как объявление — что и происходило.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "bot" / "publisher.py").read_text()
+
+    menu_at = source.index('@dp.message(F.text == kb.MY)')
+    listings_at = source.index('@dp.message(F.text & ~F.text.startswith("/"))')
+    assert menu_at < listings_at

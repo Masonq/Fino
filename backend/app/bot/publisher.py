@@ -806,93 +806,6 @@ async def _drop_album(message: Message, draft: Draft) -> None:
     draft.album_ids = []
 
 
-@dp.message(F.photo & F.media_group_id)
-async def album_part(message: Message, bot: Bot) -> None:
-    """
-    Альбом приходит несколькими сообщениями подряд.
-
-    Собираем их вместе, иначе на пять фотографий выйдет пять объявлений.
-    Подпись Telegram кладёт в первое сообщение.
-    """
-    group = message.media_group_id
-    albums.setdefault(group, []).append(message)
-    if len(albums[group]) > 1:
-        return                                   # первое сообщение уже ждёт
-
-    await asyncio.sleep(ALBUM_WAIT)
-    parts = sorted(albums.pop(group, []), key=lambda m: m.message_id)
-
-    photos = []
-    for part in parts[:MAX_PHOTOS]:
-        raw = await bot.download(part.photo[-1])
-        photos.append(shrink(raw.read()))
-    text = next((p.caption for p in parts if p.caption), "") or ""
-    # Альбом пришёл несколькими сообщениями — убрать надо все.
-    for part in parts:
-        await erase(part)
-    await handle_listing(message, photos, text)
-
-
-@dp.message(F.photo)
-async def single_photo(message: Message, bot: Bot) -> None:
-    raw = await bot.download(message.photo[-1])
-    photo = shrink(raw.read())
-
-    # Объявление уже разобрано и ждёт подтверждения — значит снимок к
-    # нему: человек прислал текст, а фотографию следом.
-    draft = drafts.get(message.from_user.id)
-    if draft and not message.caption and len(draft.photos) < MAX_PHOTOS:
-        draft.photos.append(photo)
-        await show_draft(message, draft)
-        return
-
-    await handle_listing(message, [photo], message.caption or "")
-
-
-@dp.message(F.text & ~F.text.startswith("/"))
-async def plain_text(message: Message) -> None:
-    """
-    Объявление без фотографий.
-
-    Принимаем, но предупреждаем: объявление без снимка почти не смотрят.
-    """
-    user_draft = drafts.get(message.from_user.id)
-    if user_draft and getattr(user_draft, "awaiting", None):
-        await apply_edit(message, user_draft)
-        return
-
-    await handle_listing(message, [], message.text)
-    # Про фотографию не напоминаем отдельным сообщением: об этом уже
-    # сказано в самой карточке, а лишний ответ засоряет переписку.
-
-
-async def apply_edit(message: Message, draft: Draft) -> None:
-    """Человек прислал исправление названия или цены."""
-    await erase(message)
-    what = getattr(draft, "awaiting", None)
-    value = message.text.strip()
-
-    if what == "title":
-        draft.title = value[:120]
-    elif what == "price":
-        cleaned = value.lower().replace(" ", "")
-        if cleaned in ("даром", "бесплатно", "0"):
-            draft.price, draft.is_free = None, True
-        else:
-            parsed = parse(f"Цена {value}")
-            if parsed["price"] is None:
-                await show(message.bot, message.chat.id,
-                           "Не понял цену. Напишите числом: «3000 динар» "
-                           "или «50 евро». Либо «даром».")
-                return
-            draft.price = parsed["price"]
-            draft.currency = parsed["currency"]
-            draft.is_free = False
-
-    draft.awaiting = None
-    await show_draft(message, draft)
-
-
 @dp.message(F.text == kb.MY)
 @dp.message(Command("my"))
 async def my_listings(message: Message) -> None:
@@ -1268,3 +1181,92 @@ async def main() -> None:
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+
+
+@dp.message(F.photo & F.media_group_id)
+async def album_part(message: Message, bot: Bot) -> None:
+    """
+    Альбом приходит несколькими сообщениями подряд.
+
+    Собираем их вместе, иначе на пять фотографий выйдет пять объявлений.
+    Подпись Telegram кладёт в первое сообщение.
+    """
+    group = message.media_group_id
+    albums.setdefault(group, []).append(message)
+    if len(albums[group]) > 1:
+        return                                   # первое сообщение уже ждёт
+
+    await asyncio.sleep(ALBUM_WAIT)
+    parts = sorted(albums.pop(group, []), key=lambda m: m.message_id)
+
+    photos = []
+    for part in parts[:MAX_PHOTOS]:
+        raw = await bot.download(part.photo[-1])
+        photos.append(shrink(raw.read()))
+    text = next((p.caption for p in parts if p.caption), "") or ""
+    # Альбом пришёл несколькими сообщениями — убрать надо все.
+    for part in parts:
+        await erase(part)
+    await handle_listing(message, photos, text)
+
+
+@dp.message(F.photo)
+async def single_photo(message: Message, bot: Bot) -> None:
+    raw = await bot.download(message.photo[-1])
+    photo = shrink(raw.read())
+
+    # Объявление уже разобрано и ждёт подтверждения — значит снимок к
+    # нему: человек прислал текст, а фотографию следом.
+    draft = drafts.get(message.from_user.id)
+    if draft and not message.caption and len(draft.photos) < MAX_PHOTOS:
+        draft.photos.append(photo)
+        await show_draft(message, draft)
+        return
+
+    await handle_listing(message, [photo], message.caption or "")
+
+
+@dp.message(F.text & ~F.text.startswith("/"))
+async def plain_text(message: Message) -> None:
+    """
+    Объявление без фотографий.
+
+    Принимаем, но предупреждаем: объявление без снимка почти не смотрят.
+    """
+    user_draft = drafts.get(message.from_user.id)
+    if user_draft and getattr(user_draft, "awaiting", None):
+        await apply_edit(message, user_draft)
+        return
+
+    await handle_listing(message, [], message.text)
+    # Про фотографию не напоминаем отдельным сообщением: об этом уже
+    # сказано в самой карточке, а лишний ответ засоряет переписку.
+
+
+async def apply_edit(message: Message, draft: Draft) -> None:
+    """Человек прислал исправление названия или цены."""
+    await erase(message)
+    what = getattr(draft, "awaiting", None)
+    value = message.text.strip()
+
+    if what == "title":
+        draft.title = value[:120]
+    elif what == "price":
+        cleaned = value.lower().replace(" ", "")
+        if cleaned in ("даром", "бесплатно", "0"):
+            draft.price, draft.is_free = None, True
+        else:
+            parsed = parse(f"Цена {value}")
+            if parsed["price"] is None:
+                await show(message.bot, message.chat.id,
+                           "Не понял цену. Напишите числом: «3000 динар» "
+                           "или «50 евро». Либо «даром».")
+                return
+            draft.price = parsed["price"]
+            draft.currency = parsed["currency"]
+            draft.is_free = False
+
+    draft.awaiting = None
+    await show_draft(message, draft)
+
