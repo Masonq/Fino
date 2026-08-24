@@ -168,8 +168,10 @@ async def fade(message: Message, seconds: int = CHATTER_SECONDS) -> None:
         await asyncio.sleep(seconds)
         try:
             await message.delete()
-        except Exception:                        # noqa: BLE001
-            pass
+            log.info("убрал служебное сообщение %s", message.message_id)
+        except Exception as exc:                 # noqa: BLE001
+            # Молчать нельзя: сообщения копились, а причина не была видна.
+            log.info("не убрал сообщение %s: %s", message.message_id, exc)
 
     asyncio.create_task(later())
 
@@ -475,7 +477,9 @@ async def remember_site_choice(call: CallbackQuery) -> None:
         reply_markup=None,
     )
     await call.answer()
-    await fade(call.message)
+    # Вопрос отвечен — держать его в переписке незачем. Полминуты, чтобы
+    # человек успел прочитать, что именно выбрал.
+    await fade(call.message, seconds=30)
 
 
 @dp.message(Command("site"))
