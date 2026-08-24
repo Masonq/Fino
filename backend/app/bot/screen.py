@@ -71,7 +71,12 @@ async def show(bot: Bot, chat_id: int, text: str, *,
             # для нас всё в порядке.
             if "not modified" in str(exc):
                 return None
+            # Сообщение, отправленное с меню под полем ввода, править
+            # нельзя вовсе. Тогда старое убираем и шлём новое — иначе
+            # они копятся, а живым остаётся давно ушедшее.
             log.info("не переписал сообщение %s: %s", message_id, exc)
+            await forget(bot, chat_id)
+            return await _send_new(bot, chat_id, text, photo, keyboard)
 
     # Снимок появился или исчез — переписать нельзя, шлём заново.
     await forget(bot, chat_id)

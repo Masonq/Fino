@@ -124,16 +124,30 @@ def test_menu_is_persistent():
     assert not menu.one_time_keyboard
 
 
-def test_menu_comes_with_every_plain_step():
+def test_menu_sent_sparingly():
     """
-    Меню и кнопки под сообщением делят одно поле: где есть кнопки, меню
-    не вложить. Поэтому доносим его на каждом шаге без кнопок —
-    приветствие, разбор, помощь, итог, — и человек не остаётся без него.
+    Сообщение, отправленное с меню под полем ввода, Telegram править не
+    даёт. Слать меню на каждом шаге значит плодить неправимые сообщения,
+    и они копятся в переписке. Достаточно знакомства и итога.
     """
     source = (Path(__file__).resolve().parents[1]
               / "app" / "bot" / "publisher.py").read_text()
 
-    assert source.count("menu=main_menu(") >= 5
+    assert 1 <= source.count("menu=main_menu(") <= 3
+
+
+def test_unfixable_message_is_replaced():
+    """
+    Сообщение с меню переписать нельзя. Тогда старое убираем и шлём
+    новое — иначе живым остаётся давно ушедшее, а в переписке копятся
+    близнецы.
+    """
+    import inspect
+    from app.bot.screen import show
+
+    source = inspect.getsource(show)
+    assert "await forget(bot, chat_id)" in source
+    assert source.count("_send_new(") >= 3
 
 
 def test_common_actions_live_in_the_message():

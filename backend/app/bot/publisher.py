@@ -491,7 +491,6 @@ async def remember_site_choice(call: CallbackQuery) -> None:
            if allowed else "Буду публиковать только в чат.\n\n")
         + "<i>Передумаете — напишите /site.</i>\n\n"
         "Пришлите объявление, когда будете готовы.",
-        menu=main_menu(is_chat_owner(call.from_user.id)),
     )
     await call.answer()
 
@@ -592,8 +591,6 @@ async def send_my_listings(message: Message, user) -> None:
         message.bot, message.chat.id, "\n".join(lines),
         keyboard=InlineKeyboardMarkup(inline_keyboard=buttons)
         if buttons else None,
-        # Если кнопок нет, меню несёт само сообщение: лишнего не будет.
-        menu=None if buttons else main_menu(is_chat_owner(user.id)),
     )
 
 
@@ -775,8 +772,7 @@ async def send_help(bot: Bot, chat_id: int, user_id: int) -> None:
         f"{emoji('open')} <b>Где публикуется</b>\n"
         "└ в чате и на сайте PLONK; поменять — /site\n"
         "\n"
-        f"<i>В сутки — до {rules.daily_limit} объявлений.</i>",
-        menu=main_menu(is_chat_owner(user_id)))
+        f"<i>В сутки — до {rules.daily_limit} объявлений.</i>")
 
 
 async def handle_listing(message: Message, photos: list[bytes], text: str) -> None:
@@ -815,8 +811,7 @@ async def handle_listing(message: Message, photos: list[bytes], text: str) -> No
     # Разбор занимает секунду-другую, а со снимками и дольше. Пишем это
     # в живое сообщение — новых в переписке не появляется. Заодно доносим
     # меню: у самой карточки свои кнопки, и меню в неё не вложить.
-    await show(message.bot, message.chat.id, "Разбираю объявление…",
-               menu=main_menu(is_chat_owner(message.from_user.id)))
+    await show(message.bot, message.chat.id, "Разбираю объявление…")
     draft = understand(text, Draft(
         photos=photos[:MAX_PHOTOS],
         # Что человек выбрал при знакомстве. Не выбирал — публикуем в оба
