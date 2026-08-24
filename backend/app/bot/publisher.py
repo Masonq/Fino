@@ -403,6 +403,10 @@ async def send_my_listings(message: Message, user) -> None:
     # с кнопкой у каждого выглядит как спам от самого себя и занимает
     # весь экран.
     lines = [f"{emoji('listings')} <b>Ваши объявления</b>", ""]
+    if live and sold:
+        # Подзаголовок нужен, только когда есть обе части: иначе он
+        # просто повторяет заголовок.
+        lines.append(f"{emoji('live')} <i>В продаже</i>")
     for number, item in enumerate(live, 1):
         price = money(item["price"], item["currency"], item["is_free"])
         lines.append(
