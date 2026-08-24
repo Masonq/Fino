@@ -49,6 +49,9 @@ from app.bot.emoji import digit, digit_icon, emoji, icon
 from app.bot.screen import (
     erase, forget as forget_screen, release, show,
 )
+from app.bot.guard import (
+    is_newcomer, note_join, note_published, note_repeat, punish, why_bad,
+)
 from app.bot.sweeper import looks_like_listing, rescued, sweep
 from app.bot.post_format import (
     build_caption, build_preview, build_sold_caption, money,
@@ -266,23 +269,64 @@ BOT_USERNAME = ""
 @dp.message(F.chat.id == TARGET_CHAT)
 async def watch_chat(message: Message, bot: Bot) -> None:
     """
-    Следит за чатом и убирает объявления, написанные мимо бота.
+    Присмотр за чатом: порядок, спам, объявления мимо бота.
 
-    Работает, только если владелец это включил: без разрешения хозяйничать
-    в чужом чате нельзя.
+    Системные сообщения убираем всегда — «Иван присоединился» в ленте
+    объявлений только мешает искать.
     """
-    if not rules_for(TARGET_CHAT).sweep_direct_posts:
+    # Системные сообщения: вход, выход, смена картинки, закрепление.
+    if (message.new_chat_members or message.left_chat_member
+            or message.new_chat_photo or message.delete_chat_photo
+            or message.new_chat_title or message.pinned_message
+            or message.group_chat_created or message.forum_topic_created
+            or message.forum_topic_edited):
+        for member in (message.new_chat_members or []):
+            if not member.is_bot:
+                note_join(member.id)
+        try:
+            await message.delete()
+        except Exception:                        # noqa: BLE001
+            pass
         return
-    # Свои же посты не трогаем, и сообщения администраторов тоже: они
-    # пишут правила и объявления чата.
-    if message.from_user and message.from_user.is_bot:
+
+    if not message.from_user or message.from_user.is_bot:
         return
+
+    # Администраторов не трогаем: они пишут правила и объявления чата.
     try:
         member = await bot.get_chat_member(TARGET_CHAT, message.from_user.id)
         if member.status in ("administrator", "creator"):
             return
     except Exception:                            # noqa: BLE001
         pass
+
+    rules = rules_for(TARGET_CHAT)
+
+    # Спам разбираем раньше объявлений: реклама тоже бывает похожа на
+    # объявление, и убрать её надо с объяснением, а не молча.
+    if rules.guard_spam:
+        text = message.text or message.caption or ""
+        newcomer = is_newcomer(message.from_user.id)
+        complaint = why_bad(message, newcomer)
+
+        if not complaint and note_repeat(message.from_user.id, text):
+            complaint = "одно и то же подряд"
+
+        if complaint:
+            try:
+                await message.delete()
+            except Exception:                    # noqa: BLE001
+                pass
+            done = await punish(bot, TARGET_CHAT, message.from_user.id,
+                                complaint)
+            await _say_and_fade(
+                bot, TARGET_CHAT, message.message_thread_id,
+                f"{message.from_user.full_name}, в этом чате не публикуют "
+                f"{complaint}. {done.capitalize()}.")
+            return
+
+    if not rules.sweep_direct_posts:
+        return
 
     if not looks_like_listing(message):
         return
@@ -310,6 +354,25 @@ async def watch_chat(message: Message, bot: Bot) -> None:
                     message.from_user.id, media, **kwargs)
 
         await offer_rescued(_Direct(), bot)
+
+
+async def _say_and_fade(bot: Bot, chat_id: int, thread_id: int | None,
+                        text: str) -> None:
+    """Замечание в чате, которое само убирается через минуту."""
+    try:
+        note = await bot.send_message(chat_id, text,
+                                      message_thread_id=thread_id)
+    except Exception:                            # noqa: BLE001
+        return
+
+    async def later() -> None:
+        await asyncio.sleep(60)
+        try:
+            await bot.delete_message(chat_id, note.message_id)
+        except Exception:                        # noqa: BLE001
+            pass
+
+    asyncio.create_task(later())
 
 
 @dp.message(Command("start"), F.text.contains("from_chat"))
@@ -1092,6 +1155,9 @@ async def publish(message: Message, bot: Bot) -> None:
             log.warning("не удалось запомнить номер поста")
 
     published_today.setdefault(message.from_user.id, []).append(utcnow())
+    # Опубликовал через бота — значит пришёл по делу, а не спамить.
+    # Тихий режим новичка ему больше не нужен.
+    note_published(message.from_user.id)
     published_count[message.from_user.id] = published_count.get(
         message.from_user.id, 0) + 1
     # Снимки-образцы убираем: объявление уже в чате, и держать их копию
