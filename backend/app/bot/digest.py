@@ -20,6 +20,18 @@ from app.core.partner_chats import topic_name
 from app.models import Category, Listing, ListingStatus, User
 
 
+def _title(name, lang: str = "ru") -> str:
+    """
+    Название раздела на нужном языке.
+
+    В базе оно хранится сразу на трёх — сводка на русском, значит берём
+    русское; если его нет, любое другое лучше, чем пустота.
+    """
+    if isinstance(name, dict):
+        return name.get(lang) or next(iter(name.values()), "")
+    return str(name or "")
+
+
 def build(chat_id: int, days: int = 7) -> str:
     """Собирает сводку за последние дни."""
     since = utcnow() - timedelta(days=days)
@@ -82,7 +94,7 @@ def build(chat_id: int, days: int = 7) -> str:
     if by_category:
         lines += ["", "<b>Чего больше всего</b>"]
         for name, count in by_category:
-            lines.append(f"  {name} — {count}")
+            lines.append(f"  {_title(name)} — {count}")
 
     if by_author:
         lines += ["", "<b>Кто публикует чаще</b>"]

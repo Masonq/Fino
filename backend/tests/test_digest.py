@@ -46,3 +46,19 @@ def test_digest_reads_category_names():
 
     assert "Category.name" in source
     assert "Category.slug" not in source
+
+
+def test_category_name_is_taken_in_one_language():
+    """
+    Название хранится сразу на трёх языках. Без выбора в сводку попадал
+    весь набор целиком: «{'en': 'Home & Garden', 'ru': 'Дом и сад'…}».
+    """
+    from app.bot.digest import _title
+
+    assert _title({"en": "Home & Garden", "ru": "Дом и сад",
+                   "sr": "Dom i bašta"}) == "Дом и сад"
+    # нужного языка нет — любое лучше, чем пустота
+    assert _title({"en": "Kitchenware"}) == "Kitchenware"
+    # обычная строка тоже должна работать
+    assert _title("Мебель") == "Мебель"
+    assert _title(None) == ""
