@@ -1460,6 +1460,23 @@ def save_listing(draft: Draft, author) -> str | None:
         return None
 
 
+@dp.message()
+async def unhandled(message: Message) -> None:
+    """
+    Сообщение не подошло ни к одному обработчику.
+
+    Молчать нельзя: человек не понимает, услышали его или нет. И нам
+    видно, чего не хватает.
+    """
+    log.info("не обработано: chat=%s type=%s text=%r",
+             message.chat.id, message.content_type,
+             (message.text or message.caption or "")[:60])
+    await show(message.bot, message.chat.id,
+               "Не понял. Пришлите объявление — фотографии и описание "
+               "одним сообщением.",
+               keyboard=kb.idle(is_chat_owner(message.from_user.id)))
+
+
 async def main() -> None:
     logging.basicConfig(level=logging.INFO)
     token = settings.telegram_bot_token
