@@ -12,8 +12,8 @@
 from datetime import timedelta
 from xml.sax.saxutils import escape
 
-from fastapi import APIRouter, Depends
-from fastapi.responses import Response
+from fastapi import APIRouter, Depends, Request
+from fastapi.responses import HTMLResponse, Response
 from sqlalchemy.orm import Session
 
 from app.core.clock import utcnow
@@ -47,8 +47,11 @@ def sitemap(db: Session = Depends(get_db)):
 
     # Разделы — вторые по важности после главной: по ним ищут чаще, чем
     # по отдельной вещи («мебель Белград»).
-    for category in db.query(Category).filter(Category.parent_id.is_(None)):
-        urls.append(_url(f"{site}/category/{category.slug}", now, "0.8"))
+    for category in db.query(Category).all():
+        # Подразделы тоже: «сковороды» ищут чаще, чем «дом и сад».
+        top = category.parent_id is None
+        urls.append(_url(f"{site}/category/{category.slug}", now,
+                         "0.8" if top else "0.6"))
 
     listings = (
         db.query(Listing)
@@ -72,3 +75,159 @@ def sitemap(db: Session = Depends(get_db)):
             '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
             + "".join(urls) + "</urlset>")
     return Response(content=body, media_type="application/xml")
+
+
+# Страница объявления для поисковика.
+#
+# Сайт собирается в браузере: поисковик получает пустую страницу и ни
+# названия вещи, ни цены не видит. Отдаём ему готовый разметанный
+# документ — тот же, что человек увидит после загрузки, но сразу.
+#
+# Человека при этом сразу отправляем на обычную страницу: подменять
+# людям вид — обман, за который поисковики наказывают.
+LISTING_PAGE = """<!DOCTYPE html>
+<html lang="{lang}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title} — {price} · {city} | PLONK</title>
+<meta name="description" content="{description}">
+<link rel="canonical" href="{url}">
+<meta property="og:type" content="product">
+<meta property="og:title" content="{title}">
+<meta property="og:description" content="{description}">
+<meta property="og:url" content="{url}">
+{image_tag}
+<script type="application/ld+json">
+{schema}
+</script>
+</head>
+<body>
+<h1>{title}</h1>
+<p><strong>{price}</strong>{city_line}</p>
+<p>{description}</p>
+<p><a href="{url}">Открыть объявление на PLONK</a></p>
+<script>location.replace("{url}")</script>
+</body>
+</html>"""
+
+
+def _is_crawler(agent: str) -> bool:
+    """
+    Пришёл поисковик или человек.
+
+    Человеку отдавать урезанную страницу нельзя — он ждёт живой сайт.
+    """
+    agent = (agent or "").lower()
+    return any(bot in agent for bot in (
+        "googlebot", "yandex", "bingbot", "duckduckbot", "baiduspider",
+        "applebot", "facebookexternalhit", "twitterbot", "telegrambot",
+        "whatsapp", "slackbot", "linkedinbot", "petalbot", "ahrefsbot",
+    ))
+
+
+@router.get("/listing/{listing_id}", include_in_schema=False)
+def listing_page(listing_id: str, request: Request,
+                 db: Session = Depends(get_db)):
+    """Страница объявления с текстом — для поисковиков и превью ссылок."""
+    from fastapi.responses import RedirectResponse
+    from html import escape as esc
+
+    site = settings.public_base_url.rstrip("/")
+    url = f"{site}/listing/{listing_id}"
+
+    # Человека не задерживаем: ему нужен обычный сайт.
+    if not _is_crawler(request.headers.get("user-agent", "")):
+        return RedirectResponse(url, status_code=307)
+
+    from app.models import ListingPhoto, ListingTranslation
+
+    listing = db.query(Listing).filter(Listing.id == listing_id).first()
+    if not listing:
+        return RedirectResponse(site, status_code=307)
+
+    lang = (listing.source_language.value
+            if hasattr(listing.source_language, "value")
+            else str(listing.source_language or "ru"))
+    translation = (
+        db.query(ListingTranslation)
+        .filter(ListingTranslation.listing_id == listing.id,
+                ListingTranslation.language == listing.source_language)
+        .first()
+    )
+    title = (translation.title if translation else "") or "Объявление"
+    body = (translation.description if translation else "") or ""
+
+    price = _price_words(listing)
+    city = _city_words(listing.city)
+    photo = (db.query(ListingPhoto)
+             .filter(ListingPhoto.listing_id == listing.id)
+             .order_by(ListingPhoto.sort_order).first())
+
+    schema = _listing_schema(listing, title, body, url,
+                             photo.url if photo else None)
+
+    return HTMLResponse(LISTING_PAGE.format(
+        lang=lang,
+        title=esc(title),
+        price=esc(price),
+        city=esc(city or "Сербия"),
+        city_line=f" · {esc(city)}" if city else "",
+        description=esc(body[:300] or title),
+        url=url,
+        image_tag=(f'<meta property="og:image" content="{esc(photo.url)}">'
+                   if photo else ""),
+        schema=schema,
+    ))
+
+
+def _price_words(listing) -> str:
+    if listing.is_free:
+        return "Бесплатно"
+    if listing.price is None:
+        return "Цена не указана"
+    whole = f"{int(listing.price):,}".replace(",", " ")
+    sign = "€" if str(listing.currency).endswith("eur") else "RSD"
+    return f"{whole} {sign}"
+
+
+def _city_words(city: str | None) -> str:
+    if not city:
+        return ""
+    from app.bot.post_format import city_title
+
+    return city_title(city)
+
+
+def _listing_schema(listing, title: str, body: str, url: str,
+                    image: str | None) -> str:
+    """
+    Разметка товара.
+
+    По ней поисковик показывает цену и наличие прямо в выдаче — такое
+    объявление открывают заметно чаще обычной строки.
+    """
+    import json
+
+    data = {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": title,
+        "description": body[:500] or title,
+        "url": url,
+        "offers": {
+            "@type": "Offer",
+            "url": url,
+            "priceCurrency": ("EUR" if str(listing.currency).endswith("eur")
+                              else "RSD"),
+            "price": float(listing.price or 0),
+            "availability": ("https://schema.org/InStock"
+                             if listing.status == ListingStatus.active
+                             else "https://schema.org/SoldOut"),
+        },
+    }
+    if image:
+        data["image"] = image
+    if listing.city:
+        data["areaServed"] = _city_words(listing.city)
+    return json.dumps(data, ensure_ascii=False, indent=1)

@@ -50,3 +50,44 @@ def test_page_tells_who_it_is():
     assert "application/ld+json" in html
     # старый адрес с портом нигде не остался
     assert "89.208" not in html
+
+
+def test_crawlers_get_text_people_get_the_site():
+    """
+    Сайт собирается в браузере: поисковик получает пустую страницу и ни
+    названия вещи, ни цены не видит. Человеку урезанную страницу
+    отдавать нельзя — он ждёт живой сайт.
+    """
+    from app.routers.seo import _is_crawler
+
+    for agent in ("Mozilla/5.0 (compatible; Googlebot/2.1)",
+                  "Mozilla/5.0 (compatible; YandexBot/3.0)",
+                  "TelegramBot (like TwitterBot)"):
+        assert _is_crawler(agent), agent
+
+    for agent in ("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0)",
+                  "Mozilla/5.0 (Windows NT 10.0; Win64) Chrome/120"):
+        assert not _is_crawler(agent), agent
+
+
+def test_listing_page_shows_price_in_search():
+    """
+    Разметка товара показывает цену прямо в выдаче — такое объявление
+    открывают заметно чаще обычной строки.
+    """
+    import inspect
+    from app.routers.seo import _listing_schema
+
+    source = inspect.getsource(_listing_schema)
+    assert '"@type": "Product"' in source
+    assert "priceCurrency" in source
+    assert "availability" in source
+
+
+def test_subcategories_are_in_the_map():
+    """«Сковороды» ищут чаще, чем «дом и сад»."""
+    import inspect
+    from app.routers.seo import sitemap
+
+    source = inspect.getsource(sitemap)
+    assert "Category).all()" in source
