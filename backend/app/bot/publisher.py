@@ -39,7 +39,7 @@ from app.core.spellfix import fix as spellfix
 from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.partner_chats import (
-    BARAHOLKA_TEST, topic_for, topic_name, topics_of,
+    BARAHOLKA_TEST, talk_topic, topic_for, topic_name, topics_of,
 )
 from app.core.tg_classify import classify, classify_sub
 from app.core.tg_parse import job_kind, looks_wanted, parse
@@ -301,6 +301,9 @@ async def watch_chat(message: Message, bot: Bot) -> None:
         pass
 
     rules = rules_for(TARGET_CHAT)
+    # Ветка для разговоров: там можно всё, кроме рекламы. В прочих
+    # ветках только объявления — иначе они тонут в «а ещё актуально?».
+    in_talk = message.message_thread_id == talk_topic(TARGET_CHAT)
 
     # Спам разбираем раньше объявлений: реклама тоже бывает похожа на
     # объявление, и убрать её надо с объяснением, а не молча.
@@ -325,14 +328,37 @@ async def watch_chat(message: Message, bot: Bot) -> None:
                 f"{complaint}. {done.capitalize()}.")
             return
 
-    if not rules.sweep_direct_posts:
+    if not rules.sweep_direct_posts or in_talk:
         return
 
-    if not looks_like_listing(message):
+    if looks_like_listing(message):
+        reachable = await sweep(message, bot, BOT_USERNAME)
+        await _offer_if_reachable(message, bot, reachable)
         return
 
-    reachable = await sweep(message, bot, BOT_USERNAME)
-    if reachable:
+    # Разговор в ветке объявлений: убираем и показываем, куда идти.
+    # Объявления в такой ветке ищут глазами, и «ещё актуально?» под
+    # каждым третьим делает это невозможным.
+    talk = talk_topic(TARGET_CHAT)
+    if not talk:
+        return
+    try:
+        await message.delete()
+    except Exception:                            # noqa: BLE001
+        return
+    await _say_and_fade(
+        bot, TARGET_CHAT, message.message_thread_id,
+        f"{message.from_user.full_name}, вопросы и разговоры — в ветке "
+        "«Общение». Здесь только объявления, чтобы их было видно.")
+    return
+
+
+async def _offer_if_reachable(message: Message, bot: Bot,
+                              reachable: bool) -> None:
+    """Показывает убранное объявление, если в личку удалось написать."""
+    if not reachable:
+        return
+    if True:
         # Переписка с ботом уже была — показываем готовое объявление
         # сразу, человеку никуда ходить не нужно.
         class _Direct:

@@ -52,6 +52,17 @@ TOPIC_BY_CATEGORY[BARAHOLKA_TEST] = {
     "jobs": 108,                # Вакансии • Резюме
 }
 
+# Ветка для разговоров: там можно всё, кроме рекламы. В прочих ветках
+# только объявления — иначе они тонут в «а ещё актуально?».
+TALK_TOPICS: dict[int, int] = {
+    BARAHOLKA_TEST: 109,        # Общение
+}
+
+
+def talk_topic(chat_id: int) -> int | None:
+    return TALK_TOPICS.get(chat_id)
+
+
 SPECIAL_TOPICS_TEST = {
     "free": 10,                 # Отдам даром
     "wanted": 11,               # Куплю/ищу
@@ -75,6 +86,7 @@ SPECIAL_TOPICS: dict[int, dict[str, int]] = {
 TOPIC_NAMES: dict[int, dict[int, str]] = {
     BARAHOLKA_TEST: {
         2: "Электроника",
+        109: "Общение",
         6: "Одежда • Обувь",
         8: "Мебель и всё для дома",
         9: "Детские товары",

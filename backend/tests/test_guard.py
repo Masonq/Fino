@@ -77,3 +77,30 @@ def test_punishment_is_a_ladder():
 def test_newcomer_window_is_short():
     """Сутки отсекают спамеров, а настоящему продавцу столько не нужно."""
     assert NEWCOMER_HOURS <= 48
+
+
+def test_spam_is_caught_everywhere():
+    """
+    Реклама ловится и в ветке разговоров: там можно всё, кроме неё.
+    Проверка спама идёт до разделения веток.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "bot" / "publisher.py").read_text()
+
+    guard_at = source.index("if rules.guard_spam:")
+    talk_at = source.index("if not rules.sweep_direct_posts or in_talk:")
+    assert guard_at < talk_at
+
+
+def test_talk_belongs_to_its_topic():
+    """
+    Объявления в ветке ищут глазами, и «ещё актуально?» под каждым
+    третьим делает это невозможным. Разговоры — в свою ветку.
+    """
+    from app.core.partner_chats import BARAHOLKA_TEST, talk_topic
+
+    assert talk_topic(BARAHOLKA_TEST) == 109
+
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "bot" / "publisher.py").read_text()
+    assert "вопросы и разговоры — в ветке" in source.lower()
