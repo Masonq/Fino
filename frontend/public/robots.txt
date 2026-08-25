@@ -1,0 +1,16 @@
+# Что можно смотреть поисковикам.
+#
+# Открыто всё, кроме служебного: личные страницы и админка в поиске не
+# нужны никому, а объявления — наоборот, ради них люди и приходят.
+
+User-agent: *
+Allow: /
+
+Disallow: /profile
+Disallow: /admin
+Disallow: /chats
+Disallow: /enter
+Disallow: /favorites
+Disallow: /my
+
+Sitemap: https://plonk.rs/sitemap.xml

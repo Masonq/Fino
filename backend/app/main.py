@@ -10,7 +10,8 @@ from app.routers import (
     categories, chats,
     favorites, listings,
     media,
-    moderation, preview, reports, reviews, saved_searches, support, users,
+    moderation, preview, reports, reviews, saved_searches, seo, support,
+    users,
 )
 
 app = FastAPI(title=settings.app_name)
@@ -43,6 +44,7 @@ app.include_router(admin_stats.router)
 app.include_router(admin_audit.router)
 app.include_router(support.router)
 app.include_router(auth_telegram.router)
+app.include_router(seo.router)
 
 
 @app.get("/api/health")
