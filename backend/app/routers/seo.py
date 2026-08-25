@@ -173,12 +173,26 @@ def listing_page(listing_id: str, request: Request,
         price=esc(price),
         city=esc(city or "Сербия"),
         city_line=f" · {esc(city)}" if city else "",
-        description=esc(body[:300] or title),
+        description=esc(_clean(body)[:300] or title),
         url=url,
         image_tag=(f'<meta property="og:image" content="{esc(photo.url)}">'
                    if photo else ""),
         schema=schema,
     ))
+
+
+def _clean(text: str) -> str:
+    """
+    Описание для выдачи.
+
+    Смайлики и переносы строк в поисковой строке выглядят мусором, а
+    места занимают: в выдаче показывают полторы сотни знаков, и тратить
+    их на «🙈» жалко.
+    """
+    import re
+
+    body = re.sub(r"[\U0001F300-\U0001FAFF\u2600-\u27BF]", "", text or "")
+    return " ".join(body.split())
 
 
 def _price_words(listing) -> str:
