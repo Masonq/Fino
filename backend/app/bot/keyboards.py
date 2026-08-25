@@ -26,6 +26,8 @@ MY = "Мои объявления"
 HELP = "Помощь"
 STATS = "Сводка"
 SITE = "Где публикуется"
+WATCH = "Слежу за"
+WATCH_ADD = "Следить за вещью"
 
 
 def _menu(rows: list[list[str]], hint: str) -> ReplyKeyboardMarkup:
@@ -39,11 +41,9 @@ def _menu(rows: list[list[str]], hint: str) -> ReplyKeyboardMarkup:
 
 def idle(is_owner: bool = False) -> ReplyKeyboardMarkup:
     """Меню в покое: объявления ещё нет."""
-    rows = [[MY, HELP]]
+    rows = [[MY, WATCH], [HELP, SITE]]
     if is_owner:
-        rows.append([STATS, SITE])
-    else:
-        rows.append([SITE])
+        rows.append([STATS])
     return _menu(rows, "Пришлите объявление сюда")
 
 
@@ -87,6 +87,22 @@ def listings(count: int, is_owner: bool = False) -> ReplyKeyboardMarkup:
         # а вернуть удалённое нельзя.
         rows.append([f"{n}{DROP_SUFFIX}" for n in range(1, min(count, 3) + 1)])
 
+    rows.append([MY, HELP])
+    if is_owner:
+        rows.append([STATS, SITE])
+    else:
+        rows.append([SITE])
+    return _menu(rows, "Пришлите объявление сюда")
+
+
+DROP_WATCH_SUFFIX = " не следить"
+
+
+def watching(count: int, is_owner: bool = False) -> ReplyKeyboardMarkup:
+    """Меню над списком подписок."""
+    rows = [[WATCH_ADD]]
+    if count:
+        rows.append([f"{n}{DROP_WATCH_SUFFIX}" for n in range(1, min(count, 3) + 1)])
     rows.append([MY, HELP])
     if is_owner:
         rows.append([STATS, SITE])

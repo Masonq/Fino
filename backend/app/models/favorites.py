@@ -22,7 +22,10 @@ class SavedSearch(Base):
     __tablename__ = "saved_searches"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), index=True)
+    # Пусто, если подписка заведена из бота: человек пришёл из чата и
+    # нигде не регистрировался, а искать хочет уже сейчас.
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), index=True, nullable=True)
 
     name: Mapped[str] = mapped_column(String(120))
     # Сериализованные фильтры: категория, цена, атрибуты, город

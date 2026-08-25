@@ -43,6 +43,7 @@ from app.core.partner_chats import (
 )
 from app.core.tg_classify import classify, classify_sub
 from app.core.tg_parse import job_kind, looks_wanted, parse
+from app.bot import subscriptions
 from app.bot.digest import build as build_digest
 from app.bot import keyboards as kb
 from app.bot.emoji import digit, digit_icon, emoji, icon
@@ -116,6 +117,10 @@ published_count: dict[int, int] = {}
 # Кому уже предлагали. Второй раз не зовём: назойливость раздражает
 # сильнее, чем польза от входа.
 invited: set[int] = set()
+# Кто сейчас называет вещь для подписки. Иначе следующее сообщение
+# ушло бы в разбор объявления.
+watching_input: set[int] = set()
+
 # Кто разрешил публиковать на сайте. Спрашиваем один раз при знакомстве:
 # у каждого объявления это переспрашивать — навязчиво, а решение у
 # человека всё равно одно на всех.
@@ -1025,6 +1030,59 @@ async def my_listings(message: Message) -> None:
     await send_my_listings(message, message.from_user)
 
 
+@dp.message(F.text == kb.WATCH)
+async def watch_list(message: Message) -> None:
+    """
+    Подписки человека: за чем он следит.
+
+    Бот получился для продавцов, а покупателей всегда больше. Подписка
+    возвращает их в бота — и однажды они и сами что-нибудь продадут.
+    """
+    await erase(message)
+    with SessionLocal() as db:
+        rows = subscriptions.mine(db, message.from_user.id)
+
+    if not rows:
+        await show(
+            message.bot, message.chat.id,
+            f"{emoji('listings')} <b>Слежу за вещами</b>\n\n"
+            "Назовите вещь — сообщу, как только она появится.\n"
+            "Например: <i>коляска chicco</i> или <i>iphone 13</i>.\n\n"
+            "Нажмите «Следить за вещью» и напишите, что ищете.",
+            keyboard=kb.watching(0, is_chat_owner(message.from_user.id)))
+        return
+
+    lines = [f"{emoji('listings')} <b>Слежу за вещами</b>", ""]
+    for number, (_, words) in enumerate(rows, 1):
+        lines.append(f"{digit(number)} {escape(' '.join(words))}")
+    lines += ["", "<i>Сообщу, как только появится подходящее.</i>"]
+
+    await show(message.bot, message.chat.id, "\n".join(lines),
+               keyboard=kb.watching(len(rows),
+                                    is_chat_owner(message.from_user.id)))
+
+
+@dp.message(F.text == kb.WATCH_ADD)
+async def watch_ask(message: Message) -> None:
+    """Спрашивает, за какой вещью следить."""
+    await erase(message)
+    watching_input.add(message.from_user.id)
+    await show(message.bot, message.chat.id,
+               "Что ищете? Напишите вещь одной строкой — "
+               "например «коляска chicco» или «стол письменный».",
+               keyboard=kb.watching(0, is_chat_owner(message.from_user.id)))
+
+
+@dp.message(F.text.regexp(r"^\d+ не следить$"))
+async def watch_drop(message: Message) -> None:
+    """Убирает подписку по номеру из списка."""
+    await erase(message)
+    number = int(message.text.split()[0])
+    with SessionLocal() as db:
+        subscriptions.drop(db, message.from_user.id, number)
+    await watch_list(message)
+
+
 @dp.message(F.text == kb.STATS)
 async def stats_button(message: Message) -> None:
     """Сводка — только владельцу чата."""
@@ -1216,6 +1274,7 @@ async def publish(message: Message, bot: Bot) -> None:
     await show(message.bot, message.chat.id, done, fresh=True,
                keyboard=kb.idle(is_chat_owner(message.from_user.id)))
 
+    await tell_watchers(bot, draft, listing_id)
     await maybe_invite(message, message.from_user)
 
 
@@ -1244,6 +1303,38 @@ async def mark_busy(call: CallbackQuery, what: str) -> None:
 # С третьего объявления человеку становится что смотреть на сайте: там
 # видно, кто открывал, лежит переписка, и объявления можно править.
 INVITE_AFTER = 3
+
+
+async def tell_watchers(bot: Bot, draft: Draft, listing_id: str | None) -> None:
+    """
+    Сообщает тем, кто ждал такую вещь.
+
+    Ради этого подписка и заводится: человек не листает чат каждый день,
+    а узнаёт, когда появилось нужное.
+    """
+    try:
+        with SessionLocal() as db:
+            ready = subscriptions.waiting_for(db, draft.title, draft.description)
+    except Exception:                            # noqa: BLE001
+        log.exception("не удалось найти подписчиков")
+        return
+
+    site = settings.public_base_url.rstrip("/")
+    price = money(draft.price, draft.currency, draft.is_free)
+
+    for telegram_id in ready:
+        try:
+            await bot.send_message(
+                telegram_id,
+                f"{emoji('listings')} <b>Появилось то, что вы искали</b>\n\n"
+                f"<b>{escape(draft.title)}</b>\n{price}"
+                + (f" · {escape(draft.city)}" if draft.city else "")
+                + (f"\n\n{site}/listing/{listing_id}" if listing_id else ""),
+                disable_web_page_preview=True,
+            )
+        except Exception:                        # noqa: BLE001
+            # Человек мог заблокировать бота — это не повод падать.
+            pass
 
 
 async def maybe_invite(message: Message, user) -> None:
@@ -1448,6 +1539,24 @@ async def single_photo(message: Message, bot: Bot) -> None:
 
 @dp.message(F.text & ~F.text.startswith("/"))
 async def plain_text(message: Message) -> None:
+    # Человек называет вещь для подписки — это не объявление.
+    if message.from_user.id in watching_input:
+        watching_input.discard(message.from_user.id)
+        await erase(message)
+        with SessionLocal() as db:
+            words = subscriptions.add(db, message.from_user.id, message.text)
+        if words:
+            await show(message.bot, message.chat.id,
+                       f"Слежу за: <b>{escape(' '.join(words))}</b>\n\n"
+                       "Сообщу, как только появится подходящее объявление.",
+                       keyboard=kb.idle(is_chat_owner(message.from_user.id)))
+        else:
+            await show(message.bot, message.chat.id,
+                       "Не понял, за чем следить. Напишите вещь одной "
+                       "строкой — например «коляска chicco».",
+                       keyboard=kb.idle(is_chat_owner(message.from_user.id)))
+        return
+
     """
     Объявление без фотографий.
 
