@@ -225,3 +225,18 @@ def test_listings_menu_keeps_all_actions():
     words = [b.text for row in kb.listings(2, False).keyboard for b in row]
     assert "1 продано" in words and "2 продано" in words
     assert kb.MY in words and kb.HELP in words
+
+
+def test_bot_can_actually_start():
+    """
+    Перестановка обработчиков однажды вырезала запуск целиком: бот
+    стартовал и через шесть секунд завершался без ошибки, потому что
+    слушать было нечем.
+    """
+    from app.bot import publisher
+
+    assert hasattr(publisher, "main")
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "bot" / "publisher.py").read_text()
+    assert "await dp.start_polling(bot)" in source
+    assert 'if __name__ == "__main__":' in source
