@@ -2244,3 +2244,26 @@ def test_common_words_are_not_cities():
     assert extract_city("Нишевый товар") is None
     # а настоящий Ниш находится
     assert extract_city("Продам стол в Нише") == "nis"
+
+
+def test_landmarks_point_to_belgrade():
+    """
+    Место встречи называют ориентиром, а не районом: «Сава центр»,
+    «Црвени крст», «ботанический сад». Для человека это понятнее, а
+    город из них следует однозначно.
+    """
+    from app.core.tg_parse import extract_city
+
+    assert extract_city("Платье, Сава центр") == "beograd"
+    assert extract_city("Духи, Црвени Крст") == "beograd"
+    assert extract_city("Брошки, ботанический сад, рядом с Лидлом") == "beograd"
+    assert extract_city("Стол, Калемегдан") == "beograd"
+
+
+def test_landmarks_do_not_catch_ordinary_words():
+    """«Ботанический определитель» и «аэродромный чемодан» — не адрес."""
+    from app.core.tg_parse import extract_city
+
+    assert extract_city("Продам ботанический определитель") is None
+    assert extract_city("Аэродромный чемодан") is None
+    assert extract_city("Продам центр стола") is None
