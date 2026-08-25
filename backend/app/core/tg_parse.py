@@ -509,6 +509,33 @@ def _parts_only(text: str, pos: int) -> bool:
     return bool(_PARTS_CONTEXT_RE.search(text[:pos]))
 
 
+# Вещи, которые в динарах за такие деньги не продают. Ноутбук за 2200
+# динар — это двадцать евро, и объявление выглядит обманом; а ошибка в
+# сто раз хуже пустого ценника.
+_PRICEY_RE = re.compile(
+    r"(macbook|мак ?бук|imac|ipad|айпад|iphone|айфон|"
+    r"ноутбук|laptop|playstation|ps[45]\b|xbox|"
+    r"холодильник|стиральн\w+ машин|посудомоечн\w+|"
+    r"телевизор|smart ?tv|велосипед|скутер|мопед|"
+    r"коляск\w+\s+(?:2в1|3в1)|dyson|дайсон)", re.I)
+
+
+def _currency_by_sense(value: float, text: str) -> str:
+    """
+    Валюта, когда её не написали.
+
+    До тысячи в Белграде торгуются в евро, выше — в динарах. Но у
+    дорогих вещей это правило подводит: «MacBook, цена 2200» — это
+    евро, а не двадцать евро в динарах.
+    """
+    if value <= 1000:
+        return "EUR"
+    # Дорогая вещь по цене мелочи — значит валюту недописали.
+    if value <= 5000 and _PRICEY_RE.search(text[:300]):
+        return "EUR"
+    return "RSD"
+
+
 def extract_price(text: str) -> tuple[float | None, str | None]:
     m = _RANGE_RE.search(text)
     if m:
@@ -541,9 +568,7 @@ def extract_price(text: str) -> tuple[float | None, str | None]:
             scored.sort(reverse=True)
             _, _, value, currency = scored[0]
             if currency is None:
-                # Валюту не написали: до тысячи в Белграде торгуются в
-                # евро, выше — в динарах.
-                currency = "EUR" if value <= 1000 else "RSD"
+                currency = _currency_by_sense(value, text)
             return value, currency
 
     # «Покупала за 16к, продаю за 7500» — валюту не написали вовсе. Само
@@ -553,8 +578,7 @@ def extract_price(text: str) -> tuple[float | None, str | None]:
     if m and not _PARTS_CONTEXT_RE.search(text[:m.start()]):
         value = _to_number(m.group(1))
         if value is not None:
-            # До тысячи в Белграде торгуются в евро, выше — в динарах.
-            return value, "EUR" if value <= 1000 else "RSD"
+            return value, _currency_by_sense(value, text)
 
     # «Продам:\n- диван 25000\n- стол 3000» — валюту в списках не пишут
     # вовсе, а сумма стоит в конце строки. Берём только крупные числа:
@@ -580,7 +604,7 @@ def extract_price(text: str) -> tuple[float | None, str | None]:
             # Валюту не написали, но слово «цена» рядом стоит — значит это
             # точно цена, а не случайное число. До тысячи в Белграде
             # торгуются в евро, выше — в динарах.
-            return value, "EUR" if value <= 1000 else "RSD"
+            return value, _currency_by_sense(value, text)
 
     m = _PRICE_K_RE.search(text)
     if m:

@@ -2267,3 +2267,24 @@ def test_landmarks_do_not_catch_ordinary_words():
     assert extract_city("Продам ботанический определитель") is None
     assert extract_city("Аэродромный чемодан") is None
     assert extract_city("Продам центр стола") is None
+
+
+def test_expensive_things_are_priced_in_euro():
+    """
+    «MacBook, цена 2200» — это евро, а не двадцать евро в динарах.
+    Ошибка в сто раз хуже пустого ценника: объявление выглядит обманом.
+    """
+    from app.core.tg_parse import extract_price
+
+    assert extract_price("Macbook m3 max, цена 2200") == (2200, "EUR")
+    assert extract_price("Холодильник Bosch, цена 3500") == (3500, "EUR")
+    assert extract_price("Велосипед Merida, цена 2500") == (2500, "EUR")
+
+
+def test_ordinary_things_keep_dinars():
+    """А стол за 6000 — это динары, как и было."""
+    from app.core.tg_parse import extract_price
+
+    assert extract_price("Продам стол письменный, цена 6000") == (6000, "RSD")
+    assert extract_price("Диван раскладной, цена 25000") == (25000, "RSD")
+    assert extract_price("Продам шкаф, цена 3500") == (3500, "RSD")
