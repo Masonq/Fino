@@ -76,6 +76,13 @@ class Listing(Base):
     # второе ему бы подошло.
     is_free: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
 
+    # Объявление полное: есть внятное название, цена и фотография.
+    # Первое впечатление важнее числа — человек, попавший на обрубки,
+    # второй раз не придёт. Считаем при записи, а не при каждом запросе:
+    # лента открывается тысячи раз, а объявление пишется однажды.
+    is_complete: Mapped[bool] = mapped_column(
+        Boolean, default=False, index=True)
+
     city: Mapped[str | None] = mapped_column(String(120), nullable=True, index=True)
     location_lat: Mapped[float | None] = mapped_column(Numeric(9, 6), nullable=True)
     location_lng: Mapped[float | None] = mapped_column(Numeric(9, 6), nullable=True)

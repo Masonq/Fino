@@ -542,6 +542,13 @@ def _write(db, item: dict) -> bool:
         external_message_id=item["message_id"],
         external_fingerprint=mark or None,
         is_free=bool(item.get("is_free")),
+        # Полное объявление: название, цена и хотя бы один снимок. Это
+        # тот минимум, при котором вещь можно рассмотреть и купить.
+        is_complete=bool(
+            (item["title"] or "").strip() and len(item["title"]) >= 8
+            and (item["price"] is not None or item.get("is_free"))
+            and item["photos"]
+        ),
         created_at=now,
     )
     db.add(listing)

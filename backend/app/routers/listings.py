@@ -240,8 +240,17 @@ def search_listings(
         "expensive": Listing.price.desc().nullslast(),
     }.get(sort, Listing.published_at.desc())
 
-    # При поиске сначала идут объявления, где слово стоит в названии.
-    ordering = [title_hit, order] if title_hit is not None else [order]
+    # Полные объявления впереди неполных: обрубок без цены и фотографии
+    # тоже кому-то нужен, но встречать им человека нельзя.
+    #
+    # Не прячем совсем — только опускаем: вещь без снимка находится
+    # поиском, открывается по ссылке и живёт в своём разделе.
+    ordering = [Listing.is_complete.desc()]
+    if title_hit is not None:
+        # При поиске слово в названии важнее полноты: человек искал
+        # конкретную вещь, а не красивую карточку.
+        ordering = [title_hit, Listing.is_complete.desc()]
+    ordering.append(order)
     items = q.order_by(*ordering).offset(offset).limit(limit).all()
 
     def serialize(listing: Listing):
@@ -611,5 +620,29 @@ def update_listing(
     if content_changed and listing.status == ListingStatus.active:
         listing.status = ListingStatus.pending_moderation
 
+    # Полнота могла измениться: дописали цену — объявление поднимется в
+    # ленте, стёрли название — опустится.
+    listing.is_complete = _looks_complete(listing)
+
     db.commit()
     return {"status": listing.status.value}
+
+
+def _looks_complete(listing) -> bool:
+    """
+    Полное объявление: название, цена и фотография.
+
+    Это тот минимум, при котором вещь можно рассмотреть и купить. Всё
+    прочее — описание, город, доставка — желательно, но без них ещё
+    можно обойтись.
+    """
+    title = next(
+        (t.title for t in listing.translations
+         if t.language == listing.source_language),
+        listing.translations[0].title if listing.translations else "",
+    )
+    return bool(
+        title and len(title.strip()) >= 8
+        and (listing.price is not None or listing.is_free)
+        and listing.photos
+    )
