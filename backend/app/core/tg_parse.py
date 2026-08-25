@@ -621,7 +621,15 @@ def extract_city(text: str) -> str | None:
     low = " " + re.sub(r"\s+", " ", text.lower()) + " "
     best = None
     for alias, slug in CITY_ALIASES.items():
-        if f" {alias} " in low or f" {alias}," in low or f" {alias}." in low:
+        # Названия склоняют: «в Земуне», «на Врачаре», «из Новог Сада».
+        # Так пишут чаще, чем в именительном, и без окончаний город
+        # находился едва у каждого пятнадцатого объявления.
+        #
+        # Коротким названиям окончания не даём: «ниш» превращается в
+        # «нишу для книг» и «нишевый товар», а Ниш в объявлениях
+        # Белграда почти не встречается.
+        tail = r"\w{0,3}" if len(alias) >= 5 else ""
+        if re.search(rf"[\s,.(]{re.escape(alias)}{tail}[\s,.!?)]", low):
             if best is None or len(alias) > best[0]:
                 best = (len(alias), slug)
     return best[1] if best else None

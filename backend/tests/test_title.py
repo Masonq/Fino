@@ -2217,3 +2217,30 @@ def test_animals_looking_for_a_home_are_not_wanted_ads():
     assert not looks_wanted("Щенки ищут хозяев, 2 месяца")
     # а настоящий поиск остаётся поиском
     assert looks_wanted("Ищу коляску до 10000 динар")
+
+
+def test_city_found_in_any_case():
+    """
+    Названия склоняют: «в Земуне», «на Врачаре», «из Нового Сада». Так
+    пишут чаще, чем в именительном, — без падежей город находился едва у
+    каждого пятнадцатого объявления.
+    """
+    from app.core.tg_parse import extract_city
+
+    assert extract_city("Продам стол в Земуне") == "beograd"
+    assert extract_city("Диван на Врачаре") == "beograd"
+    assert extract_city("Забрать из Нового Сада") == "novi-sad"
+    assert extract_city("Коляска на Дорчоле") == "beograd"
+
+
+def test_common_words_are_not_cities():
+    """
+    «Ниша для книг» и «нишевый товар» — не город Ниш. Ложных
+    срабатываний было бы больше, чем верных.
+    """
+    from app.core.tg_parse import extract_city
+
+    assert extract_city("Продам ниша для книг") is None
+    assert extract_city("Нишевый товар") is None
+    # а настоящий Ниш находится
+    assert extract_city("Продам стол в Нише") == "nis"
