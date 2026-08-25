@@ -91,3 +91,16 @@ def test_subcategories_are_in_the_map():
 
     source = inspect.getsource(sitemap)
     assert "Category).all()" in source
+
+
+def test_description_is_clean_for_search():
+    """
+    В выдаче показывают около полутора сотен знаков. Тратить их на
+    смайлики и переносы строк жалко.
+    """
+    from app.routers.seo import _clean
+
+    out = _clean("Продам шлема, лежат без дела 🙈\nРазмеры M и L")
+    assert "🙈" not in out
+    assert "\n" not in out
+    assert "Размеры M и L" in out
