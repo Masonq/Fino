@@ -1460,57 +1460,6 @@ def save_listing(draft: Draft, author) -> str | None:
         return None
 
 
-@dp.message()
-async def unhandled(message: Message) -> None:
-    """
-    Сообщение не подошло ни к одному обработчику.
-
-    Молчать нельзя: человек не понимает, услышали его или нет. И нам
-    видно, чего не хватает.
-    """
-    log.info("не обработано: chat=%s type=%s text=%r",
-             message.chat.id, message.content_type,
-             (message.text or message.caption or "")[:60])
-    await show(message.bot, message.chat.id,
-               "Не понял. Пришлите объявление — фотографии и описание "
-               "одним сообщением.",
-               keyboard=kb.idle(is_chat_owner(message.from_user.id)))
-
-
-async def main() -> None:
-    logging.basicConfig(level=logging.INFO)
-    token = settings.telegram_bot_token
-    if not token:
-        raise SystemExit("Нет TELEGRAM_BOT_TOKEN в backend/.env")
-
-    bot = Bot(token, default=DefaultBotProperties(parse_mode="HTML"))
-
-    # Меню команд слева от поля ввода. Без него человек не знает, что
-    # боту вообще можно сказать, кроме как прислать объявление.
-    # Всё, что есть на кнопках внизу, из списка команд убираем: два
-    # одинаковых меню рядом сбивают с толку. Остаётся только то, чему
-    # кнопки нет — начать сначала и бросить начатое.
-    await bot.set_my_commands([
-        BotCommand(command="start", description="Начать сначала"),
-        BotCommand(command="cancel", description="Отменить начатое"),
-        BotCommand(command="site", description="Публиковать ли на сайте"),
-    ])
-    await bot.set_chat_menu_button(menu_button=MenuButtonCommands())
-
-    global BOT_USERNAME
-    me = await bot.get_me()
-    BOT_USERNAME = me.username
-    log.info("бот @%s готов, публикует в чат %s", me.username, TARGET_CHAT)
-    if rules_for(TARGET_CHAT).sweep_direct_posts:
-        log.info("уборка объявлений мимо бота включена")
-    await dp.start_polling(bot)
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
-
-
-
 @dp.message(F.photo & F.media_group_id)
 async def album_part(message: Message, bot: Bot) -> None:
     """
