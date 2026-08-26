@@ -87,3 +87,20 @@ def test_every_listing_response_has_a_path():
         assert '"path"' in block, f"выдача на строке {i} без адреса"
 
     assert checked >= 4
+
+
+def test_path_shape_never_changes():
+    """
+    Треть объявлений записана без города. Адрес из разного числа частей
+    пришлось бы разбирать по-разному, и страница просто не открывалась
+    — сайт ждал три части, а получал две.
+    """
+    without_city = listing_path("45e17e58-e7c8-4f24-9642-6a55b878023a",
+                                "2 велосипедных шлема", None, "bikes")
+    without_anything = listing_path("45e17e58-e7c8-4f24-9642-6a55b878023a",
+                                    "Что-то", None, None)
+
+    assert without_city.count("/") == 3
+    assert without_anything.count("/") == 3
+    # и ключ всё равно находится
+    assert listing_id_from(without_city) == "45e17e58"

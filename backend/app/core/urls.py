@@ -81,8 +81,14 @@ def listing_path(listing_id: str, title: str,
     # одинаково, а адрес должен вести к одному.
     tail = str(listing_id).split("-")[0]
 
-    parts = [p for p in (city, category) if p]
-    parts.append(f"{slugify(title)}-{tail}")
+    # Город и раздел ставим всегда: адрес из разного числа частей
+    # пришлось бы разбирать по-разному, а треть объявлений записана без
+    # города. Пусть будет «bez-goroda» — зато устройство одинаковое.
+    parts = [
+        slugify(city) if city else "srbija",
+        slugify(category) if category else "raznoe",
+        f"{slugify(title)}-{tail}",
+    ]
     return "/" + "/".join(parts)
 
 
