@@ -1,9 +1,11 @@
 import re
 import uuid
+
+from app.core.urls import listing_path
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import case, exists, func, or_
+from sqlalchemy import String, cast, case, exists, func, or_
 from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel, Field, field_validator
 
@@ -503,6 +505,8 @@ def similar_listings(
             "currency": l.currency,
             "city": l.city,
             "cover_photo": cover.thumbnail_url if cover else None,
+            "path": listing_path(l.id, tr.title if tr else "", l.city,
+                                 l.category.slug if l.category else None),
         }
 
     return {"items": [serialize(l) for l in picked]}
@@ -550,24 +554,47 @@ def seller_listings(
             "currency": l.currency,
             "city": l.city,
             "cover_photo": cover.thumbnail_url if cover else None,
+            "path": listing_path(l.id, translation.title if translation else "",
+                                 l.city, l.category.slug if l.category else None),
         }
 
     return {"total": total, "items": [serialize(l) for l in items]}
 
 
 @router.get("/{listing_id}")
-def get_listing(listing_id: uuid.UUID, db: Session = Depends(get_db)):
-    listing = db.query(Listing).options(
-        joinedload(Listing.translations), joinedload(Listing.photos), joinedload(Listing.owner)
-    ).get(listing_id)
+def get_listing(listing_id: str, db: Session = Depends(get_db)):
+    query = db.query(Listing).options(
+        joinedload(Listing.translations), joinedload(Listing.photos),
+        joinedload(Listing.owner),
+    )
+
+    try:
+        listing = query.get(uuid.UUID(listing_id))
+    except ValueError:
+        # Короткий хвост из понятного адреса: «45e17e58» вместо ключа
+        # целиком. Название могли поправить, и адрес разойдётся с
+        # нынешним — но хвост остаётся, и объявление найдётся по нему.
+        if not re.fullmatch(r"[0-9a-f]{8}", listing_id):
+            raise HTTPException(404, "not_found")
+        listing = query.filter(
+            cast(Listing.id, String).like(f"{listing_id}-%")
+        ).first()
+
     if not listing:
         raise HTTPException(404, "not_found")
 
     listing.views_count += 1
     db.commit()
 
+    from app.core.urls import listing_path
+
     return {
         "id": str(listing.id),
+        # Понятный адрес: собираем здесь, чтобы он был одинаков везде —
+        # в ленте, в боте, в письме и в карте сайта.
+        "path": listing_path(listing.id, _own_title(listing),
+                             listing.city,
+                             listing.category.slug if listing.category else None),
         # Состояние: снятое объявление не исчезает — по нему смотрят, за
         # сколько ушла похожая вещь, и на него уже стоят ссылки. Но
         # человек должен видеть, что вещи больше нет, а не писать
@@ -717,6 +744,15 @@ def update_listing(
 
     db.commit()
     return {"status": listing.status.value}
+
+
+def _own_title(listing) -> str:
+    """Название на языке оригинала."""
+    return next(
+        (t.title for t in listing.translations
+         if t.language == listing.source_language),
+        listing.translations[0].title if listing.translations else "",
+    )
 
 
 def _looks_complete(listing) -> bool:

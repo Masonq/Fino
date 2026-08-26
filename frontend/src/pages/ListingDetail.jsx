@@ -11,7 +11,12 @@ import SimilarListings from '../components/SimilarListings'
 import { formatPrice } from '../utils/money'
 
 export default function ListingDetail() {
-  const { id } = useParams()
+  const { id, slug } = useParams()
+
+  // Ключ объявления. В понятном адресе он хвостом: у
+  // «stol-ikea-45e17e58» это «45e17e58». Название могли поправить, и
+  // адрес разойдётся с нынешним — но хвост остаётся.
+  const listingId = id || (slug || '').split('-').pop()
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
@@ -33,7 +38,7 @@ export default function ListingDetail() {
   // запоминаем просмотр — чтобы человек мог вернуться к тому, что смотрел
   useEffect(() => {
     if (id) addToHistory(id)
-  }, [id])
+  }, [listingId])
 
   // Шапка появляется, когда фото уехало вверх — как у Avito:
   // сначала кнопки полупрозрачными кружками на фото, потом панель на белом.
@@ -65,7 +70,7 @@ export default function ListingDetail() {
 
   useEffect(() => {
     api.getListing(id).then(setListing).catch(() => setListing(null))
-  }, [id])
+  }, [listingId])
 
   useEffect(() => {
     if (!listing?.category_slug) return

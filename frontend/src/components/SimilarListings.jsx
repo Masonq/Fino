@@ -24,7 +24,7 @@ export default function SimilarListings({ listingId }) {
 
       <div className="similar-strip">
         {items.map((l) => (
-          <Link key={l.id} to={`/listing/${l.id}`} className="similar-card">
+          <Link key={l.id} to={l.path || `/listing/${l.id}`} className="similar-card">
             <div className="similar-photo">
               {l.cover_photo
                 ? <img src={l.cover_photo} alt="" loading="lazy" />

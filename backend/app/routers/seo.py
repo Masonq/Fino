@@ -61,11 +61,13 @@ def sitemap(db: Session = Depends(get_db)):
         .all()
     )
     for listing in listings:
+        # Понятный адрес: человек видит его в выдаче и по нему решает,
+        # нажимать ли. Набор цифр читается как случайная страница.
         # Свежие объявления поисковику стоит перечитывать чаще: цена
         # меняется, вещь продаётся.
         fresh = listing.created_at and listing.created_at > now - timedelta(days=7)
         urls.append(_url(
-            f"{site}/listing/{listing.id}",
+            site + _nice_path(db, listing),
             listing.updated_at or listing.created_at,
             "0.7" if fresh else "0.5",
             "daily" if fresh else "weekly",
@@ -127,6 +129,45 @@ def _is_crawler(agent: str) -> bool:
 
 
 @router.get("/listing/{listing_id}", include_in_schema=False)
+def old_listing_page(listing_id: str, request: Request,
+                     db: Session = Depends(get_db)):
+    """
+    Старый адрес объявления.
+
+    По нему разошлись ссылки в телеграме и переписках — ломать их
+    нельзя. Но поисковику показываем новый: иначе он сочтёт их двумя
+    разными страницами и разделит между ними вес.
+    """
+    from fastapi.responses import RedirectResponse
+
+    listing = db.query(Listing).filter(Listing.id == listing_id).first()
+    if listing:
+        return RedirectResponse(_nice_path(db, listing), status_code=301)
+    return listing_page(listing_id, request, db)
+
+
+@router.get("/{city}/{category}/{slug}", include_in_schema=False)
+def nice_listing_page(city: str, category: str, slug: str,
+                      request: Request, db: Session = Depends(get_db)):
+    """
+    Понятный адрес объявления.
+
+    Ключ ищем по хвосту: название могли поправить, и адрес разойдётся
+    с нынешним — но хвост остаётся.
+    """
+    from app.core.urls import listing_id_from
+
+    tail = listing_id_from(slug)
+    if not tail:
+        return listing_page(slug, request, db)
+
+    from sqlalchemy import String, cast
+
+    listing = db.query(Listing).filter(
+        cast(Listing.id, String).like(f"{tail}-%")).first()
+    return listing_page(str(listing.id) if listing else slug, request, db)
+
+
 def listing_page(listing_id: str, request: Request,
                  db: Session = Depends(get_db)):
     """Страница объявления с текстом — для поисковиков и превью ссылок."""
@@ -256,3 +297,19 @@ def _listing_schema(listing, title: str, body: str, url: str,
     if listing.city:
         data["areaServed"] = _city_words(listing.city)
     return json.dumps(data, ensure_ascii=False, indent=1)
+
+
+def _nice_path(db: Session, listing) -> str:
+    """Понятный адрес объявления для карты сайта."""
+    from app.core.urls import listing_path
+    from app.models import ListingTranslation
+
+    translation = (
+        db.query(ListingTranslation.title)
+        .filter(ListingTranslation.listing_id == listing.id,
+                ListingTranslation.language == listing.source_language)
+        .first()
+    )
+    category = listing.category.slug if listing.category else None
+    return listing_path(listing.id, translation[0] if translation else "",
+                        listing.city, category)

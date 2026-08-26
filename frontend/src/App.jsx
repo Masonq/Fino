@@ -100,7 +100,14 @@ export default function App() {
           <Route path="/search" element={<Search />} />
           <Route path="/post" element={<PostAd />} />
           <Route path="/categories" element={<Categories />} />
+          {/* Старый адрес оставляем: по нему разошлись ссылки в
+              телеграме и в переписках, и ломать их нельзя. */}
           <Route path="/listing/:id" element={<ListingDetail />} />
+
+          {/* Понятный адрес: /beograd/mebel/stol-ikea-45e17e58.
+              Человек видит его в выдаче и по нему решает, нажимать ли —
+              набор цифр читается как случайная страница. */}
+          <Route path="/:city/:category/:slug" element={<ListingDetail />} />
           <Route path="/chat/:id" element={<ChatScreen />} />
           <Route path="/login" element={<Login />} />
           <Route path="/favorites" element={<Favorites />} />
