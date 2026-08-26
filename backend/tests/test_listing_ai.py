@@ -151,3 +151,25 @@ def test_refusals_are_counted_by_kind():
     assert "цена придумана" in refused
     assert "описание переписано" in refused
     assert "заголовок сочинён" in refused
+
+
+def test_prompt_keeps_the_direction():
+    """
+    «Сниму квартиру» → «Квартира на длительный срок» меняет смысл на
+    обратный: человек ищет жильё, а выходит, что сдаёт.
+    """
+    from app.core.listing_ai import PROMPT
+
+    assert "Сниму квартиру" in PROMPT
+    assert "другой смысл" in PROMPT
+
+
+def test_prompt_keeps_flaws_out_of_the_title():
+    """
+    «Наушники Airpods Pro левый неисправен» — важное уточнение, но в
+    заголовке оно отпугнёт. Такому место в описании.
+    """
+    from app.core.listing_ai import PROMPT
+
+    assert "недостатки" in PROMPT
+    assert "район" in PROMPT
