@@ -1,5 +1,5 @@
 import { Routes, Route, useLocation, useNavigationType } from 'react-router-dom'
-import { useEffect, useLayoutEffect } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import Home from './pages/Home'
 import Search from './pages/Search'
 import PostAd from './pages/PostAd'
@@ -31,7 +31,8 @@ import BottomNav from './components/BottomNav'
 import TopNav from './components/TopNav'
 
 export default function App() {
-  const { pathname } = useLocation()
+  const location = useLocation()
+  const { pathname } = location
   // Меню внизу прячем на объявлении, в переписке и на входе: там
   // человек занят одним делом, и лишние кнопки мешают.
   //
@@ -42,22 +43,42 @@ export default function App() {
 
   const navType = useNavigationType()
 
-  // Браузер восстанавливает прокрутку сам и делает это после нашего кода,
-  // причём считает её для страницы, которая ещё не догрузилась. Он
-  // перезаписывал верное положение — берём восстановление на себя.
+  // Браузер сам ничего не восстанавливает: scrollRestoration='manual'
+  // как раз выключает автоматику, а pushState-переходы (это SPA, не
+  // обычные ссылки) браузер вообще не запоминает сам по себе — это
+  // всегда должно быть на приложении. Храним прокрутку по ключу
+  // истории (у каждого перехода свой) в переживающем переходы ref.
+  const scrollPositions = useRef({})
+
   useLayoutEffect(() => {
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual'
     }
   }, [])
 
+  // Перед уходом с текущего адреса запоминаем, где на нём остановились —
+  // сохраняем в cleanup-е, он срабатывает с прошлым location по замыканию,
+  // прямо перед тем, как эффект перезапустится на новом.
+  useEffect(() => {
+    const key = location.key
+    return () => {
+      scrollPositions.current[key] = window.scrollY
+    }
+  }, [location])
+
   useLayoutEffect(() => {
-    // Наверх прокручиваем только при переходе вперёд. При возврате экран
-    // сам восстанавливает своё положение, и этот сброс отменял его — из-за
-    // чего лента дёргалась: сначала прыгала наверх, потом на место.
-    if (navType === 'POP') return
+    if (navType === 'POP') {
+      // Восстанавливаем на следующий кадр — если сделать сразу, страница
+      // ещё может быть короче нужного (список только начал грузиться),
+      // и браузер обрежет прокрутку до своего текущего максимума.
+      const saved = scrollPositions.current[location.key]
+      if (saved != null) {
+        requestAnimationFrame(() => window.scrollTo(0, saved))
+      }
+      return
+    }
     window.scrollTo(0, 0)
-  }, [pathname, navType])
+  }, [pathname, navType, location.key])
 
   // на не-главных экранах статус-бар под цвет фона страницы;
   // на главной им управляет баннер
