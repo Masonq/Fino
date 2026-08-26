@@ -20,10 +20,6 @@ const FIELDS = {
     modes: ['buy', 'rent', 'daily'],
     chips: ['rooms1', 'rooms2', 'rooms3', 'studio'],
   },
-  auto: {
-    modes: null,
-    chips: ['cars', 'moto', 'trucks', 'parts'],
-  },
   jobs: {
     modes: ['looking', 'hiring'],
     chips: ['partTime', 'fullTime', 'remote'],
