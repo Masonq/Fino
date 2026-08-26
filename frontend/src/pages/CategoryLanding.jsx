@@ -84,9 +84,6 @@ export default function CategoryLanding() {
   return (
     <div className="landing">
       <div className="landing-hero" style={{ background: BANNER_GRADIENTS[slug] || BANNER_GRADIENTS['real-estate'] }}>
-        <div className="landing-hero-card" aria-hidden="true">
-          <CategoryArt slug={slug} />
-        </div>
         <div className="landing-head">
           <button className="landing-back on-hero" onClick={() => navigate('/categories')}
                   aria-label={t('actions.back')}>
