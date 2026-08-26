@@ -182,12 +182,30 @@ def _title_ok(title: str, source: str = "") -> bool:
     if not title_is_clear(title):
         return False
 
+    if _starts_with_place(title):
+        refused["заголовок негоден"] += 1
+        log.info("заголовок начинается с района: %r", title[:50])
+        return False
+
     if source and not _words_from_source(title, source):
         log.info("заголовок сочинён: %r", title[:50])
         refused["заголовок сочинён"] += 1
         return False
 
     return True
+
+
+def _starts_with_place(title: str) -> bool:
+    """
+    Заголовок начинается с района.
+
+    «Аутокоманда Bimba Y Lola» — место встречи впереди вещи. Оно
+    показывается отдельной строкой, и в названии только мешает.
+    """
+    from app.core.tg_parse import extract_city
+
+    head = " ".join((title or "").split()[:2])
+    return bool(extract_city(head))
 
 
 # Слова, которые модель вправе добавить от себя: они не про вещь, а
@@ -269,9 +287,10 @@ def _body_ok(new_body: str, old_body: str) -> bool:
     if len(new_body) > len(old):
         return False
 
-    # Короткое описание может ужаться сильно и законно: там мусор и
-    # занимает половину. Смотрим только на заметные.
-    if len(old) >= 80 and len(new_body) < len(old) * 0.45:
+    # Треть от исходного — это уже не вычёркивание, а выбрасывание.
+    # Порог мягче для коротких: там мусор занимает большую долю.
+    floor = 0.45 if len(old) >= 80 else 0.35
+    if len(new_body) < len(old) * floor:
         log.info("описание ужалось с %d до %d — оставляем прежнее",
                  len(old), len(new_body))
         refused["описание ужалось"] += 1

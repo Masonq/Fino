@@ -53,9 +53,9 @@ def test_description_may_only_shrink():
     Модель должна была только вычёркивать. Если текст вырос, она его
     придумала — а выдумка в объявлении хуже рекламного хвоста.
     """
-    old = "Продам стол. Подробнее на моём канале @shop"
+    old = "Продам стол письменный IKEA. Подробнее на моём канале @shop"
 
-    assert _body_ok("Продам стол.", old)
+    assert _body_ok("Продам стол письменный IKEA.", old)
     assert not _body_ok(old + " Отличное состояние, доставка!", old)
     assert not _body_ok("", old)
 
@@ -78,12 +78,30 @@ def test_several_things_are_not_duplicates():
     assert _body_ok(without_zara, old)         # 1300 осталось у первой
 
 
-def test_short_descriptions_may_shrink_a_lot():
+def test_shrinking_by_two_thirds_is_refused():
     """
-    В коротком описании мусор занимает половину, и сильное сокращение
-    там законно.
+    Треть от исходного — это уже не вычёркивание, а выбрасывание.
+    «Сковорода IKEA. Диаметр 24 см. Отличное состояние, Земун» не
+    должна превращаться в «Диаметр 24 см».
     """
-    assert _body_ok("Стол IKEA.", "Стол IKEA. Подробнее в канале @shop")
+    old = ("Сковорода IKEA. Диаметр 24 см. "
+           "Отличное состояние, почти новая, Земун")
+
+    assert not _body_ok("Диаметр 24 см", old)
+    assert _body_ok("Диаметр 24 см. Отличное состояние, почти новая", old)
+
+
+def test_place_before_the_thing_is_refused():
+    """
+    «Аутокоманда Bimba Y Lola» — место встречи впереди вещи. Оно
+    показывается отдельной строкой, и в названии только мешает.
+    """
+    from app.core.listing_ai import _starts_with_place
+
+    assert _starts_with_place("Аутокоманда Bimba Y Lola")
+    assert _starts_with_place("Земун стол письменный")
+    assert not _starts_with_place("Основание кровати Luröy")
+    assert not _starts_with_place("Сковорода IKEA 24см")
 
 
 def test_title_is_checked_by_the_same_rules():
