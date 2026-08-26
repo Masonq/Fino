@@ -34,6 +34,12 @@ PROMPT = """Найди цену в объявлении с барахолки Б
 - Бери цену, за которую продают сейчас. Не бери старую цену
   («покупал за 12000»), цену за сутки аренды, размер, объём памяти,
   год выпуска, ёмкость батареи, проценты.
+- Числа в названии вещи ценой не бывают: разрешение экрана (2560,
+  1920), поколение (iPad 10), диагональ (27), модель (A4, G5, C3),
+  мощность, объём двигателя.
+- Цена — это то, что просят за вещь. Автомобиль не стоит 23 евро,
+  а ноутбук не стоит 92 евро: если число выглядит нелепо для такой
+  вещи, верни null.
 - Если цена не названа, верни null. Не выдумывай.
 - Цену бери за одну штуку. «4000 за 1 шт, за оба 7000» — это 4000.
 - Если названы две цены в разных валютах — это одна и та же сумма.
@@ -109,7 +115,43 @@ def ask_model(title: str, body: str) -> tuple[float | None, str | None]:
         return None, None
 
     currency = str(data.get("currency", "RSD")).upper()
-    return price, ("EUR" if currency == "EUR" else "RSD")
+    currency = "EUR" if currency == "EUR" else "RSD"
+
+    # Нелепая цена не записывается, что бы модель ни ответила:
+    # автомобиль за 23 евро и ноутбук за 92 — это число из названия
+    # модели, а не деньги.
+    if _absurd(price, currency, title, body):
+        log.info("нелепая цена %s %s для %r", price, currency, title[:40])
+        return None, None
+
+    return price, currency
+
+
+# Нижняя граница для вещей, которые за бесценок не продают. В евро.
+FLOORS = (
+    (r"(автомобил|авто|машина|audi|bmw|mercedes|volkswagen|"
+     r"skoda|renault|peugeot|citroen|fiat|opel|toyota)", 300),
+    (r"(macbook|ноутбук|laptop|imac)", 150),
+    (r"(iphone|ipad|samsung galaxy|планшет)", 80),
+    (r"(монитор|monitor|телевизор|smart ?tv)", 40),
+    (r"(квартир|апартамент|стан|kvartir)", 100),
+)
+
+
+def _absurd(price: float, currency: str, title: str, body: str) -> bool:
+    """
+    Цена нелепа для такой вещи.
+
+    Модель берёт число из названия модели — «Odyssey G5 2560» — и
+    выдаёт его за цену. Проверить это она сама не может, а мы можем.
+    """
+    in_euro = price if currency == "EUR" else price / 117
+    text = f"{title} {body}"[:200]
+
+    for pattern, floor in FLOORS:
+        if re.search(pattern, text, re.I) and in_euro < floor:
+            return True
+    return False
 
 
 def _in_text(price: float, text: str) -> bool:

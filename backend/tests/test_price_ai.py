@@ -72,3 +72,27 @@ def test_prompt_handles_two_currencies():
     from app.core.price_ai import PROMPT
 
     assert "в разных валютах" in PROMPT
+
+
+def test_absurd_prices_are_refused():
+    """
+    Модель берёт число из названия модели — «Odyssey G5 2560», «iPad
+    10» — и выдаёт за цену. Автомобиль за 23 евро выглядит обманом, и
+    пустая цена честнее такой.
+    """
+    from app.core.price_ai import _absurd
+
+    assert _absurd(23, "EUR", "Audi A4 Avant ухоженный", "")
+    assert _absurd(92, "EUR", "Apple MacBook Pro 13 (2020)", "")
+    assert _absurd(2560, "RSD", "Игровой монитор Samsung Odyssey G5", "")
+    assert _absurd(64, "EUR", "Apple iPad 10-ого поколения", "")
+
+
+def test_real_prices_survive():
+    """А настоящие цены трогать нельзя."""
+    from app.core.price_ai import _absurd
+
+    assert not _absurd(2200, "EUR", "Macbook m3 max", "")
+    assert not _absurd(3500, "EUR", "Audi A4 2010", "")
+    assert not _absurd(550, "EUR", "iPhone 13 Pro", "")
+    assert not _absurd(6000, "RSD", "Стол письменный IKEA", "")
