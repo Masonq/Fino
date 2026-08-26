@@ -489,5 +489,14 @@
       "fullTime": "Full-time",
       "remote": "Remote"
     }
+  },
+  "card": {
+    "rooms_short": "rm",
+    "sqm": "m²",
+    "floor_short": "fl",
+    "sotka": "sotka",
+    "year_short": "",
+    "km": "km",
+    "gb": "GB"
   }
 }

@@ -309,6 +309,8 @@ def search_listings(
             "delivery_available": listing.delivery_available,
             "is_urgent": listing.is_urgent,
             "published_at": listing.published_at.isoformat() if listing.published_at else None,
+            "attributes": listing.attributes,
+            "category_slug": listing.category.slug if listing.category else None,
             # Понятный адрес собираем здесь: он должен быть одинаков
             # везде — в ленте, в боте, в письме и в карте сайта.
             "path": listing_path(
@@ -356,6 +358,8 @@ def listings_by_ids(
             "is_free": bool(l.is_free),
             "currency": l.currency,
             "city": l.city,
+            "attributes": l.attributes,
+            "category_slug": l.category.slug if l.category else None,
             # Понятный адрес: он должен быть одинаков везде — в ленте,
             # в избранном, в своих объявлениях.
             "path": listing_path(l.id, tr.title if tr else "", l.city,
@@ -395,6 +399,8 @@ def my_listings(
             "is_free": bool(l.is_free),
             "currency": l.currency,
             "city": l.city,
+            "attributes": l.attributes,
+            "category_slug": l.category.slug if l.category else None,
             # Понятный адрес: он должен быть одинаков везде — в ленте,
             # в избранном, в своих объявлениях.
             "path": listing_path(l.id, tr.title if tr else "", l.city,
@@ -556,6 +562,8 @@ def similar_listings(
             "is_free": bool(l.is_free),
             "currency": l.currency,
             "city": l.city,
+            "attributes": l.attributes,
+            "category_slug": l.category.slug if l.category else None,
             "cover_photo": cover.thumbnail_url if cover else None,
             "path": listing_path(l.id, tr.title if tr else "", l.city,
                                  l.category.slug if l.category else None),
@@ -605,6 +613,8 @@ def seller_listings(
             "is_free": bool(l.is_free),
             "currency": l.currency,
             "city": l.city,
+            "attributes": l.attributes,
+            "category_slug": l.category.slug if l.category else None,
             "cover_photo": cover.thumbnail_url if cover else None,
             "path": listing_path(l.id, tr.title if tr else "", l.city,
                                  l.category.slug if l.category else None),

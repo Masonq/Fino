@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useFavorites } from '../context/FavoritesContext'
 import { displayCity } from '../data/cities'
 import { formatPrice } from '../utils/money'
+import { cardMeta } from '../data/cardMeta'
 
 // «сегодня», «вчера», «3 дня назад» — как у Авито, вместо голой даты,
 // которую на карточке пришлось бы читать дольше, чем она того стоит.
@@ -20,6 +21,7 @@ export default function ListingCard({ listing, large = false }) {
   const navigate = useNavigate()
   const { isFavorite, toggle } = useFavorites()
   const fav = isFavorite(listing.id)
+  const meta = cardMeta(listing.category_slug, listing.attributes, t)
 
   const onFavClick = async (e) => {
     e.preventDefault()
@@ -61,6 +63,9 @@ export default function ListingCard({ listing, large = false }) {
           ? <span className="price-free">{t('detail.free')}</span>
           : formatPrice(listing.price, listing.currency, i18n.language) || t('detail.no_price')}
       </div>
+      {/* «2-комн., 45 м², 3/9 эт.» — то, что человек заполнил на форме
+          публикации, иначе никуда дальше формы не попадало. */}
+      {meta && <div className="s-attrs">{meta}</div>}
       {/* Рисуем всегда, даже пустым: без города карточка была ниже соседней,
           и низ ряда получался рваным. */}
       <div className="s-meta">

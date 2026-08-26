@@ -491,5 +491,14 @@
       "fullTime": "Полный день",
       "remote": "Удалённо"
     }
+  },
+  "card": {
+    "rooms_short": "комн.",
+    "sqm": "м²",
+    "floor_short": "эт.",
+    "sotka": "сот.",
+    "year_short": "г.",
+    "km": "км",
+    "gb": "ГБ"
   }
 }
