@@ -74,9 +74,6 @@ def _code_letter(code: str) -> str:
     <div style="font-size:19px;font-weight:700;color:#101828;">
       Вход на PLONK
     </div>
-    <div style="margin-top:6px;font-size:14px;line-height:20px;color:#667085;">
-      Введите этот код на сайте — и вы на месте.
-    </div>
   </td></tr>
 
   <tr><td align="center" style="padding:24px 32px 8px;">
