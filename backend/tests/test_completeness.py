@@ -123,3 +123,20 @@ def test_known_brands_are_an_exception():
 
     assert title_is_clear("iPhone 13 Pro 256gb")
     assert title_is_clear("MacBook m3 max 16")
+
+
+def test_mid_sentence_titles_are_rejected():
+    """
+    «И я могу взять на себя уборку» — фраза из середины: существительное
+    в ней есть, но названием вещи это не является.
+    """
+    from app.routers.listings import title_is_clear
+
+    assert not title_is_clear("И я могу взять на себя уборку вашего дома")
+    assert not title_is_clear("Вроде бы размер XS, носили в 5 лет")
+    assert not title_is_clear("Это отличный стол")
+    assert not title_is_clear("Как новый диван")
+
+    # а нормальное название начинается с вещи
+    assert title_is_clear("Уборка домов и квартир в Белграде")
+    assert title_is_clear("Комод антикварный, массив дерева")
