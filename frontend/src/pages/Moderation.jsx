@@ -15,6 +15,14 @@ import { formatPrice } from '../utils/money'
 // возврат неизменно бросал наверх, а не туда, где смотрели.
 let cache = null
 
+// Готовые причины отклонения — ровно то, что чаще всего приходится
+// писать руками. «other» не из их числа: по нему открывается обычное
+// текстовое поле, а не отправляется буквальное слово «other».
+const REASON_KEYS = [
+  'wrong_category', 'bad_photos', 'unclear_description',
+  'duplicate', 'prohibited', 'suspicious_price',
+]
+
 export default function Moderation() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
@@ -28,10 +36,13 @@ export default function Moderation() {
   const [tab, setTab] = useState('listings')
   const [reports, setReports] = useState(() => cache?.reports || [])
   const [reportsTotal, setReportsTotal] = useState(() => cache?.reportsTotal || 0)
-  // Причина отклонения — своим полем в карточке, а не window.prompt:
+  // Причина отклонения — списком готовых вариантов, а не window.prompt:
   // нативный prompt в мобильном браузере выглядит и ведёт себя не как
   // остальной интерфейс, легко принять за то, что причины вовсе нет.
+  // «Другая причина» открывает текстовое поле — на случай, когда ни
+  // один из готовых вариантов не подходит.
   const [rejectingId, setRejectingId] = useState(null)
+  const [customReason, setCustomReason] = useState(false)
   const [reasonText, setReasonText] = useState('')
 
   const load = () => {
@@ -95,6 +106,7 @@ export default function Moderation() {
         return next
       })
       setRejectingId(null)
+      setCustomReason(false)
       setReasonText('')
     } catch { /* оставляем в очереди */ }
     finally { setBusyId(null) }
@@ -205,25 +217,55 @@ export default function Moderation() {
 
               {rejectingId === l.id ? (
                 <div className="mod-reason-box">
-                  <textarea
-                    className="mod-reason-input"
-                    placeholder={t('mod.reason_prompt')}
-                    value={reasonText}
-                    onChange={(e) => setReasonText(e.target.value)}
-                    autoFocus
-                  />
-                  <div className="mod-actions">
-                    <button onClick={() => { setRejectingId(null); setReasonText('') }}>
-                      {t('actions.cancel')}
-                    </button>
-                    <button
-                      className="mod-reject"
-                      disabled={busyId === l.id || !reasonText.trim()}
-                      onClick={() => decide(l.id, false, reasonText.trim())}
-                    >
-                      {t('mod.reject')}
-                    </button>
-                  </div>
+                  {!customReason ? (
+                    <>
+                      <div className="mod-reason-chips">
+                        {REASON_KEYS.map((key) => (
+                          <button
+                            key={key}
+                            className="mod-reason-chip"
+                            disabled={busyId === l.id}
+                            onClick={() => decide(l.id, false, t(`mod.reasons.${key}`))}
+                          >
+                            {t(`mod.reasons.${key}`)}
+                          </button>
+                        ))}
+                        <button
+                          className="mod-reason-chip"
+                          onClick={() => setCustomReason(true)}
+                        >
+                          {t('mod.reasons.other')}
+                        </button>
+                      </div>
+                      <div className="mod-actions">
+                        <button onClick={() => { setRejectingId(null) }}>
+                          {t('actions.cancel')}
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <textarea
+                        className="mod-reason-input"
+                        placeholder={t('mod.reason_prompt')}
+                        value={reasonText}
+                        onChange={(e) => setReasonText(e.target.value)}
+                        autoFocus
+                      />
+                      <div className="mod-actions">
+                        <button onClick={() => { setCustomReason(false); setReasonText('') }}>
+                          {t('actions.back')}
+                        </button>
+                        <button
+                          className="mod-reject"
+                          disabled={busyId === l.id || !reasonText.trim()}
+                          onClick={() => decide(l.id, false, reasonText.trim())}
+                        >
+                          {t('mod.reject')}
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               ) : (
                 <div className="mod-actions">
@@ -237,7 +279,7 @@ export default function Moderation() {
                   <button
                     className="mod-reject"
                     disabled={busyId === l.id}
-                    onClick={() => { setRejectingId(l.id); setReasonText('') }}
+                    onClick={() => { setRejectingId(l.id); setCustomReason(false); setReasonText('') }}
                   >
                     {t('mod.reject')}
                   </button>
