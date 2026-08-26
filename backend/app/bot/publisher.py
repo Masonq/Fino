@@ -1163,11 +1163,20 @@ async def choose_topic(message: Message) -> None:
 
 @dp.message(F.text == kb.BACK)
 async def back(message: Message) -> None:
-    """Возврат к объявлению — из веток или из правок."""
+    """
+    Возврат назад.
+
+    Откуда именно — понятно по тому, есть ли начатое объявление: если
+    есть, человек правил его, если нет — ходил по спискам.
+    """
     await erase(message)
     draft = drafts.get(message.from_user.id)
     if draft:
         await show_draft(message, draft)
+        return
+
+    await show(message.bot, message.chat.id, greeting_text(),
+               keyboard=kb.idle(is_chat_owner(message.from_user.id)))
 
 
 @dp.message(F.text.func(
@@ -1184,6 +1193,23 @@ async def set_topic(message: Message) -> None:
             draft.topic_id = topic_id
             break
     await show_draft(message, draft)
+
+
+@dp.message(F.text == kb.MENU)
+async def open_more(message: Message) -> None:
+    """
+    Всё остальное: помощь, настройки, сводка.
+
+    За этим приходят редко, и держать их на главной значит топить в
+    них главное.
+    """
+    await erase(message)
+    await show(message.bot, message.chat.id,
+               f"{emoji('listings')} <b>Что ещё я умею</b>\n\n"
+               "├ рассказать, как всё устроено\n"
+               "├ поменять, куда публиковать\n"
+               "└ показать сводку по чату — владельцу",
+               keyboard=kb.more(is_chat_owner(message.from_user.id)))
 
 
 @dp.message(F.text == kb.EDIT)

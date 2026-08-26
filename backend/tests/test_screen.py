@@ -151,8 +151,8 @@ def test_owner_tools_hidden():
     """Сводка — дело владельца чата, не посетителей."""
     from app.bot import keyboards as kb
 
-    plain = [b.text for row in kb.idle(False).keyboard for b in row]
-    owner = [b.text for row in kb.idle(True).keyboard for b in row]
+    plain = [b.text for row in kb.more(False).keyboard for b in row]
+    owner = [b.text for row in kb.more(True).keyboard for b in row]
     assert kb.STATS not in plain
     assert kb.STATS in owner
 
@@ -284,3 +284,29 @@ def test_draft_menu_is_short():
 
     buttons = [b.text for row in kb.draft().keyboard for b in row]
     assert len(buttons) == 3
+
+
+def test_every_menu_has_a_way_back():
+    """
+    Из списка объявлений выйти было некуда: человек оставался там, пока
+    не пришлёт новое объявление. Возврат нужен отовсюду.
+    """
+    from app.bot import keyboards as kb
+
+    for menu in (kb.more(), kb.editing(), kb.listings(2),
+                 kb.watching(1), kb.topics(["Электроника"])):
+        words = [b.text for row in menu.keyboard for b in row]
+        assert kb.BACK in words, words
+
+
+def test_no_more_than_three_in_a_row():
+    """
+    Человек пришёл опубликовать, а не выбирать из списка. Больше трёх
+    кнопок в строке — уже витрина.
+    """
+    from app.bot import keyboards as kb
+
+    for menu in (kb.idle(True), kb.more(True), kb.draft(),
+                 kb.editing(), kb.listings(3)):
+        for row in menu.keyboard:
+            assert len(row) <= 3, [b.text for b in row]

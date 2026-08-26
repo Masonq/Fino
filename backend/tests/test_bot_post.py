@@ -386,12 +386,13 @@ def test_menu_hides_owner_tools():
     """
     from app.bot import keyboards as kb
 
-    plain = [b.text for row in kb.idle(False).keyboard for b in row]
-    owner = [b.text for row in kb.idle(True).keyboard for b in row]
+    # Сводка живёт за кнопкой «Меню»: на главной ей не место, там
+    # только то, чем пользуются каждый раз.
+    plain = [b.text for row in kb.more(False).keyboard for b in row]
+    owner = [b.text for row in kb.more(True).keyboard for b in row]
 
     assert kb.STATS not in plain
     assert kb.STATS in owner
-    assert len(plain) >= 2                    # объявления и помощь есть у всех
 
 
 def test_menu_words_do_what_commands_do():

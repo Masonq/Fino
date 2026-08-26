@@ -23,6 +23,7 @@ CANCEL = "Отмена"
 BACK = "Назад"
 
 EDIT = "Изменить"
+MENU = "Меню"
 MY = "Мои объявления"
 HELP = "Помощь"
 STATS = "Сводка"
@@ -70,12 +71,27 @@ def _menu(rows: list[list[str]], hint: str) -> ReplyKeyboardMarkup:
 
 
 def idle(is_owner: bool = False) -> ReplyKeyboardMarkup:
-    """Меню в покое: объявления ещё нет."""
-    # В покое кнопок мало: главное здесь — прислать объявление, а не
-    # ходить по меню. Помощь и настройки — командами, они нужны редко.
-    rows = [[MY, WATCH]]
+    """
+    Главное меню: объявления ещё нет.
+
+    Три кнопки, не больше: человек пришёл опубликовать, а не выбирать
+    из списка. Всё прочее — за «Меню», куда можно вернуться откуда
+    угодно.
+    """
+    return _menu([[MY, WATCH, MENU]], "Пришлите объявление сюда")
+
+
+def more(is_owner: bool = False) -> ReplyKeyboardMarkup:
+    """
+    Всё остальное.
+
+    Помощь, настройки, сводка — то, за чем приходят редко. Держать их
+    на главной значит топить в них главное.
+    """
+    rows = [[HELP, SITE]]
     if is_owner:
         rows.append([STATS])
+    rows.append([BACK])
     return _menu(rows, "Пришлите объявление сюда")
 
 
@@ -105,6 +121,7 @@ def editing() -> ReplyKeyboardMarkup:
 # Пометки в списке: «1 продано», «1 удалить»…
 SOLD_SUFFIX = " продано"
 DROP_SUFFIX = " удалить"
+DROP_WATCH_SUFFIX = " не следить"
 
 
 def listings(count: int, is_owner: bool = False) -> ReplyKeyboardMarkup:
@@ -130,7 +147,17 @@ def listings(count: int, is_owner: bool = False) -> ReplyKeyboardMarkup:
         # промахнуться, а вернуть удалённое нельзя.
         rows.append([f"{n}{DROP_SUFFIX}" for n in range(1, min(count, 3) + 1)])
 
-    rows.append([WATCH])
+    rows.append([BACK])
+    return _menu(rows, "Пришлите объявление сюда")
+
+
+def watching(count: int, is_owner: bool = False) -> ReplyKeyboardMarkup:
+    """Меню над списком подписок."""
+    rows = [[WATCH_ADD]]
+    if count:
+        rows.append([f"{n}{DROP_WATCH_SUFFIX}"
+                     for n in range(1, min(count, 3) + 1)])
+    rows.append([BACK])
     return _menu(rows, "Пришлите объявление сюда")
 
 
