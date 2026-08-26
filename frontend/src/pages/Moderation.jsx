@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { displayCity } from '../data/cities'
@@ -146,31 +146,28 @@ export default function Moderation() {
         <div className="mod-list">
           {items.map((l) => (
             <div className="mod-card" key={l.id}>
-              {l.photos?.length > 0 && (
-                <div className="mod-photos">
-                  {l.photos.map((url, i) => <img key={i} src={url} alt="" loading="lazy" />)}
-                </div>
-              )}
-
-              <div className="mod-body">
-                <div className="mod-title">{l.title}</div>
-                <div className="mod-price">
-                  {formatPrice(l.price, l.currency, i18n.language) || t('detail.no_price')}
-                </div>
-                {l.description && <p className="mod-desc">{l.description}</p>}
-                <div className="mod-meta">
-                  {l.owner_name} · {displayCity(l.city, i18n.language)}
-                </div>
-                {/* Открывается настоящей страницей объявления — с тем же
-                    кадрированием фото и вёрсткой, что увидит покупатель,
-                    не пересказом полей в карточке очереди. Новая вкладка,
-                    чтобы очередь модерации осталась на месте. */}
-                {l.path && (
-                  <a className="mod-open" href={l.path} target="_blank" rel="noopener noreferrer">
-                    {t('mod.open')}
-                  </a>
+              {/* Открывается как обычное объявление — та же страница,
+                  тот же переход, что и везде на сайте, а не отдельная
+                  ссылка сбоку. */}
+              <Link to={l.path} className="mod-open-link">
+                {l.photos?.length > 0 && (
+                  <div className="mod-photos">
+                    {l.photos.map((url, i) => <img key={i} src={url} alt="" loading="lazy" />)}
+                  </div>
                 )}
-              </div>
+
+                <div className="mod-body">
+                  {l.category_name && <div className="mod-category">{l.category_name}</div>}
+                  <div className="mod-title">{l.title}</div>
+                  <div className="mod-price">
+                    {formatPrice(l.price, l.currency, i18n.language) || t('detail.no_price')}
+                  </div>
+                  {l.description && <p className="mod-desc">{l.description}</p>}
+                  <div className="mod-meta">
+                    {l.owner_name} · {displayCity(l.city, i18n.language)}
+                  </div>
+                </div>
+              </Link>
 
               {rejectingId === l.id ? (
                 <div className="mod-reason-box">

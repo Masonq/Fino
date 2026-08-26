@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.core.audit import record
 from app.core.auth import get_current_user
 from app.core.database import get_db
-from app.models import Listing, ListingStatus, User, UserRole
+from app.models import Category, Listing, ListingStatus, User, UserRole
 from app.core.clock import utcnow
 
 router = APIRouter(prefix="/api/moderation", tags=["moderation"])
@@ -31,7 +31,8 @@ def queue(
     items = (
         db.query(Listing)
         .options(joinedload(Listing.translations), joinedload(Listing.photos),
-                 joinedload(Listing.owner), joinedload(Listing.category))
+                 joinedload(Listing.owner),
+                 joinedload(Listing.category).joinedload(Category.parent))
         .filter(Listing.status == ListingStatus.pending_moderation)
         .order_by(Listing.created_at.asc())
         .limit(limit)
@@ -42,6 +43,16 @@ def queue(
 
     def serialize(l: Listing):
         tr = next((t for t in l.translations if t.language == lang), None) or (l.translations[0] if l.translations else None)
+        # «Раздел → Подраздел» — модератору важно видеть, куда объявление
+        # реально попадёт, до того как решать, пропускать его или нет.
+        category_name = None
+        if l.category:
+            cat_label = l.category.name.get(lang) or l.category.name.get("ru")
+            if l.category.parent:
+                parent_label = l.category.parent.name.get(lang) or l.category.parent.name.get("ru")
+                category_name = f"{parent_label} → {cat_label}"
+            else:
+                category_name = cat_label
         return {
             "id": str(l.id),
             "title": tr.title if tr else None,
@@ -52,6 +63,7 @@ def queue(
             "photos": [p.url for p in l.photos],
             "owner_name": l.owner.display_name if l.owner else None,
             "created_at": l.created_at.isoformat() if l.created_at else None,
+            "category_name": category_name,
             # Модератор должен видеть объявление так же, как его увидит
             # покупатель — фото и текст в карточке очереди этого не
             # заменяют (кадрирование, порядок фото, вёрстка страницы).
