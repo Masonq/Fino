@@ -51,3 +51,24 @@ def test_invented_price_is_refused():
     assert _in_text(2000, "продам за 2000 динар")
     assert _in_text(2000, "цена 2 000 динар")     # с пробелом
     assert not _in_text(5000, "продам за 2000 динар")
+
+
+def test_prompt_asks_for_per_item_price():
+    """
+    «4000 за 1 шт, за оба 7000» — показывать надо цену за штуку, так
+    делают все доски. Иначе покупатель видит вдвое дороже.
+    """
+    from app.core.price_ai import PROMPT
+
+    assert "за одну штуку" in PROMPT
+    assert "за оба" in PROMPT
+
+
+def test_prompt_handles_two_currencies():
+    """
+    «270 евро / 31000 динар» — это одна сумма, а не две вещи. Иначе
+    цена скачет между валютами при каждом пересчёте.
+    """
+    from app.core.price_ai import PROMPT
+
+    assert "в разных валютах" in PROMPT
