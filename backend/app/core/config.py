@@ -1,4 +1,13 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings
+
+# Абсолютный путь до backend/.env — не зависит от того, откуда запущен
+# процесс. Относительный ".env" читался только при запуске из backend/
+# (так стартует systemd), а любой скрипт, запущенный из /opt/fino
+# (deploy.sh, healthcheck.py), его не находил и тихо откатывался на
+# захардкоженный дефолт с чужим паролем к базе.
+ENV_FILE = Path(__file__).resolve().parent.parent.parent / ".env"
 
 
 class Settings(BaseSettings):
@@ -78,7 +87,7 @@ class Settings(BaseSettings):
     public_base_url: str = "http://89.208.113.147:8002"
 
     class Config:
-        env_file = ".env"
+        env_file = ENV_FILE
 
 
 settings = Settings()
