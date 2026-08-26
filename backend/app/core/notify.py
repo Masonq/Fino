@@ -8,7 +8,9 @@ from app.models import VerifyChannel
 
 log = logging.getLogger(__name__)
 
-SUBJECT = "PLONK — код подтверждения"
+# Тема без тире и лишних знаков: почтовые службы к ним придирчивы, а
+# код прямо в теме избавляет от открывания письма вовсе.
+SUBJECT = "Код для входа: {code}"
 
 BODY = """Ваш код подтверждения: {code}
 
@@ -26,8 +28,8 @@ def _send_email(to: str, code: str) -> None:
     должен быть виден сразу, крупно, без поиска глазами: остальное
     вокруг него.
     """
-    _send_email_text(to, SUBJECT, BODY.format(code=code),
-                     html=_code_letter(code))
+    _send_email_text(to, SUBJECT.format(code=code),
+                     BODY.format(code=code), html=_code_letter(code))
 
 
 def _code_letter(code: str) -> str:
@@ -60,8 +62,12 @@ def _code_letter(code: str) -> str:
               overflow:hidden;box-shadow:0 1px 3px rgba(16,24,40,.06);">
 
   <tr><td align="center" style="padding:32px 32px 8px;">
-    <img src="{site}/logo-mark.png" width="48" height="48" alt="PLONK"
-         style="display:block;border:0;border-radius:12px;">
+    <!-- Логотип рисуем разметкой, а не картинкой: письмо с одним
+         изображением и коротким текстом почтовые службы считают
+         подозрительным, да и картинки многие не грузят вовсе. -->
+    <div style="width:52px;height:52px;line-height:52px;border-radius:14px;
+                background:#0E9F6E;color:#ffffff;
+                font-size:26px;font-weight:700;">P</div>
   </td></tr>
 
   <tr><td align="center" style="padding:12px 32px 0;">
@@ -84,7 +90,7 @@ def _code_letter(code: str) -> str:
 
   <tr><td align="center" style="padding:4px 32px 28px;">
     <div style="font-size:13px;color:#98a2b3;">
-      Код действует 10 минут
+      Код действует 15 минут
     </div>
   </td></tr>
 
@@ -199,6 +205,14 @@ def _send_via_resend(to: str, subject: str, body: str,
     }
     if html:
         letter["html"] = html
+
+    # Обратный адрес: письмо, на которое некому ответить, почтовые
+    # службы считают рассылкой. Плюс человеку есть куда написать, если
+    # код пришёл не ему.
+    reply_to = getattr(settings, "support_email", None)
+    if reply_to:
+        letter["reply_to"] = reply_to
+
     payload = json.dumps(letter).encode()
 
     request = urllib.request.Request(

@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     # Ключ Resend: с ним письма уходят через него, без него — по SMTP.
     # Обычной почтой с нашего сервера они попадают в спам почти всегда.
     resend_api_key: str | None = None
+    # Куда человек может ответить на письмо. Без обратного адреса
+    # почтовые службы считают письмо рассылкой.
+    support_email: str = "info@plonk.rs"
 
     # Telegram-бот для кодов и уведомлений
     telegram_bot_token: str | None = None

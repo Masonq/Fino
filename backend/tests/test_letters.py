@@ -37,18 +37,16 @@ def test_styles_are_inline():
     assert 'style="' in letter
 
 
-def test_logo_is_absolute():
+def test_no_images_at_all():
     """
-    Относительный путь почтовая служба не найдёт — на месте картинки
-    будет пустой квадрат.
+    Письмо с одним изображением и коротким текстом почтовые службы
+    считают подозрительным, да и картинки многие не грузят вовсе.
+    Логотип рисуем разметкой.
     """
-    import re
-
     letter = _code_letter("482915")
-    link = re.search(r'<img src="([^"]+)"', letter).group(1)
 
-    assert link.startswith("http")             # полный, а не /logo.png
-    assert link.endswith("logo-mark.png")
+    assert "<img" not in letter
+    assert "background:#0E9F6E" in letter       # знак вместо картинки
 
 
 def test_plain_text_stays_too():
@@ -62,3 +60,26 @@ def test_plain_text_stays_too():
     source = inspect.getsource(_send_via_resend)
     assert '"text"' in source
     assert 'letter["html"] = html' in source
+
+
+def test_subject_carries_the_code():
+    """
+    Код прямо в теме избавляет от открывания письма вовсе. И тема без
+    тире: почтовые службы к лишним знакам придирчивы.
+    """
+    from app.core.notify import SUBJECT
+
+    subject = SUBJECT.format(code="482915")
+    assert "482915" in subject
+    assert "—" not in subject
+
+
+def test_letter_has_a_reply_address():
+    """
+    Письмо, на которое некому ответить, почтовые службы считают
+    рассылкой.
+    """
+    import inspect
+    from app.core.notify import _send_via_resend
+
+    assert "reply_to" in inspect.getsource(_send_via_resend)
