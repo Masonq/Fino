@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import CategoryArt from '../components/CategoryArt'
 import ListingCard from '../components/ListingCard'
+import { CardSkeletons } from '../components/Skeletons'
 import { LANDINGS } from '../data/landings'
 
 /**
@@ -48,6 +49,17 @@ export default function CategoryLanding() {
   const [text, setText] = useState('')
   const [showAllSubs, setShowAllSubs] = useState(false)
 
+  // Результаты показываются прямо тут, под фильтрами, вместо перехода
+  // на отдельную страницу поиска — раньше «Показать объявления» уводил
+  // на /search с почти той же вёрсткой, и это читалось как две разные,
+  // плохо связанные страницы.
+  const [results, setResults] = useState([])
+  const [resultsTotal, setResultsTotal] = useState(0)
+  const [searched, setSearched] = useState(false)
+  const [searching, setSearching] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const PAGE = 20
+
   const landing = LANDINGS[slug]
 
   useEffect(() => {
@@ -60,23 +72,41 @@ export default function CategoryLanding() {
       .catch(() => setFresh([]))
   }, [slug, i18n.language])
 
-  const search = () => {
-    const params = new URLSearchParams({ category: slug })
-    if (text.trim()) params.set('q', text.trim())
+  const buildQuery = () => {
+    const params = { category_slug: slug, lang: i18n.language, limit: PAGE, offset: 0 }
+    if (text.trim()) params.q = text.trim()
     // Ключи должны совпадать с тем, что читает Search.jsx через
-    // CategoryFields — иначе выбор «Снять» или «2 комнаты» на лендинге
-    // никуда не долетает.
-    if (deal) params.set('mode', deal)
+    // CategoryFields — та же логика раздела/подраздела переиспользуется
+    // на бэкенде, только теперь без перехода на другую страницу.
+    if (deal) params.mode = deal
     const ROOMS_TO_CHIP = { '1': 'rooms1', '2': 'rooms2', '3': 'rooms3' }
     Object.entries(values).forEach(([key, value]) => {
       if (!value) return
       if (key === 'rooms') {
-        if (ROOMS_TO_CHIP[value]) params.set('chip', ROOMS_TO_CHIP[value])
+        if (ROOMS_TO_CHIP[value]) params.chip = ROOMS_TO_CHIP[value]
         return
       }
-      params.set(key, value)
+      params[key] = value
     })
-    navigate(`/search?${params}`)
+    return params
+  }
+
+  const search = () => {
+    setSearching(true)
+    setSearched(true)
+    api.searchListings(buildQuery())
+      .then((res) => { setResults(res.items || []); setResultsTotal(res.total || 0) })
+      .catch(() => { setResults([]); setResultsTotal(0) })
+      .finally(() => setSearching(false))
+  }
+
+  const loadMore = () => {
+    if (loadingMore || results.length >= resultsTotal) return
+    setLoadingMore(true)
+    api.searchListings({ ...buildQuery(), offset: results.length })
+      .then((res) => setResults((prev) => [...prev, ...(res.items || [])]))
+      .catch(() => {})
+      .finally(() => setLoadingMore(false))
   }
 
   const name = category?.name?.[i18n.language] || category?.name?.ru || ''
@@ -255,7 +285,31 @@ export default function CategoryLanding() {
         </div>
       )}
 
-      {fresh.length > 0 && (
+      {searched ? (
+        <div className="landing-results">
+          <div className="landing-results-head">
+            <span className="results-count">
+              {searching && !results.length ? t('search.searching') : `${t('search.found')}: ${resultsTotal}`}
+            </span>
+          </div>
+          {searching && !results.length ? (
+            <div className="feed-grid"><CardSkeletons count={4} /></div>
+          ) : results.length === 0 ? (
+            <p className="empty-hint">{t('search.nothing')}</p>
+          ) : (
+            <>
+              <div className="feed-grid">
+                {results.map((l) => <ListingCard key={l.id} listing={l} />)}
+              </div>
+              {results.length < resultsTotal && (
+                <button className="load-more" disabled={loadingMore} onClick={loadMore}>
+                  {loadingMore ? t('actions.loading') : t('actions.show_more')}
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      ) : fresh.length > 0 && (
         <div className="landing-fresh">
           <h2>{t('landing.fresh')}</h2>
           <div className="feed-grid">

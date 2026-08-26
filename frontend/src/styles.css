@@ -2048,6 +2048,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .landing-fresh{ padding:20px 14px 0; }
 .landing-fresh h2{ font-size:16px; font-weight:800; color:var(--ink); margin-bottom:10px; }
 
+/* Результаты поиска прямо на лендинге — вместо перехода на /search. */
+.landing-results{ padding:20px 14px 0; }
+.landing-results-head{ padding-bottom:10px; }
+
 /* Плитка «Все категории» — без картинки, только подпись и стрелка */
 .landing-sub-all{ display:flex; align-items:center; justify-content:space-between; }
 .landing-sub-all .landing-sub-name{ max-width:none; }
