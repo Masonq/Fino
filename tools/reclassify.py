@@ -104,9 +104,22 @@ def main() -> None:
             target_slug = guessed_sub if (guessed_sub and guessed_sub in categories) else guessed_top
             if target_slug == current_slug:
                 continue
-            # Не уводим товар в услуги, если он там не был: словарь услуг
-            # слишком общий и цепляет обычные описания техники.
+            hits = explain(combined)
+            why = hits.get(target_slug) or hits.get(guessed_top) or []
+            # Услуги и товары путаются в обе стороны: словарь услуг ловит
+            # обычные описания техники («требует подключения»), а словарь
+            # товаров ловит названия услуг («замена аккумулятора iPhone» —
+            # это услуга, не телефон на продажу). Раз уже был в услугах —
+            # оттуда не уводим; не был — туда не отправляем.
             if guessed_top == SERVICE_TOP and current_top != SERVICE_TOP:
+                continue
+            if current_top == SERVICE_TOP and guessed_top != SERVICE_TOP:
+                continue
+            # «Аренда» само по себе слишком общее для недвижимости — прокат
+            # инструмента и авто-прокат его тоже задевают. В недвижимость
+            # пускаем, только если сработало что-то ещё, кроме этого
+            # одного слова.
+            if guessed_top == "real-estate" and why == ["аренд"]:
                 continue
             # Не стираем точный подраздел («bags») на общий раздел
             # («fashion») только потому, что для этого текста подраздел
@@ -117,8 +130,6 @@ def main() -> None:
                 continue
 
             moves[f"{current_top or '—'} -> {guessed_top}"] += 1
-            hits = explain(combined)
-            why = hits.get(target_slug) or hits.get(guessed_top) or []
             changes.append((listing, translation, target_slug, current_slug, why))
 
             if number % 100 == 0:
