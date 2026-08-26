@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
+import CategoryFields from '../components/CategoryFields'
 import ListingCard from '../components/ListingCard'
 import { CardSkeletons } from '../components/Skeletons'
 import { CITIES, cityLabel } from '../data/cities'
@@ -15,6 +16,17 @@ const SORTS = [
 ]
 
 const PAGE = 20
+
+// Чем ответ на вопрос раздела уточняет поиск. Отдельных полей под них
+// в базе нет, а в тексте объявления эти слова есть.
+const MODE_WORDS = {
+  buy: 'продам', rent: 'сдам', daily: 'посуточно',
+  rooms1: 'однокомнатная', rooms2: 'двухкомнатная',
+  rooms3: 'трёхкомнатная', studio: 'студия',
+  cars: 'автомобиль', moto: 'мотоцикл', trucks: 'грузовой', parts: 'запчасти',
+  looking: 'ищу работу', hiring: 'требуется',
+  partTime: 'подработка', fullTime: 'полный день', remote: 'удалённо',
+}
 
 export default function Search() {
   const { t, i18n } = useTranslation()
@@ -42,6 +54,12 @@ export default function Search() {
   const [withPhoto, setWithPhoto] = useState(params.get('with_photo') === '1')
   const [sort, setSort] = useState(params.get('sort') || 'new')
 
+  // Ответы на вопросы раздела: «снять или купить», «легковые или мото».
+  const [fields, setFields] = useState({
+    mode: params.get('mode') || '',
+    chip: params.get('chip') || '',
+  })
+
   const inputRef = useRef(null)
 
 
@@ -54,12 +72,16 @@ export default function Search() {
     const p = { lang: i18n.language, limit: PAGE, offset: 0, sort }
     if (text.trim()) p.q = text.trim()
     if (category) p.category_slug = category
+    // Ответы на вопросы раздела уточняют поиск словами: отдельных
+    // полей под них в базе нет, а в тексте объявления они есть.
+    if (fields.mode) p.q = `${p.q || ''} ${MODE_WORDS[fields.mode] || ''}`.trim()
+    if (fields.chip) p.q = `${p.q || ''} ${MODE_WORDS[fields.chip] || ''}`.trim()
     if (priceMin) p.price_min = priceMin
     if (priceMax) p.price_max = priceMax
     if (city.trim()) p.city = city.trim()
     if (withPhoto) p.with_photo = true
     return p
-  }, [text, category, priceMin, priceMax, city, withPhoto, sort, i18n.language])
+  }, [text, category, priceMin, priceMax, city, withPhoto, sort, fields, i18n.language])
 
   // поиск с задержкой, чтобы не дёргать сервер на каждую букву;
   // при первом открытии экрана ждать незачем — запрашиваем сразу
@@ -223,6 +245,15 @@ export default function Search() {
           )}
         </div>
       )}
+
+      {/* Поля именно этого раздела: у квартиры «снять или купить», у
+          машины — вид техники. Общая форма с ценой на эти вопросы не
+          отвечает, и человек уходит листать всё подряд. */}
+      <CategoryFields
+        slug={current?.slug || category}
+        value={fields}
+        onChange={setFields}
+      />
 
       {subs.length > 0 && (
         <div className="sub-row">

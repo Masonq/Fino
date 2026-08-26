@@ -307,3 +307,30 @@ def test_subcategories_count_towards_the_parent():
 
     source = inspect.getsource(list_categories)
     assert "sum(total(c) for c in cat.children)" in source
+
+
+def test_category_has_its_own_fields():
+    """
+    У квартиры спрашивают «снять или купить», у машины — вид техники.
+    Общая форма с ценой и городом ни на один из этих вопросов не
+    отвечает, и человек уходит листать всё подряд.
+    """
+    fields = (Path(__file__).resolve().parents[2] / "frontend" / "src"
+              / "components" / "CategoryFields.jsx").read_text()
+
+    assert "'real-estate'" in fields
+    assert "auto:" in fields
+    assert "jobs:" in fields
+    # в одежде и мебели полей нет: там хватает обычного поиска
+    assert "clothes" not in fields
+
+
+def test_fields_narrow_the_search():
+    """
+    Ответ на вопрос раздела должен менять выдачу, иначе это украшение.
+    """
+    search = (Path(__file__).resolve().parents[2] / "frontend" / "src"
+              / "pages" / "Search.jsx").read_text()
+
+    assert "MODE_WORDS" in search
+    assert "fields.mode" in search

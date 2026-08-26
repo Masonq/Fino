@@ -428,5 +428,51 @@
     "edit": "Edit details",
     "rating": "Rating {{value}} · {{count}} reviews",
     "no_rating": "No reviews yet"
+  },
+  "landing": {
+    "deal": "What do you need",
+    "buy": "Buy",
+    "rent": "Long-term rent",
+    "daily": "Daily",
+    "rooms": "Rooms",
+    "price": "Price",
+    "make_model": "Make and model",
+    "make_model_hint": "e.g. BMW 3 series",
+    "year": "Year",
+    "size": "Size",
+    "model": "What are you looking for",
+    "model_hint": "e.g. iPhone 13",
+    "looking_for": "You are looking for",
+    "want_job": "A job",
+    "want_worker": "Employees",
+    "from": "from",
+    "to": "to",
+    "show": "Show listings",
+    "fresh": "Fresh listings",
+    "offers": "{{count}} listings"
+  },
+  "fields": {
+    "real-estate": {
+      "buy": "Buy",
+      "rent": "Long-term rent",
+      "daily": "Daily rent",
+      "rooms1": "1 room",
+      "rooms2": "2 rooms",
+      "rooms3": "3+ rooms",
+      "studio": "Studio"
+    },
+    "auto": {
+      "cars": "Cars",
+      "moto": "Moto",
+      "trucks": "Trucks",
+      "parts": "Parts"
+    },
+    "jobs": {
+      "looking": "Looking for work",
+      "hiring": "Hiring",
+      "partTime": "Part-time",
+      "fullTime": "Full-time",
+      "remote": "Remote"
+    }
   }
 }

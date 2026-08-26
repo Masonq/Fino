@@ -4,6 +4,7 @@ import Home from './pages/Home'
 import Search from './pages/Search'
 import PostAd from './pages/PostAd'
 import Categories from './pages/Categories'
+import CategoryLanding from './pages/CategoryLanding'
 import ListingDetail from './pages/ListingDetail'
 import ChatScreen from './pages/ChatScreen'
 import ComingSoon from './pages/ComingSoon'
@@ -106,6 +107,9 @@ export default function App() {
           <Route path="/search" element={<Search />} />
           <Route path="/post" element={<PostAd />} />
           <Route path="/categories" element={<Categories />} />
+          {/* Вход в раздел со своими полями: человек ищет не
+              «что-нибудь», а двушку до тысячи евро. */}
+          <Route path="/c/:slug" element={<CategoryLanding />} />
           {/* Короткий путь по ключу — для админки и служебных ссылок,
               где понятного адреса взять неоткуда. Приложение по хвосту
               найдёт объявление и покажет его. */}

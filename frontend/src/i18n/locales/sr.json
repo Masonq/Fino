@@ -429,5 +429,51 @@
     "edit": "Izmeni podatke",
     "rating": "Ocena {{value}} · recenzija {{count}}",
     "no_rating": "Još nema recenzija"
+  },
+  "landing": {
+    "deal": "Šta tražite",
+    "buy": "Kupovina",
+    "rent": "Dugoročni najam",
+    "daily": "Dnevno",
+    "rooms": "Sobe",
+    "price": "Cena",
+    "make_model": "Marka i model",
+    "make_model_hint": "npr. BMW serija 3",
+    "year": "Godište",
+    "size": "Veličina",
+    "model": "Šta tražite",
+    "model_hint": "npr. iPhone 13",
+    "looking_for": "Tražite",
+    "want_job": "Posao",
+    "want_worker": "Radnike",
+    "from": "od",
+    "to": "do",
+    "show": "Prikaži oglase",
+    "fresh": "Novi oglasi",
+    "offers": "{{count}} oglasa"
+  },
+  "fields": {
+    "real-estate": {
+      "buy": "Kupovina",
+      "rent": "Dugoročno",
+      "daily": "Dnevno",
+      "rooms1": "1 soba",
+      "rooms2": "2 sobe",
+      "rooms3": "3+ sobe",
+      "studio": "Studio"
+    },
+    "auto": {
+      "cars": "Automobili",
+      "moto": "Moto",
+      "trucks": "Kamioni",
+      "parts": "Delovi"
+    },
+    "jobs": {
+      "looking": "Tražim posao",
+      "hiring": "Tražim radnike",
+      "partTime": "Honorarno",
+      "fullTime": "Puno radno",
+      "remote": "Na daljinu"
+    }
   }
 }

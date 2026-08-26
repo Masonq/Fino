@@ -1915,3 +1915,36 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 
 .cat-tile-2row.soon{ opacity:.5; }
+
+/* Поля раздела: у квартиры спрашивают «снять или купить», у машины —
+   марку. Общая форма с ценой ни на один из этих вопросов не отвечает. */
+.cat-fields{ padding:10px 12px 4px; }
+
+.cat-modes{
+  display:flex; gap:6px; padding:4px;
+  background:#f2f4f3; border-radius:14px; margin-bottom:10px;
+}
+.cat-mode{
+  flex:1; padding:10px 8px; border:0; border-radius:11px;
+  background:none; color:#667085;
+  font-size:14px; font-weight:600;
+}
+.cat-mode.on{
+  background:#fff; color:#101828;
+  box-shadow:0 1px 3px rgba(16,24,40,.08);
+}
+
+.cat-chips{
+  display:flex; gap:8px; overflow-x:auto;
+  scrollbar-width:none; -webkit-overflow-scrolling:touch;
+}
+.cat-chips::-webkit-scrollbar{ display:none; }
+.cat-chip{
+  flex:0 0 auto; padding:9px 15px; border-radius:999px;
+  border:1px solid var(--line,#e6e6e6); background:#fff;
+  font-size:14px; color:#344054; white-space:nowrap;
+}
+.cat-chip.on{
+  background:var(--accent,#0E9F6E); border-color:var(--accent,#0E9F6E);
+  color:#fff; font-weight:600;
+}
