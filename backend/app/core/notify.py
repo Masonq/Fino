@@ -128,6 +128,11 @@ def _send_via_resend(to: str, subject: str, body: str) -> None:
         headers={
             "Authorization": f"Bearer {settings.resend_api_key}",
             "Content-Type": "application/json",
+            # Перед Resend стоит защита, которая заворачивает запросы
+            # без признаков обычной программы — отвечает 403 с кодом
+            # 1010. Представляемся по-человечески.
+            "User-Agent": "PLONK/1.0 (+https://plonk.rs)",
+            "Accept": "application/json",
         },
     )
     try:
