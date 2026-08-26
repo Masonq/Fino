@@ -82,9 +82,32 @@ def _add_server_default(context, revision, op_directives):
         walk(script.upgrade_ops.ops)
 
 
+# Индексы, у которых Postgres при чтении обратно добавляет свои приведения
+# типов (::regconfig, ::text и т.п.) к тому же самому выражению — alembic
+# сравнивает текст буквально и каждый раз считает индекс изменившимся,
+# хотя по смыслу он тот же. Без этого фильтра каждый деплой генерировал бы
+# лишнюю миграцию, пересобирающую GIN-индекс на таблице с объявлениями —
+# это долгая операция, и она уже один раз зависла в процессе деплоя.
+NOISE_INDEXES = {"ix_translations_search"}
+
+
+def _drop_noise_index_ops(context, revision, op_directives):
+    from alembic.operations import ops
+
+    def is_noise(op):
+        return (
+            isinstance(op, (ops.CreateIndexOp, ops.DropIndexOp))
+            and getattr(op, "index_name", None) in NOISE_INDEXES
+        )
+
+    for script in op_directives:
+        script.upgrade_ops.ops = [op for op in script.upgrade_ops.ops if not is_noise(op)]
+        script.downgrade_ops.ops = [op for op in script.downgrade_ops.ops if not is_noise(op)]
+
+
 def process_revision_directives(context, revision, directives):
     _add_server_default(context, revision, directives)
-
+    _drop_noise_index_ops(context, revision, directives)
 
 
 def run_migrations_offline():
