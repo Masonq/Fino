@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import CategoryArt from '../components/CategoryArt'
-import { CATEGORY_ICONS } from '../components/CategoryIcons'
 import ListingCard from '../components/ListingCard'
 import { LANDINGS } from '../data/landings'
 
@@ -85,8 +84,8 @@ export default function CategoryLanding() {
   return (
     <div className="landing">
       <div className="landing-hero" style={{ background: BANNER_GRADIENTS[slug] || BANNER_GRADIENTS['real-estate'] }}>
-        <div className="landing-hero-glyph" aria-hidden="true">
-          {CATEGORY_ICONS[slug]}
+        <div className="landing-hero-card" aria-hidden="true">
+          <CategoryArt slug={slug} />
         </div>
         <div className="landing-head">
           <button className="landing-back on-hero" onClick={() => navigate('/categories')}
