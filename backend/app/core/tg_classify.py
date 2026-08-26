@@ -555,6 +555,26 @@ def classify_sub(parent_slug: str, text: str) -> str | None:
         if any(k in scores for k in ("flats", "houses", "rooms")):
             scores.pop("garages")
 
+    # «Русская клавиатура» у макбука, упомянутая только в описании, — это
+    # раскладка, не отдельная клавиатура на продажу. Подавляем «Товары
+    # для компьютера» только когда модель устройства названа в заголовке,
+    # а клавиатура/мышь — только в описании (не в заголовке): так
+    # «Клавиатура для iPad» (и то, и другое в заголовке) остаётся
+    # аксессуаром, а «Macbook air / русская клавиатура, зарядка» —
+    # ноутбуком. Заголовок — первая строка: так text собирают везде
+    # (f"{title}\n{description}"), отдельного параметра для него нет.
+    if parent_slug == "electronics" and "gadgets" in scores:
+        title_only = _fold(text.split("\n", 1)[0])
+        gadgets_words = table.get("gadgets", [])
+        gadget_in_title = any(_matches(w, title_only) for w in gadgets_words)
+        if not gadget_in_title:
+            device_in_title = [
+                k for k in ("laptops", "computers", "tablets", "phones")
+                if k in scores and any(_matches(w, title_only) for w in table.get(k, []))
+            ]
+            if device_in_title:
+                scores.pop("gadgets")
+
     if not scores:
         return None
     best = max(scores, key=lambda s: scores[s])
