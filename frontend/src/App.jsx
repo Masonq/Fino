@@ -56,15 +56,16 @@ export default function App() {
     }
   }, [])
 
-  // Перед уходом с текущего адреса запоминаем, где на нём остановились —
-  // сохраняем в cleanup-е, он срабатывает с прошлым location по замыканию,
-  // прямо перед тем, как эффект перезапустится на новом.
+  // Пишем прокрутку по каждому скроллу, а не «перед уходом»: cleanup
+  // эффекта срабатывает уже ПОСЛЕ того, как экран сменился на новый —
+  // к этому моменту window.scrollY уже относится к новой странице, а
+  // не к той, что покидали, и в кэш попадало не то число.
   useEffect(() => {
     const key = location.key
-    return () => {
-      scrollPositions.current[key] = window.scrollY
-    }
-  }, [location])
+    const onScroll = () => { scrollPositions.current[key] = window.scrollY }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [location.key])
 
   useLayoutEffect(() => {
     if (navType === 'POP') {
