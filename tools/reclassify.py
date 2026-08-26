@@ -27,9 +27,16 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 
 from app.core.database import SessionLocal  # noqa: E402
-from app.core.tg_import import recategorize  # noqa: E402
+from app.core.tg_classify import classify, classify_sub  # noqa: E402
 from app.models.category import Category  # noqa: E402
 from app.models import Listing, ListingStatus, ListingTranslation  # noqa: E402
+
+# Заголовок один часто слишком короткий и двусмысленный («Спальные мешки
+# Mjolk с рукавами» без описания цепляет случайные совпадения). Берём
+# заголовок и описание вместе — там обычно есть слово, снимающее
+# неоднозначность, — и требуем не одно случайное совпадение, а более
+# уверенный результат.
+MIN_SCORE = 2
 
 
 def main() -> None:
@@ -62,15 +69,19 @@ def main() -> None:
         for number, (listing, translation) in enumerate(rows, 1):
             title = translation.title or ""
             body = translation.description or ""
+            # Заголовок вперёд — там называют вещь, — но описание не
+            # отбрасываем: у коротких заголовков там весь смысл.
+            combined = f"{title}\n{body}"
             current = by_id.get(listing.category_id)
             current_slug = current.slug if current else None
             current_parent = by_id.get(current.parent_id) if current and current.parent_id else None
             current_top = current_parent.slug if current_parent else current_slug
 
-            guessed_top, guessed_sub = recategorize(title, body, current_top)
-            if not guessed_top or guessed_top not in categories:
+            guessed_top, score = classify(combined)
+            if not guessed_top or guessed_top not in categories or score < MIN_SCORE:
                 continue
 
+            guessed_sub = classify_sub(guessed_top, combined)
             target_slug = guessed_sub if (guessed_sub and guessed_sub in categories) else guessed_top
             if target_slug == current_slug:
                 continue
