@@ -28,13 +28,6 @@ export default function Categories() {
         <div className="cats-title">{t('common.all_categories')}</div>
       </div>
 
-      <div className="cats-search">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ opacity: 0.4 }}>
-          <circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" />
-        </svg>
-        {t('common.find_category')}
-      </div>
-
       <div className="cats-grid">
         {!loaded && Array.from({ length: 8 }).map((_, i) => (
           <div className="cats-item skeleton" key={`sk${i}`} />
