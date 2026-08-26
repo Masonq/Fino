@@ -235,18 +235,37 @@ def _ask_one(provider: str, prompt: str, limit: int,
     return None
 
 
+# Кто отпал в этот заход: исчерпал дневной запас, стал платным или
+# отвечает отказом. Стучаться к нему снова — тратить время на заведомый
+# отказ, а при тысяче объявлений это часы.
+_given_up: set[str] = set()
+
+
 def _ask(prompt: str, limit: int = 200, schema: dict | None = None) -> str | None:
     """
     Обходит провайдеров по очереди, пока кто-нибудь не ответит.
 
-    Исчерпанный на сегодня помечается и в этот заход больше не тревожится:
-    следующий вопрос сразу уйдёт к тому, у кого запас остался.
+    Отпавший в этот заход больше не тревожится: следующий вопрос сразу
+    уйдёт к тому, у кого запас остался.
     """
     for provider in available():
+        if provider in _given_up:
+            continue
+
         answer = _ask_one(provider, prompt, limit, schema)
         if answer:
             return answer
+
+        # Ответа нет. Разовый сбой бывает, но если провайдер молчит и
+        # на второй вопрос — считаем, что отпал.
+        _misses[provider] = _misses.get(provider, 0) + 1
+        if _misses[provider] >= 2:
+            _given_up.add(provider)
+            log.info("нейросеть %s отпала в этот заход", provider)
     return None
+
+
+_misses: dict[str, int] = {}
 
 
 # Форма ответа для заголовка и описания. Пустая строка вместо пропуска
