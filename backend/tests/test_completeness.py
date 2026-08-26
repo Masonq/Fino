@@ -224,3 +224,26 @@ def test_case_is_not_required():
 
     assert title_is_clear("Три мяча для тенниса")
     assert title_is_clear("Два матраса 180х90 примерно")
+
+
+def test_single_word_is_not_enough():
+    """
+    «Обувь», «Стол», «Hutschenreuther» — одно слово без уточнений.
+    Вещь названа, но что именно продают, непонятно: ни размера, ни
+    марки, ни состояния. Такое объявление откроют вслепую.
+    """
+    from app.routers.listings import title_is_clear
+
+    for title in ("Обувь", "Стол", "Скейт", "Компьютер",
+                  "Hutschenreuther", "Privileg"):
+        assert not title_is_clear(title), title
+
+
+def test_short_names_with_details_survive():
+    """А с уточнением — годится, даже если само название короткое."""
+    from app.routers.listings import title_is_clear
+
+    assert title_is_clear("AirPods 4")
+    assert title_is_clear("Зимние Skechers")
+    assert title_is_clear("Стол письменный IKEA")
+    assert title_is_clear("Скейт для начинающих")

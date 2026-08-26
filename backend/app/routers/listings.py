@@ -776,7 +776,18 @@ def title_is_clear(title: str | None) -> bool:
     from app.core.morphology import analyzer
 
     body = (title or "").strip()
-    if len(body) < 8:
+    if len(body) < 4:
+        return False
+
+    # Одно слово без уточнений: «Обувь», «Тест», «Компьютер». Вещь
+    # названа, но что именно продают — непонятно: размер, марка,
+    # состояние не сказаны. Такое объявление всё равно откроют вслепую.
+    #
+    # Марку в одно слово это не задевает: «Skechers» узнаваем сам по
+    # себе, а «обувь» — это раздел, а не вещь.
+    # Латиницу это задевает так же: «Hutschenreuther» — марка без вещи,
+    # и понять по ней, ваза там или сервиз, нельзя.
+    if len(body.split()) == 1 and body.isalpha():
         return False
 
     # Заголовок, начатый с середины фразы: «И я могу взять на себя
@@ -791,8 +802,10 @@ def title_is_clear(title: str | None) -> bool:
     #
     # Признак настоящего названия — марка с моделью: два и более слова,
     # где есть цифры или заглавные посреди строки.
+    # «AirPods 4», «Зимние Skechers» — марки узнаваемы и в одно слово.
+    # Требовать двух значит выбрасывать половину обуви и техники.
     latin = re.findall(r"[A-Za-z][A-Za-z0-9./-]*", body)
-    if len(latin) >= 2:
+    if len(latin) >= 2 or (latin and len(latin[0]) >= 4):
         return True
 
     morph = analyzer()
