@@ -90,6 +90,7 @@
     "show_more": "Prikaži još",
     "loading": "Učitavanje…",
     "reset_filters": "Poništi filtere",
+    "cancel": "Otkaži",
     "clear": "Obriši",
     "close": "Zatvori"
   },
@@ -229,7 +230,17 @@
     "no_reports": "Nema prijava",
     "dismiss": "Odbaci",
     "block_listing": "Ukloni oglas",
-    "block_user": "Blokiraj"
+    "block_user": "Blokiraj",
+    "return_to_edit": "Pošalji na doradu",
+    "reasons": {
+      "wrong_category": "Pogrešna kategorija",
+      "bad_photos": "Loše ili tuđe fotografije",
+      "unclear_description": "Nejasan opis",
+      "duplicate": "Duplikat",
+      "prohibited": "Zabranjen artikal",
+      "suspicious_price": "Sumnjiva cena",
+      "other": "Drugi razlog"
+    }
   },
   "rev": {
     "title": "Recenzije",

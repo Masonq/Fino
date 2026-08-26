@@ -10,6 +10,11 @@ import ReportButton from '../components/ReportButton'
 import SimilarListings from '../components/SimilarListings'
 import { formatPrice } from '../utils/money'
 
+const REASON_KEYS = [
+  'wrong_category', 'bad_photos', 'unclear_description',
+  'duplicate', 'prohibited', 'suspicious_price',
+]
+
 export default function ListingDetail() {
   const { slug } = useParams()
 
@@ -102,14 +107,32 @@ export default function ListingDetail() {
 
   const isStaff = user?.role === 'admin' || user?.role === 'moderator'
   const [deleting, setDeleting] = useState(false)
-  // Мусорная запись из чата — обрывок обсуждения, который парсер принял
-  // за объявление, — раньше удалить можно было только своё; у чужого
-  // (или у служебного аккаунта чата) кнопки не было вовсе.
+  const [showReasons, setShowReasons] = useState(false)
+  // Перенесённое из телеграм-чата объявление принадлежит служебному
+  // аккаунту чата — реального человека, которому можно вернуть его на
+  // доработку, тут нет. Такие просто удаляем, как раньше. У обычного
+  // объявления владелец — тот, кто его разместил, и ему есть куда его
+  // вернуть — через отклонение с причиной, как в очереди модерации.
+  const canReturnToEdit = listing?.external_source !== 'telegram'
+
   const handleDelete = async () => {
-    if (!listing || !window.confirm(t('my.confirm_delete'))) return
+    if (!listing) return
+    if (canReturnToEdit) { setShowReasons(true); return }
+    if (!window.confirm(t('my.confirm_delete'))) return
     setDeleting(true)
     try {
       await api.deleteListing(listing.id)
+      navigate(listing.category_slug ? `/search?category=${listing.category_slug}` : '/', { replace: true })
+    } catch { /* оставляем как было */ }
+    finally { setDeleting(false) }
+  }
+
+  const returnToEdit = async (reason) => {
+    if (!listing) return
+    setShowReasons(false)
+    setDeleting(true)
+    try {
+      await api.modReject(listing.id, reason)
       navigate(listing.category_slug ? `/search?category=${listing.category_slug}` : '/', { replace: true })
     } catch { /* оставляем как было */ }
     finally { setDeleting(false) }
@@ -433,6 +456,37 @@ export default function ListingDetail() {
           {starting ? '...' : t(isResume ? 'detail.write_person' : 'detail.write_seller')}
         </button>
       </div>
+      )}
+
+      {showReasons && (
+        <div className="reasons-sheet" onClick={() => setShowReasons(false)}>
+          <div className="reasons-card" onClick={(e) => e.stopPropagation()}>
+            <div className="reasons-title">{t('mod.return_to_edit')}</div>
+            {REASON_KEYS.map((key) => (
+              <button
+                key={key}
+                className="reasons-item"
+                disabled={deleting}
+                onClick={() => returnToEdit(t(`mod.reasons.${key}`))}
+              >
+                {t(`mod.reasons.${key}`)}
+              </button>
+            ))}
+            <button
+              className="reasons-item"
+              disabled={deleting}
+              onClick={() => {
+                const custom = window.prompt(t('mod.reason_prompt'))
+                if (custom) returnToEdit(custom)
+              }}
+            >
+              {t('mod.reasons.other')}
+            </button>
+            <button className="reasons-cancel" onClick={() => setShowReasons(false)}>
+              {t('actions.cancel')}
+            </button>
+          </div>
+        </div>
       )}
 
       {fullscreen !== null && (

@@ -90,6 +90,7 @@
     "show_more": "Показать ещё",
     "loading": "Загружаем…",
     "reset_filters": "Сбросить фильтры",
+    "cancel": "Отмена",
     "clear": "Очистить",
     "close": "Закрыть"
   },
@@ -229,7 +230,17 @@
     "no_reports": "Жалоб нет",
     "dismiss": "Отклонить жалобу",
     "block_listing": "Снять объявление",
-    "block_user": "Заблокировать"
+    "block_user": "Заблокировать",
+    "return_to_edit": "Отправить на доработку",
+    "reasons": {
+      "wrong_category": "Не тот раздел",
+      "bad_photos": "Плохие или чужие фото",
+      "unclear_description": "Непонятное описание",
+      "duplicate": "Дубликат",
+      "prohibited": "Запрещённый товар",
+      "suspicious_price": "Подозрительная цена",
+      "other": "Другая причина"
+    }
   },
   "rev": {
     "title": "Отзывы",

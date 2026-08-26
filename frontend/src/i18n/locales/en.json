@@ -90,6 +90,7 @@
     "show_more": "Show more",
     "loading": "Loading…",
     "reset_filters": "Reset filters",
+    "cancel": "Cancel",
     "clear": "Clear",
     "close": "Close"
   },
@@ -229,7 +230,17 @@
     "no_reports": "No reports",
     "dismiss": "Dismiss",
     "block_listing": "Take down",
-    "block_user": "Block user"
+    "block_user": "Block user",
+    "return_to_edit": "Send back for editing",
+    "reasons": {
+      "wrong_category": "Wrong category",
+      "bad_photos": "Bad or unrelated photos",
+      "unclear_description": "Unclear description",
+      "duplicate": "Duplicate",
+      "prohibited": "Prohibited item",
+      "suspicious_price": "Suspicious price",
+      "other": "Other reason"
+    }
   },
   "rev": {
     "title": "Reviews",

@@ -2060,3 +2060,25 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   font-size:15px; font-weight:600; color:var(--ink);
   border-bottom:1px solid rgba(20,30,25,.06);
 }
+
+/* Причина отклонения — тот же прицел, что у очереди модерации: выбрать
+   из готового списка на телефоне быстрее, чем печатать текст каждый раз. */
+.reasons-sheet{
+  position:fixed; inset:0; z-index:60; background:rgba(20,30,25,.45);
+  display:flex; align-items:flex-end;
+}
+.reasons-card{
+  width:100%; background:#fff; border-radius:20px 20px 0 0;
+  padding:8px 14px calc(20px + env(safe-area-inset-bottom));
+  display:flex; flex-direction:column;
+}
+.reasons-title{ font-size:15px; font-weight:800; color:var(--ink); padding:12px 6px 6px; }
+.reasons-item{
+  text-align:left; padding:14px 6px; font-size:14.5px; font-weight:600; color:var(--ink);
+  border-bottom:1px solid rgba(20,30,25,.06);
+}
+.reasons-item:last-of-type{ border-bottom:none; }
+.reasons-cancel{
+  margin-top:10px; padding:13px; border-radius:13px; background:#F2F2EF;
+  font-size:14px; font-weight:700; color:var(--ink-soft); text-align:center;
+}
