@@ -633,6 +633,10 @@ def classify_sub(parent_slug: str, text: str) -> str | None:
     # в «Телефоны».
     if parent_slug == "electronics":
         text = _DEVICE_POCKET_RE.sub(" ", text)
+    # «Баскетбольное кольцо» — то же слово, что у ювелирного кольца,
+    # настоящий омоним, а не ошибка сопоставления по началу слова.
+    if parent_slug == "fashion":
+        text = re.sub(r"баскетбольн\w*\s+кольц\w*", " баскетбольный обруч ", text, flags=re.I)
     # «Женская обувь» — это обувь: пол уточняет вещь, но не заменяет её
     # вид, поэтому разделы по полу весят меньше предметных.
     softer = {"women", "men"}
