@@ -191,3 +191,39 @@ def test_prompt_keeps_flaws_out_of_the_title():
 
     assert "недостатки" in PROMPT
     assert "район" in PROMPT
+
+
+def test_import_asks_only_on_suspicion():
+    """
+    Модель зовём при подозрении на цену: её нет, она подозрительно мала
+    или в тексте слова, из-за которых правила промахиваются. На обычном
+    объявлении правила не ошибаются, а обращения не бесплатны.
+    """
+    from app.core.tg_import import _price_looks_off
+
+    assert _price_looks_off({"price": None}, "Продам стол")
+    assert _price_looks_off({"price": 37, "currency": "RSD"},
+                            "Кеды р.37 -2000 rsd")
+    assert _price_looks_off({"price": 2200, "currency": "RSD"},
+                            "Macbook, батарея 99%, цена 2200")
+    assert _price_looks_off({"price": 4000, "currency": "RSD"},
+                            "Шлемы. Подробнее в моём канале @shop")
+
+    assert not _price_looks_off({"price": 6000, "currency": "RSD"},
+                                "Продам стол письменный IKEA")
+    assert not _price_looks_off({"price": 25000, "currency": "RSD"},
+                                "Диван раскладной, Земун")
+
+
+def test_import_applies_the_whole_parse():
+    """
+    Перенос идёт каждый час: без этого он снова наполнял бы сайт тем,
+    что мы только что починили.
+    """
+    import inspect
+    from app.core.tg_import import _apply_full_parse
+
+    source = inspect.getsource(_apply_full_parse)
+    assert "listing_ai" in source
+    assert '"description"' in source
+    assert '"price"' in source

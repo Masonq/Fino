@@ -20,6 +20,7 @@ import argparse
 import asyncio
 import fcntl
 import os
+import re
 import time
 import uuid
 from pathlib import Path
@@ -266,6 +267,10 @@ async def collect(client, chat_id: int, meta: dict, days: int,
     albums: dict[int, list] = {}
     bar = Progress(meta["title"])
     # Счётчик в списке, чтобы его можно было уменьшать из тела цикла.
+    # Предел на заход общий: бесплатный тариф считается за сутки, и
+    # тратить его весь на один прогон незачем. Цена и заголовок берут
+    # из него поровну — на подозрительных объявлениях нужно и то, и
+    # другое.
     ai_budget = [settings.ai_titles_per_run]
     # Дочитываем до последнего уже перенесённого сообщения, а не до даты.
     # Эти чаты живые — три-четыре тысячи сообщений в сутки, — и часовой
@@ -357,6 +362,13 @@ async def collect(client, chat_id: int, meta: dict, days: int,
 
         attrs = parsed["attributes"]
         sub_slug = parsed["sub_slug"]
+
+        # Цена и описание: правила промахиваются там, где в тексте
+        # размер, объём или рекламный хвост. Модель зовём только на
+        # подозрительных — на обычном объявлении правила не ошибаются.
+        if ai_budget[0] > 0 and _price_looks_off(parsed, text):
+            _apply_full_parse(parsed, text, bar)
+            ai_budget[0] -= 1
 
         # Заголовок вышел сухим — спрашиваем модель. Лимит на заход держим
         # сами: бесплатный тариф считается за сутки, и тратить его весь на
@@ -516,6 +528,57 @@ def _complete_enough(item: dict) -> bool:
         and (item["price"] is not None or item.get("is_free"))
         and item["photos"]
     )
+
+
+def _price_looks_off(parsed: dict, text: str) -> bool:
+    """
+    Стоит ли переспросить про цену.
+
+    Правила ошибаются заметно: цены нет вовсе, она подозрительно мала
+    или в тексте есть слова, из-за которых они и промахиваются.
+    """
+    price = parsed.get("price")
+    if price is None:
+        return True
+
+    currency = (parsed.get("currency") or "RSD").upper()
+    in_euro = price if currency == "EUR" else price / 117
+    if in_euro < 1:
+        return True                              # меньше евро — не цена
+
+    return bool(re.search(
+        r"(разм\w*|\bр\.\s*\d|\bgb\b|\bтб\b|батаре\w+\s+\d|\d+\s*%|"
+        r"год\w*\s+выпуска|купл\w+\s+за|покупал\w*\s+за|"
+        r"в\s+сутки|за\s+сутки|в\s+час|за\s+час|"
+        r"кана[лt]\w*|подпис\w+|в\s+личку|@\w+)",
+        text[:500], re.I))
+
+
+def _apply_full_parse(parsed: dict, text: str, bar) -> None:
+    """
+    Чинит цену и описание разбором целиком.
+
+    Правила берут первое подходящее число и промахиваются: размер
+    «р.37» становится ценой, а в описании остаётся «подробнее на моём
+    канале». Модель видит объявление целиком и различает.
+
+    Всё, что она вернула, проверено на своей стороне — сюда попадает
+    только прошедшее.
+    """
+    from app.core.listing_ai import parse as parse_whole
+
+    got = parse_whole(parsed.get("title") or "", parsed.get("description") or text)
+    if not got:
+        return
+
+    if got.get("price") and got["price"] != parsed.get("price"):
+        parsed["price"] = got["price"]
+        parsed["currency"] = got["currency"]
+        bar.bump("цена от нейросети")
+
+    if got.get("description"):
+        parsed["description"] = got["description"]
+        bar.bump("описание очищено")
 
 
 def _write(db, item: dict) -> bool:
