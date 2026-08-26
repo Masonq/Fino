@@ -62,16 +62,15 @@ def test_plain_text_stays_too():
     assert 'letter["html"] = html' in source
 
 
-def test_subject_carries_the_code():
+def test_subject_has_no_code():
     """
-    Код прямо в теме избавляет от открывания письма вовсе. И тема без
-    тире: почтовые службы к лишним знакам придирчивы.
+    Код крупно в письме, откуда его удобно скопировать. Дважды одно и
+    то же выглядит небрежно.
     """
     from app.core.notify import SUBJECT
 
-    subject = SUBJECT.format(code="482915")
-    assert "482915" in subject
-    assert "—" not in subject
+    assert "{code}" not in SUBJECT
+    assert "—" not in SUBJECT               # к лишним знакам почта придирчива
 
 
 def test_letter_has_a_reply_address():

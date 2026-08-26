@@ -8,9 +8,10 @@ from app.models import VerifyChannel
 
 log = logging.getLogger(__name__)
 
-# Тема без тире и лишних знаков: почтовые службы к ним придирчивы, а
-# код прямо в теме избавляет от открывания письма вовсе.
-SUBJECT = "Код для входа: {code}"
+# Тема без тире и лишних знаков: почтовые службы к ним придирчивы.
+# Код в тему не выносим — он крупно в письме, откуда его удобно
+# скопировать, а дважды одно и то же выглядит небрежно.
+SUBJECT = "Код для входа на PLONK"
 
 BODY = """Ваш код подтверждения: {code}
 
@@ -28,8 +29,8 @@ def _send_email(to: str, code: str) -> None:
     должен быть виден сразу, крупно, без поиска глазами: остальное
     вокруг него.
     """
-    _send_email_text(to, SUBJECT.format(code=code),
-                     BODY.format(code=code), html=_code_letter(code))
+    _send_email_text(to, SUBJECT, BODY.format(code=code),
+                     html=_code_letter(code))
 
 
 def _code_letter(code: str) -> str:
