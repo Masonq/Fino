@@ -520,6 +520,16 @@ _PRICEY_RE = re.compile(
     r"коляск\w+\s+(?:2в1|3в1)|dyson|дайсон)", re.I)
 
 
+# Цена голым числом в начале строки: «2000 Аутокоманда», «800 центр».
+# Дальше идёт что угодно — район, приписка про канал, но само число
+# первое.
+_BARE_LINE_PRICE_RE = re.compile(
+    r"^(\d[\d\s.,]{1,9})\s*"
+    r"(евро|eur|€|динар\w*|дин\.?|rsd|din\w*|"
+    r"доллар\w*|долл\.?|бакс\w*|usd|\$)?\b",
+    re.I)
+
+
 def _currency_by_sense(value: float, text: str) -> str:
     """
     Валюта, когда её не написали.
@@ -605,6 +615,30 @@ def extract_price(text: str) -> tuple[float | None, str | None]:
             # точно цена, а не случайное число. До тысячи в Белграде
             # торгуются в евро, выше — в динарах.
             return value, _currency_by_sense(value, text)
+
+    # Цену часто пишут голым числом в начале строки: «2000 Аутокоманда»,
+    # «800 центр», «8000 за 2 стула». Слова «цена» рядом нет, но это
+    # именно она — иначе объявление уходит в ленту с пустым ценником, а
+    # по такому не звонят.
+    #
+    # Берём только начало строки: число посреди текста чаще размер,
+    # объём или год, и путать их с ценой опаснее, чем упустить.
+    for line in text.split("\n")[:8]:
+        m = _BARE_LINE_PRICE_RE.match(line.strip())
+        if not m:
+            continue
+        value = _to_number(m.group(1))
+        if value is None or value < 50:
+            continue                             # «2 стула», «5 шт»
+        # Год выпуска ценой не бывает. Но «2000 Аутокоманда» — это
+        # цена, а не год: год стоит рядом со словом «год», «выпуска»,
+        # «года», иначе число значит деньги.
+        if (1990 <= value <= 2030 and not m.group(2)
+                and re.search(r"\b(год\w*|выпуска|г\.в\.?|модель)\b",
+                              line, re.I)):
+            continue
+        currency = CURRENCY_BY_WORD.get((m.group(2) or "").lower())
+        return value, currency or _currency_by_sense(value, text)
 
     m = _PRICE_K_RE.search(text)
     if m:
