@@ -130,21 +130,32 @@ def _is_crawler(agent: str) -> bool:
 def listing_page(listing_id: str, request: Request,
                  db: Session = Depends(get_db)):
     """Страница объявления с текстом — для поисковиков и превью ссылок."""
-    from fastapi.responses import RedirectResponse
     from html import escape as esc
 
     site = settings.public_base_url.rstrip("/")
     url = f"{site}/listing/{listing_id}"
 
-    # Человека не задерживаем: ему нужен обычный сайт.
-    if not _is_crawler(request.headers.get("user-agent", "")):
-        return RedirectResponse(url, status_code=307)
+    # Человека сюда пускать не должны — nginx отправляет его сразу на
+    # сайт. Но если он всё же дошёл, отдаём ту же страницу: отправлять
+    # его обратно нельзя, получится кольцо.
+    
 
     from app.models import ListingPhoto, ListingTranslation
 
     listing = db.query(Listing).filter(Listing.id == listing_id).first()
     if not listing:
-        return RedirectResponse(site, status_code=307)
+        # Объявления нет — так и говорим. Перенаправлять на главную
+        # нельзя: поисковик сочтёт это подменой, а человек не поймёт,
+        # куда попал.
+        return HTMLResponse(
+            "<!DOCTYPE html><html lang=ru><head><meta charset=utf-8>"
+            "<title>Объявление не найдено | PLONK</title>"
+            "<meta name=robots content=noindex></head><body>"
+            "<h1>Объявление не найдено</h1>"
+            f'<p><a href="{site}">Другие объявления на PLONK</a></p>'
+            "</body></html>",
+            status_code=404,
+        )
 
     lang = (listing.source_language.value
             if hasattr(listing.source_language, "value")
