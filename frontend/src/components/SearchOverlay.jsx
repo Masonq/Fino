@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
+import { hasLanding } from '../data/landings'
 import ListingCard from './ListingCard'
 
 const RECENT_KEY = 'plonk_recent_searches'
@@ -128,7 +129,10 @@ export default function SearchOverlay({ open, onClose }) {
                     <button
                       key={c.id}
                       className="suggest-cat"
-                      onClick={() => { onClose(); navigate(`/search?category=${c.slug}`) }}
+                      onClick={() => {
+                        onClose()
+                        navigate(hasLanding(c.slug) ? `/c/${c.slug}` : `/search?category=${c.slug}`)
+                      }}
                     >
                       {c.name?.[i18n.language] || c.name?.ru}
                     </button>

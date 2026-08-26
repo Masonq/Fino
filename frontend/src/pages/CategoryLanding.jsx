@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
@@ -59,6 +59,7 @@ export default function CategoryLanding() {
   const [searching, setSearching] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const PAGE = 20
+  const resultsRef = useRef(null)
 
   const landing = LANDINGS[slug]
 
@@ -94,11 +95,23 @@ export default function CategoryLanding() {
   const search = () => {
     setSearching(true)
     setSearched(true)
+    requestAnimationFrame(() => {
+      resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
     api.searchListings(buildQuery())
       .then((res) => { setResults(res.items || []); setResultsTotal(res.total || 0) })
       .catch(() => { setResults([]); setResultsTotal(0) })
       .finally(() => setSearching(false))
   }
+
+  // Прокрутка к результатам при самом первом переходе в режим поиска —
+  // requestAnimationFrame в search() этот случай не ловит, потому что
+  // блок результатов ещё не существовал в DOM в момент вызова.
+  useEffect(() => {
+    if (searched && resultsRef.current) {
+      resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [searched])
 
   const loadMore = () => {
     if (loadingMore || results.length >= resultsTotal) return
@@ -286,7 +299,7 @@ export default function CategoryLanding() {
       )}
 
       {searched ? (
-        <div className="landing-results">
+        <div className="landing-results" ref={resultsRef}>
           <div className="landing-results-head">
             <span className="results-count">
               {searching && !results.length ? t('search.searching') : `${t('search.found')}: ${resultsTotal}`}
