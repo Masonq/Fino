@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { CategorySkeletons } from '../components/Skeletons'
 import CategoryArt from '../components/CategoryArt'
+import { hasLanding } from '../data/landings'
 
 export default function Categories() {
   const { t, i18n } = useTranslation()
@@ -45,7 +46,7 @@ export default function Categories() {
         {loaded && categories.map((cat) => (
           <Link
             key={cat.id}
-            to={`/search?category=${cat.slug}`}
+            to={hasLanding(cat.slug) ? `/c/${cat.slug}` : `/search?category=${cat.slug}`}
             className={`cats-item${cat.ready === false ? ' soon' : ''}`}
           >
             <span className="cats-label">{cat.name?.[i18n.language] || cat.name?.ru}</span>

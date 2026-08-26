@@ -40,9 +40,18 @@ export default function CategoryLanding() {
 
   const search = () => {
     const params = new URLSearchParams({ category: slug })
-    if (deal) params.set('sub', deal)
+    // Ключи должны совпадать с тем, что читает Search.jsx через
+    // CategoryFields — иначе выбор «Снять» или «2 комнаты» на лендинге
+    // никуда не долетает.
+    if (deal) params.set('mode', deal)
+    const ROOMS_TO_CHIP = { '1': 'rooms1', '2': 'rooms2', '3': 'rooms3' }
     Object.entries(values).forEach(([key, value]) => {
-      if (value) params.set(key, value)
+      if (!value) return
+      if (key === 'rooms') {
+        if (ROOMS_TO_CHIP[value]) params.set('chip', ROOMS_TO_CHIP[value])
+        return
+      }
+      params.set(key, value)
     })
     navigate(`/search?${params}`)
   }
@@ -68,11 +77,11 @@ export default function CategoryLanding() {
       {/* Первый вопрос делит раздел надвое: без ответа на него
           остальное бессмысленно. */}
       {landing?.deal && (
-        <div className="landing-deal">
+        <div className="cat-modes landing-deal">
           {landing.deal.options.map((opt) => (
             <button
               key={opt.value}
-              className={`landing-deal-btn${deal === opt.value ? ' on' : ''}`}
+              className={`cat-mode${deal === opt.value ? ' on' : ''}`}
               onClick={() => setDeal(deal === opt.value ? '' : opt.value)}
             >
               {t(opt.label)}
@@ -86,11 +95,11 @@ export default function CategoryLanding() {
           <div className="landing-label">{t(field.label)}</div>
 
           {field.type === 'chips' && (
-            <div className="landing-chips">
+            <div className="cat-chips landing-chips">
               {field.options.map((opt) => (
                 <button
                   key={opt}
-                  className={`landing-chip${values[field.key] === opt ? ' on' : ''}`}
+                  className={`cat-chip${values[field.key] === opt ? ' on' : ''}`}
                   onClick={() => setValues({
                     ...values,
                     [field.key]: values[field.key] === opt ? '' : opt,

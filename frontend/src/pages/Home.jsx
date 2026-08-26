@@ -11,6 +11,7 @@ import OfflineNotice, { LoadError } from '../components/OfflineNotice'
 import { useAuth } from '../context/AuthContext'
 import { CITIES, cityLabel } from '../data/cities'
 import CategoryArt from '../components/CategoryArt'
+import { hasLanding } from '../data/landings'
 
 // Лента живёт в памяти между заходами на страницу. Иначе при возврате из
 // объявления она загружается заново: страница успевает отрисоваться пустой,
@@ -333,7 +334,7 @@ export default function Home() {
              именно это. */
           <Link
             key={cat.id}
-            to={`/search?category=${cat.slug}`}
+            to={hasLanding(cat.slug) ? `/c/${cat.slug}` : `/search?category=${cat.slug}`}
             className={`cat-tile-2row${cat.ready === false ? ' soon' : ''}`}
           >
             <div className="cat-tile-2row-label">{cat.name?.[i18n.language] || cat.name?.ru}</div>
