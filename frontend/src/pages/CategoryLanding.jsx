@@ -73,8 +73,14 @@ export default function CategoryLanding() {
       .catch(() => setFresh([]))
   }, [slug, i18n.language])
 
-  const buildQuery = () => {
-    const params = { category_slug: slug, lang: i18n.language, limit: PAGE, offset: 0 }
+  // Плитка подраздела задаёт свой слаг категории вместо родительского —
+  // нужен и на первом запуске поиска (buildQuery), и на догрузке
+  // (loadMore), поэтому держим его в состоянии, а не только в замыкании
+  // клика.
+  const [activeCategorySlug, setActiveCategorySlug] = useState(slug)
+
+  const buildQuery = (categorySlug = activeCategorySlug) => {
+    const params = { category_slug: categorySlug, lang: i18n.language, limit: PAGE, offset: 0 }
     if (text.trim()) params.q = text.trim()
     // Ключи должны совпадать с тем, что читает Search.jsx через
     // CategoryFields — та же логика раздела/подраздела переиспользуется
@@ -92,13 +98,19 @@ export default function CategoryLanding() {
     return params
   }
 
-  const search = () => {
+  // Принимает необязательный слаг подраздела: плитка подраздела кликает
+  // сюда напрямую с sub.slug, а не сначала кладёт его в state — иначе
+  // из-за асинхронности setState поиск на этом же клике ушёл бы со
+  // старым слагом.
+  const search = (categorySlug = slug) => {
+    setActiveCategorySlug(categorySlug)
     setSearching(true)
     setSearched(true)
+    setShowAllSubs(false)
     requestAnimationFrame(() => {
       resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     })
-    api.searchListings(buildQuery())
+    api.searchListings(buildQuery(categorySlug))
       .then((res) => { setResults(res.items || []); setResultsTotal(res.total || 0) })
       .catch(() => { setResults([]); setResultsTotal(0) })
       .finally(() => setSearching(false))
@@ -116,7 +128,7 @@ export default function CategoryLanding() {
   const loadMore = () => {
     if (loadingMore || results.length >= resultsTotal) return
     setLoadingMore(true)
-    api.searchListings({ ...buildQuery(), offset: results.length })
+    api.searchListings({ ...buildQuery(activeCategorySlug), offset: results.length })
       .then((res) => setResults((prev) => [...prev, ...(res.items || [])]))
       .catch(() => {})
       .finally(() => setLoadingMore(false))
@@ -249,7 +261,7 @@ export default function CategoryLanding() {
         </div>
       ))}
 
-      <button className="landing-go" onClick={search}>
+      <button className="landing-go" onClick={() => search()}>
         {t('landing.show')}
       </button>
 
@@ -268,7 +280,7 @@ export default function CategoryLanding() {
               <button
                 key={sub.id}
                 className="landing-sub"
-                onClick={() => navigate(`/search?category=${sub.slug}`)}
+                onClick={() => search(sub.slug)}
               >
                 <span className="landing-sub-name">
                   {sub.name?.[i18n.language] || sub.name?.ru}
@@ -302,7 +314,7 @@ export default function CategoryLanding() {
               <button
                 key={sub.id}
                 className="subs-modal-row"
-                onClick={() => navigate(`/search?category=${sub.slug}`)}
+                onClick={() => search(sub.slug)}
               >
                 {sub.name?.[i18n.language] || sub.name?.ru}
               </button>
