@@ -43,8 +43,8 @@ export const LANDINGS = {
     deal: {
       label: 'landing.looking_for',
       options: [
-        { value: 'vacancies', label: 'landing.want_job' },
-        { value: 'resumes', label: 'landing.want_worker' },
+        { value: 'looking', label: 'landing.want_job' },
+        { value: 'hiring', label: 'landing.want_worker' },
       ],
     },
     fields: [],

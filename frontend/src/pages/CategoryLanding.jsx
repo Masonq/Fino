@@ -6,6 +6,7 @@ import CategoryArt from '../components/CategoryArt'
 import ListingCard from '../components/ListingCard'
 import { CardSkeletons } from '../components/Skeletons'
 import { LANDINGS } from '../data/landings'
+import { MODE_WORDS } from '../data/modeWords'
 
 /**
  * Вход в раздел.
@@ -86,19 +87,25 @@ export default function CategoryLanding() {
   const buildQuery = (categorySlug = activeCategorySlug) => {
     const params = { category_slug: categorySlug, lang: i18n.language, limit: PAGE, offset: 0 }
     if (text.trim()) params.q = text.trim()
-    // Ключи должны совпадать с тем, что читает Search.jsx через
-    // CategoryFields — та же логика раздела/подраздела переиспользуется
-    // на бэкенде, только теперь без перехода на другую страницу.
-    if (deal) params.mode = deal
-    const ROOMS_TO_CHIP = { '1': 'rooms1', '2': 'rooms2', '3': 'rooms3' }
+
+    // Ответы на вопросы раздела («купить/снять/посуточно», «2 комнаты»)
+    // уходят как extra_terms с синонимами — так же, как на обычном
+    // /search. Раньше это слалось как mode/chip напрямую в query, а
+    // бэкенд таких параметров не знает и молча их игнорировал: фильтр
+    // не отсеивал вообще ничего.
+    const ROOMS_TO_CHIP = { '1': 'rooms1', '2': 'rooms2', '3': 'rooms3', '4+': 'rooms3' }
+    const groups = []
+    if (deal && MODE_WORDS[deal]) groups.push(MODE_WORDS[deal].join('|'))
     Object.entries(values).forEach(([key, value]) => {
       if (!value) return
       if (key === 'rooms') {
-        if (ROOMS_TO_CHIP[value]) params.chip = ROOMS_TO_CHIP[value]
+        const chip = ROOMS_TO_CHIP[value]
+        if (chip && MODE_WORDS[chip]) groups.push(MODE_WORDS[chip].join('|'))
         return
       }
       params[key] = value
     })
+    if (groups.length) params.extra_terms = groups.join(';;')
     return params
   }
 
