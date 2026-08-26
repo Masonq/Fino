@@ -17,11 +17,11 @@ import { useTranslation } from 'react-i18next'
 // «real-estate» покрывал и «real-estate/flats».
 export const FIELDS = {
   'real-estate': {
-    modes: ['buy', 'rent', 'daily'],
+    modes: ['sale', 'rent', 'daily'],
     chips: ['rooms1', 'rooms2', 'rooms3', 'studio'],
   },
   jobs: {
-    modes: ['looking', 'hiring'],
+    modes: ['resume', 'vacancy'],
     chips: ['partTime', 'fullTime', 'remote'],
   },
 }

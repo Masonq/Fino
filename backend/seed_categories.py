@@ -20,6 +20,7 @@ CATEGORIES = [
             {"key": "deal_type", "type": "select", "required": True,
              "label": {"ru": "Тип сделки", "en": "Deal type", "sr": "Vrsta ponude"},
              "options": [{"value": "rent", "label": {"ru": "Аренда", "en": "Rent", "sr": "Izdavanje"}},
+                         {"value": "daily", "label": {"ru": "Посуточно", "en": "Daily rent", "sr": "Na dan"}},
                          {"value": "sale", "label": {"ru": "Продажа", "en": "Sale", "sr": "Prodaja"}}]},
             {"key": "area_m2", "type": "number", "required": True,
              "label": {"ru": "Площадь, м²", "en": "Area, m²", "sr": "Površina, m²"}},

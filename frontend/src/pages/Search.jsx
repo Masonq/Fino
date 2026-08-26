@@ -63,11 +63,14 @@ export default function Search() {
     const p = { lang: i18n.language, limit: PAGE, offset: 0, sort }
     if (text.trim()) p.q = text.trim()
     if (category) p.category_slug = category
-    // Ответы на вопросы раздела — отдельными OR-группами (см. MODE_WORDS),
-    // а не приклеенные к тексту поиска: иначе «посуточно» требовалось бы
-    // ровно этим словом в тексте объявления, а не любым из синонимов.
+    // «Купить/Снять/Посуточно», «Ищу работу/Ищу сотрудника» — структурный
+    // атрибут (attributes.deal_type), не текстовый поиск: раньше словом
+    // «аренда» находило и «ищу квартиру в аренду», не только тех, кто
+    // реально сдаёт.
+    if (fields.mode) p.deal_type = fields.mode
+    // У «2 комнаты» и подобных структурного поля пока нет — идёт как
+    // extra_terms с синонимами, а не приклеенное к тексту поиска.
     const groups = []
-    if (fields.mode && MODE_WORDS[fields.mode]) groups.push(MODE_WORDS[fields.mode].join('|'))
     if (fields.chip && MODE_WORDS[fields.chip]) groups.push(MODE_WORDS[fields.chip].join('|'))
     if (groups.length) p.extra_terms = groups.join(';;')
     if (priceMin) p.price_min = priceMin

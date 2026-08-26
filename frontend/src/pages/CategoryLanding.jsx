@@ -88,14 +88,16 @@ export default function CategoryLanding() {
     const params = { category_slug: categorySlug, lang: i18n.language, limit: PAGE, offset: 0 }
     if (text.trim()) params.q = text.trim()
 
-    // Ответы на вопросы раздела («купить/снять/посуточно», «2 комнаты»)
-    // уходят как extra_terms с синонимами — так же, как на обычном
-    // /search. Раньше это слалось как mode/chip напрямую в query, а
-    // бэкенд таких параметров не знает и молча их игнорировал: фильтр
-    // не отсеивал вообще ничего.
+    // «Купить/Снять/Посуточно» — структурный атрибут (attributes.deal_type),
+    // отбирает по полю, а не по словам в тексте: раньше «Снять» словом
+    // «аренда» находило и «ищу квартиру в аренду» — чужую заявку, а не
+    // те, что реально сдают.
+    if (deal) params.deal_type = deal
+
+    // «2 комнаты» и т.п. структурного поля пока не имеют — уходит как
+    // extra_terms с синонимами, так же, как на обычном /search.
     const ROOMS_TO_CHIP = { '1': 'rooms1', '2': 'rooms2', '3': 'rooms3', '4+': 'rooms3' }
     const groups = []
-    if (deal && MODE_WORDS[deal]) groups.push(MODE_WORDS[deal].join('|'))
     Object.entries(values).forEach(([key, value]) => {
       if (!value) return
       if (key === 'rooms') {

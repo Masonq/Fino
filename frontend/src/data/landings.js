@@ -18,7 +18,7 @@ export const LANDINGS = {
     deal: {
       label: 'landing.deal',
       options: [
-        { value: 'buy', label: 'landing.buy' },
+        { value: 'sale', label: 'landing.buy' },
         { value: 'rent', label: 'landing.rent' },
         { value: 'daily', label: 'landing.daily' },
       ],
@@ -43,8 +43,8 @@ export const LANDINGS = {
     deal: {
       label: 'landing.looking_for',
       options: [
-        { value: 'looking', label: 'landing.want_job' },
-        { value: 'hiring', label: 'landing.want_worker' },
+        { value: 'resume', label: 'landing.want_job' },
+        { value: 'vacancy', label: 'landing.want_worker' },
       ],
     },
     fields: [],

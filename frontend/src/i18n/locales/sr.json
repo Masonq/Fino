@@ -469,7 +469,7 @@
   },
   "fields": {
     "real-estate": {
-      "buy": "Kupovina",
+      "sale": "Kupovina",
       "rent": "Dugoročno",
       "daily": "Dnevno",
       "rooms1": "1 soba",
@@ -484,8 +484,8 @@
       "parts": "Delovi"
     },
     "jobs": {
-      "looking": "Tražim posao",
-      "hiring": "Tražim radnike",
+      "resume": "Tražim posao",
+      "vacancy": "Tražim radnike",
       "partTime": "Honorarno",
       "fullTime": "Puno radno",
       "remote": "Na daljinu"

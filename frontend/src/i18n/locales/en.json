@@ -468,7 +468,7 @@
   },
   "fields": {
     "real-estate": {
-      "buy": "Buy",
+      "sale": "Buy",
       "rent": "Long-term rent",
       "daily": "Daily rent",
       "rooms1": "1 room",
@@ -483,8 +483,8 @@
       "parts": "Parts"
     },
     "jobs": {
-      "looking": "Looking for work",
-      "hiring": "Hiring",
+      "resume": "Looking for work",
+      "vacancy": "Hiring",
       "partTime": "Part-time",
       "fullTime": "Full-time",
       "remote": "Remote"
