@@ -38,9 +38,20 @@ export default function Categories() {
         {!loaded && Array.from({ length: 8 }).map((_, i) => (
           <div className="cats-item skeleton" key={`sk${i}`} />
         ))}
+        {/* Раздел без выбора помечаем честно: три объявления хуже,
+            чем ни одного — они обещают выбор и не дают его. Заходить
+            туда не запрещаем: вдруг человек ищет именно это, да и
+            опубликовать первым он всё равно может. */}
         {loaded && categories.map((cat) => (
-          <Link key={cat.id} to={`/search?category=${cat.slug}`} className="cats-item">
+          <Link
+            key={cat.id}
+            to={`/search?category=${cat.slug}`}
+            className={`cats-item${cat.ready === false ? ' soon' : ''}`}
+          >
             <span className="cats-label">{cat.name?.[i18n.language] || cat.name?.ru}</span>
+            {cat.ready === false && (
+              <span className="cats-soon">{t('categories.soon')}</span>
+            )}
             <span className="cats-img"><CategoryArt slug={cat.slug} /></span>
           </Link>
         ))}

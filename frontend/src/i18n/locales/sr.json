@@ -23,7 +23,8 @@
     "real-estate": "Nekretnine",
     "auto": "Automobili",
     "services": "Usluge",
-    "jobs": "Poslovi"
+    "jobs": "Poslovi",
+    "soon": "Uskoro"
   },
   "listing": {
     "price": "Cena",

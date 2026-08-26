@@ -2,17 +2,53 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.models import Category
+from sqlalchemy import func
+
+from app.models import Category, Listing, ListingStatus
 
 router = APIRouter(prefix="/api/categories", tags=["categories"])
 
 
+# Сколько объявлений нужно разделу, чтобы в нём был выбор.
+#
+# OpenTable выяснил это числом: около полусотни предложений в одной
+# зоне, и тогда поиск даёт достаточно, чтобы человек решил задачу.
+# Меньше — он уходит и не возвращается.
+ENOUGH_FOR_CHOICE = 50
+
+
 @router.get("")
 def list_categories(db: Session = Depends(get_db)):
-    """Возвращает дерево категорий верхнего уровня с дочерними."""
-    top_level = db.query(Category).filter(Category.parent_id.is_(None)).order_by(Category.sort_order).all()
+    """
+    Дерево разделов с числом объявлений в каждом.
+
+    Число нужно, чтобы честно показать пустые: раздел с тремя
+    объявлениями хуже, чем его отсутствие — он обещает выбор и не даёт
+    его. Лучше сказать «скоро появится» и позвать опубликовать первым.
+    """
+    top_level = (
+        db.query(Category)
+        .filter(Category.parent_id.is_(None))
+        .order_by(Category.sort_order)
+        .all()
+    )
+
+    # Считаем разом, а не для каждого раздела: иначе дюжина запросов
+    # вместо одного на странице, которую открывают чаще прочих.
+    counts = dict(
+        db.query(Listing.category_id, func.count(Listing.id))
+        .filter(Listing.status == ListingStatus.active,
+                Listing.is_complete.is_(True))
+        .group_by(Listing.category_id)
+        .all()
+    )
+
+    def total(cat: Category) -> int:
+        """Объявления раздела вместе с подразделами."""
+        return counts.get(cat.id, 0) + sum(total(c) for c in cat.children)
 
     def serialize(cat: Category):
+        count = total(cat)
         return {
             "id": str(cat.id),
             "slug": cat.slug,
@@ -20,6 +56,8 @@ def list_categories(db: Session = Depends(get_db)):
             "icon": cat.icon,
             "image_url": cat.image_url,
             "color": cat.color,
+            "count": count,
+            "ready": count >= ENOUGH_FOR_CHOICE,
             "children": [serialize(c) for c in cat.children] if cat.children else [],
         }
 

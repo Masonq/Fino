@@ -275,3 +275,33 @@ def test_long_description_is_folded():
 
     assert "descOpen" in page
     assert "detail.read_more" in page
+
+
+def test_empty_categories_are_marked():
+    """
+    Раздел с тремя объявлениями хуже, чем его отсутствие: он обещает
+    выбор и не даёт его. OpenTable выяснил числом — около полусотни
+    предложений, и тогда поиск даёт достаточно, чтобы решить задачу.
+    """
+    import inspect
+    from app.routers.categories import ENOUGH_FOR_CHOICE, list_categories
+
+    assert 20 <= ENOUGH_FOR_CHOICE <= 100
+
+    source = inspect.getsource(list_categories)
+    assert '"ready"' in source
+    assert '"count"' in source
+    # считаем разом, а не запросом на каждый раздел
+    assert "group_by(Listing.category_id)" in source
+
+
+def test_subcategories_count_towards_the_parent():
+    """
+    Объявления лежат в подразделах, и без них верхний раздел выглядит
+    пустым, хотя выбор в нём есть.
+    """
+    import inspect
+    from app.routers.categories import list_categories
+
+    source = inspect.getsource(list_categories)
+    assert "sum(total(c) for c in cat.children)" in source

@@ -1904,3 +1904,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   margin-top:8px; padding:0; border:0; background:none;
   color:var(--accent,#0E9F6E); font-size:14px; font-weight:600;
 }
+
+/* Раздел без выбора. Три объявления хуже, чем ни одного: они обещают
+   выбор и не дают его. Гасим, но не прячем — вдруг человек ищет
+   именно это. */
+.cats-item.soon{ opacity:.55; }
+.cats-soon{
+  display:block; margin-top:2px;
+  font-size:11px; font-weight:600; color:#98a2b3;
+}
+
+.cat-tile-2row.soon{ opacity:.5; }

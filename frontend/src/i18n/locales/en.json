@@ -23,7 +23,8 @@
     "real-estate": "Real Estate",
     "auto": "Cars",
     "services": "Services",
-    "jobs": "Jobs"
+    "jobs": "Jobs",
+    "soon": "Coming soon"
   },
   "listing": {
     "price": "Price",

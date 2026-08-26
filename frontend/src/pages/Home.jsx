@@ -328,7 +328,14 @@ export default function Home() {
             <div className="cat-tile-2row-glyph"><CategoryArt slug="all" /></div>
           </Link>
         ) : (
-          <Link key={cat.id} to={`/search?category=${cat.slug}`} className="cat-tile-2row">
+          /* Раздел без выбора гасим: три объявления обещают выбор и
+             не дают его. Но заходить не мешаем — вдруг человек ищет
+             именно это. */
+          <Link
+            key={cat.id}
+            to={`/search?category=${cat.slug}`}
+            className={`cat-tile-2row${cat.ready === false ? ' soon' : ''}`}
+          >
             <div className="cat-tile-2row-label">{cat.name?.[i18n.language] || cat.name?.ru}</div>
             <div className="cat-tile-2row-glyph"><CategoryArt slug={cat.slug} /></div>
           </Link>
