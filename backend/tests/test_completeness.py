@@ -73,3 +73,21 @@ def test_search_puts_the_word_first():
     assert "ordering = [title_hit, Listing.is_complete.desc()]" in source
     # а без поиска первой стоит полнота
     assert "ordering = [Listing.is_complete.desc()]" in source
+
+
+def test_sold_listing_stays_visible():
+    """
+    Снятое объявление не исчезает: по нему смотрят, за сколько ушла
+    похожая вещь, и на него уже стоят ссылки. Но человек должен видеть,
+    что вещи больше нет, а не писать продавцу впустую.
+    """
+    import inspect
+    from app.routers.listings import get_listing
+
+    # состояние отдаётся сайту
+    assert '"status": listing.status.value' in inspect.getsource(get_listing)
+
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "ListingDetail.jsx").read_text()
+    assert "listing?.status === 'sold'" in page
+    assert "detail.sold" in page

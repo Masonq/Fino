@@ -128,6 +128,9 @@ export default function ListingDetail() {
   // «продавец». Отличается только подачей, поэтому отдельной категории не
   // заводим, а правим формулировки там, где они не годятся.
   const isResume = listing?.attributes?.listing_kind === 'resume'
+  // Вещи больше нет: продана или снята. Показываем это, но объявление
+  // оставляем — по нему смотрят цены и на него стоят ссылки.
+  const gone = listing?.status === 'sold' || listing?.status === 'archived'
 
   const attrValue = (key, value) => {
     const field = schema.find((f) => f.key === key)
@@ -215,6 +218,14 @@ export default function ListingDetail() {
       </div>
 
       <div className="detail-sheet">
+        {/* Снятое объявление не исчезает: по нему смотрят, за сколько
+            ушла похожая вещь, и на него уже стоят ссылки. Но человек
+            должен видеть, что вещи больше нет, а не писать впустую. */}
+        {gone && (
+          <div className="listing-gone">
+            {t(listing.status === 'sold' ? 'detail.sold' : 'detail.gone')}
+          </div>
+        )}
         <div className="detail-price">
           {listing.price != null
             ? formatPrice(listing.price, listing.currency, lang)
@@ -316,7 +327,11 @@ export default function ListingDetail() {
       {/* Объявление перенесено из телеграм-чата: писать и звонить через сайт
           некому — автор у нас не зарегистрирован. Вместо двух погашенных
           кнопок даём одну рабочую, иначе экран выглядит сломанным. */}
-      {listing.external_source === 'telegram' && listing.external_author ? (
+      {gone ? (
+        <div className="sticky-cta">
+          <div className="cta-gone">{t('detail.gone_hint')}</div>
+        </div>
+      ) : listing.external_source === 'telegram' && listing.external_author ? (
         <div className="sticky-cta">
           <a
             className="cta-btn primary telegram"

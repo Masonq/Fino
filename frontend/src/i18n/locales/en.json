@@ -136,7 +136,10 @@
     "write_person": "Message",
     "no_salary": "Salary not stated",
     "desired_salary": "Desired salary",
-    "free": "Free"
+    "free": "Free",
+    "sold": "Sold",
+    "gone": "Listing withdrawn",
+    "gone_hint": "This item is gone — see similar ones below"
   },
   "favorites": {
     "title": "Saved",

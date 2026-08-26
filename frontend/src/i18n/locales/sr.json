@@ -136,7 +136,10 @@
     "write_person": "Pošalji poruku",
     "no_salary": "Plata nije navedena",
     "desired_salary": "Željena plata",
-    "free": "Besplatno"
+    "free": "Besplatno",
+    "sold": "Prodato",
+    "gone": "Oglas povučen",
+    "gone_hint": "Ove stvari više nema — pogledajte slične ispod"
   },
   "favorites": {
     "title": "Sačuvano",

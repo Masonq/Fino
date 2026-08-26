@@ -1855,3 +1855,16 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   border-radius:999px; font-size:14px; color:#444; background:#fff;
 }
 .edit-label{ font-size:13px; color:#777; margin-top:6px; }
+
+/* Снятое объявление. Оставляем на месте — по нему смотрят цены, — но
+   человек должен сразу видеть, что вещи больше нет. */
+.listing-gone{
+  display:inline-block; margin-bottom:8px;
+  padding:5px 11px; border-radius:999px;
+  background:#f3f4f6; color:#6b7280;
+  font-size:13px; font-weight:600;
+}
+.cta-gone{
+  flex:1; text-align:center; padding:13px;
+  color:#6b7280; font-size:14px;
+}

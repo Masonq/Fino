@@ -482,6 +482,11 @@ def get_listing(listing_id: uuid.UUID, db: Session = Depends(get_db)):
 
     return {
         "id": str(listing.id),
+        # Состояние: снятое объявление не исчезает — по нему смотрят, за
+        # сколько ушла похожая вещь, и на него уже стоят ссылки. Но
+        # человек должен видеть, что вещи больше нет, а не писать
+        # продавцу впустую.
+        "status": listing.status.value,
         "category_slug": listing.category.slug,
         "source_language": listing.source_language,
         "translations": {t.language: {"title": t.title, "description": t.description, "is_auto_translated": t.is_auto_translated} for t in listing.translations},
