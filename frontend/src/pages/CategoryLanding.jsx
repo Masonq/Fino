@@ -26,6 +26,7 @@ export default function CategoryLanding() {
   const [deal, setDeal] = useState('')
   const [values, setValues] = useState({})
   const [text, setText] = useState('')
+  const [showAllSubs, setShowAllSubs] = useState(false)
 
   const landing = LANDINGS[slug]
 
@@ -175,21 +176,60 @@ export default function CategoryLanding() {
       </button>
 
       {/* Подразделы: если отвечать на вопросы нечем, человек всё равно
-          видит, что тут есть. */}
-      {category?.children?.length > 0 && (
-        <div className="landing-subs">
-          {category.children.map((sub) => (
-            <button
-              key={sub.id}
-              className="landing-sub"
-              onClick={() => navigate(`/search?category=${sub.slug}`)}
-            >
-              <span className="landing-sub-name">
-                {sub.name?.[i18n.language] || sub.name?.ru}
-              </span>
-              <span className="landing-sub-art"><CategoryArt slug={sub.slug} /></span>
+          видит, что тут есть. Как у Авито — несколько плиток с картинкой
+          и «Все категории» последней, а не весь список сразу: длинный
+          список подряд читается хуже, чем несколько картинок и явный
+          переход дальше. */}
+      {category?.children?.length > 0 && (() => {
+        const subs = category.children
+        const showLimit = subs.length > 6
+        const visible = showLimit ? subs.slice(0, 5) : subs
+        return (
+          <div className="landing-subs">
+            {visible.map((sub) => (
+              <button
+                key={sub.id}
+                className="landing-sub"
+                onClick={() => navigate(`/search?category=${sub.slug}`)}
+              >
+                <span className="landing-sub-name">
+                  {sub.name?.[i18n.language] || sub.name?.ru}
+                </span>
+                <span className="landing-sub-art"><CategoryArt slug={sub.slug} /></span>
+              </button>
+            ))}
+            {showLimit && (
+              <button
+                className="landing-sub landing-sub-all"
+                onClick={() => setShowAllSubs(true)}
+              >
+                <span className="landing-sub-name">{t('common.all_categories')}</span>
+                <svg className="landing-sub-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 6 6 6-6 6" /></svg>
+              </button>
+            )}
+          </div>
+        )
+      })()}
+
+      {showAllSubs && (
+        <div className="subs-modal">
+          <div className="subs-modal-head">
+            <button className="subs-modal-close" onClick={() => setShowAllSubs(false)} aria-label={t('actions.close')}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
             </button>
-          ))}
+            <div className="subs-modal-title">{t('common.all_categories')}</div>
+          </div>
+          <div className="subs-modal-list">
+            {category.children.map((sub) => (
+              <button
+                key={sub.id}
+                className="subs-modal-row"
+                onClick={() => navigate(`/search?category=${sub.slug}`)}
+              >
+                {sub.name?.[i18n.language] || sub.name?.ru}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 

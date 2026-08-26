@@ -2032,3 +2032,29 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 .landing-fresh{ padding:20px 14px 0; }
 .landing-fresh h2{ font-size:16px; font-weight:800; color:var(--ink); margin-bottom:10px; }
+
+/* Плитка «Все категории» — без картинки, только подпись и стрелка */
+.landing-sub-all{ display:flex; align-items:center; justify-content:space-between; }
+.landing-sub-all .landing-sub-name{ max-width:none; }
+.landing-sub-arrow{ position:relative; z-index:2; color:var(--muted); flex-shrink:0; }
+
+/* Полноэкранный список всех подразделов — открывается с плитки «Все
+   категории», как у Авито: заголовок с крестиком и обычный список строк,
+   без картинок — тут это уже не нужно, выбор словами быстрее. */
+.subs-modal{
+  position:fixed; inset:0; z-index:40; background:#fff;
+  display:flex; flex-direction:column;
+}
+.subs-modal-head{
+  display:flex; align-items:center; gap:14px;
+  padding:calc(14px + env(safe-area-inset-top)) 16px 14px;
+  border-bottom:1px solid rgba(20,30,25,.07);
+}
+.subs-modal-close{ width:28px; height:28px; display:flex; align-items:center; justify-content:center; color:var(--ink); flex-shrink:0; }
+.subs-modal-title{ font-size:16px; font-weight:800; color:var(--ink); }
+.subs-modal-list{ overflow-y:auto; flex:1; }
+.subs-modal-row{
+  display:block; width:100%; text-align:left; padding:16px;
+  font-size:15px; font-weight:600; color:var(--ink);
+  border-bottom:1px solid rgba(20,30,25,.06);
+}
