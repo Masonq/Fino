@@ -27,9 +27,18 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 
 from app.core.database import SessionLocal  # noqa: E402
-from app.core.tg_classify import classify, classify_sub  # noqa: E402
+from app.core import tg_classify  # noqa: E402
+from app.core.tg_classify import classify, classify_sub, explain  # noqa: E402
 from app.models.category import Category  # noqa: E402
 from app.models import Listing, ListingStatus, ListingTranslation  # noqa: E402
+
+# Статистическая модель (category-model.json) непрозрачна — по итогу не
+# видно, какое слово сыграло, и «Корсет -> Недвижимость» проверить нечем.
+# Для этого разового прогона по 1655 объявлениям отключаем её и оставляем
+# только объяснимые правила и словари: каждое решение проверяется словом
+# из explain(). Живому импорту это не мешает — здесь подменяется только
+# копия в этом процессе.
+tg_classify.model_predict = lambda text: (None, 0.0)
 
 # Заголовок один часто слишком короткий и двусмысленный («Спальные мешки
 # Mjolk с рукавами» без описания цепляет случайные совпадения). Берём
@@ -107,7 +116,9 @@ def main() -> None:
                 continue
 
             moves[f"{current_top or '—'} -> {guessed_top}"] += 1
-            changes.append((listing, translation, target_slug, current_slug))
+            hits = explain(combined)
+            why = hits.get(target_slug) or hits.get(guessed_top) or []
+            changes.append((listing, translation, target_slug, current_slug, why))
 
             if number % 100 == 0:
                 print(f"  разобрано {number} из {len(rows)}…")
@@ -118,15 +129,16 @@ def main() -> None:
             print(f"  {move}: {count}")
 
         print(f"\nпримеры (первые {args.show}):")
-        for listing, translation, target_slug, current_slug in changes[:args.show]:
-            title = (translation.title or "")[:60]
-            print(f"  [{current_slug or '—'} -> {target_slug}] {title}")
+        for listing, translation, target_slug, current_slug, why in changes[:args.show]:
+            title = (translation.title or "")[:55]
+            words = ", ".join(why[:4]) or "?"
+            print(f"  [{current_slug or '—'} -> {target_slug}] {title}  (по словам: {words})")
 
         if not args.apply:
             print("\nэто был сухой прогон — ничего не изменено. Добавь --apply, чтобы применить.")
             return
 
-        for listing, translation, target_slug, current_slug in changes:
+        for listing, translation, target_slug, current_slug, why in changes:
             listing.category_id = categories[target_slug].id
         db.commit()
         print(f"\nпереставлено: {len(changes)}")
