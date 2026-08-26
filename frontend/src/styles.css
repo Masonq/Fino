@@ -441,6 +441,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .circle-btn svg{ width:22px; height:22px; }
 .circle-btn.on{ color:#FF6152; }
+.circle-btn.danger, .topbar-btn.danger{ color:#D93D3D; }
+.topbar-right, .detail-nav-right{ display:flex; align-items:center; gap:6px; }
 /* По центру и выше края: снизу фото на 22px перекрывает карточка описания,
    и счётчик в углу оказывался наполовину под ней. */
 .photo-count{

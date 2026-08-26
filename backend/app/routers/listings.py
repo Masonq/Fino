@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field, field_validator
 from app.core.auth import get_current_user
 from app.core.database import get_db
 from app.core.search_terms import variants as search_variants
-from app.models import Listing, ListingStatus, ListingTranslation, ListingPhoto, Category, User
+from app.models import Listing, ListingStatus, ListingTranslation, ListingPhoto, Category, User, UserRole
 from app.core.clock import utcnow
 
 router = APIRouter(prefix="/api/listings", tags=["listings"])
@@ -715,7 +715,11 @@ def delete_listing(
     listing = db.query(Listing).get(listing_id)
     if not listing:
         raise HTTPException(404, "not_found")
-    if listing.owner_id != user.id:
+    # Модератор и админ удаляют любое объявление — например, мусорную
+    # запись, которую парсер по ошибке принял за объявление (обрывок
+    # обсуждения из чата). Обычный человек — только своё.
+    is_staff = user.role in (UserRole.moderator, UserRole.admin)
+    if listing.owner_id != user.id and not is_staff:
         raise HTTPException(403, "not_owner")
     db.delete(listing)
     db.commit()

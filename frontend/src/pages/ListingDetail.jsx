@@ -100,6 +100,21 @@ export default function ListingDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listing])
 
+  const isStaff = user?.role === 'admin' || user?.role === 'moderator'
+  const [deleting, setDeleting] = useState(false)
+  // Мусорная запись из чата — обрывок обсуждения, который парсер принял
+  // за объявление, — раньше удалить можно было только своё; у чужого
+  // (или у служебного аккаунта чата) кнопки не было вовсе.
+  const handleDelete = async () => {
+    if (!listing || !window.confirm(t('my.confirm_delete'))) return
+    setDeleting(true)
+    try {
+      await api.deleteListing(listing.id)
+      navigate(listing.category_slug ? `/search?category=${listing.category_slug}` : '/', { replace: true })
+    } catch { /* оставляем как было */ }
+    finally { setDeleting(false) }
+  }
+
   if (!listing) {
     // Скелетон вместо надписи: страница объявления загружается заметно,
     // и пустой экран с текстом выглядит как ошибка.
@@ -216,11 +231,18 @@ export default function ListingDetail() {
           <button className="topbar-btn" onClick={goBack} aria-label={t('actions.back')}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
           </button>
-          <button className={fav ? 'topbar-btn on' : 'topbar-btn'} onClick={onFav} aria-label={t('misc.in_favorites')}>
-            <svg viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
-              <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />
-            </svg>
-          </button>
+          <div className="topbar-right">
+            {isStaff && (
+              <button className="topbar-btn danger" onClick={handleDelete} disabled={deleting} aria-label={t('my.delete')}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h16M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7m2 0-.7 12.4A2 2 0 0 1 14.3 21H9.7a2 2 0 0 1-2-1.6L7 7" /></svg>
+              </button>
+            )}
+            <button className={fav ? 'topbar-btn on' : 'topbar-btn'} onClick={onFav} aria-label={t('misc.in_favorites')}>
+              <svg viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
+                <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div className="detail-nav">
@@ -229,11 +251,18 @@ export default function ListingDetail() {
               <path d="m15 18-6-6 6-6" />
             </svg>
           </button>
-          <button className={fav ? 'circle-btn on' : 'circle-btn'} onClick={onFav} aria-label={t('misc.in_favorites')}>
-            <svg viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
-              <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />
-            </svg>
-          </button>
+          <div className="detail-nav-right">
+            {isStaff && (
+              <button className="circle-btn danger" onClick={handleDelete} disabled={deleting} aria-label={t('my.delete')}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h16M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7m2 0-.7 12.4A2 2 0 0 1 14.3 21H9.7a2 2 0 0 1-2-1.6L7 7" /></svg>
+              </button>
+            )}
+            <button className={fav ? 'circle-btn on' : 'circle-btn'} onClick={onFav} aria-label={t('misc.in_favorites')}>
+              <svg viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
+                <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />
+              </svg>
+            </button>
+          </div>
         </div>
         {/* Один указатель, а не два: счётчик в углу и точки по центру
             показывали одно и то же, и оба упирались в край карточки. */}
