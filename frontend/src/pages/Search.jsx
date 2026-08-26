@@ -18,14 +18,27 @@ const SORTS = [
 const PAGE = 20
 
 // Чем ответ на вопрос раздела уточняет поиск. Отдельных полей под них
-// в базе нет, а в тексте объявления эти слова есть.
+// в базе нет, а в тексте объявления эти слова есть — но словами, а не
+// одним точным словом: «посуточно» в базе почти не встречается, люди
+// пишут «на сутки», «суточная аренда» и т.п. Каждый список — это OR:
+// хватает любого совпадения, а не точного слова из первого варианта.
 const MODE_WORDS = {
-  buy: 'продам', rent: 'сдам', daily: 'посуточно',
-  rooms1: 'однокомнатная', rooms2: 'двухкомнатная',
-  rooms3: 'трёхкомнатная', studio: 'студия',
-  cars: 'автомобиль', moto: 'мотоцикл', trucks: 'грузовой', parts: 'запчасти',
-  looking: 'ищу работу', hiring: 'требуется',
-  partTime: 'подработка', fullTime: 'полный день', remote: 'удалённо',
+  buy: ['продам', 'продажа', 'продаю'],
+  rent: ['сдам', 'сдаю', 'в аренду', 'долгосрочная аренда'],
+  daily: ['посуточно', 'посуточная', 'на сутки', 'по суткам', 'суточная аренда'],
+  rooms1: ['однокомнатная', '1-комнатная', '1 комната'],
+  rooms2: ['двухкомнатная', '2-комнатная', '2 комнаты'],
+  rooms3: ['трёхкомнатная', '3-комнатная', '3 комнаты', 'четырёхкомнатная', '4-комнатная'],
+  studio: ['студия'],
+  cars: ['легковой', 'легковая', 'седан', 'хэтчбек', 'кроссовер'],
+  moto: ['мотоцикл', 'скутер', 'мопед'],
+  trucks: ['грузовик', 'грузовой', 'фургон'],
+  parts: ['запчасти', 'запчасть'],
+  looking: ['ищу работу', 'резюме'],
+  hiring: ['требуется', 'вакансия', 'ищем сотрудника'],
+  partTime: ['подработка', 'частичная занятость'],
+  fullTime: ['полный день', 'полная занятость'],
+  remote: ['удалённо', 'удаленная работа', 'remote'],
 }
 
 export default function Search() {
@@ -72,10 +85,13 @@ export default function Search() {
     const p = { lang: i18n.language, limit: PAGE, offset: 0, sort }
     if (text.trim()) p.q = text.trim()
     if (category) p.category_slug = category
-    // Ответы на вопросы раздела уточняют поиск словами: отдельных
-    // полей под них в базе нет, а в тексте объявления они есть.
-    if (fields.mode) p.q = `${p.q || ''} ${MODE_WORDS[fields.mode] || ''}`.trim()
-    if (fields.chip) p.q = `${p.q || ''} ${MODE_WORDS[fields.chip] || ''}`.trim()
+    // Ответы на вопросы раздела — отдельными OR-группами (см. MODE_WORDS),
+    // а не приклеенные к тексту поиска: иначе «посуточно» требовалось бы
+    // ровно этим словом в тексте объявления, а не любым из синонимов.
+    const groups = []
+    if (fields.mode && MODE_WORDS[fields.mode]) groups.push(MODE_WORDS[fields.mode].join('|'))
+    if (fields.chip && MODE_WORDS[fields.chip]) groups.push(MODE_WORDS[fields.chip].join('|'))
+    if (groups.length) p.extra_terms = groups.join(';;')
     if (priceMin) p.price_min = priceMin
     if (priceMax) p.price_max = priceMax
     if (city.trim()) p.city = city.trim()
@@ -228,18 +244,6 @@ export default function Search() {
             {t('search.only_photo')}
           </label>
 
-          <div className="sort-row">
-            {SORTS.map((s) => (
-              <button
-                key={s.key}
-                className={sort === s.key ? 'sort-chip active' : 'sort-chip'}
-                onClick={() => setSort(s.key)}
-              >
-                {t(s.labelKey)}
-              </button>
-            ))}
-          </div>
-
           {activeCount > 0 && (
             <button className="filters-reset" onClick={resetFilters}>{t('actions.reset_filters')}</button>
           )}
@@ -276,36 +280,51 @@ export default function Search() {
       )}
 
       <div className="results-head">
-        <span className="results-count">
-          {!loaded ? t('search.searching') : `${t('search.found')}: ${total}`}
-        </span>
-        {(text.trim() || category || priceMin || priceMax || city) && (
-          <button
-            className={subscribed ? 'save-search done' : 'save-search'}
-            onClick={async () => {
-              if (!user) { navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`); return }
-              try {
-                await api.saveSearch({
-                  q: text.trim() || undefined,
-                  category_slug: category || undefined,
-                  price_min: priceMin || undefined,
-                  price_max: priceMax || undefined,
-                  city: city || undefined,
-                })
-                setSubscribed(true)
-              } catch { /* уже сохранён или лимит */ }
-            }}
-          >
-            {subscribed ? t('saved.done') : t('saved.subscribe')}
-          </button>
-        )}
-        <div className="col-toggle">
-          <button className={cols === 2 ? 'col-btn active' : 'col-btn'} onClick={() => setCols(2)} aria-label={t('misc.cols_2')}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="3" y="4" width="7" height="16" rx="1.5" /><rect x="14" y="4" width="7" height="16" rx="1.5" /></svg>
-          </button>
-          <button className={cols === 1 ? 'col-btn active' : 'col-btn'} onClick={() => setCols(1)} aria-label={t('misc.cols_1')}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="4" y="4" width="16" height="16" rx="2" /></svg>
-          </button>
+        <div className="results-head-left">
+          <span className="results-count">
+            {!loaded ? t('search.searching') : `${t('search.found')}: ${total}`}
+          </span>
+          <div className="sort-row inline">
+            {SORTS.map((s) => (
+              <button
+                key={s.key}
+                className={sort === s.key ? 'sort-chip active' : 'sort-chip'}
+                onClick={() => setSort(s.key)}
+              >
+                {t(s.labelKey)}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="results-head-right">
+          {(text.trim() || category || priceMin || priceMax || city) && (
+            <button
+              className={subscribed ? 'save-search done' : 'save-search'}
+              onClick={async () => {
+                if (!user) { navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`); return }
+                try {
+                  await api.saveSearch({
+                    q: text.trim() || undefined,
+                    category_slug: category || undefined,
+                    price_min: priceMin || undefined,
+                    price_max: priceMax || undefined,
+                    city: city || undefined,
+                  })
+                  setSubscribed(true)
+                } catch { /* уже сохранён или лимит */ }
+              }}
+            >
+              {subscribed ? t('saved.done') : t('saved.subscribe')}
+            </button>
+          )}
+          <div className="col-toggle">
+            <button className={cols === 2 ? 'col-btn active' : 'col-btn'} onClick={() => setCols(2)} aria-label={t('misc.cols_2')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="3" y="4" width="7" height="16" rx="1.5" /><rect x="14" y="4" width="7" height="16" rx="1.5" /></svg>
+            </button>
+            <button className={cols === 1 ? 'col-btn active' : 'col-btn'} onClick={() => setCols(1)} aria-label={t('misc.cols_1')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="4" y="4" width="16" height="16" rx="2" /></svg>
+            </button>
+          </div>
         </div>
       </div>
 

@@ -158,6 +158,13 @@ def search_listings(
     with_photo: bool | None = None,
     delivery: bool | None = None,
     safe_deal: bool | None = None,
+    # Ответы на вопросы раздела («купить/снять/посуточно», «1 комната»
+    # и т.д.) как отдельные группы синонимов, а не приклеенное к q слово.
+    # Группы разделены ";;", синонимы внутри группы — "|". Каждая группа
+    # обязательна (AND), внутри группы достаточно любого слова (OR) —
+    # так «посуточно» находит и «на сутки», и «суточная аренда», а не
+    # только точное слово, которого в тексте объявления может не быть.
+    extra_terms: str | None = Query(None),
     sort: str = Query("new"),
     lang: str = Query("ru"),
     limit: int = Query(20, le=100),
@@ -167,6 +174,22 @@ def search_listings(
     q = db.query(Listing).options(
         joinedload(Listing.translations), joinedload(Listing.photos)
     ).filter(Listing.status == ListingStatus.active)
+
+    for group in (extra_terms.split(";;") if extra_terms else []):
+        synonyms = [s.strip() for s in group.split("|") if s.strip()]
+        if not synonyms:
+            continue
+        group_matches = []
+        for syn in synonyms:
+            syn_haystack = func.to_tsvector(
+                "simple",
+                func.coalesce(ListingTranslation.title, "") + " " +
+                func.coalesce(ListingTranslation.description, ""),
+            )
+            group_matches.append(syn_haystack.op("@@")(func.plainto_tsquery("simple", syn)))
+            group_matches.append(ListingTranslation.title.ilike(f"%{syn}%"))
+            group_matches.append(ListingTranslation.description.ilike(f"%{syn}%"))
+        q = q.filter(Listing.translations.any(or_(*group_matches)))
 
     # текстовый поиск по заголовку и описанию на любом из языков
     title_hit = None
@@ -271,6 +294,7 @@ def search_listings(
             "cover_photo": cover.thumbnail_url if cover else None,
             "delivery_available": listing.delivery_available,
             "is_urgent": listing.is_urgent,
+            "published_at": listing.published_at.isoformat() if listing.published_at else None,
             # Понятный адрес собираем здесь: он должен быть одинаков
             # везде — в ленте, в боте, в письме и в карте сайта.
             "path": listing_path(

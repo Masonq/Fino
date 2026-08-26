@@ -4,6 +4,17 @@ import { useFavorites } from '../context/FavoritesContext'
 import { displayCity } from '../data/cities'
 import { formatPrice } from '../utils/money'
 
+// «сегодня», «вчера», «3 дня назад» — как у Авито, вместо голой даты,
+// которую на карточке пришлось бы читать дольше, чем она того стоит.
+function relativeDate(iso, t) {
+  if (!iso) return ''
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000)
+  if (days <= 0) return t('misc.date_today')
+  if (days === 1) return t('misc.date_yesterday')
+  if (days < 7) return t('misc.date_days_ago', { count: days })
+  return new Date(iso).toLocaleDateString()
+}
+
 export default function ListingCard({ listing, large = false }) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
@@ -52,7 +63,10 @@ export default function ListingCard({ listing, large = false }) {
       </div>
       {/* Рисуем всегда, даже пустым: без города карточка была ниже соседней,
           и низ ряда получался рваным. */}
-      <div className="s-meta">{listing.city ? displayCity(listing.city, i18n.language) : ''}</div>
+      <div className="s-meta">
+        <span>{listing.city ? displayCity(listing.city, i18n.language) : ''}</span>
+        {listing.published_at && <span className="s-date">{relativeDate(listing.published_at, t)}</span>}
+      </div>
     </div>
   )
 }
