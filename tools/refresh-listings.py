@@ -21,7 +21,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 
 from app.core.database import SessionLocal  # noqa: E402
-from app.core.listing_ai import parse  # noqa: E402
+from app.core.listing_ai import parse, refused  # noqa: E402
 from app.models import (  # noqa: E402
     Currency, Listing, ListingStatus, ListingTranslation,
 )
@@ -89,6 +89,14 @@ def main() -> None:
         print(f"изменится:  {len(changes)}")
         for kind, count in kinds.most_common():
             print(f"  {kind:<12} {count}")
+
+        # Что отвергли и почему. Одно общее число не покажет, где
+        # модель промахивается чаще — а значит, что уточнять.
+        rejected = {k: v for k, v in refused.items() if v}
+        if rejected:
+            print("\nотвергнуто моделью:")
+            for kind, count in sorted(rejected.items(), key=lambda x: -x[1]):
+                print(f"  {kind:<22} {count}")
 
         if changes:
             print(f"\nпримеры (первые {args.show}):")

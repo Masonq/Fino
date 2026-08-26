@@ -108,3 +108,46 @@ def test_one_call_instead_of_three():
     assert "моём канале" in PROMPT              # что вычёркивать
     assert "за одну штуку" in PROMPT            # цена
     assert "Начинай с предмета" in PROMPT       # заголовок
+
+
+def test_title_words_come_from_the_listing():
+    """
+    Сочинённое название — «Стильная сумка для деловой женщины» —
+    читается красиво, но описывает не ту вещь, и покупатель приходит
+    зря. Извлечение надёжнее сочинения втрое.
+    """
+    from app.core.listing_ai import _words_from_source
+
+    source = "Продам коляску Chicco 2в1, состояние отличное, Земун"
+
+    assert _words_from_source("Коляска Chicco 2в1", source)
+    assert not _words_from_source("Стильная детская повозка для малыша", source)
+    assert not _words_from_source("Прогулочная коляска премиум класса", source)
+
+
+def test_description_is_cut_not_rewritten():
+    """
+    Модель, которой велели вычёркивать, иногда пересказывает своими
+    словами — выходит гладко, но это уже не то, что писал продавец.
+    """
+    from app.core.listing_ai import _mostly_from
+
+    old = ("Продам стол письменный IKEA MICKE. Состояние отличное. "
+           "Самовывоз Земун. Подробнее в моём канале @shop")
+
+    assert _mostly_from("Продам стол письменный IKEA MICKE. "
+                        "Состояние отличное. Самовывоз Земун.", old)
+    assert not _mostly_from("Продаётся письменный стол ИКЕА в прекрасном "
+                            "состоянии, забрать можно в Земуне.", old)
+
+
+def test_refusals_are_counted_by_kind():
+    """
+    Одно общее число не покажет, где модель промахивается чаще — а
+    значит, что уточнять в наставлении.
+    """
+    from app.core.listing_ai import refused
+
+    assert "цена придумана" in refused
+    assert "описание переписано" in refused
+    assert "заголовок сочинён" in refused

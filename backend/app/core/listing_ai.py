@@ -25,6 +25,19 @@ import re
 
 log = logging.getLogger(__name__)
 
+# Сколько раз что отвергли. По этим числам видно, где модель
+# промахивается чаще — а значит, что уточнять в наставлении. Одно общее
+# число такого не покажет.
+refused = {
+    "заголовок сочинён": 0,
+    "заголовок негоден": 0,
+    "цена придумана": 0,
+    "цена нелепа": 0,
+    "описание переписано": 0,
+    "описание ужалось": 0,
+    "суммы пропали": 0,
+}
+
 # Форма ответа. Пустая строка вместо пропуска поля: модели проще
 # вернуть её, чем решать, включать ли поле вообще.
 SCHEMA = {
@@ -44,6 +57,7 @@ PROMPT = """Разбери объявление с барахолки Белгр
 "currency": "RSD" | "EUR", "description": "..."}}
 
 title — название вещи, 3-7 слов.
+  Бери слова из самого объявления, не придумывай своих.
   Начинай с предмета: «Стол письменный IKEA MICKE», «Коляска Chicco 2в1».
   Не бери первую строку объявления как есть.
   Не пиши «продам», «срочно», «в отличном состоянии», цену, район.
@@ -130,7 +144,7 @@ def parse(title: str, body: str) -> dict | None:
     out = {}
 
     new_title = str(data.get("title", "")).strip()
-    if _title_ok(new_title):
+    if _title_ok(new_title, text):
         out["title"] = new_title[:120]
 
     price, currency = _price_ok(data, text, new_title or title)
@@ -145,19 +159,64 @@ def parse(title: str, body: str) -> dict | None:
     return out or None
 
 
-def _title_ok(title: str) -> bool:
+def _title_ok(title: str, source: str = "") -> bool:
     """
     Заголовок годится.
 
     Модель могла вернуть болтовню, пустоту или ту же первую строку.
     Проверяем теми же правилами, что и заголовки из текста.
+
+    Плюс главное: слова заголовка должны быть в объявлении. Сочинённое
+    название — «Стильная сумка для деловой женщины» — читается
+    красиво, но описывает не ту вещь, и покупатель приходит зря.
     """
     if not 8 <= len(title) <= 120:
         return False
 
     from app.routers.listings import title_is_clear
 
-    return title_is_clear(title)
+    if not title_is_clear(title):
+        return False
+
+    if source and not _words_from_source(title, source):
+        log.info("заголовок сочинён: %r", title[:50])
+        refused["заголовок сочинён"] += 1
+        return False
+
+    return True
+
+
+# Слова, которые модель вправе добавить от себя: они не про вещь, а
+# про её вид, и в объявлении могут быть написаны иначе.
+_FREE_WORDS = frozenset("""
+для из на с и в под над при б у новый новая новое бу
+""".split())
+
+
+def _words_from_source(title: str, source: str) -> bool:
+    """
+    Слова заголовка встречаются в объявлении.
+
+    Не все — модель склоняет и сокращает, — но большинство. Если из
+    пяти слов четыре чужие, заголовок сочинён.
+    """
+    from app.core.morphology import normal_form
+
+    haystack = {normal_form(w) or w
+                for w in re.findall(r"[\w-]{3,}", source.lower())}
+
+    own, alien = 0, 0
+    for raw in re.findall(r"[\w-]{3,}", title.lower()):
+        if raw in _FREE_WORDS:
+            continue
+        base = normal_form(raw) or raw
+        # Ищем и по корню: «коляска» в заголовке при «коляску» в тексте.
+        if base in haystack or any(base[:5] in w for w in haystack):
+            own += 1
+        else:
+            alien += 1
+
+    return own >= alien
 
 
 def _price_ok(data: dict, text: str, title: str) -> tuple[float | None, str]:
@@ -177,10 +236,12 @@ def _price_ok(data: dict, text: str, title: str) -> tuple[float | None, str]:
     # записать выдумку хуже, чем оставить пустоту.
     if not _in_text(price, text):
         log.info("модель придумала цену %s для %r", price, title[:40])
+        refused["цена придумана"] += 1
         return None, currency
 
     if looks_absurd(price, currency, title):
         log.info("нелепая цена %s %s для %r", price, currency, title[:40])
+        refused["цена нелепа"] += 1
         return None, currency
 
     return price, currency
@@ -209,6 +270,7 @@ def _body_ok(new_body: str, old_body: str) -> bool:
     if len(old) >= 80 and len(new_body) < len(old) * 0.45:
         log.info("описание ужалось с %d до %d — оставляем прежнее",
                  len(old), len(new_body))
+        refused["описание ужалось"] += 1
         return False
 
     # Цены из описания не теряются: если в старом было три числа, а в
@@ -217,9 +279,38 @@ def _body_ok(new_body: str, old_body: str) -> bool:
     now = set(re.findall(r"\b\d{3,6}\b", new_body))
     if len(was) >= 2 and len(now) < len(was):
         log.info("из описания пропали суммы: было %s, стало %s", was, now)
+        refused["суммы пропали"] += 1
+        return False
+
+    # Текст должен быть вырезан, а не переписан. Модель, которой велели
+    # вычёркивать, иногда пересказывает своими словами — выходит
+    # гладко, но это уже не то, что писал продавец.
+    if not _mostly_from(new_body, old):
+        log.info("описание переписано, а не вычеркнуто")
+        refused["описание переписано"] += 1
         return False
 
     return True
+
+
+def _mostly_from(new_body: str, old_body: str) -> bool:
+    """
+    Новый текст собран из старого.
+
+    Сверяем по предложениям: почти каждое должно найтись в исходном.
+    Модель вправе склеить обрывки и убрать лишние пробелы, поэтому
+    сравниваем без знаков и регистра.
+    """
+    def bare(text: str) -> str:
+        return re.sub(r"[^\w]+", "", text.lower())
+
+    source = bare(old_body)
+    pieces = [p for p in re.split(r"[.!?\n]+", new_body) if len(p.strip()) > 12]
+    if not pieces:
+        return True                              # нечего сверять
+
+    kept = sum(1 for piece in pieces if bare(piece) in source)
+    return kept >= len(pieces) * 0.8
 
 
 def _in_text(price: float, text: str) -> bool:
