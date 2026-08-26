@@ -247,3 +247,31 @@ def test_short_names_with_details_survive():
     assert title_is_clear("Зимние Skechers")
     assert title_is_clear("Стол письменный IKEA")
     assert title_is_clear("Скейт для начинающих")
+
+
+def test_direct_visitor_can_leave():
+    """
+    navigate(-1) возвращает в историю браузера, а у пришедшего по
+    прямой ссылке — из поиска, из телеграма — её нет: кнопка не делает
+    ничего, и человек застревает.
+    """
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "ListingDetail.jsx").read_text()
+
+    assert "window.history.state?.idx" in page
+    # без истории ведём в раздел объявления
+    assert "/category/${listing.category_slug}" in page
+    # и прямых navigate(-1) не осталось
+    assert "onClick={() => navigate(-1)}" not in page
+
+
+def test_long_description_is_folded():
+    """
+    В объявлениях из чата описания пишут на пол-экрана, и до продавца
+    человек не доскроллит.
+    """
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "ListingDetail.jsx").read_text()
+
+    assert "descOpen" in page
+    assert "detail.read_more" in page

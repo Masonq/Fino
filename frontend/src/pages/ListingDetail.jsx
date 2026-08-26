@@ -61,6 +61,7 @@ export default function ListingDetail() {
     if (res?.needAuth) navigate(`/login?returnTo=${encodeURIComponent(`/listing/${id}`)}`)
   }
   const [starting, setStarting] = useState(false)
+  const [descOpen, setDescOpen] = useState(false)
 
   useEffect(() => {
     api.getListing(id).then(setListing).catch(() => setListing(null))
@@ -132,6 +133,22 @@ export default function ListingDetail() {
   // оставляем — по нему смотрят цены и на него стоят ссылки.
   const gone = listing?.status === 'sold' || listing?.status === 'archived'
 
+  // Куда вести кнопку «назад».
+  //
+  // navigate(-1) возвращает в историю браузера, а у пришедшего по
+  // прямой ссылке — из поиска, из телеграма — её нет: кнопка не делает
+  // ничего, и человек застревает. Тогда ведём в раздел объявления: это
+  // ближайшее осмысленное место.
+  const goBack = () => {
+    if (window.history.state?.idx > 0) {
+      navigate(-1)
+      return
+    }
+    navigate(listing?.category_slug
+      ? `/category/${listing.category_slug}`
+      : '/', { replace: true })
+  }
+
   const attrValue = (key, value) => {
     const field = schema.find((f) => f.key === key)
     if (field?.type === 'boolean') return value ? t('common.yes') : t('common.no')
@@ -188,7 +205,7 @@ export default function ListingDetail() {
           </div>
         ) : <div className="photo-placeholder" />}
         <div className={scrolled ? 'detail-topbar shown' : 'detail-topbar'}>
-          <button className="topbar-btn" onClick={() => navigate(-1)} aria-label={t('actions.back')}>
+          <button className="topbar-btn" onClick={goBack} aria-label={t('actions.back')}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
           </button>
           <button className={fav ? 'topbar-btn on' : 'topbar-btn'} onClick={onFav} aria-label={t('misc.in_favorites')}>
@@ -199,7 +216,7 @@ export default function ListingDetail() {
         </div>
 
         <div className="detail-nav">
-          <button className="circle-btn" onClick={() => navigate(-1)} aria-label={t('actions.back')}>
+          <button className="circle-btn" onClick={goBack} aria-label={t('actions.back')}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
               <path d="m15 18-6-6 6-6" />
             </svg>
@@ -290,7 +307,20 @@ export default function ListingDetail() {
         {translation?.description && (
           <div className="desc-block">
             <div className="desc-title">{t('detail.description')}</div>
-            <div className="desc-text">{translation.description}</div>
+            {/* Длинное описание сворачиваем: в объявлениях из чата их
+                пишут на пол-экрана, и до продавца человек не
+                доскроллит. Короткие показываем целиком — прятать в них
+                нечего. */}
+            <div className={`desc-text${
+              !descOpen && (translation.description || '').length > 320
+                ? ' clipped' : ''}`}>
+              {translation.description}
+            </div>
+            {(translation.description || '').length > 320 && !descOpen && (
+              <button className="desc-more" onClick={() => setDescOpen(true)}>
+                {t('detail.read_more')}
+              </button>
+            )}
             {translation.is_auto_translated && (
               <div className="translate-note">{t('detail.auto_translated')} · <span>{t('detail.show_original')}</span></div>
             )}

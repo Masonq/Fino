@@ -1893,3 +1893,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    подписки, а прочие для барахолки не подходят. Растягиваем на всю
    ширину, чтобы одинокая кнопка не жалась в углу. */
 .auth-socials:has(.auth-social:only-child) .auth-social{ width:100%; }
+
+/* Длинное описание сворачиваем: в объявлениях из чата их пишут на
+   пол-экрана, и до продавца человек не доскроллит. */
+.desc-text.clipped{
+  display:-webkit-box; -webkit-line-clamp:6; -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.desc-more{
+  margin-top:8px; padding:0; border:0; background:none;
+  color:var(--accent,#0E9F6E); font-size:14px; font-weight:600;
+}

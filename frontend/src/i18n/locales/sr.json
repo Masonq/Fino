@@ -140,7 +140,8 @@
     "sold": "Prodato",
     "gone": "Oglas povučen",
     "gone_note": "Prodavac više ne prodaje ovu stvar",
-    "gone_to_category": "Pogledajte kategoriju"
+    "gone_to_category": "Pogledajte kategoriju",
+    "read_more": "Pročitaj sve"
   },
   "favorites": {
     "title": "Sačuvano",
