@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 from sqlalchemy import func, text  # noqa: E402
 
 from app.core.database import SessionLocal  # noqa: E402
+from app.routers.listings import title_is_clear  # noqa: E402
 from app.models import (  # noqa: E402
     Listing, ListingPhoto, ListingStatus, ListingTranslation,
 )
@@ -45,8 +46,10 @@ with SessionLocal() as db:
 
     complete = 0
     for listing, title in rows:
+        # «Hutschenreuther» — марка без вещи: человек не поймёт, что
+        # продают, пока не откроет. В ленте таким не место.
         good = bool(
-            title and len(title.strip()) >= 8
+            title_is_clear(title)
             and (listing.price is not None or listing.is_free)
             and photos.get(listing.id, 0)
         )

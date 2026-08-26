@@ -94,3 +94,32 @@ def test_sold_listing_stays_visible():
     # внизу — возврат в раздел, а не обещание похожих: подбор пока
     # слабый, и пустая надежда хуже честного «смотрите раздел»
     assert "detail.gone_to_category" in page
+
+
+def test_brand_alone_is_not_a_title():
+    """
+    «Hutschenreuther» — марка без вещи, «Чем занимался» — обрывок
+    фразы. Человек не поймёт, что продают, пока не откроет: в ленте
+    таким не место.
+    """
+    from app.routers.listings import title_is_clear
+
+    assert not title_is_clear("Hutschenreuther")
+    assert not title_is_clear("Privileg")
+    assert not title_is_clear("Чем занимался")
+    assert not title_is_clear("Studio")
+
+    # а с названием вещи — годится
+    assert title_is_clear("Ваза фарфоровая Hutschenreuther")
+    assert title_is_clear("Комод антикварный, массив дерева")
+
+
+def test_known_brands_are_an_exception():
+    """
+    «iPhone 13 Pro» понятен без слова «телефон»: такие марки знают все,
+    и требовать пояснения было бы придиркой.
+    """
+    from app.routers.listings import title_is_clear
+
+    assert title_is_clear("iPhone 13 Pro 256gb")
+    assert title_is_clear("MacBook m3 max 16")

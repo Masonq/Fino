@@ -721,7 +721,7 @@ def update_listing(
 
 def _looks_complete(listing) -> bool:
     """
-    Полное объявление: название, цена и фотография.
+    Полное объявление: понятное название, цена и фотография.
 
     Это тот минимум, при котором вещь можно рассмотреть и купить. Всё
     прочее — описание, город, доставка — желательно, но без них ещё
@@ -733,7 +733,42 @@ def _looks_complete(listing) -> bool:
         listing.translations[0].title if listing.translations else "",
     )
     return bool(
-        title and len(title.strip()) >= 8
+        title_is_clear(title)
         and (listing.price is not None or listing.is_free)
         and listing.photos
     )
+
+
+def title_is_clear(title: str | None) -> bool:
+    """
+    По названию понятно, что продают.
+
+    «Hutschenreuther» — марка без вещи, «Чем занимался» — обрывок
+    фразы: человек не поймёт, что там, пока не откроет. В ленте таким
+    не место, хотя само объявление остаётся.
+
+    Требуем существительное на кириллице: марка вещь не называет, а
+    «iPhone» и «MacBook» — исключения, которые знают все.
+    """
+    from app.core.morphology import analyzer
+
+    body = (title or "").strip()
+    if len(body) < 8:
+        return False
+
+    # Марки, которые сами по себе понятны: их знают без пояснений.
+    if re.search(r"\b(iphone|ipad|macbook|airpods|playstation|xbox|"
+                 r"kindle|switch|galaxy|thinkpad)\b", body, re.I):
+        return True
+
+    morph = analyzer()
+    if not morph:
+        return True                              # словаря нет — не судим
+
+    for raw in re.findall(r"[а-яё]{3,}", body.lower()):
+        if raw in _EMPTY_WORDS:
+            continue
+        parsed = morph.parse(raw)[0]
+        if parsed.tag.POS == "NOUN":
+            return True
+    return False

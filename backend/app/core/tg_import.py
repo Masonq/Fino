@@ -502,6 +502,22 @@ def store(db, item: dict) -> bool:
     return _write(db, item)
 
 
+def _complete_enough(item: dict) -> bool:
+    """
+    Годится ли объявление для ленты.
+
+    Понятное название, цена и снимок. «Hutschenreuther» без слова
+    «ваза» — марка, а не название: человек не поймёт, что продают.
+    """
+    from app.routers.listings import title_is_clear
+
+    return bool(
+        title_is_clear(item.get("title"))
+        and (item["price"] is not None or item.get("is_free"))
+        and item["photos"]
+    )
+
+
 def _write(db, item: dict) -> bool:
     """
     Сама запись — без проверок на повтор.
@@ -544,11 +560,7 @@ def _write(db, item: dict) -> bool:
         is_free=bool(item.get("is_free")),
         # Полное объявление: название, цена и хотя бы один снимок. Это
         # тот минимум, при котором вещь можно рассмотреть и купить.
-        is_complete=bool(
-            (item["title"] or "").strip() and len(item["title"]) >= 8
-            and (item["price"] is not None or item.get("is_free"))
-            and item["photos"]
-        ),
+        is_complete=_complete_enough(item),
         created_at=now,
     )
     db.add(listing)
