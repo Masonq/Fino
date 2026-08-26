@@ -137,3 +137,18 @@ def _adopt_listings(db: Session, user: User, telegram_id: str,
     )
     for listing in owned:
         listing.owner_id = user.id
+
+
+@router.get("/link")
+def login_link():
+    """
+    Ссылка на бота для входа.
+
+    Человек нажимает кнопку, попадает в бота, тот присылает одноразовую
+    ссылку — и он уже на сайте. Ни имени пользователя, ни пароля вводить
+    не нужно: телеграм и так знает, кто это.
+    """
+    from app.core.config import settings as cfg
+
+    name = getattr(cfg, "telegram_bot_username", None) or "Baraholka_plonk_bot"
+    return {"url": f"https://t.me/{name}?start=login"}

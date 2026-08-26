@@ -1872,3 +1872,11 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .detail-page:has(.gone-banner) .detail-price{ color:#9ca3af; }
 .detail-page:has(.gone-banner) .detail-photo img,
 .detail-page:has(.gone-banner) .detail-photo{ filter:grayscale(1); opacity:.75; }
+
+/* Вход через телеграм: ссылка на бота, но выглядит как кнопка рядом с
+   остальными способами — человеку разница не важна. */
+.auth-method.telegram{
+  display:flex; align-items:center; justify-content:center; gap:9px;
+  text-decoration:none;
+}
+.auth-method.telegram svg{ width:20px; height:20px; color:#229ED9; }

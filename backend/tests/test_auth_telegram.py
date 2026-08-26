@@ -76,3 +76,22 @@ def test_used_ticket_is_deleted():
     from app.routers.auth_telegram import enter
 
     assert "db.delete(ticket)" in inspect.getsource(enter)
+
+
+def test_login_needs_no_username():
+    """
+    Просить человека набирать своё имя пользователя — лишний шаг, на
+    котором ошибаются и бросают. Бот и так знает, кто перед ним.
+    """
+    import inspect
+    from app.bot.publisher import start_login
+
+    source = inspect.getsource(start_login)
+    assert "issue(message.from_user.id" in source
+    assert "/enter?key=" in source
+
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "Login.jsx").read_text()
+    # кнопка ведёт в бота, а не к вводу имени
+    assert "?start=login" in page
+    assert "auth-method hidden" not in page

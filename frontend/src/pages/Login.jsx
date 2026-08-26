@@ -4,6 +4,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 
+// Имя бота: через него идёт вход, и держать его в одном месте
+// надёжнее, чем повторять в разметке.
+const TELEGRAM_BOT = 'Baraholka_plonk_bot'
+
 const CODE_LEN = 6
 const RESEND_SEC = 60
 
@@ -127,10 +131,18 @@ export default function Login() {
           {t('auth.by_email')}
         </button>
 
-        <button className="auth-method" onClick={() => { setChannel('telegram'); setStep('enter') }}>
+        {/* Вход через бота: он и так знает, кто перед ним. Просить
+            человека набирать своё имя пользователя — лишний шаг, на
+            котором ошибаются и бросают. */}
+        <a
+          className="auth-method telegram"
+          href={`https://t.me/${TELEGRAM_BOT}?start=login`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3 18.7 19c-.2 1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9.1-8.2c.4-.4-.1-.6-.6-.2L6.3 12.9l-4.8-1.5c-1-.3-1-1 .2-1.5l18.8-7.2c.9-.3 1.6.2 1.4 1.6Z" /></svg>
           {t('auth.by_telegram')}
-        </button>
+        </a>
 
         <div className="auth-divider"><span>{t('auth.or')}</span></div>
 

@@ -406,6 +406,41 @@ async def _say_and_fade(bot: Bot, chat_id: int, thread_id: int | None,
     asyncio.create_task(later())
 
 
+@dp.message(Command("start"), F.text.contains("login"))
+async def start_login(message: Message) -> None:
+    """
+    Человек пришёл с сайта за входом.
+
+    Ни имени пользователя, ни пароля: телеграм и так знает, кто это.
+    Выдаём одноразовую ссылку и отпускаем.
+    """
+    await erase(message)
+    site = settings.public_base_url.rstrip("/")
+
+    try:
+        from app.routers.auth_telegram import issue
+
+        key = issue(message.from_user.id, message.from_user.full_name)
+    except Exception:                            # noqa: BLE001
+        log.exception("не удалось выдать ссылку для входа")
+        await show(message.bot, message.chat.id,
+                   "Не получилось войти. Попробуйте ещё раз через минуту.",
+                   keyboard=kb.idle(is_chat_owner(message.from_user.id)))
+        return
+
+    await show(
+        message.bot, message.chat.id,
+        f"{emoji('open')} <b>Вход на PLONK</b>\n\n"
+        "Нажмите кнопку — и вы на сайте, со своими объявлениями.\n\n"
+        "<i>Ссылка действует пять минут и только для вас.</i>",
+        keyboard=InlineKeyboardMarkup(inline_keyboard=[[
+            InlineKeyboardButton(text="Войти на сайт",
+                                 url=f"{site}/enter?key={key}",
+                                 icon_custom_emoji_id=icon("open")),
+        ]]),
+    )
+
+
 @dp.message(Command("start"), F.text.contains("from_chat"))
 async def start_from_chat(message: Message, bot: Bot) -> None:
     """
