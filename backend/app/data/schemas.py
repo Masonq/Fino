@@ -113,6 +113,45 @@ POWER_WATTS = {
     "label": _label("Мощность, Вт", "Power, W", "Snaga, W"),
 }
 
+COLOR = {
+    "key": "color", "type": "text", "required": False,
+    "label": _label("Цвет", "Color", "Boja"),
+}
+
+# ——— недвижимость: то, по чему реально ищут квартиру на любом сайте
+# объявлений (Авито, mirkvartir) — этажность дома, санузел, ремонт,
+# мебель, балкон. Раньше не было вовсе ни одного из этих полей.
+TOTAL_FLOORS = {
+    "key": "total_floors", "type": "number", "required": False,
+    "label": _label("Этажей в доме", "Floors in building", "Spratova u zgradi"),
+}
+BATHROOM = {
+    "key": "bathroom", "type": "select", "required": False,
+    "label": _label("Санузел", "Bathroom", "Kupatilo"),
+    "options": _options(
+        ("separate", "Раздельный", "Separate", "Odvojeno"),
+        ("combined", "Совмещённый", "Combined", "Zajedno"),
+    ),
+}
+RENOVATION = {
+    "key": "renovation", "type": "select", "required": False,
+    "label": _label("Ремонт", "Renovation", "Renoviranje"),
+    "options": _options(
+        ("none", "Без ремонта", "No renovation", "Bez renoviranja"),
+        ("cosmetic", "Косметический", "Cosmetic", "Kozmetičko"),
+        ("euro", "Евроремонт", "Euro renovation", "Evro renoviranje"),
+        ("designer", "Дизайнерский", "Designer", "Dizajnersko"),
+    ),
+}
+FURNISHED = {
+    "key": "furnished", "type": "boolean", "required": False,
+    "label": _label("С мебелью", "Furnished", "Namešteno"),
+}
+BALCONY = {
+    "key": "balcony", "type": "boolean", "required": False,
+    "label": _label("Балкон/лоджия", "Balcony/loggia", "Balkon/loža"),
+}
+
 
 # ——— авто: одна схема на весь раздел не годится — у детали и шины нет
 # ни года, ни пробега, ни коробки передач ———
@@ -136,6 +175,45 @@ _AUTO_TRANSMISSION = {
 _AUTO_VIN = {
     "key": "vin", "type": "text", "required": False,
     "label": _label("VIN (необязательно)", "VIN (optional)", "VIN (opciono)"),
+}
+# Кузов, топливо, объём двигателя, привод — стандартный набор фильтров
+# на любом авто-классифайде (Авито, drom.ru), у нас их не было вовсе.
+_BODY_TYPE = {
+    "key": "body_type", "type": "select", "required": False,
+    "label": _label("Тип кузова", "Body type", "Tip karoserije"),
+    "options": _options(
+        ("sedan", "Седан", "Sedan", "Limuzina"),
+        ("hatchback", "Хэтчбек", "Hatchback", "Hečbek"),
+        ("wagon", "Универсал", "Wagon", "Karavan"),
+        ("suv", "Внедорожник", "SUV", "Džip"),
+        ("minivan", "Минивэн", "Minivan", "Minibus"),
+        ("coupe", "Купе", "Coupe", "Kupe"),
+        ("pickup", "Пикап", "Pickup", "Pikap"),
+    ),
+}
+_FUEL_TYPE = {
+    "key": "fuel_type", "type": "select", "required": False,
+    "label": _label("Топливо", "Fuel", "Gorivo"),
+    "options": _options(
+        ("petrol", "Бензин", "Petrol", "Benzin"),
+        ("diesel", "Дизель", "Diesel", "Dizel"),
+        ("hybrid", "Гибрид", "Hybrid", "Hibrid"),
+        ("electric", "Электро", "Electric", "Električni"),
+        ("gas", "Газ", "Gas (LPG)", "Gas (TNG)"),
+    ),
+}
+_ENGINE_VOLUME = {
+    "key": "engine_volume", "type": "number", "required": False,
+    "label": _label("Объём двигателя, л", "Engine volume, L", "Zapremina motora, L"),
+}
+_DRIVE_TYPE = {
+    "key": "drive_type", "type": "select", "required": False,
+    "label": _label("Привод", "Drive type", "Pogon"),
+    "options": _options(
+        ("fwd", "Передний", "Front-wheel", "Prednji"),
+        ("rwd", "Задний", "Rear-wheel", "Zadnji"),
+        ("awd", "Полный", "All-wheel", "Sve četiri"),
+    ),
 }
 _TYRE_SEASON = {
     "key": "season", "type": "select", "required": False,
@@ -186,7 +264,26 @@ _MEGAPIXELS = {
 
 
 SCHEMAS: dict[str, list[dict]] = {
-    "auto": [BRAND, MODEL, _AUTO_YEAR, _AUTO_MILEAGE, _AUTO_TRANSMISSION, _AUTO_VIN],
+    "real-estate": [
+        {"key": "deal_type", "type": "select", "required": True,
+         "label": _label("Тип сделки", "Deal type", "Vrsta ponude"),
+         "options": _options(
+             ("rent", "Аренда", "Rent", "Izdavanje"),
+             ("daily", "Посуточно", "Daily rent", "Na dan"),
+             ("sale", "Продажа", "Sale", "Prodaja"),
+         )},
+        {"key": "area_m2", "type": "number", "required": True,
+         "label": _label("Площадь, м²", "Area, m²", "Površina, m²")},
+        {"key": "rooms", "type": "number", "required": False,
+         "label": _label("Комнат", "Rooms", "Sobe")},
+        {"key": "floor", "type": "number", "required": False,
+         "label": _label("Этаж", "Floor", "Sprat")},
+        TOTAL_FLOORS, BATHROOM, RENOVATION, FURNISHED, BALCONY,
+        {"key": "no_commission", "type": "boolean", "required": False,
+         "label": _label("Без комиссии", "No commission", "Bez provizije")},
+    ],
+    "auto": [BRAND, MODEL, _AUTO_YEAR, _AUTO_MILEAGE, _AUTO_TRANSMISSION,
+             _BODY_TYPE, _FUEL_TYPE, _ENGINE_VOLUME, COLOR, _AUTO_VIN],
     "electronics": [
         BRAND, MODEL, CONDITION, _STORAGE_GB, _RAM_GB, _SCREEN_INCH,
         _BATTERY_HEALTH, WARRANTY,
@@ -213,37 +310,122 @@ SCHEMAS: dict[str, list[dict]] = {
 
 
 SUB_SCHEMAS: dict[str, list[dict]] = {
+    # ——— недвижимость: у дома нет «этажа квартиры», у гаража нет
+    # ремонта и мебели, у коммерческой — своё назначение и высота
+    # потолков, а не количество комнат ———
+    "flats": [
+        {"key": "deal_type", "type": "select", "required": True,
+         "label": _label("Тип сделки", "Deal type", "Vrsta ponude"),
+         "options": _options(
+             ("rent", "Аренда", "Rent", "Izdavanje"),
+             ("daily", "Посуточно", "Daily rent", "Na dan"),
+             ("sale", "Продажа", "Sale", "Prodaja"),
+         )},
+        {"key": "area_m2", "type": "number", "required": True,
+         "label": _label("Площадь, м²", "Area, m²", "Površina, m²")},
+        {"key": "rooms", "type": "number", "required": False,
+         "label": _label("Комнат", "Rooms", "Sobe")},
+        {"key": "floor", "type": "number", "required": False,
+         "label": _label("Этаж", "Floor", "Sprat")},
+        TOTAL_FLOORS, BATHROOM, RENOVATION, FURNISHED, BALCONY,
+        {"key": "no_commission", "type": "boolean", "required": False,
+         "label": _label("Без комиссии", "No commission", "Bez provizije")},
+    ],
+    "houses": [
+        {"key": "deal_type", "type": "select", "required": True,
+         "label": _label("Тип сделки", "Deal type", "Vrsta ponude"),
+         "options": _options(
+             ("rent", "Аренда", "Rent", "Izdavanje"),
+             ("sale", "Продажа", "Sale", "Prodaja"),
+         )},
+        {"key": "area_m2", "type": "number", "required": True,
+         "label": _label("Площадь дома, м²", "House area, m²", "Površina kuće, m²")},
+        {"key": "land_area_sotka", "type": "number", "required": False,
+         "label": _label("Участок, соток", "Land, sotka", "Plac, ari")},
+        {"key": "floors_count", "type": "number", "required": False,
+         "label": _label("Этажей в доме", "Floors", "Spratova")},
+        RENOVATION, FURNISHED,
+        {"key": "no_commission", "type": "boolean", "required": False,
+         "label": _label("Без комиссии", "No commission", "Bez provizije")},
+    ],
+    "rooms": [
+        {"key": "deal_type", "type": "select", "required": True,
+         "label": _label("Тип сделки", "Deal type", "Vrsta ponude"),
+         "options": _options(
+             ("rent", "Аренда", "Rent", "Izdavanje"),
+             ("daily", "Посуточно", "Daily rent", "Na dan"),
+         )},
+        {"key": "area_m2", "type": "number", "required": False,
+         "label": _label("Площадь комнаты, м²", "Room area, m²", "Površina sobe, m²")},
+        FURNISHED,
+        {"key": "no_commission", "type": "boolean", "required": False,
+         "label": _label("Без комиссии", "No commission", "Bez provizije")},
+    ],
+    "commercial": [
+        {"key": "deal_type", "type": "select", "required": True,
+         "label": _label("Тип сделки", "Deal type", "Vrsta ponude"),
+         "options": _options(
+             ("rent", "Аренда", "Rent", "Izdavanje"),
+             ("sale", "Продажа", "Sale", "Prodaja"),
+         )},
+        {"key": "area_m2", "type": "number", "required": True,
+         "label": _label("Площадь, м²", "Area, m²", "Površina, m²")},
+        {"key": "purpose", "type": "select", "required": False,
+         "label": _label("Назначение", "Purpose", "Namena"),
+         "options": _options(
+             ("office", "Офис", "Office", "Kancelarija"),
+             ("retail", "Торговое", "Retail", "Prodajni prostor"),
+             ("warehouse", "Склад", "Warehouse", "Magacin"),
+             ("production", "Производство", "Production", "Proizvodnja"),
+         )},
+        {"key": "ceiling_height_m", "type": "number", "required": False,
+         "label": _label("Высота потолков, м", "Ceiling height, m", "Visina plafona, m")},
+    ],
+    "garages": [
+        {"key": "deal_type", "type": "select", "required": True,
+         "label": _label("Тип сделки", "Deal type", "Vrsta ponude"),
+         "options": _options(
+             ("rent", "Аренда", "Rent", "Izdavanje"),
+             ("sale", "Продажа", "Sale", "Prodaja"),
+         )},
+        {"key": "area_m2", "type": "number", "required": False,
+         "label": _label("Площадь, м²", "Area, m²", "Površina, m²")},
+        {"key": "secured", "type": "boolean", "required": False,
+         "label": _label("Охраняется", "Secured", "Obezbeđeno")},
+    ],
+
     # ——— авто ———
-    "cars": [BRAND, MODEL, _AUTO_YEAR, _AUTO_MILEAGE, _AUTO_TRANSMISSION, _AUTO_VIN],
-    "moto": [BRAND, MODEL, _AUTO_YEAR, _AUTO_MILEAGE],
-    "trucks": [BRAND, MODEL, _AUTO_YEAR, _AUTO_MILEAGE, _AUTO_TRANSMISSION],
+    "cars": [BRAND, MODEL, _AUTO_YEAR, _AUTO_MILEAGE, _AUTO_TRANSMISSION,
+             _BODY_TYPE, _FUEL_TYPE, _ENGINE_VOLUME, _DRIVE_TYPE, COLOR, _AUTO_VIN],
+    "moto": [BRAND, MODEL, _AUTO_YEAR, _AUTO_MILEAGE, _ENGINE_VOLUME, COLOR],
+    "trucks": [BRAND, MODEL, _AUTO_YEAR, _AUTO_MILEAGE, _AUTO_TRANSMISSION, _BODY_TYPE, _FUEL_TYPE],
     "car-parts": [BRAND, MODEL, CONDITION_SIMPLE],
     "tyres": [BRAND, _TYRE_SIZE, _TYRE_SEASON, CONDITION_SIMPLE],
 
     # ——— электроника ———
-    "phones": [BRAND, MODEL, CONDITION, _STORAGE_GB, _RAM_GB, _SCREEN_INCH, _BATTERY_HEALTH, WARRANTY],
-    "laptops": [BRAND, MODEL, CONDITION, _CPU, _RAM_GB, _STORAGE_GB, _SCREEN_INCH, WARRANTY],
+    "phones": [BRAND, MODEL, CONDITION, _STORAGE_GB, _RAM_GB, _SCREEN_INCH, _BATTERY_HEALTH, COLOR, WARRANTY],
+    "laptops": [BRAND, MODEL, CONDITION, _CPU, _RAM_GB, _STORAGE_GB, _SCREEN_INCH, COLOR, WARRANTY],
     "computers": [BRAND, CONDITION, _CPU, _GPU, _RAM_GB, _STORAGE_GB, WARRANTY],
-    "tablets": [BRAND, MODEL, CONDITION, _STORAGE_GB, _SCREEN_INCH, _BATTERY_HEALTH, WARRANTY],
+    "tablets": [BRAND, MODEL, CONDITION, _STORAGE_GB, _SCREEN_INCH, _BATTERY_HEALTH, COLOR, WARRANTY],
     "tv-audio": [BRAND, MODEL, CONDITION, _SCREEN_INCH, WARRANTY],
     "photo": [BRAND, MODEL, CONDITION, _MEGAPIXELS, WARRANTY],
     "gaming": [BRAND, MODEL, CONDITION, _STORAGE_GB, WARRANTY],
     "gadgets": [BRAND, MODEL, CONDITION, _BATTERY_HEALTH, WARRANTY],
 
     # ——— одежда и обувь ———
-    "women": [BRAND, CONDITION_SIMPLE, SIZE_TEXT],
-    "men": [BRAND, CONDITION_SIMPLE, SIZE_TEXT],
+    "women": [BRAND, CONDITION_SIMPLE, SIZE_TEXT, COLOR],
+    "men": [BRAND, CONDITION_SIMPLE, SIZE_TEXT, COLOR],
     "shoes": [
         BRAND, CONDITION_SIMPLE, SIZE_TEXT,
         {"key": "insole_cm", "type": "number", "required": False,
          "label": _label("Длина стельки, см", "Insole, cm", "Uložak, cm")},
-        GENDER,
+        COLOR, GENDER,
     ],
-    "bags": [BRAND, CONDITION_SIMPLE, MATERIAL],
+    "bags": [BRAND, CONDITION_SIMPLE, MATERIAL, COLOR],
     "watches": [BRAND, CONDITION_SIMPLE, MATERIAL, GENDER],
 
     # ——— дом и сад ———
-    "furniture": [MATERIAL, DIMENSIONS, CONDITION_SIMPLE],
+    "furniture": [MATERIAL, DIMENSIONS, COLOR, CONDITION_SIMPLE],
     "appliances": [BRAND, CONDITION, POWER_WATTS, WARRANTY],
     "kitchenware": [MATERIAL, CONDITION_SIMPLE],
     "decor": [MATERIAL, DIMENSIONS, CONDITION_SIMPLE],
