@@ -75,8 +75,8 @@ def main() -> None:
             # Доллары у нас не хранятся: в Белграде торгуют в динарах и
             # евро, а доллар пишут по привычке. Считаем его евро — это
             # ближе к истине, чем динары.
-            listing.currency = Currency.EUR if currency in ("EUR", "USD") \
-                else Currency.RSD
+            listing.currency = Currency.eur if currency in ("EUR", "USD") \
+                else Currency.rsd
         db.commit()
         print(f"\nпроставлено: {len(changes)}")
 
