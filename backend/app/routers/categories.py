@@ -9,17 +9,6 @@ from app.models import Category, Listing, ListingStatus
 router = APIRouter(prefix="/api/categories", tags=["categories"])
 
 
-# Сколько объявлений нужно разделу, чтобы в нём был выбор.
-#
-# OpenTable вывел около полусотни, но это для города с тысячами
-# ресторанов. Нам важнее не отпугнуть: раздел с двумя десятками уже
-# даёт человеку что посмотреть, а пометка «скоро» на нём выглядит
-# ложной скромностью.
-#
-# Метим только совсем пустые — где и десятка нет.
-ENOUGH_FOR_CHOICE = 10
-
-
 @router.get("")
 def list_categories(db: Session = Depends(get_db)):
     """
@@ -61,7 +50,7 @@ def list_categories(db: Session = Depends(get_db)):
             "image_url": cat.image_url,
             "color": cat.color,
             "count": count,
-            "ready": count >= ENOUGH_FOR_CHOICE,
+            "ready": True,
             "children": [serialize(c) for c in cat.children] if cat.children else [],
         }
 
