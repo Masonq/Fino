@@ -9,11 +9,12 @@
          python3 tools/healthcheck.py http://89.208.113.147:8002
 """
 import json
+import pathlib
 import re
-import subprocess
 import sys
 import urllib.error
 import urllib.request
+from datetime import timedelta
 
 BASE = (sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8002").rstrip("/")
 
@@ -80,17 +81,37 @@ check("код запрашивается", st in (200, 429), f"код {st}: {res
 # тот уже использован, и verify-code справедливо ответил бы «code_expired».
 fresh_code_issued = st == 200
 
-# достаём код из журнала — почта пока не настроена
+# Код кладём в базу сами.
+#
+# Из журнала его больше не взять — он уходит письмом, а не пишется в
+# записи. Читать почту проверке незачем: нам важно, что цикл входа
+# работает, а не что письмо доставлено, — это отдельная забота.
 code = None
 try:
-    out = subprocess.run(
-        ["journalctl", "-u", "fino", "-n", "60", "--no-pager"],
-        capture_output=True, text=True, timeout=10,
-    ).stdout
-    hits = re.findall(rf"Код для {re.escape(EMAIL)}: (\d{{6}})", out)
-    code = hits[-1] if hits else None
-except Exception:
-    pass
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "backend"))
+
+    from app.core.auth import hash_code
+    from app.core.clock import utcnow
+    from app.core.database import SessionLocal
+    from app.models import VerificationCode, VerifyChannel
+
+    code = "424242"
+    with SessionLocal() as db:
+        # Прежние коды этого адреса гасим: verify-code берёт свежий, и
+        # чужой недоиспользованный сбил бы проверку.
+        db.query(VerificationCode).filter(
+            VerificationCode.destination == EMAIL).delete()
+        db.add(VerificationCode(
+            destination=EMAIL,
+            channel=VerifyChannel.email,
+            code_hash=hash_code(code),
+            expires_at=utcnow() + timedelta(minutes=5),
+        ))
+        db.commit()
+    fresh_code_issued = True
+except Exception as exc:                         # noqa: BLE001
+    print(f"  {YELLOW}!{RESET} не удалось завести код: {exc}")
+    code = None
 
 if code and not fresh_code_issued:
     print(f"  {YELLOW}!{RESET} проверка кода пропущена: свежий код не выдан "
@@ -120,8 +141,8 @@ elif code:
         st, res = call("GET", "/api/listings/my/list?lang=ru", token=token)
         check("свои объявления отдаются", st == 200 and "items" in (res or {}), f"код {st}")
 else:
-    print(f"  {YELLOW}!{RESET} код не найден в журнале — цикл входа не проверен")
-    print("    (журнал доступен только на самом сервере)")
+    print(f"  {YELLOW}!{RESET} цикл входа не проверен: нет доступа к базе")
+    print("    (проверка запускается на сервере)")
 
 # ---------- защита ----------
 print("\nЗащита")
