@@ -73,10 +73,21 @@ def send_code(destination: str, code: str, channel: VerifyChannel) -> None:
         _send_email(destination, code)
 
 def _send_email_text(to: str, subject: str, body: str) -> None:
-    """Произвольное письмо — для уведомлений, а не только для кодов."""
+    """
+    Произвольное письмо — для уведомлений, а не только для кодов.
+
+    Отправляем через Resend, если задан ключ: письма от него не
+    попадают в спам, а через обычный SMTP с чужого сервера попадают
+    почти всегда. Без ключа — по SMTP, как раньше.
+    """
+    if getattr(settings, "resend_api_key", None):
+        _send_via_resend(to, subject, body)
+        return
+
     host = getattr(settings, "smtp_host", None)
     if not host:
-        log.info("SMTP не настроен. Письмо для %s: %s — %s", to, subject, body[:120])
+        log.info("Почта не настроена. Письмо для %s: %s — %s",
+                 to, subject, body[:120])
         return
 
     msg = EmailMessage()
@@ -90,3 +101,43 @@ def _send_email_text(to: str, subject: str, body: str) -> None:
         if settings.smtp_user:
             server.login(settings.smtp_user, settings.smtp_password)
         server.send_message(msg)
+
+
+def _send_via_resend(to: str, subject: str, body: str) -> None:
+    """
+    Письмо через Resend.
+
+    Обычной почтой с нашего сервера письма уходят в спам: у него нет
+    ни репутации, ни подписи. Resend этим и занимается — за него
+    ручается его собственный сервер.
+    """
+    import json
+    import urllib.error
+    import urllib.request
+
+    payload = json.dumps({
+        "from": settings.smtp_from,
+        "to": [to],
+        "subject": subject,
+        "text": f"{body}\n\n—\nPLONK — объявления в Сербии",
+    }).encode()
+
+    request = urllib.request.Request(
+        "https://api.resend.com/emails",
+        data=payload,
+        headers={
+            "Authorization": f"Bearer {settings.resend_api_key}",
+            "Content-Type": "application/json",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=10) as answer:
+            if answer.status >= 300:
+                log.warning("письмо для %s не ушло: %s", to, answer.status)
+    except urllib.error.HTTPError as exc:
+        # Причину пишем целиком: чаще всего это неподтверждённый домен
+        # или опечатка в ключе, и без текста ошибки это не понять.
+        log.warning("письмо для %s не ушло: %s %s",
+                    to, exc.code, exc.read()[:200])
+    except Exception as exc:                     # noqa: BLE001
+        log.warning("письмо для %s не ушло: %s", to, exc)
