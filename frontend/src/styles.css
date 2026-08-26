@@ -464,7 +464,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .info-badge.green{ background:var(--primary-soft); color:var(--primary-dark); }
 .info-badge.grey{ background:#F3F3F1; color:var(--ink-soft); }
 
-.attr-card{ margin-top:18px; background:#F8F8F5; border-radius:17px; padding:5px 15px; }
+.attr-card{ background:#F8F8F5; border-radius:17px; padding:5px 15px; }
+.attrs-block{ margin-top:18px; }
+.attrs-block .desc-more{ margin-top:10px; }
 .attr-row{ display:flex; justify-content:space-between; padding:11px 0; border-bottom:1px solid #ECECE6; font-size:12.5px; }
 .attr-row:last-child{ border:none; }
 .attr-row .k{ color:var(--muted); font-weight:500; }

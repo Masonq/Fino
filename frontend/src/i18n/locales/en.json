@@ -144,7 +144,9 @@
     "gone": "Listing withdrawn",
     "gone_note": "The seller is no longer selling this item",
     "gone_to_category": "Browse this category",
-    "read_more": "Read more"
+    "read_more": "Read more",
+    "characteristics": "Characteristics",
+    "show_all": "Show all"
   },
   "favorites": {
     "title": "Saved",

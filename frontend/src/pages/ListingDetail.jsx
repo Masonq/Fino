@@ -72,6 +72,7 @@ export default function ListingDetail() {
   }
   const [starting, setStarting] = useState(false)
   const [descOpen, setDescOpen] = useState(false)
+  const [attrsOpen, setAttrsOpen] = useState(false)
 
   useEffect(() => {
     api.getListing(listingId).then(setListing).catch(() => setListing(null))
@@ -352,14 +353,26 @@ export default function ListingDetail() {
               value !== null && value !== '' &&
               schema.some((f) => f.key === key))
           if (!rows.length) return null
+          // Длинный список сворачиваем — как на Авито: сразу видно
+          // главное, а не стену из пятнадцати строк характеристик.
+          const LIMIT = 6
+          const visible = attrsOpen ? rows : rows.slice(0, LIMIT)
           return (
-            <div className="attr-card">
-              {rows.map(([key, value]) => (
-                <div className="attr-row" key={key}>
-                  <span className="k">{attrLabel(key)}</span>
-                  <span className="v">{String(attrValue(key, value))}</span>
-                </div>
-              ))}
+            <div className="attrs-block">
+              <div className="desc-title">{t('detail.characteristics')}</div>
+              <div className="attr-card">
+                {visible.map(([key, value]) => (
+                  <div className="attr-row" key={key}>
+                    <span className="k">{attrLabel(key)}</span>
+                    <span className="v">{String(attrValue(key, value))}</span>
+                  </div>
+                ))}
+              </div>
+              {!attrsOpen && rows.length > LIMIT && (
+                <button className="desc-more" onClick={() => setAttrsOpen(true)}>
+                  {t('detail.show_all')}
+                </button>
+              )}
             </div>
           )
         })()}

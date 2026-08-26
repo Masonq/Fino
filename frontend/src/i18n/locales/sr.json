@@ -144,7 +144,9 @@
     "gone": "Oglas povučen",
     "gone_note": "Prodavac više ne prodaje ovu stvar",
     "gone_to_category": "Pogledajte kategoriju",
-    "read_more": "Pročitaj sve"
+    "read_more": "Pročitaj sve",
+    "characteristics": "Karakteristike",
+    "show_all": "Prikaži sve"
   },
   "favorites": {
     "title": "Sačuvano",
