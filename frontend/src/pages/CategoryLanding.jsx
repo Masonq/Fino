@@ -25,6 +25,7 @@ export default function CategoryLanding() {
   const [fresh, setFresh] = useState([])
   const [deal, setDeal] = useState('')
   const [values, setValues] = useState({})
+  const [text, setText] = useState('')
 
   const landing = LANDINGS[slug]
 
@@ -40,6 +41,7 @@ export default function CategoryLanding() {
 
   const search = () => {
     const params = new URLSearchParams({ category: slug })
+    if (text.trim()) params.set('q', text.trim())
     // Ключи должны совпадать с тем, что читает Search.jsx через
     // CategoryFields — иначе выбор «Снять» или «2 комнаты» на лендинге
     // никуда не долетает.
@@ -72,6 +74,29 @@ export default function CategoryLanding() {
             {t('landing.offers', { count: category.count })}
           </div>
         )}
+      </div>
+
+      {/* Раньше здесь были только фильтры (комнаты, цена) — можно было
+          сузить раздел, но не поискать конкретную вещь словом. Теперь
+          можно и то, и другое: слово уходит в q вместе с остальными
+          отборами. */}
+      <div className="landing-search">
+        <div className="search-field">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+          <input
+            type="search"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') search() }}
+            placeholder={t('search.placeholder_full')}
+            autoComplete="off"
+          />
+          {text && (
+            <button className="search-clear" onClick={() => setText('')} aria-label={t('actions.clear')}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M18 6 6 18M6 6l12 12" /></svg>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Первый вопрос делит раздел надвое: без ответа на него

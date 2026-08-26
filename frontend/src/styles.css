@@ -1972,6 +1972,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .landing-title{ font-size:24px; font-weight:800; color:var(--ink); flex:1; min-width:0; }
 .landing-count{ width:100%; font-size:13px; color:var(--muted); font-weight:600; padding-left:46px; }
+.landing-search{ padding:6px 14px 4px; }
 
 .landing-field{ padding:10px 14px 4px; }
 .landing-label{ font-size:13px; font-weight:700; color:var(--ink-soft); margin-bottom:8px; }
