@@ -61,6 +61,20 @@ export default function CategoryLanding() {
   const PAGE = 20
   const resultsRef = useRef(null)
 
+  // Подраздел — другое: тап по плитке не должен уводить со страницы
+  // и не должен прятать баннер/подразделы, как это делает «Показать
+  // объявления». Объявления подраздела появляются отдельным блоком
+  // сразу под плитками, а сама страница остаётся на месте — можно
+  // тут же ткнуть в другой подраздел.
+  const [subResults, setSubResults] = useState([])
+  const [subResultsTotal, setSubResultsTotal] = useState(0)
+  const [subSearched, setSubSearched] = useState(false)
+  const [subSearching, setSubSearching] = useState(false)
+  const [subLoadingMore, setSubLoadingMore] = useState(false)
+  const [subName, setSubName] = useState('')
+  const [subActiveSlug, setSubActiveSlug] = useState('')
+  const subResultsRef = useRef(null)
+
   const landing = LANDINGS[slug]
 
   useEffect(() => {
@@ -71,6 +85,11 @@ export default function CategoryLanding() {
     api.searchListings({ category_slug: slug, limit: 8, lang: i18n.language })
       .then((res) => setFresh(res.items || []))
       .catch(() => setFresh([]))
+
+    // Переход на другой раздел (напр. по «Все категории») не должен
+    // тащить за собой открытые результаты подраздела прошлого раздела.
+    setSubSearched(false)
+    setSearched(false)
   }, [slug, i18n.language])
 
   // Плитка подраздела задаёт свой слаг категории вместо родительского —
@@ -132,6 +151,30 @@ export default function CategoryLanding() {
       .then((res) => setResults((prev) => [...prev, ...(res.items || [])]))
       .catch(() => {})
       .finally(() => setLoadingMore(false))
+  }
+
+  const searchSub = (sub) => {
+    setShowAllSubs(false)
+    setSubName(sub.name?.[i18n.language] || sub.name?.ru || '')
+    setSubActiveSlug(sub.slug)
+    setSubSearching(true)
+    setSubSearched(true)
+    requestAnimationFrame(() => {
+      subResultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+    api.searchListings(buildQuery(sub.slug))
+      .then((res) => { setSubResults(res.items || []); setSubResultsTotal(res.total || 0) })
+      .catch(() => { setSubResults([]); setSubResultsTotal(0) })
+      .finally(() => setSubSearching(false))
+  }
+
+  const loadMoreSub = () => {
+    if (subLoadingMore || subResults.length >= subResultsTotal) return
+    setSubLoadingMore(true)
+    api.searchListings({ ...buildQuery(subActiveSlug), offset: subResults.length })
+      .then((res) => setSubResults((prev) => [...prev, ...(res.items || [])]))
+      .catch(() => {})
+      .finally(() => setSubLoadingMore(false))
   }
 
   const name = category?.name?.[i18n.language] || category?.name?.ru || ''
@@ -280,7 +323,7 @@ export default function CategoryLanding() {
               <button
                 key={sub.id}
                 className="landing-sub"
-                onClick={() => search(sub.slug)}
+                onClick={() => searchSub(sub)}
               >
                 <span className="landing-sub-name">
                   {sub.name?.[i18n.language] || sub.name?.ru}
@@ -314,7 +357,7 @@ export default function CategoryLanding() {
               <button
                 key={sub.id}
                 className="subs-modal-row"
-                onClick={() => search(sub.slug)}
+                onClick={() => searchSub(sub)}
               >
                 {sub.name?.[i18n.language] || sub.name?.ru}
               </button>
@@ -323,7 +366,42 @@ export default function CategoryLanding() {
         </div>
       )}
 
-      {fresh.length > 0 && (
+      {/* Объявления подраздела — прямо тут, без перехода и без того,
+          чтобы прятать баннер и сами подразделы: можно тут же ткнуть
+          в соседнюю плитку. «Свежие объявления» ниже в этот момент
+          не нужны — заменяем их этим блоком. */}
+      {subSearched && (
+        <div className="landing-results" ref={subResultsRef}>
+          <div className="landing-results-head">
+            <span className="results-count">
+              {subSearching && !subResults.length
+                ? t('search.searching')
+                : `${subName} — ${t('search.found')}: ${subResultsTotal}`}
+            </span>
+            <button className="subs-modal-close" onClick={() => setSubSearched(false)} aria-label={t('actions.close')}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+            </button>
+          </div>
+          {subSearching && !subResults.length ? (
+            <div className="feed-grid"><CardSkeletons count={4} /></div>
+          ) : subResults.length === 0 ? (
+            <p className="empty-hint">{t('search.nothing')}</p>
+          ) : (
+            <>
+              <div className="feed-grid">
+                {subResults.map((l) => <ListingCard key={l.id} listing={l} />)}
+              </div>
+              {subResults.length < subResultsTotal && (
+                <button className="load-more" disabled={subLoadingMore} onClick={loadMoreSub}>
+                  {subLoadingMore ? t('actions.loading') : t('actions.show_more')}
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {fresh.length > 0 && !subSearched && (
         <div className="landing-fresh">
           <h2>{t('landing.fresh')}</h2>
           <div className="feed-grid">
