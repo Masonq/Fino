@@ -102,7 +102,7 @@ def main() -> None:
             print(f"\nпримеры (первые {args.show}):")
             for listing, tr, got, what in changes[:args.show]:
                 print(f"\n  {(tr.title or '')[:60]}")
-                if "title" in what:
+                if "заголовок" in what:
                     print(f"    → {got['title'][:60]}")
                 if "цена" in what:
                     was = money(listing.price,
