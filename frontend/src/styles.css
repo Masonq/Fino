@@ -1978,7 +1978,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 .landing-input{
   width:100%; padding:13px 14px; border-radius:13px; border:1px solid rgba(20,30,25,.08);
-  background:#F7F8F6; font-size:14.5px; color:var(--ink); font-weight:600;
+  background:#F7F8F6; font-size:16px; color:var(--ink); font-weight:600;
 }
 .landing-input::placeholder{ color:var(--muted); font-weight:500; }
 .landing-range{ display:flex; gap:8px; }
