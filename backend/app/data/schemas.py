@@ -38,6 +38,20 @@ CONDITION = {
     ),
 }
 
+# «На запчасти» имеет смысл только для составной вещи, которую разбирают
+# на части — телефон, ноутбук, техника, велосипед. Для шины, готовой
+# детали, одежды или духов вариант бессмысленный: шина не «на запчасти»,
+# она и есть отдельная деталь; духи на запчасти не бывают.
+CONDITION_SIMPLE = {
+    "key": "condition", "type": "select", "required": False,
+    "label": _label("Состояние", "Condition", "Stanje"),
+    "options": _options(
+        ("new", "Новое", "New", "Novo"),
+        ("like_new", "Как новое", "Like new", "Kao novo"),
+        ("used", "Б/у", "Used", "Polovno"),
+    ),
+}
+
 BRAND = {
     "key": "brand", "type": "text", "required": False,
     "label": _label("Бренд", "Brand", "Brend"),
@@ -177,10 +191,10 @@ SCHEMAS: dict[str, list[dict]] = {
         BRAND, MODEL, CONDITION, _STORAGE_GB, _RAM_GB, _SCREEN_INCH,
         _BATTERY_HEALTH, WARRANTY,
     ],
-    "fashion": [BRAND, CONDITION, SIZE_TEXT, GENDER],
-    "home-garden": [BRAND, CONDITION, MATERIAL, DIMENSIONS],
-    "kids": [BRAND, CONDITION, AGE_GROUP, SIZE_TEXT],
-    "hobby-sport": [BRAND, CONDITION, SIZE_TEXT],
+    "fashion": [BRAND, CONDITION_SIMPLE, SIZE_TEXT, GENDER],
+    "home-garden": [BRAND, CONDITION_SIMPLE, MATERIAL, DIMENSIONS],
+    "kids": [BRAND, CONDITION_SIMPLE, AGE_GROUP, SIZE_TEXT],
+    "hobby-sport": [BRAND, CONDITION_SIMPLE, SIZE_TEXT],
     "pets": [
         {"key": "listing_kind", "type": "select", "required": False,
          "label": _label("Тип объявления", "Listing type", "Vrsta oglasa"),
@@ -193,8 +207,8 @@ SCHEMAS: dict[str, list[dict]] = {
         {"key": "vaccinated", "type": "boolean", "required": False,
          "label": _label("Привит", "Vaccinated", "Vakcinisan")},
     ],
-    "beauty": [BRAND, CONDITION],
-    "business": [BRAND, CONDITION, YEAR],
+    "beauty": [BRAND, CONDITION_SIMPLE],
+    "business": [BRAND, CONDITION_SIMPLE, YEAR],
 }
 
 
@@ -203,8 +217,8 @@ SUB_SCHEMAS: dict[str, list[dict]] = {
     "cars": [BRAND, MODEL, _AUTO_YEAR, _AUTO_MILEAGE, _AUTO_TRANSMISSION, _AUTO_VIN],
     "moto": [BRAND, MODEL, _AUTO_YEAR, _AUTO_MILEAGE],
     "trucks": [BRAND, MODEL, _AUTO_YEAR, _AUTO_MILEAGE, _AUTO_TRANSMISSION],
-    "car-parts": [BRAND, MODEL, CONDITION],
-    "tyres": [BRAND, _TYRE_SIZE, _TYRE_SEASON, CONDITION],
+    "car-parts": [BRAND, MODEL, CONDITION_SIMPLE],
+    "tyres": [BRAND, _TYRE_SIZE, _TYRE_SEASON, CONDITION_SIMPLE],
 
     # ——— электроника ———
     "phones": [BRAND, MODEL, CONDITION, _STORAGE_GB, _RAM_GB, _SCREEN_INCH, _BATTERY_HEALTH, WARRANTY],
@@ -217,31 +231,31 @@ SUB_SCHEMAS: dict[str, list[dict]] = {
     "gadgets": [BRAND, MODEL, CONDITION, _BATTERY_HEALTH, WARRANTY],
 
     # ——— одежда и обувь ———
-    "women": [BRAND, CONDITION, SIZE_TEXT],
-    "men": [BRAND, CONDITION, SIZE_TEXT],
+    "women": [BRAND, CONDITION_SIMPLE, SIZE_TEXT],
+    "men": [BRAND, CONDITION_SIMPLE, SIZE_TEXT],
     "shoes": [
-        BRAND, CONDITION, SIZE_TEXT,
+        BRAND, CONDITION_SIMPLE, SIZE_TEXT,
         {"key": "insole_cm", "type": "number", "required": False,
          "label": _label("Длина стельки, см", "Insole, cm", "Uložak, cm")},
         GENDER,
     ],
-    "bags": [BRAND, CONDITION, MATERIAL],
-    "watches": [BRAND, CONDITION, MATERIAL, GENDER],
+    "bags": [BRAND, CONDITION_SIMPLE, MATERIAL],
+    "watches": [BRAND, CONDITION_SIMPLE, MATERIAL, GENDER],
 
     # ——— дом и сад ———
-    "furniture": [MATERIAL, DIMENSIONS, CONDITION],
+    "furniture": [MATERIAL, DIMENSIONS, CONDITION_SIMPLE],
     "appliances": [BRAND, CONDITION, POWER_WATTS, WARRANTY],
-    "kitchenware": [MATERIAL, CONDITION],
-    "decor": [MATERIAL, DIMENSIONS, CONDITION],
-    "garden": [CONDITION],
+    "kitchenware": [MATERIAL, CONDITION_SIMPLE],
+    "decor": [MATERIAL, DIMENSIONS, CONDITION_SIMPLE],
+    "garden": [CONDITION_SIMPLE],
     "tools": [BRAND, CONDITION, POWER_WATTS],
 
     # ——— детям ———
-    "kids-clothing": [BRAND, CONDITION, AGE_GROUP, SIZE_TEXT],
-    "strollers": [BRAND, CONDITION, AGE_GROUP],
-    "toys": [BRAND, CONDITION, AGE_GROUP],
-    "kids-furniture": [MATERIAL, DIMENSIONS, CONDITION],
-    "school": [BRAND, CONDITION, AGE_GROUP],
+    "kids-clothing": [BRAND, CONDITION_SIMPLE, AGE_GROUP, SIZE_TEXT],
+    "strollers": [BRAND, CONDITION_SIMPLE, AGE_GROUP],
+    "toys": [BRAND, CONDITION_SIMPLE, AGE_GROUP],
+    "kids-furniture": [MATERIAL, DIMENSIONS, CONDITION_SIMPLE],
+    "school": [BRAND, CONDITION_SIMPLE, AGE_GROUP],
 
     # ——— хобби и спорт ———
     "bikes": [
@@ -249,15 +263,15 @@ SUB_SCHEMAS: dict[str, list[dict]] = {
         {"key": "wheel_size", "type": "text", "required": False,
          "label": _label("Размер колёс", "Wheel size", "Veličina točkova")},
     ],
-    "fitness": [BRAND, CONDITION],
-    "outdoor": [BRAND, CONDITION],
-    "music": [BRAND, MODEL, CONDITION],
+    "fitness": [BRAND, CONDITION_SIMPLE],
+    "outdoor": [BRAND, CONDITION_SIMPLE],
+    "music": [BRAND, MODEL, CONDITION_SIMPLE],
     "books": [
-        CONDITION,
+        CONDITION_SIMPLE,
         {"key": "author", "type": "text", "required": False,
          "label": _label("Автор", "Author", "Autor")},
     ],
-    "collecting": [CONDITION, YEAR],
+    "collecting": [CONDITION_SIMPLE, YEAR],
 
     # ——— животные — вопрос «привит» нелеп для миски или переноски ———
     "pets-dogs": [
@@ -282,18 +296,18 @@ SUB_SCHEMAS: dict[str, list[dict]] = {
         {"key": "age", "type": "text", "required": False,
          "label": _label("Возраст", "Age", "Uzrast")},
     ],
-    "pets-supplies": [BRAND, CONDITION],
+    "pets-supplies": [BRAND, CONDITION_SIMPLE],
 
     # ——— красота: тот самый случай — духам нужен объём, фену нет ———
     "cosmetics": [
-        BRAND, CONDITION,
+        BRAND, CONDITION_SIMPLE,
         {"key": "volume_ml", "type": "number", "required": False,
          "label": _label("Объём, мл", "Volume, ml", "Zapremina, ml")},
         {"key": "shade", "type": "text", "required": False,
          "label": _label("Оттенок", "Shade", "Nijansa")},
     ],
     "beauty-devices": [BRAND, MODEL, CONDITION, WARRANTY],
-    "health": [BRAND, CONDITION],
+    "health": [BRAND, CONDITION_SIMPLE],
 
     # ——— бизнес ———
     "equipment": [BRAND, MODEL, CONDITION, YEAR],
@@ -303,5 +317,5 @@ SUB_SCHEMAS: dict[str, list[dict]] = {
         {"key": "employees", "type": "number", "required": False,
          "label": _label("Сотрудников", "Employees", "Zaposlenih")},
     ],
-    "supplies": [BRAND, CONDITION],
+    "supplies": [BRAND, CONDITION_SIMPLE],
 }
