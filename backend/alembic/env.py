@@ -100,9 +100,25 @@ def _drop_noise_index_ops(context, revision, op_directives):
             and getattr(op, "index_name", None) in NOISE_INDEXES
         )
 
+    # Индексы лежат не на верхнем уровне списка операций, а вложены в
+    # ModifyTableOps — та же обёртка, что и у изменений колонок. Первая
+    # версия фильтра проверяла только верхний уровень и поэтому ни разу
+    # не сработала: миграция всё равно генерировалась.
+    def scrub(ops_list):
+        kept = []
+        for op in ops_list:
+            if is_noise(op):
+                continue
+            if isinstance(op, ops.ModifyTableOps):
+                op.ops = scrub(op.ops)
+                if not op.ops:
+                    continue  # пустая обёртка без содержимого не нужна
+            kept.append(op)
+        return kept
+
     for script in op_directives:
-        script.upgrade_ops.ops = [op for op in script.upgrade_ops.ops if not is_noise(op)]
-        script.downgrade_ops.ops = [op for op in script.downgrade_ops.ops if not is_noise(op)]
+        script.upgrade_ops.ops = scrub(script.upgrade_ops.ops)
+        script.downgrade_ops.ops = scrub(script.downgrade_ops.ops)
 
 
 def process_revision_directives(context, revision, directives):
