@@ -863,6 +863,7 @@ async def cancel_cmd(message: Message) -> None:
 
 @dp.message(F.text == "/emoji")
 async def show_emoji_id(message: Message) -> None:
+    await erase(message)
     """
     Подсказывает номер премиум-эмодзи.
 
@@ -1019,7 +1020,7 @@ async def handle_listing(message: Message, photos: list[bytes], text: str) -> No
 
 
 async def show_draft(message: Message, draft: Draft,
-                     edit: CallbackQuery | None = None) -> None:
+                     menu=None) -> None:
     """
     Показывает объявление так, как оно встанет в чат.
 
@@ -1050,7 +1051,7 @@ async def show_draft(message: Message, draft: Draft,
 
     single = draft.photos[0] if len(draft.photos) == 1 else None
     await show(message.bot, chat_id, text, photo=single,
-               keyboard=kb.draft(is_chat_owner(chat_id)))
+               keyboard=menu or kb.draft(is_chat_owner(chat_id)))
 
 
 
@@ -1138,6 +1139,8 @@ async def stats_button(message: Message) -> None:
 
 @dp.message(F.text == kb.CANCEL)
 async def cancel(message: Message) -> None:
+    """Бросить начатое объявление."""
+    await erase(message)
     draft = drafts.pop(message.from_user.id, None)
     if draft:
         await _drop_album(message, draft)
@@ -1160,7 +1163,7 @@ async def choose_topic(message: Message) -> None:
 
 @dp.message(F.text == kb.BACK)
 async def back(message: Message) -> None:
-    """Возврат от выбора ветки к объявлению."""
+    """Возврат к объявлению — из веток или из правок."""
     await erase(message)
     draft = drafts.get(message.from_user.id)
     if draft:
@@ -1181,6 +1184,21 @@ async def set_topic(message: Message) -> None:
             draft.topic_id = topic_id
             break
     await show_draft(message, draft)
+
+
+@dp.message(F.text == kb.EDIT)
+async def open_editing(message: Message) -> None:
+    """
+    Что можно поправить.
+
+    Правки нужны меньшинству, поэтому они за отдельной кнопкой: над
+    объявлением остаются три — опубликовать, изменить, отмена.
+    """
+    await erase(message)
+    draft = drafts.get(message.from_user.id)
+    if not draft:
+        return
+    await show_draft(message, draft, menu=kb.editing())
 
 
 @dp.message(F.text.in_({kb.TITLE, kb.PRICE, kb.DESCRIPTION}))
@@ -1204,6 +1222,8 @@ async def ask_edit(message: Message) -> None:
 
 @dp.message(F.text == kb.PUBLISH)
 async def publish(message: Message, bot: Bot) -> None:
+    # Нажатие приходит текстом «Опубликовать» и остаётся в переписке.
+    await erase(message)
     draft = drafts.get(message.from_user.id)
     if not draft:
         await show(message.bot, message.chat.id, "Объявление устарело, пришлите заново")
@@ -1647,6 +1667,9 @@ async def main() -> None:
         BotCommand(command="start", description="Начать сначала"),
         BotCommand(command="cancel", description="Отменить начатое"),
         BotCommand(command="site", description="Публиковать ли на сайте"),
+        # Помощь убрана из меню под полем ввода: там место главному, а
+        # за подробностями приходят редко и знают, куда идти.
+        BotCommand(command="help", description="Как это работает"),
     ])
     await bot.set_chat_menu_button(menu_button=MenuButtonCommands())
 

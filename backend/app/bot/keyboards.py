@@ -22,6 +22,7 @@ PRICE = "Цена"
 CANCEL = "Отмена"
 BACK = "Назад"
 
+EDIT = "Изменить"
 MY = "Мои объявления"
 HELP = "Помощь"
 STATS = "Сводка"
@@ -38,6 +39,7 @@ COLORS = {
     # «Назад» синим: это не действие над объявлением, а перемещение, и
     # путать его с правками не нужно.
     BACK: "primary",
+    EDIT: "primary",
 }
 
 
@@ -69,7 +71,9 @@ def _menu(rows: list[list[str]], hint: str) -> ReplyKeyboardMarkup:
 
 def idle(is_owner: bool = False) -> ReplyKeyboardMarkup:
     """Меню в покое: объявления ещё нет."""
-    rows = [[MY, WATCH], [HELP, SITE]]
+    # В покое кнопок мало: главное здесь — прислать объявление, а не
+    # ходить по меню. Помощь и настройки — командами, они нужны редко.
+    rows = [[MY, WATCH]]
     if is_owner:
         rows.append([STATS])
     return _menu(rows, "Пришлите объявление сюда")
@@ -79,13 +83,23 @@ def draft(is_owner: bool = False) -> ReplyKeyboardMarkup:
     """
     Меню над разобранным объявлением.
 
-    Публикация — первой строкой и одна: это главное действие, и путать
-    его с правками нельзя.
+    Три кнопки вместо девяти: человек пришёл опубликовать, а не
+    разбираться в меню. Правки нужны меньшинству, и им место за
+    «Изменить» — там они никому не мешают.
     """
-    return _menu(
-        [[PUBLISH], [TOPIC, TITLE], [PRICE, DESCRIPTION], [CANCEL], [MY, HELP]],
-        "Или пришлите объявление заново",
-    )
+    return _menu([[PUBLISH], [EDIT, CANCEL]],
+                 "Или пришлите объявление заново")
+
+
+def editing() -> ReplyKeyboardMarkup:
+    """
+    Что можно поправить в объявлении.
+
+    Открывается по «Изменить» и закрывается «Готово»: пока человек
+    правит, лишние кнопки ему не нужны.
+    """
+    return _menu([[TITLE, PRICE], [DESCRIPTION, TOPIC], [BACK]],
+                 "Или пришлите объявление заново")
 
 
 # Пометки в списке: «1 продано», «1 удалить»…
@@ -97,8 +111,9 @@ def listings(count: int, is_owner: bool = False) -> ReplyKeyboardMarkup:
     """
     Меню над списком объявлений.
 
-    Пометка «продано» тоже здесь, а не кнопками сообщения: иначе они
-    вытесняют меню, и человек остаётся без остальных действий.
+    Пометка «продано» и удаление тоже здесь, а не кнопками сообщения:
+    иначе они вытесняют меню, и человек остаётся без остальных
+    действий.
     """
     rows = []
     row = []
@@ -111,31 +126,11 @@ def listings(count: int, is_owner: bool = False) -> ReplyKeyboardMarkup:
         rows.append(row)
 
     if count:
-        # Удаление отдельной строкой: рядом с «продано» легко промахнуться,
-        # а вернуть удалённое нельзя.
+        # Удаление отдельной строкой: рядом с «продано» легко
+        # промахнуться, а вернуть удалённое нельзя.
         rows.append([f"{n}{DROP_SUFFIX}" for n in range(1, min(count, 3) + 1)])
 
-    rows.append([MY, HELP])
-    if is_owner:
-        rows.append([STATS, SITE])
-    else:
-        rows.append([SITE])
-    return _menu(rows, "Пришлите объявление сюда")
-
-
-DROP_WATCH_SUFFIX = " не следить"
-
-
-def watching(count: int, is_owner: bool = False) -> ReplyKeyboardMarkup:
-    """Меню над списком подписок."""
-    rows = [[WATCH_ADD]]
-    if count:
-        rows.append([f"{n}{DROP_WATCH_SUFFIX}" for n in range(1, min(count, 3) + 1)])
-    rows.append([MY, HELP])
-    if is_owner:
-        rows.append([STATS, SITE])
-    else:
-        rows.append([SITE])
+    rows.append([WATCH])
     return _menu(rows, "Пришлите объявление сюда")
 
 

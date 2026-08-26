@@ -123,14 +123,19 @@ def test_menu_is_the_only_control():
     """
     from app.bot import keyboards as kb
 
+    # В покое кнопок мало: главное здесь — прислать объявление, а не
+    # ходить по меню. Помощь и настройки остались командами.
     idle = [b.text for row in kb.idle(False).keyboard for b in row]
-    assert kb.MY in idle and kb.HELP in idle
+    assert kb.MY in idle
+    assert len(idle) <= 3
 
     over_draft = [b.text for row in kb.draft().keyboard for b in row]
     assert kb.PUBLISH in over_draft
-    assert kb.TOPIC in over_draft and kb.PRICE in over_draft
-    # общие действия под рукой и здесь
-    assert kb.MY in over_draft
+    assert kb.EDIT in over_draft and kb.CANCEL in over_draft
+
+    # правки за отдельной кнопкой: их нужно меньшинству
+    editing = [b.text for row in kb.editing().keyboard for b in row]
+    assert kb.TITLE in editing and kb.PRICE in editing
 
 
 def test_menu_never_hides():
@@ -227,7 +232,7 @@ def test_listings_menu_keeps_all_actions():
 
     words = [b.text for row in kb.listings(2, False).keyboard for b in row]
     assert "1 продано" in words and "2 продано" in words
-    assert kb.MY in words and kb.HELP in words
+    assert "1 удалить" in words
 
 
 def test_bot_can_actually_start():
@@ -265,5 +270,17 @@ def test_buttons_are_coloured_by_meaning():
 
     # обычные кнопки не красим: цветом выделяют важное, а если
     # выделено всё, не выделено ничего
-    assert over_draft[kb.MY] is None
-    assert over_draft[kb.TITLE] is None
+    editing = {b.text: b.style for row in kb.editing().keyboard for b in row}
+    assert editing[kb.TITLE] is None
+    assert editing[kb.PRICE] is None
+
+
+def test_draft_menu_is_short():
+    """
+    Человек пришёл опубликовать, а не разбираться в меню. Над
+    объявлением три кнопки: опубликовать, изменить, отмена.
+    """
+    from app.bot import keyboards as kb
+
+    buttons = [b.text for row in kb.draft().keyboard for b in row]
+    assert len(buttons) == 3
