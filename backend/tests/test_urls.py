@@ -67,3 +67,23 @@ def test_nothing_but_safe_characters():
     slug = slugify("Ćевапи & пљескавица (2 шт!)")
 
     assert all(c.isalnum() and c.isascii() or c == "-" for c in slug), slug
+
+
+def test_every_listing_response_has_a_path():
+    """
+    Адрес собирается в приложении, а не на сайте: иначе одна выдача
+    отдаёт понятный, другая забывает, и половина ссылок ведёт не туда.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "routers" / "listings.py").read_text()
+
+    lines = source.splitlines()
+    checked = 0
+    for i, line in enumerate(lines):
+        if "def serialize" not in line:
+            continue
+        checked += 1
+        block = "\n".join(lines[i:i + 24])
+        assert '"path"' in block, f"выдача на строке {i} без адреса"
+
+    assert checked >= 4

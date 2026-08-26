@@ -271,6 +271,12 @@ def search_listings(
             "cover_photo": cover.thumbnail_url if cover else None,
             "delivery_available": listing.delivery_available,
             "is_urgent": listing.is_urgent,
+            # Понятный адрес собираем здесь: он должен быть одинаков
+            # везде — в ленте, в боте, в письме и в карте сайта.
+            "path": listing_path(
+                listing.id, translation.title if translation else "",
+                listing.city,
+                listing.category.slug if listing.category else None),
         }
 
     return {"total": total, "items": [serialize(l) for l in items]}
@@ -312,6 +318,10 @@ def listings_by_ids(
             "is_free": bool(l.is_free),
             "currency": l.currency,
             "city": l.city,
+            # Понятный адрес: он должен быть одинаков везде — в ленте,
+            # в избранном, в своих объявлениях.
+            "path": listing_path(l.id, tr.title if tr else "", l.city,
+                                 l.category.slug if l.category else None),
             "cover_photo": cover.thumbnail_url if cover else None,
         }
 
@@ -347,6 +357,10 @@ def my_listings(
             "is_free": bool(l.is_free),
             "currency": l.currency,
             "city": l.city,
+            # Понятный адрес: он должен быть одинаков везде — в ленте,
+            # в избранном, в своих объявлениях.
+            "path": listing_path(l.id, tr.title if tr else "", l.city,
+                                 l.category.slug if l.category else None),
             "cover_photo": cover.thumbnail_url if cover else None,
             "status": l.status.value,
             "views_count": l.views_count,
@@ -554,8 +568,8 @@ def seller_listings(
             "currency": l.currency,
             "city": l.city,
             "cover_photo": cover.thumbnail_url if cover else None,
-            "path": listing_path(l.id, translation.title if translation else "",
-                                 l.city, l.category.slug if l.category else None),
+            "path": listing_path(l.id, tr.title if tr else "", l.city,
+                                 l.category.slug if l.category else None),
         }
 
     return {"total": total, "items": [serialize(l) for l in items]}
