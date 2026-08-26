@@ -156,7 +156,8 @@ export default function Login() {
             Google
           </button>
         </div>
- && <p className="auth-error">{error}</p>}
+
+        {error && <p className="auth-error">{error}</p>}
         <p className="auth-terms">{t('auth.terms')}</p>
       </div>
     )
