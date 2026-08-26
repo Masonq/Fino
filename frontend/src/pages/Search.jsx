@@ -58,6 +58,7 @@ export default function Search() {
   const [retry, setRetry] = useState(0)
   const [showFilters, setShowFilters] = useState(false)
   const [cols, setCols] = useState(2)
+  const [sortOpen, setSortOpen] = useState(false)
 
   // фильтры
   const [category, setCategory] = useState(params.get('category') || '')
@@ -284,16 +285,31 @@ export default function Search() {
           <span className="results-count">
             {!loaded ? t('search.searching') : `${t('search.found')}: ${total}`}
           </span>
-          <div className="sort-row inline">
-            {SORTS.map((s) => (
-              <button
-                key={s.key}
-                className={sort === s.key ? 'sort-chip active' : 'sort-chip'}
-                onClick={() => setSort(s.key)}
-              >
-                {t(s.labelKey)}
-              </button>
-            ))}
+          {/* Одна кнопка с текущим значением вместо ряда чипов — три
+              чипа рядом со счётчиком и «Следить» не влезали в экран
+              и обрезались. У Авито сортировка тоже одна кнопка со
+              стрелкой, а не постоянно видимый ряд вариантов. */}
+          <div className="sort-dd">
+            <button className="sort-dd-btn" onClick={() => setSortOpen((v) => !v)}>
+              {t(SORTS.find((s) => s.key === sort)?.labelKey)}
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m6 9 6 6 6-6" /></svg>
+            </button>
+            {sortOpen && (
+              <>
+                <div className="sort-dd-backdrop" onClick={() => setSortOpen(false)} />
+                <div className="sort-dd-menu">
+                  {SORTS.map((s) => (
+                    <button
+                      key={s.key}
+                      className={sort === s.key ? 'sort-dd-item active' : 'sort-dd-item'}
+                      onClick={() => { setSort(s.key); setSortOpen(false) }}
+                    >
+                      {t(s.labelKey)}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
         <div className="results-head-right">
