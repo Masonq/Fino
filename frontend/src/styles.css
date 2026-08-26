@@ -1982,6 +1982,25 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    что на Авито: сначала сузить, потом смотреть, а не листать всё подряд. */
 .landing{ padding-bottom:24px; }
 
+/* Цветная шапка раздела — своя на каждую категорию, вместо голой белой
+   полосы. Фото-композиции пока нет, поэтому фон несёт градиент и
+   крупный приглушённый значок раздела; поле поиска лежит на нём же
+   белой капсулой, как у Авито. */
+.landing-hero{
+  position:relative; overflow:hidden; padding-top:env(safe-area-inset-top);
+  padding-bottom:18px; margin-bottom:4px;
+}
+.landing-hero-glyph{
+  position:absolute; right:-24px; bottom:-30px; width:170px; height:170px;
+  color:#fff; opacity:.22; pointer-events:none;
+}
+.landing-hero-glyph svg{ width:100%; height:100%; }
+.landing-back.on-hero{ background:rgba(255,255,255,.22); color:#fff; }
+.landing-title.on-hero{ color:#fff; }
+.landing-count.on-hero{ color:rgba(255,255,255,.85); }
+.landing-hero .landing-search{ position:relative; z-index:1; padding-top:10px; }
+.landing-hero .search-field{ background:#fff; border-color:transparent; box-shadow:0 4px 14px rgba(16,24,40,.14); }
+
 .landing-head{ display:flex; align-items:center; gap:10px; padding:14px 14px 6px; flex-wrap:wrap; }
 .landing-back{
   width:36px; height:36px; border-radius:50%; background:#F2F4F3;

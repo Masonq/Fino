@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import CategoryArt from '../components/CategoryArt'
+import { CATEGORY_ICONS } from '../components/CategoryIcons'
 import ListingCard from '../components/ListingCard'
 import { LANDINGS } from '../data/landings'
 
@@ -16,6 +17,26 @@ import { LANDINGS } from '../data/landings'
  * Ниже — подразделы плитками и свежие объявления: если ответить на
  * вопросы нечем, человек всё равно видит, что тут есть.
  */
+
+// Цветная шапка раздела — тот же приём, что у промо-баннера на главной
+// (свой градиент на категорию), а не голая белая полоса. Своей
+// фотокомпозиции под каждый раздел ещё нет, поэтому вместо неё —
+// крупный контурный значок раздела поверх градиента.
+const BANNER_GRADIENTS = {
+  'real-estate': 'linear-gradient(135deg, #0E9F6E 0%, #1DB388 55%, #5CE8CC 100%)',
+  auto: 'linear-gradient(135deg, #3B5BF6 0%, #4F7BF7 55%, #93BAFF 100%)',
+  electronics: 'linear-gradient(135deg, #2B6CE0 0%, #4A8AF0 55%, #8FC1FF 100%)',
+  'home-garden': 'linear-gradient(135deg, #0E9F6E 0%, #34D8A8 55%, #B7F5E1 100%)',
+  fashion: 'linear-gradient(135deg, #E0326B 0%, #F0507F 55%, #FFA8BF 100%)',
+  kids: 'linear-gradient(135deg, #F2860C 0%, #F5A524 55%, #FFD98A 100%)',
+  'hobby-sport': 'linear-gradient(135deg, #6D3DFC 0%, #8156FD 55%, #BEA4FF 100%)',
+  pets: 'linear-gradient(135deg, #E0326B 0%, #F0507F 55%, #FFC2D3 100%)',
+  beauty: 'linear-gradient(135deg, #C0399B 0%, #DD5DBB 55%, #FBC6EE 100%)',
+  services: 'linear-gradient(135deg, #0A7A54 0%, #0E9F6E 55%, #7EE4C1 100%)',
+  jobs: 'linear-gradient(135deg, #3B5BF6 0%, #6D9BFB 55%, #C6DBFF 100%)',
+  business: 'linear-gradient(135deg, #1B2A4A 0%, #3B5BF6 55%, #93BAFF 100%)',
+}
+
 export default function CategoryLanding() {
   const { slug } = useParams()
   const navigate = useNavigate()
@@ -63,40 +84,45 @@ export default function CategoryLanding() {
 
   return (
     <div className="landing">
-      <div className="landing-head">
-        <button className="landing-back" onClick={() => navigate('/categories')}
-                aria-label={t('actions.back')}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3"
-               strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
-        </button>
-        <h1 className="landing-title">{name}</h1>
-        {category?.count > 0 && (
-          <div className="landing-count">
-            {t('landing.offers', { count: category.count })}
-          </div>
-        )}
-      </div>
+      <div className="landing-hero" style={{ background: BANNER_GRADIENTS[slug] || BANNER_GRADIENTS['real-estate'] }}>
+        <div className="landing-hero-glyph" aria-hidden="true">
+          {CATEGORY_ICONS[slug]}
+        </div>
+        <div className="landing-head">
+          <button className="landing-back on-hero" onClick={() => navigate('/categories')}
+                  aria-label={t('actions.back')}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3"
+                 strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+          </button>
+          <h1 className="landing-title on-hero">{name}</h1>
+          {category?.count > 0 && (
+            <div className="landing-count on-hero">
+              {t('landing.offers', { count: category.count })}
+            </div>
+          )}
+        </div>
 
-      {/* Раньше здесь были только фильтры (комнаты, цена) — можно было
-          сузить раздел, но не поискать конкретную вещь словом. Теперь
-          можно и то, и другое: слово уходит в q вместе с остальными
-          отборами. */}
-      <div className="landing-search">
-        <div className="search-field">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
-          <input
-            type="search"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') search() }}
-            placeholder={t('search.placeholder_full')}
-            autoComplete="off"
-          />
-          {text && (
+        {/* Раньше здесь были только фильтры (комнаты, цена) — можно было
+            сузить раздел, но не поискать конкретную вещь словом. Теперь
+            можно и то, и другое: слово уходит в q вместе с остальными
+            отборами. */}
+        <div className="landing-search">
+          <div className="search-field">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+            <input
+              type="search"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') search() }}
+              placeholder={t('search.placeholder_full')}
+              autoComplete="off"
+            />
+            {text && (
             <button className="search-clear" onClick={() => setText('')} aria-label={t('actions.clear')}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M18 6 6 18M6 6l12 12" /></svg>
             </button>
           )}
+        </div>
         </div>
       </div>
 
