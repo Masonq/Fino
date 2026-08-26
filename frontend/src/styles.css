@@ -305,19 +305,19 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    Раньше здесь была своя раскладка с картинкой из пустого поля image_url. */
 .cats-grid{
   display:grid; grid-template-columns:repeat(2,1fr);
-  gap:12px; padding:4px 12px 20px;
+  gap:11px; padding:4px 12px 20px;
 }
 .cats-item{
-  position:relative; height:118px; border-radius:16px; overflow:hidden;
-  padding:14px 80px 14px 15px;
+  position:relative; height:100px; border-radius:15px; overflow:hidden;
+  padding:12px 70px 12px 14px;
   background:var(--tile); border:1px solid rgba(20,30,25,.06);
 }
 .cats-label{
   position:relative; z-index:2;
-  font-size:14.5px; font-weight:700; color:var(--ink); line-height:1.25;
+  font-size:13.5px; font-weight:700; color:var(--ink); line-height:1.25;
 }
 .cats-img{
-  position:absolute; right:-8px; bottom:-10px; width:112px; height:112px;
+  position:absolute; right:-7px; bottom:-9px; width:98px; height:98px;
   color:var(--primary); z-index:0; pointer-events:none;
 }
 .cats-img svg{ width:52%; height:52%; margin:24%; display:block; opacity:.32; }
@@ -339,19 +339,19 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    поэтому вместо иллюстраций показывались серые квадраты. */
 .post-cat-grid{
   display:grid; grid-template-columns:repeat(2,1fr);
-  gap:12px; margin-bottom:20px;
+  gap:11px; margin-bottom:20px;
 }
 .post-cat-item{
-  position:relative; height:118px; border-radius:16px; overflow:hidden;
-  padding:14px 80px 14px 15px; text-align:left;
+  position:relative; height:100px; border-radius:15px; overflow:hidden;
+  padding:12px 70px 12px 14px; text-align:left;
   background:var(--tile); border:1px solid rgba(20,30,25,.06);
 }
 .post-cat-label{
   position:relative; z-index:2;
-  font-size:14.5px; font-weight:700; color:var(--ink); line-height:1.25;
+  font-size:13.5px; font-weight:700; color:var(--ink); line-height:1.25;
 }
 .post-cat-img{
-  position:absolute; right:-8px; bottom:-10px; width:112px; height:112px;
+  position:absolute; right:-7px; bottom:-9px; width:98px; height:98px;
   color:var(--primary); z-index:0; pointer-events:none;
 }
 .post-cat-img svg{ width:52%; height:52%; margin:24%; display:block; opacity:.32; }
