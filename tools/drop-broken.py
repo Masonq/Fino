@@ -27,6 +27,23 @@ from app.models import (  # noqa: E402
 from app.routers.listings import title_is_clear  # noqa: E402
 
 
+def pending(db):
+    """
+    Всё, что стоит на проверке.
+
+    Отдельно от негодных: там кривые заголовки, а тут просто
+    неразобранная очередь.
+    """
+    return (
+        db.query(Listing, ListingTranslation.title)
+        .join(ListingTranslation,
+              (ListingTranslation.listing_id == Listing.id)
+              & (ListingTranslation.language == Listing.source_language))
+        .filter(Listing.status == ListingStatus.pending_moderation)
+        .all()
+    )
+
+
 def broken(db):
     """Объявления с негодным заголовком."""
     rows = (
@@ -72,17 +89,20 @@ def main() -> None:
                     help="удалить (необратимо)")
     ap.add_argument("--show", type=int, default=25,
                     help="сколько заголовков показать")
+    ap.add_argument("--pending", action="store_true",
+                    help="удалить всё, что на проверке")
     ap.add_argument("--dump", metavar="ФАЙЛ",
                     help="выгрузить весь список в файл")
     args = ap.parse_args()
 
     with SessionLocal() as db:
-        doomed = broken(db)
+        doomed = pending(db) if args.pending else broken(db)
         total = db.query(Listing).filter(
             Listing.status != ListingStatus.archived).count()
 
         print(f"объявлений всего:   {total}")
-        print(f"негодных:           {len(doomed)}")
+        print(f"{'на проверке' if args.pending else 'негодных'}:"
+              f"{'':<9} {len(doomed)}")
         if not doomed:
             return
 
