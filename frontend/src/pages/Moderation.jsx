@@ -20,6 +20,11 @@ export default function Moderation() {
   const [tab, setTab] = useState('listings')
   const [reports, setReports] = useState([])
   const [reportsTotal, setReportsTotal] = useState(0)
+  // Причина отклонения — своим полем в карточке, а не window.prompt:
+  // нативный prompt в мобильном браузере выглядит и ведёт себя не как
+  // остальной интерфейс, легко принять за то, что причины вовсе нет.
+  const [rejectingId, setRejectingId] = useState(null)
+  const [reasonText, setReasonText] = useState('')
 
   const load = () => {
     api.modQueue(i18n.language)
@@ -48,18 +53,15 @@ export default function Moderation() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, i18n.language])
 
-  const decide = async (id, approve) => {
-    let reason = null
-    if (!approve) {
-      reason = window.prompt(t('mod.reason_prompt'))
-      if (reason === null) return
-    }
+  const decide = async (id, approve, reason = null) => {
     setBusyId(id)
     try {
       if (approve) await api.modApprove(id)
       else await api.modReject(id, reason)
       setItems((prev) => prev.filter((l) => l.id !== id))
       setTotal((n) => Math.max(0, n - 1))
+      setRejectingId(null)
+      setReasonText('')
     } catch { /* оставляем в очереди */ }
     finally { setBusyId(null) }
   }
@@ -159,24 +161,57 @@ export default function Moderation() {
                 <div className="mod-meta">
                   {l.owner_name} · {displayCity(l.city, i18n.language)}
                 </div>
+                {/* Открывается настоящей страницей объявления — с тем же
+                    кадрированием фото и вёрсткой, что увидит покупатель,
+                    не пересказом полей в карточке очереди. Новая вкладка,
+                    чтобы очередь модерации осталась на месте. */}
+                {l.path && (
+                  <a className="mod-open" href={l.path} target="_blank" rel="noopener noreferrer">
+                    {t('mod.open')}
+                  </a>
+                )}
               </div>
 
-              <div className="mod-actions">
-                <button
-                  className="mod-approve"
-                  disabled={busyId === l.id}
-                  onClick={() => decide(l.id, true)}
-                >
-                  {t('mod.approve')}
-                </button>
-                <button
-                  className="mod-reject"
-                  disabled={busyId === l.id}
-                  onClick={() => decide(l.id, false)}
-                >
-                  {t('mod.reject')}
-                </button>
-              </div>
+              {rejectingId === l.id ? (
+                <div className="mod-reason-box">
+                  <textarea
+                    className="mod-reason-input"
+                    placeholder={t('mod.reason_prompt')}
+                    value={reasonText}
+                    onChange={(e) => setReasonText(e.target.value)}
+                    autoFocus
+                  />
+                  <div className="mod-actions">
+                    <button onClick={() => { setRejectingId(null); setReasonText('') }}>
+                      {t('actions.cancel')}
+                    </button>
+                    <button
+                      className="mod-reject"
+                      disabled={busyId === l.id || !reasonText.trim()}
+                      onClick={() => decide(l.id, false, reasonText.trim())}
+                    >
+                      {t('mod.reject')}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="mod-actions">
+                  <button
+                    className="mod-approve"
+                    disabled={busyId === l.id}
+                    onClick={() => decide(l.id, true)}
+                  >
+                    {t('mod.approve')}
+                  </button>
+                  <button
+                    className="mod-reject"
+                    disabled={busyId === l.id}
+                    onClick={() => { setRejectingId(l.id); setReasonText('') }}
+                  >
+                    {t('mod.reject')}
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>

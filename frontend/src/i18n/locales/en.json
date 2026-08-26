@@ -243,7 +243,8 @@
       "prohibited": "Prohibited item",
       "suspicious_price": "Suspicious price",
       "other": "Other reason"
-    }
+    },
+    "open": "Open"
   },
   "rev": {
     "title": "Reviews",

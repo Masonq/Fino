@@ -243,7 +243,8 @@
       "prohibited": "Zabranjen artikal",
       "suspicious_price": "Sumnjiva cena",
       "other": "Drugi razlog"
-    }
+    },
+    "open": "Otvori"
   },
   "rev": {
     "title": "Recenzije",

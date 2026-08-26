@@ -953,6 +953,17 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;
 }
 .mod-meta{ font-size:11.5px; color:var(--muted); margin-top:8px; }
+.mod-open{
+  display:inline-block; margin-top:9px; font-size:12.5px; font-weight:700;
+  color:var(--primary-deep,#0A7A54);
+}
+.mod-reason-box{ padding:0 12px 12px; }
+.mod-reason-box .mod-actions{ padding:0 0 12px; }
+.mod-reason-input{
+  width:100%; min-height:70px; padding:10px 12px; border-radius:11px;
+  border:1px solid rgba(20,30,25,.12); background:#F7F8F6; font-size:13.5px;
+  font-family:inherit; resize:vertical; margin-bottom:8px;
+}
 .mod-actions{ display:flex; gap:8px; padding:0 12px 12px; }
 .mod-actions button{ flex:1; padding:11px; border-radius:11px; font-size:13px; font-weight:700; }
 .mod-approve{ background:var(--primary); color:#fff; }

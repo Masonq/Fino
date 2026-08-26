@@ -30,12 +30,15 @@ def queue(
     """Объявления, ожидающие проверки — самые старые первыми."""
     items = (
         db.query(Listing)
-        .options(joinedload(Listing.translations), joinedload(Listing.photos), joinedload(Listing.owner))
+        .options(joinedload(Listing.translations), joinedload(Listing.photos),
+                 joinedload(Listing.owner), joinedload(Listing.category))
         .filter(Listing.status == ListingStatus.pending_moderation)
         .order_by(Listing.created_at.asc())
         .limit(limit)
         .all()
     )
+
+    from app.core.urls import listing_path
 
     def serialize(l: Listing):
         tr = next((t for t in l.translations if t.language == lang), None) or (l.translations[0] if l.translations else None)
@@ -49,6 +52,11 @@ def queue(
             "photos": [p.url for p in l.photos],
             "owner_name": l.owner.display_name if l.owner else None,
             "created_at": l.created_at.isoformat() if l.created_at else None,
+            # Модератор должен видеть объявление так же, как его увидит
+            # покупатель — фото и текст в карточке очереди этого не
+            # заменяют (кадрирование, порядок фото, вёрстка страницы).
+            "path": listing_path(l.id, tr.title if tr else "", l.city,
+                                 l.category.slug if l.category else None),
         }
 
     total = db.query(Listing).filter(Listing.status == ListingStatus.pending_moderation).count()
