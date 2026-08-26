@@ -32,8 +32,6 @@ export const LANDINGS = {
 
   auto: {
     fields: [
-      { key: 'q', label: 'landing.make_model', type: 'text',
-        hint: 'landing.make_model_hint' },
       { key: 'year', label: 'landing.year', type: 'range' },
       { key: 'price', label: 'landing.price', type: 'range' },
     ],
