@@ -355,7 +355,12 @@ export default function CategoryLanding() {
           {searching && !results.length ? (
             <div className="feed-grid"><CardSkeletons count={4} /></div>
           ) : results.length === 0 ? (
-            <p className="empty-hint">{t('search.nothing')}</p>
+            <div className="empty-state">
+              <p className="empty-hint">{t('search.nothing')}</p>
+              <button className="empty-reset" onClick={() => setSearched(false)}>
+                {t('actions.edit_filters')}
+              </button>
+            </div>
           ) : (
             <>
               <div className="feed-grid">

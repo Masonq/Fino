@@ -1441,6 +1441,38 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .sub-chip.active{ background:var(--primary); border-color:var(--primary); color:#fff; }
 
+/* Чипы применённых фильтров над результатами — снять один фильтр,
+   не открывая панель. Отличаются от sub-chip заливкой: sub-chip —
+   это навигация по подразделу, здесь — активный отбор, который можно
+   убрать (крестик), поэтому берём мягкий акцентный фон, а не серый. */
+.active-filters-row{
+  display:flex; gap:7px; overflow-x:auto; padding:10px 16px 2px; align-items:center;
+  scrollbar-width:none; -webkit-overflow-scrolling:touch;
+}
+.active-filters-row::-webkit-scrollbar{ display:none; }
+.active-filter-chip{
+  flex-shrink:0; display:flex; align-items:center; gap:6px; padding:7px 12px 7px 13px;
+  border-radius:11px; background:var(--primary-soft,#E6F7EF); border:1px solid transparent;
+  font-size:12.5px; font-weight:600; color:var(--primary-dark,#0A7A54); white-space:nowrap;
+}
+.active-filter-chip svg{ opacity:.7; }
+.active-filter-chip.clear-all{
+  background:none; border:1px solid rgba(20,30,25,.12); color:var(--muted); font-weight:600;
+}
+
+/* Пустой результат по фильтрам — не тупик: рядом сразу кнопка их
+   снять, а не просто текст «ничего не найдено». */
+.empty-state{
+  grid-column:1/-1; display:flex; flex-direction:column; align-items:center; gap:12px;
+  padding:20px 0 24px;
+}
+.empty-state .empty-hint{ padding:0; }
+.empty-reset{
+  padding:11px 20px; border-radius:12px; background:var(--ink); color:#fff;
+  font-size:13.5px; font-weight:700;
+}
+.empty-reset:active{ opacity:.85; }
+
 /* Выбор подкатегории при публикации */
 .post-back{
   display:flex; align-items:center; gap:4px; margin:0 0 10px;

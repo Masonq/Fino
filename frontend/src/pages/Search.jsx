@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
-import CategoryFields from '../components/CategoryFields'
+import CategoryFields, { fieldsKeyFor } from '../components/CategoryFields'
 import ListingCard from '../components/ListingCard'
 import { CardSkeletons } from '../components/Skeletons'
 import { CITIES, cityLabel } from '../data/cities'
@@ -146,6 +146,30 @@ export default function Search() {
 
   const activeCount = [category, priceMin, priceMax, city, withPhoto ? '1' : ''].filter(Boolean).length
 
+  // Чипы применённых фильтров над результатами — можно снять один
+  // конкретный, не открывая панель фильтров. Категорию сюда не кладём:
+  // она и так видна активной плиткой в sub-row чуть выше.
+  const fieldsKey = fieldsKeyFor(current?.slug || category)
+  const activeChips = []
+  if (fields.mode && fieldsKey) {
+    activeChips.push({ id: 'mode', text: t(`fields.${fieldsKey}.${fields.mode}`), onRemove: () => setFields((f) => ({ ...f, mode: '' })) })
+  }
+  if (fields.chip && fieldsKey) {
+    activeChips.push({ id: 'chip', text: t(`fields.${fieldsKey}.${fields.chip}`), onRemove: () => setFields((f) => ({ ...f, chip: '' })) })
+  }
+  if (priceMin || priceMax) {
+    const text = priceMin && priceMax ? `${priceMin}–${priceMax}`
+      : priceMin ? `${t('search.price_from')} ${priceMin}`
+      : `${t('search.price_to')} ${priceMax}`
+    activeChips.push({ id: 'price', text, onRemove: () => { setPriceMin(''); setPriceMax('') } })
+  }
+  if (city) {
+    activeChips.push({ id: 'city', text: cityLabel(city, i18n.language), onRemove: () => setCity('') })
+  }
+  if (withPhoto) {
+    activeChips.push({ id: 'photo', text: t('search.only_photo'), onRemove: () => setWithPhoto(false) })
+  }
+
   return (
     <div className="search-page-full">
       <div className="search-topbar">
@@ -257,6 +281,22 @@ export default function Search() {
         </div>
       )}
 
+      {activeChips.length > 0 && (
+        <div className="active-filters-row">
+          {activeChips.map((c) => (
+            <button key={c.id} className="active-filter-chip" onClick={c.onRemove}>
+              {c.text}
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+            </button>
+          ))}
+          {(activeChips.length > 1 || activeCount > 0) && (
+            <button className="active-filter-chip clear-all" onClick={() => { resetFilters(); setFields({ mode: '', chip: '' }) }}>
+              {t('actions.reset_filters')}
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="results-head">
         <div className="results-head-left">
           <span className="results-count">
@@ -332,7 +372,19 @@ export default function Search() {
       {loaded && !loading && items.length === 0 && (
         error
           ? <LoadError onRetry={() => { setLoaded(false); setRetry((n) => n + 1) }} />
-          : <p className="empty-hint">{t('search.nothing')}</p>
+          : (
+            <div className="empty-state">
+              <p className="empty-hint">{t('search.nothing')}</p>
+              {(activeChips.length > 0 || text.trim()) && (
+                <button
+                  className="empty-reset"
+                  onClick={() => { resetFilters(); setFields({ mode: '', chip: '' }); setText('') }}
+                >
+                  {t('actions.reset_filters')}
+                </button>
+              )}
+            </div>
+          )
       )}
 
       <div ref={sentinelRef} className="feed-sentinel">

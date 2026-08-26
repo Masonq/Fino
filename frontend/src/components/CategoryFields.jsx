@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next'
 
 // Что спрашивать в каком разделе. Ключ — начало пути раздела, чтобы
 // «real-estate» покрывал и «real-estate/flats».
-const FIELDS = {
+export const FIELDS = {
   'real-estate': {
     modes: ['buy', 'rent', 'daily'],
     chips: ['rooms1', 'rooms2', 'rooms3', 'studio'],
@@ -26,12 +26,19 @@ const FIELDS = {
   },
 }
 
+// Вынесено отдельно — Search.jsx использует тот же поиск ключа, чтобы
+// подписать активный фильтр («Посуточно», «2 комнаты») человеческим
+// текстом в чипе над результатами, а не хранить перевод дважды.
+export function fieldsKeyFor(slug) {
+  return Object.keys(FIELDS).find(
+    (k) => slug === k || slug?.startsWith(`${k}-`) || slug?.startsWith(`${k}/`),
+  )
+}
+
 export default function CategoryFields({ slug, value, onChange }) {
   const { t } = useTranslation()
 
-  const key = Object.keys(FIELDS).find(
-    (k) => slug === k || slug?.startsWith(`${k}-`) || slug?.startsWith(`${k}/`),
-  )
+  const key = fieldsKeyFor(slug)
   if (!key) return null
 
   const { modes, chips } = FIELDS[key]
