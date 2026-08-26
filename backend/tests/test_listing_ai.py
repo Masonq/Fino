@@ -60,6 +60,32 @@ def test_description_may_only_shrink():
     assert not _body_ok("", old)
 
 
+def test_several_things_are_not_duplicates():
+    """
+    В одном объявлении часто продают несколько вещей, и модель
+    принимает их за повторы: «сумка 1300, рюкзак 2800, сумка Zara
+    1300» превращалось в «абсолютно новая».
+    """
+    old = ("Сумка с temy. Абсолютно новая. 1300 динар. "
+           "Рюкзак Guess. Следы носки. 2800 rsd. "
+           "Сумка мешок Zara. Отличное состояние. 1300 динар.")
+
+    assert not _body_ok("Абсолютно новая.", old)
+
+    # а убрать одну вещь целиком тоже нельзя: пропала сумма
+    without_zara = old.replace("Сумка мешок Zara. Отличное состояние. "
+                               "1300 динар.", "").strip()
+    assert _body_ok(without_zara, old)         # 1300 осталось у первой
+
+
+def test_short_descriptions_may_shrink_a_lot():
+    """
+    В коротком описании мусор занимает половину, и сильное сокращение
+    там законно.
+    """
+    assert _body_ok("Стол IKEA.", "Стол IKEA. Подробнее в канале @shop")
+
+
 def test_title_is_checked_by_the_same_rules():
     """
     Модель могла вернуть болтовню или ту же первую строку. Проверяем
