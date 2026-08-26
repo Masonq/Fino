@@ -187,3 +187,40 @@ def test_unknown_words_do_not_break_it():
     from app.routers.listings import title_is_clear
 
     assert title_is_clear("рубашка юникло, размер xs")
+
+
+def test_latin_names_are_fine():
+    """
+    Название техники целиком на латинице — обычное дело: «Honor Magic
+    V3», «Canon RF 28mm». Требовать от них русского слова значит
+    выбросить половину электроники.
+    """
+    from app.routers.listings import title_is_clear
+
+    for title in ("Legion Go S", "Honor Magic V3 - 512 GB",
+                  "Synology DS420j", "Canon RF 28mm f/2.8 STM",
+                  "Nespresso VERTUO POP", "Canyon Grizl"):
+        assert title_is_clear(title), title
+
+
+def test_new_words_are_known():
+    """
+    Словарь не знает «худи», «свитшот», «лонгслив» — слова новые, а
+    объявления с ними живые.
+    """
+    from app.routers.listings import title_is_clear
+
+    assert title_is_clear("Худи оверсайз с огромным капюшоном")
+    assert title_is_clear("Свитшот H&M размер M")
+
+
+def test_case_is_not_required():
+    """
+    «Три мяча», «Два матраса» — верные названия, а словарь видит в них
+    родительный падеж. Строгость тут выбрасывает больше хорошего, чем
+    ловит плохого.
+    """
+    from app.routers.listings import title_is_clear
+
+    assert title_is_clear("Три мяча для тенниса")
+    assert title_is_clear("Два матраса 180х90 примерно")
