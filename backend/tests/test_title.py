@@ -2288,3 +2288,37 @@ def test_ordinary_things_keep_dinars():
     assert extract_price("Продам стол письменный, цена 6000") == (6000, "RSD")
     assert extract_price("Диван раскладной, цена 25000") == (25000, "RSD")
     assert extract_price("Продам шкаф, цена 3500") == (3500, "RSD")
+
+
+def test_cheap_things_are_priced_in_dinars():
+    """
+    «Пояс, 700» — это динары: за семьсот евро поясов не бывает, а за
+    семьсот динар обычное дело. Правило «до тысячи — евро» годится для
+    техники, но не для одежды и мелочи.
+    """
+    from app.core.tg_parse import extract_price
+
+    assert extract_price("Пояс замшевый\n700 Аутокоманда") == (700, "RSD")
+    assert extract_price("Топ Zara размер M\n1500 центр") == (1500, "RSD")
+    assert extract_price("Мельницы - солонка и перечница\n800") == (800, "RSD")
+
+
+def test_electronics_keep_euro():
+    """А телефон и велосипед за те же деньги — евро."""
+    from app.core.tg_parse import extract_price
+
+    assert extract_price("iPhone 13 Pro\n550 Врачар") == (550, "EUR")
+    assert extract_price("Велосипед Merida\n250 Земун") == (250, "EUR")
+
+
+def test_bare_number_at_line_start_is_a_price():
+    """
+    Цену часто пишут голым числом: «2000 Аутокоманда». Слова «цена»
+    рядом нет, но это она — иначе объявление уходит с пустым ценником.
+    """
+    from app.core.tg_parse import extract_price
+
+    assert extract_price("2000 Аутокоманда или центр")[0] == 2000
+    assert extract_price("8000 за 2 стула. Самовывоз")[0] == 8000
+    # а год выпуска ценой не считаем
+    assert extract_price("2000 год выпуска, пробег 100000")[0] is None
