@@ -298,14 +298,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .empty-hint{ grid-column:1/-1; color:var(--muted); font-size:13px; padding:20px 0; text-align:center; }
 
 /* ===== categories page ===== */
-.cats-head{ display:flex; align-items:center; padding:calc(16px + env(safe-area-inset-top)) 16px 4px; position:relative; }
+.cats-head{ display:flex; align-items:center; padding:calc(12px + env(safe-area-inset-top)) 16px 4px; position:relative; }
 .cats-back{ width:36px; height:36px; border-radius:50%; background:#fff; box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .cats-title{ position:absolute; left:0; right:0; text-align:center; font-size:16px; font-weight:800; }
 /* Все категории — теми же плитками, что на главной и в форме публикации.
    Раньше здесь была своя раскладка с картинкой из пустого поля image_url. */
 .cats-grid{
   display:grid; grid-template-columns:repeat(2,1fr);
-  gap:11px; padding:4px 12px 20px;
+  gap:9px; padding:4px 12px 12px;
 }
 .cats-item{
   position:relative; height:100px; border-radius:15px; overflow:hidden;
@@ -323,15 +323,15 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .cats-img svg{ width:52%; height:52%; margin:24%; display:block; opacity:.32; }
 
 /* ===== stub pages ===== */
-.search-page, .post-ad-page{ padding:calc(18px + env(safe-area-inset-top)) 18px 18px; }
+.search-page, .post-ad-page{ padding:calc(14px + env(safe-area-inset-top)) 18px 14px; }
 .search-input{ width:100%; padding:14px 16px; border-radius:14px; border:1px solid var(--line); background:#fff; font-size:16px; }
 
 /* ===== post ad form ===== */
-.post-steps{ display:flex; gap:6px; margin-bottom:18px; }
+.post-steps{ display:flex; gap:6px; margin-bottom:12px; }
 .post-step-dot{ flex:1; height:4px; border-radius:3px; background:var(--line); }
 .post-step-dot.active{ background:var(--primary); }
 
-.post-ad-page h2{ font-size:18px; font-weight:800; margin-bottom:14px; letter-spacing:-0.01em; }
+.post-ad-page h2{ font-size:18px; font-weight:800; margin-bottom:10px; letter-spacing:-0.01em; }
 .post-back{ font-size:12.5px; font-weight:700; color:var(--muted); margin-bottom:14px; display:inline-block; }
 
 /* Выбор категории — теми же плитками, что на главной: раньше здесь
@@ -339,7 +339,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    поэтому вместо иллюстраций показывались серые квадраты. */
 .post-cat-grid{
   display:grid; grid-template-columns:repeat(2,1fr);
-  gap:11px; margin-bottom:20px;
+  gap:9px; margin-bottom:12px;
 }
 .post-cat-item{
   position:relative; height:100px; border-radius:15px; overflow:hidden;
