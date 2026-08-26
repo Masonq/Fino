@@ -1712,6 +1712,42 @@ _MILEAGE_RE = re.compile(
     r"|(\d{1,3}(?:[ .,\u00a0]?\d{3})|\d{1,3})\s*(тыс\.?|к|k)\s*(?=пробег))", re.I)
 _YEAR_RE = re.compile(r"(?<!\d)(19[89]\d|20[0-3]\d)(?!\d)\s*(?:год\w*|г\.?|\.|,|$)", re.I)
 
+# Тот же список, что в frontend/src/data/landings.js (CAR_BRANDS) — марка
+# не переводится на языки, значения буквально те же, только тут ещё и
+# ключ для сравнения (без пробелов/тире, нижний регистр), чтобы «Mercedes-
+# Benz» находилось и по «мерседес», и по «mercedes benz».
+_CAR_BRANDS = [
+    "Volkswagen", "Audi", "BMW", "Mercedes-Benz", "Opel", "Škoda",
+    "Renault", "Peugeot", "Citroën", "Fiat", "Ford", "Toyota", "Honda",
+    "Nissan", "Mazda", "Hyundai", "Kia", "Volvo", "Seat", "Dacia",
+    "Land Rover", "Jeep", "Chevrolet", "Mini", "Porsche", "Suzuki",
+    "Mitsubishi", "Lexus", "Tesla", "Alfa Romeo",
+]
+# Разговорные/кириллические варианты, которых в названии марки нет
+# буквально — «мерседес» встречается в тексте чаще, чем «mercedes-benz».
+_CAR_BRAND_ALIASES = {
+    "Mercedes-Benz": ["мерседес", "mercedes"],
+    "Škoda": ["шкода", "skoda"],
+    "Volkswagen": ["фольксваген", "vw"],
+    "Citroën": ["ситроен", "citroen"],
+}
+
+
+def _guess_car_brand(text: str) -> str | None:
+    low = text.lower()
+    for brand in _CAR_BRANDS:
+        if re.search(r"\b" + re.escape(brand.lower()) + r"\b", low):
+            return brand
+        # «Mercedes-Benz» / «Land Rover» пишут и через пробел, и слитно —
+        # только для составных названий, чтобы не ловить короткие марки
+        # («Kia», «Mini») случайной подстрокой где угодно в тексте.
+        if (" " in brand or "-" in brand) and re.sub(r"[\s-]", "", brand.lower()) in re.sub(r"[\s-]", "", low):
+            return brand
+    for brand, aliases in _CAR_BRAND_ALIASES.items():
+        if any(re.search(r"\b" + re.escape(a) + r"\b", low) for a in aliases):
+            return brand
+    return None
+
 
 # Категории, где спрашивают состояние вещи. У авто своя мера — год и
 # пробег, у жилья и услуг состояния не бывает вовсе.
@@ -1797,6 +1833,9 @@ def extract_attributes(category_slug: str, text: str) -> dict:
             attrs["no_commission"] = True
 
     elif category_slug == "auto":
+        brand = _guess_car_brand(text)
+        if brand:
+            attrs["brand"] = brand
         year = _YEAR_RE.search(text)
         if year:
             attrs["year"] = int(year.group(1))

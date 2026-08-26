@@ -468,7 +468,9 @@
     "to": "до",
     "show": "Показать объявления",
     "fresh": "Свежие объявления",
-    "offers": "{{count}} объявлений"
+    "offers": "{{count}} объявлений",
+    "brand": "Марка",
+    "brand_placeholder": "Любая марка"
   },
   "fields": {
     "real-estate": {

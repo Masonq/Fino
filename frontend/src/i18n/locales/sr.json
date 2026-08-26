@@ -467,7 +467,9 @@
     "to": "do",
     "show": "Prikaži oglase",
     "fresh": "Novi oglasi",
-    "offers": "{{count}} oglasa"
+    "offers": "{{count}} oglasa",
+    "brand": "Marka",
+    "brand_placeholder": "Bilo koja marka"
   },
   "fields": {
     "real-estate": {

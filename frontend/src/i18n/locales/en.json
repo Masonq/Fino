@@ -466,7 +466,9 @@
     "to": "to",
     "show": "Show listings",
     "fresh": "Fresh listings",
-    "offers": "{{count}} listings"
+    "offers": "{{count}} listings",
+    "brand": "Brand",
+    "brand_placeholder": "Any brand"
   },
   "fields": {
     "real-estate": {

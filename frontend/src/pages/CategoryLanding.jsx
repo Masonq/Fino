@@ -240,6 +240,19 @@ export default function CategoryLanding() {
             </div>
           )}
 
+          {field.type === 'select' && (
+            <select
+              className="landing-input landing-select"
+              value={values[field.key] || ''}
+              onChange={(e) => setValues({ ...values, [field.key]: e.target.value })}
+            >
+              <option value="">{field.placeholder ? t(field.placeholder) : ''}</option>
+              {field.options.map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
+          )}
+
           {field.type === 'text' && (
             <input
               className="landing-input"

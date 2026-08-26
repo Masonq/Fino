@@ -170,6 +170,9 @@ def search_listings(
     # находило чужие объявления с этим словом («ищу квартиру в аренду»
     # вместо «сдаю квартиру»), а не только те, что реально сдают.
     deal_type: str | None = Query(None),
+    # Марка — тоже структурный атрибут (attributes.brand), выбор из
+    # списка на лендинге «Авто», а не текстовый поиск.
+    brand: str | None = Query(None),
     sort: str = Query("new"),
     lang: str = Query("ru"),
     limit: int = Query(20, le=100),
@@ -270,6 +273,8 @@ def search_listings(
             Listing.attributes["deal_type"].astext == deal_type,
             Listing.attributes["listing_kind"].astext == deal_type,
         ))
+    if brand:
+        q = q.filter(func.lower(Listing.attributes["brand"].astext) == brand.lower())
 
     total = q.count()
 
