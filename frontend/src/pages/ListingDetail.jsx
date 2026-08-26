@@ -149,8 +149,11 @@ export default function ListingDetail() {
       navigate(-1)
       return
     }
+    // Раздел открывается поиском с отбором — отдельной страницы у
+    // него нет. Веду туда: человек увидит другие вещи из того же
+    // раздела, а не пустой экран.
     navigate(listing?.category_slug
-      ? `/category/${listing.category_slug}`
+      ? `/search?category=${listing.category_slug}`
       : '/', { replace: true })
   }
 

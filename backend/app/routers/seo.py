@@ -49,8 +49,12 @@ def sitemap(db: Session = Depends(get_db)):
     # по отдельной вещи («мебель Белград»).
     for category in db.query(Category).all():
         # Подразделы тоже: «сковороды» ищут чаще, чем «дом и сад».
+        #
+        # Раздел открывается поиском с отбором — отдельной страницы у
+        # него нет, и звать поисковика на /category/ значит вести его
+        # на пустой экран.
         top = category.parent_id is None
-        urls.append(_url(f"{site}/category/{category.slug}", now,
+        urls.append(_url(f"{site}/search?category={category.slug}", now,
                          "0.8" if top else "0.6"))
 
     listings = (
@@ -172,17 +176,16 @@ def listing_page(listing_id: str, request: Request,
     """Страница объявления с текстом — для поисковиков и превью ссылок."""
     from html import escape as esc
 
-    site = settings.public_base_url.rstrip("/")
-    url = f"{site}/listing/{listing_id}"
-
-    # Человека сюда пускать не должны — nginx отправляет его сразу на
-    # сайт. Но если он всё же дошёл, отдаём ту же страницу: отправлять
-    # его обратно нельзя, получится кольцо.
-    
-
     from app.models import ListingPhoto, ListingTranslation
 
+    site = settings.public_base_url.rstrip("/")
     listing = db.query(Listing).filter(Listing.id == listing_id).first()
+
+    # Адрес страницы — понятный: его увидит поисковик в разметке, и он
+    # должен совпадать с тем, что в карте сайта. Иначе выйдут две
+    # страницы вместо одной.
+    url = site + _nice_path(db, listing) if listing else f"{site}/go/{listing_id}"
+
     if not listing:
         # Объявления нет — так и говорим. Перенаправлять на главную
         # нельзя: поисковик сочтёт это подменой, а человек не поймёт,
