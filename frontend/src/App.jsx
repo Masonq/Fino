@@ -111,10 +111,6 @@ export default function App() {
               найдёт объявление и покажет его. */}
           <Route path="/go/:slug" element={<ListingDetail />} />
 
-          {/* Понятный адрес: /beograd/mebel/stol-ikea-45e17e58.
-              Человек видит его в выдаче и по нему решает, нажимать ли —
-              набор цифр читается как случайная страница. */}
-          <Route path="/:city/:category/:slug" element={<ListingDetail />} />
           <Route path="/chat/:id" element={<ChatScreen />} />
           <Route path="/login" element={<Login />} />
           <Route path="/favorites" element={<Favorites />} />
@@ -133,6 +129,12 @@ export default function App() {
           <Route path="/edit/:id" element={<EditListing />} />
           <Route path="/saved" element={<SavedSearches />} />
           <Route path="/history" element={<History />} />
+
+          {/* Понятный адрес объявления: /beograd/mebel/stol-ikea-45e17e58.
+              Стоит последним намеренно — он подходит под любые три
+              части, и выше служебных страниц перехватывал бы
+              /admin/users и всё остальное. */}
+          <Route path="/:city/:category/:slug" element={<ListingDetail />} />
         </Routes>
       </main>
       {!hideNav && <BottomNav />}

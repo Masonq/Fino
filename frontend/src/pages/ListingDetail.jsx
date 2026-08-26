@@ -37,7 +37,7 @@ export default function ListingDetail() {
 
   // запоминаем просмотр — чтобы человек мог вернуться к тому, что смотрел
   useEffect(() => {
-    if (id) addToHistory(id)
+    if (listingId) addToHistory(listingId)
   }, [listingId])
 
   // Шапка появляется, когда фото уехало вверх — как у Avito:
@@ -59,17 +59,17 @@ export default function ListingDetail() {
   const [listing, setListing] = useState(null)
   const [schema, setSchema] = useState([])
   const { isFavorite, toggle } = useFavorites()
-  const fav = isFavorite(id)
+  const fav = isFavorite(listingId)
 
   const onFav = async () => {
-    const res = await toggle(id)
+    const res = await toggle(listingId)
     if (res?.needAuth) navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`)
   }
   const [starting, setStarting] = useState(false)
   const [descOpen, setDescOpen] = useState(false)
 
   useEffect(() => {
-    api.getListing(id).then(setListing).catch(() => setListing(null))
+    api.getListing(listingId).then(setListing).catch(() => setListing(null))
   }, [listingId])
 
   useEffect(() => {
