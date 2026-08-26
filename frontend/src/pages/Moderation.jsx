@@ -7,19 +7,27 @@ import { displayCity } from '../data/cities'
 import PageHeader from '../components/PageHeader'
 import { formatPrice } from '../utils/money'
 
+// Переживает размонтирование страницы — заполняется при первой загрузке
+// и читается при возврате назад. Модератор открывает объявление,
+// смотрит его, жмёт «назад» — и до этого кэша список уже успевал
+// стать пустым к моменту, когда браузер восстанавливал прокрутку
+// (страница ещё не догрузилась и была короче, чем нужно), так что
+// возврат неизменно бросал наверх, а не туда, где смотрели.
+let cache = null
+
 export default function Moderation() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()
 
-  const [items, setItems] = useState([])
-  const [total, setTotal] = useState(0)
-  const [loaded, setLoaded] = useState(false)
+  const [items, setItems] = useState(() => cache?.items || [])
+  const [total, setTotal] = useState(() => cache?.total || 0)
+  const [loaded, setLoaded] = useState(() => !!cache)
   const [busyId, setBusyId] = useState(null)
   const [denied, setDenied] = useState(false)
   const [tab, setTab] = useState('listings')
-  const [reports, setReports] = useState([])
-  const [reportsTotal, setReportsTotal] = useState(0)
+  const [reports, setReports] = useState(() => cache?.reports || [])
+  const [reportsTotal, setReportsTotal] = useState(() => cache?.reportsTotal || 0)
   // Причина отклонения — своим полем в карточке, а не window.prompt:
   // нативный prompt в мобильном браузере выглядит и ведёт себя не как
   // остальной интерфейс, легко принять за то, что причины вовсе нет.
@@ -28,12 +36,22 @@ export default function Moderation() {
 
   const load = () => {
     api.modQueue(i18n.language)
-      .then((res) => { setItems(res.items || []); setTotal(res.total || 0); setDenied(false) })
+      .then((res) => {
+        const items = res.items || []
+        const total = res.total || 0
+        setItems(items); setTotal(total); setDenied(false)
+        cache = { ...cache, items, total }
+      })
       .catch((e) => { if (e.status === 403) setDenied(true) })
       .finally(() => setLoaded(true))
 
     api.reportsQueue()
-      .then((res) => { setReports(res.items || []); setReportsTotal(res.total || 0) })
+      .then((res) => {
+        const reports = res.items || []
+        const reportsTotal = res.total || 0
+        setReports(reports); setReportsTotal(reportsTotal)
+        cache = { ...cache, reports, reportsTotal }
+      })
       .catch(() => {})
   }
 
@@ -41,8 +59,16 @@ export default function Moderation() {
     setBusyId(id)
     try {
       await api.resolveReport(id, action)
-      setReports((prev) => prev.filter((r) => r.id !== id))
-      setReportsTotal((n) => Math.max(0, n - 1))
+      setReports((prev) => {
+        const next = prev.filter((r) => r.id !== id)
+        cache = { ...cache, reports: next }
+        return next
+      })
+      setReportsTotal((n) => {
+        const next = Math.max(0, n - 1)
+        cache = { ...cache, reportsTotal: next }
+        return next
+      })
     } catch { /* оставляем в очереди */ }
     finally { setBusyId(null) }
   }
@@ -58,8 +84,16 @@ export default function Moderation() {
     try {
       if (approve) await api.modApprove(id)
       else await api.modReject(id, reason)
-      setItems((prev) => prev.filter((l) => l.id !== id))
-      setTotal((n) => Math.max(0, n - 1))
+      setItems((prev) => {
+        const next = prev.filter((l) => l.id !== id)
+        cache = { ...cache, items: next }
+        return next
+      })
+      setTotal((n) => {
+        const next = Math.max(0, n - 1)
+        cache = { ...cache, total: next }
+        return next
+      })
       setRejectingId(null)
       setReasonText('')
     } catch { /* оставляем в очереди */ }
