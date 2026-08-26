@@ -368,26 +368,41 @@ _EMPTY_WORDS = frozenset("""
 """.split())
 
 
-def _title_words(listing, lang: str) -> set[str]:
+def _title_words(listing, lang: str) -> tuple[set[str], set[str]]:
     """
-    Значимые слова названия.
+    Слова названия: сама вещь и её признаки.
+
+    Различать их важно: «велосипедный шлем» и «велосипедное кресло»
+    делят определение, но вещи разные. Совпадение по предмету весит
+    несравнимо больше, чем по признаку.
 
     Сравниваем по корням: «коляска» и «коляски» — одно слово, а человек
     пишет как придётся.
     """
-    from app.core.morphology import normal_form
+    from app.core.morphology import analyzer, normal_form
 
     translation = pick_translation(listing, lang)
     title = (translation.title if translation else "") or ""
+    morph = analyzer()
 
-    words = set()
+    things, traits = set(), set()
     for raw in re.findall(r"[\w-]{3,}", title.lower()):
         if raw in _EMPTY_WORDS:
             continue
         base = normal_form(raw) or raw
-        if base not in _EMPTY_WORDS:
-            words.add(base)
-    return words
+        if base in _EMPTY_WORDS:
+            continue
+
+        # Марки и модели латиницей — тоже предмет: «Chicco» отличает
+        # коляску от коляски вернее любого прилагательного.
+        if raw.isascii() or not morph:
+            things.add(base)
+            continue
+
+        part = morph.parse(base)[0].tag.POS
+        (traits if part in ("ADJF", "ADJS", "PRTF") else things).add(base)
+
+    return things, traits
 
 
 @router.get("/{listing_id}/similar")
@@ -413,7 +428,7 @@ def similar_listings(
     if not base:
         raise HTTPException(404, "not_found")
 
-    base_words = _title_words(base, lang)
+    base_things, base_traits = _title_words(base, lang)
 
     q = (
         db.query(Listing)
@@ -436,12 +451,16 @@ def similar_listings(
     candidates = q.limit(200).all()
 
     def score(l: Listing) -> tuple:
-        words = _title_words(l, lang)
-        # Доля общих слов: «коляска chicco» и «коляска peg perego»
-        # делят слово «коляска» — это уже близко, а «коляска» и «стол»
-        # не делят ничего.
-        shared = len(base_words & words)
-        overlap = shared / max(len(base_words | words), 1) if base_words else 0
+        things, traits = _title_words(l, lang)
+
+        # Совпал сам предмет — это близко. Совпало только определение
+        # («велосипедный шлем» и «велосипедное кресло») — это разные
+        # вещи, и ставить их рядом нельзя.
+        same_thing = bool(base_things & things)
+
+        shared = len(base_things & things) * 3 + len(base_traits & traits)
+        total = max(len(base_things | things) * 3 + len(base_traits | traits), 1)
+        overlap = shared / total if base_things else 0
 
         same_city = 0 if (base.city and l.city == base.city) else 1
         own = 1 if l.owner_id == base.owner_id else 0
@@ -454,18 +473,22 @@ def similar_listings(
         # Сходство названий решает, остальное уточняет. Полные
         # объявления впереди: обрубок без фотографии в подборке
         # бесполезен — по нему не поймёшь, та ли это вещь.
-        return (own, -round(overlap, 2),
+        # Предмет решает: без совпадения по нему объявление уходит в
+        # конец, каким бы близким ни было по прочему.
+        return (own, 0 if same_thing else 1, -round(overlap, 2),
                 0 if l.is_complete else 1, same_city, diff)
 
     candidates.sort(key=score)
 
     # Совсем непохожее не показываем: пустая полка честнее, чем полка
     # случайных вещей — человек решит, что подбор сломан.
-    if base_words:
+    if base_things:
+        # Показываем только то, где совпал сам предмет. Пустая полка
+        # честнее полки случайных вещей: человек решит, что подбор
+        # сломан, и перестанет ему верить.
         candidates = [
-            l for l in candidates
-            if _title_words(l, lang) & base_words
-        ] or candidates
+            l for l in candidates if _title_words(l, lang)[0] & base_things
+        ]
 
     picked = candidates[:limit]
 
