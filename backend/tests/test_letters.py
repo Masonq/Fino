@@ -42,10 +42,13 @@ def test_logo_is_absolute():
     Относительный путь почтовая служба не найдёт — на месте картинки
     будет пустой квадрат.
     """
-    letter = _code_letter("482915")
+    import re
 
-    assert "https://" in letter
-    assert "logo-mark.png" in letter
+    letter = _code_letter("482915")
+    link = re.search(r'<img src="([^"]+)"', letter).group(1)
+
+    assert link.startswith("http")             # полный, а не /logo.png
+    assert link.endswith("logo-mark.png")
 
 
 def test_plain_text_stays_too():
