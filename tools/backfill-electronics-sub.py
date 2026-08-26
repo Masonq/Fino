@@ -35,6 +35,7 @@ def main() -> None:
 
     with SessionLocal() as db:
         categories = {c.id: c for c in db.query(Category).all()}
+        electronics_parent = next((c for c in categories.values() if c.slug == "electronics"), None)
         electronics_subs = {c.id: c for c in categories.values()
                              if c.parent_id and categories.get(c.parent_id)
                              and categories[c.parent_id].slug == "electronics"}
@@ -58,8 +59,19 @@ def main() -> None:
             current_sub = electronics_subs[listing.category_id]
             text = f"{translation.title or ''}\n{translation.description or ''}"
             fresh_slug = classify_sub("electronics", text)
-            if not fresh_slug or fresh_slug == current_sub.slug:
+
+            if fresh_slug == current_sub.slug:
                 continue
+            if not fresh_slug:
+                # Уверенности больше нет ни в одной подкатегории — значит
+                # и в нынешней её не должно быть тоже. Поднимаем в родителя
+                # «Электроника» целиком, а не оставляем висеть неверно.
+                if not electronics_parent:
+                    continue
+                moves[f"{current_sub.slug} -> electronics (без подраздела)"] += 1
+                changes.append((listing, translation, current_sub.slug, electronics_parent))
+                continue
+
             fresh_cat = next((c for c in electronics_subs.values() if c.slug == fresh_slug), None)
             if not fresh_cat:
                 continue
