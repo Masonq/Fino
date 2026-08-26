@@ -2322,3 +2322,24 @@ def test_bare_number_at_line_start_is_a_price():
     assert extract_price("8000 за 2 стула. Самовывоз")[0] == 8000
     # а год выпуска ценой не считаем
     assert extract_price("2000 год выпуска, пробег 100000")[0] is None
+
+
+def test_size_is_not_a_price():
+    """
+    «Кеды, р.37 -2000 rsd» — это тридцать седьмой размер за две тысячи,
+    а не «от 37 до 2000». Правило диапазона хватало размер как нижнюю
+    границу, и кеды стоили 37 динаров.
+    """
+    from app.core.tg_parse import extract_price
+
+    assert extract_price("Кеды Converse, оригинал, р.37 -2000 rsd") \
+        == (2000, "RSD")
+    assert extract_price("р.37 -2000 rsd") == (2000, "RSD")
+    assert extract_price("Размер 42, цена 3000") == (3000, "RSD")
+
+
+def test_real_ranges_still_work():
+    """А настоящий диапазон читается как прежде."""
+    from app.core.tg_parse import extract_price
+
+    assert extract_price("Цена 3000-5000 динар") == (3000, "RSD")
