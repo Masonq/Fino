@@ -15,13 +15,17 @@ class Settings(BaseSettings):
     smtp_port: int = 587
     smtp_user: str | None = None
     smtp_password: str | None = None
-    smtp_from: str = "PLONK <noreply@plonk.rs>"
+    # Отправитель. Не «noreply»: письмо от адреса, на который нельзя
+    # ответить, почтовые службы считают рассылкой, а человек — чем-то
+    # безличным. На «привет» ответить можно, и это видно сразу.
+    smtp_from: str = "PLONK <hello@plonk.rs>"
     # Ключ Resend: с ним письма уходят через него, без него — по SMTP.
     # Обычной почтой с нашего сервера они попадают в спам почти всегда.
     resend_api_key: str | None = None
-    # Куда человек может ответить на письмо. Без обратного адреса
-    # почтовые службы считают письмо рассылкой.
-    support_email: str = "info@plonk.rs"
+    # Куда человек может ответить на письмо. Тот же адрес, что и у
+    # отправителя: разные адреса в письме выглядят подозрительно, а
+    # человеку всё равно, лишь бы ответ дошёл.
+    support_email: str = "hello@plonk.rs"
 
     # Telegram-бот для кодов и уведомлений
     telegram_bot_token: str | None = None
