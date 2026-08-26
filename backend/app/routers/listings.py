@@ -1,3 +1,4 @@
+import re
 import uuid
 from datetime import datetime, timedelta
 
@@ -358,6 +359,37 @@ def my_listings(
     return {"total": len(items), "counts": counts, "items": [serialize(l) for l in items]}
 
 
+# Слова, по которым сравнивать бессмысленно: они есть в половине
+# объявлений и роднят стол с диваном.
+_EMPTY_WORDS = frozenset("""
+продам продаю продается отдам новый новая новое новые бу состоянии
+состояние отличном хорошем идеальном срочно недорого дёшево дешево
+цена торг размер белград земун врачар почти как для под из
+""".split())
+
+
+def _title_words(listing, lang: str) -> set[str]:
+    """
+    Значимые слова названия.
+
+    Сравниваем по корням: «коляска» и «коляски» — одно слово, а человек
+    пишет как придётся.
+    """
+    from app.core.morphology import normal_form
+
+    translation = pick_translation(listing, lang)
+    title = (translation.title if translation else "") or ""
+
+    words = set()
+    for raw in re.findall(r"[\w-]{3,}", title.lower()):
+        if raw in _EMPTY_WORDS:
+            continue
+        base = normal_form(raw) or raw
+        if base not in _EMPTY_WORDS:
+            words.add(base)
+    return words
+
+
 @router.get("/{listing_id}/similar")
 def similar_listings(
     listing_id: uuid.UUID,
@@ -366,15 +398,22 @@ def similar_listings(
     db: Session = Depends(get_db),
 ):
     """
-    Похожие объявления: та же категория, близкая цена, желательно тот же город.
+    Похожие объявления.
 
-    Ранжируем по близости цены — сравнивать имеет смысл то, что в одном
-    бюджете. Объявления того же продавца показываем в последнюю очередь:
-    человеку интереснее альтернативы, а не витрина одного магазина.
+    Главное — сходство по словам названия. Раздел и цена слишком грубы:
+    в «Мебели» тысяча вещей, и рядом со столом оказывался шкаф за те же
+    деньги. Человек, открывший коляску, хочет посмотреть другие коляски,
+    а не всё детское в одном бюджете.
+
+    Подкатегория, цена и город идут следом — они уточняют, но не решают.
+    Объявления того же продавца показываем в последнюю очередь: человеку
+    интереснее альтернативы, а не витрина одного магазина.
     """
     base = db.query(Listing).get(listing_id)
     if not base:
         raise HTTPException(404, "not_found")
+
+    base_words = _title_words(base, lang)
 
     q = (
         db.query(Listing)
@@ -388,22 +427,48 @@ def similar_listings(
 
     price = float(base.price) if base.price else None
     if price:
-        # берём вдвое шире нужного диапазона, отсортируем сами
-        q = q.filter(Listing.price.between(price * 0.4, price * 2.5))
+        # Цену не сужаем жёстко: похожая вещь может стоить вдвое дороже
+        # из-за состояния, и отбрасывать её рано.
+        q = q.filter(Listing.price.between(price * 0.25, price * 4))
 
-    candidates = q.limit(60).all()
+    # Берём с запасом: отбор по словам идёт в памяти, и чем шире выборка,
+    # тем больше шансов найти настоящее совпадение.
+    candidates = q.limit(200).all()
 
     def score(l: Listing) -> tuple:
+        words = _title_words(l, lang)
+        # Доля общих слов: «коляска chicco» и «коляска peg perego»
+        # делят слово «коляска» — это уже близко, а «коляска» и «стол»
+        # не делят ничего.
+        shared = len(base_words & words)
+        overlap = shared / max(len(base_words | words), 1) if base_words else 0
+
+        same_sub = 0 if (base.sub_category_id
+                         and l.sub_category_id == base.sub_category_id) else 1
         same_city = 0 if (base.city and l.city == base.city) else 1
         own = 1 if l.owner_id == base.owner_id else 0
+
         if price and l.price:
             diff = abs(float(l.price) - price) / price
         else:
             diff = 1.0
-        # сначала не свои, потом свой город, потом ближе по цене
-        return (own, same_city, diff)
+
+        # Сходство названий решает, остальное уточняет. Полные
+        # объявления впереди: обрубок без фотографии в подборке
+        # бесполезен — по нему не поймёшь, та ли это вещь.
+        return (own, -round(overlap, 2), same_sub,
+                0 if l.is_complete else 1, same_city, diff)
 
     candidates.sort(key=score)
+
+    # Совсем непохожее не показываем: пустая полка честнее, чем полка
+    # случайных вещей — человек решит, что подбор сломан.
+    if base_words:
+        candidates = [
+            l for l in candidates
+            if _title_words(l, lang) & base_words or l.sub_category_id == base.sub_category_id
+        ] or candidates
+
     picked = candidates[:limit]
 
     def serialize(l: Listing):
