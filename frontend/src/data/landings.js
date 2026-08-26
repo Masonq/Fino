@@ -71,6 +71,42 @@ export const LANDINGS = {
       { key: 'price', label: 'landing.price', type: 'range' },
     ],
   },
+
+  'home-garden': {
+    fields: [
+      { key: 'price', label: 'landing.price', type: 'range' },
+    ],
+  },
+
+  'hobby-sport': {
+    fields: [
+      { key: 'price', label: 'landing.price', type: 'range' },
+    ],
+  },
+
+  pets: {
+    fields: [
+      { key: 'price', label: 'landing.price', type: 'range' },
+    ],
+  },
+
+  beauty: {
+    fields: [
+      { key: 'price', label: 'landing.price', type: 'range' },
+    ],
+  },
+
+  services: {
+    fields: [
+      { key: 'price', label: 'landing.price', type: 'range' },
+    ],
+  },
+
+  business: {
+    fields: [
+      { key: 'price', label: 'landing.price', type: 'range' },
+    ],
+  },
 }
 
 /** Есть ли у раздела свои поля. */
