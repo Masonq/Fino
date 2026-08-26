@@ -434,7 +434,16 @@ SUB_SCHEMAS: dict[str, list[dict]] = {
 
     # ——— детям ———
     "kids-clothing": [BRAND, CONDITION_SIMPLE, AGE_GROUP, SIZE_TEXT],
-    "strollers": [BRAND, CONDITION_SIMPLE, AGE_GROUP],
+    "strollers": [
+        BRAND, CONDITION_SIMPLE, AGE_GROUP,
+        {"key": "stroller_type", "type": "select", "required": False,
+         "label": _label("Тип коляски", "Stroller type", "Tip kolica"),
+         "options": _options(
+             ("stroller", "Прогулочная", "Stroller", "Sportska"),
+             ("combo", "2 в 1 / 3 в 1", "2-in-1 / 3-in-1", "2 u 1 / 3 u 1"),
+             ("car_seat", "Автокресло", "Car seat", "Auto-sedište"),
+         )},
+    ],
     "toys": [BRAND, CONDITION_SIMPLE, AGE_GROUP],
     "kids-furniture": [MATERIAL, DIMENSIONS, CONDITION_SIMPLE],
     "school": [BRAND, CONDITION_SIMPLE, AGE_GROUP],
@@ -442,12 +451,25 @@ SUB_SCHEMAS: dict[str, list[dict]] = {
     # ——— хобби и спорт ———
     "bikes": [
         BRAND, MODEL, CONDITION,
+        {"key": "bike_type", "type": "select", "required": False,
+         "label": _label("Тип велосипеда", "Bike type", "Tip bicikla"),
+         "options": _options(
+             ("mountain", "Горный", "Mountain", "Brdski"),
+             ("road", "Шоссейный", "Road", "Trkački"),
+             ("city", "Городской", "City", "Gradski"),
+             ("electric", "Электро", "Electric", "Električni"),
+             ("kids", "Детский", "Kids'", "Dečji"),
+         )},
         {"key": "wheel_size", "type": "text", "required": False,
          "label": _label("Размер колёс", "Wheel size", "Veličina točkova")},
     ],
     "fitness": [BRAND, CONDITION_SIMPLE],
     "outdoor": [BRAND, CONDITION_SIMPLE],
-    "music": [BRAND, MODEL, CONDITION_SIMPLE],
+    "music": [
+        {"key": "instrument", "type": "text", "required": False,
+         "label": _label("Инструмент", "Instrument", "Instrument")},
+        BRAND, MODEL, CONDITION_SIMPLE,
+    ],
     "books": [
         CONDITION_SIMPLE,
         {"key": "author", "type": "text", "required": False,
@@ -461,6 +483,10 @@ SUB_SCHEMAS: dict[str, list[dict]] = {
          "label": _label("Порода", "Breed", "Rasa")},
         {"key": "age", "type": "text", "required": False,
          "label": _label("Возраст", "Age", "Uzrast")},
+        {"key": "sex", "type": "select", "required": False,
+         "label": _label("Пол", "Sex", "Pol"),
+         "options": _options(("male", "Кобель", "Male", "Mužjak"),
+                              ("female", "Сука", "Female", "Ženka"))},
         {"key": "vaccinated", "type": "boolean", "required": False,
          "label": _label("Привит", "Vaccinated", "Vakcinisan")},
     ],
@@ -469,6 +495,10 @@ SUB_SCHEMAS: dict[str, list[dict]] = {
          "label": _label("Порода", "Breed", "Rasa")},
         {"key": "age", "type": "text", "required": False,
          "label": _label("Возраст", "Age", "Uzrast")},
+        {"key": "sex", "type": "select", "required": False,
+         "label": _label("Пол", "Sex", "Pol"),
+         "options": _options(("male", "Кот", "Male", "Mužjak"),
+                              ("female", "Кошка", "Female", "Ženka"))},
         {"key": "vaccinated", "type": "boolean", "required": False,
          "label": _label("Привит", "Vaccinated", "Vakcinisan")},
     ],
@@ -494,6 +524,8 @@ SUB_SCHEMAS: dict[str, list[dict]] = {
     # ——— бизнес ———
     "equipment": [BRAND, MODEL, CONDITION, YEAR],
     "ready-business": [
+        {"key": "industry", "type": "text", "required": False,
+         "label": _label("Сфера деятельности", "Industry", "Delatnost")},
         {"key": "monthly_revenue", "type": "number", "unit": "currency", "required": False,
          "label": _label("Выручка в месяц", "Monthly revenue", "Mesečni prihod")},
         {"key": "employees", "type": "number", "required": False,
