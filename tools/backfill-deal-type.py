@@ -18,6 +18,7 @@
     python tools/backfill-deal-type.py --apply     # применить
 """
 import argparse
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -30,6 +31,17 @@ from app.models.category import Category  # noqa: E402
 from app.models import Listing, ListingStatus, ListingTranslation  # noqa: E402
 
 TARGET_TOPS = {"real-estate", "jobs"}
+
+# Тот же паттерн, что в extract_attributes (tg_parse.py) — дублируем тут,
+# а не только полагаемся на её результат: важно различать «сигнала нет»
+# (текст почищен ИИ, слово-триггер могло уйти — старое значение трогать
+# нельзя) от «сигнал явно другой» (встречная заявка — старое значение
+# ошибочно, его нужно стереть).
+_WANTED_RE = re.compile(
+    r"\bищ[уеё]\w*\b|\bсним[уе]\w*\b|\bснять\b|\bкупл[юе]\w*\b"
+    r"|\bпара\s+ищ|\bтраж(им|и)\b",
+    re.I,
+)
 
 
 def main() -> None:
@@ -70,7 +82,21 @@ def main() -> None:
 
             old_key = "deal_type" if top_slug == "real-estate" else "listing_kind"
             old_value = (listing.attributes or {}).get(old_key)
-            new_value = fresh.get(old_key)
+            found_value = fresh.get(old_key)
+
+            if found_value is not None:
+                # Нашли структурный сигнал (rent/sale/daily) — доверяем ему,
+                # даже если он расходится со старым значением.
+                new_value = found_value
+            elif old_value is not None and _WANTED_RE.search(text.lower()):
+                # Старое значение есть, а текст сейчас читается как встречная
+                # заявка («ищу», «сниму») — это и есть тот самый баг, стираем.
+                new_value = None
+            else:
+                # Сигнала нет вовсе — не значит, что старое значение неверно;
+                # чаще это ИИ причесал текст и убрал слово-триггер. Оставляем
+                # как было, а не стираем правильную старую классификацию.
+                new_value = old_value
 
             if new_value == old_value:
                 continue
