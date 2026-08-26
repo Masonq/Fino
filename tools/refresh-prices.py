@@ -20,6 +20,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 
 from app.core.database import SessionLocal  # noqa: E402
+from app.core.price_ai import ask_model, looks_wrong  # noqa: E402
 from app.core.tg_parse import extract_price  # noqa: E402
 from app.models import (  # noqa: E402
     Currency, Listing, ListingStatus, ListingTranslation,
@@ -37,28 +38,49 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--apply", action="store_true", help="записать")
     ap.add_argument("--show", type=int, default=25)
+    ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--rules-only", action="store_true",
+                    help="без нейросети, только правила")
     args = ap.parse_args()
 
     with SessionLocal() as db:
-        rows = (
+        query = (
             db.query(Listing, ListingTranslation)
             .join(ListingTranslation,
                   (ListingTranslation.listing_id == Listing.id)
                   & (ListingTranslation.language == Listing.source_language))
             .filter(Listing.status != ListingStatus.archived)
-            .all()
+            .order_by(Listing.created_at.desc())
         )
+        if args.limit:
+            query = query.limit(args.limit)
+        rows = query.all()
 
         changes = []
         kinds = Counter()
 
-        for listing, translation in rows:
-            text = f"{translation.title or ''}\n{translation.description or ''}"
-            price, currency = extract_price(text)
+        asked = 0
+        for number, (listing, translation) in enumerate(rows, 1):
+            title = translation.title or ""
+            body = translation.description or ""
+            text = f"{title}\n{body}"
 
             was_price = float(listing.price) if listing.price else None
             was_currency = (listing.currency.value
                             if listing.currency else None)
+
+            # Правила первыми: они мгновенны и на обычном объявлении не
+            # ошибаются. Модель зовём, только если ответ подозрительный.
+            price, currency = extract_price(text)
+
+            if not args.rules_only and looks_wrong(was_price, was_currency,
+                                                   title, body):
+                asked += 1
+                from_model = ask_model(title, body)
+                if from_model[0] is not None:
+                    price, currency = from_model
+                if asked % 25 == 0:
+                    print(f"  спрошено {asked}, разобрано {number}…")
 
             if price is None:
                 continue                         # цену не нашли — не трогаем
@@ -78,6 +100,7 @@ def main() -> None:
                             price, currency or "RSD"))
 
         print(f"объявлений:   {len(rows)}")
+        print(f"спрошено:     {asked}")
         print(f"изменится:    {len(changes)}")
         if kinds:
             print()
