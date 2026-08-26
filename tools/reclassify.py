@@ -38,6 +38,15 @@ from app.models import Listing, ListingStatus, ListingTranslation  # noqa: E402
 # уверенный результат.
 MIN_SCORE = 2
 
+# Словарь «услуг» («установка», «монтаж», «подключение», «обслуживание»)
+# ловит и обычные товары — в описании техники эти слова тоже есть
+# («требует подключения», «установка бесплатно»). С полным текстом
+# описания вместо одного заголовка это стало цеплять чаще: MacBook,
+# монитор, Mercedes уезжали в «ремонт» только из-за таких слов в тексте.
+# Пока словарь не разберут отдельно, в услуги пускаем только то, что там
+# уже было — не уводим туда товар, которого там не было ни разу.
+SERVICE_TOP = "services"
+
 
 def main() -> None:
     ap = argparse.ArgumentParser()
@@ -84,6 +93,17 @@ def main() -> None:
             guessed_sub = classify_sub(guessed_top, combined)
             target_slug = guessed_sub if (guessed_sub and guessed_sub in categories) else guessed_top
             if target_slug == current_slug:
+                continue
+            # Не уводим товар в услуги, если он там не был: словарь услуг
+            # слишком общий и цепляет обычные описания техники.
+            if guessed_top == SERVICE_TOP and current_top != SERVICE_TOP:
+                continue
+            # Не стираем точный подраздел («bags») на общий раздел
+            # («fashion») только потому, что для этого текста подраздел
+            # не разгадался. Это не исправление, а потеря точности — не
+            # трогаем, если раздел и так угадан верно, а подраздел
+            # разошёлся лишь молчанием, а не другой догадкой.
+            if not guessed_sub and current_top == guessed_top:
                 continue
 
             moves[f"{current_top or '—'} -> {guessed_top}"] += 1
