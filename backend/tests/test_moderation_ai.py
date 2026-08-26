@@ -63,3 +63,27 @@ def test_unsure_is_left_to_a_human():
 
     source = inspect.getsource(by_model)
     assert source.count('"unsure"') >= 3
+
+
+def test_used_goods_are_not_forbidden():
+    """
+    Модель отклонила подержанную косметику как «негигиеничную». Это не
+    её дело: подержанные вещи продаются повсеместно, и запрет тут
+    только отваживает продавцов.
+    """
+    from app.core.moderation_ai import PROMPT
+
+    assert "подержанност" in PROMPT
+    assert "запрещено законом" in PROMPT
+
+
+def test_words_instead_of_markup_are_understood():
+    """
+    Модель может ответить словами вместо разметки. Одного «ok» или
+    «no» довольно, чтобы понять решение.
+    """
+    import inspect
+    from app.core.moderation_ai import by_model
+
+    source = inspect.getsource(by_model)
+    assert "ответ словами" in source
