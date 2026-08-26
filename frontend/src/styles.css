@@ -1996,6 +1996,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .landing-hero .search-field{ background:#fff; border-color:transparent; box-shadow:0 4px 14px rgba(16,24,40,.14); }
 
 .landing-head{ display:flex; align-items:center; gap:10px; padding:14px 14px 6px; flex-wrap:wrap; }
+/* Простая шапка над результатами — баннер, фильтры и подразделы в этом
+   режиме убраны совсем, а не просто прокручены мимо, поэтому заголовок
+   здесь свой, без градиента и без white-текста «on-hero». */
+.landing-head.plain-head{ padding:calc(14px + env(safe-area-inset-top)) 14px 10px; }
 .landing-back{
   width:36px; height:36px; border-radius:50%; background:#F2F4F3;
   display:flex; align-items:center; justify-content:center; color:var(--ink); flex-shrink:0;
