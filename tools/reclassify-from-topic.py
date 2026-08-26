@@ -119,7 +119,11 @@ async def main() -> None:
                     if expected == current_top:
                         continue  # раздел и так верный, подраздел не трогаем
 
-                    text = f"{translation.title or ''}\n{translation.description or ''}"
+                    # Только заголовок — там называют предмет. С полным
+                    # описанием подраздел цеплял случайные слова не по
+                    # теме («аренда авто без кредитной карты» — услуга
+                    # проката — уезжала в «cars» из-за слова в описании).
+                    text = translation.title or ""
                     guessed_sub = classify_sub(expected, text)
                     target_slug = guessed_sub if (guessed_sub and guessed_sub in categories) else expected
 
