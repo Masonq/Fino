@@ -729,8 +729,15 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* ===== вход и регистрация ===== */
 .auth-page{
   position:relative;
-  min-height:100vh; display:flex; flex-direction:column; align-items:center;
-  padding:calc(56px + env(safe-area-inset-top)) 24px 32px; background:var(--bg);
+  /* Высота с учётом отступов: иначе 100vh плюс поля сверху и снизу
+     выходят выше экрана, и появляется прокрутка на пустом месте.
+     100dvh вместо 100vh — на телефоне первое считается без адресной
+     строки браузера, отчего страница всегда чуть длиннее нужного. */
+  min-height:100dvh; box-sizing:border-box;
+  display:flex; flex-direction:column; align-items:center;
+  padding:calc(56px + env(safe-area-inset-top)) 24px
+          calc(32px + env(safe-area-inset-bottom));
+  background:var(--bg);
 }
 
 .auth-close{
