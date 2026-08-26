@@ -457,7 +457,7 @@
     "make_model_hint": "e.g. BMW 3 series",
     "year": "Year",
     "size": "Size",
-    "model": "What are you looking for",
+    "model": "Model",
     "model_hint": "e.g. iPhone 13",
     "looking_for": "You are looking for",
     "want_job": "A job",
@@ -468,7 +468,9 @@
     "fresh": "Fresh listings",
     "offers": "{{count}} listings",
     "brand": "Brand",
-    "brand_placeholder": "Any brand"
+    "brand_placeholder": "Any brand",
+    "model_placeholder": "Any model",
+    "model_other": "Other model"
   },
   "fields": {
     "real-estate": {

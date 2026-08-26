@@ -459,7 +459,7 @@
     "make_model_hint": "Например, BMW 3 серии",
     "year": "Год выпуска",
     "size": "Размер",
-    "model": "Что ищете",
+    "model": "Модель",
     "model_hint": "Например, iPhone 13",
     "looking_for": "Вы ищете",
     "want_job": "Работу",
@@ -470,7 +470,9 @@
     "fresh": "Свежие объявления",
     "offers": "{{count}} объявлений",
     "brand": "Марка",
-    "brand_placeholder": "Любая марка"
+    "brand_placeholder": "Любая марка",
+    "model_placeholder": "Любая модель",
+    "model_other": "Другая модель"
   },
   "fields": {
     "real-estate": {

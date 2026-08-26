@@ -10,17 +10,7 @@
  * тут не повторяем, они и так в отборе.
  */
 
-// Марки — общий список для лендинга «Авто» (выпадающий список) и как
-// опора для распознавания марки в тексте при импорте из Telegram
-// (backend/app/core/tg_parse.py держит свою копию — марка не
-// переводится на языки, значения буквально те же).
-export const CAR_BRANDS = [
-  'Volkswagen', 'Audi', 'BMW', 'Mercedes-Benz', 'Opel', 'Škoda',
-  'Renault', 'Peugeot', 'Citroën', 'Fiat', 'Ford', 'Toyota', 'Honda',
-  'Nissan', 'Mazda', 'Hyundai', 'Kia', 'Volvo', 'Seat', 'Dacia',
-  'Land Rover', 'Jeep', 'Chevrolet', 'Mini', 'Porsche', 'Suzuki',
-  'Mitsubishi', 'Lexus', 'Tesla', 'Alfa Romeo',
-]
+import { CAR_BRANDS } from './carBrands'
 
 // Что показывать вместо цены там, где её принято называть иначе.
 export const LANDINGS = {
@@ -46,6 +36,7 @@ export const LANDINGS = {
     fields: [
       { key: 'brand', label: 'landing.brand', type: 'select',
         placeholder: 'landing.brand_placeholder', options: CAR_BRANDS },
+      { key: 'model', label: 'landing.model', type: 'car-model' },
       { key: 'year', label: 'landing.year', type: 'range' },
       { key: 'price', label: 'landing.price', type: 'range' },
     ],

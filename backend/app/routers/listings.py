@@ -173,6 +173,7 @@ def search_listings(
     # Марка — тоже структурный атрибут (attributes.brand), выбор из
     # списка на лендинге «Авто», а не текстовый поиск.
     brand: str | None = Query(None),
+    model: str | None = Query(None),
     sort: str = Query("new"),
     lang: str = Query("ru"),
     limit: int = Query(20, le=100),
@@ -275,6 +276,8 @@ def search_listings(
         ))
     if brand:
         q = q.filter(func.lower(Listing.attributes["brand"].astext) == brand.lower())
+    if model:
+        q = q.filter(func.lower(Listing.attributes["model"].astext) == model.lower())
 
     total = q.count()
 

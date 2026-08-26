@@ -458,7 +458,7 @@
     "make_model_hint": "npr. BMW serija 3",
     "year": "Godište",
     "size": "Veličina",
-    "model": "Šta tražite",
+    "model": "Model",
     "model_hint": "npr. iPhone 13",
     "looking_for": "Tražite",
     "want_job": "Posao",
@@ -469,7 +469,9 @@
     "fresh": "Novi oglasi",
     "offers": "{{count}} oglasa",
     "brand": "Marka",
-    "brand_placeholder": "Bilo koja marka"
+    "brand_placeholder": "Bilo koja marka",
+    "model_placeholder": "Bilo koji model",
+    "model_other": "Drugi model"
   },
   "fields": {
     "real-estate": {

@@ -7,6 +7,7 @@ import ListingCard from '../components/ListingCard'
 import { CardSkeletons } from '../components/Skeletons'
 import { LANDINGS } from '../data/landings'
 import { MODE_WORDS } from '../data/modeWords'
+import { CAR_MODELS, CAR_MODEL_OTHER } from '../data/carBrands'
 
 /**
  * Вход в раздел.
@@ -105,6 +106,10 @@ export default function CategoryLanding() {
         if (chip && MODE_WORDS[chip]) groups.push(MODE_WORDS[chip].join('|'))
         return
       }
+      // «Другая» — это «не нашлось в списке», не реальное значение
+      // фильтра; отправлять его как есть значило бы искать буквальную
+      // марку «Другая» и получать пустую выдачу.
+      if ((key === 'brand' || key === 'model') && value === CAR_MODEL_OTHER) return
       params[key] = value
     })
     if (groups.length) params.extra_terms = groups.join(';;')
@@ -219,7 +224,14 @@ export default function CategoryLanding() {
         </div>
       )}
 
-      {landing?.fields?.map((field) => (
+      {landing?.fields?.map((field) => {
+        // Модель без выбранной марки бессмысленна — список моделей
+        // зависит от того, что выбрано выше, а «Другая» модели не
+        // предполагает вовсе.
+        if (field.type === 'car-model' && (!values.brand || values.brand === CAR_MODEL_OTHER)) {
+          return null
+        }
+        return (
         <div key={field.key} className="landing-field">
           <div className="landing-label">{t(field.label)}</div>
 
@@ -244,13 +256,40 @@ export default function CategoryLanding() {
             <select
               className="landing-input landing-select"
               value={values[field.key] || ''}
-              onChange={(e) => setValues({ ...values, [field.key]: e.target.value })}
+              onChange={(e) => setValues({
+                ...values,
+                [field.key]: e.target.value,
+                ...(field.key === 'brand' ? { model: '' } : {}),
+              })}
             >
               <option value="">{field.placeholder ? t(field.placeholder) : ''}</option>
               {field.options.map((opt) => (
                 <option key={opt} value={opt}>{opt}</option>
               ))}
             </select>
+          )}
+
+          {field.type === 'car-model' && (
+            CAR_MODELS[values.brand] ? (
+              <select
+                className="landing-input landing-select"
+                value={values.model || ''}
+                onChange={(e) => setValues({ ...values, model: e.target.value })}
+              >
+                <option value="">{t('landing.model_placeholder')}</option>
+                {CAR_MODELS[values.brand].map((m) => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+                <option value={CAR_MODEL_OTHER}>{t('landing.model_other')}</option>
+              </select>
+            ) : (
+              <input
+                className="landing-input"
+                placeholder={t('landing.model_placeholder')}
+                value={values.model || ''}
+                onChange={(e) => setValues({ ...values, model: e.target.value })}
+              />
+            )
           )}
 
           {field.type === 'text' && (
@@ -285,7 +324,8 @@ export default function CategoryLanding() {
             </div>
           )}
         </div>
-      ))}
+        )
+      })}
 
       <button className="landing-go" onClick={() => search()}>
         {t('landing.show')}

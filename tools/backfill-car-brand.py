@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """
-Проставляет attributes.brand у уже существующих объявлений «Авто» —
-раньше при импорте из Telegram марка не распознавалась вовсе, только
-год/пробег/коробка. Логика распознавания (_guess_car_brand в
-tg_parse.py) взята из общего списка марок, что и в выпадающем списке
-на лендинге «Авто» — иначе список фильтровал бы по пустому полю.
+Проставляет attributes.brand и attributes.model у уже существующих
+объявлений «Авто» — раньше при импорте из Telegram ни марка, ни модель
+не распознавались вовсе, только год/пробег/коробка. Логика распознавания
+(_guess_car_brand/_guess_car_model в tg_parse.py) — тот же список марок
+и моделей, что и в выпадающих списках на лендинге «Авто», иначе списки
+фильтровали бы по пустому полю.
 
-Трогает только объявления из телеграм-чатов и только там, где brand
-ещё не проставлен — размещённые через сайт объявления пишут марку сами
-на форме публикации, поверх них не пишем.
+Трогает только объявления из телеграм-чатов и только там, где поле ещё
+не проставлено — размещённые через сайт объявления пишут марку/модель
+сами на форме публикации, поверх них не пишем.
 
     python tools/backfill-car-brand.py            # посмотреть, что найдётся
     python tools/backfill-car-brand.py --apply     # применить
@@ -21,7 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 
 from app.core.database import SessionLocal  # noqa: E402
-from app.core.tg_parse import _guess_car_brand  # noqa: E402
+from app.core.tg_parse import _guess_car_brand, _guess_car_model  # noqa: E402
 from app.models.category import Category  # noqa: E402
 from app.models import Listing, ListingStatus, ListingTranslation  # noqa: E402
 
@@ -47,8 +48,9 @@ def main() -> None:
         )
 
         changes = []
-        found = Counter()
-        not_found = 0
+        found_brand = Counter()
+        found_model = Counter()
+        brand_not_found = 0
 
         for listing, translation in rows:
             cat = categories.get(listing.category_id)
@@ -56,34 +58,46 @@ def main() -> None:
             top_slug = parent.slug if parent else (cat.slug if cat else None)
             if top_slug != "auto":
                 continue
-            if (listing.attributes or {}).get("brand"):
-                continue
 
+            existing = listing.attributes or {}
             text = f"{translation.title or ''}\n{translation.description or ''}"
-            brand = _guess_car_brand(text)
+
+            new_attrs = {}
+            brand = existing.get("brand")
             if not brand:
-                not_found += 1
-                continue
+                brand = _guess_car_brand(text)
+                if brand:
+                    new_attrs["brand"] = brand
+                    found_brand[brand] += 1
+                else:
+                    brand_not_found += 1
 
-            found[brand] += 1
-            changes.append((listing, translation, brand))
+            if brand and not existing.get("model"):
+                model = _guess_car_model(brand, text)
+                if model:
+                    new_attrs["model"] = model
+                    found_model[f"{brand} {model}"] += 1
 
-        print(f"объявлений «Авто» без марки (из телеграм-чатов): {len(changes) + not_found}")
-        print(f"распознано: {len(changes)}, не распознано: {not_found}")
-        for brand, count in found.most_common(30):
+            if new_attrs:
+                changes.append((listing, translation, new_attrs))
+
+        print(f"объявлений «Авто» (из телеграм-чатов): {len(rows)}")
+        print(f"новых марок: {sum(found_brand.values())}, новых моделей: {sum(found_model.values())}, марка не распознана: {brand_not_found}")
+        print("\nмарки:")
+        for brand, count in found_brand.most_common(30):
             print(f"  {brand}: {count}")
 
         print(f"\nпримеры (первые {args.show}):")
-        for listing, translation, brand in changes[:args.show]:
-            print(f"  [{brand}] {(translation.title or '')[:60]}")
+        for listing, translation, new_attrs in changes[:args.show]:
+            print(f"  {new_attrs} — {(translation.title or '')[:55]}")
 
         if not args.apply:
             print("\nэто был сухой прогон — ничего не изменено. Добавь --apply, чтобы применить.")
             return
 
-        for listing, translation, brand in changes:
+        for listing, translation, new_attrs in changes:
             attrs = dict(listing.attributes or {})
-            attrs["brand"] = brand
+            attrs.update(new_attrs)
             listing.attributes = attrs
 
         db.commit()

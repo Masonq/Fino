@@ -1730,6 +1730,9 @@ _CAR_BRAND_ALIASES = {
     "Škoda": ["шкода", "skoda"],
     "Volkswagen": ["фольксваген", "vw"],
     "Citroën": ["ситроен", "citroen"],
+    # На деле «Land Rover» в тексте почти не встречается — модели
+    # называют «Range Rover», без марки в названии вовсе.
+    "Land Rover": ["range rover", "рендж ровер", "ленд ровер"],
 }
 
 
@@ -1746,6 +1749,63 @@ def _guess_car_brand(text: str) -> str | None:
     for brand, aliases in _CAR_BRAND_ALIASES.items():
         if any(re.search(r"\b" + re.escape(a) + r"\b", low) for a in aliases):
             return brand
+    return None
+
+
+# Тот же список, что в frontend/src/data/carBrands.js (CAR_MODELS) — не
+# под все марки, только под самые ходовые. Значения — точно те же
+# строки, что в выпадающем списке на форме, иначе фильтр по модели не
+# находил бы то, что тут распознано.
+_CAR_MODELS = {
+    "Audi": ["A1", "A3", "A4", "A5", "A6", "A7", "A8", "Q2", "Q3", "Q5", "Q7", "Q8", "TT", "e-tron"],
+    "BMW": ["X1", "X2", "X3", "X4", "X5", "X6", "X7", "Z4", "i3", "i4", "iX"],
+    "Mercedes-Benz": ["A-класс", "B-класс", "C-класс", "E-класс", "S-класс", "CLA", "CLS", "GLA", "GLB", "GLC", "GLE", "GLS", "G-класс", "Vito", "Sprinter"],
+    "Volkswagen": ["Polo", "Golf", "Jetta", "Passat", "Arteon", "Tiguan", "Touareg", "T-Roc", "T-Cross", "Touran", "Sharan", "Caddy", "Transporter", "ID.3", "ID.4"],
+    "Opel": ["Corsa", "Astra", "Insignia", "Mokka", "Crossland", "Grandland", "Zafira", "Vivaro"],
+    "Porsche": ["911", "Cayenne", "Macan", "Panamera", "Taycan", "Boxster", "Cayman"],
+    "Renault": ["Clio", "Megane", "Talisman", "Captur", "Kadjar", "Koleos", "Duster", "Espace", "Scenic", "Trafic", "Kangoo", "Laguna", "Fluence"],
+    "Peugeot": ["208", "308", "408", "508", "2008", "3008", "5008", "Partner", "Expert", "Traveller"],
+    "Citroën": ["C3", "C4", "C5", "C4 Picasso", "C5 Aircross", "Berlingo", "Jumpy", "Grand C4 Space Tourer"],
+    "Fiat": ["500", "Panda", "Tipo", "Punto", "Doblo", "Ducato", "500X", "Bravo"],
+    "Alfa Romeo": ["Giulia", "Giulietta", "Stelvio", "MiTo"],
+    "Land Rover": ["Range Rover Sport", "Range Rover Evoque", "Range Rover Velar", "Range Rover", "Discovery Sport", "Discovery", "Defender"],
+    "Jaguar": ["XE", "XF", "XJ", "F-Pace", "E-Pace", "I-Pace", "F-Type"],
+    "Škoda": ["Fabia", "Rapid", "Octavia", "Superb", "Kamiq", "Karoq", "Kodiaq", "Scala", "Yeti"],
+    "Seat": ["Ibiza", "Leon", "Toledo", "Arona", "Ateca", "Tarraco", "Alhambra"],
+    "Volvo": ["S60", "S90", "V40", "V60", "V90", "XC40", "XC60", "XC90"],
+    "Dacia": ["Sandero", "Logan", "Duster", "Dokker", "Lodgy", "Spring"],
+    "Ford": ["Fiesta", "Focus", "Mondeo", "Kuga", "EcoSport", "Puma", "Galaxy", "S-Max", "Transit", "Ranger", "Mustang", "Explorer"],
+    "Chevrolet": ["Aveo", "Cruze", "Spark", "Captiva", "Orlando", "Camaro", "Malibu"],
+    "Jeep": ["Renegade", "Compass", "Cherokee", "Grand Cherokee", "Wrangler"],
+    "Toyota": ["Yaris", "Corolla", "Camry", "Avensis", "Auris", "C-HR", "RAV4", "Land Cruiser", "Hilux", "Prius", "Aygo", "Highlander"],
+    "Honda": ["Civic", "Accord", "CR-V", "HR-V", "Jazz", "Pilot"],
+    "Nissan": ["Micra", "Note", "Juke", "Qashqai", "X-Trail", "Leaf", "Navara", "Pathfinder"],
+    "Mazda": ["CX-3", "CX-5", "CX-30", "MX-5"],
+    "Mitsubishi": ["Colt", "Lancer", "ASX", "Outlander", "Eclipse Cross", "Pajero", "L200"],
+    "Suzuki": ["Swift", "Baleno", "Vitara", "SX4", "S-Cross", "Jimny"],
+    "Subaru": ["Impreza", "Legacy", "Forester", "Outback", "XV"],
+    "Lexus": ["IS", "ES", "GS", "LS", "NX", "RX", "UX", "CT"],
+    "Hyundai": ["i10", "i20", "i30", "Elantra", "Accent", "Tucson", "Santa Fe", "Kona", "ix35", "Solaris"],
+    "Kia": ["Picanto", "Rio", "Ceed", "Cerato", "Optima", "Sportage", "Sorento", "Niro", "Soul", "Stonic"],
+    "SsangYong": ["Korando", "Rexton", "Tivoli", "Actyon"],
+    "Chery": ["Tiggo 4", "Tiggo 7", "Tiggo 8", "Arrizo 5"],
+    "Geely": ["Coolray", "Atlas", "Emgrand", "Tugella"],
+    "Great Wall": ["Poer", "Wingle"],
+    "Haval": ["Jolion", "H6", "Dargo"],
+    "BYD": ["Atto 3", "Han", "Tang", "Seal", "Dolphin"],
+}
+
+
+def _guess_car_model(brand: str, text: str) -> str | None:
+    models = _CAR_MODELS.get(brand)
+    if not models:
+        return None
+    low = text.lower()
+    # Длинные названия раньше коротких — «Range Rover Sport» должен
+    # находиться раньше «Range Rover», а не наоборот.
+    for model in sorted(models, key=len, reverse=True):
+        if re.search(r"\b" + re.escape(model.lower()) + r"\b", low):
+            return model
     return None
 
 
@@ -1836,6 +1896,9 @@ def extract_attributes(category_slug: str, text: str) -> dict:
         brand = _guess_car_brand(text)
         if brand:
             attrs["brand"] = brand
+            model = _guess_car_model(brand, text)
+            if model:
+                attrs["model"] = model
         year = _YEAR_RE.search(text)
         if year:
             attrs["year"] = int(year.group(1))
