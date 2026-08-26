@@ -19,27 +19,91 @@ PLONK — объявления в Сербии
 
 
 def _send_email(to: str, code: str) -> None:
-    host = getattr(settings, "smtp_host", None)
-    if not host:
-        # Пока почта не настроена — пишем код в журнал, чтобы можно было тестировать
-        log.warning("SMTP не настроен. Код для %s: %s", to, code)
-        return
+    """
+    Письмо с кодом входа.
 
-    msg = EmailMessage()
-    msg["Subject"] = SUBJECT
-    msg["From"] = settings.smtp_from
-    msg["To"] = to
-    msg.set_content(BODY.format(code=code))
+    Код — единственное, ради чего человек открыл письмо. Значит он
+    должен быть виден сразу, крупно, без поиска глазами: остальное
+    вокруг него.
+    """
+    _send_email_text(to, SUBJECT, BODY.format(code=code),
+                     html=_code_letter(code))
 
-    try:
-        with smtplib.SMTP(host, settings.smtp_port, timeout=10) as server:
-            server.starttls()
-            if settings.smtp_user:
-                server.login(settings.smtp_user, settings.smtp_password)
-            server.send_message(msg)
-    except Exception as exc:
-        log.error("Не удалось отправить письмо на %s: %s", to, exc)
-        raise
+
+def _code_letter(code: str) -> str:
+    """
+    Разметка письма с кодом.
+
+    Всё вписано прямо в разметку: почтовые службы не грузят внешние
+    стили, а половина из них ещё и режет то, чего не понимает. Поэтому
+    таблицы и простые правила — как в девяностых, но иначе письмо
+    развалится.
+    """
+    site = settings.public_base_url.rstrip("/")
+    return f"""<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>{SUBJECT}</title></head>
+<body style="margin:0;padding:0;background:#f4f6f5;
+             font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+       style="background:#f4f6f5;padding:32px 16px;">
+<tr><td align="center">
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+       style="max-width:440px;background:#ffffff;border-radius:20px;
+              overflow:hidden;box-shadow:0 1px 3px rgba(16,24,40,.06);">
+
+  <tr><td align="center" style="padding:32px 32px 8px;">
+    <img src="{site}/logo-mark.png" width="48" height="48" alt="PLONK"
+         style="display:block;border:0;border-radius:12px;">
+  </td></tr>
+
+  <tr><td align="center" style="padding:12px 32px 0;">
+    <div style="font-size:19px;font-weight:700;color:#101828;">
+      Вход на PLONK
+    </div>
+    <div style="margin-top:6px;font-size:14px;line-height:20px;color:#667085;">
+      Введите этот код на сайте — и вы на месте.
+    </div>
+  </td></tr>
+
+  <tr><td align="center" style="padding:24px 32px 8px;">
+    <div style="display:inline-block;padding:14px 28px;border-radius:14px;
+                background:#f0fdf6;border:1px solid #d1fae0;
+                font-size:32px;font-weight:700;letter-spacing:8px;
+                color:#0E9F6E;font-family:'SF Mono',Menlo,monospace;">
+      {code}
+    </div>
+  </td></tr>
+
+  <tr><td align="center" style="padding:4px 32px 28px;">
+    <div style="font-size:13px;color:#98a2b3;">
+      Код действует 10 минут
+    </div>
+  </td></tr>
+
+  <tr><td style="padding:0 32px;">
+    <div style="height:1px;background:#eaecf0;"></div>
+  </td></tr>
+
+  <tr><td align="center" style="padding:20px 32px 28px;">
+    <div style="font-size:13px;line-height:19px;color:#98a2b3;">
+      Если вы не запрашивали код — просто не отвечайте на письмо.
+      Без кода войти в ваш профиль нельзя.
+    </div>
+  </td></tr>
+
+</table>
+
+<div style="margin-top:20px;font-size:12px;color:#98a2b3;">
+  <a href="{site}" style="color:#0E9F6E;text-decoration:none;">PLONK</a>
+  &nbsp;·&nbsp; объявления в Сербии
+</div>
+
+</td></tr>
+</table>
+</body></html>"""
 
 
 def _send_telegram(chat_id: str, code: str) -> None:
@@ -72,7 +136,8 @@ def send_code(destination: str, code: str, channel: VerifyChannel) -> None:
     else:
         _send_email(destination, code)
 
-def _send_email_text(to: str, subject: str, body: str) -> None:
+def _send_email_text(to: str, subject: str, body: str,
+                     html: str | None = None) -> None:
     """
     Произвольное письмо — для уведомлений, а не только для кодов.
 
@@ -81,7 +146,7 @@ def _send_email_text(to: str, subject: str, body: str) -> None:
     почти всегда. Без ключа — по SMTP, как раньше.
     """
     if getattr(settings, "resend_api_key", None):
-        _send_via_resend(to, subject, body)
+        _send_via_resend(to, subject, body, html)
         return
 
     host = getattr(settings, "smtp_host", None)
@@ -94,7 +159,10 @@ def _send_email_text(to: str, subject: str, body: str) -> None:
     msg["Subject"] = subject
     msg["From"] = settings.smtp_from
     msg["To"] = to
-    msg.set_content(f"{body}\n\n—\nPLONK — объявления в Сербии\nОтключить уведомления можно в настройках поиска.")
+    msg.set_content(f"{body}\n\n—\nPLONK — объявления в Сербии\n"
+                    "Отключить уведомления можно в настройках поиска.")
+    if html:
+        msg.add_alternative(html, subtype="html")
 
     with smtplib.SMTP(host, settings.smtp_port, timeout=10) as server:
         server.starttls()
@@ -103,7 +171,8 @@ def _send_email_text(to: str, subject: str, body: str) -> None:
         server.send_message(msg)
 
 
-def _send_via_resend(to: str, subject: str, body: str) -> None:
+def _send_via_resend(to: str, subject: str, body: str,
+                     html: str | None = None) -> None:
     """
     Письмо через Resend.
 
@@ -115,12 +184,17 @@ def _send_via_resend(to: str, subject: str, body: str) -> None:
     import urllib.error
     import urllib.request
 
-    payload = json.dumps({
+    letter = {
         "from": settings.smtp_from,
         "to": [to],
         "subject": subject,
+        # Простой текст кладём всегда: часть людей читает почту без
+        # разметки, и для них письмо должно остаться понятным.
         "text": f"{body}\n\n—\nPLONK — объявления в Сербии",
-    }).encode()
+    }
+    if html:
+        letter["html"] = html
+    payload = json.dumps(letter).encode()
 
     request = urllib.request.Request(
         "https://api.resend.com/emails",
