@@ -407,12 +407,14 @@ def decide(topic: str | None, text: str) -> tuple[str | None, bool]:
 # ноутбук в «Телефоны».
 SUB_KEYWORDS: dict[str, dict[str, list[str]]] = {
     "electronics": {
-        # «Galaxy» само по себе — линейка бренда Samsung целиком, а не
-        # телефон: «Galaxy Buds», «Galaxy Watch», «Galaxy SmartTag» — не
-        # телефоны, но матчились через голое слово. Просим модельный ряд
-        # именно телефонов — «galaxy s», «galaxy z», «galaxy note», «galaxy a».
-        "phones": ["телефон", "смартфон", "айфон", "iphone", "galaxy s", "galaxy z",
-                   "galaxy note", "galaxy a", "redmi", "pixel", "телефона"],
+        # «Galaxy» само по себе — линейка бренда Samsung целиком (Galaxy
+        # Buds, Galaxy Watch, Galaxy SmartTag — не телефоны), а не признак
+        # именно телефона. Модельный ряд («galaxy s»/«galaxy z») тоже не
+        # спасает — «galaxy s» как подстрока совпадает и с «galaxy
+        # smarttag» («s» — это начало слова «smarttag», а не число серии).
+        # Без явного «телефон»/«смартфон» такое объявление остаётся без
+        # подраздела — надёжнее, чем угадывать по одному «galaxy».
+        "phones": ["телефон", "смартфон", "айфон", "iphone", "redmi", "pixel", "телефона"],
         "laptops": ["ноутбук", "ноут", "laptop", "macbook", "макбук", "thinkpad"],
         "computers": ["компьютер", "системник", "видеокарт", "процессор", "материнск", "монитор", "пк "],
         "tablets": ["планшет", "ipad", "айпад", "электронная книга", "kindle"],
@@ -566,34 +568,51 @@ def classify_sub(parent_slug: str, text: str) -> str | None:
         if any(k in scores for k in ("flats", "houses", "rooms")):
             scores.pop("garages")
 
-    # «Русская клавиатура» у макбука, упомянутая только в описании, — это
-    # раскладка, не отдельная клавиатура на продажу. Подавляем «Товары
-    # для компьютера» только когда модель устройства названа в заголовке,
-    # а клавиатура/мышь — только в описании (не в заголовке): так
-    # «Клавиатура для iPad» (и то, и другое в заголовке) остаётся
-    # аксессуаром, а «Macbook air / русская клавиатура, зарядка» —
-    # ноутбуком. Заголовок — первая строка: так text собирают везде
-    # (f"{title}\n{description}"), отдельного параметра для него нет.
+    # «Русская клавиатура» у макбука в описании, «чехольчик» третьим
+    # пунктом после iPad+pencil, «Чехол для iPhone» первым словом — во
+    # всех трёх есть и модель устройства, и слово аксессуара, а разница
+    # в том, что названо раньше в заголовке. Первое слово — это то, что
+    # продают, остальное — довесок. По очкам решать нельзя: у «чехол»
+    # корень длиннее, чем «ipad», и он выигрывал спор всегда, даже когда
+    # сам был довеском.
     if parent_slug == "electronics" and "gadgets" in scores:
         title_only = _fold(text.split("\n", 1)[0])
-        gadgets_words = table.get("gadgets", [])
-        gadget_in_title = any(_matches(w, title_only) for w in gadgets_words)
-        if not gadget_in_title:
-            device_in_title = [
-                k for k in ("laptops", "computers", "tablets", "phones")
-                if k in scores and any(_matches(w, title_only) for w in table.get(k, []))
-            ]
-            if device_in_title:
+
+        def _pos(word: str) -> int | None:
+            needle = _fold(word).strip()
+            if not needle:
+                return None
+            probe = f" {needle} " if word.endswith(" ") else f" {needle}"
+            idx = title_only.find(probe)
+            return idx if idx >= 0 else None
+
+        def _first_pos(words: list[str]) -> int | None:
+            found = [p for p in (_pos(w) for w in words) if p is not None]
+            return min(found) if found else None
+
+        gadgets_pos = _first_pos(table.get("gadgets", []))
+        device_positions = {
+            k: _first_pos(table.get(k, []))
+            for k in ("laptops", "computers", "tablets", "phones")
+            if k in scores
+        }
+        device_positions = {k: p for k, p in device_positions.items() if p is not None}
+
+        if gadgets_pos is None:
+            # Слово-аксессуар есть только в описании (макбук + русская
+            # клавиатура) — устройство названо в заголовке, значит оно и
+            # есть товар.
+            if device_positions:
                 scores.pop("gadgets")
-        else:
-            # «Чехол для iPhone» — чехол однозначно аксессуар, каким бы
-            # ни был вес слова «iPhone» рядом. Эти слова не бывают ничем,
-            # кроме аксессуара, поэтому не спорят по очкам, а просто
-            # решают дело — иначе длинное название бренда в заголовке
-            # перевешивало короткое, но недвусмысленное слово аксессуара.
-            unambiguous = ("чехол", "case for", "futrola", "dac", "amp ", "smarttag", "smart tag")
-            if any(_matches(w, title_only) for w in unambiguous):
+        elif device_positions:
+            earliest_device = min(device_positions.values())
+            if gadgets_pos < earliest_device:
+                # Аксессуар назван раньше устройства — он и есть товар
+                # («Чехол для iPhone»).
                 return "gadgets"
+            # Устройство названо раньше — аксессуар был довеском
+            # («iPad + pencil + чехольчик»).
+            scores.pop("gadgets")
 
     if not scores:
         return None
