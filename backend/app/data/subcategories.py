@@ -33,12 +33,12 @@ SUBCATEGORIES: dict[str, list[dict]] = {
     "electronics": [
         {"slug": "phones", "name": {"ru": "Телефоны", "en": "Phones", "sr": "Telefoni"}},
         {"slug": "laptops", "name": {"ru": "Ноутбуки", "en": "Laptops", "sr": "Laptopovi"}},
-        {"slug": "computers", "name": {"ru": "Компьютеры и комплектующие", "en": "Computers & parts", "sr": "Računari i delovi"}},
+        {"slug": "computers", "name": {"ru": "Настольные компьютеры", "en": "Desktop computers", "sr": "Stoni računari"}},
         {"slug": "tablets", "name": {"ru": "Планшеты и электронные книги", "en": "Tablets & e-readers", "sr": "Tableti"}},
-        {"slug": "tv-audio", "name": {"ru": "ТВ и аудио", "en": "TV & audio", "sr": "TV i audio"}},
-        {"slug": "photo", "name": {"ru": "Фото и видео", "en": "Photo & video", "sr": "Foto i video"}},
-        {"slug": "gaming", "name": {"ru": "Игровые приставки", "en": "Consoles", "sr": "Konzole"}},
-        {"slug": "gadgets", "name": {"ru": "Гаджеты и аксессуары", "en": "Gadgets & accessories", "sr": "Gedžeti i dodaci"}},
+        {"slug": "tv-audio", "name": {"ru": "Аудио и видео", "en": "Audio & video", "sr": "Audio i video"}},
+        {"slug": "photo", "name": {"ru": "Фототехника", "en": "Photo equipment", "sr": "Foto oprema"}},
+        {"slug": "gaming", "name": {"ru": "Игры, приставки и программы", "en": "Games & consoles", "sr": "Igre i konzole"}},
+        {"slug": "gadgets", "name": {"ru": "Товары для компьютера", "en": "Computer accessories", "sr": "Oprema za računar"}},
     ],
     "home-garden": [
         {"slug": "furniture", "name": {"ru": "Мебель", "en": "Furniture", "sr": "Nameštaj"}},
