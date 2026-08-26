@@ -72,6 +72,8 @@ def main() -> None:
                     help="удалить (необратимо)")
     ap.add_argument("--show", type=int, default=25,
                     help="сколько заголовков показать")
+    ap.add_argument("--dump", metavar="ФАЙЛ",
+                    help="выгрузить весь список в файл")
     args = ap.parse_args()
 
     with SessionLocal() as db:
@@ -83,6 +85,15 @@ def main() -> None:
         print(f"негодных:           {len(doomed)}")
         if not doomed:
             return
+
+        if args.dump:
+            # Список целиком: по двадцати пяти строкам судить нельзя,
+            # а ложные срабатывания видны только на всём наборе.
+            with open(args.dump, "w", encoding="utf-8") as out:
+                out.write(f"# негодных: {len(doomed)} из {total}\n\n")
+                for listing, title in doomed:
+                    out.write(f"{title}\n")
+            print(f"\nсписок целиком: {args.dump}")
 
         print(f"\nчто удалится (первые {args.show}):")
         for listing, title in doomed[:args.show]:
