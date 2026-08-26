@@ -132,7 +132,7 @@ export default function AdminSupport() {
                     {card.listing_id && (
                       <button
                         className="admin-listing"
-                        onClick={() => navigate(`/listing/${card.listing_id}`)}
+                        onClick={() => navigate(`/go/${card.listing_id}`)}
                       >
                         <span>{t('support.open_listing')}</span>
                       </button>

@@ -100,7 +100,7 @@ export default function MyListings() {
         <div className="my-list">
           {visible.map((l) => (
             <div className="my-row" key={l.id}>
-              <Link to={l.path || `/listing/${l.id}`} className="my-main">
+              <Link to={l.path} className="my-main">
                 <div className="my-thumb">
                   {l.cover_photo ? <img src={l.cover_photo} alt="" /> : <div className="photo-placeholder" />}
                 </div>

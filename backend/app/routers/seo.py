@@ -128,15 +128,14 @@ def _is_crawler(agent: str) -> bool:
     ))
 
 
-@router.get("/listing/{listing_id}", include_in_schema=False)
-def old_listing_page(listing_id: str, request: Request,
-                     db: Session = Depends(get_db)):
+@router.get("/go/{listing_id}", include_in_schema=False)
+def short_listing_page(listing_id: str, request: Request,
+                       db: Session = Depends(get_db)):
     """
-    Старый адрес объявления.
+    Короткий путь по ключу — из бота и админки.
 
-    По нему разошлись ссылки в телеграме и переписках — ломать их
-    нельзя. Но поисковику показываем новый: иначе он сочтёт их двумя
-    разными страницами и разделит между ними вес.
+    Поисковику показываем понятный адрес: иначе он сочтёт их двумя
+    страницами и разделит между ними вес.
     """
     from fastapi.responses import RedirectResponse
 

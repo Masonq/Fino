@@ -246,7 +246,7 @@ def post_keyboard(listing_id: str | None, author_id: int) -> InlineKeyboardMarku
     site = settings.public_base_url.rstrip("/")
     return InlineKeyboardMarkup(inline_keyboard=[[
         InlineKeyboardButton(text="Открыть на PLONK",
-                             url=f"{site}/listing/{listing_id}",
+                             url=f"{site}/go/{listing_id}",
                              icon_custom_emoji_id=icon("open")),
     ]])
 
@@ -676,7 +676,7 @@ async def send_my_listings(message: Message, user) -> None:
     for number, item in enumerate(live, 1):
         price = money(item["price"], item["currency"], item["is_free"])
         lines.append(
-            f'{digit(number)} <a href="{site}/listing/{item["id"]}">'
+            f'{digit(number)} <a href="{site}/go/{item["id"]}">'
             f'{escape(item["title"])}</a> — {price}'
         )
     if sold:
@@ -1347,7 +1347,7 @@ async def publish(message: Message, bot: Bot) -> None:
     done = (
         "Опубликовано!\n\n"
         + (f'<a href="{link}">Посмотреть в чате</a>\n' if link else "")
-        + (f'<a href="{site}/listing/{listing_id}">Открыть на PLONK</a>\n'
+        + (f'<a href="{site}/go/{listing_id}">Открыть на PLONK</a>\n'
            if listing_id else "")
         # Кнопки «Продано» под постом нет — она была бы видна всем.
         # Подсказываем, где отметить, чтобы человек не искал. Но только
@@ -1418,7 +1418,7 @@ async def tell_watchers(bot: Bot, draft: Draft, listing_id: str | None) -> None:
                 f"{emoji('listings')} <b>Появилось то, что вы искали</b>\n\n"
                 f"<b>{escape(draft.title)}</b>\n{price}"
                 + (f" · {escape(draft.city)}" if draft.city else "")
-                + (f"\n\n{site}/listing/{listing_id}" if listing_id else ""),
+                + (f"\n\n{site}/go/{listing_id}" if listing_id else ""),
                 disable_web_page_preview=True,
             )
         except Exception:                        # noqa: BLE001

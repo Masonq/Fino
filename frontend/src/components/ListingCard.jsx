@@ -23,7 +23,7 @@ export default function ListingCard({ listing, large = false }) {
       {/* Адрес приходит от приложения: он одинаков везде — в ленте,
           в боте, в письме и в карте сайта. Запасной на случай старых
           записей. */}
-      <Link to={listing.path || `/listing/${listing.id}`} className="s-photo-wrap">
+      <Link to={listing.path} className="s-photo-wrap">
         {listing.cover_photo ? (
           <img src={listing.cover_photo} alt="" />
         ) : (
@@ -32,7 +32,7 @@ export default function ListingCard({ listing, large = false }) {
         {listing.is_urgent && <div className="badge-top urgent">{t('misc.urgent')}</div>}
       </Link>
       <div className="s-row">
-        <Link to={listing.path || `/listing/${listing.id}`} className="s-title">{listing.title}</Link>
+        <Link to={listing.path} className="s-title">{listing.title}</Link>
         <button
           className={fav ? 's-fav on' : 's-fav'}
           onClick={onFavClick}

@@ -31,7 +31,13 @@ import TopNav from './components/TopNav'
 
 export default function App() {
   const { pathname } = useLocation()
-  const hideNav = pathname.startsWith('/listing/') || pathname.startsWith('/chat/') || pathname === '/login'
+  // Меню внизу прячем на объявлении, в переписке и на входе: там
+  // человек занят одним делом, и лишние кнопки мешают.
+  //
+  // Объявление узнаём по хвосту адреса из восьми знаков — у прочих
+  // страниц такого нет.
+  const isListing = /\/[a-z0-9-]+-[0-9a-f]{8}\/?$/.test(pathname)
+  const hideNav = isListing || pathname.startsWith('/chat/') || pathname === '/login'
 
   const navType = useNavigationType()
 
@@ -100,9 +106,10 @@ export default function App() {
           <Route path="/search" element={<Search />} />
           <Route path="/post" element={<PostAd />} />
           <Route path="/categories" element={<Categories />} />
-          {/* Старый адрес оставляем: по нему разошлись ссылки в
-              телеграме и в переписках, и ломать их нельзя. */}
-          <Route path="/listing/:id" element={<ListingDetail />} />
+          {/* Короткий путь по ключу — для админки и служебных ссылок,
+              где понятного адреса взять неоткуда. Приложение по хвосту
+              найдёт объявление и покажет его. */}
+          <Route path="/go/:slug" element={<ListingDetail />} />
 
           {/* Понятный адрес: /beograd/mebel/stol-ikea-45e17e58.
               Человек видит его в выдаче и по нему решает, нажимать ли —

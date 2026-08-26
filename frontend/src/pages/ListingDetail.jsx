@@ -11,12 +11,12 @@ import SimilarListings from '../components/SimilarListings'
 import { formatPrice } from '../utils/money'
 
 export default function ListingDetail() {
-  const { id, slug } = useParams()
+  const { slug } = useParams()
 
-  // Ключ объявления. В понятном адресе он хвостом: у
-  // «stol-ikea-45e17e58» это «45e17e58». Название могли поправить, и
-  // адрес разойдётся с нынешним — но хвост остаётся.
-  const listingId = id || (slug || '').split('-').pop()
+  // Ключ объявления — хвост адреса: у «stol-ikea-45e17e58» это
+  // «45e17e58». Название могли поправить, и адрес разойдётся с
+  // нынешним — но хвост остаётся.
+  const listingId = (slug || '').split('-').pop()
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
@@ -63,7 +63,7 @@ export default function ListingDetail() {
 
   const onFav = async () => {
     const res = await toggle(id)
-    if (res?.needAuth) navigate(`/login?returnTo=${encodeURIComponent(`/listing/${id}`)}`)
+    if (res?.needAuth) navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`)
   }
   const [starting, setStarting] = useState(false)
   const [descOpen, setDescOpen] = useState(false)
@@ -179,7 +179,7 @@ export default function ListingDetail() {
     if (myId) {
       startChatWith()
     } else {
-      navigate(`/login?returnTo=${encodeURIComponent(`/listing/${id}`)}`)
+      navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`)
     }
   }
 

@@ -230,7 +230,7 @@ export default function AdminUsers() {
                           <button
                             key={l.id}
                             className="admin-listing"
-                            onClick={() => navigate(`/listing/${l.id}`)}
+                            onClick={() => navigate(`/go/${l.id}`)}
                           >
                             <span>{l.title || t('admin.untitled')}</span>
                             <span className="admin-listing-status">{l.status}</span>
