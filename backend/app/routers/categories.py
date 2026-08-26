@@ -11,10 +11,13 @@ router = APIRouter(prefix="/api/categories", tags=["categories"])
 
 # Сколько объявлений нужно разделу, чтобы в нём был выбор.
 #
-# OpenTable выяснил это числом: около полусотни предложений в одной
-# зоне, и тогда поиск даёт достаточно, чтобы человек решил задачу.
-# Меньше — он уходит и не возвращается.
-ENOUGH_FOR_CHOICE = 50
+# OpenTable вывел около полусотни, но это для города с тысячами
+# ресторанов. Нам важнее не отпугнуть: раздел с двумя десятками уже
+# даёт человеку что посмотреть, а пометка «скоро» на нём выглядит
+# ложной скромностью.
+#
+# Метим только совсем пустые — где и десятка нет.
+ENOUGH_FOR_CHOICE = 10
 
 
 @router.get("")
@@ -35,10 +38,11 @@ def list_categories(db: Session = Depends(get_db)):
 
     # Считаем разом, а не для каждого раздела: иначе дюжина запросов
     # вместо одного на странице, которую открывают чаще прочих.
+    # Считаем все живые, а не только полные: в разделе с двадцатью
+    # объявлениями, из которых полных пятнадцать, выбор всё равно есть.
     counts = dict(
         db.query(Listing.category_id, func.count(Listing.id))
-        .filter(Listing.status == ListingStatus.active,
-                Listing.is_complete.is_(True))
+        .filter(Listing.status == ListingStatus.active)
         .group_by(Listing.category_id)
         .all()
     )

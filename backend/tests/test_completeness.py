@@ -286,7 +286,9 @@ def test_empty_categories_are_marked():
     import inspect
     from app.routers.categories import ENOUGH_FOR_CHOICE, list_categories
 
-    assert 20 <= ENOUGH_FOR_CHOICE <= 100
+    # Метим только совсем пустые: пометка «скоро» на разделе с двумя
+    # десятками объявлений выглядит ложной скромностью.
+    assert 5 <= ENOUGH_FOR_CHOICE <= 20
 
     source = inspect.getsource(list_categories)
     assert '"ready"' in source
