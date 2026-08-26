@@ -207,6 +207,9 @@ def test_every_menu_word_has_a_handler():
     for name in dir(kb):
         if not name.isupper():
             continue
+        # COLORS и подобные — не подписи кнопок, а настройки
+        if not isinstance(getattr(kb, name), str):
+            continue
         if name.endswith("_SUFFIX"):
             # пометки списка разбираются по образцу «<номер> слово»
             word = getattr(kb, name).strip()
@@ -240,3 +243,27 @@ def test_bot_can_actually_start():
               / "app" / "bot" / "publisher.py").read_text()
     assert "await dp.start_polling(bot)" in source
     assert 'if __name__ == "__main__":' in source
+
+
+def test_buttons_are_coloured_by_meaning():
+    """
+    Человек различает цвет до того, как прочтёт надпись, и
+    промахивается реже. «Продано» — доброе дело, зелёное. «Удалить» —
+    необратимое, красное: вернуть удалённое нельзя.
+    """
+    from app.bot import keyboards as kb
+
+    over_draft = {b.text: b.style
+                  for row in kb.draft().keyboard for b in row}
+    assert over_draft[kb.PUBLISH] == "success"
+    assert over_draft[kb.CANCEL] == "danger"
+
+    listings = {b.text: b.style
+                for row in kb.listings(2).keyboard for b in row}
+    assert listings["1 продано"] == "success"
+    assert listings["1 удалить"] == "danger"
+
+    # обычные кнопки не красим: цветом выделяют важное, а если
+    # выделено всё, не выделено ничего
+    assert over_draft[kb.MY] is None
+    assert over_draft[kb.TITLE] is None

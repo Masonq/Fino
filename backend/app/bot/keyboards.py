@@ -30,9 +30,37 @@ WATCH = "Слежу за"
 WATCH_ADD = "Следить за вещью"
 
 
+# Цвет кнопки. Главное действие зелёным, отмена красной: человек
+# различает их до того, как прочтёт надпись, и промахивается реже.
+COLORS = {
+    PUBLISH: "success",
+    CANCEL: "danger",
+    # «Назад» синим: это не действие над объявлением, а перемещение, и
+    # путать его с правками не нужно.
+    BACK: "primary",
+}
+
+
+def _color(word: str) -> str | None:
+    """
+    Цвет кнопки.
+
+    «1 продано» — доброе дело, зелёное. «1 удалить» — необратимое,
+    красное: перепутать их легко, а вернуть удалённое нельзя.
+    """
+    if word in COLORS:
+        return COLORS[word]
+    if word.endswith(SOLD_SUFFIX):
+        return "success"
+    if word.endswith(DROP_SUFFIX):
+        return "danger"
+    return None
+
+
 def _menu(rows: list[list[str]], hint: str) -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
-        keyboard=[[KeyboardButton(text=word) for word in row] for row in rows],
+        keyboard=[[KeyboardButton(text=word, style=_color(word))
+                   for word in row] for row in rows],
         resize_keyboard=True,
         is_persistent=True,
         input_field_placeholder=hint,

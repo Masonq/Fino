@@ -520,6 +520,10 @@ async def start(message: Message) -> None:
         keyboard=InlineKeyboardMarkup(inline_keyboard=[[
             InlineKeyboardButton(text="Да, и в чат, и на сайт",
                                  callback_data="site:yes",
+                                 # Согласие зелёным: его выбирают
+                                 # почти все, и оно должно читаться
+                                 # первым.
+                                 style="success",
                                  icon_custom_emoji_id=icon("publish")),
         ], [
             InlineKeyboardButton(text="Только в чат",
@@ -566,6 +570,10 @@ async def ask_about_site(message: Message) -> None:
         keyboard=InlineKeyboardMarkup(inline_keyboard=[[
             InlineKeyboardButton(text="Да, и в чат, и на сайт",
                                  callback_data="site:yes",
+                                 # Согласие зелёным: его выбирают
+                                 # почти все, и оно должно читаться
+                                 # первым.
+                                 style="success",
                                  icon_custom_emoji_id=icon("publish")),
         ], [
             InlineKeyboardButton(text="Только в чат",
