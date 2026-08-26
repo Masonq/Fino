@@ -184,10 +184,10 @@ export default function CategoryLanding() {
               className="landing-sub"
               onClick={() => navigate(`/search?category=${sub.slug}`)}
             >
-              <span className="landing-sub-art"><CategoryArt slug={sub.slug} /></span>
               <span className="landing-sub-name">
                 {sub.name?.[i18n.language] || sub.name?.ru}
               </span>
+              <span className="landing-sub-art"><CategoryArt slug={sub.slug} /></span>
             </button>
           ))}
         </div>
