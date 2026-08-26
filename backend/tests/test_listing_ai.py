@@ -227,3 +227,17 @@ def test_import_applies_the_whole_parse():
     assert "listing_ai" in source
     assert '"description"' in source
     assert '"price"' in source
+
+
+def test_title_is_not_a_list_of_contents():
+    """
+    «Набор фруктов колы зеро лазаньи чая сибирских кедровых орехов» —
+    перечисление содержимого. В ленте оно всё равно обрежется на
+    середине, а понятнее не станет.
+    """
+    source = ("Набор фруктов, кола зеро, лазанья, чай, "
+              "сибирские кедровые орехи, масло с трюфелем")
+
+    assert not _title_ok("Набор фруктов колы зеро лазаньи чая "
+                         "сибирских кедровых орехов", source)
+    assert _title_ok("Набор фруктов и продуктов", source + " набор продуктов")
