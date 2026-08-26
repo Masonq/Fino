@@ -140,3 +140,50 @@ def test_mid_sentence_titles_are_rejected():
     # а нормальное название начинается с вещи
     assert title_is_clear("Уборка домов и квартир в Белграде")
     assert title_is_clear("Комод антикварный, массив дерева")
+
+
+def test_advertising_phrases_are_rejected():
+    """
+    «Наш капитан поможет», «уже более 4 лет помогаем» — рекламная
+    фраза, а не название. Настоящее название глагола не содержит:
+    «Комод антикварный», «Монитор Philips».
+    """
+    from app.routers.listings import title_is_clear
+
+    assert not title_is_clear("Наш капитан поможет сделать много фотографий")
+    assert not title_is_clear("Уже более 4 лет помогаем клиентам с трансферами")
+    assert not title_is_clear("Приглашаю в нейл студию на маникюр")
+
+
+def test_service_names_survive():
+    """
+    «Уборка», «хранение», «стрижка» — отглагольные существительные, но
+    это названия услуг, и в ленте им место.
+    """
+    from app.routers.listings import title_is_clear
+
+    assert title_is_clear("Хранение ваших вещей в Белграде")
+    assert title_is_clear("Мужская классическая стрижка в центре Белграда")
+    assert title_is_clear("Клининг в Белграде от опытного клинера")
+    assert title_is_clear("Мелкогабаритный переезд (без мебели)")
+
+
+def test_count_before_the_thing_is_fine():
+    """
+    «2 велосипедных шлема» — после числа вещь стоит в родительном, и
+    это верная форма, а не обрывок фразы.
+    """
+    from app.routers.listings import title_is_clear
+
+    assert title_is_clear("2 велосипедных шлема")
+    assert title_is_clear("3 стула из массива")
+
+
+def test_unknown_words_do_not_break_it():
+    """
+    Незнакомое слово словарь принимает за глагол («юникло»). Судить по
+    неуверенному разбору нельзя — хорошие названия попадут под нож.
+    """
+    from app.routers.listings import title_is_clear
+
+    assert title_is_clear("рубашка юникло, размер xs")
