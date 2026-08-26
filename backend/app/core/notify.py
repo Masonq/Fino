@@ -39,7 +39,12 @@ def _code_letter(code: str) -> str:
     таблицы и простые правила — как в девяностых, но иначе письмо
     развалится.
     """
-    site = settings.public_base_url.rstrip("/")
+    # Полный адрес обязателен: относительный путь почтовая служба не
+    # найдёт, и на месте логотипа будет пустой квадрат.
+    site = (settings.public_base_url or "https://plonk.rs").rstrip("/")
+    if not site.startswith("http"):
+        site = f"https://{site}"
+
     return f"""<!DOCTYPE html>
 <html lang="ru"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width">
