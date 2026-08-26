@@ -91,3 +91,6 @@ def test_sold_listing_stays_visible():
             / "frontend" / "src" / "pages" / "ListingDetail.jsx").read_text()
     assert "listing?.status === 'sold'" in page
     assert "detail.sold" in page
+    # внизу — возврат в раздел, а не обещание похожих: подбор пока
+    # слабый, и пустая надежда хуже честного «смотрите раздел»
+    assert "detail.gone_to_category" in page

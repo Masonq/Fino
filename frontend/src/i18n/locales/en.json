@@ -139,7 +139,8 @@
     "free": "Free",
     "sold": "Sold",
     "gone": "Listing withdrawn",
-    "gone_hint": "This item is gone — see similar ones below"
+    "gone_note": "The seller is no longer selling this item",
+    "gone_to_category": "Browse this category"
   },
   "favorites": {
     "title": "Saved",

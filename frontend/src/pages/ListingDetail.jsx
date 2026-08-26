@@ -222,8 +222,11 @@ export default function ListingDetail() {
             ушла похожая вещь, и на него уже стоят ссылки. Но человек
             должен видеть, что вещи больше нет, а не писать впустую. */}
         {gone && (
-          <div className="listing-gone">
-            {t(listing.status === 'sold' ? 'detail.sold' : 'detail.gone')}
+          <div className="gone-banner">
+            <div className="gone-banner-title">
+              {t(listing.status === 'sold' ? 'detail.sold' : 'detail.gone')}
+            </div>
+            <div className="gone-banner-note">{t('detail.gone_note')}</div>
           </div>
         )}
         <div className="detail-price">
@@ -329,7 +332,14 @@ export default function ListingDetail() {
           кнопок даём одну рабочую, иначе экран выглядит сломанным. */}
       {gone ? (
         <div className="sticky-cta">
-          <div className="cta-gone">{t('detail.gone_hint')}</div>
+          {/* Не обещаем похожие: подбор пока слабый, и пустая надежда
+              хуже честного «смотрите раздел». */}
+          <button
+            className="cta-btn primary"
+            onClick={() => navigate(`/category/${listing.category_slug}`)}
+          >
+            {t('detail.gone_to_category')}
+          </button>
         </div>
       ) : listing.external_source === 'telegram' && listing.external_author ? (
         <div className="sticky-cta">

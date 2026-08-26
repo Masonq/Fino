@@ -139,7 +139,8 @@
     "free": "Besplatno",
     "sold": "Prodato",
     "gone": "Oglas povučen",
-    "gone_hint": "Ove stvari više nema — pogledajte slične ispod"
+    "gone_note": "Prodavac više ne prodaje ovu stvar",
+    "gone_to_category": "Pogledajte kategoriju"
   },
   "favorites": {
     "title": "Sačuvano",
