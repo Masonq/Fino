@@ -443,8 +443,6 @@ def similar_listings(
         shared = len(base_words & words)
         overlap = shared / max(len(base_words | words), 1) if base_words else 0
 
-        same_sub = 0 if (base.sub_category_id
-                         and l.sub_category_id == base.sub_category_id) else 1
         same_city = 0 if (base.city and l.city == base.city) else 1
         own = 1 if l.owner_id == base.owner_id else 0
 
@@ -456,7 +454,7 @@ def similar_listings(
         # Сходство названий решает, остальное уточняет. Полные
         # объявления впереди: обрубок без фотографии в подборке
         # бесполезен — по нему не поймёшь, та ли это вещь.
-        return (own, -round(overlap, 2), same_sub,
+        return (own, -round(overlap, 2),
                 0 if l.is_complete else 1, same_city, diff)
 
     candidates.sort(key=score)
@@ -466,7 +464,7 @@ def similar_listings(
     if base_words:
         candidates = [
             l for l in candidates
-            if _title_words(l, lang) & base_words or l.sub_category_id == base.sub_category_id
+            if _title_words(l, lang) & base_words
         ] or candidates
 
     picked = candidates[:limit]
