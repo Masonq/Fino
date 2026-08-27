@@ -348,7 +348,8 @@
     "title": "Prodavac",
     "not_found": "Profil nije dostupan",
     "since": "Na PLONK-u od {{date}}",
-    "listings": "Oglasi"
+    "listings": "Oglasi",
+    "show_all": "Prikaži sve oglase · {{count}}"
   },
   "admin": {
     "title": "Korisnici",

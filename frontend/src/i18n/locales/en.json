@@ -347,7 +347,8 @@
     "title": "Seller",
     "not_found": "Profile unavailable",
     "since": "On PLONK since {{date}}",
-    "listings": "Listings"
+    "listings": "Listings",
+    "show_all": "Show all listings · {{count}}"
   },
   "admin": {
     "title": "Users",

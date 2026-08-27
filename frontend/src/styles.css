@@ -1535,6 +1535,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* Страница продавца */
 .seller-head{ display:flex; align-items:center; gap:14px; padding:4px 16px 18px; }
+.seller-report-corner{ display:flex; justify-content:flex-end; padding:0 16px; }
+.seller-report-corner .report-link{ margin:0 0 8px; }
+.seller-report-corner .report-sheet{ flex:1; }
 .seller-avatar.lg{ width:64px; height:64px; font-size:22px; }
 .seller-head-info{ min-width:0; }
 .seller-name.lg{ font-size:17px; }
@@ -1545,6 +1548,11 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .seller-company-about{ padding:0 16px; margin-top:14px; font-size:13px; line-height:1.5; color:var(--ink-soft); white-space:pre-line; }
 .seller-section{ padding:0 16px; margin-top:22px; }
 .seller-section-title{ font-size:15px; font-weight:800; margin-bottom:11px; }
+.seller-show-all{
+  display:block; width:100%; margin-top:12px; padding:12px;
+  border-radius:12px; border:1px solid rgba(20,30,25,.09); background:#fff;
+  font-size:13.5px; font-weight:700; color:var(--primary-deep);
+}
 .seller-missing{ padding:28px 16px; color:var(--muted); text-align:center; }
 
 .review-date{ margin-left:auto; font-size:11px; color:var(--muted); white-space:nowrap; }

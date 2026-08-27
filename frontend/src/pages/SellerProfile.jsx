@@ -8,6 +8,9 @@ import SellerReviews from '../components/SellerReviews'
 import ReportButton from '../components/ReportButton'
 import { CardSkeletons } from '../components/Skeletons'
 
+// Сколько карточек показывать, пока не развернули весь список.
+const PREVIEW_COUNT = 6
+
 /**
  * Открытая страница продавца.
  *
@@ -24,6 +27,12 @@ export default function SellerProfile() {
   const [total, setTotal] = useState(0)
   const [loadingMore, setLoadingMore] = useState(false)
   const [failed, setFailed] = useState(false)
+  // По умолчанию — всего несколько карточек, не всё, что есть у
+  // магазина: у некоторых продавцов тысячи объявлений, и до отзывов
+  // внизу страницы было physически не долистать — подгрузка при
+  // прокрутке услужливо подсовывала ещё и ещё, так и не давая дойти
+  // до конца. Разворачивается по нажатию, не само.
+  const [expanded, setExpanded] = useState(false)
   const sentinelRef = useRef(null)
 
   useEffect(() => {
@@ -43,9 +52,12 @@ export default function SellerProfile() {
       .finally(() => setLoadingMore(false))
   }, [id, i18n.language, listings.length, loadingMore])
 
-  // Подгрузка по мере прокрутки: у магазина объявлений могут быть тысячи,
-  // а раньше показывались только первые двадцать и упирались в тупик.
+  // Подгрузка по мере прокрутки — только после того, как сам развернул
+  // список: до этого хватает и первой горстки карточек, а бесконечная
+  // подгрузка сама по себе и была причиной, почему до отзывов было не
+  // добраться.
   useEffect(() => {
+    if (!expanded) return
     if (listings.length === 0 || listings.length >= total) return
     const el = sentinelRef.current
     if (!el) return
@@ -55,7 +67,7 @@ export default function SellerProfile() {
     )
     io.observe(el)
     return () => io.disconnect()
-  }, [listings.length, total, loadMore])
+  }, [expanded, listings.length, total, loadMore])
 
   if (failed) {
     return (
@@ -84,6 +96,10 @@ export default function SellerProfile() {
   return (
     <div className="page">
       <PageHeader title={t('seller.title')} />
+
+      <div className="seller-report-corner">
+        <ReportButton targetUserId={profile.id} />
+      </div>
 
       <div className="seller-head">
         <div className={profile.is_company ? 'seller-avatar lg is-company' : 'seller-avatar lg'}>
@@ -114,19 +130,25 @@ export default function SellerProfile() {
         <div className="seller-company-about">{profile.company_description}</div>
       )}
 
-      <ReportButton targetUserId={profile.id} />
-
       {listings.length > 0 && (
         <div className="seller-section">
           <div className="seller-section-title">
             {t('seller.listings')} · {total}
           </div>
           <div className="infinite-grid no-pad">
-            {listings.map((l) => <ListingCard key={l.id} listing={l} />)}
+            {(expanded ? listings : listings.slice(0, PREVIEW_COUNT)).map((l) => (
+              <ListingCard key={l.id} listing={l} />
+            ))}
           </div>
-          <div ref={sentinelRef} className="feed-sentinel">
-            {loadingMore && <span className="feed-loading">{t('actions.loading')}</span>}
-          </div>
+          {!expanded && total > PREVIEW_COUNT ? (
+            <button className="seller-show-all" onClick={() => setExpanded(true)}>
+              {t('seller.show_all', { count: total })}
+            </button>
+          ) : expanded && (
+            <div ref={sentinelRef} className="feed-sentinel">
+              {loadingMore && <span className="feed-loading">{t('actions.loading')}</span>}
+            </div>
+          )}
         </div>
       )}
 
