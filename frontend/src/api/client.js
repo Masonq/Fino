@@ -117,7 +117,7 @@ export const api = {
     method: 'POST', body: JSON.stringify({ key }),
   }),
 
-  modQueue: (lang) => request(`/moderation/queue?${new URLSearchParams({ lang })}`),
+  modQueue: (lang, offset) => request(`/moderation/queue?${new URLSearchParams({ lang, offset: offset || 0 })}`),
   modApprove: (id) => request(`/moderation/${id}/approve`, { method: 'POST' }),
   modReject: (id, reason) => request(`/moderation/${id}/reject`, {
     method: 'POST',

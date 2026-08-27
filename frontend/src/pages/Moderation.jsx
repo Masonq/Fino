@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, Link } from 'react-router-dom'
 import { api } from '../api/client'
@@ -46,6 +46,8 @@ export default function Moderation() {
   const [rejectingId, setRejectingId] = useState(null)
   const [customReason, setCustomReason] = useState(false)
   const [reasonText, setReasonText] = useState('')
+  const [loadingMore, setLoadingMore] = useState(false)
+  const sentinelRef = useRef(null)
 
   const load = () => {
     api.modQueue(i18n.language)
@@ -68,6 +70,36 @@ export default function Moderation() {
       .catch(() => {})
       .finally(() => setReportsLoaded(true))
   }
+
+  // Очередь сортирована «сначала старые» — так модератор разбирает по
+  // порядку. Но при бэклоге за одним запросом (лимит 50) новые
+  // объявления оказывались за пределами первой страницы и не
+  // показывались вовсе, пока старые не разберут. Подгружаем по
+  // прокрутке — тот же приём, что и в поиске.
+  const loadMore = useCallback(() => {
+    if (loadingMore || items.length >= total) return
+    setLoadingMore(true)
+    api.modQueue(i18n.language, items.length)
+      .then((res) => setItems((prev) => {
+        const next = [...prev, ...(res.items || [])]
+        cache = { ...cache, items: next }
+        return next
+      }))
+      .catch(() => {})
+      .finally(() => setLoadingMore(false))
+  }, [i18n.language, items.length, total, loadingMore])
+
+  useEffect(() => {
+    if (!loaded || tab !== 'listings' || items.length === 0 || items.length >= total) return
+    const el = sentinelRef.current
+    if (!el) return
+    const io = new IntersectionObserver(
+      (entries) => { if (entries[0].isIntersecting) loadMore() },
+      { rootMargin: '600px' },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [loaded, tab, items.length, total, loadMore])
 
   const resolveReport = async (id, action) => {
     setBusyId(id)
@@ -292,6 +324,14 @@ export default function Moderation() {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Показывается только на вкладке объявлений — счётчик total
+          относится к очереди на модерацию, не к жалобам */}
+      {tab === 'listings' && loaded && items.length > 0 && items.length < total && (
+        <div ref={sentinelRef} className="feed-sentinel">
+          {loadingMore && <span className="feed-loading">{t('actions.loading')}</span>}
         </div>
       )}
     </div>

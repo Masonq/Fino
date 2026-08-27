@@ -24,6 +24,7 @@ def require_moderator(user: User = Depends(get_current_user)) -> User:
 def queue(
     lang: str = Query("ru"),
     limit: int = Query(50, le=200),
+    offset: int = 0,
     moderator: User = Depends(require_moderator),
     db: Session = Depends(get_db),
 ):
@@ -35,6 +36,7 @@ def queue(
                  joinedload(Listing.category).joinedload(Category.parent))
         .filter(Listing.status == ListingStatus.pending_moderation)
         .order_by(Listing.created_at.asc())
+        .offset(offset)
         .limit(limit)
         .all()
     )
