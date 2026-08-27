@@ -642,7 +642,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   padding:14px 12px 10px; gap:10px;
 }
 .results-head-left{ display:flex; align-items:center; gap:10px; min-width:0; flex-wrap:wrap; }
-.results-head-right{ display:flex; align-items:center; gap:8px; flex-shrink:0; margin-left:auto; }
+.results-head-right{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
 .results-count{ font-size:14px; font-weight:700; color:var(--ink-soft); white-space:nowrap; }
 
 .sort-dd{ position:relative; flex-shrink:0; }
