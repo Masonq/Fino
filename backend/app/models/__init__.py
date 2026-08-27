@@ -12,6 +12,7 @@ from app.models.login_ticket import LoginTicket
 from app.models.blocked_user import BlockedUser
 from app.models.document_verification import DocVerificationRequest, DocVerificationStatus, DocVerificationKind
 from app.models.login_event import LoginEvent
+from app.models.telegram_import_progress import TelegramImportProgress
 from app.models.listing_view_daily import ListingViewDaily
 from app.models.notification import Notification
 from app.models.support import (
@@ -33,6 +34,7 @@ __all__ = [
     "ListingViewDaily",
     "DocVerificationRequest", "DocVerificationStatus", "DocVerificationKind",
     "LoginEvent",
+    "TelegramImportProgress",
     "Notification",
     "Ticket", "TicketMessage", "TicketStatus", "TicketTopic",
 ]

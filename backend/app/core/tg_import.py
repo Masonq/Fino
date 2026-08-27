@@ -146,7 +146,25 @@ def topic_of(msg) -> int | None:
 
 
 def last_imported_id(db, chat_id: int) -> int | None:
-    """Номер самого свежего сообщения, которое мы уже перенесли из чата."""
+    """
+    Номер самого свежего сообщения, до которого дочитал импорт.
+
+    Метка из отдельной таблицы (TelegramImportProgress), не из
+    оставшихся в базе объявлений — иначе удаление отклонённого
+    (обычное дело для перенесённых из чата, см. докстринг модели)
+    откатывало бы её назад и запускало повторный разбор уже
+    просмотренного куска чата.
+
+    Пока метка ни разу не записана этим кодом (первый заход после
+    обновления) — считаем по-старому, от оставшихся объявлений: без
+    этого переход сразу перечитал бы чат с нуля целиком.
+    """
+    from app.models import TelegramImportProgress
+
+    progress = db.query(TelegramImportProgress).get(str(chat_id))
+    if progress:
+        return progress.last_message_id
+
     row = (
         db.query(Listing.external_message_id)
         .filter(
@@ -157,6 +175,22 @@ def last_imported_id(db, chat_id: int) -> int | None:
         .first()
     )
     return row[0] if row else None
+
+
+def save_import_progress(db, chat_id: int, last_message_id: int) -> None:
+    """Запоминает, до какого сообщения дочитали — независимо от того,
+    стало ли оно объявлением и осталось ли оно потом в базе."""
+    from sqlalchemy.dialects.postgresql import insert as pg_insert
+    from app.models import TelegramImportProgress
+
+    stmt = pg_insert(TelegramImportProgress).values(
+        chat_id=str(chat_id), last_message_id=last_message_id, updated_at=utcnow(),
+    )
+    stmt = stmt.on_conflict_do_update(
+        index_elements=["chat_id"],
+        set_={"last_message_id": last_message_id, "updated_at": utcnow()},
+    )
+    db.execute(stmt)
 
 
 # Заголовки, собранные из фактов: живой строки в объявлении не нашлось.
@@ -430,7 +464,7 @@ async def collect(client, chat_id: int, meta: dict, days: int,
         })
 
     bar.done()
-    return out
+    return out, max((m.id for m in messages), default=min_id)
 
 
 def forget_photos(item: dict) -> None:
@@ -744,8 +778,8 @@ async def main() -> None:
             if min_id:
                 print(f"{meta['title']}: читаем после сообщения {min_id}")
             try:
-                items = await collect(client, chat_id, meta, args.days,
-                                      args.per_category, min_id)
+                items, max_id = await collect(client, chat_id, meta, args.days,
+                                              args.per_category, min_id)
             except FloodWaitError as exc:
                 # Запрет длиннее минуты библиотека не пережидает сама.
                 # Записываем срок и уходим: следующий заход по расписанию
@@ -760,6 +794,15 @@ async def main() -> None:
                     added += 1
                 else:
                     skipped += 1
+            # Метка прогресса — от того, до чего реально дочитали в этот
+            # заход, не от того, что из прочитанного осталось в базе
+            # (см. докстринг TelegramImportProgress). Только после
+            # успешной записи всех отобранных объявлений этого чата —
+            # если запись оборвётся на середине, заход по расписанию
+            # должен увидеть то же самое, а не перескочить через
+            # необработанное.
+            if max_id is not None:
+                save_import_progress(db, chat_id, max_id)
             db.commit()
     finally:
         db.close()
