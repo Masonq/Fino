@@ -559,5 +559,10 @@
     "avg_per_day": "Prosečno dnevno",
     "days_left": "Preostalo do skidanja",
     "expires_today": "Danas"
+  },
+  "profile": {
+    "sec_listings": "Oglasi",
+    "sec_activity": "Aktivnost",
+    "sec_info": "Informacije"
   }
 }

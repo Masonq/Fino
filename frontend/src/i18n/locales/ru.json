@@ -560,5 +560,10 @@
     "avg_per_day": "В среднем за день",
     "days_left": "Осталось до снятия",
     "expires_today": "Сегодня"
+  },
+  "profile": {
+    "sec_listings": "Объявления",
+    "sec_activity": "Общение",
+    "sec_info": "Информация"
   }
 }

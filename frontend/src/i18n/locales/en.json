@@ -558,5 +558,10 @@
     "avg_per_day": "Avg. per day",
     "days_left": "Days until removal",
     "expires_today": "Today"
+  },
+  "profile": {
+    "sec_listings": "Listings",
+    "sec_activity": "Activity",
+    "sec_info": "Information"
   }
 }

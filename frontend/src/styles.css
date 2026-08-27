@@ -925,7 +925,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .auth-terms a{ color:var(--ink-soft); text-decoration:underline; }
 
 /* ===== профиль ===== */
-.profile-head{ display:flex; align-items:center; gap:14px; padding:4px 12px 20px; }
+.profile-head{ display:flex; align-items:center; gap:14px; padding:16px 14px; }
 .profile-avatar{
   width:60px; height:60px; border-radius:50%; flex-shrink:0; overflow:hidden;
   background:var(--primary); color:#fff;
@@ -937,13 +937,43 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .profile-name{ font-size:17px; font-weight:800; color:var(--ink); }
 .profile-contact{ font-size:13px; color:var(--muted); margin-top:2px; }
 
-.profile-menu{ background:#fff; border-top:1px solid rgba(20,30,25,.06); }
+/* Карточка шапки — раньше аватар с именем просто «плавали» без рамки
+   прямо на фоне страницы, а десять пунктов меню ниже шли одним
+   плоским списком: всё сразу читалось как одна нерасчленённая куча.
+   Теперь шапка — своя карточка, а пункты меню разбиты на подписанные
+   смысловые группы (см. .profile-section-title/.profile-menu ниже),
+   каждая — отдельная карточка с воздухом между ними. */
+.profile-head-card{
+  margin:0 12px 22px; border-radius:16px; background:#fff;
+  border:1px solid rgba(20,30,25,.06); overflow:hidden;
+}
+.profile-edit-btn{
+  display:block; text-align:center; padding:12px; font-size:13px; font-weight:700;
+  color:var(--primary-deep); border-top:1px solid rgba(20,30,25,.06);
+}
+
+.profile-section-title{
+  padding:0 16px 8px; margin-top:4px;
+  font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.04em;
+  color:var(--muted);
+}
+.profile-menu{
+  margin:0 12px 22px; border-radius:16px; background:#fff;
+  border:1px solid rgba(20,30,25,.06); overflow:hidden;
+}
 .profile-row{
-  display:flex; align-items:center; justify-content:space-between;
-  padding:15px 12px; border-bottom:1px solid rgba(20,30,25,.06);
+  display:flex; align-items:center; gap:12px;
+  padding:13px 14px; border-bottom:1px solid rgba(20,30,25,.06);
   font-size:14.5px; font-weight:600; color:var(--ink);
 }
-.profile-row svg{ width:17px; height:17px; color:var(--muted); }
+.profile-menu .profile-row:last-child{ border-bottom:none; }
+.profile-row-icon{
+  width:32px; height:32px; border-radius:10px; flex-shrink:0;
+  background:var(--primary-soft); color:var(--primary-deep);
+  display:flex; align-items:center; justify-content:center;
+}
+.profile-row-icon svg{ width:17px; height:17px; }
+.profile-row-arrow{ width:16px; height:16px; margin-left:auto; color:var(--muted); flex-shrink:0; }
 .profile-logout{
   display:block; margin:24px auto 0; padding:12px 26px; border-radius:13px;
   background:#fff; border:1px solid rgba(255,97,82,.28);
@@ -1753,15 +1783,6 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   text-align: left;
 }
 .admin-listing-status { color: #888; flex: 0 0 auto; }
-
-.profile-staff { margin-top: 14px; }
-.profile-staff-title {
-  padding: 10px 14px 4px;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: .04em;
-  color: #999;
-}
 
 /* ——— админка: показатели ——— */
 .stats-cards {
