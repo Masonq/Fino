@@ -88,7 +88,29 @@ def _strip_tags(text: str) -> str:
     return re.sub(r"<[^>]+>", "", text)
 
 
-def notify_new_message(db: Session, recipient_id, sender_name: str, preview: str) -> bool:
+def notify_new_message(db: Session, recipient_id, sender_id, sender_name: str,
+                       preview: str, chat_id=None, message_id=None) -> bool:
+    # Не чаще одного уведомления за MESSAGE_COOLDOWN на переписку — иначе
+    # бурный диалог шлёт уведомление на каждую реплику. Раньше константа
+    # была объявлена, но нигде не проверялась. Смотрим сообщения именно
+    # от того же отправителя — иначе своё же недавнее сообщение самого
+    # получателя (в чате всего два участника, но порядок событий и так
+    # не гарантирует, что оно точно от собеседника) сбило бы счётчик.
+    if chat_id is not None:
+        from app.models import Message
+        recent = (
+            db.query(Message)
+            .filter(
+                Message.chat_id == chat_id,
+                Message.sender_id == sender_id,
+                Message.created_at > utcnow() - MESSAGE_COOLDOWN,
+                Message.id != message_id,
+            )
+            .first()
+        )
+        if recent:
+            return False
+
     text = (
         f"<b>{sender_name}</b> написал вам в PLONK\n\n"
         f"{preview[:120]}"

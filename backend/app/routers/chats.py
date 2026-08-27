@@ -179,7 +179,8 @@ def send_message(
         from app.core.notifications import notify_new_message
         other_id = chat.seller_id if sender_id == chat.buyer_id else chat.buyer_id
         sender = db.query(User).get(sender_id)
-        notify_new_message(db, other_id, sender.display_name if sender else "", payload.text or "")
+        notify_new_message(db, other_id, sender_id, sender.display_name if sender else "",
+                          payload.text or "", chat_id=chat_id, message_id=message.id)
     except Exception:
         pass
     return {"id": str(message.id), "sender_id": str(message.sender_id), "text": message.text, "created_at": message.created_at.isoformat()}
