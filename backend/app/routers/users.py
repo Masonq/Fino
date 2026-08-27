@@ -2,7 +2,7 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.core.auth import get_current_user
 from app.core.database import get_db
@@ -63,6 +63,19 @@ class ProfileEdit(BaseModel):
     # Компания — для тех, кто продаёт как бизнес. Проверку по реестру
     # это не отменяет: название человек пишет сам, а галочку ставим мы.
     company_name: str | None = Field(default=None, max_length=255)
+
+    @field_validator("display_name")
+    @classmethod
+    def check_display_name(cls, v):
+        # min_length в Field проверяет строку ДО обрезки пробелов —
+        # «  a  » (4 символа) проходил бы, хотя после strip() внизу
+        # это один символ. Обрезаем здесь же, до самой проверки длины.
+        if v is None:
+            return v
+        v = v.strip()
+        if len(v) < 2:
+            raise ValueError("too_short")
+        return v
 
 
 @router.get("/me")
