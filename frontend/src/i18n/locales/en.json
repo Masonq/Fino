@@ -184,7 +184,8 @@
     "find": "Search",
     "not_found": "This page doesn't exist — the link may be outdated or mistyped.",
     "price_down": "Price dropped",
-    "price_up": "Price increased"
+    "price_up": "Price increased",
+    "promoted": "Promoted"
   },
   "chats": {
     "need_auth": "Introduce yourself to see your conversations.",

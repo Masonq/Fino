@@ -22,6 +22,11 @@ export default function ListingCard({ listing, large = false }) {
   const { isFavorite, toggle } = useFavorites()
   const fav = isFavorite(listing.id)
   const meta = cardMeta(listing.category_slug, listing.attributes, t)
+  // XL-карточка (куплена продвижением) — крупнее соседних и занимает
+  // обе колонки сетки, тот же приём, что и large, только для конкретной
+  // карточки, а не для всего списка разом.
+  const cardClass = ['s-card', (large || listing.is_xl) && 'l-card', listing.is_xl && 'xl-span']
+    .filter(Boolean).join(' ')
 
   // Стрелка у цены — только если валюта не менялась вместе с ценой:
   // иначе «дороже/дешевле» надо сравнивать не по голым числам, а мы
@@ -41,7 +46,7 @@ export default function ListingCard({ listing, large = false }) {
   }
 
   return (
-    <div className={large ? 's-card l-card' : 's-card'}>
+    <div className={cardClass}>
       {/* Адрес приходит от приложения: он одинаков везде — в ленте,
           в боте, в письме и в карте сайта. Запасной на случай старых
           записей. */}
@@ -51,7 +56,7 @@ export default function ListingCard({ listing, large = false }) {
         ) : (
           <div className="photo-placeholder" />
         )}
-        {listing.is_urgent && <div className="badge-top urgent">{t('misc.urgent')}</div>}
+        {listing.is_xl && <div className="badge-top xl">{t('misc.promoted')}</div>}
         {listing.is_company && <div className="badge-top company">{t('seller.company_badge')}</div>}
       </Link>
       <div className="s-row">

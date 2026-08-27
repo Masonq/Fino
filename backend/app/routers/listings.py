@@ -104,6 +104,29 @@ def previous_price_of(listing) -> dict | None:
     return {"price": last["price"], "currency": last["currency"]}
 
 
+def _active_xl_ids(db: Session, listing_ids) -> set:
+    """
+    Какие из перечисленных объявлений сейчас куплены как крупная
+    карточка (XL) — один запрос на всю партию карточек, не по одному
+    на каждую: их могут быть десятки на одной странице ленты.
+    """
+    from app.models import Promotion, PromotionType
+
+    ids = [i for i in listing_ids if i]
+    if not ids:
+        return set()
+    rows = (
+        db.query(Promotion.listing_id)
+        .filter(
+            Promotion.listing_id.in_(ids),
+            Promotion.type == PromotionType.xl_card,
+            or_(Promotion.expires_at.is_(None), Promotion.expires_at > utcnow()),
+        )
+        .all()
+    )
+    return {r[0] for r in rows}
+
+
 @router.post("")
 def create_listing(
     payload: ListingCreate,
@@ -330,6 +353,7 @@ def search_listings(
         ordering = [title_hit, Listing.is_complete.desc()]
     ordering.append(order)
     items = q.order_by(*ordering).offset(offset).limit(limit).all()
+    xl_ids = _active_xl_ids(db, [l.id for l in items])
 
     def serialize(listing: Listing):
         translation = pick_translation(listing, lang)
@@ -346,7 +370,7 @@ def search_listings(
             "city": listing.city,
             "cover_photo": cover.thumbnail_url if cover else None,
             "delivery_available": listing.delivery_available,
-            "is_urgent": listing.is_urgent,
+            "is_xl": listing.id in xl_ids,
             "published_at": listing.published_at.isoformat() if listing.published_at else None,
             "attributes": listing.attributes,
             "category_slug": listing.category.slug if listing.category else None,
@@ -387,6 +411,7 @@ def listings_by_ids(
         .all()
     )
     by_id = {l.id: l for l in rows}
+    xl_ids = _active_xl_ids(db, list(by_id.keys()))
 
     def serialize(l: Listing):
         tr = pick_translation(l, lang)
@@ -402,6 +427,7 @@ def listings_by_ids(
             "attributes": l.attributes,
             "category_slug": l.category.slug if l.category else None,
             "is_company": bool(l.owner and l.owner.role == UserRole.seller_business),
+            "is_xl": l.id in xl_ids,
             # Понятный адрес: он должен быть одинаков везде — в ленте,
             # в избранном, в своих объявлениях.
             "path": listing_path(l.id, tr.title if tr else "", l.city,
@@ -605,6 +631,7 @@ def similar_listings(
         ]
 
     picked = candidates[:limit]
+    xl_ids = _active_xl_ids(db, [l.id for l in picked])
 
     def serialize(l: Listing):
         tr = pick_translation(l, lang)
@@ -620,6 +647,7 @@ def similar_listings(
             "attributes": l.attributes,
             "category_slug": l.category.slug if l.category else None,
             "is_company": bool(l.owner and l.owner.role == UserRole.seller_business),
+            "is_xl": l.id in xl_ids,
             "cover_photo": cover.thumbnail_url if cover else None,
             "path": listing_path(l.id, tr.title if tr else "", l.city,
                                  l.category.slug if l.category else None),

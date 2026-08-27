@@ -14,7 +14,7 @@ class PromotionType(str, enum.Enum):
     bump = "bump"              # разовое поднятие в поиске
     highlight = "highlight"    # цветовое выделение карточки
     top_category = "top_category"  # топ категории
-    urgent_badge = "urgent_badge"  # значок "срочно"
+    xl_card = "xl_card"        # крупная карточка на две колонки в ленте
 
 
 class Promotion(Base):

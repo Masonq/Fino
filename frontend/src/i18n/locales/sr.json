@@ -184,7 +184,8 @@
     "find": "Traži",
     "not_found": "Ova stranica ne postoji — link je možda zastareo ili pogrešno unet.",
     "price_down": "Cena je pala",
-    "price_up": "Cena je porasla"
+    "price_up": "Cena je porasla",
+    "promoted": "Izdvojeno"
   },
   "chats": {
     "need_auth": "Predstavite se da biste videli svoje razgovore.",

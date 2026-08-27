@@ -290,7 +290,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .col-btn svg{ width:15px; height:15px; }
 
 /* ===== simple listing card (Avito-style) ===== */
-.infinite-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px 8px; padding:0 12px; }
+.infinite-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:12px 8px; padding:0 12px;
+  /* dense — если XL-карточка (на 2 колонки) попадёт на нечётную
+     позицию, следующая обычная карточка подтянется в образовавшуюся
+     дыру вместо того, чтобы оставить пустое место в ряду. Без этого
+     верстка «ломалась» бы ровно там, где сработало продвижение. */
+  grid-auto-flow:dense;
+}
 /* Результаты поиска на странице раздела (CategoryLanding) — та же
    сетка, что и infinite-grid, но без своего отступа: landing-results
    вокруг уже даёт padding, и добавлять его тут ещё раз — задваивать.
@@ -306,8 +313,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .photo-placeholder{ width:100%; height:100%; background:linear-gradient(135deg,#DDE3DF,#C9D2CC); }
 
 .badge-top{ position:absolute; top:10px; left:10px; background:#fff; font-size:10px; font-weight:800; padding:5px 9px; border-radius:8px; }
-.badge-top.urgent{ background:var(--coral); color:#fff; }
+.badge-top.xl{ background:var(--ink); color:#fff; }
 .badge-top.company{ left:auto; right:10px; background:var(--primary-soft); color:var(--primary-deep); }
+/* Куплена как крупная карточка — занимает обе колонки сетки, а не
+   одну как соседние: та же строка, но во всю ширину. Стили самой
+   карточки (крупнее фото, крупнее шрифт) переиспользует .l-card —
+   она уже была нужна для другого случая (весь список в один
+   столбец), но визуально это ровно то, что нужно и здесь. */
+.s-card.xl-span{ grid-column:span 2; }
 
 .s-row{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; padding:9px 10px 0; }
 /* Заголовок держим ровно в двух строках: короткий добивается пустым местом,
