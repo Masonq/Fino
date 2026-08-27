@@ -42,6 +42,16 @@ def matches(listing: Listing, filters: dict, translations: list) -> bool:
     if filters.get("with_photo") and not listing.photos:
         return False
 
+    # «Купить/Снять/Посуточно» и подобное — structural атрибут объявления
+    # (недвижимость хранит под deal_type, работа — под listing_kind), а
+    # не отдельное текстовое слово. Без этой проверки подписка на
+    # «Снять» присылала бы и объявления о продаже.
+    deal_type = filters.get("deal_type")
+    if deal_type:
+        attrs = listing.attributes or {}
+        if attrs.get("deal_type") != deal_type and attrs.get("listing_kind") != deal_type:
+            return False
+
     # текстовый запрос — ищем по всем языкам объявления
     q = (filters.get("q") or "").strip().lower()
     if q:

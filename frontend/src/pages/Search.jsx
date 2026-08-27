@@ -106,9 +106,14 @@ export default function Search() {
     if (city.trim()) next.city = city.trim()
     if (withPhoto) next.with_photo = '1'
     if (sort !== 'new') next.sort = sort
+    // «Купить/Снять/Посуточно» и подобные — тоже влияют на выдачу, но
+    // раньше в адрес не попадали: ссылкой на такой поиск нельзя было
+    // поделиться и он не переживал обновление страницы.
+    if (fields.mode) next.mode = fields.mode
+    if (fields.chip) next.chip = fields.chip
     setParams(next, { replace: true })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [text, category, priceMin, priceMax, city, withPhoto, sort])
+  }, [text, category, priceMin, priceMax, city, withPhoto, sort, fields])
 
   const [loadingMore, setLoadingMore] = useState(false)
   const sentinelRef = useRef(null)
@@ -345,6 +350,12 @@ export default function Search() {
                     price_min: priceMin || undefined,
                     price_max: priceMax || undefined,
                     city: city || undefined,
+                    // Раньше терялись при сохранении — подписка на «Снять»
+                    // присылала уведомления и про «Купить» тоже, а «только
+                    // с фото» вообще не учитывалась (хотя бэкенд её умеет
+                    // проверять).
+                    deal_type: fields.mode || undefined,
+                    with_photo: withPhoto || undefined,
                   })
                   setSubscribed(true)
                 } catch { /* уже сохранён или лимит */ }
