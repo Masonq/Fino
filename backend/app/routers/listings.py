@@ -253,10 +253,22 @@ def search_listings(
         # кодом, а не текстом, поэтому ilike с процентом впереди только
         # мешал — он не даёт использовать индекс.
         q = q.filter(Listing.city == city)
-    if price_min is not None:
-        q = q.filter(Listing.price >= price_min)
-    if price_max is not None:
-        q = q.filter(Listing.price <= price_max)
+    if price_min is not None or price_max is not None:
+        # Цена в фильтре — всегда в евро (фронт не даёт выбрать валюту,
+        # «€» и на кнопке «Следить», и в описании сохранённого поиска).
+        # А в базе цена хранится в исходной валюте объявления — часть
+        # объявлений (в основном перенесённые из телеграм-чатов) в
+        # RSD. Без пересчёта «от 100 до 1000» сравнивало голые числа:
+        # 1000 RSD (≈8.5€) наравне с 1000 EUR. Курс тот же, что уже
+        # используется в tg_import.py для той же цели.
+        price_in_eur = case(
+            (Listing.currency == "EUR", Listing.price),
+            else_=Listing.price / 117,
+        )
+        if price_min is not None:
+            q = q.filter(price_in_eur >= price_min)
+        if price_max is not None:
+            q = q.filter(price_in_eur <= price_max)
     if currency:
         q = q.filter(Listing.currency == currency)
     if with_photo:

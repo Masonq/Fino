@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
-from app.core.auth import get_current_user, get_current_user_optional
+from app.core.auth import get_current_user
 from app.core.database import get_db
 from app.models import Review, User, Listing, Chat, ReviewInvite
 from app.core.clock import utcnow

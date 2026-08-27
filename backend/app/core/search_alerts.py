@@ -31,12 +31,16 @@ def matches(listing: Listing, filters: dict, translations: list) -> bool:
     if filters.get("city") and listing.city != filters["city"]:
         return False
 
+    # Цена в фильтре — всегда в евро (фронт не даёт выбрать валюту),
+    # а в базе — в исходной валюте объявления. Тот же курс, что и в
+    # самом поиске (listings.py) и в tg_import.py.
     price = float(listing.price) if listing.price else None
+    price_eur = price if (price is None or listing.currency == "EUR") else price / 117
     if filters.get("price_min") is not None:
-        if price is None or price < float(filters["price_min"]):
+        if price_eur is None or price_eur < float(filters["price_min"]):
             return False
     if filters.get("price_max") is not None:
-        if price is None or price > float(filters["price_max"]):
+        if price_eur is None or price_eur > float(filters["price_max"]):
             return False
 
     if filters.get("with_photo") and not listing.photos:
