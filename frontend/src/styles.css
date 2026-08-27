@@ -263,6 +263,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* ===== simple listing card (Avito-style) ===== */
 .infinite-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px 8px; padding:0 12px; }
+/* Результаты поиска на странице раздела (CategoryLanding) — та же
+   сетка, что и infinite-grid, но без своего отступа: landing-results
+   вокруг уже даёт padding, и добавлять его тут ещё раз — задваивать.
+   Класса не было в CSS вовсе: и настоящие карточки, и их скелетон
+   отображались без сетки, просто друг под другом. */
+.feed-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px 8px; }
 .infinite-list{ display:flex; flex-direction:column; gap:20px; padding:0 12px; }
 
 .s-card{ background:#fff; border-radius:12px; overflow:hidden; }
@@ -501,6 +507,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .chat-messages{ flex:1; overflow-y:auto; padding:16px 16px 8px; display:flex; flex-direction:column; gap:8px; overscroll-behavior-y:contain; -webkit-overflow-scrolling:touch; }
 .chat-bubble{ align-self:flex-start; background:#F3F3F1; padding:10px 14px; border-radius:16px 16px 16px 4px; font-size:13.5px; max-width:78%; line-height:1.4; }
 .chat-bubble.mine{ align-self:flex-end; background:var(--primary); color:#fff; border-radius:16px 16px 4px 16px; }
+/* Скелетон переписки: и «своя», и «чужая» форма пузыря на нейтральном
+   фоне — цветной фон «своей» стороны спорил бы с пульсирующей линией
+   внутри, а тут и так видно, чья сторона, по одной лишь форме угла. */
+.chat-bubble.skeleton{ background:#F3F3F1 !important; padding:12px 14px; }
 .chat-input-row{
   display:flex; gap:10px; padding:12px 16px calc(12px + env(safe-area-inset-bottom)); background:#fff;
   box-shadow:0 -4px 20px rgba(20,30,25,.06); flex-shrink:0;
@@ -595,6 +605,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* скелетоны карточек, пока идёт первая загрузка */
 .card-skeleton{ background:#fff; border-radius:12px; overflow:hidden; }
 .sk-photo{ width:100%; aspect-ratio:1/0.95; }
+/* Вариант для списка (одна широкая карточка в ряд, Search.jsx cols=1):
+   те же пропорции, что у настоящей .l-card, иначе скелетон одной формы
+   сменяется карточкой другой, и ряд подпрыгивает. */
+.card-skeleton.l-card .sk-photo{ aspect-ratio:16/10.5; border-radius:18px; }
+.card-skeleton.l-card .sk-line.title{ height:41px; }
+.card-skeleton.l-card .sk-line.price{ height:18px; }
 /* размеры повторяют реальную карточку: заголовок 13.5px/1.35, цена 17px, город 11px
    с теми же паддингами 10px — иначе при подмене контент прыгает */
 .sk-line{ border-radius:5px; }
@@ -612,9 +628,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 @keyframes sk-pulse{ 0%,100%{ opacity:1 } 50%{ opacity:.5 } }
 
-/* скелетон плитки категории */
+/* скелетон плитки категории — размеры один в один с .cat-tile-2row:
+   раньше плитки были разной ширины под длину названия, и скелетон под
+   это подгонялся (см. CAT_SKELETON_WIDTHS), но теперь все плитки
+   фиксированной ширины 126px — скелетон отстал, и ряд «прыгал» при
+   подмене на настоящие плитки. */
 .cat-skeleton{
-  position:relative; height:82px; border-radius:14px; padding:9px 38px 9px 11px;
+  position:relative; height:82px; width:126px; border-radius:14px; padding:9px 12px 9px 11px;
   background:#fff; border:1px solid rgba(20,30,25,.05); flex-shrink:0; box-sizing:border-box;
 }
 .sk-cat-line{ width:66%; height:10px; border-radius:5px; }

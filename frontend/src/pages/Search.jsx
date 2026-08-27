@@ -377,7 +377,7 @@ export default function Search() {
 
       <div className={cols === 2 ? 'infinite-grid' : 'infinite-list'}>
         {!loaded
-          ? <CardSkeletons count={cols === 2 ? 4 : 2} />
+          ? <CardSkeletons count={cols === 2 ? 4 : 2} large={cols === 1} />
           : items.map((l) => (
               <ListingCard key={l.id} listing={l} large={cols === 1} />
             ))}

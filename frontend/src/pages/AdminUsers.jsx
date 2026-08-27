@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
+import { AdminRowSkeletons } from '../components/Skeletons'
 
 // Роли показываем словами: «seller_private» в списке ничего не говорит
 // тому, кто не писал этот код.
@@ -150,7 +151,7 @@ export default function AdminUsers() {
         ))}
       </div>
 
-      {!loaded && <p className="empty">{t('admin.loading')}</p>}
+      {!loaded && <div className="admin-list"><AdminRowSkeletons count={6} /></div>}
       {loaded && !items.length && <p className="empty">{t('admin.empty')}</p>}
 
       <div className="admin-list">

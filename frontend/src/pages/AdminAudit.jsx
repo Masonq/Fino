@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
+import { AuditRowSkeletons } from '../components/Skeletons'
 
 const FILTERS = [
   { key: '', label: 'audit.all' },
@@ -107,7 +108,7 @@ export default function AdminAudit() {
         </div>
       )}
 
-      {!loaded && <p className="empty">{t('admin.loading')}</p>}
+      {!loaded && <div className="audit-list"><AuditRowSkeletons count={6} /></div>}
       {loaded && !items.length && <p className="empty">{t('audit.empty')}</p>}
 
       <div className="audit-list">

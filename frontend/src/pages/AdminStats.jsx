@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
+import { AdminStatsSkeleton } from '../components/Skeletons'
 
 const PERIODS = [7, 14, 30]
 
@@ -104,7 +105,7 @@ export default function AdminStats() {
         ))}
       </div>
 
-      {!loaded && <p className="empty">{t('admin.loading')}</p>}
+      {!loaded && <AdminStatsSkeleton />}
 
       {data && (
         <>

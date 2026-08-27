@@ -5,6 +5,7 @@ import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { CITIES, cityLabel } from '../data/cities'
 import PageHeader from '../components/PageHeader'
+import { EditFormSkeleton } from '../components/Skeletons'
 
 export default function EditListing() {
   const { t, i18n } = useTranslation()
@@ -59,7 +60,12 @@ export default function EditListing() {
   }
 
   if (authLoading || !listing) {
-    return <div className="fav-page"><PageHeader title={t('edit.title')} /></div>
+    return (
+      <div className="fav-page">
+        <PageHeader title={t('edit.title')} />
+        <EditFormSkeleton />
+      </div>
+    )
   }
 
   if (!user) {

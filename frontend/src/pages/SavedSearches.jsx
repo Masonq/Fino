@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
+import { SavedRowSkeletons } from '../components/Skeletons'
 import { displayCity } from '../data/cities'
 
 export default function SavedSearches() {
@@ -63,7 +64,7 @@ export default function SavedSearches() {
       <PageHeader title={t('saved.title')} count={items.length} />
 
       {!loaded ? (
-        <p className="empty-hint">{t('actions.loading')}</p>
+        <div className="saved-list"><SavedRowSkeletons count={3} /></div>
       ) : items.length === 0 ? (
         <div className="fav-empty">
           <p>{t('saved.empty')}</p>

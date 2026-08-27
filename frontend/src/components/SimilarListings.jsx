@@ -2,26 +2,33 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
+import { SimilarStripSkeleton } from './Skeletons'
 import { displayCity } from '../data/cities'
 import { formatPrice } from '../utils/money'
 
 export default function SimilarListings({ listingId }) {
   const { t, i18n } = useTranslation()
   const [items, setItems] = useState([])
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     if (!listingId) return
+    setLoaded(false)
     api.similarListings(listingId, i18n.language)
       .then((res) => setItems(res.items || []))
       .catch(() => setItems([]))
+      .finally(() => setLoaded(true))
   }, [listingId, i18n.language])
 
-  if (items.length === 0) return null
+  if (loaded && items.length === 0) return null
 
   return (
     <div className="similar-block">
       <div className="similar-title">{t('similar.title')}</div>
 
+      {!loaded ? (
+        <SimilarStripSkeleton />
+      ) : (
       <div className="similar-strip">
         {items.map((l) => (
           <Link key={l.id} to={l.path} className="similar-card">
@@ -40,6 +47,7 @@ export default function SimilarListings({ listingId }) {
           </Link>
         ))}
       </div>
+      )}
     </div>
   )
 }

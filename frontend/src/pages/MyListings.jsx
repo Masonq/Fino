@@ -5,6 +5,7 @@ import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { displayCity } from '../data/cities'
 import PageHeader from '../components/PageHeader'
+import { ListRowSkeletons } from '../components/Skeletons'
 import { formatPrice } from '../utils/money'
 
 const TABS = [
@@ -96,7 +97,7 @@ export default function MyListings() {
       </div>
 
       {!loaded ? (
-        <p className="empty-hint">{t('actions.loading')}</p>
+        <div className="my-list"><ListRowSkeletons count={4} /></div>
       ) : visible.length === 0 ? (
         <div className="fav-empty">
           <p>{t('my.empty')}</p>

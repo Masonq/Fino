@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
-import { CategorySkeletons } from '../components/Skeletons'
 import CategoryArt from '../components/CategoryArt'
 import { hasLanding } from '../data/landings'
 

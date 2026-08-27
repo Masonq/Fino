@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import ReviewRequest from '../components/ReviewRequest'
+import { ChatSkeleton } from '../components/Skeletons'
 
 export default function ChatScreen() {
   const { t, i18n } = useTranslation()
@@ -14,6 +15,7 @@ export default function ChatScreen() {
 
   const [chat, setChat] = useState(null)
   const [messages, setMessages] = useState([])
+  const [messagesLoaded, setMessagesLoaded] = useState(false)
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState(null)
@@ -26,7 +28,10 @@ export default function ChatScreen() {
 
   const load = () => {
     api.getChat(id, i18n.language).then(setChat).catch(() => setChat(null))
-    api.getChatMessages(id).then(setMessages).catch(() => setMessages([]))
+    api.getChatMessages(id)
+      .then(setMessages)
+      .catch(() => setMessages([]))
+      .finally(() => setMessagesLoaded(true))
   }
 
   // помечаем сообщения собеседника прочитанными при открытии переписки
@@ -39,9 +44,12 @@ export default function ChatScreen() {
     // Сбрасываем — иначе переход из одного чата сразу в другой (без
     // перезагрузки страницы) нёс за собой состояние прошлого: если там
     // долистали до конца истории (hasOlder=false), подгрузка старых
-    // сообщений в новом чате просто переставала работать.
+    // сообщений в новом чате просто переставала работать. То же для
+    // messagesLoaded — иначе список сообщений прошлого чата на миг
+    // показывался бы как «уже готовый» результат нового.
     setHasOlder(true)
     setLoadingOlder(false)
+    setMessagesLoaded(false)
     load()
   }, [id])
 
@@ -146,23 +154,29 @@ export default function ChatScreen() {
         onScroll={(e) => { if (e.currentTarget.scrollTop < 60) loadOlder() }}
       >
         {loadingOlder && <p className="empty-hint">{t('actions.loading')}</p>}
-        {messages.map((m) => (
-          m.kind === 'review_request' ? (
-            <ReviewRequest
-              key={m.id}
-              chatId={id}
-              targetId={chat?.buyer?.id === myId ? chat?.seller?.id : chat?.buyer?.id}
-              listingId={chat?.listing?.id}
-              targetName={otherName()}
-              onDone={load}
-            />
-          ) : (
-            <div key={m.id} className={m.sender_id === myId ? 'chat-bubble mine' : 'chat-bubble'}>
-              {m.text}
-            </div>
-          )
-        ))}
-        {messages.length === 0 && <p className="empty-hint">{t('chat.empty')}</p>}
+        {!messagesLoaded ? (
+          <ChatSkeleton />
+        ) : (
+          <>
+            {messages.map((m) => (
+              m.kind === 'review_request' ? (
+                <ReviewRequest
+                  key={m.id}
+                  chatId={id}
+                  targetId={chat?.buyer?.id === myId ? chat?.seller?.id : chat?.buyer?.id}
+                  listingId={chat?.listing?.id}
+                  targetName={otherName()}
+                  onDone={load}
+                />
+              ) : (
+                <div key={m.id} className={m.sender_id === myId ? 'chat-bubble mine' : 'chat-bubble'}>
+                  {m.text}
+                </div>
+              )
+            ))}
+            {messages.length === 0 && <p className="empty-hint">{t('chat.empty')}</p>}
+          </>
+        )}
         <div ref={bottomRef} />
       </div>
 

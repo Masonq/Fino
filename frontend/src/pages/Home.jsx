@@ -345,7 +345,7 @@ export default function Home() {
           return (
             <div className="cat-rows">
               <div className="cat-row"><CategorySkeletons count={5} /></div>
-              <div className="cat-row"><CategorySkeletons count={5} offset={5} /></div>
+              <div className="cat-row"><CategorySkeletons count={5} /></div>
             </div>
           )
         }
@@ -371,7 +371,7 @@ export default function Home() {
 
       <div className={cols === 2 ? 'infinite-grid' : 'infinite-list'}>
         {!feedLoaded
-          ? <CardSkeletons count={cols === 2 ? 4 : 2} />
+          ? <CardSkeletons count={cols === 2 ? 4 : 2} large={cols === 1} />
           : listings.map((l) => (
               <ListingCard key={l.id} listing={l} large={cols === 1} />
             ))}

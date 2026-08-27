@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
+import { ProfileSkeleton } from '../components/Skeletons'
 
 export default function Profile() {
   const { t } = useTranslation()
@@ -9,7 +10,12 @@ export default function Profile() {
   const { user, loading, signOut } = useAuth()
 
   if (loading) {
-    return <div className="fav-page"><PageHeader title={t('nav.profile')} back={false} /></div>
+    return (
+      <div className="fav-page">
+        <PageHeader title={t('nav.profile')} back={false} />
+        <ProfileSkeleton />
+      </div>
+    )
   }
 
   if (!user) {

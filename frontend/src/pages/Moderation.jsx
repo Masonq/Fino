@@ -5,6 +5,7 @@ import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { displayCity } from '../data/cities'
 import PageHeader from '../components/PageHeader'
+import { ModCardSkeletons } from '../components/Skeletons'
 import { formatPrice } from '../utils/money'
 
 // Переживает размонтирование страницы — заполняется при первой загрузке
@@ -31,6 +32,7 @@ export default function Moderation() {
   const [items, setItems] = useState(() => cache?.items || [])
   const [total, setTotal] = useState(() => cache?.total || 0)
   const [loaded, setLoaded] = useState(() => !!cache)
+  const [reportsLoaded, setReportsLoaded] = useState(() => !!cache)
   const [busyId, setBusyId] = useState(null)
   const [denied, setDenied] = useState(false)
   const [tab, setTab] = useState('listings')
@@ -64,6 +66,7 @@ export default function Moderation() {
         cache = { ...cache, reports, reportsTotal }
       })
       .catch(() => {})
+      .finally(() => setReportsLoaded(true))
   }
 
   const resolveReport = async (id, action) => {
@@ -153,7 +156,9 @@ export default function Moderation() {
       </div>
 
       {tab === 'reports' ? (
-        reports.length === 0 ? (
+        !reportsLoaded ? (
+          <div className="mod-list"><ModCardSkeletons count={2} /></div>
+        ) : reports.length === 0 ? (
           <p className="empty-hint">{t('mod.no_reports')}</p>
         ) : (
           <div className="mod-list">
@@ -185,7 +190,7 @@ export default function Moderation() {
           </div>
         )
       ) : !loaded ? (
-        <p className="empty-hint">{t('actions.loading')}</p>
+        <div className="mod-list"><ModCardSkeletons count={3} /></div>
       ) : items.length === 0 ? (
         <p className="empty-hint">{t('mod.empty')}</p>
       ) : (

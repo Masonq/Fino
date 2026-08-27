@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
+import { ReviewsSkeleton } from './Skeletons'
 import { monthYear } from '../utils/time'
 
 function Stars({ value, size = 14, onPick }) {
@@ -60,7 +61,7 @@ export default function SellerReviews({ sellerId, listingId }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sellerId, i18n.language])
 
-  if (!data) return null
+  if (!data) return <ReviewsSkeleton />
 
   return (
     <div className="reviews-block">
