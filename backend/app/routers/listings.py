@@ -853,6 +853,17 @@ def update_listing(
                 tr.description = payload.description.strip()
             content_changed = True
 
+            # Автопереводы на другие языки теперь не соответствуют
+            # исходнику — translate_listing() (запускается при
+            # одобрении) пополняет только недостающие языки и не трогает
+            # уже существующие, так что без удаления старый перевод
+            # остался бы навсегда рассинхронизирован с правкой.
+            # Написанный вручную (is_auto_translated=False) перевод не
+            # трогаем — его мог оставить сам продавец на другом языке.
+            for other in list(listing.translations):
+                if other is not tr and other.is_auto_translated:
+                    listing.translations.remove(other)
+
     if content_changed and listing.status == ListingStatus.active:
         listing.status = ListingStatus.pending_moderation
 
