@@ -1,13 +1,13 @@
 import uuid
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session, joinedload
 
 from app.core.audit import record
 from app.core.auth import get_current_user
-from app.core.database import get_db
+from app.core.database import get_db, SessionLocal
 from app.models import Category, Listing, ListingStatus, User, UserRole
 from app.core.clock import utcnow
 
@@ -18,6 +18,46 @@ def require_moderator(user: User = Depends(get_current_user)) -> User:
     if user.role not in (UserRole.moderator, UserRole.admin):
         raise HTTPException(403, "not_moderator")
     return user
+
+
+def _after_approve(listing_id) -> None:
+    """
+    Перевод и рассылка — после того как модератор уже получил ответ.
+
+    Перевод на два языка — до четырёх отдельных обращений к внешним
+    сервисам (заголовок и описание, каждый на английский и сербский,
+    с запасными сервисами при отказе основного) — синхронно внутри
+    approve() это была самая частая причина, по которой «Одобрить»
+    зависало на несколько секунд. Своя сессия базы: та, что была у
+    запроса, к моменту выполнения этой функции уже закрыта.
+    """
+    with SessionLocal() as db:
+        listing = db.query(Listing).get(listing_id)
+        if not listing:
+            return
+
+        try:
+            from app.core.notifications import notify_moderation
+            tr = listing.translations[0] if listing.translations else None
+            notify_moderation(db, listing.owner_id, tr.title if tr else "", True)
+        except Exception:
+            pass
+
+        # Достраиваем недостающие языки: продавец пишет на одном, а искать
+        # объявление будут на трёх. Делаем до рассылки, чтобы подписчики
+        # получили его уже на своём языке.
+        try:
+            from app.core.translate import translate_listing
+            translate_listing(db, listing)
+        except Exception:
+            pass   # перевод не должен мешать публикации
+
+        # оповещаем тех, кто подписан на подходящий поиск
+        try:
+            from app.core.search_alerts import notify_subscribers
+            notify_subscribers(db, listing)
+        except Exception:
+            pass
 
 
 @router.get("/queue")
@@ -84,6 +124,7 @@ class DecisionIn(BaseModel):
 @router.post("/{listing_id}/approve")
 def approve(
     listing_id: uuid.UUID,
+    background_tasks: BackgroundTasks,
     moderator: User = Depends(require_moderator),
     db: Session = Depends(get_db),
 ):
@@ -106,36 +147,34 @@ def approve(
            target_id=listing.id, owner=str(listing.owner_id))
     db.commit()
 
-    try:
-        from app.core.notifications import notify_moderation
-        tr = listing.translations[0] if listing.translations else None
-        notify_moderation(db, listing.owner_id, tr.title if tr else "", True)
-    except Exception:
-        pass
-
-    # Достраиваем недостающие языки: продавец пишет на одном, а искать
-    # объявление будут на трёх. Делаем до рассылки, чтобы подписчики
-    # получили его уже на своём языке.
-    try:
-        from app.core.translate import translate_listing
-        translate_listing(db, listing)
-    except Exception:
-        pass   # перевод не должен мешать публикации
-
-    # оповещаем тех, кто подписан на подходящий поиск
-    try:
-        from app.core.search_alerts import notify_subscribers
-        notify_subscribers(db, listing)
-    except Exception:
-        pass
+    # Перевод и рассылка — после ответа, не вместо него. Раньше кнопка
+    # «Одобрить» ждала до четырёх обращений к внешним сервисам перевода
+    # и рассылку подписчикам, прежде чем модератор вообще видел, что
+    # объявление ушло из очереди.
+    background_tasks.add_task(_after_approve, listing.id)
 
     return {"status": "active"}
+
+
+def _after_reject(listing_id, reason: str | None) -> None:
+    """Уведомление об отклонении — тоже после ответа, не вместо него."""
+    with SessionLocal() as db:
+        listing = db.query(Listing).get(listing_id)
+        if not listing:
+            return
+        try:
+            from app.core.notifications import notify_moderation
+            tr = listing.translations[0] if listing.translations else None
+            notify_moderation(db, listing.owner_id, tr.title if tr else "", False, reason)
+        except Exception:
+            pass
 
 
 @router.post("/{listing_id}/reject")
 def reject(
     listing_id: uuid.UUID,
     payload: DecisionIn,
+    background_tasks: BackgroundTasks,
     moderator: User = Depends(require_moderator),
     db: Session = Depends(get_db),
 ):
@@ -149,11 +188,6 @@ def reject(
            owner=str(listing.owner_id))
     db.commit()
 
-    try:
-        from app.core.notifications import notify_moderation
-        tr = listing.translations[0] if listing.translations else None
-        notify_moderation(db, listing.owner_id, tr.title if tr else "", False, payload.reason)
-    except Exception:
-        pass
+    background_tasks.add_task(_after_reject, listing.id, payload.reason)
 
     return {"status": "rejected"}

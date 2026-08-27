@@ -121,6 +121,12 @@ export default function Moderation() {
 
   useEffect(() => {
     if (!user) { setLoaded(true); return }
+    // Кэш уже настоящий список с той же прокруткой, что видел
+    // модератор — если он есть, доверяем ему и не спрашиваем сервер
+    // заново. Иначе load() всегда запрашивает первую страницу (50
+    // штук) и стирал бы то, что дозагрузили прокруткой, при каждом
+    // возврате со страницы объявления.
+    if (cache) return
     load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, i18n.language])
