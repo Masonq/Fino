@@ -391,7 +391,8 @@
     "reverify_pending": "This person already has a re-verification in progress",
     "err_reverify": "Couldn't send the request, please try again",
     "suspicious_device": "Both device and country changed at once (last login from {{location}}) — this looks like someone else is using the account.",
-    "logins_title": "Recent logins"
+    "logins_title": "Recent logins",
+    "no_logins": "No logins recorded yet — either the person hasn’t signed in since tracking started, or they signed in before it was enabled."
   },
   "stats": {
     "title": "Numbers",

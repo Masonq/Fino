@@ -301,26 +301,26 @@ export default function AdminUsers() {
                       </div>
                     )}
 
-                    {!!card.logins?.length && (
-                      <>
-                        <div className="admin-subtitle">{t('admin.logins_title')}</div>
-                        <div className="admin-logins">
-                          {card.logins.map((l) => (
-                            <div key={l.id} className="admin-login-row">
-                              <span className="admin-login-when">
-                                {l.created_at ? new Date(l.created_at).toLocaleString(i18n.language) : '—'}
-                              </span>
-                              <span className="admin-login-where">
-                                {l.city ? `${l.city}, ${l.country}` : (l.country || '—')}
-                              </span>
-                              <span className="admin-login-device" title={l.device_guid || ''}>
-                                {l.device_guid ? l.device_guid.slice(0, 8) : '—'}
-                              </span>
-                              <span className="admin-login-ip">{l.ip_address || '—'}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </>
+                    <div className="admin-subtitle">{t('admin.logins_title')}</div>
+                    {card.logins?.length ? (
+                      <div className="admin-logins">
+                        {card.logins.map((l) => (
+                          <div key={l.id} className="admin-login-row">
+                            <span className="admin-login-when">
+                              {l.created_at ? new Date(l.created_at).toLocaleString(i18n.language) : '—'}
+                            </span>
+                            <span className="admin-login-where">
+                              {l.city ? `${l.city}, ${l.country}` : (l.country || '—')}
+                            </span>
+                            <span className="admin-login-device" title={l.device_guid || ''}>
+                              {l.device_guid ? l.device_guid.slice(0, 8) : '—'}
+                            </span>
+                            <span className="admin-login-ip">{l.ip_address || '—'}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="admin-note">{t('admin.no_logins')}</p>
                     )}
                   </>
                 )}

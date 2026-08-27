@@ -392,7 +392,8 @@
     "reverify_pending": "Ova osoba već ima proveru u toku",
     "err_reverify": "Nije uspelo slanje zahteva, pokušajte ponovo",
     "suspicious_device": "Uređaj i zemlja su se naglo promenili istovremeno (poslednja prijava iz {{location}}) — deluje kao da nalog koristi neko drugi.",
-    "logins_title": "Nedavne prijave"
+    "logins_title": "Nedavne prijave",
+    "no_logins": "Nije zabeležena nijedna prijava — osoba se ili nije prijavljivala otkako je praćenje uključeno, ili se prijavila pre toga."
   },
   "stats": {
     "title": "Brojevi",
