@@ -137,6 +137,10 @@ export default function SellerProfile() {
         <div className="seller-company-about">{profile.company_description}</div>
       )}
 
+      <div className="seller-section">
+        <SellerReviews sellerId={profile.id} />
+      </div>
+
       {listings.length > 0 && (
         <div className="seller-section">
           <div className="seller-section-title">
@@ -158,10 +162,6 @@ export default function SellerProfile() {
           )}
         </div>
       )}
-
-      <div className="seller-section">
-        <SellerReviews sellerId={profile.id} />
-      </div>
     </div>
   )
 }
