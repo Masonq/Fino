@@ -24,7 +24,15 @@
     "auto": "Cars",
     "services": "Services",
     "jobs": "Jobs",
-    "soon": "Coming soon"
+    "soon": "Coming soon",
+    "electronics": "Electronics",
+    "fashion": "Fashion",
+    "home-garden": "Home & Garden",
+    "hobby-sport": "Hobby & Sport",
+    "kids": "Kids",
+    "pets": "Pets",
+    "beauty": "Beauty",
+    "business": "Business"
   },
   "listing": {
     "price": "Price",

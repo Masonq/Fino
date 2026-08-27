@@ -24,7 +24,15 @@
     "auto": "Automobili",
     "services": "Usluge",
     "jobs": "Poslovi",
-    "soon": "Uskoro"
+    "soon": "Uskoro",
+    "electronics": "Elektronika",
+    "fashion": "Odeća i obuća",
+    "home-garden": "Dom i bašta",
+    "hobby-sport": "Hobi i sport",
+    "kids": "Za decu",
+    "pets": "Životinje",
+    "beauty": "Lepota",
+    "business": "Biznis"
   },
   "listing": {
     "price": "Cena",
