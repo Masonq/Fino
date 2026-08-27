@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 
-from app.models import SavedSearch, Listing, ListingTranslation
+from app.models import SavedSearch, Listing, ListingTranslation, User
 from app.core.clock import utcnow
 
 log = logging.getLogger(__name__)
@@ -74,9 +74,19 @@ def notify_subscribers(db: Session, listing: Listing) -> int:
     скольким людям ушло уведомление.
     """
     translations = list(listing.translations or [])
-    title = translations[0].title if translations else ""
 
     searches = db.query(SavedSearch).filter(SavedSearch.notify_enabled.is_(True)).all()
+    if not searches:
+        return 0
+
+    # Язык каждого подписчика — чтобы уведомление пришло на понятном
+    # ему языке, а не на том, что случайно оказался первым в списке
+    # переводов объявления (обычно это язык оригинала).
+    users_by_id = {
+        u.id: u for u in db.query(User)
+        .filter(User.id.in_({s.user_id for s in searches})).all()
+    }
+    from app.routers.listings import pick_translation
 
     sent = 0
     now = utcnow()
@@ -99,6 +109,12 @@ def notify_subscribers(db: Session, listing: Listing) -> int:
 
         try:
             from app.core.notifications import notify
+            subscriber = users_by_id.get(s.user_id)
+            lang = "ru"
+            if subscriber:
+                lang = getattr(subscriber.default_language, "value", None) or "ru"
+            tr = pick_translation(listing, lang)
+            title = tr.title if tr else (translations[0].title if translations else "")
             price = f"{listing.price:.0f} {listing.currency}" if listing.price else ""
             text = (
                 f"По вашему поиску «{s.name}» новое объявление:\n\n"
