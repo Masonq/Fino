@@ -43,6 +43,19 @@ export default function ListingDashboard() {
 
   const title = listing?.title || ''
 
+  // Среднее в день — нормализует «просмотров всего» под возраст
+  // объявления: 50 просмотров за неделю и 50 за месяц говорят разное.
+  const avgPerDay = (() => {
+    if (!data?.published_at) return null
+    const daysListed = Math.max(1, Math.round((Date.now() - new Date(data.published_at)) / 86400000))
+    return (data.views_total / daysListed).toFixed(1)
+  })()
+
+  const daysLeft = (() => {
+    if (!data?.expires_at) return null
+    return Math.ceil((new Date(data.expires_at) - Date.now()) / 86400000)
+  })()
+
   return (
     <div className="page">
       <PageHeader title={t('ldash.title')} />
@@ -88,6 +101,18 @@ export default function ListingDashboard() {
               </div>
               <div className="stats-label">{t('ldash.conversion')}</div>
             </div>
+            {avgPerDay !== null && (
+              <div className="stats-card">
+                <div className="stats-value">{avgPerDay}</div>
+                <div className="stats-label">{t('ldash.avg_per_day')}</div>
+              </div>
+            )}
+            {daysLeft !== null && (
+              <div className="stats-card">
+                <div className="stats-value">{daysLeft > 0 ? daysLeft : t('ldash.expires_today')}</div>
+                <div className="stats-label">{t('ldash.days_left')}</div>
+              </div>
+            )}
           </div>
 
           <div className="stats-block">

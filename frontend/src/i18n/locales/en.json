@@ -542,13 +542,16 @@
   },
   "ldash": {
     "title": "Listing stats",
-    "views_total": "Total views",
+    "views_total": "Views",
     "favorites": "Favorited",
-    "chats": "Contacts",
+    "chats": "Responses",
     "views_unit": "views",
     "not_owner": "Stats are visible only to the listing owner.",
     "incomplete_hint": "This listing is missing a price or photo — such listings rank lower. Fill in the card completely to get more views.",
     "short": "Stats",
-    "conversion": "View-to-message rate"
+    "conversion": "Conversion",
+    "avg_per_day": "Avg. per day",
+    "days_left": "Days until removal",
+    "expires_today": "Today"
   }
 }

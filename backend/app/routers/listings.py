@@ -815,6 +815,8 @@ def listing_dashboard(
         "chats_count": chats_count,
         "status": listing.status.value,
         "is_complete": listing.is_complete,
+        "published_at": listing.published_at.isoformat() if listing.published_at else None,
+        "expires_at": listing.expires_at.isoformat() if listing.expires_at else None,
         "daily": daily,
     }
 
