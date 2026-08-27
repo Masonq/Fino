@@ -154,6 +154,22 @@ export default function CategoryLanding() {
 
   const name = category?.name?.[i18n.language] || category?.name?.ru || ''
 
+  // Раньше кнопка «назад» в шапке жёстко вела на /categories — если
+  // человек пришёл сюда с главной (по плитке раздела), «назад» уводил
+  // не туда, откуда он пришёл, а на «Все категории»: история браузера
+  // росла (Главная → Раздел → Все категории → Раздел → Все категории…),
+  // и «назад» с «Все категории» возвращал обратно в этот же раздел —
+  // получался замкнутый круг. Тот же приём, что и в ListingDetail.jsx:
+  // если есть настоящая история — идём по ней, а не мимо. «Все
+  // категории» остаётся запасным для прямых ссылок, где истории нет.
+  const goBack = () => {
+    if (window.history.state?.idx > 0) {
+      navigate(-1)
+      return
+    }
+    navigate('/categories', { replace: true })
+  }
+
   return (
     <div className="landing">
       {searched && (
@@ -171,7 +187,7 @@ export default function CategoryLanding() {
       <>
       <div className="landing-hero" style={{ background: BANNER_GRADIENTS[slug] || BANNER_GRADIENTS['real-estate'] }}>
         <div className="landing-head">
-          <button className="landing-back on-hero" onClick={() => navigate('/categories')}
+          <button className="landing-back on-hero" onClick={goBack}
                   aria-label={t('actions.back')}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3"
                  strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
