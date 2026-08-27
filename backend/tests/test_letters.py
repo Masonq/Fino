@@ -22,7 +22,7 @@ def test_code_is_the_main_thing():
 
     assert "482915" in letter
     # крупно и с разрядкой: код переписывают руками
-    assert "font-size:32px" in letter
+    assert "font-size:30px" in letter
     assert "letter-spacing" in letter
 
 
@@ -39,14 +39,17 @@ def test_styles_are_inline():
 
 def test_no_images_at_all():
     """
-    Письмо с одним изображением и коротким текстом почтовые службы
-    считают подозрительным, да и картинки многие не грузят вовсе.
-    Логотип рисуем разметкой.
+    Апple отклоняет письма с кодом в цветной рамке-плашке как похожие
+    на фишинг («554 5.7.1 [HM07] Message rejected due to local
+    policy») — картинок и раньше не было, а от самой цветной плашки
+    (закрашенный логотип-квадрат, цветная рамка вокруг кода) избавились
+    тоже: обычный текст на белом фоне вызывает меньше подозрений.
     """
     letter = _code_letter("482915")
 
     assert "<img" not in letter
-    assert "background:#0E9F6E" in letter       # знак вместо картинки
+    assert "PLONK" in letter       # текстовая марка вместо картинки/плашки
+    assert "background:#0E9F6E" not in letter   # цветного лого-квадрата больше нет
 
 
 def test_plain_text_stays_too():

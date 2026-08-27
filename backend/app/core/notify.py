@@ -37,13 +37,18 @@ def _code_letter(code: str) -> str:
     """
     Разметка письма с кодом.
 
+    Раньше тут была цветная плашка-логотип и код в зелёной рамке —
+    выглядело нарядно, но Apple такие письма с одноразовым кодом в
+    цветном боксе отклоняет: «554 5.7.1 [HM07] Message rejected due to
+    local policy» с советом «измените содержимое». Сделал максимально
+    скромно — просто текст, без блоков и заливок, как у обычного
+    делового письма. Это единственное письмо в проекте, которое обязано
+    дойти всегда: без него никто не входит вовсе, поэтому надёжность
+    доставки тут важнее нарядного вида.
+
     Всё вписано прямо в разметку: почтовые службы не грузят внешние
-    стили, а половина из них ещё и режет то, чего не понимает. Поэтому
-    таблицы и простые правила — как в девяностых, но иначе письмо
-    развалится.
+    стили, а половина из них ещё и режет то, чего не понимает.
     """
-    # Полный адрес обязателен: относительный путь почтовая служба не
-    # найдёт, и на месте логотипа будет пустой квадрат.
     site = (settings.public_base_url or "https://plonk.rs").rstrip("/")
     if not site.startswith("http"):
         site = f"https://{site}"
@@ -52,65 +57,32 @@ def _code_letter(code: str) -> str:
 <html lang="ru"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width">
 <title>{SUBJECT}</title></head>
-<body style="margin:0;padding:0;background:#f4f6f5;
-             font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0"
-       style="background:#f4f6f5;padding:32px 16px;">
-<tr><td align="center">
+<body style="margin:0;padding:24px 16px;background:#ffffff;
+             font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+             color:#101828;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:420px;">
 
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0"
-       style="max-width:440px;background:#ffffff;border-radius:20px;
-              overflow:hidden;box-shadow:0 1px 3px rgba(16,24,40,.06);">
-
-  <tr><td align="center" style="padding:32px 32px 8px;">
-    <!-- Логотип рисуем разметкой, а не картинкой: письмо с одним
-         изображением и коротким текстом почтовые службы считают
-         подозрительным, да и картинки многие не грузят вовсе. -->
-    <div style="width:52px;height:52px;line-height:52px;border-radius:14px;
-                background:#0E9F6E;color:#ffffff;
-                font-size:26px;font-weight:700;">P</div>
+  <tr><td style="font-size:14px;color:#667085;padding-bottom:18px;">
+    PLONK
   </td></tr>
 
-  <tr><td align="center" style="padding:12px 32px 0;">
-    <div style="font-size:19px;font-weight:700;color:#101828;">
-      Вход на PLONK
-    </div>
+  <tr><td style="font-size:15px;line-height:22px;padding-bottom:16px;">
+    Код для входа:
   </td></tr>
 
-  <tr><td align="center" style="padding:24px 32px 8px;">
-    <div style="display:inline-block;padding:14px 28px;border-radius:14px;
-                background:#f0fdf6;border:1px solid #d1fae0;
-                font-size:32px;font-weight:700;letter-spacing:8px;
-                color:#0E9F6E;font-family:'SF Mono',Menlo,monospace;">
-      {code}
-    </div>
+  <tr><td style="font-size:30px;font-weight:700;letter-spacing:4px;padding-bottom:16px;">
+    {code}
   </td></tr>
 
-  <tr><td align="center" style="padding:4px 32px 28px;">
-    <div style="font-size:13px;color:#98a2b3;">
-      Код действует 15 минут
-    </div>
+  <tr><td style="font-size:13px;line-height:19px;color:#667085;padding-bottom:24px;">
+    Код действует 15 минут. Если вы не запрашивали вход — просто не
+    отвечайте на это письмо, без кода войти в ваш профиль нельзя.
   </td></tr>
 
-  <tr><td style="padding:0 32px;">
-    <div style="height:1px;background:#eaecf0;"></div>
+  <tr><td style="font-size:12px;color:#98a2b3;">
+    <a href="{site}" style="color:#667085;">PLONK — объявления в Сербии</a>
   </td></tr>
 
-  <tr><td align="center" style="padding:20px 32px 28px;">
-    <div style="font-size:13px;line-height:19px;color:#98a2b3;">
-      Если вы не запрашивали код — просто не отвечайте на письмо.
-      Без кода войти в ваш профиль нельзя.
-    </div>
-  </td></tr>
-
-</table>
-
-<div style="margin-top:20px;font-size:12px;color:#98a2b3;">
-  <a href="{site}" style="color:#0E9F6E;text-decoration:none;">PLONK</a>
-  &nbsp;·&nbsp; объявления в Сербии
-</div>
-
-</td></tr>
 </table>
 </body></html>"""
 
