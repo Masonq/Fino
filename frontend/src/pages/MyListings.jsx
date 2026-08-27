@@ -112,28 +112,8 @@ export default function MyListings() {
           {visible.map((l) => (
             <div className="my-row" key={l.id}>
               <Link to={l.path} className="my-main">
-                <div className="my-thumb-wrap">
-                  <div className="my-thumb">
-                    {l.cover_photo ? <img src={l.cover_photo} alt="" /> : <div className="photo-placeholder" />}
-                  </div>
-                  {/* Показатели и правка — иконками поверх фото, не в
-                      тесном ряду кнопок снизу: тот ряд и без того
-                      перегружен, а до этих двух действий чаще всего
-                      добираются с самого объявления, не отсюда. */}
-                  <button
-                    className="my-thumb-icon stats"
-                    aria-label={t('ldash.short')}
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/my/${l.id}/stats`) }}
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18" /><path d="M18 9 12 15l-3-3-4 4" /></svg>
-                  </button>
-                  <button
-                    className="my-thumb-icon edit"
-                    aria-label={t('edit.save_short')}
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/edit/${l.id}`) }}
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
-                  </button>
+                <div className="my-thumb">
+                  {l.cover_photo ? <img src={l.cover_photo} alt="" /> : <div className="photo-placeholder" />}
                 </div>
                 <div className="my-body">
                   <div className="my-title">{l.title}</div>
@@ -147,6 +127,26 @@ export default function MyListings() {
                   {l.status === 'rejected' && l.rejection_reason && (
                     <div className="my-rejection">{l.rejection_reason}</div>
                   )}
+                </div>
+                {/* Показатели и правка — своим столбцом справа от текста,
+                    не поверх фото (там их не видно на тёмных снимках,
+                    да и закрывают собой сам товар) и не в тесном ряду
+                    кнопок снизу. */}
+                <div className="my-quick-actions">
+                  <button
+                    className="my-quick-icon"
+                    aria-label={t('ldash.short')}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/my/${l.id}/stats`) }}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18" /><path d="M18 9 12 15l-3-3-4 4" /></svg>
+                  </button>
+                  <button
+                    className="my-quick-icon"
+                    aria-label={t('edit.save_short')}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/edit/${l.id}`) }}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+                  </button>
                 </div>
               </Link>
 
@@ -177,13 +177,15 @@ export default function MyListings() {
                   с управлением статусом: пять кнопок в одном тесном
                   ряду теснили друг друга, а это единственная кнопка,
                   что приносит деньги — прятать её среди прочих не
-                  стоит. */}
+                  стоит. На всю ширину, не по размеру текста. */}
               {l.status === 'active' && (
-                <PromoteButton
-                  listingId={l.id} renderMode="trigger"
-                  open={promoteFor === l.id}
-                  onOpenChange={(v) => setPromoteFor(v ? l.id : null)}
-                />
+                <div className="my-promote-slot">
+                  <PromoteButton
+                    listingId={l.id} renderMode="trigger"
+                    open={promoteFor === l.id}
+                    onOpenChange={(v) => setPromoteFor(v ? l.id : null)}
+                  />
+                </div>
               )}
 
               {promoteFor === l.id && (
