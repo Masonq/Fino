@@ -92,6 +92,7 @@ export const api = {
   adminUsers: (params) => request(`/admin/users?${new URLSearchParams(params)}`),
   adminUser: (id) => request(`/admin/users/${id}`),
   adminUserListings: (id) => request(`/admin/users/${id}/listings`),
+  adminUserLogins: (id) => request(`/admin/users/${id}/logins`),
   adminUserSummary: (id) => request(`/admin/users/${id}/summary`),
   adminSetRole: (id, role) => request(`/admin/users/${id}/role`, {
     method: 'POST',

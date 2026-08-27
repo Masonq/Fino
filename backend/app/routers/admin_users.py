@@ -333,3 +333,42 @@ def user_summary(
             or (device_changed and country_changed)
         ),
     }
+
+
+@router.get("/{user_id}/logins")
+def user_logins(
+    user_id: uuid.UUID,
+    staff: User = Depends(require_staff),
+    db: Session = Depends(get_db),
+):
+    """
+    Сами записи входов — не только флаг «подозрительно», а то, что
+    реально накопилось: когда, откуда, с какого устройства. Флаг в
+    сводке зажигается только при совпадении сразу двух признаков —
+    здесь модератор может посмотреть историю целиком и решить сам,
+    даже если автоматический флаг не сработал.
+    """
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, "user_not_found")
+
+    events = (
+        db.query(LoginEvent)
+        .filter(LoginEvent.user_id == user_id)
+        .order_by(LoginEvent.created_at.desc())
+        .limit(20)
+        .all()
+    )
+    return {
+        "items": [
+            {
+                "id": str(e.id),
+                "created_at": e.created_at.isoformat() if e.created_at else None,
+                "ip_address": e.ip_address,
+                "device_guid": e.device_guid,
+                "country": e.country,
+                "city": e.city,
+            }
+            for e in events
+        ],
+    }

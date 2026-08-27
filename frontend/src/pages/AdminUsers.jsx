@@ -20,7 +20,7 @@ const FILTERS = [
 ]
 
 export default function AdminUsers() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()
 
@@ -72,12 +72,13 @@ export default function AdminUsers() {
     setOpenId(id)
     setCard(null)
     try {
-      const [full, summary, listings] = await Promise.all([
+      const [full, summary, listings, logins] = await Promise.all([
         api.adminUser(id),
         api.adminUserSummary(id).catch(() => null),
         api.adminUserListings(id).catch(() => ({ items: [] })),
+        api.adminUserLogins(id).catch(() => ({ items: [] })),
       ])
-      setCard({ ...full, summary, listings: listings.items || [] })
+      setCard({ ...full, summary, listings: listings.items || [], logins: logins.items || [] })
     } catch { setCard({ error: true }) }
   }
 
@@ -298,6 +299,28 @@ export default function AdminUsers() {
                           </button>
                         ))}
                       </div>
+                    )}
+
+                    {!!card.logins?.length && (
+                      <>
+                        <div className="admin-subtitle">{t('admin.logins_title')}</div>
+                        <div className="admin-logins">
+                          {card.logins.map((l) => (
+                            <div key={l.id} className="admin-login-row">
+                              <span className="admin-login-when">
+                                {l.created_at ? new Date(l.created_at).toLocaleString(i18n.language) : '—'}
+                              </span>
+                              <span className="admin-login-where">
+                                {l.city ? `${l.city}, ${l.country}` : (l.country || '—')}
+                              </span>
+                              <span className="admin-login-device" title={l.device_guid || ''}>
+                                {l.device_guid ? l.device_guid.slice(0, 8) : '—'}
+                              </span>
+                              <span className="admin-login-ip">{l.ip_address || '—'}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </>
                     )}
                   </>
                 )}

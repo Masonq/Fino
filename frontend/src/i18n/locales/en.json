@@ -390,7 +390,8 @@
     "reverify_sent": "Sent — the person will get a link in a notification",
     "reverify_pending": "This person already has a re-verification in progress",
     "err_reverify": "Couldn't send the request, please try again",
-    "suspicious_device": "Both device and country changed at once (last login from {{location}}) — this looks like someone else is using the account."
+    "suspicious_device": "Both device and country changed at once (last login from {{location}}) — this looks like someone else is using the account.",
+    "logins_title": "Recent logins"
   },
   "stats": {
     "title": "Numbers",
