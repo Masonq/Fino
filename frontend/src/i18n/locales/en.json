@@ -287,8 +287,9 @@
     "save": "Save",
     "saved": "Changes saved",
     "not_owner": "This isn't your listing",
-    "remoderation": "Changing the title, description or price sends the listing back for review",
-    "save_short": "Edit"
+    "remoderation": "After changing photos, title, description, or price, the listing goes through moderation again",
+    "save_short": "Edit",
+    "photo_failed": "Couldn't change the photo, please try again"
   },
   "report": {
     "button": "Report",

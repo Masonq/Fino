@@ -147,6 +147,13 @@ export const api = {
     method: 'PATCH',
     body: JSON.stringify(payload),
   }),
+  addListingPhoto: (id, payload) => request(`/listings/${id}/photos`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }),
+  deleteListingPhoto: (id, photoId) => request(`/listings/${id}/photos/${photoId}`, {
+    method: 'DELETE',
+  }),
   createListing: (payload) => request('/listings', {
     method: 'POST',
     body: JSON.stringify(payload),

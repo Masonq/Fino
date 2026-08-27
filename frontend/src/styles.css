@@ -415,6 +415,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
   color:var(--muted); font-size:10.5px; font-weight:700;
 }
+.photo-add.disabled{ opacity:.5; pointer-events:none; }
 .post-field{ display:flex; flex-direction:column; gap:6px; flex:1; }
 .post-field label{ font-size:12px; font-weight:700; color:var(--ink-soft); }
 .post-field input, .post-field select, .post-field textarea{

@@ -19,6 +19,9 @@ export default function EditListing() {
   const [price, setPrice] = useState('')
   const [negotiable, setNegotiable] = useState(false)
   const [city, setCity] = useState('')
+  const [photos, setPhotos] = useState([])
+  const [photoBusy, setPhotoBusy] = useState(false)
+  const [photoError, setPhotoError] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(false)
@@ -36,9 +39,41 @@ export default function EditListing() {
         setPrice(l.price != null ? String(l.price) : '')
         setNegotiable(!!l.price_negotiable)
         setCity(l.city || '')
+        setPhotos(l.photos || [])
       })
       .catch(() => setListing(null))
   }, [id])
+
+  const addPhoto = async (event) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file || photos.length >= 10) return
+    setPhotoBusy(true); setPhotoError('')
+    try {
+      const uploaded = await api.uploadPhoto(file)
+      const attached = await api.addListingPhoto(id, {
+        url: uploaded.url,
+        thumbnail_url: uploaded.thumbnail_url || uploaded.url,
+      })
+      setPhotos((prev) => [...prev, attached])
+    } catch {
+      setPhotoError(t('edit.photo_failed'))
+    } finally {
+      setPhotoBusy(false)
+    }
+  }
+
+  const removePhoto = async (photoId) => {
+    setPhotoBusy(true); setPhotoError('')
+    try {
+      await api.deleteListingPhoto(id, photoId)
+      setPhotos((prev) => prev.filter((p) => p.id !== photoId))
+    } catch {
+      setPhotoError(t('edit.photo_failed'))
+    } finally {
+      setPhotoBusy(false)
+    }
+  }
 
   const save = async () => {
     setBusy(true); setError('')
@@ -102,6 +137,34 @@ export default function EditListing() {
       <PageHeader title={t('edit.title')} />
 
       <div className="post-fields edit-fields">
+        <div className="post-field">
+          <label>{t('post.photos')} · {photos.length}/10</label>
+          <div className="photo-grid">
+            {photos.map((p) => (
+              <div key={p.id} className="photo-thumb">
+                <img src={p.url} alt="" />
+                <button
+                  type="button"
+                  className="photo-remove"
+                  disabled={photoBusy}
+                  onClick={() => removePhoto(p.id)}
+                  aria-label={t('actions.clear')}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                </button>
+              </div>
+            ))}
+            {photos.length < 10 && (
+              <label className={photoBusy ? 'photo-add disabled' : 'photo-add'}>
+                <input type="file" accept="image/*" onChange={addPhoto} disabled={photoBusy} hidden />
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
+                {t('post.photos')}
+              </label>
+            )}
+          </div>
+          {photoError && <p className="auth-error">{photoError}</p>}
+        </div>
+
         <div className="post-field">
           <label>{t('listing.title')}</label>
           <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} />

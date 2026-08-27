@@ -754,7 +754,7 @@ def get_listing(listing_id: str, db: Session = Depends(get_db),
         # как он уже делает с переводами заголовка и описания.
         "attributes_i18n": listing.attributes_i18n or {},
         "city": listing.city,
-        "photos": [{"url": p.url, "is_cover": p.is_cover} for p in listing.photos],
+        "photos": [{"id": str(p.id), "url": p.url, "is_cover": p.is_cover} for p in listing.photos],
         "views_count": listing.views_count,
         "owner": {
             "id": str(listing.owner.id),
@@ -993,6 +993,81 @@ def update_listing(
 
     db.commit()
     return {"status": listing.status.value}
+
+
+@router.post("/{listing_id}/photos")
+def add_photo(
+    listing_id: uuid.UUID,
+    payload: PhotoIn,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Добавляет фото к уже существующему объявлению.
+
+    Раньше фотографии задавались только при первой публикации —
+    отклонённое именно за фото объявление («Плохие или чужие фото»)
+    нечем было починить: поправить текст можно, а заменить снимки
+    негде. Тот же смысл, что и правка текста: реальное изменение
+    отправляет объявление на повторную проверку.
+    """
+    listing = db.query(Listing).options(joinedload(Listing.photos)).get(listing_id)
+    if not listing:
+        raise HTTPException(404, "not_found")
+    if listing.owner_id != user.id:
+        raise HTTPException(403, "not_owner")
+    if len(listing.photos) >= 10:
+        raise HTTPException(400, "too_many_photos")
+
+    next_order = max((p.sort_order for p in listing.photos), default=-1) + 1
+    photo = ListingPhoto(
+        listing_id=listing.id,
+        url=payload.url,
+        thumbnail_url=payload.thumbnail_url or payload.url,
+        sort_order=next_order,
+        is_cover=not listing.photos,   # первое фото у объявления — сразу обложка
+    )
+    db.add(photo)
+
+    if listing.status == ListingStatus.active:
+        listing.status = ListingStatus.pending_moderation
+    listing.is_complete = _looks_complete(listing)
+    db.commit()
+    db.refresh(photo)
+    return {"id": str(photo.id), "url": photo.url, "is_cover": photo.is_cover}
+
+
+@router.delete("/{listing_id}/photos/{photo_id}")
+def delete_photo(
+    listing_id: uuid.UUID,
+    photo_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    listing = db.query(Listing).options(joinedload(Listing.photos)).get(listing_id)
+    if not listing:
+        raise HTTPException(404, "not_found")
+    if listing.owner_id != user.id:
+        raise HTTPException(403, "not_owner")
+
+    photo = next((p for p in listing.photos if p.id == photo_id), None)
+    if not photo:
+        raise HTTPException(404, "photo_not_found")
+
+    was_cover = photo.is_cover
+    listing.photos.remove(photo)   # cascade="all, delete-orphan" удалит саму запись
+
+    # Убрали обложку — назначаем следующую по порядку, иначе карточка
+    # осталась бы без превью, хотя другие фото ещё есть.
+    if was_cover and listing.photos:
+        next_cover = sorted(listing.photos, key=lambda p: p.sort_order)[0]
+        next_cover.is_cover = True
+
+    if listing.status == ListingStatus.active:
+        listing.status = ListingStatus.pending_moderation
+    listing.is_complete = _looks_complete(listing)
+    db.commit()
+    return {"status": "deleted"}
 
 
 def _own_title(listing) -> str:
