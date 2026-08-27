@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 
-const REASONS = [
+const LISTING_REASONS = [
   'fraud',
   'prohibited_item',
   'spam',
@@ -13,7 +13,17 @@ const REASONS = [
   'other',
 ]
 
-export default function ReportButton({ listingId, ownerId }) {
+// На человека — только то, что вообще может относиться к поведению,
+// а не к самому товару: «не та категория»/«дубликат» тут смысла не
+// имеют.
+const USER_REASONS = [
+  'offensive_user',
+  'fraud',
+  'spam',
+  'other',
+]
+
+export default function ReportButton({ listingId, ownerId, targetUserId }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -25,14 +35,19 @@ export default function ReportButton({ listingId, ownerId }) {
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
 
-  // своё объявление не показываем жалобой
-  if (user && ownerId && user.id === ownerId) return null
+  // жаловаться на себя нет смысла — ни на своё объявление, ни на свой профиль
+  if (user && ((ownerId && user.id === ownerId) || (targetUserId && user.id === targetUserId))) {
+    return null
+  }
+
+  const reasons = targetUserId ? USER_REASONS : LISTING_REASONS
 
   const submit = async () => {
     setBusy(true); setError('')
     try {
       await api.createReport({
-        listing_id: listingId,
+        listing_id: listingId || null,
+        target_user_id: targetUserId || null,
         reason,
         comment: comment.trim() || null,
       })
@@ -62,7 +77,7 @@ export default function ReportButton({ listingId, ownerId }) {
           setOpen(true)
         }}
       >
-        {t('report.button')}
+        {t(targetUserId ? 'report.button_user' : 'report.button')}
       </button>
     )
   }
@@ -73,10 +88,12 @@ export default function ReportButton({ listingId, ownerId }) {
         <p className="report-done">{t('report.thanks')}</p>
       ) : (
         <>
-          <div className="report-title">{t('report.title')}</div>
+          <div className="report-title">
+            {t(targetUserId ? 'report.title_user' : 'report.title')}
+          </div>
 
           <div className="report-reasons">
-            {REASONS.map((r) => (
+            {reasons.map((r) => (
               <button
                 key={r}
                 className={reason === r ? 'report-reason active' : 'report-reason'}

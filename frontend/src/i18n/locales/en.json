@@ -301,7 +301,10 @@
     "err_already": "You've already reported this listing",
     "err_too_many": "Too many reports today, try again tomorrow",
     "err_self": "You can't report your own listing",
-    "r_offensive_user": "Offensive behavior"
+    "r_offensive_user": "Offensive behavior",
+    "button_user": "Report user",
+    "title_user": "What's wrong with this user?",
+    "on_user": "On user"
   },
   "saved": {
     "title": "Saved searches",

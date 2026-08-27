@@ -302,7 +302,10 @@
     "err_already": "Već ste prijavili ovaj oglas",
     "err_too_many": "Previše prijava danas, pokušajte sutra",
     "err_self": "Ne možete prijaviti sopstveni oglas",
-    "r_offensive_user": "Uvredljivo ponašanje"
+    "r_offensive_user": "Uvredljivo ponašanje",
+    "button_user": "Prijavi korisnika",
+    "title_user": "Šta nije u redu sa ovim korisnikom?",
+    "on_user": "Na korisnika"
   },
   "saved": {
     "title": "Sačuvane pretrage",

@@ -5,6 +5,7 @@ import { api } from '../api/client'
 import PageHeader from '../components/PageHeader'
 import ListingCard from '../components/ListingCard'
 import SellerReviews from '../components/SellerReviews'
+import ReportButton from '../components/ReportButton'
 import { CardSkeletons } from '../components/Skeletons'
 
 /**
@@ -104,6 +105,8 @@ export default function SellerProfile() {
           {since && <div className="seller-since">{t('seller.since', { date: since })}</div>}
         </div>
       </div>
+
+      <ReportButton targetUserId={profile.id} />
 
       {listings.length > 0 && (
         <div className="seller-section">

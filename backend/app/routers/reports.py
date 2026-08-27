@@ -112,11 +112,19 @@ def queue(
         .all()
     )
 
-    # сколько всего жалоб на каждое объявление
+    # сколько всего жалоб на каждое объявление — и отдельно на каждого
+    # человека: жалуются не только на товар, но и на поведение самого
+    # продавца/покупателя, и там массовость тоже важно видеть.
     counts = dict(
         db.query(Report.listing_id, func.count(Report.id))
         .filter(Report.status == ReportStatus.pending, Report.listing_id.isnot(None))
         .group_by(Report.listing_id)
+        .all()
+    )
+    user_counts = dict(
+        db.query(Report.target_user_id, func.count(Report.id))
+        .filter(Report.status == ReportStatus.pending, Report.target_user_id.isnot(None))
+        .group_by(Report.target_user_id)
         .all()
     )
 
@@ -124,10 +132,17 @@ def queue(
         l.id: l for l in db.query(Listing)
         .filter(Listing.id.in_([r.listing_id for r in rows if r.listing_id])).all()
     } if rows else {}
+    # Имя того, на кого жалуются напрямую — без этого модератор видел бы
+    # в карточке жалобы просто тире, без единой зацепки, кто это.
+    reported_users = {
+        u.id: u for u in db.query(User)
+        .filter(User.id.in_([r.target_user_id for r in rows if r.target_user_id])).all()
+    } if rows else {}
 
     def serialize(r: Report):
         listing = listings.get(r.listing_id) if r.listing_id else None
         tr = listing.translations[0] if listing and listing.translations else None
+        target_user = reported_users.get(r.target_user_id) if r.target_user_id else None
         return {
             "id": str(r.id),
             "reason": r.reason.value,
@@ -135,7 +150,12 @@ def queue(
             "listing_id": str(r.listing_id) if r.listing_id else None,
             "listing_title": tr.title if tr else None,
             "target_user_id": str(r.target_user_id) if r.target_user_id else None,
-            "same_target_count": counts.get(r.listing_id, 1) if r.listing_id else 1,
+            "target_user_name": target_user.display_name if target_user else None,
+            "same_target_count": (
+                counts.get(r.listing_id, 1) if r.listing_id
+                else user_counts.get(r.target_user_id, 1) if r.target_user_id
+                else 1
+            ),
             "created_at": r.created_at.isoformat() if r.created_at else None,
         }
 
@@ -180,10 +200,18 @@ def resolve(
         if listing:
             listing.status = ListingStatus.rejected
             listing.rejection_reason = f"Жалобы: {report.reason.value}"
-        db.query(Report).filter(
-            Report.listing_id == report.listing_id,
-            Report.status == ReportStatus.pending,
-        ).update({"status": ReportStatus.action_taken, "resolved_at": now})
+            db.query(Report).filter(
+                Report.listing_id == report.listing_id,
+                Report.status == ReportStatus.pending,
+            ).update({"status": ReportStatus.action_taken, "resolved_at": now})
+        else:
+            # Жалоба без объявления (например, на самого человека) —
+            # блокировать нечего, но саму жалобу всё равно закрываем,
+            # иначе она зависла бы в очереди навсегда: массовое
+            # обновление выше матчится по listing_id, а тут он None и
+            # ни с чем не совпадает.
+            report.status = ReportStatus.action_taken
+            report.resolved_at = now
 
     elif payload.action == "block_user":
         target_id = report.target_user_id

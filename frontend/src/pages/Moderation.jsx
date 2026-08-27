@@ -209,16 +209,22 @@ export default function Moderation() {
                       <span className="report-count">×{r.same_target_count}</span>
                     )}
                   </div>
-                  <div className="mod-title">{r.listing_title || '—'}</div>
+                  <div className="mod-title">
+                    {r.listing_title || (r.target_user_name
+                      ? `${t('report.on_user')}: ${r.target_user_name}`
+                      : '—')}
+                  </div>
                   {r.comment && <p className="mod-desc">{r.comment}</p>}
                 </div>
                 <div className="mod-actions">
                   <button disabled={busyId === r.id} onClick={() => resolveReport(r.id, 'dismiss')}>
                     {t('mod.dismiss')}
                   </button>
-                  <button className="mod-reject" disabled={busyId === r.id} onClick={() => resolveReport(r.id, 'block_listing')}>
-                    {t('mod.block_listing')}
-                  </button>
+                  {r.listing_id && (
+                    <button className="mod-reject" disabled={busyId === r.id} onClick={() => resolveReport(r.id, 'block_listing')}>
+                      {t('mod.block_listing')}
+                    </button>
+                  )}
                   <button className="mod-reject" disabled={busyId === r.id} onClick={() => resolveReport(r.id, 'block_user')}>
                     {t('mod.block_user')}
                   </button>
