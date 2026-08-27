@@ -260,7 +260,7 @@ def test_direct_visitor_can_leave():
 
     assert "window.history.state?.idx" in page
     # без истории ведём в раздел объявления
-    assert "/category/${listing.category_slug}" in page
+    assert "/search?category=${listing.category_slug}" in page
     # и прямых navigate(-1) не осталось
     assert "onClick={() => navigate(-1)}" not in page
 
@@ -277,21 +277,18 @@ def test_long_description_is_folded():
     assert "detail.read_more" in page
 
 
-def test_empty_categories_are_marked():
+def test_categories_show_regardless_of_count():
     """
-    Раздел с тремя объявлениями хуже, чем его отсутствие: он обещает
-    выбор и не даёт его. OpenTable выяснил числом — около полусотни
-    предложений, и тогда поиск даёт достаточно, чтобы решить задачу.
+    Пометку «скоро» под разделами убрали — она обещала мало полезного
+    сравнению с честным пустым разделом, а порог по числу объявлений
+    оказался лишней сложностью. Раздел показывается всегда, независимо
+    от числа объявлений в нём.
     """
     import inspect
-    from app.routers.categories import ENOUGH_FOR_CHOICE, list_categories
-
-    # Метим только совсем пустые: пометка «скоро» на разделе с двумя
-    # десятками объявлений выглядит ложной скромностью.
-    assert 5 <= ENOUGH_FOR_CHOICE <= 20
+    from app.routers.categories import list_categories
 
     source = inspect.getsource(list_categories)
-    assert '"ready"' in source
+    assert '"ready": True' in source
     assert '"count"' in source
     # считаем разом, а не запросом на каждый раздел
     assert "group_by(Listing.category_id)" in source

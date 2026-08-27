@@ -301,7 +301,18 @@ def test_long_actions_show_progress():
 
     # кнопки убираются сразу, чтобы второе нажатие было невозможно
     assert "reply_markup=None" in inspect.getsource(mark_busy)
-    assert "mark_busy(call" in inspect.getsource(publish)
+    # «Опубликовать» приходит обычным текстом (@dp.message), а не
+    # нажатием инлайн-кнопки (@dp.callback_query) — mark_busy рассчитана
+    # именно на второе (правит существующее сообщение с кнопкой через
+    # свой аргумент), и в publish() применить её нельзя: раньше здесь
+    # стояла попытка вызвать её с объектом нажатия, которого в этой
+    # функции попросту не было — публикация падала с ошибкой при каждой
+    # попытке, а этот тест, проверяя только НАЛИЧИЕ подстроки в исходном
+    # коде через inspect.getsource(), эту ошибку пропускал: подстрока
+    # была на месте, работал код или нет, тест не проверял вовсе.
+    source = inspect.getsource(publish)
+    assert "mark_busy(call" not in source
+    assert "show(message.bot, message.chat.id, \"Публикую" in source
 
 
 def test_every_emoji_has_a_plain_fallback():
