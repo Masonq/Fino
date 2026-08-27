@@ -984,7 +984,13 @@ def update_listing(
                     if other is not tr and other.is_auto_translated:
                         listing.translations.remove(other)
 
-    if content_changed and listing.status == ListingStatus.active:
+    # Обратно на проверку — и если объявление было активным (тогда
+    # правка временно снимает его с публикации до одобрения), и если
+    # оно было отклонено: это тот самый случай, ради которого правку
+    # вообще открывают после отказа — поправили и хотят, чтобы
+    # объявление снова дошло до модератора, а не осталось «отклонено»
+    # навсегда.
+    if content_changed and listing.status in (ListingStatus.active, ListingStatus.rejected):
         listing.status = ListingStatus.pending_moderation
 
     # Полнота могла измениться: дописали цену — объявление поднимется в
@@ -1029,7 +1035,10 @@ def add_photo(
     )
     db.add(photo)
 
-    if listing.status == ListingStatus.active:
+    # Тот же смысл, что и в update_listing() — добавление фото после
+    # отказа именно за фото должно возвращать на проверку, а не
+    # оставлять «отклонено» навсегда.
+    if listing.status in (ListingStatus.active, ListingStatus.rejected):
         listing.status = ListingStatus.pending_moderation
     listing.is_complete = _looks_complete(listing)
     db.commit()
@@ -1063,7 +1072,7 @@ def delete_photo(
         next_cover = sorted(listing.photos, key=lambda p: p.sort_order)[0]
         next_cover.is_cover = True
 
-    if listing.status == ListingStatus.active:
+    if listing.status in (ListingStatus.active, ListingStatus.rejected):
         listing.status = ListingStatus.pending_moderation
     listing.is_complete = _looks_complete(listing)
     db.commit()
