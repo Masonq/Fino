@@ -25,7 +25,7 @@ const ICONS = {
 }
 
 /**
- * Кнопка «Продвинуть» — только для владельца активного объявления.
+ * Кнопка «Поднять просмотры» — только для владельца активного объявления.
  *
  * Тот же управляемый режим, что и у ReportButton: renderMode='trigger'
  * рисует только кнопку (пригодится внутри тесного ряда других кнопок,
@@ -36,10 +36,15 @@ const ICONS = {
  * компонент как раньше — сам себе хозяин, для мест, где панели есть
  * куда развернуться без конфликта (страница объявления).
  *
- * Выбор — радио, не чекбоксы: один платёж ЮKassa несёт одну сумму за
- * один тип, купить несколько разом одной кнопкой нельзя технически.
+ * Выбор — радио, не чекбоксы: один платёж несёт одну сумму за один
+ * тип, купить несколько разом одной кнопкой нельзя технически.
  * Совмещать можно — просто не в один заход: купил один, вернулся,
  * выбрал другой.
+ *
+ * Оплата — с баланса мгновенно (если хватает), либо картой через
+ * ЮKassa с редиректом. Баланс приходит тем же запросом, что и цены —
+ * не нужен отдельный поход за ним только чтобы решить, какую кнопку
+ * показать.
  */
 export default function PromoteButton({ listingId, renderMode = 'full', open: openProp, onOpenChange }) {
   const { t } = useTranslation()
@@ -53,6 +58,7 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
   const [selected, setSelected] = useState(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [done, setDone] = useState(false)
 
   const load = () => {
     api.listingPromotions(listingId).then((res) => {
@@ -63,7 +69,7 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
       const active = new Set((res.items || []).map((p) => p.type))
       const firstFree = TYPES.find((tp) => !active.has(tp))
       setSelected(firstFree || null)
-    }).catch(() => setData({ prices: {}, items: [] }))
+    }).catch(() => setData({ prices: {}, items: [], balance: 0 }))
   }
 
   const openSheet = () => {
@@ -78,17 +84,26 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [controlled, open])
 
-  const buy = async () => {
+  const buy = async (payMethod) => {
     if (!selected) return
     setBusy(true); setError('')
     try {
-      const { confirmation_url } = await api.startPromotion(listingId, selected)
-      // Уводим на оплату целиком, как и с проверкой документа — сама
-      // оплата происходит на стороне ЮKassa, не на нашей странице.
-      window.location.href = confirmation_url
+      const res = await api.startPromotion(listingId, selected, payMethod)
+      if (res.paid_from_balance) {
+        // Списалось мгновенно — обновляем список активных и баланс,
+        // никуда уходить не нужно.
+        setDone(true)
+        load()
+        setTimeout(() => setDone(false), 1800)
+      } else {
+        // Уводим на оплату целиком, как и с проверкой документа —
+        // сама оплата происходит на стороне ЮKassa, не у нас.
+        window.location.href = res.confirmation_url
+      }
     } catch (e) {
       setError(e.code === 'promotion_not_configured'
         ? t('promo.err_unavailable') : t('promo.err_generic'))
+    } finally {
       setBusy(false)
     }
   }
@@ -101,10 +116,23 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
 
   const sheet = () => {
     const activeTypes = new Set((data?.items || []).map((p) => p.type))
+    const price = selected ? data?.prices?.[selected] : null
+    const balance = data?.balance || 0
+    const canUseBalance = price != null && balance >= price
+
     return (
       <div className="promo-sheet">
-        <div className="promo-title">{t('promo.title')}</div>
-        <div className="promo-sub">{t('promo.subtitle')}</div>
+        <div className="promo-sheet-head">
+          <div>
+            <div className="promo-title">{t('promo.title')}</div>
+            <div className="promo-sub">{t('promo.subtitle')}</div>
+          </div>
+          {data && (
+            <div className="promo-balance">
+              {t('promo.balance', { amount: balance })}
+            </div>
+          )}
+        </div>
 
         {!data ? (
           <p className="verify-hint">{t('actions.loading')}</p>
@@ -149,12 +177,34 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
             </div>
 
             {error && <p className="auth-error">{error}</p>}
+            {done && <p className="promo-done">{t('promo.paid_ok')}</p>}
 
-            <button className="promo-cta" disabled={!selected || busy} onClick={buy}>
-              {busy ? '…' : selected
-                ? t('promo.cta', { price: data.prices?.[selected] })
-                : t('promo.all_active')}
-            </button>
+            {selected && (
+              canUseBalance ? (
+                <>
+                  <button className="promo-cta" disabled={busy} onClick={() => buy('balance')}>
+                    {busy ? '…' : t('promo.pay_balance', { price })}
+                  </button>
+                  <button className="promo-alt-pay" disabled={busy} onClick={() => buy('yookassa')}>
+                    {t('promo.pay_card')}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button className="promo-cta" disabled={busy} onClick={() => buy('yookassa')}>
+                    {busy ? '…' : t('promo.cta', { price })}
+                  </button>
+                  {price != null && (
+                    <p className="promo-balance-hint">
+                      {t('promo.not_enough_balance', { amount: balance })}
+                    </p>
+                  )}
+                </>
+              )
+            )}
+            {!selected && (
+              <button className="promo-cta" disabled>{t('promo.all_active')}</button>
+            )}
           </>
         )}
 

@@ -103,7 +103,12 @@
     "err_generic": "Nije uspelo pokretanje plaćanja, pokušajte ponovo",
     "subtitle": "Izaberite opciju",
     "all_active": "Sve je već izdvojeno",
-    "cta": "Povećaj preglede — {{price}} ₽"
+    "cta": "Povećaj preglede — {{price}} ₽",
+    "balance": "Stanje: {{amount}} ₽",
+    "pay_balance": "Plati sa stanja — {{price}} ₽",
+    "pay_card": "Plati karticom",
+    "not_enough_balance": "Stanje je {{amount}} ₽ — nedovoljno, platite karticom",
+    "paid_ok": "Plaćeno sa stanja"
   },
   "ptr": {
     "pull": "Povucite nadole",
@@ -606,5 +611,10 @@
     "err_format": "Nepodržan format fajla",
     "err_generic": "Nije uspelo slanje, pokušajte ponovo",
     "err_unavailable": "Provera je privremeno nedostupna, pokušajte kasnije"
+  },
+  "balance": {
+    "title": "Stanje",
+    "topup": "Dopuni",
+    "topup_cta": "Dopuni za {{amount}} ₽"
   }
 }

@@ -1,7 +1,7 @@
 """
-Платное продвижение объявлений — ЮKassa.
+Платное продвижение объявлений и баланс — ЮKassa.
 
-Три типа готовы к продаже уже сейчас:
+Три типа продвижения готовы к продаже уже сейчас:
   bump      — разовое поднятие в поиске, без срока действия
   highlight — цветовое выделение карточки, на срок
   xl_card   — крупная карточка на две колонки в ленте, на срок
@@ -19,6 +19,10 @@ top_category в PromotionType существует, но здесь не про�
 API. Так рекомендует сама ЮKassa: тело вебхука можно подделать, а вот
 подписаться под чужим id платежа и получить в ответ «оплачено» —
 нельзя, ответ приходит с их стороны, не от того, кто прислал вебхук.
+
+Баланс — чтобы не уходить к ЮKassa за каждой мелкой покупкой
+продвижения: пополнил один раз, дальше покупки списываются мгновенно,
+без внешнего платежа и без ожидания вебхука.
 """
 import json
 import logging
@@ -28,14 +32,17 @@ import uuid
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.core.auth import get_current_user
 from app.core.config import settings
 from app.core.database import get_db, SessionLocal
 from app.core.clock import utcnow
-from app.models import Listing, ListingStatus, Promotion, PromotionStatus, PromotionType, User, UserRole
+from app.models import (
+    Listing, ListingStatus, Promotion, PromotionStatus, PromotionType,
+    BalanceTopup, BalanceTopupStatus, User, UserRole,
+)
 
 log = logging.getLogger(__name__)
 
@@ -59,9 +66,23 @@ PROMOTION_PRICES = {
 
 SELLABLE_TYPES = frozenset(PROMOTION_PRICES)
 
+# Пополнить можно от 100 до 20000 рублей за раз — нижняя граница,
+# чтобы не заводить платёж на смешные суммы (комиссия съест больше,
+# чем сам платёж), верхняя — просто разумный потолок для первой версии.
+MIN_TOPUP = 100
+MAX_TOPUP = 20000
+
 
 class PromoteIn(BaseModel):
     type: PromotionType
+    # "balance" — списать с уже пополненного баланса мгновенно, без
+    # похода к ЮKassa. "yookassa" (по умолчанию) — как раньше, платёж
+    # с редиректом на оплату.
+    pay_method: str = "yookassa"
+
+
+class TopupIn(BaseModel):
+    amount: float = Field(gt=0)
 
 
 def _yookassa_request(method: str, path: str, body: dict | None = None,
@@ -91,6 +112,35 @@ def _yookassa_request(method: str, path: str, body: dict | None = None,
         raise HTTPException(502, "promotion_unavailable")
 
 
+def _activate_promotion(db: Session, promo: Promotion) -> None:
+    """
+    Включает уже оплаченное продвижение — общее место для обоих путей
+    оплаты (баланс и вебхук ЮKassa), чтобы логика не разъезжалась
+    между ними.
+    """
+    promo.status = PromotionStatus.paid
+    promo.starts_at = utcnow()
+    if promo.type != PromotionType.bump:
+        promo.expires_at = utcnow() + timedelta(days=PROMOTION_DURATION_DAYS)
+
+    listing = db.query(Listing).get(promo.listing_id)
+    if promo.type == PromotionType.bump and listing:
+        # Разовое поднятие: делаем вид, что объявление только что
+        # опубликовано — сортировка «сначала новые» поднимает его
+        # наверх сама, без отдельного поля под это.
+        listing.published_at = utcnow()
+
+    db.commit()
+
+    try:
+        from app.core.notifications import notify_promotion_paid
+        if listing:
+            title = listing.translations[0].title if listing.translations else ""
+            notify_promotion_paid(db, promo.user_id, title, promo.type.value)
+    except Exception:
+        pass
+
+
 @router.post("/listings/{listing_id}/promotions")
 def start_promotion(
     listing_id: uuid.UUID,
@@ -98,8 +148,10 @@ def start_promotion(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Заводит платёж у ЮKassa за выбранное продвижение — сама покупка
-    подтвердится вебхуком, тут только отдаём ссылку на оплату."""
+    """
+    Покупка продвижения — с баланса мгновенно, или через ЮKassa со
+    ссылкой на оплату.
+    """
     if payload.type not in SELLABLE_TYPES:
         raise HTTPException(400, "not_sellable")
 
@@ -114,6 +166,24 @@ def start_promotion(
         raise HTTPException(400, "listing_not_active")
 
     price = PROMOTION_PRICES[payload.type]
+
+    if payload.pay_method == "balance":
+        # Свежее значение баланса, не то, что могло прийти закэшированным
+        # в объекте user из предыдущего запроса.
+        fresh = db.query(User).get(user.id)
+        if fresh.balance < price:
+            raise HTTPException(400, "insufficient_balance")
+
+        fresh.balance = fresh.balance - price
+        promo = Promotion(
+            listing_id=listing_id, user_id=user.id, type=payload.type,
+            status=PromotionStatus.pending, price_paid=price, currency="RUB",
+        )
+        db.add(promo)
+        db.flush()
+        _activate_promotion(db, promo)
+        return {"paid_from_balance": True, "balance": float(fresh.balance)}
+
     idempotence_key = str(uuid.uuid4())
     data = _yookassa_request("POST", "/payments", {
         "amount": {"value": f"{price:.2f}", "currency": "RUB"},
@@ -123,7 +193,7 @@ def start_promotion(
             "return_url": f"{settings.site_base_url}/go/{listing_id}",
         },
         "description": f"PLONK — продвижение объявления ({payload.type.value})",
-        "metadata": {"listing_id": str(listing_id), "promotion_type": payload.type.value},
+        "metadata": {"kind": "promotion", "listing_id": str(listing_id), "promotion_type": payload.type.value},
     }, idempotence_key=idempotence_key)
 
     promo = Promotion(
@@ -144,7 +214,8 @@ def listing_promotions(
     db: Session = Depends(get_db),
 ):
     """Действующие продвижения объявления — показать владельцу, до
-    какого числа они держатся, и что уже куплено."""
+    какого числа они держатся, и что уже куплено. Заодно баланс — тем
+    же запросом, панель покупки сразу знает, хватит ли денег."""
     listing = db.query(Listing).get(listing_id)
     if not listing:
         raise HTTPException(404, "not_found")
@@ -160,8 +231,10 @@ def listing_promotions(
         .order_by(Promotion.created_at.desc())
         .all()
     )
+    fresh = db.query(User).get(user.id)
     return {
         "prices": {t.value: PROMOTION_PRICES[t] for t in SELLABLE_TYPES},
+        "balance": float(fresh.balance),
         "items": [
             {
                 "type": p.type.value,
@@ -173,13 +246,53 @@ def listing_promotions(
     }
 
 
+@router.get("/balance")
+def my_balance(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    fresh = db.query(User).get(user.id)
+    return {"balance": float(fresh.balance)}
+
+
+@router.post("/balance/topup")
+def start_topup(
+    payload: TopupIn,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Заводит платёж на пополнение баланса — зачисление придёт вебхуком,
+    как и с продвижением."""
+    if payload.amount < MIN_TOPUP or payload.amount > MAX_TOPUP:
+        raise HTTPException(400, "amount_out_of_range")
+
+    idempotence_key = str(uuid.uuid4())
+    data = _yookassa_request("POST", "/payments", {
+        "amount": {"value": f"{payload.amount:.2f}", "currency": "RUB"},
+        "capture": True,
+        "confirmation": {
+            "type": "redirect",
+            "return_url": f"{settings.site_base_url}/profile",
+        },
+        "description": "PLONK — пополнение баланса",
+        "metadata": {"kind": "balance_topup", "user_id": str(user.id)},
+    }, idempotence_key=idempotence_key)
+
+    topup = BalanceTopup(
+        user_id=user.id, amount=payload.amount, currency="RUB",
+        status=BalanceTopupStatus.pending, payment_id=data["id"],
+    )
+    db.add(topup)
+    db.commit()
+
+    return {"confirmation_url": data["confirmation"]["confirmation_url"]}
+
+
 @router.post("/payments/yookassa/webhook")
 async def yookassa_webhook(request: Request):
     """
     Сюда стучится сама ЮKassa. Телу не доверяем — по id платежа из
     уведомления переспрашиваем его настоящий статус авторизованным
     запросом к их API, действуем по тому, что ответят они, а не по
-    тому, что пришло в теле запроса.
+    тому, что пришло в теле запроса. metadata.kind решает, какую из
+    двух заявок (продвижение или пополнение баланса) подтверждать.
     """
     try:
         payload = await request.json()
@@ -197,35 +310,25 @@ async def yookassa_webhook(request: Request):
         # тут не на чем.
         return {"status": "ok"}
 
+    kind = (real.get("metadata") or {}).get("kind")
+
     db = SessionLocal()
     try:
+        if kind == "balance_topup":
+            topup = db.query(BalanceTopup).filter(BalanceTopup.payment_id == payment_id).first()
+            if not topup or topup.status != BalanceTopupStatus.pending:
+                return {"status": "ok"}
+            topup.status = BalanceTopupStatus.paid
+            user = db.query(User).get(topup.user_id)
+            user.balance = user.balance + topup.amount
+            db.commit()
+            return {"status": "ok"}
+
         promo = db.query(Promotion).filter(Promotion.payment_id == payment_id).first()
         if not promo or promo.status != PromotionStatus.pending:
             # Уже обработано раньше, или платёж не наш вовсе.
             return {"status": "ok"}
-
-        promo.status = PromotionStatus.paid
-        promo.starts_at = utcnow()
-        if promo.type != PromotionType.bump:
-            promo.expires_at = utcnow() + timedelta(days=PROMOTION_DURATION_DAYS)
-
-        listing = db.query(Listing).get(promo.listing_id)
-        if promo.type == PromotionType.bump and listing:
-            # Разовое поднятие: делаем вид, что объявление только что
-            # опубликовано — сортировка «сначала новые» поднимает его
-            # наверх сама, без отдельного поля под это.
-            listing.published_at = utcnow()
-
-        db.commit()
-
-        try:
-            from app.core.notifications import notify_promotion_paid
-            if listing:
-                title = listing.translations[0].title if listing.translations else ""
-                notify_promotion_paid(db, promo.user_id, title, promo.type.value)
-        except Exception:
-            pass
-
+        _activate_promotion(db, promo)
         return {"status": "ok"}
     finally:
         db.close()

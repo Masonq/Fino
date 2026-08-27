@@ -984,6 +984,24 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   display:block; text-align:center; padding:12px; font-size:13px; font-weight:700;
   color:var(--primary-deep); border-top:1px solid rgba(20,30,25,.06);
 }
+.balance-card{
+  margin:0 12px 22px; padding:14px; border-radius:16px; background:#fff;
+  border:1px solid rgba(20,30,25,.06);
+}
+.balance-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.balance-label{ font-size:12px; color:var(--muted); font-weight:600; }
+.balance-amount{ font-size:19px; font-weight:800; color:var(--ink); margin-top:1px; }
+.balance-topup-btn{
+  flex-shrink:0; padding:10px 16px; border-radius:11px;
+  background:var(--primary); color:#fff; font-size:13px; font-weight:700;
+}
+.balance-topup-form{ margin-top:14px; padding-top:14px; border-top:1px solid rgba(20,30,25,.06); }
+.balance-presets{ display:flex; gap:7px; margin-bottom:12px; }
+.balance-preset{
+  flex:1; padding:10px 4px; border-radius:10px; background:#F2F2EF;
+  color:var(--ink); font-size:13px; font-weight:700;
+}
+.balance-preset.active{ background:var(--primary); color:#fff; }
 
 .profile-section-title{
   padding:0 16px 8px; margin-top:4px;
@@ -1271,6 +1289,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .promo-title{ font-size:16px; font-weight:800; color:var(--ink); margin-bottom:3px; }
 .promo-sub{ font-size:12.5px; color:var(--muted); margin-bottom:15px; }
+.promo-sheet-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:15px; }
+.promo-sheet-head .promo-sub{ margin-bottom:0; }
+.promo-balance{
+  flex-shrink:0; padding:6px 11px; border-radius:10px; background:var(--primary-soft);
+  color:var(--primary-deep); font-size:12px; font-weight:800; margin-top:1px;
+}
 
 .promo-row{
   display:flex; align-items:center; gap:11px; cursor:pointer;
@@ -1315,6 +1339,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   background:var(--primary); color:#fff; font-size:14.5px; font-weight:800;
 }
 .promo-cta:disabled{ opacity:.5; }
+.promo-alt-pay{
+  width:100%; margin-top:8px; padding:11px; border-radius:12px;
+  background:none; color:var(--ink-soft); font-size:12.5px; font-weight:700;
+  text-decoration:underline; text-underline-offset:2px;
+}
+.promo-balance-hint{ font-size:11.5px; color:var(--muted); text-align:center; margin-top:7px; }
+.promo-done{ font-size:13px; font-weight:700; color:var(--primary-deep); text-align:center; padding:6px; }
 .promo-sheet .review-cancel{
   display:block; width:100%; margin-top:10px; padding:13px;
   border-radius:12px; background:#FFF0EE; color:var(--coral);

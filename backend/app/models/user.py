@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import String, Boolean, DateTime, Enum, Float, Integer, Text
+from sqlalchemy import String, Boolean, DateTime, Enum, Float, Integer, Text, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -49,6 +49,11 @@ class User(Base):
 
     phone_verified: Mapped[bool] = mapped_column(Boolean, default=False)
     document_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    # Баланс — рубли, пополняется через ЮKassa, тратится на
+    # продвижение объявлений напрямую, без похода к ЮKassa каждый раз.
+    # Numeric, не Float: деньги, копейки не должны плавать.
+    balance: Mapped[float] = mapped_column(Numeric(10, 2), default=0)
 
     # Business seller fields (APR verification — Serbian company registry)
     company_name: Mapped[str | None] = mapped_column(String(255), nullable=True)

@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
 import { ProfileSkeleton } from '../components/Skeletons'
 import NotificationBell from '../components/NotificationBell'
+import BalanceCard from '../components/BalanceCard'
 
 export default function Profile() {
   const { t } = useTranslation()
@@ -73,6 +74,8 @@ export default function Profile() {
           {t('edit_profile.edit')}
         </Link>
       </div>
+
+      <BalanceCard />
 
       {/* Раньше все десять пунктов шли одним плоским списком без единой
           зацепки, что где искать, — теперь три смысловые группы, у

@@ -104,11 +104,17 @@ export const api = {
   }),
   adminUnblock: (id) => request(`/admin/users/${id}/unblock`, { method: 'POST' }),
   adminRequestReverify: (id) => request(`/verification/moderation/${id}/reverify`, { method: 'POST' }),
-  // Платное продвижение объявления — три типа, оплата через ЮKassa.
+  // Платное продвижение объявления — три типа, оплата через ЮKassa
+  // или с баланса.
   listingPromotions: (id) => request(`/listings/${id}/promotions`),
-  startPromotion: (id, type) => request(`/listings/${id}/promotions`, {
+  startPromotion: (id, type, payMethod) => request(`/listings/${id}/promotions`, {
     method: 'POST',
-    body: JSON.stringify({ type }),
+    body: JSON.stringify({ type, pay_method: payMethod }),
+  }),
+  getBalance: () => request('/balance'),
+  startTopup: (amount) => request('/balance/topup', {
+    method: 'POST',
+    body: JSON.stringify({ amount }),
   }),
   adminStats: (days) => request(`/admin/stats?${new URLSearchParams({ days })}`),
   adminStatsDaily: (days) => request(`/admin/stats/daily?${new URLSearchParams({ days })}`),

@@ -7,6 +7,7 @@ from app.models.review_invite import ReviewInvite
 from app.models.chat import Chat, Message
 from app.models.trust import Review, Report, ReportReason, ReportStatus
 from app.models.promotion import Promotion, PromotionType, PromotionStatus
+from app.models.balance_topup import BalanceTopup, BalanceTopupStatus
 from app.models.audit import AuditEntry
 from app.models.login_ticket import LoginTicket
 from app.models.blocked_user import BlockedUser
@@ -29,6 +30,7 @@ __all__ = [
     "Chat", "Message",
     "Review", "Report", "ReportReason", "ReportStatus",
     "Promotion", "PromotionType", "PromotionStatus",
+    "BalanceTopup", "BalanceTopupStatus",
     "AuditEntry", "LoginTicket",
     "BlockedUser",
     "ListingViewDaily",

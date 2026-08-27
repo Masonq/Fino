@@ -103,7 +103,12 @@
     "err_generic": "Couldn't start the payment, please try again",
     "subtitle": "Choose an option",
     "all_active": "Everything is already promoted",
-    "cta": "Boost views — {{price}} ₽"
+    "cta": "Boost views — {{price}} ₽",
+    "balance": "Balance: {{amount}} ₽",
+    "pay_balance": "Pay from balance — {{price}} ₽",
+    "pay_card": "Pay by card",
+    "not_enough_balance": "Balance is {{amount}} ₽ — not enough, pay by card instead",
+    "paid_ok": "Paid from balance"
   },
   "ptr": {
     "pull": "Pull down",
@@ -605,5 +610,10 @@
     "err_format": "Unsupported file format",
     "err_generic": "Couldn’t send it, please try again",
     "err_unavailable": "Verification is temporarily unavailable, try again later"
+  },
+  "balance": {
+    "title": "Balance",
+    "topup": "Top up",
+    "topup_cta": "Top up {{amount}} ₽"
   }
 }
