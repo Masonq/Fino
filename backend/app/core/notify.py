@@ -145,6 +145,78 @@ def send_code(destination: str, code: str, channel: VerifyChannel) -> None:
     else:
         _send_email(destination, code)
 
+def _notification_letter(title: str, body_text: str, link: str | None = None) -> str:
+    """
+    Разметка письма-уведомления — тот же стиль карточки, что и у письма
+    с кодом входа, просто без крупного кода посередине.
+
+    Текст приходит уже как обычная строка без разметки (после
+    _strip_tags — Telegram-тегов вроде <b> тут может не быть, а если
+    останутся спецсимволы из названия объявления, экранируем их сами,
+    чтобы «Стол <IKEA>» не оказался обрывком HTML-тега).
+    """
+    import html as html_module
+
+    site = (settings.public_base_url or "https://plonk.rs").rstrip("/")
+    if not site.startswith("http"):
+        site = f"https://{site}"
+
+    body_html = "<br>".join(html_module.escape(line) for line in body_text.split("\n"))
+
+    button = ""
+    if link:
+        full_link = f"{site}{link}" if link.startswith("/") else link
+        button = f"""
+  <tr><td align="center" style="padding:4px 32px 28px;">
+    <a href="{full_link}" style="display:inline-block;padding:13px 26px;border-radius:12px;
+              background:#0E9F6E;color:#ffffff;font-size:14px;font-weight:700;
+              text-decoration:none;">Открыть на PLONK</a>
+  </td></tr>"""
+
+    return f"""<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>{html_module.escape(title)}</title></head>
+<body style="margin:0;padding:0;background:#f4f6f5;
+             font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+       style="background:#f4f6f5;padding:32px 16px;">
+<tr><td align="center">
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+       style="max-width:440px;background:#ffffff;border-radius:20px;
+              overflow:hidden;box-shadow:0 1px 3px rgba(16,24,40,.06);">
+
+  <tr><td align="center" style="padding:32px 32px 8px;">
+    <div style="width:52px;height:52px;line-height:52px;border-radius:14px;
+                background:#0E9F6E;color:#ffffff;
+                font-size:26px;font-weight:700;">P</div>
+  </td></tr>
+
+  <tr><td align="center" style="padding:16px 32px 4px;">
+    <div style="font-size:18px;font-weight:700;color:#101828;">
+      {html_module.escape(title)}
+    </div>
+  </td></tr>
+
+  <tr><td align="center" style="padding:12px 32px 24px;">
+    <div style="font-size:14.5px;line-height:22px;color:#475467;">
+      {body_html}
+    </div>
+  </td></tr>
+{button}
+</table>
+
+<div style="margin-top:20px;font-size:12px;color:#98a2b3;">
+  <a href="{site}" style="color:#0E9F6E;text-decoration:none;">PLONK</a>
+  &nbsp;·&nbsp; объявления в Сербии
+</div>
+
+</td></tr>
+</table>
+</body></html>"""
+
+
 def _send_email_text(to: str, subject: str, body: str,
                      html: str | None = None) -> None:
     """

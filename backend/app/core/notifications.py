@@ -49,7 +49,8 @@ def _send_telegram(chat_id: str, text: str) -> bool:
 
 
 def notify(db: Session, user_id, text: str, force: bool = False,
-           allow_email: bool = False, subject: str | None = None) -> bool:
+           allow_email: bool = False, subject: str | None = None,
+           link: str | None = None) -> bool:
     """
     Отправляет уведомление, если человек не в приложении прямо сейчас.
 
@@ -59,10 +60,21 @@ def notify(db: Session, user_id, text: str, force: bool = False,
                    решение по объявлению. Для каждого сообщения в переписке
                    почту не используем — письмо на каждую реплику уведёт
                    нас в спам, и перестанут доходить даже коды входа.
+    link         — путь на сайте, куда ведёт уведомление в колокольчике.
+
+    В колокольчик на сайте кладём всегда, даже если человек сейчас в
+    приложении и внешнюю отправку пропускаем — это отдельный, не
+    зависящий от Telegram/почты след события: человек без привязанного
+    канала связи раньше не видел уведомлений вообще нигде.
     """
+    from app.models import Notification
+
     user = db.query(User).get(user_id)
     if not user:
         return False
+
+    db.add(Notification(user_id=user_id, text=_strip_tags(text), link=link))
+    db.commit()
 
     if not force and user.last_seen_at:
         if utcnow() - user.last_seen_at < ACTIVE_WINDOW:
@@ -73,8 +85,11 @@ def notify(db: Session, user_id, text: str, force: bool = False,
 
     if (allow_email or force) and user.email:
         try:
-            from app.core.notify import _send_email_text
-            _send_email_text(user.email, subject or "PLONK", _strip_tags(text))
+            from app.core.notify import _send_email_text, _notification_letter
+            plain = _strip_tags(text)
+            title = subject or "PLONK"
+            _send_email_text(user.email, title, plain,
+                             html=_notification_letter(title, plain, link))
             return True
         except Exception as exc:
             log.warning("Не доставлено на почту %s: %s", user.email, exc)
@@ -115,26 +130,31 @@ def notify_new_message(db: Session, recipient_id, sender_id, sender_name: str,
         f"<b>{sender_name}</b> написал вам в PLONK\n\n"
         f"{preview[:120]}"
     )
-    return notify(db, recipient_id, text)
+    link = f"/chat/{chat_id}" if chat_id else None
+    return notify(db, recipient_id, text, link=link)
 
 
-def notify_review_request(db: Session, user_id, other_name: str) -> bool:
+def notify_review_request(db: Session, user_id, other_name: str, chat_id=None) -> bool:
     text = (
         f"Как прошла сделка с <b>{other_name}</b>?\n\n"
         f"Оставьте отзыв — это помогает другим покупателям."
     )
-    return notify(db, user_id, text, allow_email=True, subject="PLONK — как прошла сделка?")
+    link = f"/chat/{chat_id}" if chat_id else None
+    return notify(db, user_id, text, allow_email=True,
+                  subject="PLONK — как прошла сделка?", link=link)
 
 
-def notify_moderation(db: Session, user_id, title: str, approved: bool, reason: str | None = None) -> bool:
+def notify_moderation(db: Session, user_id, title: str, approved: bool,
+                      reason: str | None = None, listing_id=None) -> bool:
     if approved:
         text = f"Объявление «{title}» прошло проверку и опубликовано"
     else:
         text = f"Объявление «{title}» отклонено"
         if reason:
             text += f"\n\nПричина: {reason}"
+    link = f"/go/{listing_id}" if (approved and listing_id) else "/my"
     return notify(db, user_id, text, force=True, allow_email=True,
-                  subject="PLONK — ваше объявление")
+                  subject="PLONK — ваше объявление", link=link)
 
 
 def notify_expiring_soon(db: Session, user_id, title: str, days_left: int) -> bool:
@@ -145,7 +165,7 @@ def notify_expiring_soon(db: Session, user_id, title: str, days_left: int) -> bo
         "проверку и получит новый срок показа."
     )
     return notify(db, user_id, text, allow_email=True,
-                  subject="PLONK — объявление скоро снимется с публикации")
+                  subject="PLONK — объявление скоро снимется с публикации", link="/my")
 
 
 def notify_expired(db: Session, user_id, title: str) -> bool:
@@ -155,4 +175,4 @@ def notify_expired(db: Session, user_id, title: str) -> bool:
         "«Архив» есть кнопка «Вернуть» — она разместит объявление снова."
     )
     return notify(db, user_id, text, allow_email=True,
-                  subject="PLONK — объявление снято с публикации")
+                  subject="PLONK — объявление снято с публикации", link="/my")
