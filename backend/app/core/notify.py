@@ -148,7 +148,7 @@ def send_code(destination: str, code: str, channel: VerifyChannel) -> None:
     else:
         _send_email(destination, code)
 
-def _notification_letter(title: str, body_text: str, link: str | None = None) -> str:
+def _notification_letter(title: str, body_text: str) -> str:
     """
     Разметка письма-уведомления — тот же стиль карточки, что и у письма
     с кодом входа, просто без крупного кода посередине.
@@ -159,6 +159,14 @@ def _notification_letter(title: str, body_text: str, link: str | None = None) ->
     суть, а внутри карточки это же читалось бы двойным заголовком.
     title используется только в скрытом <title> письма.
 
+    Ссылок нет вовсе — ни кнопки «Открыть на PLONK», ни ссылки на сайт
+    в подвале. Письмо с кодом входа тоже лишилось единственной ссылки
+    по той же причине: код (или тут — призыв «открыть»/«оставить
+    отзыв») рядом с кликабельной ссылкой — рисунок фишингового письма,
+    и Apple такие письма отклоняет целиком («554 5.7.1 [HM07] Message
+    rejected due to local policy»). Кто захочет перейти — откроет само
+    приложение, оно и так на первом экране показывает уведомления.
+
     Текст приходит уже как обычная строка без разметки (после
     _strip_tags — Telegram-тегов вроде <b> тут может не быть, а если
     останутся спецсимволы из названия объявления, экранируем их сами,
@@ -166,21 +174,7 @@ def _notification_letter(title: str, body_text: str, link: str | None = None) ->
     """
     import html as html_module
 
-    site = (settings.public_base_url or "https://plonk.rs").rstrip("/")
-    if not site.startswith("http"):
-        site = f"https://{site}"
-
     body_html = "<br>".join(html_module.escape(line) for line in body_text.split("\n"))
-
-    button = ""
-    if link:
-        full_link = f"{site}{link}" if link.startswith("/") else link
-        button = f"""
-  <tr><td align="center" style="padding:4px 32px 28px;">
-    <a href="{full_link}" style="display:inline-block;padding:13px 26px;border-radius:12px;
-              background:#0E9F6E;color:#ffffff;font-size:14px;font-weight:700;
-              text-decoration:none;">Открыть на PLONK</a>
-  </td></tr>"""
 
     return f"""<!DOCTYPE html>
 <html lang="ru"><head><meta charset="utf-8">
@@ -208,17 +202,16 @@ def _notification_letter(title: str, body_text: str, link: str | None = None) ->
     </div>
   </td></tr>
 
-  <tr><td align="center" style="padding:12px 32px 24px;">
+  <tr><td align="center" style="padding:12px 32px 28px;">
     <div style="font-size:14.5px;line-height:22px;color:#475467;">
       {body_html}
     </div>
   </td></tr>
-{button}
+
 </table>
 
 <div style="margin-top:20px;font-size:12px;color:#98a2b3;">
-  <a href="{site}" style="color:#0E9F6E;text-decoration:none;">PLONK</a>
-  &nbsp;·&nbsp; объявления в Сербии
+  PLONK &nbsp;·&nbsp; объявления в Сербии
 </div>
 
 </td></tr>

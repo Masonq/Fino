@@ -89,7 +89,7 @@ def notify(db: Session, user_id, text: str, force: bool = False,
             plain = _strip_tags(text)
             title = subject or "PLONK"
             _send_email_text(user.email, title, plain,
-                             html=_notification_letter(title, plain, link))
+                             html=_notification_letter(title, plain))
             return True
         except Exception as exc:
             log.warning("Не доставлено на почту %s: %s", user.email, exc)
