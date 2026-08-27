@@ -15,7 +15,7 @@ import PageHeader from '../components/PageHeader'
 export default function EditProfile() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
-  const { user, loading: authLoading } = useAuth()
+  const { user, loading: authLoading, updateUser } = useAuth()
 
   const [name, setName] = useState('')
   const [avatar, setAvatar] = useState('')
@@ -44,13 +44,19 @@ export default function EditProfile() {
     if (name.trim().length < 2) return
     setSaving(true)
     try {
-      await api.editProfile({
+      const updated = await api.editProfile({
         display_name: name.trim(),
         avatar_url: avatar.trim(),
         company_name: company.trim(),
         company_description: companyDescription.trim(),
         default_language: i18n.language,
       })
+      // Сервер в ответе на сохранение уже отдаёт обновлённый профиль
+      // целиком — используем его же, а не собираем заново из полей
+      // формы: так кэш входа точно совпадает с тем, что реально
+      // сохранилось (например, company_verified сервер мог сбросить
+      // сам, если название компании поменялось).
+      updateUser(updated)
       setDone(true)
       setTimeout(() => navigate('/profile'), 700)
     } catch {

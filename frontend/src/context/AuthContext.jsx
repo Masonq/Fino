@@ -6,6 +6,7 @@ const AuthContext = createContext({
   loading: true,
   signIn: () => {},
   signOut: () => {},
+  updateUser: () => {},
 })
 
 export function AuthProvider({ children }) {
@@ -48,8 +49,19 @@ export function AuthProvider({ children }) {
     setUser(null)
   }, [])
 
+  // Правка профиля (имя, фото, компания) сохраняется на сервере, но
+  // без этого в кэше входа оставались старые значения до следующей
+  // полной перезагрузки приложения — страница профиля, чат и карточки
+  // объявлений берут имя/аватар отсюда, не своим отдельным запросом,
+  // и молча показывали бы прежнее, пока страницу не обновишь руками.
+  // Сливаем поверх текущего, а не заменяем целиком — сервер в ответе
+  // на PATCH /users/me может прислать не все поля, что были при входе.
+  const updateUser = useCallback((partial) => {
+    setUser((prev) => (prev ? { ...prev, ...partial } : prev))
+  }, [])
+
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signOut, updateUser }}>
       {children}
     </AuthContext.Provider>
   )
