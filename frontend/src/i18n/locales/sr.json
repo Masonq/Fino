@@ -549,6 +549,7 @@
     "views_unit": "pregleda",
     "not_owner": "Statistika je vidljiva samo vlasniku oglasa.",
     "incomplete_hint": "Ovom oglasu nedostaje cena ili slika — takvi oglasi se prikazuju niže. Popunite karticu u potpunosti da biste dobili više pregleda.",
-    "short": "Statistika"
+    "short": "Statistika",
+    "conversion": "Konverzija u poruke"
   }
 }

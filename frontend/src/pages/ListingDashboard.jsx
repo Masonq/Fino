@@ -80,6 +80,14 @@ export default function ListingDashboard() {
               <div className="stats-value">{data.chats_count}</div>
               <div className="stats-label">{t('ldash.chats')}</div>
             </div>
+            <div className="stats-card">
+              <div className="stats-value">
+                {data.views_total > 0
+                  ? `${((data.chats_count / data.views_total) * 100).toFixed(1)}%`
+                  : '—'}
+              </div>
+              <div className="stats-label">{t('ldash.conversion')}</div>
+            </div>
           </div>
 
           <div className="stats-block">
