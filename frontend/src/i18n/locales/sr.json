@@ -176,7 +176,9 @@
     "cols_2": "Dva u redu",
     "cols_1": "Jedan u redu",
     "find": "Traži",
-    "not_found": "Ova stranica ne postoji — link je možda zastareo ili pogrešno unet."
+    "not_found": "Ova stranica ne postoji — link je možda zastareo ili pogrešno unet.",
+    "price_down": "Cena je pala",
+    "price_up": "Cena je porasla"
   },
   "chats": {
     "need_auth": "Predstavite se da biste videli svoje razgovore.",

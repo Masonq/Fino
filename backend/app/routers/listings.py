@@ -92,6 +92,18 @@ def pick_translation(listing, lang: str):
     return listing.translations[0] if listing.translations else None
 
 
+def previous_price_of(listing) -> dict | None:
+    """
+    Цена до последней правки — для стрелки/перечёркнутой цены на
+    карточке и странице объявления. Только последняя запись: для
+    индикатора вся история не нужна, важно лишь «было дороже/дешевле».
+    """
+    if not listing.price_history:
+        return None
+    last = listing.price_history[-1]
+    return {"price": last["price"], "currency": last["currency"]}
+
+
 @router.post("")
 def create_listing(
     payload: ListingCreate,
@@ -326,6 +338,7 @@ def search_listings(
             "id": str(listing.id),
             "title": translation.title if translation else None,
             "price": float(listing.price) if listing.price else None,
+            "previous_price": previous_price_of(listing),
             "is_free": bool(listing.is_free),
             "currency": listing.currency,
             "city": listing.city,
@@ -379,6 +392,7 @@ def listings_by_ids(
             "id": str(l.id),
             "title": tr.title if tr else None,
             "price": float(l.price) if l.price else None,
+            "previous_price": previous_price_of(l),
             "is_free": bool(l.is_free),
             "currency": l.currency,
             "city": l.city,
@@ -595,6 +609,7 @@ def similar_listings(
             "id": str(l.id),
             "title": tr.title if tr else None,
             "price": float(l.price) if l.price else None,
+            "previous_price": previous_price_of(l),
             "is_free": bool(l.is_free),
             "currency": l.currency,
             "city": l.city,
@@ -646,6 +661,7 @@ def seller_listings(
             "id": str(l.id),
             "title": tr.title if tr else None,
             "price": float(l.price) if l.price else None,
+            "previous_price": previous_price_of(l),
             "is_free": bool(l.is_free),
             "currency": l.currency,
             "city": l.city,
@@ -710,13 +726,7 @@ def get_listing(listing_id: str, db: Session = Depends(get_db),
         # Последняя цена до правки — показываем перечёркнутой рядом с
         # новой, как у Авито. Только последнюю запись, не всю историю:
         # для одной строки на странице больше не нужно.
-        "previous_price": (
-            {
-                "price": listing.price_history[-1]["price"],
-                "currency": listing.price_history[-1]["currency"],
-            }
-            if listing.price_history else None
-        ),
+        "previous_price": previous_price_of(listing),
         "is_free": bool(listing.is_free),
         "currency": listing.currency,
         "price_negotiable": listing.price_negotiable,

@@ -23,6 +23,15 @@ export default function ListingCard({ listing, large = false }) {
   const fav = isFavorite(listing.id)
   const meta = cardMeta(listing.category_slug, listing.attributes, t)
 
+  // Стрелка у цены — только если валюта не менялась вместе с ценой:
+  // иначе «дороже/дешевле» надо сравнивать не по голым числам, а мы
+  // предпочитаем промолчать, чем показать направление наугад.
+  const prev = listing.previous_price
+  const priceDirection =
+    prev && listing.price != null && prev.currency === listing.currency
+      ? listing.price < prev.price ? 'down' : listing.price > prev.price ? 'up' : null
+      : null
+
   const onFavClick = async (e) => {
     e.preventDefault()
     e.stopPropagation()
@@ -62,6 +71,18 @@ export default function ListingCard({ listing, large = false }) {
         {listing.is_free
           ? <span className="price-free">{t('detail.free')}</span>
           : formatPrice(listing.price, listing.currency, i18n.language) || t('detail.no_price')}
+        {priceDirection && (
+          <svg
+            className={`s-price-arrow ${priceDirection}`}
+            width="13" height="13" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
+            aria-label={t(priceDirection === 'down' ? 'misc.price_down' : 'misc.price_up')}
+          >
+            {priceDirection === 'down'
+              ? <path d="M12 5v14M6 13l6 6 6-6" />
+              : <path d="M12 19V5M6 11l6-6 6 6" />}
+          </svg>
+        )}
       </div>
       {/* «2-комн., 45 м², 3/9 эт.» — то, что человек заполнил на форме
           публикации, иначе никуда дальше формы не попадало. */}

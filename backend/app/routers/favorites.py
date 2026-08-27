@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.core.auth import get_current_user
 from app.core.database import get_db
 from app.core.urls import listing_path
-from app.routers.listings import pick_translation
+from app.routers.listings import pick_translation, previous_price_of
 from app.models import User, Favorite, Listing, ListingStatus
 
 router = APIRouter(prefix="/api/favorites", tags=["favorites"])
@@ -48,6 +48,7 @@ def list_favorites(
             "id": str(listing.id),
             "title": translation.title if translation else None,
             "price": float(listing.price) if listing.price else None,
+            "previous_price": previous_price_of(listing),
             "is_free": bool(listing.is_free),
             "currency": listing.currency,
             "city": listing.city,

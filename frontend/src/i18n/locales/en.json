@@ -176,7 +176,9 @@
     "cols_2": "Two per row",
     "cols_1": "One per row",
     "find": "Search",
-    "not_found": "This page doesn't exist — the link may be outdated or mistyped."
+    "not_found": "This page doesn't exist — the link may be outdated or mistyped.",
+    "price_down": "Price dropped",
+    "price_up": "Price increased"
   },
   "chats": {
     "need_auth": "Introduce yourself to see your conversations.",
