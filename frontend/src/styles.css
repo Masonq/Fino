@@ -2124,6 +2124,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   border-radius:999px; font-size:14px; color:#444; background:#fff;
 }
 .edit-label{ font-size:13px; color:#777; margin-top:6px; }
+.edit-hint-warn{
+  margin-top:6px; padding:10px 12px; border-radius:10px; background:#FFF8E8;
+  font-size:12px; line-height:1.5; color:#8a6d1f;
+}
 
 /* Снятое объявление. Оставляем на месте — по нему смотрят цены, — но
    человек должен понять с первого взгляда, что вещи больше нет. */

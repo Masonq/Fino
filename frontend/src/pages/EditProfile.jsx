@@ -59,8 +59,9 @@ export default function EditProfile() {
       updateUser(updated)
       setDone(true)
       setTimeout(() => navigate('/profile'), 700)
-    } catch {
-      alert(t('edit_profile.failed'))
+    } catch (e) {
+      alert(e.code === 'verify_identity_first'
+        ? t('edit_profile.verify_first') : t('edit_profile.failed'))
     } finally { setSaving(false) }
   }
 
@@ -120,6 +121,12 @@ export default function EditProfile() {
           onChange={(e) => setCompany(e.target.value)}
           placeholder={t('edit_profile.company_hint')}
         />
+        {/* Уже бизнес-аккаунт — правит своё же название, проверка тут
+            не при чём. Иначе, пока не пройдена проверка личности,
+            подсказываем сразу, не дожидаясь неудачной попытки сохранить. */}
+        {company.trim() && user?.role !== 'seller_business' && verify && verify.status !== 'verified' && (
+          <p className="edit-hint-warn">{t('edit_profile.verify_first')}</p>
+        )}
 
         {company.trim() && (
           <>

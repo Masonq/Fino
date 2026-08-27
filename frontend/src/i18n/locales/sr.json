@@ -488,7 +488,8 @@
     "rating": "Ocena {{value}} · recenzija {{count}}",
     "no_rating": "Još nema recenzija",
     "company_description": "O kompaniji",
-    "company_description_hint": "Čime se bavite, šta prodajete — kupac će ovo videti na vašoj vitrini"
+    "company_description_hint": "Čime se bavite, šta prodajete — kupac će ovo videti na vašoj vitrini",
+    "verify_first": "Da biste postali poslovni nalog, prvo prođite proveru identiteta — odeljak „Provera dokumenta\" niže na istoj stranici."
   },
   "landing": {
     "deal": "Šta tražite",

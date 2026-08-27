@@ -123,16 +123,23 @@ def edit_profile(
         user.default_language = payload.default_language
     if payload.company_name is not None:
         name = payload.company_name.strip()
+        # Впервые становится бизнес-аккаунтом именно сейчас — не был
+        # им раньше и не персонал. На уже действующий бизнес-аккаунт
+        # (правит своё же название) эта проверка второй раз не действует.
+        becoming_business = bool(
+            name and user.role not in (UserRole.moderator, UserRole.admin, UserRole.seller_business)
+        )
+        if becoming_business and not user.document_verified:
+            # Витрина, значок компании, доверие покупателя — всё это
+            # не выдаём просто по факту того, что кто-то напечатал
+            # название в поле. Сначала подтвердить, что за аккаунтом
+            # стоит реальный, проверенный человек.
+            raise HTTPException(400, "verify_identity_first")
         # Название поменяли — прежняя проверка к нему не относится.
         if name != (user.company_name or ""):
             user.company_verified = False
         user.company_name = name or None
-        # Заполнение названия компании — единственный явный сигнал «я
-        # продаю как бизнес», который вообще есть у обычного человека
-        # в этой форме. Роль персонала (модератор/админ) не трогаем
-        # никогда — иначе понизить/сменить права себе можно было бы
-        # прямо через форму профиля, а не только из админки.
-        if name and user.role not in (UserRole.moderator, UserRole.admin):
+        if becoming_business:
             user.role = UserRole.seller_business
     if payload.company_description is not None:
         user.company_description = payload.company_description.strip() or None
