@@ -53,12 +53,47 @@ class Watch:
     repeats: int = 0
     # Своё объявление через бота — знак, что человек настоящий.
     published: bool = False
+    # Когда в последний раз хоть что-то о нём узнавали — не только при
+    # входе (note_join вызывается только на настоящее событие «вошёл»,
+    # а не на каждое сообщение): без этого чистка по joined_at пропускала
+    # бы записи людей, что были в чате ещё до перезапуска бота — они
+    # никогда не получают joined_at, и оставались бы в словаре навсегда.
+    last_seen: object = None
+
+
+def _touch(user_id: int) -> Watch:
+    """Единая точка создания/обновления записи — чтобы last_seen не
+    забыть проставить где-то в одном из мест."""
+    w = watched.setdefault(user_id, Watch())
+    w.last_seen = utcnow()
+    return w
 
 
 # Что мы знаем о людях в чате. В памяти: сведения живут сутки, и
 # заводить ради них таблицу незачем — перезапуск бота просто снимает
 # ограничения с новичков, а это не беда.
 watched: dict[int, Watch] = {}
+
+# Без очистки словарь растёт, пока жив процесс: раньше запись оставалась
+# навсегда, хотя комментарий выше и обещал «сутки». Подчищаем не отдельной
+# задачей, а заодно с обычными вызовами — раз в час, не чаще, чтобы не
+# перебирать весь словарь на каждое сообщение в бурном чате.
+_last_swept = 0.0
+_SWEEP_EVERY = 3600
+_MAX_AGE = timedelta(hours=NEWCOMER_HOURS * 2)   # с запасом, не впритык к порогу новичка
+
+
+def _sweep_stale() -> None:
+    import time
+    global _last_swept
+    now = time.monotonic()
+    if now - _last_swept < _SWEEP_EVERY:
+        return
+    _last_swept = now
+    cutoff = utcnow() - _MAX_AGE
+    stale = [uid for uid, w in watched.items() if w.last_seen and w.last_seen < cutoff]
+    for uid in stale:
+        del watched[uid]
 
 
 def is_newcomer(user_id: int) -> bool:
@@ -72,12 +107,13 @@ def is_newcomer(user_id: int) -> bool:
 
 
 def note_join(user_id: int) -> None:
-    watched.setdefault(user_id, Watch()).joined_at = utcnow()
+    _sweep_stale()
+    _touch(user_id).joined_at = utcnow()
 
 
 def note_published(user_id: int) -> None:
     """Опубликовал объявление — значит пришёл по делу."""
-    watched.setdefault(user_id, Watch()).published = True
+    _touch(user_id).published = True
 
 
 def why_bad(message: Message, is_new: bool) -> str | None:
@@ -118,7 +154,7 @@ def note_repeat(user_id: int, text: str) -> bool:
     Возвращает True, если человек повторяется третий раз: два раза
     бывает случайно — не отправилось, отправил снова.
     """
-    watch = watched.setdefault(user_id, Watch())
+    watch = _touch(user_id)
     body = (text or "").strip().lower()
     if body and body == watch.last_text:
         watch.repeats += 1
@@ -135,7 +171,7 @@ async def punish(bot: Bot, chat_id: int, user_id: int, reason: str) -> str:
     Сразу банить нельзя: половина нарушений — незнание правил, а не злой
     умысел. Возвращает, что сделали, — чтобы сказать человеку.
     """
-    watch = watched.setdefault(user_id, Watch())
+    watch = _touch(user_id)
     watch.strikes += 1
 
     if watch.strikes >= STRIKES_TO_KICK:

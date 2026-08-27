@@ -469,7 +469,7 @@ async def offer_rescued(message: Message, bot: Bot) -> bool:
     if not saved:
         return False
 
-    text, photo_id = saved
+    text, photo_id, _saved_at = saved
     photos: list[bytes] = []
     if photo_id:
         try:

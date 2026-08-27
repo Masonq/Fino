@@ -16,6 +16,7 @@
 import asyncio
 import logging
 import re
+import time
 from html import escape
 
 from aiogram import Bot
@@ -25,13 +26,36 @@ log = logging.getLogger(__name__)
 
 # Что мы убрали у человека, которому не смогли написать в личку. Он
 # придёт по кнопке — и получит свой текст обратно, а не начнёт с нуля.
-# Держим в памяти: объявление живёт минуты, до первого прихода.
-rescued: dict[int, tuple[str, str | None]] = {}
+# Держим в памяти: объявление живёт минуты, до первого прихода — но
+# если человек вообще не вернётся, запись оставалась бы навсегда:
+# rescued.pop() убирает её только при реальном возврате.
+# Каждая запись — (текст, id фото, когда убрано) для очистки по возрасту.
+rescued: dict[int, tuple[str, str | None, float]] = {}
 
 # Сколько висит пометка в чате. Полминуты мало: человек мог отложить
 # телефон сразу после отправки и вернуться через минуту — и увидеть
 # пустое место, не поняв, куда делось объявление.
 HINT_SECONDS = 120
+
+# Забытые (человек не вернулся) записи держим на порядок дольше самой
+# пометки в чате — с большим запасом на случай, если он всё же
+# вернётся не сразу, но не бесконечно. Чистим не отдельной задачей,
+# а заодно с обычной уборкой — раз в час.
+_RESCUED_MAX_AGE = 3600 * 3
+_last_swept = 0.0
+_SWEEP_EVERY = 3600
+
+
+def _sweep_stale_rescued() -> None:
+    global _last_swept
+    now = time.monotonic()
+    if now - _last_swept < _SWEEP_EVERY:
+        return
+    _last_swept = now
+    cutoff = time.time() - _RESCUED_MAX_AGE
+    stale = [uid for uid, (_, _, saved_at) in rescued.items() if saved_at < cutoff]
+    for uid in stale:
+        del rescued[uid]
 
 
 # Обращения, вопросы и благодарности — признаки разговора, а не
@@ -112,7 +136,8 @@ async def sweep(message: Message, bot: Bot, bot_username: str) -> bool:
     # там оно должно ждать его готовым — не текстом для копирования, а
     # разобранной карточкой с кнопкой «Опубликовать».
     photo_id = message.photo[-1].file_id if message.photo else None
-    rescued[author.id] = (text, photo_id)
+    rescued[author.id] = (text, photo_id, time.time())
+    _sweep_stale_rescued()
 
     link = f"https://t.me/{bot_username}?start=from_chat"
     sent_privately = False
