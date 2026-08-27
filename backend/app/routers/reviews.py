@@ -258,3 +258,20 @@ def publish_expired(db: Session, wait_days: int = 7) -> int:
         recalc_rating(db, t)
     db.commit()
     return len(pending)
+
+
+if __name__ == "__main__":
+    # Публикует «зависшие» односторонние отзывы — без этого честный
+    # отзыв о недобросовестном продавце, который просто промолчал,
+    # никогда не увидел бы свет. Раз в сутки через systemd-таймер, тем
+    # же способом, что и рассылка сводок (см. tools/setup-digest.sh).
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    from app.core.database import SessionLocal
+
+    session = SessionLocal()
+    try:
+        count = publish_expired(session)
+        print(f"Опубликовано просроченных отзывов: {count}")
+    finally:
+        session.close()
