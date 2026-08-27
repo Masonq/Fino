@@ -12,9 +12,13 @@ const PERIODS = [7, 14, 30]
 // а по высоте прямоугольника провал виден не хуже.
 function Bars({ items, valueKey, secondKey }) {
   const peak = Math.max(1, ...items.map((d) => d[valueKey] || 0))
+  // Подпись дня показываем не под каждым столбиком — при 30 днях цифры
+  // просто накладывались бы друг на друга в такой узкой полосе. Держим
+  // примерно десяток подписей независимо от того, 7 дней выбрано или 30.
+  const labelStep = Math.max(1, Math.ceil(items.length / 10))
   return (
     <div className="stats-bars">
-      {items.map((d) => {
+      {items.map((d, i) => {
         const value = d[valueKey] || 0
         const second = secondKey ? d[secondKey] || 0 : 0
         return (
@@ -32,7 +36,9 @@ function Bars({ items, valueKey, secondKey }) {
                 )}
               </div>
             </div>
-            <span className="stats-bar-day">{d.day.slice(8)}</span>
+            <span className="stats-bar-day">
+              {i % labelStep === 0 ? d.day.slice(8) : ''}
+            </span>
           </div>
         )
       })}
