@@ -108,7 +108,8 @@
     "pay_balance": "Plati sa stanja — {{price}} ₽",
     "pay_card": "Plati karticom",
     "not_enough_balance": "Stanje je {{amount}} ₽ — nedovoljno, platite karticom",
-    "paid_ok": "Plaćeno sa stanja"
+    "paid_ok": "Plaćeno sa stanja",
+    "next": "Dalje"
   },
   "ptr": {
     "pull": "Povucite nadole",

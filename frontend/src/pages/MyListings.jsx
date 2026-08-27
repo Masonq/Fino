@@ -189,11 +189,13 @@ export default function MyListings() {
               )}
 
               {promoteFor === l.id && (
-                <PromoteButton
-                  listingId={l.id} renderMode="sheet"
-                  open={promoteFor === l.id}
-                  onOpenChange={(v) => setPromoteFor(v ? l.id : null)}
-                />
+                <div className="promo-sheet-dock">
+                  <PromoteButton
+                    listingId={l.id} renderMode="sheet"
+                    open={promoteFor === l.id}
+                    onOpenChange={(v) => setPromoteFor(v ? l.id : null)}
+                  />
+                </div>
               )}
             </div>
           ))}

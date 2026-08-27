@@ -171,8 +171,20 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
           <p className="verify-hint">{t('actions.loading')}</p>
         ) : (
           <>
-            <div className="promo-carousel" ref={carouselRef} onScroll={onScroll}>
-              {TYPES.map((type) => {
+            <div className="promo-carousel-wrap">
+              {/* Стрелки — только на широком экране (см. CSS), где
+                  нет тачскрина и пролистать свайпом нечем. На телефоне
+                  скрыты, там и так работает жест. */}
+              <button
+                className="promo-arrow prev"
+                aria-label={t('actions.back')}
+                disabled={TYPES.indexOf(selected) <= 0}
+                onClick={() => goTo(Math.max(0, TYPES.indexOf(selected) - 1))}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+              </button>
+              <div className="promo-carousel" ref={carouselRef} onScroll={onScroll}>
+                {TYPES.map((type) => {
                 const activePromo = (data.items || []).find((p) => p.type === type)
                 const isActive = activeTypes.has(type)
                 return (
@@ -200,6 +212,15 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
                   </div>
                 )
               })}
+            </div>
+              <button
+                className="promo-arrow next"
+                aria-label={t('promo.next')}
+                disabled={TYPES.indexOf(selected) >= TYPES.length - 1}
+                onClick={() => goTo(Math.min(TYPES.length - 1, TYPES.indexOf(selected) + 1))}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m9 6 6 6-6 6" /></svg>
+              </button>
             </div>
 
             <div className="promo-dots">

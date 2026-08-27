@@ -108,7 +108,8 @@
     "pay_balance": "Pay from balance — {{price}} ₽",
     "pay_card": "Pay by card",
     "not_enough_balance": "Balance is {{amount}} ₽ — not enough, pay by card instead",
-    "paid_ok": "Paid from balance"
+    "paid_ok": "Paid from balance",
+    "next": "Next"
   },
   "ptr": {
     "pull": "Pull down",
