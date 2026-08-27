@@ -10,41 +10,62 @@ const PERIODS = [7, 14, 30]
 
 // Столбики рисуем сами: ради одного графика тянуть библиотеку незачем,
 // а по высоте прямоугольника провал виден не хуже.
+//
+// Прокрутка вбок вместо прореживания подписей: у каждого дня своя
+// фиксированная ширина, хватает места на двузначное число всегда,
+// сколько бы дней ни было выбрано — раньше пытались сжать все 30 в
+// экран разом, из-за чего то раздувало страницу вбок, то подписи
+// приходилось через одну прятать.
 function Bars({ items, valueKey, secondKey }) {
+  const { t, i18n } = useTranslation()
+  const [selectedDay, setSelectedDay] = useState(null)
   const peak = Math.max(1, ...items.map((d) => d[valueKey] || 0))
-  // Подпись дня показываем не под каждым столбиком, только когда
-  // столбиков действительно много — при 30 днях цифры накладывались
-  // бы друг на друга в такой узкой полосе. Раньше порог считался от
-  // items.length всегда, и на 14 днях (где всё и так помещалось без
-  // проблем) подписи стали пропадать без нужды — сузил условие: не
-  // трогаем то, что и без того помещается.
-  const labelStep = items.length > 15 ? Math.ceil(items.length / 10) : 1
+
+  const active = items.find((d) => d.day === selectedDay) || items[items.length - 1]
+  const activeValue = active ? (active[valueKey] || 0) : 0
+  const activeSecond = active && secondKey ? (active[secondKey] || 0) : 0
+  const activeDate = active
+    ? new Date(`${active.day}T00:00:00`).toLocaleDateString(i18n.language, { day: 'numeric', month: 'long' })
+    : ''
+
   return (
-    <div className="stats-bars">
-      {items.map((d, i) => {
-        const value = d[valueKey] || 0
-        const second = secondKey ? d[secondKey] || 0 : 0
-        return (
-          <div key={d.day} className="stats-bar" title={`${d.day}: ${value}`}>
-            <div className="stats-bar-track">
-              <div
-                className="stats-bar-fill"
-                style={{ height: `${(value / peak) * 100}%` }}
-              >
-                {!!second && (
-                  <div
-                    className="stats-bar-own"
-                    style={{ height: `${(second / Math.max(value, 1)) * 100}%` }}
-                  />
-                )}
+    <div>
+      {active && (
+        <div className="stats-bars-info">
+          <b>{activeDate}</b> — {activeValue} {t('stats.listings_count')}
+          {!!secondKey && ` (${activeSecond} ${t('stats.own_short')})`}
+        </div>
+      )}
+      <div className="stats-bars">
+        {items.map((d) => {
+          const value = d[valueKey] || 0
+          const second = secondKey ? d[secondKey] || 0 : 0
+          const isActive = active === d
+          return (
+            <button
+              type="button"
+              key={d.day}
+              className={isActive ? 'stats-bar selected' : 'stats-bar'}
+              onClick={() => setSelectedDay(d.day)}
+            >
+              <div className="stats-bar-track">
+                <div
+                  className="stats-bar-fill"
+                  style={{ height: `${(value / peak) * 100}%` }}
+                >
+                  {!!second && (
+                    <div
+                      className="stats-bar-own"
+                      style={{ height: `${(second / Math.max(value, 1)) * 100}%` }}
+                    />
+                  )}
+                </div>
               </div>
-            </div>
-            <span className="stats-bar-day">
-              {i % labelStep === 0 ? d.day.slice(8) : ''}
-            </span>
-          </div>
-        )
-      })}
+              <span className="stats-bar-day">{d.day.slice(8)}</span>
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -151,7 +172,7 @@ export default function AdminStats() {
               <span className="dot dot-all" /> {t('stats.all')}
               <span className="dot dot-own" /> {t('stats.own')}
             </div>
-            <Bars items={daily} valueKey="listings" secondKey="own" />
+            <Bars key={days} items={daily} valueKey="listings" secondKey="own" />
           </div>
 
           {quality && (

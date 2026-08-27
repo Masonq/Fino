@@ -395,7 +395,9 @@
     "not_translated": "Не переведено",
     "by_category": "По разделам",
     "by_source": "Откуда",
-    "own_source": "Свои объявления"
+    "own_source": "Свои объявления",
+    "listings_count": "объявлений",
+    "own_short": "своих"
   },
   "audit": {
     "title": "Журнал действий",

@@ -393,7 +393,9 @@
     "not_translated": "Not translated",
     "by_category": "By section",
     "by_source": "Sources",
-    "own_source": "Own listings"
+    "own_source": "Own listings",
+    "listings_count": "listings",
+    "own_short": "own"
   },
   "audit": {
     "title": "Action log",
