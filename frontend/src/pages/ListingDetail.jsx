@@ -21,7 +21,15 @@ export default function ListingDetail() {
   // Ключ объявления — хвост адреса: у «stol-ikea-45e17e58» это
   // «45e17e58». Название могли поправить, и адрес разойдётся с
   // нынешним — но хвост остаётся.
-  const listingId = (slug || '').split('-').pop()
+  //
+  // Короткая ссылка /go/:slug (админка) передаёт сюда объявление
+  // целиком по UUID, а не по хвосту — split('-').pop() на полном UUID
+  // («e63e2224-...-543bbc7d2b31») давал «543bbc7d2b31» (12 знаков),
+  // не подходящее ни под UUID, ни под 8-значный хвост, который ждёт
+  // бэкенд, — ссылка вела на несуществующее объявление. Полный UUID
+  // передаём как есть, не трогая.
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  const listingId = UUID_RE.test(slug || '') ? slug : (slug || '').split('-').pop()
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
