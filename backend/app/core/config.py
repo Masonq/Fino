@@ -25,6 +25,11 @@ class Settings(BaseSettings):
     didit_api_key: str = ""
     didit_workflow_id: str = ""
     didit_webhook_secret: str = ""
+    # Адрес самого сайта (фронтенда), не бэкенда — public_base_url
+    # выше это адрес backend для файлов (с портом 8002), а сюда
+    # браузер человека должен вернуться после проверки на Didit,
+    # на страницу /profile, которую отдаёт фронтенд, а не бэкенд.
+    site_base_url: str = "https://plonk.rs"
 
     # Почта для кодов подтверждения (пока не задана — коды пишутся в журнал)
     smtp_host: str | None = None

@@ -78,7 +78,12 @@ def start(user: User = Depends(get_current_user), db: Session = Depends(get_db))
     if existing_pending:
         raise HTTPException(400, "already_pending")
 
-    callback = f"{settings.public_base_url}/api/verification/webhook"
+    # callback — не адрес вебхука (тот настроен отдельно, на уровне
+    # приложения в кабинете Didit), а куда вернуть человека браузером
+    # после того, как он закончит на стороне Didit. Без этого поля
+    # человек после проверки увидел бы их дефолтную страницу, а не
+    # свой профиль.
+    callback = f"{settings.site_base_url}/profile"
     body = json.dumps({
         "workflow_id": settings.didit_workflow_id,
         "callback": callback,
