@@ -95,7 +95,10 @@
     "active_now": "Aktivno",
     "active_until": "Do {{date}}",
     "err_unavailable": "Izdvajanje je privremeno nedostupno, pokušajte kasnije",
-    "err_generic": "Nije uspelo pokretanje plaćanja, pokušajte ponovo"
+    "err_generic": "Nije uspelo pokretanje plaćanja, pokušajte ponovo",
+    "subtitle": "Izaberite opciju",
+    "all_active": "Sve je već izdvojeno",
+    "cta": "Izdvoji — {{price}} ₽"
   },
   "ptr": {
     "pull": "Povucite nadole",

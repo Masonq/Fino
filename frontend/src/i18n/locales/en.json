@@ -95,7 +95,10 @@
     "active_now": "Active",
     "active_until": "Until {{date}}",
     "err_unavailable": "Promotion is temporarily unavailable, try again later",
-    "err_generic": "Couldn't start the payment, please try again"
+    "err_generic": "Couldn't start the payment, please try again",
+    "subtitle": "Choose an option",
+    "all_active": "Everything is already promoted",
+    "cta": "Promote — {{price}} ₽"
   },
   "ptr": {
     "pull": "Pull down",

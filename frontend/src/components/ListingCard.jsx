@@ -24,9 +24,14 @@ export default function ListingCard({ listing, large = false }) {
   const meta = cardMeta(listing.category_slug, listing.attributes, t)
   // XL-карточка (куплена продвижением) — крупнее соседних и занимает
   // обе колонки сетки, тот же приём, что и large, только для конкретной
-  // карточки, а не для всего списка разом.
-  const cardClass = ['s-card', (large || listing.is_xl) && 'l-card', listing.is_xl && 'xl-span']
-    .filter(Boolean).join(' ')
+  // карточки, а не для всего списка разом. Выделение цветом — можно
+  // купить и вместе с XL, и отдельно само по себе.
+  const cardClass = [
+    's-card',
+    (large || listing.is_xl) && 'l-card',
+    listing.is_xl && 'xl-span',
+    listing.is_highlighted && 'highlighted',
+  ].filter(Boolean).join(' ')
 
   // Стрелка у цены — только если валюта не менялась вместе с ценой:
   // иначе «дороже/дешевле» надо сравнивать не по голым числам, а мы
