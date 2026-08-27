@@ -112,6 +112,19 @@ export default function Login() {
     if (digits.length === CODE_LEN) submitCode(digits)
   }
 
+  const loginWithPassword = async () => {
+    setBusy(true); setError('')
+    try {
+      const res = await api.loginPassword(destination.trim(), code)
+      signIn(res.token, res.user)
+      navigate(returnTo, { replace: true })
+    } catch (e) {
+      setError(e.code === 'invalid_credentials' ? t('auth.err_wrong_password') : errorText(e))
+    } finally {
+      setBusy(false)
+    }
+  }
+
   // ——— выбор способа ———
   if (step === 'choose') {
     return (
@@ -152,6 +165,52 @@ export default function Login() {
           {' '}{t('auth.terms_and')}{' '}
           <Link to="/privacy" target="_blank" rel="noopener">{t('auth.privacy_link')}</Link>
         </p>
+        {/* Не для обычных людей — у их аккаунтов пароля вообще нет
+            (только код на почту/телеграм). Нужен для служебных заходов,
+            где код на чужую разовую почту не получить: например,
+            проверяющему у платёжной системы, которому нужен
+            воспроизводимый вход, а не одноразовый код. Оттого —
+            маленькая неприметная ссылка, не кнопка наравне с прочими. */}
+        <button className="auth-password-link" onClick={() => { setStep('password'); setError('') }}>
+          {t('auth.by_password')}
+        </button>
+      </div>
+    )
+  }
+
+  // ——— вход по паролю: служебный, не для обычных людей ———
+  if (step === 'password') {
+    return (
+      <div className="auth-page">
+        <button className="auth-close" onClick={() => { setStep('choose'); setError('') }} aria-label={t('actions.back')}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+        </button>
+
+        <h1>{t('auth.by_password')}</h1>
+
+        <input
+          className="auth-input"
+          type="email"
+          value={destination}
+          onChange={(e) => setDestination(e.target.value)}
+          placeholder="email"
+          autoComplete="username"
+        />
+        <input
+          className="auth-input"
+          type="password"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          placeholder={t('auth.password_ph')}
+          autoComplete="current-password"
+          onKeyDown={(e) => e.key === 'Enter' && loginWithPassword()}
+        />
+
+        {error && <p className="auth-error">{error}</p>}
+
+        <button className="auth-method primary" disabled={busy || !destination.trim() || !code} onClick={loginWithPassword}>
+          {busy ? '…' : t('common.login')}
+        </button>
       </div>
     )
   }

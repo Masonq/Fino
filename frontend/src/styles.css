@@ -886,6 +886,20 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .auth-input-wrap input:focus{ outline:none; }
 
+/* Вход по паролю — служебный, для проверяющих платёжной системы и
+   подобного, не для обычных людей (у их аккаунтов пароля вообще нет).
+   Проще, чем auth-input-wrap: без иконки, это не тот экран, что видят
+   все. */
+.auth-input{
+  width:100%; max-width:340px; padding:15px 16px; border-radius:14px;
+  margin-bottom:10px; background:#fff; border:1.5px solid rgba(20,30,25,.09);
+  font-size:16px; color:var(--ink);
+}
+.auth-input:focus{ outline:none; border-color:var(--primary); }
+.auth-password-link{
+  margin-top:18px; font-size:12px; font-weight:600; color:var(--muted);
+}
+
 .auth-method{
   width:100%; max-width:340px; display:flex; align-items:center; justify-content:center; gap:10px;
   padding:15px; border-radius:14px; margin-bottom:10px;

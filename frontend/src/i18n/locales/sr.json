@@ -232,7 +232,10 @@
     "terms_prefix": "Nastavkom prihvatate",
     "terms_link": "uslove korišćenja",
     "terms_and": "i",
-    "privacy_link": "politiku privatnosti"
+    "privacy_link": "politiku privatnosti",
+    "by_password": "Prijava lozinkom",
+    "password_ph": "Lozinka",
+    "err_wrong_password": "Pogrešan email ili lozinka"
   },
   "my": {
     "title": "Moji oglasi",
