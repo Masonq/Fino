@@ -52,6 +52,7 @@ export default function ListingCard({ listing, large = false }) {
           <div className="photo-placeholder" />
         )}
         {listing.is_urgent && <div className="badge-top urgent">{t('misc.urgent')}</div>}
+        {listing.is_company && <div className="badge-top company">{t('seller.company_badge')}</div>}
       </Link>
       <div className="s-row">
         <Link to={listing.path} className="s-title">{listing.title}</Link>

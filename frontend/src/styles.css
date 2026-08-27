@@ -307,6 +307,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 .badge-top{ position:absolute; top:10px; left:10px; background:#fff; font-size:10px; font-weight:800; padding:5px 9px; border-radius:8px; }
 .badge-top.urgent{ background:var(--coral); color:#fff; }
+.badge-top.company{ left:auto; right:10px; background:var(--primary-soft); color:var(--primary-deep); }
 
 .s-row{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; padding:9px 10px 0; }
 /* Заголовок держим ровно в двух строках: короткий добивается пустым местом,

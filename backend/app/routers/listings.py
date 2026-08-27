@@ -195,7 +195,8 @@ def search_listings(
     db: Session = Depends(get_db),
 ):
     q = db.query(Listing).options(
-        joinedload(Listing.translations), joinedload(Listing.photos)
+        joinedload(Listing.translations), joinedload(Listing.photos),
+        joinedload(Listing.owner),
     ).filter(Listing.status == ListingStatus.active)
 
     # Цена в фильтре и в сортировке — всегда в евро (фронт не даёт
@@ -349,6 +350,7 @@ def search_listings(
             "published_at": listing.published_at.isoformat() if listing.published_at else None,
             "attributes": listing.attributes,
             "category_slug": listing.category.slug if listing.category else None,
+            "is_company": bool(listing.owner and listing.owner.role == UserRole.seller_business),
             # Понятный адрес собираем здесь: он должен быть одинаков
             # везде — в ленте, в боте, в письме и в карте сайта.
             "path": listing_path(
@@ -380,7 +382,7 @@ def listings_by_ids(
 
     rows = (
         db.query(Listing)
-        .options(joinedload(Listing.translations), joinedload(Listing.photos))
+        .options(joinedload(Listing.translations), joinedload(Listing.photos), joinedload(Listing.owner))
         .filter(Listing.id.in_(wanted), Listing.status == ListingStatus.active)
         .all()
     )
@@ -399,6 +401,7 @@ def listings_by_ids(
             "city": l.city,
             "attributes": l.attributes,
             "category_slug": l.category.slug if l.category else None,
+            "is_company": bool(l.owner and l.owner.role == UserRole.seller_business),
             # Понятный адрес: он должен быть одинаков везде — в ленте,
             # в избранном, в своих объявлениях.
             "path": listing_path(l.id, tr.title if tr else "", l.city,
@@ -534,7 +537,7 @@ def similar_listings(
 
     q = (
         db.query(Listing)
-        .options(joinedload(Listing.translations), joinedload(Listing.photos))
+        .options(joinedload(Listing.translations), joinedload(Listing.photos), joinedload(Listing.owner))
         .filter(
             Listing.id != listing_id,
             Listing.status == ListingStatus.active,
@@ -616,6 +619,7 @@ def similar_listings(
             "city": l.city,
             "attributes": l.attributes,
             "category_slug": l.category.slug if l.category else None,
+            "is_company": bool(l.owner and l.owner.role == UserRole.seller_business),
             "cover_photo": cover.thumbnail_url if cover else None,
             "path": listing_path(l.id, tr.title if tr else "", l.city,
                                  l.category.slug if l.category else None),
