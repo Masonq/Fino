@@ -287,7 +287,8 @@
     "count_one": "{{count}} отзыв",
     "count_few": "{{count}} отзыва",
     "count_many": "{{count}} отзывов",
-    "count_other": "{{count}} отзыва"
+    "count_other": "{{count}} отзыва",
+    "show_all": "Показать все отзывы · {{count}}"
   },
   "edit": {
     "title": "Редактирование",

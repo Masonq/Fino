@@ -20,11 +20,18 @@ function Stars({ value, size = 14, onPick }) {
   )
 }
 
+// Сколько отзывов показывать, пока не развернули весь список — тот же
+// приём, что и у объявлений на этой же странице: у продавца с историей
+// отзывов их могут быть сотни, и бесконечная подгрузка сама по себе
+// мешала бы долистать вниз, до самих объявлений.
+const PREVIEW_COUNT = 4
+
 export default function SellerReviews({ sellerId, listingId }) {
   const { t, i18n } = useTranslation()
 
   const [data, setData] = useState(null)
   const [loadingMore, setLoadingMore] = useState(false)
+  const [expanded, setExpanded] = useState(false)
   const sentinelRef = useRef(null)
 
   const load = () => {
@@ -40,9 +47,10 @@ export default function SellerReviews({ sellerId, listingId }) {
       .finally(() => setLoadingMore(false))
   }, [sellerId, i18n.language, data, loadingMore])
 
-  // У продавца с историей отзывов могут быть сотни — показывали первые
-  // двадцать, а до остальных было не добраться.
+  // Подгрузка по мере прокрутки — только после того, как сам развернул
+  // список целиком.
   useEffect(() => {
+    if (!expanded) return
     if (!data || data.items.length === 0 || data.items.length >= data.total) return
     const el = sentinelRef.current
     if (!el) return
@@ -52,7 +60,7 @@ export default function SellerReviews({ sellerId, listingId }) {
     )
     io.observe(el)
     return () => io.disconnect()
-  }, [data, loadMore])
+  }, [expanded, data, loadMore])
 
   useEffect(() => {
     if (!sellerId) return
@@ -86,7 +94,7 @@ export default function SellerReviews({ sellerId, listingId }) {
 
       {data.items.length > 0 && (
         <div className="reviews-list">
-          {data.items.map((r) => (
+          {(expanded ? data.items : data.items.slice(0, PREVIEW_COUNT)).map((r) => (
             <div className="review-row" key={r.id}>
               <div className="review-top">
                 <span className="review-author">{r.author_name || '—'}</span>
@@ -99,9 +107,15 @@ export default function SellerReviews({ sellerId, listingId }) {
         </div>
       )}
 
-      <div ref={sentinelRef} className="feed-sentinel">
-        {loadingMore && <span className="feed-loading">{t('actions.loading')}</span>}
-      </div>
+      {!expanded && data.total > PREVIEW_COUNT ? (
+        <button className="seller-show-all" onClick={() => setExpanded(true)}>
+          {t('rev.show_all', { count: data.total })}
+        </button>
+      ) : expanded && (
+        <div ref={sentinelRef} className="feed-sentinel">
+          {loadingMore && <span className="feed-loading">{t('actions.loading')}</span>}
+        </div>
+      )}
     </div>
   )
 }

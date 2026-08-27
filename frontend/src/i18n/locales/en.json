@@ -285,7 +285,8 @@
     "thanks": "Thanks for the review",
     "not_shown": "No reviews published yet",
     "count_one": "{{count}} review",
-    "count_other": "{{count}} reviews"
+    "count_other": "{{count}} reviews",
+    "show_all": "Show all reviews · {{count}}"
   },
   "edit": {
     "title": "Edit listing",

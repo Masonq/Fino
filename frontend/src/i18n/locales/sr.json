@@ -286,7 +286,8 @@
     "not_shown": "Recenzije još nisu objavljene",
     "count_one": "{{count}} recenzija",
     "count_few": "{{count}} recenzije",
-    "count_other": "{{count}} recenzija"
+    "count_other": "{{count}} recenzija",
+    "show_all": "Prikaži sve recenzije · {{count}}"
   },
   "edit": {
     "title": "Izmena oglasa",
