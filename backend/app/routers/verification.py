@@ -6,6 +6,7 @@ import time
 import urllib.error
 import urllib.request
 import uuid
+from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
@@ -26,6 +27,14 @@ DIDIT_HOST = "https://verification.didit.me"
 # подписи: старее считаем попыткой повтора запроса, не настоящим
 # вебхуком.
 WEBHOOK_MAX_AGE = 300
+# Сколько ждать, прежде чем считать «на проверке» брошенной сессией и
+# разрешить начать заново. Живой документ + селфи занимают минуты —
+# час с большим запасом. Без этого порога человек, вышедший на
+# середине (закрыл вкладку, не дошёл до конца на стороне Didit — там
+# решать ещё нечего, вебхука с решением просто не будет никогда),
+# оставался бы с вечным «на проверке» без единого способа попробовать
+# снова.
+STALE_PENDING_HOURS = 1
 
 
 def _create_session(workflow_id: str, user_id, callback: str) -> dict:
@@ -68,6 +77,7 @@ def my_status(user: User = Depends(get_current_user), db: Session = Depends(get_
         .filter(
             DocVerificationRequest.user_id == user.id,
             DocVerificationRequest.status == DocVerificationStatus.pending,
+            DocVerificationRequest.created_at >= utcnow() - timedelta(hours=STALE_PENDING_HOURS),
         )
         .first()
     )
@@ -103,6 +113,7 @@ def start(user: User = Depends(get_current_user), db: Session = Depends(get_db))
         .filter(
             DocVerificationRequest.user_id == user.id,
             DocVerificationRequest.status == DocVerificationStatus.pending,
+            DocVerificationRequest.created_at >= utcnow() - timedelta(hours=STALE_PENDING_HOURS),
         )
         .first()
     )
@@ -151,6 +162,7 @@ def request_reverify(
         .filter(
             DocVerificationRequest.user_id == user_id,
             DocVerificationRequest.status == DocVerificationStatus.pending,
+            DocVerificationRequest.created_at >= utcnow() - timedelta(hours=STALE_PENDING_HOURS),
         )
         .first()
     )
@@ -239,7 +251,7 @@ async def webhook(request: Request):
             except Exception:
                 pass
 
-        elif status in ("Declined", "Abandoned"):
+        elif status in ("Declined", "Abandoned", "Expired"):
             decision = payload.get("decision") or {}
             warnings = (decision.get("id_verification") or {}).get("warnings") or []
             reason = warnings[0]["short_description"] if warnings else None
