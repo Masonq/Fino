@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 
@@ -159,7 +159,12 @@ export default function Login() {
         </div>
 
         {error && <p className="auth-error">{error}</p>}
-        <p className="auth-terms">{t('auth.terms')}</p>
+        <p className="auth-terms">
+          {t('auth.terms_prefix')}{' '}
+          <Link to="/terms" target="_blank" rel="noopener">{t('auth.terms_link')}</Link>
+          {' '}{t('auth.terms_and')}{' '}
+          <Link to="/privacy" target="_blank" rel="noopener">{t('auth.privacy_link')}</Link>
+        </p>
       </div>
     )
   }

@@ -17,7 +17,9 @@
     "favorites": "Saved",
     "post": "Post",
     "chats": "Messages",
-    "profile": "Profile"
+    "profile": "Profile",
+    "terms": "Terms of Use",
+    "privacy": "Privacy Policy"
   },
   "categories": {
     "real-estate": "Real Estate",
@@ -201,7 +203,6 @@
     "by_telegram": "Sign in with Telegram",
     "or": "or",
     "soon": "This option is coming soon",
-    "terms": "By continuing you agree to the terms of use",
     "enter_email": "Your email",
     "enter_email_hint": "We'll send a confirmation code to this address",
     "enter_telegram": "Your Telegram",
@@ -218,7 +219,11 @@
     "err_too_often": "Please wait a minute before requesting again",
     "err_generic": "Something went wrong, please try again",
     "logout": "Sign out",
-    "err_blocked": "This account is blocked"
+    "err_blocked": "This account is blocked",
+    "terms_prefix": "By continuing, you agree to the",
+    "terms_link": "Terms of Use",
+    "terms_and": "and",
+    "privacy_link": "Privacy Policy"
   },
   "my": {
     "title": "My listings",

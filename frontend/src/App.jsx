@@ -11,6 +11,7 @@ import ComingSoon from './pages/ComingSoon'
 import Favorites from './pages/Favorites'
 import Notifications from './pages/Notifications'
 import ListingDashboard from './pages/ListingDashboard'
+import LegalDoc from './pages/LegalDoc'
 import Chats from './pages/Chats'
 import Login from './pages/Login'
 import Profile from './pages/Profile'
@@ -145,6 +146,8 @@ export default function App() {
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/my/:id/stats" element={<ListingDashboard />} />
+          <Route path="/terms" element={<LegalDoc doc="terms" />} />
+          <Route path="/privacy" element={<LegalDoc doc="privacy" />} />
           <Route path="/chats" element={<Chats />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/seller/:id" element={<SellerProfile />} />

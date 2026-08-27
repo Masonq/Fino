@@ -17,7 +17,9 @@
     "favorites": "Sačuvano",
     "post": "Postavi",
     "chats": "Poruke",
-    "profile": "Profil"
+    "profile": "Profil",
+    "terms": "Uslovi korišćenja",
+    "privacy": "Politika privatnosti"
   },
   "categories": {
     "real-estate": "Nekretnine",
@@ -201,7 +203,6 @@
     "by_telegram": "Prijava preko Telegrama",
     "or": "ili",
     "soon": "Ova opcija uskoro stiže",
-    "terms": "Nastavkom prihvatate uslove korišćenja",
     "enter_email": "Vaš mejl",
     "enter_email_hint": "Poslaćemo kod za potvrdu na ovu adresu",
     "enter_telegram": "Vaš Telegram",
@@ -218,7 +219,11 @@
     "err_too_often": "Sačekajte minut pre ponovnog slanja",
     "err_generic": "Nešto nije u redu, pokušajte ponovo",
     "logout": "Odjavi se",
-    "err_blocked": "Nalog je blokiran"
+    "err_blocked": "Nalog je blokiran",
+    "terms_prefix": "Nastavkom prihvatate",
+    "terms_link": "uslove korišćenja",
+    "terms_and": "i",
+    "privacy_link": "politiku privatnosti"
   },
   "my": {
     "title": "Moji oglasi",
