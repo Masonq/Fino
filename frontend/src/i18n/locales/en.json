@@ -83,6 +83,11 @@
     "you_are_blocked": "This user has blocked you — you can't message them."
   },
   "promo": {
+    "safe_deal": "Safe deal",
+    "free_post": "Post for free",
+    "три_языка": "Three languages: RU · EN · SR",
+    "verified": "Verified sellers",
+    "local": "Listings near you",
     "button": "Promote",
     "title": "Promote listing",
     "type_bump": "Bump to top",

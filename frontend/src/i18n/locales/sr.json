@@ -83,6 +83,11 @@
     "you_are_blocked": "Ovaj korisnik vas je blokirao — ne možete mu pisati."
   },
   "promo": {
+    "safe_deal": "Sigurna kupovina",
+    "free_post": "Besplatno oglašavanje",
+    "три_языка": "Tri jezika: RU · EN · SR",
+    "verified": "Provereni prodavci",
+    "local": "Oglasi u vašoj blizini",
     "button": "Izdvoji",
     "title": "Izdvajanje oglasa",
     "type_bump": "Podizanje u pretrazi",
