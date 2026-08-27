@@ -65,7 +65,8 @@
   "chat": {
     "empty": "No messages yet — say hello",
     "message_ph": "Write a message...",
-    "no_access": "You don't have access to this chat"
+    "no_access": "You don't have access to this chat",
+    "send_failed": "Failed to send — try again"
   },
   "promo": {
     "safe_deal": "Safe deal",

@@ -16,6 +16,7 @@ export default function ChatScreen() {
   const [messages, setMessages] = useState([])
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
+  const [sendError, setSendError] = useState(null)
   const bottomRef = useRef(null)
 
   const otherName = () => {
@@ -34,7 +35,15 @@ export default function ChatScreen() {
     api.markChatRead(id).catch(() => {})
   }, [id, myId])
 
-  useEffect(() => { load() }, [id])
+  useEffect(() => {
+    // Сбрасываем — иначе переход из одного чата сразу в другой (без
+    // перезагрузки страницы) нёс за собой состояние прошлого: если там
+    // долистали до конца истории (hasOlder=false), подгрузка старых
+    // сообщений в новом чате просто переставала работать.
+    setHasOlder(true)
+    setLoadingOlder(false)
+    load()
+  }, [id])
 
   // Новые сообщения подтягиваются сами. Опрос вместо постоянного соединения:
   // проще и надёжнее на мобильном, где связь часто рвётся. Пока вкладка скрыта —
@@ -104,11 +113,16 @@ export default function ChatScreen() {
   const send = async () => {
     if (!text.trim() || !myId) return
     setSending(true)
+    setSendError(null)
     try {
       await api.sendMessage(id, text.trim())
       setText('')
       const res = await api.getChatMessages(id)
       setMessages(res)
+    } catch {
+      // Текст остаётся в поле — человек не должен набирать заново то,
+      // что просто не ушло.
+      setSendError(t('chat.send_failed'))
     } finally {
       setSending(false)
     }
@@ -157,7 +171,7 @@ export default function ChatScreen() {
         <input
           type="text"
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => { setText(e.target.value); if (sendError) setSendError(null) }}
           onKeyDown={(e) => e.key === 'Enter' && send()}
           placeholder={t('chat.message_ph')}
         />

@@ -65,7 +65,8 @@
   "chat": {
     "empty": "Još nema poruka — započnite razgovor",
     "message_ph": "Napišite poruku...",
-    "no_access": "Nemate pristup ovom razgovoru"
+    "no_access": "Nemate pristup ovom razgovoru",
+    "send_failed": "Slanje nije uspelo — pokušajte ponovo"
   },
   "promo": {
     "safe_deal": "Sigurna kupovina",
