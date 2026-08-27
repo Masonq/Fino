@@ -9,7 +9,7 @@ from sqlalchemy import String, cast, case, exists, func, or_
 from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel, Field, field_validator
 
-from app.core.auth import get_current_user
+from app.core.auth import get_current_user, get_current_user_optional
 from app.core.database import get_db
 from app.core.search_terms import variants as search_variants
 from app.models import Listing, ListingStatus, ListingTranslation, ListingPhoto, Category, User, UserRole
@@ -659,7 +659,8 @@ def seller_listings(
 
 
 @router.get("/{listing_id}")
-def get_listing(listing_id: str, db: Session = Depends(get_db)):
+def get_listing(listing_id: str, db: Session = Depends(get_db),
+                viewer: User | None = Depends(get_current_user_optional)):
     query = db.query(Listing).options(
         joinedload(Listing.translations), joinedload(Listing.photos),
         joinedload(Listing.owner),
@@ -680,8 +681,12 @@ def get_listing(listing_id: str, db: Session = Depends(get_db)):
     if not listing:
         raise HTTPException(404, "not_found")
 
-    listing.views_count += 1
-    db.commit()
+    # Не считаем просмотры владельца — иначе продавец, проверяющий своё
+    # же объявление (например, из «Моих объявлений»), искусственно
+    # завышает себе счётчик и делает вывод о несуществующем интересе.
+    if not viewer or viewer.id != listing.owner_id:
+        listing.views_count += 1
+        db.commit()
 
     from app.core.urls import listing_path
 
