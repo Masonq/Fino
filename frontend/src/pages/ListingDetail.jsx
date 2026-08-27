@@ -433,6 +433,9 @@ export default function ListingDetail() {
                 )}
               </div>
               <div className="seller-meta">
+                {listing.owner.is_company && (
+                  <span className="seller-badge-inline">{t('seller.company_badge')} · </span>
+                )}
                 {listing.owner.rating_count > 0
                   ? `${listing.owner.rating_avg?.toFixed(1)} · ${t('rev.count', { count: listing.owner.rating_count })}`
                   : t('rev.none_yet')}

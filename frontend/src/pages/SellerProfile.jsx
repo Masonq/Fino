@@ -118,6 +118,7 @@ export default function SellerProfile() {
               </div>
             )}
           </div>
+          {profile.is_company && <div className="seller-badge">{t('seller.company_badge')}</div>}
           {profile.rating_count > 0 && (
             <div className="seller-head-rating">
               <span className="seller-head-avg">{profile.rating_avg.toFixed(1)}</span>

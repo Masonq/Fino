@@ -349,7 +349,8 @@
     "not_found": "Profile unavailable",
     "since": "On PLONK since {{date}}",
     "listings": "Listings",
-    "show_all": "Show all listings · {{count}}"
+    "show_all": "Show all listings · {{count}}",
+    "company_badge": "Business"
   },
   "admin": {
     "title": "Users",

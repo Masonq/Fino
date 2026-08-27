@@ -351,7 +351,8 @@
     "not_found": "Профиль недоступен",
     "since": "На PLONK с {{date}}",
     "listings": "Объявления",
-    "show_all": "Показать все объявления · {{count}}"
+    "show_all": "Показать все объявления · {{count}}",
+    "company_badge": "Компания"
   },
   "admin": {
     "title": "Пользователи",

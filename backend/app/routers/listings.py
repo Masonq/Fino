@@ -112,7 +112,8 @@ def create_listing(
 ):
     """Создаёт объявление от имени вошедшего пользователя."""
     from app.core.rate_limit import check_listing_limit
-    check_listing_limit(db, user.id)
+    from app.models import UserRole
+    check_listing_limit(db, user.id, is_business=user.role == UserRole.seller_business)
 
     owner_id = user.id
     category = db.query(Category).get(payload.category_id)

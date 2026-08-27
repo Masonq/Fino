@@ -350,7 +350,8 @@
     "not_found": "Profil nije dostupan",
     "since": "Na PLONK-u od {{date}}",
     "listings": "Oglasi",
-    "show_all": "Prikaži sve oglase · {{count}}"
+    "show_all": "Prikaži sve oglase · {{count}}",
+    "company_badge": "Kompanija"
   },
   "admin": {
     "title": "Korisnici",

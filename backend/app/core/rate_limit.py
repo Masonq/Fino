@@ -21,20 +21,27 @@ def _count_since(db: Session, model, user_field, user_id, since, extra=None):
     return q.count()
 
 
-def check_listing_limit(db: Session, user_id) -> None:
+def check_listing_limit(db: Session, user_id, is_business: bool = False) -> None:
     """
     Объявления. Обычный человек публикует несколько штук в день;
     сотня за час — это либо ошибка, либо спам.
+
+    У проверенного бизнес-аккаунта лимит выше — у настоящего магазина
+    товаров реально больше, и это не спам, если сам аккаунт уже прошёл
+    проверку личности, чтобы стать бизнесом (см. edit_profile()).
     """
     hour_ago = utcnow() - timedelta(hours=1)
     day_ago = utcnow() - timedelta(days=1)
 
+    hour_cap = 60 if is_business else 20
+    day_cap = 200 if is_business else 50
+
     per_hour = _count_since(db, Listing, Listing.owner_id, user_id, hour_ago)
-    if per_hour >= 20:
+    if per_hour >= hour_cap:
         raise HTTPException(429, "too_many_listings_hour")
 
     per_day = _count_since(db, Listing, Listing.owner_id, user_id, day_ago)
-    if per_day >= 50:
+    if per_day >= day_cap:
         raise HTTPException(429, "too_many_listings_day")
 
 
