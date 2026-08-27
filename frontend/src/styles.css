@@ -134,6 +134,34 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .avito-login-pill .avatar-mini{ width:38px; height:38px; font-size:15px; }
 
+.notif-bell{
+  flex-shrink:0; position:relative; display:flex; align-items:center; justify-content:center;
+  width:48px; height:48px; border-radius:15px; background:#F1F1EC; color:var(--ink);
+}
+.notif-bell svg{ width:21px; height:21px; }
+.notif-bell-badge{
+  position:absolute; top:5px; right:5px; min-width:16px; height:16px; padding:0 4px;
+  border-radius:9px; background:var(--coral); color:#fff; font-size:10px; font-weight:800;
+  display:flex; align-items:center; justify-content:center; line-height:1;
+}
+
+.notif-list{ display:flex; flex-direction:column; }
+.notif-row{
+  display:block; width:100%; text-align:left; padding:14px 16px;
+  border-bottom:1px solid rgba(20,30,25,.06); position:relative;
+}
+.notif-row.unread{ background:var(--primary-soft); }
+.notif-row.unread::before{
+  content:''; position:absolute; left:6px; top:19px; width:7px; height:7px;
+  border-radius:50%; background:var(--primary);
+}
+.notif-text{
+  font-size:13.5px; line-height:1.4; color:var(--ink); padding-left:14px;
+  white-space:pre-line;
+}
+.notif-time{ font-size:11px; color:var(--muted); margin-top:5px; padding-left:14px; }
+.notif-read-all{ font-size:12.5px; font-weight:700; color:var(--primary-deep); margin-left:auto; }
+
 /* картинка ушла в фон, делить строку больше не с кем */
 .avito-promo-row{ display:block; padding:0; }
 .avito-promo-left{ display:flex; flex-direction:column; gap:5px; min-width:0; }

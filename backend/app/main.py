@@ -10,7 +10,7 @@ from app.routers import (
     categories, chats,
     favorites, listings,
     media,
-    moderation, preview, reports, reviews, saved_searches, seo, support,
+    moderation, notifications, preview, reports, reviews, saved_searches, seo, support,
     users,
 )
 
@@ -35,6 +35,7 @@ app.include_router(media.router)
 app.include_router(favorites.router)
 app.include_router(auth.router)
 app.include_router(moderation.router)
+app.include_router(notifications.router)
 app.include_router(reviews.router)
 app.include_router(reports.router)
 app.include_router(saved_searches.router)

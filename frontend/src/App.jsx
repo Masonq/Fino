@@ -9,6 +9,7 @@ import ListingDetail from './pages/ListingDetail'
 import ChatScreen from './pages/ChatScreen'
 import ComingSoon from './pages/ComingSoon'
 import Favorites from './pages/Favorites'
+import Notifications from './pages/Notifications'
 import Chats from './pages/Chats'
 import Login from './pages/Login'
 import Profile from './pages/Profile'
@@ -141,6 +142,7 @@ export default function App() {
           <Route path="/chat/:id" element={<ChatScreen />} />
           <Route path="/login" element={<Login />} />
           <Route path="/favorites" element={<Favorites />} />
+          <Route path="/notifications" element={<Notifications />} />
           <Route path="/chats" element={<Chats />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/seller/:id" element={<SellerProfile />} />

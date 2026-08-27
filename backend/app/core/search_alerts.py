@@ -123,7 +123,8 @@ def notify_subscribers(db: Session, listing: Listing) -> int:
             # Человек сам включил уведомления по этой подписке — если
             # Telegram не привязан, уходит на почту.
             if notify(db, s.user_id, text, allow_email=True,
-                      subject=f"PLONK — новое по поиску «{s.name}»"):
+                      subject=f"PLONK — новое по поиску «{s.name}»",
+                      link=f"/go/{listing.id}"):
                 sent += 1
         except Exception:
             continue

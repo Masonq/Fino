@@ -125,8 +125,8 @@ def send_invite(db: Session, chat: Chat, score: int, reasons: dict) -> bool:
             buyer = db.query(User).get(chat.buyer_id)
             seller = db.query(User).get(chat.seller_id)
             if buyer and seller:
-                notify_review_request(db, chat.buyer_id, seller.display_name)
-                notify_review_request(db, chat.seller_id, buyer.display_name)
+                notify_review_request(db, chat.buyer_id, seller.display_name, chat_id=chat.id)
+                notify_review_request(db, chat.seller_id, buyer.display_name, chat_id=chat.id)
         except Exception:
             pass
 

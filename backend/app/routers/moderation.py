@@ -39,7 +39,8 @@ def _after_approve(listing_id) -> None:
         try:
             from app.core.notifications import notify_moderation
             tr = listing.translations[0] if listing.translations else None
-            notify_moderation(db, listing.owner_id, tr.title if tr else "", True)
+            notify_moderation(db, listing.owner_id, tr.title if tr else "", True,
+                              listing_id=listing.id)
         except Exception:
             pass
 
@@ -165,7 +166,8 @@ def _after_reject(listing_id, reason: str | None) -> None:
         try:
             from app.core.notifications import notify_moderation
             tr = listing.translations[0] if listing.translations else None
-            notify_moderation(db, listing.owner_id, tr.title if tr else "", False, reason)
+            notify_moderation(db, listing.owner_id, tr.title if tr else "", False, reason,
+                              listing_id=listing.id)
         except Exception:
             pass
 

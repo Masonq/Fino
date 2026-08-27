@@ -522,5 +522,11 @@
     "year_short": "g.",
     "km": "km",
     "gb": "GB"
+  },
+  "notif": {
+    "title": "Obaveštenja",
+    "empty": "Još nema obaveštenja — ovde će se pojaviti odluke o oglasima, odgovori u ćaskanjima i novo po vašim pretragama.",
+    "need_auth": "Prijavite se da biste videli svoja obaveštenja.",
+    "read_all": "Označi sve kao pročitano"
   }
 }

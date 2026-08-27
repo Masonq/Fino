@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import ListingCard from '../components/ListingCard'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+import NotificationBell from '../components/NotificationBell'
 import { CardSkeletons, CategorySkeletons } from '../components/Skeletons'
 import PullToRefresh from '../components/PullToRefresh'
 import SearchOverlay from '../components/SearchOverlay'
@@ -262,6 +263,7 @@ export default function Home() {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
             </span>
           </button>
+          <NotificationBell />
           <Link to={user ? '/profile' : '/login'} className="avito-login-pill">
             {user
               ? <div className="avatar-mini">{(user.display_name || '?').trim().charAt(0).toUpperCase()}</div>
