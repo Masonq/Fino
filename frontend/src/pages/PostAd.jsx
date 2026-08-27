@@ -39,6 +39,13 @@ export default function PostAd() {
     api.getCategories().then(setCategories).catch(() => setCategories([]))
   }, [])
 
+  // Предзаполняем телефон, если человек уже указывал его раньше —
+  // иначе вводить одно и то же при каждой публикации.
+  useEffect(() => {
+    if (!user) return
+    api.me().then((me) => { if (me?.phone) setPhone(me.phone) }).catch(() => {})
+  }, [user])
+
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [step])
@@ -121,6 +128,13 @@ export default function PostAd() {
         translations: [{ language: i18n.language, title, description }],
         photos: photos.filter((p) => p.url && !p.failed).map((p) => ({ url: p.url, thumbnail_url: p.thumbnail_url })),
       })
+
+      // Телефон вводили на этом же шаге, но раньше он никуда не уходил —
+      // просто терялся при отправке. Сохраняем в профиль, раз уж
+      // человек его ввёл; не блокируем публикацию, если это не удастся.
+      if (phone.trim()) {
+        api.updateMe({ phone: phone.trim() }).catch(() => {})
+      }
 
       setDone(true)
     } catch (e) {
