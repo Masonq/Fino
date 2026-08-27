@@ -64,6 +64,15 @@ def _add_server_default(context, revision, op_directives):
                 if value is None:
                     continue
 
+                # Enum-поле: value тут — сам элемент перечисления
+                # (DocVerificationKind.initial), а не строка. str() на нём
+                # даёт "DocVerificationKind.initial" — python-репрезентацию,
+                # не значение колонки. Postgres такую строку не примет —
+                # нужно .value, то же самое, что реально хранится в базе.
+                import enum as _enum
+                if isinstance(value, _enum.Enum):
+                    value = value.value
+
                 # Обычная строка, а не sa.text(): Alembic проверяет
                 # server_default на истинность, а объект text() этого не умеет
                 # и падает с «Boolean value of this clause is not defined».
@@ -121,9 +130,49 @@ def _drop_noise_index_ops(context, revision, op_directives):
         script.downgrade_ops.ops = scrub(script.downgrade_ops.ops)
 
 
+# Postgres требует, чтобы тип ENUM существовал до того, как колонка на
+# него сошлётся. Для НОВОЙ таблицы SQLAlchemy создаёт тип сам, попутно
+# с CREATE TABLE — а вот для ADD COLUMN к уже существующей таблице
+# (наш обычный случай, раз в базе почти всегда уже есть данные) — нет,
+# и alembic это не восполняет сам: без этого фильтра каждая новая
+# enum-колонка падала бы с «type ... does not exist», как уже
+# случилось на сервере с doc_verification_requests.kind.
+def _create_enum_before_add_column(context, revision, op_directives):
+    from alembic.operations import ops
+    import sqlalchemy as sa
+
+    def scan(ops_list):
+        result = []
+        for op in ops_list:
+            if isinstance(op, ops.ModifyTableOps):
+                op.ops = scan(op.ops)
+                result.append(op)
+                continue
+            if isinstance(op, ops.AddColumnOp) and isinstance(op.column.type, sa.Enum):
+                enum_type = op.column.type
+                values = ", ".join(
+                    "'" + v.replace("'", "''") + "'" for v in enum_type.enums)
+                # DO-блок с перехватом duplicate_object — безопасно, даже
+                # если тип уже создан этой же миграцией для другой колонки
+                # того же перечисления.
+                sql = (
+                    f"DO $$ BEGIN "
+                    f"CREATE TYPE {enum_type.name} AS ENUM ({values}); "
+                    f"EXCEPTION WHEN duplicate_object THEN null; "
+                    f"END $$;"
+                )
+                result.append(ops.ExecuteSQLOp(sql))
+            result.append(op)
+        return result
+
+    for script in op_directives:
+        script.upgrade_ops.ops = scan(script.upgrade_ops.ops)
+
+
 def process_revision_directives(context, revision, directives):
     _add_server_default(context, revision, directives)
     _drop_noise_index_ops(context, revision, directives)
+    _create_enum_before_add_column(context, revision, directives)
 
 
 def run_migrations_offline():
