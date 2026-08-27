@@ -437,9 +437,13 @@ export default function ListingDetail() {
         <div className="sticky-cta">
           {/* Не обещаем похожие: подбор пока слабый, и пустая надежда
               хуже честного «смотрите раздел». */}
+          {/* Ведём в поиск по подразделу этого объявления, а не на /c/,
+              который рассчитан только на разделы верхнего уровня —
+              category_slug тут почти всегда подраздел («phones»), и
+              /c/phones упал бы: LANDINGS ключуется по верхнему уровню. */}
           <button
             className="cta-btn primary"
-            onClick={() => navigate(`/category/${listing.category_slug}`)}
+            onClick={() => navigate(`/search?category=${listing.category_slug}`)}
           >
             {t('detail.gone_to_category')}
           </button>

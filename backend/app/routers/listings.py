@@ -415,6 +415,9 @@ def my_listings(
                                  l.category.slug if l.category else None),
             "cover_photo": cover.thumbnail_url if cover else None,
             "status": l.status.value,
+            # Автор должен видеть, почему объявление отклонили — без
+            # этого оно просто пропадало из виду без объяснений.
+            "rejection_reason": l.rejection_reason if l.status == ListingStatus.rejected else None,
             "views_count": l.views_count,
             "created_at": l.created_at.isoformat() if l.created_at else None,
         }

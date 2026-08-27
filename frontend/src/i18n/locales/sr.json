@@ -168,7 +168,8 @@
     "urgent": "Hitno",
     "cols_2": "Dva u redu",
     "cols_1": "Jedan u redu",
-    "find": "Traži"
+    "find": "Traži",
+    "not_found": "Ova stranica ne postoji — link je možda zastareo ili pogrešno unet."
   },
   "chats": {
     "need_auth": "Predstavite se da biste videli svoje razgovore.",
@@ -218,7 +219,8 @@
     "archive": "Skloni",
     "restore": "Objavi ponovo",
     "delete": "Obriši",
-    "confirm_delete": "Obrisati oglas? Ovo se ne može poništiti."
+    "confirm_delete": "Obrisati oglas? Ovo se ne može poništiti.",
+    "tab_rejected": "Odbijeno"
   },
   "mod": {
     "title": "Moderacija",

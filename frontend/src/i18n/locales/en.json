@@ -168,7 +168,8 @@
     "urgent": "Urgent",
     "cols_2": "Two per row",
     "cols_1": "One per row",
-    "find": "Search"
+    "find": "Search",
+    "not_found": "This page doesn't exist — the link may be outdated or mistyped."
   },
   "chats": {
     "need_auth": "Introduce yourself to see your conversations.",
@@ -218,7 +219,8 @@
     "archive": "Unpublish",
     "restore": "Publish again",
     "delete": "Delete",
-    "confirm_delete": "Delete this listing? This can't be undone."
+    "confirm_delete": "Delete this listing? This can't be undone.",
+    "tab_rejected": "Rejected"
   },
   "mod": {
     "title": "Moderation",

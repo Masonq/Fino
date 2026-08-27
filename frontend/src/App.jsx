@@ -25,6 +25,7 @@ import Moderation from './pages/Moderation'
 import EditListing from './pages/EditListing'
 import SavedSearches from './pages/SavedSearches'
 import History from './pages/History'
+import NotFound from './pages/NotFound'
 import { AuthProvider } from './context/AuthContext'
 import { FavoritesProvider } from './context/FavoritesContext'
 import BottomNav from './components/BottomNav'
@@ -161,6 +162,10 @@ export default function App() {
               части, и выше служебных страниц перехватывал бы
               /admin/users и всё остальное. */}
           <Route path="/:city/:category/:slug" element={<ListingDetail />} />
+          {/* Ловит всё, что не подошло ни под одно правило выше — без
+              этого несуществующий адрес открывал пустой экран без
+              единого объяснения или выхода. */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
       {!hideNav && <BottomNav />}

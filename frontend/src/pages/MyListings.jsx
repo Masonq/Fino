@@ -10,6 +10,10 @@ import { formatPrice } from '../utils/money'
 const TABS = [
   { key: 'active', labelKey: 'my.tab_active' },
   { key: 'pending_moderation', labelKey: 'my.tab_pending' },
+  // Без этой вкладки отклонённое объявление просто пропадало из виду:
+  // бэкенд его отдавал, а посмотреть было негде — продавец не узнавал
+  // ни того, что его отклонили, ни почему.
+  { key: 'rejected', labelKey: 'my.tab_rejected' },
   { key: 'sold', labelKey: 'my.tab_sold' },
   { key: 'archived', labelKey: 'my.tab_archived' },
 ]
@@ -113,6 +117,9 @@ export default function MyListings() {
                     {displayCity(l.city, i18n.language)}
                     {l.views_count > 0 && ` · ${t('my.views')} ${l.views_count}`}
                   </div>
+                  {l.status === 'rejected' && l.rejection_reason && (
+                    <div className="my-rejection">{l.rejection_reason}</div>
+                  )}
                 </div>
               </Link>
 
