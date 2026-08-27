@@ -308,13 +308,11 @@ export default function Search() {
 
       <div className="results-head">
         <div className="results-head-left">
-          <span className="results-count">
-            {!loaded ? t('search.searching') : `${t('search.found')}: ${total}`}
-          </span>
-          {/* Одна кнопка с текущим значением вместо ряда чипов — три
-              чипа рядом со счётчиком и «Следить» не влезали в экран
-              и обрезались. У Авито сортировка тоже одна кнопка со
-              стрелкой, а не постоянно видимый ряд вариантов. */}
+          {/* Раньше тут же был счётчик «Найдено: N» — при добавлении
+              «По релевантности» ряд стал слишком тесным дважды подряд.
+              Убрали, не подбирая очередной хрупкий компромисс по
+              ширине: число найденного видно и так — по самой длине
+              ленты под этой строкой. */}
           <div className="sort-dd">
             <button className="sort-dd-btn" onClick={() => setSortOpen((v) => !v)}>
               {t(SORTS.find((s) => s.key === sort)?.labelKey)}
