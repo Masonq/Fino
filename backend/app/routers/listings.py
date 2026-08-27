@@ -184,6 +184,17 @@ def search_listings(
         joinedload(Listing.translations), joinedload(Listing.photos)
     ).filter(Listing.status == ListingStatus.active)
 
+    # Цена в фильтре и в сортировке — всегда в евро (фронт не даёт
+    # выбрать валюту), а в базе объявление хранит цену в своей исходной
+    # валюте — часть объявлений (в основном перенесённые из телеграм-
+    # чатов) в RSD. Без пересчёта «от 100 до 1000€» находило бы и
+    # объявления в 1000 RSD (≈8.5€), а «сначала дешёвые» — путало бы
+    # порядок. Курс тот же, что уже используется в tg_import.py.
+    price_in_eur = case(
+        (Listing.currency == "EUR", Listing.price),
+        else_=Listing.price / 117,
+    )
+
     for group in (extra_terms.split(";;") if extra_terms else []):
         synonyms = [s.strip() for s in group.split("|") if s.strip()]
         if not synonyms:
@@ -254,17 +265,6 @@ def search_listings(
         # мешал — он не даёт использовать индекс.
         q = q.filter(Listing.city == city)
     if price_min is not None or price_max is not None:
-        # Цена в фильтре — всегда в евро (фронт не даёт выбрать валюту,
-        # «€» и на кнопке «Следить», и в описании сохранённого поиска).
-        # А в базе цена хранится в исходной валюте объявления — часть
-        # объявлений (в основном перенесённые из телеграм-чатов) в
-        # RSD. Без пересчёта «от 100 до 1000» сравнивало голые числа:
-        # 1000 RSD (≈8.5€) наравне с 1000 EUR. Курс тот же, что уже
-        # используется в tg_import.py для той же цели.
-        price_in_eur = case(
-            (Listing.currency == "EUR", Listing.price),
-            else_=Listing.price / 117,
-        )
         if price_min is not None:
             q = q.filter(price_in_eur >= price_min)
         if price_max is not None:
@@ -293,11 +293,14 @@ def search_listings(
 
     total = q.count()
 
+    # price_in_eur уже определена выше — используется тут для «сначала
+    # дешёвые/дорогие», иначе товар в 50 000 RSD (≈427€) сортировался
+    # бы дороже товара в 1000 EUR просто потому, что число 50000 больше.
     order = {
         "new": Listing.published_at.desc(),
         "old": Listing.published_at.asc(),
-        "cheap": Listing.price.asc().nullslast(),
-        "expensive": Listing.price.desc().nullslast(),
+        "cheap": price_in_eur.asc().nullslast(),
+        "expensive": price_in_eur.desc().nullslast(),
     }.get(sort, Listing.published_at.desc())
 
     # Полные объявления впереди неполных: обрубок без цены и фотографии
