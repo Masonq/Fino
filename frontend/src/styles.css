@@ -1415,10 +1415,6 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   font-size:13px; color:var(--muted); margin:10px 0 0;
 }
 
-.review-translated{
-  font-size:11px; color:var(--muted); margin-top:4px;
-}
-
 /* Страница продавца */
 .seller-head{ display:flex; align-items:center; gap:14px; padding:4px 16px 18px; }
 .seller-avatar.lg{ width:64px; height:64px; font-size:22px; }

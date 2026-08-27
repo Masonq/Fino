@@ -93,9 +93,6 @@ export default function SellerReviews({ sellerId, listingId }) {
                 <span className="review-date">{monthYear(r.created_at, i18n.language)}</span>
               </div>
               {r.comment && <p className="review-text">{r.comment}</p>}
-              {r.is_auto_translated && (
-                <div className="review-translated">{t('detail.auto_translated')}</div>
-              )}
             </div>
           ))}
         </div>
