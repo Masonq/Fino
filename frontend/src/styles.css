@@ -842,12 +842,31 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   color:var(--ink);
 }
 .auth-logo{ width:52px; height:52px; object-fit:contain; margin-bottom:18px; }
+.auth-icon{
+  width:64px; height:64px; border-radius:18px; margin-bottom:18px;
+  background:var(--primary-soft); color:var(--primary-deep);
+  display:flex; align-items:center; justify-content:center;
+}
+.auth-icon svg{ width:28px; height:28px; }
 .auth-page h1{ font-size:22px; font-weight:800; letter-spacing:-0.01em; text-align:center; }
 .auth-sub{
   font-size:13.5px; line-height:1.45; color:var(--muted);
   text-align:center; margin:8px 0 26px; max-width:300px;
 }
 .auth-sub b{ color:var(--ink); font-weight:700; }
+
+.auth-input-wrap{
+  width:100%; max-width:340px; display:flex; align-items:center; gap:11px;
+  padding:15px 16px; border-radius:14px; margin-bottom:6px;
+  background:#fff; border:1.5px solid rgba(20,30,25,.09);
+}
+.auth-input-wrap:focus-within{ border-color:var(--primary); }
+.auth-input-wrap svg{ width:20px; height:20px; flex-shrink:0; color:var(--muted); }
+.auth-input-wrap input{
+  flex:1; min-width:0; border:none; padding:0; font-size:16px; color:var(--ink);
+  background:none;
+}
+.auth-input-wrap input:focus{ outline:none; }
 
 .auth-method{
   width:100%; max-width:340px; display:flex; align-items:center; justify-content:center; gap:10px;
