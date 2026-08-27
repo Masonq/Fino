@@ -1,10 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 
 // Порядок показа — от самого дешёвого к самому дорогому, цены сами
 // приходят с сервера (одно место правды, не дублируем тут).
 const TYPES = ['bump', 'highlight', 'xl_card']
+
+// Картинка-иллюстрация каждого типа — если файла нет (ещё не
+// загружен), просто остаётся крупная иконка на цветной подложке,
+// ничего не ломается.
+const IMAGES = {
+  bump: '/promo/bump.png',
+  highlight: '/promo/highlight.png',
+  xl_card: '/promo/xl.png',
+}
 
 const ICONS = {
   bump: (
@@ -59,16 +68,40 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [done, setDone] = useState(false)
+  const carouselRef = useRef(null)
+
+  // Одна карточка на весь экран, листается свайпом — по прокрутке
+  // определяем, какая сейчас видна, и делаем её выбранной сама собой:
+  // раз видно только одну, «выбор» и «пролистал до неё» — одно и то же.
+  const onScroll = () => {
+    const el = carouselRef.current
+    if (!el) return
+    const index = Math.round(el.scrollLeft / el.clientWidth)
+    const type = TYPES[Math.max(0, Math.min(TYPES.length - 1, index))]
+    if (type) setSelected((prev) => (prev === type ? prev : type))
+  }
+
+  const goTo = (index) => {
+    const el = carouselRef.current
+    if (!el) return
+    el.scrollTo({ left: el.clientWidth * index, behavior: 'smooth' })
+  }
 
   const load = () => {
     api.listingPromotions(listingId).then((res) => {
       setData(res)
       // Выбираем по умолчанию первый ещё не купленный тип — чтобы
       // кнопка внизу сразу была готова к нажатию, не заставляя сначала
-      // тыкать в строку.
+      // тыкать в строку. Прокрутку карусели ставим туда же без
+      // анимации — иначе первый показ дёргался бы к нужной карточке.
       const active = new Set((res.items || []).map((p) => p.type))
       const firstFree = TYPES.find((tp) => !active.has(tp))
       setSelected(firstFree || null)
+      const index = firstFree ? TYPES.indexOf(firstFree) : 0
+      requestAnimationFrame(() => {
+        const el = carouselRef.current
+        if (el) el.scrollLeft = el.clientWidth * index
+      })
     }).catch(() => setData({ prices: {}, items: [], balance: 0 }))
   }
 
@@ -138,26 +171,22 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
           <p className="verify-hint">{t('actions.loading')}</p>
         ) : (
           <>
-            <div className="promo-row-list">
+            <div className="promo-carousel" ref={carouselRef} onScroll={onScroll}>
               {TYPES.map((type) => {
                 const activePromo = (data.items || []).find((p) => p.type === type)
                 const isActive = activeTypes.has(type)
-                const isSelected = !isActive && selected === type
                 return (
-                  <div
-                    key={type}
-                    className={isSelected ? 'promo-row selected' : 'promo-row'}
-                    onClick={isActive ? undefined : () => setSelected(type)}
-                    role={isActive ? undefined : 'button'}
-                  >
-                    <div className={`promo-icon ${type === 'xl_card' ? 'xl' : type}`}>
-                      {ICONS[type]}
+                  <div key={type} className="promo-card-full">
+                    <div className={`promo-card-image ${type === 'xl_card' ? 'xl' : type}`}>
+                      <img
+                        src={IMAGES[type]} alt=""
+                        onError={(e) => { e.currentTarget.style.display = 'none' }}
+                      />
+                      <div className="promo-card-icon">{ICONS[type]}</div>
                     </div>
-                    <div className="promo-body">
-                      <div className="promo-name">{t(`promo.type_${type}`)}</div>
-                      <div className="promo-desc">{t(`promo.desc_${type}`)}</div>
-                    </div>
-                    <div className="promo-row-bottom">
+                    <div className="promo-card-name">{t(`promo.type_${type}`)}</div>
+                    <div className="promo-card-desc">{t(`promo.desc_${type}`)}</div>
+                    <div className="promo-card-bottom">
                       {isActive ? (
                         <span className="promo-active-tag">
                           {activePromo?.expires_at
@@ -165,10 +194,7 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
                             : t('promo.active_now')}
                         </span>
                       ) : (
-                        <>
-                          <span className="promo-price">{t('promo.price', { price: data.prices?.[type] })}</span>
-                          <span className={isSelected ? 'promo-radio on' : 'promo-radio'} />
-                        </>
+                        <span className="promo-price">{t('promo.price', { price: data.prices?.[type] })}</span>
                       )}
                     </div>
                   </div>
@@ -176,6 +202,16 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
               })}
             </div>
 
+            <div className="promo-dots">
+              {TYPES.map((type, i) => (
+                <button
+                  key={type}
+                  className={selected === type ? 'promo-dot active' : 'promo-dot'}
+                  aria-label={t(`promo.type_${type}`)}
+                  onClick={() => goTo(i)}
+                />
+              ))}
+            </div>
             {error && <p className="auth-error">{error}</p>}
             {done && <p className="promo-done">{t('promo.paid_ok')}</p>}
 
