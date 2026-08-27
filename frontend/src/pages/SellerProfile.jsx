@@ -86,7 +86,11 @@ export default function SellerProfile() {
       <PageHeader title={t('seller.title')} />
 
       <div className="seller-head">
-        <div className="seller-avatar lg">{profile.display_name?.[0] || '?'}</div>
+        <div className={profile.is_company ? 'seller-avatar lg is-company' : 'seller-avatar lg'}>
+          {profile.avatar_url
+            ? <img src={profile.avatar_url} alt="" />
+            : (profile.company_name || profile.display_name)?.[0] || '?'}
+        </div>
         <div className="seller-head-info">
           <div className="seller-name lg">
             {profile.company_name || profile.display_name}
@@ -105,6 +109,10 @@ export default function SellerProfile() {
           {since && <div className="seller-since">{t('seller.since', { date: since })}</div>}
         </div>
       </div>
+
+      {profile.company_description && (
+        <div className="seller-company-about">{profile.company_description}</div>
+      )}
 
       <ReportButton targetUserId={profile.id} />
 

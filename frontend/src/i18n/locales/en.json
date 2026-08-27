@@ -470,7 +470,9 @@
     "photo_failed": "Could not upload the photo",
     "edit": "Edit details",
     "rating": "Rating {{value}} · {{count}} reviews",
-    "no_rating": "No reviews yet"
+    "no_rating": "No reviews yet",
+    "company_description": "About the company",
+    "company_description_hint": "What you do, what you sell — buyers will see this on your storefront"
   },
   "landing": {
     "deal": "What do you need",

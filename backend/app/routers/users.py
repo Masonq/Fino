@@ -44,6 +44,7 @@ def public_profile(user_id: uuid.UUID, lang: str = "ru", db: Session = Depends(g
         "avatar_url": user.avatar_url,
         "is_company": user.role == UserRole.seller_business,
         "company_name": user.company_name if user.role == UserRole.seller_business else None,
+        "company_description": user.company_description if user.role == UserRole.seller_business else None,
         "phone_verified": user.phone_verified,
         "document_verified": user.document_verified,
         "company_verified": user.company_verified,
@@ -63,6 +64,8 @@ class ProfileEdit(BaseModel):
     # Компания — для тех, кто продаёт как бизнес. Проверку по реестру
     # это не отменяет: название человек пишет сам, а галочку ставим мы.
     company_name: str | None = Field(default=None, max_length=255)
+    # Описание на витрине — под названием, покупатель видит его первым.
+    company_description: str | None = Field(default=None, max_length=2000)
 
     @field_validator("display_name")
     @classmethod
@@ -92,6 +95,7 @@ def my_profile(user: User = Depends(get_current_user)):
         "email_verified": user.email_verified,
         "phone_verified": user.phone_verified,
         "company_name": user.company_name,
+        "company_description": user.company_description,
         "company_verified": user.company_verified,
         "rating_avg": round(user.rating_avg or 0, 2),
         "rating_count": user.rating_count,
@@ -123,6 +127,8 @@ def edit_profile(
         if name != (user.company_name or ""):
             user.company_verified = False
         user.company_name = name or None
+    if payload.company_description is not None:
+        user.company_description = payload.company_description.strip() or None
 
     db.commit()
     return my_profile(user)

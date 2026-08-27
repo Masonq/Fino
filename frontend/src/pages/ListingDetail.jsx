@@ -418,10 +418,14 @@ export default function ListingDetail() {
 
         {listing.owner && (
           <Link to={`/seller/${listing.owner.id}`} className="seller-row">
-            <div className="seller-avatar">{listing.owner.display_name?.[0] || '?'}</div>
+            <div className={listing.owner.is_company ? 'seller-avatar is-company' : 'seller-avatar'}>
+              {listing.owner.avatar_url
+                ? <img src={listing.owner.avatar_url} alt="" />
+                : (listing.owner.company_name || listing.owner.display_name)?.[0] || '?'}
+            </div>
             <div>
               <div className="seller-name">
-                {listing.owner.display_name}
+                {listing.owner.company_name || listing.owner.display_name}
                 {listing.owner.phone_verified && (
                   <div className="seal seal-sm">
                     <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><path d="M20 6 9 17l-5-5" /></svg>

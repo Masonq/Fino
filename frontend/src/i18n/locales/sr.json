@@ -471,7 +471,9 @@
     "photo_failed": "Slika nije poslata",
     "edit": "Izmeni podatke",
     "rating": "Ocena {{value}} · recenzija {{count}}",
-    "no_rating": "Još nema recenzija"
+    "no_rating": "Još nema recenzija",
+    "company_description": "O kompaniji",
+    "company_description_hint": "Čime se bavite, šta prodajete — kupac će ovo videti na vašoj vitrini"
   },
   "landing": {
     "deal": "Šta tražite",

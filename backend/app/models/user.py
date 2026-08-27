@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import String, Boolean, DateTime, Enum, Float, Integer
+from sqlalchemy import String, Boolean, DateTime, Enum, Float, Integer, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -55,6 +55,10 @@ class User(Base):
     company_pib: Mapped[str | None] = mapped_column(String(32), nullable=True)  # ПИБ
     company_mb: Mapped[str | None] = mapped_column(String(32), nullable=True)   # матични број
     company_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+    # О компании — на витрине под названием. Логотип отдельного поля не
+    # требует: тот же avatar_url, что и у обычного человека, только у
+    # компании это будет логотип, а не портрет.
+    company_description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     rating_avg: Mapped[float] = mapped_column(Float, default=0.0)
     rating_count: Mapped[int] = mapped_column(Integer, default=0)

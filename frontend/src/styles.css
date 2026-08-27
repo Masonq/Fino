@@ -519,7 +519,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .seller-row{ margin-top:20px; display:flex; align-items:center; gap:12px; padding:15px; background:#F8F8F5; border-radius:17px; color:inherit; text-decoration:none; }
 .seller-row:active{ background:#F1F1EC; }
 .seller-chevron{ margin-left:auto; color:var(--muted); flex-shrink:0; }
-.seller-avatar{ width:46px; height:46px; border-radius:50%; background:linear-gradient(135deg,var(--violet),#9B8FFF); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:15px; flex-shrink:0; }
+.seller-avatar{ width:46px; height:46px; border-radius:50%; background:linear-gradient(135deg,var(--violet),#9B8FFF); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:15px; flex-shrink:0; overflow:hidden; }
+.seller-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+.seller-avatar.is-company{ border-radius:16px; }
 .seller-name{ font-size:13.5px; font-weight:800; display:flex; align-items:center; gap:5px; }
 .seller-meta{ font-size:11px; color:var(--muted); font-weight:600; margin-top:2px; }
 .seal-sm{ width:18px; height:18px; }
@@ -1489,6 +1491,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .seller-head-avg{ font-size:15px; font-weight:800; }
 .seller-head-count{ font-size:12px; color:var(--muted); font-weight:600; }
 .seller-since{ font-size:12px; color:var(--muted); margin-top:3px; }
+.seller-company-about{ padding:0 16px; margin-top:14px; font-size:13px; line-height:1.5; color:var(--ink-soft); white-space:pre-line; }
 .seller-section{ padding:0 16px; margin-top:22px; }
 .seller-section-title{ font-size:15px; font-weight:800; margin-bottom:11px; }
 .seller-missing{ padding:28px 16px; color:var(--muted); text-align:center; }
@@ -1763,6 +1766,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   background: #fff;
 }
 .stats-block-title { font-weight: 600; margin-bottom: 10px; }
+.edit-company-desc{ resize:vertical; min-height:90px; font-family:inherit; line-height:1.4; }
 .ldash-listing-title{ padding:0 12px 14px; font-size:14px; font-weight:700; color:var(--ink); }
 .ldash-hint{ margin:14px 12px 0; padding:12px 14px; border-radius:12px; background:#FFF8E8; font-size:12.5px; line-height:1.5; color:#8a6d1f; }
 

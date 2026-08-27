@@ -20,6 +20,7 @@ export default function EditProfile() {
   const [name, setName] = useState('')
   const [avatar, setAvatar] = useState('')
   const [company, setCompany] = useState('')
+  const [companyDescription, setCompanyDescription] = useState('')
   const [saving, setSaving] = useState(false)
   const [done, setDone] = useState(false)
 
@@ -30,6 +31,7 @@ export default function EditProfile() {
       setName(me.display_name || '')
       setAvatar(me.avatar_url || '')
       setCompany(me.company_name || '')
+      setCompanyDescription(me.company_description || '')
     }).catch(() => {})
   }, [authLoading, user, navigate])
 
@@ -41,6 +43,7 @@ export default function EditProfile() {
         display_name: name.trim(),
         avatar_url: avatar.trim(),
         company_name: company.trim(),
+        company_description: companyDescription.trim(),
         default_language: i18n.language,
       })
       setDone(true)
@@ -92,6 +95,20 @@ export default function EditProfile() {
           onChange={(e) => setCompany(e.target.value)}
           placeholder={t('edit_profile.company_hint')}
         />
+
+        {company.trim() && (
+          <>
+            <label className="edit-label">{t('edit_profile.company_description')}</label>
+            <textarea
+              className="admin-search edit-company-desc"
+              value={companyDescription}
+              onChange={(e) => setCompanyDescription(e.target.value)}
+              placeholder={t('edit_profile.company_description_hint')}
+              rows={4}
+              maxLength={2000}
+            />
+          </>
+        )}
 
         <button className="support-send" disabled={saving} onClick={save}>
           {done ? t('edit_profile.saved') : t('edit_profile.save')}
