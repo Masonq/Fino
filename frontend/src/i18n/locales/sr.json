@@ -83,11 +83,19 @@
     "you_are_blocked": "Ovaj korisnik vas je blokirao — ne možete mu pisati."
   },
   "promo": {
-    "safe_deal": "Sigurna kupovina",
-    "free_post": "Besplatno oglašavanje",
-    "три_языка": "Tri jezika: RU · EN · SR",
-    "verified": "Provereni prodavci",
-    "local": "Oglasi u vašoj blizini"
+    "button": "Izdvoji",
+    "title": "Izdvajanje oglasa",
+    "type_bump": "Podizanje u pretrazi",
+    "desc_bump": "Jednokratno podiže oglas na vrh, kao da je tek objavljen",
+    "type_highlight": "Isticanje bojom",
+    "desc_highlight": "Kartica se izdvaja među susedima — 7 dana",
+    "type_xl_card": "Velika kartica",
+    "desc_xl_card": "Više fotografija i prostora u listi — 7 dana",
+    "price": "{{price}} ₽",
+    "active_now": "Aktivno",
+    "active_until": "Do {{date}}",
+    "err_unavailable": "Izdvajanje je privremeno nedostupno, pokušajte kasnije",
+    "err_generic": "Nije uspelo pokretanje plaćanja, pokušajte ponovo"
   },
   "ptr": {
     "pull": "Povucite nadole",

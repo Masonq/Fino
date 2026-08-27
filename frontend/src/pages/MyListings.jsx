@@ -5,6 +5,7 @@ import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { displayCity } from '../data/cities'
 import PageHeader from '../components/PageHeader'
+import PromoteButton from '../components/PromoteButton'
 import { ListRowSkeletons } from '../components/Skeletons'
 import { formatPrice } from '../utils/money'
 
@@ -29,6 +30,9 @@ export default function MyListings() {
   const [tab, setTab] = useState('active')
   const [loaded, setLoaded] = useState(false)
   const [busyId, setBusyId] = useState(null)
+  // Панель продвижения открыта максимум для одной карточки за раз —
+  // id объявления, если открыта, иначе null.
+  const [promoteFor, setPromoteFor] = useState(null)
 
   const load = () => {
     if (!user) { setLoaded(true); return }
@@ -141,6 +145,11 @@ export default function MyListings() {
                     <button disabled={busyId === l.id} onClick={() => changeStatus(l.id, 'archived')}>
                       {t('my.archive')}
                     </button>
+                    <PromoteButton
+                      listingId={l.id} renderMode="trigger"
+                      open={promoteFor === l.id}
+                      onOpenChange={(v) => setPromoteFor(v ? l.id : null)}
+                    />
                   </>
                 )}
                 {(l.status === 'sold' || l.status === 'archived') && (
@@ -154,6 +163,14 @@ export default function MyListings() {
                   </>
                 )}
               </div>
+
+              {promoteFor === l.id && (
+                <PromoteButton
+                  listingId={l.id} renderMode="sheet"
+                  open={promoteFor === l.id}
+                  onOpenChange={(v) => setPromoteFor(v ? l.id : null)}
+                />
+              )}
             </div>
           ))}
         </div>

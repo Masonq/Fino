@@ -194,6 +194,17 @@ def notify_reverify_requested(db: Session, user_id, verify_url: str) -> bool:
                   subject="PLONK — подтвердите личность")
 
 
+def notify_promotion_paid(db: Session, user_id, title: str, promo_type: str) -> bool:
+    names = {
+        "bump": "Поднятие в поиске",
+        "highlight": "Выделение цветом",
+        "xl_card": "Крупная карточка",
+    }
+    text = f"«{names.get(promo_type, promo_type)}» для «{title}» оплачено и уже работает"
+    return notify(db, user_id, text, force=True, allow_email=False,
+                  subject="PLONK — продвижение оплачено")
+
+
 def notify_expiring_soon(db: Session, user_id, title: str, days_left: int) -> bool:
     text = (
         f"Объявление «{title}» скоро снимется с публикации — через {days_left} дн.\n\n"

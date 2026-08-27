@@ -83,11 +83,19 @@
     "you_are_blocked": "This user has blocked you — you can't message them."
   },
   "promo": {
-    "safe_deal": "Safe deal",
-    "free_post": "Post for free",
-    "три_языка": "Three languages: RU · EN · SR",
-    "verified": "Verified sellers",
-    "local": "Listings near you"
+    "button": "Promote",
+    "title": "Promote listing",
+    "type_bump": "Bump to top",
+    "desc_bump": "One-time bump to the top, as if just published",
+    "type_highlight": "Color highlight",
+    "desc_highlight": "Card stands out among neighbors — 7 days",
+    "type_xl_card": "Large card",
+    "desc_xl_card": "More photo and space in the feed — 7 days",
+    "price": "{{price}} ₽",
+    "active_now": "Active",
+    "active_until": "Until {{date}}",
+    "err_unavailable": "Promotion is temporarily unavailable, try again later",
+    "err_generic": "Couldn't start the payment, please try again"
   },
   "ptr": {
     "pull": "Pull down",

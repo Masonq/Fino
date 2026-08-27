@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field, field_validator
 from app.core.auth import get_current_user, get_current_user_optional
 from app.core.database import get_db
 from app.core.search_terms import variants as search_variants
-from app.models import Listing, ListingStatus, ListingTranslation, ListingPhoto, Category, User, UserRole
+from app.models import Listing, ListingStatus, ListingTranslation, ListingPhoto, Category, User, UserRole, PromotionType
 from app.core.clock import utcnow
 
 router = APIRouter(prefix="/api/listings", tags=["listings"])
@@ -104,27 +104,35 @@ def previous_price_of(listing) -> dict | None:
     return {"price": last["price"], "currency": last["currency"]}
 
 
-def _active_xl_ids(db: Session, listing_ids) -> set:
+def _active_promo_ids(db: Session, listing_ids) -> dict:
     """
     Какие из перечисленных объявлений сейчас куплены как крупная
-    карточка (XL) — один запрос на всю партию карточек, не по одному
-    на каждую: их могут быть десятки на одной странице ленты.
+    карточка (XL) или выделены цветом — один запрос на всю партию
+    карточек и сразу на оба типа, не по одному на каждую карточку и
+    не по отдельному запросу на каждый тип: их могут быть десятки на
+    одной странице ленты.
+
+    Возвращает {PromotionType.xl_card: {id, id, ...}, PromotionType.highlight: {...}}.
     """
-    from app.models import Promotion, PromotionType
+    from app.models import Promotion, PromotionStatus
 
     ids = [i for i in listing_ids if i]
+    result = {PromotionType.xl_card: set(), PromotionType.highlight: set()}
     if not ids:
-        return set()
+        return result
     rows = (
-        db.query(Promotion.listing_id)
+        db.query(Promotion.listing_id, Promotion.type)
         .filter(
             Promotion.listing_id.in_(ids),
-            Promotion.type == PromotionType.xl_card,
+            Promotion.type.in_(list(result.keys())),
+            Promotion.status == PromotionStatus.paid,
             or_(Promotion.expires_at.is_(None), Promotion.expires_at > utcnow()),
         )
         .all()
     )
-    return {r[0] for r in rows}
+    for listing_id, promo_type in rows:
+        result[promo_type].add(listing_id)
+    return result
 
 
 @router.post("")
@@ -353,7 +361,7 @@ def search_listings(
         ordering = [title_hit, Listing.is_complete.desc()]
     ordering.append(order)
     items = q.order_by(*ordering).offset(offset).limit(limit).all()
-    xl_ids = _active_xl_ids(db, [l.id for l in items])
+    promo = _active_promo_ids(db, [l.id for l in items])
 
     def serialize(listing: Listing):
         translation = pick_translation(listing, lang)
@@ -370,7 +378,8 @@ def search_listings(
             "city": listing.city,
             "cover_photo": cover.thumbnail_url if cover else None,
             "delivery_available": listing.delivery_available,
-            "is_xl": listing.id in xl_ids,
+            "is_xl": listing.id in promo[PromotionType.xl_card],
+            "is_highlighted": listing.id in promo[PromotionType.highlight],
             "published_at": listing.published_at.isoformat() if listing.published_at else None,
             "attributes": listing.attributes,
             "category_slug": listing.category.slug if listing.category else None,
@@ -411,7 +420,7 @@ def listings_by_ids(
         .all()
     )
     by_id = {l.id: l for l in rows}
-    xl_ids = _active_xl_ids(db, list(by_id.keys()))
+    promo = _active_promo_ids(db, list(by_id.keys()))
 
     def serialize(l: Listing):
         tr = pick_translation(l, lang)
@@ -427,7 +436,8 @@ def listings_by_ids(
             "attributes": l.attributes,
             "category_slug": l.category.slug if l.category else None,
             "is_company": bool(l.owner and l.owner.role == UserRole.seller_business),
-            "is_xl": l.id in xl_ids,
+            "is_xl": l.id in promo[PromotionType.xl_card],
+            "is_highlighted": l.id in promo[PromotionType.highlight],
             # Понятный адрес: он должен быть одинаков везде — в ленте,
             # в избранном, в своих объявлениях.
             "path": listing_path(l.id, tr.title if tr else "", l.city,
@@ -631,7 +641,7 @@ def similar_listings(
         ]
 
     picked = candidates[:limit]
-    xl_ids = _active_xl_ids(db, [l.id for l in picked])
+    promo = _active_promo_ids(db, [l.id for l in picked])
 
     def serialize(l: Listing):
         tr = pick_translation(l, lang)
@@ -647,7 +657,8 @@ def similar_listings(
             "attributes": l.attributes,
             "category_slug": l.category.slug if l.category else None,
             "is_company": bool(l.owner and l.owner.role == UserRole.seller_business),
-            "is_xl": l.id in xl_ids,
+            "is_xl": l.id in promo[PromotionType.xl_card],
+            "is_highlighted": l.id in promo[PromotionType.highlight],
             "cover_photo": cover.thumbnail_url if cover else None,
             "path": listing_path(l.id, tr.title if tr else "", l.city,
                                  l.category.slug if l.category else None),

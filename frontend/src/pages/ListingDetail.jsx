@@ -7,6 +7,7 @@ import { addToHistory } from '../data/history'
 import { useAuth } from '../context/AuthContext'
 import { useFavorites } from '../context/FavoritesContext'
 import ReportButton from '../components/ReportButton'
+import PromoteButton from '../components/PromoteButton'
 import SimilarListings from '../components/SimilarListings'
 import { formatPrice } from '../utils/money'
 
@@ -115,6 +116,11 @@ export default function ListingDetail() {
   }, [listing])
 
   const isStaff = user?.role === 'admin' || user?.role === 'moderator'
+  // Продвигать может только сам владелец, и только пока объявление
+  // реально в выдаче — снятое или ждущее модерации продвигать бы
+  // впустую, покупатель его всё равно не увидит (та же проверка,
+  // что и на бэкенде).
+  const isOwner = user?.id && listing?.owner?.id === user.id && listing?.status === 'active'
   const [deleting, setDeleting] = useState(false)
   const [showReasons, setShowReasons] = useState(false)
   const [customReason, setCustomReason] = useState(false)
@@ -446,6 +452,12 @@ export default function ListingDetail() {
               <path d="m9 18 6-6-6-6" />
             </svg>
           </Link>
+        )}
+
+        {isOwner && (
+          <div className="detail-promote-slot">
+            <PromoteButton listingId={listing.id} />
+          </div>
         )}
 
         <SimilarListings listingId={listing.id} />
