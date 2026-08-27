@@ -707,6 +707,16 @@ def get_listing(listing_id: str, db: Session = Depends(get_db),
         "source_language": listing.source_language,
         "translations": {t.language: {"title": t.title, "description": t.description, "is_auto_translated": t.is_auto_translated} for t in listing.translations},
         "price": float(listing.price) if listing.price else None,
+        # Последняя цена до правки — показываем перечёркнутой рядом с
+        # новой, как у Авито. Только последнюю запись, не всю историю:
+        # для одной строки на странице больше не нужно.
+        "previous_price": (
+            {
+                "price": listing.price_history[-1]["price"],
+                "currency": listing.price_history[-1]["currency"],
+            }
+            if listing.price_history else None
+        ),
         "is_free": bool(listing.is_free),
         "currency": listing.currency,
         "price_negotiable": listing.price_negotiable,
@@ -856,6 +866,17 @@ def update_listing(
             current_cmp = float(current) if current is not None else None
         else:
             current_cmp = current
+        # Старую цену — в историю, до того как перезаписали. Только на
+        # реальное изменение, не на каждое сохранение формы: иначе одна
+        # и та же цена копилась бы записью на каждое нажатие «Сохранить».
+        if field == "price" and value != current_cmp and current_cmp is not None:
+            history = list(listing.price_history or [])
+            history.append({
+                "price": current_cmp,
+                "currency": listing.currency,
+                "changed_at": utcnow().isoformat(),
+            })
+            listing.price_history = history
         setattr(listing, field, value)
         if field in ("price", "city") and value != current_cmp:
             content_changed = True
