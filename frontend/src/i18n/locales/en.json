@@ -88,7 +88,7 @@
     "три_языка": "Three languages: RU · EN · SR",
     "verified": "Verified sellers",
     "local": "Listings near you",
-    "button": "Promote",
+    "button": "Boost views",
     "title": "Promote listing",
     "type_bump": "Bump to top",
     "desc_bump": "Moves the listing to the very top of results — buyers see it first",
@@ -103,7 +103,7 @@
     "err_generic": "Couldn't start the payment, please try again",
     "subtitle": "Choose an option",
     "all_active": "Everything is already promoted",
-    "cta": "Promote — {{price}} ₽"
+    "cta": "Boost views — {{price}} ₽"
   },
   "ptr": {
     "pull": "Pull down",
