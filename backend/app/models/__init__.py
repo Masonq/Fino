@@ -28,3 +28,10 @@ __all__ = [
     "Notification",
     "Ticket", "TicketMessage", "TicketStatus", "TicketTopic",
 ]
+
+# Временная слежка за откатом статуса объявления active → pending_moderation
+# в обход approve()/reject() — см. докстринг в самом модуле. Подключена
+# здесь, а не в main.py: так её видят все процессы, которые трогают
+# базу (веб-сервер, бот, разовые скрипты вроде перевода и импорта из
+# чатов), а не только сам веб-сервер.
+from app.core import status_watch  # noqa: F401,E402
