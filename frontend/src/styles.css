@@ -1093,7 +1093,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .mod-actions button:disabled{ opacity:.5; }
 
 /* ===== отзывы о продавце ===== */
-.reviews-block{ padding:16px 0 4px; border-top:1px solid rgba(20,30,25,.07); margin-top:16px; }
+.reviews-block{
+  background:#fff; border:1px solid rgba(20,30,25,.06); border-radius:16px;
+  padding:16px; margin-top:16px;
+}
 .reviews-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
 .reviews-title{ font-size:15px; font-weight:800; color:var(--ink); }
 .reviews-summary{ display:flex; align-items:center; gap:7px; margin-top:5px; }
