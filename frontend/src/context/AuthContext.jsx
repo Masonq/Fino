@@ -17,10 +17,19 @@ export function AuthProvider({ children }) {
     if (!getToken()) { setLoading(false); return }
     api.me()
       .then(setUser)
-      .catch(() => {
-        // токен просрочен или отозван — убираем, чтобы не мешал
-        localStorage.removeItem(TOKEN_KEY)
-        setUser(null)
+      .catch((err) => {
+        // Токен снимаем только когда сервер прямо ответил «401 —
+        // неверный/просроченный токен». Раньше снимали при ЛЮБОЙ
+        // ошибке — а быстрое повторное обновление страницы обрывает
+        // ещё не завершившийся запрос с прошлой загрузки (fetch
+        // бросает AbortError/сетевую ошибку без err.status вовсе), и
+        // это неотличимо не проверялось от настоящего «токен плохой»:
+        // рабочий токен стирался, и человека выкидывало из профиля
+        // на ровном месте.
+        if (err?.status === 401) {
+          localStorage.removeItem(TOKEN_KEY)
+          setUser(null)
+        }
       })
       .finally(() => setLoading(false))
   }, [])
