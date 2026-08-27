@@ -11,7 +11,7 @@ const STEPS = ['category', 'attributes', 'details', 'contact']
 
 export default function PostAd() {
   const { t, i18n } = useTranslation()
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
 
   const [step, setStep] = useState(0)
@@ -161,6 +161,26 @@ export default function PostAd() {
         <h2>{t('post.sent_title')}</h2>
         <p className="empty-hint">{t('post.sent_text')}</p>
         <button className="post-submit-btn" onClick={() => navigate('/')}>{t('actions.to_home')}</button>
+      </div>
+    )
+  }
+
+  // Вход сразу, а не на последнем шаге: раньше форма давала заполнить
+  // всё, включая фото, и только на шаге контактов просила войти —
+  // человек терял уже сделанную работу или недоумевал, почему фото не
+  // прикрепляются молча (грузились без входа под лимитом по IP).
+  if (authLoading) {
+    return <div className="post-ad-page" />
+  }
+  if (!user) {
+    return (
+      <div className="post-ad-page">
+        <div className="fav-empty">
+          <p>{t('post.need_login')}</p>
+          <button className="fav-cta" onClick={() => navigate('/login?returnTo=%2Fpost')}>
+            {t('common.login')}
+          </button>
+        </div>
       </div>
     )
   }
@@ -340,26 +360,17 @@ export default function PostAd() {
         <>
           <button className="post-back" onClick={() => setStep(2)}><svg className="back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>{t('actions.back')}</button>
           <h2>{t('post.step_contact')}</h2>
-          {user ? (
-            <div className="post-fields">
-              <p className="empty-hint">{t('post.posting_as')} <b>{user.display_name}</b></p>
-              <div className="post-field">
-                <label>{t('post.phone')}</label>
-                <input type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+381 6..." />
-              </div>
+          <div className="post-fields">
+            <p className="empty-hint">{t('post.posting_as')} <b>{user.display_name}</b></p>
+            <div className="post-field">
+              <label>{t('post.phone')}</label>
+              <input type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+381 6..." />
             </div>
-          ) : (
-            <div className="fav-empty">
-              <p>{t('post.need_login')}</p>
-              <button className="fav-cta" onClick={() => navigate('/login?returnTo=%2Fpost')}>
-                {t('common.login')}
-              </button>
-            </div>
-          )}
+          </div>
           {error && <p className="post-error">{error}</p>}
           <button
             className="post-submit-btn"
-            disabled={submitting || !user}
+            disabled={submitting}
             onClick={handleSubmit}
           >
             {submitting ? '...' : t('listing.publish')}

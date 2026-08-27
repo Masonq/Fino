@@ -15,6 +15,7 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session, joinedload
 
 from app.core.database import get_db
+from app.core.urls import listing_path
 from app.models import Listing, ListingStatus
 
 router = APIRouter(tags=["preview"])
@@ -69,19 +70,27 @@ def listing_preview(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    app_url = f"{request.base_url}".rstrip("/") + f"/#/listing/{listing_id}"
+    base = f"{request.base_url}".rstrip("/")
+    # Короткая ссылка /go/:id — она уже умеет находить объявление по
+    # UUID целиком (см. фронт, ListingDetail.jsx). Раньше тут был
+    # /#/listing/{id}: приложение работает на BrowserRouter, а не
+    # HashRouter, и такой адрес не подходил ни под один маршрут —
+    # обычный человек, перешедший по ссылке, попадал на пустую
+    # главную вместо объявления.
+    go_url = f"{base}/go/{listing_id}"
 
     if not is_bot(request):
         # обычный посетитель — сразу в приложение
         return HTMLResponse(
             f'<!doctype html><meta charset="utf-8">'
-            f'<script>location.replace("{app_url}")</script>',
+            f'<script>location.replace("{go_url}")</script>',
             status_code=200,
         )
 
     listing = (
         db.query(Listing)
-        .options(joinedload(Listing.translations), joinedload(Listing.photos))
+        .options(joinedload(Listing.translations), joinedload(Listing.photos),
+                 joinedload(Listing.category))
         .filter(Listing.id == listing_id, Listing.status == ListingStatus.active)
         .first()
     )
@@ -93,6 +102,13 @@ def listing_preview(
     if listing.price:
         title = f"{title} — {listing.price:.0f} {listing.currency}"
 
+    # Красивый постоянный адрес, а не короткий — под него и canonical
+    # выдают лучше, и это тот же адрес, что человек видит в приложении.
+    app_url = base + listing_path(
+        str(listing.id), tr.title if tr else "", listing.city,
+        listing.category.slug if listing.category else None,
+    )
+
     description = (tr.description if tr else "") or ""
     description = " ".join(description.split())[:200]
     if listing.city:
@@ -103,7 +119,7 @@ def listing_preview(
     if cover:
         img = cover.url
         if img.startswith("/"):
-            img = f"{request.base_url}".rstrip("/") + img
+            img = base + img
         image_tags = (
             f'<meta property="og:image" content="{html.escape(img)}" />\n'
             f'<meta name="twitter:image" content="{html.escape(img)}" />'

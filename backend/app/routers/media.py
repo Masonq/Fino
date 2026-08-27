@@ -20,14 +20,15 @@ THUMB_DIM = 640
 
 
 @router.post("/upload")
-async def upload_photo(request: Request, file: UploadFile = File(...)):
-    # Без входа — так и задумано: форма публикации даёт заполнить всё,
-    # включая фото, до того как попросить войти (шаг 2 из 4, вход — на
-    # шаге 3), иначе ранний экран входа отпугивает часть людей. Поэтому
-    # вместо обязательной авторизации — ограничение по IP: без него
-    # эндпоинт принимал файлы вообще без единого предела частоты.
-    from app.core.rate_limit import check_upload_limit
-    check_upload_limit(request)
+async def upload_photo(
+    request: Request,
+    file: UploadFile = File(...),
+    # Форма публикации теперь просит войти сразу, до первого шага —
+    # анонимный путь до фото закрыт (см. PostAd.jsx), так что здесь
+    # снова можно требовать настоящий вход вместо приближённого
+    # лимита по IP.
+    user: User = Depends(get_current_user),
+):
     ext = os.path.splitext(file.filename or "")[1].lower()
     if ext not in ALLOWED_EXT:
         raise HTTPException(400, "unsupported_format")
