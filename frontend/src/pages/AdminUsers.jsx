@@ -32,6 +32,11 @@ export default function AdminUsers() {
   const [openId, setOpenId] = useState(null)
   const [card, setCard] = useState(null)
   const [busy, setBusy] = useState(false)
+  // Причина блокировки — полем в карточке, а не window.prompt: тот
+  // же паттерн, что уже чинили в модерации и на странице объявления —
+  // нативный prompt на мобильном ведёт себя не как остальной интерфейс.
+  const [blockingId, setBlockingId] = useState(null)
+  const [blockReasonText, setBlockReasonText] = useState('')
 
   const canEdit = user?.role === 'admin'
   const roleName = (role) => t(`admin.role_${role}`, role)
@@ -86,8 +91,7 @@ export default function AdminUsers() {
     } finally { setBusy(false) }
   }
 
-  const block = async (id) => {
-    const reason = prompt(t('admin.block_prompt'))
+  const block = async (id, reason) => {
     if (!reason || !reason.trim()) return
     setBusy(true)
     try {
@@ -95,6 +99,7 @@ export default function AdminUsers() {
       setItems((prev) => prev.map((u) => (
         u.id === id ? { ...u, is_blocked: true, block_reason: reason.trim() } : u
       )))
+      setBlockingId(null); setBlockReasonText('')
       if (res.hidden_listings) {
         alert(t('admin.hidden', { count: res.hidden_listings }))
       }
@@ -216,11 +221,39 @@ export default function AdminUsers() {
                           <button disabled={busy} onClick={() => unblock(u.id)}>
                             {t('admin.unblock')}
                           </button>
-                        ) : (
-                          <button className="danger" disabled={busy} onClick={() => block(u.id)}>
+                        ) : blockingId === u.id ? null : (
+                          <button
+                            className="danger"
+                            disabled={busy}
+                            onClick={() => { setBlockingId(u.id); setBlockReasonText('') }}
+                          >
                             {t('admin.block')}
                           </button>
                         )}
+                      </div>
+                    )}
+
+                    {blockingId === u.id && (
+                      <div className="mod-reason-box">
+                        <textarea
+                          className="mod-reason-input"
+                          placeholder={t('admin.block_prompt')}
+                          value={blockReasonText}
+                          onChange={(e) => setBlockReasonText(e.target.value)}
+                          autoFocus
+                        />
+                        <div className="admin-actions">
+                          <button onClick={() => { setBlockingId(null); setBlockReasonText('') }}>
+                            {t('actions.cancel')}
+                          </button>
+                          <button
+                            className="danger"
+                            disabled={busy || !blockReasonText.trim()}
+                            onClick={() => block(u.id, blockReasonText)}
+                          >
+                            {t('admin.block')}
+                          </button>
+                        </div>
                       </div>
                     )}
 
