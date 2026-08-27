@@ -211,7 +211,8 @@
     "err_too_many": "Previše pokušaja, zatražite novi kod",
     "err_too_often": "Sačekajte minut pre ponovnog slanja",
     "err_generic": "Nešto nije u redu, pokušajte ponovo",
-    "logout": "Odjavi se"
+    "logout": "Odjavi se",
+    "err_blocked": "Nalog je blokiran"
   },
   "my": {
     "title": "Moji oglasi",

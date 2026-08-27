@@ -211,7 +211,8 @@
     "err_too_many": "Too many attempts, request a new code",
     "err_too_often": "Please wait a minute before requesting again",
     "err_generic": "Something went wrong, please try again",
-    "logout": "Sign out"
+    "logout": "Sign out",
+    "err_blocked": "This account is blocked"
   },
   "my": {
     "title": "My listings",

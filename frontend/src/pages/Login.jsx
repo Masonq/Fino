@@ -65,6 +65,7 @@ export default function Login() {
       too_many_attempts: t('auth.err_too_many'),
       invalid_code: t('auth.err_wrong_code'),
       code_expired: t('auth.err_expired'),
+      user_blocked: t('auth.err_blocked'),
     }
     return map[e?.code] || t('auth.err_generic')
   }

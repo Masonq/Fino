@@ -153,6 +153,9 @@ def verify_code_endpoint(payload: VerifyCodeIn, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
 
+    if user.is_blocked:
+        raise HTTPException(403, "user_blocked")
+
     return {"token": create_access_token(user.id), "user": _user_payload(user)}
 
 
@@ -218,6 +221,9 @@ def oauth_login(payload: OAuthIn, db: Session = Depends(get_db)):
 
     db.commit()
     db.refresh(user)
+
+    if user.is_blocked:
+        raise HTTPException(403, "user_blocked")
 
     return {"token": create_access_token(user.id), "user": _user_payload(user)}
 
