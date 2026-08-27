@@ -80,6 +80,9 @@ export default function ListingDetail() {
   }
   const [starting, setStarting] = useState(false)
   const [descOpen, setDescOpen] = useState(false)
+  // «Показать оригинал» рядом с пометкой автоперевода выглядела как
+  // ссылка, но клик ничего не делал — обработчика не было вовсе.
+  const [showOriginal, setShowOriginal] = useState(false)
   const [attrsOpen, setAttrsOpen] = useState(false)
 
   useEffect(() => {
@@ -117,6 +120,8 @@ export default function ListingDetail() {
   const isStaff = user?.role === 'admin' || user?.role === 'moderator'
   const [deleting, setDeleting] = useState(false)
   const [showReasons, setShowReasons] = useState(false)
+  const [customReason, setCustomReason] = useState(false)
+  const [reasonText, setReasonText] = useState('')
   // Перенесённое из телеграм-чата объявление принадлежит служебному
   // аккаунту чата — реального человека, которому можно вернуть его на
   // доработку, тут нет. Такие просто удаляем, как раньше. У обычного
@@ -164,7 +169,9 @@ export default function ListingDetail() {
   }
 
   const lang = i18n.language
-  const translation = listing.translations[lang] || Object.values(listing.translations)[0]
+  const translation = (showOriginal && listing.translations[listing.source_language])
+    || listing.translations[lang]
+    || Object.values(listing.translations)[0]
   // обложка идёт первой, остальные — следом
   const photos = (() => {
     const all = listing.photos || []
@@ -402,8 +409,12 @@ export default function ListingDetail() {
                 {t('detail.read_more')}
               </button>
             )}
-            {translation.is_auto_translated && (
-              <div className="translate-note">{t('detail.auto_translated')} · <span>{t('detail.show_original')}</span></div>
+            {listing.translations[lang]?.is_auto_translated && (
+              <div className="translate-note">
+                {t('detail.auto_translated')} · <span onClick={() => setShowOriginal((v) => !v)}>
+                  {showOriginal ? t('detail.show_translation') : t('detail.show_original')}
+                </span>
+              </div>
             )}
           </div>
         )}
@@ -484,32 +495,55 @@ export default function ListingDetail() {
       )}
 
       {showReasons && (
-        <div className="reasons-sheet" onClick={() => setShowReasons(false)}>
+        <div className="reasons-sheet" onClick={() => { setShowReasons(false); setCustomReason(false); setReasonText('') }}>
           <div className="reasons-card" onClick={(e) => e.stopPropagation()}>
             <div className="reasons-title">{t('mod.return_to_edit')}</div>
-            {REASON_KEYS.map((key) => (
-              <button
-                key={key}
-                className="reasons-item"
-                disabled={deleting}
-                onClick={() => returnToEdit(t(`mod.reasons.${key}`))}
-              >
-                {t(`mod.reasons.${key}`)}
-              </button>
-            ))}
-            <button
-              className="reasons-item"
-              disabled={deleting}
-              onClick={() => {
-                const custom = window.prompt(t('mod.reason_prompt'))
-                if (custom) returnToEdit(custom)
-              }}
-            >
-              {t('mod.reasons.other')}
-            </button>
-            <button className="reasons-cancel" onClick={() => setShowReasons(false)}>
-              {t('actions.cancel')}
-            </button>
+            {!customReason ? (
+              <>
+                {REASON_KEYS.map((key) => (
+                  <button
+                    key={key}
+                    className="reasons-item"
+                    disabled={deleting}
+                    onClick={() => returnToEdit(t(`mod.reasons.${key}`))}
+                  >
+                    {t(`mod.reasons.${key}`)}
+                  </button>
+                ))}
+                <button
+                  className="reasons-item"
+                  disabled={deleting}
+                  onClick={() => setCustomReason(true)}
+                >
+                  {t('mod.reasons.other')}
+                </button>
+                <button className="reasons-cancel" onClick={() => setShowReasons(false)}>
+                  {t('actions.cancel')}
+                </button>
+              </>
+            ) : (
+              <>
+                <textarea
+                  className="mod-reason-input"
+                  placeholder={t('mod.reason_prompt')}
+                  value={reasonText}
+                  onChange={(e) => setReasonText(e.target.value)}
+                  autoFocus
+                />
+                <div className="reasons-actions-row">
+                  <button className="reasons-cancel" onClick={() => setCustomReason(false)}>
+                    {t('actions.back')}
+                  </button>
+                  <button
+                    className="reasons-item primary"
+                    disabled={deleting || !reasonText.trim()}
+                    onClick={() => returnToEdit(reasonText.trim())}
+                  >
+                    {t('mod.reject')}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

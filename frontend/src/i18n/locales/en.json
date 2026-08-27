@@ -147,7 +147,8 @@
     "gone_to_category": "Browse this category",
     "read_more": "Read more",
     "characteristics": "Characteristics",
-    "show_all": "Show all"
+    "show_all": "Show all",
+    "show_translation": "show translation"
   },
   "favorites": {
     "title": "Saved",

@@ -2161,3 +2161,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   margin-top:10px; padding:13px; border-radius:13px; background:#F2F2EF;
   font-size:14px; font-weight:700; color:var(--ink-soft); text-align:center;
 }
+.reasons-actions-row{ display:flex; gap:8px; margin-top:10px; }
+.reasons-actions-row .reasons-cancel{ flex:1; margin-top:0; }
+.reasons-item.primary{
+  flex:1; border-bottom:none; text-align:center; border-radius:13px;
+  background:var(--coral); color:#fff; padding:13px;
+}
+.reasons-item.primary:disabled{ opacity:.5; }
