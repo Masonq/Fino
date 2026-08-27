@@ -404,9 +404,6 @@ export default function ListingDetail() {
                 {t('detail.read_more')}
               </button>
             )}
-            {listing.translations[lang]?.is_auto_translated && (
-              <div className="translate-note">{t('detail.auto_translated')}</div>
-            )}
           </div>
         )}
 
