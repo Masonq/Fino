@@ -26,7 +26,8 @@ export const TERMS = {
         h: '2. Кто может пользоваться сервисом',
         p: [
           'Сервис предназначен для совершеннолетних. Создавая учётную запись, вы подтверждаете, что вам есть 18 лет.',
-          'Для входа нужен email или Telegram — мы не проверяем личность документально, кроме добровольной проверки телефона и компании для деловых продавцов.',
+          'Для входа нужен email или Telegram. Проверка документа удостоверения личности — добровольная, через стороннего партнёра; отметка «Проверенный пользователь» подтверждает, что за аккаунтом стоит конкретный, реально проверенный человек.',
+          'Аккаунт — личный и непередаваемый: продавать, дарить или иным образом передавать его другому человеку нельзя, даже если на нём уже есть отметка «Проверенный пользователь» или история отзывов. Мы вправе запросить повторное подтверждение личности в любой момент — если оно не пройдено, отметка снимается.',
         ],
       },
       {
@@ -96,7 +97,8 @@ export const TERMS = {
         h: '2. Who can use the service',
         p: [
           'The service is intended for adults. By creating an account, you confirm that you are at least 18 years old.',
-          'Signing in requires an email or Telegram — we don\u2019t verify identity by documents, apart from optional phone and business verification for business sellers.',
+          'Signing in requires an email or Telegram. Identity document verification is optional, through a third-party partner; a \u201cVerified user\u201d badge confirms a specific, actually verified person stands behind the account.',
+          'An account is personal and non-transferable: selling, gifting, or otherwise handing it to someone else is not allowed, even if it already carries a \u201cVerified user\u201d badge or a review history. We may request re-confirmation of identity at any time \u2014 if it is not completed, the badge is removed.',
         ],
       },
       {
@@ -166,7 +168,8 @@ export const TERMS = {
         h: '2. Ko može da koristi servis',
         p: [
           'Servis je namenjen punoletnim licima. Kreiranjem naloga potvrđujete da imate najmanje 18 godina.',
-          'Za prijavu je potreban email ili Telegram — ne proveravamo identitet dokumentima, osim dobrovoljne provere telefona i firme za poslovne prodavce.',
+          'Za prijavu je potreban email ili Telegram. Provera ličnog dokumenta je dobrovoljna, preko spoljnog partnera; oznaka „Proveren korisnik" potvrđuje da iza naloga stoji konkretna, stvarno proverena osoba.',
+          'Nalog je lični i neprenosiv: prodaja, poklanjanje ili na drugi način prenošenje drugoj osobi nije dozvoljeno, čak i ako nalog već ima oznaku „Proveren korisnik" ili istoriju recenzija. Zadržavamo pravo da u bilo kom trenutku zatražimo ponovnu potvrdu identiteta — ako ne bude izvršena, oznaka se uklanja.',
         ],
       },
       {

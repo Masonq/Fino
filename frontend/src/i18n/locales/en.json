@@ -385,7 +385,11 @@
     "role_seller_private": "Seller",
     "role_seller_business": "Company",
     "role_moderator": "Moderator",
-    "role_admin": "Owner"
+    "role_admin": "Owner",
+    "reverify": "Request re-verification",
+    "reverify_sent": "Sent — the person will get a link in a notification",
+    "reverify_pending": "This person already has a re-verification in progress",
+    "err_reverify": "Couldn't send the request, please try again"
   },
   "stats": {
     "title": "Numbers",

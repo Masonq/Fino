@@ -157,9 +157,18 @@ def notify_moderation(db: Session, user_id, title: str, approved: bool,
                   subject="PLONK — ваше объявление", link=link)
 
 
-def notify_doc_verification(db: Session, user_id, approved: bool, reason: str | None = None) -> bool:
+def notify_doc_verification(db: Session, user_id, approved: bool, reason: str | None = None,
+                            revoked: bool = False) -> bool:
     if approved:
         text = "Документ проверен — на вашем профиле теперь отметка «Проверенный пользователь»"
+    elif revoked:
+        # Повторная сверка (её запрашивает модератор у уже проверенного
+        # человека) не прошла — снимаем отметку, а не просто «не
+        # подтвердили с первого раза», как при обычном отказе.
+        text = "Отметка «Проверенный пользователь» снята — повторная сверка личности не подтвердилась"
+        if reason:
+            text += f"\n\nПричина: {reason}"
+        text += "\n\nМожно пройти проверку заново."
     else:
         text = "Не получилось проверить присланный документ"
         if reason:
@@ -167,6 +176,22 @@ def notify_doc_verification(db: Session, user_id, approved: bool, reason: str | 
         text += "\n\nМожно отправить ещё раз."
     return notify(db, user_id, text, force=True, allow_email=True,
                   subject="PLONK — проверка документа", link="/profile")
+
+
+def notify_reverify_requested(db: Session, user_id, verify_url: str) -> bool:
+    """
+    Модератор запросил у уже проверенного человека повторную сверку
+    лица — уведомление со ссылкой прямо на сессию Didit, без захода
+    на сайт: подтвердить, что аккаунт всё ещё у того же человека, кто
+    его заводил.
+    """
+    text = (
+        "Нужно подтвердить, что аккаунт всё ещё у вас — быстрая сверка "
+        "лица, без документа заново.\n\n"
+        f"Пройти проверку: {verify_url}"
+    )
+    return notify(db, user_id, text, force=True, allow_email=True,
+                  subject="PLONK — подтвердите личность")
 
 
 def notify_expiring_soon(db: Session, user_id, title: str, days_left: int) -> bool:

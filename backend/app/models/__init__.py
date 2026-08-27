@@ -10,7 +10,7 @@ from app.models.promotion import Promotion, PromotionType
 from app.models.audit import AuditEntry
 from app.models.login_ticket import LoginTicket
 from app.models.blocked_user import BlockedUser
-from app.models.document_verification import DocVerificationRequest, DocVerificationStatus
+from app.models.document_verification import DocVerificationRequest, DocVerificationStatus, DocVerificationKind
 from app.models.listing_view_daily import ListingViewDaily
 from app.models.notification import Notification
 from app.models.support import (
@@ -30,7 +30,7 @@ __all__ = [
     "AuditEntry", "LoginTicket",
     "BlockedUser",
     "ListingViewDaily",
-    "DocVerificationRequest", "DocVerificationStatus",
+    "DocVerificationRequest", "DocVerificationStatus", "DocVerificationKind",
     "Notification",
     "Ticket", "TicketMessage", "TicketStatus", "TicketTopic",
 ]

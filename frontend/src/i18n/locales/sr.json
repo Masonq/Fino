@@ -386,7 +386,11 @@
     "role_seller_private": "Prodavac",
     "role_seller_business": "Firma",
     "role_moderator": "Moderator",
-    "role_admin": "Vlasnik"
+    "role_admin": "Vlasnik",
+    "reverify": "Zatraži ponovnu proveru",
+    "reverify_sent": "Poslato — osoba će dobiti link putem obaveštenja",
+    "reverify_pending": "Ova osoba već ima proveru u toku",
+    "err_reverify": "Nije uspelo slanje zahteva, pokušajte ponovo"
   },
   "stats": {
     "title": "Brojevi",

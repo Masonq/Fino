@@ -16,6 +16,17 @@ class DocVerificationStatus(str, enum.Enum):
     rejected = "rejected"
 
 
+class DocVerificationKind(str, enum.Enum):
+    # Первая проверка — до этого document_verified точно False.
+    initial = "initial"
+    # Запрошена модератором у уже проверенного человека — например,
+    # заподозрили, что аккаунт продали или передали другому: значок
+    # «Проверенный» должен принадлежать конкретному человеку, а не
+    # путешествовать вместе с логином и паролем. Отказ здесь снимает
+    # уже стоящую отметку, а не просто «не подтвердили».
+    reverify = "reverify"
+
+
 class DocVerificationRequest(Base):
     """
     Заявка на проверку документа удостоверения личности.
@@ -33,9 +44,16 @@ class DocVerificationRequest(Base):
     # session_id от Didit — по нему сверяем пришедший вебхук.
     session_id: Mapped[str] = mapped_column(String(64), index=True, unique=True)
 
+    kind: Mapped[DocVerificationKind] = mapped_column(
+        Enum(DocVerificationKind), default=DocVerificationKind.initial)
     status: Mapped[DocVerificationStatus] = mapped_column(
         Enum(DocVerificationStatus), default=DocVerificationStatus.pending, index=True)
     reject_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    # Кто из модераторов запросил повторную проверку — для initial
+    # всегда пусто, инициатор там сам человек.
+    requested_by: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     reviewed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

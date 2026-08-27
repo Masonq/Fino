@@ -119,6 +119,16 @@ export default function AdminUsers() {
     finally { setBusy(false) }
   }
 
+  const requestReverify = async (id) => {
+    setBusy(true)
+    try {
+      await api.adminRequestReverify(id)
+      alert(t('admin.reverify_sent'))
+    } catch (e) {
+      alert(e.code === 'already_pending' ? t('admin.reverify_pending') : t('admin.err_reverify'))
+    } finally { setBusy(false) }
+  }
+
   if (denied) {
     return (
       <div className="page">
@@ -229,6 +239,14 @@ export default function AdminUsers() {
                             onClick={() => { setBlockingId(u.id); setBlockReasonText('') }}
                           >
                             {t('admin.block')}
+                          </button>
+                        )}
+                        {/* Заподозрили, что аккаунт продали или передали
+                            другому — значок «Проверенный» должен
+                            принадлежать конкретному человеку. */}
+                        {card.document_verified && (
+                          <button disabled={busy} onClick={() => requestReverify(u.id)}>
+                            {t('admin.reverify')}
                           </button>
                         )}
                       </div>

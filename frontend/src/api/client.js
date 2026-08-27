@@ -87,6 +87,7 @@ export const api = {
     body: JSON.stringify({ reason }),
   }),
   adminUnblock: (id) => request(`/admin/users/${id}/unblock`, { method: 'POST' }),
+  adminRequestReverify: (id) => request(`/verification/moderation/${id}/reverify`, { method: 'POST' }),
   adminStats: (days) => request(`/admin/stats?${new URLSearchParams({ days })}`),
   adminStatsDaily: (days) => request(`/admin/stats/daily?${new URLSearchParams({ days })}`),
   adminStatsCategories: () => request('/admin/stats/categories'),

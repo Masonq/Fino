@@ -5,6 +5,7 @@ import logging
 import time
 import urllib.error
 import urllib.request
+import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
@@ -13,7 +14,8 @@ from app.core.auth import get_current_user
 from app.core.config import settings
 from app.core.database import get_db, SessionLocal
 from app.core.clock import utcnow
-from app.models import DocVerificationRequest, DocVerificationStatus, User
+from app.models import DocVerificationRequest, DocVerificationStatus, DocVerificationKind, User
+from app.routers.moderation import require_moderator
 
 log = logging.getLogger(__name__)
 
@@ -24,6 +26,35 @@ DIDIT_HOST = "https://verification.didit.me"
 # подписи: старее считаем попыткой повтора запроса, не настоящим
 # вебхуком.
 WEBHOOK_MAX_AGE = 300
+
+
+def _create_session(workflow_id: str, user_id, callback: str) -> dict:
+    """Общая точка создания сессии — используется и первой проверкой,
+    и повторной сверкой лица по запросу модератора."""
+    body = json.dumps({
+        "workflow_id": workflow_id,
+        "callback": callback,
+        "vendor_data": str(user_id),
+    }).encode()
+    req_obj = urllib.request.Request(
+        f"{DIDIT_HOST}/v2/session/",
+        data=body,
+        headers={
+            "X-Api-Key": settings.didit_api_key,
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req_obj, timeout=15) as resp:
+            return json.loads(resp.read().decode())
+    except urllib.error.HTTPError as exc:
+        log.warning("Didit отклонил создание сессии для %s: %s %s",
+                   user_id, exc.code, exc.read()[:300])
+        raise HTTPException(502, "verification_unavailable")
+    except Exception as exc:
+        log.warning("не удалось создать сессию Didit для %s: %s", user_id, exc)
+        raise HTTPException(502, "verification_unavailable")
 
 
 @router.get("/me")
@@ -80,39 +111,67 @@ def start(user: User = Depends(get_current_user), db: Session = Depends(get_db))
 
     # callback — не адрес вебхука (тот настроен отдельно, на уровне
     # приложения в кабинете Didit), а куда вернуть человека браузером
-    # после того, как он закончит на стороне Didit. Без этого поля
-    # человек после проверки увидел бы их дефолтную страницу, а не
-    # свой профиль.
-    callback = f"{settings.site_base_url}/profile"
-    body = json.dumps({
-        "workflow_id": settings.didit_workflow_id,
-        "callback": callback,
-        "vendor_data": str(user.id),
-    }).encode()
-    req_obj = urllib.request.Request(
-        f"{DIDIT_HOST}/v2/session/",
-        data=body,
-        headers={
-            "X-Api-Key": settings.didit_api_key,
-            "Content-Type": "application/json",
-        },
-        method="POST",
-    )
-    try:
-        with urllib.request.urlopen(req_obj, timeout=15) as resp:
-            data = json.loads(resp.read().decode())
-    except urllib.error.HTTPError as exc:
-        log.warning("Didit отклонил создание сессии для %s: %s %s",
-                   user.id, exc.code, exc.read()[:300])
-        raise HTTPException(502, "verification_unavailable")
-    except Exception as exc:
-        log.warning("не удалось создать сессию Didit для %s: %s", user.id, exc)
-        raise HTTPException(502, "verification_unavailable")
+    # после того, как он закончит на стороне Didit.
+    data = _create_session(settings.didit_workflow_id, user.id, f"{settings.site_base_url}/profile")
 
-    req = DocVerificationRequest(user_id=user.id, session_id=data["session_id"])
+    req = DocVerificationRequest(user_id=user.id, session_id=data["session_id"],
+                                 kind=DocVerificationKind.initial)
     db.add(req)
     db.commit()
     return {"url": data["url"]}
+
+
+@router.post("/moderation/{user_id}/reverify")
+def request_reverify(
+    user_id: uuid.UUID,
+    moderator: User = Depends(require_moderator),
+    db: Session = Depends(get_db),
+):
+    """
+    Модератор запрашивает у уже проверенного человека повторную сверку
+    лица — например, заподозрив, что аккаунт продали или передали
+    кому-то другому. Значок должен принадлежать конкретному человеку,
+    а не путешествовать вместе с логином и паролем.
+
+    Лёгкий workflow: только Liveness + Face Match, без пересъёмки
+    документа — сверяет с биометрией, уже сохранённой у Didit с первой
+    проверки. Ссылку получает не модератор, а сам человек — уведомлением.
+    """
+    if not settings.didit_api_key:
+        raise HTTPException(503, "verification_not_configured")
+
+    target = db.query(User).get(user_id)
+    if not target:
+        raise HTTPException(404, "not_found")
+    if not target.document_verified:
+        raise HTTPException(400, "not_verified")
+
+    existing_pending = (
+        db.query(DocVerificationRequest)
+        .filter(
+            DocVerificationRequest.user_id == user_id,
+            DocVerificationRequest.status == DocVerificationStatus.pending,
+        )
+        .first()
+    )
+    if existing_pending:
+        raise HTTPException(400, "already_pending")
+
+    data = _create_session(settings.didit_reverify_workflow_id, user_id,
+                           f"{settings.site_base_url}/profile")
+
+    req = DocVerificationRequest(user_id=user_id, session_id=data["session_id"],
+                                 kind=DocVerificationKind.reverify,
+                                 requested_by=moderator.id)
+    db.add(req)
+    db.commit()
+
+    try:
+        from app.core.notifications import notify_reverify_requested
+        notify_reverify_requested(db, user_id, data["url"])
+    except Exception:
+        pass
+    return {"status": "requested"}
 
 
 def _verify_signature(raw_body: bytes, signature: str | None, timestamp: str | None) -> bool:
@@ -162,16 +221,20 @@ async def webhook(request: Request):
             # подтверждаем приём, не трогая ничего.
             return {"status": "ok"}
 
+        user = db.query(User).get(req.user_id)
+
         if status == "Approved":
-            user = db.query(User).get(req.user_id)
-            if user:
-                user.document_verified = True
             req.status = DocVerificationStatus.approved
             req.reviewed_at = utcnow()
+            # У initial — это и есть момент, когда появляется отметка.
+            # У reverify она уже стояла: подтверждение просто оставляет
+            # её как есть, ничего дополнительно включать не нужно.
+            if req.kind == DocVerificationKind.initial and user:
+                user.document_verified = True
             db.commit()
             try:
                 from app.core.notifications import notify_doc_verification
-                if user:
+                if user and req.kind == DocVerificationKind.initial:
                     notify_doc_verification(db, user.id, True)
             except Exception:
                 pass
@@ -184,10 +247,17 @@ async def webhook(request: Request):
             req.status = DocVerificationStatus.rejected
             req.reject_reason = reason
             req.reviewed_at = utcnow()
+            # У reverify отказ — не «не подтвердили с первого раза», а
+            # прямой повод снять уже стоящую отметку: лицо не совпало
+            # с тем, что было при первой проверке, или человек так и
+            # не прошёл её вовсе.
+            if req.kind == DocVerificationKind.reverify and user:
+                user.document_verified = False
             db.commit()
             try:
                 from app.core.notifications import notify_doc_verification
-                notify_doc_verification(db, req.user_id, False, reason)
+                notify_doc_verification(db, req.user_id, False, reason,
+                                        revoked=(req.kind == DocVerificationKind.reverify))
             except Exception:
                 pass
 
