@@ -844,10 +844,21 @@ def update_listing(
     for field in ("price", "currency", "price_negotiable", "city",
                   "attributes", "delivery_available", "safe_deal_available"):
         value = getattr(payload, field)
-        if value is not None:
-            setattr(listing, field, value)
-            if field in ("price", "city"):
-                content_changed = True
+        if value is None:
+            continue
+        # На повторную проверку отправляем только настоящую правку —
+        # раньше поле считалось «изменённым», если оно вообще пришло
+        # в запросе, а форма редактирования всегда шлёт все поля,
+        # даже нетронутые: любое сохранение, включая нажатие «Сохранить»
+        # без единой правки, гнало объявление на модерацию заново.
+        current = getattr(listing, field)
+        if field == "price":
+            current_cmp = float(current) if current is not None else None
+        else:
+            current_cmp = current
+        setattr(listing, field, value)
+        if field in ("price", "city") and value != current_cmp:
+            content_changed = True
 
     if payload.title is not None or payload.description is not None:
         tr = next(
@@ -855,22 +866,26 @@ def update_listing(
             listing.translations[0] if listing.translations else None,
         )
         if tr:
-            if payload.title is not None:
-                tr.title = payload.title.strip()[:200]
-            if payload.description is not None:
-                tr.description = payload.description.strip()
-            content_changed = True
+            new_title = payload.title.strip()[:200] if payload.title is not None else tr.title
+            new_description = payload.description.strip() if payload.description is not None else tr.description
+            text_changed = new_title != (tr.title or "") or new_description != (tr.description or "")
+            tr.title = new_title
+            tr.description = new_description
 
-            # Автопереводы на другие языки теперь не соответствуют
-            # исходнику — translate_listing() (запускается при
-            # одобрении) пополняет только недостающие языки и не трогает
-            # уже существующие, так что без удаления старый перевод
-            # остался бы навсегда рассинхронизирован с правкой.
-            # Написанный вручную (is_auto_translated=False) перевод не
-            # трогаем — его мог оставить сам продавец на другом языке.
-            for other in list(listing.translations):
-                if other is not tr and other.is_auto_translated:
-                    listing.translations.remove(other)
+            if text_changed:
+                content_changed = True
+
+                # Автопереводы на другие языки теперь не соответствуют
+                # исходнику — translate_listing() (запускается при
+                # одобрении) пополняет только недостающие языки и не
+                # трогает уже существующие, так что без удаления старый
+                # перевод остался бы навсегда рассинхронизирован с
+                # правкой. Написанный вручную (is_auto_translated=False)
+                # перевод не трогаем — его мог оставить сам продавец на
+                # другом языке.
+                for other in list(listing.translations):
+                    if other is not tr and other.is_auto_translated:
+                        listing.translations.remove(other)
 
     if content_changed and listing.status == ListingStatus.active:
         listing.status = ListingStatus.pending_moderation
