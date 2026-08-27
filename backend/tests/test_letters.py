@@ -22,7 +22,7 @@ def test_code_is_the_main_thing():
 
     assert "482915" in letter
     # крупно и с разрядкой: код переписывают руками
-    assert "font-size:30px" in letter
+    assert "font-size:32px" in letter
     assert "letter-spacing" in letter
 
 
@@ -39,17 +39,29 @@ def test_styles_are_inline():
 
 def test_no_images_at_all():
     """
-    Апple отклоняет письма с кодом в цветной рамке-плашке как похожие
-    на фишинг («554 5.7.1 [HM07] Message rejected due to local
-    policy») — картинок и раньше не было, а от самой цветной плашки
-    (закрашенный логотип-квадрат, цветная рамка вокруг кода) избавились
-    тоже: обычный текст на белом фоне вызывает меньше подозрений.
+    Письмо с одним изображением и коротким текстом почтовые службы
+    считают подозрительным, да и картинки многие не грузят вовсе.
+    Логотип рисуем разметкой.
     """
     letter = _code_letter("482915")
 
     assert "<img" not in letter
-    assert "PLONK" in letter       # текстовая марка вместо картинки/плашки
-    assert "background:#0E9F6E" not in letter   # цветного лого-квадрата больше нет
+    assert "background:#0E9F6E" in letter       # знак вместо картинки
+
+
+def test_no_links_in_code_letter():
+    """
+    Apple отклонял письмо целиком: «554 5.7.1 [HM07] Message rejected
+    due to local policy». Код вместе с кликабельной ссылкой в одном
+    письме — классический рисунок фишингового письма («вот код, вот
+    ссылка, подтвердите вход»). Убрали единственную ссылку, что была в
+    письме (подвал вёл на сайт) — теперь их нет вовсе, код только
+    переписывают руками.
+    """
+    letter = _code_letter("482915")
+
+    assert "<a href" not in letter
+    assert "href=" not in letter
 
 
 def test_plain_text_stays_too():
