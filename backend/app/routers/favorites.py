@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.core.auth import get_current_user
 from app.core.database import get_db
+from app.core.urls import listing_path
 from app.routers.listings import pick_translation
 from app.models import User, Favorite, Listing, ListingStatus
 
@@ -31,7 +32,8 @@ def list_favorites(
 
     listings = (
         db.query(Listing)
-        .options(joinedload(Listing.translations), joinedload(Listing.photos))
+        .options(joinedload(Listing.translations), joinedload(Listing.photos),
+                 joinedload(Listing.category))
         .filter(Listing.id.in_(listing_ids), Listing.status == ListingStatus.active)
         .all()
     )
@@ -46,8 +48,17 @@ def list_favorites(
             "id": str(listing.id),
             "title": translation.title if translation else None,
             "price": float(listing.price) if listing.price else None,
+            "is_free": bool(listing.is_free),
             "currency": listing.currency,
             "city": listing.city,
+            "category_slug": listing.category.slug if listing.category else None,
+            "attributes": listing.attributes,
+            "published_at": listing.published_at.isoformat() if listing.published_at else None,
+            # Без этого поля ссылки на карточке (ListingCard читает
+            # listing.path) не вели никуда — избранное было кликабельным
+            # только на вид.
+            "path": listing_path(listing.id, translation.title if translation else "",
+                                 listing.city, listing.category.slug if listing.category else None),
             "cover_photo": cover.thumbnail_url if cover else None,
             "delivery_available": listing.delivery_available,
             "is_urgent": listing.is_urgent,
