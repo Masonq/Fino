@@ -882,17 +882,34 @@ def delete_listing(
     is_staff = user.role in (UserRole.moderator, UserRole.admin)
     if listing.owner_id != user.id and not is_staff:
         raise HTTPException(403, "not_owner")
+
+    # Просмотры по дням, избранное и продвижение — технические данные
+    # без ценности как «история» (в отличие от переписки/жалобы/отзыва):
+    # избранное — просто закладка, не след настоящего взаимодействия
+    # между людьми, а просмотры и продвижение никто и не читает —
+    # задача, которую они решают, умирает вместе с самим объявлением.
+    # Раньше их не убирали при добавлении дашборда просмотров
+    # (ListingViewDaily) — без этой очистки delete падал так же, как и
+    # с чатом/отзывом, но фраза «есть переписка» вводила в заблуждение,
+    # когда реальная причина — накопленная статистика просмотров или
+    # чья-то закладка.
+    from app.models import ListingViewDaily, Promotion, Favorite
+    db.query(ListingViewDaily).filter(ListingViewDaily.listing_id == listing_id).delete()
+    db.query(Promotion).filter(Promotion.listing_id == listing_id).delete()
+    db.query(Favorite).filter(Favorite.listing_id == listing_id).delete()
+
     try:
         db.delete(listing)
         db.commit()
     except IntegrityError:
-        # Ни у чатов, ни у избранного, ни у жалоб, ни у отзывов нет
+        # Ни у чатов, ни у жалоб, ни у отзывов, ни у приглашений
+        # оставить отзыв, ни у обращений в поддержку нет
         # ondelete=CASCADE на listing_id — без этой обработки запрос
         # падал 500-й ошибкой на любом объявлении, у которого уже
         # накопился хоть один из них, а фронт эту ошибку молча
         # проглатывал («оставляем как было»), не показывая ничего.
-        # Каскадом их не удаляем: переписка и отзыв — это история,
-        # которую не стоит стирать заодно с мусорной карточкой.
+        # Каскадом их не удаляем: это настоящая история, которую не
+        # стоит стирать заодно с мусорной карточкой.
         db.rollback()
         raise HTTPException(409, "listing_has_history")
     return {"status": "deleted"}

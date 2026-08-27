@@ -235,7 +235,7 @@
     "delete": "Obriši",
     "confirm_delete": "Obrisati oglas? Ovo se ne može poništiti.",
     "tab_rejected": "Odbijeno",
-    "delete_has_history": "Nije moguće obrisati — ovaj oglas već ima poruke, omiljene, prijavu ili recenziju. Umesto brisanja, arhivirajte ga."
+    "delete_has_history": "Nije moguće obrisati — ovaj oglas već ima poruke, prijavu, recenziju ili prijavu podrške. Umesto brisanja, arhivirajte ga."
   },
   "mod": {
     "title": "Moderacija",
