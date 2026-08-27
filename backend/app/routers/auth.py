@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, EmailStr, field_validator
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -104,7 +104,7 @@ def request_code(payload: RequestCodeIn, db: Session = Depends(get_db)):
 
 
 @router.post("/verify-code")
-def verify_code_endpoint(payload: VerifyCodeIn, db: Session = Depends(get_db)):
+def verify_code_endpoint(payload: VerifyCodeIn, request: Request, db: Session = Depends(get_db)):
     destination = payload.destination.strip().lower()
 
     record = (
@@ -156,6 +156,12 @@ def verify_code_endpoint(payload: VerifyCodeIn, db: Session = Depends(get_db)):
 
     if user.is_blocked:
         raise HTTPException(403, "user_blocked")
+
+    try:
+        from app.core.login_events import record_login
+        record_login(request, user.id, db)
+    except Exception:
+        pass
 
     return {"token": create_access_token(user.id), "user": _user_payload(user)}
 

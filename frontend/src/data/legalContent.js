@@ -235,7 +235,7 @@ export const PRIVACY = {
         p: [
           'При регистрации: email или Telegram-аккаунт, имя, которое вы указали, необязательно — телефон, фото профиля, название и данные компании для деловых продавцов.',
           'При использовании сервиса: объявления и фотографии к ним, сообщения в чате с другими пользователями, отзывы, жалобы, избранные объявления, сохранённые поисковые запросы.',
-          'Технически: IP-адрес и данные браузера в служебных журналах сервера — для защиты от злоупотреблений, без сопоставления с личностью в обычном режиме.',
+          'Технически: IP-адрес, случайный id устройства (заводит браузер, хранится у вас, не отпечаток в строгом смысле) и приблизительные страна/город по IP — при каждом входе, для защиты от злоупотреблений: например, чтобы заметить, если аккаунт внезапно стал использоваться с совершенно другого устройства и из другой страны разом.',
         ],
       },
       {
@@ -303,7 +303,7 @@ export const PRIVACY = {
         p: [
           'On sign-up: your email or Telegram account, the name you provide, optionally a phone number, a profile photo, and company details for business sellers.',
           'While using the service: your listings and their photos, chat messages with other users, reviews, reports, favorited listings, saved searches.',
-          'Technically: IP address and browser data in server logs — for abuse prevention, not normally matched to your identity.',
+          'Technically: IP address, a random device id (set by the browser, stored on your device, not a strict fingerprint) and an approximate country/city from the IP \u2014 on each sign-in, for abuse prevention: for example, to notice if an account suddenly starts being used from a completely different device and country at once.',
         ],
       },
       {
@@ -371,7 +371,7 @@ export const PRIVACY = {
         p: [
           'Prilikom registracije: vaš email ili Telegram nalog, ime koje navedete, opciono broj telefona, profilnu fotografiju, i podatke o firmi za poslovne prodavce.',
           'Tokom korišćenja servisa: vaše oglase i fotografije uz njih, poruke u ćaskanju sa drugim korisnicima, recenzije, prijave, omiljene oglase, sačuvane pretrage.',
-          'Tehnički: IP adresu i podatke pregledača u serverskim zapisima — radi zaštite od zloupotrebe, obično bez povezivanja sa identitetom.',
+          'Tehnički: IP adresu, nasumični id uređaja (postavlja pregledač, čuva se kod vas, nije otisak u strogom smislu) i približnu zemlju/grad po IP adresi — pri svakoj prijavi, radi zaštite od zloupotrebe: na primer, da primetimo ako se nalog odjednom počne koristiti sa potpuno drugog uređaja i iz druge zemlje istovremeno.',
         ],
       },
       {

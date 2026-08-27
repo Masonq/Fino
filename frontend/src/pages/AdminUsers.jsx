@@ -196,11 +196,20 @@ export default function AdminUsers() {
                         {t('admin.block_reason', { reason: card.block_reason })}
                       </p>
                     )}
-                    {card.summary?.suspicious && (
+                    {card.summary?.listings_suspicious && (
                       <p className="admin-note admin-note-warn">
                         {t('admin.suspicious', {
                           count: card.summary.listings_last_day,
                           days: card.summary.account_age_days,
+                        })}
+                      </p>
+                    )}
+                    {card.summary?.device_changed && card.summary?.country_changed && (
+                      <p className="admin-note admin-note-warn">
+                        {t('admin.suspicious_device', {
+                          location: card.summary.last_city
+                            ? `${card.summary.last_city}, ${card.summary.last_country}`
+                            : card.summary.last_country,
                         })}
                       </p>
                     )}

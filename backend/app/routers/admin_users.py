@@ -21,7 +21,7 @@ from app.core.audit import record
 from app.core.auth import get_current_user
 from app.core.clock import utcnow
 from app.core.database import get_db
-from app.models import Listing, ListingStatus, User, UserRole
+from app.models import Listing, ListingStatus, LoginEvent, User, UserRole
 
 router = APIRouter(prefix="/api/admin/users", tags=["admin"])
 
@@ -290,9 +290,46 @@ def user_summary(
     )
     age_days = ((utcnow() - user.created_at).days
                 if user.created_at else None)
+
+    # Устройство и страна резко сменились разом — не то же самое, что
+    # обычная жизнь: новый телефон сохраняет ту же страну, поездка в
+    # отпуск сохраняет то же устройство. Смена обоих сразу больше похожа
+    # на то, что аккаунтом теперь пользуется кто-то другой.
+    events = (
+        db.query(LoginEvent)
+        .filter(LoginEvent.user_id == user.id)
+        .order_by(LoginEvent.created_at.desc())
+        .limit(50)
+        .all()
+    )
+    device_changed = False
+    country_changed = False
+    last_country = None
+    last_city = None
+    if events:
+        latest = events[0]
+        earlier = events[1:]
+        known_devices = {e.device_guid for e in earlier if e.device_guid}
+        known_countries = {e.country for e in earlier if e.country}
+        device_changed = bool(
+            earlier and latest.device_guid and latest.device_guid not in known_devices)
+        country_changed = bool(
+            earlier and latest.country and latest.country not in known_countries)
+        last_country = latest.country
+        last_city = latest.city
+
     return {
         "listings_last_day": last_day,
         "account_age_days": age_days,
-        # Десяток объявлений в сутки от новичка — повод посмотреть глазами
-        "suspicious": bool(last_day >= 10 and (age_days or 0) <= 3),
+        "listings_suspicious": bool(last_day >= 10 and (age_days or 0) <= 3),
+        "device_changed": device_changed,
+        "country_changed": country_changed,
+        "last_country": last_country,
+        "last_city": last_city,
+        # Десяток объявлений в сутки от новичка — повод посмотреть глазами.
+        # Резкая смена устройства и страны разом — тоже.
+        "suspicious": bool(
+            (last_day >= 10 and (age_days or 0) <= 3)
+            or (device_changed and country_changed)
+        ),
     }

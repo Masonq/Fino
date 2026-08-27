@@ -390,7 +390,8 @@
     "reverify": "Zatraži ponovnu proveru",
     "reverify_sent": "Poslato — osoba će dobiti link putem obaveštenja",
     "reverify_pending": "Ova osoba već ima proveru u toku",
-    "err_reverify": "Nije uspelo slanje zahteva, pokušajte ponovo"
+    "err_reverify": "Nije uspelo slanje zahteva, pokušajte ponovo",
+    "suspicious_device": "Uređaj i zemlja su se naglo promenili istovremeno (poslednja prijava iz {{location}}) — deluje kao da nalog koristi neko drugi."
   },
   "stats": {
     "title": "Brojevi",

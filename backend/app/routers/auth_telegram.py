@@ -16,7 +16,7 @@ import secrets
 import uuid
 from datetime import timedelta
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -65,7 +65,7 @@ class Ticket(BaseModel):
 
 
 @router.post("/enter")
-def enter(payload: Ticket, db: Session = Depends(get_db)):
+def enter(payload: Ticket, request: Request, db: Session = Depends(get_db)):
     """
     Меняет ключ из бота на вход.
 
@@ -110,6 +110,12 @@ def enter(payload: Ticket, db: Session = Depends(get_db)):
 
     if user.is_blocked:
         raise HTTPException(403, "user_blocked")
+
+    try:
+        from app.core.login_events import record_login
+        record_login(request, user.id, db)
+    except Exception:
+        pass
 
     return {
         "access_token": create_access_token(user.id),

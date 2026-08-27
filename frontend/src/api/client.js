@@ -6,12 +6,27 @@ export function getToken() {
   return localStorage.getItem(TOKEN_KEY)
 }
 
+// Случайный id устройства — заводится один раз и хранится в localStorage,
+// не отпечаток в строгом смысле (сбрасывается очисткой данных сайта), но
+// достаточно, чтобы при входе отличить «тот же браузер, что обычно» от
+// «совсем другой» — см. record_login на бэкенде.
+const DEVICE_KEY = 'plonk_device_id'
+function getDeviceId() {
+  let id = localStorage.getItem(DEVICE_KEY)
+  if (!id) {
+    id = crypto.randomUUID()
+    localStorage.setItem(DEVICE_KEY, id)
+  }
+  return id
+}
+
 async function request(path, options = {}) {
   const token = getToken()
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
+      'X-Device-Id': getDeviceId(),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     },
