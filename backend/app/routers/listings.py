@@ -756,7 +756,15 @@ def change_status(
         raise HTTPException(400, "bad_status")
 
     was_sold = listing.status == ListingStatus.sold
+    was_active = listing.status == ListingStatus.active
     listing.status = ListingStatus(payload.status)
+    # Вернули в продажу — это по сути повторная публикация, продлеваем
+    # срок заново. Без этого объявление, восстановленное после
+    # архивации по сроку, тут же попало бы под неё снова при следующем
+    # ночном проходе.
+    if payload.status == "active" and not was_active:
+        listing.expires_at = utcnow() + timedelta(days=LISTING_TTL_DAYS)
+        listing.expiry_warned = False
     db.commit()
 
     # Отметили проданным — самый надёжный момент спросить об отзыве.

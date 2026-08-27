@@ -102,6 +102,9 @@ class Listing(Base):
 
     published_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, index=True)
     expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    # Чтобы предупреждение об истечении не уходило по кругу каждый день,
+    # пока владелец не отреагирует — шлём его один раз на объявление.
+    expiry_warned: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
 

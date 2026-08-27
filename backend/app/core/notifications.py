@@ -135,3 +135,24 @@ def notify_moderation(db: Session, user_id, title: str, approved: bool, reason: 
             text += f"\n\nПричина: {reason}"
     return notify(db, user_id, text, force=True, allow_email=True,
                   subject="PLONK — ваше объявление")
+
+
+def notify_expiring_soon(db: Session, user_id, title: str, days_left: int) -> bool:
+    text = (
+        f"Объявление «{title}» скоро снимется с публикации — через {days_left} дн.\n\n"
+        "Если вещь ещё продаётся, откройте объявление и сохраните его "
+        "заново (например, поправьте описание) — оно вернётся на проверку "
+        "и получит новый срок."
+    )
+    return notify(db, user_id, text, allow_email=True,
+                  subject="PLONK — объявление скоро снимется с публикации")
+
+
+def notify_expired(db: Session, user_id, title: str) -> bool:
+    text = (
+        f"Объявление «{title}» сняли с публикации — истёк срок показа.\n\n"
+        "Если вещь ещё продаётся, в «Моих объявлениях» на вкладке "
+        "«Архив» есть кнопка «Вернуть» — она разместит объявление снова."
+    )
+    return notify(db, user_id, text, allow_email=True,
+                  subject="PLONK — объявление снято с публикации")

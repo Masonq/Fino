@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
@@ -94,6 +94,12 @@ def approve(
     # работала непредсказуемо.
     if not listing.published_at:
         listing.published_at = utcnow()
+    # Одобрение — подтверждение, что объявление актуально, будь оно
+    # совсем новым или отредактированным и отправленным на повторную
+    # проверку. Продлеваем срок жизни заново в обоих случаях.
+    from app.routers.listings import LISTING_TTL_DAYS
+    listing.expires_at = utcnow() + timedelta(days=LISTING_TTL_DAYS)
+    listing.expiry_warned = False
     record(db, moderator, "listing.approve", target_type="listing",
            target_id=listing.id, owner=str(listing.owner_id))
     db.commit()
