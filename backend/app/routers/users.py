@@ -127,6 +127,13 @@ def edit_profile(
         if name != (user.company_name or ""):
             user.company_verified = False
         user.company_name = name or None
+        # Заполнение названия компании — единственный явный сигнал «я
+        # продаю как бизнес», который вообще есть у обычного человека
+        # в этой форме. Роль персонала (модератор/админ) не трогаем
+        # никогда — иначе понизить/сменить права себе можно было бы
+        # прямо через форму профиля, а не только из админки.
+        if name and user.role not in (UserRole.moderator, UserRole.admin):
+            user.role = UserRole.seller_business
     if payload.company_description is not None:
         user.company_description = payload.company_description.strip() or None
 
