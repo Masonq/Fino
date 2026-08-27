@@ -102,6 +102,10 @@ def start_chat(
             seller_id=listing.owner_id,
         )
         db.add(chat)
+        # Сигнал интереса для формулы релевантности в поиске — только
+        # при первом обращении, не при каждом открытии уже идущей
+        # переписки.
+        listing.chats_count = (listing.chats_count or 0) + 1
         db.commit()
         db.refresh(chat)
 

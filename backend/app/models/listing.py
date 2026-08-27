@@ -97,6 +97,9 @@ class Listing(Base):
 
     views_count: Mapped[int] = mapped_column(Integer, default=0)
     favorites_count: Mapped[int] = mapped_column(Integer, default=0)
+    # Число начатых переписок — сигнал интереса не слабее избранного,
+    # для формулы релевантности в поиске (see search_listings()).
+    chats_count: Mapped[int] = mapped_column(Integer, default=0)
 
     price_history: Mapped[list] = mapped_column(JSONB, default=list)  # [{"price": 1000, "changed_at": "..."}]
 

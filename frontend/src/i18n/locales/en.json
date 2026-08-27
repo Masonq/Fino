@@ -70,7 +70,8 @@
     "all_cities": "All cities",
     "all_in_category": "All",
     "recent": "Recent searches",
-    "open_filters": "All results and filters"
+    "open_filters": "All results and filters",
+    "sort_relevance": "Relevance"
   },
   "chat": {
     "empty": "No messages yet — say hello",

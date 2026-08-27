@@ -5,7 +5,7 @@ from app.core.urls import listing_path
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import String, cast, case, exists, func, or_
+from sqlalchemy import String, cast, case, exists, func, or_, Float
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel, Field, field_validator
@@ -219,7 +219,7 @@ def search_listings(
     # списка на лендинге «Авто», а не текстовый поиск.
     brand: str | None = Query(None),
     model: str | None = Query(None),
-    sort: str = Query("new"),
+    sort: str = Query("relevance"),
     lang: str = Query("ru"),
     limit: int = Query(20, le=100),
     offset: int = 0,
@@ -339,15 +339,53 @@ def search_listings(
 
     total = q.count()
 
+    # Формула релевантности — свой аналог того же принципа, что у
+    # крупных досок объявлений (Avito Ranker и подобные): не просто
+    # «сначала новые», а взвешенная сумма из нескольких сигналов.
+    # Не нейросеть на сотню признаков — прозрачная, читаемая формула,
+    # уместная для нашего масштаба, но того же духа: свежесть — это
+    # один из факторов, а не единственный.
+    #
+    #   поведение   — просмотры/избранное/переписки, НА ДЕНЬ с публикации
+    #                 (иначе старое популярное вечно топило бы свежее,
+    #                 у которого просто не было времени набрать статистику),
+    #                 сжато логарифмом — иначе объявление с тысячей
+    #                 просмотров задавило бы всё остальное одним слагаемым
+    #   свежесть    — плавно затухает со временем, не обрыв по дате
+    #   продавец    — рейтинг, подтверждённый документ, бизнес-статус
+    #   полнота     — как и раньше, is_complete
+    #
+    # Платное продвижение (bump/highlight/xl) эту формулу не подменяет,
+    # а работает поверх нее — так же, как у Авито.
+    q = q.join(User, Listing.owner_id == User.id)
+    age_days = func.extract("epoch", func.now() - Listing.published_at) / 86400.0
+    freshness = 1.0 / (1.0 + age_days / 7.0)
+    engagement = (
+        Listing.views_count + Listing.favorites_count * 3 + Listing.chats_count * 5
+    ) / func.greatest(age_days, 0.5)
+    behavior_score = func.ln(1 + engagement)
+    seller_score = (
+        func.coalesce(User.rating_avg, 0) / 5.0
+        + case((User.document_verified.is_(True), 0.5), else_=0)
+        + case((User.role == UserRole.seller_business, 0.3), else_=0)
+    )
+    relevance = (
+        behavior_score * 2.0
+        + freshness * 1.5
+        + seller_score * 1.0
+        + case((Listing.is_complete.is_(True), 0.8), else_=0)
+    )
+
     # price_in_eur уже определена выше — используется тут для «сначала
     # дешёвые/дорогие», иначе товар в 50 000 RSD (≈427€) сортировался
     # бы дороже товара в 1000 EUR просто потому, что число 50000 больше.
     order = {
+        "relevance": relevance.desc(),
         "new": Listing.published_at.desc(),
         "old": Listing.published_at.asc(),
         "cheap": price_in_eur.asc().nullslast(),
         "expensive": price_in_eur.desc().nullslast(),
-    }.get(sort, Listing.published_at.desc())
+    }.get(sort, relevance.desc())
 
     # Полные объявления впереди неполных: обрубок без цены и фотографии
     # тоже кому-то нужен, но встречать им человека нельзя.

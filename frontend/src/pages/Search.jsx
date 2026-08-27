@@ -11,6 +11,7 @@ import { LoadError } from '../components/OfflineNotice'
 import { useAuth } from '../context/AuthContext'
 
 const SORTS = [
+  { key: 'relevance', labelKey: 'search.sort_relevance' },
   { key: 'new', labelKey: 'search.sort_new' },
   { key: 'cheap', labelKey: 'search.sort_cheap' },
   { key: 'expensive', labelKey: 'search.sort_expensive' },
@@ -43,7 +44,7 @@ export default function Search() {
   const [priceMax, setPriceMax] = useState(params.get('price_max') || '')
   const [city, setCity] = useState(params.get('city') || '')
   const [withPhoto, setWithPhoto] = useState(params.get('with_photo') === '1')
-  const [sort, setSort] = useState(params.get('sort') || 'new')
+  const [sort, setSort] = useState(params.get('sort') || 'relevance')
 
   // Ответы на вопросы раздела: «снять или купить», «легковые или мото».
   const [fields, setFields] = useState({
