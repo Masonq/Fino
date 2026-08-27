@@ -136,12 +136,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 .notif-bell{
   flex-shrink:0; position:relative; display:flex; align-items:center; justify-content:center;
-  width:48px; height:48px; border-radius:15px; background:#F1F1EC; color:var(--ink);
+  width:34px; height:34px; margin-left:auto; color:var(--ink);
 }
 .notif-bell svg{ width:21px; height:21px; }
 .notif-bell-badge{
-  position:absolute; top:5px; right:5px; min-width:16px; height:16px; padding:0 4px;
-  border-radius:9px; background:var(--coral); color:#fff; font-size:10px; font-weight:800;
+  position:absolute; top:2px; right:2px; min-width:15px; height:15px; padding:0 3px;
+  border-radius:8px; background:var(--coral); color:#fff; font-size:9.5px; font-weight:800;
   display:flex; align-items:center; justify-content:center; line-height:1;
 }
 

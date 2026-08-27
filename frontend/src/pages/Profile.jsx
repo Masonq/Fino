@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
 import { ProfileSkeleton } from '../components/Skeletons'
+import NotificationBell from '../components/NotificationBell'
 
 export default function Profile() {
   const { t } = useTranslation()
@@ -41,7 +42,9 @@ export default function Profile() {
 
   return (
     <div className="fav-page">
-      <PageHeader title={t('nav.profile')} back={false} />
+      <PageHeader title={t('nav.profile')} back={false}>
+        <NotificationBell />
+      </PageHeader>
 
       <div className="profile-head">
         <div className="profile-avatar">
