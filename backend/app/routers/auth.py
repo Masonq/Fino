@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, EmailStr, field_validator
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.auth import (
@@ -252,6 +253,14 @@ def update_me(
         user.phone = payload.phone.strip() or None
     if payload.default_language:
         user.default_language = payload.default_language
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        # Телефон уникален в базе — если кто-то другой уже указал тот
+        # же номер, коммит падает целиком без этой обработки: 500
+        # вместо понятной ошибки. Стало заметно после того, как форму
+        # публикации подключили сохранять сюда телефон.
+        db.rollback()
+        raise HTTPException(400, "phone_taken")
     db.refresh(user)
     return _user_payload(user)
