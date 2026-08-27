@@ -134,7 +134,11 @@ export default function ListingDetail() {
     try {
       await api.deleteListing(listing.id)
       navigate(listing.category_slug ? `/search?category=${listing.category_slug}` : '/', { replace: true })
-    } catch { /* оставляем как было */ }
+    } catch (e) {
+      // Раньше тут любая ошибка проглатывалась молча — модератор
+      // видел, что кнопка просто перестала крутиться, без объяснения.
+      alert(e.code === 'listing_has_history' ? t('my.delete_has_history') : t('auth.err_generic'))
+    }
     finally { setDeleting(false) }
   }
 

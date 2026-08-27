@@ -228,7 +228,8 @@
     "restore": "Publish again",
     "delete": "Delete",
     "confirm_delete": "Delete this listing? This can't be undone.",
-    "tab_rejected": "Rejected"
+    "tab_rejected": "Rejected",
+    "delete_has_history": "Can't delete — this listing already has messages, favorites, a report, or a review. Archive it instead."
   },
   "mod": {
     "title": "Moderation",

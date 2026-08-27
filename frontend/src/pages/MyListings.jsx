@@ -54,7 +54,9 @@ export default function MyListings() {
     try {
       await api.deleteListing(id)
       load()
-    } catch { /* оставляем как было */ }
+    } catch (e) {
+      alert(e.code === 'listing_has_history' ? t('my.delete_has_history') : t('auth.err_generic'))
+    }
     finally { setBusyId(null) }
   }
 

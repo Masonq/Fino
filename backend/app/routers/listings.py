@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import String, cast, case, exists, func, or_
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel, Field, field_validator
 
@@ -785,8 +786,19 @@ def delete_listing(
     is_staff = user.role in (UserRole.moderator, UserRole.admin)
     if listing.owner_id != user.id and not is_staff:
         raise HTTPException(403, "not_owner")
-    db.delete(listing)
-    db.commit()
+    try:
+        db.delete(listing)
+        db.commit()
+    except IntegrityError:
+        # Ни у чатов, ни у избранного, ни у жалоб, ни у отзывов нет
+        # ondelete=CASCADE на listing_id — без этой обработки запрос
+        # падал 500-й ошибкой на любом объявлении, у которого уже
+        # накопился хоть один из них, а фронт эту ошибку молча
+        # проглатывал («оставляем как было»), не показывая ничего.
+        # Каскадом их не удаляем: переписка и отзыв — это история,
+        # которую не стоит стирать заодно с мусорной карточкой.
+        db.rollback()
+        raise HTTPException(409, "listing_has_history")
     return {"status": "deleted"}
 
 class ListingUpdate(BaseModel):

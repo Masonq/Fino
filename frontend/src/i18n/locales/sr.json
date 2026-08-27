@@ -228,7 +228,8 @@
     "restore": "Objavi ponovo",
     "delete": "Obriši",
     "confirm_delete": "Obrisati oglas? Ovo se ne može poništiti.",
-    "tab_rejected": "Odbijeno"
+    "tab_rejected": "Odbijeno",
+    "delete_has_history": "Nije moguće obrisati — ovaj oglas već ima poruke, omiljene, prijavu ili recenziju. Umesto brisanja, arhivirajte ga."
   },
   "mod": {
     "title": "Moderacija",
