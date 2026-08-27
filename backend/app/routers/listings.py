@@ -527,10 +527,18 @@ def similar_listings(
     )
 
     price = float(base.price) if base.price else None
-    if price:
+    # Цена самого объявления — тоже в исходной валюте, пересчитываем в
+    # евро для честного сравнения (та же причина, что и в search_listings
+    # чуть выше по файлу: RSD и EUR — разные по величине числа).
+    price_eur = (price if (price is None or base.currency == "EUR") else price / 117)
+    if price_eur:
         # Цену не сужаем жёстко: похожая вещь может стоить вдвое дороже
         # из-за состояния, и отбрасывать её рано.
-        q = q.filter(Listing.price.between(price * 0.25, price * 4))
+        price_in_eur = case(
+            (Listing.currency == "EUR", Listing.price),
+            else_=Listing.price / 117,
+        )
+        q = q.filter(price_in_eur.between(price_eur * 0.25, price_eur * 4))
 
     # Берём с запасом: отбор по словам идёт в памяти, и чем шире выборка,
     # тем больше шансов найти настоящее совпадение.
@@ -551,8 +559,9 @@ def similar_listings(
         same_city = 0 if (base.city and l.city == base.city) else 1
         own = 1 if l.owner_id == base.owner_id else 0
 
-        if price and l.price:
-            diff = abs(float(l.price) - price) / price
+        if price_eur and l.price:
+            l_price_eur = float(l.price) if l.currency == "EUR" else float(l.price) / 117
+            diff = abs(l_price_eur - price_eur) / price_eur
         else:
             diff = 1.0
 
