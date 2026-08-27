@@ -10,9 +10,9 @@ const TYPES = ['bump', 'highlight', 'xl_card']
 // загружен), просто остаётся крупная иконка на цветной подложке,
 // ничего не ломается.
 const IMAGES = {
-  bump: '/promo/bump.png',
-  highlight: '/promo/highlight.png',
-  xl_card: '/promo/xl.png',
+  bump: '/promo/bump.jpg',
+  highlight: '/promo/highlight.jpg',
+  xl_card: '/promo/xl.jpg',
 }
 
 const ICONS = {
