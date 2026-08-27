@@ -24,6 +24,14 @@ export const FIELDS = {
     modes: ['resume', 'vacancy'],
     chips: ['partTime', 'fullTime', 'remote'],
   },
+  // Слова уже были готовы в modeWords.js (cars/moto/trucks/parts) —
+  // подкатегории (Легковые/Мото/Грузовые/Запчасти) делают то же самое
+  // переходом по ссылке, а modes даёт уточнить это же на месте, не
+  // уходя со страницы поиска, тем же приёмом, что и sale/rent/daily
+  // у недвижимости.
+  auto: {
+    modes: ['cars', 'moto', 'trucks', 'parts'],
+  },
 }
 
 // Вынесено отдельно — Search.jsx использует тот же поиск ключа, чтобы
