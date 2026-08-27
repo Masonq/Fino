@@ -38,7 +38,8 @@ export default function Profile() {
     )
   }
 
-  const initial = (user.display_name || '?').trim().charAt(0).toUpperCase()
+  const initial = ((user.company_name || user.display_name) || '?').trim().charAt(0).toUpperCase()
+  const isCompany = user.role === 'seller_business'
 
   return (
     <div className="fav-page">
@@ -48,11 +49,12 @@ export default function Profile() {
 
       <div className="profile-head-card">
         <div className="profile-head">
-          <div className="profile-avatar">
+          <div className={isCompany ? 'profile-avatar is-company' : 'profile-avatar'}>
             {user.avatar_url ? <img src={user.avatar_url} alt="" /> : initial}
           </div>
           <div className="profile-info">
-            <div className="profile-name">{user.display_name}</div>
+            <div className="profile-name">{user.company_name || user.display_name}</div>
+            {isCompany && <div className="seller-badge">{t('seller.company_badge')}</div>}
             {user.email && <div className="profile-contact">{user.email}</div>}
             {user.phone && <div className="profile-contact">{user.phone}</div>}
             {/* Рейтинг — то, по чему покупатель судит о продавце. Прятать

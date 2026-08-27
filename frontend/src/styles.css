@@ -932,6 +932,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   display:flex; align-items:center; justify-content:center;
   font-size:24px; font-weight:800;
 }
+.profile-avatar.is-company{ border-radius:18px; }
 .profile-avatar img{ width:100%; height:100%; object-fit:cover; }
 .profile-info{ min-width:0; }
 .profile-name{ font-size:17px; font-weight:800; color:var(--ink); }
