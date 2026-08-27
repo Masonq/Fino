@@ -98,7 +98,7 @@ export default function SellerProfile() {
       <PageHeader title={t('seller.title')} />
 
       <div className="seller-report-corner">
-        <ReportButton targetUserId={profile.id} />
+        <ReportButton targetUserId={profile.id} iconOnly />
       </div>
 
       <div className="seller-head">

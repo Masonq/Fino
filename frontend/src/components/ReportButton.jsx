@@ -23,7 +23,7 @@ const USER_REASONS = [
   'other',
 ]
 
-export default function ReportButton({ listingId, ownerId, targetUserId }) {
+export default function ReportButton({ listingId, ownerId, targetUserId, iconOnly = false }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -66,18 +66,29 @@ export default function ReportButton({ listingId, ownerId, targetUserId }) {
   }
 
   if (!open) {
+    const onClick = () => {
+      if (!user) {
+        navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`)
+        return
+      }
+      setOpen(true)
+    }
+    const label = t(targetUserId ? 'report.button_user' : 'report.button')
+
+    if (iconOnly) {
+      return (
+        <button className="report-icon-btn" onClick={onClick} aria-label={label} title={label}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 9v4M12 16.5v.01" strokeLinecap="round" />
+            <path d="M10.3 3.9 2.7 17.5a1.8 1.8 0 0 0 1.6 2.7h15.4a1.8 1.8 0 0 0 1.6-2.7L13.7 3.9a1.8 1.8 0 0 0-3.4 0Z" />
+          </svg>
+        </button>
+      )
+    }
+
     return (
-      <button
-        className="report-link"
-        onClick={() => {
-          if (!user) {
-            navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`)
-            return
-          }
-          setOpen(true)
-        }}
-      >
-        {t(targetUserId ? 'report.button_user' : 'report.button')}
+      <button className="report-link" onClick={onClick}>
+        {label}
       </button>
     )
   }
