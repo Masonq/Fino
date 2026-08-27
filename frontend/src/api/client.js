@@ -153,7 +153,16 @@ export const api = {
   uploadPhoto: async (file) => {
     const form = new FormData()
     form.append('file', file)
-    const res = await fetch(`${API_BASE}/media/upload`, { method: 'POST', body: form })
+    const token = getToken()
+    const res = await fetch(`${API_BASE}/media/upload`, {
+      method: 'POST',
+      // Тут отдельный fetch в обход request() (нельзя ставить
+      // Content-Type: multipart сам браузер расставляет границы) —
+      // но заголовок авторизации из-за этого тоже не долетал никогда.
+      // Пока бэкенд не проверял вход, это работало по случайности.
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+    })
     if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
     return res.json()
   },

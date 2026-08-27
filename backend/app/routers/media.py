@@ -6,6 +6,7 @@ from PIL import Image
 
 from app.core.auth import get_current_user
 from app.core.config import settings
+from app.models import User
 
 router = APIRouter(prefix="/api/media", tags=["media"])
 
@@ -20,6 +21,13 @@ THUMB_DIM = 640
 
 @router.post("/upload")
 async def upload_photo(request: Request, file: UploadFile = File(...)):
+    # Без входа — так и задумано: форма публикации даёт заполнить всё,
+    # включая фото, до того как попросить войти (шаг 2 из 4, вход — на
+    # шаге 3), иначе ранний экран входа отпугивает часть людей. Поэтому
+    # вместо обязательной авторизации — ограничение по IP: без него
+    # эндпоинт принимал файлы вообще без единого предела частоты.
+    from app.core.rate_limit import check_upload_limit
+    check_upload_limit(request)
     ext = os.path.splitext(file.filename or "")[1].lower()
     if ext not in ALLOWED_EXT:
         raise HTTPException(400, "unsupported_format")
