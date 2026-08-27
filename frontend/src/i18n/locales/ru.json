@@ -406,7 +406,9 @@
       "user.unblock": "Разблокировал",
       "user.role": "Сменил роль",
       "listing.approve": "Одобрил объявление",
-      "listing.reject": "Отклонил объявление"
+      "listing.reject": "Отклонил объявление",
+      "ticket.answer": "Ответил в обращении",
+      "ticket.close": "Закрыл обращение"
     }
   },
   "support": {

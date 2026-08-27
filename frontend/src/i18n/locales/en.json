@@ -404,7 +404,9 @@
       "user.unblock": "Unblocked",
       "user.role": "Changed role",
       "listing.approve": "Approved listing",
-      "listing.reject": "Rejected listing"
+      "listing.reject": "Rejected listing",
+      "ticket.answer": "Answered a ticket",
+      "ticket.close": "Closed a ticket"
     }
   },
   "support": {

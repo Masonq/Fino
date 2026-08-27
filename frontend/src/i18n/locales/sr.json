@@ -405,7 +405,9 @@
       "user.unblock": "Odblokirao",
       "user.role": "Promenio ulogu",
       "listing.approve": "Odobrio oglas",
-      "listing.reject": "Odbio oglas"
+      "listing.reject": "Odbio oglas",
+      "ticket.answer": "Odgovorio na tiket",
+      "ticket.close": "Zatvorio tiket"
     }
   },
   "support": {
