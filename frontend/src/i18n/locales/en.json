@@ -131,7 +131,6 @@
     "safe_deal": "Safe deal",
     "description": "Description",
     "auto_translated": "Automatically translated",
-    "show_original": "show original",
     "write_seller": "Message seller",
     "no_price": "Price not set",
     "own_listing": "This is your own listing — you can't message yourself.",
@@ -147,8 +146,7 @@
     "gone_to_category": "Browse this category",
     "read_more": "Read more",
     "characteristics": "Characteristics",
-    "show_all": "Show all",
-    "show_translation": "show translation"
+    "show_all": "Show all"
   },
   "favorites": {
     "title": "Saved",

@@ -131,7 +131,6 @@
     "safe_deal": "Sigurna kupovina",
     "description": "Opis",
     "auto_translated": "Automatski prevedeno",
-    "show_original": "prikaži original",
     "write_seller": "Pošalji poruku",
     "no_price": "Cena nije navedena",
     "own_listing": "Ovo je vaš oglas — ne možete pisati sebi.",
@@ -147,8 +146,7 @@
     "gone_to_category": "Pogledajte kategoriju",
     "read_more": "Pročitaj sve",
     "characteristics": "Karakteristike",
-    "show_all": "Prikaži sve",
-    "show_translation": "prikaži prevod"
+    "show_all": "Prikaži sve"
   },
   "favorites": {
     "title": "Sačuvano",

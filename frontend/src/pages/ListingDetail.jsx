@@ -80,9 +80,6 @@ export default function ListingDetail() {
   }
   const [starting, setStarting] = useState(false)
   const [descOpen, setDescOpen] = useState(false)
-  // «Показать оригинал» рядом с пометкой автоперевода выглядела как
-  // ссылка, но клик ничего не делал — обработчика не было вовсе.
-  const [showOriginal, setShowOriginal] = useState(false)
   const [attrsOpen, setAttrsOpen] = useState(false)
 
   useEffect(() => {
@@ -169,9 +166,7 @@ export default function ListingDetail() {
   }
 
   const lang = i18n.language
-  const translation = (showOriginal && listing.translations[listing.source_language])
-    || listing.translations[lang]
-    || Object.values(listing.translations)[0]
+  const translation = listing.translations[lang] || Object.values(listing.translations)[0]
   // обложка идёт первой, остальные — следом
   const photos = (() => {
     const all = listing.photos || []
@@ -410,11 +405,7 @@ export default function ListingDetail() {
               </button>
             )}
             {listing.translations[lang]?.is_auto_translated && (
-              <div className="translate-note">
-                {t('detail.auto_translated')} · <span onClick={() => setShowOriginal((v) => !v)}>
-                  {showOriginal ? t('detail.show_translation') : t('detail.show_original')}
-                </span>
-              </div>
+              <div className="translate-note">{t('detail.auto_translated')}</div>
             )}
           </div>
         )}
