@@ -107,6 +107,10 @@ def enter(payload: Ticket, db: Session = Depends(get_db)):
         _adopt_listings(db, user, telegram_id, display_name)
 
     db.commit()
+
+    if user.is_blocked:
+        raise HTTPException(403, "user_blocked")
+
     return {
         "access_token": create_access_token(user.id),
         "token_type": "bearer",

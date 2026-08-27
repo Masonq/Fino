@@ -16,6 +16,7 @@ export default function Enter() {
   const [params] = useSearchParams()
   const { signIn } = useAuth()
   const [failed, setFailed] = useState(false)
+  const [blocked, setBlocked] = useState(false)
 
   useEffect(() => {
     const key = params.get('key')
@@ -27,12 +28,19 @@ export default function Enter() {
         // Ведём сразу к объявлениям: за ними человек и шёл.
         navigate('/my', { replace: true })
       })
-      .catch(() => setFailed(true))
+      .catch((e) => { if (e.code === 'user_blocked') setBlocked(true); else setFailed(true) })
   }, [params, signIn, navigate])
 
   return (
     <div className="page enter-page">
-      {failed ? (
+      {blocked ? (
+        <>
+          <p className="empty">{t('auth.err_blocked')}</p>
+          <button className="support-send" onClick={() => navigate('/')}>
+            {t('enter.to_home')}
+          </button>
+        </>
+      ) : failed ? (
         <>
           <p className="empty">{t('enter.expired')}</p>
           <button className="support-send" onClick={() => navigate('/')}>
