@@ -97,7 +97,7 @@ export default function ListingDetail() {
     if (!listing) return
     setStarting(true)
     try {
-      const chat = await api.startChat(listing.id)
+      const chat = await api.startChat(listing.id, i18n.language)
       navigate(`/chat/${chat.id}`)
     } catch (e) {
       alert(t('detail.own_listing'))

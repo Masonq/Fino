@@ -161,13 +161,13 @@ export const api = {
   getFavoriteIds: () => request('/favorites/ids'),
   addFavorite: (listingId) => request(`/favorites/${listingId}`, { method: 'POST' }),
   removeFavorite: (listingId) => request(`/favorites/${listingId}`, { method: 'DELETE' }),
-  startChat: (listingId) => request('/chats/start', {
+  startChat: (listingId, lang) => request(`/chats/start?${new URLSearchParams({ lang })}`, {
     method: 'POST',
     body: JSON.stringify({ listing_id: listingId }),
   }),
   getChats: (lang) => request(`/chats?${new URLSearchParams({ lang })}`),
   markChatRead: (chatId) => request(`/chats/${chatId}/read`, { method: 'POST' }),
-  getChat: (chatId) => request(`/chats/${chatId}`),
+  getChat: (chatId, lang) => request(`/chats/${chatId}?${new URLSearchParams({ lang })}`),
   getChatMessages: (chatId, before) => request(`/chats/${chatId}/messages${before ? `?before=${encodeURIComponent(before)}` : ''}`),
   sendMessage: (chatId, text) => request(`/chats/${chatId}/messages`, {
     method: 'POST',

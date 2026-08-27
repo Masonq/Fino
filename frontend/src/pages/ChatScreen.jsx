@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext'
 import ReviewRequest from '../components/ReviewRequest'
 
 export default function ChatScreen() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { user } = useAuth()
   const { id } = useParams()
   const navigate = useNavigate()
@@ -25,7 +25,7 @@ export default function ChatScreen() {
   }
 
   const load = () => {
-    api.getChat(id).then(setChat).catch(() => setChat(null))
+    api.getChat(id, i18n.language).then(setChat).catch(() => setChat(null))
     api.getChatMessages(id).then(setMessages).catch(() => setMessages([]))
   }
 

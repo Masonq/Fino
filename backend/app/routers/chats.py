@@ -16,20 +16,29 @@ router = APIRouter(prefix="/api/chats", tags=["chats"])
 
 
 class StartChatIn(BaseModel):
+    # Покупатель — всегда сам вошедший (см. start_chat ниже), buyer_id
+    # тут раньше требовалось обязательным, а фронт его не отправлял —
+    # та же болезнь, что была у SendMessageIn: валидация отвергала
+    # запрос ещё до входа в функцию, начать новый чат было нельзя.
     listing_id: uuid.UUID
-    buyer_id: uuid.UUID
 
 
 class SendMessageIn(BaseModel):
-    sender_id: uuid.UUID
+    # Отправитель — всегда сам вошедший (см. send_message ниже), поле
+    # sender_id тут раньше требовалось обязательным, а фронт его вовсе
+    # не отправлял ({text} без sender_id) — валидация Pydantic отвергала
+    # ЛЮБОЕ сообщение ещё до входа в функцию.
     text: str
 
 
-def _serialize_chat(chat: Chat, db: Session):
+def _serialize_chat(chat: Chat, db: Session, lang: str = "ru"):
     listing = db.query(Listing).options(joinedload(Listing.translations)).get(chat.listing_id)
     buyer = db.query(User).get(chat.buyer_id)
     seller = db.query(User).get(chat.seller_id)
-    title = listing.translations[0].title if listing and listing.translations else None
+    title = None
+    if listing and listing.translations:
+        translation = pick_translation(listing, lang)
+        title = (translation or listing.translations[0]).title
     return {
         "id": str(chat.id),
         "listing_id": str(chat.listing_id),
@@ -42,6 +51,7 @@ def _serialize_chat(chat: Chat, db: Session):
 @router.post("/start")
 def start_chat(
     payload: StartChatIn,
+    lang: str = Query("ru"),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -78,7 +88,7 @@ def start_chat(
         db.commit()
         db.refresh(chat)
 
-    return _serialize_chat(chat, db)
+    return _serialize_chat(chat, db, lang)
 
 
 def _require_participant(chat_id, user, db) -> Chat:
@@ -99,11 +109,12 @@ def _require_participant(chat_id, user, db) -> Chat:
 @router.get("/{chat_id}")
 def get_chat(
     chat_id: uuid.UUID,
+    lang: str = Query("ru"),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     chat = _require_participant(chat_id, user, db)
-    return _serialize_chat(chat, db)
+    return _serialize_chat(chat, db, lang)
 
 
 @router.get("/{chat_id}/messages")
