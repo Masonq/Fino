@@ -23,12 +23,35 @@ const USER_REASONS = [
   'other',
 ]
 
-export default function ReportButton({ listingId, ownerId, targetUserId, iconOnly = false }) {
+/**
+ * Кнопка «Пожаловаться» — на объявление или на пользователя.
+ *
+ * По умолчанию сама себе хозяйка: держит открыто/закрыто внутри себя,
+ * кнопка и форма выходят одним куском там, где стоит компонент — так
+ * и было изначально, годится, когда рядом с триггером есть место для
+ * формы (страница объявления).
+ *
+ * Значок в шапке страницы продавца — исключение: живёт в узкой строке
+ * заголовка вместе с «Продавец» и стрелкой назад, а разворачивающаяся
+ * форма туда не влезает и не должна пытаться. Для этого — режим
+ * renderMode: 'trigger' рисует только кнопку (открытие сообщает наружу
+ * через onOpenChange, не хранит своё состояние), 'sheet' рисует только
+ * форму, когда open истинно, управляется тем же состоянием снаружи.
+ * Обе половины — один открытый диалог, просто в разных местах DOM.
+ */
+export default function ReportButton({
+  listingId, ownerId, targetUserId, iconOnly = false,
+  renderMode = 'full', open: openProp, onOpenChange,
+}) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { user } = useAuth()
 
-  const [open, setOpen] = useState(false)
+  const [openState, setOpenState] = useState(false)
+  const controlled = openProp !== undefined
+  const open = controlled ? openProp : openState
+  const setOpen = controlled ? onOpenChange : setOpenState
+
   const [reason, setReason] = useState('')
   const [comment, setComment] = useState('')
   const [busy, setBusy] = useState(false)
@@ -65,19 +88,19 @@ export default function ReportButton({ listingId, ownerId, targetUserId, iconOnl
     }
   }
 
-  if (!open) {
-    const onClick = () => {
-      if (!user) {
-        navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`)
-        return
-      }
-      setOpen(true)
+  const onTriggerClick = () => {
+    if (!user) {
+      navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`)
+      return
     }
-    const label = t(targetUserId ? 'report.button_user' : 'report.button')
+    setOpen(true)
+  }
 
+  const trigger = () => {
+    const label = t(targetUserId ? 'report.button_user' : 'report.button')
     if (iconOnly) {
       return (
-        <button className="report-icon-btn" onClick={onClick} aria-label={label} title={label}>
+        <button className="report-icon-btn" onClick={onTriggerClick} aria-label={label} title={label}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 9v4M12 16.5v.01" strokeLinecap="round" />
             <path d="M10.3 3.9 2.7 17.5a1.8 1.8 0 0 0 1.6 2.7h15.4a1.8 1.8 0 0 0 1.6-2.7L13.7 3.9a1.8 1.8 0 0 0-3.4 0Z" />
@@ -85,15 +108,14 @@ export default function ReportButton({ listingId, ownerId, targetUserId, iconOnl
         </button>
       )
     }
-
     return (
-      <button className="report-link" onClick={onClick}>
+      <button className="report-link" onClick={onTriggerClick}>
         {label}
       </button>
     )
   }
 
-  return (
+  const sheet = () => (
     <div className="report-sheet">
       {done ? (
         <p className="report-done">{t('report.thanks')}</p>
@@ -136,4 +158,8 @@ export default function ReportButton({ listingId, ownerId, targetUserId, iconOnl
       )}
     </div>
   )
+
+  if (renderMode === 'trigger') return trigger()
+  if (renderMode === 'sheet') return open ? sheet() : null
+  return open ? sheet() : trigger()
 }

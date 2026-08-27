@@ -33,6 +33,7 @@ export default function SellerProfile() {
   // прокрутке услужливо подсовывала ещё и ещё, так и не давая дойти
   // до конца. Разворачивается по нажатию, не само.
   const [expanded, setExpanded] = useState(false)
+  const [reportOpen, setReportOpen] = useState(false)
   const sentinelRef = useRef(null)
 
   useEffect(() => {
@@ -95,11 +96,12 @@ export default function SellerProfile() {
 
   return (
     <div className="page">
-      <PageHeader title={t('seller.title')} />
-
-      <div className="seller-report-corner">
-        <ReportButton targetUserId={profile.id} iconOnly />
-      </div>
+      <PageHeader title={t('seller.title')}>
+        <ReportButton
+          targetUserId={profile.id} iconOnly renderMode="trigger"
+          open={reportOpen} onOpenChange={setReportOpen}
+        />
+      </PageHeader>
 
       <div className="seller-head">
         <div className={profile.is_company ? 'seller-avatar lg is-company' : 'seller-avatar lg'}>
@@ -125,6 +127,11 @@ export default function SellerProfile() {
           {since && <div className="seller-since">{t('seller.since', { date: since })}</div>}
         </div>
       </div>
+
+      <ReportButton
+        targetUserId={profile.id} renderMode="sheet"
+        open={reportOpen} onOpenChange={setReportOpen}
+      />
 
       {profile.company_description && (
         <div className="seller-company-about">{profile.company_description}</div>

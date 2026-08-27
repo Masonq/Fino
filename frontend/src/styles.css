@@ -1184,6 +1184,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   background:#fff; border:1px solid rgba(20,30,25,.08); color:var(--muted);
 }
 .report-icon-btn svg{ width:18px; height:18px; }
+.page-header .report-icon-btn{ margin-left:auto; }
 .report-sheet{
   margin:20px 0 8px; padding:14px; border-radius:14px;
   background:#fff; border:1px solid rgba(20,30,25,.08);
@@ -1541,8 +1542,6 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* Страница продавца */
 .seller-head{ display:flex; align-items:center; gap:14px; padding:4px 16px 18px; }
-.seller-report-corner{ display:flex; justify-content:flex-end; padding:0 16px; }
-.seller-report-corner .report-sheet{ flex:1; }
 .seller-avatar.lg{ width:64px; height:64px; font-size:22px; }
 .seller-head-info{ min-width:0; }
 .seller-name.lg{ font-size:17px; }
