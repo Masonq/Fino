@@ -90,6 +90,16 @@ export default function EditProfile() {
     }
   }
 
+  // Пока не пройдена проверка личности, поле «Компания» недоступно
+  // для ввода вовсе — заполнить его и всё равно не сохранить (см.
+  // edit_profile() на сервере), так честнее показать сразу, чем
+  // разрешить печатать и только на «Сохранить» отказать. Уже
+  // бизнес-аккаунт — правит своё же название, замок к нему не
+  // относится: ждём, пока verify не загрузится, только для тех, кто
+  // им ещё не стал.
+  const isBusiness = user?.role === 'seller_business'
+  const locked = !isBusiness && (!verify || verify.status !== 'verified')
+
   return (
     <div className="page edit-profile">
       <PageHeader title={t('edit_profile.title')} />
@@ -115,16 +125,28 @@ export default function EditProfile() {
         />
 
         <label className="edit-label">{t('edit_profile.company')}</label>
-        <input
-          className="admin-search"
-          value={company}
-          onChange={(e) => setCompany(e.target.value)}
-          placeholder={t('edit_profile.company_hint')}
-        />
-        {/* Уже бизнес-аккаунт — правит своё же название, проверка тут
-            не при чём. Иначе, пока не пройдена проверка личности,
-            подсказываем сразу, не дожидаясь неудачной попытки сохранить. */}
-        {company.trim() && user?.role !== 'seller_business' && verify && verify.status !== 'verified' && (
+        <div className={locked ? 'edit-input-wrap locked' : 'edit-input-wrap'}>
+          <input
+            className="admin-search"
+            value={company}
+            onChange={(e) => setCompany(e.target.value)}
+            placeholder={t('edit_profile.company_hint')}
+            disabled={locked}
+            readOnly={locked}
+          />
+          {locked && (
+            <svg className="edit-lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
+              <rect x="4.5" y="10.5" width="15" height="10" rx="2.5" />
+              <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
+            </svg>
+          )}
+        </div>
+        {/* Пока не пройдена проверка личности, само поле недоступно для
+            ввода — подсказка должна быть видна сразу, а не только
+            после того, как что-то в него напечатали (напечатать и
+            так нельзя). Уже бизнес-аккаунт — правит своё же название,
+            замок к нему не относится вовсе. */}
+        {locked && (
           <p className="edit-hint-warn">{t('edit_profile.verify_first')}</p>
         )}
 

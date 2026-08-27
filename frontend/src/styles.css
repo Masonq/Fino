@@ -2135,6 +2135,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   margin-top:6px; padding:10px 12px; border-radius:10px; background:#FFF8E8;
   font-size:12px; line-height:1.5; color:#8a6d1f;
 }
+.edit-input-wrap{ position:relative; }
+.edit-input-wrap.locked .admin-search{
+  padding-right:42px; background:#F7F7F3; color:var(--muted);
+}
+.edit-lock-icon{
+  position:absolute; right:14px; top:50%; margin-top:-5px;
+  width:18px; height:18px; color:var(--muted); pointer-events:none;
+}
 
 /* Снятое объявление. Оставляем на месте — по нему смотрят цены, — но
    человек должен понять с первого взгляда, что вещи больше нет. */
