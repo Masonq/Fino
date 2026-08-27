@@ -140,9 +140,9 @@ def notify_moderation(db: Session, user_id, title: str, approved: bool, reason: 
 def notify_expiring_soon(db: Session, user_id, title: str, days_left: int) -> bool:
     text = (
         f"Объявление «{title}» скоро снимется с публикации — через {days_left} дн.\n\n"
-        "Если вещь ещё продаётся, откройте объявление и сохраните его "
-        "заново (например, поправьте описание) — оно вернётся на проверку "
-        "и получит новый срок."
+        "Если вещь ещё продаётся, поправьте в нём что-нибудь — например, "
+        "цену или описание — и сохраните: объявление вернётся на "
+        "проверку и получит новый срок показа."
     )
     return notify(db, user_id, text, allow_email=True,
                   subject="PLONK — объявление скоро снимется с публикации")
