@@ -536,5 +536,15 @@
     "empty": "No notifications yet — listing decisions, chat replies, and matches for your saved searches will show up here.",
     "need_auth": "Sign in to see your notifications.",
     "read_all": "Mark all read"
+  },
+  "ldash": {
+    "title": "Listing stats",
+    "views_total": "Total views",
+    "favorites": "Favorited",
+    "chats": "Conversations",
+    "views_unit": "views",
+    "not_owner": "Stats are visible only to the listing owner.",
+    "incomplete_hint": "This listing is missing a price or photo — such listings rank lower. Fill in the card completely to get more views.",
+    "short": "Stats"
   }
 }

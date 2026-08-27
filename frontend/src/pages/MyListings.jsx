@@ -127,6 +127,9 @@ export default function MyListings() {
               </Link>
 
               <div className="my-actions">
+                <button disabled={busyId === l.id} onClick={() => navigate(`/my/${l.id}/stats`)}>
+                  {t('ldash.short')}
+                </button>
                 <button disabled={busyId === l.id} onClick={() => navigate(`/edit/${l.id}`)}>
                   {t('edit.save_short')}
                 </button>

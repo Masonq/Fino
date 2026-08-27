@@ -1763,6 +1763,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   background: #fff;
 }
 .stats-block-title { font-weight: 600; margin-bottom: 10px; }
+.ldash-listing-title{ padding:0 12px 14px; font-size:14px; font-weight:700; color:var(--ink); }
+.ldash-hint{ margin:14px 12px 0; padding:12px 14px; border-radius:12px; background:#FFF8E8; font-size:12.5px; line-height:1.5; color:#8a6d1f; }
 
 .stats-legend {
   display: flex;

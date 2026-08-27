@@ -10,6 +10,7 @@ from app.models.promotion import Promotion, PromotionType
 from app.models.audit import AuditEntry
 from app.models.login_ticket import LoginTicket
 from app.models.blocked_user import BlockedUser
+from app.models.listing_view_daily import ListingViewDaily
 from app.models.notification import Notification
 from app.models.support import (
     Ticket, TicketMessage, TicketStatus, TicketTopic,
@@ -27,6 +28,7 @@ __all__ = [
     "Promotion", "PromotionType",
     "AuditEntry", "LoginTicket",
     "BlockedUser",
+    "ListingViewDaily",
     "Notification",
     "Ticket", "TicketMessage", "TicketStatus", "TicketTopic",
 ]

@@ -5,70 +5,9 @@ import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
 import { AdminStatsSkeleton } from '../components/Skeletons'
+import BarsChart from '../components/BarsChart'
 
 const PERIODS = [7, 14, 30]
-
-// Столбики рисуем сами: ради одного графика тянуть библиотеку незачем,
-// а по высоте прямоугольника провал виден не хуже.
-//
-// Прокрутка вбок вместо прореживания подписей: у каждого дня своя
-// фиксированная ширина, хватает места на двузначное число всегда,
-// сколько бы дней ни было выбрано — раньше пытались сжать все 30 в
-// экран разом, из-за чего то раздувало страницу вбок, то подписи
-// приходилось через одну прятать.
-function Bars({ items, valueKey, secondKey }) {
-  const { t, i18n } = useTranslation()
-  const [selectedDay, setSelectedDay] = useState(null)
-  const peak = Math.max(1, ...items.map((d) => d[valueKey] || 0))
-
-  const active = items.find((d) => d.day === selectedDay) || items[items.length - 1]
-  const activeValue = active ? (active[valueKey] || 0) : 0
-  const activeSecond = active && secondKey ? (active[secondKey] || 0) : 0
-  const activeDate = active
-    ? new Date(`${active.day}T00:00:00`).toLocaleDateString(i18n.language, { day: 'numeric', month: 'long' })
-    : ''
-
-  return (
-    <div>
-      {active && (
-        <div className="stats-bars-info">
-          <b>{activeDate}</b> — {activeValue} {t('stats.listings_count')}
-          {!!secondKey && ` (${activeSecond} ${t('stats.own_short')})`}
-        </div>
-      )}
-      <div className="stats-bars">
-        {items.map((d) => {
-          const value = d[valueKey] || 0
-          const second = secondKey ? d[secondKey] || 0 : 0
-          const isActive = active === d
-          return (
-            <button
-              type="button"
-              key={d.day}
-              className={isActive ? 'stats-bar selected' : 'stats-bar'}
-              onClick={() => setSelectedDay(d.day)}
-            >
-              <div className="stats-bar-track">
-                <div
-                  className="stats-bar-fill"
-                  style={{ height: `${(value / peak) * 100}%` }}
-                >
-                  {!!second && (
-                    <div
-                      className="stats-bar-own"
-                      style={{ height: `${(second / Math.max(value, 1)) * 100}%` }}
-                    />
-                  )}
-                </div>
-              </div>
-              <span className="stats-bar-day">{d.day.slice(8)}</span>
-            </button>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
 
 export default function AdminStats() {
   const { t } = useTranslation()
@@ -172,7 +111,7 @@ export default function AdminStats() {
               <span className="dot dot-all" /> {t('stats.all')}
               <span className="dot dot-own" /> {t('stats.own')}
             </div>
-            <Bars key={days} items={daily} valueKey="listings" secondKey="own" />
+            <BarsChart key={days} items={daily} valueKey="listings" secondKey="own" />
           </div>
 
           {quality && (

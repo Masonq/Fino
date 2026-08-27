@@ -132,6 +132,7 @@ export const api = {
   getCategorySchema: (slug) => request(`/categories/${slug}/schema`),
   searchListings: (params) => request(`/listings?${new URLSearchParams(params)}`),
   getListing: (id) => request(`/listings/${id}`),
+  getListingDashboard: (id, days) => request(`/listings/${id}/dashboard?${new URLSearchParams({ days: days || 30 })}`),
   listingsByIds: (ids, lang) => request(`/listings/by-ids?${new URLSearchParams({ ids: ids.join(','), lang })}`),
   similarListings: (id, lang) => request(`/listings/${id}/similar?${new URLSearchParams({ lang })}`),
   myListings: (lang) => request(`/listings/my/list?${new URLSearchParams({ lang })}`),

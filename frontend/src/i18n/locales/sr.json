@@ -537,5 +537,15 @@
     "empty": "Još nema obaveštenja — ovde će se pojaviti odluke o oglasima, odgovori u ćaskanjima i novo po vašim pretragama.",
     "need_auth": "Prijavite se da biste videli svoja obaveštenja.",
     "read_all": "Označi sve kao pročitano"
+  },
+  "ldash": {
+    "title": "Statistika oglasa",
+    "views_total": "Ukupno pregleda",
+    "favorites": "U omiljenim",
+    "chats": "Razgovora",
+    "views_unit": "pregleda",
+    "not_owner": "Statistika je vidljiva samo vlasniku oglasa.",
+    "incomplete_hint": "Ovom oglasu nedostaje cena ili slika — takvi oglasi se prikazuju niže. Popunite karticu u potpunosti da biste dobili više pregleda.",
+    "short": "Statistika"
   }
 }

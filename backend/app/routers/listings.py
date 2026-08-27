@@ -703,6 +703,20 @@ def get_listing(listing_id: str, db: Session = Depends(get_db),
     # завышает себе счётчик и делает вывод о несуществующем интересе.
     if not viewer or viewer.id != listing.owner_id:
         listing.views_count += 1
+        # И в дневную статистику — без неё дашборд продавца показывал
+        # бы только одно растущее число, без единой возможности увидеть,
+        # вырос интерес на этой неделе или упал.
+        from sqlalchemy.dialects.postgresql import insert as pg_insert
+        from app.models import ListingViewDaily
+        from datetime import date as date_type
+        stmt = pg_insert(ListingViewDaily).values(
+            id=uuid.uuid4(), listing_id=listing.id, day=date_type.today(), count=1,
+        )
+        stmt = stmt.on_conflict_do_update(
+            index_elements=["listing_id", "day"],
+            set_={"count": ListingViewDaily.count + 1},
+        )
+        db.execute(stmt)
         db.commit()
 
     from app.core.urls import listing_path
@@ -752,6 +766,55 @@ def get_listing(listing_id: str, db: Session = Depends(get_db),
         "delivery_available": listing.delivery_available,
         "safe_deal_available": listing.safe_deal_available,
     }
+
+
+@router.get("/{listing_id}/dashboard")
+def listing_dashboard(
+    listing_id: uuid.UUID,
+    days: int = Query(30, le=90),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Показатели одного объявления для владельца: просмотры по дням,
+    избранное, начатые переписки. Тот самый фундамент, на котором
+    потом будет видно, помогает ли платное продвижение — сравнить
+    дни с поднятием и без.
+    """
+    from app.models import ListingViewDaily, Favorite, Chat
+
+    listing = db.query(Listing).get(listing_id)
+    if not listing:
+        raise HTTPException(404, "not_found")
+    if listing.owner_id != user.id and user.role not in (UserRole.moderator, UserRole.admin):
+        raise HTTPException(403, "not_owner")
+
+    since = utcnow().date() - timedelta(days=days - 1)
+    daily_rows = (
+        db.query(ListingViewDaily)
+        .filter(ListingViewDaily.listing_id == listing_id, ListingViewDaily.day >= since)
+        .all()
+    )
+    by_day = {r.day.isoformat(): r.count for r in daily_rows}
+    # Дни без единого просмотра в базе не хранятся вовсе — достраиваем
+    # нулями, иначе график показывал бы только те дни, где что-то было.
+    daily = []
+    for i in range(days):
+        day = (since + timedelta(days=i)).isoformat()
+        daily.append({"day": day, "views": by_day.get(day, 0)})
+
+    favorites_count = db.query(Favorite).filter(Favorite.listing_id == listing_id).count()
+    chats_count = db.query(Chat).filter(Chat.listing_id == listing_id).count()
+
+    return {
+        "views_total": listing.views_count,
+        "favorites_count": favorites_count,
+        "chats_count": chats_count,
+        "status": listing.status.value,
+        "is_complete": listing.is_complete,
+        "daily": daily,
+    }
+
 
 class StatusIn(BaseModel):
     status: str
