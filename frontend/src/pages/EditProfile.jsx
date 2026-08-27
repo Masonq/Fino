@@ -24,6 +24,10 @@ export default function EditProfile() {
   const [saving, setSaving] = useState(false)
   const [done, setDone] = useState(false)
 
+  const [verify, setVerify] = useState(null)
+  const [verifyBusy, setVerifyBusy] = useState(false)
+  const [verifyError, setVerifyError] = useState('')
+
   useEffect(() => {
     if (authLoading) return
     if (!user) { navigate('/login', { replace: true }); return }
@@ -33,6 +37,7 @@ export default function EditProfile() {
       setCompany(me.company_name || '')
       setCompanyDescription(me.company_description || '')
     }).catch(() => {})
+    api.getVerificationStatus().then(setVerify).catch(() => {})
   }, [authLoading, user, navigate])
 
   const save = async () => {
@@ -61,6 +66,20 @@ export default function EditProfile() {
       setAvatar(url)
     } catch {
       alert(t('edit_profile.photo_failed'))
+    }
+  }
+
+  const submitDoc = async () => {
+    setVerifyBusy(true); setVerifyError('')
+    try {
+      const { url } = await api.startVerification()
+      // Уводим на сторону Didit целиком — снимок документа и селфи
+      // происходят там, не на нашей странице.
+      window.location.href = url
+    } catch (e) {
+      setVerifyError(e.code === 'verification_not_configured'
+        ? t('verify.err_unavailable') : t('verify.err_generic'))
+      setVerifyBusy(false)
     }
   }
 
@@ -113,6 +132,40 @@ export default function EditProfile() {
         <button className="support-send" disabled={saving} onClick={save}>
           {done ? t('edit_profile.saved') : t('edit_profile.save')}
         </button>
+      </div>
+
+      {/* Проверка документа — отдельное действие от правки профиля,
+          со своим статусом и загрузкой, поэтому вне общей формы и
+          кнопки «Сохранить». */}
+      <div className="profile-section-title">{t('verify.title')}</div>
+      <div className="verify-card">
+        {!verify ? (
+          <p className="verify-hint">{t('actions.loading')}</p>
+        ) : verify.status === 'verified' ? (
+          <div className="verify-status verified">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M20 6 9 17l-5-5" /></svg>
+            {t('verify.verified')}
+          </div>
+        ) : verify.status === 'pending' ? (
+          <div className="verify-status pending">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></svg>
+            {t('verify.pending')}
+          </div>
+        ) : (
+          <>
+            {verify.status === 'rejected' && (
+              <div className="verify-status rejected">
+                {t('verify.rejected')}
+                {verify.reason && <div className="verify-reason">{verify.reason}</div>}
+              </div>
+            )}
+            <p className="verify-hint">{t('verify.hint')}</p>
+            <button className={verifyBusy ? 'verify-upload disabled' : 'verify-upload'} disabled={verifyBusy} onClick={submitDoc}>
+              {verifyBusy ? '…' : t('verify.upload')}
+            </button>
+            {verifyError && <p className="auth-error">{verifyError}</p>}
+          </>
+        )}
       </div>
     </div>
   )

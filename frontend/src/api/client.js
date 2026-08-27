@@ -174,6 +174,12 @@ export const api = {
     if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
     return res.json()
   },
+  // Проверка документа — сторонний сервис (Didit): начинаем сессию,
+  // человек снимает документ и селфи уже у них, к нам ни то ни другое
+  // не попадает вовсе. Решение приходит вебхуком, статус спрашиваем
+  // отдельным запросом.
+  startVerification: () => request('/verification/start', { method: 'POST' }),
+  getVerificationStatus: () => request('/verification/me'),
   getFavorites: (lang) => request(`/favorites?${new URLSearchParams({ lang })}`),
   getFavoriteIds: () => request('/favorites/ids'),
   addFavorite: (listingId) => request(`/favorites/${listingId}`, { method: 'POST' }),

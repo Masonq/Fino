@@ -564,5 +564,16 @@
     "sec_listings": "Oglasi",
     "sec_activity": "Aktivnost",
     "sec_info": "Informacije"
+  },
+  "verify": {
+    "title": "Provera dokumenta",
+    "hint": "Provera se odvija preko partnerskog servisa — fotografišete dokument (pasoš, lična karta) i pravite selfie na njihovoj strani, traje par minuta. Nakon provere, na profilu će se pojaviti oznaka „Proveren korisnik\".",
+    "upload": "Pokreni proveru",
+    "pending": "Dokument na proveri",
+    "verified": "Proveren korisnik",
+    "rejected": "Nije uspela provera dokumenta",
+    "err_format": "Nepodržan format fajla",
+    "err_generic": "Nije uspelo slanje, pokušajte ponovo",
+    "err_unavailable": "Provera je privremeno nedostupna, pokušajte kasnije"
   }
 }

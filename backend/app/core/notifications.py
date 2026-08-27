@@ -157,6 +157,18 @@ def notify_moderation(db: Session, user_id, title: str, approved: bool,
                   subject="PLONK — ваше объявление", link=link)
 
 
+def notify_doc_verification(db: Session, user_id, approved: bool, reason: str | None = None) -> bool:
+    if approved:
+        text = "Документ проверен — на вашем профиле теперь отметка «Проверенный пользователь»"
+    else:
+        text = "Не получилось проверить присланный документ"
+        if reason:
+            text += f"\n\nПричина: {reason}"
+        text += "\n\nМожно отправить ещё раз."
+    return notify(db, user_id, text, force=True, allow_email=True,
+                  subject="PLONK — проверка документа", link="/profile")
+
+
 def notify_expiring_soon(db: Session, user_id, title: str, days_left: int) -> bool:
     text = (
         f"Объявление «{title}» скоро снимется с публикации — через {days_left} дн.\n\n"

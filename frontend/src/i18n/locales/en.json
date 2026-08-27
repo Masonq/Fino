@@ -563,5 +563,16 @@
     "sec_listings": "Listings",
     "sec_activity": "Activity",
     "sec_info": "Information"
+  },
+  "verify": {
+    "title": "Identity verification",
+    "hint": "Verification runs through a partner service — you’ll photograph a document (passport, ID card) and take a selfie on their side, a couple of minutes. Once reviewed, your profile will show a \"Verified user\" badge.",
+    "upload": "Start verification",
+    "pending": "Document under review",
+    "verified": "Verified user",
+    "rejected": "Couldn’t verify the document",
+    "err_format": "Unsupported file format",
+    "err_generic": "Couldn’t send it, please try again",
+    "err_unavailable": "Verification is temporarily unavailable, try again later"
   }
 }

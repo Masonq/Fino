@@ -1809,6 +1809,26 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .stats-block-title { font-weight: 600; margin-bottom: 10px; }
 .edit-company-desc{ resize:vertical; min-height:90px; font-family:inherit; line-height:1.4; }
+
+.verify-card{
+  margin:0 12px 22px; padding:16px; border-radius:16px; background:#fff;
+  border:1px solid rgba(20,30,25,.06);
+}
+.verify-hint{ font-size:13px; color:var(--muted); line-height:1.5; margin-bottom:12px; }
+.verify-status{
+  display:flex; align-items:center; gap:9px; font-size:14px; font-weight:700;
+}
+.verify-status svg{ width:20px; height:20px; flex-shrink:0; }
+.verify-status.verified{ color:var(--primary-deep); }
+.verify-status.pending{ color:var(--muted); }
+.verify-status.rejected{ display:block; color:var(--coral); margin-bottom:12px; }
+.verify-reason{ margin-top:4px; font-size:12.5px; font-weight:500; color:var(--ink-soft); }
+.verify-upload{
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:11px 20px; border-radius:12px; background:var(--primary);
+  color:#fff; font-size:13.5px; font-weight:700;
+}
+.verify-upload.disabled{ opacity:.6; pointer-events:none; }
 .ldash-listing-title{ padding:0 12px 14px; font-size:14px; font-weight:700; color:var(--ink); }
 .ldash-hint{ margin:14px 12px 0; padding:12px 14px; border-radius:12px; background:#FFF8E8; font-size:12.5px; line-height:1.5; color:#8a6d1f; }
 

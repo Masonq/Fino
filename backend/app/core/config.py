@@ -18,6 +18,13 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60 * 24 * 7
     default_languages: list[str] = ["ru", "en", "sr"]
     media_dir: str = "./media"
+    # Проверка документов — сторонний сервис Didit, не своё хранилище:
+    # документ и селфи снимаются и остаются у него, к нам они не
+    # попадают вовсе. Пустые строки по умолчанию — раздел в профиле
+    # сам скрывается, пока ключи не заданы (см. verification.py).
+    didit_api_key: str = ""
+    didit_workflow_id: str = ""
+    didit_webhook_secret: str = ""
 
     # Почта для кодов подтверждения (пока не задана — коды пишутся в журнал)
     smtp_host: str | None = None
