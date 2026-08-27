@@ -74,7 +74,11 @@
     "empty": "No messages yet — say hello",
     "message_ph": "Write a message...",
     "no_access": "You don't have access to this chat",
-    "send_failed": "Failed to send — try again"
+    "send_failed": "Failed to send — try again",
+    "block": "Block",
+    "unblock": "Unblock",
+    "confirm_block": "Block this user? They won't be able to message you — you can undo this anytime.",
+    "you_are_blocked": "This user has blocked you — you can't message them."
   },
   "promo": {
     "safe_deal": "Safe deal",

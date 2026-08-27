@@ -180,6 +180,8 @@ export const api = {
   markNotificationRead: (id) => request(`/notifications/${id}/read`, { method: 'POST' }),
   markAllNotificationsRead: () => request('/notifications/read-all', { method: 'POST' }),
   markChatRead: (chatId) => request(`/chats/${chatId}/read`, { method: 'POST' }),
+  blockChatPartner: (chatId) => request(`/chats/${chatId}/block`, { method: 'POST' }),
+  unblockChatPartner: (chatId) => request(`/chats/${chatId}/unblock`, { method: 'POST' }),
   getChat: (chatId, lang) => request(`/chats/${chatId}?${new URLSearchParams({ lang })}`),
   getChatMessages: (chatId, before) => request(`/chats/${chatId}/messages${before ? `?before=${encodeURIComponent(before)}` : ''}`),
   sendMessage: (chatId, text) => request(`/chats/${chatId}/messages`, {

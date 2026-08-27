@@ -19,6 +19,7 @@ export default function ChatScreen() {
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState(null)
+  const [blockBusy, setBlockBusy] = useState(false)
   const bottomRef = useRef(null)
 
   const otherName = () => {
@@ -136,6 +137,19 @@ export default function ChatScreen() {
     }
   }
 
+  const toggleBlock = async () => {
+    if (!chat) return
+    if (!chat.i_blocked_them && !window.confirm(t('chat.confirm_block'))) return
+    setBlockBusy(true)
+    try {
+      if (chat.i_blocked_them) await api.unblockChatPartner(id)
+      else await api.blockChatPartner(id)
+      const fresh = await api.getChat(id, i18n.language)
+      setChat(fresh)
+    } catch { /* оставляем как было */ }
+    finally { setBlockBusy(false) }
+  }
+
   return (
     <div className="chat-page">
       <div className="chat-head">
@@ -146,6 +160,15 @@ export default function ChatScreen() {
           <div className="chat-head-name">{otherName() || '...'}</div>
           {chat?.listing_title && <div className="chat-head-listing">{chat.listing_title}</div>}
         </div>
+        {chat && (
+          <button
+            className={chat.i_blocked_them ? 'chat-block-btn active' : 'chat-block-btn'}
+            disabled={blockBusy}
+            onClick={toggleBlock}
+          >
+            {t(chat.i_blocked_them ? 'chat.unblock' : 'chat.block')}
+          </button>
+        )}
       </div>
 
       <div
@@ -181,20 +204,24 @@ export default function ChatScreen() {
       </div>
 
       {sendError && <p className="chat-error">{sendError}</p>}
-      <div className="chat-input-row">
-        <input
-          type="text"
-          value={text}
-          onChange={(e) => { setText(e.target.value); if (sendError) setSendError(null) }}
-          onKeyDown={(e) => e.key === 'Enter' && send()}
-          placeholder={t('chat.message_ph')}
-        />
-        <button className="chat-send-btn" disabled={sending || !text.trim()} onClick={send} aria-label={t('actions.send')}>
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-            <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z" />
-          </svg>
-        </button>
-      </div>
+      {chat?.blocked_by_them ? (
+        <p className="chat-blocked-notice">{t('chat.you_are_blocked')}</p>
+      ) : (
+        <div className="chat-input-row">
+          <input
+            type="text"
+            value={text}
+            onChange={(e) => { setText(e.target.value); if (sendError) setSendError(null) }}
+            onKeyDown={(e) => e.key === 'Enter' && send()}
+            placeholder={t('chat.message_ph')}
+          />
+          <button className="chat-send-btn" disabled={sending || !text.trim()} onClick={send} aria-label={t('actions.send')}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+              <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z" />
+            </svg>
+          </button>
+        </div>
+      )}
     </div>
   )
 }

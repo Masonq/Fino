@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from app.core.auth import get_current_user
 from app.core.database import get_db
 from app.routers.listings import pick_translation
-from app.models import Chat, Message, Listing, User
+from app.models import Chat, Message, Listing, User, BlockedUser
 from app.core.clock import utcnow
 
 router = APIRouter(prefix="/api/chats", tags=["chats"])
@@ -31,7 +31,18 @@ class SendMessageIn(BaseModel):
     text: str
 
 
-def _serialize_chat(chat: Chat, db: Session, lang: str = "ru"):
+def _other_id(chat: Chat, user_id) -> uuid.UUID:
+    return chat.seller_id if user_id == chat.buyer_id else chat.buyer_id
+
+
+def _is_blocked(db: Session, blocker_id, blocked_id) -> bool:
+    return db.query(BlockedUser).filter(
+        BlockedUser.blocker_id == blocker_id,
+        BlockedUser.blocked_id == blocked_id,
+    ).first() is not None
+
+
+def _serialize_chat(chat: Chat, db: Session, lang: str = "ru", viewer_id=None):
     listing = db.query(Listing).options(joinedload(Listing.translations)).get(chat.listing_id)
     buyer = db.query(User).get(chat.buyer_id)
     seller = db.query(User).get(chat.seller_id)
@@ -39,12 +50,18 @@ def _serialize_chat(chat: Chat, db: Session, lang: str = "ru"):
     if listing and listing.translations:
         translation = pick_translation(listing, lang)
         title = (translation or listing.translations[0]).title
+    other_id = _other_id(chat, viewer_id) if viewer_id else None
     return {
         "id": str(chat.id),
         "listing_id": str(chat.listing_id),
         "listing_title": title,
         "buyer": {"id": str(buyer.id), "display_name": buyer.display_name} if buyer else None,
         "seller": {"id": str(seller.id), "display_name": seller.display_name} if seller else None,
+        # С точки зрения именно того, кто сейчас смотрит: заблокировал ли
+        # он собеседника, и не заблокирован ли сам — от этого зависит,
+        # можно ли писать и что показывать вместо поля ввода.
+        "i_blocked_them": _is_blocked(db, viewer_id, other_id) if viewer_id else False,
+        "blocked_by_them": _is_blocked(db, other_id, viewer_id) if viewer_id else False,
     }
 
 
@@ -88,7 +105,7 @@ def start_chat(
         db.commit()
         db.refresh(chat)
 
-    return _serialize_chat(chat, db, lang)
+    return _serialize_chat(chat, db, lang, viewer_id=buyer_id)
 
 
 def _require_participant(chat_id, user, db) -> Chat:
@@ -114,7 +131,7 @@ def get_chat(
     db: Session = Depends(get_db),
 ):
     chat = _require_participant(chat_id, user, db)
-    return _serialize_chat(chat, db, lang)
+    return _serialize_chat(chat, db, lang, viewer_id=user.id)
 
 
 @router.get("/{chat_id}/messages")
@@ -158,10 +175,16 @@ def send_message(
     db: Session = Depends(get_db),
 ):
     chat = _require_participant(chat_id, user, db)
+    sender_id = user.id   # отправитель — всегда сам, а не кто указан в запросе
+    other_id = _other_id(chat, sender_id)
+
+    # Собеседник заблокировал именно отправителя — сам заблокировавший
+    # может писать первым и дальше, блокировка не запрещает это ему.
+    if _is_blocked(db, other_id, sender_id):
+        raise HTTPException(403, "blocked_by_recipient")
+
     from app.core.rate_limit import check_message_limit
     check_message_limit(db, user.id, chat_id)
-
-    sender_id = user.id   # отправитель — всегда сам, а не кто указан в запросе
 
     message = Message(
         id=uuid.uuid4(),
@@ -177,13 +200,43 @@ def send_message(
     # уведомляем собеседника, если он не в приложении
     try:
         from app.core.notifications import notify_new_message
-        other_id = chat.seller_id if sender_id == chat.buyer_id else chat.buyer_id
         sender = db.query(User).get(sender_id)
         notify_new_message(db, other_id, sender_id, sender.display_name if sender else "",
                           payload.text or "", chat_id=chat_id, message_id=message.id)
     except Exception:
         pass
     return {"id": str(message.id), "sender_id": str(message.sender_id), "text": message.text, "created_at": message.created_at.isoformat()}
+
+
+@router.post("/{chat_id}/block")
+def block_participant(
+    chat_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Закрывает собеседнику из этого чата доступ писать вам."""
+    chat = _require_participant(chat_id, user, db)
+    other_id = _other_id(chat, user.id)
+    if not _is_blocked(db, user.id, other_id):
+        db.add(BlockedUser(blocker_id=user.id, blocked_id=other_id))
+        db.commit()
+    return {"status": "blocked"}
+
+
+@router.post("/{chat_id}/unblock")
+def unblock_participant(
+    chat_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    chat = _require_participant(chat_id, user, db)
+    other_id = _other_id(chat, user.id)
+    db.query(BlockedUser).filter(
+        BlockedUser.blocker_id == user.id,
+        BlockedUser.blocked_id == other_id,
+    ).delete()
+    db.commit()
+    return {"status": "unblocked"}
 
 @router.get("")
 def list_chats(

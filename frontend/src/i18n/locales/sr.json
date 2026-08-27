@@ -74,7 +74,11 @@
     "empty": "Još nema poruka — započnite razgovor",
     "message_ph": "Napišite poruku...",
     "no_access": "Nemate pristup ovom razgovoru",
-    "send_failed": "Slanje nije uspelo — pokušajte ponovo"
+    "send_failed": "Slanje nije uspelo — pokušajte ponovo",
+    "block": "Blokiraj",
+    "unblock": "Odblokiraj",
+    "confirm_block": "Blokirati ovog korisnika? Neće moći da vam piše, možete ovo poništiti u bilo kom trenutku.",
+    "you_are_blocked": "Ovaj korisnik vas je blokirao — ne možete mu pisati."
   },
   "promo": {
     "safe_deal": "Sigurna kupovina",

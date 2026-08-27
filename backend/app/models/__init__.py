@@ -9,6 +9,7 @@ from app.models.trust import Review, Report, ReportReason, ReportStatus
 from app.models.promotion import Promotion, PromotionType
 from app.models.audit import AuditEntry
 from app.models.login_ticket import LoginTicket
+from app.models.blocked_user import BlockedUser
 from app.models.notification import Notification
 from app.models.support import (
     Ticket, TicketMessage, TicketStatus, TicketTopic,
@@ -25,6 +26,7 @@ __all__ = [
     "Review", "Report", "ReportReason", "ReportStatus",
     "Promotion", "PromotionType",
     "AuditEntry", "LoginTicket",
+    "BlockedUser",
     "Notification",
     "Ticket", "TicketMessage", "TicketStatus", "TicketTopic",
 ]
