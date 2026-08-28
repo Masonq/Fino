@@ -59,6 +59,11 @@ def main() -> None:
         if not parent or not parent.children:
             raise SystemExit(f"раздел {args.parent_slug!r} не найден или без подкатегорий")
         sub_slugs = [c.slug for c in parent.children]
+        # Русское название рядом со слагом — без него нейросеть трактует
+        # английское слово по-своему: «gadgets» превращалось в любой
+        # гаджет вообще, хотя на сайте это «Товары для компьютера»,
+        # раздел куда уже. См. docstring guess_category() в ai_title.py.
+        sub_names = {c.slug: (c.name or {}).get("ru", c.slug) for c in parent.children}
         # И то, что уже разложено по подкатегориям (учимся на своих же
         # решениях правил — рискованно), и то, что ещё лежит в
         # родителе — размечаем всё вперемешку, чтобы модель не путала
@@ -86,7 +91,7 @@ def main() -> None:
             if len(text) < 25:
                 continue
 
-            slug = guess_category(text, sub_slugs)
+            slug = guess_category(text, sub_slugs, names=sub_names)
             if not slug:
                 skipped += 1
                 continue

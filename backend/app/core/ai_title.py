@@ -471,16 +471,28 @@ CATEGORY_PROMPT = """Отнеси объявление с барахолки к 
 """
 
 
-def guess_category(text: str, slugs: list[str]) -> str | None:
+def guess_category(text: str, slugs: list[str], names: dict[str, str] | None = None) -> str | None:
     """
     Спрашивает раздел для объявления, которое правила не разобрали.
 
     Такое объявление иначе не попадёт в выдачу вообще — для читателя его
     просто нет.
+
+    names — человеческое название рядом с каждым слагом (по-русски), не
+    обязательно. Для верхнего уровня разделов голых английских слов
+    (phones, jobs, beauty) хватало — они говорят сами за себя. А вот
+    подкатегория gadgets на сайте называется «Товары для компьютера» —
+    без этой подсказки нейросеть трактует слово широко, любой гаджет
+    вообще, и разбор перекашивается в неё одну (на пробе — больше
+    трети всех меток, при честной доле в одну восьмую).
     """
     if not _ready() or not text.strip():
         return None
-    prompt = CATEGORY_PROMPT.format(slugs=", ".join(slugs)) + text.strip()[:800]
+    if names:
+        listed = ", ".join(f'{s} ("{names.get(s, s)}")' for s in slugs)
+    else:
+        listed = ", ".join(slugs)
+    prompt = CATEGORY_PROMPT.format(slugs=listed) + text.strip()[:800]
     _wait_turn()
     answer = _parse_answer(_ask(prompt, limit=60, schema=CATEGORY_SCHEMA))
     category = (answer.get("category") or "").strip()
