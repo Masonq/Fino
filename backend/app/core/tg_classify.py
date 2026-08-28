@@ -13,7 +13,7 @@
 import re
 import unicodedata
 
-from app.core.category_model import MIN_MARGIN, predict as model_predict
+from app.core.category_model import MIN_MARGIN, predict as model_predict, predict_sub
 
 # Слова, по которым узнаётся категория. Русские и сербские вперемешку —
 # в этих чатах пишут и так, и так, часто в одном объявлении.
@@ -698,6 +698,18 @@ def classify_sub(parent_slug: str, text: str) -> str | None:
     родительской категории. Это не потеря — родитель показывает всё
     вложенное, — а вот ноутбук в «Телефонах» пришлось бы искать руками.
     """
+    # Модель — тот же приём, что в classify() для верхнего уровня: если
+    # для этого родителя накопилось достаточно размеченных примеров
+    # (tools/label-subcategories-with-ai.py + train-subcategories.py),
+    # пробуем её первой. Модели нет для этого родителя или она не
+    # уверена — работают правила ниже, как и раньше. Учим не на одной
+    # модели для всех шестидесяти подкатегорий разом, а отдельно на
+    # каждого родителя (см. category_model.py) — словари «Авто» и
+    # «Детей» не пересекаются вовсе, нет смысла путать их в одной сумке.
+    guessed, margin = predict_sub(parent_slug, text)
+    if guessed and margin >= MIN_MARGIN:
+        return guessed
+
     table = SUB_KEYWORDS.get(parent_slug)
     if not table:
         return None

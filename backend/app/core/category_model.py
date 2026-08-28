@@ -110,9 +110,16 @@ class Model:
         # и незачем запрещать ей первое из-за второго.
         self.by_category = by_category or {}
 
-    def trustworthy(self) -> bool:
-        """Есть ли хоть один раздел, которому можно доверять."""
-        return bool(self.trusted_categories()) and self.samples >= MIN_SAMPLES
+    def trustworthy(self, min_samples: int = MIN_SAMPLES) -> bool:
+        """
+        Есть ли хоть один раздел, которому можно доверять.
+
+        min_samples — порог настраиваемый: у модели подкатегорий одного
+        родителя структурно меньше данных, чем у модели по всем разделам
+        сразу (там копится весь сайт, тут — только один раздел), 500
+        для неё завышенный порог, отбраковал бы любую попытку.
+        """
+        return bool(self.trusted_categories()) and self.samples >= min_samples
 
     def trusted_categories(self) -> set[str]:
         """Разделы, где модель ошибается редко."""
@@ -248,6 +255,67 @@ def save(model: Model) -> None:
 def predict(text: str) -> tuple[str | None, float]:
     """Раздел по обученной модели — или (None, 0), если её нет."""
     model = load()
+    if model is None:
+        return None, 0.0
+    return model.predict(text)
+
+
+# ── подкатегории ────────────────────────────────────────────────────────
+#
+# Модель на все шестьдесят подкатегорий разом учить не пытаемся — словари
+# «Авто» и «Детей» не пересекаются вовсе, и одна общая модель путала бы
+# то, что и человеку разделить несложно. Вместо этого — отдельная
+# маленькая модель на каждого родителя, тем же классом Model, только
+# файл и порог доверия свои. Заводим не для всех родителей сразу, а по
+# мере того как для каждого набирается размеченных данных (см.
+# tools/label-subcategories-with-ai.py) — раздел без своей модели просто
+# работает по старым правилам SUB_KEYWORDS, ничего не ломается.
+
+# Данных здесь структурно меньше, чем на верхнем уровне (там весь сайт,
+# тут один раздел) — порог ниже, но не символический: модели, которая
+# доказала себя всего на паре десятков проверок, доверять рано.
+SUB_MIN_SAMPLES = 100
+
+_sub_loaded: dict[str, Model | None] = {}
+_sub_tried: set[str] = set()
+
+
+def sub_model_path(parent_slug: str) -> Path:
+    return Path(__file__).resolve().parents[2] / f"category-model-sub-{parent_slug}.json"
+
+
+def load_sub(parent_slug: str) -> Model | None:
+    """Читает обученную модель подкатегорий одного родителя. Нет файла — None."""
+    if parent_slug in _sub_tried:
+        return _sub_loaded.get(parent_slug)
+    _sub_tried.add(parent_slug)
+    try:
+        data = json.loads(sub_model_path(parent_slug).read_text(encoding="utf-8"))
+        model = Model(data["weights"], data["priors"], data["vocabulary"],
+                      data.get("accuracy", 0.0), data.get("samples", 0),
+                      data.get("by_category"))
+        if not model.trustworthy(min_samples=SUB_MIN_SAMPLES):
+            log.warning(
+                "классификатор подкатегорий %s не допущен: ни одна подкатегория "
+                "не набрала %.0f%% на %d+ проверках (всего примеров %d). "
+                "Работают SUB_KEYWORDS.",
+                parent_slug, MIN_ACCURACY * 100, MIN_PER_CATEGORY, model.samples)
+            _sub_loaded[parent_slug] = None
+            return None
+        _sub_loaded[parent_slug] = model
+    except (OSError, ValueError, KeyError):
+        _sub_loaded[parent_slug] = None
+    return _sub_loaded[parent_slug]
+
+
+def save_sub(parent_slug: str, model: Model) -> None:
+    sub_model_path(parent_slug).write_text(
+        json.dumps(model.to_json(), ensure_ascii=False), encoding="utf-8")
+
+
+def predict_sub(parent_slug: str, text: str) -> tuple[str | None, float]:
+    """Подкатегория по обученной модели родителя — или (None, 0), если её нет."""
+    model = load_sub(parent_slug)
     if model is None:
         return None, 0.0
     return model.predict(text)
