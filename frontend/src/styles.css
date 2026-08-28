@@ -1518,8 +1518,11 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
   /* Лента: пять в ряд. Карточки без белой подложки — у Avito фото
      со скруглением, а текст лежит прямо на фоне страницы: так сетка
-     выглядит легче и помещается больше. */
-  .infinite-grid{
+     выглядит легче и помещается больше. feed-grid — та же сетка на
+     странице раздела (CategoryLanding): без этой строки на десктопе
+     оставались те же две колонки, что и на телефоне, а объявление в
+     половину экрана шириной растягивало фото в гигантский квадрат. */
+  .infinite-grid, .feed-grid{
     grid-template-columns:repeat(5, 1fr);
     gap:26px 16px; padding:0;
   }
@@ -1688,7 +1691,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* Промежуточная ширина — планшеты и узкие окна */
 @media (min-width: 620px) and (max-width: 899px) {
   .app-shell{ max-width:720px; padding:0 16px; }
-  .infinite-grid{ grid-template-columns:repeat(3, 1fr); gap:16px 12px; }
+  .infinite-grid, .feed-grid{ grid-template-columns:repeat(3, 1fr); gap:16px 12px; }
   .cat-row{ display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; width:auto; }
   .cat-rows{ overflow:visible; }
   .cat-tile-2row{ width:auto; max-width:none; }
