@@ -62,6 +62,58 @@ MODEL = {
     "label": _label("Модель", "Model", "Model"),
 }
 
+# Бренд и модель для авто/мото/грузовых — отдельно от общего BRAND/MODEL
+# (тот остаётся текстом: для техники, одежды, духов и подобного —
+# готового списка не построишь, брендов слишком много и они не
+# перечислимы). Марка машины — наоборот, конечный и всем известный
+# список: делаем выпадающим и обязательным, вместо пустого текстового
+# поля, которое можно было проскочить не заполнив.
+_AUTO_BRAND = {
+    "key": "brand", "type": "select", "required": True,
+    "label": _label("Марка", "Make", "Marka"),
+    "options": _options(
+        ("volkswagen", "Volkswagen", "Volkswagen", "Volkswagen"),
+        ("opel", "Opel", "Opel", "Opel"),
+        ("renault", "Renault", "Renault", "Renault"),
+        ("peugeot", "Peugeot", "Peugeot", "Peugeot"),
+        ("citroen", "Citroën", "Citroën", "Citroën"),
+        ("fiat", "Fiat", "Fiat", "Fiat"),
+        ("skoda", "Škoda", "Škoda", "Škoda"),
+        ("ford", "Ford", "Ford", "Ford"),
+        ("bmw", "BMW", "BMW", "BMW"),
+        ("mercedes", "Mercedes-Benz", "Mercedes-Benz", "Mercedes-Benz"),
+        ("audi", "Audi", "Audi", "Audi"),
+        ("toyota", "Toyota", "Toyota", "Toyota"),
+        ("hyundai", "Hyundai", "Hyundai", "Hyundai"),
+        ("kia", "Kia", "Kia", "Kia"),
+        ("nissan", "Nissan", "Nissan", "Nissan"),
+        ("honda", "Honda", "Honda", "Honda"),
+        ("mazda", "Mazda", "Mazda", "Mazda"),
+        ("volvo", "Volvo", "Volvo", "Volvo"),
+        ("seat", "Seat", "Seat", "Seat"),
+        ("dacia", "Dacia", "Dacia", "Dacia"),
+        ("suzuki", "Suzuki", "Suzuki", "Suzuki"),
+        ("mitsubishi", "Mitsubishi", "Mitsubishi", "Mitsubishi"),
+        ("chevrolet", "Chevrolet", "Chevrolet", "Chevrolet"),
+        ("land_rover", "Land Rover", "Land Rover", "Land Rover"),
+        ("jeep", "Jeep", "Jeep", "Jeep"),
+        ("mini", "Mini", "Mini", "Mini"),
+        ("porsche", "Porsche", "Porsche", "Porsche"),
+        ("lexus", "Lexus", "Lexus", "Lexus"),
+        ("subaru", "Subaru", "Subaru", "Subaru"),
+        ("alfa_romeo", "Alfa Romeo", "Alfa Romeo", "Alfa Romeo"),
+        ("lada", "Lada", "Lada", "Lada"),
+        ("zastava", "Zastava", "Zastava", "Zastava"),
+        ("yugo", "Yugo", "Yugo", "Yugo"),
+        ("other", "Другая марка", "Other make", "Druga marka"),
+    ),
+}
+
+_AUTO_MODEL = {
+    "key": "model", "type": "text", "required": True,
+    "label": _label("Модель", "Model", "Model"),
+}
+
 WARRANTY = {
     "key": "warranty", "type": "boolean", "required": False,
     "label": _label("Есть гарантия", "Under warranty", "Ima garanciju"),
@@ -395,10 +447,10 @@ SUB_SCHEMAS: dict[str, list[dict]] = {
     ],
 
     # ——— авто ———
-    "cars": [BRAND, MODEL, _AUTO_YEAR, _AUTO_MILEAGE, _AUTO_TRANSMISSION,
+    "cars": [_AUTO_BRAND, _AUTO_MODEL, _AUTO_YEAR, _AUTO_MILEAGE, _AUTO_TRANSMISSION,
              _BODY_TYPE, _FUEL_TYPE, _ENGINE_VOLUME, _DRIVE_TYPE, COLOR, _AUTO_VIN],
-    "moto": [BRAND, MODEL, _AUTO_YEAR, _AUTO_MILEAGE, _ENGINE_VOLUME, COLOR],
-    "trucks": [BRAND, MODEL, _AUTO_YEAR, _AUTO_MILEAGE, _AUTO_TRANSMISSION, _BODY_TYPE, _FUEL_TYPE],
+    "moto": [_AUTO_BRAND, _AUTO_MODEL, _AUTO_YEAR, _AUTO_MILEAGE, _ENGINE_VOLUME, COLOR],
+    "trucks": [_AUTO_BRAND, _AUTO_MODEL, _AUTO_YEAR, _AUTO_MILEAGE, _AUTO_TRANSMISSION, _BODY_TYPE, _FUEL_TYPE],
     "car-parts": [BRAND, MODEL, CONDITION_SIMPLE],
     "tyres": [BRAND, _TYRE_SIZE, _TYRE_SEASON, CONDITION_SIMPLE],
 
