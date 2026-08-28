@@ -1952,6 +1952,11 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .admin-note { margin: 0 0 10px; font-size: 13px; color: #b3261e; }
 .admin-note-warn { color: #8a6100; }
+/* «Ни одного входа не зафиксировано» — не тревога, а нейтральное
+   пояснение отсутствия данных (человек мог войти до включения
+   слежения). Красный (обычный .admin-note) для этого слишком
+   зловеще — подталкивает искать проблему там, где её нет. */
+.admin-note-neutral { color: var(--ink-soft, #6b6b6b); }
 
 .admin-facts {
   display: flex;

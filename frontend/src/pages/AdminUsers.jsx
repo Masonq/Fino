@@ -326,7 +326,7 @@ export default function AdminUsers() {
                         ))}
                       </div>
                     ) : (
-                      <p className="admin-note">{t('admin.no_logins')}</p>
+                      <p className="admin-note admin-note-neutral">{t('admin.no_logins')}</p>
                     )}
                   </>
                 )}
