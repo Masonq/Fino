@@ -131,7 +131,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .avatar-mini{
   width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,var(--violet),#9B8FFF);
   display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:13px; flex-shrink:0;
+  overflow:hidden;
 }
+.avatar-mini img{ width:100%; height:100%; object-fit:cover; display:block; }
+.avatar-mini.is-company{ border-radius:10px; }
 .avito-login-pill .avatar-mini{ width:38px; height:38px; font-size:15px; }
 
 .notif-bell{

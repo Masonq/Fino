@@ -42,8 +42,10 @@ export default function TopNav() {
         <Link to="/post" className="topnav-post">{t('nav.post')}</Link>
         {user ? (
           <Link to="/profile" className="topnav-user">
-            <span className="avatar-mini">
-              {(user.display_name || '?').trim().charAt(0).toUpperCase()}
+            <span className={user.role === 'seller_business' ? 'avatar-mini is-company' : 'avatar-mini'}>
+              {user.avatar_url
+                ? <img src={user.avatar_url} alt="" />
+                : (user.company_name || user.display_name || '?').trim().charAt(0).toUpperCase()}
             </span>
           </Link>
         ) : (

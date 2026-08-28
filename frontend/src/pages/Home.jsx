@@ -264,7 +264,13 @@ export default function Home() {
           </button>
           <Link to={user ? '/profile' : '/login'} className="avito-login-pill">
             {user
-              ? <div className="avatar-mini">{(user.display_name || '?').trim().charAt(0).toUpperCase()}</div>
+              ? (
+                <div className={user.role === 'seller_business' ? 'avatar-mini is-company' : 'avatar-mini'}>
+                  {user.avatar_url
+                    ? <img src={user.avatar_url} alt="" />
+                    : (user.company_name || user.display_name || '?').trim().charAt(0).toUpperCase()}
+                </div>
+              )
               : t('common.login')}
           </Link>
         </div>
