@@ -212,102 +212,104 @@ export default function Search() {
         </button>
       </div>
 
-      {showFilters && (
-        <div className="filters-panel">
-          <div className="post-field">
-            <label>{t('search.category')}</label>
-            <select value={category} onChange={(e) => setCategory(e.target.value)}>
-              <option value="">{t('search.all_categories')}</option>
-              {/* Подкатегории отбиты отступом: в выпадающем списке вложенность
-                  иначе не видна, и «Телефоны» читались бы как ещё одна
-                  категория вровень с «Электроникой». */}
-              {categories.map((c) => [
-                <option key={c.id} value={c.slug}>{c.name?.[i18n.language] || c.name?.ru}</option>,
-                ...(c.children || []).map((sub) => (
-                  <option key={sub.id} value={sub.slug}>
-                    {'\u00A0\u00A0\u00A0'}{sub.name?.[i18n.language] || sub.name?.ru}
-                  </option>
-                )),
-              ])}
-            </select>
-          </div>
-
-          <div className="post-field-row">
+      <div className="search-body">
+        <aside className="search-sidebar">
+          <div className={showFilters ? 'filters-panel open' : 'filters-panel'}>
             <div className="post-field">
-              <label>{t('search.price_from')}</label>
-              <input type="number" inputMode="decimal" pattern="[0-9]*" value={priceMin} onChange={(e) => setPriceMin(e.target.value)} placeholder="0" />
+              <label>{t('search.category')}</label>
+              <select value={category} onChange={(e) => setCategory(e.target.value)}>
+                <option value="">{t('search.all_categories')}</option>
+                {/* Подкатегории отбиты отступом: в выпадающем списке вложенность
+                    иначе не видна, и «Телефоны» читались бы как ещё одна
+                    категория вровень с «Электроникой». */}
+                {categories.map((c) => [
+                  <option key={c.id} value={c.slug}>{c.name?.[i18n.language] || c.name?.ru}</option>,
+                  ...(c.children || []).map((sub) => (
+                    <option key={sub.id} value={sub.slug}>
+                      {'\u00A0\u00A0\u00A0'}{sub.name?.[i18n.language] || sub.name?.ru}
+                    </option>
+                  )),
+                ])}
+              </select>
             </div>
+
+            <div className="post-field-row">
+              <div className="post-field">
+                <label>{t('search.price_from')}</label>
+                <input type="number" inputMode="decimal" pattern="[0-9]*" value={priceMin} onChange={(e) => setPriceMin(e.target.value)} placeholder="0" />
+              </div>
+              <div className="post-field">
+                <label>{t('search.price_to')}</label>
+                <input type="number" inputMode="decimal" pattern="[0-9]*" value={priceMax} onChange={(e) => setPriceMax(e.target.value)} placeholder="—" />
+              </div>
+            </div>
+
             <div className="post-field">
-              <label>{t('search.price_to')}</label>
-              <input type="number" inputMode="decimal" pattern="[0-9]*" value={priceMax} onChange={(e) => setPriceMax(e.target.value)} placeholder="—" />
+              <label>{t('search.city')}</label>
+              <select value={city} onChange={(e) => setCity(e.target.value)}>
+                <option value="">{t('search.all_cities')}</option>
+                {CITIES.map((c) => <option key={c.slug} value={c.slug}>{cityLabel(c.slug, i18n.language)}</option>)}
+              </select>
             </div>
+
+            <label className="filter-check">
+              <input type="checkbox" checked={withPhoto} onChange={(e) => setWithPhoto(e.target.checked)} />
+              {t('search.only_photo')}
+            </label>
+
+            {activeCount > 0 && (
+              <button className="filters-reset" onClick={resetFilters}>{t('actions.reset_filters')}</button>
+            )}
           </div>
 
-          <div className="post-field">
-            <label>{t('search.city')}</label>
-            <select value={city} onChange={(e) => setCity(e.target.value)}>
-              <option value="">{t('search.all_cities')}</option>
-              {CITIES.map((c) => <option key={c.slug} value={c.slug}>{cityLabel(c.slug, i18n.language)}</option>)}
-            </select>
-          </div>
+          {/* Поля именно этого раздела: у квартиры «снять или купить», у
+              машины — вид техники. Общая форма с ценой на эти вопросы не
+              отвечает, и человек уходит листать всё подряд. */}
+          <CategoryFields
+            slug={current?.slug || category}
+            value={fields}
+            onChange={setFields}
+          />
 
-          <label className="filter-check">
-            <input type="checkbox" checked={withPhoto} onChange={(e) => setWithPhoto(e.target.checked)} />
-            {t('search.only_photo')}
-          </label>
-
-          {activeCount > 0 && (
-            <button className="filters-reset" onClick={resetFilters}>{t('actions.reset_filters')}</button>
+          {subs.length > 0 && (
+            <div className="sub-row">
+              <button
+                className={category === current.slug ? 'sub-chip active' : 'sub-chip'}
+                onClick={() => setCategory(current.slug)}
+              >
+                {t('search.all_in_category')}
+              </button>
+              {subs.map((sub) => (
+                <button
+                  key={sub.id}
+                  className={category === sub.slug ? 'sub-chip active' : 'sub-chip'}
+                  onClick={() => setCategory(sub.slug)}
+                >
+                  {label(sub)}
+                </button>
+              ))}
+            </div>
           )}
-        </div>
-      )}
+        </aside>
 
-      {/* Поля именно этого раздела: у квартиры «снять или купить», у
-          машины — вид техники. Общая форма с ценой на эти вопросы не
-          отвечает, и человек уходит листать всё подряд. */}
-      <CategoryFields
-        slug={current?.slug || category}
-        value={fields}
-        onChange={setFields}
-      />
-
-      {subs.length > 0 && (
-        <div className="sub-row">
-          <button
-            className={category === current.slug ? 'sub-chip active' : 'sub-chip'}
-            onClick={() => setCategory(current.slug)}
-          >
-            {t('search.all_in_category')}
-          </button>
-          {subs.map((sub) => (
-            <button
-              key={sub.id}
-              className={category === sub.slug ? 'sub-chip active' : 'sub-chip'}
-              onClick={() => setCategory(sub.slug)}
-            >
-              {label(sub)}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {activeChips.length > 0 && (
-        <div className="active-filters-row">
-          {activeChips.map((c) => (
-            <button key={c.id} className="active-filter-chip" onClick={c.onRemove}>
-              {c.text}
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
-            </button>
-          ))}
-          {(activeChips.length > 1 || activeCount > 0) && (
-            <button className="active-filter-chip clear-all" onClick={() => { resetFilters(); setFields({ mode: '', chip: '' }) }}>
-              {t('actions.reset_filters')}
-            </button>
+        <div className="search-results">
+          {activeChips.length > 0 && (
+            <div className="active-filters-row">
+              {activeChips.map((c) => (
+                <button key={c.id} className="active-filter-chip" onClick={c.onRemove}>
+                  {c.text}
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                </button>
+              ))}
+              {(activeChips.length > 1 || activeCount > 0) && (
+                <button className="active-filter-chip clear-all" onClick={() => { resetFilters(); setFields({ mode: '', chip: '' }) }}>
+                  {t('actions.reset_filters')}
+                </button>
+              )}
+            </div>
           )}
-        </div>
-      )}
 
-      <div className="results-head">
+          <div className="results-head">
         <div className="results-head-left">
           {/* Раньше тут же был счётчик «Найдено: N» — при добавлении
               «По релевантности» ряд стал слишком тесным дважды подряд.
@@ -416,6 +418,8 @@ export default function Search() {
 
       <div ref={sentinelRef} className="feed-sentinel">
         {loadingMore && <span className="feed-loading">{t('actions.loading')}</span>}
+      </div>
+        </div>
       </div>
     </div>
   )

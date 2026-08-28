@@ -628,10 +628,17 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   display:flex; align-items:center; justify-content:center;
 }
 
+/* Раньше видимость панели держалась целиком на условном рендеринге в
+   JSX ({showFilters && ...}) — на мобильном это то, что нужно, но
+   такой блок нельзя «просто показать всегда» через CSS на десктопе,
+   его там нет в разметке вовсе. Теперь панель рендерится всегда, а
+   .open отвечает за мобильный показ/скрытие — на десктопе ниже это
+   правило перекрывается и она видна независимо от .open. */
 .filters-panel{
-  display:flex; flex-direction:column; gap:12px; padding:14px 12px;
+  display:none; flex-direction:column; gap:12px; padding:14px 12px;
   background:#fff; border-bottom:1px solid rgba(20,30,25,.06);
 }
+.filters-panel.open{ display:flex; }
 .filter-check{ display:flex; align-items:center; gap:9px; font-size:13.5px; font-weight:600; color:var(--ink); }
 .filter-check input{ width:19px; height:19px; accent-color:var(--primary); }
 .sort-row{ display:flex; gap:7px; flex-wrap:wrap; }
@@ -1556,6 +1563,34 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   /* поиск */
   .search-topbar{ padding:18px 0; }
   .search-field{ max-width:640px; }
+  /* Фильтры прячутся за кнопкой-иконкой ровно потому, что на телефоне
+     тесно — на десктопе места достаточно, чтобы держать их видимыми
+     постоянно, боковой колонкой, как это делает большинство маркетплейсов
+     (Avito в том числе): не нужно открывать панель, чтобы просто
+     посмотреть, какие фильтры вообще есть. */
+  .search-filter-btn{ display:none; }
+  .search-body{
+    display:grid; grid-template-columns:264px 1fr; gap:28px; align-items:start;
+  }
+  .search-sidebar{
+    position:sticky; top:82px;
+    display:flex; flex-direction:column; gap:16px;
+  }
+  .search-sidebar .filters-panel{
+    display:flex !important; background:#fff; border:1px solid rgba(20,30,25,.08);
+    border-radius:16px; padding:16px;
+  }
+  /* Параметры раздела и подразделы — те же карточки-контейнеры, что и
+     фильтры сверху, чтобы боковая колонка читалась одним целым, а не
+     набором случайных кусков. */
+  .search-sidebar .cat-fields, .search-sidebar .sub-row{
+    background:#fff; border:1px solid rgba(20,30,25,.08); border-radius:16px; padding:16px;
+    flex-wrap:wrap;
+  }
+  /* «Цена от / до» в ряд — на всю ширину страницы уместно, но 264px
+     колонки не хватает на два поля рядом: подписи обрезались, поля
+     наезжали друг на друга. В сайдбаре — друг под другом. */
+  .search-sidebar .post-field-row{ flex-direction:column; gap:12px; }
 
   /* чат — колонкой по центру, читать широкие строки неудобно */
   .chat-page{ max-width:760px; margin:0 auto; }
