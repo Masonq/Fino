@@ -528,8 +528,9 @@ SUB_KEYWORDS: dict[str, dict[str, list[str]]] = {
         # обучаемому классификатору (category_model.py) на таком есть
         # чему учиться, в отличие от одной общей «мелочи».
         "wearables": ["умные часы", "смарт-часы", "фитнес-браслет", "smart band", "mi band",
-                      "часы", "garmin", "smarttag", "smart tag"],
-        "charging": ["powerbank", "повербанк", "зарядк", "кабель для зарядк", "провод для зарядк"],
+                      "часы", "garmin", "smarttag", "smart tag", "apple watch", "watch series"],
+        "charging": ["powerbank", "повербанк", "зарядк", "кабель для зарядк", "провод для зарядк",
+                     "зарядн", "зарядное устройств"],
         # «Наушники» без уточнения остаются в tv-audio (обычные, для
         # дома), а «гарнитура» — игровой/рабочий термин, сюда же.
         "peripherals": ["клавиатур", "мышк", "компьютерная мыш", "докстанц", "док-станц",
@@ -717,6 +718,14 @@ def classify_sub(parent_slug: str, text: str) -> str | None:
     # (см. _TOOL_PURPOSE_RE в classify()) — только там, а не в
     # classify_sub, поэтому рюкзаки с карманом под телефон уезжали
     # в «Телефоны».
+    #
+    # Исходный текст сохраняем отдельно: тот же самый оборот «для
+    # iPhone/iPad» нужен ещё раз ниже, в правиле «что раньше в
+    # заголовке» — «Чехол для iPad Air» без него терял всякий след
+    # устройства, и решение откатывалось на голый счёт слов, где более
+    # длинный корень «клавиатур» (в хвосте «...с клавиатурой») перевешивал
+    # более короткий «чехол», хотя чехол и назван первым, и есть товар.
+    original_text = text
     if parent_slug == "electronics":
         text = _DEVICE_POCKET_RE.sub(" ", text)
     # «Баскетбольное кольцо», «кольцо диафрагмы» — то же слово, что у
@@ -781,11 +790,18 @@ def classify_sub(parent_slug: str, text: str) -> str | None:
             found = [p for p in (_pos(w) for w in words) if p is not None]
             return min(found) if found else None
 
-        title_only = _fold(text.split("\n", 1)[0])
+        title_only = _fold(original_text.split("\n", 1)[0])
+        # Не привязываемся к scores для устройств: «ipad» в scores не
+        # попадёт, если _DEVICE_POCKET_RE его уже вырезал из text — а
+        # для сравнения позиций устройство всё равно нужно найти в
+        # original_text, вырезка тут ни при чём. Раньше «if k in scores»
+        # оставляло device_positions пустым именно в таких случаях, и
+        # спор между двумя аксессуарами (чехол и клавиатура у одного
+        # и того же планшета) решался по голому счёту слов вместо
+        # позиции в заголовке.
         device_positions = {
             k: _first_pos(table.get(k, []))
             for k in ("laptops", "computers", "tablets", "phones")
-            if k in scores
         }
         device_positions = {k: p for k, p in device_positions.items() if p is not None}
 
