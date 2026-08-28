@@ -69,6 +69,7 @@ export default function CategoryFields({ slug, value, onChange }) {
         </div>
       )}
 
+      {chips && (
       <div className="cat-chips">
         {chips.map((chip) => (
           <button
@@ -80,6 +81,7 @@ export default function CategoryFields({ slug, value, onChange }) {
           </button>
         ))}
       </div>
+      )}
     </div>
   )
 }
