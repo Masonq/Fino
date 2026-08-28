@@ -62,16 +62,18 @@ export default function ListingDashboard() {
 
       {title && <div className="ldash-listing-title">{title}</div>}
 
-      <div className="admin-filters">
-        {PERIODS.map((p) => (
-          <button
-            key={p}
-            className={`chip ${p === days ? 'chip-active' : ''}`}
-            onClick={() => setDays(p)}
-          >
-            {t('stats.days', { count: p })}
-          </button>
-        ))}
+      <div className="admin-filters-wrap">
+        <div className="admin-filters">
+          {PERIODS.map((p) => (
+            <button
+              key={p}
+              className={`chip ${p === days ? 'chip-active' : ''}`}
+              onClick={() => setDays(p)}
+            >
+              {t('stats.days', { count: p })}
+            </button>
+          ))}
+        </div>
       </div>
 
       {denied ? (
