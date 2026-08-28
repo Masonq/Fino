@@ -409,11 +409,44 @@ def search_listings(
         + case((User.document_verified.is_(True), 0.5), else_=0)
         + case((User.role == UserRole.seller_business, 0.3), else_=0)
     )
+
+    # Разовое поднятие (bump) — раньше подделывало published_at, теперь
+    # свой явный бонус здесь: сильный сразу после покупки, гладко
+    # затухающий по экспоненте, а не бессрочный обрубок по дате
+    # публикации. BUMP_BOOST_MAX подобран так, чтобы в первые часы
+    # перебивать почти любую органическую активность (максимум
+    # остальных слагаемых для типичного объявления — единицы, не
+    # десятки), BUMP_DECAY_HOURS — за сколько часов бонус спадает
+    # вдвое: на 2*BUMP_DECAY_HOURS от покупки уже около четверти
+    # исходной силы, дальше объявление конкурирует на общих основаниях.
+    from app.models import Promotion, PromotionStatus
+
+    BUMP_BOOST_MAX = 6.0
+    BUMP_DECAY_HOURS = 10.0
+
+    bump_started = (
+        db.query(func.max(Promotion.starts_at))
+        .filter(
+            Promotion.listing_id == Listing.id,
+            Promotion.type == PromotionType.bump,
+            Promotion.status == PromotionStatus.paid,
+            Promotion.starts_at.isnot(None),
+        )
+        .correlate(Listing)
+        .scalar_subquery()
+    )
+    bump_hours = func.extract("epoch", func.now() - bump_started) / 3600.0
+    bump_boost = case(
+        (bump_started.isnot(None), BUMP_BOOST_MAX * func.exp(-bump_hours / BUMP_DECAY_HOURS)),
+        else_=0.0,
+    )
+
     relevance = (
         behavior_score * 2.0
         + freshness * 1.5
         + seller_score * 1.0
         + case((Listing.is_complete.is_(True), 0.8), else_=0)
+        + bump_boost
     )
 
     # price_in_eur уже определена выше — используется тут для «сначала

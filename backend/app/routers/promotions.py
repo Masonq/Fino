@@ -55,6 +55,11 @@ YOOKASSA_HOST = "https://api.yookassa.ru/v3"
 # спрос именно на это.
 PROMOTION_DURATION_DAYS = 7
 
+# Окно, после которого бонус bump в формуле релевантности (listings.py,
+# BUMP_BOOST_MAX/BUMP_DECAY_HOURS) уже практически неотличим от нуля —
+# чисто информационная граница для expires_at, не резкий обрыв.
+BUMP_DECAY_WINDOW_HOURS = 48
+
 # Цены в рублях — не окончательные, ориентир для первой версии, можно
 # поправить, когда будут первые продажи и станет видно, что дорого,
 # а что дёшево.
@@ -120,16 +125,27 @@ def _activate_promotion(db: Session, promo: Promotion) -> None:
     """
     promo.status = PromotionStatus.paid
     promo.starts_at = utcnow()
-    if promo.type != PromotionType.bump:
+    if promo.type == PromotionType.bump:
+        # Раньше тут подделывалась published_at — «как будто объявление
+        # только что опубликовано». У этого было два изъяна: во-первых,
+        # нечестно перед покупателями, листающими по дате — объявление
+        # реально старое, а выглядит сегодняшним; во-вторых, эффект
+        # был всё-или-ничего и не имел срока — раз обновив дату, дальше
+        # либо решает вся остальная формула релевантности (просмотры,
+        # избранное — а у них веса нет и не тает), либо сортировка
+        # «сначала новые» бессрочно держит его наверху даже через месяц.
+        # Теперь вместо подмены поля — свой явный, сильный и заметно
+        # затухающий бонус прямо в формуле релевантности (см.
+        # BUMP_BOOST_MAX/BUMP_DECAY_HOURS в listings.py), отсчитываемый
+        # от promo.starts_at, а не от даты публикации. expires_at тут
+        # чисто информационный — граница, после которой бонус в формуле
+        # уже практически неотличим от нуля, а не то, что реально
+        # отрезает его резко.
+        promo.expires_at = utcnow() + timedelta(hours=BUMP_DECAY_WINDOW_HOURS)
+    else:
         promo.expires_at = utcnow() + timedelta(days=PROMOTION_DURATION_DAYS)
 
     listing = db.query(Listing).get(promo.listing_id)
-    if promo.type == PromotionType.bump and listing:
-        # Разовое поднятие: делаем вид, что объявление только что
-        # опубликовано — сортировка «сначала новые» поднимает его
-        # наверх сама, без отдельного поля под это.
-        listing.published_at = utcnow()
-
     db.commit()
 
     try:
