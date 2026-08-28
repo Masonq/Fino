@@ -185,6 +185,8 @@ export default function CategoryLanding() {
 
       {!searched && (
       <>
+      <div className="landing-body">
+      <div className="landing-sidebar">
       <div className="landing-hero" style={{ background: BANNER_GRADIENTS[slug] || BANNER_GRADIENTS['real-estate'] }}>
         <div className="landing-head">
           <button className="landing-back on-hero" onClick={goBack}
@@ -346,7 +348,9 @@ export default function CategoryLanding() {
       <button className="landing-go" onClick={() => search()}>
         {t('landing.show')}
       </button>
+      </div>
 
+      <div className="landing-main">
       {/* Подразделы: если отвечать на вопросы нечем, человек всё равно
           видит, что тут есть. Как у Авито — несколько плиток с картинкой
           и «Все категории» последней, а не весь список сразу: длинный
@@ -413,6 +417,8 @@ export default function CategoryLanding() {
           </div>
         </div>
       )}
+      </div>
+      </div>
       </>
       )}
 
