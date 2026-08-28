@@ -136,6 +136,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .avatar-mini img{ width:100%; height:100%; object-fit:cover; display:block; }
 .avatar-mini.is-company{ border-radius:10px; }
 .avito-login-pill .avatar-mini{ width:38px; height:38px; font-size:15px; }
+.avatar-mini.skeleton{
+  background:#EDEDE8; animation:sk-pulse 1.4s ease-in-out infinite; will-change:opacity;
+}
 
 .notif-bell{
   flex-shrink:0; position:relative; display:flex; align-items:center; justify-content:center;

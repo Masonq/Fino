@@ -78,7 +78,7 @@ export default function Home() {
   // иначе цвет статус-бара не успевает за сменой и отстаёт
   const [slide] = useState(() => Math.floor(Math.random() * PROMO_SLIDES.length))
   const [searchOpen, setSearchOpen] = useState(false)
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
 
   // Статус-бар на iOS 26 Safari больше НЕ управляется theme-color: браузер берёт цвет
   // из background-color липкого элемента у края экрана (наш баннер) в момент отрисовки.
@@ -263,15 +263,23 @@ export default function Home() {
             </span>
           </button>
           <Link to={user ? '/profile' : '/login'} className="avito-login-pill">
-            {user
-              ? (
-                <div className={user.role === 'seller_business' ? 'avatar-mini is-company' : 'avatar-mini'}>
-                  {user.avatar_url
-                    ? <img src={user.avatar_url} alt="" />
-                    : (user.company_name || user.display_name || '?').trim().charAt(0).toUpperCase()}
-                </div>
-              )
-              : t('common.login')}
+            {/* Пока идёт проверка токена, user ещё null — раньше тут
+                на секунду показывалось «Войти» текстом, а затем резко
+                сжималось в кружок аватара: заметный скачок макета при
+                каждом обновлении у любого вошедшего человека. Нейтральный
+                кружок того же размера, что и у итогового аватара, не
+                дёргается ни в одну сторону, каким бы ни был исход. */}
+            {authLoading
+              ? <div className="avatar-mini skeleton" />
+              : user
+                ? (
+                  <div className={user.role === 'seller_business' ? 'avatar-mini is-company' : 'avatar-mini'}>
+                    {user.avatar_url
+                      ? <img src={user.avatar_url} alt="" />
+                      : (user.company_name || user.display_name || '?').trim().charAt(0).toUpperCase()}
+                  </div>
+                )
+                : t('common.login')}
           </Link>
         </div>
 

@@ -10,7 +10,7 @@ import { useAuth } from '../context/AuthContext'
 export default function TopNav() {
   const { t } = useTranslation()
   const { pathname } = useLocation()
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
 
   const items = [
     { to: '/', key: 'nav.home' },
@@ -40,7 +40,14 @@ export default function TopNav() {
 
       <div className="topnav-right">
         <Link to="/post" className="topnav-post">{t('nav.post')}</Link>
-        {user ? (
+        {/* Тот же скачок макета, что чинил в Home.jsx: пока идёт
+            проверка токена, user ещё null — без этого тут на секунду
+            показывалось «Войти» текстом, а затем сжималось в кружок
+            аватара. Нейтральный кружок того же размера не дёргается
+            ни в одну сторону, каким бы ни был исход. */}
+        {authLoading ? (
+          <span className="avatar-mini skeleton" />
+        ) : user ? (
           <Link to="/profile" className="topnav-user">
             <span className={user.role === 'seller_business' ? 'avatar-mini is-company' : 'avatar-mini'}>
               {user.avatar_url
