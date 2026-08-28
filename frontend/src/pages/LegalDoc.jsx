@@ -1,9 +1,9 @@
 import { Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import PageHeader from '../components/PageHeader'
-import { TERMS, PRIVACY } from '../data/legalContent'
+import { TERMS, PRIVACY, RULES } from '../data/legalContent'
 
-const DOCS = { terms: TERMS, privacy: PRIVACY }
+const DOCS = { terms: TERMS, privacy: PRIVACY, rules: RULES }
 
 /**
  * Условия использования и Политика конфиденциальности — один

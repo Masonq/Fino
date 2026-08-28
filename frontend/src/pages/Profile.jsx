@@ -139,6 +139,13 @@ export default function Profile() {
           {t('support.title')}
           <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
         </Link>
+        <Link className="profile-row" to="/rules">
+          <span className="profile-row-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M9 12h6M9 16h6M9 8h1" /><rect x="4" y="3" width="16" height="18" rx="2" /></svg>
+          </span>
+          {t('nav.rules')}
+          <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+        </Link>
         <Link className="profile-row" to="/terms">
           <span className="profile-row-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M6 2.5h9l3 3V21H6V2.5Z" /><path d="M9 9h6M9 13h6M9 17h4" /></svg>

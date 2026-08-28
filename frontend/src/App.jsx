@@ -148,6 +148,7 @@ export default function App() {
           <Route path="/my/:id/stats" element={<ListingDashboard />} />
           <Route path="/terms" element={<LegalDoc doc="terms" />} />
           <Route path="/privacy" element={<LegalDoc doc="privacy" />} />
+          <Route path="/rules" element={<LegalDoc doc="rules" />} />
           <Route path="/chats" element={<Chats />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/seller/:id" element={<SellerProfile />} />

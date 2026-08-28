@@ -430,3 +430,149 @@ export const PRIVACY = {
     ],
   },
 }
+
+// Правила размещения — что можно и нельзя выкладывать, каким должно
+// быть само объявление. Отдельно от Условий использования (там —
+// про аккаунт и площадку в целом), здесь — конкретно про содержимое.
+export const RULES = {
+  ru: {
+    title: 'Правила размещения',
+    updated: 'Обновлено: 28 августа 2026',
+    sections: [
+      {
+        h: '1. Что нельзя размещать',
+        p: [
+          'Всё, что запрещено к обороту законом Сербии: оружие и боеприпасы без исключений, наркотики и любые вещества, имитирующие их эффект, поддельные документы, деньги и ценные бумаги, ворованные или полученные обманом вещи.',
+          'Товары и услуги, требующие лицензии, которой у вас нет — рецептурные лекарства, финансовые и страховые услуги, азартные игры.',
+          'Контент сексуального характера, услуги интимного характера под любым прикрытием, финансовые пирамиды и схемы «приведи друга — получи процент».',
+          'Живые животные — можно искать новый дом бесплатно, но не продавать: этот раздел не про зоомагазин.',
+          'Подделки под известные бренды, если это прямо заявлено или очевидно из фото и описания.',
+        ],
+      },
+      {
+        h: '2. Одно объявление — одна вещь',
+        p: [
+          'Если продаёте несколько разных вещей, на каждую — своё объявление, не список всего сразу в одном. Исключение — если это действительно единый комплект (сервиз, комплект мебели), который логично продать целиком.',
+          'Дублировать одно и то же объявление в нескольких категориях или создавать его заново вместо того, чтобы поднять существующее — тоже не по правилам, для этого есть платное поднятие в поиске.',
+        ],
+      },
+      {
+        h: '3. Фото и описание',
+        p: [
+          'Фотографии — свои, самой вещи, а не найденные в интернете или взятые с сайта производителя. Исключение — если вещь ещё не куплена и это честно указано в описании.',
+          'Категория выбирается по смыслу объявления, не по тому, где больше просмотров. Если сомневаетесь, ближе к тому, что человек будет искать этими словами.',
+          'Цена и состояние — реальные на момент публикации. «Торг» и «цена не указана» — не повод писать заведомо заниженную цифру ради внимания.',
+        ],
+      },
+      {
+        h: '4. Продвижение не отменяет эти правила',
+        p: [
+          'Платное продвижение (поднятие в поиске, выделение цветом, крупная карточка) увеличивает заметность уже опубликованного объявления — оно всё равно должно соответствовать правилам выше, модерация проверяет одинаково и платные, и бесплатные объявления.',
+          'Бизнес-аккаунт (после проверки личности) даёт видимый значок «Компания» и увеличенный лимит объявлений — но не освобождает от этих же правил.',
+        ],
+      },
+      {
+        h: '5. Что происходит при нарушении',
+        p: [
+          'Объявление, не прошедшее проверку, отклоняется с указанием причины — можно поправить и отправить заново. Уже опубликованное, но нарушающее правила, может быть снято без предупреждения.',
+          'Жалобу на конкретное объявление или продавца можно оставить прямо на странице объявления или в профиле продавца — рассматривается вручную, не автоматически.',
+          'Повторные или грубые нарушения ведут к ограничению или блокировке аккаунта — подробнее в Условиях использования.',
+        ],
+      },
+    ],
+  },
+
+  en: {
+    title: 'Posting Rules',
+    updated: 'Updated: August 28, 2026',
+    sections: [
+      {
+        h: '1. What you cannot post',
+        p: [
+          'Anything illegal under Serbian law: weapons and ammunition without exception, drugs and substances mimicking their effect, forged documents, money, or securities, stolen or fraudulently obtained items.',
+          'Goods and services that require a license you don\u2019t have \u2014 prescription medication, financial and insurance services, gambling.',
+          'Sexual content, services of an intimate nature under any label, financial pyramids and \u201crefer a friend for a cut\u201d schemes.',
+          'Live animals \u2014 rehoming for free is fine, selling is not: this section isn\u2019t a pet store.',
+          'Counterfeits of known brands, when stated outright or obvious from the photos and description.',
+        ],
+      },
+      {
+        h: '2. One listing, one item',
+        p: [
+          'If you\u2019re selling several different things, each gets its own listing, not one combined list. Exception: a genuine matching set (a dinner service, a furniture set) that makes sense to sell as one.',
+          'Duplicating the same listing across categories, or re-creating it instead of bumping the existing one, isn\u2019t allowed either \u2014 that\u2019s what paid bump-to-top is for.',
+        ],
+      },
+      {
+        h: '3. Photos and description',
+        p: [
+          'Photos should be your own, of the actual item \u2014 not pulled from the internet or a manufacturer\u2019s site. Exception: if the item isn\u2019t in hand yet and the listing says so honestly.',
+          'Pick the category that matches what the listing actually is, not whichever gets more views. When unsure, go with what a buyer would search for.',
+          'Price and condition should be accurate at the time of posting. \u201cNegotiable\u201d or \u201cno price\u201d isn\u2019t a license to post a deliberately misleading number for attention.',
+        ],
+      },
+      {
+        h: '4. Promotion doesn\u2019t override these rules',
+        p: [
+          'Paid promotion (bump to top, color highlight, large card) makes an already-published listing more visible \u2014 it still has to follow the rules above; moderation checks paid and free listings the same way.',
+          'A business account (after identity verification) shows a visible \u201cBusiness\u201d badge and a higher listing limit \u2014 it doesn\u2019t exempt you from these same rules.',
+        ],
+      },
+      {
+        h: '5. What happens if you break them',
+        p: [
+          'A listing that fails review is rejected with a reason \u2014 fix it and resubmit. An already-published listing that turns out to break the rules can be taken down without warning.',
+          'You can report a specific listing or seller right from the listing page or the seller\u2019s profile \u2014 reports are reviewed by a person, not automatically.',
+          'Repeated or serious violations lead to account restrictions or a ban \u2014 see the Terms of Use for details.',
+        ],
+      },
+    ],
+  },
+
+  sr: {
+    title: 'Pravila oglašavanja',
+    updated: 'Ažurirano: 28. avgust 2026',
+    sections: [
+      {
+        h: '1. Šta ne smete da objavite',
+        p: [
+          'Sve što je zakonom Srbije zabranjeno u prometu: oružje i municiju bez izuzetka, drogu i supstance koje imitiraju njeno dejstvo, falsifikovana dokumenta, novac ili hartije od vrednosti, ukradene ili prevarom stečene stvari.',
+          'Robu i usluge koje zahtevaju dozvolu koju nemate \u2014 lekove na recept, finansijske i osiguravajuće usluge, igre na sreću.',
+          'Sadržaj seksualne prirode, intimne usluge pod bilo kojim izgovorom, finansijske piramide i šeme \u201epreporuči prijatelja za procenat\u201c.',
+          'Žive životinje \u2014 besplatno udomljavanje je u redu, prodaja nije: ovaj odeljak nije zoo prodavnica.',
+          'Falsifikate poznatih brendova, kada je to izričito navedeno ili očigledno sa fotografija i opisa.',
+        ],
+      },
+      {
+        h: '2. Jedan oglas \u2014 jedna stvar',
+        p: [
+          'Ako prodajete više različitih stvari, svaka dobija svoj oglas, ne spisak svega u jednom. Izuzetak \u2014 kada je reč o pravom kompletu (servis, komplet nameštaja) koji ima smisla prodati kao celinu.',
+          'Dupliranje istog oglasa u više kategorija, ili ponovno kreiranje umesto podizanja postojećeg, takođe nije dozvoljeno \u2014 za to postoji plaćeno podizanje u pretrazi.',
+        ],
+      },
+      {
+        h: '3. Fotografije i opis',
+        p: [
+          'Fotografije treba da budu vaše, same stvari \u2014 ne preuzete sa interneta ili sajta proizvođača. Izuzetak \u2014 ako stvar još nije nabavljena i to je pošteno navedeno u opisu.',
+          'Kategoriju birajte prema suštini oglasa, ne prema tome gde ima više pregleda. Ako niste sigurni, birajte ono što bi kupac tražio tim rečima.',
+          'Cena i stanje treba da budu tačni u trenutku objave. \u201eCena po dogovoru\u201c ili \u201ecena nije navedena\u201c nije razlog da upišete namerno pogrešan broj radi pažnje.',
+        ],
+      },
+      {
+        h: '4. Izdvajanje ne ukida ova pravila',
+        p: [
+          'Plaćeno izdvajanje (podizanje u pretrazi, isticanje bojom, velika kartica) čini već objavljen oglas vidljivijim \u2014 i dalje mora da poštuje pravila iznad, moderacija proverava plaćene i besplatne oglase na isti način.',
+          'Poslovni nalog (posle provere identiteta) dobija vidljivu oznaku \u201eKompanija\u201c i veći limit oglasa \u2014 ne oslobađa vas ovih istih pravila.',
+        ],
+      },
+      {
+        h: '5. Šta sledi u slučaju kršenja',
+        p: [
+          'Oglas koji ne prođe proveru se odbija uz razlog \u2014 možete ga ispraviti i ponovo poslati. Već objavljen oglas koji krši pravila može biti uklonjen bez upozorenja.',
+          'Prijavu konkretnog oglasa ili prodavca možete poslati direktno sa stranice oglasa ili profila prodavca \u2014 prijave pregleda osoba, ne automatski.',
+          'Ponovljena ili ozbiljna kršenja vode ograničenju ili blokiranju naloga \u2014 detaljnije u Uslovima korišćenja.',
+        ],
+      },
+    ],
+  },
+}
