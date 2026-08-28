@@ -58,13 +58,30 @@ export default function ListingDetail() {
 
   // Шапка появляется, когда фото уехало вверх — как у Avito:
   // сначала кнопки полупрозрачными кружками на фото, потом панель на белом.
+  //
+  // Нижняя кнопка «Написать продавцу» — по тому же принципу, что и
+  // многие мобильные сайты: прячется, когда листаешь вниз (читаешь
+  // описание — кнопка занимает место просто так), и тут же
+  // возвращается, стоит прокрутить назад вверх — жест «хочу
+  // вернуться» и «хочу написать» это, как правило, один и тот же
+  // порыв. Не прячем возле самого верха (< 80px) — там дёргалась бы
+  // от каждого мелкого покачивания при обычном чтении первого экрана.
+  const lastScrollY = useRef(0)
+  const [ctaHidden, setCtaHidden] = useState(false)
   useEffect(() => {
     let raf = 0
     const onScroll = () => {
       if (raf) return
       raf = requestAnimationFrame(() => {
         raf = 0
-        setScrolled(window.scrollY > 210)
+        const y = window.scrollY
+        setScrolled(y > 210)
+        if (y > 80) {
+          setCtaHidden(y > lastScrollY.current)
+        } else {
+          setCtaHidden(false)
+        }
+        lastScrollY.current = y
       })
     }
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -653,7 +670,7 @@ export default function ListingDetail() {
           в styles.css превращает её в обычную часть карточки, сразу
           под ценой и продавцом, а не в конце после похожих объявлений. */}
       {gone ? (
-        <div className="sticky-cta">
+        <div className={ctaHidden ? 'sticky-cta hidden' : 'sticky-cta'}>
           {/* Не обещаем похожие: подбор пока слабый, и пустая надежда
               хуже честного «смотрите раздел». */}
           {/* Ведём в поиск по подразделу этого объявления, а не на /c/,
@@ -668,7 +685,7 @@ export default function ListingDetail() {
           </button>
         </div>
       ) : listing.external_source === 'telegram' && listing.external_author ? (
-        <div className="sticky-cta">
+        <div className={ctaHidden ? 'sticky-cta hidden' : 'sticky-cta'}>
           <a
             className="cta-btn primary telegram"
             href={`https://t.me/${listing.external_author}`}
@@ -682,7 +699,7 @@ export default function ListingDetail() {
           </a>
         </div>
       ) : (
-      <div className="sticky-cta">
+      <div className={ctaHidden ? 'sticky-cta hidden' : 'sticky-cta'}>
         <button className="cta-btn icon">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .7 3a2 2 0 0 1-.4 2.1L8 10.3a16 16 0 0 0 6 6l1.5-1.4a2 2 0 0 1 2.1-.4c1 .4 2 .6 3 .7a2 2 0 0 1 1.7 2Z" />

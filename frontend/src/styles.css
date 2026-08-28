@@ -588,7 +588,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   position:fixed; left:0; right:0; bottom:0; max-width:480px; margin:0 auto; background:#fff;
   padding:13px 18px calc(13px + env(safe-area-inset-bottom)); display:flex; gap:10px;
   box-shadow:0 -4px 24px rgba(20,30,25,.08); border-radius:22px 22px 0 0; z-index:20;
+  transition:transform .25s ease;
 }
+/* Прячется при прокрутке вниз, тут же возвращается при прокрутке
+   вверх — см. ctaHidden в ListingDetail.jsx. Сдвигаем за пределы
+   экрана transform’ом, а не display:none — так есть чему плавно
+   ехать, а не просто исчезать/появляться рывком. */
+.sticky-cta.hidden{ transform:translateY(150%); }
 .cta-btn{ flex:1; text-align:center; padding:14px; border-radius:15px; font-weight:800; font-size:14px; }
 .cta-btn.primary{ background:var(--primary); color:#fff; box-shadow:0 8px 18px rgba(14,159,110,.3); }
 .cta-btn.icon{ flex:0 0 50px; background:#F3F3F1; color:var(--ink); display:flex; align-items:center; justify-content:center; }
@@ -1683,6 +1689,11 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     box-shadow:none; border-radius:0; padding:20px 0 0; z-index:auto;
     border-top:1px solid rgba(20,30,25,.08);
   }
+  /* На десктопе кнопка уже встроена в обычный поток карточки, а не
+     прибита к низу экрана — прятать её по прокрутке тут нечего и
+     незачем: с ней ничего не «наезжает» и не тратится место, как на
+     мобильном. .hidden — чисто мобильное поведение. */
+  .detail-sheet .sticky-cta.hidden{ transform:none; }
 
   /* похожие и отзывы — на всю ширину под колонками */
   .similar-block, .reviews-block, .report-link{ grid-column:1 / -1; }
