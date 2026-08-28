@@ -55,6 +55,15 @@ export default function ListingDetail() {
     if (!el) return
 
     const onMove = (e) => {
+      // Щипок двумя пальцами — не свайп закрытия вовсе, не вмешиваемся:
+      // ни transform, ни preventDefault, отдаём жест целиком нативному
+      // масштабированию. Раньше это не проверялось — читался только
+      // первый палец, а preventDefault всё равно вызывался и глушил
+      // сам зум.
+      if (e.touches.length > 1) {
+        lightboxTouch.current = null
+        return
+      }
       const start = lightboxTouch.current
       if (!start) return
       const t = e.touches[0]
@@ -609,6 +618,13 @@ export default function ListingDetail() {
           className="lightbox"
           onClick={() => setFullscreen(null)}
           onTouchStart={(e) => {
+            // Второй палец лёг ещё до того, как первый успел сдвинуться
+            // достаточно, чтобы определить направление, — это уже щипок,
+            // не начало свайпа закрытия, отслеживать нечего.
+            if (e.touches.length > 1) {
+              lightboxTouch.current = null
+              return
+            }
             const t = e.touches[0]
             // mode: пока неизвестно, куда в итоге пойдёт жест — решаем
             // по первым же пикселям движения, не заранее.
@@ -618,6 +634,10 @@ export default function ListingDetail() {
             const start = lightboxTouch.current
             lightboxTouch.current = null
             const el = lightboxRef.current
+            // Если на экране всё ещё остался хотя бы один палец (снимали
+            // один из двух после щипка) — точно не отпускание свайпа
+            // закрытия, ничего не делаем.
+            if (e.touches.length > 0) return
             if (!start || start.mode !== 'v' || !el) return
             const t = e.changedTouches[0]
             const dy = t.clientY - start.y
