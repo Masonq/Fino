@@ -581,6 +581,33 @@ def my_listings(
 
     items = q.order_by(Listing.created_at.desc()).all()
 
+    # Активные продвижения разом на все объявления — без этого
+    # человек, купивший highlight/XL/поднятие, никак не мог убедиться
+    # в самом «Моих объявлениях», что оно вообще подействовало и
+    # сколько ему осталось: кнопка называлась одинаково что до, что
+    # после покупки. bump тоже сюда попадает — его expires_at теперь
+    # тоже выставляется (окно затухания, см. promotions.py), даже
+    # хотя сам бонус в релевантности спадает плавно, а не обрывается
+    # ровно в этот момент — для отображения статуса упрощение уместно.
+    from app.models import Promotion, PromotionStatus
+    listing_ids = [l.id for l in items]
+    active_promos: dict = {}
+    if listing_ids:
+        rows = (
+            db.query(Promotion.listing_id, Promotion.type, Promotion.expires_at)
+            .filter(
+                Promotion.listing_id.in_(listing_ids),
+                Promotion.status == PromotionStatus.paid,
+                or_(Promotion.expires_at.is_(None), Promotion.expires_at > utcnow()),
+            )
+            .all()
+        )
+        for listing_id, promo_type, expires_at in rows:
+            active_promos.setdefault(listing_id, []).append({
+                "type": promo_type.value,
+                "expires_at": expires_at.isoformat() if expires_at else None,
+            })
+
     def serialize(l: Listing):
         tr = pick_translation(l, lang)
         cover = next((p for p in l.photos if p.is_cover), l.photos[0] if l.photos else None)
@@ -604,6 +631,7 @@ def my_listings(
             "rejection_reason": l.rejection_reason if l.status == ListingStatus.rejected else None,
             "views_count": l.views_count,
             "created_at": l.created_at.isoformat() if l.created_at else None,
+            "active_promotions": active_promos.get(l.id, []),
         }
 
     # сводка по статусам — для вкладок на экране

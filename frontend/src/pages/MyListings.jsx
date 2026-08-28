@@ -189,6 +189,23 @@ export default function MyListings() {
                 )}
               </div>
 
+              {/* Статус уже купленного продвижения — видно сразу на
+                  карточке, без лишнего клика в панель «Поднять
+                  просмотры» (там то же самое, но только после открытия).
+                  Раньше кнопка называлась одинаково что до, что после
+                  покупки — человек не мог тут же убедиться, что деньги
+                  подействовали. */}
+              {l.active_promotions?.length > 0 && (
+                <div className="my-promo-status">
+                  {l.active_promotions.map((p) => (
+                    <span key={p.type} className="my-promo-badge">
+                      {t(`promo.type_${p.type}`)}
+                      {p.expires_at && ` — ${t('promo.active_until', { date: new Date(p.expires_at).toLocaleDateString() })}`}
+                    </span>
+                  ))}
+                </div>
+              )}
+
               {/* Продвинуть — отдельной заметной строкой, не наравне
                   с управлением статусом: пять кнопок в одном тесном
                   ряду теснили друг друга, а это единственная кнопка,
