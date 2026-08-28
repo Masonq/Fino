@@ -4,17 +4,7 @@ import { useFavorites } from '../context/FavoritesContext'
 import { displayCity } from '../data/cities'
 import { formatPrice } from '../utils/money'
 import { cardMeta } from '../data/cardMeta'
-
-// «сегодня», «вчера», «3 дня назад» — как у Авито, вместо голой даты,
-// которую на карточке пришлось бы читать дольше, чем она того стоит.
-function relativeDate(iso, t) {
-  if (!iso) return ''
-  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000)
-  if (days <= 0) return t('misc.date_today')
-  if (days === 1) return t('misc.date_yesterday')
-  if (days < 7) return t('misc.date_days_ago', { count: days })
-  return new Date(iso).toLocaleDateString()
-}
+import { relativeDate } from '../utils/time'
 
 export default function ListingCard({ listing, large = false }) {
   const { t, i18n } = useTranslation()

@@ -25,3 +25,18 @@ export function monthYear(iso, lang) {
   if (!iso) return ''
   return new Date(iso + 'Z').toLocaleDateString(lang, { year: 'numeric', month: 'long' })
 }
+
+/**
+ * «сегодня», «вчера», «3 дня назад» — как у Авито, вместо голой даты,
+ * которую пришлось бы читать дольше, чем она того стоит. Раньше жила
+ * только внутри ListingCard.jsx — теперь общая, использует её и
+ * карточка объявления в ленте, и сама страница объявления.
+ */
+export function relativeDate(iso, t) {
+  if (!iso) return ''
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000)
+  if (days <= 0) return t('misc.date_today')
+  if (days === 1) return t('misc.date_yesterday')
+  if (days < 7) return t('misc.date_days_ago', { count: days })
+  return new Date(iso).toLocaleDateString()
+}

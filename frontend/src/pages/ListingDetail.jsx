@@ -11,6 +11,7 @@ import PromoteButton from '../components/PromoteButton'
 import SimilarListings from '../components/SimilarListings'
 import SellerListings from '../components/SellerListings'
 import { formatPrice } from '../utils/money'
+import { relativeDate } from '../utils/time'
 
 const REASON_KEYS = [
   'wrong_category', 'bad_photos', 'unclear_description',
@@ -539,6 +540,21 @@ export default function ListingDetail() {
             {displayCity(listing.city, lang)}
           </div>
         )}
+
+        {/* Просмотры/дата/номер — раньше видел только владелец, в
+            «Моих объявлениях». Покупателю это тоже полезно: ощущение
+            свежести и что объявление живое, не заброшенное. Номер —
+            не своя отдельная сущность, те же первые 8 символов id,
+            что уже есть в самом адресе страницы (…-f7642d6b), просто
+            явно, для тех, кто пишет в поддержку и не умеет прочитать
+            его из URL самостоятельно. */}
+        <div className="detail-meta">
+          {listing.views_count > 0 && (
+            <span>{t('detail.views', { count: listing.views_count })}</span>
+          )}
+          {listing.published_at && <span>{relativeDate(listing.published_at, t)}</span>}
+          {listing.short_id && <span>{t('detail.id', { id: listing.short_id })}</span>}
+        </div>
 
         <div className="badge-row">
           {listing.safe_deal_available && (

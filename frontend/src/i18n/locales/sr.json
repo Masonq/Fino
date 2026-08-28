@@ -195,7 +195,9 @@
     "quick_when_see": "Gde i kada mogu da pogledam?",
     "quick_negotiable": "Da li je moguće cenkanje?",
     "quick_delivery": "Da li je moguća dostava?",
-    "quick_own": "Napišite svoju poruku"
+    "quick_own": "Napišite svoju poruku",
+    "views": "{{count}} pregleda",
+    "id": "Br. {{id}}"
   },
   "favorites": {
     "title": "Sačuvano",
