@@ -23,6 +23,7 @@ export default function Search() {
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
   const [subscribed, setSubscribed] = useState(false)
+  const [subscribedId, setSubscribedId] = useState(null)
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
 
@@ -342,8 +343,20 @@ export default function Search() {
               className={subscribed ? 'save-search done' : 'save-search'}
               onClick={async () => {
                 if (!user) { navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`); return }
+                // Повторное нажатие — снять слежение, не завести
+                // ещё одну (бэкенд её всё равно не завёл бы второй
+                // раз, но раньше и снять было нельзя не уходя в
+                // профиль).
+                if (subscribed && subscribedId) {
+                  try {
+                    await api.deleteSavedSearch(subscribedId)
+                    setSubscribed(false)
+                    setSubscribedId(null)
+                  } catch { /* оставляем как было */ }
+                  return
+                }
                 try {
-                  await api.saveSearch({
+                  const res = await api.saveSearch({
                     q: text.trim() || undefined,
                     category_slug: category || undefined,
                     price_min: priceMin || undefined,
@@ -357,6 +370,7 @@ export default function Search() {
                     with_photo: withPhoto || undefined,
                   })
                   setSubscribed(true)
+                  setSubscribedId(res.id)
                 } catch { /* уже сохранён или лимит */ }
               }}
             >
