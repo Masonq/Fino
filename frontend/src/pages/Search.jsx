@@ -151,7 +151,16 @@ export default function Search() {
   // категорий, и не добавляют лишнего шага тем, кому нужна вся категория.
   const current = categories.find((c) => c.slug === category)
     || categories.find((c) => (c.children || []).some((s) => s.slug === category))
-  const subs = current?.children || []
+  // «Работа»: Вакансии/Резюме существуют как категории только для
+  // классификации при импорте из Telegram-чатов (см. tg_parse.py) —
+  // реальные объявления, размещённые через саму форму публикации,
+  // остаются в родительской jobs, поле «Тип объявления» отличает их
+  // атрибутом, не категорией. Ряд подкатегорий тут всегда пустой (0
+  // объявлений что там, что там) — а тот же самый выбор уже отдельно
+  // и по-настоящему работает через modes ниже («Ищу работу»/«Ищу
+  // сотрудников»). Показывать оба — не просто задвоение, а ряд, что
+  // всегда возвращает пустую выдачу, рядом с тем, что работает.
+  const subs = current?.slug === 'jobs' ? [] : (current?.children || [])
   const label = (c) => c.name?.[i18n.language] || c.name?.ru
 
   const activeCount = [category, priceMin, priceMax, city, withPhoto ? '1' : ''].filter(Boolean).length
