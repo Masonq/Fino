@@ -237,7 +237,7 @@ export default function PostAd() {
           <button className="post-back" onClick={() => setStep(0)}><svg className="back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>{category.name?.[i18n.language] || category.name?.ru}</button>
           <h2>{t('post.step_params')}</h2>
           {schema.length === 0 && <p className="empty-hint">{t('post.no_params')}</p>}
-          <div className="post-fields">
+          <div className="post-fields params-fields">
             {schema.map((field) => (
               <div key={field.key} className="post-field">
                 <label>{field.label?.[i18n.language] || field.label?.ru || field.key}{field.required && ' *'}</label>

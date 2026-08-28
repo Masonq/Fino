@@ -1580,6 +1580,16 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   .post-fields, .edit-fields, .filters-panel, .auth-page > *{ max-width:560px; }
   .auth-page{ padding-top:64px; }
 
+  /* Шаг «Параметры» — исключение из строки выше: там не длинный текст,
+     а восемь однотипных коротких полей (бренд, память, экран...)
+     друг под другом — та же болезнь, что была у фильтров поиска до
+     сегодняшней правки. Через params-fields на этом шаге отбиваемся от
+     общего узкого max-width и раскладываем в две колонки — так восемь
+     полей помещаются в четыре ряда вместо восьми, без прокрутки. */
+  .post-fields.params-fields{
+    max-width:720px; display:grid; grid-template-columns:1fr 1fr; gap:14px 20px;
+  }
+
   /* списки */
   .fav-page{ padding-top:28px; }
   .saved-list, .chat-list{ max-width:820px; }
