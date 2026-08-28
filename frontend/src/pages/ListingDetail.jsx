@@ -42,6 +42,42 @@ export default function ListingDetail() {
   // Точка начала касания — для свайпа вниз/вверх, закрывающего просмотр.
   // Не стейт: пересчитывать компонент на каждое touchmove незачем.
   const lightboxTouch = useRef(null)
+  const lightboxRef = useRef(null)
+
+  // Сама анимация перетаскивания — через нативный touchmove, не через
+  // JSX onTouchMove: синтетические обработчики React могут навесить
+  // {passive:true}, и preventDefault() в них тогда бы просто не сработал,
+  // а он нужен — иначе одновременно с перетаскиванием фото вверх-вниз
+  // страница под ним попыталась бы прокрутиться сама.
+  useEffect(() => {
+    if (fullscreen === null) return
+    const el = lightboxRef.current
+    if (!el) return
+
+    const onMove = (e) => {
+      const start = lightboxTouch.current
+      if (!start) return
+      const t = e.touches[0]
+      const dx = t.clientX - start.x
+      const dy = t.clientY - start.y
+
+      if (start.mode === null) {
+        // Направление решаем один раз, по первым же заметным пикселям —
+        // дальше жест держится того же режима до конца касания.
+        if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return
+        start.mode = Math.abs(dy) > Math.abs(dx) * 1.3 ? 'v' : 'h'
+      }
+      if (start.mode !== 'v') return
+
+      e.preventDefault()
+      const progress = Math.min(Math.abs(dy) / 300, 1)
+      el.style.transform = `translateY(${dy}px)`
+      el.style.opacity = String(1 - progress * 0.7)
+    }
+
+    el.addEventListener('touchmove', onMove, { passive: false })
+    return () => el.removeEventListener('touchmove', onMove)
+  }, [fullscreen])
 
   // При открытом просмотре страница под ним не должна прокручиваться:
   // иначе закрываешь снимок и оказываешься в другом месте объявления.
@@ -569,24 +605,36 @@ export default function ListingDetail() {
 
       {fullscreen !== null && (
         <div
+          ref={lightboxRef}
           className="lightbox"
           onClick={() => setFullscreen(null)}
           onTouchStart={(e) => {
             const t = e.touches[0]
-            lightboxTouch.current = { x: t.clientX, y: t.clientY }
+            // mode: пока неизвестно, куда в итоге пойдёт жест — решаем
+            // по первым же пикселям движения, не заранее.
+            lightboxTouch.current = { x: t.clientX, y: t.clientY, mode: null }
           }}
           onTouchEnd={(e) => {
             const start = lightboxTouch.current
             lightboxTouch.current = null
-            if (!start) return
+            const el = lightboxRef.current
+            if (!start || start.mode !== 'v' || !el) return
             const t = e.changedTouches[0]
             const dy = t.clientY - start.y
-            const dx = t.clientX - start.x
-            // Вертикально и заметно больше, чем по горизонтали — иначе
-            // обычное перелистывание фото (тот же жест пальцем, только
-            // влево-вправо) закрывало бы просмотр самим собой.
-            if (Math.abs(dy) > 80 && Math.abs(dy) > Math.abs(dx) * 1.5) {
-              setFullscreen(null)
+            if (Math.abs(dy) > 80) {
+              // долистали — доводим уже начатое движение до конца, тем
+              // же направлением, что и тянул палец, и только тогда
+              // закрываем по-настоящему.
+              el.style.transition = 'transform .2s ease, opacity .2s ease'
+              el.style.transform = `translateY(${dy > 0 ? '100%' : '-100%'})`
+              el.style.opacity = '0'
+              setTimeout(() => setFullscreen(null), 200)
+            } else {
+              // не дотянули — плавно возвращаем на место, а не дёргаем обратно рывком
+              el.style.transition = 'transform .25s ease, opacity .25s ease'
+              el.style.transform = ''
+              el.style.opacity = ''
+              setTimeout(() => { if (el) el.style.transition = '' }, 250)
             }
           }}
         >
