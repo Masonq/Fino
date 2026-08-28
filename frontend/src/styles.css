@@ -1545,6 +1545,17 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   .detail-sheet{ margin-top:0; border-radius:16px; padding:24px; }
   .detail-topbar{ max-width:1180px; }
   .detail-nav{ display:none; }        /* кнопки уходят в шапку страницы */
+  /* «Написать продавцу» — на мобильном это .sticky-cta, прибитая к
+     низу экрана (там ей и место, под палец). На десктопе низа экрана
+     как ориентира нет — раньше кнопка плавала узкой полоской посреди
+     страницы, оторванной от карточки. Теперь она физически внутри
+     .detail-sheet (см. ListingDetail.jsx) — тут просто снимаем
+     фиксацию и превращаем в обычный блок кнопок внутри карточки. */
+  .detail-sheet .sticky-cta{
+    position:static; max-width:none; margin:22px 0 0; background:transparent;
+    box-shadow:none; border-radius:0; padding:20px 0 0; z-index:auto;
+    border-top:1px solid rgba(20,30,25,.08);
+  }
 
   /* похожие и отзывы — на всю ширину под колонками */
   .similar-block, .reviews-block, .report-link{ grid-column:1 / -1; }

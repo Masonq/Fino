@@ -507,14 +507,16 @@ export default function ListingDetail() {
           </div>
         )}
 
-        <SimilarListings listingId={listing.id} />
-
-        <ReportButton listingId={listing.id} ownerId={listing.owner?.id} />
-      </div>
-
-      {/* Объявление перенесено из телеграм-чата: писать и звонить через сайт
-          некому — автор у нас не зарегистрирован. Вместо двух погашенных
-          кнопок даём одну рабочую, иначе экран выглядит сломанным. */}
+      {/* Кнопка «Написать продавцу» — на мобильном она же .sticky-cta,
+          прибитая к низу экрана под палец. На десктопе так же жить не
+          может: там негде «низу экрана» быть, кнопка просто повисала
+          бы отдельной узкой плашкой посреди страницы, оторванной от
+          остальной карточки. Раньше .sticky-cta была соседом
+          .detail-sheet и всегда рендерилась вне его — теперь она
+          внутри: на мобильном это ничего не меняет (position:fixed не
+          зависит от места в DOM), а на десктопе .detail-sheet .sticky-cta
+          в styles.css превращает её в обычную часть карточки, сразу
+          под ценой и продавцом, а не в конце после похожих объявлений. */}
       {gone ? (
         <div className="sticky-cta">
           {/* Не обещаем похожие: подбор пока слабый, и пустая надежда
@@ -556,6 +558,12 @@ export default function ListingDetail() {
         </button>
       </div>
       )}
+
+        <SimilarListings listingId={listing.id} />
+
+        <ReportButton listingId={listing.id} ownerId={listing.owner?.id} />
+      </div>
+
 
       {showReasons && (
         <div className="reasons-sheet" onClick={() => { setShowReasons(false); setCustomReason(false); setReasonText('') }}>
