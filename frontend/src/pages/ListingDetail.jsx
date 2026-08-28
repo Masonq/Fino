@@ -39,6 +39,40 @@ export default function ListingDetail() {
   // Просмотр во весь экран: в галерее фото вписано целиком и потому мелкое,
   // а разглядеть вещь перед покупкой — половина смысла объявления.
   const [fullscreen, setFullscreen] = useState(null)
+
+  // При открытом просмотре страница под ним не должна прокручиваться:
+  // иначе закрываешь снимок и оказываешься в другом месте объявления.
+  useEffect(() => {
+    if (fullscreen === null) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = prev }
+  }, [fullscreen])
+
+  // запоминаем просмотр — чтобы человек мог вернуться к тому, что смотрел
+  useEffect(() => {
+    if (listingId) addToHistory(listingId)
+  }, [listingId])
+
+  // Шапка появляется, когда фото уехало вверх — как у Avito:
+  // сначала кнопки полупрозрачными кружками на фото, потом панель на белом.
+  useEffect(() => {
+    let raf = 0
+    const onScroll = () => {
+      if (raf) return
+      raf = requestAnimationFrame(() => {
+        raf = 0
+        setScrolled(window.scrollY > 210)
+      })
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => { window.removeEventListener('scroll', onScroll); if (raf) cancelAnimationFrame(raf) }
+  }, [])
+  const [searchParams] = useSearchParams()
+
+  const [listing, setListing] = useState(null)
+  const [schema, setSchema] = useState([])
+
   const lightboxRef = useRef(null)
   const stripRef = useRef(null)
   const imgRefs = useRef([])
@@ -79,7 +113,11 @@ export default function ListingDetail() {
 
   const goToPhoto = (index, animate) => {
     const el = stripRef.current
-    const clamped = Math.max(0, Math.min(photos.length - 1, index))
+    // photos ещё не объявлена на этом месте файла (там, ниже, за ранней
+    // отрисовкой скелетона) — count берём из listing напрямую, он-то
+    // доступен с самого начала, даже пока сама страница ещё грузится.
+    const count = listing?.photos?.length || 0
+    const clamped = Math.max(0, Math.min(count - 1, index))
     setPhotoIdx(clamped)
     if (el) {
       if (animate) {
@@ -251,40 +289,7 @@ export default function ListingDetail() {
       el.removeEventListener('touchend', onEnd)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fullscreen, photoIdx, photos.length])
-
-  // При открытом просмотре страница под ним не должна прокручиваться:
-  // иначе закрываешь снимок и оказываешься в другом месте объявления.
-  useEffect(() => {
-    if (fullscreen === null) return
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = prev }
-  }, [fullscreen])
-
-  // запоминаем просмотр — чтобы человек мог вернуться к тому, что смотрел
-  useEffect(() => {
-    if (listingId) addToHistory(listingId)
-  }, [listingId])
-
-  // Шапка появляется, когда фото уехало вверх — как у Avito:
-  // сначала кнопки полупрозрачными кружками на фото, потом панель на белом.
-  useEffect(() => {
-    let raf = 0
-    const onScroll = () => {
-      if (raf) return
-      raf = requestAnimationFrame(() => {
-        raf = 0
-        setScrolled(window.scrollY > 210)
-      })
-    }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => { window.removeEventListener('scroll', onScroll); if (raf) cancelAnimationFrame(raf) }
-  }, [])
-  const [searchParams] = useSearchParams()
-
-  const [listing, setListing] = useState(null)
-  const [schema, setSchema] = useState([])
+  }, [fullscreen, photoIdx, listing?.photos?.length])
   const { isFavorite, toggle } = useFavorites()
   const fav = isFavorite(listingId)
 
