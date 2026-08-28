@@ -1064,25 +1064,11 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 
 /* ===== мои объявления ===== */
-.my-tabs-wrap{ position:relative; }
 .my-tabs{
   display:flex; gap:7px; padding:0 12px 14px;
   overflow-x:auto; scrollbar-width:none;
 }
 .my-tabs::-webkit-scrollbar{ display:none; }
-/* Ряд вкладок обрезался по правому краю без единого намёка, что там
-   есть ещё «Продано» — прокрутка находилась только на ощупь. Слияние
-   градиента с самим фоном страницы (var(--bg)) оказалось почти
-   неразличимо — тут светлая, низкоконтрастная палитра, фон и сами
-   вкладки почти одного тона. Вместо этого — мягкая тень внутрь, она
-   заметна независимо от точных оттенков вокруг. pointer-events
-   отключены, чтобы не мешать нажатию на последнюю видимую вкладку.
-*/
-.my-tabs-wrap::after{
-  content:''; position:absolute; top:0; right:0; bottom:14px; width:28px;
-  background:linear-gradient(to right, rgba(28,38,32,0), rgba(28,38,32,.12));
-  pointer-events:none;
-}
 .my-tab{
   flex-shrink:0; display:flex; align-items:center; gap:6px;
   padding:8px 13px; border-radius:11px; background:#F2F2EF;
@@ -1877,21 +1863,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   background: #fff;
 }
 
-.admin-filters-wrap { position: relative; }
 .admin-filters {
   display: flex;
   gap: 8px;
   overflow-x: auto;
   padding-bottom: 10px;
   -webkit-overflow-scrolling: touch;
-}
-/* Тот же обрыв без намёка на прокрутку, что был у «Мои объявления» —
-   и то же решение: тень внутрь вместо слияния с фоном, независимо от
-   точного тона вокруг. */
-.admin-filters-wrap::after {
-  content: ''; position: absolute; top: 0; right: 0; bottom: 10px; width: 28px;
-  background: linear-gradient(to right, rgba(28,38,32,0), rgba(28,38,32,.12));
-  pointer-events: none;
 }
 .admin-filters .chip {
   flex: 0 0 auto;

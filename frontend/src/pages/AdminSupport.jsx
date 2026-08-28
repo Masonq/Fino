@@ -85,19 +85,17 @@ export default function AdminSupport() {
     <div className="page admin-support">
       <PageHeader title={t('support.queue')} />
 
-      <div className="admin-filters-wrap">
-        <div className="admin-filters">
-          {TABS.map((item) => (
-            <button
-              key={item.key}
-              className={`chip ${tab === item.key ? 'chip-active' : ''}`}
-              onClick={() => setTab(item.key)}
-            >
-              {t(item.label)}
-              {counts[item.key] ? ` · ${counts[item.key]}` : ''}
-            </button>
-          ))}
-        </div>
+      <div className="admin-filters">
+        {TABS.map((item) => (
+          <button
+            key={item.key}
+            className={`chip ${tab === item.key ? 'chip-active' : ''}`}
+            onClick={() => setTab(item.key)}
+          >
+            {t(item.label)}
+            {counts[item.key] ? ` · ${counts[item.key]}` : ''}
+          </button>
+        ))}
       </div>
 
       {!loaded && <div className="admin-list"><AdminRowSkeletons count={6} /></div>}

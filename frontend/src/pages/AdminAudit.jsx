@@ -82,18 +82,16 @@ export default function AdminAudit() {
         placeholder={t('audit.who')}
       />
 
-      <div className="admin-filters-wrap">
-        <div className="admin-filters">
-          {FILTERS.map((f) => (
-            <button
-              key={f.key || 'all'}
-              className={`chip ${filter === f.key ? 'chip-active' : ''}`}
-              onClick={() => setFilter(f.key)}
-            >
-              {t(f.label)}
-            </button>
-          ))}
-        </div>
+      <div className="admin-filters">
+        {FILTERS.map((f) => (
+          <button
+            key={f.key || 'all'}
+            className={`chip ${filter === f.key ? 'chip-active' : ''}`}
+            onClick={() => setFilter(f.key)}
+          >
+            {t(f.label)}
+          </button>
+        ))}
       </div>
 
       {summary?.by_actor?.length > 0 && (

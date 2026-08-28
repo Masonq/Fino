@@ -58,18 +58,16 @@ export default function Support() {
       {sent && <p className="support-sent">{t('support.sent')}</p>}
 
       <div className="support-form">
-        <div className="admin-filters-wrap">
-          <div className="admin-filters">
-            {TOPICS.map((key) => (
-              <button
-                key={key}
-                className={`chip ${topic === key ? 'chip-active' : ''}`}
-                onClick={() => setTopic(key)}
-              >
-                {t(`support.topic.${key}`)}
-              </button>
-            ))}
-          </div>
+        <div className="admin-filters">
+          {TOPICS.map((key) => (
+            <button
+              key={key}
+              className={`chip ${topic === key ? 'chip-active' : ''}`}
+              onClick={() => setTopic(key)}
+            >
+              {t(`support.topic.${key}`)}
+            </button>
+          ))}
         </div>
 
         <input
