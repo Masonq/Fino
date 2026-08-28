@@ -93,17 +93,19 @@ export default function MyListings() {
     <div className="fav-page">
       <PageHeader title={t('my.title')} />
 
-      <div className="my-tabs">
-        {TABS.map((tb) => (
-          <button
-            key={tb.key}
-            className={tab === tb.key ? 'my-tab active' : 'my-tab'}
-            onClick={() => setTab(tb.key)}
-          >
-            {t(tb.labelKey)}
-            {counts[tb.key] > 0 && <span className="my-tab-count">{counts[tb.key]}</span>}
-          </button>
-        ))}
+      <div className="my-tabs-wrap">
+        <div className="my-tabs">
+          {TABS.map((tb) => (
+            <button
+              key={tb.key}
+              className={tab === tb.key ? 'my-tab active' : 'my-tab'}
+              onClick={() => setTab(tb.key)}
+            >
+              {t(tb.labelKey)}
+              {counts[tb.key] > 0 && <span className="my-tab-count">{counts[tb.key]}</span>}
+            </button>
+          ))}
+        </div>
       </div>
 
       {!loaded ? (
