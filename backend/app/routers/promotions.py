@@ -206,7 +206,13 @@ def start_promotion(
         "capture": True,
         "confirmation": {
             "type": "redirect",
-            "return_url": f"{settings.site_base_url}/go/{listing_id}",
+            # Тип покупки в самом adресе — после возврата с оплаты
+            # страница объявления может проверить именно его (опросить
+            # api/listings/{id}/promotions несколько раз, вебхук
+            # приходит не мгновенно) и показать понятное подтверждение,
+            # а не молча высадить человека на ту же страницу без единого
+            # знака, что деньги вообще куда-то ушли.
+            "return_url": f"{settings.site_base_url}/go/{listing_id}?promoted={payload.type.value}",
         },
         "description": f"PLONK — продвижение объявления ({payload.type.value})",
         "metadata": {"kind": "promotion", "listing_id": str(listing_id), "promotion_type": payload.type.value},

@@ -68,7 +68,7 @@ export default function ListingDetail() {
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => { window.removeEventListener('scroll', onScroll); if (raf) cancelAnimationFrame(raf) }
   }, [])
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const [listing, setListing] = useState(null)
   const [schema, setSchema] = useState([])
@@ -161,6 +161,43 @@ export default function ListingDetail() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listing])
+
+  // После оплаты продвижения картой ЮKassa возвращает сюда же —
+  // молча высаживать человека на ту же страницу без единого знака,
+  // что деньги вообще куда-то ушли, не годится. Вебхук от ЮKassa
+  // приходит не мгновенно, поэтому не читаем один раз, а опрашиваем
+  // несколько раз с паузой — как и с проверкой документа. promoCheck:
+  // null (ничего не проверяем) | 'checking' | 'confirmed' | 'pending'
+  // (не дождались за отведённое время — не обязательно провал, вебхук
+  // мог просто задержаться дольше).
+  const [promoCheck, setPromoCheck] = useState(null)
+  useEffect(() => {
+    const promotedType = searchParams.get('promoted')
+    if (!promotedType || !listing) return
+    setPromoCheck('checking')
+    let attempts = 0
+    const maxAttempts = 5
+    const poll = () => {
+      api.listingPromotions(listing.id).then((res) => {
+        const found = (res.items || []).some((p) => p.type === promotedType)
+        if (found) {
+          setPromoCheck('confirmed')
+        } else if (attempts < maxAttempts) {
+          attempts += 1
+          setTimeout(poll, 1600)
+        } else {
+          setPromoCheck('pending')
+        }
+      }).catch(() => setPromoCheck('pending'))
+    }
+    poll()
+    // Убираем параметр из адреса сразу — иначе обновление страницы
+    // (или просто повторный визит по этой же ссылке) снова запускало
+    // бы проверку заново.
+    searchParams.delete('promoted')
+    setSearchParams(searchParams, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listing?.id])
 
   const isStaff = user?.role === 'admin' || user?.role === 'moderator'
   // Продвигать может только сам владелец, и только пока объявление
@@ -363,6 +400,19 @@ export default function ListingDetail() {
       </div>
 
       <div className="detail-sheet">
+        {/* Подтверждение оплаты продвижения — сразу после возврата
+            с ЮKassa, пока не прочитано и не отброшено переходом на
+            другую страницу. Три состояния: идёт проверка, подтвердилось,
+            не успели дождаться за отведённое время (не обязательно
+            провал — вебхук мог задержаться, но снова опрашивать вечно
+            тоже не дело). */}
+        {promoCheck && (
+          <div className={`promo-check-banner ${promoCheck}`}>
+            {promoCheck === 'checking' && t('promo.checking')}
+            {promoCheck === 'confirmed' && t('promo.confirmed')}
+            {promoCheck === 'pending' && t('promo.check_pending')}
+          </div>
+        )}
         {/* Снятое объявление не исчезает: по нему смотрят, за сколько
             ушла похожая вещь, и на него уже стоят ссылки. Но человек
             должен видеть, что вещи больше нет, а не писать впустую. */}

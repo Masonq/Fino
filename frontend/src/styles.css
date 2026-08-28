@@ -2566,6 +2566,18 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .gone-banner-title{ font-size:17px; font-weight:700; color:#374151; }
 .gone-banner-note{ margin-top:2px; font-size:13px; color:#9ca3af; }
 
+/* Подтверждение оплаты продвижения после возврата с ЮKassa — три
+   состояния разным цветом, тот же принцип, что и у .my-promo-badge
+   (жёлтый — «в процессе», зелёный — «получилось», нейтральный —
+   «не страшно, но пока не видно»). */
+.promo-check-banner{
+  margin:-4px 0 14px; padding:12px 14px; border-radius:14px;
+  font-size:14px; font-weight:600;
+}
+.promo-check-banner.checking{ background:#FBF3E3; color:#8A6100; }
+.promo-check-banner.confirmed{ background:#E3F5EC; color:#0A7A54; }
+.promo-check-banner.pending{ background:#f3f4f6; color:#374151; }
+
 /* Цена и фотографии гасятся: вещь неактуальна, и держать её яркой —
    значит выдавать за живое объявление. */
 .detail-page:has(.gone-banner) .detail-price{ color:#9ca3af; }
