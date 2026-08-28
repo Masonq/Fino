@@ -47,7 +47,6 @@ class User(Base):
     role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.buyer)
     default_language: Mapped[Language] = mapped_column(Enum(Language), default=Language.ru)
 
-    phone_verified: Mapped[bool] = mapped_column(Boolean, default=False)
     document_verified: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # Баланс — рубли, пополняется через ЮKassa, тратится на

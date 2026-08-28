@@ -134,7 +134,6 @@ def run():
                 display_name=DEMO_SELLER_NAME,
                 role=UserRole.seller_private,
                 default_language=Language.ru,
-                phone_verified=True,
             )
             db.add(seller)
             db.flush()

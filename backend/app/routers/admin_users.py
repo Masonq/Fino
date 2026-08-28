@@ -60,7 +60,6 @@ def serialize(user: User, listings: int = 0, active: int = 0) -> dict:
         "is_blocked": user.is_blocked,
         "block_reason": user.block_reason,
         "email_verified": user.email_verified,
-        "phone_verified": user.phone_verified,
         "document_verified": user.document_verified,
         "company_name": user.company_name,
         "company_verified": user.company_verified,
