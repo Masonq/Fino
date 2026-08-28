@@ -541,21 +541,6 @@ export default function ListingDetail() {
           </div>
         )}
 
-        {/* Просмотры/дата/номер — раньше видел только владелец, в
-            «Моих объявлениях». Покупателю это тоже полезно: ощущение
-            свежести и что объявление живое, не заброшенное. Номер —
-            не своя отдельная сущность, те же первые 8 символов id,
-            что уже есть в самом адресе страницы (…-f7642d6b), просто
-            явно, для тех, кто пишет в поддержку и не умеет прочитать
-            его из URL самостоятельно. */}
-        <div className="detail-meta">
-          {listing.views_count > 0 && (
-            <span>{t('detail.views', { count: listing.views_count })}</span>
-          )}
-          {listing.published_at && <span>{relativeDate(listing.published_at, t)}</span>}
-          {listing.short_id && <span>{t('detail.id', { id: listing.short_id })}</span>}
-        </div>
-
         <div className="badge-row">
           {listing.safe_deal_available && (
             <div className="info-badge green">
@@ -752,6 +737,22 @@ export default function ListingDetail() {
         <SimilarListings listingId={listing.id} />
 
         <ReportButton listingId={listing.id} ownerId={listing.owner?.id} />
+
+        {/* Просмотры/дата/номер — в самом низу страницы, тем же
+            порядком, что и у Avito (после жалобы, а не под ценой) —
+            это справочная строка, не то, что нужно видеть в первую
+            секунду. Раньше видел только владелец, в «Моих
+            объявлениях». Номер — не своя отдельная сущность, те же
+            первые 8 символов id, что уже есть в самом адресе страницы
+            (…-f7642d6b), просто явно, для тех, кто пишет в поддержку
+            и не умеет прочитать его из URL самостоятельно. */}
+        <div className="detail-meta">
+          {listing.views_count > 0 && (
+            <span>{t('detail.views', { count: listing.views_count })}</span>
+          )}
+          {listing.published_at && <span>{relativeDate(listing.published_at, t)}</span>}
+          {listing.short_id && <span>{t('detail.id', { id: listing.short_id })}</span>}
+        </div>
       </div>
 
 
