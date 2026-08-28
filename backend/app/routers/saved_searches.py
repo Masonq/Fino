@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.core.auth import get_current_user
 from app.core.database import get_db
-from app.models import SavedSearch, User
+from app.models import SavedSearch, User, Category
 
 router = APIRouter(prefix="/api/saved-searches", tags=["saved-searches"])
 
@@ -20,13 +20,26 @@ class SavedSearchIn(BaseModel):
     notify_enabled: bool = True
 
 
-def describe(filters: dict, fallback: str = "Поиск") -> str:
-    """Человеческое название из фильтров, если пользователь не задал своё."""
+def describe(filters: dict, db: Session, lang: str, fallback: str = "Поиск") -> str:
+    """
+    Человеческое название из фильтров, если пользователь не задал своё.
+
+    Раньше category_slug клался как есть («furniture») — сырой
+    английский идентификатор, не то, что видит человек нигде больше в
+    интерфейсе. Ищем категорию по slug и берём её человеческое
+    название на нужном языке, с откатом на русский и сам slug, если
+    вдруг категория пропала.
+    """
     parts = []
     if filters.get("q"):
         parts.append(f'«{filters["q"]}»')
-    if filters.get("category_slug"):
-        parts.append(filters["category_slug"])
+    slug = filters.get("category_slug")
+    if slug:
+        category = db.query(Category).filter(Category.slug == slug).first()
+        if category and category.name:
+            parts.append(category.name.get(lang) or category.name.get("ru") or slug)
+        else:
+            parts.append(slug)
     if filters.get("price_min") or filters.get("price_max"):
         lo = filters.get("price_min") or ""
         hi = filters.get("price_max") or ""
@@ -83,7 +96,7 @@ def create_saved(
 
     item = SavedSearch(
         user_id=user.id,
-        name=(payload.name or describe(payload.filters))[:120],
+        name=(payload.name or describe(payload.filters, db, user.default_language.value))[:120],
         filters=payload.filters,
         notify_enabled=payload.notify_enabled,
     )
