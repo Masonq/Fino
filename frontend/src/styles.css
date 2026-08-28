@@ -1526,6 +1526,29 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     grid-template-columns:repeat(5, 1fr);
     gap:26px 16px; padding:0;
   }
+  /* XL-карточка (куплена продвижением) на мобильном сама по себе
+     занимает целый ряд — там сетка в две колонки, span 2 отдаёт ей
+     ряд целиком. На десктопе колонок уже пять, и те же span 2 делят
+     ряд с тремя обычными карточками — а у XL фото выше (аспект
+     16/10.5 у .l-card против квадрата у обычной), из-за чего её
+     цена и город съезжали вниз, ниже уже написанных цены и города
+     соседних карточек — ряд выглядел рваным. Тут — full-width на всю
+     сетку (не делит ряд ни с кем) и горизонтальный вид, тот же приём,
+     что уже есть у режима «списком» (.infinite-list .s-card) — не
+     изобретаю новый, переиспользую готовый. */
+  .infinite-grid .s-card.xl-span, .feed-grid .s-card.xl-span{
+    grid-column:1 / -1;
+    display:grid; grid-template-columns:280px 1fr; gap:20px;
+    background:#fff; border-radius:16px; padding:16px;
+    border:1px solid rgba(20,30,25,.06);
+  }
+  .infinite-grid .s-card.xl-span .s-photo-wrap,
+  .feed-grid .s-card.xl-span .s-photo-wrap{ aspect-ratio:4/3; border-radius:12px; }
+  .infinite-grid .s-card.xl-span .s-body,
+  .feed-grid .s-card.xl-span .s-body{ padding:4px 0 0; justify-content:flex-start; }
+  .infinite-grid .s-card.xl-span .s-title, .feed-grid .s-card.xl-span .s-title{ font-size:17px; margin-bottom:8px; }
+  .infinite-grid .s-card.xl-span .s-price, .feed-grid .s-card.xl-span .s-price{ font-size:22px; }
+  .infinite-grid .s-card.xl-span .s-meta, .feed-grid .s-card.xl-span .s-meta{ margin-top:10px; }
   /* Цветной градиент шапки категории — на телефоне работает (полный
      экран цвета, узнаваемый и живой), на широком экране превращается
      в плоскую цветную полосу через всю страницу, ничего не обрамляя.
