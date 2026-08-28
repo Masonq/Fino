@@ -33,6 +33,7 @@ from app.core.database import SessionLocal  # noqa: E402
 from app.core.tg_import import screen, topic_of  # noqa: E402
 from app.core.tg_parse import fingerprint, same_thing  # noqa: E402
 from app.core.tg_sources import CHATS  # noqa: E402
+from app.models.audit import AuditEntry  # noqa: E402
 from app.models.category import Category  # noqa: E402
 from app.models.listing import Listing, ListingStatus, ListingTranslation  # noqa: E402
 
@@ -59,6 +60,24 @@ def ru_text(db, listing: Listing) -> ListingTranslation | None:
                 ListingTranslation.language == "ru")
         .first()
     )
+
+
+def was_moderated_by_human(db, listing_id) -> bool:
+    """
+    Смотрел ли живой модератор это объявление хоть раз.
+
+    Часть перенесённого из чатов публикуется сразу активным, минуя
+    модератора вовсе (published=True при заносе) — для такого
+    автоматическая переоценка по нынешним правилам по-прежнему нужна.
+    Но если человек открыл карточку и осознанно одобрил или отклонил —
+    его решение не должен отменять ночной скрипт только потому, что
+    критерии с тех пор чуть сдвинулись.
+    """
+    return db.query(AuditEntry).filter(
+        AuditEntry.target_type == "listing",
+        AuditEntry.target_id == str(listing_id),
+        AuditEntry.action.in_(("listing.approve", "listing.reject")),
+    ).first() is not None
 
 
 async def run(apply: bool, limit: int | None) -> None:
@@ -123,9 +142,19 @@ def _apply_to(db, row: Listing, msg, chat_id: int, stats: dict, apply: bool) -> 
     if reason:
         # Объявление больше не проходит отбор: спам, реклама, уже продано.
         # Скрываем, но не удаляем — вдруг правило окажется слишком строгим.
-        if apply and row.status == ListingStatus.active:
+        #
+        # Раньше это срабатывало вообще для любого активного объявления —
+        # включая те, что живой модератор уже открыл и осознанно одобрил.
+        # Критерии screen() время от времени чуть меняются (новые слова
+        # в списках, донастройка классификатора), и то, что вчера
+        # казалось спамом или ещё не готовым, сегодня иногда снова
+        # проходит — а модератор своё решение уже принял и не должен
+        # обнаруживать его молча отменённым наутро.
+        human_seen = was_moderated_by_human(db, row.id)
+        if apply and row.status == ListingStatus.active and not human_seen:
             row.status = ListingStatus.pending_moderation
-        print(f"  ⚑ {reason:<16} {str(row_title(db, row))[:48]}")
+        mark = " (модератор уже смотрел — статус не трогаю)" if human_seen else ""
+        print(f"  ⚑ {reason:<16} {str(row_title(db, row))[:48]}{mark}")
         stats[reason] = stats.get(reason, 0) + 1
         return
 
