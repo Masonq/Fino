@@ -1526,6 +1526,19 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     grid-template-columns:repeat(5, 1fr);
     gap:26px 16px; padding:0;
   }
+  /* Цветной градиент шапки категории — на телефоне работает (полный
+     экран цвета, узнаваемый и живой), на широком экране превращается
+     в плоскую цветную полосу через всю страницу, ничего не обрамляя.
+     На десктопе задаём фон нейтральным поверх инлайн-стиля из JSX
+     (!important — иначе он и остаётся, инлайн всегда сильнее обычного
+     класса) и возвращаем тексту тёмный цвет — тот же приём, что уже
+     есть на этой же странице у «простой» шапки без градиента
+     (.landing-head.plain-head), просто теперь и здесь. */
+  .landing-hero{ background:var(--bg) !important; padding-bottom:10px; }
+  .landing-back.on-hero{ background:#F2F4F3 !important; color:var(--ink) !important; }
+  .landing-title.on-hero{ color:var(--ink) !important; }
+  .landing-count.on-hero{ color:var(--muted) !important; }
+  .landing-hero .search-field{ box-shadow:0 1px 2px rgba(20,30,25,.06); border:1px solid rgba(20,30,25,.08); }
   /* Режим «по одному»: на десктопе карточка во всю ширину выглядит
      огромной, поэтому раскладываем горизонтально — фото слева,
      описание справа, как у Avito в списочном виде. */
@@ -2580,6 +2593,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .landing-count.on-hero{ color:rgba(255,255,255,.85); }
 .landing-hero .landing-search{ position:relative; z-index:1; padding-top:10px; }
 .landing-hero .search-field{ background:#fff; border-color:transparent; box-shadow:0 4px 14px rgba(16,24,40,.14); }
+
 
 .landing-head{ display:flex; align-items:center; gap:10px; padding:14px 14px 6px; flex-wrap:wrap; }
 /* Простая шапка над результатами — баннер, фильтры и подразделы в этом
