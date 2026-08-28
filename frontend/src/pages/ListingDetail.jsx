@@ -139,11 +139,28 @@ export default function ListingDetail() {
     return () => el.removeEventListener('touchmove', onMove)
   }, [fullscreen])
   const { isFavorite, toggle } = useFavorites()
-  const fav = isFavorite(listingId)
+  // listingId — короткий хвост из адреса (см. комментарий выше про
+  // UUID_RE), нужен только чтобы ЗАГРУЗИТЬ это объявление — бэкенд
+  // для get_listing специально понимает такую сокращённую форму.
+  // Остальные эндпоинты (в том числе избранное) строго ждут полный
+  // UUID и никакого запасного варианта для короткого хвоста не имеют
+  // — FastAPI отбрасывает такой запрос как невалидный молча для
+  // человека, лайк просто не срабатывал. listing.id — настоящий
+  // полный id уже загруженного объявления, им пользуются и все
+  // соседние кнопки на этой же странице (PromoteButton, ReportButton,
+  // SimilarListings) — тут та же логика, просто раньше забыли применить.
+  const fav = isFavorite(listing?.id)
 
+  // Тот же отскок, что и на карточках в ленте — только при добавлении.
+  const [justFaved, setJustFaved] = useState(false)
   const onFav = async () => {
-    const res = await toggle(listingId)
+    const wasFav = fav
+    const res = await toggle(listing?.id)
     if (res?.needAuth) navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`)
+    else if (!wasFav) {
+      setJustFaved(true)
+      setTimeout(() => setJustFaved(false), 450)
+    }
   }
 
   // «Поделиться» — системное меню (WhatsApp/Telegram/куда угодно),
@@ -454,7 +471,7 @@ export default function ListingDetail() {
               </svg>
             </button>
             <button className={fav ? 'topbar-btn on' : 'topbar-btn'} onClick={onFav} aria-label={t('misc.in_favorites')}>
-              <svg viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
+              <svg viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" className={justFaved ? 'fav-pop' : ''}>
                 <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />
               </svg>
             </button>
@@ -480,7 +497,7 @@ export default function ListingDetail() {
               </svg>
             </button>
             <button className={fav ? 'circle-btn on' : 'circle-btn'} onClick={onFav} aria-label={t('misc.in_favorites')}>
-              <svg viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
+              <svg viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" className={justFaved ? 'fav-pop' : ''}>
                 <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />
               </svg>
             </button>

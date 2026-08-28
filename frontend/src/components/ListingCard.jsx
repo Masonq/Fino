@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useFavorites } from '../context/FavoritesContext'
@@ -32,12 +33,21 @@ export default function ListingCard({ listing, large = false }) {
       ? listing.price < prev.price ? 'down' : listing.price > prev.price ? 'up' : null
       : null
 
+  // Отскок — только при добавлении, не при снятии: убирать из
+  // избранного тем же радостным пульсом было бы странно, это не то
+  // действие, которое стоит подчёркивать анимацией.
+  const [justFaved, setJustFaved] = useState(false)
   const onFavClick = async (e) => {
     e.preventDefault()
     e.stopPropagation()
+    const wasFav = fav
     const res = await toggle(listing.id)
     // не представился — отправляем знакомиться, потом вернём обратно
     if (res?.needAuth) navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`)
+    else if (!wasFav) {
+      setJustFaved(true)
+      setTimeout(() => setJustFaved(false), 450)
+    }
   }
 
   return (
@@ -61,7 +71,11 @@ export default function ListingCard({ listing, large = false }) {
           onClick={onFavClick}
           aria-label={t('misc.in_favorites')}
         >
-          <svg width={large ? 22 : 21} height={large ? 22 : 21} viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.7">
+          <svg
+            width={large ? 22 : 21} height={large ? 22 : 21} viewBox="0 0 24 24"
+            fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.7"
+            className={justFaved ? 'fav-pop' : ''}
+          >
             <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />
           </svg>
         </button>
