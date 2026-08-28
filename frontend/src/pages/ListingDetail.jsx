@@ -39,54 +39,219 @@ export default function ListingDetail() {
   // Просмотр во весь экран: в галерее фото вписано целиком и потому мелкое,
   // а разглядеть вещь перед покупкой — половина смысла объявления.
   const [fullscreen, setFullscreen] = useState(null)
-  // Точка начала касания — для свайпа вниз/вверх, закрывающего просмотр.
-  // Не стейт: пересчитывать компонент на каждое touchmove незачем.
-  const lightboxTouch = useRef(null)
   const lightboxRef = useRef(null)
+  const stripRef = useRef(null)
+  const imgRefs = useRef([])
 
-  // Сама анимация перетаскивания — через нативный touchmove, не через
-  // JSX onTouchMove: синтетические обработчики React могут навесить
-  // {passive:true}, и preventDefault() в них тогда бы просто не сработал,
-  // а он нужен — иначе одновременно с перетаскиванием фото вверх-вниз
-  // страница под ним попыталась бы прокрутиться сама.
+  // Все жесты просмотра в одном месте: щипок (зум), перетаскивание
+  // увеличенного фото, свайп между фото, свайп-закрытие вниз/вверх,
+  // двойной тап. Раньше переключение между фото шло через нативный
+  // scroll-x ленты — при зуме это не уживалось бы с панорамированием
+  // одним пальцем (кто в какой момент ведёт жест — браузер через
+  // scroll или наш JS через transform). Теперь лента подвинута через
+  // JS от начала до конца, всё в одних руках.
+  //
+  // gesture — то, что живёт только на время одного касания:
+  //   mode: null | 'v-close' | 'h-swipe' | 'pinch' | 'pan'
+  //   points: текущие пальцы на старте жеста
+  // zoom — то, что относится к открытому сейчас фото, сбрасывается
+  //   при переключении на другое.
+  const gesture = useRef({ mode: null, points: [], startDist: 0, startScale: 1, startMidX: 0, startMidY: 0, panStartX: 0, panStartY: 0, zoomStartX: 0, zoomStartY: 0, lastTap: 0, lastTapX: 0, lastTapY: 0, suppressClick: false })
+  const zoom = useRef({ scale: 1, x: 0, y: 0 })
+
+  const currentImg = () => imgRefs.current[photoIdx]
+
+  const applyZoom = (animate) => {
+    const el = currentImg()
+    if (!el) return
+    if (animate) {
+      el.style.transition = 'transform .2s ease'
+      setTimeout(() => { if (el) el.style.transition = '' }, 200)
+    }
+    const { scale, x, y } = zoom.current
+    el.style.transform = `translate(${x}px, ${y}px) scale(${scale})`
+  }
+
+  const resetZoom = (animate) => {
+    zoom.current = { scale: 1, x: 0, y: 0 }
+    applyZoom(animate)
+  }
+
+  const goToPhoto = (index, animate) => {
+    const el = stripRef.current
+    const clamped = Math.max(0, Math.min(photos.length - 1, index))
+    setPhotoIdx(clamped)
+    if (el) {
+      if (animate) {
+        el.style.transition = 'transform .25s ease'
+        setTimeout(() => { if (el) el.style.transition = '' }, 250)
+      }
+      el.style.transform = `translateX(-${clamped * 100}%)`
+    }
+  }
+
+  // При смене фото зум предыдущего снимка не должен переезжать на
+  // следующий — каждое открывается заново на 1×.
+  useEffect(() => { resetZoom(false) }, [photoIdx])
+
   useEffect(() => {
     if (fullscreen === null) return
     const el = lightboxRef.current
-    if (!el) return
+    const strip = stripRef.current
+    if (!el || !strip) return
+    const g = gesture.current
+    const dist = (a, b) => Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY)
+    const mid = (a, b) => ({ x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2 })
 
-    const onMove = (e) => {
-      // Щипок двумя пальцами — не свайп закрытия вовсе, не вмешиваемся:
-      // ни transform, ни preventDefault, отдаём жест целиком нативному
-      // масштабированию. Раньше это не проверялось — читался только
-      // первый палец, а preventDefault всё равно вызывался и глушил
-      // сам зум.
-      if (e.touches.length > 1) {
-        lightboxTouch.current = null
+    const onStart = (e) => {
+      const touches = e.touches
+      if (touches.length === 2) {
+        g.mode = 'pinch'
+        g.startDist = dist(touches[0], touches[1])
+        g.startScale = zoom.current.scale
+        const m = mid(touches[0], touches[1])
+        g.startMidX = m.x; g.startMidY = m.y
+        g.zoomStartX = zoom.current.x; g.zoomStartY = zoom.current.y
         return
       }
-      const start = lightboxTouch.current
-      if (!start) return
-      const t = e.touches[0]
-      const dx = t.clientX - start.x
-      const dy = t.clientY - start.y
-
-      if (start.mode === null) {
-        // Направление решаем один раз, по первым же заметным пикселям —
-        // дальше жест держится того же режима до конца касания.
-        if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return
-        start.mode = Math.abs(dy) > Math.abs(dx) * 1.3 ? 'v' : 'h'
+      if (touches.length === 1) {
+        const t = touches[0]
+        if (zoom.current.scale > 1.02) {
+          g.mode = 'pan'
+          g.panStartX = t.clientX; g.panStartY = t.clientY
+          g.zoomStartX = zoom.current.x; g.zoomStartY = zoom.current.y
+        } else {
+          // пока неизвестно, свайп вниз/вверх (закрыть) или влево/вправо
+          // (соседнее фото) — решаем по первым же пикселям движения
+          g.mode = null
+          g.panStartX = t.clientX; g.panStartY = t.clientY
+        }
       }
-      if (start.mode !== 'v') return
-
-      e.preventDefault()
-      const progress = Math.min(Math.abs(dy) / 300, 1)
-      el.style.transform = `translateY(${dy}px)`
-      el.style.opacity = String(1 - progress * 0.7)
     }
 
+    const onMove = (e) => {
+      const touches = e.touches
+      // Число пальцев сменилось посреди жеста (отпустили один из двух
+      // при щипке) — не дёргаем позицию рывком, просто берём точкой
+      // отсчёта то, что осталось, и едем дальше тем же плавным движением.
+      if ((g.mode === 'pinch' && touches.length !== 2) || (g.mode === 'pan' && touches.length !== 1)) {
+        onStart(e)
+      }
+
+      if (g.mode === 'pinch' && touches.length === 2) {
+        e.preventDefault()
+        const d = dist(touches[0], touches[1])
+        const m = mid(touches[0], touches[1])
+        const scale = Math.max(1, Math.min(4, g.startScale * (d / g.startDist)))
+        zoom.current = {
+          scale,
+          x: g.zoomStartX + (m.x - g.startMidX),
+          y: g.zoomStartY + (m.y - g.startMidY),
+        }
+        applyZoom(false)
+        return
+      }
+
+      if (g.mode === 'pan' && touches.length === 1) {
+        e.preventDefault()
+        const t = touches[0]
+        zoom.current = {
+          scale: zoom.current.scale,
+          x: g.zoomStartX + (t.clientX - g.panStartX),
+          y: g.zoomStartY + (t.clientY - g.panStartY),
+        }
+        applyZoom(false)
+        return
+      }
+
+      if (touches.length !== 1) return
+      const t = touches[0]
+      const dx = t.clientX - g.panStartX
+      const dy = t.clientY - g.panStartY
+
+      if (g.mode === null) {
+        if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return
+        g.mode = Math.abs(dy) > Math.abs(dx) * 1.3 ? 'v-close' : 'h-swipe'
+      }
+
+      if (g.mode === 'v-close') {
+        e.preventDefault()
+        const progress = Math.min(Math.abs(dy) / 300, 1)
+        el.style.transform = `translateY(${dy}px)`
+        el.style.opacity = String(1 - progress * 0.7)
+      } else if (g.mode === 'h-swipe') {
+        e.preventDefault()
+        const pct = (dx / strip.clientWidth) * 100
+        strip.style.transform = `translateX(calc(-${photoIdx * 100}% + ${pct}%))`
+      }
+    }
+
+    const onEnd = (e) => {
+      // Любой настоящий жест (не просто лёгкий тап) — клик после него
+      // не должен закрывать панель сам по себе, даже если движение не
+      // дотянуло до порога и всё вернулось на место: человек явно не
+      // тапал по фону, чтобы закрыть, он что-то перетаскивал.
+      if (g.mode !== null) g.suppressClick = true
+
+      // Двойной тап — переключатель зума. Считается только если жест
+      // не превратился в перетаскивание (mode остался null — палец
+      // почти не сдвинулся).
+      if (g.mode === null && e.touches.length === 0) {
+        const now = Date.now()
+        const t = e.changedTouches[0]
+        const closeTap = Math.hypot(t.clientX - g.lastTapX, t.clientY - g.lastTapY) < 40
+        if (now - g.lastTap < 300 && closeTap) {
+          g.suppressClick = true
+          if (zoom.current.scale > 1.02) resetZoom(true)
+          else { zoom.current = { scale: 2.5, x: 0, y: 0 }; applyZoom(true) }
+          g.lastTap = 0
+        } else {
+          g.lastTap = now; g.lastTapX = t.clientX; g.lastTapY = t.clientY
+        }
+      }
+
+      if (g.mode === 'pinch' || g.mode === 'pan') {
+        if (zoom.current.scale <= 1.02) resetZoom(true)
+        if (e.touches.length === 0) g.mode = null
+        return
+      }
+
+      if (g.mode === 'v-close') {
+        const t = e.changedTouches[0]
+        const dy = t.clientY - g.panStartY
+        if (Math.abs(dy) > 80) {
+          el.style.transition = 'transform .2s ease, opacity .2s ease'
+          el.style.transform = `translateY(${dy > 0 ? '100%' : '-100%'})`
+          el.style.opacity = '0'
+          setTimeout(() => setFullscreen(null), 200)
+        } else {
+          el.style.transition = 'transform .25s ease, opacity .25s ease'
+          el.style.transform = ''
+          el.style.opacity = ''
+          setTimeout(() => { if (el) el.style.transition = '' }, 250)
+        }
+      } else if (g.mode === 'h-swipe') {
+        const t = e.changedTouches[0]
+        const dx = t.clientX - g.panStartX
+        if (Math.abs(dx) > strip.clientWidth * 0.2) {
+          goToPhoto(photoIdx + (dx < 0 ? 1 : -1), true)
+        } else {
+          goToPhoto(photoIdx, true)
+        }
+      }
+      g.mode = null
+    }
+
+    el.addEventListener('touchstart', onStart, { passive: true })
     el.addEventListener('touchmove', onMove, { passive: false })
-    return () => el.removeEventListener('touchmove', onMove)
-  }, [fullscreen])
+    el.addEventListener('touchend', onEnd, { passive: true })
+    return () => {
+      el.removeEventListener('touchstart', onStart)
+      el.removeEventListener('touchmove', onMove)
+      el.removeEventListener('touchend', onEnd)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fullscreen, photoIdx, photos.length])
 
   // При открытом просмотре страница под ним не должна прокручиваться:
   // иначе закрываешь снимок и оказываешься в другом месте объявления.
@@ -616,46 +781,9 @@ export default function ListingDetail() {
         <div
           ref={lightboxRef}
           className="lightbox"
-          onClick={() => setFullscreen(null)}
-          onTouchStart={(e) => {
-            // Второй палец лёг ещё до того, как первый успел сдвинуться
-            // достаточно, чтобы определить направление, — это уже щипок,
-            // не начало свайпа закрытия, отслеживать нечего.
-            if (e.touches.length > 1) {
-              lightboxTouch.current = null
-              return
-            }
-            const t = e.touches[0]
-            // mode: пока неизвестно, куда в итоге пойдёт жест — решаем
-            // по первым же пикселям движения, не заранее.
-            lightboxTouch.current = { x: t.clientX, y: t.clientY, mode: null }
-          }}
-          onTouchEnd={(e) => {
-            const start = lightboxTouch.current
-            lightboxTouch.current = null
-            const el = lightboxRef.current
-            // Если на экране всё ещё остался хотя бы один палец (снимали
-            // один из двух после щипка) — точно не отпускание свайпа
-            // закрытия, ничего не делаем.
-            if (e.touches.length > 0) return
-            if (!start || start.mode !== 'v' || !el) return
-            const t = e.changedTouches[0]
-            const dy = t.clientY - start.y
-            if (Math.abs(dy) > 80) {
-              // долистали — доводим уже начатое движение до конца, тем
-              // же направлением, что и тянул палец, и только тогда
-              // закрываем по-настоящему.
-              el.style.transition = 'transform .2s ease, opacity .2s ease'
-              el.style.transform = `translateY(${dy > 0 ? '100%' : '-100%'})`
-              el.style.opacity = '0'
-              setTimeout(() => setFullscreen(null), 200)
-            } else {
-              // не дотянули — плавно возвращаем на место, а не дёргаем обратно рывком
-              el.style.transition = 'transform .25s ease, opacity .25s ease'
-              el.style.transform = ''
-              el.style.opacity = ''
-              setTimeout(() => { if (el) el.style.transition = '' }, 250)
-            }
+          onClick={() => {
+            if (gesture.current.suppressClick) { gesture.current.suppressClick = false; return }
+            if (zoom.current.scale <= 1.02) setFullscreen(null)
           }}
         >
           <button className="lightbox-close" aria-label={t('actions.close')}>
@@ -666,20 +794,23 @@ export default function ListingDetail() {
           <div
             className="lightbox-strip"
             ref={(el) => {
+              stripRef.current = el
               // открываем сразу на том снимке, который смотрели в ленте
               if (el && el.dataset.ready !== '1') {
-                el.scrollLeft = fullscreen * el.clientWidth
+                el.style.transform = `translateX(-${fullscreen * 100}%)`
                 el.dataset.ready = '1'
               }
             }}
             onClick={(e) => e.stopPropagation()}
-            onScroll={(e) => {
-              const el = e.currentTarget
-              setPhotoIdx(Math.round(el.scrollLeft / el.clientWidth))
-            }}
           >
             {photos.map((ph, i) => (
-              <img key={ph.url || i} src={ph.url} alt="" />
+              <img
+                key={ph.url || i}
+                ref={(el) => { imgRefs.current[i] = el }}
+                src={ph.url}
+                alt=""
+                draggable="false"
+              />
             ))}
           </div>
           {photos.length > 1 && (
