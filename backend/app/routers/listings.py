@@ -297,14 +297,31 @@ def search_listings(
         )
 
     if category_slug:
-        # По родительской категории показываем и её подкатегории — иначе
-        # «Электроника» была бы пустой, ведь объявления лежат в «Телефонах».
-        cat = db.query(Category).filter(Category.slug == category_slug).first()
-        if cat:
-            ids = [cat.id] + [c.id for c in cat.children]
-            q = q.filter(Listing.category_id.in_(ids))
+        # «Работа»: Вакансии/Резюме существуют как категории только для
+        # классификации при импорте из Telegram-чатов (tg_parse.py) —
+        # реальные объявления, размещённые через саму форму публикации,
+        # остаются в родительской jobs, различие живёт в
+        # attributes.listing_kind, не в category_id. Без этого псевдонима
+        # плитка подраздела всегда находила бы ноль объявлений — ни один
+        # человек, размещающий вакансию через форму, не попадал в
+        # category_id именно «Вакансии».
+        JOBS_KIND_ALIASES = {"vacancies": "vacancy", "resumes": "resume"}
+        if category_slug in JOBS_KIND_ALIASES:
+            jobs_cat = db.query(Category).filter(Category.slug == "jobs").first()
+            if jobs_cat:
+                q = q.filter(
+                    Listing.category_id == jobs_cat.id,
+                    Listing.attributes["listing_kind"].astext == JOBS_KIND_ALIASES[category_slug],
+                )
         else:
-            q = q.join(Category).filter(Category.slug == category_slug)
+            # По родительской категории показываем и её подкатегории — иначе
+            # «Электроника» была бы пустой, ведь объявления лежат в «Телефонах».
+            cat = db.query(Category).filter(Category.slug == category_slug).first()
+            if cat:
+                ids = [cat.id] + [c.id for c in cat.children]
+                q = q.filter(Listing.category_id.in_(ids))
+            else:
+                q = q.join(Category).filter(Category.slug == category_slug)
     if city:
         # Точное совпадение вместо поиска подстроки: город теперь хранится
         # кодом, а не текстом, поэтому ilike с процентом впереди только
