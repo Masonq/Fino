@@ -226,7 +226,15 @@ export const api = {
   blockChatPartner: (chatId) => request(`/chats/${chatId}/block`, { method: 'POST' }),
   unblockChatPartner: (chatId) => request(`/chats/${chatId}/unblock`, { method: 'POST' }),
   getChat: (chatId, lang) => request(`/chats/${chatId}?${new URLSearchParams({ lang })}`),
-  getChatMessages: (chatId, before) => request(`/chats/${chatId}/messages${before ? `?before=${encodeURIComponent(before)}` : ''}`),
+  // Бэкенд отдаёт сообщения от новых к старым (см. комментарий у
+  // ChatScreen.loadOlder — так проще подгружать именно последнюю
+  // порцию, не читая всю историю). Разворачиваем тут же, один раз: вся
+  // остальная логика в ChatScreen.jsx (загрузка старых при прокрутке
+  // вверх, дозапись новых по опросу) держит messages в хронологическом
+  // порядке и на этом строится — без разворота список открывался бы
+  // снизу вверх, самым свежим сообщением сверху.
+  getChatMessages: (chatId, before) => request(`/chats/${chatId}/messages${before ? `?before=${encodeURIComponent(before)}` : ''}`)
+    .then((rows) => rows.reverse()),
   sendMessage: (chatId, text) => request(`/chats/${chatId}/messages`, {
     method: 'POST',
     body: JSON.stringify({ text }),
