@@ -150,16 +150,18 @@ export default function AdminUsers() {
         placeholder={t('admin.search')}
       />
 
-      <div className="admin-filters">
-        {FILTERS.map((f) => (
-          <button
-            key={f.key}
-            className={`chip ${filter === f.key ? 'chip-active' : ''}`}
-            onClick={() => setFilter(f.key)}
-          >
-            {t(f.label)}
-          </button>
-        ))}
+      <div className="admin-filters-wrap">
+        <div className="admin-filters">
+          {FILTERS.map((f) => (
+            <button
+              key={f.key}
+              className={`chip ${filter === f.key ? 'chip-active' : ''}`}
+              onClick={() => setFilter(f.key)}
+            >
+              {t(f.label)}
+            </button>
+          ))}
+        </div>
       </div>
 
       {!loaded && <div className="admin-list"><AdminRowSkeletons count={6} /></div>}
