@@ -942,13 +942,16 @@ def get_listing(listing_id: str, db: Session = Depends(get_db),
         "city": listing.city,
         "photos": [{"id": str(p.id), "url": p.url, "is_cover": p.is_cover} for p in listing.photos],
         "views_count": listing.views_count,
-        # Дата публикации и укороченный id — то же, что уже видно в
-        # самом адресе объявления (…-f7642d6b), просто явно, а не
-        # только тем, кто умеет читать URL. Дату берём именно
-        # published_at, а не created_at — момент, когда объявление
-        # реально появилось в выдаче, важнее момента черновика.
+        # Дата публикации и номер — номер сначала был первыми 8
+        # символами UUID (…-f7642d6b), но это буквы вперемешку с
+        # цифрами — «Объявление № f7642d6b» не читается и не
+        # произносится вслух. number — настоящий автоинкремент в базе
+        # (см. модель Listing), только для этой строки на странице.
+        # Дату берём именно published_at, а не created_at — момент,
+        # когда объявление реально появилось в выдаче, важнее момента
+        # черновика.
         "published_at": listing.published_at.isoformat() if listing.published_at else None,
-        "short_id": str(listing.id)[:8],
+        "number": listing.number,
         "owner": {
             "id": str(listing.owner.id),
             "display_name": listing.owner.display_name,

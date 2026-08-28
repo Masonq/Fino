@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Index, text, String, ForeignKey, DateTime, Numeric, Boolean, Enum, Integer, Text
+from sqlalchemy import Index, text, String, ForeignKey, DateTime, Numeric, Boolean, Enum, Integer, Text, BigInteger, Identity
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 
@@ -36,6 +36,14 @@ class Listing(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    # Чисто витринный номер — для человека на странице, не для связей
+    # в базе (те остаются на UUID выше, ничего не переписываем).
+    # Настоящий автоинкремент, не первые символы UUID вперемешку из
+    # букв и цифр — «Объявление № 100047» читается и произносится
+    # вслух, «№ f7642d6b» нет. Стартуем не с единицы — свежий сайт с
+    # «Объявление № 3» выглядит подозрительно пустым.
+    number: Mapped[int] = mapped_column(BigInteger, Identity(start=100000), unique=True, nullable=False)
 
     owner_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), index=True)
     category_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("categories.id"), index=True)
