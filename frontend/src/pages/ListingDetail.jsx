@@ -9,6 +9,7 @@ import { useFavorites } from '../context/FavoritesContext'
 import ReportButton from '../components/ReportButton'
 import PromoteButton from '../components/PromoteButton'
 import SimilarListings from '../components/SimilarListings'
+import SellerListings from '../components/SellerListings'
 import { formatPrice } from '../utils/money'
 
 const REASON_KEYS = [
@@ -608,6 +609,13 @@ export default function ListingDetail() {
         </button>
       </div>
       )}
+
+        {/* Другие объявления продавца — до похожих товаров и жалобы,
+            а не после: на десктопе именно это место (после кнопки
+            «Написать продавцу») оставалось пустым белым фоном под
+            высоту фото слева, если описание короткое. На мобильном
+            просто ещё один блок в общей ленте, ничего не меняется. */}
+        <SellerListings sellerId={listing.owner?.id} excludeListingId={listing.id} />
 
         <SimilarListings listingId={listing.id} />
 
