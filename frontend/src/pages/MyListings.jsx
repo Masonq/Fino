@@ -46,6 +46,11 @@ export default function MyListings() {
 
   const changeStatus = async (id, status) => {
     setBusyId(id)
+    // Панель продвижения могла быть открыта именно для этого
+    // объявления — «Продано»/«Снять с публикации»/«Вернуть в продажу»
+    // переносит его в другую вкладку, продвигать там уже нельзя
+    // (бэкенд и так откажет), панель должна закрыться вместе со сменой.
+    setPromoteFor((prev) => (prev === id ? null : prev))
     try {
       await api.setListingStatus(id, status)
       load()
@@ -56,6 +61,7 @@ export default function MyListings() {
   const remove = async (id) => {
     if (!window.confirm(t('my.confirm_delete'))) return
     setBusyId(id)
+    setPromoteFor((prev) => (prev === id ? null : prev))
     try {
       await api.deleteListing(id)
       load()
@@ -188,7 +194,7 @@ export default function MyListings() {
                 </div>
               )}
 
-              {promoteFor === l.id && (
+              {promoteFor === l.id && l.status === 'active' && (
                 <div className="promo-sheet-dock">
                   <PromoteButton
                     listingId={l.id} renderMode="sheet"
