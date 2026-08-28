@@ -63,14 +63,18 @@ def test_incomplete_are_lowered_not_hidden():
 def test_search_puts_the_word_first():
     """
     При поиске слово в названии важнее полноты: человек искал
-    конкретную вещь, а не красивую карточку.
+    конкретную вещь, а не красивую карточку. Слово рано в описании —
+    промежуточный уровень между «в заголовке» и «просто где-то в
+    описании», чтобы «Мануальная терапия… ✅Детские массажи» не
+    смешивалось наравне с объявлением-охапкой, где то же слово
+    потеряно глубоко в перечне чужих вещей.
     """
     import inspect
     from app.routers.listings import search_listings
 
     source = inspect.getsource(search_listings)
-    # при поиске слово идёт первым в списке сортировки
-    assert "ordering = [title_hit, Listing.is_complete.desc()]" in source
+    # при поиске слово в названии первое, потом — рано в описании
+    assert "ordering = [title_hit, early_desc_hit, Listing.is_complete.desc()]" in source
     # а без поиска первой стоит полнота
     assert "ordering = [Listing.is_complete.desc()]" in source
 

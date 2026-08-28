@@ -259,6 +259,7 @@ def search_listings(
 
     # текстовый поиск по заголовку и описанию на любом из языков
     title_hit = None
+    early_desc_hit = None
     if q_text:
         words = q_text.strip()
         # Марку пишут и латиницей, и кириллицей: «айфон» должен находить
@@ -288,6 +289,28 @@ def search_listings(
                     (ListingTranslation.listing_id == Listing.id)
                     & or_(*[
                         ListingTranslation.title.ilike(f"%{spelling}%")
+                        for spelling in spellings
+                    ])
+                ),
+                0,
+            ),
+            else_=1,
+        )
+
+        # Промежуточный уровень между «в заголовке» и «где-то в описании»:
+        # слово рядом с началом описания — ещё в тему («…для взрослых и
+        # детей. ✅Детские и подростковые массажи» — услуга детского
+        # массажа реально среди предложенного), а глубоко в длинном
+        # перечне чужих вещей одного объявления-охапки («Платье, топы…
+        # Тапочки детские… Карабурма») — уже нет, это соседняя вещь в
+        # том же посте, не то, что человек ищет. Первые 150 символов —
+        # там, где называют сам предмет/услугу, не весь текст целиком.
+        early_desc_hit = case(
+            (
+                exists().where(
+                    (ListingTranslation.listing_id == Listing.id)
+                    & or_(*[
+                        func.left(ListingTranslation.description, 150).ilike(f"%{spelling}%")
                         for spelling in spellings
                     ])
                 ),
@@ -412,8 +435,11 @@ def search_listings(
     ordering = [Listing.is_complete.desc()]
     if title_hit is not None:
         # При поиске слово в названии важнее полноты: человек искал
-        # конкретную вещь, а не красивую карточку.
-        ordering = [title_hit, Listing.is_complete.desc()]
+        # конкретную вещь, а не красивую карточку. early_desc_hit —
+        # промежуточный уровень между «в заголовке» и «просто где-то
+        # в описании»: рано в тексте — ещё в тему, глубоко в длинном
+        # перечне чужих вещей одного поста — уже нет.
+        ordering = [title_hit, early_desc_hit, Listing.is_complete.desc()]
     ordering.append(order)
     items = q.order_by(*ordering).offset(offset).limit(limit).all()
     promo = _active_promo_ids(db, [l.id for l in items])
