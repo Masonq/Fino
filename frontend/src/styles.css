@@ -1782,6 +1782,15 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* все категории — на широких экранах в ряд */
 @media (min-width: 900px) {
   .cats-grid{ grid-template-columns:repeat(5, 206px); justify-content:start; }
+  /* Заголовок был по центру всей ширины (position:absolute; left:0;
+     right:0) — на телефоне это выглядит как обычная мобильная шапка
+     (кнопка назад слева, заголовок по центру узкого экрана), но на
+     широком экране заголовок центрируется по ВСЕЙ странице, а не по
+     контенту под ним — визуально отрывается и от кнопки назад, и от
+     самой сетки плиток, которая начинается от левого края. Остальные
+     страницы (PageHeader) заголовок просто ставят рядом с кнопкой —
+     приводим и этот к тому же виду. */
+  .cats-title{ position:static; text-align:left; font-size:22px; margin-left:4px; }
 }
 @media (min-width: 620px) and (max-width: 899px) {
   .cats-grid{ grid-template-columns:repeat(3, 1fr); }
