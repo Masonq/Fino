@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { api } from '../api/client'
@@ -39,6 +39,9 @@ export default function ListingDetail() {
   // Просмотр во весь экран: в галерее фото вписано целиком и потому мелкое,
   // а разглядеть вещь перед покупкой — половина смысла объявления.
   const [fullscreen, setFullscreen] = useState(null)
+  // Точка начала касания — для свайпа вниз/вверх, закрывающего просмотр.
+  // Не стейт: пересчитывать компонент на каждое touchmove незачем.
+  const lightboxTouch = useRef(null)
 
   // При открытом просмотре страница под ним не должна прокручиваться:
   // иначе закрываешь снимок и оказываешься в другом месте объявления.
@@ -565,7 +568,28 @@ export default function ListingDetail() {
       )}
 
       {fullscreen !== null && (
-        <div className="lightbox" onClick={() => setFullscreen(null)}>
+        <div
+          className="lightbox"
+          onClick={() => setFullscreen(null)}
+          onTouchStart={(e) => {
+            const t = e.touches[0]
+            lightboxTouch.current = { x: t.clientX, y: t.clientY }
+          }}
+          onTouchEnd={(e) => {
+            const start = lightboxTouch.current
+            lightboxTouch.current = null
+            if (!start) return
+            const t = e.changedTouches[0]
+            const dy = t.clientY - start.y
+            const dx = t.clientX - start.x
+            // Вертикально и заметно больше, чем по горизонтали — иначе
+            // обычное перелистывание фото (тот же жест пальцем, только
+            // влево-вправо) закрывало бы просмотр самим собой.
+            if (Math.abs(dy) > 80 && Math.abs(dy) > Math.abs(dx) * 1.5) {
+              setFullscreen(null)
+            }
+          }}
+        >
           <button className="lightbox-close" aria-label={t('actions.close')}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
               <path d="M18 6 6 18M6 6l12 12" />
