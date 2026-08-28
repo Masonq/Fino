@@ -189,7 +189,13 @@
     "show_all": "Показать все",
     "seller_other_listings": "Ещё у этого продавца",
     "share": "Поделиться",
-    "link_copied": "Ссылка скопирована"
+    "link_copied": "Ссылка скопирована",
+    "quick_title": "Спросить у продавца",
+    "quick_available": "Ещё актуально?",
+    "quick_when_see": "Где и когда можно посмотреть?",
+    "quick_negotiable": "Торг уместен?",
+    "quick_delivery": "Доставка возможна?",
+    "quick_own": "Написать своё сообщение"
   },
   "favorites": {
     "title": "Избранное",

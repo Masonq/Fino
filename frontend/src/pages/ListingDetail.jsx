@@ -171,11 +171,19 @@ export default function ListingDetail() {
       .catch(() => setSchema([]))
   }, [listing?.category_slug])
 
-  const startChatWith = async () => {
+  const startChatWith = async (initialText) => {
     if (!listing) return
     setStarting(true)
     try {
       const chat = await api.startChat(listing.id, i18n.language)
+      // Подсказка — не обязательный первый шаг: если человек выбрал
+      // готовый вопрос, отправляем его сразу, тем же приёмом, что и
+      // обычное сообщение из самого чата. Если это неудача — чат уже
+      // создан, и открыть его всё равно стоит, просто без подставленного
+      // текста: молчать полностью хуже, чем прийти в чат без готовой фразы.
+      if (initialText) {
+        try { await api.sendMessage(chat.id, initialText) } catch { /* открываем чат всё равно */ }
+      }
       navigate(`/chat/${chat.id}`)
     } catch (e) {
       alert(t('detail.own_listing'))
@@ -239,6 +247,15 @@ export default function ListingDetail() {
   const [showReasons, setShowReasons] = useState(false)
   const [customReason, setCustomReason] = useState(false)
   const [reasonText, setReasonText] = useState('')
+  // Подсказки перед первым сообщением продавцу — хук должен жить тут,
+  // до раннего return скелетоном загрузки ниже (if (!listing)): после
+  // него хуки условны (на первом кадре, пока listing ещё не пришёл,
+  // return срабатывает раньше и хук просто не вызывается) — React на
+  // это ругается «Rendered more hooks than during the previous render»
+  // и роняет всю страницу целиком. Раньше уже наступал на эти же
+  // грабли — не с первого раза, тестом в реальном браузере, а не
+  // просто чтением кода.
+  const [quickReplyOpen, setQuickReplyOpen] = useState(false)
   // Перенесённое из телеграм-чата объявление принадлежит служебному
   // аккаунту чата — реального человека, которому можно вернуть его на
   // доработку, тут нет. Такие просто удаляем, как раньше. У обычного
@@ -350,10 +367,27 @@ export default function ListingDetail() {
     return value
   }
 
+  // Готовые вопросы — не всегда одни и те же: торг и доставка
+  // спрашивают только если это вообще применимо к объявлению, иначе
+  // вопрос был бы бессмысленным («Торг уместен?» под ценой, где
+  // владелец уже сказал, что торга нет). Первые два — общие, подходят
+  // почти любой вещи или услуге.
+  const quickReplies = [
+    t('detail.quick_available'),
+    t('detail.quick_when_see'),
+    ...(listing?.price_negotiable ? [t('detail.quick_negotiable')] : []),
+    ...(listing?.delivery_available ? [t('detail.quick_delivery')] : []),
+  ]
+
   const handleWriteToSeller = () => {
     const myId = user?.id
     if (myId) {
-      startChatWith()
+      // Резюме — не тот случай, когда «где и когда посмотреть» уместно;
+      // сразу открываем чат, как и раньше. Для обычной вещи или услуги —
+      // сначала подсказки: пустой чат заставляет придумывать первую
+      // фразу с нуля, а тут есть с чего начать одним касанием.
+      if (isResume) startChatWith()
+      else setQuickReplyOpen(true)
     } else {
       navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`)
     }
@@ -657,6 +691,39 @@ export default function ListingDetail() {
           {starting ? '...' : t(isResume ? 'detail.write_person' : 'detail.write_seller')}
         </button>
       </div>
+      )}
+
+      {/* Подсказки перед первым сообщением — пустой чат заставлял
+          придумывать, с чего начать, с нуля. Готовый вопрос уходит
+          сразу при касании; «Своё сообщение» — прежнее поведение,
+          открывает пустой чат как раньше. */}
+      {quickReplyOpen && (
+        <>
+          <div className="quick-reply-backdrop" onClick={() => setQuickReplyOpen(false)} />
+          <div className="quick-reply-sheet">
+            <div className="quick-reply-title">{t('detail.quick_title')}</div>
+            {quickReplies.map((text) => (
+              <button
+                key={text}
+                className="quick-reply-option"
+                disabled={starting}
+                onClick={() => { setQuickReplyOpen(false); startChatWith(text) }}
+              >
+                {text}
+              </button>
+            ))}
+            <button
+              className="quick-reply-option quick-reply-own"
+              disabled={starting}
+              onClick={() => { setQuickReplyOpen(false); startChatWith() }}
+            >
+              {t('detail.quick_own')}
+            </button>
+            <button className="quick-reply-cancel" onClick={() => setQuickReplyOpen(false)}>
+              {t('rev.cancel')}
+            </button>
+          </div>
+        </>
       )}
 
         {/* Другие объявления продавца — до похожих товаров и жалобы,

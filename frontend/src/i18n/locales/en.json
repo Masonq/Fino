@@ -189,7 +189,13 @@
     "show_all": "Show all",
     "seller_other_listings": "More from this seller",
     "share": "Share",
-    "link_copied": "Link copied"
+    "link_copied": "Link copied",
+    "quick_title": "Ask the seller",
+    "quick_available": "Still available?",
+    "quick_when_see": "Where and when can I see it?",
+    "quick_negotiable": "Is the price negotiable?",
+    "quick_delivery": "Is delivery possible?",
+    "quick_own": "Write your own message"
   },
   "favorites": {
     "title": "Saved",

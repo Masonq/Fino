@@ -521,6 +521,26 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   color:#fff; font-size:13px; font-weight:600; padding:9px 16px; border-radius:11px;
 }
 
+/* Подсказки перед первым сообщением продавцу — лёгкая шторка снизу,
+   не в полноэкранную модалку ради всего четырёх кнопок. */
+.quick-reply-backdrop{ position:fixed; inset:0; z-index:40; background:rgba(20,30,25,.4); }
+.quick-reply-sheet{
+  position:fixed; left:0; right:0; bottom:0; z-index:41;
+  background:#fff; border-radius:20px 20px 0 0;
+  padding:18px 16px calc(18px + env(safe-area-inset-bottom));
+  max-width:480px; margin:0 auto;
+}
+.quick-reply-title{ font-size:15px; font-weight:800; color:var(--ink); margin-bottom:12px; }
+.quick-reply-option{
+  display:block; width:100%; text-align:left; padding:13px 14px; margin-bottom:8px;
+  background:#F2F2EF; border-radius:12px; font-size:14px; font-weight:600; color:var(--ink);
+}
+.quick-reply-own{ background:transparent; border:1px solid rgba(20,30,25,.14); color:var(--primary-deep); }
+.quick-reply-cancel{
+  display:block; width:100%; text-align:center; padding:11px; margin-top:2px;
+  color:var(--muted); font-size:14px; font-weight:600;
+}
+
 .detail-sheet{ background:#fff; border-radius:24px 24px 0 0; margin-top:-22px; position:relative; padding:20px 20px 20px; box-shadow:0 -6px 20px rgba(20,30,25,.05); }
 .detail-price{ font-family:'IBM Plex Mono',monospace; font-weight:800; font-size:25px; color:var(--primary-deep); }
 .price-old{
