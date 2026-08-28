@@ -50,6 +50,19 @@ systemctl daemon-reload
 systemctl restart fino
 systemctl restart fino-frontend
 
+echo "→ обновляю конфиг nginx"
+# Раньше этот шаг не делался вовсе — правки в deploy/plonk.rs.conf
+# копились в репозитории, а на сервере годами работал старый файл.
+# nginx -t до перезагрузки — не дать битому конфигу положить сайт
+# совсем: reload с ошибкой в файле останавливает nginx на всех
+# сайтах разом, не только на этом.
+cp deploy/plonk.rs.conf /etc/nginx/sites-available/plonk
+if ! nginx -t 2>&1; then
+  echo "  ✗ конфиг nginx не прошёл проверку — деплой остановлен, nginx не тронут"
+  exit 1
+fi
+systemctl reload nginx
+
 # ждём, пока сервер поднимется
 echo "→ жду запуска"
 for i in $(seq 1 15); do
