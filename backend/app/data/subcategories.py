@@ -38,7 +38,18 @@ SUBCATEGORIES: dict[str, list[dict]] = {
         {"slug": "tv-audio", "name": {"ru": "Аудио и видео", "en": "Audio & video", "sr": "Audio i video"}},
         {"slug": "photo", "name": {"ru": "Фототехника", "en": "Photo equipment", "sr": "Foto oprema"}},
         {"slug": "gaming", "name": {"ru": "Игры, приставки и программы", "en": "Games & consoles", "sr": "Igre i konzole"}},
-        {"slug": "gadgets", "name": {"ru": "Товары для компьютера", "en": "Computer accessories", "sr": "Oprema za računar"}},
+        # Раньше один общий gadgets — умные часы, зарядки, клавиатуры,
+        # чехлы вперемешку. У обучаемого классификатора для такой
+        # разношёрстной корзины не набирается общего словаря (часы и
+        # чехлы не делят почти ни одного слова), и она забирала на себя
+        # больше трети всех объявлений раздела — не потому что их и
+        # правда столько, а потому что была самой широкой сетью.
+        # Разбито на четыре узких раздела — каждому есть свой узнаваемый
+        # словарь, в отличие от одной общей «мелочи».
+        {"slug": "wearables", "name": {"ru": "Умные часы и браслеты", "en": "Smartwatches & bands", "sr": "Pametni satovi i narukvice"}},
+        {"slug": "charging", "name": {"ru": "Зарядки и повербанки", "en": "Chargers & power banks", "sr": "Punjači i pauerbanke"}},
+        {"slug": "peripherals", "name": {"ru": "Периферия для компьютера", "en": "Computer peripherals", "sr": "Periferija za računar"}},
+        {"slug": "cases", "name": {"ru": "Чехлы и защита", "en": "Cases & protection", "sr": "Maske i zaštita"}},
     ],
     "home-garden": [
         {"slug": "furniture", "name": {"ru": "Мебель", "en": "Furniture", "sr": "Nameštaj"}},

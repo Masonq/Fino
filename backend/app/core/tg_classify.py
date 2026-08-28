@@ -522,22 +522,20 @@ SUB_KEYWORDS: dict[str, dict[str, list[str]]] = {
                   "дрон", "квадрокоптер", "drone"],
         "gaming": ["playstation", "ps4", "ps5", "xbox", "nintendo", "приставк", "джойстик", "геймпад",
                    "steam deck"],
-        # Периферия и мелочь — не сам компьютер и не музыкальная система,
-        # а то, что к ним подключают. «Наушники» без уточнения остаются
-        # в tv-audio (обычные для дома), а «гарнитура» — игровой/рабочий
-        # термин, сюда. Сюда же чехлы, зарядки, звуковые карты/усилители
-        # для наушников (DAC/AMP) — явные слова-аксессуары, которые
-        # раньше проигрывали спор бренду телефона в самом же заголовке
-        # («Чехол для iPhone» уезжал в «Телефоны»).
-        "gadgets": ["умные часы", "смарт-часы", "фитнес-браслет", "powerbank", "повербанк", "зарядк",
-                    "клавиатур", "мышк", "компьютерная мыш", "докстанц", "док-станц",
-                    "роутер", "принтер", "вебкамер", "веб-камер", "гарнитур", "наушники с микрофон",
-                    "чехол", "case for", "futrola", "dac", "amp ", "smarttag", "smart tag",
-                    # Английские названия — обычное дело у техники: бренды
-                    # продают модели этими словами, а не переводят на
-                    # русский. «мышк» короче «мышь» не ловит — нужен корень
-                    # «мыш» (3 буквы), начало и «мышь», и «мышка».
-                    "mouse", "мыш", "keyboard", "router", "smart band", "mi band", "часы", "garmin"],
+        # Раньше один общий «gadgets» — умные часы, зарядки, клавиатуры,
+        # чехлы вперемешку, без общего словаря между ними. Разбито на
+        # четыре узких раздела — каждому свой узнаваемый набор слов,
+        # обучаемому классификатору (category_model.py) на таком есть
+        # чему учиться, в отличие от одной общей «мелочи».
+        "wearables": ["умные часы", "смарт-часы", "фитнес-браслет", "smart band", "mi band",
+                      "часы", "garmin", "smarttag", "smart tag"],
+        "charging": ["powerbank", "повербанк", "зарядк", "кабель для зарядк", "провод для зарядк"],
+        # «Наушники» без уточнения остаются в tv-audio (обычные, для
+        # дома), а «гарнитура» — игровой/рабочий термин, сюда же.
+        "peripherals": ["клавиатур", "мышк", "компьютерная мыш", "докстанц", "док-станц",
+                         "роутер", "принтер", "вебкамер", "веб-камер", "гарнитур", "наушники с микрофон",
+                         "mouse", "мыш", "keyboard", "router", "dac", "amp "],
+        "cases": ["чехол", "case for", "futrola"],
     },
     "home-garden": {
         "furniture": ["диван", "кроват", "шкаф", "комод", "кресл", "стеллаж", "матрас", "тумб", "стул", "стуль",
@@ -767,10 +765,10 @@ def classify_sub(parent_slug: str, text: str) -> str | None:
     # в том, что названо раньше в заголовке. Первое слово — это то, что
     # продают, остальное — довесок. По очкам решать нельзя: у «чехол»
     # корень длиннее, чем «ipad», и он выигрывал спор всегда, даже когда
-    # сам был довеском.
-    if parent_slug == "electronics" and "gadgets" in scores:
-        title_only = _fold(text.split("\n", 1)[0])
-
+    # сам был довеском. Правило одно на все четыре раздела-аксессуара
+    # (раньше был единственный gadgets, теперь их четыре — тот же спор
+    # с устройством у каждого).
+    if parent_slug == "electronics":
         def _pos(word: str) -> int | None:
             needle = _fold(word).strip()
             if not needle:
@@ -783,7 +781,7 @@ def classify_sub(parent_slug: str, text: str) -> str | None:
             found = [p for p in (_pos(w) for w in words) if p is not None]
             return min(found) if found else None
 
-        gadgets_pos = _first_pos(table.get("gadgets", []))
+        title_only = _fold(text.split("\n", 1)[0])
         device_positions = {
             k: _first_pos(table.get(k, []))
             for k in ("laptops", "computers", "tablets", "phones")
@@ -791,21 +789,25 @@ def classify_sub(parent_slug: str, text: str) -> str | None:
         }
         device_positions = {k: p for k, p in device_positions.items() if p is not None}
 
-        if gadgets_pos is None:
-            # Слово-аксессуар есть только в описании (макбук + русская
-            # клавиатура) — устройство названо в заголовке, значит оно и
-            # есть товар.
-            if device_positions:
-                scores.pop("gadgets")
-        elif device_positions:
-            earliest_device = min(device_positions.values())
-            if gadgets_pos < earliest_device:
-                # Аксессуар назван раньше устройства — он и есть товар
-                # («Чехол для iPhone»).
-                return "gadgets"
-            # Устройство названо раньше — аксессуар был довеском
-            # («iPad + pencil + чехольчик»).
-            scores.pop("gadgets")
+        for accessory in ("wearables", "charging", "peripherals", "cases"):
+            if accessory not in scores:
+                continue
+            accessory_pos = _first_pos(table.get(accessory, []))
+            if accessory_pos is None:
+                # Слово-аксессуар есть только в описании (макбук + русская
+                # клавиатура) — устройство названо в заголовке, значит оно
+                # и есть товар.
+                if device_positions:
+                    scores.pop(accessory)
+            elif device_positions:
+                earliest_device = min(device_positions.values())
+                if accessory_pos < earliest_device:
+                    # Аксессуар назван раньше устройства — он и есть товар
+                    # («Чехол для iPhone»).
+                    return accessory
+                # Устройство названо раньше — аксессуар был довеском
+                # («iPad + pencil + чехольчик»).
+                scores.pop(accessory)
 
     if not scores:
         return None

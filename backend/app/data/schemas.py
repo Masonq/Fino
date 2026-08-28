@@ -462,7 +462,10 @@ SUB_SCHEMAS: dict[str, list[dict]] = {
     "tv-audio": [BRAND, MODEL, CONDITION, _SCREEN_INCH, WARRANTY],
     "photo": [BRAND, MODEL, CONDITION, _MEGAPIXELS, WARRANTY],
     "gaming": [BRAND, MODEL, CONDITION, _STORAGE_GB, WARRANTY],
-    "gadgets": [BRAND, MODEL, CONDITION, _BATTERY_HEALTH, WARRANTY],
+    "wearables": [BRAND, MODEL, CONDITION, _BATTERY_HEALTH, COLOR, WARRANTY],
+    "charging": [BRAND, MODEL, CONDITION, WARRANTY],
+    "peripherals": [BRAND, MODEL, CONDITION, COLOR, WARRANTY],
+    "cases": [BRAND, MODEL, CONDITION, COLOR],
 
     # ——— одежда и обувь ———
     "women": [BRAND, CONDITION_SIMPLE, SIZE_TEXT, COLOR],
