@@ -1822,17 +1822,23 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .lightbox{
   position:fixed; inset:0; z-index:80; background:#000;
   display:flex; align-items:center; justify-content:center;
-  touch-action:none;
 }
 .lightbox-strip{
   display:flex; width:100%; height:100%;
-  overflow:hidden;
-  touch-action:none;
+  overflow-x:auto; overflow-y:hidden;
+  scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  /* pan-x — горизонталь браузер ведёт сам (родная прокрутка между
+     фото), а вертикаль и щипок остаются нашему JS: без этого
+     touch-action:none глушил бы прокрутку вовсе, а auto отдавал бы
+     браузеру ещё и вертикаль, с которой свайп-закрытие бы не совладал. */
+  touch-action:pan-x;
 }
+.lightbox-strip::-webkit-scrollbar{ display:none; }
 .lightbox-strip img{
   width:100%; height:100%; flex:0 0 100%;
-  object-fit:contain; user-select:none;
-  -webkit-user-drag:none;
+  object-fit:contain; scroll-snap-align:start;
+  user-select:none; -webkit-user-drag:none;
 }
 .lightbox-close{
   position:absolute; top:calc(12px + env(safe-area-inset-top)); right:14px; z-index:2;

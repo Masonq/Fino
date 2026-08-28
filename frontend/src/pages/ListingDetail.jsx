@@ -77,20 +77,24 @@ export default function ListingDetail() {
   const stripRef = useRef(null)
   const imgRefs = useRef([])
 
-  // Все жесты просмотра в одном месте: щипок (зум), перетаскивание
-  // увеличенного фото, свайп между фото, свайп-закрытие вниз/вверх,
-  // двойной тап. Раньше переключение между фото шло через нативный
-  // scroll-x ленты — при зуме это не уживалось бы с панорамированием
-  // одним пальцем (кто в какой момент ведёт жест — браузер через
-  // scroll или наш JS через transform). Теперь лента подвинута через
-  // JS от начала до конца, всё в одних руках.
+  // Переключение между фото — снова через нативную прокрутку ленты
+  // (scroll-x + scroll-snap), как было изначально: проверенно
+  // работает, браузер сам умеет это лучше самодельного кода. Щипок,
+  // зум, панорама при увеличении, свайп-закрытие вниз/вверх и двойной
+  // тап — отдельный слой поверх, включается только когда действительно
+  // нужен (два пальца, либо уже увеличено), не спорит с прокруткой.
   //
-  // gesture — то, что живёт только на время одного касания:
-  //   mode: null | 'v-close' | 'h-swipe' | 'pinch' | 'pan'
-  //   points: текущие пальцы на старте жеста
-  // zoom — то, что относится к открытому сейчас фото, сбрасывается
-  //   при переключении на другое.
-  const gesture = useRef({ mode: null, points: [], startDist: 0, startScale: 1, startMidX: 0, startMidY: 0, panStartX: 0, panStartY: 0, zoomStartX: 0, zoomStartY: 0, lastTap: 0, lastTapX: 0, lastTapY: 0, suppressClick: false })
+  // Более ранняя версия пробовала подвинуть и переключение между фото
+  // тоже через свой JS (transform вместо scroll) — итог был печальным:
+  // счётчик наверху обновлялся верно, а само изображение переставало
+  // показываться, чёрный экран вместо фото. Свой код для того, что
+  // браузер и так умеет надёжно, — плохой размен.
+  const gesture = useRef({
+    mode: null, startDist: 0, startScale: 1, startMidX: 0, startMidY: 0,
+    panStartX: 0, panStartY: 0, zoomStartX: 0, zoomStartY: 0,
+    closeStartX: 0, closeStartY: 0,
+    lastTap: 0, lastTapX: 0, lastTapY: 0, suppressClick: false,
+  })
   const zoom = useRef({ scale: 1, x: 0, y: 0 })
 
   const currentImg = () => imgRefs.current[photoIdx]
@@ -109,23 +113,10 @@ export default function ListingDetail() {
   const resetZoom = (animate) => {
     zoom.current = { scale: 1, x: 0, y: 0 }
     applyZoom(animate)
-  }
-
-  const goToPhoto = (index, animate) => {
-    const el = stripRef.current
-    // photos ещё не объявлена на этом месте файла (там, ниже, за ранней
-    // отрисовкой скелетона) — count берём из listing напрямую, он-то
-    // доступен с самого начала, даже пока сама страница ещё грузится.
-    const count = listing?.photos?.length || 0
-    const clamped = Math.max(0, Math.min(count - 1, index))
-    setPhotoIdx(clamped)
-    if (el) {
-      if (animate) {
-        el.style.transition = 'transform .25s ease'
-        setTimeout(() => { if (el) el.style.transition = '' }, 250)
-      }
-      el.style.transform = `translateX(-${clamped * 100}%)`
-    }
+    // Пока было увеличено, нативную прокрутку ленты держали
+    // выключенной (см. onStart ниже) — возвращаем её на 1×.
+    const strip = stripRef.current
+    if (strip) strip.style.overflowX = ''
   }
 
   // При смене фото зум предыдущего снимка не должен переезжать на
@@ -150,6 +141,9 @@ export default function ListingDetail() {
         const m = mid(touches[0], touches[1])
         g.startMidX = m.x; g.startMidY = m.y
         g.zoomStartX = zoom.current.x; g.zoomStartY = zoom.current.y
+        // На время щипка нативная прокрутка мешала бы — временно гасим,
+        // resetZoom() включит обратно, когда вернёмся к 1×.
+        strip.style.overflowX = 'hidden'
         return
       }
       if (touches.length === 1) {
@@ -158,11 +152,13 @@ export default function ListingDetail() {
           g.mode = 'pan'
           g.panStartX = t.clientX; g.panStartY = t.clientY
           g.zoomStartX = zoom.current.x; g.zoomStartY = zoom.current.y
+          strip.style.overflowX = 'hidden'
         } else {
-          // пока неизвестно, свайп вниз/вверх (закрыть) или влево/вправо
-          // (соседнее фото) — решаем по первым же пикселям движения
+          // Не увеличено — горизонталь целиком достаётся нативной
+          // прокрутке ленты между фото, мы только следим за вертикалью,
+          // чтобы понять, не тянут ли вниз/вверх для закрытия.
           g.mode = null
-          g.panStartX = t.clientX; g.panStartY = t.clientY
+          g.closeStartX = t.clientX; g.closeStartY = t.clientY
         }
       }
     }
@@ -170,8 +166,8 @@ export default function ListingDetail() {
     const onMove = (e) => {
       const touches = e.touches
       // Число пальцев сменилось посреди жеста (отпустили один из двух
-      // при щипке) — не дёргаем позицию рывком, просто берём точкой
-      // отсчёта то, что осталось, и едем дальше тем же плавным движением.
+      // при щипке) — не дёргаем позицию рывком, берём точкой отсчёта
+      // то, что осталось, едем дальше тем же плавным движением.
       if ((g.mode === 'pinch' && touches.length !== 2) || (g.mode === 'pan' && touches.length !== 1)) {
         onStart(e)
       }
@@ -202,38 +198,35 @@ export default function ListingDetail() {
         return
       }
 
+      // Не увеличено, один палец — свайп-закрытие. Срабатывает только
+      // если движение явно вертикальное: иначе это самое обычное
+      // перелистывание между фото, которое ведёт браузер сам через
+      // нативный scroll, мы его руками не трогаем вовсе.
       if (touches.length !== 1) return
+      if (g.mode !== null && g.mode !== 'v-close') return
       const t = touches[0]
-      const dx = t.clientX - g.panStartX
-      const dy = t.clientY - g.panStartY
+      const dx = t.clientX - g.closeStartX
+      const dy = t.clientY - g.closeStartY
 
       if (g.mode === null) {
-        if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return
-        g.mode = Math.abs(dy) > Math.abs(dx) * 1.3 ? 'v-close' : 'h-swipe'
+        if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return
+        if (Math.abs(dy) <= Math.abs(dx) * 1.3) return // горизонталь — не наше дело
+        g.mode = 'v-close'
       }
 
-      if (g.mode === 'v-close') {
-        e.preventDefault()
-        const progress = Math.min(Math.abs(dy) / 300, 1)
-        el.style.transform = `translateY(${dy}px)`
-        el.style.opacity = String(1 - progress * 0.7)
-      } else if (g.mode === 'h-swipe') {
-        e.preventDefault()
-        const pct = (dx / strip.clientWidth) * 100
-        strip.style.transform = `translateX(calc(-${photoIdx * 100}% + ${pct}%))`
-      }
+      e.preventDefault()
+      const progress = Math.min(Math.abs(dy) / 300, 1)
+      el.style.transform = `translateY(${dy}px)`
+      el.style.opacity = String(1 - progress * 0.7)
     }
 
     const onEnd = (e) => {
-      // Любой настоящий жест (не просто лёгкий тап) — клик после него
-      // не должен закрывать панель сам по себе, даже если движение не
-      // дотянуло до порога и всё вернулось на место: человек явно не
-      // тапал по фону, чтобы закрыть, он что-то перетаскивал.
+      // Любой настоящий жест — клик после него не должен закрывать
+      // панель сам по себе, даже если движение не дотянуло до порога.
       if (g.mode !== null) g.suppressClick = true
 
-      // Двойной тап — переключатель зума. Считается только если жест
-      // не превратился в перетаскивание (mode остался null — палец
-      // почти не сдвинулся).
+      // Двойной тап — переключатель зума. Только если жест не
+      // превратился в перетаскивание (mode остался null).
       if (g.mode === null && e.touches.length === 0) {
         const now = Date.now()
         const t = e.changedTouches[0]
@@ -256,7 +249,7 @@ export default function ListingDetail() {
 
       if (g.mode === 'v-close') {
         const t = e.changedTouches[0]
-        const dy = t.clientY - g.panStartY
+        const dy = t.clientY - g.closeStartY
         if (Math.abs(dy) > 80) {
           el.style.transition = 'transform .2s ease, opacity .2s ease'
           el.style.transform = `translateY(${dy > 0 ? '100%' : '-100%'})`
@@ -267,14 +260,6 @@ export default function ListingDetail() {
           el.style.transform = ''
           el.style.opacity = ''
           setTimeout(() => { if (el) el.style.transition = '' }, 250)
-        }
-      } else if (g.mode === 'h-swipe') {
-        const t = e.changedTouches[0]
-        const dx = t.clientX - g.panStartX
-        if (Math.abs(dx) > strip.clientWidth * 0.2) {
-          goToPhoto(photoIdx + (dx < 0 ? 1 : -1), true)
-        } else {
-          goToPhoto(photoIdx, true)
         }
       }
       g.mode = null
@@ -289,7 +274,7 @@ export default function ListingDetail() {
       el.removeEventListener('touchend', onEnd)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fullscreen, photoIdx, listing?.photos?.length])
+  }, [fullscreen, photoIdx])
   const { isFavorite, toggle } = useFavorites()
   const fav = isFavorite(listingId)
 
@@ -802,11 +787,18 @@ export default function ListingDetail() {
               stripRef.current = el
               // открываем сразу на том снимке, который смотрели в ленте
               if (el && el.dataset.ready !== '1') {
-                el.style.transform = `translateX(-${fullscreen * 100}%)`
+                el.scrollLeft = fullscreen * el.clientWidth
                 el.dataset.ready = '1'
               }
             }}
             onClick={(e) => e.stopPropagation()}
+            onScroll={(e) => {
+              // Только пока не увеличено — при зуме прокрутка временно
+              // выключена (overflowX:'hidden' в onStart), это событие
+              // просто не придёт.
+              const el = e.currentTarget
+              setPhotoIdx(Math.round(el.scrollLeft / el.clientWidth))
+            }}
           >
             {photos.map((ph, i) => (
               <img
