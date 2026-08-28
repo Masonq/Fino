@@ -187,7 +187,9 @@
     "read_more": "Read more",
     "characteristics": "Characteristics",
     "show_all": "Show all",
-    "seller_other_listings": "More from this seller"
+    "seller_other_listings": "More from this seller",
+    "share": "Share",
+    "link_copied": "Link copied"
   },
   "favorites": {
     "title": "Saved",

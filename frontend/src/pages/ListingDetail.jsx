@@ -127,6 +127,35 @@ export default function ListingDetail() {
     const res = await toggle(listingId)
     if (res?.needAuth) navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`)
   }
+
+  // «Поделиться» — системное меню (WhatsApp/Telegram/куда угодно),
+  // где есть navigator.share (почти все мобильные браузеры); там, где
+  // нет (десктоп, старые браузеры) — копируем ссылку в буфер и
+  // показываем короткое подтверждение самостоятельно, раз системного
+  // сообщения об успехе тут не будет. Адрес строим сами
+  // (origin + listing.path), а не берём window.location.href как есть —
+  // в строке браузера мог остаться случайный ?promoted=... или другой
+  // служебный параметр, которому нечего делать в ссылке для чужого человека.
+  const [shareCopied, setShareCopied] = useState(false)
+  const onShare = async () => {
+    const url = `${window.location.origin}${listing?.path || window.location.pathname}`
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: listing?.title, url })
+      } catch {
+        // человек просто закрыл системное меню — не ошибка, молчим
+      }
+      return
+    }
+    try {
+      await navigator.clipboard.writeText(url)
+      setShareCopied(true)
+      setTimeout(() => setShareCopied(false), 2000)
+    } catch {
+      // буфер обмена недоступен — редкий случай, молча ничего не делаем
+    }
+  }
+
   const [starting, setStarting] = useState(false)
   const [descOpen, setDescOpen] = useState(false)
   const [attrsOpen, setAttrsOpen] = useState(false)
@@ -366,6 +395,12 @@ export default function ListingDetail() {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h16M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7m2 0-.7 12.4A2 2 0 0 1 14.3 21H9.7a2 2 0 0 1-2-1.6L7 7" /></svg>
               </button>
             )}
+            <button className="topbar-btn" onClick={onShare} aria-label={t('detail.share')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+                <path d="M8.6 10.5 15.4 6.5M8.6 13.5 15.4 17.5" />
+              </svg>
+            </button>
             <button className={fav ? 'topbar-btn on' : 'topbar-btn'} onClick={onFav} aria-label={t('misc.in_favorites')}>
               <svg viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
                 <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />
@@ -386,6 +421,12 @@ export default function ListingDetail() {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h16M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7m2 0-.7 12.4A2 2 0 0 1 14.3 21H9.7a2 2 0 0 1-2-1.6L7 7" /></svg>
               </button>
             )}
+            <button className="circle-btn" onClick={onShare} aria-label={t('detail.share')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+                <path d="M8.6 10.5 15.4 6.5M8.6 13.5 15.4 17.5" />
+              </svg>
+            </button>
             <button className={fav ? 'circle-btn on' : 'circle-btn'} onClick={onFav} aria-label={t('misc.in_favorites')}>
               <svg viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
                 <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />
@@ -399,6 +440,14 @@ export default function ListingDetail() {
           <div className="photo-count">{photoIdx + 1} / {photos.length}</div>
         )}
       </div>
+
+      {/* Подтверждение только для запасного пути (копия в буфер) —
+          там, где сработало системное меню navigator.share, у
+          телефона уже есть своё «отправлено», добавлять здесь ещё
+          одно поверх — задваивать. */}
+      {shareCopied && (
+        <div className="share-toast">{t('detail.link_copied')}</div>
+      )}
 
       <div className="detail-sheet">
         {/* Подтверждение оплаты продвижения — сразу после возврата

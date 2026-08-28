@@ -187,7 +187,9 @@
     "read_more": "Читать полностью",
     "characteristics": "Характеристики",
     "show_all": "Показать все",
-    "seller_other_listings": "Ещё у этого продавца"
+    "seller_other_listings": "Ещё у этого продавца",
+    "share": "Поделиться",
+    "link_copied": "Ссылка скопирована"
   },
   "favorites": {
     "title": "Избранное",

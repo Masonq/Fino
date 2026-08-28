@@ -187,7 +187,9 @@
     "read_more": "Pročitaj sve",
     "characteristics": "Karakteristike",
     "show_all": "Prikaži sve",
-    "seller_other_listings": "Još od ovog prodavca"
+    "seller_other_listings": "Još od ovog prodavca",
+    "share": "Podeli",
+    "link_copied": "Link je kopiran"
   },
   "favorites": {
     "title": "Sačuvano",
