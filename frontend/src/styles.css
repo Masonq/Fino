@@ -1557,8 +1557,24 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
   /* списки */
   .fav-page{ padding-top:28px; }
-  .my-list, .saved-list, .chat-list{ max-width:820px; }
+  .saved-list, .chat-list{ max-width:820px; }
   .mod-list{ max-width:820px; }
+
+  /* «Мои объявления» — на мобильном ряд с кнопками flex:1 растянутыми
+     под палец, один в один под ширину экрана. На десктопе тот же ряд
+     просто растягивался на всю страницу — тот же список, что и на
+     телефоне, только шире, а не сеткой карточек. Тут — сетка в две
+     колонки, каждая строка теперь настоящая карточка (рамка вместо
+     разделительной линии), а кнопки не растягиваются на всю ширину. */
+  .my-list{
+    max-width:none;
+    display:grid; grid-template-columns:repeat(2, 1fr); gap:14px; align-items:start;
+  }
+  .my-row{
+    border:1px solid rgba(20,30,25,.08); border-radius:14px; border-bottom:1px solid rgba(20,30,25,.08);
+    background:#fff;
+  }
+  .my-actions button{ flex:0 1 auto; padding:9px 16px; }
 
   /* поиск */
   .search-topbar{ padding:18px 0; }
