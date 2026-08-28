@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import ReviewRequest from '../components/ReviewRequest'
+import ChatList from '../components/ChatList'
 import { ChatSkeleton } from '../components/Skeletons'
 
 export default function ChatScreen() {
@@ -151,7 +152,12 @@ export default function ChatScreen() {
   }
 
   return (
-    <div className="chat-page">
+    <div className="chats-layout in-chat">
+      <div className="chats-list-pane">
+        <ChatList activeId={id} />
+      </div>
+      <div className="chats-content-pane">
+      <div className="chat-page">
       <div className="chat-head">
         <button className="cats-back" onClick={() => navigate(-1)} aria-label={t('actions.back')}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
@@ -222,6 +228,8 @@ export default function ChatScreen() {
           </button>
         </div>
       )}
+      </div>
+      </div>
     </div>
   )
 }

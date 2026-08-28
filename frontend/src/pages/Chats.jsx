@@ -1,30 +1,15 @@
-import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate } from 'react-router-dom'
-import { api } from '../api/client'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
-import { timeAgo } from '../utils/time'
+import ChatList from '../components/ChatList'
 
 export default function Chats() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { user } = useAuth()
 
-  const [items, setItems] = useState([])
-  const [loaded, setLoaded] = useState(false)
-
-  const userId = user?.id
-
-  useEffect(() => {
-    if (!userId) { setLoaded(true); return }
-    api.getChats(i18n.language)
-      .then((res) => setItems(res.items || []))
-      .catch(() => setItems([]))
-      .finally(() => setLoaded(true))
-  }, [userId, i18n.language])
-
-  if (!userId) {
+  if (!user) {
     return (
       <div className="fav-page">
         <PageHeader title={t('nav.chats')} back={false} />
@@ -47,55 +32,24 @@ export default function Chats() {
     <div className="fav-page">
       <PageHeader title={t('nav.chats')} back={false} />
 
-      {!loaded ? (
-        <div className="chat-list">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div className="chat-row skeleton" key={i}>
-              <div className="chat-thumb sk-block" />
-              <div className="chat-row-body">
-                <div className="sk-line title" />
-                <div className="sk-line meta" />
-              </div>
-            </div>
-          ))}
+      {/* На десктопе список — левая колонка постоянно открытой
+          двухпанельной переписки (см. .chats-layout в styles.css и
+          ChatScreen.jsx, где та же колонка встаёт рядом с открытым
+          чатом). Здесь же, пока чат не выбран, справа — просто
+          приглашение выбрать переписку, а не пустое место. */}
+      <div className="chats-layout">
+        <div className="chats-list-pane">
+          <ChatList />
         </div>
-      ) : items.length === 0 ? (
-        <div className="fav-empty">
+        <div className="chats-content-pane chats-placeholder">
           <div className="fav-empty-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20.5 12a8 8 0 0 1-8.5 8 9 9 0 0 1-3.4-.6L4 21l1.4-4a8 8 0 0 1-1.4-4.6A8 8 0 0 1 12.5 4a8 8 0 0 1 8 8Z" />
             </svg>
           </div>
-          <p>{t('chats.empty')}</p>
-          <Link className="fav-cta" to="/">{t('actions.to_listings')}</Link>
+          <p>{t('chats.pick_one')}</p>
         </div>
-      ) : (
-        <div className="chat-list">
-          {items.map((c) => (
-            <Link key={c.id} to={`/chat/${c.id}`} className={c.unread ? 'chat-row unread' : 'chat-row'}>
-              <div className="chat-thumb">
-                {c.listing_photo
-                  ? <img src={c.listing_photo} alt="" />
-                  : <div className="photo-placeholder" />}
-              </div>
-              <div className="chat-row-body">
-                <div className="chat-row-top">
-                  <span className="chat-name">{c.other_name || '—'}</span>
-                  <span className="chat-time">{timeAgo(c.last_at, t, i18n.language)}</span>
-                </div>
-                <div className="chat-listing">{c.listing_title}</div>
-                <div className="chat-row-bottom">
-                  <span className="chat-last">
-                    {c.last_from_me && <span className="chat-you">{t('chats.you')}: </span>}
-                    {c.last_text || t('chats.no_messages')}
-                  </span>
-                  {c.unread > 0 && <span className="chat-badge">{c.unread}</span>}
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
+      </div>
     </div>
   )
 }

@@ -219,7 +219,8 @@
     "just_now": "just now",
     "min": "min",
     "hour": "h",
-    "day": "d"
+    "day": "d",
+    "pick_one": "Select a conversation on the left"
   },
   "auth": {
     "title": "Sign in to PLONK",

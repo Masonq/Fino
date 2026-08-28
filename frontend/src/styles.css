@@ -805,6 +805,20 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   border-bottom:1px solid rgba(20,30,25,.06);
 }
 .chat-row.unread{ background:var(--primary-soft); }
+/* Подсветка открытой сейчас переписки — имеет смысл только там, где
+   список и открытый чат видны одновременно (десктоп), но класс
+   ставится всегда через activeId, поэтому именно тут решаем, когда
+   его вообще показывать. */
+.chat-row.active{ background:#F2F2EF; }
+
+/* Список переписок и сама открытая переписка — на мобильном это два
+   разных экрана (было так и раньше), на десктопе — одна страница в
+   две колонки, без перехода. .chats-list-pane/.chats-content-pane —
+   общие обёртки для обоих случаев (см. Chats.jsx и ChatScreen.jsx);
+   .in-chat отличает «открыт конкретный чат» от «список без выбора». */
+.chats-layout.in-chat .chats-list-pane{ display:none; }
+.chats-layout:not(.in-chat) .chats-content-pane{ display:none; }
+
 .chat-thumb{
   width:52px; height:52px; border-radius:11px; overflow:hidden; flex-shrink:0; background:#EFEFEB;
 }
@@ -1619,8 +1633,39 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
      наезжали друг на друга. В сайдбаре — друг под другом. */
   .search-sidebar .post-field-row{ flex-direction:column; gap:12px; }
 
-  /* чат — колонкой по центру, читать широкие строки неудобно */
-  .chat-page{ max-width:760px; margin:0 auto; }
+  /* чат — на десктопе список и открытая переписка видны разом, без
+     перехода на отдельную страницу (как у большинства мессенджеров:
+     Telegram Web, Gmail и так далее — не только Avito). Мобильные
+     правила выше прятали то список, то содержимое по очереди — здесь
+     оба возвращаем разом и раскладываем колонками. */
+  .chats-layout.in-chat .chats-list-pane,
+  .chats-layout:not(.in-chat) .chats-content-pane{ display:block; }
+
+  .chats-layout{
+    display:grid; grid-template-columns:320px 1fr; align-items:stretch;
+    border:1px solid rgba(20,30,25,.08); border-radius:16px; overflow:hidden;
+    min-height:65vh;
+  }
+  /* /chat/:id прячет верхнюю навигацию сайта целиком (App.jsx,
+     hideNav) — тот же приём, что и раньше на мобильном для
+     полноэкранного чата, теперь просто работает и на десктопе тоже.
+     Значит вычитать её высоту не из чего — сравнивал с реальным
+     снимком, calc(100vh - 90px) оставлял пустую полосу внизу ровно в
+     90px, никакой навигации там нет и не было. */
+  .chats-layout.in-chat{ height:100vh; height:100dvh; }
+  .chats-list-pane{
+    border-right:1px solid rgba(20,30,25,.08); overflow-y:auto; background:#fff;
+  }
+  .chats-content-pane{ min-width:0; height:100%; }
+  .chats-placeholder{
+    height:100%; display:flex; flex-direction:column; align-items:center;
+    justify-content:center; gap:10px; color:var(--muted); text-align:center; padding:20px;
+  }
+  .chats-placeholder p{ font-size:14px; }
+  /* Раньше .chat-page была центрированной колонкой на всю высоту
+     экрана — здесь она уже внутри своей панели рядом со списком,
+     во всю ширину и высоту panel, а не сама по себе. */
+  .chat-page{ max-width:none; margin:0; height:100%; }
 }
 
 /* Промежуточная ширина — планшеты и узкие окна */

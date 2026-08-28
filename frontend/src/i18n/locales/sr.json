@@ -219,7 +219,8 @@
     "just_now": "upravo sada",
     "min": "min",
     "hour": "č",
-    "day": "d"
+    "day": "d",
+    "pick_one": "Izaberite razgovor sa leve strane"
   },
   "auth": {
     "title": "Prijava na PLONK",
