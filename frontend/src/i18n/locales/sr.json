@@ -350,8 +350,8 @@
     "title": "Sačuvane pretrage",
     "subscribe": "Prati",
     "done": "Pratite",
-    "need_login": "Prijavite se da sačuvate pretragu",
-    "empty": "Nema sačuvanih pretraga",
+    "need_login": "Predstavite se da biste sačuvali pretrage i dobijali obaveštenja o novom.",
+    "empty": "Još nema sačuvanih pretraga. Podesite filtere i dodirnite „Prati“ — novi oglasi će sami stići do vas.",
     "notify": "Obaveštavaj"
   },
   "similar": {

@@ -28,7 +28,7 @@ def _options(*items: tuple[str, str, str, str]) -> list[dict]:
 # ——— общие поля ———
 
 CONDITION = {
-    "key": "condition", "type": "select", "required": False,
+    "key": "condition", "type": "select", "required": True,
     "label": _label("Состояние", "Condition", "Stanje"),
     "options": _options(
         ("new", "Новое", "New", "Novo"),
@@ -43,7 +43,7 @@ CONDITION = {
 # детали, одежды или духов вариант бессмысленный: шина не «на запчасти»,
 # она и есть отдельная деталь; духи на запчасти не бывают.
 CONDITION_SIMPLE = {
-    "key": "condition", "type": "select", "required": False,
+    "key": "condition", "type": "select", "required": True,
     "label": _label("Состояние", "Condition", "Stanje"),
     "options": _options(
         ("new", "Новое", "New", "Novo"),
@@ -54,6 +54,15 @@ CONDITION_SIMPLE = {
 
 BRAND = {
     "key": "brand", "type": "text", "required": False,
+    "label": _label("Бренд", "Brand", "Brend"),
+}
+
+# Тот же BRAND, но обязательный — для разделов, где бренд практически
+# всегда известен и есть на самой вещи (коробка, шильдик, бирка):
+# техника, инструмент, велосипед. Для одежды и белья без бирки бренд
+# знают не всегда — там остаётся необязательный BRAND.
+_BRAND_REQUIRED = {
+    "key": "brand", "type": "text", "required": True,
     "label": _label("Бренд", "Brand", "Brend"),
 }
 
@@ -144,8 +153,30 @@ SIZE_TEXT = {
     "label": _label("Размер", "Size", "Veličina"),
 }
 
+# Тот же SIZE_TEXT, но обязательный — для взрослой и детской одежды и
+# обуви размер решает, подойдёт ли вещь вообще, покупателю без него
+# смотреть на объявление почти незачем.
+_SIZE_REQUIRED = {
+    "key": "size", "type": "text", "required": True,
+    "label": _label("Размер", "Size", "Veličina"),
+}
+
 AGE_GROUP = {
     "key": "age_group", "type": "select", "required": False,
+    "label": _label("Возраст", "Age", "Uzrast"),
+    "options": _options(
+        ("baby", "0-1 год", "0-1 year", "0-1 godina"),
+        ("toddler", "1-3 года", "1-3 years", "1-3 godine"),
+        ("preschool", "3-7 лет", "3-7 years", "3-7 godina"),
+        ("school", "7+ лет", "7+ years", "7+ godina"),
+    ),
+}
+
+# Тот же AGE_GROUP, но обязательный — для игрушек и колясок это
+# главный ориентир покупателя (годится ли ребёнку по возрасту), не
+# второстепенная деталь.
+_AGE_GROUP_REQUIRED = {
+    "key": "age_group", "type": "select", "required": True,
     "label": _label("Возраст", "Age", "Uzrast"),
     "options": _options(
         ("baby", "0-1 год", "0-1 year", "0-1 godina"),
@@ -451,27 +482,27 @@ SUB_SCHEMAS: dict[str, list[dict]] = {
              _BODY_TYPE, _FUEL_TYPE, _ENGINE_VOLUME, _DRIVE_TYPE, COLOR, _AUTO_VIN],
     "moto": [_AUTO_BRAND, _AUTO_MODEL, _AUTO_YEAR, _AUTO_MILEAGE, _ENGINE_VOLUME, COLOR],
     "trucks": [_AUTO_BRAND, _AUTO_MODEL, _AUTO_YEAR, _AUTO_MILEAGE, _AUTO_TRANSMISSION, _BODY_TYPE, _FUEL_TYPE],
-    "car-parts": [BRAND, MODEL, CONDITION_SIMPLE],
-    "tyres": [BRAND, _TYRE_SIZE, _TYRE_SEASON, CONDITION_SIMPLE],
+    "car-parts": [_BRAND_REQUIRED, MODEL, CONDITION_SIMPLE],
+    "tyres": [_BRAND_REQUIRED, _TYRE_SIZE, _TYRE_SEASON, CONDITION_SIMPLE],
 
     # ——— электроника ———
-    "phones": [BRAND, MODEL, CONDITION, _STORAGE_GB, _RAM_GB, _SCREEN_INCH, _BATTERY_HEALTH, COLOR, WARRANTY],
-    "laptops": [BRAND, MODEL, CONDITION, _CPU, _RAM_GB, _STORAGE_GB, _SCREEN_INCH, COLOR, WARRANTY],
-    "computers": [BRAND, CONDITION, _CPU, _GPU, _RAM_GB, _STORAGE_GB, WARRANTY],
-    "tablets": [BRAND, MODEL, CONDITION, _STORAGE_GB, _SCREEN_INCH, _BATTERY_HEALTH, COLOR, WARRANTY],
-    "tv-audio": [BRAND, MODEL, CONDITION, _SCREEN_INCH, WARRANTY],
-    "photo": [BRAND, MODEL, CONDITION, _MEGAPIXELS, WARRANTY],
-    "gaming": [BRAND, MODEL, CONDITION, _STORAGE_GB, WARRANTY],
-    "wearables": [BRAND, MODEL, CONDITION, _BATTERY_HEALTH, COLOR, WARRANTY],
-    "charging": [BRAND, MODEL, CONDITION, WARRANTY],
-    "peripherals": [BRAND, MODEL, CONDITION, COLOR, WARRANTY],
+    "phones": [_BRAND_REQUIRED, MODEL, CONDITION, _STORAGE_GB, _RAM_GB, _SCREEN_INCH, _BATTERY_HEALTH, COLOR, WARRANTY],
+    "laptops": [_BRAND_REQUIRED, MODEL, CONDITION, _CPU, _RAM_GB, _STORAGE_GB, _SCREEN_INCH, COLOR, WARRANTY],
+    "computers": [_BRAND_REQUIRED, CONDITION, _CPU, _GPU, _RAM_GB, _STORAGE_GB, WARRANTY],
+    "tablets": [_BRAND_REQUIRED, MODEL, CONDITION, _STORAGE_GB, _SCREEN_INCH, _BATTERY_HEALTH, COLOR, WARRANTY],
+    "tv-audio": [_BRAND_REQUIRED, MODEL, CONDITION, _SCREEN_INCH, WARRANTY],
+    "photo": [_BRAND_REQUIRED, MODEL, CONDITION, _MEGAPIXELS, WARRANTY],
+    "gaming": [_BRAND_REQUIRED, MODEL, CONDITION, _STORAGE_GB, WARRANTY],
+    "wearables": [_BRAND_REQUIRED, MODEL, CONDITION, _BATTERY_HEALTH, COLOR, WARRANTY],
+    "charging": [_BRAND_REQUIRED, MODEL, CONDITION, WARRANTY],
+    "peripherals": [_BRAND_REQUIRED, MODEL, CONDITION, COLOR, WARRANTY],
     "cases": [BRAND, MODEL, CONDITION, COLOR],
 
     # ——— одежда и обувь ———
-    "women": [BRAND, CONDITION_SIMPLE, SIZE_TEXT, COLOR],
-    "men": [BRAND, CONDITION_SIMPLE, SIZE_TEXT, COLOR],
+    "women": [BRAND, CONDITION_SIMPLE, _SIZE_REQUIRED, COLOR],
+    "men": [BRAND, CONDITION_SIMPLE, _SIZE_REQUIRED, COLOR],
     "shoes": [
-        BRAND, CONDITION_SIMPLE, SIZE_TEXT,
+        BRAND, CONDITION_SIMPLE, _SIZE_REQUIRED,
         {"key": "insole_cm", "type": "number", "required": False,
          "label": _label("Длина стельки, см", "Insole, cm", "Uložak, cm")},
         COLOR, GENDER,
@@ -481,16 +512,16 @@ SUB_SCHEMAS: dict[str, list[dict]] = {
 
     # ——— дом и сад ———
     "furniture": [MATERIAL, DIMENSIONS, COLOR, CONDITION_SIMPLE],
-    "appliances": [BRAND, CONDITION, POWER_WATTS, WARRANTY],
+    "appliances": [_BRAND_REQUIRED, CONDITION, POWER_WATTS, WARRANTY],
     "kitchenware": [MATERIAL, CONDITION_SIMPLE],
     "decor": [MATERIAL, DIMENSIONS, CONDITION_SIMPLE],
     "garden": [CONDITION_SIMPLE],
-    "tools": [BRAND, CONDITION, POWER_WATTS],
+    "tools": [_BRAND_REQUIRED, CONDITION, POWER_WATTS],
 
     # ——— детям ———
-    "kids-clothing": [BRAND, CONDITION_SIMPLE, AGE_GROUP, SIZE_TEXT],
+    "kids-clothing": [BRAND, CONDITION_SIMPLE, AGE_GROUP, _SIZE_REQUIRED],
     "strollers": [
-        BRAND, CONDITION_SIMPLE, AGE_GROUP,
+        _BRAND_REQUIRED, CONDITION_SIMPLE, _AGE_GROUP_REQUIRED,
         {"key": "stroller_type", "type": "select", "required": False,
          "label": _label("Тип коляски", "Stroller type", "Tip kolica"),
          "options": _options(
@@ -499,13 +530,13 @@ SUB_SCHEMAS: dict[str, list[dict]] = {
              ("car_seat", "Автокресло", "Car seat", "Auto-sedište"),
          )},
     ],
-    "toys": [BRAND, CONDITION_SIMPLE, AGE_GROUP],
+    "toys": [BRAND, CONDITION_SIMPLE, _AGE_GROUP_REQUIRED],
     "kids-furniture": [MATERIAL, DIMENSIONS, CONDITION_SIMPLE],
-    "school": [BRAND, CONDITION_SIMPLE, AGE_GROUP],
+    "school": [BRAND, CONDITION_SIMPLE, _AGE_GROUP_REQUIRED],
 
     # ——— хобби и спорт ———
     "bikes": [
-        BRAND, MODEL, CONDITION,
+        _BRAND_REQUIRED, MODEL, CONDITION,
         {"key": "bike_type", "type": "select", "required": False,
          "label": _label("Тип велосипеда", "Bike type", "Tip bicikla"),
          "options": _options(
@@ -521,7 +552,7 @@ SUB_SCHEMAS: dict[str, list[dict]] = {
     "fitness": [BRAND, CONDITION_SIMPLE],
     "outdoor": [BRAND, CONDITION_SIMPLE],
     "music": [
-        {"key": "instrument", "type": "text", "required": False,
+        {"key": "instrument", "type": "text", "required": True,
          "label": _label("Инструмент", "Instrument", "Instrument")},
         BRAND, MODEL, CONDITION_SIMPLE,
     ],
@@ -536,9 +567,9 @@ SUB_SCHEMAS: dict[str, list[dict]] = {
     "pets-dogs": [
         {"key": "breed", "type": "text", "required": False,
          "label": _label("Порода", "Breed", "Rasa")},
-        {"key": "age", "type": "text", "required": False,
+        {"key": "age", "type": "text", "required": True,
          "label": _label("Возраст", "Age", "Uzrast")},
-        {"key": "sex", "type": "select", "required": False,
+        {"key": "sex", "type": "select", "required": True,
          "label": _label("Пол", "Sex", "Pol"),
          "options": _options(("male", "Кобель", "Male", "Mužjak"),
                               ("female", "Сука", "Female", "Ženka"))},
@@ -548,9 +579,9 @@ SUB_SCHEMAS: dict[str, list[dict]] = {
     "pets-cats": [
         {"key": "breed", "type": "text", "required": False,
          "label": _label("Порода", "Breed", "Rasa")},
-        {"key": "age", "type": "text", "required": False,
+        {"key": "age", "type": "text", "required": True,
          "label": _label("Возраст", "Age", "Uzrast")},
-        {"key": "sex", "type": "select", "required": False,
+        {"key": "sex", "type": "select", "required": True,
          "label": _label("Пол", "Sex", "Pol"),
          "options": _options(("male", "Кот", "Male", "Mužjak"),
                               ("female", "Кошка", "Female", "Ženka"))},
@@ -558,7 +589,7 @@ SUB_SCHEMAS: dict[str, list[dict]] = {
          "label": _label("Привит", "Vaccinated", "Vakcinisan")},
     ],
     "pets-other": [
-        {"key": "species", "type": "text", "required": False,
+        {"key": "species", "type": "text", "required": True,
          "label": _label("Вид", "Species", "Vrsta")},
         {"key": "age", "type": "text", "required": False,
          "label": _label("Возраст", "Age", "Uzrast")},
@@ -573,13 +604,13 @@ SUB_SCHEMAS: dict[str, list[dict]] = {
         {"key": "shade", "type": "text", "required": False,
          "label": _label("Оттенок", "Shade", "Nijansa")},
     ],
-    "beauty-devices": [BRAND, MODEL, CONDITION, WARRANTY],
+    "beauty-devices": [_BRAND_REQUIRED, MODEL, CONDITION, WARRANTY],
     "health": [BRAND, CONDITION_SIMPLE],
 
     # ——— бизнес ———
-    "equipment": [BRAND, MODEL, CONDITION, YEAR],
+    "equipment": [_BRAND_REQUIRED, MODEL, CONDITION, YEAR],
     "ready-business": [
-        {"key": "industry", "type": "text", "required": False,
+        {"key": "industry", "type": "text", "required": True,
          "label": _label("Сфера деятельности", "Industry", "Delatnost")},
         {"key": "monthly_revenue", "type": "number", "unit": "currency", "required": False,
          "label": _label("Выручка в месяц", "Monthly revenue", "Mesečni prihod")},

@@ -349,8 +349,8 @@
     "title": "Saved searches",
     "subscribe": "Notify me",
     "done": "Tracking",
-    "need_login": "Sign in to save searches",
-    "empty": "No saved searches",
+    "need_login": "Introduce yourself to save searches and get notified about new listings.",
+    "empty": "No saved searches yet. Set up filters and tap “Follow” — new listings will find you.",
     "notify": "Notify"
   },
   "similar": {
