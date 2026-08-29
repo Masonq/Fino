@@ -1106,12 +1106,18 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* ===== профиль ===== */
 /* Картинка — фон всей этой строки (аватар, имя, рейтинг), внутри
-   карточки, не отдельная полоса сверху. Пока градиент тем же зелёным,
-   что и весь сайт — заменится настоящей картинкой (object-fit:cover
-   на реальном <img>, когда она будет готова). */
+   карточки, не отдельная полоса сверху. background-position:left
+   center — спокойная, тёмная часть картинки специально слева (там,
+   где аватар и текст), детали и пузырьки справа — при обрезке на
+   более узких экранах уходит именно правая часть, а не та, что под
+   аватаром. Градиент оставлен вторым слоем — покажется на долю
+   секунды, пока сама картинка ещё не загрузилась, и не будет ни
+   пустого, ни белого фона в этот момент. */
 .profile-head{
   display:flex; align-items:center; gap:14px; padding:20px 14px;
-  background:linear-gradient(135deg, var(--primary), #6BC9A0);
+  background:
+    url('/profile-banner.jpg') left center / cover no-repeat,
+    linear-gradient(135deg, var(--primary), #6BC9A0);
 }
 .profile-avatar{
   width:66px; height:66px; border-radius:50%; flex-shrink:0; overflow:hidden;
