@@ -92,7 +92,7 @@
     "call_allow": "Allow",
     "call_decline": "Decline",
     "call_allow_proactive": "Allow a call",
-    "call_pending": "Call requested — waiting for the seller",
+    "call_pending": "Call requested — waiting",
     "call_request": "Request a call",
     "menu": "Menu",
     "call_revoke": "Revoke call access",
