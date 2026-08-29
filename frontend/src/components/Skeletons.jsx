@@ -276,20 +276,3 @@ export function ReviewsSkeleton() {
   )
 }
 
-// Лента «Похожие объявления» — карточка 132×132, цена, название в две
-// строки — similar-card/similar-photo/similar-price/similar-name, как
-// у настоящей карточки.
-export function SimilarStripSkeleton() {
-  return (
-    <div className="similar-strip">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <div className="similar-card" key={i}>
-          <div className="sk-block" style={{ width: 132, height: 132, borderRadius: 12, marginBottom: 7 }} />
-          <div className="sk-block sk-line" style={{ height: 14.5, width: 60 }} />
-          <div className="sk-block sk-line" style={{ height: 12.5, width: '90%', marginTop: 4 }} />
-          <div className="sk-block sk-line" style={{ height: 12.5, width: '60%', marginTop: 3 }} />
-        </div>
-      ))}
-    </div>
-  )
-}

@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
-import { SimilarStripSkeleton } from './Skeletons'
 import { displayCity } from '../data/cities'
 import { formatPrice } from '../utils/money'
 
@@ -27,15 +26,17 @@ export default function SellerListings({ sellerId, excludeListingId }) {
       .finally(() => setLoaded(true))
   }, [sellerId, excludeListingId, i18n.language])
 
-  if (loaded && items.length === 0) return null
+  // Без скелетона на время загрузки — тот же случай, что и у
+  // SimilarListings рядом: скелетон, обещающий место под чужие
+  // объявления, а продавец других не разместил — блок схлопывался бы
+  // до null и утягивал бы всё, что ниже, вверх. Появляется, только
+  // если объявления реально есть.
+  if (!loaded || items.length === 0) return null
 
   return (
     <div className="similar-block seller-listings-block">
       <div className="similar-title">{t('detail.seller_other_listings')}</div>
 
-      {!loaded ? (
-        <SimilarStripSkeleton />
-      ) : (
       <div className="similar-strip">
         {items.slice(0, 6).map((l) => (
           <Link key={l.id} to={l.path} className="similar-card">
@@ -54,7 +55,6 @@ export default function SellerListings({ sellerId, excludeListingId }) {
           </Link>
         ))}
       </div>
-      )}
     </div>
   )
 }
