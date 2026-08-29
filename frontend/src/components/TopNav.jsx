@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next'
+import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import SearchOverlay from './SearchOverlay'
 
 /**
  * Верхняя навигация — только для широких экранов.
@@ -11,6 +13,11 @@ export default function TopNav() {
   const { t } = useTranslation()
   const { pathname } = useLocation()
   const { user, loading: authLoading } = useAuth()
+  // Поиск — только на главной: на страницах объявлений, поиска и
+  // категорий уже есть свой (сайдбар с фильтрами или строка сверху
+  // ленты), дублировать его тут ни к чему.
+  const [searchOpen, setSearchOpen] = useState(false)
+  const isHome = pathname === '/'
 
   const items = [
     { to: '/', key: 'nav.home' },
@@ -38,6 +45,13 @@ export default function TopNav() {
         ))}
       </nav>
 
+      {isHome && (
+        <button type="button" className="topnav-search" onClick={() => setSearchOpen(true)}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+          <span>{t('search.placeholder')}</span>
+        </button>
+      )}
+
       <div className="topnav-right">
         <Link to="/post" className="topnav-post">{t('nav.post')}</Link>
         {/* Тот же скачок макета, что чинил в Home.jsx: пока идёт
@@ -59,6 +73,7 @@ export default function TopNav() {
           <Link to="/login" className="topnav-login">{t('common.login')}</Link>
         )}
       </div>
+      {isHome && <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />}
     </div>
   )
 }
