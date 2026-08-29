@@ -1279,6 +1279,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .my-list{ display:flex; flex-direction:column; }
 .my-row{
   padding:12px; border-bottom:1px solid rgba(20,30,25,.06);
+  /* Колонка, не просто блок — чтобы «Поднять просмотры» ниже можно
+     было прижать к низу карточки через margin-top:auto, независимо
+     от того, есть ли между ним и остальным содержимым бейдж
+     продвижения. Без этого кнопка у карточки с бейджем оказывалась
+     ниже, чем у соседней без него, даже после того как сами карточки
+     выровняли по высоте (align-items:stretch) — высота совпадала,
+     а кнопка внутри — нет. */
+  display:flex; flex-direction:column;
 }
 .my-main{ display:flex; gap:12px; align-items:flex-start; }
 .my-thumb{
@@ -1308,7 +1316,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .my-actions button.danger{ color:var(--coral); }
 .my-actions button:disabled{ opacity:.5; }
-.my-promote-slot{ margin-top:7px; }
+.my-promote-slot{ margin-top:auto; padding-top:7px; }
 .my-promote-slot .promo-trigger{
   display:block; width:100%; padding:11px;
   background:var(--primary-soft); color:var(--primary-deep); font-size:13px;
