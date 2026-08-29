@@ -1682,6 +1682,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   .profile-sidebar .profile-head-card{ margin:0 0 16px; }
   .profile-sidebar .balance-card{ margin:0; }
   .profile-main .profile-section-title:first-child{ margin-top:0; }
+  /* Тот же самый мобильный отступ 12px, что уже чинили у аватара и
+     баланса выше — нашли измерением: баннер стоял на 12px правее,
+     чем всё остальное на странице, не по одной линии. */
+  .profile-page .phone-reminder{ margin-left:0; margin-right:0; }
+  /* Карточка проверки документа в редактировании профиля — тот же
+     класс проблемы, отдельно от сетки/сайдбара выше, но причина та же:
+     мобильный отступ по бокам никогда не обнулялся на десктопе. */
+  .edit-profile .verify-card{ margin-left:0; margin-right:0; }
 
   /* Размещение — тот же принцип: без сужения выбор категории (сетка
      из 4×206px, уже подстроена отдельно чуть ниже) просто терялся бы
@@ -2696,7 +2704,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
      и ломает соседнюю колонку. */
   .admin-row:has(.admin-card){ grid-column:1/-1; }
 
-  .admin-search{ max-width:520px; }
+  /* Только тут это поле — правда поиск (AdminUsers/AdminAudit), не
+     растягивать на всю широкую сетку рядом. У EditProfile и Support
+     тот же класс переиспользован для обычных полей формы — без этого
+     уточнения правило утекало и туда, поле оказывалось уже, чем
+     карточка «Проверка документа» рядом (нашли измерением: 520px
+     против 608px, из-за чего правый край не совпадал). */
+  .admin-users .admin-search, .admin-audit .admin-search{ max-width:520px; }
 
   /* Показатели: числа в ряд, а не столбиком */
   .stats-cards{ grid-template-columns:repeat(6, 1fr); }
