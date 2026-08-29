@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
+from app.core.global_rate_limit import GlobalRateLimitMiddleware
 from app.routers import (
     admin_audit, admin_stats, admin_users, auth, auth_telegram,
     categories, chats,
@@ -15,6 +16,14 @@ from app.routers import (
 )
 
 app = FastAPI(title=settings.app_name)
+
+# Общий предел по IP — добавлен раньше CORS специально: порядок в
+# Starlette такой, что последний добавленный middleware оказывается
+# снаружи всех остальных. CORS должен быть снаружи, чтобы заголовки
+# CORS стояли и на ответе «слишком много запросов» тоже — иначе
+# браузер показал бы человеку невнятную ошибку CORS вместо настоящей
+# причины (429).
+app.add_middleware(GlobalRateLimitMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
