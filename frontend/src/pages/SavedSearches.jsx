@@ -43,11 +43,11 @@ export default function SavedSearches() {
     return parts.join(' · ')
   }
 
-  if (authLoading) return <div className="fav-page"><PageHeader title={t('saved.title')} /></div>
+  if (authLoading) return <div className="fav-page saved-page"><PageHeader title={t('saved.title')} /></div>
 
   if (!user) {
     return (
-      <div className="fav-page">
+      <div className="fav-page saved-page">
         <PageHeader title={t('saved.title')} />
         <div className="fav-empty">
           <div className="fav-empty-icon">
@@ -65,7 +65,7 @@ export default function SavedSearches() {
   }
 
   return (
-    <div className="fav-page">
+    <div className="fav-page saved-page">
       <PageHeader title={t('saved.title')} count={items.length} />
 
       {!loaded ? (

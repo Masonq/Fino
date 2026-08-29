@@ -1651,6 +1651,11 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
      полосой текста, читать было бы неудобно. */
   .notif-page{ max-width:640px; margin:0 auto; }
 
+  /* Сохранённые поиски — тоже простой список, той же природы, что и
+     уведомления рядом: без сужения строки прижимались бы к левому
+     краю на фоне пустоты. */
+  .saved-page{ max-width:640px; margin:0 auto; }
+
   /* нижнее меню на десктопе не нужно — навигация уходит в шапку */
   .bottomnav{ display:none; }
   .app-shell > main.has-bottomnav{ padding-bottom:40px; }
