@@ -1,3 +1,4 @@
+import json
 import re
 import uuid
 
@@ -219,6 +220,20 @@ def search_listings(
     # списка на лендинге «Авто», а не текстовый поиск.
     brand: str | None = Query(None),
     model: str | None = Query(None),
+    # Общий механизм для остальных структурных полей раздела (год
+    # выпуска, пробег, коробка передач, тип кузова и подобное) — раньше
+    # под каждое такое поле заводили отдельный именованный параметр
+    # (deal_type/brand/model) или не заводили вовсе, и оно просто
+    # показывалось на лендинге, ничего не фильтруя по-настоящему (так
+    # обнаружился «Год выпуска» у авто — поле было, а бэкенд его не
+    # принимал совсем). Теперь один параметр на всё разом, не JSON-
+    # объект под каждое новое поле в будущем. attr_eq — точное
+    # совпадение атрибута («автомат», «внедорожник»), attr_range —
+    # диапазон числового атрибута (пробег, год). Оба — JSON-строкой в
+    # query, а не отдельными полями: FastAPI не умеет заранее знать
+    # список ключей объекта.
+    attr_eq: str | None = Query(None),
+    attr_range: str | None = Query(None),
     sort: str = Query("relevance"),
     lang: str = Query("ru"),
     limit: int = Query(20, le=100),
@@ -376,6 +391,48 @@ def search_listings(
         q = q.filter(func.lower(Listing.attributes["brand"].astext) == brand.lower())
     if model:
         q = q.filter(func.lower(Listing.attributes["model"].astext) == model.lower())
+
+    # Точное совпадение атрибута — {"transmission": "automatic"}. Битый
+    # JSON или пустое значение внутри просто пропускаем, а не роняем
+    # весь поиск: лучше отдать выдачу без этого одного фильтра, чем
+    # ошибку на всю страницу из-за одного неверного символа в адресе.
+    if attr_eq:
+        try:
+            filters = json.loads(attr_eq)
+        except (ValueError, TypeError):
+            filters = {}
+        if isinstance(filters, dict):
+            for key, value in filters.items():
+                if value in (None, ""):
+                    continue
+                q = q.filter(func.lower(Listing.attributes[key].astext) == str(value).lower())
+
+    # Диапазон числового атрибута — {"mileage_km": [0, 50000], "year":
+    # [2015, null]}. Атрибуты — свободный JSONB, у части объявлений
+    # значение может быть текстом, пустой строкой или вовсе
+    # отсутствовать — приведение к числу прямо в SQL на такой строке
+    # уронило бы весь запрос. Проверяем регулярным выражением, что
+    # значение вообще похоже на число, прежде чем приводить и сравнивать
+    # — непохожие строки просто не участвуют в фильтре, как если бы
+    # атрибута не было вовсе.
+    if attr_range:
+        try:
+            ranges = json.loads(attr_range)
+        except (ValueError, TypeError):
+            ranges = {}
+        if isinstance(ranges, dict):
+            for key, bounds in ranges.items():
+                if not isinstance(bounds, (list, tuple)) or len(bounds) != 2:
+                    continue
+                lo, hi = bounds
+                if lo is None and hi is None:
+                    continue
+                looks_numeric = Listing.attributes[key].astext.op("~")(r"^-?\d+(\.\d+)?$")
+                numeric_value = cast(Listing.attributes[key].astext, Float)
+                if lo is not None:
+                    q = q.filter(looks_numeric, numeric_value >= float(lo))
+                if hi is not None:
+                    q = q.filter(looks_numeric, numeric_value <= float(hi))
 
     total = q.count()
 

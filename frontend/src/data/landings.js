@@ -38,6 +38,17 @@ export const LANDINGS = {
         placeholder: 'landing.brand_placeholder', options: CAR_BRANDS },
       { key: 'model', label: 'landing.model', type: 'car-model' },
       { key: 'year', label: 'landing.year', type: 'range' },
+      // Пробег и коробка — тот же стандартный набор, что уже есть у
+      // формы размещения (mileage_km/transmission в schemas.py), но
+      // раньше на входе в раздел их не спрашивали вовсе — только марка,
+      // модель, год, цена. Реальный человек, ищущий машину, почти
+      // всегда уточняет и то, и другое сразу.
+      { key: 'mileage_km', label: 'landing.mileage', type: 'range' },
+      { key: 'transmission', label: 'landing.transmission', type: 'chips',
+        options: [
+          { value: 'manual', label: 'landing.transmission_manual' },
+          { value: 'automatic', label: 'landing.transmission_automatic' },
+        ] },
       { key: 'price', label: 'landing.price', type: 'range' },
     ],
   },
@@ -63,6 +74,17 @@ export const LANDINGS = {
 
   kids: {
     fields: [
+      // age_group — уже есть в форме размещения (AGE_GROUP,
+      // schemas.py) и главный ориентир покупателя детских товаров —
+      // подойдёт ли ребёнку по возрасту, важнее почти всего
+      // остального. Раньше на входе в раздел спрашивали только цену.
+      { key: 'age_group', label: 'landing.age', type: 'chips',
+        options: [
+          { value: 'baby', label: 'landing.age_baby' },
+          { value: 'toddler', label: 'landing.age_toddler' },
+          { value: 'preschool', label: 'landing.age_preschool' },
+          { value: 'school', label: 'landing.age_school' },
+        ] },
       { key: 'price', label: 'landing.price', type: 'range' },
     ],
   },
@@ -71,6 +93,15 @@ export const LANDINGS = {
     fields: [
       { key: 'q', label: 'landing.model', type: 'text',
         hint: 'landing.model_hint' },
+      // Состояние — уже есть в форме размещения (CONDITION,
+      // schemas.py), для электроники разница в цене между «новое» и
+      // «б/у» велика, и это один из первых вопросов у покупателя.
+      { key: 'condition', label: 'landing.condition', type: 'chips',
+        options: [
+          { value: 'new', label: 'landing.condition_new' },
+          { value: 'like_new', label: 'landing.condition_like_new' },
+          { value: 'used', label: 'landing.condition_used' },
+        ] },
       { key: 'price', label: 'landing.price', type: 'range' },
     ],
   },

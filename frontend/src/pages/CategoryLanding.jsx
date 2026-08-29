@@ -99,6 +99,13 @@ export default function CategoryLanding() {
     // extra_terms с синонимами, так же, как на обычном /search.
     const ROOMS_TO_CHIP = { '1': 'rooms1', '2': 'rooms2', '3': 'rooms3', '4+': 'rooms3' }
     const groups = []
+    // Остальные поля раздела (год, пробег, коробка передач и т.п.) —
+    // общий механизм attr_eq/attr_range (см. listings.py): раньше
+    // такое поле либо не фильтровало вовсе (было в интерфейсе, но
+    // бэкенд его не принимал — так нашёлся нерабочий «Год выпуска» у
+    // авто), либо под каждое заводили свой именованный параметр.
+    const attrEq = {}
+    const attrRange = {}
     Object.entries(values).forEach(([key, value]) => {
       if (!value) return
       if (key === 'rooms') {
@@ -110,9 +117,25 @@ export default function CategoryLanding() {
       // фильтра; отправлять его как есть значило бы искать буквальную
       // марку «Другая» и получать пустую выдачу.
       if ((key === 'brand' || key === 'model') && value === CAR_MODEL_OTHER) return
-      params[key] = value
+      if (key === 'brand' || key === 'model') { params[key] = value; return }
+
+      // *_min/*_max — поле типа range. price — уже готовая пара
+      // параметров на самой колонке цены (работает и без этого
+      // механизма), остальные — в общий числовой диапазон.
+      const rangeMatch = key.match(/^(.+)_(min|max)$/)
+      if (rangeMatch) {
+        const [, baseKey, bound] = rangeMatch
+        if (baseKey === 'price') { params[key] = value; return }
+        attrRange[baseKey] = attrRange[baseKey] || [null, null]
+        attrRange[baseKey][bound === 'min' ? 0 : 1] = value
+        return
+      }
+
+      attrEq[key] = value
     })
     if (groups.length) params.extra_terms = groups.join(';;')
+    if (Object.keys(attrEq).length) params.attr_eq = JSON.stringify(attrEq)
+    if (Object.keys(attrRange).length) params.attr_range = JSON.stringify(attrRange)
     return params
   }
 
@@ -255,18 +278,27 @@ export default function CategoryLanding() {
 
           {field.type === 'chips' && (
             <div className="cat-chips landing-chips">
-              {field.options.map((opt) => (
-                <button
-                  key={opt}
-                  className={`cat-chip${values[field.key] === opt ? ' on' : ''}`}
-                  onClick={() => setValues({
-                    ...values,
-                    [field.key]: values[field.key] === opt ? '' : opt,
-                  })}
-                >
-                  {opt}
-                </button>
-              ))}
+              {field.options.map((opt) => {
+                // Старые поля (комнаты, размер) — плоский массив строк,
+                // значение и подпись совпадают. Новые (коробка передач
+                // и подобное) — {value, label}: хранится по-английски
+                // («automatic»), показывается переводом. Оба формата
+                // рядом, чтобы не переписывать уже работающие поля.
+                const value = typeof opt === 'object' ? opt.value : opt
+                const label = typeof opt === 'object' ? t(opt.label) : opt
+                return (
+                  <button
+                    key={value}
+                    className={`cat-chip${values[field.key] === value ? ' on' : ''}`}
+                    onClick={() => setValues({
+                      ...values,
+                      [field.key]: values[field.key] === value ? '' : value,
+                    })}
+                  >
+                    {label}
+                  </button>
+                )
+              })}
             </div>
           )}
 
@@ -281,9 +313,11 @@ export default function CategoryLanding() {
               })}
             >
               <option value="">{field.placeholder ? t(field.placeholder) : ''}</option>
-              {field.options.map((opt) => (
-                <option key={opt} value={opt}>{opt}</option>
-              ))}
+              {field.options.map((opt) => {
+                const value = typeof opt === 'object' ? opt.value : opt
+                const label = typeof opt === 'object' ? t(opt.label) : opt
+                return <option key={value} value={value}>{label}</option>
+              })}
             </select>
           )}
 

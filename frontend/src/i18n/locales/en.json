@@ -558,7 +558,20 @@
     "brand": "Brand",
     "brand_placeholder": "Any brand",
     "model_placeholder": "Any model",
-    "model_other": "Other model"
+    "model_other": "Other model",
+    "mileage": "Mileage, km",
+    "transmission": "Transmission",
+    "transmission_manual": "Manual",
+    "transmission_automatic": "Automatic",
+    "age": "Age",
+    "age_baby": "0-1 year",
+    "age_toddler": "1-3 years",
+    "age_preschool": "3-7 years",
+    "age_school": "7+ years",
+    "condition": "Condition",
+    "condition_new": "New",
+    "condition_like_new": "Like new",
+    "condition_used": "Used"
   },
   "fields": {
     "real-estate": {

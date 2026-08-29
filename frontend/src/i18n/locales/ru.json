@@ -560,7 +560,20 @@
     "brand": "Марка",
     "brand_placeholder": "Любая марка",
     "model_placeholder": "Любая модель",
-    "model_other": "Другая модель"
+    "model_other": "Другая модель",
+    "mileage": "Пробег, км",
+    "transmission": "Коробка передач",
+    "transmission_manual": "Механика",
+    "transmission_automatic": "Автомат",
+    "age": "Возраст",
+    "age_baby": "0-1 год",
+    "age_toddler": "1-3 года",
+    "age_preschool": "3-7 лет",
+    "age_school": "7+ лет",
+    "condition": "Состояние",
+    "condition_new": "Новое",
+    "condition_like_new": "Как новое",
+    "condition_used": "Б/у"
   },
   "fields": {
     "real-estate": {

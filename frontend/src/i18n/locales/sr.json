@@ -559,7 +559,20 @@
     "brand": "Marka",
     "brand_placeholder": "Bilo koja marka",
     "model_placeholder": "Bilo koji model",
-    "model_other": "Drugi model"
+    "model_other": "Drugi model",
+    "mileage": "Kilometraža",
+    "transmission": "Menjač",
+    "transmission_manual": "Manuelni",
+    "transmission_automatic": "Automatik",
+    "age": "Uzrast",
+    "age_baby": "0-1 godina",
+    "age_toddler": "1-3 godine",
+    "age_preschool": "3-7 godina",
+    "age_school": "7+ godina",
+    "condition": "Stanje",
+    "condition_new": "Novo",
+    "condition_like_new": "Kao novo",
+    "condition_used": "Polovno"
   },
   "fields": {
     "real-estate": {
