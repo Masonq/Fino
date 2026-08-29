@@ -228,6 +228,7 @@ export const api = {
   requestCall: (chatId) => request(`/chats/${chatId}/call-request`, { method: 'POST' }),
   allowCall: (chatId) => request(`/chats/${chatId}/call-allow`, { method: 'POST' }),
   declineCall: (chatId) => request(`/chats/${chatId}/call-decline`, { method: 'POST' }),
+  revokeCall: (chatId) => request(`/chats/${chatId}/call-revoke`, { method: 'POST' }),
   getChat: (chatId, lang) => request(`/chats/${chatId}?${new URLSearchParams({ lang })}`),
   // Бэкенд уже отдаёт сообщения в хронологическом порядке (сортирует
   // по убыванию только для эффективной выборки последних N, потом

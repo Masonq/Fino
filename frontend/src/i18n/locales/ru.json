@@ -94,7 +94,9 @@
     "call_allow_proactive": "Разрешить звонок",
     "call_pending": "Звонок запрошен — ждём ответа продавца",
     "call_request": "Запросить звонок",
-    "menu": "Меню"
+    "menu": "Меню",
+    "call_revoke": "Запретить звонок",
+    "call_revoked_note": "{{name}} — звонок запрещён"
   },
   "promo": {
     "safe_deal": "Безопасная сделка",

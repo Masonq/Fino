@@ -368,6 +368,41 @@ def decline_call(
     db.commit()
     return {"status": "declined"}
 
+
+@router.post("/{chat_id}/call-revoke")
+def revoke_call(
+    chat_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Продавец забирает уже данное разрешение обратно — раз можно
+    разрешить, должна быть возможность и отменить. Действует так же
+    широко, как и само разрешение: убирает PhoneReveal для этой пары
+    целиком, не только для этого чата — если номер был открыт через
+    другое объявление, отменяет и там тоже, не оставляя половинчатого
+    состояния (открыто в одном чате, закрыто в другом, хотя пара
+    людей одна и та же).
+    """
+    chat = _require_participant(chat_id, user, db)
+    if user.id != chat.seller_id:
+        raise HTTPException(403, "only_seller_can_revoke")
+
+    db.query(PhoneReveal).filter(
+        PhoneReveal.seller_id == chat.seller_id,
+        PhoneReveal.buyer_id == chat.buyer_id,
+    ).delete()
+
+    message = Message(id=uuid.uuid4(), chat_id=chat_id, sender_id=user.id, kind="call_revoked")
+    db.add(message)
+    chat.last_message_at = utcnow()
+    db.commit()
+    db.refresh(message)
+
+    other_id = _other_id(chat, user.id)
+    _notify_call_event(db, chat, user.id, other_id, "закрыл доступ к звонку", message.id)
+    return {"status": "revoked"}
+
 @router.get("")
 def list_chats(
     lang: str = Query("ru"),

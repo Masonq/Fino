@@ -94,7 +94,9 @@
     "call_allow_proactive": "Allow a call",
     "call_pending": "Call requested — waiting for the seller",
     "call_request": "Request a call",
-    "menu": "Menu"
+    "menu": "Menu",
+    "call_revoke": "Revoke call access",
+    "call_revoked_note": "{{name}} — call access revoked"
   },
   "promo": {
     "safe_deal": "Safe deal",

@@ -94,7 +94,9 @@
     "call_allow_proactive": "Dozvoli poziv",
     "call_pending": "Poziv zatražen — čeka se odgovor prodavca",
     "call_request": "Zatraži poziv",
-    "menu": "Meni"
+    "menu": "Meni",
+    "call_revoke": "Zabrani poziv",
+    "call_revoked_note": "{{name}} — poziv zabranjen"
   },
   "promo": {
     "safe_deal": "Sigurna kupovina",

@@ -188,6 +188,15 @@ export default function ChatScreen() {
     } catch { /* оставляем как было */ }
     finally { setCallBusy(false) }
   }
+  const doRevokeCall = async () => {
+    setCallBusy(true)
+    try {
+      await api.revokeCall(id)
+      const [fresh, freshMessages] = await Promise.all([api.getChat(id, i18n.language), api.getChatMessages(id)])
+      setChat(fresh); setMessages(freshMessages)
+    } catch { /* оставляем как было */ }
+    finally { setCallBusy(false) }
+  }
 
   return (
     <div className="chats-layout in-chat">
@@ -229,6 +238,19 @@ export default function ChatScreen() {
                       {t('chat.call_allow_proactive')}
                     </button>
                   )}
+                  {isSeller && chat.phone_revealed && (
+                    <button
+                      className="chat-menu-item"
+                      disabled={callBusy}
+                      onClick={() => { setMenuOpen(false); doRevokeCall() }}
+                    >
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .7 3a2 2 0 0 1-.4 2.1L8 10.3a16 16 0 0 0 6 6l1.5-1.4a2 2 0 0 1 2.1-.4c1 .4 2 .6 3 .7a2 2 0 0 1 1.7 2Z" />
+                        <path d="M4 4l16 16" />
+                      </svg>
+                      {t('chat.call_revoke')}
+                    </button>
+                  )}
                   <button
                     className="chat-menu-item"
                     disabled={blockBusy}
@@ -266,7 +288,7 @@ export default function ChatScreen() {
                   targetName={otherName()}
                   onDone={load}
                 />
-              ) : m.kind === 'call_request' || m.kind === 'call_allowed' || m.kind === 'call_declined' ? (
+              ) : m.kind === 'call_request' || m.kind === 'call_allowed' || m.kind === 'call_declined' || m.kind === 'call_revoked' ? (
                 // Просто запись в истории — вся интерактивность (кнопки
                 // разрешить/отклонить/запросить) живёт в одной панели
                 // над полем ввода, не тут: два места для одного и того

@@ -52,3 +52,17 @@ def test_call_allow_writes_to_phone_reveal_not_chat():
     source = inspect.getsource(allow_call)
     assert "PhoneReveal(" in source
     assert "chat.phone_revealed" not in source
+
+
+def test_call_revoke_removes_by_pair_not_by_chat():
+    """Отмена разрешения должна убирать запись PhoneReveal по паре
+    продавец-покупатель — если убирать только для одного чата, номер
+    остался бы видимым в другом чате с тем же продавцом, хотя продавец
+    явно попросил закрыть доступ."""
+    import inspect
+    from app.routers.chats import revoke_call
+
+    source = inspect.getsource(revoke_call)
+    assert "PhoneReveal.seller_id == chat.seller_id" in source
+    assert "PhoneReveal.buyer_id == chat.buyer_id" in source
+    assert "only_seller_can_revoke" in source
