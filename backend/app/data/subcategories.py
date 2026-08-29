@@ -111,3 +111,31 @@ SUBCATEGORIES: dict[str, list[dict]] = {
         {"slug": "supplies", "name": {"ru": "Расходники и упаковка", "en": "Supplies & packaging", "sr": "Potrošni materijal"}},
     ],
 }
+
+# Третий уровень — родитель тут уже сама подкатегория (её slug —
+# ключ), не корневая категория. По той же логике, что и раскол
+# "gadgets" выше: "Игры, приставки и программы" объединяла три
+# совсем разных типа товара под одной крышей (сама игра, железо
+# приставки, программа/подписка) — у покупателя, который ищет
+# конкретно PS5, нет способа отсеять диски с играми и наоборот.
+# "Запчасти" для авто — то же самое: деталь двигателя и автомагнитола
+# делят категорию, но не делят ни одного слова в описании.
+# Добавляется только там, где реально есть эта путаница — не
+# бездумно на каждую подкатегорию подряд.
+SUB_SUBCATEGORIES: dict[str, list[dict]] = {
+    "gaming": [
+        {"slug": "consoles", "name": {"ru": "Игровые приставки", "en": "Game consoles", "sr": "Konzole"}},
+        {"slug": "games-ps", "name": {"ru": "Игры для PlayStation", "en": "PlayStation games", "sr": "Igre za PlayStation"}},
+        {"slug": "games-xbox", "name": {"ru": "Игры для Xbox", "en": "Xbox games", "sr": "Igre za Xbox"}},
+        {"slug": "games-nintendo", "name": {"ru": "Игры для Nintendo", "en": "Nintendo games", "sr": "Igre za Nintendo"}},
+        {"slug": "games-pc", "name": {"ru": "Игры и программы для ПК", "en": "PC games & software", "sr": "PC igre i softver"}},
+        {"slug": "gaming-accessories", "name": {"ru": "Игровые аксессуары", "en": "Gaming accessories", "sr": "Gejming dodaci"}},
+    ],
+    "car-parts": [
+        {"slug": "parts-engine", "name": {"ru": "Двигатель и трансмиссия", "en": "Engine & transmission", "sr": "Motor i menjač"}},
+        {"slug": "parts-body", "name": {"ru": "Кузов и оптика", "en": "Body & lighting", "sr": "Karoserija i svetla"}},
+        {"slug": "parts-interior", "name": {"ru": "Салон и электроника", "en": "Interior & electronics", "sr": "Enterijer i elektronika"}},
+        {"slug": "parts-suspension", "name": {"ru": "Подвеска и тормоза", "en": "Suspension & brakes", "sr": "Ovešenje i kočnice"}},
+        {"slug": "parts-audio", "name": {"ru": "Автозвук и мультимедиа", "en": "Car audio & multimedia", "sr": "Auto zvuk i multimedija"}},
+    ],
+}

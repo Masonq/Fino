@@ -52,7 +52,9 @@ export default function PostAd() {
 
   // Промежуточный выбор подкатегории. Отдельным шагом не делаем — это ещё
   // одна точка выхода из формы; показываем список прямо на первом шаге.
-  const [parent, setParent] = useState(null)
+  // Путь вниз по категориям — массив, не одно значение: раньше parent
+  // был единственным уровнем, и третий уровень было некуда деть.
+  const [path, setPath] = useState([])
 
   const pickCategory = async (cat) => {
     setCategory(cat)
@@ -193,44 +195,52 @@ export default function PostAd() {
         ))}
       </div>
 
-      {step === 0 && !parent && (
-        <>
-          <h2>{t('listing.select_category')}</h2>
-          <div className="post-cat-grid">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                className="post-cat-item"
-                onClick={() => ((cat.children || []).length ? setParent(cat) : pickCategory(cat))}
-              >
-                <span className="post-cat-label">
-                  {cat.name?.[i18n.language] || cat.name?.ru}
-                </span>
-                <span className="post-cat-img"><CategoryArt slug={cat.slug} /></span>
+      {step === 0 && (() => {
+        // Текущий уровень — либо корневые категории (path пуст), либо
+        // дети последнего элемента пути. Один и тот же блок для любой
+        // глубины — раньше было два отдельных (корень/один подуровень),
+        // и третий уровень было решительно некуда деть: клик по
+        // подкатегории с собственными детьми сразу завершал бы выбор,
+        // пропуская их. Теперь клик проверяет наличие детей на каждом
+        // шаге одинаково, вне зависимости от того, первый это уровень
+        // или третий.
+        const current = path.length ? path[path.length - 1] : null
+        const items = current ? (current.children || []) : categories
+        const isRoot = path.length === 0
+        return (
+          <>
+            {!isRoot && (
+              <button className="post-back" onClick={() => setPath((p) => p.slice(0, -1))}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m15 18-6-6 6-6" />
+                </svg>
+                {current.name?.[i18n.language] || current.name?.ru}
               </button>
-            ))}
-          </div>
-        </>
-      )}
-
-      {step === 0 && parent && (
-        <>
-          <button className="post-back" onClick={() => setParent(null)}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m15 18-6-6 6-6" />
-            </svg>
-            {parent.name?.[i18n.language] || parent.name?.ru}
-          </button>
-          <h2>{t('listing.select_subcategory')}</h2>
-          <div className="post-sub-list">
-            {parent.children.map((sub) => (
-              <button key={sub.id} className="post-sub-item" onClick={() => pickCategory(sub)}>
-                {sub.name?.[i18n.language] || sub.name?.ru}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
+            )}
+            <h2>{isRoot ? t('listing.select_category') : t('listing.select_subcategory')}</h2>
+            <div className={isRoot ? 'post-cat-grid' : 'post-sub-list'}>
+              {items.map((cat) => (
+                <button
+                  key={cat.id}
+                  className={isRoot ? 'post-cat-item' : 'post-sub-item'}
+                  onClick={() => ((cat.children || []).length ? setPath((p) => [...p, cat]) : pickCategory(cat))}
+                >
+                  {isRoot ? (
+                    <>
+                      <span className="post-cat-label">
+                        {cat.name?.[i18n.language] || cat.name?.ru}
+                      </span>
+                      <span className="post-cat-img"><CategoryArt slug={cat.slug} /></span>
+                    </>
+                  ) : (
+                    cat.name?.[i18n.language] || cat.name?.ru
+                  )}
+                </button>
+              ))}
+            </div>
+          </>
+        )
+      })()}
 
       {step === 1 && category && (
         <>

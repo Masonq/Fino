@@ -6,7 +6,7 @@
 """
 from app.core.database import SessionLocal
 from app.models import Category
-from app.data.subcategories import SUBCATEGORIES
+from app.data.subcategories import SUBCATEGORIES, SUB_SUBCATEGORIES
 from app.data.schemas import SCHEMAS, SUB_SCHEMAS
 
 CATEGORIES = [
@@ -179,6 +179,33 @@ def run():
                     attribute_schema=sub_schema,
                 ))
             print(f"{parent_slug}: подкатегорий {len(children)}")
+        db.commit()
+
+        # Третий уровень — тот же цикл, но родителя теперь ищем среди
+        # уже созданных ПОДКАТЕГОРИЙ (SUBCATEGORIES выше), не корневых
+        # категорий. Отдельным проходом, после commit() над вторым
+        # уровнем — иначе к моменту поиска родителя-подкатегории она
+        # могла ещё не существовать в базе.
+        for parent_slug, children in SUB_SUBCATEGORIES.items():
+            parent = db.query(Category).filter(Category.slug == parent_slug).first()
+            if not parent:
+                print(f"пропуск: нет родителя-подкатегории {parent_slug}")
+                continue
+            for order, child in enumerate(children):
+                sub_schema = SUB_SCHEMAS.get(child["slug"], [])
+                exists = db.query(Category).filter(Category.slug == child["slug"]).first()
+                if exists:
+                    exists.name = child["name"]
+                    exists.parent_id = parent.id
+                    exists.sort_order = order
+                    exists.attribute_schema = sub_schema
+                    continue
+                db.add(Category(
+                    slug=child["slug"], name=child["name"],
+                    parent_id=parent.id, sort_order=order,
+                    attribute_schema=sub_schema,
+                ))
+            print(f"{parent_slug}: под-подкатегорий {len(children)}")
         db.commit()
     finally:
         db.close()
