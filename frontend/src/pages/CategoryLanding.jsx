@@ -109,8 +109,25 @@ export default function CategoryLanding() {
   const landing = LANDINGS[slug]
 
   useEffect(() => {
+    // Раньше all.find(...) смотрел только на корневой уровень массива —
+    // работало, пока на страницу категории попадали только по
+    // корневым слагам. Теперь плитка подраздела тоже может вести на
+    // /c/:slug (сама эта правка, для подразделов вроде gaming/trucks —
+    // они не корневые, а вложены в electronics/auto), и плоский find
+    // их находить не будет вовсе, category останется null. Ищем по
+    // всему дереву, на любую глубину, не только по первому уровню.
+    const findBySlug = (nodes) => {
+      for (const node of nodes) {
+        if (node.slug === slug) return node
+        if (node.children?.length) {
+          const found = findBySlug(node.children)
+          if (found) return found
+        }
+      }
+      return null
+    }
     api.getCategories()
-      .then((all) => setCategory(all.find((c) => c.slug === slug) || null))
+      .then((all) => setCategory(findBySlug(all)))
       .catch(() => setCategory(null))
 
     api.searchListings({ category_slug: slug, limit: 8, lang: i18n.language })
@@ -475,7 +492,11 @@ export default function CategoryLanding() {
               <button
                 key={sub.id}
                 className="landing-sub"
-                onClick={() => navigate(`/search?category=${sub.slug}`)}
+                onClick={() => (
+                  sub.children?.length > 0
+                    ? navigate(`/c/${sub.slug}`)
+                    : navigate(`/search?category=${sub.slug}`)
+                )}
               >
                 <span className="landing-sub-name">
                   {sub.name?.[i18n.language] || sub.name?.ru}
@@ -509,7 +530,11 @@ export default function CategoryLanding() {
               <button
                 key={sub.id}
                 className="subs-modal-row"
-                onClick={() => navigate(`/search?category=${sub.slug}`)}
+                onClick={() => (
+                  sub.children?.length > 0
+                    ? navigate(`/c/${sub.slug}`)
+                    : navigate(`/search?category=${sub.slug}`)
+                )}
               >
                 {sub.name?.[i18n.language] || sub.name?.ru}
               </button>
