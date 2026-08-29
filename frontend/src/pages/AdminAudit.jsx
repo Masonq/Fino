@@ -40,6 +40,13 @@ export default function AdminAudit() {
   const [denied, setDenied] = useState(false)
 
   const load = useCallback(() => {
+    // Проверено: items.map ниже рендерится вообще без условия на
+    // loaded, а loaded никогда не сбрасывался обратно в false при
+    // смене filter/actor — при смене фильтра скелетон не показывался
+    // вовсе, сразу оставались старые, уже неверные по фильтру строки
+    // до прихода новых. Сбрасываем оба явно.
+    setLoaded(false)
+    setItems([])
     const params = { days: 30, limit: 100 }
     if (filter) params.action = filter
     if (actor.trim()) params.actor = actor.trim()

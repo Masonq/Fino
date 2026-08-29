@@ -28,6 +28,10 @@ export default function AdminSupport() {
   const [denied, setDenied] = useState(false)
 
   const load = useCallback(() => {
+    // Та же дыра, что и в AdminAudit.jsx — items.map ниже рендерится
+    // без условия на loaded, а loaded не сбрасывался при смене tab.
+    setLoaded(false)
+    setItems([])
     api.supportQueue({ status: tab, limit: 100 })
       .then((res) => {
         setItems(res.items || [])

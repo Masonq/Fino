@@ -38,6 +38,16 @@ export default function SellerProfile() {
 
   useEffect(() => {
     if (!id) return
+    // Тот же класс утечки, что уже чинили на страницах категории,
+    // объявления и поиска — переход между двумя продавцами (тот же
+    // маршрут /seller/:id, другой :id) переиспользует один и тот же
+    // компонент. Проверил настоящим переходом: имя ПРЕЖНЕГО продавца
+    // было ещё видно даже после того, как URL уже сменился на нового —
+    // менялось только спустя ~50мс, когда приходил ответ сервера.
+    setProfile(null)
+    setListings([])
+    setTotal(0)
+    setFailed(false)
     api.sellerProfile(id, i18n.language).then(setProfile).catch(() => setFailed(true))
     api.sellerListings(id, i18n.language)
       .then((r) => { setListings(r.items || []); setTotal(r.total || 0) })

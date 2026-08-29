@@ -43,6 +43,11 @@ export default function AdminUsers() {
   const roleName = (role) => t(`admin.role_${role}`, role)
 
   const load = useCallback(() => {
+    // Та же дыра, что и в AdminAudit.jsx/AdminSupport.jsx — items.map
+    // ниже рендерится без условия на loaded, а loaded не сбрасывался
+    // при смене query/filter.
+    setLoaded(false)
+    setItems([])
     const params = { limit: 50 }
     if (query.trim()) params.q = query.trim()
     if (filter === 'blocked') params.blocked = true
