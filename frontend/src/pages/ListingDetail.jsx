@@ -96,6 +96,16 @@ export default function ListingDetail() {
   // Точка начала касания — для свайпа вниз/вверх, закрывающего просмотр.
   // Не стейт: пересчитывать компонент на каждое touchmove незачем.
   const lightboxTouch = useRef(null)
+  // Стрелки для десктопа — на телефоне и с тачпадом фото листают
+  // свайпом, обычной мышью без сенсора и тачпада горизонтальную
+  // полосу прокрутить нечем: колесо мыши крутит только вертикально.
+  const photoStripRef = useRef(null)
+  const goToPhoto = (i) => {
+    const el = photoStripRef.current
+    if (!el) return
+    const clamped = Math.max(0, Math.min(photos.length - 1, i))
+    el.scrollTo({ left: clamped * el.clientWidth, behavior: 'smooth' })
+  }
 
   // Сама анимация перетаскивания — через нативный touchmove, не через
   // JSX onTouchMove: синтетические обработчики React могут навесить
@@ -434,6 +444,7 @@ export default function ListingDetail() {
         {photos.length > 0 ? (
           <div
             className="photo-strip"
+            ref={photoStripRef}
             onScroll={(e) => {
               const el = e.currentTarget
               setPhotoIdx(Math.round(el.scrollLeft / el.clientWidth))
@@ -507,6 +518,31 @@ export default function ListingDetail() {
             показывали одно и то же, и оба упирались в край карточки. */}
         {photos.length > 1 && (
           <div className="photo-count">{photoIdx + 1} / {photos.length}</div>
+        )}
+        {/* Стрелки — видны только на десктопе (styles.css, скрыты через
+            hover:none touch-медиазапрос на телефоне/планшете, там и
+            так свайп). Без них у мыши без сенсора и тачпада не было
+            вовсе способа пролистать фото — колесо крутит только
+            вертикально, а горизонтальной полосе это не помогает. */}
+        {photos.length > 1 && (
+          <>
+            <button
+              className="photo-nav photo-nav-prev"
+              onClick={() => goToPhoto(photoIdx - 1)}
+              disabled={photoIdx === 0}
+              aria-label={t('detail.prev_photo')}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+            </button>
+            <button
+              className="photo-nav photo-nav-next"
+              onClick={() => goToPhoto(photoIdx + 1)}
+              disabled={photoIdx === photos.length - 1}
+              aria-label={t('detail.next_photo')}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+            </button>
+          </>
         )}
       </div>
 

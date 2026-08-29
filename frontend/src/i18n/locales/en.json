@@ -214,7 +214,9 @@
     "quick_own": "Write your own message",
     "views": "{{count}} views",
     "id": "ID {{id}}",
-    "call_via_chat": "Call via chat"
+    "call_via_chat": "Call via chat",
+    "prev_photo": "Previous photo",
+    "next_photo": "Next photo"
   },
   "favorites": {
     "title": "Saved",

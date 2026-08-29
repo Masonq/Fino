@@ -214,7 +214,9 @@
     "quick_own": "Napišite svoju poruku",
     "views": "{{count}} pregleda",
     "id": "Br. {{id}}",
-    "call_via_chat": "Pozovite preko chata"
+    "call_via_chat": "Pozovite preko chata",
+    "prev_photo": "Prethodna fotografija",
+    "next_photo": "Sledeća fotografija"
   },
   "favorites": {
     "title": "Sačuvano",
