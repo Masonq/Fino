@@ -21,6 +21,10 @@ export default function EditProfile() {
   const [avatar, setAvatar] = useState('')
   const [company, setCompany] = useState('')
   const [companyDescription, setCompanyDescription] = useState('')
+  // Только цифры после кода страны — сам код зашит в самой строке
+  // ввода (+381), не отдельное поле выбора: сайт работает в Сербии,
+  // спрашивать код у каждого просто лишний шаг.
+  const [phoneLocal, setPhoneLocal] = useState('')
   const [saving, setSaving] = useState(false)
   const [done, setDone] = useState(false)
 
@@ -36,6 +40,11 @@ export default function EditProfile() {
       setAvatar(me.avatar_url || '')
       setCompany(me.company_name || '')
       setCompanyDescription(me.company_description || '')
+      // Если номер уже сохранён с кодом +381 — показываем только
+      // остаток, префикс и так на своём месте в самой строке ввода.
+      // Мало ли номер сохранён без него (старые записи, до этого поля
+      // вообще не было) — тогда просто как есть.
+      setPhoneLocal((me.phone || '').replace(/^\+381/, ''))
     }).catch(() => {})
     api.getVerificationStatus().then(setVerify).catch(() => {})
   }, [authLoading, user, navigate])
@@ -50,6 +59,7 @@ export default function EditProfile() {
         company_name: company.trim(),
         company_description: companyDescription.trim(),
         default_language: i18n.language,
+        phone: phoneLocal.trim() ? `+381${phoneLocal.trim()}` : '',
       })
       // Сервер в ответе на сохранение уже отдаёт обновлённый профиль
       // целиком — используем его же, а не собираем заново из полей
@@ -61,7 +71,10 @@ export default function EditProfile() {
       setTimeout(() => navigate('/profile'), 700)
     } catch (e) {
       alert(e.code === 'verify_identity_first'
-        ? t('edit_profile.verify_first') : t('edit_profile.failed'))
+        ? t('edit_profile.verify_first')
+        : e.code === 'phone_already_used'
+        ? t('edit_profile.phone_taken')
+        : t('edit_profile.failed'))
     } finally { setSaving(false) }
   }
 
@@ -123,6 +136,24 @@ export default function EditProfile() {
           onChange={(e) => setName(e.target.value)}
           placeholder={t('edit_profile.name_hint')}
         />
+
+        {/* Код страны зашит прямо в саму строку ввода, не отдельным
+            полем выбора — сайт работает в Сербии, спрашивать код у
+            каждого просто лишний шаг. Без этого номера вся функция
+            звонка в чате (см. ChatScreen.jsx) скрыта целиком —
+            нечего раскрывать покупателю. */}
+        <label className="edit-label">{t('edit_profile.phone')}</label>
+        <div className="phone-input-wrap">
+          <span className="phone-prefix">+381</span>
+          <input
+            className="admin-search phone-input"
+            type="tel"
+            inputMode="numeric"
+            value={phoneLocal}
+            onChange={(e) => setPhoneLocal(e.target.value.replace(/[^\d]/g, ''))}
+            placeholder={t('edit_profile.phone_hint')}
+          />
+        </div>
 
         <label className="edit-label">{t('edit_profile.company')}</label>
         <div className={locked ? 'edit-input-wrap locked' : 'edit-input-wrap'}>

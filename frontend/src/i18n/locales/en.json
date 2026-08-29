@@ -547,7 +547,10 @@
     "no_rating": "No reviews yet",
     "company_description": "About the company",
     "company_description_hint": "What you do, what you sell — buyers will see this on your storefront",
-    "verify_first": "To switch to a business account, verify your identity first — see \"Identity verification\" below on this same page."
+    "verify_first": "To switch to a business account, verify your identity first — see \"Identity verification\" below on this same page.",
+    "phone": "Phone",
+    "phone_hint": "6X XXX XXXX",
+    "phone_taken": "This number is already used by another account"
   },
   "landing": {
     "deal": "What do you need",

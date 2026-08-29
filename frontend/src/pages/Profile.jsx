@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
+import PhoneReminder from '../components/PhoneReminder'
 import { ProfileSkeleton } from '../components/Skeletons'
 import NotificationBell from '../components/NotificationBell'
 import LanguageSwitcher from '../components/LanguageSwitcher'
@@ -48,6 +49,11 @@ export default function Profile() {
       <PageHeader title={t('nav.profile')} back={false}>
         <NotificationBell />
       </PageHeader>
+
+      {/* Перенесено с главной — тут логичнее: человек уже смотрит на
+          свои данные, поле для ввода телефона в один шаг отсюда, а
+          не через отдельный переход. */}
+      <PhoneReminder user={user} />
 
       <div className="profile-head-card">
         {/* Место под декоративную картинку — «обложка» профиля, тем же

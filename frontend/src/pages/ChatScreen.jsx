@@ -23,9 +23,22 @@ export default function ChatScreen() {
   const [blockBusy, setBlockBusy] = useState(false)
   const [callBusy, setCallBusy] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  // Плавающее уведомление про звонок сверху экрана, не строка снизу —
+  // закрывается крестиком независимо от самого решения (закрыть — не
+  // то же самое, что отклонить: продавец мог просто отвлечься, запрос
+  // остаётся висеть, ответить можно и из меню). Сбрасывается, когда
+  // само состояние запроса меняется — новый запрос снова покажет
+  // уведомление, даже если прошлое уже закрывали.
+  const [callNoticeDismissed, setCallNoticeDismissed] = useState(false)
   const bottomRef = useRef(null)
 
   const isSeller = chat?.seller?.id === myId
+
+  // Новый запрос — снова показываем уведомление, даже если прошлое
+  // уже закрывали крестиком: это другое событие, не то же самое.
+  useEffect(() => {
+    if (chat?.call_request_pending) setCallNoticeDismissed(false)
+  }, [chat?.call_request_pending])
 
   const otherName = () => {
     if (!chat) return ''
@@ -259,6 +272,18 @@ export default function ChatScreen() {
           {chat?.listing_title && <div className="chat-head-listing">{chat.listing_title}</div>}
         </div>
         {chat && (
+          <div className="chat-head-actions">
+            {/* Номер уже раскрыт — вместо кнопки «Позвонить» снизу
+                (просили убрать) теперь просто иконка здесь, рядом с
+                меню. Только у покупателя — у продавца номера
+                собеседника тут никогда нет, см. серверную часть. */}
+            {!isSeller && chat.phone_revealed && chat.other_phone && (
+              <a className="chat-head-call-btn" href={`tel:${chat.other_phone}`} aria-label={t('chat.call_number', { phone: chat.other_phone })}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .7 3a2 2 0 0 1-.4 2.1L8 10.3a16 16 0 0 0 6 6l1.5-1.4a2 2 0 0 1 2.1-.4c1 .4 2 .6 3 .7a2 2 0 0 1 1.7 2Z" />
+                </svg>
+              </a>
+            )}
           <div className="chat-menu-wrap">
             <button className="chat-menu-btn" onClick={() => setMenuOpen((v) => !v)} aria-label={t('chat.menu')}>
               <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
@@ -267,10 +292,38 @@ export default function ChatScreen() {
               <>
                 <div className="chat-menu-backdrop" onClick={() => setMenuOpen(false)} />
                 <div className="chat-menu">
+                  {/* Покупатель запрашивает звонок — тем же местом, что
+                      и у продавца «Разрешить звонок» ниже: одна и та же
+                      логика меню для обеих ролей, не отдельный элемент
+                      где-то ещё. Пока запрос уже отправлен и висит без
+                      ответа — пункт превращается в неактивную подпись,
+                      не пропадает совсем (человек должен видеть, что
+                      что-то уже сделал, а не гадать, сработало ли). */}
+                  {!isSeller && chat.seller_has_phone && !chat.phone_revealed && (
+                    chat.call_request_pending ? (
+                      <div className="chat-menu-item disabled-note">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .7 3a2 2 0 0 1-.4 2.1L8 10.3a16 16 0 0 0 6 6l1.5-1.4a2 2 0 0 1 2.1-.4c1 .4 2 .6 3 .7a2 2 0 0 1 1.7 2Z" />
+                        </svg>
+                        {t('chat.call_pending')}
+                      </div>
+                    ) : (
+                      <button
+                        className="chat-menu-item"
+                        disabled={callBusy}
+                        onClick={() => { setMenuOpen(false); doRequestCall() }}
+                      >
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .7 3a2 2 0 0 1-.4 2.1L8 10.3a16 16 0 0 0 6 6l1.5-1.4a2 2 0 0 1 2.1-.4c1 .4 2 .6 3 .7a2 2 0 0 1 1.7 2Z" />
+                        </svg>
+                        {t('chat.call_request')}
+                      </button>
+                    )
+                  )}
                   {/* Проактивное разрешение (без запроса от покупателя) —
                       только продавцу и только пока ещё не разрешено;
-                      ответ на уже пришедший запрос — своя, более заметная
-                      панель над полем ввода ниже, не тут. */}
+                      ответ на уже пришедший запрос — своё плавающее
+                      уведомление сверху экрана, не тут. */}
                   {isSeller && chat.seller_has_phone && !chat.phone_revealed && (
                     <button
                       className="chat-menu-item"
@@ -309,6 +362,7 @@ export default function ChatScreen() {
                 </div>
               </>
             )}
+          </div>
           </div>
         )}
       </div>
@@ -355,43 +409,32 @@ export default function ChatScreen() {
 
       {sendError && <p className="chat-error">{sendError}</p>}
 
-      {/* Одна строка на всё, что касается звонка — независимо от роли
-          и состояния показывает ровно то, что можно сделать прямо
-          сейчас. Раньше кнопка звонка на самой странице объявления
-          вообще ничего не делала (не было даже href="tel:") — номер
-          в базе был, а раскрывать его было некому и незачем: не было
-          ни согласия, ни самого места, где его спросить. */}
-      {chat && !chat.blocked_by_them && (!isSeller ? (chat.seller_has_phone || chat.phone_revealed) : chat.call_request_pending) && (
-        <div className="call-status-row">
-          {isSeller ? (
-            // Продавцу тут — только ответ на уже пришедший запрос.
-            // Номера покупателя тут никогда нет и не будет — звонок
-            // нужен покупателю, чтобы дозвониться до продавца, не
-            // наоборот; продавцу писать покупателю есть куда и без
-            // этого, тот же чат. Проактивное разрешение — в меню по
-            // трём точкам сверху, не дублируется тут.
-            chat.call_request_pending && (
-              <>
-                <span className="call-status-hint">{t('chat.call_requested_by_them')}</span>
-                <button className="call-status-btn" disabled={callBusy} onClick={doAllowCall}>
-                  {t('chat.call_allow')}
-                </button>
-                <button className="call-status-btn ghost" disabled={callBusy} onClick={doDeclineCall}>
-                  {t('chat.call_decline')}
-                </button>
-              </>
-            )
-          ) : chat.phone_revealed && chat.other_phone ? (
-            <a className="call-status-btn" href={`tel:${chat.other_phone}`}>
-              {t('chat.call_number', { phone: chat.other_phone })}
-            </a>
-          ) : chat.call_request_pending ? (
-            <span className="call-status-hint">{t('chat.call_pending')}</span>
-          ) : chat.seller_has_phone && (
-            <button className="call-status-btn ghost" disabled={callBusy} onClick={doRequestCall}>
-              {t('chat.call_request')}
-            </button>
-          )}
+      {/* Плавающее уведомление сверху экрана — по образцу системных
+          уведомлений (закрыть крестиком, не мешая читать сообщения
+          под ним), а не строка снизу, которая раньше отъедала место
+          у поля ввода постоянно, даже когда решать было нечего. */}
+      {chat && chat.call_request_pending && !callNoticeDismissed && (
+        <div className="call-toast">
+          <button
+            className="call-toast-body"
+            disabled={callBusy}
+            onClick={isSeller ? doAllowCall : undefined}
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .7 3a2 2 0 0 1-.4 2.1L8 10.3a16 16 0 0 0 6 6l1.5-1.4a2 2 0 0 1 2.1-.4c1 .4 2 .6 3 .7a2 2 0 0 1 1.7 2Z" />
+            </svg>
+            {/* Продавцу — сама просьба, касание разрешает звонок сразу.
+                Покупателю — просто «ждём ответа», ничего не нажимается,
+                тут только посмотреть и закрыть. */}
+            {isSeller ? t('chat.call_requested_by_them') : t('chat.call_pending')}
+          </button>
+          <button
+            className="call-toast-close"
+            aria-label={t('actions.close')}
+            onClick={() => (isSeller ? doDeclineCall() : setCallNoticeDismissed(true))}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
         </div>
       )}
 

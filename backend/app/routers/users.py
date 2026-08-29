@@ -65,6 +65,12 @@ class ProfileEdit(BaseModel):
     company_name: str | None = Field(default=None, max_length=255)
     # Описание на витрине — под названием, покупатель видит его первым.
     company_description: str | None = Field(default=None, max_length=2000)
+    # Для звонка через чат (см. chats.py) — без него вся функция
+    # скрыта целиком, нечего раскрывать покупателю. Формат — как
+    # прислал фронтенд (код страны уже вписан туда же, не отдельным
+    # полем): +381 плюс цифры, но заставлять именно этот формат тут
+    # незачем — просто нормализуем и проверяем, что не занят.
+    phone: str | None = Field(default=None, max_length=32)
 
     @field_validator("display_name")
     @classmethod
@@ -141,6 +147,19 @@ def edit_profile(
             user.role = UserRole.seller_business
     if payload.company_description is not None:
         user.company_description = payload.company_description.strip() or None
+    if payload.phone is not None:
+        phone = payload.phone.strip()
+        if phone:
+            taken = (
+                db.query(User)
+                .filter(User.phone == phone, User.id != user.id)
+                .first()
+            )
+            if taken:
+                raise HTTPException(400, "phone_already_used")
+            user.phone = phone
+        else:
+            user.phone = None
 
     db.commit()
     return my_profile(user)

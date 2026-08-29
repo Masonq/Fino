@@ -623,7 +623,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* Меню по трём точкам в шапке чата — «Разрешить звонок» (только
    продавцу, только пока не разрешено) и «Заблокировать»/
    «Разблокировать», каждый со своей иконкой. */
-.chat-menu-wrap{ margin-left:auto; position:relative; flex-shrink:0; }
+.chat-menu-wrap{ position:relative; flex-shrink:0; }
 .chat-menu-btn{
   width:34px; height:34px; border-radius:50%; display:flex; align-items:center;
   justify-content:center; color:var(--ink-soft);
@@ -661,18 +661,40 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   padding:4px 12px; text-align:center;
 }
 
-/* Одна панель на все состояния вокруг звонка — над полем ввода. */
-.call-status-row{
-  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
-  padding:10px 16px; background:#F7F7F3; border-top:1px solid rgba(20,30,25,.06);
+/* Плавающее уведомление про звонок сверху экрана — тёмная капсула,
+   тем же духом, что и системные уведомления телефона (не строка,
+   постоянно занимающая место над полем ввода). */
+.call-toast{
+  position:fixed; top:calc(10px + env(safe-area-inset-top)); left:50%; transform:translateX(-50%);
+  z-index:45; max-width:calc(100% - 24px);
+  display:flex; align-items:center; gap:4px;
+  background:rgba(28,28,30,.92); backdrop-filter:blur(14px);
+  border-radius:16px; padding:6px 6px 6px 16px;
+  box-shadow:0 8px 24px rgba(0,0,0,.25);
 }
-.call-status-hint{ font-size:12.5px; color:var(--muted); font-weight:600; }
-.call-status-btn{
-  padding:8px 14px; border-radius:12px; background:var(--primary); color:#fff;
-  font-size:12.5px; font-weight:700;
+.call-toast-body{
+  display:flex; align-items:center; gap:8px; color:#7AB8FF;
+  font-size:14.5px; font-weight:600; white-space:nowrap;
+  padding:6px 4px;
 }
-.call-status-btn.ghost{ background:#fff; color:var(--primary-deep); border:1px solid rgba(20,30,25,.12); }
-.call-status-btn:disabled{ opacity:.6; }
+.call-toast-body:disabled{ opacity:.6; }
+.call-toast-close{
+  flex-shrink:0; width:30px; height:30px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  color:#8E8E93; background:rgba(255,255,255,.08);
+}
+
+/* Иконка звонка в шапке (номер уже раскрыт) — рядом с меню по трём
+   точкам, не строка снизу с самим номером текстом. */
+.chat-head-actions{ margin-left:auto; display:flex; align-items:center; gap:6px; }
+.chat-head-call-btn{
+  width:34px; height:34px; border-radius:50%; display:flex; align-items:center;
+  justify-content:center; color:var(--primary-deep); background:var(--primary-soft);
+}
+/* Пункт меню, который ничего не делает — просто напоминает, что
+   запрос уже отправлен и висит без ответа, не пропадает совсем. */
+.chat-menu-item.disabled-note{ color:var(--muted); }
+.chat-menu-item.disabled-note svg{ color:var(--muted); }
 
 .chat-input-row{
   display:flex; gap:10px; padding:12px 16px calc(12px + env(safe-area-inset-bottom)); background:#fff;
@@ -1075,14 +1097,22 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .auth-terms a{ color:var(--ink-soft); text-decoration:underline; }
 
 /* ===== профиль ===== */
-.profile-head{ display:flex; align-items:center; gap:14px; padding:16px 14px; }
+.profile-head{ display:flex; align-items:flex-end; gap:14px; padding:16px 14px; }
 .profile-avatar{
-  width:60px; height:60px; border-radius:50%; flex-shrink:0; overflow:hidden;
+  width:66px; height:66px; border-radius:50%; flex-shrink:0; overflow:hidden;
   background:var(--primary); color:#fff;
   display:flex; align-items:center; justify-content:center;
   font-size:24px; font-weight:800;
+  /* Выступает из баннера над ним — тот же приём, что и в большинстве
+     приложений с обложкой профиля: белая обводка отделяет аватар и
+     от цветного баннера сверху, и от текста рядом снизу. margin-top
+     отрицательный ровно настолько, чтобы верхняя треть аватара легла
+     на баннер, а не просто торчала сверху карточки без объяснения. */
+  margin-top:-34px;
+  border:3px solid #fff;
+  box-shadow:0 2px 8px rgba(20,30,25,.12);
 }
-.profile-avatar.is-company{ border-radius:18px; }
+.profile-avatar.is-company{ border-radius:20px; }
 .profile-avatar img{ width:100%; height:100%; object-fit:cover; }
 .profile-info{ min-width:0; }
 .profile-name{ font-size:17px; font-weight:800; color:var(--ink); }
@@ -2682,6 +2712,20 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   position:absolute; right:14px; top:50%; margin-top:-5px;
   width:18px; height:18px; color:var(--muted); pointer-events:none;
 }
+
+/* Телефон — код страны зашит прямо в строку, не отдельное поле
+   выбора: серый непрозрачный префикс слева, дальше обычное поле
+   ввода без своей рамки, сросшееся с ним в одну общую. */
+.phone-input-wrap{
+  display:flex; align-items:center; margin:12px 0 8px;
+  border:1px solid var(--line, #e6e6e6); border-radius:12px; background:#fff;
+  overflow:hidden;
+}
+.phone-prefix{
+  padding:12px 0 12px 14px; font-size:15px; font-weight:700; color:var(--muted);
+  flex-shrink:0;
+}
+.phone-input.admin-search{ margin:0; border:none; border-radius:0; padding-left:4px; }
 
 /* Снятое объявление. Оставляем на месте — по нему смотрят цены, — но
    человек должен понять с первого взгляда, что вещи больше нет. */

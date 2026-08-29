@@ -548,7 +548,10 @@
     "no_rating": "Još nema recenzija",
     "company_description": "O kompaniji",
     "company_description_hint": "Čime se bavite, šta prodajete — kupac će ovo videti na vašoj vitrini",
-    "verify_first": "Da biste postali poslovni nalog, prvo prođite proveru identiteta — odeljak „Provera dokumenta\" niže na istoj stranici."
+    "verify_first": "Da biste postali poslovni nalog, prvo prođite proveru identiteta — odeljak „Provera dokumenta\" niže na istoj stranici.",
+    "phone": "Telefon",
+    "phone_hint": "6X XXX XXXX",
+    "phone_taken": "Ovaj broj je već povezan sa drugim nalogom"
   },
   "landing": {
     "deal": "Šta tražite",
