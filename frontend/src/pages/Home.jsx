@@ -51,6 +51,13 @@ const PROMO_FALLBACK = (
 
 export default function Home() {
   const { t, i18n } = useTranslation()
+  // Возвращает заголовок вкладки к общему, если он остался от
+  // страницы категории (там он меняется на конкретный раздел —
+  // см. CategoryLanding.jsx) — иначе после захода в «Авто» и
+  // возврата на главную вкладка так и осталась бы «Авто — ...».
+  useEffect(() => {
+    document.title = 'PLONK — объявления в Белграде и Сербии'
+  }, [])
   const [categories, setCategories] = useState([])
   const [catsLoaded, setCatsLoaded] = useState(false)
   // объявляем до первого обращения: ниже с него начинается состояние ленты
