@@ -6,11 +6,13 @@ from sqlalchemy import or_, func
 from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel
 
-from app.core.auth import get_current_user
-from app.core.database import get_db
+from app.core.auth import get_current_user, decode_token
+from app.core.database import get_db, SessionLocal
+from app.core.chat_ws import manager
 from app.routers.listings import pick_translation
 from app.models import Chat, Message, Listing, User, BlockedUser, PhoneReveal
 from app.core.clock import utcnow
+from fastapi import WebSocket, WebSocketDisconnect
 
 router = APIRouter(prefix="/api/chats", tags=["chats"])
 
@@ -85,6 +87,18 @@ def _serialize_chat(chat: Chat, db: Session, lang: str = "ru", viewer_id=None):
         "phone_revealed": phone_revealed,
         "call_request_pending": chat.call_request_pending,
         "other_phone": other_phone,
+    }
+
+
+def _serialize_message(m: Message) -> dict:
+    return {
+        "id": str(m.id),
+        "sender_id": str(m.sender_id),
+        "text": m.text,
+        "kind": m.kind or "user",
+        "is_read": m.is_read,
+        "offer_price": float(m.offer_price) if m.offer_price else None,
+        "created_at": m.created_at.isoformat(),
     }
 
 
@@ -180,22 +194,11 @@ def list_messages(
 
     rows = q.order_by(Message.created_at.desc()).limit(limit).all()
     messages = list(reversed(rows))
-    return [
-        {
-            "id": str(m.id),
-            "sender_id": str(m.sender_id),
-            "text": m.text,
-            "kind": m.kind or "user",
-            "is_read": m.is_read,
-            "offer_price": float(m.offer_price) if m.offer_price else None,
-            "created_at": m.created_at.isoformat(),
-        }
-        for m in messages
-    ]
+    return [_serialize_message(m) for m in messages]
 
 
 @router.post("/{chat_id}/messages")
-def send_message(
+async def send_message(
     chat_id: uuid.UUID,
     payload: SendMessageIn,
     user: User = Depends(get_current_user),
@@ -224,6 +227,9 @@ def send_message(
     db.commit()
     db.refresh(message)
 
+    # Живой чат — сразу обоим открытым окнам, не дожидаясь опроса.
+    await manager.broadcast(str(chat_id), {"type": "message", "message": _serialize_message(message)})
+
     # уведомляем собеседника, если он не в приложении
     try:
         from app.core.notifications import notify_new_message
@@ -236,7 +242,7 @@ def send_message(
 
 
 @router.post("/{chat_id}/block")
-def block_participant(
+async def block_participant(
     chat_id: uuid.UUID,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -247,11 +253,12 @@ def block_participant(
     if not _is_blocked(db, user.id, other_id):
         db.add(BlockedUser(blocker_id=user.id, blocked_id=other_id))
         db.commit()
+    await manager.broadcast(str(chat_id), {"type": "chat_updated"})
     return {"status": "blocked"}
 
 
 @router.post("/{chat_id}/unblock")
-def unblock_participant(
+async def unblock_participant(
     chat_id: uuid.UUID,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -263,6 +270,7 @@ def unblock_participant(
         BlockedUser.blocked_id == other_id,
     ).delete()
     db.commit()
+    await manager.broadcast(str(chat_id), {"type": "chat_updated"})
     return {"status": "unblocked"}
 
 
@@ -279,7 +287,7 @@ def _notify_call_event(db: Session, chat: Chat, actor_id, other_id, text: str, m
 
 
 @router.post("/{chat_id}/call-request")
-def request_call(
+async def request_call(
     chat_id: uuid.UUID,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -311,12 +319,14 @@ def request_call(
     db.commit()
     db.refresh(message)
 
+    await manager.broadcast(str(chat_id), {"type": "message", "message": _serialize_message(message)})
+    await manager.broadcast(str(chat_id), {"type": "chat_updated"})
     _notify_call_event(db, chat, user.id, other_id, "запросил звонок", message.id)
     return {"status": "requested"}
 
 
 @router.post("/{chat_id}/call-allow")
-def allow_call(
+async def allow_call(
     chat_id: uuid.UUID,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -346,13 +356,15 @@ def allow_call(
     db.commit()
     db.refresh(message)
 
+    await manager.broadcast(str(chat_id), {"type": "message", "message": _serialize_message(message)})
+    await manager.broadcast(str(chat_id), {"type": "chat_updated"})
     other_id = _other_id(chat, user.id)
     _notify_call_event(db, chat, user.id, other_id, "разрешил звонок", message.id)
     return {"status": "allowed"}
 
 
 @router.post("/{chat_id}/call-decline")
-def decline_call(
+async def decline_call(
     chat_id: uuid.UUID,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -368,11 +380,15 @@ def decline_call(
     db.add(message)
     chat.last_message_at = utcnow()
     db.commit()
+    db.refresh(message)
+
+    await manager.broadcast(str(chat_id), {"type": "message", "message": _serialize_message(message)})
+    await manager.broadcast(str(chat_id), {"type": "chat_updated"})
     return {"status": "declined"}
 
 
 @router.post("/{chat_id}/call-revoke")
-def revoke_call(
+async def revoke_call(
     chat_id: uuid.UUID,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -401,6 +417,8 @@ def revoke_call(
     db.commit()
     db.refresh(message)
 
+    await manager.broadcast(str(chat_id), {"type": "message", "message": _serialize_message(message)})
+    await manager.broadcast(str(chat_id), {"type": "chat_updated"})
     other_id = _other_id(chat, user.id)
     _notify_call_event(db, chat, user.id, other_id, "закрыл доступ к звонку", message.id)
     return {"status": "revoked"}
@@ -495,17 +513,66 @@ def list_chats(
 
 
 @router.post("/{chat_id}/read")
-def mark_read(
+async def mark_read(
     chat_id: uuid.UUID,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     user_id = user.id
     """Отмечаем сообщения собеседника прочитанными."""
-    db.query(Message).filter(
+    changed = db.query(Message).filter(
         Message.chat_id == chat_id,
         Message.sender_id != user_id,
         Message.is_read.is_(False),
     ).update({Message.is_read: True}, synchronize_session=False)
     db.commit()
+    if changed:
+        # «Прочитано» у собеседника — тоже вживую, галочки должны
+        # смениться сразу, а не только при следующем открытии чата.
+        await manager.broadcast(str(chat_id), {"type": "chat_updated"})
     return {"status": "ok"}
+
+
+@router.websocket("/{chat_id}/ws")
+async def chat_ws(websocket: WebSocket, chat_id: uuid.UUID, token: str = Query(...)):
+    """
+    Живой канал одного чата — вместо опроса раз в 4 секунды. Токен —
+    query-параметром, а не заголовком Authorization: браузер не даёт
+    выставить произвольные заголовки при открытии WebSocket-соединения,
+    только URL и протокол.
+
+    Два вида событий рассылаются: {"type":"message", "message":{...}} —
+    готовое сообщение, можно сразу дописать в список; и
+    {"type":"chat_updated"} — сигнал «что-то в самом чате изменилось
+    (звонок, блокировка, прочитано), перечитай /chats/{id}» — не
+    рассылаем сериализованный чат целиком, потому что он разный для
+    покупателя и продавца (номер телефона виден только одному) —
+    проще и безопаснее попросить каждого перечитать свою версию, чем
+    держать в одном месте две разные сериализации на рассылку.
+    """
+    user_id = decode_token(token)
+    if not user_id:
+        await websocket.close(code=4401)
+        return
+
+    db = SessionLocal()
+    try:
+        chat = db.query(Chat).get(chat_id)
+        if not chat or user_id not in (chat.buyer_id, chat.seller_id):
+            await websocket.close(code=4403)
+            return
+    finally:
+        db.close()
+
+    await manager.connect(str(chat_id), websocket)
+    try:
+        while True:
+            # От клиента ничего не ждём по смыслу — держим соединение
+            # открытым, пока оно живо. receive_text() кинет
+            # WebSocketDisconnect, когда клиент закроет вкладку или
+            # потеряет сеть — этим и ловим отключение.
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        pass
+    finally:
+        manager.disconnect(str(chat_id), websocket)

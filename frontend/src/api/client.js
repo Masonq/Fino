@@ -6,6 +6,19 @@ export function getToken() {
   return localStorage.getItem(TOKEN_KEY)
 }
 
+// Адрес живого чата — тот же хост, что и у обычных запросов, только
+// http(s) меняем на ws(s) и добавляем токен параметром: браузер не
+// даёт выставить заголовок Authorization при открытии WebSocket,
+// только то, что помещается в сам URL.
+export function chatWsUrl(chatId) {
+  const token = getToken()
+  if (!token) return null
+  const base = API_BASE.startsWith('http')
+    ? API_BASE.replace(/^http/, 'ws')
+    : `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}${API_BASE}`
+  return `${base}/chats/${chatId}/ws?token=${encodeURIComponent(token)}`
+}
+
 // Случайный id устройства — заводится один раз и хранится в localStorage,
 // не отпечаток в строгом смысле (сбрасывается очисткой данных сайта), но
 // достаточно, чтобы при входе отличить «тот же браузер, что обычно» от

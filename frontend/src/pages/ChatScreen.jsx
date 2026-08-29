@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { api } from '../api/client'
+import { api, chatWsUrl } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import ReviewRequest from '../components/ReviewRequest'
 import ChatList from '../components/ChatList'
@@ -59,37 +59,82 @@ export default function ChatScreen() {
     load()
   }, [id])
 
-  // Новые сообщения подтягиваются сами. Опрос вместо постоянного соединения:
-  // проще и надёжнее на мобильном, где связь часто рвётся. Пока вкладка скрыта —
-  // не опрашиваем, чтобы не тратить батарею и трафик.
+  // Живой чат — WebSocket вместо опроса раз в 4 секунды: сообщения,
+  // разрешения на звонок, отметки «прочитано» приходят сразу, а не
+  // с задержкой до следующего тика. Раньше опрос вдобавок подтягивал
+  // только сообщения — chat.phone_revealed/call_request_pending не
+  // обновлялись вовсе у собеседника, кнопка «Позвонить» не появлялась,
+  // сколько ни жди, до самой перезагрузки страницы.
   useEffect(() => {
     if (!id || !myId) return
-    let timer = 0
+    let ws = null
+    let reconnectTimer = 0
+    let closedByUs = false
 
-    const tick = async () => {
+    const refreshChatState = () => {
+      api.getChat(id, i18n.language).then(setChat).catch(() => {})
+    }
+
+    const connect = () => {
+      const url = chatWsUrl(id)
+      if (!url) return
+      ws = new WebSocket(url)
+
+      ws.onmessage = (event) => {
+        let data
+        try { data = JSON.parse(event.data) } catch { return }
+
+        if (data.type === 'message') {
+          setMessages((prev) => (
+            prev.some((m) => m.id === data.message.id) ? prev : [...prev, data.message]
+          ))
+          if (data.message.sender_id !== myId) api.markChatRead(id).catch(() => {})
+        } else if (data.type === 'chat_updated') {
+          // Не рассылаем сериализованный чат целиком (он разный для
+          // покупателя и продавца — номер телефона видит только один) —
+          // просто перечитываем свою версию по сигналу.
+          refreshChatState()
+        }
+      }
+
+      ws.onclose = () => {
+        if (closedByUs) return
+        // Соединение оборвалось не по нашей воле (сеть моргнула,
+        // телефон заснул) — пробуем снова через паузу, не сразу:
+        // мгновенный повтор при недоступной сети просто зациклился бы.
+        reconnectTimer = setTimeout(connect, 2000)
+      }
+      ws.onerror = () => { ws?.close() }
+    }
+
+    connect()
+
+    // Запасной, редкий опрос — только на случай, если WebSocket в
+    // принципе не работает (очень старый браузер, необычный прокси у
+    // оператора связи): не даёт чату замереть насовсем, но не спорит
+    // с живым каналом, пока тот в порядке.
+    const fallbackTick = async () => {
       if (document.hidden) return
+      if (ws && ws.readyState === WebSocket.OPEN) return
       try {
         const res = await api.getChatMessages(id)
-        // Опрос возвращает только последние сообщения — дописываем новые,
-        // а не заменяем список целиком, иначе подгруженная история пропадёт.
         setMessages((prev) => {
           if (prev.length === 0) return res
           const known = new Set(prev.map((m) => m.id))
           const fresh = res.filter((m) => !known.has(m.id))
           return fresh.length > 0 ? [...prev, ...fresh] : prev
         })
-        // пришло чужое — сразу помечаем прочитанным, раз чат открыт
-        if (res.some((m) => m.sender_id !== myId && !m.is_read)) {
-          api.markChatRead(id).catch(() => {})
-        }
+        refreshChatState()
       } catch { /* следующая попытка через интервал */ }
     }
+    const fallbackTimer = setInterval(fallbackTick, 15000)
 
-    timer = setInterval(tick, 4000)
-    const onVisible = () => { if (!document.hidden) tick() }
-    document.addEventListener('visibilitychange', onVisible)
-
-    return () => { clearInterval(timer); document.removeEventListener('visibilitychange', onVisible) }
+    return () => {
+      closedByUs = true
+      ws?.close()
+      if (reconnectTimer) clearTimeout(reconnectTimer)
+      clearInterval(fallbackTimer)
+    }
   }, [id, myId])
 
   const [loadingOlder, setLoadingOlder] = useState(false)
