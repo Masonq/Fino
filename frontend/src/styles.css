@@ -671,7 +671,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   padding:14px 16px; text-align:center; font-size:12.5px; color:var(--muted);
   background:#F7F7F3; border-top:1px solid rgba(20,30,25,.06);
 }
-.chat-messages{ flex:1; overflow-y:auto; padding:16px 16px 8px; display:flex; flex-direction:column; gap:8px; overscroll-behavior-y:contain; -webkit-overflow-scrolling:touch; }
+.chat-messages{ flex:1; min-height:0; overflow-y:auto; padding:16px 16px 8px; display:flex; flex-direction:column; gap:8px; overscroll-behavior-y:contain; -webkit-overflow-scrolling:touch; }
 .chat-bubble{ align-self:flex-start; background:#F3F3F1; padding:10px 14px; border-radius:16px 16px 16px 4px; font-size:13.5px; max-width:78%; line-height:1.4; }
 .chat-bubble.mine{ align-self:flex-end; background:var(--primary); color:#fff; border-radius:16px 16px 4px 16px; }
 /* Скелетон переписки: и «своя», и «чужая» форма пузыря на нейтральном
@@ -2058,7 +2058,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   .chats-list-pane{
     border-right:1px solid rgba(20,30,25,.08); overflow-y:auto; background:#fff;
   }
-  .chats-content-pane{ min-width:0; height:100%; }
+  .chats-content-pane{ min-width:0; min-height:0; height:100%; }
   /* .chats-layout .chats-content-pane.chats-placeholder — не просто
      .chats-placeholder: та более простая версия проигрывала по
      специфичности правилу выше (.chats-layout:not(.in-chat)
@@ -2075,8 +2075,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   .chats-placeholder p{ font-size:14px; }
   /* Раньше .chat-page была центрированной колонкой на всю высоту
      экрана — здесь она уже внутри своей панели рядом со списком,
-     во всю ширину и высоту panel, а не сама по себе. */
-  .chat-page{ max-width:none; margin:0; height:100%; }
+     во всю ширину и высоту panel, а не сама по себе. min-height:0 —
+     без него flex/grid-потомок по умолчанию не сжимается меньше
+     высоты своего содержимого (min-height:auto по умолчанию), и
+     внутренняя прокрутка .chat-messages ниже перестаёт работать —
+     вместо неё растягивается и скроллится вся страница целиком.
+     Safari строже придерживается этого умолчания, чем Chrome — там
+     баг был заметен, здесь в разработке — нет. */
+  .chat-page{ max-width:none; margin:0; height:100%; min-height:0; }
 }
 
 /* Промежуточная ширина — планшеты и узкие окна */
