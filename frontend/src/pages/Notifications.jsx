@@ -65,7 +65,7 @@ export default function Notifications() {
 
   if (!userId) {
     return (
-      <div className="fav-page">
+      <div className="fav-page notif-page">
         <PageHeader title={t('notif.title')} />
         <div className="fav-empty">
           <div className="fav-empty-icon">
@@ -84,7 +84,7 @@ export default function Notifications() {
   }
 
   return (
-    <div className="fav-page">
+    <div className="fav-page notif-page">
       <PageHeader title={t('notif.title')}>
         {hasUnread && (
           <button className="notif-read-all" onClick={readAll}>{t('notif.read_all')}</button>
