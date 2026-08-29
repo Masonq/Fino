@@ -75,6 +75,7 @@ export const api = {
     body: JSON.stringify(payload),
   }),
   me: () => request('/auth/me'),
+  logout: () => request('/auth/logout', { method: 'POST' }),
   savedSearches: () => request('/saved-searches'),
   saveSearch: (filters, name) => request('/saved-searches', {
     method: 'POST',

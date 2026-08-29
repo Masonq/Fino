@@ -163,7 +163,7 @@ def verify_code_endpoint(payload: VerifyCodeIn, request: Request, db: Session = 
     except Exception:
         pass
 
-    return {"token": create_access_token(user.id), "user": _user_payload(user)}
+    return {"token": create_access_token(user.id, user.token_version), "user": _user_payload(user)}
 
 
 # ---------- вход по паролю ----------
@@ -176,7 +176,7 @@ def login(payload: PasswordLoginIn, db: Session = Depends(get_db)):
     if user.is_blocked:
         raise HTTPException(403, "user_blocked")
 
-    return {"token": create_access_token(user.id), "user": _user_payload(user)}
+    return {"token": create_access_token(user.id, user.token_version), "user": _user_payload(user)}
 
 
 @router.post("/set-password")
@@ -232,7 +232,7 @@ def oauth_login(payload: OAuthIn, db: Session = Depends(get_db)):
     if user.is_blocked:
         raise HTTPException(403, "user_blocked")
 
-    return {"token": create_access_token(user.id), "user": _user_payload(user)}
+    return {"token": create_access_token(user.id, user.token_version), "user": _user_payload(user)}
 
 
 # ---------- профиль ----------
@@ -270,3 +270,18 @@ def update_me(
         raise HTTPException(400, "phone_taken")
     db.refresh(user)
     return _user_payload(user)
+
+
+@router.post("/logout")
+def logout(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Отзывает ВСЕ токены этого человека разом, не только тот, что
+    предъявлен сейчас — увеличивает token_version, и любой ранее
+    выпущенный токен (этот телефон, другой телефон, чужой компьютер,
+    если он там сохранился) перестаёт проходить проверку в
+    get_current_user немедленно, а не через 30 дней естественного
+    истечения. Раньше signOut() на фронтенде только чистил
+    localStorage на самом устройстве — сам токен на сервере
+    продолжал молча работать весь оставшийся срок."""
+    user.token_version += 1
+    db.commit()
+    return {"ok": True}

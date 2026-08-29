@@ -118,7 +118,7 @@ def enter(payload: Ticket, request: Request, db: Session = Depends(get_db)):
         pass
 
     return {
-        "access_token": create_access_token(user.id),
+        "access_token": create_access_token(user.id, user.token_version),
         "token_type": "bearer",
         "user": {
             "id": str(user.id),

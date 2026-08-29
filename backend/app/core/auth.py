@@ -49,19 +49,26 @@ def verify_code(code: str, stored_hash: str) -> bool:
 
 
 # --- токены ---
-def create_access_token(user_id: uuid.UUID) -> str:
+def create_access_token(user_id: uuid.UUID, token_version: int = 0) -> str:
     payload = {
         "sub": str(user_id),
+        "tv": token_version,
         "exp": utcnow() + ACCESS_TTL,
         "iat": utcnow(),
     }
     return jwt.encode(payload, settings.secret_key, algorithm=ALGORITHM)
 
 
-def decode_token(token: str) -> uuid.UUID | None:
+def decode_token(token: str) -> tuple[uuid.UUID, int] | None:
+    """Возвращает (id пользователя, версия токена в самом токене) — версию
+    сверяет с текущей уже get_current_user, тут только достаём из JWT.
+    Старые токены, выпущенные до появления поля "tv" (до этой правки),
+    не несут его вовсе — .get(..., 0) читает их как версию 0, ту же,
+    что и у only что созданных пользователей: не рвём вход тем, кто уже
+    был залогинен на момент раскатки этой правки."""
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[ALGORITHM])
-        return uuid.UUID(payload["sub"])
+        return uuid.UUID(payload["sub"]), payload.get("tv", 0)
     except Exception:
         return None
 
@@ -79,13 +86,20 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
     if not token:
         raise HTTPException(401, "not_authenticated")
 
-    user_id = decode_token(token)
-    if not user_id:
+    decoded = decode_token(token)
+    if not decoded:
         raise HTTPException(401, "invalid_token")
+    user_id, token_ver = decoded
 
     user = db.query(User).get(user_id)
     if not user:
         raise HTTPException(401, "user_not_found")
+    # Версия в токене устарела — где-то был выход из аккаунта уже после
+    # того, как этот конкретный токен выпустили. Тот же ответ, что и на
+    # заведомо неверный токен: с точки зрения того, кто его предъявляет,
+    # разницы нет — токен просто больше не работает.
+    if token_ver != user.token_version:
+        raise HTTPException(401, "invalid_token")
     if user.is_blocked:
         raise HTTPException(403, "user_blocked")
 
@@ -104,7 +118,11 @@ def get_current_user_optional(request: Request, db: Session = Depends(get_db)) -
     token = _token_from_request(request)
     if not token:
         return None
-    user_id = decode_token(token)
-    if not user_id:
+    decoded = decode_token(token)
+    if not decoded:
         return None
-    return db.query(User).get(user_id)
+    user_id, token_ver = decoded
+    user = db.query(User).get(user_id)
+    if not user or token_ver != user.token_version:
+        return None
+    return user
