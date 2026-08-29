@@ -26,7 +26,7 @@ export default function BlockedUsers() {
   }
 
   return (
-    <div className="fav-page">
+    <div className="fav-page blocked-page">
       <PageHeader title={t('blocked.title')} />
 
       {!loaded ? null : items.length === 0 ? (

@@ -153,11 +153,11 @@ export default function Moderation() {
     finally { setBusyId(null) }
   }
 
-  if (authLoading) return <div className="fav-page"><PageHeader title={t('mod.title')} /></div>
+  if (authLoading) return <div className="fav-page mod-page"><PageHeader title={t('mod.title')} /></div>
 
   if (!user) {
     return (
-      <div className="fav-page">
+      <div className="fav-page mod-page">
         <PageHeader title={t('mod.title')} />
         <div className="fav-empty">
           <p>{t('mod.need_login')}</p>
@@ -171,7 +171,7 @@ export default function Moderation() {
 
   if (denied) {
     return (
-      <div className="fav-page">
+      <div className="fav-page mod-page">
         <PageHeader title={t('mod.title')} />
         <p className="empty-hint">{t('mod.no_access')}</p>
       </div>
@@ -179,7 +179,7 @@ export default function Moderation() {
   }
 
   return (
-    <div className="fav-page">
+    <div className="fav-page mod-page">
       <PageHeader title={t('mod.title')} count={total} />
 
       <div className="my-tabs">

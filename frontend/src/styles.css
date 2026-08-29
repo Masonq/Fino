@@ -1693,6 +1693,27 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     padding:16px;
   }
 
+  /* Формы — не растягиваем в широкую сетку (там нечему быть в сетке,
+     это одна колонка полей), но и не оставляем прижатыми к левому
+     краю на фоне пустоты — центрируем со спокойной шириной. */
+  .edit-profile, .support, .edit-listing-page{ max-width:640px; margin:0 auto; }
+
+  /* Модерация и заблокированные — списки карточек той же природы,
+     что уведомления/сохранённые поиски выше: сетка вместо
+     вертикального списка на всю ширину экрана. */
+  .mod-page{ max-width:1100px; margin:0 auto; }
+  .mod-list{
+    display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;
+  }
+  .blocked-page{ max-width:900px; margin:0 auto; }
+  .blocked-list{
+    display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;
+    border-radius:0; background:none; margin:0;
+  }
+  .blocked-row{
+    border-radius:14px; border:1px solid rgba(20,30,25,.08); background:#fff;
+  }
+
   /* нижнее меню на десктопе не нужно — навигация уходит в шапку */
   .bottomnav{ display:none; }
   .app-shell > main.has-bottomnav{ padding-bottom:40px; }

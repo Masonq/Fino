@@ -96,7 +96,7 @@ export default function EditListing() {
 
   if (authLoading || !listing) {
     return (
-      <div className="fav-page">
+      <div className="fav-page edit-listing-page">
         <PageHeader title={t('edit.title')} />
         <EditFormSkeleton />
       </div>
@@ -105,7 +105,7 @@ export default function EditListing() {
 
   if (!user) {
     return (
-      <div className="fav-page">
+      <div className="fav-page edit-listing-page">
         <PageHeader title={t('edit.title')} />
         <div className="fav-empty">
           <p>{t('my.need_login')}</p>
@@ -119,7 +119,7 @@ export default function EditListing() {
 
   if (saved) {
     return (
-      <div className="fav-page">
+      <div className="fav-page edit-listing-page">
         <div className="fav-empty">
           <div className="fav-empty-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -133,7 +133,7 @@ export default function EditListing() {
   }
 
   return (
-    <div className="fav-page">
+    <div className="fav-page edit-listing-page">
       <PageHeader title={t('edit.title')} />
 
       <div className="post-fields edit-fields">
