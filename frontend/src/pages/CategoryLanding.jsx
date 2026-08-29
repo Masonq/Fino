@@ -64,6 +64,7 @@ export default function CategoryLanding() {
 
   const [category, setCategory] = useState(null)
   const [fresh, setFresh] = useState([])
+  const [freshLoading, setFreshLoading] = useState(true)
   const [deal, setDeal] = useState('')
   const [values, setValues] = useState({})
   const [text, setText] = useState('')
@@ -130,9 +131,21 @@ export default function CategoryLanding() {
       .then((all) => setCategory(findBySlug(all)))
       .catch(() => setCategory(null))
 
+    // Проверили настоящим замером: старая карточка («Свежие
+    // объявления» прошлого раздела) оставалась видна ещё 30мс+ после
+    // клика на новый раздел, пропадала только когда приходил ответ
+    // сервера (~300мс) — тот же класс утечки, что и с values/deal
+    // выше, просто визуальный, не в самом запросе. setFresh([]) тут
+    // же, синхронно с переходом — не оставляем чужую картинку висеть,
+    // пока грузится настоящая. freshLoading — не просто пустота (та
+    // тоже дёргано: блок разом исчезает и через мгновение появляется
+    // снова, сдвигая макет) — скелетон той же формы держит место.
+    setFresh([])
+    setFreshLoading(true)
     api.searchListings({ category_slug: slug, limit: 8, lang: i18n.language })
       .then((res) => setFresh(res.items || []))
       .catch(() => setFresh([]))
+      .finally(() => setFreshLoading(false))
 
     // Переход на другой раздел (напр. по «Все категории») не должен
     // оставлять открытым режим результатов прошлого раздела.
@@ -571,7 +584,14 @@ export default function CategoryLanding() {
         </div>
       )}
 
-      {fresh.length > 0 && (
+      {freshLoading && (
+        <div className="landing-fresh">
+          <h2>{t('landing.fresh')}</h2>
+          <div className="feed-grid"><CardSkeletons count={4} /></div>
+        </div>
+      )}
+
+      {!freshLoading && fresh.length > 0 && (
         <div className="landing-fresh">
           <h2>{t('landing.fresh')}</h2>
           <div className="feed-grid">
