@@ -11,7 +11,7 @@ export default function Chats() {
 
   if (!user) {
     return (
-      <div className="fav-page">
+      <div className="fav-page chats-page">
         <PageHeader title={t('nav.chats')} back={false} />
         <div className="fav-empty">
           <div className="fav-empty-icon">
@@ -29,7 +29,7 @@ export default function Chats() {
   }
 
   return (
-    <div className="fav-page">
+    <div className="fav-page chats-page">
       <PageHeader title={t('nav.chats')} back={false} />
 
       {/* На десктопе список — левая колонка постоянно открытой

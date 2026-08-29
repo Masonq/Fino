@@ -2036,6 +2036,15 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   .chats-layout.in-chat .chats-list-pane,
   .chats-layout:not(.in-chat) .chats-content-pane{ display:block; }
 
+  /* Заголовок «Сообщения» отдельной полосой над раскладкой — тот
+     единственный кусок, которым список отличался от открытого чата:
+     там (ChatScreen.jsx) отдельного заголовка страницы нет вовсе,
+     .chats-layout начинается сразу под навигацией, шапка самого
+     чата — и есть верх панели. На мобильном заголовок нужен
+     (там список — не часть двухпанельной раскладки, а весь экран
+     сам по себе), поэтому прячем только тут, в десктопном блоке. */
+  .chats-page .page-header{ display:none; }
+
   .chats-layout{
     display:grid; grid-template-columns:320px 1fr; align-items:stretch;
     border:1px solid rgba(20,30,25,.08); border-radius:16px; overflow:hidden;
