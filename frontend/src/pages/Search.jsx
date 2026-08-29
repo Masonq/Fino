@@ -29,6 +29,10 @@ export default function Search() {
 
   const [text, setText] = useState(params.get('q') || '')
   const [categories, setCategories] = useState([])
+  // Пустой массив неотличим от «ещё не пришло» — нужен свой явный
+  // флаг, иначе не на что опереться, решая, показывать ли скелетон
+  // строки подкатегорий или уже настоящую (пустую) строку.
+  const [catsLoaded, setCatsLoaded] = useState(false)
   const [items, setItems] = useState([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -58,7 +62,7 @@ export default function Search() {
 
 
   useEffect(() => {
-    api.getCategories().then(setCategories).catch(() => setCategories([]))
+    api.getCategories().then(setCategories).catch(() => setCategories([])).finally(() => setCatsLoaded(true))
   }, [])
 
   const query = useMemo(() => {
@@ -271,6 +275,13 @@ export default function Search() {
             onChange={setFields}
           />
 
+          {!catsLoaded && (
+            <div className="sub-row">
+              <div className="sub-chip skeleton" style={{ width: 90 }} />
+              <div className="sub-chip skeleton" style={{ width: 70 }} />
+              <div className="sub-chip skeleton" style={{ width: 100 }} />
+            </div>
+          )}
           {subs.length > 0 && (
             <div className="sub-row">
               <button
