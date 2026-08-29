@@ -218,11 +218,16 @@ export default function CategoryLanding() {
                  strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
           </button>
           <h1 className="landing-title on-hero">{name}</h1>
-          {category?.count > 0 && (
-            <div className="landing-count on-hero">
-              {t('landing.offers', { count: category.count })}
-            </div>
-          )}
+          {/* Число объявлений приходит отдельным запросом (getCategories),
+              чуть позже самой страницы — раньше блок целиком рендерился
+              только после этого, резко появляясь и сдвигая всё, что
+              ниже (саму страницу «дёргало» при каждом заходе). Теперь
+              блок стоит на месте с первого кадра — просто пустой, пока
+              число не пришло, высота у него уже есть за счёт line-height
+              в CSS, появление текста ничего не сдвигает. */}
+          <div className="landing-count on-hero">
+            {category?.count > 0 ? t('landing.offers', { count: category.count }) : '\u00A0'}
+          </div>
         </div>
 
         {/* Раньше здесь были только фильтры (комнаты, цена) — можно было

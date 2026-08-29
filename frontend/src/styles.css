@@ -2739,7 +2739,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   display:flex; align-items:center; justify-content:center; color:var(--ink); flex-shrink:0;
 }
 .landing-title{ font-size:24px; font-weight:800; color:var(--ink); flex:1; min-width:0; }
-.landing-count{ width:100%; font-size:13px; color:var(--muted); font-weight:600; padding-left:46px; }
+.landing-count{ width:100%; font-size:13px; line-height:17px; color:var(--muted); font-weight:600; padding-left:46px; }
 .landing-search{ padding:6px 14px 4px; }
 
 .landing-field{ padding:10px 14px 4px; }
