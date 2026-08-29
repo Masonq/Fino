@@ -5,7 +5,7 @@ import uuid
 from app.core.urls import listing_path
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import String, cast, case, exists, func, or_, Float
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
@@ -919,7 +919,7 @@ def seller_listings(
 
 
 @router.get("/{listing_id}")
-def get_listing(listing_id: str, db: Session = Depends(get_db),
+def get_listing(listing_id: str, request: Request, db: Session = Depends(get_db),
                 viewer: User | None = Depends(get_current_user_optional)):
     query = db.query(Listing).options(
         joinedload(Listing.translations), joinedload(Listing.photos),
@@ -944,22 +944,46 @@ def get_listing(listing_id: str, db: Session = Depends(get_db),
     # Не считаем просмотры владельца — иначе продавец, проверяющий своё
     # же объявление (например, из «Моих объявлений»), искусственно
     # завышает себе счётчик и делает вывод о несуществующем интересе.
+    #
+    # Один и тот же посетитель — не чаще раза в день на одно
+    # объявление: раньше здесь считался каждый заход без всякого
+    # предела, и обычное обновление страницы (F5) уже накручивало
+    # счётчик до бесконечности, без всякого продвижения. viewer_key —
+    # id вошедшего, иначе X-Device-Id с браузера, иначе IP как
+    # последний запасной вариант.
     if not viewer or viewer.id != listing.owner_id:
-        listing.views_count += 1
-        # И в дневную статистику — без неё дашборд продавца показывал
-        # бы только одно растущее число, без единой возможности увидеть,
-        # вырос интерес на этой неделе или упал.
-        from sqlalchemy.dialects.postgresql import insert as pg_insert
-        from app.models import ListingViewDaily
+        from app.core.login_events import _client_ip
+        from app.models import ListingViewLog
         from datetime import date as date_type
-        stmt = pg_insert(ListingViewDaily).values(
-            id=uuid.uuid4(), listing_id=listing.id, day=date_type.today(), count=1,
+
+        viewer_key = (
+            str(viewer.id) if viewer
+            else request.headers.get("x-device-id") or _client_ip(request) or "unknown"
         )
-        stmt = stmt.on_conflict_do_update(
-            index_elements=["listing_id", "day"],
-            set_={"count": ListingViewDaily.count + 1},
-        )
-        db.execute(stmt)
+
+        from sqlalchemy.dialects.postgresql import insert as pg_insert
+        dedup_stmt = pg_insert(ListingViewLog).values(
+            id=uuid.uuid4(), listing_id=listing.id, viewer_key=viewer_key, day=date_type.today(),
+        ).on_conflict_do_nothing(index_elements=["listing_id", "viewer_key", "day"])
+        result = db.execute(dedup_stmt)
+
+        # rowcount > 0 — запись реально появилась, этот посетитель
+        # сегодня тут ещё не был. rowcount == 0 — ON CONFLICT сработал,
+        # заход уже был засчитан, просмотр не считаем повторно.
+        if result.rowcount > 0:
+            listing.views_count += 1
+            # И в дневную статистику — без неё дашборд продавца показывал
+            # бы только одно растущее число, без единой возможности увидеть,
+            # вырос интерес на этой неделе или упал.
+            from app.models import ListingViewDaily
+            stmt = pg_insert(ListingViewDaily).values(
+                id=uuid.uuid4(), listing_id=listing.id, day=date_type.today(), count=1,
+            )
+            stmt = stmt.on_conflict_do_update(
+                index_elements=["listing_id", "day"],
+                set_={"count": ListingViewDaily.count + 1},
+            )
+            db.execute(stmt)
         db.commit()
 
     from app.core.urls import listing_path
