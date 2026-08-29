@@ -81,3 +81,18 @@ def test_phone_reveal_is_one_directional_to_buyer_only():
     # раньше тут читался номер то покупателя, то продавца в
     # зависимости от того, кто смотрит — этой развилки быть не должно
     assert "other_user = buyer if other_id" not in source
+
+
+def test_call_feature_hidden_without_seller_phone():
+    """Вся функция звонка теряет смысл, если у продавца телефон не
+    указан вовсе — нечего раскрывать. И сериализация чата отдаёт
+    признак наличия телефона, и сам запрос отклоняется на сервере,
+    не только прячется в интерфейсе."""
+    import inspect
+    from app.routers.chats import _serialize_chat, request_call
+
+    assert "seller_has_phone" in inspect.getsource(_serialize_chat)
+
+    source = inspect.getsource(request_call)
+    assert "seller.phone" in source
+    assert "seller_has_no_phone" in source

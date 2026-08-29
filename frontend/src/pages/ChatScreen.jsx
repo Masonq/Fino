@@ -271,7 +271,7 @@ export default function ChatScreen() {
                       только продавцу и только пока ещё не разрешено;
                       ответ на уже пришедший запрос — своя, более заметная
                       панель над полем ввода ниже, не тут. */}
-                  {isSeller && !chat.phone_revealed && (
+                  {isSeller && chat.seller_has_phone && !chat.phone_revealed && (
                     <button
                       className="chat-menu-item"
                       disabled={callBusy}
@@ -361,7 +361,7 @@ export default function ChatScreen() {
           вообще ничего не делала (не было даже href="tel:") — номер
           в базе был, а раскрывать его было некому и незачем: не было
           ни согласия, ни самого места, где его спросить. */}
-      {chat && !chat.blocked_by_them && (!isSeller || chat.call_request_pending) && (
+      {chat && !chat.blocked_by_them && (!isSeller ? (chat.seller_has_phone || chat.phone_revealed) : chat.call_request_pending) && (
         <div className="call-status-row">
           {isSeller ? (
             // Продавцу тут — только ответ на уже пришедший запрос.
@@ -381,13 +381,13 @@ export default function ChatScreen() {
                 </button>
               </>
             )
-          ) : chat.phone_revealed ? (
+          ) : chat.phone_revealed && chat.other_phone ? (
             <a className="call-status-btn" href={`tel:${chat.other_phone}`}>
               {t('chat.call_number', { phone: chat.other_phone })}
             </a>
           ) : chat.call_request_pending ? (
             <span className="call-status-hint">{t('chat.call_pending')}</span>
-          ) : (
+          ) : chat.seller_has_phone && (
             <button className="call-status-btn ghost" disabled={callBusy} onClick={doRequestCall}>
               {t('chat.call_request')}
             </button>

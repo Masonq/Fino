@@ -661,5 +661,9 @@
     "title": "Balance",
     "topup": "Top up",
     "topup_cta": "Top up {{amount}} ₽"
+  },
+  "home": {
+    "phone_reminder": "Add your phone — buyers will be able to call you directly",
+    "phone_reminder_cta": "Add"
   }
 }

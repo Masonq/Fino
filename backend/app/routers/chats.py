@@ -85,6 +85,10 @@ def _serialize_chat(chat: Chat, db: Session, lang: str = "ru", viewer_id=None):
         "i_blocked_them": _is_blocked(db, viewer_id, other_id) if viewer_id else False,
         "blocked_by_them": _is_blocked(db, other_id, viewer_id) if viewer_id else False,
         "phone_revealed": phone_revealed,
+        # Вся функция звонка теряет смысл, если у продавца телефон не
+        # указан вовсе — нечего раскрывать. Фронтенд по этому полю
+        # прячет и панель, и пункты меню целиком, не только у покупателя.
+        "seller_has_phone": bool(seller.phone) if seller else False,
         "call_request_pending": chat.call_request_pending,
         "other_phone": other_phone,
     }
@@ -304,6 +308,12 @@ async def request_call(
     chat = _require_participant(chat_id, user, db)
     if user.id != chat.buyer_id:
         raise HTTPException(403, "only_buyer_can_request")
+    seller = db.query(User).get(chat.seller_id)
+    if not seller or not seller.phone:
+        # Нечего раскрывать — телефон не указан вовсе. Фронтенд прячет
+        # саму кнопку, но прямой запрос к API стоит отклонять и тут же,
+        # не полагаясь только на то, что кнопки не видно.
+        raise HTTPException(400, "seller_has_no_phone")
     if _is_phone_revealed(db, chat.seller_id, chat.buyer_id):
         # Уже разрешено раньше, в другом чате с этим же продавцом —
         # спрашивать заново незачем, разрешение общее на пару целиком.

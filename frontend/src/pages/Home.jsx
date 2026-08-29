@@ -8,6 +8,7 @@ import { CardSkeletons, CategorySkeletons } from '../components/Skeletons'
 import PullToRefresh from '../components/PullToRefresh'
 import SearchOverlay from '../components/SearchOverlay'
 import OfflineNotice, { LoadError } from '../components/OfflineNotice'
+import PhoneReminder from '../components/PhoneReminder'
 import { useAuth } from '../context/AuthContext'
 import { CITIES, cityLabel } from '../data/cities'
 import CategoryArt from '../components/CategoryArt'
@@ -332,6 +333,8 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      <PhoneReminder user={user} />
 
       {(() => {
         const all = [{ id: '__all', slug: null, isAll: true }, ...categories]

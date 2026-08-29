@@ -1019,6 +1019,11 @@ def get_listing(listing_id: str, db: Session = Depends(get_db),
             "rating_count": listing.owner.rating_count,
             "document_verified": listing.owner.document_verified,
             "company_verified": listing.owner.company_verified,
+            # Сам номер тут не отдаём — только флаг, есть ли он вообще.
+            # Иконка звонка на этой странице ведёт в чат, где и решается,
+            # раскрывать номер или нет; если его нет в профиле у
+            # продавца совсем, показывать саму иконку незачем.
+            "has_phone": bool(listing.owner.phone),
         },
         "delivery_available": listing.delivery_available,
         "safe_deal_available": listing.safe_deal_available,

@@ -717,22 +717,24 @@ export default function ListingDetail() {
         </div>
       ) : (
       <div className={ctaHidden ? 'sticky-cta hidden' : 'sticky-cta'}>
-        <button
-          className="cta-btn icon"
-          onClick={() => {
-            // Не через панель с готовыми вопросами (та — для текстовых
-            // сообщений) — иконка телефона ведёт сразу в чат, где и
-            // живёт вся механика запроса звонка (call-status-row).
-            const myId = user?.id
-            if (myId) startChatWith()
-            else navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`)
-          }}
-          aria-label={t('detail.call_via_chat')}
-        >
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .7 3a2 2 0 0 1-.4 2.1L8 10.3a16 16 0 0 0 6 6l1.5-1.4a2 2 0 0 1 2.1-.4c1 .4 2 .6 3 .7a2 2 0 0 1 1.7 2Z" />
+        {listing.owner?.has_phone && (
+          <button
+            className="cta-btn icon"
+            onClick={() => {
+              // Не через панель с готовыми вопросами (та — для текстовых
+              // сообщений) — иконка телефона ведёт сразу в чат, где и
+              // живёт вся механика запроса звонка (call-status-row).
+              const myId = user?.id
+              if (myId) startChatWith()
+              else navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`)
+            }}
+            aria-label={t('detail.call_via_chat')}
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .7 3a2 2 0 0 1-.4 2.1L8 10.3a16 16 0 0 0 6 6l1.5-1.4a2 2 0 0 1 2.1-.4c1 .4 2 .6 3 .7a2 2 0 0 1 1.7 2Z" />
           </svg>
         </button>
+        )}
         <button className="cta-btn primary" disabled={starting} onClick={handleWriteToSeller}>
           {starting ? '...' : t(isResume ? 'detail.write_person' : 'detail.write_seller')}
         </button>

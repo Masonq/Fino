@@ -2673,6 +2673,21 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .promo-check-banner.confirmed{ background:#E3F5EC; color:#0A7A54; }
 .promo-check-banner.pending{ background:#f3f4f6; color:#374151; }
 
+/* Напоминание указать телефон — тот же жёлтый, что и «в процессе» у
+   баннера подтверждения оплаты выше, тот же смысл: «стоит обратить
+   внимание», не тревога и не праздник. */
+.phone-reminder{
+  display:flex; align-items:center; gap:10px; margin:0 12px 14px;
+  padding:11px 12px 11px 14px; border-radius:14px;
+  background:#FBF3E3; color:#8A6100;
+}
+.phone-reminder-text{ flex:1; font-size:13px; font-weight:600; line-height:1.35; }
+.phone-reminder-link{
+  flex-shrink:0; font-size:12.5px; font-weight:800; color:#8A6100;
+  padding:7px 12px; border-radius:10px; background:rgba(138,97,0,.12);
+}
+.phone-reminder-close{ flex-shrink:0; color:#8A6100; opacity:.6; padding:4px; }
+
 /* Цена и фотографии гасятся: вещь неактуальна, и держать её яркой —
    значит выдавать за живое объявление. */
 .detail-page:has(.gone-banner) .detail-price{ color:#9ca3af; }
