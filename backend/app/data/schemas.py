@@ -54,7 +54,7 @@ CONDITION_SIMPLE = {
 
 BRAND = {
     "key": "brand", "type": "text", "required": False,
-    "label": _label("Бренд", "Brand", "Brend"),
+    "label": _label("Марка", "Brand", "Marka"),
 }
 
 # Тот же BRAND, но обязательный — для разделов, где бренд практически
@@ -63,7 +63,7 @@ BRAND = {
 # знают не всегда — там остаётся необязательный BRAND.
 _BRAND_REQUIRED = {
     "key": "brand", "type": "text", "required": True,
-    "label": _label("Бренд", "Brand", "Brend"),
+    "label": _label("Марка", "Brand", "Marka"),
 }
 
 MODEL = {
