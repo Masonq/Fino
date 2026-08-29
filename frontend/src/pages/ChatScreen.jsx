@@ -316,16 +316,15 @@ export default function ChatScreen() {
           вообще ничего не делала (не было даже href="tel:") — номер
           в базе был, а раскрывать его было некому и незачем: не было
           ни согласия, ни самого места, где его спросить. */}
-      {chat && !chat.blocked_by_them && (chat.phone_revealed || !isSeller || chat.call_request_pending) && (
+      {chat && !chat.blocked_by_them && (!isSeller || chat.call_request_pending) && (
         <div className="call-status-row">
-          {chat.phone_revealed ? (
-            <a className="call-status-btn" href={`tel:${chat.other_phone}`}>
-              {t('chat.call_number', { phone: chat.other_phone })}
-            </a>
-          ) : isSeller ? (
-            // Продавцу тут показываем только ответ на уже пришедший
-            // запрос — само проактивное разрешение (без запроса)
-            // теперь в меню по трём точкам сверху, не дублируется тут.
+          {isSeller ? (
+            // Продавцу тут — только ответ на уже пришедший запрос.
+            // Номера покупателя тут никогда нет и не будет — звонок
+            // нужен покупателю, чтобы дозвониться до продавца, не
+            // наоборот; продавцу писать покупателю есть куда и без
+            // этого, тот же чат. Проактивное разрешение — в меню по
+            // трём точкам сверху, не дублируется тут.
             chat.call_request_pending && (
               <>
                 <span className="call-status-hint">{t('chat.call_requested_by_them')}</span>
@@ -337,6 +336,10 @@ export default function ChatScreen() {
                 </button>
               </>
             )
+          ) : chat.phone_revealed ? (
+            <a className="call-status-btn" href={`tel:${chat.other_phone}`}>
+              {t('chat.call_number', { phone: chat.other_phone })}
+            </a>
           ) : chat.call_request_pending ? (
             <span className="call-status-hint">{t('chat.call_pending')}</span>
           ) : (

@@ -66,3 +66,18 @@ def test_call_revoke_removes_by_pair_not_by_chat():
     assert "PhoneReveal.seller_id == chat.seller_id" in source
     assert "PhoneReveal.buyer_id == chat.buyer_id" in source
     assert "only_seller_can_revoke" in source
+
+
+def test_phone_reveal_is_one_directional_to_buyer_only():
+    """Раскрытие номера — только покупателю, никогда продавцу: звонок
+    нужен, чтобы дозвониться ДО продавца, не наоборот. Продавец не
+    должен получать номер покупателя через этот механизм ни при каких
+    условиях, даже когда phone_revealed истинно."""
+    import inspect
+    from app.routers.chats import _serialize_chat
+
+    source = inspect.getsource(_serialize_chat)
+    assert "viewer_id == chat.buyer_id" in source
+    # раньше тут читался номер то покупателя, то продавца в
+    # зависимости от того, кто смотрит — этой развилки быть не должно
+    assert "other_user = buyer if other_id" not in source

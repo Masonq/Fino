@@ -62,13 +62,15 @@ def _serialize_chat(chat: Chat, db: Session, lang: str = "ru", viewer_id=None):
         title = (translation or listing.translations[0]).title
     other_id = _other_id(chat, viewer_id) if viewer_id else None
     phone_revealed = _is_phone_revealed(db, chat.seller_id, chat.buyer_id)
-    # Номер собеседника — только после того, как оба (через продавца)
-    # согласились его раскрыть, и только тому, кто сейчас смотрит: с
-    # точки зрения продавца «собеседник» — покупатель, и наоборот.
+    # Односторонне: покупателю нужен номер продавца, чтобы позвонить —
+    # обратного смысла нет, продавцу писать покупателю есть куда и без
+    # звонка, это тот же самый чат. Раньше раскрывалось «взаимно» (оба
+    # видели номер друг друга) — при просмотре от лица продавца
+    # other_phone тут всегда остаётся пустым, каким бы ни было
+    # phone_revealed.
     other_phone = None
-    if phone_revealed and other_id:
-        other_user = buyer if other_id == chat.buyer_id else seller
-        other_phone = other_user.phone if other_user else None
+    if phone_revealed and viewer_id == chat.buyer_id:
+        other_phone = seller.phone if seller else None
     return {
         "id": str(chat.id),
         "listing_id": str(chat.listing_id),
