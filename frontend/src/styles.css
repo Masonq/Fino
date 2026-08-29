@@ -2020,6 +2020,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   .search-filter-btn{ display:none; }
   .search-body{
     display:flex; align-items:flex-start; gap:28px;
+    margin-top:24px;
   }
   .search-sidebar{
     position:sticky; top:82px;
