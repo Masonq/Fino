@@ -1887,9 +1887,23 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     position:sticky; top:82px;
     width:300px; flex-shrink:0;
     background:#fff; border:1px solid rgba(20,30,25,.08); border-radius:16px;
-    overflow:hidden;
   }
-  .landing-sidebar .landing-hero{ margin-bottom:0; }
+  /* Скругление углов раньше держалось на overflow:hidden у самого
+     .landing-sidebar — но это тот же элемент, что и position:sticky,
+     а у Safari задокументированная ловушка именно на этом сочетании
+     (overflow:hidden + border-radius на липком элементе создаёт
+     отдельный композитный слой, из-за которого sticky перестаёт
+     работать — воспроизвести у себя не смог, Safari тут нет, но
+     это устраняет сам источник, а не гадание вслепую). Переносим
+     скругление на верхние углы самого баннера внутри — он и так уже
+     обрезает свою собственную декоративную начинку (.landing-hero
+     наследует overflow:hidden из мобильного правила выше), только
+     добавляем ему верхние радиусы, чтобы не торчать острыми углами
+     за пределами скруглённой карточки. Нижним элементам (полям,
+     кнопке) скруглять нечего — они и так у нижнего края карточки. */
+  .landing-sidebar .landing-hero{
+    margin-bottom:0; border-top-left-radius:16px; border-top-right-radius:16px;
+  }
   .landing-sidebar .landing-deal,
   .landing-sidebar .landing-field,
   .landing-sidebar .landing-go{ margin-left:14px; margin-right:14px; }
