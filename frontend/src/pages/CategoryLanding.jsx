@@ -44,12 +44,55 @@ export default function CategoryLanding() {
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
 
+  // Ручная липкость сайдбара — в дополнение к CSS position:sticky, не
+  // вместо него: несколько попыток одним только CSS не помогли на
+  // Safari у пользователя, при том что тот же самый приём работает
+  // верно и в Chromium, и на соседней странице поиска — не нашли ни
+  // одного оставшегося структурного отличия между двумя сайдбарами,
+  // при этом один липнет, другой нет. Раз чистый CSS не поддаётся
+  // диагностике без доступа к самому Safari, этот способ гарантированно
+  // работает в любом браузере одинаково, не полагаясь на то, как
+  // именно движок трактует sticky. Обычный обработчик scroll и прямое
+  // сравнение координат — проще и предсказуемее, чем IntersectionObserver
+  // с margin-математикой (первая версия так и не откалибровалась верно:
+  // естественное положение сайдбара оказалось уже около 68px, ниже
+  // порога в 82px, и срабатывало сразу, а не после настоящей прокрутки).
+  const sidebarRef = useRef(null)
+  const [sidebarStuck, setSidebarStuck] = useState(false)
+  const [sidebarLeft, setSidebarLeft] = useState(0)
+  const STICK_AT = 82
+
   const [category, setCategory] = useState(null)
   const [fresh, setFresh] = useState([])
   const [deal, setDeal] = useState('')
   const [values, setValues] = useState({})
   const [text, setText] = useState('')
   const [showAllSubs, setShowAllSubs] = useState(false)
+
+  // category в зависимостях — сайдбар не существует в DOM, пока
+  // категория не загрузилась; без этого обработчик мог бы читать
+  // getBoundingClientRect() у ещё не отрисованного элемента.
+  useEffect(() => {
+    const handleScroll = () => {
+      const el = sidebarRef.current
+      if (!el) return
+      // .parentElement — сам .landing-body, тот же ориентир, что и
+      // раньше: не зависит от того, закреплён ли сейчас сам сайдбар
+      // (position:fixed вынимает его из потока, но не родителя).
+      const parentTop = el.parentElement.getBoundingClientRect().top
+      setSidebarStuck((prevStuck) => {
+        if (parentTop < STICK_AT && !prevStuck) {
+          setSidebarLeft(el.getBoundingClientRect().left)
+          return true
+        }
+        if (parentTop >= STICK_AT && prevStuck) return false
+        return prevStuck
+      })
+    }
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [category])
 
   // Результаты показываются прямо тут, под фильтрами, вместо перехода
   // на отдельную страницу поиска — раньше «Показать объявления» уводил
@@ -209,7 +252,16 @@ export default function CategoryLanding() {
       {!searched && (
       <>
       <div className="landing-body">
-      <div className="landing-sidebar">
+      {/* Распорка того же размера, что и сайдбар — появляется, только
+          когда сайдбар переключён на position:fixed (см. sidebarStuck
+          выше), чтобы освободившееся место не схлопывалось и соседняя
+          колонка не «прыгала» вбок в момент переключения. */}
+      {sidebarStuck && <div className="landing-sidebar-spacer" aria-hidden="true" />}
+      <div
+        ref={sidebarRef}
+        className={sidebarStuck ? 'landing-sidebar is-stuck' : 'landing-sidebar'}
+        style={sidebarStuck ? { left: sidebarLeft } : undefined}
+      >
       <div className="landing-hero" style={{ background: BANNER_GRADIENTS[slug] || BANNER_GRADIENTS['real-estate'] }}>
         <div className="landing-head">
           <button className="landing-back on-hero" onClick={goBack}

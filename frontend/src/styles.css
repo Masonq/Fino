@@ -1882,25 +1882,25 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
      грида, а не они сами по себе. */
   .landing-body{
     display:flex; align-items:flex-start; gap:32px;
+    position:relative;
   }
   .landing-sidebar{
     position:sticky; top:82px;
     width:300px; flex-shrink:0;
     background:#fff; border:1px solid rgba(20,30,25,.08); border-radius:16px;
   }
-  /* Скругление углов раньше держалось на overflow:hidden у самого
-     .landing-sidebar — но это тот же элемент, что и position:sticky,
-     а у Safari задокументированная ловушка именно на этом сочетании
-     (overflow:hidden + border-radius на липком элементе создаёт
-     отдельный композитный слой, из-за которого sticky перестаёт
-     работать — воспроизвести у себя не смог, Safari тут нет, но
-     это устраняет сам источник, а не гадание вслепую). Переносим
-     скругление на верхние углы самого баннера внутри — он и так уже
-     обрезает свою собственную декоративную начинку (.landing-hero
-     наследует overflow:hidden из мобильного правила выше), только
-     добавляем ему верхние радиусы, чтобы не торчать острыми углами
-     за пределами скруглённой карточки. Нижним элементам (полям,
-     кнопке) скруглять нечего — они и так у нижнего края карточки. */
+  /* Распорка — держит место в ряду flex, пока сайдбар вынут из потока
+     через position:fixed (класс .is-stuck ниже). */
+  .landing-sidebar-spacer{ width:300px; flex-shrink:0; }
+  /* Закреплённое состояние — CSS position:sticky оставлен как есть
+     (работает в Chromium и не мешает), но вдобавок, а не вместо,
+     дублируем тем же результатом через JS: как только точка-наблюдатель
+     уходит выше порога, добавляется этот класс, и position:fixed
+     держит сайдбар на месте гарантированно, независимо от того, как
+     конкретный браузер трактует sticky. */
+  .landing-sidebar.is-stuck{
+    position:fixed; top:82px; width:300px;
+  }
   .landing-sidebar .landing-hero{
     margin-bottom:0; border-top-left-radius:16px; border-top-right-radius:16px;
   }
