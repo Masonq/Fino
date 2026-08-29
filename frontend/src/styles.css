@@ -2044,6 +2044,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
      (там список — не часть двухпанельной раскладки, а весь экран
      сам по себе), поэтому прячем только тут, в десктопном блоке. */
   .chats-page .page-header{ display:none; }
+  /* Скрытие заголовка выше убирает только его самого — общий отступ
+     .fav-page{padding-top:28px} (для списков вообще, чуть ниже по
+     файлу) остаётся и создаёт то самое расхождение, которое заметили
+     на скриншотах: 32px зазор у списка против 4px у открытого чата
+     (у того нет .fav-page вовсе, только .chats-layout напрямую).
+     Обнуляем именно для чатов — только тут, не трогая остальные
+     списки, которым эти 28px по-прежнему нужны. */
+  .chats-page{ padding-top:0; }
 
   .chats-layout{
     display:grid; grid-template-columns:320px 1fr; align-items:stretch;
