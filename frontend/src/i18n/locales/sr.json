@@ -645,7 +645,9 @@
   "profile": {
     "sec_listings": "Oglasi",
     "sec_activity": "Aktivnost",
-    "sec_info": "Informacije"
+    "sec_info": "Informacije",
+    "sec_settings": "Podešavanja",
+    "language": "Jezik"
   },
   "verify": {
     "title": "Provera dokumenta",
@@ -666,5 +668,9 @@
   "home": {
     "phone_reminder": "Dodajte broj telefona — kupci će moći direktno da vas pozovu",
     "phone_reminder_cta": "Dodaj"
+  },
+  "blocked": {
+    "title": "Blokirani korisnici",
+    "empty": "Niste nikoga blokirali"
   }
 }

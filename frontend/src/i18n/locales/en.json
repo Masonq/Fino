@@ -644,7 +644,9 @@
   "profile": {
     "sec_listings": "Listings",
     "sec_activity": "Activity",
-    "sec_info": "Information"
+    "sec_info": "Information",
+    "sec_settings": "Settings",
+    "language": "Language"
   },
   "verify": {
     "title": "Identity verification",
@@ -665,5 +667,9 @@
   "home": {
     "phone_reminder": "Add your phone — buyers will be able to call you directly",
     "phone_reminder_cta": "Add"
+  },
+  "blocked": {
+    "title": "Blocked users",
+    "empty": "You haven't blocked anyone"
   }
 }

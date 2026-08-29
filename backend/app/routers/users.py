@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from app.core.auth import get_current_user
 from app.core.database import get_db
-from app.models import User, UserRole, Language
+from app.models import User, UserRole, Language, BlockedUser
 
 router = APIRouter(prefix="/api/users", tags=["users"])
 
@@ -144,3 +144,49 @@ def edit_profile(
 
     db.commit()
     return my_profile(user)
+
+
+@router.get("/blocked")
+def list_blocked(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Кого сам заблокировал — раньше это можно было увидеть и снять
+    только изнутри конкретного чата (кнопка «Разблокировать» в
+    шапке переписки), отдельной страницы со списком не было вовсе.
+    """
+    rows = (
+        db.query(BlockedUser, User)
+        .join(User, User.id == BlockedUser.blocked_id)
+        .filter(BlockedUser.blocker_id == user.id)
+        .order_by(BlockedUser.created_at.desc())
+        .all()
+    )
+    return {
+        "items": [
+            {
+                "id": str(blocked.id),
+                "display_name": blocked.display_name,
+                "avatar_url": blocked.avatar_url,
+                "blocked_at": bu.created_at.isoformat(),
+            }
+            for bu, blocked in rows
+        ]
+    }
+
+
+@router.post("/blocked/{blocked_id}/unblock")
+def unblock_user(
+    blocked_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Та же операция, что и кнопка внутри чата (chats.py:unblock_participant),
+    только не требует открывать конкретную переписку, чтобы её найти."""
+    db.query(BlockedUser).filter(
+        BlockedUser.blocker_id == user.id,
+        BlockedUser.blocked_id == blocked_id,
+    ).delete()
+    db.commit()
+    return {"status": "unblocked"}

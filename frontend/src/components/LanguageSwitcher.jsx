@@ -6,7 +6,10 @@ const LANGS = [
   { code: 'sr', label: 'SR' },
 ]
 
-export default function LanguageSwitcher() {
+// variant="light" — тот же переключатель, но для светлого фона (профиль,
+// настройки): тёмный текст на серой подложке вместо белого текста на
+// полупрозрачной подложке цветной шапки главной.
+export default function LanguageSwitcher({ variant }) {
   const { i18n } = useTranslation()
 
   const change = (code) => {
@@ -15,7 +18,7 @@ export default function LanguageSwitcher() {
   }
 
   return (
-    <div className="lang-switch">
+    <div className={variant === 'light' ? 'lang-switch light' : 'lang-switch'}>
       {LANGS.map((l) => (
         <button
           key={l.code}

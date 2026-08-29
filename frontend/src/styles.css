@@ -222,6 +222,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .lang-switch{ display:flex; background:rgba(255,255,255,.24); border-radius:10px; padding:3px; backdrop-filter:blur(4px); }
 .lang-btn{ font-size:12px; font-weight:700; padding:5px 10px; border-radius:8px; color:rgba(255,255,255,.8); }
 .lang-btn.active{ background:#fff; color:var(--primary-deep); }
+.lang-switch.light{ background:#F2F2EF; backdrop-filter:none; }
+.lang-switch.light .lang-btn{ color:var(--muted); }
+.lang-switch.light .lang-btn.active{ background:#fff; color:var(--ink); box-shadow:0 1px 3px rgba(20,30,25,.1); }
 
 /* ===== категории — сетка в 2 ряда, подпись сверху-слева, фото снизу-справа внахлёст ===== */
 .cat-rows{
@@ -1140,6 +1143,26 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .profile-row-icon svg{ width:17px; height:17px; }
 .profile-row-arrow{ width:16px; height:16px; margin-left:auto; color:var(--muted); flex-shrink:0; }
+/* Строка настройки языка — не ссылка, ничего не открывает, сам
+   переключатель уже интерактивен внутри неё. */
+.profile-row-static{ cursor:default; }
+.profile-row-static .lang-switch{ margin-left:auto; }
+
+/* Список заблокированных — своя простая строка: аватар, имя,
+   кнопка разблокировать, тем же духом, что и у .profile-row рядом. */
+.blocked-list{ background:#fff; border-radius:16px; overflow:hidden; margin:0 12px; }
+.blocked-row{
+  display:flex; align-items:center; gap:12px; padding:12px 14px;
+  border-bottom:1px solid rgba(20,30,25,.06);
+}
+.blocked-list .blocked-row:last-child{ border-bottom:none; }
+.blocked-name{ flex:1; font-size:14px; font-weight:700; color:var(--ink); }
+.blocked-unblock-btn{
+  flex-shrink:0; font-size:12px; font-weight:700; color:var(--primary-deep);
+  padding:7px 12px; border-radius:10px; background:var(--primary-soft);
+}
+.blocked-unblock-btn:disabled{ opacity:.5; }
+
 .profile-logout{
   display:block; margin:24px auto 0; padding:12px 26px; border-radius:13px;
   background:#fff; border:1px solid rgba(255,97,82,.28);
