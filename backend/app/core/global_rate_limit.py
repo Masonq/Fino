@@ -30,6 +30,20 @@ class GlobalRateLimitMiddleware(BaseHTTPMiddleware):
         self.hits: dict[str, deque] = defaultdict(deque)
 
     async def dispatch(self, request, call_next):
+        # /media/ — сами файлы фотографий, не API. Одна лента объявлений
+        # грузит десятки картинок разом — это нормальное поведение
+        # браузера при обычном пролистывании, не накрутка чем-то одним.
+        # Раньше картинки считались в ту же самую корзину, что и API-
+        # запросы, и обычная загрузка ленты объявлений могла случайно
+        # упереться в лимит — сервер отвечал «слишком много запросов»
+        # вместо самой картинки, а браузер рисовал это как битую
+        # иконку. nginx уже держит эти файлы в кэше браузера подолгу
+        # (expires 30d, immutable) — свою, отдельную защиту от
+        # долбления сюда добавлять не нужно, риск тут не тот же самый,
+        # что у обычных API-запросов к базе.
+        if request.url.path.startswith("/media/"):
+            return await call_next(request)
+
         ip = request.headers.get("x-real-ip") or (request.client.host if request.client else "unknown")
         now = time.monotonic()
         window = self.hits[ip]

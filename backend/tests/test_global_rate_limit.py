@@ -30,3 +30,18 @@ def test_window_cleans_up_old_entries():
 
     source = inspect.getsource(GlobalRateLimitMiddleware.dispatch)
     assert "popleft()" in source
+
+
+def test_media_requests_are_exempt():
+    """Настоящий баг, найденный по битым фото в ленте: /media/ считался
+    в ту же самую корзину, что и API-запросы — обычная загрузка ленты
+    с десятками картинок разом могла упереться в лимит, и сервер отвечал
+    429 вместо самой картинки. Браузер рисовал это как битую иконку.
+    Картинки должны обходить лимитер целиком, до самого счётчика."""
+    import inspect
+    from app.core.global_rate_limit import GlobalRateLimitMiddleware
+
+    source = inspect.getsource(GlobalRateLimitMiddleware.dispatch)
+    media_check_pos = source.index('"/media/"')
+    ip_lookup_pos = source.index("x-real-ip")
+    assert media_check_pos < ip_lookup_pos
