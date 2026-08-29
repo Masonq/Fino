@@ -1097,26 +1097,30 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .auth-terms a{ color:var(--ink-soft); text-decoration:underline; }
 
 /* ===== профиль ===== */
-.profile-head{ display:flex; align-items:flex-end; gap:14px; padding:16px 14px; }
+/* Картинка — фон всей этой строки (аватар, имя, рейтинг), внутри
+   карточки, не отдельная полоса сверху. Пока градиент тем же зелёным,
+   что и весь сайт — заменится настоящей картинкой (object-fit:cover
+   на реальном <img>, когда она будет готова). */
+.profile-head{
+  display:flex; align-items:center; gap:14px; padding:20px 14px;
+  background:linear-gradient(135deg, var(--primary), #6BC9A0);
+}
 .profile-avatar{
   width:66px; height:66px; border-radius:50%; flex-shrink:0; overflow:hidden;
-  background:var(--primary); color:#fff;
+  background:rgba(255,255,255,.18); color:#fff;
   display:flex; align-items:center; justify-content:center;
   font-size:24px; font-weight:800;
-  /* Выступает из баннера над ним — тот же приём, что и в большинстве
-     приложений с обложкой профиля: белая обводка отделяет аватар и
-     от цветного баннера сверху, и от текста рядом снизу. margin-top
-     отрицательный ровно настолько, чтобы верхняя треть аватара легла
-     на баннер, а не просто торчала сверху карточки без объяснения. */
-  margin-top:-34px;
   border:3px solid #fff;
   box-shadow:0 2px 8px rgba(20,30,25,.12);
 }
 .profile-avatar.is-company{ border-radius:20px; }
 .profile-avatar img{ width:100%; height:100%; object-fit:cover; }
 .profile-info{ min-width:0; }
-.profile-name{ font-size:17px; font-weight:800; color:var(--ink); }
-.profile-contact{ font-size:13px; color:var(--muted); margin-top:2px; }
+/* Текст поверх картинки — светлый, а не тёмный: неизвестно заранее,
+   какой яркости выйдет сама картинка, светлый читается почти на любом
+   фоне, тёмный на тёмном участке фото мог бы потеряться совсем. */
+.profile-name{ font-size:17px; font-weight:800; color:#fff; }
+.profile-contact{ font-size:13px; color:rgba(255,255,255,.85); margin-top:2px; }
 
 /* Карточка шапки — раньше аватар с именем просто «плавали» без рамки
    прямо на фоне страницы, а десять пунктов меню ниже шли одним
@@ -1127,10 +1131,6 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .profile-head-card{
   margin:0 12px 22px; border-radius:16px; background:#fff;
   border:1px solid rgba(20,30,25,.06); overflow:hidden;
-}
-.profile-banner{
-  height:110px;
-  background:linear-gradient(135deg, var(--primary), #6BC9A0);
 }
 .profile-edit-btn{
   display:block; text-align:center; padding:12px; font-size:13px; font-weight:700;
@@ -2692,7 +2692,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .enter-page .support-send{ max-width:260px; }
 
 /* Правка своих данных */
-.profile-rating{ margin-top:4px; font-size:13px; color:#888; }
+.profile-rating{ margin-top:4px; font-size:13px; color:rgba(255,255,255,.85); }
+/* .seller-badge переиспользуется и на белом фоне (SellerProfile.jsx)
+   — тут, поверх картинки, свой цвет, не трогая общее правило. */
+.profile-head .seller-badge{ background:rgba(255,255,255,.22); color:#fff; }
 .edit-avatar{ display:flex; flex-direction:column; align-items:center;
   gap:12px; padding:8px 0 20px; }
 .edit-avatar-pick{
