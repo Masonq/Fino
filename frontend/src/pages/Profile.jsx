@@ -14,7 +14,7 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="fav-page">
+      <div className="fav-page profile-page">
         <PageHeader title={t('nav.profile')} back={false} />
         <ProfileSkeleton />
       </div>
@@ -23,7 +23,7 @@ export default function Profile() {
 
   if (!user) {
     return (
-      <div className="fav-page">
+      <div className="fav-page profile-page">
         <PageHeader title={t('nav.profile')} back={false} />
         <div className="fav-empty">
           <div className="fav-empty-icon">
@@ -44,12 +44,19 @@ export default function Profile() {
   const isCompany = user.role === 'seller_business'
 
   return (
-    <div className="fav-page">
+    <div className="fav-page profile-page">
       <PageHeader title={t('nav.profile')} back={false}>
         <NotificationBell />
       </PageHeader>
 
       <div className="profile-head-card">
+        {/* Место под декоративную картинку — «обложка» профиля, тем же
+            принципом, что и у популярных приложений. Пока просто
+            градиент тем же зелёным, что и весь сайт — заменится
+            настоящей картинкой, как только она будет готова. Высота
+            подобрана и вот-вот будет измерена по-настоящему через
+            рендер, не на глаз. */}
+        <div className="profile-banner" />
         <div className="profile-head">
           <div className={isCompany ? 'profile-avatar is-company' : 'profile-avatar'}>
             {user.avatar_url ? <img src={user.avatar_url} alt="" /> : initial}

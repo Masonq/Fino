@@ -1098,6 +1098,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   margin:0 12px 22px; border-radius:16px; background:#fff;
   border:1px solid rgba(20,30,25,.06); overflow:hidden;
 }
+.profile-banner{
+  height:110px;
+  background:linear-gradient(135deg, var(--primary), #6BC9A0);
+}
 .profile-edit-btn{
   display:block; text-align:center; padding:12px; font-size:13px; font-weight:700;
   color:var(--primary-deep); border-top:1px solid rgba(20,30,25,.06);
@@ -1599,6 +1603,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    ========================================================================== */
 @media (min-width: 900px) {
   .app-shell{ max-width:1320px; padding:0 28px; }
+
+  /* Профиль — одна колонка, не сетка карточек в отличие от многих
+     других страниц с тем же .fav-page (избранное, свои объявления):
+     без сужения обратно карточки настроек и меню растягивались бы
+     на всю ширину экрана, вплоть до 1300px, и выглядели пусто. */
+  .profile-page{ max-width:600px; margin:0 auto; }
 
   /* нижнее меню на десктопе не нужно — навигация уходит в шапку */
   .bottomnav{ display:none; }
