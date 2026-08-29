@@ -96,7 +96,9 @@
     "call_request": "Request a call",
     "menu": "Menu",
     "call_revoke": "Revoke call access",
-    "call_revoked_note": "{{name}} — call access revoked"
+    "call_revoked_note": "{{name}} — call access revoked",
+    "yes": "Yes",
+    "no": "No"
   },
   "promo": {
     "safe_deal": "Safe deal",

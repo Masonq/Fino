@@ -96,7 +96,9 @@
     "call_request": "Запросить звонок",
     "menu": "Меню",
     "call_revoke": "Запретить звонок",
-    "call_revoked_note": "{{name}} — звонок запрещён"
+    "call_revoked_note": "{{name}} — звонок запрещён",
+    "yes": "Да",
+    "no": "Нет"
   },
   "promo": {
     "safe_deal": "Безопасная сделка",

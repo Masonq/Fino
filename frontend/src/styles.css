@@ -661,23 +661,31 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   padding:4px 12px; text-align:center;
 }
 
-/* Плавающее уведомление про звонок сверху экрана — тёмная капсула,
-   тем же духом, что и системные уведомления телефона (не строка,
-   постоянно занимающая место над полем ввода). */
+/* Плавающее уведомление про звонок — тёмная капсула под шапкой чата,
+   не у самого верха экрана (там системная строка телефона, задевать
+   её незачем — 74px здесь ровно высота шапки чата в её собственных
+   единицах: 14px верхний отступ + 36px содержимое + 14px нижний,
+   плюс 10px зазора; safe-area-inset-top посчитан тем же образом, что
+   и в самой шапке, чтобы верно съезжать вниз на телефонах с вырезом). */
 .call-toast{
-  position:fixed; top:calc(10px + env(safe-area-inset-top)); left:50%; transform:translateX(-50%);
+  position:fixed; top:calc(74px + env(safe-area-inset-top)); left:50%; transform:translateX(-50%);
   z-index:45; max-width:calc(100% - 24px);
-  display:flex; align-items:center; gap:4px;
+  display:flex; align-items:center; gap:10px;
   background:rgba(28,28,30,.92); backdrop-filter:blur(14px);
-  border-radius:16px; padding:6px 6px 6px 16px;
+  border-radius:16px; padding:10px 10px 10px 16px;
   box-shadow:0 8px 24px rgba(0,0,0,.25);
 }
-.call-toast-body{
-  display:flex; align-items:center; gap:8px; color:#7AB8FF;
-  font-size:14.5px; font-weight:600; white-space:nowrap;
-  padding:6px 4px;
+.call-toast-text{
+  display:flex; align-items:center; gap:8px; color:#fff;
+  font-size:14px; font-weight:600; white-space:nowrap;
 }
-.call-toast-body:disabled{ opacity:.6; }
+.call-toast-actions{ display:flex; gap:6px; flex-shrink:0; }
+.call-toast-yes, .call-toast-no{
+  padding:7px 14px; border-radius:11px; font-size:13px; font-weight:700;
+}
+.call-toast-yes{ background:#34C759; color:#fff; }
+.call-toast-no{ background:rgba(255,255,255,.12); color:#fff; }
+.call-toast-yes:disabled, .call-toast-no:disabled{ opacity:.5; }
 .call-toast-close{
   flex-shrink:0; width:30px; height:30px; border-radius:50%;
   display:flex; align-items:center; justify-content:center;

@@ -96,7 +96,9 @@
     "call_request": "Zatraži poziv",
     "menu": "Meni",
     "call_revoke": "Zabrani poziv",
-    "call_revoked_note": "{{name}} — poziv zabranjen"
+    "call_revoked_note": "{{name}} — poziv zabranjen",
+    "yes": "Da",
+    "no": "Ne"
   },
   "promo": {
     "safe_deal": "Sigurna kupovina",
