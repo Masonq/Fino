@@ -675,9 +675,22 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   border-radius:16px; padding:10px 10px 10px 16px;
   box-shadow:0 8px 24px rgba(0,0,0,.25);
 }
+/* Отзывчиво на любой ширине экрана и любой длине текста (в том числе
+   на других языках — не подгонка под конкретный текст на одном
+   конкретном экране): текст сжимается и обрезается многоточием,
+   если места не хватает, а не толкает крестик/кнопки за пределы
+   капсулы. Раньше на длинном тексте («Звонок запрошен — ждём ответа
+   продавца») с white-space:nowrap без min-width:0 капсула упиралась
+   в свой max-width, и крестик выталкивало за пределы экрана —
+   измерили точно: 4px за viewport. Сократить сам текст было бы
+   решением только для одного конкретного случая, не для всех. */
 .call-toast-text{
   display:flex; align-items:center; gap:8px; color:#fff;
-  font-size:14px; font-weight:600; white-space:nowrap;
+  font-size:14px; font-weight:600;
+  min-width:0; flex:1 1 auto;
+}
+.call-toast-text-inner{
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0;
 }
 .call-toast-actions{ display:flex; gap:6px; flex-shrink:0; }
 .call-toast-yes, .call-toast-no{

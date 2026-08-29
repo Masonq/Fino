@@ -420,7 +420,9 @@ export default function ChatScreen() {
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .7 3a2 2 0 0 1-.4 2.1L8 10.3a16 16 0 0 0 6 6l1.5-1.4a2 2 0 0 1 2.1-.4c1 .4 2 .6 3 .7a2 2 0 0 1 1.7 2Z" />
             </svg>
-            {isSeller ? t('chat.call_requested_by_them') : t('chat.call_pending')}
+            <span className="call-toast-text-inner">
+              {isSeller ? t('chat.call_requested_by_them') : t('chat.call_pending')}
+            </span>
           </div>
           {isSeller ? (
             <div className="call-toast-actions">
