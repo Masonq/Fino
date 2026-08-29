@@ -138,4 +138,60 @@ SUB_SUBCATEGORIES: dict[str, list[dict]] = {
         {"slug": "parts-suspension", "name": {"ru": "Подвеска и тормоза", "en": "Suspension & brakes", "sr": "Ovešenje i kočnice"}},
         {"slug": "parts-audio", "name": {"ru": "Автозвук и мультимедиа", "en": "Car audio & multimedia", "sr": "Auto zvuk i multimedija"}},
     ],
+    # Эвакуатор, автобус и трактор — все трое «Грузовые и спецтехника»,
+    # но не делят почти ни одного слова в описании.
+    "trucks": [
+        {"slug": "trucks-vans", "name": {"ru": "Грузовики и фургоны", "en": "Trucks & vans", "sr": "Kamioni i kombiji"}},
+        {"slug": "trucks-buses", "name": {"ru": "Автобусы и микроавтобусы", "en": "Buses & minibuses", "sr": "Autobusi i kombi vozila"}},
+        {"slug": "trucks-construction", "name": {"ru": "Строительная и сельхозтехника", "en": "Construction & farm machinery", "sr": "Građevinske i poljoprivredne mašine"}},
+        {"slug": "trucks-trailers", "name": {"ru": "Прицепы", "en": "Trailers", "sr": "Prikolice"}},
+    ],
+    # Офис, склад и магазинное помещение ищут по совсем разным
+    # параметрам (проходимость против высоты потолков под стеллажи).
+    "commercial": [
+        {"slug": "commercial-office", "name": {"ru": "Офисы", "en": "Offices", "sr": "Kancelarije"}},
+        {"slug": "commercial-retail", "name": {"ru": "Торговые помещения", "en": "Retail space", "sr": "Poslovni prostor za trgovinu"}},
+        {"slug": "commercial-warehouse", "name": {"ru": "Склады и производство", "en": "Warehouses & production", "sr": "Magacini i proizvodnja"}},
+    ],
+    # Дом со спальнями и голый участок земли — разная суть объявления,
+    # не просто разные слова.
+    "houses": [
+        {"slug": "houses-only", "name": {"ru": "Дома", "en": "Houses", "sr": "Kuće"}},
+        {"slug": "land", "name": {"ru": "Участки", "en": "Land plots", "sr": "Placevi"}},
+    ],
+    # Холодильник и чайник оба «бытовая техника», но ищут их по-разному
+    # (габариты и подключение против цены и цвета).
+    "appliances": [
+        {"slug": "appliances-major", "name": {"ru": "Крупная техника", "en": "Major appliances", "sr": "Bela tehnika"}},
+        {"slug": "appliances-small", "name": {"ru": "Мелкая техника", "en": "Small appliances", "sr": "Mali kućni aparati"}},
+    ],
+    # Штанга, лыжи и мяч для футбола не делят словарь вовсе — самая
+    # широкая сеть во всём разделе «Хобби, спорт, отдых».
+    "fitness": [
+        {"slug": "fitness-gym", "name": {"ru": "Тренажёры и фитнес", "en": "Gym & fitness", "sr": "Sprave i fitnes"}},
+        {"slug": "fitness-winter", "name": {"ru": "Зимний спорт", "en": "Winter sports", "sr": "Zimski sportovi"}},
+        {"slug": "fitness-water", "name": {"ru": "Водный спорт", "en": "Water sports", "sr": "Vodeni sportovi"}},
+        {"slug": "fitness-team", "name": {"ru": "Командные игры", "en": "Team sports", "sr": "Timski sportovi"}},
+    ],
+    # Сантехник, электрик и маляр — три разные профессии под одной
+    # услугой, у каждой свой узнаваемый словарь заявки.
+    "repair": [
+        {"slug": "repair-plumbing", "name": {"ru": "Сантехника", "en": "Plumbing", "sr": "Vodoinstalacije"}},
+        {"slug": "repair-electrical", "name": {"ru": "Электрика", "en": "Electrical", "sr": "Elektrika"}},
+        {"slug": "repair-finishing", "name": {"ru": "Отделка и ремонт", "en": "Finishing & renovation", "sr": "Završni radovi"}},
+        {"slug": "repair-materials", "name": {"ru": "Стройматериалы", "en": "Building materials", "sr": "Građevinski materijal"}},
+    ],
+    # Программист и дизайнер — разные специальности, разные заказчики
+    # ищут их по-разному.
+    "it-design": [
+        {"slug": "it-dev", "name": {"ru": "Разработка и IT", "en": "Development & IT", "sr": "Razvoj i IT"}},
+        {"slug": "design-graphics", "name": {"ru": "Дизайн и графика", "en": "Design & graphics", "sr": "Dizajn i grafika"}},
+    ],
+    # Корм, переноска и когтеточка — три разных отдела в любом
+    # зоомагазине не просто так.
+    "pets-supplies": [
+        {"slug": "pets-food", "name": {"ru": "Корм", "en": "Food", "sr": "Hrana"}},
+        {"slug": "pets-carriers", "name": {"ru": "Переноски и клетки", "en": "Carriers & cages", "sr": "Nosiljke i kavezi"}},
+        {"slug": "pets-accessories", "name": {"ru": "Аксессуары и игрушки", "en": "Accessories & toys", "sr": "Dodaci i igračke"}},
+    ],
 }
