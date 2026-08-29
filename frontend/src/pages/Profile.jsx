@@ -79,7 +79,9 @@ export default function Profile() {
 
       {/* Раньше все десять пунктов шли одним плоским списком без единой
           зацепки, что где искать, — теперь три смысловые группы, у
-          каждого пункта своя иконка вместо одинаковой стрелочки. */}
+          каждого пункта своя иконка вместо одинаковой стрелочки.
+          «Разместить», «Избранное», «Сообщения» отсюда убраны — они
+          уже есть в нижнем меню на каждом экране, дублировать незачем. */}
       <div className="profile-section-title">{t('profile.sec_listings')}</div>
       <div className="profile-menu">
         <Link className="profile-row" to="/my">
@@ -87,20 +89,6 @@ export default function Profile() {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><rect x="3" y="4" width="18" height="17" rx="2.5" /><path d="M7 9h10M7 13h10M7 17h6" /></svg>
           </span>
           {t('my.title')}
-          <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
-        </Link>
-        <Link className="profile-row" to="/post">
-          <span className="profile-row-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><circle cx="12" cy="12" r="9" /><path d="M12 8v8M8 12h8" /></svg>
-          </span>
-          {t('nav.post')}
-          <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
-        </Link>
-        <Link className="profile-row" to="/favorites">
-          <span className="profile-row-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M12 20s-7-4.4-9.5-8.8C1 8 2.4 5 5.6 5c1.8 0 3.3 1 4.4 2.6C11.1 6 12.6 5 14.4 5c3.2 0 4.6 3 3.1 6.2C15 15.6 12 20 12 20Z" /></svg>
-          </span>
-          {t('nav.favorites')}
           <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
         </Link>
         <Link className="profile-row" to="/saved">
@@ -114,13 +102,6 @@ export default function Profile() {
 
       <div className="profile-section-title">{t('profile.sec_activity')}</div>
       <div className="profile-menu">
-        <Link className="profile-row" to="/chats">
-          <span className="profile-row-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M4 4h16v12H8l-4 4V4Z" /></svg>
-          </span>
-          {t('nav.chats')}
-          <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
-        </Link>
         <Link className="profile-row" to="/history">
           <span className="profile-row-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></svg>
