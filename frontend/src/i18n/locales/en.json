@@ -82,7 +82,19 @@
     "block": "Block",
     "unblock": "Unblock",
     "confirm_block": "Block this user? They won't be able to message you — you can undo this anytime.",
-    "you_are_blocked": "This user has blocked you — you can't message them."
+    "you_are_blocked": "This user has blocked you — you can't message them.",
+    "you": "You",
+    "call_request_note": "{{name}} — call request",
+    "call_allowed_note": "{{name}} — call allowed",
+    "call_declined_note": "{{name}} — call declined",
+    "call_number": "Call: {{phone}}",
+    "call_requested_by_them": "Asking to allow a call",
+    "call_allow": "Allow",
+    "call_decline": "Decline",
+    "call_allow_proactive": "Allow a call",
+    "call_pending": "Call requested — waiting for the seller",
+    "call_request": "Request a call",
+    "menu": "Menu"
   },
   "promo": {
     "safe_deal": "Safe deal",
@@ -197,7 +209,8 @@
     "quick_delivery": "Is delivery possible?",
     "quick_own": "Write your own message",
     "views": "{{count}} views",
-    "id": "ID {{id}}"
+    "id": "ID {{id}}",
+    "call_via_chat": "Call via chat"
   },
   "favorites": {
     "title": "Saved",

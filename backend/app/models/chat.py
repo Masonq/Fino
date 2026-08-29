@@ -17,8 +17,11 @@ class Chat(Base):
     buyer_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), index=True)
     seller_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), index=True)
 
-    # Раскрыт ли телефон друг другу (защита от спама до обоюдного согласия)
-    phone_revealed: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Покупатель запросил звонок, продавец ещё не ответил — живёт на
+    # самом чате (конкретный, активный запрос в конкретной переписке),
+    # в отличие от самого разрешения — то уже общее на пару людей
+    # целиком, смотри PhoneReveal.
+    call_request_pending: Mapped[bool] = mapped_column(Boolean, default=False)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     last_message_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
@@ -41,7 +44,13 @@ class Message(Base):
 
     # Системные сообщения от сервиса: приглашение оставить отзыв и т.п.
     # Отправитель у них формальный, показываются отдельным блоком.
-    kind: Mapped[str] = mapped_column(String(24), default="user")   # user | review_request
+    # call_request — покупатель просит номер, рендерится карточкой с
+    # Разрешить/Отклонить для продавца (кто именно продавец —
+    # определяется по chat.seller_id, не по отдельному полю здесь).
+    # call_allowed/call_declined — запись в истории переписки о том,
+    # чем кончился запрос; само разрешение живёт в PhoneReveal (пара
+    # продавец-покупатель целиком), не в этих сообщениях.
+    kind: Mapped[str] = mapped_column(String(24), default="user")   # user | review_request | call_request | call_allowed | call_declined
 
     is_read: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)

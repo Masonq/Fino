@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from app.core.auth import get_current_user
 from app.core.database import get_db
 from app.routers.listings import pick_translation
-from app.models import Chat, Message, Listing, User, BlockedUser
+from app.models import Chat, Message, Listing, User, BlockedUser, PhoneReveal
 from app.core.clock import utcnow
 
 router = APIRouter(prefix="/api/chats", tags=["chats"])
@@ -42,6 +42,16 @@ def _is_blocked(db: Session, blocker_id, blocked_id) -> bool:
     ).first() is not None
 
 
+def _is_phone_revealed(db: Session, seller_id, buyer_id) -> bool:
+    """Разрешение на пару людей целиком, не на один чат — если этот
+    же покупатель уже писал этому же продавцу раньше (про другое
+    объявление) и номер был открыт, здесь тоже открыт сразу."""
+    return db.query(PhoneReveal).filter(
+        PhoneReveal.seller_id == seller_id,
+        PhoneReveal.buyer_id == buyer_id,
+    ).first() is not None
+
+
 def _serialize_chat(chat: Chat, db: Session, lang: str = "ru", viewer_id=None):
     listing = db.query(Listing).options(joinedload(Listing.translations)).get(chat.listing_id)
     buyer = db.query(User).get(chat.buyer_id)
@@ -51,6 +61,14 @@ def _serialize_chat(chat: Chat, db: Session, lang: str = "ru", viewer_id=None):
         translation = pick_translation(listing, lang)
         title = (translation or listing.translations[0]).title
     other_id = _other_id(chat, viewer_id) if viewer_id else None
+    phone_revealed = _is_phone_revealed(db, chat.seller_id, chat.buyer_id)
+    # Номер собеседника — только после того, как оба (через продавца)
+    # согласились его раскрыть, и только тому, кто сейчас смотрит: с
+    # точки зрения продавца «собеседник» — покупатель, и наоборот.
+    other_phone = None
+    if phone_revealed and other_id:
+        other_user = buyer if other_id == chat.buyer_id else seller
+        other_phone = other_user.phone if other_user else None
     return {
         "id": str(chat.id),
         "listing_id": str(chat.listing_id),
@@ -62,6 +80,9 @@ def _serialize_chat(chat: Chat, db: Session, lang: str = "ru", viewer_id=None):
         # можно ли писать и что показывать вместо поля ввода.
         "i_blocked_them": _is_blocked(db, viewer_id, other_id) if viewer_id else False,
         "blocked_by_them": _is_blocked(db, other_id, viewer_id) if viewer_id else False,
+        "phone_revealed": phone_revealed,
+        "call_request_pending": chat.call_request_pending,
+        "other_phone": other_phone,
     }
 
 
@@ -241,6 +262,111 @@ def unblock_participant(
     ).delete()
     db.commit()
     return {"status": "unblocked"}
+
+
+def _notify_call_event(db: Session, chat: Chat, actor_id, other_id, text: str, message_id) -> None:
+    """Уведомление собеседнику о событии со звонком — то же самое место,
+    что и у обычного сообщения, не отдельная система."""
+    try:
+        from app.core.notifications import notify_new_message
+        actor = db.query(User).get(actor_id)
+        notify_new_message(db, other_id, actor_id, actor.display_name if actor else "",
+                          text, chat_id=chat.id, message_id=message_id)
+    except Exception:
+        pass
+
+
+@router.post("/{chat_id}/call-request")
+def request_call(
+    chat_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Покупатель просит номер телефона. Номер не раскрывается сам по
+    себе — продавец должен явно разрешить (call-allow) или отклонить
+    (call-decline). Кнопка «Позвонить» у Avito и подобных площадок так
+    и устроена — номер защищён от спама до обоюдного согласия, тут
+    та же логика, просто раньше не была подключена (поле
+    phone_revealed существовало в модели с самого начала, но нигде
+    не читалось и не менялось).
+    """
+    chat = _require_participant(chat_id, user, db)
+    if user.id != chat.buyer_id:
+        raise HTTPException(403, "only_buyer_can_request")
+    if _is_phone_revealed(db, chat.seller_id, chat.buyer_id):
+        # Уже разрешено раньше, в другом чате с этим же продавцом —
+        # спрашивать заново незачем, разрешение общее на пару целиком.
+        return {"status": "already_revealed"}
+    other_id = _other_id(chat, user.id)
+    if _is_blocked(db, other_id, user.id):
+        raise HTTPException(403, "blocked_by_recipient")
+
+    chat.call_request_pending = True
+    message = Message(id=uuid.uuid4(), chat_id=chat_id, sender_id=user.id, kind="call_request")
+    db.add(message)
+    chat.last_message_at = utcnow()
+    db.commit()
+    db.refresh(message)
+
+    _notify_call_event(db, chat, user.id, other_id, "запросил звонок", message.id)
+    return {"status": "requested"}
+
+
+@router.post("/{chat_id}/call-allow")
+def allow_call(
+    chat_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Продавец разрешает звонок — либо отвечая на запрос покупателя,
+    либо сам по себе, без запроса (продавец решил проактивно, ничего
+    не дожидаясь). Разрешение — на пару людей целиком (PhoneReveal), не
+    на этот один чат: тот же покупатель у того же продавца на другом
+    объявлении номер уже увидит сразу, спрашивать второй раз не придётся.
+    """
+    chat = _require_participant(chat_id, user, db)
+    if user.id != chat.seller_id:
+        raise HTTPException(403, "only_seller_can_allow")
+
+    already = db.query(PhoneReveal).filter(
+        PhoneReveal.seller_id == chat.seller_id,
+        PhoneReveal.buyer_id == chat.buyer_id,
+    ).first()
+    if not already:
+        db.add(PhoneReveal(seller_id=chat.seller_id, buyer_id=chat.buyer_id))
+
+    chat.call_request_pending = False
+    message = Message(id=uuid.uuid4(), chat_id=chat_id, sender_id=user.id, kind="call_allowed")
+    db.add(message)
+    chat.last_message_at = utcnow()
+    db.commit()
+    db.refresh(message)
+
+    other_id = _other_id(chat, user.id)
+    _notify_call_event(db, chat, user.id, other_id, "разрешил звонок", message.id)
+    return {"status": "allowed"}
+
+
+@router.post("/{chat_id}/call-decline")
+def decline_call(
+    chat_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Продавец отклоняет именно запрос — номер остаётся закрытым,
+    попросить можно ещё раз позже, если что-то изменится."""
+    chat = _require_participant(chat_id, user, db)
+    if user.id != chat.seller_id:
+        raise HTTPException(403, "only_seller_can_decline")
+
+    chat.call_request_pending = False
+    message = Message(id=uuid.uuid4(), chat_id=chat_id, sender_id=user.id, kind="call_declined")
+    db.add(message)
+    chat.last_message_at = utcnow()
+    db.commit()
+    return {"status": "declined"}
 
 @router.get("")
 def list_chats(

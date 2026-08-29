@@ -225,6 +225,9 @@ export const api = {
   markChatRead: (chatId) => request(`/chats/${chatId}/read`, { method: 'POST' }),
   blockChatPartner: (chatId) => request(`/chats/${chatId}/block`, { method: 'POST' }),
   unblockChatPartner: (chatId) => request(`/chats/${chatId}/unblock`, { method: 'POST' }),
+  requestCall: (chatId) => request(`/chats/${chatId}/call-request`, { method: 'POST' }),
+  allowCall: (chatId) => request(`/chats/${chatId}/call-allow`, { method: 'POST' }),
+  declineCall: (chatId) => request(`/chats/${chatId}/call-decline`, { method: 'POST' }),
   getChat: (chatId, lang) => request(`/chats/${chatId}?${new URLSearchParams({ lang })}`),
   // Бэкенд уже отдаёт сообщения в хронологическом порядке (сортирует
   // по убыванию только для эффективной выборки последних N, потом
