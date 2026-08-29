@@ -1872,7 +1872,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     display:grid; grid-template-columns:300px 1fr; gap:32px; align-items:start;
   }
   .landing-sidebar{
-    position:sticky; top:82px;
+    position:sticky; top:82px; align-self:start;
     background:#fff; border:1px solid rgba(20,30,25,.08); border-radius:16px;
     overflow:hidden;
   }
@@ -2009,7 +2009,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     display:grid; grid-template-columns:264px 1fr; gap:28px; align-items:start;
   }
   .search-sidebar{
-    position:sticky; top:82px;
+    position:sticky; top:82px; align-self:start;
     display:flex; flex-direction:column; gap:16px;
   }
   .search-sidebar .filters-panel{
