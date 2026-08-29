@@ -4,7 +4,7 @@ After=network.target postgresql.service
 
 [Service]
 WorkingDirectory=/opt/fino/backend
-ExecStart=/opt/fino/backend/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8002
+ExecStart=/opt/fino/backend/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8002 --proxy-headers
 Restart=always
 User=root
 

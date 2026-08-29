@@ -1,7 +1,7 @@
 import os
 import uuid
 
-from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, Request
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from PIL import Image
 
 from app.core.auth import get_current_user
@@ -21,7 +21,6 @@ THUMB_DIM = 640
 
 @router.post("/upload")
 async def upload_photo(
-    request: Request,
     file: UploadFile = File(...),
     # Форма публикации теперь просит войти сразу, до первого шага —
     # анонимный путь до фото закрыт (см. PostAd.jsx), так что здесь
@@ -64,7 +63,16 @@ async def upload_photo(
             f.write(contents)
         thumb_name = full_name
 
-    base = str(request.base_url).rstrip("/")
+    # request.base_url отражает схему, с которой запрос дошёл до
+    # самого Uvicorn — а это внутренний http от nginx, если Uvicorn не
+    # настроен доверять X-Forwarded-Proto (--proxy-headers). Без этого
+    # ссылка сохранялась бы как http://plonk.rs/media/... на сайте,
+    # который целиком открывается по https, — браузер блокирует такую
+    # картинку как «смешанное содержимое», и выходит битая ссылка.
+    # settings.site_base_url — тот же настоящий адрес, что уже
+    # используется для возврата с оплаты ЮKassa, не зависит от того,
+    # правильно ли Uvicorn распознал схему запроса.
+    base = settings.site_base_url.rstrip("/")
     return {
         "url": f"{base}/media/{full_name}",
         "thumbnail_url": f"{base}/media/{thumb_name}",
