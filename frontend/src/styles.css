@@ -1130,6 +1130,11 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .profile-name{ font-size:17px; font-weight:800; color:#fff; }
 .profile-contact{ font-size:13px; color:rgba(255,255,255,.85); margin-top:2px; }
 
+/* Обёртка для десктопной боковой панели (см. медиа-блок ниже) — на
+   мобильном её как будто нет вовсе, дети (сайдбар и основной контент)
+   ведут себя так, как если бы шли прямо друг за другом без неё. */
+.profile-layout, .profile-sidebar, .profile-main{ display:contents; }
+
 /* Карточка шапки — раньше аватар с именем просто «плавали» без рамки
    прямо на фоне страницы, а десять пунктов меню ниже шли одним
    плоским списком: всё сразу читалось как одна нерасчленённая куча.
@@ -1642,11 +1647,22 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 @media (min-width: 900px) {
   .app-shell{ max-width:1320px; padding:0 28px; }
 
-  /* Профиль — одна колонка, не сетка карточек в отличие от многих
-     других страниц с тем же .fav-page (избранное, свои объявления):
-     без сужения обратно карточки настроек и меню растягивались бы
-     на всю ширину экрана, вплоть до 1300px, и выглядели пусто. */
-  .profile-page{ max-width:600px; margin:0 auto; }
+  /* Профиль — не просто узкая колонка по центру (это по сути та же
+     мобильная вёрстка, только с полями по бокам), а настоящая
+     боковая панель: аватар и баланс закреплены слева и остаются на
+     месте при прокрутке, справа — весь остальной контент, шире, с
+     сеткой пунктов в .profile-menu (сетка была сделана раньше в
+     сессии, но терялась в узкой 600px странице — тут наконец есть
+     где ей развернуться). */
+  .profile-page{ max-width:1040px; margin:0 auto; }
+  .profile-layout{
+    display:grid; grid-template-columns:300px 1fr; gap:22px; align-items:start;
+  }
+  .profile-sidebar{ display:block; position:sticky; top:20px; }
+  .profile-main{ display:block; }
+  .profile-sidebar .profile-head-card{ margin:0 0 16px; }
+  .profile-sidebar .balance-card{ margin:0; }
+  .profile-main .profile-section-title:first-child{ margin-top:0; }
 
   /* Размещение — тот же принцип: без сужения выбор категории (сетка
      из 4×206px, уже подстроена отдельно чуть ниже) просто терялся бы
@@ -1654,15 +1670,28 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
      формы (фото, цена) выглядели бы неестественно широкими. */
   .post-ad-page{ max-width:900px; margin:0 auto; }
 
-  /* Уведомления — простой вертикальный список, не сетка карточек:
-     без сужения строки растягивались бы на всю ширину экрана плоской
-     полосой текста, читать было бы неудобно. */
-  .notif-page{ max-width:640px; margin:0 auto; }
+  /* Уведомления — сетка карточек, тем же приёмом, что и «Показатели»:
+     несколько колонок вместо одной узкой, страница используется
+     целиком, не сужена до мобильной колонки на большом экране. */
+  .notif-page{ max-width:1100px; margin:0 auto; }
+  .notif-list{
+    display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;
+  }
+  .notif-row{
+    border-radius:14px; border:1px solid rgba(20,30,25,.08);
+    background:#fff;
+  }
+  .notif-row.unread{ background:var(--primary-soft); border-color:transparent; }
 
-  /* Сохранённые поиски — тоже простой список, той же природы, что и
-     уведомления рядом: без сужения строки прижимались бы к левому
-     краю на фоне пустоты. */
-  .saved-page{ max-width:640px; margin:0 auto; }
+  /* Сохранённые поиски — та же сетка. */
+  .saved-page{ max-width:1100px; margin:0 auto; }
+  .saved-list{
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;
+  }
+  .saved-row{
+    border-radius:14px; border:1px solid rgba(20,30,25,.08); background:#fff;
+    padding:16px;
+  }
 
   /* нижнее меню на десктопе не нужно — навигация уходит в шапку */
   .bottomnav{ display:none; }

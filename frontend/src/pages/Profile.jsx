@@ -55,41 +55,51 @@ export default function Profile() {
           не через отдельный переход. */}
       <PhoneReminder user={user} />
 
-      <div className="profile-head-card">
-        {/* Картинка — фон всей этой строки целиком (аватар, имя,
-            рейтинг), не отдельная полоса сверху, которую аватар
-            только слегка перекрывает снизу. Пока просто градиент тем
-            же зелёным, что и весь сайт — заменится настоящей
-            картинкой. Текст поэтому светлый — на фотографии тёмный
-            может потеряться, светлый читается почти на любом фоне. */}
-        <div className="profile-head">
-          <div className={isCompany ? 'profile-avatar is-company' : 'profile-avatar'}>
-            {user.avatar_url ? <img src={user.avatar_url} alt="" /> : initial}
-          </div>
-          <div className="profile-info">
-            <div className="profile-name">{user.company_name || user.display_name}</div>
-            {isCompany && <div className="seller-badge">{t('seller.company_badge')}</div>}
-            {user.email && <div className="profile-contact">{user.email}</div>}
-            {user.phone && <div className="profile-contact">{user.phone}</div>}
-            {/* Рейтинг — то, по чему покупатель судит о продавце. Прятать
-                его от самого продавца странно: он должен видеть, как
-                выглядит со стороны. */}
-            <div className="profile-rating">
-              {user.rating_count
-                ? t('edit_profile.rating', {
-                  value: user.rating_avg, count: user.rating_count,
-                })
-                : t('edit_profile.no_rating')}
+      {/* .profile-layout — display:contents на мобильном (не меняет
+          поток вовсе, дети ведут себя как будто обёртки нет), на
+          десктопе — сетка: слева аватар и баланс постоянно на месте,
+          справа весь остальной контент, шире и с уже готовой сеткой
+          пунктов в .profile-menu (была сделана раньше в сессии, но
+          терялась в узкой 600px странице). */}
+      <div className="profile-layout">
+        <div className="profile-sidebar">
+          <div className="profile-head-card">
+            {/* Картинка — фон всей этой строки целиком (аватар, имя,
+                рейтинг), не отдельная полоса сверху, которую аватар
+                только слегка перекрывает снизу. Пока просто градиент тем
+                же зелёным, что и весь сайт — заменится настоящей
+                картинкой. Текст поэтому светлый — на фотографии тёмный
+                может потеряться, светлый читается почти на любом фоне. */}
+            <div className="profile-head">
+              <div className={isCompany ? 'profile-avatar is-company' : 'profile-avatar'}>
+                {user.avatar_url ? <img src={user.avatar_url} alt="" /> : initial}
+              </div>
+              <div className="profile-info">
+                <div className="profile-name">{user.company_name || user.display_name}</div>
+                {isCompany && <div className="seller-badge">{t('seller.company_badge')}</div>}
+                {user.email && <div className="profile-contact">{user.email}</div>}
+                {user.phone && <div className="profile-contact">{user.phone}</div>}
+                {/* Рейтинг — то, по чему покупатель судит о продавце. Прятать
+                    его от самого продавца странно: он должен видеть, как
+                    выглядит со стороны. */}
+                <div className="profile-rating">
+                  {user.rating_count
+                    ? t('edit_profile.rating', {
+                      value: user.rating_avg, count: user.rating_count,
+                    })
+                    : t('edit_profile.no_rating')}
+                </div>
+              </div>
             </div>
+            <Link className="profile-edit-btn" to="/profile/edit">
+              {t('edit_profile.edit')}
+            </Link>
           </div>
+
+          <BalanceCard />
         </div>
-        <Link className="profile-edit-btn" to="/profile/edit">
-          {t('edit_profile.edit')}
-        </Link>
-      </div>
 
-      <BalanceCard />
-
+        <div className="profile-main">
       {/* Раньше все десять пунктов шли одним плоским списком без единой
           зацепки, что где искать, — теперь три смысловые группы, у
           каждого пункта своя иконка вместо одинаковой стрелочки.
@@ -225,6 +235,8 @@ export default function Profile() {
       >
         {t('auth.logout')}
       </button>
+        </div>
+      </div>
     </div>
   )
 }
