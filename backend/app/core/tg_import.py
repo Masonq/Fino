@@ -678,6 +678,22 @@ def _write(db, item: dict) -> bool:
     owner = service_account(db, item["chat_id"], item["chat_title"])
     now = utcnow()
     published = item["publish"]
+    # Живой человек публикует сам через бота — ему решает модератор,
+    # как и раньше: «Публикация бесплатно» подразумевает, что кто-то
+    # посмотрит и одобрит, отказывать без объяснений нельзя.
+    # Чистый перенос из чата — другое дело: сомнительное сюда же не
+    # долетает не потому что скучно, а по решению правил/модели
+    # (decide_for/classify) выше по цепочке, и держать его в общей
+    # очереди вперемешку с настоящими людьми означало бы путать один
+    # поток с другим. Не пропускаем совсем, а сразу отклоняем: запись
+    # остаётся (мало ли правила ошиблись и надо будет разобраться),
+    # просто не висит в очереди на модерацию.
+    if published:
+        status = ListingStatus.active
+    elif item.get("from_bot"):
+        status = ListingStatus.pending_moderation
+    else:
+        status = ListingStatus.rejected
 
     listing = Listing(
         id=uuid.uuid4(),
@@ -693,7 +709,10 @@ def _write(db, item: dict) -> bool:
         currency=Currency.rsd if item["currency"] == "RSD" else Currency.eur,
         city=item["city"],
         attributes=item["attributes"],
-        status=ListingStatus.active if published else ListingStatus.pending_moderation,
+        status=status,
+        rejection_reason=("Автоматически отклонено при переносе из чата — "
+                           "не прошло автопроверку публикации")
+                          if status == ListingStatus.rejected else None,
         published_at=now if published else None,
         external_source="telegram",
         external_author=item["username"],
