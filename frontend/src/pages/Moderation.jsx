@@ -252,6 +252,9 @@ export default function Moderation() {
                 )}
 
                 <div className="mod-body">
+                  {l.forbidden_warning && (
+                    <div className="mod-forbidden-warning">{l.forbidden_warning}</div>
+                  )}
                   {l.category_name && <div className="mod-category">{l.category_name}</div>}
                   <div className="mod-title">{l.title}</div>
                   <div className="mod-price">

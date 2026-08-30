@@ -295,6 +295,22 @@ def screen(text: str, chat_id: int, topic_id: int | None,
     # остаётся второй уровень, как и раньше.
     sub_slug = classify_sub2(sub_slug, parsed["searchable"]) or sub_slug
     parsed["sub_slug"] = sub_slug
+    # Явно запрещённое (оружие, рецептурные препараты, поддельные
+    # документы, требование полной предоплаты) не должно уйти в ленту
+    # автопубликацией без единого человеческого взгляда — а именно так
+    # раньше и было: modernation_ai.py существовал, но нигде не
+    # вызывался, и объявление с темой+текстом, совпавшими уверенно, шло
+    # прямиком в active, что бы в нём ни было написано. Только быстрые
+    # правила (by_rules), не модель — это должно быть мгновенно и не
+    # добавлять стоимость на тысячи разбираемых сообщений; то, что
+    # правила не ловят, всё равно не должно быть острым «нельзя
+    # публиковать без раздумий» случаем.
+    if publish:
+        from app.core.moderation_ai import by_rules
+        forbidden = by_rules(parsed["title"], parsed["description"])
+        if forbidden:
+            publish = False
+            parsed["forbidden_reason"] = forbidden[1]
     parsed["publish"] = publish
     parsed["language"] = source_language(text)
     return None, parsed
@@ -726,9 +742,14 @@ def _write(db, item: dict) -> bool:
     owner = service_account(db, item["chat_id"], item["chat_title"])
     now = utcnow()
     published = item["publish"]
+    forbidden_reason = item.get("forbidden_reason")
     # Живой человек публикует сам через бота — ему решает модератор,
     # как и раньше: «Публикация бесплатно» подразумевает, что кто-то
-    # посмотрит и одобрит, отказывать без объяснений нельзя.
+    # посмотрит и одобрит, отказывать без объяснений нельзя. Но если
+    # именно правила распознали запрещённое (оружие, рецептурные
+    # препараты, поддельные документы, полная предоплата) — это тоже
+    # остаётся модератору решить, только он должен сразу видеть, ПОЧЕМУ
+    # автопубликация не сработала, не гадать самому.
     # Чистый перенос из чата — другое дело: сомнительное сюда же не
     # долетает не потому что скучно, а по решению правил/модели
     # (decide_for/classify) выше по цепочке, и держать его в общей
@@ -742,6 +763,16 @@ def _write(db, item: dict) -> bool:
         status = ListingStatus.pending_moderation
     else:
         status = ListingStatus.rejected
+
+    if status == ListingStatus.rejected:
+        rejection_reason = (f"Похоже на запрещённое к продаже: {forbidden_reason}"
+                            if forbidden_reason else
+                            "Автоматически отклонено при переносе из чата — "
+                            "не прошло автопроверку публикации")
+    elif status == ListingStatus.pending_moderation and forbidden_reason:
+        rejection_reason = f"⚠ Похоже на запрещённое к продаже: {forbidden_reason}"
+    else:
+        rejection_reason = None
 
     listing = Listing(
         id=uuid.uuid4(),
@@ -758,9 +789,7 @@ def _write(db, item: dict) -> bool:
         city=item["city"],
         attributes=item["attributes"],
         status=status,
-        rejection_reason=("Автоматически отклонено при переносе из чата — "
-                           "не прошло автопроверку публикации")
-                          if status == ListingStatus.rejected else None,
+        rejection_reason=rejection_reason,
         published_at=now if published else None,
         external_source="telegram",
         external_author=item["username"],

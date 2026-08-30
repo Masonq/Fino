@@ -107,6 +107,13 @@ def queue(
             "owner_name": l.owner.display_name if l.owner else None,
             "created_at": l.created_at.isoformat() if l.created_at else None,
             "category_name": category_name,
+            # Заполнено только когда быстрый фильтр (moderation_ai.py)
+            # уже нашёл что-то похожее на запрещённое — не решает за
+            # модератора, но экономит ему время на то, чтобы заметить
+            # это самому, читая текст.
+            "forbidden_warning": (l.rejection_reason
+                                  if l.rejection_reason and l.rejection_reason.startswith("⚠")
+                                  else None),
             # Модератор должен видеть объявление так же, как его увидит
             # покупатель — фото и текст в карточке очереди этого не
             # заменяют (кадрирование, порядок фото, вёрстка страницы).
