@@ -7,6 +7,7 @@
 """
 import json
 import logging
+import threading
 import urllib.error
 import urllib.request
 
@@ -44,13 +45,41 @@ def _geo_lookup(ip: str | None) -> tuple[str | None, str | None]:
     return None, None
 
 
+def _fill_geo_later(event_id) -> None:
+    """
+    Достаёт страну/город после того, как вход уже случился — в
+    отдельном потоке, со своей сессией. У бесплатного ip-api.com
+    жёсткий лимит запросов в минуту: раньше это был синхронный вызов
+    прямо внутри record_login(), и человек ждал ответа чужого сервиса,
+    чтобы просто войти. При наплыве логинов, упёршихся в лимит, каждый
+    вход стал бы занимать до 3 секунд разом на пустом месте.
+    """
+    from app.core.database import SessionLocal
+
+    ip = None
+    with SessionLocal() as db:
+        event = db.query(LoginEvent).get(event_id)
+        if not event:
+            return
+        ip = event.ip_address
+    country, city = _geo_lookup(ip)
+    if not country and not city:
+        return
+    with SessionLocal() as db:
+        event = db.query(LoginEvent).get(event_id)
+        if event:
+            event.country = country
+            event.city = city
+            db.commit()
+
+
 def record_login(request: Request, user_id, db: Session) -> None:
     ip = _client_ip(request)
     device_guid = request.headers.get("x-device-id")
-    country, city = _geo_lookup(ip)
 
-    db.add(LoginEvent(
-        user_id=user_id, ip_address=ip, device_guid=device_guid,
-        country=country, city=city,
-    ))
+    event = LoginEvent(user_id=user_id, ip_address=ip, device_guid=device_guid)
+    db.add(event)
     db.commit()
+    db.refresh(event)
+
+    threading.Thread(target=_fill_geo_later, args=(event.id,), daemon=True).start()
