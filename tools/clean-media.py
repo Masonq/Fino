@@ -18,6 +18,7 @@
 import argparse
 import os
 import sys
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
@@ -37,6 +38,15 @@ def used_names(db) -> set[str]:
     return names
 
 
+# Фото загружаются на сервер сразу при выборе в форме создания
+# объявления — раньше самой публикации, пока человек ещё дописывает
+# описание и цену. В это окно файл уже на диске, а ListingPhoto в базе
+# появится только на финальной отправке — без запаса по возрасту заход
+# посреди чужого черновика стёр бы фото прямо из-под человека. Несколько
+# часов с запасом на самую медленную заполненную форму.
+MIN_AGE_HOURS = 6
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--apply", action="store_true",
@@ -50,7 +60,8 @@ def main() -> None:
     with SessionLocal() as db:
         used = used_names(db)
 
-    total = orphan = 0
+    cutoff = time.time() - MIN_AGE_HOURS * 3600
+    total = orphan = skipped_fresh = 0
     freed = 0
     victims: list[Path] = []
     for path in media.iterdir():
@@ -59,12 +70,19 @@ def main() -> None:
         total += 1
         if path.name in used:
             continue
+        if path.stat().st_mtime > cutoff:
+            # Свежее MIN_AGE_HOURS — может быть чей-то ещё не
+            # отправленный черновик, не трогаем.
+            skipped_fresh += 1
+            continue
         orphan += 1
         freed += path.stat().st_size
         victims.append(path)
 
     print(f"снимков на диске:      {total}")
     print(f"ничьих:                {orphan}")
+    if skipped_fresh:
+        print(f"свежих (пропущены):    {skipped_fresh}  (младше {MIN_AGE_HOURS} ч)")
     print(f"занимают:              {freed / 1024 / 1024:.1f} МБ")
 
     if not victims:
