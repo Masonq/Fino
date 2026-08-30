@@ -62,6 +62,11 @@ _ENTITY_CACHE: dict[int, object] = {}
 # За сколько дней ищем повтор того же товара. Дольше держать бессмысленно:
 # вещь либо продана, либо объявление уже неактуально.
 DUP_DAYS = 21
+# «Продаю утюг за 3000» через два дня стало «продаю утюг за 2000» —
+# тот же продавец сбросил цену, чтобы продать быстрее, а не выставил
+# вторую такую же вещь. До 30% разницы в любую сторону — это ещё
+# «та же цена, с поправкой», а не другой товар.
+PRICE_CLOSE_RATIO = 0.3
 TRANSLATE = True
 LOCK_PATH = "/tmp/plonk-tg-import.lock"
 # Миниатюра в ленте занимает около 190 точек экрана, но на телефоне с
@@ -551,6 +556,40 @@ def store(db, item: dict) -> bool:
         if any(same_thing(mark, other.external_fingerprint) for other in recent):
             forget_photos(item)
             return False
+
+    # Тот же продавец выставил ту же вещь снова, но по другой (обычно
+    # ниже) цене — обычная история, когда хотят продать быстрее, а не
+    # вторая единица товара. Прежнее объявление ему больше не нужно:
+    # архивируем его, новое пишем как обычно — у него будет отдельная
+    # карточка (другое сообщение, часто и другие фото), просто прежняя
+    # не будет висеть в ленте активной наравне с новой.
+    # username, а не сверка по id — то же поле, что уже используют
+    # твины выше; без него (аккаунт скрыл юзернейм) сверять не с чем,
+    # пропускаем.
+    if item["username"] and mark and item["price"] is not None:
+        item_currency = Currency.rsd if item["currency"] == "RSD" else Currency.eur
+        same_seller_recent = (
+            db.query(Listing)
+            .filter(
+                Listing.external_source == "telegram",
+                Listing.external_author == item["username"],
+                Listing.external_fingerprint.isnot(None),
+                Listing.status == ListingStatus.active,
+                Listing.city == item["city"],
+                Listing.currency == item_currency,
+                Listing.created_at >= utcnow() - timedelta(days=DUP_DAYS),
+            )
+            .limit(50)
+            .all()
+        )
+        for other in same_seller_recent:
+            if not other.price:
+                continue
+            price_ratio = abs(float(other.price) - float(item["price"])) / float(other.price)
+            if price_ratio <= PRICE_CLOSE_RATIO and same_thing(mark, other.external_fingerprint):
+                other.status = ListingStatus.archived
+                db.commit()
+                break
 
     return _write(db, item)
 
