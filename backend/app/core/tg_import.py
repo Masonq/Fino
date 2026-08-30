@@ -19,6 +19,7 @@
 import argparse
 import asyncio
 import fcntl
+import hashlib
 import os
 import re
 import time
@@ -406,6 +407,11 @@ async def collect(client, chat_id: int, meta: dict, days: int,
             if saved:
                 photos.append(saved)
 
+        # Хеш только первого (обложка) — второе и следующие фото у
+        # одного и того же товара часто разные ракурсы, а первое обычно
+        # переиспользуют без изменений при перевыставлении.
+        photo_hash = hashlib.sha256(raw_photos[0]).hexdigest() if raw_photos else None
+
         if watermarked:
             # Часть снимков успели сохраниться до того, как знак нашёлся
             # на следующем кадре: убираем их, иначе останутся мусором.
@@ -475,6 +481,7 @@ async def collect(client, chat_id: int, meta: dict, days: int,
             "publish": publish,
             "is_resume": is_resume(topic_id),
             "photos": photos,
+            "photo_hash": photo_hash,
             # searchable нужен был только для распознавания — в объявление
             # он не идёт
             **{k: v for k, v in parsed.items()
@@ -522,6 +529,40 @@ def store(db, item: dict) -> bool:
     if dup:
         forget_photos(item)
         return False
+
+    # Тот же снимок — самый надёжный сигнал из всех: одинаковые байты
+    # фото у двух разных людей — совпадение уровня лотереи, а вот
+    # тот же человек, перевыставляющий тот же товар (в этом чате или в
+    # другом — фото не привязано к чату), переиспользует его сплошь и
+    # рядом. Точнее текстового fingerprint (переписанное описание меняет
+    # набор слов, фото остаётся тем же) и не требует известного
+    # username, в отличие от проверки по автору ниже.
+    if item.get("photo_hash"):
+        photo_twin = (
+            db.query(Listing)
+            .filter(
+                Listing.external_source == "telegram",
+                Listing.external_photo_hash == item["photo_hash"],
+                Listing.status == ListingStatus.active,
+                Listing.created_at >= utcnow() - timedelta(days=DUP_DAYS),
+            )
+            .first()
+        )
+        if photo_twin:
+            same_price = (
+                photo_twin.price is None and item["price"] is None
+            ) or (
+                photo_twin.price is not None and item["price"] is not None
+                and float(photo_twin.price) == float(item["price"])
+            )
+            if same_price:
+                # Тот же товар, та же цена — это повтор, а не апдейт.
+                forget_photos(item)
+                return False
+            # Та же вещь, другая цена — перевыставили осознанно;
+            # старое больше не актуально, новое пишем как обычно.
+            photo_twin.status = ListingStatus.archived
+            db.commit()
 
     # То же объявление тот же человек часто выкладывает сразу в несколько
     # чатов. Номер сообщения там свой, поэтому проверка выше их не ловит —
@@ -726,6 +767,7 @@ def _write(db, item: dict) -> bool:
         external_chat=str(item["chat_id"]),
         external_message_id=item["message_id"],
         external_fingerprint=mark or None,
+        external_photo_hash=item.get("photo_hash"),
         is_free=bool(item.get("is_free")),
         # Полное объявление: название, цена и хотя бы один снимок. Это
         # тот минимум, при котором вещь можно рассмотреть и купить.
