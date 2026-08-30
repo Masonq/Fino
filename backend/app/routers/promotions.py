@@ -185,8 +185,14 @@ def start_promotion(
 
     if payload.pay_method == "balance":
         # Свежее значение баланса, не то, что могло прийти закэшированным
-        # в объекте user из предыдущего запроса.
-        fresh = db.query(User).get(user.id)
+        # в объекте user из предыдущего запроса. FOR UPDATE — держит
+        # строку заблокированной до конца транзакции: без него два
+        # запроса подряд (двойной клик, две открытых вкладки) читают
+        # один и тот же баланс ДО того, как первый успеет списать, и оба
+        # проходят проверку «хватает ли денег» — баланс уходит в минус,
+        # а оплачено оказывается дважды тем, что должно было хватить
+        # только на одно продвижение.
+        fresh = db.query(User).filter(User.id == user.id).with_for_update().first()
         if fresh.balance < price:
             raise HTTPException(400, "insufficient_balance")
 
@@ -337,16 +343,26 @@ async def yookassa_webhook(request: Request):
     db = SessionLocal()
     try:
         if kind == "balance_topup":
-            topup = db.query(BalanceTopup).filter(BalanceTopup.payment_id == payment_id).first()
+            topup = (
+                db.query(BalanceTopup)
+                .filter(BalanceTopup.payment_id == payment_id)
+                .with_for_update()
+                .first()
+            )
             if not topup or topup.status != BalanceTopupStatus.pending:
                 return {"status": "ok"}
             topup.status = BalanceTopupStatus.paid
-            user = db.query(User).get(topup.user_id)
+            user = db.query(User).filter(User.id == topup.user_id).with_for_update().first()
             user.balance = user.balance + topup.amount
             db.commit()
             return {"status": "ok"}
 
-        promo = db.query(Promotion).filter(Promotion.payment_id == payment_id).first()
+        promo = (
+            db.query(Promotion)
+            .filter(Promotion.payment_id == payment_id)
+            .with_for_update()
+            .first()
+        )
         if not promo or promo.status != PromotionStatus.pending:
             # Уже обработано раньше, или платёж не наш вовсе.
             return {"status": "ok"}
