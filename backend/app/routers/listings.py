@@ -31,6 +31,19 @@ class PhotoIn(BaseModel):
     thumbnail_url: str | None = None
 
 
+MAX_ATTRIBUTES_JSON_BYTES = 8000
+# С запасом на настоящие объявления (обычно 5-20 коротких полей вроде
+# площади/состояния/этажа — см. extract_attributes в tg_parse.py), но
+# не мегабайты: без границы attributes принимал что угодно, вплоть до
+# всего тела запроса (сдерживал только общий лимит nginx на 25 МБ) —
+# впустую раздувало бы JSONB-колонку одним объявлением.
+def _check_attributes_size(v: dict) -> dict:
+    size = len(json.dumps(v, ensure_ascii=False))
+    if size > MAX_ATTRIBUTES_JSON_BYTES:
+        raise ValueError("attributes_too_large")
+    return v
+
+
 class ListingCreate(BaseModel):
     category_id: uuid.UUID
     source_language: str = "ru"
@@ -46,6 +59,11 @@ class ListingCreate(BaseModel):
     hide_exact_address: bool = False
     translations: list[TranslationIn]
     photos: list[PhotoIn] = Field(default_factory=list, max_length=10)
+
+    @field_validator("attributes")
+    @classmethod
+    def check_attributes_size(cls, v):
+        return _check_attributes_size(v)
 
     @field_validator("translations")
     @classmethod
@@ -1304,7 +1322,18 @@ def delete_listing(
     return {"status": "deleted"}
 
 class ListingUpdate(BaseModel):
-    price: float | None = None
+    # Те же границы, что и при создании (см. ListingCreate выше) — их
+    # тут не было вовсе: правка через PATCH принимала любое число,
+    # включая отрицательное, огромное или NaN/бесконечность (Pydantic
+    # по умолчанию не отклоняет ни то ни другое для float). Отрицательная
+    # цена спокойно писалась бы в базу — Numeric(10,2) её не отклоняет
+    # без явного CHECK; NaN Postgres принимает как обычное значение
+    # numeric, и дальше оно тихо портит сравнения цены везде, где они
+    # есть (сортировка «дешевле», формула релевантности ленты) — не
+    # ошибкой, а молча неверным результатом. ge=0 заодно отсеивает и
+    # NaN — сравнение NaN >= 0 в Python всегда False, так что граница
+    # ловит его тем же путём, что и обычное отрицательное число.
+    price: float | None = Field(None, ge=0, le=100_000_000)
     currency: str | None = None
     price_negotiable: bool | None = None
     city: str | None = None
@@ -1313,6 +1342,11 @@ class ListingUpdate(BaseModel):
     description: str | None = None
     delivery_available: bool | None = None
     safe_deal_available: bool | None = None
+
+    @field_validator("attributes")
+    @classmethod
+    def check_attributes_size(cls, v):
+        return _check_attributes_size(v) if v is not None else v
 
 
 @router.patch("/{listing_id}")
