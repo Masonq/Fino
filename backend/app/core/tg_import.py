@@ -48,7 +48,7 @@ from app.core.tg_parse import (
     build_title, fingerprint, same_thing, source_language, drop_attribute_lines, extract_attributes, plausible_price,
     looks_like_ad, looks_like_spam, looks_sold, parse,
 )
-from app.core.tg_sources import CHATS, is_resume, topic_category
+from app.core.tg_sources import CHATS, is_resume, topic_category, topic_sub_hint
 from app.core.translate import translate_listing
 from app.core.watermark import has_watermark, ready as watermark_ready
 from app.models import (
@@ -259,6 +259,13 @@ def screen(text: str, chat_id: int, topic_id: int | None,
 
     attrs = extract_attributes(category_slug, parsed["searchable"])
     sub_slug = classify_sub(category_slug, parsed["searchable"])
+    # Тема сузила подкатегорию («Телефоны и планшеты» — только phones
+    # или tablets) — разбор текста мимо этих двух означает либо ошибку
+    # разбора, либо совсем не то объявление; в обоих случаях доверять
+    # такому попаданию нельзя, откатываемся на родительский раздел.
+    sub_hint = topic_sub_hint(chat_id, topic_id)
+    if sub_hint and sub_slug not in sub_hint:
+        sub_slug = None
     # Дом за 150 динар — это не цена, а площадь или этаж, попавшие под
     # разбор. Показываем «цена не указана», а не заведомую чушь.
     if not plausible_price(sub_slug, parsed.get("price"), parsed.get("currency")):
