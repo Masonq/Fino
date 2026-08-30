@@ -23,5 +23,12 @@ class LoginTicket(Base):
     key: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     telegram_id: Mapped[str] = mapped_column(String(64))
     display_name: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    # Отдельно от display_name (там полное имя вроде «Иван Петров») —
+    # именно это поле совпадает с Listing.external_author у объявлений,
+    # опубликованных через бота (см. publisher.py: author = username or
+    # str(user_id)). Без него usernamed-пользователи входили на сайт и
+    # не видели своих же объявлений — «усыновление» пыталось сверяться
+    # с полным именем, которого в external_author никогда не бывает.
+    username: Mapped[str | None] = mapped_column(String(64), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=utcnow, index=True)

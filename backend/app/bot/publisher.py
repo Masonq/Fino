@@ -420,7 +420,8 @@ async def start_login(message: Message) -> None:
     try:
         from app.routers.auth_telegram import issue
 
-        key = issue(message.from_user.id, message.from_user.full_name)
+        key = issue(message.from_user.id, message.from_user.full_name,
+                   message.from_user.username)
     except Exception:                            # noqa: BLE001
         log.exception("не удалось выдать ссылку для входа")
         await show(message.bot, message.chat.id,
@@ -1452,7 +1453,7 @@ async def maybe_invite(message: Message, user) -> None:
     try:
         from app.routers.auth_telegram import issue
 
-        key = issue(user.id, user.full_name)
+        key = issue(user.id, user.full_name, user.username)
     except Exception:                            # noqa: BLE001
         log.exception("не удалось выдать ссылку для входа")
         return

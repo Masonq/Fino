@@ -34,7 +34,8 @@ TTL = timedelta(minutes=5)
 # Ключи храним в базе, а не в памяти. Бот и сайт — разные процессы: то,
 # что бот положил себе в память, сайт не увидит, и ссылка окажется
 # «устаревшей» через две минуты после выдачи.
-def issue(telegram_id: int, display_name: str | None = None) -> str:
+def issue(telegram_id: int, display_name: str | None = None,
+          username: str | None = None) -> str:
     """Выдаёт одноразовый ключ для входа. Зовётся из бота."""
     from app.core.database import SessionLocal
     from app.models import LoginTicket
@@ -46,6 +47,7 @@ def issue(telegram_id: int, display_name: str | None = None) -> str:
             key=key,
             telegram_id=str(telegram_id),
             display_name=(display_name or "")[:120],
+            username=(username or None),
         ))
         db.commit()
     return key
@@ -80,6 +82,7 @@ def enter(payload: Ticket, request: Request, db: Session = Depends(get_db)):
 
     telegram_id = ticket.telegram_id
     display_name = ticket.display_name
+    username = ticket.username
     issued_at = ticket.created_at
 
     # Ключ одноразовый: переписку могут переслать, и вечно рабочая
@@ -104,7 +107,7 @@ def enter(payload: Ticket, request: Request, db: Session = Depends(get_db)):
         db.add(user)
         db.flush()
 
-        _adopt_listings(db, user, telegram_id, display_name)
+        _adopt_listings(db, user, telegram_id, username)
 
     db.commit()
 
@@ -129,20 +132,27 @@ def enter(payload: Ticket, request: Request, db: Session = Depends(get_db)):
 
 
 def _adopt_listings(db: Session, user: User, telegram_id: str,
-                    display_name: str | None) -> None:
+                    username: str | None) -> None:
     """
     Передаёт человеку объявления, опубликованные им через бота.
 
     Они записаны на служебный аккаунт: когда человек публиковал, своей
     учётной записи у него ещё не было. Без этого он войдёт и увидит
     пустоту, хотя объявления его.
+
+    Сверяем по telegram_id и username — именно то, что бот пишет в
+    external_author (author = message.from_user.username or
+    str(user_id), см. publisher.py). Раньше вместо username сюда
+    приходило полное имя (display_name) — оно никогда не совпадает
+    с external_author, и у всех, кто публиковал под своим username
+    (а не числовым id без него), объявления молча не находились.
     """
     from app.models import Listing
 
+    candidates = [telegram_id] + ([username] if username else [])
     owned = (
         db.query(Listing)
-        .filter(Listing.external_author.in_(
-            [telegram_id, display_name] if display_name else [telegram_id]))
+        .filter(Listing.external_author.in_(candidates))
         .all()
     )
     for listing in owned:
