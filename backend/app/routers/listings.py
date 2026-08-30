@@ -3,7 +3,7 @@ import re
 import uuid
 
 from app.core.urls import listing_path
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date as date_type
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import String, cast, case, exists, func, or_, Float
@@ -443,28 +443,107 @@ def search_listings(
     # уместная для нашего масштаба, но того же духа: свежесть — это
     # один из факторов, а не единственный.
     #
-    #   поведение   — просмотры/избранное/переписки, НА ДЕНЬ с публикации
-    #                 (иначе старое популярное вечно топило бы свежее,
-    #                 у которого просто не было времени набрать статистику),
-    #                 сжато логарифмом — иначе объявление с тысячей
-    #                 просмотров задавило бы всё остальное одним слагаемым
+    #   поведение   — просмотры/избранное/переписки ЗА ПОСЛЕДНИЕ 7 ДНЕЙ,
+    #                 не за весь срок жизни объявления. Раньше это было
+    #                 «на день с публикации» (сумма / возраст) — то есть
+    #                 фактически СРЕДНЯЯ скорость за всё время, а не
+    #                 текущая. Объявление, которое было наверху месяц
+    #                 назад и с тех пор только собирает просмотры просто
+    #                 потому что наверху, держит эту среднюю скорость
+    #                 вечно — замкнутый круг, из-за которого одни и те
+    #                 же карточки не сходят с первых мест. Окно в 7 дней
+    #                 его размыкает: то, что не смотрели всю неделю,
+    #                 больше не считается «активным», сколько бы у него
+    #                 ни было просмотров за прошлые месяцы.
+    #   CTR         — просмотры / показы в ленте за то же окно. Без
+    #                 знаменателя объявление наверху получает больше
+    #                 просмотров просто потому что его чаще показывают,
+    #                 а не потому что оно интереснее — CTR отличает
+    #                 действительно кликабельную карточку от той, что
+    #                 просто была на виду.
     #   свежесть    — плавно затухает со временем, не обрыв по дате
     #   продавец    — рейтинг, подтверждённый документ, бизнес-статус
     #   полнота     — как и раньше, is_complete
+    #   старт       — гарантированный буст первые часы после публикации,
+    #                 пока у объявления физически не было времени набрать
+    #                 собственную статистику (см. ниже)
     #
     # Платное продвижение (bump/highlight/xl) эту формулу не подменяет,
     # а работает поверх нее — так же, как у Авито.
     q = q.join(User, Listing.owner_id == User.id)
     age_days = func.extract("epoch", func.now() - Listing.published_at) / 86400.0
     freshness = 1.0 / (1.0 + age_days / 7.0)
+
+    from app.models import ListingViewDaily, ListingSignalDaily, Favorite, Chat
+
+    WINDOW_DAYS = 7
+    since_day = date_type.today() - timedelta(days=WINDOW_DAYS)
+    # Питоновский datetime как параметр, не SQL-литерал вида "interval
+    # '7 days'" — тот работает только в Postgres, а тесты гоняются на
+    # SQLite (см. tests/).
+    since_ts = utcnow() - timedelta(days=WINDOW_DAYS)
+
+    recent_views = (
+        db.query(func.coalesce(func.sum(ListingViewDaily.count), 0))
+        .filter(ListingViewDaily.listing_id == Listing.id, ListingViewDaily.day >= since_day)
+        .correlate(Listing).scalar_subquery()
+    )
+    recent_impressions = (
+        db.query(func.coalesce(func.sum(ListingSignalDaily.impressions), 0))
+        .filter(ListingSignalDaily.listing_id == Listing.id, ListingSignalDaily.day >= since_day)
+        .correlate(Listing).scalar_subquery()
+    )
+    recent_gallery = (
+        db.query(func.coalesce(func.sum(ListingSignalDaily.gallery_views), 0))
+        .filter(ListingSignalDaily.listing_id == Listing.id, ListingSignalDaily.day >= since_day)
+        .correlate(Listing).scalar_subquery()
+    )
+    recent_desc = (
+        db.query(func.coalesce(func.sum(ListingSignalDaily.desc_expands), 0))
+        .filter(ListingSignalDaily.listing_id == Listing.id, ListingSignalDaily.day >= since_day)
+        .correlate(Listing).scalar_subquery()
+    )
+    recent_favorites = (
+        db.query(func.count(Favorite.id))
+        .filter(Favorite.listing_id == Listing.id, Favorite.created_at >= since_ts)
+        .correlate(Listing).scalar_subquery()
+    )
+    recent_chats = (
+        db.query(func.count(Chat.id))
+        .filter(Chat.listing_id == Listing.id, Chat.created_at >= since_ts)
+        .correlate(Listing).scalar_subquery()
+    )
+
+    # Знаменатель — не весь возраст, а сколько дней из окна объявление
+    # реально прожило: у вчерашнего объявления окно ещё не заполнилось,
+    # делить сумму на 7 занизило бы его скорость впятеро.
+    window_lived_days = func.greatest(func.least(age_days, float(WINDOW_DAYS)), 0.5)
     engagement = (
-        Listing.views_count + Listing.favorites_count * 3 + Listing.chats_count * 5
-    ) / func.greatest(age_days, 0.5)
-    behavior_score = func.ln(1 + engagement)
+        recent_views + recent_favorites * 3 + recent_chats * 5
+        + recent_gallery * 0.5 + recent_desc * 0.5
+    ) / window_lived_days
+    ctr = recent_views / func.greatest(recent_impressions, 1)
+    behavior_score = func.ln(1 + engagement) + ctr * 2.0
+
     seller_score = (
         func.coalesce(User.rating_avg, 0) / 5.0
         + case((User.document_verified.is_(True), 0.5), else_=0)
         + case((User.role == UserRole.seller_business, 0.3), else_=0)
+    )
+
+    # Старт — гарантированная видимость первые часы после публикации,
+    # вне зависимости от того, что покажет формула выше: у только что
+    # опубликованного объявления просмотров и показов ещё физически не
+    # может быть, и без явного буста ему неоткуда взять свои первые
+    # просмотры, чтобы формула вообще начала его замечать. Тот же
+    # экспоненциальный спад, что и у платного bump, но слабее и короче —
+    # это не замена продвижению, а гарантия точки старта для всех.
+    EXPLORE_BOOST_MAX = 1.2
+    EXPLORE_DECAY_HOURS = 4.0
+    age_hours = func.extract("epoch", func.now() - Listing.published_at) / 3600.0
+    explore_boost = case(
+        (Listing.published_at.isnot(None), EXPLORE_BOOST_MAX * func.exp(-age_hours / EXPLORE_DECAY_HOURS)),
+        else_=0.0,
     )
 
     # Разовое поднятие (bump) — раньше подделывало published_at, теперь
@@ -504,6 +583,7 @@ def search_listings(
         + seller_score * 1.0
         + case((Listing.is_complete.is_(True), 0.8), else_=0)
         + bump_boost
+        + explore_boost
     )
 
     # price_in_eur уже определена выше — используется тут для «сначала
@@ -533,6 +613,14 @@ def search_listings(
     ordering.append(order)
     items = q.order_by(*ordering).offset(offset).limit(limit).all()
     promo = _active_promo_ids(db, [l.id for l in items])
+
+    # Показ в выдаче — отдельный сигнал от открытия карточки, нужен для
+    # CTR (просмотры/показы) в формуле релевантности. Считаем и на
+    # relevance, и на других сортировках — иначе на "новые"/"дешёвые"
+    # показы вообще не копились бы, а объявление могло сортироваться
+    # по CTR из одной пустой выдачи.
+    from app.core.signals import bump_impressions
+    bump_impressions(db, [l.id for l in items])
 
     def serialize(listing: Listing):
         translation = pick_translation(listing, lang)
@@ -1052,6 +1140,22 @@ def get_listing(listing_id: str, request: Request, db: Session = Depends(get_db)
         "delivery_available": listing.delivery_available,
         "safe_deal_available": listing.safe_deal_available,
     }
+
+
+@router.post("/{listing_id}/signal")
+def send_signal(listing_id: uuid.UUID, payload: dict, db: Session = Depends(get_db)):
+    """Глубина взаимодействия с уже открытой карточкой — пролистал ли
+    фото дальше первой, развернул ли полное описание. Тихий сигнал: не
+    падает, если объявления уже нет, не требует авторизации, не
+    возвращает ничего, что могло бы использоваться для накрутки счётом
+    в ответе."""
+    kind = payload.get("type")
+    field = {"gallery_view": "gallery_views", "desc_expand": "desc_expands"}.get(kind)
+    if not field:
+        raise HTTPException(400, "bad_signal_type")
+    from app.core.signals import bump_signal
+    bump_signal(db, listing_id, field)
+    return {"ok": True}
 
 
 @router.get("/{listing_id}/dashboard")

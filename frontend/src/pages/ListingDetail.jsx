@@ -204,6 +204,12 @@ export default function ListingDetail() {
   const [starting, setStarting] = useState(false)
   const [descOpen, setDescOpen] = useState(false)
   const [attrsOpen, setAttrsOpen] = useState(false)
+  // Сигнал шлём один раз за просмотр объявления, не на каждый скролл/
+  // клик — иначе пролистывание туда-сюда по фото раздувало бы счётчик
+  // одним и тем же посетителем. Ref, не state: не должен вызывать
+  // лишний рендер сам по себе.
+  const gallerySignalSent = useRef(false)
+  const descSignalSent = useRef(false)
 
   useEffect(() => {
     // Тот же класс утечки, что и с photoIdx ниже, только серьёзнее —
@@ -232,6 +238,8 @@ export default function ListingDetail() {
     setDescOpen(false)
     setAttrsOpen(false)
     setFullscreen(null)
+    gallerySignalSent.current = false
+    descSignalSent.current = false
     // Одного сброса состояния мало — сам DOM-элемент полосы фото
     // тоже переиспользуется, и его scrollLeft остаётся от прошлого
     // объявления. onScroll на нём тут же пересчитывает photoIdx
@@ -480,7 +488,15 @@ export default function ListingDetail() {
             ref={photoStripRef}
             onScroll={(e) => {
               const el = e.currentTarget
-              setPhotoIdx(Math.round(el.scrollLeft / el.clientWidth))
+              const idx = Math.round(el.scrollLeft / el.clientWidth)
+              setPhotoIdx(idx)
+              // Сигнал глубины — реально пролистал, не просто фото
+              // подгрузилось. Дальше первой (idx>0) уже значит
+              // намеренное действие, не случайность.
+              if (idx > 0 && !gallerySignalSent.current) {
+                gallerySignalSent.current = true
+                api.sendListingSignal(listingId, 'gallery_view').catch(() => {})
+              }
             }}
           >
             {photos.map((ph, i) => (
@@ -700,7 +716,16 @@ export default function ListingDetail() {
               {translation.description}
             </div>
             {(translation.description || '').length > 320 && !descOpen && (
-              <button className="desc-more" onClick={() => setDescOpen(true)}>
+              <button
+                className="desc-more"
+                onClick={() => {
+                  setDescOpen(true)
+                  if (!descSignalSent.current) {
+                    descSignalSent.current = true
+                    api.sendListingSignal(listingId, 'desc_expand').catch(() => {})
+                  }
+                }}
+              >
                 {t('detail.read_more')}
               </button>
             )}

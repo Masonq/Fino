@@ -175,6 +175,14 @@ export const api = {
   getCategorySchema: (slug) => request(`/categories/${slug}/schema`),
   searchListings: (params) => request(`/listings?${new URLSearchParams(params)}`),
   getListing: (id) => request(`/listings/${id}`),
+  // Тихий сигнал глубины взаимодействия — пролистал фото дальше первой
+  // или развернул полное описание. Не блокирует интерфейс: ошибка
+  // сети тут не должна ничего ломать, поэтому catch молча глотает её
+  // в месте вызова, не здесь (см. ListingDetail.jsx).
+  sendListingSignal: (id, type) => request(`/listings/${id}/signal`, {
+    method: 'POST',
+    body: JSON.stringify({ type }),
+  }),
   getListingDashboard: (id, days) => request(`/listings/${id}/dashboard?${new URLSearchParams({ days: days || 30 })}`),
   listingsByIds: (ids, lang) => request(`/listings/by-ids?${new URLSearchParams({ ids: ids.join(','), lang })}`),
   similarListings: (id, lang) => request(`/listings/${id}/similar?${new URLSearchParams({ lang })}`),

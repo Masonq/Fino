@@ -17,6 +17,7 @@ from app.models.document_verification import DocVerificationRequest, DocVerifica
 from app.models.login_event import LoginEvent
 from app.models.telegram_import_progress import TelegramImportProgress
 from app.models.listing_view_daily import ListingViewDaily
+from app.models.listing_signal_daily import ListingSignalDaily
 from app.models.notification import Notification
 from app.models.support import (
     Ticket, TicketMessage, TicketStatus, TicketTopic,
@@ -38,6 +39,7 @@ __all__ = [
     "PhoneReveal",
     "ListingViewLog",
     "ListingViewDaily",
+    "ListingSignalDaily",
     "DocVerificationRequest", "DocVerificationStatus", "DocVerificationKind",
     "LoginEvent",
     "TelegramImportProgress",
