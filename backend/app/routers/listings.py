@@ -1280,8 +1280,9 @@ def delete_listing(
     # с чатом/отзывом, но фраза «есть переписка» вводила в заблуждение,
     # когда реальная причина — накопленная статистика просмотров или
     # чья-то закладка.
-    from app.models import ListingViewDaily, Promotion, Favorite
+    from app.models import ListingViewDaily, ListingSignalDaily, Promotion, Favorite
     db.query(ListingViewDaily).filter(ListingViewDaily.listing_id == listing_id).delete()
+    db.query(ListingSignalDaily).filter(ListingSignalDaily.listing_id == listing_id).delete()
     db.query(Promotion).filter(Promotion.listing_id == listing_id).delete()
     db.query(Favorite).filter(Favorite.listing_id == listing_id).delete()
 
