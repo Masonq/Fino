@@ -14,6 +14,15 @@ class Settings(BaseSettings):
     app_name: str = "PLONK"
     database_url: str = "postgresql://fino:fino@localhost:5432/fino"
     secret_key: str = "change-me-in-env"
+    # Список через запятую в .env (CORS_ORIGINS=https://plonk.rs,https://www.plonk.rs).
+    # Раньше было allow_origins=["*"] — открыто на любой сайт, до сегодняшнего
+    # аудита оставалось как отметка «сузить перед продакшеном», которую
+    # никто не убрал. Токен живёт в localStorage, не в куке (фронт нигде
+    # не шлёт credentials: 'include'), так что чужой сайт всё равно не мог
+    # бы использовать чужую сессию без отдельной XSS-дыры — но открытый
+    # CORS всё равно даром отдаёт публичную выдачу (ленту, поиск) на
+    # переиспользование чужими сайтами без всякого сдерживания.
+    cors_origins: str = "https://plonk.rs,https://www.plonk.rs"
     default_languages: list[str] = ["ru", "en", "sr"]
     media_dir: str = "./media"
     # Проверка документов — сторонний сервис Didit, не своё хранилище:

@@ -39,7 +39,29 @@ async def upload_photo(
     os.makedirs(settings.media_dir, exist_ok=True)
 
     name = uuid.uuid4().hex
-    # HEIC (частый формат с iPhone) Pillow без плагина не откроет — сохраняем как есть при неудаче конверта.
+    # HEIC (частый формат с iPhone) Pillow без плагина не откроет — но
+    # «не открылся» не значит «доверяем как есть»: сюда же раньше
+    # попадало ЛЮБОЕ исключение, включая защиту Pillow от бомб
+    # декомпрессии (DecompressionBombError — тоже Exception) и файлы,
+    # которые вообще не изображение, просто с подходящим расширением.
+    # Сверяем магические байты самим форматам — как минимум убеждаемся,
+    # что это действительно то, чем себя называет, прежде чем сохранять
+    # непроверенным.
+    _MAGIC = (
+        (b"\xff\xd8\xff", None),                              # JPEG
+        (b"\x89PNG\r\n\x1a\n", None),                          # PNG
+        (b"RIFF", b"WEBP"),                                    # WEBP (RIFF....WEBP)
+        (b"\x00\x00\x00", b"ftyp"),                             # HEIC/HEIF (ftyp box)
+    )
+    def _looks_like_image(data: bytes) -> bool:
+        for prefix, marker in _MAGIC:
+            if marker is None:
+                if data.startswith(prefix):
+                    return True
+            elif data[:4] == prefix and marker in data[4:16]:
+                return True
+        return False
+
     try:
         from io import BytesIO
         img = Image.open(BytesIO(contents))
@@ -57,7 +79,10 @@ async def upload_photo(
 
         full_name, thumb_name = f"{name}.jpg", f"{name}_thumb.jpg"
     except Exception:
-        # Не смогли обработать (например неподдержанный HEIC-вариант) — сохраняем оригинал без обработки.
+        if not _looks_like_image(contents):
+            raise HTTPException(400, "unsupported_format")
+        # Настоящий HEIC-вариант, который Pillow не осилил — сохраняем
+        # как есть, но теперь только после проверки байтов, не вслепую.
         full_name = f"{name}{ext}"
         with open(os.path.join(settings.media_dir, full_name), "wb") as f:
             f.write(contents)
