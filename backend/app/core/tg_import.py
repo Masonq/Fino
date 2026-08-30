@@ -34,7 +34,7 @@ from telethon.errors import FloodWaitError
 from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.tg_classify import (
-    KEYWORDS, classify, classify_sub, decide_for,
+    KEYWORDS, classify, classify_sub, classify_sub2, decide_for,
 )
 from app.core.progress import Progress
 from app.core.ai_title import (
@@ -274,6 +274,13 @@ def screen(text: str, chat_id: int, topic_id: int | None,
     )
     parsed["attributes"] = attrs
     parsed["category_slug"] = category_slug
+    # Третий уровень — уточняем ПОСЛЕ того, как заголовок/цена уже
+    # посчитаны по второму уровню (build_title/plausible_price знают
+    # только его слаги): «Запчасти» → «Двигатель и трансмиссия» не
+    # меняет то, что это запчасть, только то, в какую именно из четырёх
+    # третьеуровневых попадает. Не нашли уверенного совпадения —
+    # остаётся второй уровень, как и раньше.
+    sub_slug = classify_sub2(sub_slug, parsed["searchable"]) or sub_slug
     parsed["sub_slug"] = sub_slug
     parsed["publish"] = publish
     parsed["language"] = source_language(text)
