@@ -20,6 +20,35 @@ const TABS = [
   { key: 'archived', labelKey: 'my.tab_archived' },
 ]
 
+// Один и тот же силуэт, что и в панели «Поднять просмотры» — узнаваем
+// в двух местах сразу. Плоские, однотонные (currentColor), под цвет
+// текста бейджа — на 14px глянцевый 3D-рендер, как у картинок
+// категорий, превращается в кашу, тут это другой масштаб задачи.
+const PROMO_ICONS = {
+  highlight: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 21l3.5-1 11-11-2.5-2.5-11 11L3 21z" />
+      <path d="M14.5 6.5L17.5 9.5" />
+      <circle cx="19" cy="19" r="2.3" fill="currentColor" stroke="none" />
+    </svg>
+  ),
+  bump: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="M20 20l-4.35-4.35" />
+      <path d="M10.5 13.5V7.5M10.5 7.5L8 10M10.5 7.5L13 10" />
+    </svg>
+  ),
+  xl_card: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 9V5a1 1 0 011-1h4" />
+      <path d="M20 9V5a1 1 0 00-1-1h-4" />
+      <path d="M4 15v4a1 1 0 001 1h4" />
+      <path d="M20 15v4a1 1 0 01-1 1h-4" />
+    </svg>
+  ),
+}
+
 export default function MyListings() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
@@ -33,6 +62,9 @@ export default function MyListings() {
   // Панель продвижения открыта максимум для одной карточки за раз —
   // id объявления, если открыта, иначе null.
   const [promoteFor, setPromoteFor] = useState(null)
+  // Всплывающая подсказка «до какого числа» под значком продвижения —
+  // тоже максимум одна открытая сразу, ключ вида "id_объявления:тип".
+  const [infoFor, setInfoFor] = useState(null)
 
   const load = () => {
     if (!user) { setLoaded(true); return }
@@ -43,6 +75,15 @@ export default function MyListings() {
   }
 
   useEffect(load, [user, i18n.language])
+
+  // Закрываем открытую подсказку по тапу куда угодно ещё — иначе она
+  // висела бы до следующего тапа по тому же значку.
+  useEffect(() => {
+    if (!infoFor) return
+    const close = () => setInfoFor(null)
+    document.addEventListener('click', close)
+    return () => document.removeEventListener('click', close)
+  }, [infoFor])
 
   const changeStatus = async (id, status) => {
     setBusyId(id)
@@ -132,7 +173,37 @@ export default function MyListings() {
                   {l.cover_photo ? <img src={l.cover_photo} alt="" /> : <div className="photo-placeholder" />}
                 </div>
                 <div className="my-body">
-                  <div className="my-title">{l.title}</div>
+                  <div className="my-title-row">
+                    <div className="my-title">{l.title}</div>
+                    {l.active_promotions?.length > 0 && (
+                      <div className="my-promo-icons">
+                        {l.active_promotions.map((p) => (
+                          <div className="my-promo-icon-wrap" key={p.type}>
+                            <button
+                              className="my-promo-icon"
+                              aria-label={t(`promo.type_${p.type}`)}
+                              onClick={(e) => {
+                                e.preventDefault(); e.stopPropagation()
+                                setInfoFor(infoFor === `${l.id}:${p.type}` ? null : `${l.id}:${p.type}`)
+                              }}
+                            >
+                              {PROMO_ICONS[p.type]}
+                            </button>
+                            {infoFor === `${l.id}:${p.type}` && (
+                              <div className="my-promo-info" onClick={(e) => e.stopPropagation()}>
+                                <strong>{t(`promo.type_${p.type}`)}</strong>
+                                <span>
+                                  {p.expires_at
+                                    ? t('promo.active_until', { date: new Date(p.expires_at).toLocaleDateString() })
+                                    : t('promo.active_now')}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <div className="my-price">
                     {formatPrice(l.price, l.currency, i18n.language) || t('detail.no_price')}
                   </div>
@@ -189,22 +260,11 @@ export default function MyListings() {
                 )}
               </div>
 
-              {/* Статус уже купленного продвижения — видно сразу на
+              {/* Статус уже купленного продвижения теперь значками
+                  у заголовка (my-promo-icons выше) — видно сразу на
                   карточке, без лишнего клика в панель «Поднять
-                  просмотры» (там то же самое, но только после открытия).
-                  Раньше кнопка называлась одинаково что до, что после
-                  покупки — человек не мог тут же убедиться, что деньги
-                  подействовали. */}
-              {l.active_promotions?.length > 0 && (
-                <div className="my-promo-status">
-                  {l.active_promotions.map((p) => (
-                    <span key={p.type} className="my-promo-badge">
-                      {t(`promo.type_${p.type}`)}
-                      {p.expires_at && ` — ${t('promo.active_until', { date: new Date(p.expires_at).toLocaleDateString() })}`}
-                    </span>
-                  ))}
-                </div>
-              )}
+                  просмотры», но не отдельным рядом текстовых бейджей,
+                  тесно с кнопками статуса под ним. */}
 
               {/* Продвинуть — отдельной заметной строкой, не наравне
                   с управлением статусом: пять кнопок в одном тесном
