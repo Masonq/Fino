@@ -560,16 +560,32 @@ async def chat_ws(websocket: WebSocket, chat_id: uuid.UUID, token: str = Query(.
     проще и безопаснее попросить каждого перечитать свою версию, чем
     держать в одном месте две разные сериализации на рассылку.
     """
-    user_id = decode_token(token)
-    if not user_id:
+    decoded = decode_token(token)
+    if not decoded:
         await websocket.close(code=4401)
         return
+    # decode_token отдаёт (id, версия токена) — раньше здесь этот
+    # кортеж целиком присваивался в user_id и сверялся с UUID напрямую
+    # (`user_id not in (chat.buyer_id, chat.seller_id)`), а кортеж не
+    # равен UUID никогда: живой чат отклонял ВСЕХ, даже настоящих
+    # участников, всегда закрывая соединение с 4403. get_current_user
+    # рядом уже распаковывает decode_token точно так же — тут просто не
+    # обновили следом за ним, когда появилась версия токена.
+    user_id, token_ver = decoded
 
     db = SessionLocal()
     try:
         chat = db.query(Chat).get(chat_id)
         if not chat or user_id not in (chat.buyer_id, chat.seller_id):
             await websocket.close(code=4403)
+            return
+        # Токен предъявлен старой версии — где-то был выход из аккаунта
+        # уже после того, как его выпустили. Тот же принцип, что и у
+        # get_current_user: не пускаем висеть живому соединению на токене,
+        # который сам обычный запрос уже не принял бы.
+        user = db.query(User).get(user_id)
+        if not user or token_ver < user.token_version:
+            await websocket.close(code=4401)
             return
     finally:
         db.close()
