@@ -179,7 +179,10 @@
     "need_city": "Izaberite grad",
     "err_currency": "Nepodržana valuta",
     "photo_limit": "Najviše 10 fotografija",
-    "photo_failed": "Otpremanje nije uspelo — dodirnite da uklonite"
+    "photo_failed": "Otpremanje nije uspelo — dodirnite da uklonite",
+    "draft_found": "Pronađen nedovršen nacrt oglasa",
+    "draft_restore": "Nastavi",
+    "draft_discard": "Počni ispočetka"
   },
   "detail": {
     "loading": "Učitavanje…",

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
@@ -8,6 +8,13 @@ import { useAuth } from '../context/AuthContext'
 import CategoryArt from '../components/CategoryArt'
 
 const STEPS = ['category', 'attributes', 'details', 'contact']
+
+// Черновик — на случай случайного закрытия вкладки или сбоя сети
+// посреди заполнения. Не вечно: через двое суток предлагать
+// восстановить старую, наверняка уже неактуальную форму (цены,
+// состояние вещи) хуже, чем просто дать начать заново.
+const DRAFT_KEY = 'fino_post_draft'
+const DRAFT_TTL_HOURS = 48
 
 export default function PostAd() {
   const { t, i18n } = useTranslation()
@@ -34,6 +41,88 @@ export default function PostAd() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
   const [done, setDone] = useState(false)
+  const [path, setPath] = useState([])
+
+  // Черновик, найденный при заходе на форму — ждёт решения человека
+  // (восстановить / начать заново), пока не null. Сохранение текущего
+  // ввода намеренно не идёт, пока это решение не принято — иначе
+  // пустая свежая форма затёрла бы найденный черновик раньше, чем
+  // человек успеет на него посмотреть.
+  const [draftPrompt, setDraftPrompt] = useState(null)
+  const draftResolved = useRef(false)
+
+  useEffect(() => {
+    let raw
+    try { raw = localStorage.getItem(DRAFT_KEY) } catch { return }
+    if (!raw) { draftResolved.current = true; return }
+    try {
+      const draft = JSON.parse(raw)
+      const ageHours = (Date.now() - (draft.savedAt || 0)) / 3600000
+      // Пустая форма (ни категории, ни заголовка) — сохранять было
+      // нечего, не спрашиваем.
+      const hasContent = draft.category || draft.title || draft.description
+      if (ageHours < DRAFT_TTL_HOURS && hasContent) {
+        setDraftPrompt(draft)
+      } else {
+        localStorage.removeItem(DRAFT_KEY)
+        draftResolved.current = true
+      }
+    } catch {
+      localStorage.removeItem(DRAFT_KEY)
+      draftResolved.current = true
+    }
+  }, [])
+
+  const restoreDraft = async () => {
+    const d = draftPrompt
+    setDraftPrompt(null)
+    draftResolved.current = true
+    if (!d) return
+    if (d.category) {
+      setCategory(d.category)
+      setPath(d.path || [])
+      try {
+        const res = await api.getCategorySchema(d.category.slug)
+        setSchema(res.attribute_schema || [])
+      } catch { setSchema([]) }
+    }
+    setAttrs(d.attrs || {})
+    setTitle(d.title || '')
+    setDescription(d.description || '')
+    setPrice(d.price || '')
+    setCurrency(d.currency || 'EUR')
+    setNegotiable(!!d.negotiable)
+    setCity(d.city || '')
+    setPhotos(d.photos || [])
+    setDisplayName(d.displayName || '')
+    if (d.step != null) setStep(d.step)
+  }
+
+  const discardDraft = () => {
+    localStorage.removeItem(DRAFT_KEY)
+    setDraftPrompt(null)
+    draftResolved.current = true
+  }
+
+  // Сохраняем на каждое осмысленное изменение — форма короткая (4
+  // шага), а localStorage дешёвый; ждать отдельного debounce тут
+  // избыточно. Только реально загруженные фото (со своим url) —
+  // blob-ссылки на ещё не отправленные файлы не переживут
+  // перезагрузку вкладки в любом случае.
+  useEffect(() => {
+    if (!draftResolved.current) return
+    const hasContent = category || title || description
+    if (!hasContent) {
+      localStorage.removeItem(DRAFT_KEY)
+      return
+    }
+    const draft = {
+      savedAt: Date.now(), step, category, path, attrs, title, description,
+      price, currency, negotiable, city, displayName,
+      photos: photos.filter((p) => p.url && !p.uploading && !p.failed),
+    }
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)) } catch { /* переполнен или недоступен — не критично */ }
+  }, [step, category, path, attrs, title, description, price, currency, negotiable, city, displayName, photos])
 
   useEffect(() => {
     api.getCategories().then(setCategories).catch(() => setCategories([]))
@@ -54,7 +143,6 @@ export default function PostAd() {
   // одна точка выхода из формы; показываем список прямо на первом шаге.
   // Путь вниз по категориям — массив, не одно значение: раньше parent
   // был единственным уровнем, и третий уровень было некуда деть.
-  const [path, setPath] = useState([])
 
   const pickCategory = async (cat) => {
     setCategory(cat)
@@ -138,6 +226,7 @@ export default function PostAd() {
         api.updateMe({ phone: phone.trim() }).catch(() => {})
       }
 
+      localStorage.removeItem(DRAFT_KEY)
       setDone(true)
     } catch (e) {
       // Показываем, что именно не так, а не общее «не получилось»
@@ -189,6 +278,15 @@ export default function PostAd() {
 
   return (
     <div className="post-ad-page">
+      {draftPrompt && (
+        <div className="draft-banner">
+          <span>{t('post.draft_found')}</span>
+          <div className="draft-banner-actions">
+            <button className="draft-restore-btn" onClick={restoreDraft}>{t('post.draft_restore')}</button>
+            <button className="draft-discard-btn" onClick={discardDraft}>{t('post.draft_discard')}</button>
+          </div>
+        </div>
+      )}
       <div className="post-steps">
         {STEPS.map((s, i) => (
           <div key={s} className={i <= step ? 'post-step-dot active' : 'post-step-dot'} />
