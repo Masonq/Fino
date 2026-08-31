@@ -671,7 +671,8 @@
     "language": "Language",
     "push_notifications": "Push notifications",
     "push_unsupported": "Not supported",
-    "push_blocked": "Blocked in browser"
+    "push_blocked": "Blocked in browser",
+    "push_needs_install": "Add to Home Screen first"
   },
   "verify": {
     "title": "Identity verification",

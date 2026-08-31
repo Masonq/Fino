@@ -672,7 +672,8 @@
     "language": "Jezik",
     "push_notifications": "Push obaveštenja",
     "push_unsupported": "Nije podržano",
-    "push_blocked": "Blokirano u pregledaču"
+    "push_blocked": "Blokirano u pregledaču",
+    "push_needs_install": "Dodajte sajt na početni ekran"
   },
   "verify": {
     "title": "Provera dokumenta",

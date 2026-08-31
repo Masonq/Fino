@@ -673,7 +673,8 @@
     "language": "Язык",
     "push_notifications": "Push-уведомления",
     "push_unsupported": "Не поддерживается",
-    "push_blocked": "Заблокировано в браузере"
+    "push_blocked": "Заблокировано в браузере",
+    "push_needs_install": "Добавьте сайт на главный экран"
   },
   "verify": {
     "title": "Проверка документа",
