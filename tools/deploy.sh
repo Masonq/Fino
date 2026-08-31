@@ -35,6 +35,11 @@ fi
 
 echo "→ проверяю сборку фронтенда"
 cd frontend
+if ! npm install --no-audit --no-fund > /tmp/plonk-npm-install.log 2>&1; then
+  echo "  ✗ npm install не прошёл — деплой остановлен:"
+  tail -20 /tmp/plonk-npm-install.log
+  exit 1
+fi
 if ! npm run build > /tmp/plonk-build.log 2>&1; then
   echo "  ✗ фронтенд не собирается — деплой остановлен:"
   tail -20 /tmp/plonk-build.log
