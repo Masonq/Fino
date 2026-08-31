@@ -258,6 +258,11 @@ export default function MyListings() {
                     </button>
                   </>
                 )}
+                {(l.status === 'pending_moderation' || l.status === 'rejected') && (
+                  <button className="danger" disabled={busyId === l.id} onClick={() => remove(l.id)}>
+                    {t('my.delete')}
+                  </button>
+                )}
               </div>
 
               {/* Статус уже купленного продвижения теперь значками
