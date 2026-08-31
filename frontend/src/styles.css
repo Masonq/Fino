@@ -467,7 +467,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .photo-thumb{ position:relative; aspect-ratio:1/1; border-radius:12px; overflow:hidden; background:#eee; }
 .photo-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
 .photo-thumb-loading{
-  position:absolute; inset:0; background:rgba(0,0,0,.35); display:flex; align-items:center; justify-content:center;
+  position:absolute; inset:0; background:rgba(0,0,0,.35);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
 }
 .spinner{
   width:16px; height:16px; border-radius:50%; border:2px solid #ffffff55; border-top-color:#fff;
@@ -489,7 +490,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .photo-add{
   aspect-ratio:1/1; border-radius:12px; border:1.5px dashed var(--line); background:#fff;
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
-  color:var(--muted); font-size:10.5px; font-weight:700;
+  color:var(--muted); font-size:10.5px; font-weight:700; text-align:center; padding:0 6px;
 }
 .photo-add.disabled{ opacity:.5; pointer-events:none; }
 .post-field{ display:flex; flex-direction:column; gap:6px; flex:1; }
@@ -553,7 +554,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .location-search-result:last-child{ border-bottom:none; }
 .post-map-hint{ font-size:11.5px; color:var(--muted); margin-top:6px; line-height:1.4; }
 .post-map-hint.error{ color:var(--coral); }
-.video-uploading-text{ font-size:10px; color:#fff; font-weight:600; margin-top:4px; }
+.video-uploading-text{ font-size:10px; color:#fff; font-weight:600; }
 /* Метка «это видео» на плитке в форме размещения/редактирования —
    отличать от фото при управлении объявлением. Не то же самое, что
    плей-бейдж поверх публичного превью в ленте (его специально нет —
