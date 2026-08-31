@@ -18,6 +18,26 @@ from app.core.clock import utcnow
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
+
+def _normalize_phone(raw: str) -> str:
+    """
+    Приводит к единому виду перед сравнением/сохранением — только
+    цифры и, если был, ведущий '+'. Пробелы, дефисы, скобки — из
+    формы ввода, не часть самого номера.
+
+    Не решает целиком: '631801643' и '+381631801643' — один и тот же
+    реальный номер, но разные строки даже после этого, потому что
+    сама функция не может надёжно угадать, что голому номеру не
+    хватает кода страны +381, не спрашивая человека прямо — так уже
+    случилось однажды (тестовый аккаунт 'YooKassa Test' занял номер
+    в формате с кодом страны, настоящий владелец — без), и это не
+    единственный возможный случай, раз нормализация не решает его
+    целиком. Но одинаковый ввод в разных пробелах/дефисах/скобках —
+    самый частый источник таких же на вид, но разных по строке
+    номеров — теперь всегда даёт одну и ту же строку.
+    """
+    return re.sub(r"[^\d+]", "", raw)
+
 CODE_TTL = timedelta(minutes=15)
 MAX_ATTEMPTS = 5
 RESEND_COOLDOWN = timedelta(seconds=60)
@@ -283,7 +303,7 @@ def update_me(
     if payload.display_name:
         user.display_name = payload.display_name.strip()[:120]
     if payload.phone is not None:
-        user.phone = payload.phone.strip() or None
+        user.phone = _normalize_phone(payload.phone.strip()) or None
     if payload.default_language:
         user.default_language = payload.default_language
     try:
