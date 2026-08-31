@@ -192,7 +192,15 @@
     "location_use_mine": "My location",
     "location_searching": "Searching…",
     "location_geo_unsupported": "Your browser doesn't support geolocation",
-    "location_geo_denied": "Could not get your location — check location permission"
+    "location_geo_denied": "Could not get your location — check location permission",
+    "video_optional": "Video (optional)",
+    "video_add": "Add video",
+    "video_processing": "Processing — usually quick",
+    "video_err_format": "Format not supported — record with your phone camera",
+    "video_err_size": "File is too large",
+    "video_err_length": "Video is too long — up to 90 seconds",
+    "video_err_processing": "Could not process the video — try another one",
+    "video_err_generic": "Could not upload the video"
   },
   "detail": {
     "loading": "Loading…",

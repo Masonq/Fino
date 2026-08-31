@@ -57,6 +57,8 @@ class ListingCreate(BaseModel):
     location_lat: float | None = None
     location_lng: float | None = None
     hide_exact_address: bool = False
+    video_url: str | None = None
+    video_thumbnail_url: str | None = None
     translations: list[TranslationIn]
     photos: list[PhotoIn] = Field(default_factory=list, max_length=10)
 
@@ -182,6 +184,8 @@ def create_listing(
         location_lat=payload.location_lat,
         location_lng=payload.location_lng,
         hide_exact_address=payload.hide_exact_address,
+        video_url=payload.video_url,
+        video_thumbnail_url=payload.video_thumbnail_url,
         status=ListingStatus.pending_moderation,
         expires_at=utcnow() + timedelta(days=LISTING_TTL_DAYS),
     )
@@ -1191,6 +1195,8 @@ def get_listing(listing_id: str, request: Request, db: Session = Depends(get_db)
             and not (viewer and viewer.id == listing.owner_id)
         ),
         "hide_exact_address": bool(listing.hide_exact_address),
+        "video_url": listing.video_url,
+        "video_thumbnail_url": listing.video_thumbnail_url,
         "photos": [{"id": str(p.id), "url": p.url, "is_cover": p.is_cover} for p in listing.photos],
         "views_count": listing.views_count,
         # Публичный счётчик избранного — раньше видел только владелец
@@ -1437,6 +1443,8 @@ class ListingUpdate(BaseModel):
     location_lat: float | None = None
     location_lng: float | None = None
     hide_exact_address: bool | None = None
+    video_url: str | None = None
+    video_thumbnail_url: str | None = None
     attributes: dict | None = None
     title: str | None = None
     description: str | None = None
@@ -1517,6 +1525,13 @@ def update_listing(
         listing.location_lat = payload.location_lat
     if "location_lng" in payload.model_fields_set:
         listing.location_lng = payload.location_lng
+
+    # То же самое рассуждение, что и с координатами: убрать видео —
+    # это тоже прислать null нарочно, не просто «не тронуть».
+    if "video_url" in payload.model_fields_set:
+        listing.video_url = payload.video_url
+    if "video_thumbnail_url" in payload.model_fields_set:
+        listing.video_thumbnail_url = payload.video_thumbnail_url
 
     if payload.title is not None or payload.description is not None:
         tr = next(

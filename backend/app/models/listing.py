@@ -103,6 +103,15 @@ class Listing(Base):
     location_lng: Mapped[float | None] = mapped_column(Numeric(9, 6), nullable=True)
     hide_exact_address: Mapped[bool] = mapped_column(Boolean, default=False)
 
+    # Одно видео на объявление, необязательное — обработано на сервере
+    # (перекодировано в H.264/AAC, превью-кадр вырезан), см.
+    # app/routers/media.py:upload_video. Само видео заметно тяжелее
+    # фото, второе на объявление не потянуло бы разумный размер
+    # хранилища без отдельной инфраструктуры — этого достаточно, чтобы
+    # показать вещь в движении (для чего оно и нужно), не карусель.
+    video_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    video_thumbnail_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
     status: Mapped[ListingStatus] = mapped_column(Enum(ListingStatus), default=ListingStatus.draft, index=True)
     rejection_reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
 

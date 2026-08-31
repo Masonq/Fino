@@ -234,6 +234,22 @@ export const api = {
     if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
     return res.json()
   },
+  uploadVideo: async (file) => {
+    const form = new FormData()
+    form.append('file', file)
+    const token = getToken()
+    const res = await fetch(`${API_BASE}/media/upload-video`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+    })
+    if (!res.ok) {
+      const err = new Error(`Upload failed: ${res.status}`)
+      try { err.code = (await res.json()).detail } catch { /* тело не JSON — код так и останется пустым */ }
+      throw err
+    }
+    return res.json()
+  },
   // Проверка документа — сторонний сервис (Didit): начинаем сессию,
   // человек снимает документ и селфи уже у них, к нам ни то ни другое
   // не попадает вовсе. Решение приходит вебхуком, статус спрашиваем

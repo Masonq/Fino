@@ -609,6 +609,18 @@ export default function ListingDetail() {
         )}
       </div>
 
+      {listing.video_url && (
+        <div className="detail-video">
+          <video
+            controls
+            playsInline
+            preload="none"
+            poster={listing.video_thumbnail_url}
+            src={listing.video_url}
+          />
+        </div>
+      )}
+
       {/* Подтверждение только для запасного пути (копия в буфер) —
           там, где сработало системное меню navigator.share, у
           телефона уже есть своё «отправлено», добавлять здесь ещё

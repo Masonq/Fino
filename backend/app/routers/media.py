@@ -18,6 +18,10 @@ MAX_DIM = 1600
 # растягивается — фотография выглядит мыльной.
 THUMB_DIM = 640
 
+ALLOWED_VIDEO_EXT = {".mp4", ".mov", ".webm", ".m4v", ".3gp"}
+MAX_VIDEO_UPLOAD_BYTES = 80 * 1024 * 1024  # 80MB — сырое видео с телефона, до сжатия
+MAX_VIDEO_SECONDS = 90
+
 
 @router.post("/upload")
 async def upload_photo(
@@ -101,4 +105,88 @@ async def upload_photo(
     return {
         "url": f"{base}/media/{full_name}",
         "thumbnail_url": f"{base}/media/{thumb_name}",
+    }
+
+
+@router.post("/upload-video")
+async def upload_video(
+    file: UploadFile = File(...),
+    user: User = Depends(get_current_user),
+):
+    """
+    Видео к объявлению — одно на объявление, необязательное. Всегда
+    перекодируем в H.264/AAC, что бы телефон ни прислал: iPhone часто
+    снимает в HEVC (.mov), который не все браузеры показывают, а заодно
+    перекодирование даёт предсказуемый размер файла вместо доверия
+    тому, что камера решила сама.
+    """
+    import subprocess
+    import json as json_lib
+
+    ext = os.path.splitext(file.filename or "")[1].lower()
+    if ext not in ALLOWED_VIDEO_EXT:
+        raise HTTPException(400, "unsupported_format")
+
+    contents = await file.read()
+    if len(contents) > MAX_VIDEO_UPLOAD_BYTES:
+        raise HTTPException(400, "file_too_large")
+
+    os.makedirs(settings.media_dir, exist_ok=True)
+    name = uuid.uuid4().hex
+    raw_path = os.path.join(settings.media_dir, f"{name}_raw{ext}")
+    with open(raw_path, "wb") as f:
+        f.write(contents)
+
+    # ffprobe — сколько идёт и вообще настоящее ли это видео, раньше
+    # чем тратить время (и CPU сервера) на перекодирование чего-то
+    # битого или подсунутого с чужим расширением.
+    try:
+        probe = subprocess.run(
+            ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+             "-of", "json", raw_path],
+            capture_output=True, text=True, timeout=15,
+        )
+        duration = float(json_lib.loads(probe.stdout)["format"]["duration"])
+    except Exception:
+        os.remove(raw_path)
+        raise HTTPException(400, "unsupported_format")
+
+    if duration > MAX_VIDEO_SECONDS:
+        os.remove(raw_path)
+        raise HTTPException(400, "video_too_long")
+
+    video_path = os.path.join(settings.media_dir, f"{name}.mp4")
+    thumb_path = os.path.join(settings.media_dir, f"{name}_vthumb.jpg")
+    # Кадр для превью берём не строго с начала (там часто чёрный кадр
+    # или дрожащий старт съёмки) — но и не позже середины у короткого
+    # ролика, чтобы не выйти за его длину.
+    seek_time = min(1.0, max(0.1, duration / 4))
+
+    try:
+        subprocess.run(
+            ["ffmpeg", "-y", "-i", raw_path,
+             "-vf", "scale='min(1280,iw)':'-2'",
+             "-c:v", "libx264", "-preset", "fast", "-crf", "26",
+             "-c:a", "aac", "-b:a", "128k",
+             "-movflags", "+faststart",
+             video_path],
+            capture_output=True, timeout=180, check=True,
+        )
+        subprocess.run(
+            ["ffmpeg", "-y", "-ss", str(seek_time), "-i", raw_path,
+             "-vframes", "1", "-vf", "scale=640:-2", thumb_path],
+            capture_output=True, timeout=30, check=True,
+        )
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        for p in (video_path, thumb_path):
+            if os.path.exists(p):
+                os.remove(p)
+        raise HTTPException(400, "processing_failed")
+    finally:
+        os.remove(raw_path)
+
+    base = settings.site_base_url.rstrip("/")
+    return {
+        "video_url": f"{base}/media/{name}.mp4",
+        "video_thumbnail_url": f"{base}/media/{name}_vthumb.jpg",
     }

@@ -27,6 +27,9 @@ export default function EditListing() {
   const [photos, setPhotos] = useState([])
   const [photoBusy, setPhotoBusy] = useState(false)
   const [photoError, setPhotoError] = useState('')
+  const [video, setVideo] = useState(null)
+  const [videoBusy, setVideoBusy] = useState(false)
+  const [videoError, setVideoError] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(false)
@@ -49,6 +52,7 @@ export default function EditListing() {
     setLocationLng(null)
     setHideExactAddress(false)
     setPhotos([])
+    setVideo(null)
     api.getListing(id)
       .then((l) => {
         setListing(l)
@@ -68,6 +72,7 @@ export default function EditListing() {
         }
         setHideExactAddress(!!l.hide_exact_address)
         setPhotos(l.photos || [])
+        if (l.video_url) setVideo({ url: l.video_url, thumbnail_url: l.video_thumbnail_url })
       })
       .catch(() => setListing(null))
   }, [id])
@@ -103,6 +108,36 @@ export default function EditListing() {
     }
   }
 
+  // Видео — не отдельный эндпоинт с немедленным сохранением, как у
+  // фото (add/deleteListingPhoto): одно поле самого объявления, как
+  // координаты — грузится сразу (перекодирование на сервере занимает
+  // время, ждать нажатия «Сохранить» после уже готового файла было бы
+  // странно), но на сервер объявления улетает вместе с остальной
+  // формой по кнопке «Сохранить».
+  const handleVideoSelect = async (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setVideoError('')
+    setVideoBusy(true)
+    try {
+      const res = await api.uploadVideo(file)
+      setVideo({ url: res.video_url, thumbnail_url: res.video_thumbnail_url })
+    } catch (err) {
+      const map = {
+        unsupported_format: t('post.video_err_format'),
+        file_too_large: t('post.video_err_size'),
+        video_too_long: t('post.video_err_length'),
+        processing_failed: t('post.video_err_processing'),
+      }
+      setVideoError(map[err.code] || t('post.video_err_generic'))
+    } finally {
+      setVideoBusy(false)
+    }
+  }
+
+  const removeVideo = () => { setVideo(null); setVideoError('') }
+
   // Обложка — просто фото на первом месте, отдельного поля на экране
   // нет: «сделать обложкой» — переставить это фото вперёд, остальные
   // сохраняют взаимный порядок. Оптимистично меняем сразу, откатываем
@@ -136,6 +171,8 @@ export default function EditListing() {
         location_lat: locationLat,
         location_lng: locationLng,
         hide_exact_address: hideExactAddress,
+        video_url: video?.url || null,
+        video_thumbnail_url: video?.thumbnail_url || null,
       })
       setSaved(true)
       setTimeout(() => navigate('/my'), 1200)
@@ -227,6 +264,33 @@ export default function EditListing() {
             )}
           </div>
           {photoError && <p className="auth-error">{photoError}</p>}
+        </div>
+
+        <div className="post-field">
+          <label>{t('post.video_optional')}</label>
+          {video?.url ? (
+            <div className="video-thumb">
+              <img src={video.thumbnail_url} alt="" />
+              <div className="video-play-badge">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z" /></svg>
+              </div>
+              <button type="button" className="photo-remove" onClick={removeVideo} aria-label={t('actions.clear')}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6"><path d="M18 6 6 18M6 6l12 12" /></svg>
+              </button>
+            </div>
+          ) : videoBusy ? (
+            <div className="video-thumb video-uploading">
+              <span className="spinner" />
+              <span className="video-uploading-text">{t('post.video_processing')}</span>
+            </div>
+          ) : (
+            <label className="photo-add video-add">
+              <input type="file" accept="video/mp4,video/quicktime,video/webm,video/3gpp" onChange={handleVideoSelect} hidden />
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 7l-7 5 7 5V7z" /><rect x="1" y="5" width="15" height="14" rx="2" /></svg>
+              {t('post.video_add')}
+            </label>
+          )}
+          {videoError && <p className="auth-error">{videoError}</p>}
         </div>
 
         <div className="post-field">
