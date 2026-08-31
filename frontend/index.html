@@ -2,6 +2,32 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <script>
+  // nginx уже шлёт index.html с Cache-Control: no-store, но мобильный
+  // Safari всё равно иногда показывает старый снимок страницы при
+  // возврате по истории или из свёрнутой вкладки — вообще без
+  // обращения к серверу. Заголовки тут бессильны: запроса не
+  // происходит, серверу нечего запретить кэшировать. Единственный
+  // надёжный способ — сделать адрес каждый раз новым: с другим
+  // query-параметром браузер не сможет подставить старый снимок,
+  // обязан сходить в сеть за настоящей страницей. Проверенное решение
+  // (тот же приём уже стоит в другом проекте) — once на вкладку, не в
+  // цикл, и через location.replace, не через обычный переход: не
+  // плодит лишнюю запись в истории браузера, кнопка «назад» ведёт
+  // туда же, что и раньше.
+  (function () {
+    try {
+      var u = new URL(location.href);
+      if (!u.searchParams.has('_v')) {
+        u.searchParams.set('_v', Date.now().toString(36));
+        location.replace(u.toString());
+      }
+    } catch (e) {}
+  })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
   <meta name="theme-color" content="#0E9F6E" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
