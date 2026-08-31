@@ -497,7 +497,8 @@
     "by_source": "Откуда",
     "own_source": "Свои объявления",
     "listings_count": "объявлений",
-    "own_short": "своих"
+    "own_short": "своих",
+    "promo_legend": "дни с платным продвижением"
   },
   "audit": {
     "title": "Журнал действий",

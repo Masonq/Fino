@@ -117,7 +117,7 @@ export default function ListingDashboard() {
 
           <div className="stats-block">
             <div className="stats-block-title">{t('stats.by_day')}</div>
-            <BarsChart key={days} items={data.daily} valueKey="views" unitKey="ldash.views_unit" />
+            <BarsChart key={days} items={data.daily} valueKey="views" unitKey="ldash.views_unit" promotions={data.promotions || []} />
           </div>
 
           {!data.is_complete && (

@@ -496,7 +496,8 @@
     "by_source": "Izvori",
     "own_source": "Svoji oglasi",
     "listings_count": "oglasa",
-    "own_short": "sopstvenih"
+    "own_short": "sopstvenih",
+    "promo_legend": "dani sa plaćenim promovisanjem"
   },
   "audit": {
     "title": "Dnevnik radnji",

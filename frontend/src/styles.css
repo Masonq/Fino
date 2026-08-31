@@ -2815,6 +2815,17 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   border-radius: 4px 4px 0 0;
 }
 .stats-bar-day { margin-top: 4px; font-size: 10px; color: #999; overflow: hidden; white-space: nowrap; }
+.stats-bar-promo-dot{
+  width: 5px; height: 5px; border-radius: 50%; background: #E0A030; margin-top: 3px; flex-shrink: 0;
+}
+.stats-bars-legend{
+  display: flex; align-items: center; gap: 6px; margin-top: 8px;
+  font-size: 11.5px; color: var(--muted, #8a8a85);
+}
+.stats-bars-promo-tag{
+  margin-left: 6px; padding: 2px 7px; border-radius: 7px; background: #FBF3E3; color: #8A6A1F;
+  font-size: 11px; font-weight: 700;
+}
 
 .stats-rows { display: flex; flex-direction: column; }
 .stats-row {

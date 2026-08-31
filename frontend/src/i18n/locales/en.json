@@ -495,7 +495,8 @@
     "by_source": "Sources",
     "own_source": "Own listings",
     "listings_count": "listings",
-    "own_short": "own"
+    "own_short": "own",
+    "promo_legend": "days with paid promotion"
   },
   "audit": {
     "title": "Action log",

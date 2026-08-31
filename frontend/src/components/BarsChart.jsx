@@ -13,10 +13,28 @@ import { useTranslation } from 'react-i18next'
 // unitKey — ключ перевода единицы измерения в строке над графиком
 // («объявлений», «просмотров» и т.п.) — раньше был жёстко зашит под
 // один-единственный случай использования в статистике админки.
-export default function BarsChart({ items, valueKey, secondKey, unitKey = 'stats.listings_count' }) {
+export default function BarsChart({ items, valueKey, secondKey, unitKey = 'stats.listings_count', promotions = [] }) {
   const { t, i18n } = useTranslation()
   const [selectedDay, setSelectedDay] = useState(null)
   const peak = Math.max(1, ...items.map((d) => d[valueKey] || 0))
+
+  // Даты продвижения приходят точными метками времени (начало/конец),
+  // а столбики графика — по календарным дням: день промаркирован, если
+  // хоть немного пересекается с периодом хоть одного продвижения —
+  // человек смотрит по дням, не по часам, «весь день чуть-чуть
+  // подсвечен» понятнее, чем дробить один столбик пополам.
+  const promotedDays = new Map()
+  for (const p of promotions) {
+    const start = new Date(p.starts_at)
+    const end = new Date(p.expires_at)
+    for (const d of items) {
+      const dayStart = new Date(`${d.day}T00:00:00`)
+      const dayEnd = new Date(`${d.day}T23:59:59.999`)
+      if (start <= dayEnd && end >= dayStart && !promotedDays.has(d.day)) {
+        promotedDays.set(d.day, p.type)
+      }
+    }
+  }
 
   const active = items.find((d) => d.day === selectedDay) || items[items.length - 1]
   const activeValue = active ? (active[valueKey] || 0) : 0
@@ -24,6 +42,7 @@ export default function BarsChart({ items, valueKey, secondKey, unitKey = 'stats
   const activeDate = active
     ? new Date(`${active.day}T00:00:00`).toLocaleDateString(i18n.language, { day: 'numeric', month: 'long' })
     : ''
+  const activePromo = active ? promotedDays.get(active.day) : null
 
   return (
     <div>
@@ -31,6 +50,7 @@ export default function BarsChart({ items, valueKey, secondKey, unitKey = 'stats
         <div className="stats-bars-info">
           <b>{activeDate}</b> — {activeValue} {t(unitKey)}
           {!!secondKey && ` (${activeSecond} ${t('stats.own_short')})`}
+          {activePromo && <span className="stats-bars-promo-tag">{t(`promo.type_${activePromo}`)}</span>}
         </div>
       )}
       <div className="stats-bars">
@@ -38,6 +58,7 @@ export default function BarsChart({ items, valueKey, secondKey, unitKey = 'stats
           const value = d[valueKey] || 0
           const second = secondKey ? d[secondKey] || 0 : 0
           const isActive = active === d
+          const promoted = promotedDays.has(d.day)
           return (
             <button
               type="button"
@@ -59,10 +80,17 @@ export default function BarsChart({ items, valueKey, secondKey, unitKey = 'stats
                 </div>
               </div>
               <span className="stats-bar-day">{d.day.slice(8)}</span>
+              {promoted && <span className="stats-bar-promo-dot" />}
             </button>
           )
         })}
       </div>
+      {promotedDays.size > 0 && (
+        <div className="stats-bars-legend">
+          <span className="stats-bar-promo-dot" />
+          {t('stats.promo_legend')}
+        </div>
+      )}
     </div>
   )
 }

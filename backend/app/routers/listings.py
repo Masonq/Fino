@@ -1276,6 +1276,34 @@ def listing_dashboard(
     favorites_count = db.query(Favorite).filter(Favorite.listing_id == listing_id).count()
     chats_count = db.query(Chat).filter(Chat.listing_id == listing_id).count()
 
+    # Периоды платного продвижения — накладываем на график просмотров,
+    # чтобы было видно, помогает ли оно на самом деле, а не гадать.
+    # Только оплаченные и только те, что хоть немного пересекаются с
+    # показанным диапазоном дат — прошлогоднее поднятие на графике за
+    # последний месяц не нужно.
+    from app.models import Promotion, PromotionStatus, PromotionType
+    since_dt = datetime.combine(since, datetime.min.time())
+    promos = (
+        db.query(Promotion)
+        .filter(
+            Promotion.listing_id == listing_id,
+            Promotion.status == PromotionStatus.paid,
+            Promotion.starts_at.isnot(None),
+            Promotion.expires_at.isnot(None),
+            Promotion.expires_at >= since_dt,
+        )
+        .order_by(Promotion.starts_at)
+        .all()
+    )
+    promo_periods = [
+        {
+            "type": p.type.value if isinstance(p.type, PromotionType) else p.type,
+            "starts_at": p.starts_at.isoformat(),
+            "expires_at": p.expires_at.isoformat(),
+        }
+        for p in promos
+    ]
+
     return {
         "views_total": listing.views_count,
         "favorites_count": favorites_count,
@@ -1285,6 +1313,7 @@ def listing_dashboard(
         "published_at": listing.published_at.isoformat() if listing.published_at else None,
         "expires_at": listing.expires_at.isoformat() if listing.expires_at else None,
         "daily": daily,
+        "promotions": promo_periods,
     }
 
 
