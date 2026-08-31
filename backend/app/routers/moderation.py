@@ -74,6 +74,14 @@ def _after_approve(listing_id) -> None:
         except Exception:
             pass
 
+        # реферальный бонус — если это первое одобренное объявление
+        # приглашённого человека
+        try:
+            from app.core.referrals import reward_referral_if_first_listing
+            reward_referral_if_first_listing(db, listing)
+        except Exception:
+            pass
+
 
 @router.get("/queue")
 def queue(

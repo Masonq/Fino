@@ -10,6 +10,7 @@ import ChatScreen from './pages/ChatScreen'
 import ComingSoon from './pages/ComingSoon'
 import Favorites from './pages/Favorites'
 import BlockedUsers from './pages/BlockedUsers'
+import InviteFriend from './pages/InviteFriend'
 import Notifications from './pages/Notifications'
 import ListingDashboard from './pages/ListingDashboard'
 import LegalDoc from './pages/LegalDoc'
@@ -157,6 +158,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/profile/blocked" element={<BlockedUsers />} />
+          <Route path="/profile/invite" element={<InviteFriend />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/my/:id/stats" element={<ListingDashboard />} />
           <Route path="/terms" element={<LegalDoc doc="terms" />} />

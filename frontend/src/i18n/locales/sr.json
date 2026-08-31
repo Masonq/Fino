@@ -710,5 +710,18 @@
   "blocked": {
     "title": "Blokirani korisnici",
     "empty": "Niste nikoga blokirali"
+  },
+  "invite": {
+    "card_title": "Pozovite prijatelja",
+    "card_subtitle": "Dobijte 100₽ za svakog",
+    "title": "Pozovite prijatelja",
+    "hero_title": "Pozovite prijatelje",
+    "hero_text": "Kada prijatelj objavi svoj prvi oglas, oboje dobijate po {{amount}}₽ na račun",
+    "share_btn": "Podeli link",
+    "copied": "Link kopiran",
+    "share_title": "Pridruži se PLONK-u — oglasi Srbije",
+    "stat_invited": "pozvano",
+    "stat_rewarded": "objavilo oglas",
+    "fineprint": "Bonus se dodeljuje za svakog pozvanog prijatelja čiji prvi oglas bude odobren. Dodeljuje se jednom po osobi."
   }
 }

@@ -64,7 +64,13 @@ export const api = {
   }),
   verifyCode: (destination, code, channel, displayName) => request('/auth/verify-code', {
     method: 'POST',
-    body: JSON.stringify({ destination, code, channel, display_name: displayName }),
+    body: JSON.stringify({
+      destination, code, channel, display_name: displayName,
+      // Кто пригласил — запомнили при заходе по ссылке ?ref=<id>
+      // (см. main.jsx), значение имеет смысл только для НОВОГО
+      // человека, на существующий аккаунт сервер его просто не смотрит.
+      referred_by: localStorage.getItem('fino_ref') || null,
+    }),
   }),
   loginPassword: (email, password) => request('/auth/login', {
     method: 'POST',
@@ -273,6 +279,7 @@ export const api = {
   blockChatPartner: (chatId) => request(`/chats/${chatId}/block`, { method: 'POST' }),
   unblockChatPartner: (chatId) => request(`/chats/${chatId}/unblock`, { method: 'POST' }),
   listBlockedUsers: () => request('/users/blocked'),
+  myReferrals: () => request('/users/me/referrals'),
   unblockUser: (userId) => request(`/users/blocked/${userId}/unblock`, { method: 'POST' }),
   requestCall: (chatId) => request(`/chats/${chatId}/call-request`, { method: 'POST' }),
   allowCall: (chatId) => request(`/chats/${chatId}/call-allow`, { method: 'POST' }),

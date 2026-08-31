@@ -210,6 +210,23 @@ def edit_profile(
     return my_profile(user)
 
 
+@router.get("/me/referrals")
+def my_referrals(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Сколько людей привёл и скольким уже начислен бонус — id для самой
+    ссылки (plonk.rs/?ref=<id>) строится на фронте из user.id, тут
+    только счётчик, отдельным эндпоинтом: не вешаем лишний COUNT-запрос
+    на /auth/me, который дёргается при каждой загрузке приложения.
+    """
+    total = db.query(User).filter(User.referred_by == user.id).count()
+    rewarded = db.query(User).filter(
+        User.referred_by == user.id, User.referral_reward_given.is_(True)).count()
+    return {"invited_total": total, "invited_rewarded": rewarded}
+
+
 @router.get("/blocked")
 def list_blocked(
     user: User = Depends(get_current_user),

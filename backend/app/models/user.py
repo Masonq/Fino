@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import String, Boolean, DateTime, Enum, Float, Integer, Text, Numeric
+from sqlalchemy import String, Boolean, DateTime, Enum, Float, Integer, Text, Numeric, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -53,6 +53,18 @@ class User(Base):
     # продвижение объявлений напрямую, без похода к ЮKassa каждый раз.
     # Numeric, не Float: деньги, копейки не должны плавать.
     balance: Mapped[float] = mapped_column(Numeric(10, 2), default=0)
+
+    # Реферальная программа — простой крючок для роста: пригласившему и
+    # приглашённому начисляется бонус на баланс, когда приглашённый
+    # публикует своё первое одобренное объявление (не просто
+    # регистрируется — так не выгодно накручивать пустыми аккаунтами).
+    # referred_by пишется один раз, при регистрации — кто именно привёл
+    # этого человека. reward_given защищает от повторной выплаты, если
+    # что-то вызовет проверку дважды (например, объявление отклонили и
+    # одобрили заново).
+    referred_by: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    referral_reward_given: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # Business seller fields (APR verification — Serbian company registry)
     company_name: Mapped[str | None] = mapped_column(String(255), nullable=True)

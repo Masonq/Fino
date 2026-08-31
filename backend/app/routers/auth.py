@@ -33,6 +33,10 @@ class VerifyCodeIn(BaseModel):
     code: str
     display_name: str | None = None
     channel: VerifyChannel = VerifyChannel.email
+    # Кто пригласил — id пользователя из ссылки ?ref=<id>. Только на
+    # регистрации нового человека имеет значение; для уже
+    # существующего аккаунта просто игнорируется.
+    referred_by: str | None = None
 
 
 class PasswordLoginIn(BaseModel):
@@ -130,6 +134,18 @@ def verify_code_endpoint(payload: VerifyCodeIn, request: Request, db: Session = 
 
     record.used = True
 
+    # Проверяем и резолвим пригласившего один раз — до создания
+    # пользователя, а не после: сам объект User() ещё не существует,
+    # проще передать в конструктор сразу, чем потом отдельным UPDATE.
+    referrer_id = None
+    if payload.referred_by:
+        try:
+            candidate = uuid.UUID(payload.referred_by)
+            if db.query(User.id).filter(User.id == candidate).first():
+                referrer_id = candidate
+        except ValueError:
+            pass   # битый/поддельный id в ссылке — просто без реферала, не 400
+
     # находим или создаём пользователя
     if payload.channel == VerifyChannel.email:
         user = db.query(User).filter(User.email == destination).first()
@@ -138,6 +154,7 @@ def verify_code_endpoint(payload: VerifyCodeIn, request: Request, db: Session = 
                 email=destination,
                 display_name=payload.display_name or destination.split("@")[0],
                 email_verified=True,
+                referred_by=referrer_id,
             )
             db.add(user)
         else:
@@ -148,6 +165,7 @@ def verify_code_endpoint(payload: VerifyCodeIn, request: Request, db: Session = 
             user = User(
                 telegram_id=destination,
                 display_name=payload.display_name or f"user{destination[-4:]}",
+                referred_by=referrer_id,
             )
             db.add(user)
 

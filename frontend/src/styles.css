@@ -1335,6 +1335,57 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .balance-preset.active{ background:var(--primary); color:#fff; }
 
+/* Карточка-приглашение в профиле — та же оболочка, что у balance-card,
+   чтобы не выглядело чужеродной вставкой рядом с ней. */
+.invite-card{
+  display:flex; align-items:center; gap:12px;
+  margin:10px 12px 0; padding:14px; border-radius:16px;
+  background:#fff; border:1px solid rgba(20,30,25,.06);
+}
+.invite-card-icon{
+  width:38px; height:38px; border-radius:11px; flex-shrink:0;
+  background:var(--primary-soft); color:var(--primary-deep,#0A7A54);
+  display:flex; align-items:center; justify-content:center;
+}
+.invite-card-text{ display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
+.invite-card-text b{ font-size:13.5px; color:var(--ink); }
+.invite-card-text span{ font-size:11.5px; color:var(--muted); }
+.invite-card-chevron{ font-size:20px; color:var(--muted); flex-shrink:0; }
+
+/* Страница «Пригласить друга» */
+.invite-hero{
+  text-align:center; padding:8px 24px 20px;
+}
+.invite-hero-icon{
+  width:64px; height:64px; border-radius:50%; margin:0 auto 14px;
+  background:var(--primary-soft); color:var(--primary-deep,#0A7A54);
+  display:flex; align-items:center; justify-content:center;
+}
+.invite-hero h2{ font-size:19px; font-weight:800; color:var(--ink); margin-bottom:6px; }
+.invite-hero p{ font-size:13.5px; color:var(--ink-soft); line-height:1.5; }
+.invite-link-row{
+  margin:0 18px; padding:13px 14px; border-radius:12px;
+  background:var(--tile); border:1px solid rgba(20,30,25,.07);
+}
+.invite-link-text{
+  display:block; font-size:12.5px; color:var(--ink-soft); font-weight:600;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.invite-share-btn{
+  display:block; width:calc(100% - 36px); margin:12px 18px 0; padding:14px;
+  border-radius:13px; background:var(--primary); color:#fff;
+  font-size:14.5px; font-weight:700; text-align:center;
+}
+.invite-stats{ display:flex; gap:10px; margin:20px 18px 0; }
+.invite-stat{
+  flex:1; padding:14px; border-radius:14px; background:var(--tile); text-align:center;
+}
+.invite-stat b{ display:block; font-size:22px; font-weight:800; color:var(--ink); }
+.invite-stat span{ font-size:11.5px; color:var(--muted); font-weight:600; margin-top:2px; display:block; }
+.invite-fineprint{
+  font-size:11.5px; color:var(--muted); line-height:1.5; text-align:center;
+  margin:20px 24px 0;
+}
 .profile-section-title{
   padding:0 16px 8px; margin-top:4px;
   font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.04em;

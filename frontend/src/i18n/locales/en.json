@@ -709,5 +709,18 @@
   "blocked": {
     "title": "Blocked users",
     "empty": "You haven't blocked anyone"
+  },
+  "invite": {
+    "card_title": "Invite a friend",
+    "card_subtitle": "Get 100₽ credit for each one",
+    "title": "Invite a friend",
+    "hero_title": "Invite your friends",
+    "hero_text": "When your friend publishes their first listing, you both get {{amount}}₽ credited to your balance",
+    "share_btn": "Share link",
+    "copied": "Link copied",
+    "share_title": "Join PLONK — Serbian classifieds",
+    "stat_invited": "invited",
+    "stat_rewarded": "published a listing",
+    "fineprint": "The bonus is credited for each invited friend whose first listing gets published and approved. Credited once per person."
   }
 }
