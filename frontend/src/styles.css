@@ -221,7 +221,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    не наша обводка, дефолт Safari. Прячем на тач-выбор, но оставляем
    для управления с клавиатуры (:focus-visible) — так её не потеряет
    тот, кому она реально нужна для навигации без мыши. */
-.city-pill select:focus-visible{ outline:2px solid rgba(255,255,255,.7); outline-offset:2px; }
+/* :focus-visible не спасло — на iOS Safari тап по <select> тоже
+   считается «клавиатурной» навигацией для этого правила, и обводка
+   всё равно показывалась. Просто убираю совсем. */
 .city-pill select option{ color:var(--ink); }
 .city-pill-chevron{ opacity:.5; pointer-events:none; }
 .lang-switch{ display:flex; background:rgba(255,255,255,.24); border-radius:10px; padding:3px; backdrop-filter:blur(4px); }
