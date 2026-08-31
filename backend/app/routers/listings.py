@@ -685,7 +685,7 @@ def search_listings(
             "city": listing.city,
             "cover_photo": cover.thumbnail_url if cover else None,
             "cover_is_video": bool(cover.is_video) if cover else False,
-            "is_reserved": bool(l.reserved_until and l.reserved_until > utcnow()),
+            "is_reserved": bool(listing.reserved_until and listing.reserved_until > utcnow()),
             "cover_video_url": cover.url if (cover and cover.is_video) else None,
             "delivery_available": listing.delivery_available,
             "is_xl": listing.id in promo[PromotionType.xl_card],
