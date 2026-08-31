@@ -11,7 +11,7 @@ from app.routers import (
     categories, chats,
     favorites, listings,
     media,
-    moderation, notifications, preview, promotions, reports, reviews, saved_searches, seo, support,
+    moderation, notifications, preview, promotions, push, reports, reviews, saved_searches, seo, support,
     users, verification,
 )
 
@@ -57,6 +57,7 @@ app.include_router(admin_audit.router)
 app.include_router(support.router)
 app.include_router(auth_telegram.router)
 app.include_router(seo.router)
+app.include_router(push.router)
 
 
 @app.get("/api/health")

@@ -669,7 +669,10 @@
     "sec_activity": "Aktivnost",
     "sec_info": "Informacije",
     "sec_settings": "Podešavanja",
-    "language": "Jezik"
+    "language": "Jezik",
+    "push_notifications": "Push obaveštenja",
+    "push_unsupported": "Nije podržano",
+    "push_blocked": "Blokirano u pregledaču"
   },
   "verify": {
     "title": "Provera dokumenta",

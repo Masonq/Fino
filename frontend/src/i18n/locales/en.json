@@ -668,7 +668,10 @@
     "sec_activity": "Activity",
     "sec_info": "Information",
     "sec_settings": "Settings",
-    "language": "Language"
+    "language": "Language",
+    "push_notifications": "Push notifications",
+    "push_unsupported": "Not supported",
+    "push_blocked": "Blocked in browser"
   },
   "verify": {
     "title": "Identity verification",

@@ -190,6 +190,9 @@ export const api = {
   sellerProfile: (userId, lang) => request(`/users/${userId}/public?${new URLSearchParams({ lang })}`),
   sellerListings: (userId, lang, offset = 0) => request(`/listings/by-seller/${userId}?${new URLSearchParams({ lang, offset })}`),
   subscribeToSeller: (userId) => request(`/users/${userId}/subscribe`, { method: 'POST' }),
+  vapidPublicKey: () => request('/push/vapid-public-key'),
+  pushSubscribe: (sub) => request('/push/subscribe', { method: 'POST', body: JSON.stringify(sub) }),
+  pushUnsubscribe: (endpoint) => request('/push/unsubscribe', { method: 'POST', body: JSON.stringify({ endpoint }) }),
   unsubscribeFromSeller: (userId) => request(`/users/${userId}/subscribe`, { method: 'DELETE' }),
   setListingStatus: (id, status) => request(`/listings/${id}/status`, {
     method: 'PATCH',

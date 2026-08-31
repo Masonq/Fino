@@ -6,6 +6,7 @@ import PhoneReminder from '../components/PhoneReminder'
 import { ProfileSkeleton } from '../components/Skeletons'
 import NotificationBell from '../components/NotificationBell'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+import PushToggle from '../components/PushToggle'
 import BalanceCard from '../components/BalanceCard'
 
 export default function Profile() {
@@ -143,6 +144,13 @@ export default function Profile() {
           </span>
           {t('profile.language')}
           <LanguageSwitcher variant="light" />
+        </div>
+        <div className="profile-row profile-row-static">
+          <span className="profile-row-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>
+          </span>
+          {t('profile.push_notifications')}
+          <PushToggle />
         </div>
         <Link className="profile-row" to="/profile/blocked">
           <span className="profile-row-icon">

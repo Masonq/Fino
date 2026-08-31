@@ -670,7 +670,10 @@
     "sec_activity": "Общение",
     "sec_info": "Информация",
     "sec_settings": "Настройки",
-    "language": "Язык"
+    "language": "Язык",
+    "push_notifications": "Push-уведомления",
+    "push_unsupported": "Не поддерживается",
+    "push_blocked": "Заблокировано в браузере"
   },
   "verify": {
     "title": "Проверка документа",

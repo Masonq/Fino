@@ -80,6 +80,17 @@ def notify(db: Session, user_id, text: str, force: bool = False,
         if utcnow() - user.last_seen_at < ACTIVE_WINDOW:
             return False   # он в приложении, увидит сам
 
+    # Push — независимый канал, шлём его всегда вместе с любым другим:
+    # человек мог разрешить пуши в браузере И иметь привязанный
+    # Telegram одновременно, оба на разных устройствах — не выбираем
+    # между ними, слово в это же событие докладывается на все места,
+    # где его реально увидят.
+    try:
+        from app.core.webpush import send_web_push
+        send_web_push(db, user_id, subject or "PLONK", _strip_tags(text), link=link)
+    except Exception as exc:                     # noqa: BLE001
+        log.warning("Web Push не отправлен: %s", exc)
+
     if user.telegram_id:
         return _send_telegram(user.telegram_id, text)
 
