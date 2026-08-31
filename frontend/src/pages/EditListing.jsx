@@ -27,7 +27,6 @@ export default function EditListing() {
   const [photos, setPhotos] = useState([])
   const [photoBusy, setPhotoBusy] = useState(false)
   const [photoError, setPhotoError] = useState('')
-  const [video, setVideo] = useState(null)
   const [videoBusy, setVideoBusy] = useState(false)
   const [videoError, setVideoError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -52,7 +51,6 @@ export default function EditListing() {
     setLocationLng(null)
     setHideExactAddress(false)
     setPhotos([])
-    setVideo(null)
     api.getListing(id)
       .then((l) => {
         setListing(l)
@@ -72,7 +70,6 @@ export default function EditListing() {
         }
         setHideExactAddress(!!l.hide_exact_address)
         setPhotos(l.photos || [])
-        if (l.video_url) setVideo({ url: l.video_url, thumbnail_url: l.video_thumbnail_url })
       })
       .catch(() => setListing(null))
   }, [id])
@@ -108,21 +105,26 @@ export default function EditListing() {
     }
   }
 
-  // Видео — не отдельный эндпоинт с немедленным сохранением, как у
-  // фото (add/deleteListingPhoto): одно поле самого объявления, как
-  // координаты — грузится сразу (перекодирование на сервере занимает
-  // время, ждать нажатия «Сохранить» после уже готового файла было бы
-  // странно), но на сервер объявления улетает вместе с остальной
-  // формой по кнопке «Сохранить».
-  const handleVideoSelect = async (e) => {
-    const file = e.target.files?.[0]
-    e.target.value = ''
-    if (!file) return
+  // Видео — запись в той же коллекции photos (is_video:true), не
+  // отдельное поле объявления: то же самое, что уже устроено для фото
+  // (add/deleteListingPhoto — сразу на сервер, не ждёт «Сохранить»),
+  // просто перед прикреплением ещё и перекодируется.
+  const hasVideo = photos.some((p) => p.is_video)
+
+  const handleVideoSelect = async (event) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file || hasVideo || photos.length >= 10) return
     setVideoError('')
     setVideoBusy(true)
     try {
-      const res = await api.uploadVideo(file)
-      setVideo({ url: res.video_url, thumbnail_url: res.video_thumbnail_url })
+      const uploaded = await api.uploadVideo(file)
+      const attached = await api.addListingPhoto(id, {
+        url: uploaded.video_url,
+        thumbnail_url: uploaded.video_thumbnail_url,
+        is_video: true,
+      })
+      setPhotos((prev) => [...prev, attached])
     } catch (err) {
       const map = {
         unsupported_format: t('post.video_err_format'),
@@ -135,8 +137,6 @@ export default function EditListing() {
       setVideoBusy(false)
     }
   }
-
-  const removeVideo = () => { setVideo(null); setVideoError('') }
 
   // Обложка — просто фото на первом месте, отдельного поля на экране
   // нет: «сделать обложкой» — переставить это фото вперёд, остальные
@@ -171,8 +171,6 @@ export default function EditListing() {
         location_lat: locationLat,
         location_lng: locationLng,
         hide_exact_address: hideExactAddress,
-        video_url: video?.url || null,
-        video_thumbnail_url: video?.thumbnail_url || null,
       })
       setSaved(true)
       setTimeout(() => navigate('/my'), 1200)
@@ -231,7 +229,12 @@ export default function EditListing() {
           <div className="photo-grid">
             {photos.map((p, i) => (
               <div key={p.id} className="photo-thumb">
-                <img src={p.url} alt="" />
+                <img src={p.is_video ? p.thumbnail_url : p.url} alt="" />
+                {p.is_video && (
+                  <span className="grid-video-badge">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z" /></svg>
+                  </span>
+                )}
                 {i === 0 ? (
                   <span className="photo-cover-badge">{t('edit.cover')}</span>
                 ) : (
@@ -262,34 +265,17 @@ export default function EditListing() {
                 {t('post.photos')}
               </label>
             )}
+            {photos.length < 10 && !hasVideo && (
+              <label className={videoBusy ? 'photo-add disabled' : 'photo-add'}>
+                <input type="file" accept="video/mp4,video/quicktime,video/webm,video/3gpp" onChange={handleVideoSelect} disabled={videoBusy} hidden />
+                {videoBusy
+                  ? <span className="spinner" />
+                  : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 7l-7 5 7 5V7z" /><rect x="1" y="5" width="15" height="14" rx="2" /></svg>}
+                {videoBusy ? t('post.video_processing') : t('post.video_add')}
+              </label>
+            )}
           </div>
           {photoError && <p className="auth-error">{photoError}</p>}
-        </div>
-
-        <div className="post-field">
-          <label>{t('post.video_optional')}</label>
-          {video?.url ? (
-            <div className="video-thumb">
-              <img src={video.thumbnail_url} alt="" />
-              <div className="video-play-badge">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z" /></svg>
-              </div>
-              <button type="button" className="photo-remove" onClick={removeVideo} aria-label={t('actions.clear')}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6"><path d="M18 6 6 18M6 6l12 12" /></svg>
-              </button>
-            </div>
-          ) : videoBusy ? (
-            <div className="video-thumb video-uploading">
-              <span className="spinner" />
-              <span className="video-uploading-text">{t('post.video_processing')}</span>
-            </div>
-          ) : (
-            <label className="photo-add video-add">
-              <input type="file" accept="video/mp4,video/quicktime,video/webm,video/3gpp" onChange={handleVideoSelect} hidden />
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 7l-7 5 7 5V7z" /><rect x="1" y="5" width="15" height="14" rx="2" /></svg>
-              {t('post.video_add')}
-            </label>
-          )}
           {videoError && <p className="auth-error">{videoError}</p>}
         </div>
 

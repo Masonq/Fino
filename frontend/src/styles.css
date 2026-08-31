@@ -325,6 +325,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .s-photo-wrap{ position:relative; display:block; border-radius:0; overflow:hidden; aspect-ratio:1/0.95; background:#ddd; }
 .l-card .s-photo-wrap{ aspect-ratio:16/10.5; border-radius:18px; }
 .s-photo-wrap img{ width:100%; height:100%; object-fit:cover; display:block; animation:photo-fade-in .25s ease; }
+.s-cover-video{ width:100%; height:100%; object-fit:cover; display:block; background:#111; }
 /* Пробуем смягчить ощущение «скачка», когда серый плейсхолдер скелетона
    сменяется настоящим фото — резкая смена контраста воспринимается
    как лёгкое движение, хотя сама вёрстка не сдвигается ни на пиксель
@@ -552,20 +553,15 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .location-search-result:last-child{ border-bottom:none; }
 .post-map-hint{ font-size:11.5px; color:var(--muted); margin-top:6px; line-height:1.4; }
 .post-map-hint.error{ color:var(--coral); }
-.video-thumb{
-  position:relative; aspect-ratio:16/10; max-width:220px; border-radius:12px; overflow:hidden;
-  background:#111; display:flex; align-items:center; justify-content:center;
+.video-uploading-text{ font-size:10px; color:#fff; font-weight:600; margin-top:4px; }
+/* Метка «это видео» на плитке в форме размещения/редактирования —
+   отличать от фото при управлении объявлением. Не то же самое, что
+   плей-бейдж поверх публичного превью в ленте (его специально нет —
+   видео там автопроигрывается само, без иконки поверх). */
+.grid-video-badge{
+  position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:5px;
+  background:rgba(0,0,0,.55); display:flex; align-items:center; justify-content:center;
 }
-.video-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
-.video-play-badge{
-  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-  background:rgba(0,0,0,.18); pointer-events:none;
-}
-.video-uploading{ flex-direction:column; gap:8px; background:var(--tile); }
-.video-uploading-text{ font-size:11px; color:var(--muted); font-weight:600; }
-.video-add{ max-width:220px; }
-.detail-video{ margin:12px 18px; border-radius:14px; overflow:hidden; background:#111; }
-.detail-video video{ width:100%; display:block; max-height:420px; }
 .post-map-clear{ font-size:12.5px; font-weight:700; color:var(--coral); margin-top:8px; }
 /* Leaflet рисует свой контрол зума крупным по умолчанию — на телефоне
    он слишком заметный рядом с компактной формой. */
@@ -2572,7 +2568,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   scrollbar-width:none;
 }
 .lightbox-strip::-webkit-scrollbar{ display:none; }
-.lightbox-strip img{
+.lightbox-strip img, .lightbox-strip video{
   width:100%; height:100%; flex:0 0 100%;
   object-fit:contain; scroll-snap-align:start;
 }

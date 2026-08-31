@@ -103,15 +103,6 @@ class Listing(Base):
     location_lng: Mapped[float | None] = mapped_column(Numeric(9, 6), nullable=True)
     hide_exact_address: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    # Одно видео на объявление, необязательное — обработано на сервере
-    # (перекодировано в H.264/AAC, превью-кадр вырезан), см.
-    # app/routers/media.py:upload_video. Само видео заметно тяжелее
-    # фото, второе на объявление не потянуло бы разумный размер
-    # хранилища без отдельной инфраструктуры — этого достаточно, чтобы
-    # показать вещь в движении (для чего оно и нужно), не карусель.
-    video_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    video_thumbnail_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
-
     status: Mapped[ListingStatus] = mapped_column(Enum(ListingStatus), default=ListingStatus.draft, index=True)
     rejection_reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
@@ -175,5 +166,12 @@ class ListingPhoto(Base):
     thumbnail_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
     is_cover: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Видео живёт в этой же коллекции, не отдельным полем на Listing —
+    # так оно бесплатно получает то же самое, что уже есть у фото:
+    # порядок, возможность стать обложкой, показ в общей карусели.
+    # url для видео — уже перекодированный H.264/AAC файл (см.
+    # upload_video в media.py), thumbnail_url — вырезанный кадр-превью,
+    # используется и как постер видео, и как обложка в карточке ленты.
+    is_video: Mapped[bool] = mapped_column(Boolean, default=False)
 
     listing = relationship("Listing", back_populates="photos")

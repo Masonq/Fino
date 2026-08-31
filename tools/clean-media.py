@@ -65,7 +65,7 @@ def main() -> None:
     freed = 0
     victims: list[Path] = []
     for path in media.iterdir():
-        if not path.is_file() or path.suffix.lower() not in (".jpg", ".jpeg", ".png", ".webp"):
+        if not path.is_file() or path.suffix.lower() not in (".jpg", ".jpeg", ".png", ".webp", ".mp4"):
             continue
         total += 1
         if path.name in used:

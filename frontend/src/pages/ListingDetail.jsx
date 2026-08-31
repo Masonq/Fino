@@ -520,10 +520,29 @@ export default function ListingDetail() {
               <div
                 className="photo-slide"
                 key={ph.url || i}
-                onClick={() => setFullscreen(i)}
+                onClick={ph.is_video ? undefined : () => setFullscreen(i)}
               >
-                <img className="photo-blur" src={ph.url} alt="" aria-hidden="true" />
-                <img className="photo-main" src={ph.url} alt="" loading={i === 0 ? 'eager' : 'lazy'} />
+                {ph.is_video ? (
+                  // Видео — со своими элементами управления (звук,
+                  // полный экран), поэтому без onClick на весь слайд:
+                  // иначе тап по самим контролам открывал бы ещё и
+                  // лайтбокс поверх них.
+                  <video
+                    className="photo-main"
+                    src={ph.url}
+                    poster={ph.thumbnail_url}
+                    autoPlay
+                    muted
+                    loop
+                    controls
+                    playsInline
+                  />
+                ) : (
+                  <>
+                    <img className="photo-blur" src={ph.url} alt="" aria-hidden="true" />
+                    <img className="photo-main" src={ph.url} alt="" loading={i === 0 ? 'eager' : 'lazy'} />
+                  </>
+                )}
               </div>
             ))}
           </div>
@@ -608,18 +627,6 @@ export default function ListingDetail() {
           </>
         )}
       </div>
-
-      {listing.video_url && (
-        <div className="detail-video">
-          <video
-            controls
-            playsInline
-            preload="none"
-            poster={listing.video_thumbnail_url}
-            src={listing.video_url}
-          />
-        </div>
-      )}
 
       {/* Подтверждение только для запасного пути (копия в буфер) —
           там, где сработало системное меню navigator.share, у
@@ -1056,7 +1063,9 @@ export default function ListingDetail() {
             }}
           >
             {photos.map((ph, i) => (
-              <img key={ph.url || i} src={ph.url} alt="" />
+              ph.is_video
+                ? <video key={ph.url || i} src={ph.url} poster={ph.thumbnail_url} controls playsInline />
+                : <img key={ph.url || i} src={ph.url} alt="" />
             ))}
           </div>
           {photos.length > 1 && (

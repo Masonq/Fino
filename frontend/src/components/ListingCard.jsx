@@ -56,7 +56,18 @@ export default function ListingCard({ listing, large = false }) {
           в боте, в письме и в карте сайта. Запасной на случай старых
           записей. */}
       <Link to={listing.path} className="s-photo-wrap">
-        {listing.cover_photo ? (
+        {listing.cover_is_video && listing.cover_video_url ? (
+          <video
+            className="s-cover-video"
+            src={listing.cover_video_url}
+            poster={listing.cover_photo || undefined}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+          />
+        ) : listing.cover_photo ? (
           <img src={listing.cover_photo} alt="" />
         ) : (
           <div className="photo-placeholder" />

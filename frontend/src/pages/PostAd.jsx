@@ -39,7 +39,7 @@ export default function PostAd() {
   const [hideExactAddress, setHideExactAddress] = useState(false)
   const [mapOpen, setMapOpen] = useState(false)
   const [photos, setPhotos] = useState([]) // [{url, thumbnail_url, uploading}]
-  const [video, setVideo] = useState(null) // {url, thumbnail_url} | {uploading:true} | {failed:true} | null
+  const [videoUploading, setVideoUploading] = useState(false)
   const [videoError, setVideoError] = useState('')
 
   const [phone, setPhone] = useState('')
@@ -102,7 +102,9 @@ export default function PostAd() {
     setCity(d.city || '')
     if (d.locationLat != null) { setLocationLat(d.locationLat); setLocationLng(d.locationLng); setMapOpen(true) }
     setHideExactAddress(!!d.hideExactAddress)
-    if (d.video?.url) setVideo(d.video)
+    // видео — обычный элемент того же массива photos (is_video:true),
+    // восстанавливается вместе с остальными фото ниже, отдельного поля
+    // в черновике для него больше нет
     setPhotos(d.photos || [])
     setDisplayName(d.displayName || '')
     if (d.step != null) setStep(d.step)
@@ -130,10 +132,9 @@ export default function PostAd() {
       savedAt: Date.now(), step, category, path, attrs, title, description,
       price, currency, negotiable, city, displayName, locationLat, locationLng, hideExactAddress,
       photos: photos.filter((p) => p.url && !p.uploading && !p.failed),
-      video: video && video.url ? video : null,
     }
     try { localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)) } catch { /* переполнен или недоступен — не критично */ }
-  }, [step, category, path, attrs, title, description, price, currency, negotiable, city, displayName, photos, locationLat, locationLng, hideExactAddress, video])
+  }, [step, category, path, attrs, title, description, price, currency, negotiable, city, displayName, photos, locationLat, locationLng, hideExactAddress])
 
   useEffect(() => {
     api.getCategories().then(setCategories).catch(() => setCategories([]))
@@ -205,20 +206,31 @@ export default function PostAd() {
 
   const removePhoto = (localId) => setPhotos((prev) => prev.filter((p) => p.localId !== localId))
 
-  // Видео — одно на объявление, не массив: перекодирование на сервере
-  // (см. media.py:upload_video) занимает заметное время, тут честный
-  // спиннер, а не мгновенное превью, как у фото.
+  // Видео — запись в той же самой сетке photos, с is_video:true, не
+  // отдельное состояние: так оно бесплатно получает то же самое, что
+  // уже есть у фото — порядок, «сделать обложкой», показ в общей
+  // карусели на странице объявления. Перекодирование на сервере (см.
+  // media.py:upload_video) занимает заметное время — честный спиннер
+  // прямо в сетке, как у обычного фото при загрузке.
+  const hasVideo = photos.some((p) => p.is_video && !p.failed)
+
   const handleVideoSelect = async (e) => {
     const file = e.target.files?.[0]
     e.target.value = ''
-    if (!file) return
+    if (!file || hasVideo) return
     setVideoError('')
-    setVideo({ uploading: true })
+    setVideoUploading(true)
+    const localId = `video-${Date.now()}`
+    setPhotos((prev) => [...prev, { localId, is_video: true, uploading: true }])
     try {
       const res = await api.uploadVideo(file)
-      setVideo({ url: res.video_url, thumbnail_url: res.video_thumbnail_url })
+      setPhotos((prev) => prev.map((p) => (
+        p.localId === localId
+          ? { ...p, url: res.video_url, thumbnail_url: res.video_thumbnail_url, uploading: false }
+          : p
+      )))
     } catch (err) {
-      setVideo(null)
+      setPhotos((prev) => prev.filter((p) => p.localId !== localId))
       const map = {
         unsupported_format: t('post.video_err_format'),
         file_too_large: t('post.video_err_size'),
@@ -226,10 +238,10 @@ export default function PostAd() {
         processing_failed: t('post.video_err_processing'),
       }
       setVideoError(map[err.code] || t('post.video_err_generic'))
+    } finally {
+      setVideoUploading(false)
     }
   }
-
-  const removeVideo = () => { setVideo(null); setVideoError('') }
 
   const requiredAttrsFilled = schema
     .filter((f) => f.required)
@@ -255,10 +267,10 @@ export default function PostAd() {
         location_lat: locationLat,
         location_lng: locationLng,
         hide_exact_address: hideExactAddress,
-        video_url: video?.url || null,
-        video_thumbnail_url: video?.thumbnail_url || null,
         translations: [{ language: i18n.language, title, description }],
-        photos: photos.filter((p) => p.url && !p.failed).map((p) => ({ url: p.url, thumbnail_url: p.thumbnail_url })),
+        photos: photos.filter((p) => p.url && !p.failed).map((p) => ({
+          url: p.url, thumbnail_url: p.thumbnail_url, is_video: !!p.is_video,
+        })),
       })
 
       // Телефон вводили на этом же шаге, но раньше он никуда не уходил —
@@ -436,7 +448,12 @@ export default function PostAd() {
               <div className="photo-grid">
                 {photos.map((p) => (
                   <div key={p.localId} className="photo-thumb">
-                    <img src={p.thumbnail_url || p.previewUrl} alt="" />
+                    {p.thumbnail_url || p.previewUrl ? <img src={p.thumbnail_url || p.previewUrl} alt="" /> : null}
+                    {p.is_video && !p.uploading && (
+                      <span className="grid-video-badge">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z" /></svg>
+                      </span>
+                    )}
                     {p.failed && (
                       <span className="photo-failed" title={t('post.photo_failed')}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
@@ -444,7 +461,12 @@ export default function PostAd() {
                         </svg>
                       </span>
                     )}
-                    {p.uploading && <div className="photo-thumb-loading"><span className="spinner" /></div>}
+                    {p.uploading && (
+                      <div className="photo-thumb-loading">
+                        <span className="spinner" />
+                        {p.is_video && <span className="video-uploading-text">{t('post.video_processing')}</span>}
+                      </div>
+                    )}
                     {!p.uploading && (
                       <button type="button" className="photo-remove" onClick={() => removePhoto(p.localId)} aria-label={t('actions.clear')}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6"><path d="M18 6 6 18M6 6l12 12" /></svg>
@@ -459,32 +481,14 @@ export default function PostAd() {
                     {t('post.photos')}
                   </label>
                 )}
+                {photos.length < 10 && !hasVideo && !videoUploading && (
+                  <label className="photo-add">
+                    <input type="file" accept="video/mp4,video/quicktime,video/webm,video/3gpp" onChange={handleVideoSelect} hidden />
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 7l-7 5 7 5V7z" /><rect x="1" y="5" width="15" height="14" rx="2" /></svg>
+                    {t('post.video_add')}
+                  </label>
+                )}
               </div>
-            </div>
-            <div className="post-field">
-              <label>{t('post.video_optional')}</label>
-              {video?.url ? (
-                <div className="video-thumb">
-                  <img src={video.thumbnail_url} alt="" />
-                  <div className="video-play-badge">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z" /></svg>
-                  </div>
-                  <button type="button" className="photo-remove" onClick={removeVideo} aria-label={t('actions.clear')}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6"><path d="M18 6 6 18M6 6l12 12" /></svg>
-                  </button>
-                </div>
-              ) : video?.uploading ? (
-                <div className="video-thumb video-uploading">
-                  <span className="spinner" />
-                  <span className="video-uploading-text">{t('post.video_processing')}</span>
-                </div>
-              ) : (
-                <label className="photo-add video-add">
-                  <input type="file" accept="video/mp4,video/quicktime,video/webm,video/3gpp" onChange={handleVideoSelect} hidden />
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 7l-7 5 7 5V7z" /><rect x="1" y="5" width="15" height="14" rx="2" /></svg>
-                  {t('post.video_add')}
-                </label>
-              )}
               {videoError && <div className="post-map-hint error">{videoError}</div>}
             </div>
             <div className="post-field-row">

@@ -29,6 +29,7 @@ class TranslationIn(BaseModel):
 class PhotoIn(BaseModel):
     url: str
     thumbnail_url: str | None = None
+    is_video: bool = False
 
 
 MAX_ATTRIBUTES_JSON_BYTES = 8000
@@ -57,10 +58,17 @@ class ListingCreate(BaseModel):
     location_lat: float | None = None
     location_lng: float | None = None
     hide_exact_address: bool = False
-    video_url: str | None = None
-    video_thumbnail_url: str | None = None
     translations: list[TranslationIn]
     photos: list[PhotoIn] = Field(default_factory=list, max_length=10)
+
+    @field_validator("photos")
+    @classmethod
+    def check_single_video(cls, v):
+        # Одно видео на объявление — не карусель роликов, второе
+        # только раздуло бы хранилище без реальной пользы.
+        if sum(1 for p in v if p.is_video) > 1:
+            raise ValueError("only_one_video_allowed")
+        return v
 
     @field_validator("attributes")
     @classmethod
@@ -208,6 +216,7 @@ def create_listing(
             thumbnail_url=photo.thumbnail_url or photo.url,
             sort_order=idx,
             is_cover=(idx == 0),
+            is_video=photo.is_video,
         ))
 
     db.commit()
@@ -677,6 +686,8 @@ def search_listings(
             "currency": listing.currency,
             "city": listing.city,
             "cover_photo": cover.thumbnail_url if cover else None,
+            "cover_is_video": bool(cover.is_video) if cover else False,
+            "cover_video_url": cover.url if (cover and cover.is_video) else None,
             "delivery_available": listing.delivery_available,
             "is_xl": listing.id in promo[PromotionType.xl_card],
             "is_highlighted": listing.id in promo[PromotionType.highlight],
@@ -743,6 +754,8 @@ def listings_by_ids(
             "path": listing_path(l.id, tr.title if tr else "", l.city,
                                  l.category.slug if l.category else None),
             "cover_photo": cover.thumbnail_url if cover else None,
+            "cover_is_video": bool(cover.is_video) if cover else False,
+            "cover_video_url": cover.url if (cover and cover.is_video) else None,
         }
 
     # снятые с публикации просто выпадают из списка
@@ -811,6 +824,8 @@ def my_listings(
             "path": listing_path(l.id, tr.title if tr else "", l.city,
                                  l.category.slug if l.category else None),
             "cover_photo": cover.thumbnail_url if cover else None,
+            "cover_is_video": bool(cover.is_video) if cover else False,
+            "cover_video_url": cover.url if (cover and cover.is_video) else None,
             "status": l.status.value,
             # Автор должен видеть, почему объявление отклонили — без
             # этого оно просто пропадало из виду без объяснений.
@@ -988,6 +1003,8 @@ def similar_listings(
             "is_xl": l.id in promo[PromotionType.xl_card],
             "is_highlighted": l.id in promo[PromotionType.highlight],
             "cover_photo": cover.thumbnail_url if cover else None,
+            "cover_is_video": bool(cover.is_video) if cover else False,
+            "cover_video_url": cover.url if (cover and cover.is_video) else None,
             "path": listing_path(l.id, tr.title if tr else "", l.city,
                                  l.category.slug if l.category else None),
         }
@@ -1040,6 +1057,8 @@ def seller_listings(
             "attributes": l.attributes,
             "category_slug": l.category.slug if l.category else None,
             "cover_photo": cover.thumbnail_url if cover else None,
+            "cover_is_video": bool(cover.is_video) if cover else False,
+            "cover_video_url": cover.url if (cover and cover.is_video) else None,
             "path": listing_path(l.id, tr.title if tr else "", l.city,
                                  l.category.slug if l.category else None),
         }
@@ -1195,9 +1214,13 @@ def get_listing(listing_id: str, request: Request, db: Session = Depends(get_db)
             and not (viewer and viewer.id == listing.owner_id)
         ),
         "hide_exact_address": bool(listing.hide_exact_address),
-        "video_url": listing.video_url,
-        "video_thumbnail_url": listing.video_thumbnail_url,
-        "photos": [{"id": str(p.id), "url": p.url, "is_cover": p.is_cover} for p in listing.photos],
+        "photos": [
+            {
+                "id": str(p.id), "url": p.url, "thumbnail_url": p.thumbnail_url,
+                "is_cover": p.is_cover, "is_video": p.is_video,
+            }
+            for p in listing.photos
+        ],
         "views_count": listing.views_count,
         # Публичный счётчик избранного — раньше видел только владелец
         # в своей отдельной статистике (listing_dashboard). Только
@@ -1443,8 +1466,6 @@ class ListingUpdate(BaseModel):
     location_lat: float | None = None
     location_lng: float | None = None
     hide_exact_address: bool | None = None
-    video_url: str | None = None
-    video_thumbnail_url: str | None = None
     attributes: dict | None = None
     title: str | None = None
     description: str | None = None
@@ -1526,13 +1547,6 @@ def update_listing(
     if "location_lng" in payload.model_fields_set:
         listing.location_lng = payload.location_lng
 
-    # То же самое рассуждение, что и с координатами: убрать видео —
-    # это тоже прислать null нарочно, не просто «не тронуть».
-    if "video_url" in payload.model_fields_set:
-        listing.video_url = payload.video_url
-    if "video_thumbnail_url" in payload.model_fields_set:
-        listing.video_thumbnail_url = payload.video_thumbnail_url
-
     if payload.title is not None or payload.description is not None:
         tr = next(
             (t for t in listing.translations if t.language == listing.source_language),
@@ -1600,6 +1614,8 @@ def add_photo(
         raise HTTPException(403, "not_owner")
     if len(listing.photos) >= 10:
         raise HTTPException(400, "too_many_photos")
+    if payload.is_video and any(p.is_video for p in listing.photos):
+        raise HTTPException(400, "only_one_video_allowed")
 
     next_order = max((p.sort_order for p in listing.photos), default=-1) + 1
     photo = ListingPhoto(
@@ -1608,6 +1624,7 @@ def add_photo(
         thumbnail_url=payload.thumbnail_url or payload.url,
         sort_order=next_order,
         is_cover=not listing.photos,   # первое фото у объявления — сразу обложка
+        is_video=payload.is_video,
     )
     db.add(photo)
 
@@ -1619,7 +1636,7 @@ def add_photo(
     listing.is_complete = _looks_complete(listing)
     db.commit()
     db.refresh(photo)
-    return {"id": str(photo.id), "url": photo.url, "is_cover": photo.is_cover}
+    return {"id": str(photo.id), "url": photo.url, "is_cover": photo.is_cover, "is_video": photo.is_video}
 
 
 @router.delete("/{listing_id}/photos/{photo_id}")
