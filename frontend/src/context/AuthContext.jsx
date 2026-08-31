@@ -4,20 +4,36 @@ import { api, TOKEN_KEY, getToken } from '../api/client'
 const AuthContext = createContext({
   user: null,
   loading: true,
+  lastKnownRole: null,
   signIn: () => {},
   signOut: () => {},
   updateUser: () => {},
 })
 
+// Роль с прошлого раза — не для прав доступа (те всегда сверяются по
+// настоящему user.role после ответа сервера), а только чтобы скелетон
+// профиля мог заранее прикинуть, показывать ли заглушку раздела для
+// модераторов/админов. user на старте — null, роль неоткуда взять,
+// пока не придёт ответ /me — у модератора/админа реальная страница
+// после загрузки всегда была на одну секцию длиннее скелетона.
+const LAST_ROLE_KEY = 'fino_last_role'
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [lastKnownRole, setLastKnownRole] = useState(() => localStorage.getItem(LAST_ROLE_KEY))
 
   // при запуске проверяем сохранённый токен
   useEffect(() => {
     if (!getToken()) { setLoading(false); return }
     api.me()
-      .then(setUser)
+      .then((userData) => {
+        setUser(userData)
+        if (userData?.role) {
+          localStorage.setItem(LAST_ROLE_KEY, userData.role)
+          setLastKnownRole(userData.role)
+        }
+      })
       .catch((err) => {
         // Токен снимаем только когда сервер прямо ответил «401 —
         // неверный/просроченный токен». Раньше снимали при ЛЮБОЙ
@@ -41,6 +57,10 @@ export function AuthProvider({ children }) {
     // старая заглушка хранила id отдельно — держим в согласии,
     // пока избранное и чаты не переведены на токен
     if (userData?.id) localStorage.setItem('fino_user_id', userData.id)
+    if (userData?.role) {
+      localStorage.setItem(LAST_ROLE_KEY, userData.role)
+      setLastKnownRole(userData.role)
+    }
   }, [])
 
   const signOut = useCallback(() => {
@@ -57,7 +77,9 @@ export function AuthProvider({ children }) {
     api.logout().catch(() => {})
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem('fino_user_id')
+    localStorage.removeItem(LAST_ROLE_KEY)
     setUser(null)
+    setLastKnownRole(null)
   }, [])
 
   // Правка профиля (имя, фото, компания) сохраняется на сервере, но
@@ -72,7 +94,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut, updateUser }}>
+    <AuthContext.Provider value={{ user, loading, lastKnownRole, signIn, signOut, updateUser }}>
       {children}
     </AuthContext.Provider>
   )

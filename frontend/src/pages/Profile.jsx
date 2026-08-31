@@ -11,13 +11,13 @@ import BalanceCard from '../components/BalanceCard'
 export default function Profile() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { user, loading, signOut } = useAuth()
+  const { user, loading, lastKnownRole, signOut } = useAuth()
 
   if (loading) {
     return (
       <div className="fav-page profile-page">
         <PageHeader title={t('nav.profile')} back={false} />
-        <ProfileSkeleton />
+        <ProfileSkeleton showStaff={lastKnownRole === 'moderator' || lastKnownRole === 'admin'} />
       </div>
     )
   }

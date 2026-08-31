@@ -188,7 +188,7 @@ export function AdminStatsSkeleton() {
 }
 
 // Шапка профиля — круглый аватар + имя + контакт, дальше пункты меню.
-export function ProfileSkeleton() {
+export function ProfileSkeleton({ showStaff = false }) {
   return (
     <>
       <div className="profile-head-card">
@@ -240,6 +240,29 @@ export function ProfileSkeleton() {
           </div>
         </div>
       ))}
+      {/* Пятая группа — только у модераторов/админов (условие в
+          Profile.jsx: user.role === 'moderator' || 'admin'). В момент
+          показа скелетона user ещё не загружен, роль неоткуда взять
+          напрямую — но AuthContext помнит роль с прошлого раза
+          (lastKnownRole), и для тех, кто уже открывал профиль будучи
+          модератором/админом, скелетон теперь резервирует и её. Для
+          обычного пользователя lastKnownRole не совпадёт — эта секция
+          просто не рендерится, как и раньше. */}
+      {showStaff && (
+        <div>
+          <div className="profile-section-title">
+            <div className="sk-block sk-line" style={{ height: 10, width: 70 }} />
+          </div>
+          <div className="profile-menu">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div className="profile-row" key={i}>
+                <div className="sk-block" style={{ width: 32, height: 32, borderRadius: 10, flexShrink: 0 }} />
+                <div className="sk-block sk-line" style={{ height: 14.5, width: 120 }} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </>
   )
 }
