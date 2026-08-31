@@ -32,6 +32,12 @@ export default function ChatScreen() {
   // уведомление, даже если прошлое уже закрывали.
   const [callNoticeDismissed, setCallNoticeDismissed] = useState(false)
   const [offerOpen, setOfferOpen] = useState(false)
+  // Закрыто крестиком — не навсегда, только на этот просмотр чата:
+  // тот же принцип, что уже есть у уведомления про звонок
+  // (callNoticeDismissed). Пропадает совсем — человек забудет, что
+  // вообще можно поторговаться; пропадает до следующего захода —
+  // не мешает прямо сейчас, но не теряется как возможность.
+  const [offerPillDismissed, setOfferPillDismissed] = useState(false)
   const [offerAmount, setOfferAmount] = useState('')
   const [offerBusy, setOfferBusy] = useState(false)
   const [reserveBusy, setReserveBusy] = useState(false)
@@ -587,7 +593,7 @@ export default function ChatScreen() {
               разрешил торг на самом объявлении. Отдельная маленькая
               панель, раскрывается по кнопке — не отдельная форма на
               весь экран ради одной цифры. */}
-          {!isSeller && chat?.listing_price_negotiable && chat?.listing_status === 'active' && (
+          {!isSeller && chat?.listing_price_negotiable && chat?.listing_status === 'active' && !offerPillDismissed && (
             <div className="offer-panel">
               {offerOpen ? (
                 <div className="offer-panel-form">
@@ -605,9 +611,18 @@ export default function ChatScreen() {
                   </button>
                 </div>
               ) : (
-                <button className="offer-panel-open" onClick={() => setOfferOpen(true)}>
-                  {t('chat.offer_open')}
-                </button>
+                <div className="offer-panel-open-row">
+                  <button className="offer-panel-open" onClick={() => setOfferOpen(true)}>
+                    {t('chat.offer_open')}
+                  </button>
+                  <button
+                    className="offer-panel-dismiss"
+                    onClick={() => setOfferPillDismissed(true)}
+                    aria-label={t('actions.close')}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>
+                  </button>
+                </div>
               )}
             </div>
           )}

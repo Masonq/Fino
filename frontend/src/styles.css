@@ -887,10 +887,16 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* Панель «Предложить цену» — раскрывается по кнопке над полем ввода,
    не отдельным экраном ради одной цифры. */
 .offer-panel{ padding:0 16px; background:#fff; }
+.offer-panel-open-row{ display:flex; gap:8px; align-items:center; margin:10px 0; }
 .offer-panel-open{
-  display:block; width:calc(100% - 32px); margin:10px auto; padding:11px;
+  flex:1; padding:11px;
   border-radius:13px; background:var(--primary-soft); color:var(--primary-deep,#0A7A54);
   font-size:13.5px; font-weight:700; text-align:center;
+}
+.offer-panel-dismiss{
+  flex-shrink:0; width:34px; height:34px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--muted); background:var(--tile);
 }
 .offer-panel-form{ display:flex; gap:8px; padding:10px 0; align-items:center; }
 .offer-panel-form input{
