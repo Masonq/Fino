@@ -287,7 +287,14 @@ export default function Search() {
             onChange={setFields}
           />
 
-          {!catsLoaded && (
+          {/* Категория ещё не выбрана — подкатегорий точно не будет,
+              категории тут ни при чём (subs всегда пустой без current).
+              Раньше скелетон рисовался при любом !catsLoaded, даже для
+              обычного текстового поиска без категории — три вымышленные
+              «таблетки» появлялись и тут же пропадали в пустоту, ведь
+              настоящие чипы для такого поиска никогда не должны были
+              возникнуть. */}
+          {category && !catsLoaded && (
             <div className="sub-row">
               <div className="sub-chip skeleton" style={{ width: 90 }} />
               <div className="sub-chip skeleton" style={{ width: 70 }} />
