@@ -1461,6 +1461,11 @@ def update_listing(
                 "changed_at": utcnow().isoformat(),
             })
             listing.price_history = history
+            # (снижение цены проверяется заново по price_history в
+            # момент, когда объявление снова станет активным после
+            # модерации — см. notify_price_drop в search_alerts.py —
+            # а не прямо тут: до одобрения объявление всё равно не
+            # показывается никому)
         setattr(listing, field, value)
         if field in ("price", "city") and value != current_cmp:
             content_changed = True

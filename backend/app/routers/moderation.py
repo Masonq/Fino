@@ -67,6 +67,13 @@ def _after_approve(listing_id) -> None:
         except Exception:
             pass
 
+        # и тех, у кого это объявление в избранном — если цена упала
+        try:
+            from app.core.search_alerts import notify_price_drop
+            notify_price_drop(db, listing)
+        except Exception:
+            pass
+
 
 @router.get("/queue")
 def queue(

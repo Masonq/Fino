@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 
-from app.models import SavedSearch, Listing, ListingTranslation, User, SellerSubscription
+from app.models import SavedSearch, Listing, ListingTranslation, User, SellerSubscription, Favorite
 from app.core.clock import utcnow
 
 log = logging.getLogger(__name__)
@@ -192,5 +192,69 @@ def notify_seller_subscribers(db: Session, listing: Listing) -> int:
 
     if sent:
         log.info("Объявление %s: уведомлено подписчиков продавца %s", listing.id, sent)
+
+    return sent
+
+
+def notify_price_drop(db: Session, listing: Listing) -> int:
+    """
+    Тем, у кого объявление в избранном — цена упала с прошлого раза,
+    когда оно было опубликовано. Вызывается там же, где и остальные
+    'объявление стало активным' уведомления — не сразу при самой правке
+    цены: правка сначала уводит объявление на повторную модерацию
+    (см. content_changed в update_listing), в это время оно не
+    показывается вовсе, и уведомлять о нём рано.
+
+    Только в приложение/Telegram — специально без почты (allow_email
+    не передаём, по умолчанию False): для избранного это не то, ради
+    чего стоит открывать почтовый ящик, в отличие от решения по
+    объявлению или запроса на вход.
+    """
+    history = listing.price_history or []
+    if not history or listing.price is None:
+        return 0
+    prev_price = history[-1].get("price")
+    prev_currency = history[-1].get("currency")
+    if prev_price is None or prev_currency != listing.currency:
+        return 0
+    if float(listing.price) >= float(prev_price):
+        return 0   # не упала — выросла или не изменилась с той записи
+
+    favorites = (
+        db.query(Favorite)
+        .filter(Favorite.listing_id == listing.id)
+        .all()
+    )
+    if not favorites:
+        return 0
+
+    from app.routers.listings import pick_translation
+    from app.core.notifications import notify
+
+    translations = list(listing.translations or [])
+    sent = 0
+    for fav in favorites:
+        if fav.user_id == listing.owner_id:
+            continue
+        user = db.query(User).get(fav.user_id)
+        if not user:
+            continue
+        lang = getattr(user.default_language, "value", None) or "ru"
+        tr = pick_translation(listing, lang)
+        title = tr.title if tr else (translations[0].title if translations else "")
+        text = (
+            f"Цена снизилась на объявление из избранного:\n\n"
+            f"<b>{title}</b>\n"
+            f"{prev_price:.0f} → {listing.price:.0f} {listing.currency}"
+        )
+        try:
+            if notify(db, fav.user_id, text, subject="PLONK — цена снизилась",
+                      link=f"/go/{listing.id}"):
+                sent += 1
+        except Exception:
+            continue
+
+    if sent:
+        log.info("Объявление %s: уведомлено о снижении цены %s", listing.id, sent)
 
     return sent
