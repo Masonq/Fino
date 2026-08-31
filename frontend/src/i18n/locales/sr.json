@@ -182,7 +182,12 @@
     "photo_failed": "Otpremanje nije uspelo — dodirnite da uklonite",
     "draft_found": "Pronađen nedovršen nacrt oglasa",
     "draft_restore": "Nastavi",
-    "draft_discard": "Počni ispočetka"
+    "draft_discard": "Počni ispočetka",
+    "location_add": "Označi lokaciju na mapi",
+    "location_set": "Lokacija je označena",
+    "location_hint": "Dodirnite mapu ili prevucite oznaku da biste postavili tačno mesto",
+    "hide_exact_address": "Ne prikazuj tačnu adresu — samo oblast",
+    "location_clear": "Ukloni lokaciju"
   },
   "detail": {
     "loading": "Učitavanje…",

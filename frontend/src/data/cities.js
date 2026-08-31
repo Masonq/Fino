@@ -13,6 +13,22 @@ export const CITIES = [
   { slug: 'kraljevo',   ru: 'Кралево',    en: 'Kraljevo',    sr: 'Kraljevo' },
 ]
 
+// Приблизительный центр — только чтобы карта при выборе точки открывалась
+// сразу над нужным городом, а не над всей Сербией целиком. Точность
+// самого объявления зависит от того, куда поставили метку, не отсюда.
+export const CITY_COORDS = {
+  'beograd':    [44.7866, 20.4489],
+  'novi-sad':   [45.2671, 19.8335],
+  'nis':        [43.3209, 21.8958],
+  'kragujevac': [44.0128, 20.9114],
+  'subotica':   [46.1008, 19.6667],
+  'zrenjanin':  [45.3836, 20.3823],
+  'pancevo':    [44.8708, 20.6403],
+  'cacak':      [43.8914, 20.3497],
+  'novi-pazar': [43.1367, 20.5122],
+  'kraljevo':   [43.7257, 20.6892],
+}
+
 export function cityLabel(slug, lang = 'ru') {
   const city = CITIES.find((c) => c.slug === slug)
   if (!city) return slug || ''

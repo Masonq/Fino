@@ -1044,6 +1044,23 @@ def seller_listings(
 
 
 @router.get("/{listing_id}")
+def _fuzz_coord(value: float, listing_id) -> float:
+    """
+    Размывает координату в пределах ~350 метров — детерминированно
+    (тот же listing_id всегда даёт то же смещение, а не новое при
+    каждой перезагрузке страницы, иначе точка на карте прыгала бы
+    туда-сюда). Смещение зависит от того, широта это или долгота
+    (используем сам факт вызова + значение как часть затравки), чтобы
+    оба смещения по одному объявлению не совпадали.
+    """
+    import hashlib
+    seed = f"{listing_id}:{value}".encode()
+    h = int(hashlib.sha256(seed).hexdigest()[:8], 16)
+    # ~350 метров в градусах — грубо, но fuzz и не претендует на точность
+    offset = ((h % 1000) / 1000 - 0.5) * 0.006
+    return round(value + offset, 5)
+
+
 def get_listing(listing_id: str, request: Request, db: Session = Depends(get_db),
                 viewer: User | None = Depends(get_current_user_optional)):
     query = db.query(Listing).options(
@@ -1146,6 +1163,32 @@ def get_listing(listing_id: str, request: Request, db: Session = Depends(get_db)
         # как он уже делает с переводами заголовка и описания.
         "attributes_i18n": listing.attributes_i18n or {},
         "city": listing.city,
+        # Точка на карте — необязательная: у большинства объявлений её
+        # никогда не задавали (только текст города). hide_exact_address
+        # решает не сам факт наличия координат, а то, показывать ли их
+        # ТОЧНО чужим — размытие делаем тут, а не на фронте, чтобы точные
+        # координаты вообще не покидали сервер для чужого просмотра.
+        # Владельцу (когда редактирует своё же объявление) отдаём как
+        # есть, без размытия — иначе, включив скрытие один раз, он бы
+        # больше никогда не увидел, куда сам поставил метку, и не смог
+        # бы её поправить осмысленно.
+        "location_lat": (
+            listing.location_lat
+            if (viewer and viewer.id == listing.owner_id) or not listing.hide_exact_address
+            or listing.location_lat is None
+            else _fuzz_coord(listing.location_lat, listing.id)
+        ),
+        "location_lng": (
+            listing.location_lng
+            if (viewer and viewer.id == listing.owner_id) or not listing.hide_exact_address
+            or listing.location_lng is None
+            else _fuzz_coord(listing.location_lng, listing.id)
+        ),
+        "location_approximate": bool(
+            listing.hide_exact_address and listing.location_lat is not None
+            and not (viewer and viewer.id == listing.owner_id)
+        ),
+        "hide_exact_address": bool(listing.hide_exact_address),
         "photos": [{"id": str(p.id), "url": p.url, "is_cover": p.is_cover} for p in listing.photos],
         "views_count": listing.views_count,
         # Дата публикации и номер — номер сначала был первыми 8
@@ -1356,6 +1399,9 @@ class ListingUpdate(BaseModel):
     currency: str | None = None
     price_negotiable: bool | None = None
     city: str | None = None
+    location_lat: float | None = None
+    location_lng: float | None = None
+    hide_exact_address: bool | None = None
     attributes: dict | None = None
     title: str | None = None
     description: str | None = None
@@ -1389,6 +1435,7 @@ def update_listing(
     content_changed = False
 
     for field in ("price", "currency", "price_negotiable", "city",
+                  "hide_exact_address",
                   "attributes", "delivery_available", "safe_deal_available"):
         value = getattr(payload, field)
         if value is None:
@@ -1417,6 +1464,19 @@ def update_listing(
         setattr(listing, field, value)
         if field in ("price", "city") and value != current_cmp:
             content_changed = True
+
+    # Координаты — отдельно от общего цикла выше: там None означает
+    # «поле не прислали, не трогаем», а тут null нужно уметь прислать
+    # НАРОЧНО — кнопка «Убрать точку» на карте шлёт именно
+    # location_lat: null, чтобы стереть ранее поставленную метку. Общий
+    # цикл такое молча проигнорировал бы (value is None -> continue),
+    # и метка оставалась бы в базе навсегда, что бы ни нажимали.
+    # model_fields_set — какие поля реально пришли в теле запроса,
+    # включая присланные как null, в отличие от вовсе отсутствующих.
+    if "location_lat" in payload.model_fields_set:
+        listing.location_lat = payload.location_lat
+    if "location_lng" in payload.model_fields_set:
+        listing.location_lng = payload.location_lng
 
     if payload.title is not None or payload.description is not None:
         tr = next(

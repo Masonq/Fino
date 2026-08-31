@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
-import { CITIES, cityLabel } from '../data/cities'
+import { CITIES, CITY_COORDS, cityLabel } from '../data/cities'
 import { shrinkImage } from '../data/shrinkImage'
 import { useAuth } from '../context/AuthContext'
 import CategoryArt from '../components/CategoryArt'
+import LocationPicker from '../components/LocationPicker'
 
 const STEPS = ['category', 'attributes', 'details', 'contact']
 
@@ -33,6 +34,10 @@ export default function PostAd() {
   const [currency, setCurrency] = useState('EUR')
   const [negotiable, setNegotiable] = useState(false)
   const [city, setCity] = useState('')
+  const [locationLat, setLocationLat] = useState(null)
+  const [locationLng, setLocationLng] = useState(null)
+  const [hideExactAddress, setHideExactAddress] = useState(false)
+  const [mapOpen, setMapOpen] = useState(false)
   const [photos, setPhotos] = useState([]) // [{url, thumbnail_url, uploading}]
 
   const [phone, setPhone] = useState('')
@@ -93,6 +98,8 @@ export default function PostAd() {
     setCurrency(d.currency || 'EUR')
     setNegotiable(!!d.negotiable)
     setCity(d.city || '')
+    if (d.locationLat != null) { setLocationLat(d.locationLat); setLocationLng(d.locationLng); setMapOpen(true) }
+    setHideExactAddress(!!d.hideExactAddress)
     setPhotos(d.photos || [])
     setDisplayName(d.displayName || '')
     if (d.step != null) setStep(d.step)
@@ -118,11 +125,11 @@ export default function PostAd() {
     }
     const draft = {
       savedAt: Date.now(), step, category, path, attrs, title, description,
-      price, currency, negotiable, city, displayName,
+      price, currency, negotiable, city, displayName, locationLat, locationLng, hideExactAddress,
       photos: photos.filter((p) => p.url && !p.uploading && !p.failed),
     }
     try { localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)) } catch { /* переполнен или недоступен — не критично */ }
-  }, [step, category, path, attrs, title, description, price, currency, negotiable, city, displayName, photos])
+  }, [step, category, path, attrs, title, description, price, currency, negotiable, city, displayName, photos, locationLat, locationLng, hideExactAddress])
 
   useEffect(() => {
     api.getCategories().then(setCategories).catch(() => setCategories([]))
@@ -215,6 +222,9 @@ export default function PostAd() {
         price_negotiable: negotiable,
         attributes: attrs,
         city,
+        location_lat: locationLat,
+        location_lng: locationLng,
+        hide_exact_address: hideExactAddress,
         translations: [{ language: i18n.language, title, description }],
         photos: photos.filter((p) => p.url && !p.failed).map((p) => ({ url: p.url, thumbnail_url: p.thumbnail_url })),
       })
@@ -442,6 +452,51 @@ export default function PostAd() {
                 <option value="">{t('post.choose_city')}</option>
                 {CITIES.map((c) => <option key={c.slug} value={c.slug}>{cityLabel(c.slug, i18n.language)}</option>)}
               </select>
+            </div>
+            {/* Необязательно — только для тех, кому важна точная точка
+                (недвижимость, услуги на выезд), большинству хватает
+                текста города. Раскрывается по кнопке, а не всегда
+                открыта: карта — тяжёлый компонент, не должна грузиться
+                (и тянуть тайлы OpenStreetMap) у каждого, кто её не
+                попросит. */}
+            <div className="post-field">
+              <button
+                type="button"
+                className="post-map-toggle"
+                onClick={() => setMapOpen((v) => !v)}
+              >
+                {locationLat != null ? t('post.location_set') : t('post.location_add')}
+                <span className={mapOpen ? 'chev up' : 'chev'}>›</span>
+              </button>
+              {mapOpen && (
+                <>
+                  <LocationPicker
+                    value={locationLat != null ? [locationLat, locationLng] : null}
+                    defaultCenter={CITY_COORDS[city] || null}
+                    onChange={(lat, lng) => { setLocationLat(lat); setLocationLng(lng) }}
+                  />
+                  <div className="post-map-hint">{t('post.location_hint')}</div>
+                  {locationLat != null && (
+                    <>
+                      <label className="post-checkbox">
+                        <input
+                          type="checkbox"
+                          checked={hideExactAddress}
+                          onChange={(e) => setHideExactAddress(e.target.checked)}
+                        />
+                        {t('post.hide_exact_address')}
+                      </label>
+                      <button
+                        type="button"
+                        className="post-map-clear"
+                        onClick={() => { setLocationLat(null); setLocationLng(null) }}
+                      >
+                        {t('post.location_clear')}
+                      </button>
+                    </>
+                  )}
+                </>
+              )}
             </div>
           </div>
           {/* Подсказываем, чего не хватает: кнопка просто серая — человек

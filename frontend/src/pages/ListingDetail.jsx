@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { api } from '../api/client'
 import { displayCity } from '../data/cities'
+import LocationMap from '../components/LocationMap'
 import { addToHistory } from '../data/history'
 import { useAuth } from '../context/AuthContext'
 import { useFavorites } from '../context/FavoritesContext'
@@ -671,6 +672,13 @@ export default function ListingDetail() {
             </svg>
             {displayCity(listing.city, lang)}
           </div>
+        )}
+        {listing.location_lat != null && (
+          <LocationMap
+            lat={listing.location_lat}
+            lng={listing.location_lng}
+            approximate={listing.location_approximate}
+          />
         )}
 
         <div className="badge-row">

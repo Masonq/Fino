@@ -3,9 +3,10 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
-import { CITIES, cityLabel } from '../data/cities'
+import { CITIES, CITY_COORDS, cityLabel } from '../data/cities'
 import PageHeader from '../components/PageHeader'
 import { EditFormSkeleton } from '../components/Skeletons'
+import LocationPicker from '../components/LocationPicker'
 
 export default function EditListing() {
   const { t, i18n } = useTranslation()
@@ -19,6 +20,10 @@ export default function EditListing() {
   const [price, setPrice] = useState('')
   const [negotiable, setNegotiable] = useState(false)
   const [city, setCity] = useState('')
+  const [locationLat, setLocationLat] = useState(null)
+  const [locationLng, setLocationLng] = useState(null)
+  const [hideExactAddress, setHideExactAddress] = useState(false)
+  const [mapOpen, setMapOpen] = useState(false)
   const [photos, setPhotos] = useState([])
   const [photoBusy, setPhotoBusy] = useState(false)
   const [photoError, setPhotoError] = useState('')
@@ -40,6 +45,9 @@ export default function EditListing() {
     setPrice('')
     setNegotiable(false)
     setCity('')
+    setLocationLat(null)
+    setLocationLng(null)
+    setHideExactAddress(false)
     setPhotos([])
     api.getListing(id)
       .then((l) => {
@@ -53,6 +61,12 @@ export default function EditListing() {
         setPrice(l.price != null ? String(l.price) : '')
         setNegotiable(!!l.price_negotiable)
         setCity(l.city || '')
+        if (l.location_lat != null) {
+          setLocationLat(l.location_lat)
+          setLocationLng(l.location_lng)
+          setMapOpen(true)
+        }
+        setHideExactAddress(!!l.hide_exact_address)
         setPhotos(l.photos || [])
       })
       .catch(() => setListing(null))
@@ -98,6 +112,9 @@ export default function EditListing() {
         price: price ? Number(price) : null,
         price_negotiable: negotiable,
         city: city || null,
+        location_lat: locationLat,
+        location_lng: locationLng,
+        hide_exact_address: hideExactAddress,
       })
       setSaved(true)
       setTimeout(() => navigate('/my'), 1200)
@@ -202,6 +219,46 @@ export default function EditListing() {
               ))}
             </select>
           </div>
+        </div>
+
+        <div className="post-field">
+          <button
+            type="button"
+            className="post-map-toggle"
+            onClick={() => setMapOpen((v) => !v)}
+          >
+            {locationLat != null ? t('post.location_set') : t('post.location_add')}
+            <span className={mapOpen ? 'chev up' : 'chev'}>›</span>
+          </button>
+          {mapOpen && (
+            <>
+              <LocationPicker
+                value={locationLat != null ? [locationLat, locationLng] : null}
+                defaultCenter={CITY_COORDS[city] || null}
+                onChange={(lat, lng) => { setLocationLat(lat); setLocationLng(lng) }}
+              />
+              <div className="post-map-hint">{t('post.location_hint')}</div>
+              {locationLat != null && (
+                <>
+                  <label className="filter-check">
+                    <input
+                      type="checkbox"
+                      checked={hideExactAddress}
+                      onChange={(e) => setHideExactAddress(e.target.checked)}
+                    />
+                    {t('post.hide_exact_address')}
+                  </label>
+                  <button
+                    type="button"
+                    className="post-map-clear"
+                    onClick={() => { setLocationLat(null); setLocationLng(null) }}
+                  >
+                    {t('post.location_clear')}
+                  </button>
+                </>
+              )}
+            </>
+          )}
         </div>
 
         <label className="filter-check">

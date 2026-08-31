@@ -182,7 +182,12 @@
     "photo_failed": "Upload failed — tap to remove",
     "draft_found": "Found an unfinished listing draft",
     "draft_restore": "Continue",
-    "draft_discard": "Start over"
+    "draft_discard": "Start over",
+    "location_add": "Set location on map",
+    "location_set": "Location is set",
+    "location_hint": "Tap the map or drag the pin to set the exact spot",
+    "hide_exact_address": "Don't show exact address — only the area",
+    "location_clear": "Remove location"
   },
   "detail": {
     "loading": "Loading…",
