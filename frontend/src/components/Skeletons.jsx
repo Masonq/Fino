@@ -197,16 +197,49 @@ export function ProfileSkeleton() {
           <div className="profile-info" style={{ flex: 1 }}>
             <div className="sk-block sk-line" style={{ height: 17, width: '55%' }} />
             <div className="sk-block sk-line" style={{ height: 13, width: '35%', marginTop: 6 }} />
+            {/* .profile-rating — рейтинг всегда что-то показывает (число
+                или «пока нет отзывов»), просто в другом цвете строки
+                выше; без этой заглушки настоящая карточка была на
+                строку выше своего скелетона. */}
+            <div className="sk-block sk-line" style={{ height: 13, width: '45%', marginTop: 4 }} />
           </div>
         </div>
+        {/* .profile-edit-btn — не показан условно, есть всегда. */}
+        <div className="sk-block sk-line" style={{ height: 44, margin: 0 }} />
       </div>
-      <div className="profile-menu">
-        {Array.from({ length: 7 }).map((_, i) => (
-          <div className="profile-row" key={i}>
-            <div className="sk-block sk-line" style={{ height: 14.5, width: 120 }} />
+      {/* BalanceCard — отдельный компонент под карточкой профиля, тоже
+          рендерится всегда (значение баланса грузится своим запросом
+          внутри него, но сама карточка — сразу). */}
+      <div className="balance-card">
+        <div className="balance-row">
+          <div>
+            <div className="sk-block sk-line" style={{ height: 12, width: 60 }} />
+            <div className="sk-block sk-line" style={{ height: 19, width: 90, marginTop: 5 }} />
           </div>
-        ))}
+          <div className="sk-block sk-line" style={{ height: 38, width: 110 }} />
+        </div>
       </div>
+      {/* Настоящее меню — четыре подписанные группы (Объявления x2,
+          Активность x1, Настройки x2, Информация x4), не единый список.
+          Раньше скелетон рисовал плоские 7 строк без заголовков секций —
+          и по числу строк (7 вместо 9), и по структуре (без
+          .profile-section-title, у которого свой отступ) настоящее меню
+          оказывалось заметно длиннее скелетона. */}
+      {[2, 1, 2, 4].map((rows, group) => (
+        <div key={group}>
+          <div className="profile-section-title">
+            <div className="sk-block sk-line" style={{ height: 10, width: 70 }} />
+          </div>
+          <div className="profile-menu">
+            {Array.from({ length: rows }).map((_, i) => (
+              <div className="profile-row" key={i}>
+                <div className="sk-block" style={{ width: 32, height: 32, borderRadius: 10, flexShrink: 0 }} />
+                <div className="sk-block sk-line" style={{ height: 14.5, width: 120 }} />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
     </>
   )
 }

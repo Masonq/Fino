@@ -215,8 +215,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .city-pill svg{ width:13px; height:13px; }
 .city-pill select{
   appearance:none; -webkit-appearance:none; border:none; background:transparent; font-family:inherit;
-  font-size:13px; font-weight:700; color:#fff; padding-right:2px; max-width:110px;
+  font-size:13px; font-weight:700; color:#fff; padding-right:2px; max-width:110px; outline:none;
 }
+/* На iPhone тап по <select> подсвечивает его синей рамкой браузера —
+   не наша обводка, дефолт Safari. Прячем на тач-выбор, но оставляем
+   для управления с клавиатуры (:focus-visible) — так её не потеряет
+   тот, кому она реально нужна для навигации без мыши. */
+.city-pill select:focus-visible{ outline:2px solid rgba(255,255,255,.7); outline-offset:2px; }
 .city-pill select option{ color:var(--ink); }
 .city-pill-chevron{ opacity:.5; pointer-events:none; }
 .lang-switch{ display:flex; background:rgba(255,255,255,.24); border-radius:10px; padding:3px; backdrop-filter:blur(4px); }
