@@ -488,132 +488,139 @@ def search_listings(
     #
     # Платное продвижение (bump/highlight/xl) эту формулу не подменяет,
     # а работает поверх нее — так же, как у Авито.
-    q = q.join(User, Listing.owner_id == User.id)
-    age_days = func.extract("epoch", func.now() - Listing.published_at) / 86400.0
-    freshness = 1.0 / (1.0 + age_days / 7.0)
+    # Тяжёлая часть — JOIN на продавца и шесть скоррелированных
+    # подзапросов (просмотры/показы/избранное/чаты/галерея/описание
+    # за 7 дней) — нужна только если реально сортируем по релевантности.
+    # На странице поиска можно выбрать «сначала дешёвые»/«сначала
+    # новые»: считать всю эту машинерию ради результата, который
+    # потом не используется, значит гонять лишний JOIN и подзапросы
+    # по каждой строке впустую.
+    PRICE_DATE_SORTS = {"new", "old", "cheap", "expensive"}
+    if sort in PRICE_DATE_SORTS:
+        order = {
+            "new": Listing.published_at.desc(),
+            "old": Listing.published_at.asc(),
+            "cheap": price_in_eur.asc().nullslast(),
+            "expensive": price_in_eur.desc().nullslast(),
+        }[sort]
+    else:
+        q = q.join(User, Listing.owner_id == User.id)
+        age_days = func.extract("epoch", func.now() - Listing.published_at) / 86400.0
+        freshness = 1.0 / (1.0 + age_days / 7.0)
 
-    from app.models import ListingViewDaily, ListingSignalDaily, Favorite, Chat
+        from app.models import ListingViewDaily, ListingSignalDaily, Favorite, Chat
 
-    WINDOW_DAYS = 7
-    since_day = date_type.today() - timedelta(days=WINDOW_DAYS)
-    # Питоновский datetime как параметр, не SQL-литерал вида "interval
-    # '7 days'" — тот работает только в Postgres, а тесты гоняются на
-    # SQLite (см. tests/).
-    since_ts = utcnow() - timedelta(days=WINDOW_DAYS)
+        WINDOW_DAYS = 7
+        since_day = date_type.today() - timedelta(days=WINDOW_DAYS)
+        # Питоновский datetime как параметр, не SQL-литерал вида "interval
+        # '7 days'" — тот работает только в Postgres, а тесты гоняются на
+        # SQLite (см. tests/).
+        since_ts = utcnow() - timedelta(days=WINDOW_DAYS)
 
-    recent_views = (
-        db.query(func.coalesce(func.sum(ListingViewDaily.count), 0))
-        .filter(ListingViewDaily.listing_id == Listing.id, ListingViewDaily.day >= since_day)
-        .correlate(Listing).scalar_subquery()
-    )
-    recent_impressions = (
-        db.query(func.coalesce(func.sum(ListingSignalDaily.impressions), 0))
-        .filter(ListingSignalDaily.listing_id == Listing.id, ListingSignalDaily.day >= since_day)
-        .correlate(Listing).scalar_subquery()
-    )
-    recent_gallery = (
-        db.query(func.coalesce(func.sum(ListingSignalDaily.gallery_views), 0))
-        .filter(ListingSignalDaily.listing_id == Listing.id, ListingSignalDaily.day >= since_day)
-        .correlate(Listing).scalar_subquery()
-    )
-    recent_desc = (
-        db.query(func.coalesce(func.sum(ListingSignalDaily.desc_expands), 0))
-        .filter(ListingSignalDaily.listing_id == Listing.id, ListingSignalDaily.day >= since_day)
-        .correlate(Listing).scalar_subquery()
-    )
-    recent_favorites = (
-        db.query(func.count(Favorite.id))
-        .filter(Favorite.listing_id == Listing.id, Favorite.created_at >= since_ts)
-        .correlate(Listing).scalar_subquery()
-    )
-    recent_chats = (
-        db.query(func.count(Chat.id))
-        .filter(Chat.listing_id == Listing.id, Chat.created_at >= since_ts)
-        .correlate(Listing).scalar_subquery()
-    )
-
-    # Знаменатель — не весь возраст, а сколько дней из окна объявление
-    # реально прожило: у вчерашнего объявления окно ещё не заполнилось,
-    # делить сумму на 7 занизило бы его скорость впятеро.
-    window_lived_days = func.greatest(func.least(age_days, float(WINDOW_DAYS)), 0.5)
-    engagement = (
-        recent_views + recent_favorites * 3 + recent_chats * 5
-        + recent_gallery * 0.5 + recent_desc * 0.5
-    ) / window_lived_days
-    ctr = recent_views / func.greatest(recent_impressions, 1)
-    behavior_score = func.ln(1 + engagement) + ctr * 2.0
-
-    seller_score = (
-        func.coalesce(User.rating_avg, 0) / 5.0
-        + case((User.document_verified.is_(True), 0.5), else_=0)
-        + case((User.role == UserRole.seller_business, 0.3), else_=0)
-    )
-
-    # Старт — гарантированная видимость первые часы после публикации,
-    # вне зависимости от того, что покажет формула выше: у только что
-    # опубликованного объявления просмотров и показов ещё физически не
-    # может быть, и без явного буста ему неоткуда взять свои первые
-    # просмотры, чтобы формула вообще начала его замечать. Тот же
-    # экспоненциальный спад, что и у платного bump, но слабее и короче —
-    # это не замена продвижению, а гарантия точки старта для всех.
-    EXPLORE_BOOST_MAX = 1.2
-    EXPLORE_DECAY_HOURS = 4.0
-    age_hours = func.extract("epoch", func.now() - Listing.published_at) / 3600.0
-    explore_boost = case(
-        (Listing.published_at.isnot(None), EXPLORE_BOOST_MAX * func.exp(-age_hours / EXPLORE_DECAY_HOURS)),
-        else_=0.0,
-    )
-
-    # Разовое поднятие (bump) — раньше подделывало published_at, теперь
-    # свой явный бонус здесь: сильный сразу после покупки, гладко
-    # затухающий по экспоненте, а не бессрочный обрубок по дате
-    # публикации. BUMP_BOOST_MAX подобран так, чтобы в первые часы
-    # перебивать почти любую органическую активность (максимум
-    # остальных слагаемых для типичного объявления — единицы, не
-    # десятки), BUMP_DECAY_HOURS — за сколько часов бонус спадает
-    # вдвое: на 2*BUMP_DECAY_HOURS от покупки уже около четверти
-    # исходной силы, дальше объявление конкурирует на общих основаниях.
-    from app.models import Promotion, PromotionStatus
-
-    BUMP_BOOST_MAX = 6.0
-    BUMP_DECAY_HOURS = 10.0
-
-    bump_started = (
-        db.query(func.max(Promotion.starts_at))
-        .filter(
-            Promotion.listing_id == Listing.id,
-            Promotion.type == PromotionType.bump,
-            Promotion.status == PromotionStatus.paid,
-            Promotion.starts_at.isnot(None),
+        recent_views = (
+            db.query(func.coalesce(func.sum(ListingViewDaily.count), 0))
+            .filter(ListingViewDaily.listing_id == Listing.id, ListingViewDaily.day >= since_day)
+            .correlate(Listing).scalar_subquery()
         )
-        .correlate(Listing)
-        .scalar_subquery()
-    )
-    bump_hours = func.extract("epoch", func.now() - bump_started) / 3600.0
-    bump_boost = case(
-        (bump_started.isnot(None), BUMP_BOOST_MAX * func.exp(-bump_hours / BUMP_DECAY_HOURS)),
-        else_=0.0,
-    )
+        recent_impressions = (
+            db.query(func.coalesce(func.sum(ListingSignalDaily.impressions), 0))
+            .filter(ListingSignalDaily.listing_id == Listing.id, ListingSignalDaily.day >= since_day)
+            .correlate(Listing).scalar_subquery()
+        )
+        recent_gallery = (
+            db.query(func.coalesce(func.sum(ListingSignalDaily.gallery_views), 0))
+            .filter(ListingSignalDaily.listing_id == Listing.id, ListingSignalDaily.day >= since_day)
+            .correlate(Listing).scalar_subquery()
+        )
+        recent_desc = (
+            db.query(func.coalesce(func.sum(ListingSignalDaily.desc_expands), 0))
+            .filter(ListingSignalDaily.listing_id == Listing.id, ListingSignalDaily.day >= since_day)
+            .correlate(Listing).scalar_subquery()
+        )
+        recent_favorites = (
+            db.query(func.count(Favorite.id))
+            .filter(Favorite.listing_id == Listing.id, Favorite.created_at >= since_ts)
+            .correlate(Listing).scalar_subquery()
+        )
+        recent_chats = (
+            db.query(func.count(Chat.id))
+            .filter(Chat.listing_id == Listing.id, Chat.created_at >= since_ts)
+            .correlate(Listing).scalar_subquery()
+        )
 
-    relevance = (
-        behavior_score * 2.0
-        + freshness * 1.5
-        + seller_score * 1.0
-        + case((Listing.is_complete.is_(True), 0.8), else_=0)
-        + bump_boost
-        + explore_boost
-    )
+        # Знаменатель — не весь возраст, а сколько дней из окна объявление
+        # реально прожило: у вчерашнего объявления окно ещё не заполнилось,
+        # делить сумму на 7 занизило бы его скорость впятеро.
+        window_lived_days = func.greatest(func.least(age_days, float(WINDOW_DAYS)), 0.5)
+        engagement = (
+            recent_views + recent_favorites * 3 + recent_chats * 5
+            + recent_gallery * 0.5 + recent_desc * 0.5
+        ) / window_lived_days
+        ctr = recent_views / func.greatest(recent_impressions, 1)
+        behavior_score = func.ln(1 + engagement) + ctr * 2.0
 
-    # price_in_eur уже определена выше — используется тут для «сначала
-    # дешёвые/дорогие», иначе товар в 50 000 RSD (≈427€) сортировался
-    # бы дороже товара в 1000 EUR просто потому, что число 50000 больше.
-    order = {
-        "relevance": relevance.desc(),
-        "new": Listing.published_at.desc(),
-        "old": Listing.published_at.asc(),
-        "cheap": price_in_eur.asc().nullslast(),
-        "expensive": price_in_eur.desc().nullslast(),
-    }.get(sort, relevance.desc())
+        seller_score = (
+            func.coalesce(User.rating_avg, 0) / 5.0
+            + case((User.document_verified.is_(True), 0.5), else_=0)
+            + case((User.role == UserRole.seller_business, 0.3), else_=0)
+        )
+
+        # Старт — гарантированная видимость первые часы после публикации,
+        # вне зависимости от того, что покажет формула выше: у только что
+        # опубликованного объявления просмотров и показов ещё физически не
+        # может быть, и без явного буста ему неоткуда взять свои первые
+        # просмотры, чтобы формула вообще начала его замечать. Тот же
+        # экспоненциальный спад, что и у платного bump, но слабее и короче —
+        # это не замена продвижению, а гарантия точки старта для всех.
+        EXPLORE_BOOST_MAX = 1.2
+        EXPLORE_DECAY_HOURS = 4.0
+        age_hours = func.extract("epoch", func.now() - Listing.published_at) / 3600.0
+        explore_boost = case(
+            (Listing.published_at.isnot(None), EXPLORE_BOOST_MAX * func.exp(-age_hours / EXPLORE_DECAY_HOURS)),
+            else_=0.0,
+        )
+
+        # Разовое поднятие (bump) — раньше подделывало published_at, теперь
+        # свой явный бонус здесь: сильный сразу после покупки, гладко
+        # затухающий по экспоненте, а не бессрочный обрубок по дате
+        # публикации. BUMP_BOOST_MAX подобран так, чтобы в первые часы
+        # перебивать почти любую органическую активность (максимум
+        # остальных слагаемых для типичного объявления — единицы, не
+        # десятки), BUMP_DECAY_HOURS — за сколько часов бонус спадает
+        # вдвое: на 2*BUMP_DECAY_HOURS от покупки уже около четверти
+        # исходной силы, дальше объявление конкурирует на общих основаниях.
+        from app.models import Promotion, PromotionStatus
+
+        BUMP_BOOST_MAX = 6.0
+        BUMP_DECAY_HOURS = 10.0
+
+        bump_started = (
+            db.query(func.max(Promotion.starts_at))
+            .filter(
+                Promotion.listing_id == Listing.id,
+                Promotion.type == PromotionType.bump,
+                Promotion.status == PromotionStatus.paid,
+                Promotion.starts_at.isnot(None),
+            )
+            .correlate(Listing)
+            .scalar_subquery()
+        )
+        bump_hours = func.extract("epoch", func.now() - bump_started) / 3600.0
+        bump_boost = case(
+            (bump_started.isnot(None), BUMP_BOOST_MAX * func.exp(-bump_hours / BUMP_DECAY_HOURS)),
+            else_=0.0,
+        )
+
+        relevance = (
+            behavior_score * 2.0
+            + freshness * 1.5
+            + seller_score * 1.0
+            + case((Listing.is_complete.is_(True), 0.8), else_=0)
+            + bump_boost
+            + explore_boost
+        )
+
+        order = relevance.desc()
 
     # Полные объявления впереди неполных: обрубок без цены и фотографии
     # тоже кому-то нужен, но встречать им человека нельзя.
