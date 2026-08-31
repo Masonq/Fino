@@ -206,6 +206,16 @@ export default function PostAd() {
 
   const removePhoto = (localId) => setPhotos((prev) => prev.filter((p) => p.localId !== localId))
 
+  // Тут без обращения к серверу вовсе — до публикации это просто
+  // порядок в локальном состоянии, который и так уходит на сервер
+  // целиком при отправке формы (handleSubmit ниже). Тот же принцип,
+  // что и в EditListing.jsx: обложка — фото на первом месте.
+  const makeCover = (localId) => setPhotos((prev) => {
+    const target = prev.find((p) => p.localId === localId)
+    if (!target || prev[0]?.localId === localId) return prev
+    return [target, ...prev.filter((p) => p.localId !== localId)]
+  })
+
   // Видео — запись в той же самой сетке photos, с is_video:true, не
   // отдельное состояние: так оно бесплатно получает то же самое, что
   // уже есть у фото — порядок, «сделать обложкой», показ в общей
@@ -446,7 +456,7 @@ export default function PostAd() {
             <div className="post-field">
               <label>{t('post.photos')} · {photos.length}/10</label>
               <div className="photo-grid">
-                {photos.map((p) => (
+                {photos.map((p, i) => (
                   <div key={p.localId} className="photo-thumb">
                     {p.thumbnail_url || p.previewUrl ? <img src={p.thumbnail_url || p.previewUrl} alt="" /> : null}
                     {p.is_video && !p.uploading && (
@@ -466,6 +476,15 @@ export default function PostAd() {
                         <span className="spinner" />
                         {p.is_video && <span className="video-uploading-text">{t('post.video_processing')}</span>}
                       </div>
+                    )}
+                    {!p.uploading && !p.failed && (
+                      i === 0 ? (
+                        <span className="photo-cover-badge">{t('edit.cover')}</span>
+                      ) : (
+                        <button type="button" className="photo-make-cover" onClick={() => makeCover(p.localId)}>
+                          {t('edit.make_cover')}
+                        </button>
+                      )
                     )}
                     {!p.uploading && (
                       <button type="button" className="photo-remove" onClick={() => removePhoto(p.localId)} aria-label={t('actions.clear')}>
