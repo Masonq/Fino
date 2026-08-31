@@ -136,7 +136,7 @@ class Listing(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
 
-    owner = relationship("User", back_populates="listings")
+    owner = relationship("User", back_populates="listings", foreign_keys=[owner_id])
     category = relationship("Category", back_populates="listings")
     translations = relationship("ListingTranslation", back_populates="listing", cascade="all, delete-orphan")
     photos = relationship("ListingPhoto", back_populates="listing", cascade="all, delete-orphan", order_by="ListingPhoto.sort_order")

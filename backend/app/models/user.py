@@ -98,4 +98,10 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
 
-    listings = relationship("Listing", back_populates="owner")
+    # foreign_keys обязателен явно: у Listing теперь два поля со ссылкой
+    # на users.id (owner_id и reserved_for, появилось сегодня) —
+    # SQLAlchemy больше не может сам угадать, через какое из двух
+    # строить эту связь, и без явного указания падает прямо на старте
+    # приложения (ловится сразу на любом запросе, не только там, где
+    # эта связь реально используется).
+    listings = relationship("Listing", back_populates="owner", foreign_keys="Listing.owner_id")
