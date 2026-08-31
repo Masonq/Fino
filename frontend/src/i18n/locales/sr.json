@@ -229,7 +229,8 @@
     "id": "Br. {{id}}",
     "call_via_chat": "Pozovite preko chata",
     "prev_photo": "Prethodna fotografija",
-    "next_photo": "Sledeća fotografija"
+    "next_photo": "Sledeća fotografija",
+    "favorited_count": "{{count}} u omiljenima"
   },
   "favorites": {
     "title": "Sačuvano",

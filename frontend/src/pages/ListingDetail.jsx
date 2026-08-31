@@ -914,6 +914,9 @@ export default function ListingDetail() {
           {listing.views_count > 0 && (
             <span>{t('detail.views', { count: listing.views_count })}</span>
           )}
+          {listing.favorites_count > 0 && (
+            <span>{t('detail.favorited_count', { count: listing.favorites_count })}</span>
+          )}
           {listing.published_at && <span>{relativeDate(listing.published_at, t)}</span>}
           {listing.number && <span>{t('detail.id', { id: listing.number })}</span>}
         </div>

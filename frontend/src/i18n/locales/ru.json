@@ -229,7 +229,8 @@
     "id": "№ {{id}}",
     "call_via_chat": "Позвонить через чат",
     "prev_photo": "Предыдущее фото",
-    "next_photo": "Следующее фото"
+    "next_photo": "Следующее фото",
+    "favorited_count": "{{count}} в избранном"
   },
   "favorites": {
     "title": "Избранное",

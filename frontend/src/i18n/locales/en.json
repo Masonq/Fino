@@ -229,7 +229,8 @@
     "id": "ID {{id}}",
     "call_via_chat": "Call via chat",
     "prev_photo": "Previous photo",
-    "next_photo": "Next photo"
+    "next_photo": "Next photo",
+    "favorited_count": "{{count}} favorited"
   },
   "favorites": {
     "title": "Saved",

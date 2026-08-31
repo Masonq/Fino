@@ -1063,6 +1063,8 @@ def _fuzz_coord(value: float, listing_id) -> float:
 @router.get("/{listing_id}")
 def get_listing(listing_id: str, request: Request, db: Session = Depends(get_db),
                 viewer: User | None = Depends(get_current_user_optional)):
+    from app.models import Favorite
+
     query = db.query(Listing).options(
         joinedload(Listing.translations), joinedload(Listing.photos),
         joinedload(Listing.owner),
@@ -1191,6 +1193,10 @@ def get_listing(listing_id: str, request: Request, db: Session = Depends(get_db)
         "hide_exact_address": bool(listing.hide_exact_address),
         "photos": [{"id": str(p.id), "url": p.url, "is_cover": p.is_cover} for p in listing.photos],
         "views_count": listing.views_count,
+        # Публичный счётчик избранного — раньше видел только владелец
+        # в своей отдельной статистике (listing_dashboard). Только
+        # число, не список имён — кто именно добавил, не публикуем.
+        "favorites_count": db.query(Favorite).filter(Favorite.listing_id == listing.id).count(),
         # Дата публикации и номер — номер сначала был первыми 8
         # символами UUID (…-f7642d6b), но это буквы вперемешку с
         # цифрами — «Объявление № f7642d6b» не читается и не
