@@ -4,6 +4,12 @@ export function CardSkeleton({ large = false }) {
       <div className="sk-photo" />
       <div className="sk-line title" />
       <div className="sk-line price" />
+      {/* Настоящая карточка (ListingCard.jsx) рисует .s-attrs — площадь/
+          комнаты/год и т.п. — почти у всех объявлений, где эти атрибуты
+          заполнены. Скелетон был короче на одну строку: настоящая
+          карточка при подгрузке оказывалась выше него, и всё, что ниже
+          в сетке, дёргалось вниз. */}
+      <div className="sk-line attrs" />
       <div className="sk-line meta" />
     </div>
   )
@@ -185,11 +191,13 @@ export function AdminStatsSkeleton() {
 export function ProfileSkeleton() {
   return (
     <>
-      <div className="profile-head">
-        <div className="sk-block" style={{ width: 60, height: 60, borderRadius: '50%', flexShrink: 0 }} />
-        <div className="profile-info" style={{ flex: 1 }}>
-          <div className="sk-block sk-line" style={{ height: 17, width: '55%' }} />
-          <div className="sk-block sk-line" style={{ height: 13, width: '35%', marginTop: 6 }} />
+      <div className="profile-head-card">
+        <div className="profile-head">
+          <div className="sk-block" style={{ width: 60, height: 60, borderRadius: '50%', flexShrink: 0 }} />
+          <div className="profile-info" style={{ flex: 1 }}>
+            <div className="sk-block sk-line" style={{ height: 17, width: '55%' }} />
+            <div className="sk-block sk-line" style={{ height: 13, width: '35%', marginTop: 6 }} />
+          </div>
         </div>
       </div>
       <div className="profile-menu">

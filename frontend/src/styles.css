@@ -867,6 +867,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* высота под две строки заголовка — столько же занимает готовая карточка */
 .sk-line.title{ height:37px; margin:9px 10px 0; }
 .sk-line.price{ height:17px; width:52%; margin:8px 10px 0; }
+/* .s-attrs у настоящей карточки: font-size 11.5px, padding-top 3px —
+   и не у каждого объявления есть заполненные атрибуты, но у
+   большинства есть, так что резервируем строку по умолчанию: карточка
+   без атрибутов станет чуть короче настоящей при подмене (небольшая,
+   редкая просадка), а не наоборот — у большинства карточек высота
+   совпадёт точно, и ряд не прыгнет. */
+.sk-line.attrs{ height:12px; width:45%; margin:4px 10px 0; }
 .sk-line.meta{ height:11px; width:38%; margin:3px 10px 11px; }
 /* мерцание через opacity — считается видеокартой, не вызывает перерисовку раскладки */
 .card-skeleton .sk-photo,
