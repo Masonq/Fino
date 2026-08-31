@@ -1043,7 +1043,6 @@ def seller_listings(
     return {"total": total, "items": [serialize(l) for l in items]}
 
 
-@router.get("/{listing_id}")
 def _fuzz_coord(value: float, listing_id) -> float:
     """
     Размывает координату в пределах ~350 метров — детерминированно
@@ -1061,6 +1060,7 @@ def _fuzz_coord(value: float, listing_id) -> float:
     return round(value + offset, 5)
 
 
+@router.get("/{listing_id}")
 def get_listing(listing_id: str, request: Request, db: Session = Depends(get_db),
                 viewer: User | None = Depends(get_current_user_optional)):
     query = db.query(Listing).options(
