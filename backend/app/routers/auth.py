@@ -1,3 +1,4 @@
+import re
 import uuid
 from datetime import datetime, timedelta
 
@@ -137,14 +138,22 @@ def verify_code_endpoint(payload: VerifyCodeIn, request: Request, db: Session = 
     # Проверяем и резолвим пригласившего один раз — до создания
     # пользователя, а не после: сам объект User() ещё не существует,
     # проще передать в конструктор сразу, чем потом отдельным UPDATE.
+    # Код — первые 8 символов id (тот же приём, что уже используется
+    # для коротких ссылок на объявления, см. seo.py:short_listing_page) —
+    # не полный UUID, иначе ссылка получалась на километр длиной.
+    # Строго 8 hex-символов: помимо формата, это ещё и защита от
+    # спецсимволов LIKE (% _) — с ними можно было бы случайно
+    # получить слишком широкое совпадение вместо одного человека.
     referrer_id = None
-    if payload.referred_by:
-        try:
-            candidate = uuid.UUID(payload.referred_by)
-            if db.query(User.id).filter(User.id == candidate).first():
-                referrer_id = candidate
-        except ValueError:
-            pass   # битый/поддельный id в ссылке — просто без реферала, не 400
+    if payload.referred_by and re.fullmatch(r"[0-9a-f]{8}", payload.referred_by):
+        from sqlalchemy import String, cast
+        match = (
+            db.query(User.id)
+            .filter(cast(User.id, String).like(f"{payload.referred_by}-%"))
+            .first()
+        )
+        if match:
+            referrer_id = match[0]
 
     # находим или создаём пользователя
     if payload.channel == VerifyChannel.email:

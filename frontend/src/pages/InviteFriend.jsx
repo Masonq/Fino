@@ -14,7 +14,10 @@ export default function InviteFriend() {
     api.myReferrals().then(setStats).catch(() => setStats(null))
   }, [])
 
-  const link = user ? `${window.location.origin}/?ref=${user.id}` : ''
+  // Короткий код — первые 8 символов id, тот же приём, что уже
+  // используется для ссылок на объявления (см. seo.py на бэкенде) —
+  // не весь UUID, а то ссылка получалась на километр длиной.
+  const link = user ? `${window.location.origin}/?ref=${user.id.slice(0, 8)}` : ''
 
   const share = async () => {
     if (navigator.share) {
