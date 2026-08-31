@@ -521,13 +521,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   width:100%; border-radius:12px; overflow:hidden; margin-top:8px;
   background:var(--tile);
 }
-.location-search-row{ display:flex; gap:8px; margin-top:8px; }
+.location-search-row{ display:flex; gap:8px; margin-top:8px; align-items:stretch; }
 .location-search-input{
   flex:1; min-width:0; padding:11px 13px; border-radius:11px;
   background:var(--tile); border:1px solid rgba(20,30,25,.07); font-size:16px;
 }
 .location-geo-btn{
-  width:42px; height:42px; flex-shrink:0; border-radius:11px;
+  width:44px; flex-shrink:0; border-radius:11px;
   background:var(--tile); border:1px solid rgba(20,30,25,.07); color:var(--primary-deep,#0A7A54);
   display:flex; align-items:center; justify-content:center;
 }
