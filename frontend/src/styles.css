@@ -888,7 +888,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    не отдельным экраном ради одной цифры. */
 .offer-panel{ padding:0 16px; background:#fff; }
 .offer-panel-open{
-  display:block; width:calc(100% - 32px); margin:10px auto 0; padding:11px;
+  display:block; width:calc(100% - 32px); margin:10px auto; padding:11px;
   border-radius:13px; background:var(--primary-soft); color:var(--primary-deep,#0A7A54);
   font-size:13.5px; font-weight:700; text-align:center;
 }
