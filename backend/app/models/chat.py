@@ -23,6 +23,14 @@ class Chat(Base):
     # целиком, смотри PhoneReveal.
     call_request_pending: Mapped[bool] = mapped_column(Boolean, default=False)
 
+    # Какое сообщение уже получило напоминание о молчании — чтобы не
+    # слать его на одно и то же сообщение повторно на каждом заходе
+    # скрипта. Новый ответ (или новое сообщение от того же человека)
+    # делает это поле неактуальным само по себе — сравниваем с id
+    # актуального последнего сообщения, не чистим его отдельно.
+    silence_reminder_sent_for: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), nullable=True)
+
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     last_message_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 

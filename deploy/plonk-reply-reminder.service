@@ -1,0 +1,9 @@
+[Unit]
+Description=PLONK — напоминание о молчании в переписке
+After=network.target postgresql.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/fino/backend
+ExecStart=/opt/fino/backend/venv/bin/python3 -m app.core.reply_reminder
+User=root
