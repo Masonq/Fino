@@ -1634,6 +1634,50 @@ def delete_photo(
     return {"status": "deleted"}
 
 
+class PhotoOrderIn(BaseModel):
+    # Полный список id фото объявления в новом порядке — первый в
+    # списке автоматически становится обложкой. Не присылаем «новую
+    # позицию одного фото», а весь порядок разом: перетаскивание на
+    # телефоне и так пересчитывает весь список у себя в состоянии,
+    # отправить его целиком проще и надёжнее частичного патча.
+    photo_ids: list[uuid.UUID]
+
+
+@router.patch("/{listing_id}/photos/order")
+def reorder_photos(
+    listing_id: uuid.UUID,
+    payload: PhotoOrderIn,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Порядок фото при редактировании — раньше первое загруженное
+    навсегда оставалось обложкой, ни перетащить, ни выбрать другое
+    было нельзя.
+    """
+    listing = db.query(Listing).options(joinedload(Listing.photos)).get(listing_id)
+    if not listing:
+        raise HTTPException(404, "not_found")
+    if listing.owner_id != user.id:
+        raise HTTPException(403, "not_owner")
+
+    by_id = {p.id: p for p in listing.photos}
+    # Список должен содержать ровно те же фото, что уже есть у
+    # объявления — ни больше, ни меньше: иначе кто-то мог бы шепнуть
+    # чужой id фото и обложка объявления стала бы указывать не на
+    # свою же фотографию.
+    if set(payload.photo_ids) != set(by_id.keys()):
+        raise HTTPException(400, "photo_set_mismatch")
+
+    for i, photo_id in enumerate(payload.photo_ids):
+        photo = by_id[photo_id]
+        photo.sort_order = i
+        photo.is_cover = (i == 0)
+
+    db.commit()
+    return {"status": "reordered"}
+
+
 def _own_title(listing) -> str:
     """Название на языке оригинала."""
     return next(

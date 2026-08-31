@@ -477,6 +477,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   position:absolute; top:3px; right:3px; width:20px; height:20px; border-radius:50%;
   background:rgba(0,0,0,.55); display:flex; align-items:center; justify-content:center;
 }
+.photo-cover-badge{
+  position:absolute; bottom:3px; left:3px; padding:2px 7px; border-radius:7px;
+  background:var(--primary); color:#fff; font-size:9.5px; font-weight:700;
+}
+.photo-make-cover{
+  position:absolute; bottom:3px; left:3px; padding:2px 7px; border-radius:7px;
+  background:rgba(0,0,0,.55); color:#fff; font-size:9.5px; font-weight:700;
+}
 .photo-add{
   aspect-ratio:1/1; border-radius:12px; border:1.5px dashed var(--line); background:#fff;
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;

@@ -371,7 +371,9 @@
     "not_owner": "Ovo nije vaš oglas",
     "remoderation": "Nakon izmene slika, naziva, opisa ili cene, oglas ponovo ide na proveru",
     "save_short": "Izmeni",
-    "photo_failed": "Nije uspelo menjanje slike, pokušajte ponovo"
+    "photo_failed": "Nije uspelo menjanje slike, pokušajte ponovo",
+    "cover": "Naslovna",
+    "make_cover": "Postavi kao naslovnu"
   },
   "report": {
     "button": "Prijavi",

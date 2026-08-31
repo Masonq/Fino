@@ -210,6 +210,10 @@ export const api = {
   deleteListingPhoto: (id, photoId) => request(`/listings/${id}/photos/${photoId}`, {
     method: 'DELETE',
   }),
+  reorderListingPhotos: (id, photoIds) => request(`/listings/${id}/photos/order`, {
+    method: 'PATCH',
+    body: JSON.stringify({ photo_ids: photoIds }),
+  }),
   createListing: (payload) => request('/listings', {
     method: 'POST',
     body: JSON.stringify(payload),

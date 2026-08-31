@@ -370,7 +370,9 @@
     "not_owner": "This isn't your listing",
     "remoderation": "After changing photos, title, description, or price, the listing goes through moderation again",
     "save_short": "Edit",
-    "photo_failed": "Couldn't change the photo, please try again"
+    "photo_failed": "Couldn't change the photo, please try again",
+    "cover": "Cover",
+    "make_cover": "Set as cover"
   },
   "report": {
     "button": "Report",

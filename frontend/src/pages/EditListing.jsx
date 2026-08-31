@@ -103,6 +103,27 @@ export default function EditListing() {
     }
   }
 
+  // Обложка — просто фото на первом месте, отдельного поля на экране
+  // нет: «сделать обложкой» — переставить это фото вперёд, остальные
+  // сохраняют взаимный порядок. Оптимистично меняем сразу, откатываем
+  // при ошибке — то же самое, что уже делает FavoritesContext.
+  const makeCover = async (photoId) => {
+    const before = photos
+    const target = photos.find((p) => p.id === photoId)
+    if (!target || photos[0]?.id === photoId) return
+    const next = [target, ...photos.filter((p) => p.id !== photoId)]
+    setPhotos(next)
+    setPhotoBusy(true); setPhotoError('')
+    try {
+      await api.reorderListingPhotos(id, next.map((p) => p.id))
+    } catch {
+      setPhotos(before)
+      setPhotoError(t('edit.photo_failed'))
+    } finally {
+      setPhotoBusy(false)
+    }
+  }
+
   const save = async () => {
     setBusy(true); setError('')
     try {
@@ -171,9 +192,21 @@ export default function EditListing() {
         <div className="post-field">
           <label>{t('post.photos')} · {photos.length}/10</label>
           <div className="photo-grid">
-            {photos.map((p) => (
+            {photos.map((p, i) => (
               <div key={p.id} className="photo-thumb">
                 <img src={p.url} alt="" />
+                {i === 0 ? (
+                  <span className="photo-cover-badge">{t('edit.cover')}</span>
+                ) : (
+                  <button
+                    type="button"
+                    className="photo-make-cover"
+                    disabled={photoBusy}
+                    onClick={() => makeCover(p.id)}
+                  >
+                    {t('edit.make_cover')}
+                  </button>
+                )}
                 <button
                   type="button"
                   className="photo-remove"
