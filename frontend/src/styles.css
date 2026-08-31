@@ -322,7 +322,16 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .s-card{ background:#fff; border-radius:12px; overflow:hidden; }
 .s-photo-wrap{ position:relative; display:block; border-radius:0; overflow:hidden; aspect-ratio:1/0.95; background:#ddd; }
 .l-card .s-photo-wrap{ aspect-ratio:16/10.5; border-radius:18px; }
-.s-photo-wrap img{ width:100%; height:100%; object-fit:cover; display:block; }
+.s-photo-wrap img{ width:100%; height:100%; object-fit:cover; display:block; animation:photo-fade-in .25s ease; }
+/* Пробуем смягчить ощущение «скачка», когда серый плейсхолдер скелетона
+   сменяется настоящим фото — резкая смена контраста воспринимается
+   как лёгкое движение, хотя сама вёрстка не сдвигается ни на пиксель
+   (проверено измерением). Пробный фикс — если не поможет или будет
+   выглядеть хуже мгновенной подмены, откатываем без сожалений. */
+@keyframes photo-fade-in{
+  from{ opacity:0; }
+  to{ opacity:1; }
+}
 .photo-placeholder{ width:100%; height:100%; background:linear-gradient(135deg,#DDE3DF,#C9D2CC); }
 
 .badge-top{ position:absolute; top:10px; left:10px; background:#fff; font-size:10px; font-weight:800; padding:5px 9px; border-radius:8px; }
