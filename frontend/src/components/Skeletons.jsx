@@ -193,15 +193,26 @@ export function ProfileSkeleton({ showStaff = false }) {
     <>
       <div className="profile-head-card">
         <div className="profile-head">
-          <div className="sk-block" style={{ width: 60, height: 60, borderRadius: '50%', flexShrink: 0 }} />
+          <div className="sk-block" style={{ width: 66, height: 66, borderRadius: '50%', flexShrink: 0 }} />
           <div className="profile-info" style={{ flex: 1 }}>
-            <div className="sk-block sk-line" style={{ height: 17, width: '55%' }} />
-            <div className="sk-block sk-line" style={{ height: 13, width: '35%', marginTop: 6 }} />
-            {/* .profile-rating — рейтинг всегда что-то показывает (число
-                или «пока нет отзывов»), просто в другом цвете строки
-                выше; без этой заглушки настоящая карточка была на
-                строку выше своего скелетона. */}
-            <div className="sk-block sk-line" style={{ height: 13, width: '45%', marginTop: 4 }} />
+            {/* Реальные строки — не просто высота шрифта, а высота
+                строки целиком (с междустрочным интервалом): 17px
+                шрифт занимает на экране заметно больше 17px. Раньше
+                блоки были ровно по font-size — из-за этого, плюс
+                недостающей четвёртой строки (у email И phone разные
+                условия в коде, оба могут быть заполнены одновременно —
+                частый случай), настоящая шапка была на 148px выше
+                своего скелетона — измерено по кадрам записи экрана,
+                не на глаз. Резервируем сразу 4 строки (имя + два
+                контакта + рейтинг), с запасом по высоте и отступам —
+                лучше скелетон будет чуть выше настоящей карточки для
+                тех, у кого заполнен только email ИЛИ только phone
+                (редкая небольшая просадка), чем ниже для частого
+                случая «оба контакта заполнены» (какой был здесь). */}
+            <div className="sk-block sk-line" style={{ height: 24, width: '60%' }} />
+            <div className="sk-block sk-line" style={{ height: 18, width: '75%', marginTop: 6 }} />
+            <div className="sk-block sk-line" style={{ height: 18, width: '40%', marginTop: 6 }} />
+            <div className="sk-block sk-line" style={{ height: 18, width: '45%', marginTop: 6 }} />
           </div>
         </div>
         {/* .profile-edit-btn — не показан условно, есть всегда. */}
