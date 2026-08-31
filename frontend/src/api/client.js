@@ -189,6 +189,8 @@ export const api = {
   myListings: (lang) => request(`/listings/my/list?${new URLSearchParams({ lang })}`),
   sellerProfile: (userId, lang) => request(`/users/${userId}/public?${new URLSearchParams({ lang })}`),
   sellerListings: (userId, lang, offset = 0) => request(`/listings/by-seller/${userId}?${new URLSearchParams({ lang, offset })}`),
+  subscribeToSeller: (userId) => request(`/users/${userId}/subscribe`, { method: 'POST' }),
+  unsubscribeFromSeller: (userId) => request(`/users/${userId}/subscribe`, { method: 'DELETE' }),
   setListingStatus: (id, status) => request(`/listings/${id}/status`, {
     method: 'PATCH',
     body: JSON.stringify({ status }),

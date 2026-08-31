@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 
-from app.models import SavedSearch, Listing, ListingTranslation, User
+from app.models import SavedSearch, Listing, ListingTranslation, User, SellerSubscription
 from app.core.clock import utcnow
 
 log = logging.getLogger(__name__)
@@ -138,5 +138,59 @@ def notify_subscribers(db: Session, listing: Listing) -> int:
     if sent:
         db.commit()
         log.info("Объявление %s: уведомлено подписчиков %s", listing.id, sent)
+
+    return sent
+
+
+def notify_seller_subscribers(db: Session, listing: Listing) -> int:
+    """
+    Подписка на продавца — не на фильтр, а на конкретного человека:
+    любое его новое объявление интересно подписчику по определению,
+    без ограничения на раз в сутки (в отличие от notify_subscribers
+    выше) — тут подписчик сам решил следить именно за этим продавцом,
+    а не попал под широкий фильтр категории.
+    """
+    subs = (
+        db.query(SellerSubscription)
+        .filter(SellerSubscription.seller_id == listing.owner_id)
+        .all()
+    )
+    if not subs:
+        return 0
+
+    users_by_id = {
+        u.id: u for u in db.query(User)
+        .filter(User.id.in_({s.subscriber_id for s in subs})).all()
+    }
+    from app.routers.listings import pick_translation
+    from app.core.notifications import notify
+
+    translations = list(listing.translations or [])
+    seller = db.query(User).get(listing.owner_id)
+    seller_name = seller.display_name if seller else ""
+
+    sent = 0
+    for s in subs:
+        subscriber = users_by_id.get(s.subscriber_id)
+        if not subscriber:
+            continue
+        lang = getattr(subscriber.default_language, "value", None) or "ru"
+        tr = pick_translation(listing, lang)
+        title = tr.title if tr else (translations[0].title if translations else "")
+        price = f"{listing.price:.0f} {listing.currency}" if listing.price else ""
+        text = (
+            f"{seller_name} опубликовал(а) новое объявление:\n\n"
+            f"<b>{title}</b>\n{price}"
+        )
+        try:
+            if notify(db, s.subscriber_id, text, allow_email=True,
+                      subject=f"PLONK — новое объявление от {seller_name}",
+                      link=f"/go/{listing.id}"):
+                sent += 1
+        except Exception:
+            continue
+
+    if sent:
+        log.info("Объявление %s: уведомлено подписчиков продавца %s", listing.id, sent)
 
     return sent

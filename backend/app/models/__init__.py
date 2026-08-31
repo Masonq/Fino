@@ -2,6 +2,7 @@ from app.models.user import User, UserRole, Language
 from app.models.category import Category
 from app.models.listing import Listing, ListingTranslation, ListingPhoto, ListingStatus, Currency
 from app.models.favorites import Favorite, SavedSearch
+from app.models.seller_subscription import SellerSubscription
 from app.models.verification import VerificationCode, VerifyChannel
 from app.models.review_invite import ReviewInvite
 from app.models.chat import Chat, Message
@@ -27,7 +28,7 @@ __all__ = [
     "User", "UserRole", "Language",
     "Category",
     "Listing", "ListingTranslation", "ListingPhoto", "ListingStatus", "Currency",
-    "Favorite", "SavedSearch",
+    "Favorite", "SavedSearch", "SellerSubscription",
     "VerificationCode", "VerifyChannel",
     "ReviewInvite",
     "Chat", "Message",

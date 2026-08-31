@@ -4,9 +4,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field, field_validator
 
-from app.core.auth import get_current_user
+from app.core.auth import get_current_user, get_current_user_optional
 from app.core.database import get_db
-from app.models import User, UserRole, Language, BlockedUser
+from app.models import User, UserRole, Language, BlockedUser, SellerSubscription
 
 router = APIRouter(prefix="/api/users", tags=["users"])
 
@@ -19,7 +19,8 @@ class QuickIdentifyIn(BaseModel):
 
 
 @router.get("/{user_id}/public")
-def public_profile(user_id: uuid.UUID, lang: str = "ru", db: Session = Depends(get_db)):
+def public_profile(user_id: uuid.UUID, lang: str = "ru", db: Session = Depends(get_db),
+                    viewer: User | None = Depends(get_current_user_optional)):
     """
     Открытая карточка продавца: то, по чему покупатель решает, иметь ли дело.
 
@@ -38,6 +39,15 @@ def public_profile(user_id: uuid.UUID, lang: str = "ru", db: Session = Depends(g
         .count()
     )
 
+    is_subscribed = False
+    if viewer and viewer.id != user.id:
+        is_subscribed = (
+            db.query(SellerSubscription)
+            .filter(SellerSubscription.subscriber_id == viewer.id,
+                    SellerSubscription.seller_id == user.id)
+            .first() is not None
+        )
+
     return {
         "id": str(user.id),
         "display_name": user.display_name,
@@ -52,7 +62,42 @@ def public_profile(user_id: uuid.UUID, lang: str = "ru", db: Session = Depends(g
         "active_listings": active,
         "created_at": user.created_at.isoformat() if user.created_at else None,
         "last_seen_at": user.last_seen_at.isoformat() if user.last_seen_at else None,
+        "is_subscribed": is_subscribed,
     }
+
+
+@router.post("/{user_id}/subscribe")
+def subscribe_to_seller(user_id: uuid.UUID, user: User = Depends(get_current_user),
+                        db: Session = Depends(get_db)):
+    if user_id == user.id:
+        raise HTTPException(400, "cannot_subscribe_self")
+    seller = db.query(User).get(user_id)
+    if not seller or seller.is_blocked:
+        raise HTTPException(404, "not_found")
+
+    existing = (
+        db.query(SellerSubscription)
+        .filter(SellerSubscription.subscriber_id == user.id,
+                SellerSubscription.seller_id == user_id)
+        .first()
+    )
+    if not existing:
+        db.add(SellerSubscription(subscriber_id=user.id, seller_id=user_id))
+        db.commit()
+    return {"status": "subscribed"}
+
+
+@router.delete("/{user_id}/subscribe")
+def unsubscribe_from_seller(user_id: uuid.UUID, user: User = Depends(get_current_user),
+                            db: Session = Depends(get_db)):
+    (
+        db.query(SellerSubscription)
+        .filter(SellerSubscription.subscriber_id == user.id,
+                SellerSubscription.seller_id == user_id)
+        .delete()
+    )
+    db.commit()
+    return {"status": "unsubscribed"}
 
 
 class ProfileEdit(BaseModel):

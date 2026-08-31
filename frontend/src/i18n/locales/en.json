@@ -425,7 +425,9 @@
     "since": "On PLONK since {{date}}",
     "listings": "Listings",
     "show_all": "Show all listings · {{count}}",
-    "company_badge": "Business"
+    "company_badge": "Business",
+    "subscribe": "Follow",
+    "subscribed": "Following"
   },
   "admin": {
     "title": "Users",

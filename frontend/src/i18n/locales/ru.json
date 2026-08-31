@@ -427,7 +427,9 @@
     "since": "На PLONK с {{date}}",
     "listings": "Объявления",
     "show_all": "Показать все объявления · {{count}}",
-    "company_badge": "Компания"
+    "company_badge": "Компания",
+    "subscribe": "Подписаться",
+    "subscribed": "Вы подписаны"
   },
   "admin": {
     "title": "Пользователи",

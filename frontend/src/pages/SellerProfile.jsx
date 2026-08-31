@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
+import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
 import ListingCard from '../components/ListingCard'
 import SellerReviews from '../components/SellerReviews'
@@ -21,12 +22,15 @@ const PREVIEW_COUNT = 6
 export default function SellerProfile() {
   const { id } = useParams()
   const { t, i18n } = useTranslation()
+  const navigate = useNavigate()
+  const { user } = useAuth()
 
   const [profile, setProfile] = useState(null)
   const [listings, setListings] = useState([])
   const [total, setTotal] = useState(0)
   const [loadingMore, setLoadingMore] = useState(false)
   const [failed, setFailed] = useState(false)
+  const [subBusy, setSubBusy] = useState(false)
   // По умолчанию — всего несколько карточек, не всё, что есть у
   // магазина: у некоторых продавцов тысячи объявлений, и до отзывов
   // внизу страницы было physически не долистать — подгрузка при
@@ -104,6 +108,22 @@ export default function SellerProfile() {
     ? new Date(profile.created_at + 'Z').toLocaleDateString(i18n.language, { year: 'numeric', month: 'long' })
     : null
 
+  const toggleSubscribe = async () => {
+    if (!user) { navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`); return }
+    setSubBusy(true)
+    const was = profile.is_subscribed
+    // сразу меняем на экране, не дожидаясь сервера — так кнопка реагирует мгновенно
+    setProfile((p) => ({ ...p, is_subscribed: !was }))
+    try {
+      if (was) await api.unsubscribeFromSeller(profile.id)
+      else await api.subscribeToSeller(profile.id)
+    } catch {
+      setProfile((p) => ({ ...p, is_subscribed: was }))
+    } finally {
+      setSubBusy(false)
+    }
+  }
+
   return (
     <div className="page">
       <PageHeader title={t('seller.title')}>
@@ -137,6 +157,16 @@ export default function SellerProfile() {
           )}
           {since && <div className="seller-since">{t('seller.since', { date: since })}</div>}
         </div>
+        {(!user || user.id !== profile.id) && (
+          <button
+            type="button"
+            className={profile.is_subscribed ? 'seller-sub-btn active' : 'seller-sub-btn'}
+            onClick={toggleSubscribe}
+            disabled={subBusy}
+          >
+            {profile.is_subscribed ? t('seller.subscribed') : t('seller.subscribe')}
+          </button>
+        )}
       </div>
 
       <ReportButton

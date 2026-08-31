@@ -2412,6 +2412,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .seller-head-avg{ font-size:15px; font-weight:800; }
 .seller-head-count{ font-size:12px; color:var(--muted); font-weight:600; }
 .seller-since{ font-size:12px; color:var(--muted); margin-top:3px; }
+.seller-sub-btn{
+  flex-shrink:0; padding:9px 16px; border-radius:11px; align-self:center;
+  background:var(--primary); color:#fff; font-size:13px; font-weight:700;
+}
+.seller-sub-btn.active{ background:var(--tile); color:var(--ink); border:1px solid rgba(20,30,25,.1); }
+.seller-sub-btn:disabled{ opacity:.6; }
 .seller-badge{
   display:inline-block; margin-top:5px; padding:3px 9px; border-radius:8px;
   background:var(--primary-soft); color:var(--primary-deep);

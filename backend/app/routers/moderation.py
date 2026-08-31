@@ -60,6 +60,13 @@ def _after_approve(listing_id) -> None:
         except Exception:
             pass
 
+        # и тех, кто подписан на самого продавца
+        try:
+            from app.core.search_alerts import notify_seller_subscribers
+            notify_seller_subscribers(db, listing)
+        except Exception:
+            pass
+
 
 @router.get("/queue")
 def queue(
