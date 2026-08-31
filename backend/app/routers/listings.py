@@ -192,8 +192,6 @@ def create_listing(
         location_lat=payload.location_lat,
         location_lng=payload.location_lng,
         hide_exact_address=payload.hide_exact_address,
-        video_url=payload.video_url,
-        video_thumbnail_url=payload.video_thumbnail_url,
         status=ListingStatus.pending_moderation,
         expires_at=utcnow() + timedelta(days=LISTING_TTL_DAYS),
     )
