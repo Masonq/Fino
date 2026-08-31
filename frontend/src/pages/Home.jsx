@@ -18,7 +18,15 @@ import { hasLanding } from '../data/landings'
 // потом появляются карточки, потом прыгает прокрутка — это и был рывок.
 // Восстановить положение после отрисовки недостаточно, нужно чтобы к первой
 // же отрисовке лента была той же, что была.
-let feedCache = { lang: null, items: [], total: 0, scroll: 0 }
+//
+// Но как и в Moderation.jsx (тот же класс проблемы, найден и там): кэш без
+// срока жизни означает, что лента после первой загрузки не обновляется
+// вообще никогда за сессию — вернулся спустя час, а видишь тот же снимок.
+// FEED_CACHE_TTL — компромисс: быстрый заход в объявление и обратно не
+// сбрасывает прокрутку и не мигает пустым списком, а настоящий возврат
+// спустя время подтягивает свежую ленту.
+const FEED_CACHE_TTL = 60_000
+let feedCache = { lang: null, items: [], total: 0, scroll: 0, fetchedAt: 0 }
 
 const PROMO_SLIDES = [
   { key: 'safe_deal', to: '/search', icon: 'shield', top: '#0E9F6E', grad: 'linear-gradient(180deg, #0E9F6E 0%, #0E9F6E 22%, #1DB388 48%, #34D8A8 78%, #5CE8CC 100%)' },
@@ -142,6 +150,7 @@ export default function Home() {
         setListings(res.items || [])
         setFeedTotal(res.total || 0)
         setFeedError(false)
+        fetchedAtRef.current = Date.now()
       })
       .catch(() => { setListings([]); setFeedError(true) })
       .finally(() => setFeedLoaded(true))
@@ -173,8 +182,9 @@ export default function Home() {
 
   useEffect(() => {
     // при возврате лента уже есть — перезагрузка сбросила бы её к двенадцати
-    // объявлениям и снова уронила прокрутку
-    if (cached?.items.length) return
+    // объявлениям и снова уронила прокрутку. Но только пока кэш не устарел —
+    // иначе тот же снимок остался бы навсегда.
+    if (cached?.items.length && Date.now() - cached.fetchedAt < FEED_CACHE_TTL) return
     loadFeed()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadFeed])
@@ -190,6 +200,7 @@ export default function Home() {
         items: itemsRef.current,
         total: totalRef.current,
         scroll: lastScroll.current || window.scrollY,
+        fetchedAt: fetchedAtRef.current,
       }
     }
     window.addEventListener('pagehide', save)
@@ -201,6 +212,7 @@ export default function Home() {
   const itemsRef = useRef(listings)
   const totalRef = useRef(feedTotal)
   const langRef = useRef(i18n.language)
+  const fetchedAtRef = useRef(cached?.fetchedAt || 0)
   useEffect(() => { itemsRef.current = listings }, [listings])
   useEffect(() => { totalRef.current = feedTotal }, [feedTotal])
   useEffect(() => { langRef.current = i18n.language }, [i18n.language])
