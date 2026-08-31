@@ -187,7 +187,12 @@
     "location_set": "Lokacija je označena",
     "location_hint": "Dodirnite mapu ili prevucite oznaku da biste postavili tačno mesto",
     "hide_exact_address": "Ne prikazuj tačnu adresu — samo oblast",
-    "location_clear": "Ukloni lokaciju"
+    "location_clear": "Ukloni lokaciju",
+    "location_search_placeholder": "Pretraga po adresi",
+    "location_use_mine": "Moja lokacija",
+    "location_searching": "Tražim…",
+    "location_geo_unsupported": "Vaš pregledač ne podržava određivanje lokacije",
+    "location_geo_denied": "Nije moguće odrediti lokaciju — proverite dozvolu za lokaciju"
   },
   "detail": {
     "loading": "Učitavanje…",

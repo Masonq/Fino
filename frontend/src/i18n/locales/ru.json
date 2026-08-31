@@ -187,7 +187,12 @@
     "location_set": "Точка на карте указана",
     "location_hint": "Нажмите на карту или перетащите метку, чтобы указать точное место",
     "hide_exact_address": "Не показывать точный адрес — только район",
-    "location_clear": "Убрать точку"
+    "location_clear": "Убрать точку",
+    "location_search_placeholder": "Поиск по адресу",
+    "location_use_mine": "Моё местоположение",
+    "location_searching": "Ищу…",
+    "location_geo_unsupported": "Браузер не поддерживает определение местоположения",
+    "location_geo_denied": "Не удалось определить местоположение — проверьте разрешение геолокации"
   },
   "detail": {
     "loading": "Загрузка…",

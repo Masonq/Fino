@@ -187,7 +187,12 @@
     "location_set": "Location is set",
     "location_hint": "Tap the map or drag the pin to set the exact spot",
     "hide_exact_address": "Don't show exact address — only the area",
-    "location_clear": "Remove location"
+    "location_clear": "Remove location",
+    "location_search_placeholder": "Search by address",
+    "location_use_mine": "My location",
+    "location_searching": "Searching…",
+    "location_geo_unsupported": "Your browser doesn't support geolocation",
+    "location_geo_denied": "Could not get your location — check location permission"
   },
   "detail": {
     "loading": "Loading…",
