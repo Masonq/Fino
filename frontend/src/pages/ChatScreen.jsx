@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext'
 import ReviewRequest from '../components/ReviewRequest'
 import ChatList from '../components/ChatList'
 import { ChatSkeleton } from '../components/Skeletons'
+import { formatPrice } from '../utils/money'
 
 export default function ChatScreen() {
   const { t, i18n } = useTranslation()
@@ -30,6 +31,10 @@ export default function ChatScreen() {
   // само состояние запроса меняется — новый запрос снова покажет
   // уведомление, даже если прошлое уже закрывали.
   const [callNoticeDismissed, setCallNoticeDismissed] = useState(false)
+  const [offerOpen, setOfferOpen] = useState(false)
+  const [offerAmount, setOfferAmount] = useState('')
+  const [offerBusy, setOfferBusy] = useState(false)
+  const [reserveBusy, setReserveBusy] = useState(false)
   const bottomRef = useRef(null)
 
   const isSeller = chat?.seller?.id === myId
@@ -207,6 +212,61 @@ export default function ChatScreen() {
     }
   }
 
+  // Предложение цены — свой ввод, не общее поле «text»: цифра и
+  // обычное сообщение отправляются по-разному (offer_price отдельным
+  // полем), смешивать их в одном инпуте только путает.
+  const sendOffer = async () => {
+    const amount = Number(offerAmount)
+    if (!amount || amount <= 0) return
+    setOfferBusy(true)
+    try {
+      await api.sendMessage(id, null, amount)
+      setOfferAmount('')
+      setOfferOpen(false)
+      const res = await api.getChatMessages(id)
+      setMessages(res)
+    } catch {
+      setSendError(t('chat.send_failed'))
+    } finally {
+      setOfferBusy(false)
+    }
+  }
+
+  const respondOffer = async (messageId, status) => {
+    setOfferBusy(true)
+    try {
+      await api.respondToOffer(id, messageId, status)
+      const res = await api.getChatMessages(id)
+      setMessages(res)
+    } catch { /* оставляем как было — можно попробовать снова */ }
+    finally { setOfferBusy(false) }
+  }
+
+  // Бронь — по умолчанию 48 часов, без формы выбора срока: «придержи
+  // на пару дней» и есть тот самый частый случай, который и решает
+  // эта кнопка. Дольше — редкость, не стоит усложнять первый экран.
+  const doReserve = async () => {
+    if (!chat) return
+    setReserveBusy(true)
+    try {
+      await api.reserveListing(chat.listing_id, chat.buyer.id, 48)
+      const fresh = await api.getChat(id, i18n.language)
+      setChat(fresh)
+    } catch { /* оставляем как было */ }
+    finally { setReserveBusy(false) }
+  }
+
+  const cancelReserve = async () => {
+    if (!chat) return
+    setReserveBusy(true)
+    try {
+      await api.cancelReservation(chat.listing_id)
+      const fresh = await api.getChat(id, i18n.language)
+      setChat(fresh)
+    } catch { /* оставляем как было */ }
+    finally { setReserveBusy(false) }
+  }
+
   const toggleBlock = async () => {
     if (!chat) return
     if (!chat.i_blocked_them && !window.confirm(t('chat.confirm_block'))) return
@@ -356,6 +416,30 @@ export default function ChatScreen() {
                       {t('chat.call_revoke')}
                     </button>
                   )}
+                  {/* Бронирование — только продавцу, только пока
+                      объявление ещё активно (снятое с продажи или уже
+                      проданное бронировать нечего). */}
+                  {isSeller && chat.listing_status === 'active' && (
+                    chat.listing_is_reserved ? (
+                      <button
+                        className="chat-menu-item"
+                        disabled={reserveBusy}
+                        onClick={() => { setMenuOpen(false); cancelReserve() }}
+                      >
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                        {t('chat.reservation_cancel')}
+                      </button>
+                    ) : (
+                      <button
+                        className="chat-menu-item"
+                        disabled={reserveBusy}
+                        onClick={() => { setMenuOpen(false); doReserve() }}
+                      >
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                        {t('chat.reserve_for_them')}
+                      </button>
+                    )
+                  )}
                   <button
                     className="chat-menu-item"
                     disabled={blockBusy}
@@ -401,6 +485,35 @@ export default function ChatScreen() {
                 // же действия только путают.
                 <div key={m.id} className="chat-system-note">
                   {t(`chat.${m.kind}_note`, { name: m.sender_id === myId ? t('chat.you') : otherName() })}
+                </div>
+              ) : m.kind === 'price_offer' ? (
+                // Тут интерактивность прямо на сообщении, не вынесена в
+                // отдельную панель, как у звонка: предложений за
+                // переписку может быть несколько подряд, кнопки должны
+                // относиться к конкретному, а не к «последнему».
+                <div key={m.id} className={m.sender_id === myId ? 'chat-offer mine' : 'chat-offer'}>
+                  <div className="chat-offer-amount">
+                    {t('chat.offer_label')} {formatPrice(m.offer_price, chat?.listing_currency, i18n.language)}
+                  </div>
+                  {m.offer_status === 'accepted' && (
+                    <div className="chat-offer-status accepted">{t('chat.offer_accepted')}</div>
+                  )}
+                  {m.offer_status === 'declined' && (
+                    <div className="chat-offer-status declined">{t('chat.offer_declined')}</div>
+                  )}
+                  {!m.offer_status && isSeller && m.sender_id !== myId && (
+                    <div className="chat-offer-actions">
+                      <button disabled={offerBusy} onClick={() => respondOffer(m.id, 'accepted')}>
+                        {t('chat.offer_accept')}
+                      </button>
+                      <button disabled={offerBusy} onClick={() => respondOffer(m.id, 'declined')}>
+                        {t('chat.offer_decline')}
+                      </button>
+                    </div>
+                  )}
+                  {!m.offer_status && !isSeller && (
+                    <div className="chat-offer-status pending">{t('chat.offer_pending')}</div>
+                  )}
                 </div>
               ) : (
                 <div key={m.id} className={m.sender_id === myId ? 'chat-bubble mine' : 'chat-bubble'}>
@@ -452,23 +565,67 @@ export default function ChatScreen() {
         </div>
       )}
 
+      {/* Бронь — короткая плашка, без крестика (в отличие от звонка):
+          это факт состояния объявления, не разовое уведомление —
+          должна быть видна всё время, пока действует. */}
+      {chat?.listing_is_reserved && (
+        <div className="reservation-banner">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+          {isSeller
+            ? t('chat.reservation_active_seller')
+            : chat.listing_reserved_for_me
+              ? t('chat.reservation_active_for_me')
+              : t('chat.reservation_active_other')}
+        </div>
+      )}
+
       {chat?.blocked_by_them ? (
         <p className="chat-blocked-notice">{t('chat.you_are_blocked')}</p>
       ) : (
-        <div className="chat-input-row">
-          <input
-            type="text"
-            value={text}
-            onChange={(e) => { setText(e.target.value); if (sendError) setSendError(null) }}
-            onKeyDown={(e) => e.key === 'Enter' && send()}
-            placeholder={t('chat.message_ph')}
-          />
-          <button className="chat-send-btn" disabled={sending || !text.trim()} onClick={send} aria-label={t('actions.send')}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-              <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z" />
-            </svg>
-          </button>
-        </div>
+        <>
+          {/* Предложить цену — только покупателю, только если продавец
+              разрешил торг на самом объявлении. Отдельная маленькая
+              панель, раскрывается по кнопке — не отдельная форма на
+              весь экран ради одной цифры. */}
+          {!isSeller && chat?.listing_price_negotiable && chat?.listing_status === 'active' && (
+            <div className="offer-panel">
+              {offerOpen ? (
+                <div className="offer-panel-form">
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    value={offerAmount}
+                    onChange={(e) => setOfferAmount(e.target.value)}
+                    placeholder={t('chat.offer_amount_ph')}
+                    autoFocus
+                  />
+                  <button disabled={offerBusy || !offerAmount} onClick={sendOffer}>{t('chat.offer_send')}</button>
+                  <button className="offer-panel-cancel" onClick={() => { setOfferOpen(false); setOfferAmount('') }}>
+                    {t('actions.cancel')}
+                  </button>
+                </div>
+              ) : (
+                <button className="offer-panel-open" onClick={() => setOfferOpen(true)}>
+                  {t('chat.offer_open')}
+                </button>
+              )}
+            </div>
+          )}
+          <div className="chat-input-row">
+            <input
+              type="text"
+              value={text}
+              onChange={(e) => { setText(e.target.value); if (sendError) setSendError(null) }}
+              onKeyDown={(e) => e.key === 'Enter' && send()}
+              placeholder={t('chat.message_ph')}
+            />
+            <button className="chat-send-btn" disabled={sending || !text.trim()} onClick={send} aria-label={t('actions.send')}>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+                <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z" />
+              </svg>
+            </button>
+          </div>
+        </>
       )}
       </div>
       </div>

@@ -98,7 +98,21 @@
     "call_revoke": "Revoke call access",
     "call_revoked_note": "{{name}} — call access revoked",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "offer_open": "Make an offer",
+    "offer_amount_ph": "Your price",
+    "offer_send": "Send",
+    "offer_label": "Offer:",
+    "offer_pending": "Waiting for seller's response",
+    "offer_accepted": "Accepted",
+    "offer_declined": "Declined",
+    "offer_accept": "Accept",
+    "offer_decline": "Decline",
+    "reserve_for_them": "Reserve for this buyer",
+    "reservation_cancel": "Cancel reservation",
+    "reservation_active_seller": "Reserved by you for 48 hours",
+    "reservation_active_for_me": "The seller reserved this for you",
+    "reservation_active_other": "This listing is reserved by another buyer"
   },
   "promo": {
     "safe_deal": "Safe deal",
@@ -238,7 +252,9 @@
     "call_via_chat": "Call via chat",
     "prev_photo": "Previous photo",
     "next_photo": "Next photo",
-    "favorited_count": "{{count}} favorited"
+    "favorited_count": "{{count}} favorited",
+    "reserved_for_me": "The seller reserved this for you",
+    "reserved_other": "Reserved by another buyer"
   },
   "favorites": {
     "title": "Saved",
@@ -264,7 +280,8 @@
     "not_found": "This page doesn't exist — the link may be outdated or mistyped.",
     "price_down": "Price dropped",
     "price_up": "Price increased",
-    "promoted": "Promoted"
+    "promoted": "Promoted",
+    "reserved": "Reserved"
   },
   "chats": {
     "need_auth": "Introduce yourself to see your conversations.",

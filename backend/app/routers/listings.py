@@ -685,6 +685,7 @@ def search_listings(
             "city": listing.city,
             "cover_photo": cover.thumbnail_url if cover else None,
             "cover_is_video": bool(cover.is_video) if cover else False,
+            "is_reserved": bool(l.reserved_until and l.reserved_until > utcnow()),
             "cover_video_url": cover.url if (cover and cover.is_video) else None,
             "delivery_available": listing.delivery_available,
             "is_xl": listing.id in promo[PromotionType.xl_card],
@@ -753,6 +754,7 @@ def listings_by_ids(
                                  l.category.slug if l.category else None),
             "cover_photo": cover.thumbnail_url if cover else None,
             "cover_is_video": bool(cover.is_video) if cover else False,
+            "is_reserved": bool(l.reserved_until and l.reserved_until > utcnow()),
             "cover_video_url": cover.url if (cover and cover.is_video) else None,
         }
 
@@ -823,6 +825,7 @@ def my_listings(
                                  l.category.slug if l.category else None),
             "cover_photo": cover.thumbnail_url if cover else None,
             "cover_is_video": bool(cover.is_video) if cover else False,
+            "is_reserved": bool(l.reserved_until and l.reserved_until > utcnow()),
             "cover_video_url": cover.url if (cover and cover.is_video) else None,
             "status": l.status.value,
             # Автор должен видеть, почему объявление отклонили — без
@@ -1002,6 +1005,7 @@ def similar_listings(
             "is_highlighted": l.id in promo[PromotionType.highlight],
             "cover_photo": cover.thumbnail_url if cover else None,
             "cover_is_video": bool(cover.is_video) if cover else False,
+            "is_reserved": bool(l.reserved_until and l.reserved_until > utcnow()),
             "cover_video_url": cover.url if (cover and cover.is_video) else None,
             "path": listing_path(l.id, tr.title if tr else "", l.city,
                                  l.category.slug if l.category else None),
@@ -1056,6 +1060,7 @@ def seller_listings(
             "category_slug": l.category.slug if l.category else None,
             "cover_photo": cover.thumbnail_url if cover else None,
             "cover_is_video": bool(cover.is_video) if cover else False,
+            "is_reserved": bool(l.reserved_until and l.reserved_until > utcnow()),
             "cover_video_url": cover.url if (cover and cover.is_video) else None,
             "path": listing_path(l.id, tr.title if tr else "", l.city,
                                  l.category.slug if l.category else None),
@@ -1212,6 +1217,14 @@ def get_listing(listing_id: str, request: Request, db: Session = Depends(get_db)
             and not (viewer and viewer.id == listing.owner_id)
         ),
         "hide_exact_address": bool(listing.hide_exact_address),
+        # Бронь видно всем как факт (не выдаём чужую, но и не скрываем,
+        # что вещь занята — это важно знать любому смотрящему), а вот
+        # «забронировано ИМЕННО ДЛЯ ТЕБЯ» — только тому самому покупателю.
+        "is_reserved": bool(listing.reserved_until and listing.reserved_until > utcnow()),
+        "reserved_for_me": bool(
+            listing.reserved_until and listing.reserved_until > utcnow()
+            and viewer and listing.reserved_for == viewer.id
+        ),
         "photos": [
             {
                 "id": str(p.id), "url": p.url, "thumbnail_url": p.thumbnail_url,
@@ -1394,6 +1407,68 @@ def change_status(
             pass   # приглашение не должно ломать смену статуса
 
     return {"status": listing.status.value}
+
+
+class ReserveIn(BaseModel):
+    buyer_id: uuid.UUID
+    # Часов, на сколько бронируем — сутки-двое, как обычно и
+    # договариваются «придержи, я заберу завтра». Не даём бронировать
+    # на произвольный долгий срок — вещь всё равно должна продаваться,
+    # не висеть в подвешенном состоянии неделями.
+    hours: int = 48
+
+
+@router.post("/{listing_id}/reserve")
+def reserve_listing(
+    listing_id: uuid.UUID,
+    payload: ReserveIn,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Продавец бронирует объявление за конкретным покупателем — из
+    чата, не отдельной формой: он и так там, договариваясь. Статус
+    объявления не меняется — оно остаётся active, просто с меткой."""
+    listing = db.query(Listing).get(listing_id)
+    if not listing:
+        raise HTTPException(404, "not_found")
+    if listing.owner_id != user.id:
+        raise HTTPException(403, "not_owner")
+    if listing.status != ListingStatus.active:
+        raise HTTPException(400, "listing_not_active")
+    if not (1 <= payload.hours <= 168):   # неделя — разумный потолок
+        raise HTTPException(400, "bad_duration")
+
+    listing.reserved_for = payload.buyer_id
+    listing.reserved_until = utcnow() + timedelta(hours=payload.hours)
+    db.commit()
+
+    try:
+        from app.core.notifications import notify
+        notify(db, payload.buyer_id,
+              f"Продавец забронировал для вас объявление на {payload.hours} ч.",
+              link=f"/go/{listing.id}", force=True)
+    except Exception:
+        pass
+
+    return {"reserved_until": listing.reserved_until.isoformat()}
+
+
+@router.post("/{listing_id}/reserve/cancel")
+def cancel_reservation(
+    listing_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    listing = db.query(Listing).get(listing_id)
+    if not listing:
+        raise HTTPException(404, "not_found")
+    if listing.owner_id != user.id:
+        raise HTTPException(403, "not_owner")
+
+    listing.reserved_for = None
+    listing.reserved_until = None
+    db.commit()
+    return {"status": "cancelled"}
 
 
 @router.delete("/{listing_id}")

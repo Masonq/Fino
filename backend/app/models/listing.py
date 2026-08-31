@@ -103,6 +103,16 @@ class Listing(Base):
     location_lng: Mapped[float | None] = mapped_column(Numeric(9, 6), nullable=True)
     hide_exact_address: Mapped[bool] = mapped_column(Boolean, default=False)
 
+    # Бронирование — «придержать для конкретного покупателя», не новый
+    # статус объявления (оно остаётся active, ищется и покупается как
+    # обычно — просто с меткой). Ставит продавец из чата на
+    # определённый срок; reserved_for — кто именно, чтобы отличить
+    # «забронировано для тебя» от «забронировано для кого-то другого»
+    # на экране у разных людей.
+    reserved_until: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    reserved_for: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+
     status: Mapped[ListingStatus] = mapped_column(Enum(ListingStatus), default=ListingStatus.draft, index=True)
     rejection_reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
 

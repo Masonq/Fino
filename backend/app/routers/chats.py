@@ -4,7 +4,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import or_, func
 from sqlalchemy.orm import Session, joinedload
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from app.core.auth import get_current_user, decode_token
 from app.core.database import get_db, SessionLocal
@@ -30,7 +30,18 @@ class SendMessageIn(BaseModel):
     # sender_id тут раньше требовалось обязательным, а фронт его вовсе
     # не отправлял ({text} без sender_id) — валидация Pydantic отвергала
     # ЛЮБОЕ сообщение ещё до входа в функцию.
-    text: str
+    text: str | None = None
+    # Предложение цены — торг кнопкой. Можно вместе с text (короткий
+    # комментарий к цене) или само по себе; ниже проверяется, что хоть
+    # что-то одно всё же есть — пустое сообщение ни с чем отправить нельзя.
+    offer_price: float | None = None
+
+    @field_validator("offer_price")
+    @classmethod
+    def check_positive(cls, v):
+        if v is not None and v <= 0:
+            raise ValueError("offer_price_must_be_positive")
+        return v
 
 
 def _other_id(chat: Chat, user_id) -> uuid.UUID:
@@ -73,10 +84,18 @@ def _serialize_chat(chat: Chat, db: Session, lang: str = "ru", viewer_id=None):
     other_phone = None
     if phone_revealed and viewer_id == chat.buyer_id:
         other_phone = seller.phone if seller else None
+    reserved_active = bool(listing and listing.reserved_until and listing.reserved_until > utcnow())
     return {
         "id": str(chat.id),
         "listing_id": str(chat.listing_id),
         "listing_title": title,
+        "listing_price": float(listing.price) if listing and listing.price is not None else None,
+        "listing_currency": listing.currency.value if listing and listing.currency else None,
+        "listing_price_negotiable": bool(listing.price_negotiable) if listing else False,
+        "listing_status": listing.status.value if listing else None,
+        "listing_is_reserved": reserved_active,
+        "listing_reserved_for_me": bool(
+            reserved_active and viewer_id and listing.reserved_for == viewer_id),
         "buyer": {"id": str(buyer.id), "display_name": buyer.display_name} if buyer else None,
         "seller": {"id": str(seller.id), "display_name": seller.display_name} if seller else None,
         # С точки зрения именно того, кто сейчас смотрит: заблокировал ли
@@ -102,6 +121,7 @@ def _serialize_message(m: Message) -> dict:
         "kind": m.kind or "user",
         "is_read": m.is_read,
         "offer_price": float(m.offer_price) if m.offer_price else None,
+        "offer_status": m.offer_status,
         "created_at": m.created_at.isoformat(),
     }
 
@@ -212,6 +232,17 @@ async def send_message(
     sender_id = user.id   # отправитель — всегда сам, а не кто указан в запросе
     other_id = _other_id(chat, sender_id)
 
+    if not (payload.text or "").strip() and payload.offer_price is None:
+        raise HTTPException(400, "empty_message")
+
+    # Предложение цены — только покупателю есть смысл его слать (тот,
+    # кто и так продаёт по своей цене, не предлагает её сам себе).
+    # Прямой торг заранее видно на самой карточке — price_negotiable —
+    # но проверять его тут необязательно: продавец сам решает, вести
+    # ли переговоры, отклонить предложение можно и без этого флага.
+    if payload.offer_price is not None and sender_id != chat.buyer_id:
+        raise HTTPException(400, "only_buyer_can_offer")
+
     # Собеседник заблокировал именно отправителя — сам заблокировавший
     # может писать первым и дальше, блокировка не запрещает это ему.
     if _is_blocked(db, other_id, sender_id):
@@ -225,6 +256,8 @@ async def send_message(
         chat_id=chat_id,
         sender_id=sender_id,
         text=payload.text,
+        offer_price=payload.offer_price,
+        kind="price_offer" if payload.offer_price is not None else "user",
     )
     db.add(message)
     chat.last_message_at = utcnow()
@@ -242,7 +275,7 @@ async def send_message(
                           payload.text or "", chat_id=chat_id, message_id=message.id)
     except Exception:
         pass
-    return {"id": str(message.id), "sender_id": str(message.sender_id), "text": message.text, "created_at": message.created_at.isoformat()}
+    return _serialize_message(message)
 
 
 @router.post("/{chat_id}/block")
@@ -278,9 +311,10 @@ async def unblock_participant(
     return {"status": "unblocked"}
 
 
-def _notify_call_event(db: Session, chat: Chat, actor_id, other_id, text: str, message_id) -> None:
-    """Уведомление собеседнику о событии со звонком — то же самое место,
-    что и у обычного сообщения, не отдельная система."""
+def _notify_chat_event(db: Session, chat: Chat, actor_id, other_id, text: str, message_id) -> None:
+    """Уведомление собеседнику о структурном событии в чате (звонок,
+    предложение цены) — то же самое место, что и у обычного сообщения,
+    не отдельная система."""
     try:
         from app.core.notifications import notify_new_message
         actor = db.query(User).get(actor_id)
@@ -331,7 +365,7 @@ async def request_call(
 
     await manager.broadcast(str(chat_id), {"type": "message", "message": _serialize_message(message)})
     await manager.broadcast(str(chat_id), {"type": "chat_updated"})
-    _notify_call_event(db, chat, user.id, other_id, "запросил звонок", message.id)
+    _notify_chat_event(db, chat, user.id, other_id, "запросил звонок", message.id)
     return {"status": "requested"}
 
 
@@ -369,7 +403,7 @@ async def allow_call(
     await manager.broadcast(str(chat_id), {"type": "message", "message": _serialize_message(message)})
     await manager.broadcast(str(chat_id), {"type": "chat_updated"})
     other_id = _other_id(chat, user.id)
-    _notify_call_event(db, chat, user.id, other_id, "разрешил звонок", message.id)
+    _notify_chat_event(db, chat, user.id, other_id, "разрешил звонок", message.id)
     return {"status": "allowed"}
 
 
@@ -395,6 +429,54 @@ async def decline_call(
     await manager.broadcast(str(chat_id), {"type": "message", "message": _serialize_message(message)})
     await manager.broadcast(str(chat_id), {"type": "chat_updated"})
     return {"status": "declined"}
+
+
+class OfferResponseIn(BaseModel):
+    status: str   # accepted | declined
+
+    @field_validator("status")
+    @classmethod
+    def check_status(cls, v):
+        if v not in ("accepted", "declined"):
+            raise ValueError("bad_status")
+        return v
+
+
+@router.post("/{chat_id}/offers/{message_id}/respond")
+async def respond_to_offer(
+    chat_id: uuid.UUID,
+    message_id: uuid.UUID,
+    payload: OfferResponseIn,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Продавец принимает или отклоняет конкретное предложение цены —
+    статус меняется на самом сообщении (не новой записью, как у
+    call_allowed/declined): предложений за переписку может быть
+    несколько подряд, ответ должен относиться к конкретному, не к
+    «последнему активному» на весь чат.
+    """
+    chat = _require_participant(chat_id, user, db)
+    if user.id != chat.seller_id:
+        raise HTTPException(403, "only_seller_can_respond")
+
+    message = db.query(Message).filter(
+        Message.id == message_id, Message.chat_id == chat_id).first()
+    if not message or message.kind != "price_offer":
+        raise HTTPException(404, "offer_not_found")
+    if message.offer_status is not None:
+        raise HTTPException(400, "offer_already_answered")
+
+    message.offer_status = payload.status
+    db.commit()
+    db.refresh(message)
+
+    await manager.broadcast(str(chat_id), {"type": "message", "message": _serialize_message(message)})
+    verb = "принял" if payload.status == "accepted" else "отклонил"
+    _notify_chat_event(db, chat, user.id, chat.buyer_id,
+                       f"{verb} предложение {message.offer_price:.0f}", message.id)
+    return _serialize_message(message)
 
 
 @router.post("/{chat_id}/call-revoke")
@@ -430,7 +512,7 @@ async def revoke_call(
     await manager.broadcast(str(chat_id), {"type": "message", "message": _serialize_message(message)})
     await manager.broadcast(str(chat_id), {"type": "chat_updated"})
     other_id = _other_id(chat, user.id)
-    _notify_call_event(db, chat, user.id, other_id, "закрыл доступ к звонку", message.id)
+    _notify_chat_event(db, chat, user.id, other_id, "закрыл доступ к звонку", message.id)
     return {"status": "revoked"}
 
 @router.get("")

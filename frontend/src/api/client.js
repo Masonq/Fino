@@ -294,8 +294,17 @@ export const api = {
   // строку ниже. Из-за этого фронтенд переворачивал уже правильный
   // порядок в неправильный. Без разворота здесь.
   getChatMessages: (chatId, before) => request(`/chats/${chatId}/messages${before ? `?before=${encodeURIComponent(before)}` : ''}`),
-  sendMessage: (chatId, text) => request(`/chats/${chatId}/messages`, {
+  sendMessage: (chatId, text, offerPrice) => request(`/chats/${chatId}/messages`, {
     method: 'POST',
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({ text: text || null, offer_price: offerPrice || null }),
   }),
+  respondToOffer: (chatId, messageId, status) => request(`/chats/${chatId}/offers/${messageId}/respond`, {
+    method: 'POST',
+    body: JSON.stringify({ status }),
+  }),
+  reserveListing: (listingId, buyerId, hours) => request(`/listings/${listingId}/reserve`, {
+    method: 'POST',
+    body: JSON.stringify({ buyer_id: buyerId, hours: hours || 48 }),
+  }),
+  cancelReservation: (listingId) => request(`/listings/${listingId}/reserve/cancel`, { method: 'POST' }),
 }

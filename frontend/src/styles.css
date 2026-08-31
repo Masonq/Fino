@@ -340,6 +340,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .badge-top{ position:absolute; top:10px; left:10px; background:#fff; font-size:10px; font-weight:800; padding:5px 9px; border-radius:8px; }
 .badge-top.xl{ background:var(--ink); color:#fff; }
 .badge-top.company{ left:auto; right:10px; background:var(--primary-soft); color:var(--primary-deep); }
+.badge-top.reserved{ background:#8A6A1F; color:#fff; }
+/* Продвинутое объявление ещё и забронировано — редкое, но возможное
+   сочетание: без сдвига бейдж брони лёг бы поверх «Продвигается»
+   (оба слева по умолчанию). ~ (любой предшествующий элемент), не +
+   (строго соседний) — между XL и бронью в разметке может встать ещё
+   и бейдж «компания» (справа, но в DOM между ними), soблюдая порядок
+   рендера в ListingCard.jsx. */
+.badge-top.xl ~ .badge-top.reserved{ top:34px; }
 /* Куплена как крупная карточка — занимает обе колонки сетки, а не
    одну как соседние: та же строка, но во всю ширину. Стили самой
    карточки (крупнее фото, крупнее шрифт) переиспользует .l-card —
@@ -853,6 +861,58 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .chat-input-row input{ flex:1; padding:12px 16px; border-radius:20px; border:1px solid var(--line); font-size:16px; font-family:inherit; }
 .chat-send-btn{ width:42px; height:42px; border-radius:50%; background:var(--primary); color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .chat-send-btn:disabled{ background:var(--line); color:var(--muted); }
+
+/* Сообщение-предложение цены — своя карточка, не обычный пузырь: тут
+   нужно место под сумму крупным шрифтом и, у получателя, под две
+   кнопки ответа — обычный .chat-bubble для этого тесноват. */
+.chat-offer{
+  align-self:flex-start; max-width:78%; background:#fff;
+  border:1.5px solid var(--primary); border-radius:16px 16px 16px 4px;
+  padding:12px 14px;
+}
+.chat-offer.mine{ align-self:flex-end; border-radius:16px 16px 4px 16px; }
+.chat-offer-amount{ font-size:15px; font-weight:800; color:var(--ink); }
+.chat-offer-status{ font-size:12px; font-weight:700; margin-top:6px; }
+.chat-offer-status.pending{ color:var(--muted); }
+.chat-offer-status.accepted{ color:#1F8F5F; }
+.chat-offer-status.declined{ color:var(--coral); }
+.chat-offer-actions{ display:flex; gap:8px; margin-top:8px; }
+.chat-offer-actions button{
+  flex:1; padding:8px; border-radius:10px; font-size:12.5px; font-weight:700;
+}
+.chat-offer-actions button:first-child{ background:var(--primary); color:#fff; }
+.chat-offer-actions button:last-child{ background:var(--tile); color:var(--ink); }
+.chat-offer-actions button:disabled{ opacity:.5; }
+
+/* Панель «Предложить цену» — раскрывается по кнопке над полем ввода,
+   не отдельным экраном ради одной цифры. */
+.offer-panel{ padding:0 16px; background:#fff; }
+.offer-panel-open{
+  display:block; width:calc(100% - 32px); margin:10px auto 0; padding:11px;
+  border-radius:13px; background:var(--primary-soft); color:var(--primary-deep,#0A7A54);
+  font-size:13.5px; font-weight:700; text-align:center;
+}
+.offer-panel-form{ display:flex; gap:8px; padding-top:10px; align-items:center; }
+.offer-panel-form input{
+  flex:1; min-width:0; padding:11px 13px; border-radius:11px;
+  border:1px solid var(--line); font-size:16px; font-family:inherit;
+}
+.offer-panel-form button{
+  flex-shrink:0; padding:11px 14px; border-radius:11px; font-size:13px; font-weight:700;
+  background:var(--primary); color:#fff;
+}
+.offer-panel-form button:disabled{ opacity:.5; }
+.offer-panel-cancel{ background:transparent !important; color:var(--muted) !important; padding:11px 6px !important; }
+
+/* Плашка брони — постоянный факт состояния, не разовое уведомление,
+   поэтому без крестика (в отличие от .call-toast) и не position:fixed —
+   встроена в поток страницы, всегда на своём месте, пока бронь активна. */
+.reservation-banner{
+  display:flex; align-items:center; gap:8px; margin:0 16px 10px; padding:10px 14px;
+  border-radius:12px; background:#FBF3E3; color:#8A6A1F;
+  font-size:12.5px; font-weight:700; line-height:1.4;
+}
+.reservation-banner svg{ flex-shrink:0; }
 
 /* уважаем системную настройку «уменьшить движение» */
 @media (prefers-reduced-motion: reduce){

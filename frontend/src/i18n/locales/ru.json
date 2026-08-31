@@ -98,7 +98,21 @@
     "call_revoke": "Запретить звонок",
     "call_revoked_note": "{{name}} — звонок запрещён",
     "yes": "Да",
-    "no": "Нет"
+    "no": "Нет",
+    "offer_open": "Предложить свою цену",
+    "offer_amount_ph": "Ваша цена",
+    "offer_send": "Отправить",
+    "offer_label": "Предложение:",
+    "offer_pending": "Ждёт ответа продавца",
+    "offer_accepted": "Принято",
+    "offer_declined": "Отклонено",
+    "offer_accept": "Принять",
+    "offer_decline": "Отклонить",
+    "reserve_for_them": "Забронировать для покупателя",
+    "reservation_cancel": "Снять бронь",
+    "reservation_active_seller": "Забронировано вами на 48 часов",
+    "reservation_active_for_me": "Продавец забронировал это для вас",
+    "reservation_active_other": "Объявление забронировано другим покупателем"
   },
   "promo": {
     "safe_deal": "Безопасная сделка",
@@ -238,7 +252,9 @@
     "call_via_chat": "Позвонить через чат",
     "prev_photo": "Предыдущее фото",
     "next_photo": "Следующее фото",
-    "favorited_count": "{{count}} в избранном"
+    "favorited_count": "{{count}} в избранном",
+    "reserved_for_me": "Продавец забронировал это для вас",
+    "reserved_other": "Забронировано другим покупателем"
   },
   "favorites": {
     "title": "Избранное",
@@ -264,7 +280,8 @@
     "not_found": "Такой страницы нет — возможно, ссылка устарела или адрес набран с ошибкой.",
     "price_down": "Цена снизилась",
     "price_up": "Цена выросла",
-    "promoted": "Продвигается"
+    "promoted": "Продвигается",
+    "reserved": "Забронировано"
   },
   "chats": {
     "need_auth": "Представьтесь, чтобы видеть свои переписки.",

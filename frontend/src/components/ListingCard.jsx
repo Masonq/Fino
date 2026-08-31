@@ -74,6 +74,7 @@ export default function ListingCard({ listing, large = false }) {
         )}
         {listing.is_xl && <div className="badge-top xl">{t('misc.promoted')}</div>}
         {listing.is_company && <div className="badge-top company">{t('seller.company_badge')}</div>}
+        {listing.is_reserved && <div className="badge-top reserved">{t('misc.reserved')}</div>}
       </Link>
       <div className="s-row">
         <Link to={listing.path} className="s-title">{listing.title}</Link>

@@ -98,7 +98,21 @@
     "call_revoke": "Zabrani poziv",
     "call_revoked_note": "{{name}} — poziv zabranjen",
     "yes": "Da",
-    "no": "Ne"
+    "no": "Ne",
+    "offer_open": "Ponudite svoju cenu",
+    "offer_amount_ph": "Vaša cena",
+    "offer_send": "Pošalji",
+    "offer_label": "Ponuda:",
+    "offer_pending": "Čeka se odgovor prodavca",
+    "offer_accepted": "Prihvaćeno",
+    "offer_declined": "Odbijeno",
+    "offer_accept": "Prihvati",
+    "offer_decline": "Odbij",
+    "reserve_for_them": "Rezerviši za kupca",
+    "reservation_cancel": "Otkaži rezervaciju",
+    "reservation_active_seller": "Rezervisano od vas na 48 sati",
+    "reservation_active_for_me": "Prodavac je ovo rezervisao za vas",
+    "reservation_active_other": "Oglas je rezervisan od strane drugog kupca"
   },
   "promo": {
     "safe_deal": "Sigurna kupovina",
@@ -238,7 +252,9 @@
     "call_via_chat": "Pozovite preko chata",
     "prev_photo": "Prethodna fotografija",
     "next_photo": "Sledeća fotografija",
-    "favorited_count": "{{count}} u omiljenima"
+    "favorited_count": "{{count}} u omiljenima",
+    "reserved_for_me": "Prodavac je ovo rezervisao za vas",
+    "reserved_other": "Rezervisano od strane drugog kupca"
   },
   "favorites": {
     "title": "Sačuvano",
@@ -264,7 +280,8 @@
     "not_found": "Ova stranica ne postoji — link je možda zastareo ili pogrešno unet.",
     "price_down": "Cena je pala",
     "price_up": "Cena je porasla",
-    "promoted": "Izdvojeno"
+    "promoted": "Izdvojeno",
+    "reserved": "Rezervisano"
   },
   "chats": {
     "need_auth": "Predstavite se da biste videli svoje razgovore.",

@@ -49,6 +49,12 @@ class Message(Base):
 
     # Структурированное предложение цены — торг кнопкой, а не только текстом
     offer_price: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
+    # None, пока получатель не ответил; 'accepted'/'declined' —
+    # получатель нажал кнопку под самим сообщением. Встречное
+    # предложение — не статус этого сообщения, а просто НОВОЕ
+    # сообщение с offer_price от другой стороны: своя цепочка
+    # версий не нужна, чат и так последовательный.
+    offer_status: Mapped[str | None] = mapped_column(String(16), nullable=True)
 
     # Системные сообщения от сервиса: приглашение оставить отзыв и т.п.
     # Отправитель у них формальный, показываются отдельным блоком.
@@ -58,7 +64,7 @@ class Message(Base):
     # call_allowed/call_declined — запись в истории переписки о том,
     # чем кончился запрос; само разрешение живёт в PhoneReveal (пара
     # продавец-покупатель целиком), не в этих сообщениях.
-    kind: Mapped[str] = mapped_column(String(24), default="user")   # user | review_request | call_request | call_allowed | call_declined | call_revoked
+    kind: Mapped[str] = mapped_column(String(24), default="user")   # user | review_request | call_request | call_allowed | call_declined | call_revoked | price_offer
 
     is_read: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
