@@ -64,15 +64,11 @@ def remind_silent_chats(db: Session) -> int:
         listing = db.query(Listing).get(chat.listing_id)
         tr = None
         if listing:
+            from app.routers.listings import pick_translation
             recipient = db.query(User).get(recipient_id)
             lang = getattr(recipient.default_language, "value", None) if recipient else "ru"
-            tr = (
-                db.query(ListingTranslation)
-                .filter(ListingTranslation.listing_id == listing.id,
-                        ListingTranslation.language == (lang or "ru"))
-                .first()
-            )
-        title = tr.title if tr else (listing.translations[0].title if listing and listing.translations else "")
+            tr = pick_translation(listing, lang or "ru")
+        title = tr.title if tr else ""
 
         text = (
             f"<b>{sender.display_name}</b> ждёт ответа в переписке"

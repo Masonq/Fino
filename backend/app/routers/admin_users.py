@@ -263,6 +263,8 @@ def user_listings(
     db: Session = Depends(get_db),
 ):
     """Объявления человека — чтобы понять, за что его блокируют."""
+    from app.routers.listings import pick_translation
+
     items = (
         db.query(Listing)
         .filter(Listing.owner_id == user_id)
@@ -272,7 +274,7 @@ def user_listings(
     )
     out = []
     for listing in items:
-        translation = listing.translations[0] if listing.translations else None
+        translation = pick_translation(listing, "ru")
         out.append({
             "id": str(listing.id),
             "title": translation.title if translation else "",

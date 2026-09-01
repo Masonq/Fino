@@ -99,6 +99,7 @@ def create_report(
 
 @router.get("/queue")
 def queue(
+    lang: str = Query("ru"),
     limit: int = Query(50, le=200),
     moderator: User = Depends(require_moderator),
     db: Session = Depends(get_db),
@@ -140,8 +141,9 @@ def queue(
     } if rows else {}
 
     def serialize(r: Report):
+        from app.routers.listings import pick_translation
         listing = listings.get(r.listing_id) if r.listing_id else None
-        tr = listing.translations[0] if listing and listing.translations else None
+        tr = pick_translation(listing, lang) if listing else None
         target_user = reported_users.get(r.target_user_id) if r.target_user_id else None
         return {
             "id": str(r.id),

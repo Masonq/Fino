@@ -19,7 +19,7 @@ from datetime import timedelta
 from sqlalchemy.orm import Session
 
 from app.core.clock import utcnow
-from app.models import Listing, ListingStatus
+from app.models import Listing, ListingStatus, User
 
 log = logging.getLogger(__name__)
 
@@ -52,7 +52,11 @@ def warn_expiring_soon(db: Session) -> int:
 
     sent = 0
     for listing in listings:
-        title = listing.translations[0].title if listing.translations else ""
+        from app.routers.listings import pick_translation
+        owner = db.query(User).get(listing.owner_id)
+        owner_lang = owner.default_language.value if owner else "ru"
+        tr = pick_translation(listing, owner_lang)
+        title = tr.title if tr else ""
         try:
             notify_expiring_soon(db, listing.owner_id, title, WARN_DAYS_BEFORE)
         except Exception:
@@ -83,7 +87,11 @@ def archive_expired(db: Session) -> int:
     )
 
     for listing in expired:
-        title = listing.translations[0].title if listing.translations else ""
+        from app.routers.listings import pick_translation
+        owner = db.query(User).get(listing.owner_id)
+        owner_lang = owner.default_language.value if owner else "ru"
+        tr = pick_translation(listing, owner_lang)
+        title = tr.title if tr else ""
         listing.status = ListingStatus.archived
         try:
             notify_expired(db, listing.owner_id, title)

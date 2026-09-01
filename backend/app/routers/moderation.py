@@ -38,7 +38,12 @@ def _after_approve(listing_id) -> None:
 
         try:
             from app.core.notifications import notify_moderation
-            tr = listing.translations[0] if listing.translations else None
+            from app.routers.listings import pick_translation
+            # Заголовок в уведомлении — на языке продавца, не наугад
+            # первый попавшийся перевод: получал бы и русский текст на
+            # сербском, если так лёг порядок переводов в базе.
+            owner_lang = listing.owner.default_language.value if listing.owner else "ru"
+            tr = pick_translation(listing, owner_lang)
             notify_moderation(db, listing.owner_id, tr.title if tr else "", True,
                               listing_id=listing.id)
         except Exception:
@@ -105,9 +110,10 @@ def queue(
     )
 
     from app.core.urls import listing_path
+    from app.routers.listings import pick_translation
 
     def serialize(l: Listing):
-        tr = next((t for t in l.translations if t.language == lang), None) or (l.translations[0] if l.translations else None)
+        tr = pick_translation(l, lang)
         # «Раздел → Подраздел» — модератору важно видеть, куда объявление
         # реально попадёт, до того как решать, пропускать его или нет.
         category_name = None
@@ -194,7 +200,9 @@ def _after_reject(listing_id, reason: str | None) -> None:
             return
         try:
             from app.core.notifications import notify_moderation
-            tr = listing.translations[0] if listing.translations else None
+            from app.routers.listings import pick_translation
+            owner_lang = listing.owner.default_language.value if listing.owner else "ru"
+            tr = pick_translation(listing, owner_lang)
             notify_moderation(db, listing.owner_id, tr.title if tr else "", False, reason,
                               listing_id=listing.id)
         except Exception:

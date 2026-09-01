@@ -150,8 +150,12 @@ def _activate_promotion(db: Session, promo: Promotion) -> None:
 
     try:
         from app.core.notifications import notify_promotion_paid
+        from app.routers.listings import pick_translation
         if listing:
-            title = listing.translations[0].title if listing.translations else ""
+            recipient = db.query(User).get(promo.user_id)
+            recipient_lang = recipient.default_language.value if recipient else "ru"
+            tr = pick_translation(listing, recipient_lang)
+            title = tr.title if tr else ""
             notify_promotion_paid(db, promo.user_id, title, promo.type.value)
     except Exception:
         pass
