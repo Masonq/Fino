@@ -204,7 +204,7 @@ export const api = {
     method: 'PATCH',
     body: JSON.stringify({ status }),
   }),
-  deleteListing: (id) => request(`/listings/${id}`, { method: 'DELETE' }),
+  deleteListing: (id, force) => request(`/listings/${id}${force ? '?force=true' : ''}`, { method: 'DELETE' }),
   updateListing: (id, payload) => request(`/listings/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(payload),

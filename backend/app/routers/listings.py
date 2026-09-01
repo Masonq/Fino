@@ -1474,6 +1474,7 @@ def cancel_reservation(
 @router.delete("/{listing_id}")
 def delete_listing(
     listing_id: uuid.UUID,
+    force: bool = Query(False),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -1503,6 +1504,26 @@ def delete_listing(
     db.query(ListingViewLog).filter(ListingViewLog.listing_id == listing_id).delete()
     db.query(Promotion).filter(Promotion.listing_id == listing_id).delete()
     db.query(Favorite).filter(Favorite.listing_id == listing_id).delete()
+
+    # force — только у модератора/админа: снести объявление вместе с
+    # настоящей историей (переписка, жалобы, отзывы), не просто с
+    # техническими данными выше. Обычному человеку это недоступно даже
+    # на своё же объявление — если по нему уже реально общались,
+    # решение стирать эту историю не должно быть в одних руках с
+    # тем, кто в этой истории участвовал.
+    if force:
+        if not is_staff:
+            raise HTTPException(403, "force_delete_staff_only")
+        from app.models import Chat, Message, Review, Report, ReviewInvite, Ticket, TicketMessage
+        chat_ids = [c[0] for c in db.query(Chat.id).filter(Chat.listing_id == listing_id).all()]
+        db.query(Message).filter(Message.chat_id.in_(chat_ids)).delete(synchronize_session=False)
+        db.query(Chat).filter(Chat.listing_id == listing_id).delete()
+        db.query(Review).filter(Review.listing_id == listing_id).delete()
+        db.query(Report).filter(Report.listing_id == listing_id).delete()
+        db.query(ReviewInvite).filter(ReviewInvite.listing_id == listing_id).delete()
+        ticket_ids = [t[0] for t in db.query(Ticket.id).filter(Ticket.listing_id == listing_id).all()]
+        db.query(TicketMessage).filter(TicketMessage.ticket_id.in_(ticket_ids)).delete(synchronize_session=False)
+        db.query(Ticket).filter(Ticket.listing_id == listing_id).delete()
 
     try:
         db.delete(listing)

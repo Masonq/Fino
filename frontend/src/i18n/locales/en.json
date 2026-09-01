@@ -341,7 +341,8 @@
     "delete": "Delete",
     "confirm_delete": "Delete this listing? This can't be undone.",
     "tab_rejected": "Rejected",
-    "delete_has_history": "Can't delete — this listing already has messages, a report, a review, or a support ticket tied to it. Archive it instead."
+    "delete_has_history": "Can't delete — this listing already has messages, a report, a review, or a support ticket tied to it. Archive it instead.",
+    "delete_has_history_force_confirm": "This listing has chat history, reports, reviews, or support tickets attached — they will be permanently deleted along with the listing. Delete anyway?"
   },
   "mod": {
     "title": "Moderation",

@@ -374,7 +374,28 @@ export default function ListingDetail() {
     } catch (e) {
       // Раньше тут любая ошибка проглатывалась молча — модератор
       // видел, что кнопка просто перестала крутиться, без объяснения.
-      alert(e.code === 'listing_has_history' ? t('my.delete_has_history') : t('auth.err_generic'))
+      if (e.code === 'listing_has_history' && isStaff) {
+        // Сюда попадают только объявления без «настоящего» владельца —
+        // canReturnToEdit=false, то есть перенесённые из Telegram
+        // (у обычных объявлений выше уже сработал бы путь «отклонить
+        // с причиной», не удаление вовсе — отклонение не трогает
+        // историю, конфликта внешнего ключа там просто не бывает).
+        // У такого объявления второе, отдельное и явное подтверждение —
+        // это стирает настоящую переписку/жалобы/отзывы, не просто
+        // мусорную карточку.
+        if (window.confirm(t('my.delete_has_history_force_confirm'))) {
+          setDeleting(true)
+          try {
+            await api.deleteListing(listing.id, true)
+            navigate(listing.category_slug ? `/search?category=${listing.category_slug}` : '/', { replace: true })
+            return
+          } catch {
+            alert(t('auth.err_generic'))
+          }
+        }
+      } else {
+        alert(e.code === 'listing_has_history' ? t('my.delete_has_history') : t('auth.err_generic'))
+      }
     }
     finally { setDeleting(false) }
   }
