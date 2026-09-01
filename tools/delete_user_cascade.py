@@ -67,7 +67,6 @@ def main(email: str, dry_run: bool) -> None:
         (Listing, Listing.id.in_(lids)),
         (TicketMessage, TicketMessage.ticket_id.in_(ticket_ids)),
         (Ticket, Ticket.id.in_(ticket_ids)),
-        (AuditEntry, AuditEntry.user_id == uid),
         (BalanceTopup, BalanceTopup.user_id == uid),
         (BlockedUser, (BlockedUser.blocker_id == uid) | (BlockedUser.blocked_id == uid)),
         (DocVerificationRequest, (DocVerificationRequest.user_id == uid) | (DocVerificationRequest.requested_by == uid)),
@@ -94,6 +93,17 @@ def main(email: str, dry_run: bool) -> None:
         if not dry_run:
             db.query(User).filter(User.referred_by == uid).update(
                 {User.referred_by: None}, synchronize_session=False)
+
+    # Журнал служебных действий — не удаляем, обнуляем ссылку: имя
+    # действовавшего уже сохранено рядом текстом (actor_name), запись
+    # остаётся читаемой и без живой ссылки на аккаунт (см. комментарий
+    # в самой модели — 'аккаунт может быть удалён позже').
+    audit_count = db.query(AuditEntry).filter(AuditEntry.actor_id == uid).count()
+    if audit_count:
+        print(f"  AuditEntry.actor_id (обнуляю ссылку, запись остаётся, имя уже сохранено рядом): {audit_count}")
+        if not dry_run:
+            db.query(AuditEntry).filter(AuditEntry.actor_id == uid).update(
+                {AuditEntry.actor_id: None}, synchronize_session=False)
 
     if not dry_run:
         db.query(User).filter(User.id == uid).delete()
