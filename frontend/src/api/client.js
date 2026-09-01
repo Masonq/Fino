@@ -162,6 +162,12 @@ export const api = {
   editProfile: (payload) => request('/users/me', {
     method: 'PATCH', body: JSON.stringify(payload),
   }),
+  requestEmailChange: (newEmail) => request('/auth/change-email/request', {
+    method: 'POST', body: JSON.stringify({ new_email: newEmail }),
+  }),
+  verifyEmailChange: (newEmail, code) => request('/auth/change-email/verify', {
+    method: 'POST', body: JSON.stringify({ new_email: newEmail, code }),
+  }),
   enterByTelegram: (key) => request('/auth/telegram/enter', {
     method: 'POST', body: JSON.stringify({ key }),
   }),

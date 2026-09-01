@@ -32,6 +32,16 @@ export default function EditProfile() {
   const [verifyBusy, setVerifyBusy] = useState(false)
   const [verifyError, setVerifyError] = useState('')
 
+  // Смена почты — отдельный, самостоятельный поток, не часть общего
+  // «Сохранить» ниже: у неё свой цикл (запрос кода на новый адрес →
+  // подтверждение), пока код не подтверждён, менять по сути нечего.
+  const [email, setEmail] = useState('')
+  const [emailStep, setEmailStep] = useState('view')   // view | enter | code
+  const [newEmail, setNewEmail] = useState('')
+  const [emailCode, setEmailCode] = useState('')
+  const [emailBusy, setEmailBusy] = useState(false)
+  const [emailError, setEmailError] = useState('')
+
   useEffect(() => {
     if (authLoading) return
     if (!user) { navigate('/login', { replace: true }); return }
@@ -40,6 +50,7 @@ export default function EditProfile() {
       setAvatar(me.avatar_url || '')
       setCompany(me.company_name || '')
       setCompanyDescription(me.company_description || '')
+      setEmail(me.email || '')
       // Если номер уже сохранён с кодом +381 — показываем только
       // остаток, префикс и так на своём месте в самой строке ввода.
       // Мало ли номер сохранён без него (старые записи, до этого поля
@@ -76,6 +87,41 @@ export default function EditProfile() {
         ? t('edit_profile.phone_taken')
         : t('edit_profile.failed'))
     } finally { setSaving(false) }
+  }
+
+  const requestEmailCode = async () => {
+    const trimmed = newEmail.trim().toLowerCase()
+    if (!trimmed || trimmed === email.toLowerCase()) return
+    setEmailBusy(true); setEmailError('')
+    try {
+      await api.requestEmailChange(trimmed)
+      setEmailStep('code')
+    } catch (e) {
+      setEmailError(
+        e.code === 'email_taken' ? t('edit_profile.email_taken')
+        : e.code === 'too_many_requests' ? t('edit_profile.email_too_soon')
+        : t('edit_profile.failed')
+      )
+    } finally { setEmailBusy(false) }
+  }
+
+  const confirmEmailCode = async () => {
+    if (!emailCode.trim()) return
+    setEmailBusy(true); setEmailError('')
+    try {
+      const updated = await api.verifyEmailChange(newEmail.trim().toLowerCase(), emailCode.trim())
+      updateUser(updated)
+      setEmail(updated.email || newEmail.trim().toLowerCase())
+      setEmailStep('view')
+      setNewEmail(''); setEmailCode('')
+    } catch (e) {
+      setEmailError(
+        e.code === 'wrong_code' ? t('edit_profile.email_wrong_code')
+        : e.code === 'code_expired' ? t('edit_profile.email_code_expired')
+        : e.code === 'email_taken' ? t('edit_profile.email_taken')
+        : t('edit_profile.failed')
+      )
+    } finally { setEmailBusy(false) }
   }
 
   const pickPhoto = async (event) => {
@@ -154,6 +200,63 @@ export default function EditProfile() {
             placeholder={t('edit_profile.phone_hint')}
           />
         </div>
+
+        <label className="edit-label">{t('edit_profile.email')}</label>
+        {emailStep === 'view' && (
+          <div className="email-row">
+            <span className="email-current">{email || t('edit_profile.email_none')}</span>
+            <button type="button" className="email-change-btn" onClick={() => setEmailStep('enter')}>
+              {t('edit_profile.email_change')}
+            </button>
+          </div>
+        )}
+        {emailStep === 'enter' && (
+          <div className="email-form">
+            <input
+              className="admin-search"
+              type="email"
+              inputMode="email"
+              autoCapitalize="none"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              placeholder={t('edit_profile.email_new_ph')}
+              autoFocus
+            />
+            <div className="email-form-actions">
+              <button type="button" disabled={emailBusy || !newEmail.trim()} onClick={requestEmailCode}>
+                {t('edit_profile.email_send_code')}
+              </button>
+              <button type="button" className="email-form-cancel"
+                     onClick={() => { setEmailStep('view'); setNewEmail(''); setEmailError('') }}>
+                {t('actions.cancel')}
+              </button>
+            </div>
+          </div>
+        )}
+        {emailStep === 'code' && (
+          <div className="email-form">
+            <div className="edit-hint-warn">{t('edit_profile.email_code_sent', { email: newEmail.trim() })}</div>
+            <input
+              className="admin-search"
+              type="text"
+              inputMode="numeric"
+              value={emailCode}
+              onChange={(e) => setEmailCode(e.target.value.replace(/\D/g, ''))}
+              placeholder={t('edit_profile.email_code_ph')}
+              autoFocus
+            />
+            <div className="email-form-actions">
+              <button type="button" disabled={emailBusy || !emailCode.trim()} onClick={confirmEmailCode}>
+                {t('edit_profile.email_confirm')}
+              </button>
+              <button type="button" className="email-form-cancel"
+                     onClick={() => { setEmailStep('view'); setNewEmail(''); setEmailCode(''); setEmailError('') }}>
+                {t('actions.cancel')}
+              </button>
+            </div>
+          </div>
+        )}
+        {emailError && <p className="auth-error">{emailError}</p>}
 
         <label className="edit-label">{t('edit_profile.company')}</label>
         <div className={locked ? 'edit-input-wrap locked' : 'edit-input-wrap'}>

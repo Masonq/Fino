@@ -603,7 +603,19 @@
     "verify_first": "To switch to a business account, verify your identity first — see \"Identity verification\" below on this same page.",
     "phone": "Phone",
     "phone_hint": "6X XXX XXXX",
-    "phone_taken": "This number is already used by another account"
+    "phone_taken": "This number is already used by another account",
+    "email": "Email",
+    "email_none": "Not set",
+    "email_change": "Change",
+    "email_new_ph": "New email",
+    "email_send_code": "Send code",
+    "email_code_ph": "Code from the email",
+    "email_confirm": "Confirm",
+    "email_code_sent": "Code sent to {{email}}",
+    "email_taken": "This email is already used by another account",
+    "email_too_soon": "Code already sent — wait a bit before requesting again",
+    "email_wrong_code": "Wrong code",
+    "email_code_expired": "Code expired — request a new one"
   },
   "landing": {
     "deal": "What do you need",

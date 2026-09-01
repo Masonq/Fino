@@ -322,6 +322,7 @@ def user_summary(
     )
     device_changed = False
     country_changed = False
+    isp_changed = False
     last_country = None
     last_city = None
     if events:
@@ -329,10 +330,13 @@ def user_summary(
         earlier = events[1:]
         known_devices = {e.device_guid for e in earlier if e.device_guid}
         known_countries = {e.country for e in earlier if e.country}
+        known_isps = {e.isp for e in earlier if e.isp}
         device_changed = bool(
             earlier and latest.device_guid and latest.device_guid not in known_devices)
         country_changed = bool(
             earlier and latest.country and latest.country not in known_countries)
+        isp_changed = bool(
+            earlier and latest.isp and latest.isp not in known_isps)
         last_country = latest.country
         last_city = latest.city
 
@@ -342,13 +346,18 @@ def user_summary(
         "listings_suspicious": bool(last_day >= 10 and (age_days or 0) <= 3),
         "device_changed": device_changed,
         "country_changed": country_changed,
+        "isp_changed": isp_changed,
         "last_country": last_country,
         "last_city": last_city,
         # Десяток объявлений в сутки от новичка — повод посмотреть глазами.
-        # Резкая смена устройства и страны разом — тоже.
+        # Резкая смена устройства вместе со сменой локации — тоже:
+        # страна ИЛИ провайдер, не только страна — человек мог остаться
+        # в той же стране, но пересесть на другую сеть (или наоборот,
+        # тот же оператор в роуминге за границей) — оба случая говорят
+        # об одном и том же: другое место, не просто новый роутер дома.
         "suspicious": bool(
             (last_day >= 10 and (age_days or 0) <= 3)
-            or (device_changed and country_changed)
+            or (device_changed and (country_changed or isp_changed))
         ),
     }
 

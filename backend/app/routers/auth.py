@@ -319,6 +319,111 @@ def update_me(
     return _user_payload(user)
 
 
+class ChangeEmailRequestIn(BaseModel):
+    new_email: EmailStr
+
+
+@router.post("/change-email/request")
+def change_email_request(
+    payload: ChangeEmailRequestIn,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Смена почты — раньше просто не было такой возможности вовсе: если
+    человек пытался «войти» с новой почтой, обычный вход заводил ему
+    ВТОРОЙ, отдельный аккаунт, а не переносил старый на новый адрес.
+
+    Код шлём на НОВУЮ почту (не на старую) — подтверждаем, что человек
+    реально владеет тем адресом, на который переезжает, тем же самым
+    способом, что уже проверен для обычной регистрации.
+    """
+    new_email = payload.new_email.strip().lower()
+
+    if new_email == (user.email or "").lower():
+        raise HTTPException(400, "same_email")
+
+    taken = db.query(User).filter(User.email == new_email, User.id != user.id).first()
+    if taken:
+        raise HTTPException(400, "email_taken")
+
+    recent = (
+        db.query(VerificationCode)
+        .filter(
+            VerificationCode.destination == new_email,
+            VerificationCode.created_at > utcnow() - RESEND_COOLDOWN,
+        )
+        .first()
+    )
+    if recent:
+        raise HTTPException(429, "too_many_requests")
+
+    code = generate_code()
+    db.add(VerificationCode(
+        destination=new_email,
+        channel=VerifyChannel.email,
+        code_hash=hash_code(code),
+        expires_at=utcnow() + CODE_TTL,
+    ))
+    db.commit()
+
+    send_code(new_email, code, VerifyChannel.email)
+    return {"status": "sent"}
+
+
+class ChangeEmailVerifyIn(BaseModel):
+    new_email: EmailStr
+    code: str
+
+
+@router.post("/change-email/verify")
+def change_email_verify(
+    payload: ChangeEmailVerifyIn,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    new_email = payload.new_email.strip().lower()
+
+    record = (
+        db.query(VerificationCode)
+        .filter(
+            VerificationCode.destination == new_email,
+            VerificationCode.used.is_(False),
+            VerificationCode.expires_at > utcnow(),
+        )
+        .order_by(VerificationCode.created_at.desc())
+        .first()
+    )
+    if not record:
+        raise HTTPException(400, "code_expired")
+
+    record.attempts += 1
+    if record.attempts > MAX_ATTEMPTS:
+        record.used = True
+        db.commit()
+        raise HTTPException(400, "too_many_attempts")
+
+    if not verify_code(payload.code, record.code_hash):
+        db.commit()
+        raise HTTPException(400, "wrong_code")
+
+    record.used = True
+
+    # Второй раз проверяем занятость прямо перед записью — окно между
+    # запросом кода и его вводом может занять минуты, и почту мог
+    # успеть занять кто-то другой за это время.
+    taken = db.query(User).filter(User.email == new_email, User.id != user.id).first()
+    if taken:
+        db.commit()
+        raise HTTPException(400, "email_taken")
+
+    user.email = new_email
+    user.email_verified = True
+    db.commit()
+    db.refresh(user)
+    return _user_payload(user)
+
+
 @router.post("/logout")
 def logout(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Отзывает ВСЕ токены этого человека разом, не только тот, что

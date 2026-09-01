@@ -33,5 +33,12 @@ class LoginEvent(Base):
     device_guid: Mapped[str | None] = mapped_column(String(64), nullable=True)
     country: Mapped[str | None] = mapped_column(String(2), nullable=True)
     city: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    # Интернет-провайдер по IP — сильнее самого IP как сигнал: адрес
+    # меняется от каждого переподключения роутера (динамический IP у
+    # большинства людей), а провайдер — только при реальной смене сети
+    # или места (другой оператор, другая страна, дом vs мобильный
+    # интернет). Голое сравнение IP давало бы срабатывание почти на
+    # каждом заходе, толку от него не было бы вовсе.
+    isp: Mapped[str | None] = mapped_column(String(200), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, index=True)

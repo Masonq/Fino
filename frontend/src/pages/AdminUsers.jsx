@@ -210,7 +210,7 @@ export default function AdminUsers() {
                         })}
                       </p>
                     )}
-                    {card.summary?.device_changed && card.summary?.country_changed && (
+                    {card.summary?.device_changed && (card.summary?.country_changed || card.summary?.isp_changed) && (
                       <p className="admin-note admin-note-warn">
                         {t('admin.suspicious_device', {
                           location: card.summary.last_city

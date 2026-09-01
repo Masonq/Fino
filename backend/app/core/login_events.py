@@ -25,24 +25,24 @@ def _client_ip(request: Request) -> str | None:
     return request.headers.get("x-real-ip") or (request.client.host if request.client else None)
 
 
-def _geo_lookup(ip: str | None) -> tuple[str | None, str | None]:
+def _geo_lookup(ip: str | None) -> tuple[str | None, str | None, str | None]:
     """
-    Страна/город по IP — бесплатный ip-api.com, без ключа. Не блокируем
-    вход, если сервис недоступен или ответил не тем: геоданные тут
-    вспомогательные, не обязательное условие входа.
+    Страна/город/провайдер по IP — бесплатный ip-api.com, без ключа.
+    Не блокируем вход, если сервис недоступен или ответил не тем:
+    геоданные тут вспомогательные, не обязательное условие входа.
     """
     if not ip or ip in ("127.0.0.1", "::1"):
-        return None, None
+        return None, None, None
     try:
         with urllib.request.urlopen(
-            f"http://ip-api.com/json/{ip}?fields=status,countryCode,city", timeout=3,
+            f"http://ip-api.com/json/{ip}?fields=status,countryCode,city,isp", timeout=3,
         ) as resp:
             data = json.loads(resp.read().decode())
         if data.get("status") == "success":
-            return data.get("countryCode"), data.get("city")
+            return data.get("countryCode"), data.get("city"), data.get("isp")
     except Exception as exc:                     # noqa: BLE001
         log.info("геолокация IP не удалась: %s", exc)
-    return None, None
+    return None, None, None
 
 
 def _fill_geo_later(event_id) -> None:
@@ -62,14 +62,15 @@ def _fill_geo_later(event_id) -> None:
         if not event:
             return
         ip = event.ip_address
-    country, city = _geo_lookup(ip)
-    if not country and not city:
+    country, city, isp = _geo_lookup(ip)
+    if not country and not city and not isp:
         return
     with SessionLocal() as db:
         event = db.query(LoginEvent).get(event_id)
         if event:
             event.country = country
             event.city = city
+            event.isp = isp
             db.commit()
 
 
