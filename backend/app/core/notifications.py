@@ -146,8 +146,9 @@ def notify_new_message(db: Session, recipient_id, sender_id, sender_name: str,
 
 
 def notify_review_request(db: Session, user_id, other_name: str, chat_id=None) -> bool:
+    from app.core.morphology import to_instrumental
     text = (
-        f"Как прошла сделка с <b>{other_name}</b>?\n\n"
+        f"Как прошла сделка с <b>{to_instrumental(other_name)}</b>?\n\n"
         f"Оставьте отзыв — это помогает другим покупателям."
     )
     link = f"/chat/{chat_id}" if chat_id else None

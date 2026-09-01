@@ -124,6 +124,44 @@ def to_nominative(text: str, words: int = 2) -> str | None:
     return " ".join(parts) if changed else text
 
 
+def to_instrumental(name: str) -> str:
+    """
+    «Иван» -> «Иваном» — для «сделка с {name}». Склоняем только слова,
+    которые словарь уверенно считает именем или фамилией (грамема
+    Name/Surn) — не любое слово подряд: ник вроде 'Petrov_92' или
+    название компании 'ООО Ромашка' словарь не отмечает так, и они
+    остаются как есть, а не превращаются во что-то беспорядочное.
+
+    Возвращает исходную строку без изменений, если словаря нет или
+    распознать по этим грамемам нечего — тогда «с {name}» просто
+    остаётся без падежа, как было до этой функции, не хуже.
+    """
+    morph = analyzer()
+    if morph is None:
+        return name
+
+    words = name.split()
+    changed = False
+    for i, raw in enumerate(words):
+        core = raw.strip(" ,.;:!?—–-«»\"'()")
+        if not core or not core[0].isalpha():
+            continue
+        best = morph.parse(core)[0]
+        tag = str(best.tag)
+        if "Name" not in tag and "Surn" not in tag and "Patr" not in tag:
+            continue
+        inst = best.inflect({"ablt"})
+        if inst is None:
+            continue
+        fixed = inst.word
+        if core[:1].isupper():
+            fixed = fixed[:1].upper() + fixed[1:]
+        words[i] = raw.replace(core, fixed, 1)
+        changed = True
+
+    return " ".join(words) if changed else name
+
+
 def sentences(text: str) -> list[str]:
     """
     Делит текст на предложения.
