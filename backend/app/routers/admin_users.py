@@ -90,6 +90,15 @@ def list_users(
     """
     query = db.query(User)
 
+    # Служебные аккаунты-владельцы для объявлений, перенесённых из
+    # Telegram-каналов (по одному на канал-источник, см. service_account()
+    # в tg_import.py) — не живые люди, вход в них закрыт. В списке людей
+    # для модерации им не место, только засоряют — отличаем по телефону:
+    # реальный телефон так не выглядит (у него не может начинаться с
+    # буквенного 'tg', только сгенерированный service_account() именно так
+    # и строит его — f"tg{abs(chat_id)}").
+    query = query.filter(or_(User.phone.is_(None), ~User.phone.like("tg%")))
+
     if q:
         like = f"%{q.strip()}%"
         query = query.filter(or_(
