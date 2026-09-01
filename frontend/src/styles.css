@@ -1973,6 +1973,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   .profile-main{ display:block; }
   .profile-sidebar .profile-head-card{ margin:0 0 16px; }
   .profile-sidebar .balance-card{ margin:0; }
+  .profile-sidebar .invite-card{ margin-left:0; margin-right:0; }
   .profile-main .profile-section-title:first-child{ margin-top:0; }
   /* Аватар был прижат к самому краю баннера — на маленьком мобильном
      баннере тот же отступ (14px) смотрелся нормально, а тут, на
