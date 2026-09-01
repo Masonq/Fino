@@ -87,7 +87,20 @@ def notify(db: Session, user_id, text: str, force: bool = False,
     # где его реально увидят.
     try:
         from app.core.webpush import send_web_push
-        send_web_push(db, user_id, subject or "PLONK", _strip_tags(text), link=link)
+        # Заголовок push без приставки «PLONK —» — subject тот же самый,
+        # что уходит и в тему письма, где эта приставка уместна (почта
+        # не показывает источник так же явно), а у push система и так
+        # подписывает уведомление названием сайта своей строкой снизу —
+        # с приставкой получалось бы «PLONK» дважды подряд.
+        push_title = subject or "PLONK"
+        if push_title.startswith("PLONK — "):
+            push_title = push_title[len("PLONK — "):]
+            # После среза первая буква осталась строчной («как прошла
+            # сделка?») — в исходной строке это было продолжением
+            # фразы после «PLONK —», а отдельным заголовком читается
+            # как опечатка.
+            push_title = push_title[:1].upper() + push_title[1:]
+        send_web_push(db, user_id, push_title or "PLONK", _strip_tags(text), link=link)
     except Exception as exc:                     # noqa: BLE001
         log.warning("Web Push не отправлен: %s", exc)
 
