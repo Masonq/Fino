@@ -706,7 +706,8 @@
     "push_notifications": "Push notifications",
     "push_unsupported": "Not supported",
     "push_blocked": "Blocked in browser",
-    "push_needs_install": "Add to Home Screen first"
+    "push_needs_install": "Add to Home Screen first",
+    "push_error": "Could not turn on — try again"
   },
   "verify": {
     "title": "Identity verification",

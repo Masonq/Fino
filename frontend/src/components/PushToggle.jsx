@@ -9,6 +9,7 @@ export default function PushToggle() {
   const [on, setOn] = useState(false)
   const [busy, setBusy] = useState(false)
   const [blocked, setBlocked] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (!pushSupported()) {
@@ -22,6 +23,7 @@ export default function PushToggle() {
 
   const toggle = async () => {
     setBusy(true)
+    setError('')
     try {
       if (on) {
         await disablePush()
@@ -32,8 +34,17 @@ export default function PushToggle() {
         setBlocked(false)
       }
     } catch (e) {
-      if (e.message === 'denied') setBlocked(true)
-      // 'unsupported'/'no_key' — молча оставляем выключенным, тумблер уже это отражает
+      if (e.message === 'denied') {
+        setBlocked(true)
+      } else if (e.message !== 'unsupported') {
+        // Разрешение уже дано браузером, но что-то пошло не так дальше
+        // (service worker, ключ с сервера, сама подписка) — раньше это
+        // проглатывалось молча, тумблер просто не переключался без
+        // всякого объяснения. console.error — чтобы было что показать
+        // из консоли браузера при следующем разборе, если понадобится.
+        console.error('push toggle:', e)
+        setError(t('profile.push_error'))
+      }
     } finally {
       setBusy(false)
     }
@@ -44,14 +55,17 @@ export default function PushToggle() {
   if (blocked) return <span className="push-toggle-unsupported">{t('profile.push_blocked')}</span>
 
   return (
-    <button
-      type="button"
-      className={on ? 'toggle-switch on' : 'toggle-switch'}
-      onClick={toggle}
-      disabled={busy}
-      aria-label={t('profile.push_notifications')}
-    >
-      <span className="toggle-switch-knob" />
-    </button>
+    <span className="push-toggle-wrap">
+      <button
+        type="button"
+        className={on ? 'toggle-switch on' : 'toggle-switch'}
+        onClick={toggle}
+        disabled={busy}
+        aria-label={t('profile.push_notifications')}
+      >
+        <span className="toggle-switch-knob" />
+      </button>
+      {error && <div className="push-toggle-error">{error}</div>}
+    </span>
   )
 }
