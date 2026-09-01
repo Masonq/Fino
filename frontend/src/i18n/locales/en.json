@@ -214,7 +214,11 @@
     "video_err_size": "File is too large",
     "video_err_length": "Video is too long — up to 90 seconds",
     "video_err_processing": "Could not process the video — try another one",
-    "video_err_generic": "Could not upload the video"
+    "video_err_generic": "Could not upload the video",
+    "title_rooms": "{{n}}-room apartment",
+    "title_no_rooms": "Apartment",
+    "title_area_fmt": "{{head}}, {{area}} m²",
+    "title_auto_hint": "The title is built from the number of rooms and area — this makes listings easier to scan and compare"
   },
   "detail": {
     "loading": "Loading…",

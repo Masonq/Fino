@@ -508,6 +508,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   font-family:inherit; color:var(--ink);
 }
 .post-field-row{ display:flex; gap:10px; }
+.post-title-auto{ background:var(--tile) !important; color:var(--ink-soft) !important; }
 .post-checkbox{ display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--ink-soft); }
 .post-checkbox input{ width:17px; height:17px; }
 .post-map-toggle{

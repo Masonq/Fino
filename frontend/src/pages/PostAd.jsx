@@ -257,6 +257,27 @@ export default function PostAd() {
     .filter((f) => f.required)
     .every((f) => attrs[f.key] !== undefined && attrs[f.key] !== '')
 
+  // Квартиры — заголовок собирается сам из комнат и площади, не
+  // пишется вручную: одна и та же карточка «3-комнатная квартира,
+  // 65 м²» — по этому её и ищут глазами в ленте, свободный текст тут
+  // только мешает (совпадает с тем, что уже делает разбор объявлений
+  // из Telegram — compose_title в tg_parse.py, тот же самый формат).
+  const isApartment = schema.some((f) => f.key === 'area_m2') && schema.some((f) => f.key === 'rooms')
+  const apartmentTitle = (() => {
+    const area = attrs.area_m2
+    if (!area) return ''
+    const rooms = attrs.rooms
+    const head = rooms
+      ? t('post.title_rooms', { n: Number(rooms) })
+      : t('post.title_no_rooms')
+    return t('post.title_area_fmt', { head, area })
+  })()
+
+  useEffect(() => {
+    if (isApartment && apartmentTitle) setTitle(apartmentTitle)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isApartment, apartmentTitle])
+
   const handleSubmit = async () => {
     setError(null)
     setSubmitting(true)
@@ -447,7 +468,14 @@ export default function PostAd() {
           <div className="post-fields">
             <div className="post-field">
               <label>{t('listing.title')} *</label>
-              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('post.title_ph')} />
+              {isApartment ? (
+                <>
+                  <input type="text" value={apartmentTitle} readOnly disabled className="post-title-auto" />
+                  <div className="post-map-hint">{t('post.title_auto_hint')}</div>
+                </>
+              ) : (
+                <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('post.title_ph')} />
+              )}
             </div>
             <div className="post-field">
               <label>{t('listing.description')}</label>
