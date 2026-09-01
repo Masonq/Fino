@@ -206,12 +206,17 @@ def notify_reverify_requested(db: Session, user_id, verify_url: str) -> bool:
 
 
 def notify_promotion_paid(db: Session, user_id, title: str, promo_type: str) -> bool:
+    # Причастие своё на каждый тип — краткая форма («оплачено»/
+    # «оплачена») должна согласовываться в роде с названием: «Крупная
+    # карточка» женского рода, «оплачено» тут было бы ошибкой,
+    # «Поднятие»/«Выделение» — среднего, им подходит «оплачено».
     names = {
-        "bump": "Поднятие в поиске",
-        "highlight": "Выделение цветом",
-        "xl_card": "Крупная карточка",
+        "bump": ("Поднятие в поиске", "оплачено"),
+        "highlight": ("Выделение цветом", "оплачено"),
+        "xl_card": ("Крупная карточка", "оплачена"),
     }
-    text = f"«{names.get(promo_type, promo_type)}» для «{title}» оплачено и уже работает"
+    name, paid_word = names.get(promo_type, (promo_type, "оплачено"))
+    text = f"«{name}» для «{title}» {paid_word} и уже работает"
     return notify(db, user_id, text, force=True, allow_email=False,
                   subject="PLONK — продвижение оплачено")
 
