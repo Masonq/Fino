@@ -98,6 +98,14 @@ def list_users(
     # буквенного 'tg', только сгенерированный service_account() именно так
     # и строит его — f"tg{abs(chat_id)}").
     query = query.filter(or_(User.phone.is_(None), ~User.phone.like("tg%")))
+    # Тот же класс проблемы — technical-аккаунт healthcheck.py
+    # (healthcheck@plonk.local), заводится настоящим входом при первом
+    # запуске проверки и переиспользуется дальше, не человек. .local —
+    # общепринятое обозначение «не настоящий, служебный домен» — фильтр
+    # по всему домену, не по одному этому адресу: подхватит и любой
+    # будущий похожий служебный аккаунт с тем же соглашением, не только
+    # этот конкретный.
+    query = query.filter(or_(User.email.is_(None), ~User.email.ilike("%@plonk.local")))
 
     if q:
         like = f"%{q.strip()}%"
