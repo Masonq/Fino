@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
@@ -39,10 +39,27 @@ const BANNER_GRADIENTS = {
   business: 'linear-gradient(135deg, #1B2A4A 0%, #3B5BF6 55%, #93BAFF 100%)',
 }
 
+// Кэш результатов поиска внутри раздела — по одному на каждый slug,
+// не единый на все разделы (иначе объявления одной категории
+// подставлялись бы при возврате в другую). См. подробный комментарий
+// в самом компоненте, у cached/cacheFresh.
+const LANDING_CACHE_TTL = 60_000
+const landingCache = {}
+
 export default function CategoryLanding() {
   const { slug } = useParams()
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
+
+  // Возврат из объявления сбрасывал всю страницу раздела к началу —
+  // фильтры и уже найденные объявления терялись, прокрутка прыгала
+  // наверх, хотя человек только что листал результаты внизу. У главной
+  // ленты то же самое чинили раньше отдельно (feedCache в Home.jsx) —
+  // тот же принцип, но с привязкой к конкретному разделу: у категорий
+  // разное содержимое, один общий кэш для всех перепутал бы их.
+  const cached = landingCache[slug]
+  const cacheFresh = cached && Date.now() - cached.fetchedAt < LANDING_CACHE_TTL
+  const restoringFromCache = useRef(Boolean(cacheFresh && cached.searched))
 
   // Ручная липкость сайдбара — в дополнение к CSS position:sticky, не
   // вместо него: несколько попыток одним только CSS не помогли на
@@ -65,9 +82,9 @@ export default function CategoryLanding() {
   const [category, setCategory] = useState(null)
   const [fresh, setFresh] = useState([])
   const [freshLoading, setFreshLoading] = useState(true)
-  const [deal, setDeal] = useState('')
-  const [values, setValues] = useState({})
-  const [text, setText] = useState('')
+  const [deal, setDeal] = useState(() => cacheFresh ? cached.deal : '')
+  const [values, setValues] = useState(() => cacheFresh ? cached.values : {})
+  const [text, setText] = useState(() => cacheFresh ? cached.text : '')
   const [showAllSubs, setShowAllSubs] = useState(false)
 
   // category в зависимостях — сайдбар не существует в DOM, пока
@@ -99,9 +116,9 @@ export default function CategoryLanding() {
   // на отдельную страницу поиска — раньше «Показать объявления» уводил
   // на /search с почти той же вёрсткой, и это читалось как две разные,
   // плохо связанные страницы.
-  const [results, setResults] = useState([])
-  const [resultsTotal, setResultsTotal] = useState(0)
-  const [searched, setSearched] = useState(false)
+  const [results, setResults] = useState(() => cacheFresh ? cached.results : [])
+  const [resultsTotal, setResultsTotal] = useState(() => cacheFresh ? cached.resultsTotal : 0)
+  const [searched, setSearched] = useState(() => cacheFresh ? cached.searched : false)
   const [searching, setSearching] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const PAGE = 20
@@ -199,7 +216,7 @@ export default function CategoryLanding() {
   // нужен и на первом запуске поиска (buildQuery), и на догрузке
   // (loadMore), поэтому держим его в состоянии, а не только в замыкании
   // клика.
-  const [activeCategorySlug, setActiveCategorySlug] = useState(slug)
+  const [activeCategorySlug, setActiveCategorySlug] = useState(() => cacheFresh ? cached.activeCategorySlug : slug)
 
   const buildQuery = (categorySlug = activeCategorySlug) => {
     const params = { category_slug: categorySlug, lang: i18n.language, limit: PAGE, offset: 0 }
@@ -276,7 +293,17 @@ export default function CategoryLanding() {
   // Прокрутка к результатам при самом первом переходе в режим поиска —
   // requestAnimationFrame в search() этот случай не ловит, потому что
   // блок результатов ещё не существовал в DOM в момент вызова.
+  //
+  // При восстановлении из кэша (возврат из объявления) searched уже
+  // true на самом первом рендере — этот эффект всё равно сработает
+  // (зависимость меняется относительно «не было рендера», не только
+  // относительно предыдущего значения), и его плавная прокрутка к
+  // НАЧАЛУ результатов боролась бы с восстановлением места, на
+  // котором человек реально был, — а оно может быть куда ниже.
+  // restoringFromCache — само по себе не меняется, но исключает
+  // именно тот самый первый рендер после восстановления.
   useEffect(() => {
+    if (restoringFromCache.current) return
     if (searched && resultsRef.current) {
       resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
@@ -290,6 +317,82 @@ export default function CategoryLanding() {
       .catch(() => {})
       .finally(() => setLoadingMore(false))
   }
+
+  // Актуальные значения на момент ухода со страницы — так же, как и в
+  // Home.jsx: обработчик pagehide создаётся один раз и иначе видел бы
+  // состояние из момента своего создания, не из момента реального ухода.
+  const resultsRefState = useRef(results)
+  const resultsTotalRef = useRef(resultsTotal)
+  const searchedRef = useRef(searched)
+  const activeCategorySlugRef = useRef(activeCategorySlug)
+  const dealRef = useRef(deal)
+  const valuesRef = useRef(values)
+  const textRef = useRef(text)
+  const scrollRef = useRef(cacheFresh ? cached.scroll : 0)
+  const fetchedAtRef = useRef(cacheFresh ? cached.fetchedAt : 0)
+  useEffect(() => { resultsRefState.current = results }, [results])
+  useEffect(() => { resultsTotalRef.current = resultsTotal }, [resultsTotal])
+  useEffect(() => { searchedRef.current = searched }, [searched])
+  useEffect(() => { activeCategorySlugRef.current = activeCategorySlug }, [activeCategorySlug])
+  useEffect(() => { dealRef.current = deal }, [deal])
+  useEffect(() => { valuesRef.current = values }, [values])
+  useEffect(() => { textRef.current = text }, [text])
+  useEffect(() => {
+    if (!searched) return
+    fetchedAtRef.current = Date.now()
+  }, [results, searched])
+  useEffect(() => {
+    const onScroll = () => { scrollRef.current = window.scrollY }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    const save = () => {
+      landingCache[slug] = {
+        results: resultsRefState.current,
+        resultsTotal: resultsTotalRef.current,
+        searched: searchedRef.current,
+        activeCategorySlug: activeCategorySlugRef.current,
+        deal: dealRef.current,
+        values: valuesRef.current,
+        text: textRef.current,
+        scroll: scrollRef.current,
+        fetchedAt: fetchedAtRef.current,
+      }
+    }
+    window.addEventListener('pagehide', save)
+    return () => { save(); window.removeEventListener('pagehide', save) }
+  }, [slug])
+
+  // Прокрутку выставляем до первой отрисовки (useLayoutEffect) — иначе
+  // страница на мгновение показывается сверху и лишь потом прыгает на
+  // место. Повторяем несколько раз: фото ниже ещё догружаются и слегка
+  // меняют высоту страницы, отчего однократно выставленная прокрутка
+  // уезжает через долю секунды после того, как её выставили.
+  const scrollRestored = useRef(false)
+  useLayoutEffect(() => {
+    if (scrollRestored.current || !cacheFresh || !cached.scroll || !results.length) return
+    scrollRestored.current = true
+    const target = cached.scroll
+    window.scrollTo(0, target)
+    let tries = 0
+    let stop = false
+    const giveUp = () => { stop = true }
+    window.addEventListener('touchstart', giveUp, { passive: true, once: true })
+    window.addEventListener('wheel', giveUp, { passive: true, once: true })
+    const id = setInterval(() => {
+      if (stop) { clearInterval(id); return }
+      if (Math.abs(window.scrollY - target) > 2) window.scrollTo(0, target)
+      if (++tries >= 8) clearInterval(id)
+    }, 60)
+    return () => {
+      clearInterval(id)
+      window.removeEventListener('touchstart', giveUp)
+      window.removeEventListener('wheel', giveUp)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [results.length])
 
   const name = category?.name?.[i18n.language] || category?.name?.ru || ''
 
