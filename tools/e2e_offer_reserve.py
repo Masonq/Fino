@@ -153,9 +153,20 @@ check("снято (200)", r.status_code == 200, f"— {r.status_code} {r.text[:2
 r = api(buyer_token, "GET", f"/listings/{listing.id}")
 check("is_reserved = false после отмены", r.json().get("is_reserved") is False)
 
-# уборка
+# уборка — по всем таблицам, что могут ссылаться на listings.id
+# (нашёл grep'ом по всем моделям, не только то, что предвидел заранее:
+# первый прогон упал именно тут — listing_view_daily получил запись от
+# собственных же GET-запросов этой проверки, и без явной чистки этой
+# таблицы удаление объявления сразу упало на внешнем ключе).
+from app.models import ListingViewDaily, ListingViewLog, ListingSignalDaily, Favorite, Promotion
+
 db.query(Message).filter(Message.chat_id == chat_id).delete()
 db.query(Chat).filter(Chat.id == chat_id).delete()
+db.query(ListingViewDaily).filter(ListingViewDaily.listing_id == listing.id).delete()
+db.query(ListingViewLog).filter(ListingViewLog.listing_id == listing.id).delete()
+db.query(ListingSignalDaily).filter(ListingSignalDaily.listing_id == listing.id).delete()
+db.query(Favorite).filter(Favorite.listing_id == listing.id).delete()
+db.query(Promotion).filter(Promotion.listing_id == listing.id).delete()
 db.query(ListingTranslation).filter(ListingTranslation.listing_id == listing.id).delete()
 db.query(Listing).filter(Listing.id == listing.id).delete()
 db.query(User).filter(User.id.in_([seller.id, buyer.id, stranger.id])).delete(synchronize_session=False)
