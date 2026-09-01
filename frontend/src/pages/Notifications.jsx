@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
+import SwipeableNotification from '../components/SwipeableNotification'
 import { timeAgo } from '../utils/time'
 
 export default function Notifications() {
@@ -15,6 +16,7 @@ export default function Notifications() {
   const [total, setTotal] = useState(0)
   const [loaded, setLoaded] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
+  const [openId, setOpenId] = useState(null)   // id строки, у которой сейчас видна красная кнопка
   const sentinelRef = useRef(null)
 
   const userId = user?.id
@@ -59,6 +61,13 @@ export default function Notifications() {
   const readAll = () => {
     setItems((prev) => prev.map((x) => ({ ...x, is_read: true })))
     api.markAllNotificationsRead().catch(() => {})
+  }
+
+  const remove = (n) => {
+    setOpenId(null)
+    setItems((prev) => prev.filter((x) => x.id !== n.id))
+    setTotal((prev) => Math.max(0, prev - 1))
+    api.deleteNotification(n.id).catch(() => {})
   }
 
   const hasUnread = items.some((n) => !n.is_read)
@@ -114,14 +123,17 @@ export default function Notifications() {
         <>
           <div className="notif-list">
             {items.map((n) => (
-              <button
+              <SwipeableNotification
                 key={n.id}
-                className={n.is_read ? 'notif-row' : 'notif-row unread'}
-                onClick={() => open(n)}
+                notification={n}
+                isOpen={openId === n.id}
+                onOpenChange={setOpenId}
+                onOpen={open}
+                onDelete={remove}
               >
                 <div className="notif-text">{n.text}</div>
                 <div className="notif-time">{timeAgo(n.created_at, t, i18n.language)}</div>
-              </button>
+              </SwipeableNotification>
             ))}
           </div>
           {items.length < total && (

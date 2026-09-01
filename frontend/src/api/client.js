@@ -280,6 +280,7 @@ export const api = {
   getNotifications: (offset) => request(`/notifications?${new URLSearchParams({ offset: offset || 0 })}`),
   getNotificationsUnread: () => request('/notifications/unread-count'),
   markNotificationRead: (id) => request(`/notifications/${id}/read`, { method: 'POST' }),
+  deleteNotification: (id) => request(`/notifications/${id}`, { method: 'DELETE' }),
   markAllNotificationsRead: () => request('/notifications/read-all', { method: 'POST' }),
   markChatRead: (chatId) => request(`/chats/${chatId}/read`, { method: 'POST' }),
   blockChatPartner: (chatId) => request(`/chats/${chatId}/block`, { method: 'POST' }),

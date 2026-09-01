@@ -76,6 +76,20 @@ def mark_read(
     return {"status": "ok"}
 
 
+@router.delete("/{notification_id}")
+def delete_notification(
+    notification_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    n = db.query(Notification).get(notification_id)
+    if not n or n.user_id != user.id:
+        raise HTTPException(404, "not_found")
+    db.delete(n)
+    db.commit()
+    return {"status": "deleted"}
+
+
 @router.post("/read-all")
 def mark_all_read(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     (
