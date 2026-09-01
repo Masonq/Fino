@@ -318,29 +318,14 @@ export default function CategoryLanding() {
       .finally(() => setLoadingMore(false))
   }
 
-  // Актуальные значения на момент ухода со страницы — так же, как и в
-  // Home.jsx: обработчик pagehide создаётся один раз и иначе видел бы
-  // состояние из момента своего создания, не из момента реального ухода.
-  const resultsRefState = useRef(results)
-  const resultsTotalRef = useRef(resultsTotal)
-  const searchedRef = useRef(searched)
-  const activeCategorySlugRef = useRef(activeCategorySlug)
-  const dealRef = useRef(deal)
-  const valuesRef = useRef(values)
-  const textRef = useRef(text)
+  // Пишем в кэш сразу при каждом изменении, а не только в момент ухода
+  // со страницы — раньше полагались на pagehide/размонтирование
+  // (см. тот же приём в Home.jsx), но это требует точного совпадения
+  // по времени между уходом со страницы и тем, что React успел
+  // прогнать все эффекты синхронизации к этому моменту. Проще и
+  // надёжнее — держать кэш всегда актуальным, без выжидания
+  // конкретного события ухода вообще.
   const scrollRef = useRef(cacheFresh ? cached.scroll : 0)
-  const fetchedAtRef = useRef(cacheFresh ? cached.fetchedAt : 0)
-  useEffect(() => { resultsRefState.current = results }, [results])
-  useEffect(() => { resultsTotalRef.current = resultsTotal }, [resultsTotal])
-  useEffect(() => { searchedRef.current = searched }, [searched])
-  useEffect(() => { activeCategorySlugRef.current = activeCategorySlug }, [activeCategorySlug])
-  useEffect(() => { dealRef.current = deal }, [deal])
-  useEffect(() => { valuesRef.current = values }, [values])
-  useEffect(() => { textRef.current = text }, [text])
-  useEffect(() => {
-    if (!searched) return
-    fetchedAtRef.current = Date.now()
-  }, [results, searched])
   useEffect(() => {
     const onScroll = () => { scrollRef.current = window.scrollY }
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -348,18 +333,19 @@ export default function CategoryLanding() {
   }, [])
 
   useEffect(() => {
+    landingCache[slug] = {
+      results, resultsTotal, searched, activeCategorySlug, deal, values, text,
+      scroll: scrollRef.current,
+      fetchedAt: Date.now(),
+    }
+  }, [slug, results, resultsTotal, searched, activeCategorySlug, deal, values, text])
+
+  // Прокрутку на момент ухода записываем отдельно, uже поверх готовой
+  // записи в кэше — сама прокрутка меняется без остановки, отдельным
+  // эффектом на каждое движение её обновлять было бы дорого.
+  useEffect(() => {
     const save = () => {
-      landingCache[slug] = {
-        results: resultsRefState.current,
-        resultsTotal: resultsTotalRef.current,
-        searched: searchedRef.current,
-        activeCategorySlug: activeCategorySlugRef.current,
-        deal: dealRef.current,
-        values: valuesRef.current,
-        text: textRef.current,
-        scroll: scrollRef.current,
-        fetchedAt: fetchedAtRef.current,
-      }
+      if (landingCache[slug]) landingCache[slug].scroll = scrollRef.current
     }
     window.addEventListener('pagehide', save)
     return () => { save(); window.removeEventListener('pagehide', save) }
