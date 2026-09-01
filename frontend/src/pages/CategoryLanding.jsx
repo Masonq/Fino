@@ -60,6 +60,9 @@ export default function CategoryLanding() {
   const cached = landingCache[slug]
   const cacheFresh = cached && Date.now() - cached.fetchedAt < LANDING_CACHE_TTL
   const restoringFromCache = useRef(Boolean(cacheFresh && cached.searched))
+  // Тот самый настоящий виновник — см. подробный комментарий у самого
+  // места использования, в эффекте сброса при смене slug.
+  const skipFirstReset = useRef(Boolean(cacheFresh && cached.searched))
 
   // Ручная липкость сайдбара — в дополнение к CSS position:sticky, не
   // вместо него: несколько попыток одним только CSS не помогли на
@@ -181,6 +184,19 @@ export default function CategoryLanding() {
 
     // Переход на другой раздел (напр. по «Все категории») не должен
     // оставлять открытым режим результатов прошлого раздела.
+    //
+    // НО: этот же эффект срабатывает и на самом первом монтировании
+    // компонента — включая возврат из объявления, когда searched/values/
+    // deal/text уже восстановлены из landingCache (см. инициализацию
+    // состояний выше). Без skipFirstReset этот блок тут же стирал бы
+    // восстановленное состояние тем же самым циклом — то самое, что
+    // не удавалось поймать несколько заходов подряд: сам кэш работал
+    // верно, просто этот соседний, куда более старый и никак с ним не
+    // связанный сброс перезаписывал его сразу следом. Нашли только по
+    // видео, чтением кода не давалось.
+    if (skipFirstReset.current) {
+      skipFirstReset.current = false
+    } else {
     setSearched(false)
     // То же самое для самого модального окна «Все категории» — раньше
     // не сбрасывался. Клик по подразделу С СОБСТВЕННЫМИ детьми (см.
@@ -210,6 +226,7 @@ export default function CategoryLanding() {
     setValues({})
     setDeal('')
     setText('')
+    }
   }, [slug, i18n.language])
 
   // Плитка подраздела задаёт свой слаг категории вместо родительского —
