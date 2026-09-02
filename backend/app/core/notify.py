@@ -1,5 +1,6 @@
 import logging
 import smtplib
+import time
 from email.message import EmailMessage
 from urllib import request as urlrequest, parse
 
@@ -160,6 +161,17 @@ def _notification_letter(title: str, body_text: str) -> str:
 # просто не может войти.
 APPLE_DOMAINS = ("icloud.com", "me.com", "mac.com")
 
+# До какого времени не трогаем Gmail после неудачи.
+#
+# Хостер закрывает исходящий почтовый порт, и соединение не
+# отказывается сразу, а молчит до истечения ожидания. Человек всё это
+# время смотрит на кнопку «отправляем…» — увидел на живом экране.
+# Поэтому: короткое ожидание, а после первой же неудачи полчаса даже не
+# пробуем — сразу идём основным путём.
+_gmail_blocked_until = 0.0
+GMAIL_RETRY_AFTER = 1800
+GMAIL_TIMEOUT = 4
+
 
 def _is_apple(address: str) -> bool:
     return address.strip().lower().endswith(APPLE_DOMAINS)
@@ -190,7 +202,7 @@ def _send_via_gmail(to: str, subject: str, body: str) -> None:
         msg["Reply-To"] = settings.support_email
     msg.set_content(body)
 
-    with smtplib.SMTP("smtp.gmail.com", 587, timeout=15) as server:
+    with smtplib.SMTP("smtp.gmail.com", 587, timeout=GMAIL_TIMEOUT) as server:
         server.starttls()
         server.login(user, password)
         server.send_message(msg)
@@ -207,12 +219,20 @@ def _send_email_text(to: str, subject: str, body: str,
     """
     # Ящики Apple — сразу через Gmail, если он настроен: через наш домен
     # они не доходят вовсе, и пробовать бессмысленно.
-    gmail_ready = bool(settings.gmail_user and settings.gmail_app_password)
+    global _gmail_blocked_until
+
+    gmail_ready = (
+        bool(settings.gmail_user and settings.gmail_app_password)
+        and time.time() > _gmail_blocked_until
+    )
     if gmail_ready and _is_apple(to):
         try:
             _send_via_gmail(to, subject, body)
             return
         except Exception:                                  # noqa: BLE001
+            # Запоминаем неудачу: следующий человек не должен ждать
+            # впустую те же секунды.
+            _gmail_blocked_until = time.time() + GMAIL_RETRY_AFTER
             # Не вышло — идём прежним путём. Обычно причина в том, что
             # хостер закрывает исходящий почтовый порт (587 и 465), и
             # соединение просто отваливается по времени.

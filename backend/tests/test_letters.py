@@ -170,3 +170,41 @@ def test_gmail_failure_does_not_lose_the_letter():
 
     assert "try:" in gmail_branch
     assert "except Exception" in gmail_branch
+
+
+def test_gmail_is_not_retried_after_failure():
+    """После первой неудачи Gmail не пробуем — человек не должен ждать.
+
+    Хостер закрывает исходящий почтовый порт, и соединение не
+    отказывается сразу, а молчит до истечения ожидания. Увидел на живом
+    экране: кнопка «отправляем…» висела серой все эти секунды, и так у
+    каждого, кто вводит адрес iCloud.
+    """
+    import app.core.notify as notify
+
+    saved = (notify.settings.gmail_user, notify.settings.gmail_app_password,
+             notify.settings.resend_api_key, notify._gmail_blocked_until)
+    calls = {"gmail": 0, "resend": 0}
+
+    def fail(to, subject, body):
+        calls["gmail"] += 1
+        raise TimeoutError("порт закрыт")
+
+    try:
+        notify.settings.gmail_user = "x@gmail.com"
+        notify.settings.gmail_app_password = "y"
+        notify.settings.resend_api_key = "ключ"
+        notify._gmail_blocked_until = 0.0
+        notify._send_via_gmail = fail
+        notify._send_via_resend = lambda to, s, b, h=None: calls.__setitem__(
+            "resend", calls["resend"] + 1)
+
+        for i in range(3):
+            notify._send_email_text(f"{i}@icloud.com", "Код", "123456")
+
+        assert calls["gmail"] == 1        # пробуем один раз, дальше молча мимо
+        assert calls["resend"] == 3       # и ни одно письмо не потеряно
+        assert notify.GMAIL_TIMEOUT <= 5  # ждать дольше нельзя: это живой запрос
+    finally:
+        (notify.settings.gmail_user, notify.settings.gmail_app_password,
+         notify.settings.resend_api_key, notify._gmail_blocked_until) = saved
