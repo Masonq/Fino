@@ -51,6 +51,20 @@ export default function ListingDetail() {
   const [mapOpen, setMapOpen] = useState(false)
   const [mapAddress, setMapAddress] = useState('')
   const [addressCopied, setAddressCopied] = useState(false)
+  // Широкий экран — не просто «другие отступы»: заголовок стоит над
+  // фотографией слева (а не в правой колонке над ценой), и готовые
+  // вопросы продавцу показываются прямо в колонке, а не всплывающей
+  // панелью. Один и тот же узел разметки нельзя переставить между
+  // колонками средствами CSS, а дублировать заголовок в разметке —
+  // два h1 на странице, поэтому решаем в JS. 900px — та же точка
+  // перелома, что и во всех медиазапросах styles.css.
+  const [wide, setWide] = useState(() => window.matchMedia('(min-width: 900px)').matches)
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 900px)')
+    const onChange = (e) => setWide(e.matches)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
   const lang = i18n.language
 
   const copyAddress = () => {
@@ -569,7 +583,11 @@ export default function ListingDetail() {
       // сразу открываем чат, как и раньше. Для обычной вещи или услуги —
       // сначала подсказки: пустой чат заставляет придумывать первую
       // фразу с нуля, а тут есть с чего начать одним касанием.
-      if (isResume) startChatWith()
+      // На широком экране готовые вопросы уже стоят в правой колонке
+      // («Спросите у продавца») — всплывающая панель с тем же
+      // содержимым была бы вторым списком тех же кнопок поверх
+      // первого. Кнопка «Написать» там открывает чат сразу.
+      if (isResume || wide) startChatWith()
       else setQuickReplyOpen(true)
     } else {
       navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`)
@@ -578,6 +596,38 @@ export default function ListingDetail() {
 
   return (
     <div className="detail-page">
+      {/* Хлебные крошки — на десктопе первой строкой во всю ширину, над
+          фотографией и правой колонкой (на телефоне скрыты в CSS: там
+          для возврата есть кнопка «назад»). Раньше лежали внутри
+          .detail-aside и потому начинались с середины страницы, от
+          края правой колонки. */}
+      {listing.category_path?.length > 0 && (
+        <nav className="breadcrumbs">
+          <Link to="/">{t('nav.home')}</Link>
+          {listing.category_path.map((c) => (
+            <span key={c.slug}>
+              <span className="breadcrumbs-sep">›</span>
+              <Link to={hasLanding(c.slug) ? `/c/${c.slug}` : `/search?category=${c.slug}`}>
+                {c.name?.[lang] || c.name?.ru || c.slug}
+              </Link>
+            </span>
+          ))}
+        </nav>
+      )}
+      {/* Левая колонка на широком экране — заголовок, фотография и
+          миниатюры одним блоком. Обёртка не для красоты: без неё эти
+          три узла были отдельными элементами сетки и их приходилось
+          расставлять по номерам строк, а правая колонка растягивалась
+          на span в три строки — под фотографией от этого оставалась
+          пустая полоса в 160px (нашёл на снимке, не в коде). С
+          обёрткой сетка простая: две колонки, три строки, всё
+          раскладывается само. На телефоне обёртка ничего не меняет —
+          обычный блок во всю ширину вокруг фотографии. */}
+      <div className="detail-gallery">
+      {/* Заголовок: на широком экране — над фотографией, слева, а цена
+          остаётся первой строкой правой колонки, ровно на одной линии
+          с ним. На телефоне заголовок идёт под ценой, как и был. */}
+      {wide && <div className="detail-title detail-title-wide">{translation?.title}</div>}
       <div className="detail-photo">
         {photos.length > 0 ? (
           <div
@@ -711,6 +761,32 @@ export default function ListingDetail() {
         )}
       </div>
 
+      {/* Миниатюры — под фотографией и только на широком экране: там
+          мышью листать стрелками по одной неудобно, а места под ряд
+          снимков хватает. На телефоне их нет намеренно — свайп и так
+          естественный, а ряд отнял бы высоту у самой фотографии. */}
+      {wide && photos.length > 1 && (
+        <div className="photo-thumbs">
+          {photos.map((ph, i) => (
+            <button
+              type="button"
+              key={ph.url || i}
+              className={i === photoIdx ? 'photo-thumb on' : 'photo-thumb'}
+              onClick={() => goToPhoto(i)}
+              aria-label={`${i + 1} / ${photos.length}`}
+            >
+              <img src={ph.is_video ? ph.thumbnail_url : ph.url} alt="" loading="lazy" />
+              {ph.is_video && (
+                <span className="photo-thumb-play">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+      </div>
+
       {/* Подтверждение только для запасного пути (копия в буфер) —
           там, где сработало системное меню navigator.share, у
           телефона уже есть своё «отправлено», добавлять здесь ещё
@@ -726,23 +802,6 @@ export default function ListingDetail() {
             обе идут одна под другой обычным потоком (flex только в
             десктопном медиазапросе). */}
         <div className="detail-aside">
-        {/* Хлебные крошки — на десктопе держат верх страницы и дают
-            быстрый путь обратно в раздел. На мобильном скрыты (CSS):
-            там для этого есть кнопка «назад», а строка съедала бы
-            место у самого важного — цены и заголовка. */}
-        {listing.category_path?.length > 0 && (
-          <nav className="breadcrumbs">
-            <Link to="/">{t('nav.home')}</Link>
-            {listing.category_path.map((c) => (
-              <span key={c.slug}>
-                <span className="breadcrumbs-sep">›</span>
-                <Link to={hasLanding(c.slug) ? `/c/${c.slug}` : `/search?category=${c.slug}`}>
-                  {c.name?.[lang] || c.name?.ru || c.slug}
-                </Link>
-              </span>
-            ))}
-          </nav>
-        )}
         {/* Подтверждение оплаты продвижения — сразу после возврата
             с ЮKassa, пока не прочитано и не отброшено переходом на
             другую страницу. Три состояния: идёт проверка, подтвердилось,
@@ -790,7 +849,7 @@ export default function ListingDetail() {
           </div>
         )}
 
-        <div className="detail-title">{translation?.title}</div>
+        {!wide && <div className="detail-title">{translation?.title}</div>}
         {/* Помечаем явно: иначе продавец с нашего сайта конкурирует с
             перепечаткой и не понимает, почему объявление ведёт себя иначе. */}
         {listing.external_source === 'telegram' && (
@@ -899,6 +958,50 @@ export default function ListingDetail() {
       </div>
       )}
 
+        {/* «Спросите у продавца» — на широком экране готовые вопросы
+            стоят прямо под кнопками, а не прячутся во всплывающей
+            панели: место в колонке есть, и первый вопрос уходит одним
+            нажатием. На телефоне остаётся панель (см. handleWriteToSeller):
+            там этот список занял бы пол-экрана над описанием. */}
+        {wide && !gone && !isOwner && !isResume && listing.owner
+          && listing.external_source !== 'telegram' && (
+          <div className="quick-ask">
+            <div className="quick-ask-title">{t('detail.quick_title')}</div>
+            {quickReplies.map((text) => (
+              <button
+                key={text}
+                type="button"
+                className="quick-ask-option"
+                disabled={starting}
+                onClick={() => {
+                  if (user?.id) startChatWith(text)
+                  else navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`)
+                }}
+              >
+                {text}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="badge-row">
+          {listing.safe_deal_available && (
+            <div className="info-badge green">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6 9 17l-5-5" /></svg>
+              {t('detail.safe_deal')}
+            </div>
+          )}
+          {listing.delivery_available && <div className="info-badge grey">{t('detail.delivery')}</div>}
+        </div>
+
+        </div>
+
+        <div className="detail-main">
+        {/* Местоположение и карта — на широком экране идут под фотографией
+            и правой колонкой, во всю ширину страницы (карта в узкой
+            колонке была шириной с кнопку). Порядок на телефоне не
+            меняется: .detail-main лежит сразу за колонкой и в обычном
+            потоке продолжает её. */}
         {/* Город и координаты — независимые поля в базе, может быть
             только одно из двух: показываем блок, если есть хоть что-то,
             и каждую часть — по своему условию. */}
@@ -955,19 +1058,6 @@ export default function ListingDetail() {
           </>
         )}
 
-        <div className="badge-row">
-          {listing.safe_deal_available && (
-            <div className="info-badge green">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6 9 17l-5-5" /></svg>
-              {t('detail.safe_deal')}
-            </div>
-          )}
-          {listing.delivery_available && <div className="info-badge grey">{t('detail.delivery')}</div>}
-        </div>
-
-        </div>
-
-        <div className="detail-main">
         {/* Показываем только то, что описано в схеме категории. Иначе на
             странице появлялась строка с сырым ключом вроде «condition» —
             так и случилось, когда признак заполнили там, где поля нет. */}

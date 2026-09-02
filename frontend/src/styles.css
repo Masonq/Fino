@@ -2284,50 +2284,87 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   .s-price{ font-size:17px; order:2; }
   .s-meta{ order:3; margin-top:5px; }
 
-  /* Фото — во всю ширину сверху, сведения — под ним двумя колонками
-     (внутри самой .detail-sheet, см. ниже). Раньше сетка делила
-     страницу на «фото слева / сведения справа», но сведения были
-     заметно длиннее фото, и под фото оставалась пустота во всю
-     оставшуюся высоту — увидел это на живом снимке. */
+  /* Раскладка страницы объявления — как у Avito на большом экране:
+     крошки первой строкой во всю ширину, под ними слева заголовок и
+     фотография с рядом миниатюр (всё это .detail-gallery), справа
+     колонка 360px (цена, кнопки, продавец, готовые вопросы), а ниже
+     во всю ширину — местоположение с картой, характеристики и
+     описание.
+
+     Сетку держит сама .detail-page, а .detail-sheet на этой ширине
+     становится display:contents: карточка-«шторка» нужна только на
+     телефоне (белый лист, наезжающий на фото снизу), а здесь она лишь
+     мешала бы — её дети должны стоять в сетке страницы наравне с
+     галереей, иначе правую колонку не поставить рядом с фото.
+     Белый лист при этом не пропадает: фон и поля переезжают на саму
+     .detail-page.
+
+     Строки не расписываем номерами: заголовок, фото и миниатюры
+     собраны в один блок, и трёх элементов сетки (крошки, галерея,
+     колонка, подвал) хватает, чтобы всё встало само. Пробовал
+     номерами — правая колонка растягивалась на span в три строки, и
+     под фотографией оставалась пустая полоса в 160px.
+
+     Раньше фото лежало во всю ширину полосой 16/7, а под ним шли две
+     колонки. Так снимок вещи был маленьким (высота — треть ширины
+     страницы), а всё главное — цена и кнопки — уезжало под него. */
   .detail-page{
-    display:grid; grid-template-columns:1fr; gap:20px; padding-top:24px;
-    max-width:1180px; margin:0 auto;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 360px;
+    column-gap:28px; padding:24px; padding-bottom:40px;
+    max-width:1180px; margin:24px auto;
+    background:#fff; border-radius:16px;
   }
-  .detail-photo{ border-radius:16px; overflow:hidden; height:auto; aspect-ratio:16/7; }
-  /* Внутри карточки сведений — своя сетка на две колонки: слева
-     характеристики и описание (длинный текст, ему нужна ширина),
-     справа цена, продавец, кнопки и местоположение (то, ради чего
-     человек пришёл — видно сразу, без прокрутки).
-
-     Почему так, а не через grid-column на самих блоках: они лежат
-     ВНУТРИ .detail-sheet, то есть элементы этой сетки, а не внешней
-     .detail-page — прежние правила grid-column:1/-1 не делали ничего
-     вовсе, увидел это только на живом снимке страницы.
-
-     Порядок в разметке (цена → продавец → кнопки → местоположение →
-     характеристики → описание) не трогаем: на телефоне он верный, а
-     тут просто раскладываем по колонкам через grid-column, оставляя
-     сам DOM как есть. */
-  /* Две колонки внутри карточки — через flex по настоящим обёрткам в
-     разметке (.detail-main / .detail-aside в ListingDetail.jsx), а не
-     через grid-column на отдельных блоках.
-
-     Пробовал сеткой: блоки лежат вперемешку по порядку (цена,
-     продавец, кнопки, потом характеристики и описание), и каждый
-     занимал свою строку — то левая колонка начиналась с пустоты в три
-     блока, то между «Характеристиками» и «Описанием» зиял разрыв, то
-     (с grid-auto-flow:dense) правую колонку растаскивало по всей
-     высоте. Каждый раз проверял снимком и откатывал. С обёртками
-     таких сюрпризов нет: внутри каждой колонки обычный поток. */
+  .breadcrumbs{ grid-column:1/-1; }
+  .detail-gallery{ grid-column:1; min-width:0; }
+  .detail-title-wide{ margin:0 0 14px; font-size:24px; line-height:1.25; }
+  .detail-photo{
+    border-radius:16px; overflow:hidden; height:auto; aspect-ratio:4/3;
+  }
+  /* Миниатюры — ряд под фотографией, шириной с неё. Прокрутка по
+     горизонтали на случай, когда снимков больше, чем влезает в ряд:
+     их бывает и двадцать. */
+  .photo-thumbs{
+    display:flex; gap:8px; margin-top:10px; overflow-x:auto; padding-bottom:2px;
+    scrollbar-width:none;
+  }
+  .photo-thumbs::-webkit-scrollbar{ display:none; }
+  .photo-thumb{
+    position:relative; flex:0 0 74px; width:74px; height:74px; padding:0;
+    border-radius:10px; overflow:hidden; background:#E9E9E4;
+    border:2px solid transparent; transition:border-color .15s ease;
+  }
+  .photo-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .photo-thumb.on{ border-color:var(--primary); }
+  .photo-thumb-play{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    background:rgba(20,30,25,.35); color:#fff;
+  }
+  .photo-thumb-play svg{ width:22px; height:22px; }
+  /* Правая колонка. Порядок в разметке остаётся мобильным (цена,
+     продавец, кнопки), а здесь кнопки поднимаются сразу под цену —
+     это то, ради чего человек пришёл, и так же стоит у Avito.
+     Через order, а не перестановкой в разметке: на телефоне нынешний
+     порядок верный и трогать его незачем. Всё, что не перечислено
+     (баннеры о снятом объявлении и об оплате продвижения), остаётся с
+     order 0 и потому наверху колонки — там им и место. */
+  .detail-aside{
+    grid-column:2; align-self:start;
+    display:flex; flex-direction:column;
+  }
+  .detail-aside .detail-price{ order:1; }
+  .detail-aside .sticky-cta{ order:2; }
+  .detail-aside .seller-row{ order:3; }
+  .detail-aside .detail-promote-slot{ order:4; }
+  .detail-aside .quick-ask{ order:5; }
+  .detail-aside .badge-row{ order:6; }
+  .detail-main{ grid-column:1/-1; margin-top:26px; }
+  /* Сама «шторка» на этой ширине не рисуется — её роль (белый лист с
+     полями) взяла на себя .detail-page, а колонки внутри стоят в её
+     сетке. */
   .detail-sheet{
-    margin-top:0; border-radius:16px; padding:24px;
-    display:flex; align-items:flex-start; gap:28px;
+    display:contents;
   }
-  .detail-main{ flex:1; min-width:0; order:1; }
-  /* order:2 — в разметке правая колонка идёт первой (так на телефоне
-     цена и продавец оказываются сверху, где им и место), а на
-     десктопе меняем их местами: содержимое слева, шапка справа. */
-  .detail-aside{ flex:0 0 360px; order:2; }
   .detail-topbar{ max-width:1180px; }
   /* .detail-nav раньше прятали на десктопе целиком (комментарий
      обещал «кнопки уходят в шапку страницы», но замену туда так и не
@@ -2344,9 +2381,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
      .detail-sheet (см. ListingDetail.jsx) — тут просто снимаем
      фиксацию и превращаем в обычный блок кнопок внутри карточки. */
   .detail-sheet .sticky-cta{
-    position:static; max-width:none; margin:22px 0 0; background:transparent;
-    box-shadow:none; border-radius:0; padding:20px 0 0; z-index:auto;
-    border-top:1px solid rgba(20,30,25,.08);
+    position:static; max-width:none; margin:16px 0 0; background:transparent;
+    box-shadow:none; border-radius:0; padding:0; z-index:auto;
   }
   /* На десктопе кнопка уже встроена в обычный поток карточки, а не
      прибита к низу экрана — прятать её по прокрутке тут нечего и
@@ -2370,7 +2406,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
      Оставляем блоки там, где они есть, и просто выравниваем
      «Пожаловаться» по левому краю колонки — по центру он смотрелся
      потерянным посреди текста. */
-  .report-link{ text-align:left; }
+  /* «Пожаловаться» — влево, к краю колонки. Одного text-align тут
+     мало: сама кнопка блочная с margin:0 auto, то есть по центру
+     стоит она, а не текст внутри неё. */
+  .report-link{ text-align:left; margin-left:0; margin-right:auto; padding-left:0; }
+  /* Справочная строка (просмотры, дата, номер) — в одну строку: в
+     столбик её ставили, когда она жила в колонке 360px, а во всю
+     ширину это три коротких слова друг под другом посреди пустоты. */
+  .detail-meta{ flex-direction:row; flex-wrap:wrap; gap:14px; }
   /* Хлебные крошки — только на десктопе (базовое правило прячет их
      совсем): на телефоне для возврата есть кнопка «назад», а строка
      съедала бы место у цены и заголовка. */
@@ -2381,13 +2424,18 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   .breadcrumbs a{ color:var(--muted); text-decoration:none; }
   .breadcrumbs a:hover{ color:var(--primary-deep); text-decoration:underline; }
   .breadcrumbs-sep{ margin:0 6px; opacity:.6; }
-  /* В узкой колонке лента в один ряд не влезает — показываем сеткой
-     2×N вместо горизонтальной прокрутки. */
-  .seller-listings-block .similar-strip{
-    display:grid; grid-template-columns:1fr 1fr; gap:12px; overflow:visible;
+  /* Готовые вопросы продавцу — в правой колонке под кнопками.
+     Оформление то же, что у панели на телефоне (.quick-reply-option),
+     только без шторки и кнопки «Отмена»: здесь это часть страницы. */
+  .quick-ask{ margin-top:22px; }
+  .quick-ask-title{ font-size:15px; font-weight:800; color:var(--ink); margin-bottom:10px; }
+  .quick-ask-option{
+    display:block; width:100%; text-align:left; padding:12px 14px; margin-bottom:8px;
+    background:#F2F2EF; border-radius:12px; font-size:13.5px; font-weight:600; color:var(--ink);
+    transition:background .15s ease;
   }
-  .seller-listings-block .similar-card{ flex:none; width:auto; }
-  .seller-listings-block .similar-photo{ width:100%; height:auto; aspect-ratio:1; }
+  .quick-ask-option:hover{ background:#E9E9E4; }
+  .quick-ask-option:last-child{ margin-bottom:0; }
 
   /* Карта на десктопе — не всплывающее окно, а обычный блок прямо в
      потоке страницы, под «Местоположением» (у конкурента ровно так,
@@ -2395,9 +2443,17 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
      отдельным полноэкранным экраном — там места под встроенную карту
      просто нет. Открывается по нажатию на «Узнать подробности» в
      обоих случаях, разница только во внешнем виде после открытия. */
+  /* Город и ссылка на карту — рядом, а не по краям строки: блок стал
+     во всю ширину страницы, и space-between развёл бы их на метр
+     друг от друга по разным концам экрана. */
+  .detail-loc-row{ justify-content:flex-start; gap:16px; margin-bottom:26px; }
+  /* Первый заголовок в общей части не отбивается сверху дважды: у
+     .loc-title свой margin-top:22px, а .detail-main уже отступает от
+     галереи. */
+  .detail-main > .loc-title:first-child{ margin-top:0; }
   .map-page{
     position:relative; inset:auto; transform:none; width:auto;
-    height:340px; margin-top:10px;
+    height:420px; margin-top:0; margin-bottom:26px;
     border-radius:14px; overflow:hidden; box-shadow:none;
     border:1px solid rgba(20,30,25,.08);
   }
