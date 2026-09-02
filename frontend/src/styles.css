@@ -727,7 +727,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .detail-title{ font-size:17.5px; font-weight:800; margin-top:12px; line-height:1.3; letter-spacing:-0.01em; }
 /* Город и ссылка на карту — в одну строку, ссылка справа от города
    (раньше шла отдельной строкой под ним). */
-.detail-loc-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:8px; }
+.detail-loc-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:8px; }
 .detail-loc{ font-size:14px; color:var(--ink-soft); font-weight:600; display:flex; align-items:center; gap:6px; }
 .detail-loc svg{ width:15px; height:15px; flex-shrink:0; }
 .detail-map-link{
@@ -2081,6 +2081,17 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     background:#fff;
   }
   .notif-row.unread{ background:var(--primary-soft); border-color:transparent; }
+  /* Свайп — жест для пальца, мышью его не сделать: на десктопе
+     красная кнопка удаления просто показывается при наведении на
+     строку, а сама строка никуда не едет. Обёртка .notif-swipe-wrap
+     нужна и здесь — иначе сетка в две колонки применилась бы к ней,
+     а не к самим строкам. */
+  .notif-swipe-wrap{ border-radius:14px; }
+  .notif-swipe-wrap .notif-row{ transform:none !important; }
+  .notif-delete-btn{
+    opacity:0; transition:opacity .15s ease; border-radius:0 14px 14px 0;
+  }
+  .notif-swipe-wrap:hover .notif-delete-btn{ opacity:1; }
 
   /* Сохранённые поиски — та же сетка. */
   .saved-page{ max-width:1100px; margin:0 auto; }
@@ -2298,6 +2309,21 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
   /* похожие и отзывы — на всю ширину под колонками */
   .similar-block, .reviews-block, .report-link{ grid-column:1 / -1; }
+
+  /* Экран карты на десктопе — окно по центру, а не на весь монитор:
+     position:fixed inset:0 задумано под телефон, на широком экране
+     карта растягивалась бы во весь экран без всякой рамки, что для
+     «посмотреть, где это» неуместно. Затемнение вокруг — через
+     box-shadow с огромным разлётом, не через ::before с
+     отрицательным z-index: у .map-page свой z-index:60, то есть свой
+     контекст наложения, и ::before с z-index:-1 ушёл бы под её же
+     белый фон, а не лёг поверх страницы. */
+  .map-page{
+    inset:auto; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:min(880px, 92vw); height:min(680px, 88vh);
+    border-radius:18px; overflow:hidden;
+    box-shadow:0 0 0 100vmax rgba(10,15,12,.45), 0 24px 60px rgba(20,30,25,.28);
+  }
   .similar-card{ flex:0 0 168px; }
   .similar-photo{ width:168px; height:168px; }
 
