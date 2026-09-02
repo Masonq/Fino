@@ -14,7 +14,22 @@ export default function LanguageSwitcher({ variant }) {
 
   const change = (code) => {
     i18n.changeLanguage(code)
-    localStorage.setItem('fino_lang', code)
+    try { localStorage.setItem('fino_lang', code) } catch { /* не беда */ }
+
+    // Вместе с языком меняем адрес: у каждого языка свой (/en/..., /sr/...,
+    // русский без приставки). Иначе серб отправит другу ссылку, а тот
+    // откроет её по-русски — и поисковик по той же причине видел бы
+    // один адрес на три языка.
+    //
+    // Перезагружаем страницу целиком, а не переходим внутри приложения:
+    // приставка задаётся роутеру один раз при запуске (basename в
+    // main.jsx), и на ходу её не поменять.
+    const path = window.location.pathname.replace(/^\/(en|sr)(?=\/|$)/, '') || '/'
+    const prefix = code === 'ru' ? '' : `/${code}`
+    const next = prefix + path + window.location.search + window.location.hash
+    if (next !== window.location.pathname + window.location.search + window.location.hash) {
+      window.location.assign(next)
+    }
   }
 
   return (

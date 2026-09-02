@@ -5,6 +5,28 @@ import './i18n'
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import './styles.css'
+import i18n from './i18n'
+
+// Языковые адреса: /en/... и /sr/... Русский живёт без приставки —
+// он основной, и ломать существующие ссылки на него нельзя.
+//
+// Зачем вообще: поисковику нужен отдельный адрес на каждый язык. Пока
+// все три жили по одному адресу, серб и англичанин находили в выдаче
+// русскую страницу — а это половина людей в Белграде.
+//
+// Приставку снимаем здесь и отдаём роутеру как basename: тогда все
+// ссылки внутри приложения получают её сами, и ни одну из них не
+// нужно переписывать.
+const LANG_PREFIXES = ['en', 'sr']
+const first = window.location.pathname.split('/')[1]
+const urlLang = LANG_PREFIXES.includes(first) ? first : null
+const basename = urlLang ? `/${urlLang}` : '/'
+if (urlLang) {
+  // Адрес главнее сохранённого выбора: человек пришёл по ссылке из
+  // выдачи или от знакомого именно на этом языке.
+  i18n.changeLanguage(urlLang)
+  try { localStorage.setItem('fino_lang', urlLang) } catch { /* не беда */ }
+}
 
 // _v в адресе — только чтобы протолкнуть перезагрузку мимо кэша
 // Safari (см. index.html), самому React Router он не нужен и не
@@ -37,7 +59,7 @@ try {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <BrowserRouter>
+      <BrowserRouter basename={basename}>
         <App />
       </BrowserRouter>
     </ErrorBoundary>

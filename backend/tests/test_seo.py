@@ -114,3 +114,47 @@ def test_description_is_clean_for_search():
     assert "🙈" not in out
     assert "\n" not in out
     assert "Размеры M и L" in out
+
+
+# ── Языковые адреса ─────────────────────────────────────────────────────────
+def test_each_language_has_its_own_address():
+    """У каждого языка свой адрес, а не один на троих.
+
+    Раньше три hreflang вели на одну страницу: язык переключался внутри
+    приложения, адрес не менялся. Для поисковика это значило «версий
+    нет», и серб с англичанином находили в выдаче русскую страницу — а
+    это половина людей в Белграде.
+    """
+    from app.routers.seo import _lang_url
+
+    site = "https://plonk.rs"
+    # Русский — основной и живёт без приставки: на него ведут все
+    # существующие ссылки, ломать их ради единообразия нельзя.
+    assert _lang_url(site, "/c/mebel", "ru") == "https://plonk.rs/c/mebel"
+    assert _lang_url(site, "/c/mebel", "en") == "https://plonk.rs/en/c/mebel"
+    assert _lang_url(site, "/c/mebel", "sr") == "https://plonk.rs/sr/c/mebel"
+
+
+def test_sitemap_lists_language_versions():
+    """Карта сайта перечисляет версии, иначе они конкурируют друг с другом."""
+    from app.routers.seo import _with_langs
+
+    entry = _with_langs("https://plonk.rs", "/c/mebel")
+    assert 'hreflang="x-default"' in entry
+    assert 'hreflang="en" href="https://plonk.rs/en/c/mebel"' in entry
+    assert 'hreflang="sr" href="https://plonk.rs/sr/c/mebel"' in entry
+
+
+def test_section_page_is_translated_whole():
+    """Страница раздела переведена целиком, а не только название.
+
+    Иначе у английской версии выходит половина заголовка по-русски —
+    «Real Estate — объявления в Белграде и Сербии», — и в англоязычной
+    выдаче она выглядит страницей на чужом языке.
+    """
+    from app.routers.seo import CATEGORY_TEXTS
+
+    for lang in ("ru", "en", "sr"):
+        assert set(CATEGORY_TEXTS[lang]) == set(CATEGORY_TEXTS["ru"])
+    assert "classifieds" in CATEGORY_TEXTS["en"]["title"]
+    assert "oglasi" in CATEGORY_TEXTS["sr"]["title"]

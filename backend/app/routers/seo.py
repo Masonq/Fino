@@ -28,14 +28,83 @@ router = APIRouter(tags=["seo"])
 MAX_LISTINGS = 5000
 
 
+# Языки сайта и их приставки в адресе. Русский — основной и живёт без
+# приставки: он был первым, на него ведут все существующие ссылки, и
+# ломать их ради единообразия нельзя.
+LANGS = ("ru", "en", "sr")
+
+# Обрамление страницы раздела на каждом языке. Без него у английской
+# версии по-русски выходила половина заголовка — «Real Estate —
+# объявления в Белграде и Сербии», — и в англоязычной выдаче она
+# выглядела бы страницей на чужом языке.
+CATEGORY_TEXTS = {
+    "ru": {
+        "title": "{name} — объявления в Белграде и Сербии | PLONK",
+        "with_count": "{name} в Сербии на PLONK: {count} свежих объявлений",
+        "plain": "{name} в Сербии на PLONK",
+        "tail": ". Покупайте и продавайте рядом с домом, на русском, "
+                "английском и сербском.",
+        "open": "Открыть раздел на PLONK",
+        "missing": "Раздел не найден",
+    },
+    "en": {
+        "title": "{name} — classifieds in Belgrade and Serbia | PLONK",
+        "with_count": "{name} in Serbia on PLONK: {count} fresh listings",
+        "plain": "{name} in Serbia on PLONK",
+        "tail": ". Buy and sell close to home, in Russian, English "
+                "and Serbian.",
+        "open": "Open this section on PLONK",
+        "missing": "Section not found",
+    },
+    "sr": {
+        "title": "{name} — oglasi u Beogradu i Srbiji | PLONK",
+        "with_count": "{name} u Srbiji na PLONK: {count} novih oglasa",
+        "plain": "{name} u Srbiji na PLONK",
+        "tail": ". Kupujte i prodajte blizu kuće, na ruskom, engleskom "
+                "i srpskom.",
+        "open": "Otvorite sekciju na PLONK",
+        "missing": "Sekcija nije pronađena",
+    },
+}
+
+
+def _lang_url(site: str, path: str, lang: str) -> str:
+    """Адрес страницы на нужном языке."""
+    prefix = "" if lang == "ru" else f"/{lang}"
+    return f"{site}{prefix}{path}"
+
+
 def _url(loc: str, changed=None, priority: str = "0.5",
-         frequency: str = "daily") -> str:
+         frequency: str = "daily", alternates: dict | None = None) -> str:
     parts = [f"<loc>{escape(loc)}</loc>"]
     if changed:
         parts.append(f"<lastmod>{changed.date().isoformat()}</lastmod>")
     parts.append(f"<changefreq>{frequency}</changefreq>")
     parts.append(f"<priority>{priority}</priority>")
+    # Языковые версии перечисляем прямо в карте сайта. Так поисковик
+    # узнаёт, что /en/c/mebel и /c/mebel — одна и та же страница на
+    # разных языках, а не две конкурирующие: иначе он выберет одну и
+    # покажет её всем, включая тех, кто ищет по-сербски.
+    for lang, href in (alternates or {}).items():
+        code = "x-default" if lang == "ru" else lang
+        parts.append(
+            f'<xhtml:link rel="alternate" hreflang="{code}" '
+            f'href="{escape(href)}"/>'
+        )
+        if lang == "ru":
+            parts.append(
+                f'<xhtml:link rel="alternate" hreflang="ru" '
+                f'href="{escape(href)}"/>'
+            )
     return "<url>" + "".join(parts) + "</url>"
+
+
+def _with_langs(site: str, path: str, changed=None, priority: str = "0.5",
+                frequency: str = "daily") -> str:
+    """Одна запись карты сайта — со ссылками на все языковые версии."""
+    alternates = {lang: _lang_url(site, path, lang) for lang in LANGS}
+    return _url(_lang_url(site, path, "ru"), changed, priority, frequency,
+                alternates)
 
 
 @router.get("/sitemap.xml")
@@ -43,7 +112,7 @@ def sitemap(db: Session = Depends(get_db)):
     """Карта сайта: главная, разделы, объявления."""
     site = settings.public_base_url.rstrip("/")
     now = utcnow()
-    urls = [_url(f"{site}/", now, "1.0", "hourly")]
+    urls = [_with_langs(site, "/", now, "1.0", "hourly")]
 
     # Разделы — вторые по важности после главной: по ним ищут чаще, чем
     # по отдельной вещи («мебель Белград»).
@@ -59,8 +128,8 @@ def sitemap(db: Session = Depends(get_db)):
         # (см. category_page ниже), а адреса с «?» поисковики
         # индексируют неохотно и часто считают одной и той же
         # страницей.
-        urls.append(_url(f"{site}/c/{category.slug}", now,
-                         "0.8" if top else "0.6"))
+        urls.append(_with_langs(site, f"/c/{category.slug}", now,
+                                "0.8" if top else "0.6"))
 
     listings = (
         db.query(Listing)
@@ -75,15 +144,16 @@ def sitemap(db: Session = Depends(get_db)):
         # Свежие объявления поисковику стоит перечитывать чаще: цена
         # меняется, вещь продаётся.
         fresh = listing.created_at and listing.created_at > now - timedelta(days=7)
-        urls.append(_url(
-            site + _nice_path(db, listing),
+        urls.append(_with_langs(
+            site, _nice_path(db, listing),
             listing.updated_at or listing.created_at,
             "0.7" if fresh else "0.5",
             "daily" if fresh else "weekly",
         ))
 
     body = ('<?xml version="1.0" encoding="UTF-8"?>'
-            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
+            'xmlns:xhtml="http://www.w3.org/1999/xhtml">'
             + "".join(urls) + "</urlset>")
     return Response(content=body, media_type="application/xml")
 
@@ -161,6 +231,18 @@ def short_listing_page(listing_id: str, request: Request,
     return listing_page(listing_id, request, db)
 
 
+@router.get("/{lang}/{city}/{category}/{slug}", include_in_schema=False)
+def nice_listing_page_localised(lang: str, city: str, category: str, slug: str,
+                                request: Request,
+                                db: Session = Depends(get_db)):
+    """Объявление на другом языке: /en/beograd/mebel/stol-45e17e58."""
+    if lang not in ("en", "sr"):
+        return HTMLResponse(
+            "<!doctype html><html><head><meta name=robots content=noindex>"
+            "</head><body><h1>404</h1></body></html>", status_code=404)
+    return nice_listing_page(city, category, slug, request, db)
+
+
 @router.get("/{city}/{category}/{slug}", include_in_schema=False)
 def nice_listing_page(city: str, category: str, slug: str,
                       request: Request, db: Session = Depends(get_db)):
@@ -171,6 +253,14 @@ def nice_listing_page(city: str, category: str, slug: str,
     с нынешним — но хвост остаётся.
     """
     from app.core.urls import listing_id_from
+
+    # Языковые адреса совпадают по форме с адресом объявления: у
+    # /en/c/mebel те же три части, что у /beograd/mebel/stol. Разбираем
+    # здесь, потому что этот маршрут объявлен раньше и перехватывает их
+    # первым — поймал на живом запросе, английская страница отвечала
+    # ошибкой про негодный ключ.
+    if city in ("en", "sr") and category == "c":
+        return category_page(slug, request, db, lang=city)
 
     tail = listing_id_from(slug)
     if not tail:
@@ -392,13 +482,14 @@ def _nice_path(db: Session, listing) -> str:
 # описание, свежие объявления ссылками и разметку списка. Человека, как
 # и на странице объявления, сразу отправляем в приложение.
 CATEGORY_PAGE = """<!DOCTYPE html>
-<html lang="ru">
+<html lang="{lang}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title}</title>
 <meta name="description" content="{description}">
 <link rel="canonical" href="{url}">
+{alternates}
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PLONK">
 <meta property="og:title" content="{title}">
@@ -414,13 +505,25 @@ CATEGORY_PAGE = """<!DOCTYPE html>
 <ul>
 {items}
 </ul>
-<p><a href="{url}">Открыть раздел на PLONK</a></p>
+<p><a href="{url}">{open_text}</a></p>
 </body>
 </html>"""
 
 
+@router.get("/{lang}/c/{slug}", include_in_schema=False)
+def category_page_localised(lang: str, slug: str, request: Request,
+                            db: Session = Depends(get_db)):
+    """Тот же раздел на другом языке: /en/c/mebel, /sr/c/mebel."""
+    if lang not in ("en", "sr"):
+        return HTMLResponse(
+            "<!doctype html><html><head><meta name=robots content=noindex>"
+            "</head><body><h1>404</h1></body></html>", status_code=404)
+    return category_page(slug, request, db, lang=lang)
+
+
 @router.get("/c/{slug}", include_in_schema=False)
-def category_page(slug: str, request: Request, db: Session = Depends(get_db)):
+def category_page(slug: str, request: Request, db: Session = Depends(get_db),
+                  lang: str = "ru"):
     """Раздел с объявлениями — для поисковиков."""
     import json
     from html import escape as esc
@@ -428,16 +531,17 @@ def category_page(slug: str, request: Request, db: Session = Depends(get_db)):
     from app.models import Category, ListingTranslation
 
     site = settings.public_base_url.rstrip("/")
-    url = f"{site}/c/{slug}"
+    url = _lang_url(site, f"/c/{slug}", lang)
 
     category = db.query(Category).filter(Category.slug == slug).first()
     if not category:
         return HTMLResponse(
             "<!doctype html><html><head>"
             "<meta name=robots content=noindex></head><body>"
-            "<h1>Раздел не найден</h1></body></html>", status_code=404)
+            f"<h1>{CATEGORY_TEXTS.get(lang, CATEGORY_TEXTS['ru'])['missing']}"
+            "</h1></body></html>", status_code=404)
 
-    name = (category.name or {}).get("ru") or slug
+    name = (category.name or {}).get(lang) or (category.name or {}).get("ru") or slug
     # Дети раздела — чтобы поисковик знал и о подразделах тоже.
     children = db.query(Category).filter(Category.parent_id == category.id).all()
 
@@ -446,7 +550,7 @@ def category_page(slug: str, request: Request, db: Session = Depends(get_db)):
         .join(ListingTranslation, ListingTranslation.listing_id == Listing.id)
         .filter(
             Listing.status == ListingStatus.active,
-            ListingTranslation.language == "ru",
+            ListingTranslation.language == lang,
             Listing.category_id.in_(
                 [category.id] + [c.id for c in children]),
         )
@@ -464,32 +568,33 @@ def category_page(slug: str, request: Request, db: Session = Depends(get_db)):
     # объявлений» в описании раздела отпугивает и человека в выдаче, и
     # поисковика — раздел выглядит заброшенным, даже если завтра в нём
     # снова появятся вещи.
+    words = CATEGORY_TEXTS.get(lang, CATEGORY_TEXTS["ru"])
     if rows:
-        head = f"{name} в Сербии на PLONK: {len(rows)} свежих объявлений"
+        head = words["with_count"].format(name=name, count=len(rows))
         if cities:
             head += f" — {', '.join(sorted(cities)[:4])}"
     else:
-        head = f"{name} в Сербии на PLONK"
-    description = (
-        head + ". Покупайте и продавайте рядом с домом, на русском, "
-        "английском и сербском."
-    )
+        head = words["plain"].format(name=name)
+    description = head + words["tail"]
 
     items, schema_items = [], []
     for i, (listing, tr) in enumerate(rows, start=1):
         path = _nice_path(db, listing)
-        items.append(f'<li><a href="{esc(site + path)}">{esc(tr.title or "")}</a></li>')
+        href = _lang_url(site, path, lang)
+        items.append(f'<li><a href="{esc(href)}">{esc(tr.title or "")}</a></li>')
         schema_items.append({
             "@type": "ListItem",
             "position": i,
-            "url": site + path,
+            "url": href,
             "name": tr.title or "",
         })
 
     for child in children:
-        child_name = (child.name or {}).get("ru") or child.slug
+        child_name = ((child.name or {}).get(lang)
+                      or (child.name or {}).get("ru") or child.slug)
         items.append(
-            f'<li><a href="{esc(site)}/c/{esc(child.slug)}">{esc(child_name)}</a></li>')
+            f'<li><a href="{esc(_lang_url(site, f"/c/{child.slug}", lang))}">'
+            f'{esc(child_name)}</a></li>')
 
     schema = json.dumps({
         "@context": "https://schema.org",
@@ -500,11 +605,24 @@ def category_page(slug: str, request: Request, db: Session = Depends(get_db)):
         "itemListElement": schema_items,
     }, ensure_ascii=False, indent=1)
 
+    # Языковые версии — на каждой странице: поисковик должен знать, что
+    # /en/c/mebel и /c/mebel одно и то же на разных языках, иначе
+    # выберет одну и покажет её всем.
+    alternates = "\n".join(
+        f'<link rel="alternate" hreflang="{code}" '
+        f'href="{_lang_url(site, f"/c/{slug}", code_lang)}">'
+        for code, code_lang in (("x-default", "ru"), ("ru", "ru"),
+                                ("en", "en"), ("sr", "sr"))
+    )
+
     return HTMLResponse(CATEGORY_PAGE.format(
-        title=f"{esc(name)} — объявления в Белграде и Сербии | PLONK",
+        lang=lang,
+        alternates=alternates,
+        title=esc(words["title"].format(name=name)),
         heading=esc(name),
         description=esc(description),
         url=url,
         schema=schema,
         items="\n".join(items),
+        open_text=esc(words["open"]),
     ))
