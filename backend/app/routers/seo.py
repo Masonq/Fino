@@ -54,7 +54,12 @@ def sitemap(db: Session = Depends(get_db)):
         # него нет, и звать поисковика на /category/ значит вести его
         # на пустой экран.
         top = category.parent_id is None
-        urls.append(_url(f"{site}/search?category={category.slug}", now,
+        # Ведём на страницу раздела, а не на поиск с параметром в
+        # адресе: у /c/<slug> есть готовый текст со списком объявлений
+        # (см. category_page ниже), а адреса с «?» поисковики
+        # индексируют неохотно и часто считают одной и той же
+        # страницей.
+        urls.append(_url(f"{site}/c/{category.slug}", now,
                          "0.8" if top else "0.6"))
 
     listings = (
@@ -374,3 +379,132 @@ def _nice_path(db: Session, listing) -> str:
     category = listing.category.slug if listing.category else None
     return listing_path(listing.id, translation[0] if translation else "",
                         listing.city, category)
+
+
+# Страница раздела для поисковика.
+#
+# По разделу ищут чаще, чем по отдельной вещи: «мебель Белград»,
+# «квартиры Нови Сад». Но раздел у нас — обычная страница приложения, и
+# поисковик видел на ней пустоту: ни списка объявлений, ни текста, ни
+# ссылок, по которым можно уйти вглубь сайта.
+#
+# Здесь отдаём роботу готовый документ: заголовок раздела, короткое
+# описание, свежие объявления ссылками и разметку списка. Человека, как
+# и на странице объявления, сразу отправляем в приложение.
+CATEGORY_PAGE = """<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title}</title>
+<meta name="description" content="{description}">
+<link rel="canonical" href="{url}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PLONK">
+<meta property="og:title" content="{title}">
+<meta property="og:description" content="{description}">
+<meta property="og:url" content="{url}">
+<script type="application/ld+json">
+{schema}
+</script>
+</head>
+<body>
+<h1>{heading}</h1>
+<p>{description}</p>
+<ul>
+{items}
+</ul>
+<p><a href="{url}">Открыть раздел на PLONK</a></p>
+</body>
+</html>"""
+
+
+@router.get("/c/{slug}", include_in_schema=False)
+def category_page(slug: str, request: Request, db: Session = Depends(get_db)):
+    """Раздел с объявлениями — для поисковиков."""
+    import json
+    from html import escape as esc
+
+    from app.models import Category, ListingTranslation
+
+    site = settings.public_base_url.rstrip("/")
+    url = f"{site}/c/{slug}"
+
+    category = db.query(Category).filter(Category.slug == slug).first()
+    if not category:
+        return HTMLResponse(
+            "<!doctype html><html><head>"
+            "<meta name=robots content=noindex></head><body>"
+            "<h1>Раздел не найден</h1></body></html>", status_code=404)
+
+    name = (category.name or {}).get("ru") or slug
+    # Дети раздела — чтобы поисковик знал и о подразделах тоже.
+    children = db.query(Category).filter(Category.parent_id == category.id).all()
+
+    rows = (
+        db.query(Listing, ListingTranslation)
+        .join(ListingTranslation, ListingTranslation.listing_id == Listing.id)
+        .filter(
+            Listing.status == ListingStatus.active,
+            ListingTranslation.language == "ru",
+            Listing.category_id.in_(
+                [category.id] + [c.id for c in children]),
+        )
+        .order_by(Listing.published_at.desc().nullslast())
+        .limit(40)
+        .all()
+    )
+
+    # Текст на странице: без него у раздела нет ни одного слова, по
+    # которому его можно найти. Собираем из того, что знаем наверняка —
+    # название раздела, число объявлений, города, — а не выдумываем
+    # рекламные обещания.
+    cities = {l.city for l, _ in rows if l.city}
+    # Число объявлений называем, только если они есть: «0 свежих
+    # объявлений» в описании раздела отпугивает и человека в выдаче, и
+    # поисковика — раздел выглядит заброшенным, даже если завтра в нём
+    # снова появятся вещи.
+    if rows:
+        head = f"{name} в Сербии на PLONK: {len(rows)} свежих объявлений"
+        if cities:
+            head += f" — {', '.join(sorted(cities)[:4])}"
+    else:
+        head = f"{name} в Сербии на PLONK"
+    description = (
+        head + ". Покупайте и продавайте рядом с домом, на русском, "
+        "английском и сербском."
+    )
+
+    items, schema_items = [], []
+    for i, (listing, tr) in enumerate(rows, start=1):
+        path = _nice_path(db, listing)
+        items.append(f'<li><a href="{esc(site + path)}">{esc(tr.title or "")}</a></li>')
+        schema_items.append({
+            "@type": "ListItem",
+            "position": i,
+            "url": site + path,
+            "name": tr.title or "",
+        })
+
+    for child in children:
+        child_name = (child.name or {}).get("ru") or child.slug
+        items.append(
+            f'<li><a href="{esc(site)}/c/{esc(child.slug)}">{esc(child_name)}</a></li>')
+
+    schema = json.dumps({
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": name,
+        "url": url,
+        "numberOfItems": len(schema_items),
+        "itemListElement": schema_items,
+    }, ensure_ascii=False, indent=1)
+
+    return HTMLResponse(CATEGORY_PAGE.format(
+        title=f"{esc(name)} — объявления в Белграде и Сербии | PLONK",
+        heading=esc(name),
+        description=esc(description),
+        url=url,
+        schema=schema,
+        items="\n".join(items),
+    ))
