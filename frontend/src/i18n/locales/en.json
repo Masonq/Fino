@@ -762,5 +762,19 @@
     "stat_invited": "invited",
     "stat_rewarded": "published a listing",
     "fineprint": "The bonus is credited for each invited friend whose first listing gets published and approved. Credited once per person."
+  },
+  "footer": {
+    "about": "Classifieds in Serbia — in Russian, English and Serbian. Buy and sell close to home.",
+    "sec_marketplace": "Listings",
+    "categories": "All categories",
+    "post_ad": "Post a listing",
+    "search": "Search",
+    "sec_help": "Help",
+    "support": "Support",
+    "rules": "Posting rules",
+    "sec_legal": "Legal",
+    "terms": "Terms of service",
+    "privacy": "Privacy policy",
+    "made_in": "Made in Belgrade"
   }
 }

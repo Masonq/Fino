@@ -34,6 +34,7 @@ import NotFound from './pages/NotFound'
 import { AuthProvider } from './context/AuthContext'
 import { FavoritesProvider } from './context/FavoritesContext'
 import BottomNav from './components/BottomNav'
+import Footer from './components/Footer'
 import TopNav from './components/TopNav'
 
 export default function App() {
@@ -191,6 +192,7 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
+      <Footer />
       {!hideNav && <BottomNav />}
     </div>
     </FavoritesProvider>

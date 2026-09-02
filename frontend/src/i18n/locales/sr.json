@@ -763,5 +763,19 @@
     "stat_invited": "pozvano",
     "stat_rewarded": "objavilo oglas",
     "fineprint": "Bonus se dodeljuje za svakog pozvanog prijatelja čiji prvi oglas bude odobren. Dodeljuje se jednom po osobi."
+  },
+  "footer": {
+    "about": "Oglasi u Srbiji — na ruskom, engleskom i srpskom. Kupujte i prodajte u svom komšiluku.",
+    "sec_marketplace": "Oglasi",
+    "categories": "Sve kategorije",
+    "post_ad": "Postavi oglas",
+    "search": "Pretraga",
+    "sec_help": "Pomoć",
+    "support": "Podrška",
+    "rules": "Pravila objavljivanja",
+    "sec_legal": "Dokumenti",
+    "terms": "Uslovi korišćenja",
+    "privacy": "Politika privatnosti",
+    "made_in": "Napravljeno u Beogradu"
   }
 }

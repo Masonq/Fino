@@ -2313,7 +2313,21 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   .detail-sheet .sticky-cta.hidden{ transform:none; }
 
   /* похожие и отзывы — на всю ширину под колонками */
+  /* «Похожие» и «Отзывы» — на всю ширину под колонками: это ленты
+     карточек, им нужна вся ширина. А вот «Другие объявления продавца»
+     остаются в правой колонке, под кнопками — ровно там, где иначе
+     остаётся пустое место (высоту правой колонки задаёт фото слева).
+     Раньше этот блок тоже растягивался на всю ширину и уезжал вниз,
+     хотя ставили его туда как раз ради заполнения этой пустоты. */
   .similar-block, .reviews-block, .report-link{ grid-column:1 / -1; }
+  .seller-listings-block{ grid-column:2; margin-top:18px; }
+  /* В узкой колонке лента в один ряд не влезает — показываем сеткой
+     2×N вместо горизонтальной прокрутки. */
+  .seller-listings-block .similar-strip{
+    display:grid; grid-template-columns:1fr 1fr; gap:12px; overflow:visible;
+  }
+  .seller-listings-block .similar-card{ flex:none; width:auto; }
+  .seller-listings-block .similar-photo{ width:100%; height:auto; aspect-ratio:1; }
 
   /* Карта на десктопе — не всплывающее окно, а обычный блок прямо в
      потоке страницы, под «Местоположением» (у конкурента ровно так,
@@ -3616,3 +3630,38 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   background:var(--coral); color:#fff; padding:13px;
 }
 .reasons-item.primary:disabled{ opacity:.5; }
+
+/* ===== Подвал сайта =====
+   На мобильном скрыт целиком: снизу экрана прибито своё меню
+   (BottomNav), подвал под ним всё равно был бы недосягаем, а на
+   страницах без меню (объявление, переписка, вход) он там и не
+   нужен — они сами по себе законченные экраны. Показывается только
+   на десктопе, где страница иначе просто обрывается снизу. */
+.site-footer{ display:none; }
+
+@media (min-width: 900px){
+  .site-footer{
+    display:block; margin-top:56px; padding:40px 24px 0;
+    background:#fff; border-top:1px solid rgba(20,30,25,.08);
+  }
+  .site-footer-inner{
+    max-width:1180px; margin:0 auto; display:grid;
+    grid-template-columns:1.6fr 1fr 1fr 1fr; gap:32px;
+  }
+  .footer-col{ display:flex; flex-direction:column; gap:9px; align-items:flex-start; }
+  .footer-brand{ font-size:19px; font-weight:800; color:var(--primary-deep); letter-spacing:-0.02em; }
+  .footer-about{
+    font-size:12.5px; color:var(--muted); line-height:1.6; margin:0; max-width:280px;
+  }
+  .footer-title{ font-size:12.5px; font-weight:800; color:var(--ink); margin-bottom:2px; }
+  .footer-col a{
+    font-size:12.5px; color:var(--ink-soft); text-decoration:none; transition:color .15s;
+  }
+  .footer-col a:hover{ color:var(--primary-deep); }
+  .site-footer-bottom{
+    max-width:1180px; margin:32px auto 0; padding:16px 0 24px;
+    border-top:1px solid rgba(20,30,25,.06);
+    font-size:11.5px; color:var(--muted); display:flex; gap:8px; align-items:center;
+  }
+  .footer-sep{ opacity:.5; }
+}
