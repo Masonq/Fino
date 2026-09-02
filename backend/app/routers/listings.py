@@ -596,34 +596,57 @@ def search_listings(
         # SQLite (см. tests/).
         since_ts = utcnow() - timedelta(days=WINDOW_DAYS)
 
+        # Верхняя граница окна — начало сегодняшнего дня, и это главное
+        # здесь.
+        #
+        # Оценка учитывает показы в ленте, а лента сама их записывает при
+        # каждом запросе: пролистал страницу — у полусотни карточек
+        # изменились те самые данные, по которым идёт сортировка, и
+        # следующая страница считается уже иначе. Одни объявления
+        # сдвигаются назад и показываются второй раз, другие вперёд и не
+        # показываются вовсе. На живой ленте: 2764 карточки, 204 повтора
+        # и ровно столько же пропущенных.
+        #
+        # Поэтому считаем только то, что накопилось до сегодня. Порядок
+        # держится сутки, а поведение людей всё равно измеряется неделей
+        # — сегодняшние показы ничего к нему не добавляют, кроме
+        # неустойчивости.
+        until_day = date_type.today()
+
         recent_views = (
             db.query(func.coalesce(func.sum(ListingViewDaily.count), 0))
-            .filter(ListingViewDaily.listing_id == Listing.id, ListingViewDaily.day >= since_day)
+            .filter(ListingViewDaily.listing_id == Listing.id,
+                    ListingViewDaily.day >= since_day, ListingViewDaily.day < until_day)
             .correlate(Listing).scalar_subquery()
         )
         recent_impressions = (
             db.query(func.coalesce(func.sum(ListingSignalDaily.impressions), 0))
-            .filter(ListingSignalDaily.listing_id == Listing.id, ListingSignalDaily.day >= since_day)
+            .filter(ListingSignalDaily.listing_id == Listing.id,
+                    ListingSignalDaily.day >= since_day, ListingSignalDaily.day < until_day)
             .correlate(Listing).scalar_subquery()
         )
         recent_gallery = (
             db.query(func.coalesce(func.sum(ListingSignalDaily.gallery_views), 0))
-            .filter(ListingSignalDaily.listing_id == Listing.id, ListingSignalDaily.day >= since_day)
+            .filter(ListingSignalDaily.listing_id == Listing.id,
+                    ListingSignalDaily.day >= since_day, ListingSignalDaily.day < until_day)
             .correlate(Listing).scalar_subquery()
         )
         recent_desc = (
             db.query(func.coalesce(func.sum(ListingSignalDaily.desc_expands), 0))
-            .filter(ListingSignalDaily.listing_id == Listing.id, ListingSignalDaily.day >= since_day)
+            .filter(ListingSignalDaily.listing_id == Listing.id,
+                    ListingSignalDaily.day >= since_day, ListingSignalDaily.day < until_day)
             .correlate(Listing).scalar_subquery()
         )
         recent_favorites = (
             db.query(func.count(Favorite.id))
-            .filter(Favorite.listing_id == Listing.id, Favorite.created_at >= since_ts)
+            .filter(Favorite.listing_id == Listing.id,
+                    Favorite.created_at >= since_ts, Favorite.created_at < NOW)
             .correlate(Listing).scalar_subquery()
         )
         recent_chats = (
             db.query(func.count(Chat.id))
-            .filter(Chat.listing_id == Listing.id, Chat.created_at >= since_ts)
+            .filter(Chat.listing_id == Listing.id,
+                    Chat.created_at >= since_ts, Chat.created_at < NOW)
             .correlate(Listing).scalar_subquery()
         )
 
