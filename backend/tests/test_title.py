@@ -2411,3 +2411,16 @@ def test_real_titles_pass():
     assert acceptable("Кроссовки ellesse", SECTIONS)
     assert acceptable("Гироскутер Smart Balance 10 дюймов", SECTIONS)
     assert acceptable("Наушники Sony WH-1000XM4", SECTIONS)
+
+
+def test_broken_word_at_the_end_is_rejected():
+    """Оборванное слово в конце — обрубок, а не название.
+
+    Модель прислала «Пс3 супер Слим в комплекте cd диски ,два джо».
+    Единицы и размеры при этом законно короткие и проходят.
+    """
+    from app.core.retitle import acceptable
+
+    assert not acceptable("Пс3 супер Слим в комплекте cd диски ,два джо", SECTIONS)
+    assert acceptable("Аккумулятор 5000 мАч", SECTIONS)
+    assert acceptable("Куртка зимняя, размер XL", SECTIONS)
