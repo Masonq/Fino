@@ -258,7 +258,8 @@
     "next_photo": "Следующее фото",
     "favorited_count": "{{count}} в избранном",
     "reserved_for_me": "Продавец забронировал это для вас",
-    "reserved_other": "Забронировано другим покупателем"
+    "reserved_other": "Забронировано другим покупателем",
+    "map_learn_more": "Узнать подробности"
   },
   "favorites": {
     "title": "Избранное",
