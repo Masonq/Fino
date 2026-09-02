@@ -2343,3 +2343,32 @@ def test_real_ranges_still_work():
     from app.core.tg_parse import extract_price
 
     assert extract_price("Цена 3000-5000 динар") == (3000, "RSD")
+
+
+# ── Глаголы самой доски ─────────────────────────────────────────────────────
+# Правило бракует заголовки с глаголами: иначе в ленту лезут рекламные
+# фразы вроде «уже более 4 лет помогаем клиентам». Но «куплю», «сдам»,
+# «ищет дом» — это язык объявлений, а не реклама. Проверил на живой базе:
+# из 173 забракованных заголовков заметная часть оказалась именно такими,
+# и переписывать их нейросетью значило бы портить хорошее.
+def test_trade_verbs_are_not_advertising():
+    from app.routers.listings import title_is_clear
+
+    assert title_is_clear("Кошка Монеточка ищет дом")
+    assert title_is_clear("Куплю набор гантелей 30+кг")
+    assert title_is_clear("Нашлась собака (мальчик)")
+    assert title_is_clear("Сдам квартиру на Врачаре")
+    assert title_is_clear("Продам диван IKEA")
+
+
+def test_advertising_phrases_still_rejected():
+    """А рекламная фраза остаётся мусором: вещь в ней не названа."""
+    from app.routers.listings import title_is_clear
+
+    assert not title_is_clear("уже более 4 лет помогаем клиентам")
+    assert not title_is_clear("наш капитан поможет")
+    # Один только глагол торговли вещь тоже не называет.
+    assert not title_is_clear("Продам")
+    # Раздел вместо вещи: непонятно, что именно продают.
+    assert not title_is_clear("Электроника")
+    assert not title_is_clear("Компьютер")
