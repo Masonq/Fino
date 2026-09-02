@@ -751,96 +751,6 @@ export default function ListingDetail() {
         {listing.external_source === 'telegram' && (
           <div className="from-telegram">{t('detail.from_telegram')}</div>
         )}
-        {listing.city && (
-          <div className="detail-loc">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" />
-            </svg>
-            {displayCity(listing.city, lang)}
-          </div>
-        )}
-        {/* Карта раньше открывалась сразу под адресом — занимала место
-            даже тем, кому это неважно. Теперь как отдельный экран по
-            запросу: ссылка тут, сама карта — во весь экран поверх,
-            открывается только по касанию. */}
-        {listing.location_lat != null && (
-          <button type="button" className="detail-map-link" onClick={() => setMapOpen(true)}>
-            {t('detail.map_learn_more')}
-          </button>
-        )}
-
-        <div className="badge-row">
-          {listing.safe_deal_available && (
-            <div className="info-badge green">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6 9 17l-5-5" /></svg>
-              {t('detail.safe_deal')}
-            </div>
-          )}
-          {listing.delivery_available && <div className="info-badge grey">{t('detail.delivery')}</div>}
-        </div>
-
-        {/* Показываем только то, что описано в схеме категории. Иначе на
-            странице появлялась строка с сырым ключом вроде «condition» —
-            так и случилось, когда признак заполнили там, где поля нет. */}
-        {(() => {
-          const rows = Object.entries(listing.attributes || {})
-            .filter(([key, value]) =>
-              value !== null && value !== '' &&
-              schema.some((f) => f.key === key))
-          if (!rows.length) return null
-          // Длинный список сворачиваем — как на Авито: сразу видно
-          // главное, а не стену из пятнадцати строк характеристик.
-          const LIMIT = 6
-          const visible = attrsOpen ? rows : rows.slice(0, LIMIT)
-          return (
-            <div className="attrs-block">
-              <div className="desc-title">{t('detail.characteristics')}</div>
-              <div className="attr-card">
-                {visible.map(([key, value]) => (
-                  <div className="attr-row" key={key}>
-                    <span className="k">{attrLabel(key)}</span>
-                    <span className="v">{String(attrValue(key, value))}</span>
-                  </div>
-                ))}
-              </div>
-              {!attrsOpen && rows.length > LIMIT && (
-                <button className="desc-more" onClick={() => setAttrsOpen(true)}>
-                  {t('detail.show_all')}
-                </button>
-              )}
-            </div>
-          )
-        })()}
-
-        {translation?.description && (
-          <div className="desc-block">
-            <div className="desc-title">{t('detail.description')}</div>
-            {/* Длинное описание сворачиваем: в объявлениях из чата их
-                пишут на пол-экрана, и до продавца человек не
-                доскроллит. Короткие показываем целиком — прятать в них
-                нечего. */}
-            <div className={`desc-text${
-              !descOpen && (translation.description || '').length > 320
-                ? ' clipped' : ''}`}>
-              {translation.description}
-            </div>
-            {(translation.description || '').length > 320 && !descOpen && (
-              <button
-                className="desc-more"
-                onClick={() => {
-                  setDescOpen(true)
-                  if (!descSignalSent.current) {
-                    descSignalSent.current = true
-                    api.sendListingSignal(listingId, 'desc_expand').catch(() => {})
-                  }
-                }}
-              >
-                {t('detail.read_more')}
-              </button>
-            )}
-          </div>
-        )}
-
         {listing.owner && (
           <Link to={`/seller/${listing.owner.id}`} className="seller-row">
             <div className={listing.owner.is_company ? 'seller-avatar is-company' : 'seller-avatar'}>
@@ -944,7 +854,100 @@ export default function ListingDetail() {
       </div>
       )}
 
-      {/* Подсказки перед первым сообщением — пустой чат заставлял
+        {listing.city && (
+          <>
+            <div className="desc-title">{t('detail.map_location_label')}</div>
+            <div className="detail-loc">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" />
+              </svg>
+              {displayCity(listing.city, lang)}
+            </div>
+          </>
+        )}
+        {/* Карта раньше открывалась сразу под адресом — занимала место
+            даже тем, кому это неважно. Теперь как отдельный экран по
+            запросу: ссылка тут, сама карта — во весь экран поверх,
+            открывается только по касанию. */}
+        {listing.location_lat != null && (
+          <button type="button" className="detail-map-link" onClick={() => setMapOpen(true)}>
+            {t('detail.map_learn_more')}
+          </button>
+        )}
+
+        <div className="badge-row">
+          {listing.safe_deal_available && (
+            <div className="info-badge green">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6 9 17l-5-5" /></svg>
+              {t('detail.safe_deal')}
+            </div>
+          )}
+          {listing.delivery_available && <div className="info-badge grey">{t('detail.delivery')}</div>}
+        </div>
+
+        {/* Показываем только то, что описано в схеме категории. Иначе на
+            странице появлялась строка с сырым ключом вроде «condition» —
+            так и случилось, когда признак заполнили там, где поля нет. */}
+        {(() => {
+          const rows = Object.entries(listing.attributes || {})
+            .filter(([key, value]) =>
+              value !== null && value !== '' &&
+              schema.some((f) => f.key === key))
+          if (!rows.length) return null
+          // Длинный список сворачиваем — как на Авито: сразу видно
+          // главное, а не стену из пятнадцати строк характеристик.
+          const LIMIT = 6
+          const visible = attrsOpen ? rows : rows.slice(0, LIMIT)
+          return (
+            <div className="attrs-block">
+              <div className="desc-title">{t('detail.characteristics')}</div>
+              <div className="attr-card">
+                {visible.map(([key, value]) => (
+                  <div className="attr-row" key={key}>
+                    <span className="k">{attrLabel(key)}</span>
+                    <span className="v">{String(attrValue(key, value))}</span>
+                  </div>
+                ))}
+              </div>
+              {!attrsOpen && rows.length > LIMIT && (
+                <button className="desc-more" onClick={() => setAttrsOpen(true)}>
+                  {t('detail.show_all')}
+                </button>
+              )}
+            </div>
+          )
+        })()}
+
+        {translation?.description && (
+          <div className="desc-block">
+            <div className="desc-title">{t('detail.description')}</div>
+            {/* Длинное описание сворачиваем: в объявлениях из чата их
+                пишут на пол-экрана, и до продавца человек не
+                доскроллит. Короткие показываем целиком — прятать в них
+                нечего. */}
+            <div className={`desc-text${
+              !descOpen && (translation.description || '').length > 320
+                ? ' clipped' : ''}`}>
+              {translation.description}
+            </div>
+            {(translation.description || '').length > 320 && !descOpen && (
+              <button
+                className="desc-more"
+                onClick={() => {
+                  setDescOpen(true)
+                  if (!descSignalSent.current) {
+                    descSignalSent.current = true
+                    api.sendListingSignal(listingId, 'desc_expand').catch(() => {})
+                  }
+                }}
+              >
+                {t('detail.read_more')}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Подсказки перед первым сообщением — пустой чат заставлял
           придумывать, с чего начать, с нуля. Готовый вопрос уходит
           сразу при касании; «Своё сообщение» — прежнее поведение,
           открывает пустой чат как раньше. */}
