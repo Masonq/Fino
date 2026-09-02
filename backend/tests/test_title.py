@@ -2372,3 +2372,42 @@ def test_advertising_phrases_still_rejected():
     # Раздел вместо вещи: непонятно, что именно продают.
     assert not title_is_clear("Электроника")
     assert not title_is_clear("Компьютер")
+
+
+# ── Приёмка переписанного заголовка ─────────────────────────────────────────
+# Холостой прогон уборки показал, что правила при нехватке фактов
+# возвращают раздел с городом: «Гироскутер» превращался в «Хобби и
+# спорт», «Манеж» — в «Для дома», «Marshall» — в «Товары для животных».
+# Для переноса из чатов такой запасной вариант разумен, для замены
+# существующего заголовка — прямое ухудшение.
+SECTIONS = {"для дома", "хобби и спорт", "мебель", "товары для животных",
+            "книги", "обувь", "женская одежда", "техника для дома"}
+
+
+def test_section_name_is_not_a_title():
+    from app.core.retitle import acceptable
+
+    assert not acceptable("Хобби и спорт", SECTIONS)
+    assert not acceptable("Для дома", SECTIONS)
+    # Раздел с городом — тот же раздел.
+    assert not acceptable("Мебель, Нови Белград", SECTIONS)
+    assert not acceptable("Для дома, Стари Град", SECTIONS)
+
+
+def test_truncated_answer_is_rejected():
+    """Заголовок, оборвавшийся на союзе, — кусок фразы, а не название.
+
+    Модель упирается в предел длины посреди перечисления: «серии книг
+    Лихо, Бессмертник, Сквозь туман и».
+    """
+    from app.core.retitle import acceptable
+
+    assert not acceptable("серии книг Лихо, Бессмертник, Сквозь туман и", SECTIONS)
+
+
+def test_real_titles_pass():
+    from app.core.retitle import acceptable
+
+    assert acceptable("Кроссовки ellesse", SECTIONS)
+    assert acceptable("Гироскутер Smart Balance 10 дюймов", SECTIONS)
+    assert acceptable("Наушники Sony WH-1000XM4", SECTIONS)

@@ -40,6 +40,56 @@ from app.models import Category, Listing, ListingStatus, ListingTranslation
 # новые объявления, которые приедут ночью.
 DEFAULT_LIMIT = 50
 
+# Слова-хвосты. Заголовок, оборвавшийся на предлоге или союзе, — это
+# кусок фразы, а не название: модель упёрлась в предел длины на
+# середине перечисления. Такое в ленту пускать нельзя.
+_DANGLING = frozenset("""
+и а но или для из от до по на в с у к о об про за над под при без
+через между около это его её их также тоже ещё еще да же бы ли
+""".split())
+
+
+def _section_names(db) -> set:
+    """Названия всех разделов — их нельзя ставить заголовком.
+
+    Правила (build_title) при нехватке фактов возвращают раздел с
+    городом: «Для дома», «Хобби и спорт», «Мебель, Нови Белград». Для
+    переноса из чатов это разумный запасной вариант, а для переписывания
+    — прямое ухудшение: «Гироскутер» и «Манеж» превращались в «Хобби и
+    спорт» и «Для дома». Увидел на холостом прогоне.
+    """
+    names = set()
+    for (raw,) in db.query(Category.name).all():
+        for value in (raw or {}).values():
+            if value:
+                names.add(str(value).strip().lower())
+    return names
+
+
+def acceptable(new_title: str, sections: set) -> bool:
+    """Годится ли новый заголовок взамен старого."""
+    from app.routers.listings import title_is_clear
+
+    body = (new_title or "").strip()
+    if not title_is_clear(body):
+        return False
+
+    # Раздел вместо вещи — в любом виде: «Для дома», «Мебель, Нови
+    # Белград», «Хобби и спорт, Земун». Отрезаем город и сверяем.
+    head = body.split(",")[0].strip().lower()
+    if head in sections or body.lower() in sections:
+        return False
+
+    words = body.replace(",", " ").split()
+    if words and words[-1].lower().strip(".,") in _DANGLING:
+        return False
+    # Обрыв на середине слова: модель упёрлась в предел длины. Точной
+    # приметы нет, но заголовок ровно в предел и без знака конца —
+    # почти всегда обрубок.
+    if len(body) >= 44 and not body[-1].isalnum():
+        return False
+    return True
+
 
 def _candidates(db, limit: int):
     """Активные объявления, чей русский заголовок ничего не говорит."""
@@ -58,10 +108,8 @@ def _candidates(db, limit: int):
     return out[:limit]
 
 
-def _better_title(db, listing, translation) -> tuple[str | None, str]:
+def _better_title(db, listing, translation, sections) -> tuple[str | None, str]:
     """Новый заголовок и то, чем он получен: правилами или моделью."""
-    from app.routers.listings import title_is_clear
-
     text = (translation.description or "").strip()
     if not text:
         # Из пустоты название не сочинить, а выдумывать за продавца
@@ -74,12 +122,12 @@ def _better_title(db, listing, translation) -> tuple[str | None, str]:
     sub_slug = category.slug if parent else None
 
     by_rules = build_title(root_slug, sub_slug, text, listing.attributes or {})
-    if by_rules and title_is_clear(by_rules):
+    if by_rules and acceptable(by_rules, sections):
         return by_rules, "правила"
 
     answer = improve(text, translation.title)
     title = (answer.get("title") or "").strip()
-    if title and title_is_clear(title):
+    if title and acceptable(title, sections):
         return title, "нейросеть"
 
     return None, "не вышло"
@@ -89,10 +137,11 @@ def run(limit: int = DEFAULT_LIMIT, dry_run: bool = False) -> int:
     changed = 0
     with SessionLocal() as db:
         items = _candidates(db, limit)
+        sections = _section_names(db)
         print(f"непонятных заголовков к разбору: {len(items)}")
 
         for listing, translation in items:
-            new_title, how = _better_title(db, listing, translation)
+            new_title, how = _better_title(db, listing, translation, sections)
             if not new_title or new_title == translation.title:
                 print(f"  — {translation.title[:40]!r}: {how}")
                 continue
