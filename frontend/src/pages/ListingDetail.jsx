@@ -720,6 +720,12 @@ export default function ListingDetail() {
       )}
 
       <div className="detail-sheet">
+        {/* Правая колонка — «шапка» объявления: цена, продавец, кнопки,
+            местоположение. Левая (.detail-main ниже) — содержимое:
+            характеристики, описание, объявления продавца. На телефоне
+            обе идут одна под другой обычным потоком (flex только в
+            десктопном медиазапросе). */}
+        <div className="detail-aside">
         {/* Хлебные крошки — на десктопе держат верх страницы и дают
             быстрый путь обратно в раздел. На мобильном скрыты (CSS):
             там для этого есть кнопка «назад», а строка съедала бы
@@ -959,6 +965,9 @@ export default function ListingDetail() {
           {listing.delivery_available && <div className="info-badge grey">{t('detail.delivery')}</div>}
         </div>
 
+        </div>
+
+        <div className="detail-main">
         {/* Показываем только то, что описано в схеме категории. Иначе на
             странице появлялась строка с сырым ключом вроде «condition» —
             так и случилось, когда признак заполнили там, где поля нет. */}
@@ -1084,6 +1093,7 @@ export default function ListingDetail() {
           )}
           {listing.published_at && <span>{relativeDate(listing.published_at, t)}</span>}
           {listing.number && <span>{t('detail.id', { id: listing.number })}</span>}
+        </div>
         </div>
       </div>
 
