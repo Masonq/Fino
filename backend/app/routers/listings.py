@@ -734,6 +734,41 @@ def search_listings(
                     else_=0.0,
                 )
 
+        # Уже открывал — опускаем ниже. Лента, которая на каждом заходе
+        # крутит одно и то же, быстро надоедает: человек уже видел эту
+        # вещь и решение по ней принял.
+        #
+        # Опускаем, а не прячем: к вещи возвращаются — посмотреть ещё
+        # раз, показать близким, написать продавцу через неделю. Совсем
+        # убрать её из ленты значит отнять эту возможность.
+        #
+        # Штраф ослабевает со временем: вчерашний просмотр говорит о
+        # том, что вещь уже смотрели, куда увереннее, чем просмотр
+        # двухнедельной давности. И действует он только в общей ленте —
+        # в поиске по слову человек ищет конкретное, и прятать от него
+        # уже открытое было бы издевательством.
+        seen_penalty = 0.0
+        if viewer and not q_text and not category_slug:
+            from app.models import ListingViewLog
+
+            SEEN_PENALTY_MAX = 1.2
+            SEEN_FADE_DAYS = 10.0
+            last_seen = (
+                db.query(func.max(ListingViewLog.created_at))
+                .filter(
+                    ListingViewLog.listing_id == Listing.id,
+                    ListingViewLog.viewer_key == str(viewer.id),
+                )
+                .correlate(Listing)
+                .scalar_subquery()
+            )
+            seen_days = func.extract("epoch", func.now() - last_seen) / 86400.0
+            seen_penalty = case(
+                (last_seen.isnot(None),
+                 SEEN_PENALTY_MAX * func.exp(-seen_days / SEEN_FADE_DAYS)),
+                else_=0.0,
+            )
+
         relevance = (
             behavior_score * 2.0
             + freshness * 1.5
@@ -742,6 +777,7 @@ def search_listings(
             + bump_boost
             + explore_boost
             + personal_boost
+            - seen_penalty
         )
 
         # Штраф за место внутри своего раздела: первое объявление раздела

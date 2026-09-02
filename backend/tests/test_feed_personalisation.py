@@ -87,3 +87,29 @@ def test_personalisation_stays_out_of_search_and_filters():
     source = (Path(__file__).resolve().parents[1]
               / "app" / "routers" / "listings.py").read_text()
     assert "if viewer and not q_text and not category_slug:" in source
+
+
+def test_seen_listings_sink_but_stay():
+    """Уже открытое опускается ниже, а не исчезает.
+
+    Лента, которая на каждом заходе крутит одно и то же, надоедает:
+    человек эту вещь уже видел. Но и прятать её нельзя — к вещи
+    возвращаются: посмотреть ещё раз, показать близким, написать
+    продавцу через неделю.
+
+    Штраф ослабевает со временем и меньше платного поднятия, чтобы не
+    топить оплаченные места. Проверено на живой выдаче: тому, кто вчера
+    смотрел три верхних объявления, лента показала сперва остальные, а
+    просмотренные — следом.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "routers" / "listings.py").read_text()
+
+    assert "seen_penalty" in source
+    assert "SEEN_PENALTY_MAX = 1.2" in source
+    # Вычитаем, а не отбрасываем: объявление остаётся в выдаче.
+    assert "- seen_penalty" in source
+    assert "ListingViewLog.viewer_key == str(viewer.id)" in source
+    # В поиске по слову и в выбранном разделе штрафа нет: там человек
+    # ищет конкретное, и прятать от него уже открытое — издевательство.
+    assert "if viewer and not q_text and not category_slug:" in source

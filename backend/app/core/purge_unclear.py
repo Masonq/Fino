@@ -27,7 +27,9 @@
     python3 -m app.core.purge_unclear --apply --scope title
 """
 import argparse
+import json
 import os
+from datetime import datetime
 
 from sqlalchemy import text
 
@@ -112,6 +114,34 @@ def show(db) -> dict:
     return groups
 
 
+def _backup(items, targets) -> str:
+    """Сохраняет текст удаляемых объявлений в файл рядом с проектом.
+
+    Удаление необратимо, а решение принимается по списку из полусотни
+    строк. Файл ничего не стоит и позволяет хотя бы восстановить, что
+    именно было в ленте: заголовок, описание, раздел, адреса снимков.
+    Сами снимки не сохраняем — они стираются с диска.
+    """
+    keep = {str(i) for i in targets}
+    data = [
+        {
+            "id": str(listing.id),
+            "title": tr.title,
+            "description": tr.description,
+            "city": listing.city,
+            "price": float(listing.price) if listing.price else None,
+            "source": listing.external_source,
+            "created_at": str(listing.created_at),
+        }
+        for listing, tr in items if str(listing.id) in keep
+    ]
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    path = os.path.join(os.getcwd(), f"удалённые-объявления-{stamp}.json")
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump(data, fh, ensure_ascii=False, indent=1)
+    return path
+
+
 def purge(db, items) -> int:
     """Удаляет насовсем: записи, связи и снимки с диска."""
     ids = [l.id for l, _ in items]
@@ -119,6 +149,9 @@ def purge(db, items) -> int:
     targets = [i for i in ids if i not in busy]
     if not targets:
         return 0
+
+    saved = _backup(items, targets)
+    print(f"текст удаляемых объявлений сохранён: {saved}")
 
     files = [row[0] for row in db.execute(
         text("select url from listing_photos where listing_id = any(:ids)"),
@@ -143,8 +176,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--apply", action="store_true", help="удалить (необратимо)")
     parser.add_argument("--scope", default="both",
-                        choices=("both", "title", "description"),
-                        help="какую группу удалять")
+                        choices=("both", "title", "description", "all"),
+                        help="какую группу удалять; all — все три сразу")
     args = parser.parse_args()
 
     with SessionLocal() as db:
@@ -153,6 +186,10 @@ if __name__ == "__main__":
             print("это был показ, ничего не изменено. "
                   "Для удаления добавьте --apply")
         else:
-            key = {"both": "и то и другое", "title": "только заголовок",
-                   "description": "только описание"}[args.scope]
-            purge(db, groups[key])
+            if args.scope == "all":
+                items = [pair for group in groups.values() for pair in group]
+            else:
+                key = {"both": "и то и другое", "title": "только заголовок",
+                       "description": "только описание"}[args.scope]
+                items = groups[key]
+            purge(db, items)
