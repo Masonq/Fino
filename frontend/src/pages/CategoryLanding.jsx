@@ -64,23 +64,36 @@ export default function CategoryLanding() {
   // места использования, в эффекте сброса при смене slug.
   const skipFirstReset = useRef(Boolean(cacheFresh && cached.searched))
 
-  // Ручная липкость сайдбара — в дополнение к CSS position:sticky, не
-  // вместо него: несколько попыток одним только CSS не помогли на
-  // Safari у пользователя, при том что тот же самый приём работает
-  // верно и в Chromium, и на соседней странице поиска — не нашли ни
-  // одного оставшегося структурного отличия между двумя сайдбарами,
-  // при этом один липнет, другой нет. Раз чистый CSS не поддаётся
-  // диагностике без доступа к самому Safari, этот способ гарантированно
-  // работает в любом браузере одинаково, не полагаясь на то, как
-  // именно движок трактует sticky. Обычный обработчик scroll и прямое
-  // сравнение координат — проще и предсказуемее, чем IntersectionObserver
-  // с margin-математикой (первая версия так и не откалибровалась верно:
-  // естественное положение сайдбара оказалось уже около 68px, ниже
-  // порога в 82px, и срабатывало сразу, а не после настоящей прокрутки).
+  // Липкость сайдбара. Считаем сами, а не одним CSS position:sticky:
+  // несколько попыток чистым CSS не помогли на Safari, при том что тот
+  // же приём работает в Chromium и на соседней странице поиска.
+  //
+  // Прошлая версия делала блок липким неправильно в двух местах, и
+  // оба видны только на живой странице:
+  //
+  //  • она сравнивала верх колонки с жёстким порогом 82px, а колонка
+  //    и на самом верху страницы начинается примерно с 68px — условие
+  //    было истинным сразу при загрузке, то есть блок был
+  //    position:fixed всегда, а не «прилипал» по мере прокрутки;
+  //  • низа никто не сторожил: когда колонка с фильтрами кончалась,
+  //    блок продолжал висеть на экране и доезжал до самого подвала —
+  //    со стороны это и выглядит как «блок едет вниз вместе со
+  //    страницей».
+  //
+  // Поэтому три состояния, а не два. Пока верх колонки на экране —
+  // блок стоит в потоке. Дальше — прибит к верху окна. А у нижнего
+  // края колонки останавливается вместе с ней (absolute внутри
+  // .landing-body, у которого position:relative) и уезжает вверх, как
+  // любой обычный блок.
   const sidebarRef = useRef(null)
+  // false | 'fixed' | 'bottom'
   const [sidebarStuck, setSidebarStuck] = useState(false)
   const [sidebarLeft, setSidebarLeft] = useState(0)
-  const STICK_AT = 82
+  const [sidebarBottomTop, setSidebarBottomTop] = useState(0)
+  // Отступ от верха окна в прибитом состоянии. Шапка сайта на десктопе
+  // не закреплена и уезжает вместе со страницей, поэтому прятаться под
+  // неё не нужно — хватает воздуха, чтобы блок не лип к самому краю.
+  const STICK_TOP = 20
 
   const [category, setCategory] = useState(null)
   const [fresh, setFresh] = useState([])
@@ -97,22 +110,37 @@ export default function CategoryLanding() {
     const handleScroll = () => {
       const el = sidebarRef.current
       if (!el) return
-      // .parentElement — сам .landing-body, тот же ориентир, что и
-      // раньше: не зависит от того, закреплён ли сейчас сам сайдбар
-      // (position:fixed вынимает его из потока, но не родителя).
-      const parentTop = el.parentElement.getBoundingClientRect().top
-      setSidebarStuck((prevStuck) => {
-        if (parentTop < STICK_AT && !prevStuck) {
-          setSidebarLeft(el.getBoundingClientRect().left)
-          return true
-        }
-        if (parentTop >= STICK_AT && prevStuck) return false
-        return prevStuck
-      })
+      // .landing-body — ориентир: он остаётся в потоке, даже когда сам
+      // сайдбар из него вынут (position:fixed), поэтому его координаты
+      // не зависят от текущего состояния липкости и считать можно
+      // всегда одинаково.
+      const parent = el.parentElement
+      const box = parent.getBoundingClientRect()
+      const height = el.offsetHeight
+      if (box.top >= STICK_TOP) {
+        // Верх колонки ещё на экране — блоку незачем куда-то липнуть.
+        setSidebarStuck(false)
+        return
+      }
+      if (box.bottom - height <= STICK_TOP) {
+        // Колонка кончается: дальше блок не висит, а останавливается
+        // на её нижнем крае и уезжает вверх вместе со страницей.
+        setSidebarBottomTop(Math.max(0, box.height - height))
+        setSidebarStuck('bottom')
+        return
+      }
+      setSidebarLeft(box.left)
+      setSidebarStuck('fixed')
     }
     handleScroll()
     window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
+    // Ширина окна меняется — вместе с ней и левый край колонки, а он у
+    // прибитого блока задан числом в стиле и сам по себе не пересчитается.
+    window.addEventListener('resize', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', handleScroll)
+    }
   }, [category])
 
   // Результаты показываются прямо тут, под фильтрами, вместо перехода
@@ -438,8 +466,12 @@ export default function CategoryLanding() {
       {sidebarStuck && <div className="landing-sidebar-spacer" aria-hidden="true" />}
       <div
         ref={sidebarRef}
-        className={sidebarStuck ? 'landing-sidebar is-stuck' : 'landing-sidebar'}
-        style={sidebarStuck ? { left: sidebarLeft } : undefined}
+        className={sidebarStuck ? `landing-sidebar is-${sidebarStuck}` : 'landing-sidebar'}
+        style={
+          sidebarStuck === 'fixed' ? { left: sidebarLeft }
+            : sidebarStuck === 'bottom' ? { top: sidebarBottomTop }
+              : undefined
+        }
       >
       <div className="landing-hero" style={{ background: BANNER_GRADIENTS[slug] || BANNER_GRADIENTS['real-estate'] }}>
         <div className="landing-head">

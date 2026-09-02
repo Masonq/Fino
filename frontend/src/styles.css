@@ -2224,21 +2224,26 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     position:relative;
   }
   .landing-sidebar{
-    position:sticky; top:82px;
+    position:sticky; top:20px;
     width:300px; flex-shrink:0;
     background:#fff; border:1px solid rgba(20,30,25,.08); border-radius:16px;
   }
   /* Распорка — держит место в ряду flex, пока сайдбар вынут из потока
-     через position:fixed (класс .is-stuck ниже). */
+     (.is-fixed и .is-bottom ниже). */
   .landing-sidebar-spacer{ width:300px; flex-shrink:0; }
-  /* Закреплённое состояние — CSS position:sticky оставлен как есть
-     (работает в Chromium и не мешает), но вдобавок, а не вместо,
-     дублируем тем же результатом через JS: как только точка-наблюдатель
-     уходит выше порога, добавляется этот класс, и position:fixed
-     держит сайдбар на месте гарантированно, независимо от того, как
-     конкретный браузер трактует sticky. */
-  .landing-sidebar.is-stuck{
-    position:fixed; top:82px; width:300px;
+  /* Прибитое состояние: блок стоит на месте, пока идёт колонка.
+     max-height — на случай длинного набора фильтров (недвижимость,
+     авто): без него нижняя часть с кнопкой «Показать объявления»
+     уходила бы за край экрана и достать её было бы нечем. */
+  .landing-sidebar.is-fixed{
+    position:fixed; top:20px; width:300px;
+    max-height:calc(100vh - 40px); overflow-y:auto;
+  }
+  /* Конец колонки: блок останавливается на её нижнем крае и дальше
+     уезжает вверх вместе со страницей, а не висит над подвалом.
+     Отсчёт от .landing-body — у него position:relative. */
+  .landing-sidebar.is-bottom{
+    position:absolute; left:0; width:300px;
   }
   .landing-sidebar .landing-hero{
     margin-bottom:0; border-top-left-radius:16px; border-top-right-radius:16px;
