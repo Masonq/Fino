@@ -2059,13 +2059,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     display:grid; grid-template-columns:300px 1fr; gap:22px; align-items:start;
     position:relative;
   }
-  .profile-sidebar{ display:block; position:sticky; top:20px; }
+  .profile-sidebar{ display:block; position:sticky; top:28px; }
   /* Прибитое состояние (см. useStickyColumn): ширину колонки в сетке
      держит grid-template-columns, поэтому распорка тут не нужна —
      место остаётся за колонкой, даже когда блок вынут из потока. */
   .profile-sidebar.is-fixed{
-    position:fixed; top:20px; width:300px;
-    max-height:calc(100vh - 40px); overflow-y:auto;
+    position:fixed; top:28px; width:300px;
+    max-height:calc(100vh - 56px); overflow-y:auto;
   }
   /* Конец колонки: блок останавливается на её нижнем крае, а не висит
      над подвалом. Отсчёт от .profile-layout — у него position:relative. */
@@ -2246,7 +2246,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     position:relative;
   }
   .landing-sidebar{
-    position:sticky; top:20px;
+    position:sticky; top:28px;
     width:300px; flex-shrink:0;
     background:#fff; border:1px solid rgba(20,30,25,.08); border-radius:16px;
   }
@@ -2258,8 +2258,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
      авто): без него нижняя часть с кнопкой «Показать объявления»
      уходила бы за край экрана и достать её было бы нечем. */
   .landing-sidebar.is-fixed{
-    position:fixed; top:20px; width:300px;
-    max-height:calc(100vh - 40px); overflow-y:auto;
+    position:fixed; top:28px; width:300px;
+    max-height:calc(100vh - 56px); overflow-y:auto;
   }
   /* Конец колонки: блок останавливается на её нижнем крае и дальше
      уезжает вверх вместе со страницей, а не висит над подвалом.
@@ -2561,11 +2561,24 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     display:flex; align-items:flex-start; gap:28px;
     margin-top:24px;
   }
+  /* Отступ сверху — не «немного», а ровно под липкой строкой поиска
+     (.search-topbar, position:sticky top:0, высота около 76px) плюс
+     воздух. Раньше стояло 82px: колонка прилипала впритык, зазор между
+     ней и строкой поиска был меньше пары пикселей, и два прибитых
+     блока читались как один слипшийся. */
   .search-sidebar{
-    position:sticky; top:82px;
+    position:sticky; top:92px;
     width:264px; flex-shrink:0;
     display:flex; flex-direction:column; gap:16px;
   }
+  /* То же прибитое состояние, что у лендинга и профиля (useStickyColumn):
+     чистый CSS sticky не срабатывает в Safari. */
+  .search-sidebar.is-fixed{
+    position:fixed; top:92px; width:264px;
+    max-height:calc(100vh - 112px); overflow-y:auto;
+  }
+  .search-sidebar.is-bottom{ position:absolute; left:0; width:264px; }
+  .search-body{ position:relative; }
   /* Раньше ширину задавал grid-template-columns (1fr), теперь при
      display:flex её нужно указать явно — без этого блок с
      результатами сжимался бы под свой контент вместо того, чтобы
@@ -2586,6 +2599,26 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
      колонки не хватает на два поля рядом: подписи обрезались, поля
      наезжали друг на друга. В сайдбаре — друг под другом. */
   .search-sidebar .post-field-row{ flex-direction:column; gap:12px; }
+  /* Чипы («1 комната», «2 комнаты», «3+») в колонке 264px в строку не
+     помещаются, а прокрутить их мышью нечем: колесо крутит только
+     вертикально, и последний чип оставался обрезанным навсегда.
+     Переносим на следующую строку — места по высоте в колонке хватает,
+     и никакие стрелки не нужны. Прокрутка вбок остаётся на телефоне,
+     где есть свайп. */
+  .search-sidebar .cat-chips,
+  .landing-sidebar .cat-chips{
+    flex-wrap:wrap; overflow-x:visible; row-gap:8px;
+  }
+  /* Переключатель сделки («Купить / Снять на длительный срок /
+     Посуточно»): три кнопки делят ширину поровну, но без min-width:0
+     кнопка не может стать уже своего текста — и в узкой колонке
+     последняя вылезала за пределы серой подложки. Длинные слова при
+     этом переносим, а не обрезаем: «Посуточно» должно читаться
+     целиком. */
+  .search-sidebar .cat-mode,
+  .landing-sidebar .cat-mode{
+    min-width:0; font-size:13px; padding:9px 6px; overflow-wrap:anywhere;
+  }
 
   /* чат — на десктопе список и открытая переписка видны разом, без
      перехода на отдельную страницу (как у большинства мессенджеров:
@@ -3807,4 +3840,33 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     font-size:11.5px; color:var(--muted); display:flex; gap:8px; align-items:center;
   }
   .footer-sep{ opacity:.5; }
+}
+
+/* Горизонтальная лента со стрелками (HScroll.jsx). Сами стрелки нужны
+   только там, где есть настоящий курсор: пальцем и тачпадом ленту
+   листают напрямую, а обычной мышью — нечем, колесо крутит только
+   вертикально. Поэтому по умолчанию их нет вовсе, а показываем ниже, в
+   медиазапросе hover/pointer — тем же приёмом, что у стрелок галереи
+   объявления (.photo-nav). */
+.hscroll{ position:relative; }
+.hscroll-arrow{ display:none; }
+
+@media (hover: hover) and (pointer: fine) {
+  .hscroll-arrow{
+    display:flex; align-items:center; justify-content:center;
+    position:absolute; top:50%; transform:translateY(-50%); z-index:3;
+    width:34px; height:34px; border-radius:50%;
+    background:#fff; color:var(--ink);
+    box-shadow:0 2px 10px rgba(20,30,25,.18);
+    opacity:0; transition:opacity .16s ease;
+  }
+  .hscroll-arrow svg{ width:18px; height:18px; }
+  .hscroll-arrow.left{ left:-6px; }
+  .hscroll-arrow.right{ right:-6px; }
+  /* Показываем при наведении на саму ленту — постоянно висящие кружки
+     поверх карточек только мешали бы читать выдачу. Отключённую
+     стрелку (лента в самом начале или в самом конце) не показываем
+     совсем: нажимать её незачем. */
+  .hscroll:hover .hscroll-arrow:not(:disabled){ opacity:1; }
+  .hscroll-arrow:disabled{ opacity:0 !important; pointer-events:none; }
 }

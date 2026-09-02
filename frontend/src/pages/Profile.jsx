@@ -37,7 +37,7 @@ export default function Profile() {
   // колонки блок останавливается и уезжает вверх вместе с ней.
   // Вызываем до ранних возвратов ниже — порядок хуков должен быть
   // одинаковым при любом состоянии загрузки.
-  const sidebar = useStickyColumn(20, Boolean(user))
+  const sidebar = useStickyColumn(28, Boolean(user))
 
   if (loading) {
     return (

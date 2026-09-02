@@ -153,6 +153,7 @@
   },
   "actions": {
     "back": "Nazad",
+    "forward": "Napred",
     "next": "Dalje",
     "continue": "Nastavi",
     "send": "Pošalji",

@@ -39,6 +39,14 @@ export default function useStickyColumn(topGap = 20, ready = true) {
       if (!el || !parent) return
       const box = parent.getBoundingClientRect()
       const height = el.offsetHeight
+      // Блок выше собственной колонки — липнуть некуда: любое
+      // «прибитое» положение вынесет его за нижний край колонки, и он
+      // накроет то, что идёт следом (поймал на снимке: фильтры поиска
+      // легли поверх подвала). Оставляем в обычном потоке.
+      if (height >= box.height) {
+        setStuck(false)
+        return
+      }
       if (box.top >= topGap) {
         setStuck(false)
         return

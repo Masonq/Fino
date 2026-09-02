@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import { displayCity } from '../data/cities'
 import { formatPrice } from '../utils/money'
+import HScroll from './HScroll'
 
 // Другие объявления этого же продавца — не путать с SimilarListings
 // (те похожи по теме, но у разных продавцов). Тот же визуальный
@@ -37,7 +38,7 @@ export default function SellerListings({ sellerId, excludeListingId }) {
     <div className="similar-block seller-listings-block">
       <div className="similar-title">{t('detail.seller_other_listings')}</div>
 
-      <div className="similar-strip">
+      <HScroll className="similar-strip">
         {items.slice(0, 6).map((l) => (
           <Link key={l.id} to={l.path} className="similar-card">
             <div className="similar-photo">
@@ -54,7 +55,7 @@ export default function SellerListings({ sellerId, excludeListingId }) {
             {l.city && <div className="similar-city">{displayCity(l.city, i18n.language)}</div>}
           </Link>
         ))}
-      </div>
+      </HScroll>
     </div>
   )
 }

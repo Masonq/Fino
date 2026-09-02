@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import { displayCity } from '../data/cities'
 import { formatPrice } from '../utils/money'
+import HScroll from './HScroll'
 
 export default function SimilarListings({ listingId }) {
   const { t, i18n } = useTranslation()
@@ -34,7 +35,7 @@ export default function SimilarListings({ listingId }) {
     <div className="similar-block">
       <div className="similar-title">{t('similar.title')}</div>
 
-      <div className="similar-strip">
+      <HScroll className="similar-strip">
         {items.map((l) => (
           <Link key={l.id} to={l.path} className="similar-card">
             <div className="similar-photo">
@@ -51,7 +52,7 @@ export default function SimilarListings({ listingId }) {
             {l.city && <div className="similar-city">{displayCity(l.city, i18n.language)}</div>}
           </Link>
         ))}
-      </div>
+      </HScroll>
     </div>
   )
 }

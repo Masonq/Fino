@@ -75,7 +75,7 @@ export default function CategoryLanding() {
   // Сайдбара нет в разметке, пока не загрузилась категория — поэтому
   // передаём это признаком готовности, чтобы хук переподписался и
   // замерил уже существующий блок.
-  const sidebar = useStickyColumn(20, Boolean(category))
+  const sidebar = useStickyColumn(28, Boolean(category))
 
   const [fresh, setFresh] = useState([])
   const [freshLoading, setFreshLoading] = useState(true)

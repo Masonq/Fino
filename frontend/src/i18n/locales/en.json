@@ -153,6 +153,7 @@
   },
   "actions": {
     "back": "Back",
+    "forward": "Forward",
     "next": "Next",
     "continue": "Continue",
     "send": "Send",

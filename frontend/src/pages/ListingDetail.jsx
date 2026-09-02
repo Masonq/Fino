@@ -11,6 +11,7 @@ import ReportButton from '../components/ReportButton'
 import PromoteButton from '../components/PromoteButton'
 import SimilarListings from '../components/SimilarListings'
 import SellerListings from '../components/SellerListings'
+import HScroll from '../components/HScroll'
 import { formatPrice } from '../utils/money'
 import { relativeDate } from '../utils/time'
 import { hasLanding } from '../data/landings'
@@ -766,7 +767,7 @@ export default function ListingDetail() {
           снимков хватает. На телефоне их нет намеренно — свайп и так
           естественный, а ряд отнял бы высоту у самой фотографии. */}
       {wide && photos.length > 1 && (
-        <div className="photo-thumbs">
+        <HScroll className="photo-thumbs">
           {photos.map((ph, i) => (
             <button
               type="button"
@@ -783,7 +784,7 @@ export default function ListingDetail() {
               )}
             </button>
           ))}
-        </div>
+        </HScroll>
       )}
       </div>
 

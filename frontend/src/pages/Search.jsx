@@ -9,6 +9,7 @@ import { CITIES, cityLabel } from '../data/cities'
 import { MODE_WORDS } from '../data/modeWords'
 import { LoadError } from '../components/OfflineNotice'
 import { useAuth } from '../context/AuthContext'
+import useStickyColumn from '../hooks/useStickyColumn'
 
 const SORTS = [
   { key: 'relevance', labelKey: 'search.sort_relevance' },
@@ -22,6 +23,11 @@ const PAGE = 20
 export default function Search() {
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
+  // Липкая колонка фильтров — тот же хук, что на лендинге и в профиле
+  // (CSS sticky не срабатывает в Safari). Отступ 92px — высота липкой
+  // строки поиска сверху плюс воздух, иначе два прибитых блока
+  // слипаются.
+  const sidebar = useStickyColumn(92)
   const [subscribed, setSubscribed] = useState(false)
   const [subscribedId, setSubscribedId] = useState(null)
   const navigate = useNavigate()
@@ -229,7 +235,11 @@ export default function Search() {
       </div>
 
       <div className="search-body">
-        <aside className="search-sidebar">
+        <aside
+          ref={sidebar.ref}
+          className={`search-sidebar${sidebar.className}`}
+          style={sidebar.style}
+        >
           <div className={showFilters ? 'filters-panel open' : 'filters-panel'}>
             <div className="post-field">
               <label>{t('search.category')}</label>
