@@ -4,7 +4,12 @@ After=network.target postgresql.service
 
 [Service]
 WorkingDirectory=/opt/fino/backend
-ExecStart=/opt/fino/backend/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8002 --proxy-headers
+# Два рабочих процесса вместо одного. Ядро на сервере одно, поэтому
+# больше не имеет смысла, но и одного процесса мало: пока он ждёт ответа
+# от базы, второй успевает обслужить следующего человека. При наплыве —
+# а он бывает после рекламы — очередь на одном процессе выстраивается
+# мгновенно.
+ExecStart=/opt/fino/backend/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8002 --proxy-headers --workers 2
 Restart=always
 User=root
 

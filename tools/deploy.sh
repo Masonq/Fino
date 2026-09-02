@@ -62,7 +62,11 @@ cp deploy/fino-frontend.service /etc/systemd/system/fino-frontend.service
 cp deploy/fino.service /etc/systemd/system/fino.service
 systemctl daemon-reload
 systemctl restart fino
-systemctl restart fino-frontend
+# Статику теперь отдаёт nginx прямо из frontend/dist, а не vite preview:
+# один процесс на JavaScript, раздающий каждый файл каждому посетителю,
+# при наплыве становится узким местом. Сервис останавливаем, если он
+# ещё жив после обновления.
+systemctl disable --now fino-frontend 2>/dev/null || true
 
 echo "→ обновляю конфиг nginx"
 # Раньше этот шаг не делался вовсе — правки в deploy/plonk.rs.conf
