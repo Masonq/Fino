@@ -47,37 +47,6 @@ export default function ListingDetail() {
   const [addressCopied, setAddressCopied] = useState(false)
   const lang = i18n.language
 
-  // Адрес текстом — координаты у нас есть, а самой строки «улица, дом»
-  // в базе нет вовсе (только город), так что переводим координаты в
-  // читаемый адрес тем же бесплатным Nominatim, что уже используется
-  // в LocationPicker для обратной задачи (поиск адреса по тексту).
-  //
-  // Место вставки — здесь, ДО if (!listing) return ниже по файлу, а
-  // не после (там стоял раньше, дважды подряд ошибался с этим же
-  // самым блоком): хук после условного return — это не temporal
-  // dead zone, а другая, более серьёзная ошибка — 'Rendered more
-  // hooks than during the previous render' (React #310). На рендере,
-  // где сработал early return (сама страница ещё грузится), этот
-  // useEffect не вызывался бы вовсе, а на следующем рендере (данные
-  // пришли, return уже не срабатывает) — вызвался бы, и число хуков
-  // между двумя рендерами разошлось бы. Правило React — хуки идут
-  // строго до любого условного return, без исключений.
-  useEffect(() => {
-    if (!mapOpen || !listing?.location_lat) return
-    setMapAddress('')
-    const controller = new AbortController()
-    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${listing.location_lat}&lon=${listing.location_lng}&zoom=17&addressdetails=1`
-    fetch(url, { signal: controller.signal, headers: { 'Accept-Language': lang } })
-      .then((r) => r.json())
-      .then((data) => {
-        const parts = (data?.display_name || '').split(',').map((s) => s.trim())
-        setMapAddress(parts.slice(0, 3).join(', ') || displayCity(listing?.city, lang))
-      })
-      .catch(() => setMapAddress(displayCity(listing?.city, lang)))
-    return () => controller.abort()
-  }, [mapOpen, listing?.location_lat, listing?.location_lng, listing?.city, lang])
-
-
   const copyAddress = () => {
     if (!mapAddress) return
     navigator.clipboard.writeText(mapAddress).then(() => {
@@ -135,6 +104,35 @@ export default function ListingDetail() {
 
   const [listing, setListing] = useState(null)
   const [schema, setSchema] = useState([])
+
+  // Адрес текстом — координаты у нас есть, а самой строки «улица, дом»
+  // в базе нет вовсе (только город), так что переводим координаты в
+  // читаемый адрес тем же бесплатным Nominatim, что уже используется
+  // в LocationPicker для обратной задачи (поиск адреса по тексту).
+  //
+  // Место вставки далось не с первого раза (три подряд промаха на
+  // одном и том же блоке) — сюда, сразу после useState(listing), а
+  // не выше (там listing ещё не объявлен — temporal dead zone на
+  // чтение в массиве зависимостей) и не ниже, после if (!listing)
+  // return (там же — React #310, другой хук на разных рендерах).
+  // Правильное место — строго между объявлением каждой переменной,
+  // которую использует хук, и любым условным return в компоненте,
+  // без исключений в обе стороны.
+  useEffect(() => {
+    if (!mapOpen || !listing?.location_lat) return
+    setMapAddress('')
+    const controller = new AbortController()
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${listing.location_lat}&lon=${listing.location_lng}&zoom=17&addressdetails=1`
+    fetch(url, { signal: controller.signal, headers: { 'Accept-Language': lang } })
+      .then((r) => r.json())
+      .then((data) => {
+        const parts = (data?.display_name || '').split(',').map((s) => s.trim())
+        setMapAddress(parts.slice(0, 3).join(', ') || displayCity(listing?.city, lang))
+      })
+      .catch(() => setMapAddress(displayCity(listing?.city, lang)))
+    return () => controller.abort()
+  }, [mapOpen, listing?.location_lat, listing?.location_lng, listing?.city, lang])
+
 
   const lightboxRef = useRef(null)
   // Точка начала касания — для свайпа вниз/вверх, закрывающего просмотр.

@@ -40,6 +40,15 @@ if ! npm install --no-audit --no-fund > /tmp/plonk-npm-install.log 2>&1; then
   tail -20 /tmp/plonk-npm-install.log
   exit 1
 fi
+# Правила хуков React (rules-of-hooks) — та самая ошибка, что сегодня
+# трижды подряд прошла мимо npm run build (он проверяет только
+# синтаксис, не порядок вызова хуков относительно условных return или
+# того, что объявлено раньше/позже) и всплыла уже на живом сайте.
+if ! npm run lint > /tmp/plonk-lint.log 2>&1; then
+  echo "  ✗ eslint нашёл нарушение правил хуков — деплой остановлен:"
+  tail -30 /tmp/plonk-lint.log
+  exit 1
+fi
 if ! npm run build > /tmp/plonk-build.log 2>&1; then
   echo "  ✗ фронтенд не собирается — деплой остановлен:"
   tail -20 /tmp/plonk-build.log
