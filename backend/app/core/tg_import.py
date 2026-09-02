@@ -603,14 +603,30 @@ def store(db, item: dict) -> bool:
     # Сравниваем по смыслу среди недавних объявлений с той же ценой и
     # городом: таких единицы, и перебрать их в памяти дешевле, чем искать
     # похожий текст в базе.
+    #
+    # Цены может не быть вовсе — у услуг её не пишут почти никогда
+    # («Сантехник», «Трансферы и перевозки», «Бронь на все»). Раньше
+    # такие объявления эту проверку не проходили совсем (условие
+    # требовало price is not None), и защищал их только точный
+    # заголовок — а он у повторов гуляет: другой регистр, эмодзи,
+    # лишнее слово. Отпечаток к таким мелочам не чувствителен (он из
+    # основ слов по алфавиту), и именно из-за этого разрыва в ленте
+    # висело по шесть одинаковых «Сантехников» подряд, по одному за
+    # каждый день. Теперь объявления без цены сверяются между собой:
+    # «цены нет» — такое же условие отбора, как конкретная сумма, а не
+    # повод пропустить проверку.
     mark = fingerprint(item["title"], item.get("description"))
-    if mark and item["price"] is not None:
+    if mark:
+        price_match = (
+            Listing.price.is_(None) if item["price"] is None
+            else Listing.price == item["price"]
+        )
         recent = (
             db.query(Listing)
             .filter(
                 Listing.external_source == "telegram",
                 Listing.external_fingerprint.isnot(None),
-                Listing.price == item["price"],
+                price_match,
                 Listing.city == item["city"],
                 Listing.created_at >= utcnow() - timedelta(days=DUP_DAYS),
             )
