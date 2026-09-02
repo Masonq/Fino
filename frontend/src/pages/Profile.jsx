@@ -8,11 +8,36 @@ import NotificationBell from '../components/NotificationBell'
 import LanguageSwitcher from '../components/LanguageSwitcher'
 import PushToggle from '../components/PushToggle'
 import BalanceCard from '../components/BalanceCard'
+import useStickyColumn from '../hooks/useStickyColumn'
+
+/**
+ * Почта в карточке — с точкой переноса перед «собакой».
+ *
+ * Адрес вроде maxsim_kolesnikov@icloud.com для браузера одно длинное
+ * слово: переносить его негде, и он уезжал за правый край карточки.
+ * Разрешить перенос в любом месте мало — тогда строка рвётся посреди
+ * домена («…@icloud.c / om»). <wbr> подсказывает единственное
+ * осмысленное место разрыва: имя на одной строке, домен на другой.
+ * Ломается только когда не помещается, короткий адрес остаётся в
+ * строку как был.
+ */
+function ContactEmail({ value }) {
+  const at = value.indexOf('@')
+  if (at < 1) return value
+  return <>{value.slice(0, at)}<wbr />{value.slice(at)}</>
+}
 
 export default function Profile() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { user, loading, lastKnownRole, signOut } = useAuth()
+  // Липкая боковая колонка — тот же хук, что и на лендинге раздела
+  // (src/hooks/useStickyColumn.js): аватар с балансом остаются на
+  // месте, пока справа прокручивается список пунктов, а у нижнего края
+  // колонки блок останавливается и уезжает вверх вместе с ней.
+  // Вызываем до ранних возвратов ниже — порядок хуков должен быть
+  // одинаковым при любом состоянии загрузки.
+  const sidebar = useStickyColumn(20, Boolean(user))
 
   if (loading) {
     return (
@@ -63,7 +88,11 @@ export default function Profile() {
           пунктов в .profile-menu (была сделана раньше в сессии, но
           терялась в узкой 600px странице). */}
       <div className="profile-layout">
-        <div className="profile-sidebar">
+        <div
+          ref={sidebar.ref}
+          className={`profile-sidebar${sidebar.className}`}
+          style={sidebar.style}
+        >
           <div className="profile-head-card">
             {/* Картинка — фон всей этой строки целиком (аватар, имя,
                 рейтинг), не отдельная полоса сверху, которую аватар
@@ -79,7 +108,11 @@ export default function Profile() {
               <div className="profile-info">
                 <div className="profile-name">{user.company_name || user.display_name}</div>
                 {isCompany && <div className="seller-badge">{t('seller.company_badge')}</div>}
-                {user.email && <div className="profile-contact">{user.email}</div>}
+                {user.email && (
+                  <div className="profile-contact">
+                    <ContactEmail value={user.email} />
+                  </div>
+                )}
                 {user.phone && <div className="profile-contact">{user.phone}</div>}
                 {/* Рейтинг — то, по чему покупатель судит о продавце. Прятать
                     его от самого продавца странно: он должен видеть, как
