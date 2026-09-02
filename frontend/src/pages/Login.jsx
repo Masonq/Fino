@@ -31,6 +31,7 @@ export default function Login() {
   const [code, setCode] = useState('')
   const [name, setName] = useState('')
   const [error, setError] = useState('')
+  const [shake, setShake] = useState(false)
   const [busy, setBusy] = useState(false)
   const [left, setLeft] = useState(() => {
     if (!saved.sentAt) return 0
@@ -100,6 +101,8 @@ export default function Login() {
     } catch (e) {
       setError(errorText(e))
       setCode('')
+      setShake(false)
+      requestAnimationFrame(() => setShake(true))
       codeRef.current?.focus()
     } finally {
       setBusy(false)
@@ -279,7 +282,7 @@ export default function Login() {
 
       <input
         ref={codeRef}
-        className="auth-code"
+        className={shake ? 'auth-code shake' : 'auth-code'}
         type="text"
         inputMode="numeric"
         autoComplete="one-time-code"
@@ -287,6 +290,7 @@ export default function Login() {
         onChange={(e) => onCodeChange(e.target.value)}
         placeholder="······"
         maxLength={CODE_LEN}
+        onAnimationEnd={() => setShake(false)}
       />
 
       {error && <p className="auth-error">{error}</p>}

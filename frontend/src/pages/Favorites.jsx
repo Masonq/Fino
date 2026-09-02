@@ -67,7 +67,11 @@ export default function Favorites() {
         </div>
       ) : (
         <div className="infinite-grid no-pad">
-          {visible.map((l) => <ListingCard key={l.id} listing={l} />)}
+          {visible.map((l, i) => (
+            <div key={l.id} className="grid-stagger-in" style={{ animationDelay: `${Math.min(i, 8) * 0.05}s` }}>
+              <ListingCard listing={l} />
+            </div>
+          ))}
         </div>
       )}
     </div>

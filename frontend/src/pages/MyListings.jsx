@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
@@ -56,7 +56,15 @@ export default function MyListings() {
 
   const [items, setItems] = useState([])
   const [counts, setCounts] = useState({})
+
+  useEffect(() => {
+    const el = tabRefs.current[tab]
+    if (el) setThumb({ left: el.offsetLeft, width: el.offsetWidth })
+  }, [tab, counts])
   const [tab, setTab] = useState('active')
+  const tabsTrackRef = useRef(null)
+  const tabRefs = useRef({})
+  const [thumb, setThumb] = useState({ left: 0, width: 0 })
   const [loaded, setLoaded] = useState(false)
   const [busyId, setBusyId] = useState(null)
   // Панель продвижения открыта максимум для одной карточки за раз —
@@ -139,10 +147,12 @@ export default function MyListings() {
     <div className="fav-page">
       <PageHeader title={t('my.title')} />
 
-      <div className="my-tabs">
+      <div className="my-tabs" ref={tabsTrackRef}>
+        <span className="my-tabs-thumb" style={{ left: thumb.left, width: thumb.width }} />
         {TABS.map((tb) => (
           <button
             key={tb.key}
+            ref={(el) => { tabRefs.current[tb.key] = el }}
             className={tab === tb.key ? 'my-tab active' : 'my-tab'}
             onClick={() => setTab(tb.key)}
           >

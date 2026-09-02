@@ -174,6 +174,22 @@ export default function ListingDetail() {
     }
   }
 
+  // Двойной тап по фото — тот же способ добавить в избранное, что и в
+  // Instagram: сердце по центру, без перехода в избранное и обратно.
+  const [dblHeart, setDblHeart] = useState(false)
+  const lastTapRef = useRef(0)
+  const onPhotoTap = () => {
+    const now = Date.now()
+    if (now - lastTapRef.current < 320) {
+      lastTapRef.current = 0
+      if (!fav) onFav()
+      setDblHeart(false)
+      requestAnimationFrame(() => setDblHeart(true))
+    } else {
+      lastTapRef.current = now
+    }
+  }
+
   // «Поделиться» — системное меню (WhatsApp/Telegram/куда угодно),
   // где есть navigator.share (почти все мобильные браузеры); там, где
   // нет (десктоп, старые браузеры) — копируем ссылку в буфер и
@@ -541,8 +557,13 @@ export default function ListingDetail() {
               <div
                 className="photo-slide"
                 key={ph.url || i}
-                onClick={ph.is_video ? undefined : () => setFullscreen(i)}
+                onClick={ph.is_video ? undefined : () => { setFullscreen(i); onPhotoTap() }}
               >
+                {i === photoIdx && dblHeart && (
+                  <span className="dbl-tap-heart" onAnimationEnd={() => setDblHeart(false)}>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z" /></svg>
+                  </span>
+                )}
                 {ph.is_video ? (
                   // Видео — со своими элементами управления (звук,
                   // полный экран), поэтому без onClick на весь слайд:
