@@ -57,14 +57,15 @@ export default function MyListings() {
   const [items, setItems] = useState([])
   const [counts, setCounts] = useState({})
 
-  useEffect(() => {
-    const el = tabRefs.current[tab]
-    if (el) setThumb({ left: el.offsetLeft, width: el.offsetWidth })
-  }, [tab, counts])
   const [tab, setTab] = useState('active')
   const tabsTrackRef = useRef(null)
   const tabRefs = useRef({})
   const [thumb, setThumb] = useState({ left: 0, width: 0 })
+
+  useEffect(() => {
+    const el = tabRefs.current[tab]
+    if (el) setThumb({ left: el.offsetLeft, width: el.offsetWidth })
+  }, [tab, counts])
   const [loaded, setLoaded] = useState(false)
   const [busyId, setBusyId] = useState(null)
   // Панель продвижения открыта максимум для одной карточки за раз —
