@@ -22,7 +22,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.core.notify import (  # noqa: E402
-    BODY, SUBJECT, _notification_letter, _send_email, _send_via_resend,
+    BODY, SUBJECT, _notification_letter, _send_email, _send_email_text,
+    _send_via_resend,
 )
 
 
@@ -93,3 +94,48 @@ def test_notification_letter_keeps_its_markup():
     assert "style=" in letter
     assert "<link" not in letter
     assert "<img" not in letter
+
+
+# ── Запасная отправка ───────────────────────────────────────────────────────
+def test_apple_addresses_go_through_gmail():
+    """Ящики Apple отправляем через Gmail.
+
+    Apple отклоняет наши письма целиком (554 5.7.1 [HM07] и [HM08]).
+    Проверено, что дело не в содержимом — отказ пришёл и на письмо из
+    шести цифр простым текстом, — и не в подписях: SPF, DKIM и DMARC на
+    месте. Apple не доверяет молодому домену, а репутация набирается
+    месяцами. Письмам с серверов Google он доверяет.
+    """
+    from app.core.notify import _is_apple
+
+    assert _is_apple("maxsim@icloud.com")
+    assert _is_apple("ivan@me.com")
+    assert _is_apple("old@mac.com")
+    assert not _is_apple("person@gmail.com")
+    # Похожий, но чужой домен запасным путём не отправляем.
+    assert not _is_apple("x@icloud.com.ru")
+
+
+def test_resend_failure_falls_back():
+    """Если основной путь отказал — пробуем запасной, а не теряем код.
+
+    Молча потерять письмо нельзя: человек останется без входа и не
+    поймёт почему.
+    """
+    source = inspect.getsource(_send_email_text)
+
+    assert "_send_via_gmail" in source
+    assert "except Exception" in source
+
+
+def test_gmail_letter_is_sent_from_google_address():
+    """Отправитель в запасном пути — сам гугловский адрес.
+
+    Подменять его своим нельзя: подпись не сойдётся с доменом, и письмо
+    отклонят уже по этой причине.
+    """
+    from app.core.notify import _send_via_gmail
+
+    source = inspect.getsource(_send_via_gmail)
+    assert 'msg["From"] = f"PLONK <{user}>"' in source
+    assert "smtp.gmail.com" in source

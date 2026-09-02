@@ -150,6 +150,52 @@ def _notification_letter(title: str, body_text: str) -> str:
 </body></html>"""
 
 
+# Ящики, до которых наши письма не доходят.
+#
+# Apple отклоняет их целиком — 554 5.7.1 [HM07] и [HM08], «rejected due
+# to local policy». Проверено, что дело не в содержимом (отказ пришёл и
+# на письмо из шести цифр простым текстом) и не в подписях (SPF, DKIM,
+# DMARC на месте). Apple не доверяет молодому домену без истории
+# отправок, а набирается она месяцами — ждать столько нельзя, человек
+# просто не может войти.
+APPLE_DOMAINS = ("icloud.com", "me.com", "mac.com")
+
+
+def _is_apple(address: str) -> bool:
+    return address.strip().lower().endswith(APPLE_DOMAINS)
+
+
+def _send_via_gmail(to: str, subject: str, body: str) -> None:
+    """
+    Отправка через Gmail — для ящиков, куда иначе не доходит.
+
+    Письмам с серверов Google Apple доверяет: репутация у них накоплена
+    годами, в отличие от нашего домена. Отправитель здесь — сам
+    гугловский адрес, подменять его своим нельзя: подпись не сойдётся с
+    доменом, и письмо отклонят уже по этой причине.
+
+    Только простой текст: разметка тут ни к чему, а лишний повод для
+    фильтра — ни к чему тем более.
+    """
+    user = settings.gmail_user
+    password = settings.gmail_app_password
+    if not user or not password:
+        raise RuntimeError("запасная отправка через Gmail не настроена")
+
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"] = f"PLONK <{user}>"
+    msg["To"] = to
+    if getattr(settings, "support_email", None):
+        msg["Reply-To"] = settings.support_email
+    msg.set_content(body)
+
+    with smtplib.SMTP("smtp.gmail.com", 587, timeout=15) as server:
+        server.starttls()
+        server.login(user, password)
+        server.send_message(msg)
+
+
 def _send_email_text(to: str, subject: str, body: str,
                      html: str | None = None) -> None:
     """
@@ -159,9 +205,26 @@ def _send_email_text(to: str, subject: str, body: str,
     попадают в спам, а через обычный SMTP с чужого сервера попадают
     почти всегда. Без ключа — по SMTP, как раньше.
     """
-    if getattr(settings, "resend_api_key", None):
-        _send_via_resend(to, subject, body, html)
+    # Ящики Apple — сразу через Gmail, если он настроен: через наш домен
+    # они не доходят вовсе, и пробовать бессмысленно.
+    gmail_ready = bool(settings.gmail_user and settings.gmail_app_password)
+    if gmail_ready and _is_apple(to):
+        _send_via_gmail(to, subject, body)
         return
+
+    if getattr(settings, "resend_api_key", None):
+        try:
+            _send_via_resend(to, subject, body, html)
+            return
+        except Exception:                                  # noqa: BLE001
+            # Не доставили — пробуем вторым путём, если он есть. Молча
+            # потерять код нельзя: человек останется без входа и не
+            # поймёт почему.
+            if not gmail_ready:
+                raise
+            log.warning("Resend не принял письмо для %s, отправляю через Gmail", to)
+            _send_via_gmail(to, subject, body)
+            return
 
     host = getattr(settings, "smtp_host", None)
     if not host:
