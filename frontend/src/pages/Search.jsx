@@ -146,7 +146,13 @@ export default function Search() {
     if (loadingMore) return
     setLoadingMore(true)
     api.searchListings({ ...query, offset: items.length })
-      .then((res) => setItems((prev) => [...prev, ...(res.items || [])]))
+      .then((res) => setItems((prev) => {
+        // Отсеиваем уже показанное — как в ленте на главной: когда
+        // подгрузка накладывается на обычную загрузку списка, одни и те
+        // же карточки дописываются второй раз.
+        const have = new Set(prev.map((l) => l.id))
+        return [...prev, ...(res.items || []).filter((l) => !have.has(l.id))]
+      }))
       .catch(() => {})
       .finally(() => setLoadingMore(false))
   }, [query, items.length, loadingMore])

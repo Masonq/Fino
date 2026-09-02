@@ -166,3 +166,22 @@ def test_todays_signals_do_not_shuffle_the_feed():
     assert "until_day = date_type.today()" in source
     # Верхняя граница стоит у всех дневных сигналов, а не у одного.
     assert source.count("day < until_day") >= 4
+
+
+def test_pages_never_append_a_listing_twice():
+    """Подгрузка не дописывает то, что уже в списке.
+
+    В базе объявление одно и в выдаче одно, а на экране показывалось
+    дважды: человек возвращался на главную с карточки объявления, лента
+    перечитывала первую страницу, а висевшая подгрузка дописывала в
+    конец те же самые объявления.
+
+    Проверка стоит на всех трёх списках — лента, поиск, страница
+    раздела: схема подгрузки у них одинаковая, и чинить надо было все
+    три.
+    """
+    frontend = Path(__file__).resolve().parents[2] / "frontend" / "src" / "pages"
+
+    for page in ("Home.jsx", "Search.jsx", "CategoryLanding.jsx"):
+        source = (frontend / page).read_text()
+        assert "have.has(l.id)" in source, page

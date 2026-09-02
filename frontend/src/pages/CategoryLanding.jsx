@@ -302,7 +302,13 @@ export default function CategoryLanding() {
     if (loadingMore || results.length >= resultsTotal) return
     setLoadingMore(true)
     api.searchListings({ ...buildQuery(activeCategorySlug), offset: results.length })
-      .then((res) => setResults((prev) => [...prev, ...(res.items || [])]))
+      .then((res) => setResults((prev) => {
+        // Отсеиваем уже показанное — как в ленте на главной: когда
+        // подгрузка накладывается на обычную загрузку списка, одни и те
+        // же карточки дописываются второй раз.
+        const have = new Set(prev.map((l) => l.id))
+        return [...prev, ...(res.items || []).filter((l) => !have.has(l.id))]
+      }))
       .catch(() => {})
       .finally(() => setLoadingMore(false))
   }

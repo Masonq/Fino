@@ -183,7 +183,19 @@ export default function Home() {
     if (loadingMore) return
     setLoadingMore(true)
     api.searchListings({ lang: i18n.language, limit: PAGE, offset: listings.length })
-      .then((res) => setListings((prev) => [...prev, ...(res.items || [])]))
+      .then((res) => setListings((prev) => {
+        // Отсеиваем то, что уже в ленте.
+        //
+        // Без этого карточка появляется второй раз, когда подгрузка и
+        // обычная загрузка ленты накладываются друг на друга: человек
+        // вернулся на главную с карточки объявления, лента перечитала
+        // первую страницу, а висевшая подгрузка дописала в конец те же
+        // объявления. На экране это выглядит как дубли — одна и та же
+        // квартира дважды подряд, — хотя в базе объявление одно и в
+        // выдаче оно тоже одно.
+        const have = new Set(prev.map((l) => l.id))
+        return [...prev, ...(res.items || []).filter((l) => !have.has(l.id))]
+      }))
       .catch(() => {})
       .finally(() => setLoadingMore(false))
   }, [i18n.language, listings.length, loadingMore])
