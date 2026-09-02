@@ -100,10 +100,17 @@ LISTING_PAGE = """<!DOCTYPE html>
 <meta name="description" content="{description}">
 <link rel="canonical" href="{url}">
 <meta property="og:type" content="product">
+<meta property="og:site_name" content="PLONK">
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{description}">
 <meta property="og:url" content="{url}">
+<meta property="og:locale" content="{og_locale}">
+{price_tags}
 {image_tag}
+<meta name="twitter:card" content="{twitter_card}">
+<meta name="twitter:title" content="{title}">
+<meta name="twitter:description" content="{description}">
+{twitter_image}
 <script type="application/ld+json">
 {schema}
 </script>
@@ -221,18 +228,70 @@ def listing_page(listing_id: str, request: Request,
     schema = _listing_schema(listing, title, body, url,
                              photo.url if photo else None)
 
+    # Цена первой строкой описания — в мессенджерах заголовок часто
+    # обрезается по ширине, и цена из него пропадает; в самом описании
+    # она видна всегда. Тот же порядок, что у Avito при вставке ссылки.
+    body_text = _clean(body)
+    description = f"{price} · {city}. {body_text}" if city else f"{price}. {body_text}"
+    description = _cut(description, 300) or title
+
+    # og:image:alt даём, а вот width/height — нет: фото приводятся к
+    # 1600px по большей стороне с сохранением пропорций (MAX_DIM в
+    # media.py), то есть вторая сторона у каждого своя, и указать
+    # честные числа неоткуда. Соврать хуже, чем не указать: площадки,
+    # увидев несовпадение с реальным файлом, обрежут превью по
+    # заявленным пропорциям.
+    image_tag = ""
+    twitter_image = ""
+    twitter_card = "summary"
+    if photo:
+        image_tag = (
+            f'<meta property="og:image" content="{esc(photo.url)}">\n'
+            f'<meta property="og:image:alt" content="{esc(title)}">'
+        )
+        twitter_image = f'<meta name="twitter:image" content="{esc(photo.url)}">'
+        twitter_card = "summary_large_image"
+
+    # og:type=product ожидает эти поля — без них разметка неполная и
+    # часть площадок просто игнорирует тип, показывая ссылку как
+    # обычную страницу.
+    price_tags = ""
+    if listing.price:
+        currency = (listing.currency.value
+                    if hasattr(listing.currency, "value")
+                    else str(listing.currency or "RSD"))
+        price_tags = (
+            f'<meta property="product:price:amount" content="{float(listing.price):.0f}">\n'
+            f'<meta property="product:price:currency" content="{esc(currency)}">'
+        )
+
     return HTMLResponse(LISTING_PAGE.format(
         lang=lang,
         title=esc(title),
         price=esc(price),
         city=esc(city or "Сербия"),
         city_line=f" · {esc(city)}" if city else "",
-        description=esc(_clean(body)[:300] or title),
+        description=esc(description),
         url=url,
-        image_tag=(f'<meta property="og:image" content="{esc(photo.url)}">'
-                   if photo else ""),
+        og_locale={"ru": "ru_RS", "en": "en_RS", "sr": "sr_RS"}.get(lang, "ru_RS"),
+        price_tags=price_tags,
+        image_tag=image_tag,
+        twitter_card=twitter_card,
+        twitter_image=twitter_image,
         schema=schema,
     ))
+
+
+def _cut(text: str, limit: int) -> str:
+    """
+    Обрезает по границе слова, а не посреди него: раньше был простой
+    срез [:300], и описание могло оборваться на «прямостоя…».
+    """
+    text = (text or "").strip()
+    if len(text) <= limit:
+        return text
+    cut = text[:limit].rsplit(" ", 1)[0].rstrip(" ,.;:—-")
+    return f"{cut}…"
 
 
 def _clean(text: str) -> str:
