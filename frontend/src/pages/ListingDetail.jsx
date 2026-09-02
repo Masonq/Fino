@@ -42,13 +42,12 @@ export default function ListingDetail() {
   // Просмотр во весь экран: в галерее фото вписано целиком и потому мелкое,
   // а разглядеть вещь перед покупкой — половина смысла объявления.
   const [fullscreen, setFullscreen] = useState(null)
-  // На десктопе карта живёт прямо в потоке страницы, под
-  // «Местоположением» (как у конкурента — проверено по скриншоту их
-  // десктопной версии), и открыта сразу: прятать её за ссылкой там
-  // незачем, места хватает. На телефоне — отдельный полноэкранный
-  // экран по нажатию, там встроенной карте места нет.
-  const isWide = typeof window !== 'undefined' && window.matchMedia('(min-width: 900px)').matches
-  const [mapOpen, setMapOpen] = useState(isWide)
+  // Карта открывается только по нажатию на «Узнать подробности» — и на
+  // телефоне, и на десктопе. Разница лишь в том, КАК она выглядит
+  // после открытия: на телефоне отдельный полноэкранный экран, на
+  // десктопе — блок прямо в потоке страницы под «Местоположением»
+  // (см. .map-page в десктопной секции styles.css).
+  const [mapOpen, setMapOpen] = useState(false)
   const [mapAddress, setMapAddress] = useState('')
   const [addressCopied, setAddressCopied] = useState(false)
   const lang = i18n.language

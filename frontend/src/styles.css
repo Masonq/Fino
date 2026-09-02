@@ -2319,15 +2319,28 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
      потоке страницы, под «Местоположением» (у конкурента ровно так,
      проверено по скриншоту десктопной версии). На телефоне остаётся
      отдельным полноэкранным экраном — там места под встроенную карту
-     просто нет. Кнопка «назад» в шапке карты тут не нужна: закрывать
-     нечего, блок просто часть страницы. */
+     просто нет. Открывается по нажатию на «Узнать подробности» в
+     обоих случаях, разница только во внешнем виде после открытия. */
   .map-page{
     position:relative; inset:auto; transform:none; width:auto;
     height:340px; margin-top:10px;
     border-radius:14px; overflow:hidden; box-shadow:none;
     border:1px solid rgba(20,30,25,.08);
   }
-  .map-page-head{ display:none; }
+  /* Шапка со стрелкой «назад» и заголовком — на десктопе не нужна
+     целиком (заголовок объявления и так на странице выше), но
+     закрыть карту чем-то надо: оставляем саму кнопку, кладём её
+     кружком поверх левого верхнего угла карты. */
+  .map-page-head{
+    position:absolute; top:10px; left:10px; z-index:5;
+    padding:0; border:none; background:none; gap:0;
+  }
+  .map-page-head .topbar-btn{
+    width:34px; height:34px; border-radius:50%; background:#fff;
+    box-shadow:0 2px 10px rgba(20,30,25,.18);
+  }
+  .map-page-head .topbar-btn svg{ width:18px; height:18px; }
+  .map-page-title{ display:none; }
   .map-page-address{
     position:absolute; left:16px; bottom:16px; right:auto;
     max-width:min(420px, 70%); margin:0;
