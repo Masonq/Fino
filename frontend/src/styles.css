@@ -747,7 +747,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .map-page .location-view-map{ flex:1; border-radius:0; margin-top:0; height:100% !important; }
 .map-page-address{
-  position:absolute; left:12px; right:12px; bottom:16px;
+  position:absolute; left:12px; right:12px; bottom:16px; z-index:10;
   background:#fff; border-radius:14px; padding:12px 14px;
   box-shadow:0 6px 20px rgba(20,30,25,.14);
 }
