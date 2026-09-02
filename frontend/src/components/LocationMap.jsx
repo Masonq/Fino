@@ -32,8 +32,20 @@ export default function LocationMap({ lat, lng, approximate = false, height = 20
       L.marker([lat, lng], { icon: pinIcon }).addTo(map)
     }
 
-    setTimeout(() => map.invalidateSize(), 80)
-    return () => map.remove()
+    // Раньше был один setTimeout(80мс) — угадывание, а не гарантия:
+    // если контейнер (особенно на экране карты, где рядом ещё и
+    // карточка адреса) успевал принять окончательный размер позже
+    // 80мс, Leaflet рисовал первую партию тайлов под неверный,
+    // ещё не устоявшийся размер — а потом, когда invalidateSize()
+    // всё же срабатывал, новые тайлы рисовались поверх, но старые,
+    // неверно посчитанные, оставались видны под ними полупрозрачным
+    // «двойным» слоем. ResizeObserver реагирует на настоящий момент,
+    // когда размер контейнера действительно изменился, а не на
+    // случайно подобранную паузу.
+    const ro = new ResizeObserver(() => map.invalidateSize())
+    ro.observe(containerRef.current)
+
+    return () => { ro.disconnect(); map.remove() }
   }, [lat, lng, approximate])
 
   if (lat == null || lng == null) return null
