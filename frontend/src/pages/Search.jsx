@@ -235,6 +235,10 @@ export default function Search() {
       </div>
 
       <div className="search-body">
+        {/* Распорка на месте прибитой колонки: .search-body — flex, и
+            когда сайдбар уходит в position:fixed, результаты
+            расползаются на его место, а при возврате прыгают обратно. */}
+        {sidebar.stuck && <div className="search-sidebar-spacer" aria-hidden="true" />}
         <aside
           ref={sidebar.ref}
           className={`search-sidebar${sidebar.className}`}

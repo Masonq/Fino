@@ -28,6 +28,11 @@ import { hasLanding } from '../data/landings'
 const FEED_CACHE_TTL = 60_000
 let feedCache = { lang: null, items: [], total: 0, scroll: 0, fetchedAt: 0 }
 
+// Фон страницы (--bg в styles.css). Держим тут же числом: значение
+// уходит в meta theme-color, а из CSS-переменной его пришлось бы
+// вычитывать через getComputedStyle на каждый вызов.
+const PAGE_BG = '#FAFAF9'
+
 const PROMO_SLIDES = [
   { key: 'safe_deal', to: '/search', icon: 'shield', top: '#0E9F6E', grad: 'linear-gradient(180deg, #0E9F6E 0%, #0E9F6E 22%, #1DB388 48%, #34D8A8 78%, #5CE8CC 100%)' },
   { key: 'free_post', to: '/post', icon: 'tag', top: '#F2860C', grad: 'linear-gradient(180deg, #F2860C 0%, #F2860C 22%, #F5A524 48%, #FFC259 78%, #FFD98A 100%)' },
@@ -99,12 +104,28 @@ export default function Home() {
   // из background-color липкого элемента у края экрана (наш баннер) в момент отрисовки.
   // Поэтому цвет задаётся через backgroundColor баннера выше, а мета-тег ниже нужен
   // только для Android и старых версий Safari.
+  //
+  // На десктопе цвет слайда сюда ставить нельзя. Баннера там нет вовсе
+  // (.avito-banner{display:none} в медиазапросе), а Safari на macOS
+  // красит в theme-color область за краем страницы — ту самую, что
+  // видна при резиновой прокрутке. При быстром пролистывании ленты
+  // снизу выезжала цветная полоса, а на резком рывке — почти весь
+  // экран: синий или фиолетовый, смотря какой слайд выпал при
+  // загрузке. Поймал по видео: цвет совпадал с градиентом слайда.
+  // На широком экране отдаём фон самой страницы — тогда за краем
+  // ровно тот же цвет, что и под лентой, и никакого блока не видно.
   useEffect(() => {
-    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.remove())
-    const meta = document.createElement('meta')
-    meta.setAttribute('name', 'theme-color')
-    meta.setAttribute('content', PROMO_SLIDES[slide].top)
-    document.head.appendChild(meta)
+    const mq = window.matchMedia('(min-width: 900px)')
+    const apply = () => {
+      document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.remove())
+      const meta = document.createElement('meta')
+      meta.setAttribute('name', 'theme-color')
+      meta.setAttribute('content', mq.matches ? PAGE_BG : PROMO_SLIDES[slide].top)
+      document.head.appendChild(meta)
+    }
+    apply()
+    mq.addEventListener('change', apply)
+    return () => mq.removeEventListener('change', apply)
   }, [slide])
 
   useEffect(() => {

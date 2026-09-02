@@ -2059,7 +2059,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     display:grid; grid-template-columns:300px 1fr; gap:22px; align-items:start;
     position:relative;
   }
-  .profile-sidebar{ display:block; position:sticky; top:28px; }
+  /* Колонки закреплены за элементами явно. Иначе, когда сайдбар
+     переходит в position:fixed и выпадает из потока, единственный
+     оставшийся элемент сетки (.profile-main) занимает ПЕРВУЮ ячейку —
+     список пунктов уезжал в узкую левую колонку и оказывался прямо
+     под прибитой карточкой профиля. Увидел на снимке при прокрутке. */
+  .profile-sidebar{ display:block; position:sticky; top:28px; grid-column:1; grid-row:1; }
+  .profile-main{ grid-column:2; grid-row:1; }
   /* Прибитое состояние (см. useStickyColumn): ширину колонки в сетке
      держит grid-template-columns, поэтому распорка тут не нужна —
      место остаётся за колонкой, даже когда блок вынут из потока. */
@@ -2578,6 +2584,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     max-height:calc(100vh - 112px); overflow-y:auto;
   }
   .search-sidebar.is-bottom{ position:absolute; left:0; width:264px; }
+  .search-sidebar-spacer{ width:264px; flex-shrink:0; }
   .search-body{ position:relative; }
   /* Раньше ширину задавал grid-template-columns (1fr), теперь при
      display:flex её нужно указать явно — без этого блок с
