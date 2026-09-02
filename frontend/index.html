@@ -37,14 +37,14 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/manifest.webmanifest" />
-  <title>PLONK — объявления в Белграде и Сербии</title>
-  <meta name="description" content="PLONK — доска объявлений и барахолка в Сербии: Белград, Нови-Сад и другие города. Покупайте и продавайте без посредников на русском, английском и сербском." />
+  <title>Барахолка Сербии — объявления в Белграде на русском | PLONK</title>
+  <meta name="description" content="Барахолка и доска объявлений в Сербии на русском языке. Купить и продать б/у вещи, технику, мебель, детские товары в Белграде, Нови-Саде и Нише. Бесплатное размещение, без посредников." />
 
   <!-- Превью при отправке ссылки в мессенджеры и соцсети -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="PLONK" />
-  <meta property="og:title" content="PLONK — объявления в Белграде и Сербии" />
-  <meta property="og:description" content="Доска объявлений и барахолка в Сербии: Белград, Нови-Сад и другие города. RU · EN · SR" />
+  <meta property="og:title" content="Барахолка Сербии — объявления в Белграде на русском" />
+  <meta property="og:description" content="Купить и продать б/у вещи, технику, мебель в Белграде и по всей Сербии. Бесплатное размещение объявлений, без посредников." />
   <!-- полный адрес: по относительному пути мессенджеры картинку не находят -->
   <meta property="og:image" content="https://plonk.rs/og-cover.png" />
   <meta property="og:image:width" content="1200" />
@@ -75,14 +75,36 @@
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "PLONK",
+    "alternateName": ["Барахолка Сербии", "Объявления Белград", "PLONK Serbia"],
     "url": "https://plonk.rs/",
-    "description": "Доска объявлений и барахолка в Сербии: Белград, Нови-Сад и другие города, на русском, английском и сербском",
+    "description": "Барахолка и доска объявлений в Сербии на русском языке: Белград, Нови-Сад, Ниш. Купить и продать б/у вещи, технику, мебель, детские товары без посредников",
     "inLanguage": ["ru", "en", "sr"],
     "potentialAction": {
       "@type": "SearchAction",
       "target": "https://plonk.rs/search?q={search_term_string}",
       "query-input": "required name=search_term_string"
     }
+  }
+  </script>
+
+  <!-- Отдельно — сам сервис и где он работает: города поисковик
+       читает как факт, а не как слова в тексте, и это то, что
+       связывает нас с запросами вида «барахолка Нови-Сад». -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "OnlineBusiness",
+    "name": "PLONK",
+    "url": "https://plonk.rs/",
+    "logo": "https://plonk.rs/logo-mark.png",
+    "description": "Барахолка и доска бесплатных объявлений для русскоязычных в Сербии",
+    "areaServed": [
+      { "@type": "City", "name": "Белград" },
+      { "@type": "City", "name": "Нови-Сад" },
+      { "@type": "City", "name": "Ниш" },
+      { "@type": "Country", "name": "Сербия" }
+    ],
+    "availableLanguage": ["ru", "en", "sr"]
   }
   </script>
 </head>
