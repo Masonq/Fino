@@ -2315,19 +2315,22 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   /* похожие и отзывы — на всю ширину под колонками */
   .similar-block, .reviews-block, .report-link{ grid-column:1 / -1; }
 
-  /* Экран карты на десктопе — окно по центру, а не на весь монитор:
-     position:fixed inset:0 задумано под телефон, на широком экране
-     карта растягивалась бы во весь экран без всякой рамки, что для
-     «посмотреть, где это» неуместно. Затемнение вокруг — через
-     box-shadow с огромным разлётом, не через ::before с
-     отрицательным z-index: у .map-page свой z-index:60, то есть свой
-     контекст наложения, и ::before с z-index:-1 ушёл бы под её же
-     белый фон, а не лёг поверх страницы. */
+  /* Карта на десктопе — не всплывающее окно, а обычный блок прямо в
+     потоке страницы, под «Местоположением» (у конкурента ровно так,
+     проверено по скриншоту десктопной версии). На телефоне остаётся
+     отдельным полноэкранным экраном — там места под встроенную карту
+     просто нет. Кнопка «назад» в шапке карты тут не нужна: закрывать
+     нечего, блок просто часть страницы. */
   .map-page{
-    inset:auto; top:50%; left:50%; transform:translate(-50%,-50%);
-    width:min(880px, 92vw); height:min(680px, 88vh);
-    border-radius:18px; overflow:hidden;
-    box-shadow:0 0 0 100vmax rgba(10,15,12,.45), 0 24px 60px rgba(20,30,25,.28);
+    position:relative; inset:auto; transform:none; width:auto;
+    height:340px; margin-top:10px;
+    border-radius:14px; overflow:hidden; box-shadow:none;
+    border:1px solid rgba(20,30,25,.08);
+  }
+  .map-page-head{ display:none; }
+  .map-page-address{
+    position:absolute; left:16px; bottom:16px; right:auto;
+    max-width:min(420px, 70%); margin:0;
   }
   .similar-card{ flex:0 0 168px; }
   .similar-photo{ width:168px; height:168px; }

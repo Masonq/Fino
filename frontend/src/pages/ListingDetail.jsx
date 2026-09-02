@@ -42,7 +42,13 @@ export default function ListingDetail() {
   // Просмотр во весь экран: в галерее фото вписано целиком и потому мелкое,
   // а разглядеть вещь перед покупкой — половина смысла объявления.
   const [fullscreen, setFullscreen] = useState(null)
-  const [mapOpen, setMapOpen] = useState(false)
+  // На десктопе карта живёт прямо в потоке страницы, под
+  // «Местоположением» (как у конкурента — проверено по скриншоту их
+  // десктопной версии), и открыта сразу: прятать её за ссылкой там
+  // незачем, места хватает. На телефоне — отдельный полноэкранный
+  // экран по нажатию, там встроенной карте места нет.
+  const isWide = typeof window !== 'undefined' && window.matchMedia('(min-width: 900px)').matches
+  const [mapOpen, setMapOpen] = useState(isWide)
   const [mapAddress, setMapAddress] = useState('')
   const [addressCopied, setAddressCopied] = useState(false)
   const lang = i18n.language
@@ -894,6 +900,35 @@ export default function ListingDetail() {
                 </button>
               )}
             </div>
+            {mapOpen && listing.location_lat != null && (
+          <div className="map-page">
+            <div className="map-page-head">
+              <button type="button" className="topbar-btn" onClick={() => setMapOpen(false)} aria-label={t('actions.back')}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+              </button>
+              <span className="map-page-title">{translation?.title}</span>
+            </div>
+            <LocationMap
+              lat={listing.location_lat}
+              lng={listing.location_lng}
+              approximate={listing.location_approximate}
+              height="100%"
+            />
+            <div className="map-page-address">
+              <span className="map-page-address-label">{t('detail.map_location_label')}</span>
+              <div className="map-page-address-row">
+                <span className="map-page-address-text">{mapAddress || displayCity(listing.city, lang)}</span>
+                <button type="button" className="map-page-copy-btn" onClick={copyAddress} aria-label={t('actions.copy')}>
+                  {addressCopied ? (
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l5 5L19 7" /></svg>
+                  ) : (
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M4 16V5a1 1 0 0 1 1-1h11" /></svg>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
           </>
         )}
 
@@ -1086,36 +1121,6 @@ export default function ListingDetail() {
                 </div>
               </>
             )}
-          </div>
-        </div>
-      )}
-
-      {mapOpen && listing.location_lat != null && (
-        <div className="map-page">
-          <div className="map-page-head">
-            <button type="button" className="topbar-btn" onClick={() => setMapOpen(false)} aria-label={t('actions.back')}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
-            </button>
-            <span className="map-page-title">{translation?.title}</span>
-          </div>
-          <LocationMap
-            lat={listing.location_lat}
-            lng={listing.location_lng}
-            approximate={listing.location_approximate}
-            height="100%"
-          />
-          <div className="map-page-address">
-            <span className="map-page-address-label">{t('detail.map_location_label')}</span>
-            <div className="map-page-address-row">
-              <span className="map-page-address-text">{mapAddress || displayCity(listing.city, lang)}</span>
-              <button type="button" className="map-page-copy-btn" onClick={copyAddress} aria-label={t('actions.copy')}>
-                {addressCopied ? (
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l5 5L19 7" /></svg>
-                ) : (
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M4 16V5a1 1 0 0 1 1-1h11" /></svg>
-                )}
-              </button>
-            </div>
           </div>
         </div>
       )}
