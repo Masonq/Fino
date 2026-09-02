@@ -83,44 +83,27 @@ def test_boost_never_outweighs_paid_promotion():
     assert "EXPLORE_BOOST_MAX = 1.2" in source
 
 
-def test_feed_is_diluted_by_section():
-    """Лента чередует разделы, а не идёт блоками.
+def test_feed_never_repeats_a_listing():
+    """Лента не показывает одно и то же дважды.
 
-    Без этого похожие объявления получают близкие оценки и слипаются:
-    сначала десять машин, потом десять квартир. С персональной прибавкой
-    ещё хуже — наверх выходит целый раздел разом.
+    Здесь стояло разбавление разделов, и оно прошло два круга, оба раза
+    выйдя хуже. Оконная функция в запросе стоила 1.9с вместо 0.24с. Та
+    же работа на порции в 200 объявлений давала повторы: порция
+    пересобирается по мере листания, порядок внутри меняется, и человек
+    снова видит пролистанное. На живой ленте — 73 повтора из 400
+    карточек, отдельные объявления по четыре раза.
 
-    Считается на выбранной порции, а не оконной функцией в самом
-    запросе: там формула вычислялась для каждого объявления базы и
-    дважды за строку — 1.9 секунды против 0.24 на 2800 объявлениях.
-    Порция берётся с запасом и одинаковая для соседних страниц, иначе
-    на их границе порядок поедет.
+    Однообразие соседних карточек — беда меньшая, чем выдача, которая
+    крутит одно и то же по кругу. Поэтому разбавления нет, а этот тест
+    сторожит, чтобы оно не вернулось незаметно.
     """
     source = (Path(__file__).resolve().parents[1]
               / "app" / "routers" / "listings.py").read_text()
-    assert "blend_by_section" in source
-    assert "POOL_STEP" in source
-    assert "pool[offset:offset + limit]" in source
 
-
-def test_blend_keeps_sections_apart():
-    """Больше трёх подряд из одного раздела не идёт."""
-    from app.core.interests import blend
-
-    items = [("авто", i) for i in range(6)] + [("дом", i) for i in range(6)]
-    mixed = blend(items, key=lambda pair: pair[0])
-
-    assert len(mixed) == len(items)
-    # Пока есть чем чередовать, больше трёх подряд не идёт. Хвост из
-    # одного раздела допустим: когда остальные кончились, разбавлять
-    # нечем, и выбрасывать оставшиеся объявления из ленты незачем.
-    head = mixed[:8]
-    longest, run = 1, 1
-    for a, b in zip(head, head[1:]):
-        run = run + 1 if a[0] == b[0] else 1
-        longest = max(longest, run)
-    assert longest <= 3
-    assert len({pair[0] for pair in head}) == 2
+    assert "blend" not in source
+    assert "POOL_STEP" not in source
+    # Порядок задаёт база, страницы режутся ею же — тогда они сходятся.
+    assert ".offset(offset).limit(limit).all()" in source
 
 
 def test_personalisation_stays_out_of_search_and_filters():
