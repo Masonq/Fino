@@ -46,28 +46,6 @@ export default function ListingDetail() {
   const [mapAddress, setMapAddress] = useState('')
   const [addressCopied, setAddressCopied] = useState(false)
 
-  // Адрес текстом — координаты у нас есть, а самой строки «улица, дом»
-  // в базе нет вовсе (только город), так что переводим координаты в
-  // читаемый адрес тем же бесплатным Nominatim, что уже используется
-  // в LocationPicker для обратной задачи (поиск адреса по тексту).
-  useEffect(() => {
-    if (!mapOpen || !listing?.location_lat) return
-    setMapAddress('')
-    const controller = new AbortController()
-    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${listing.location_lat}&lon=${listing.location_lng}&zoom=17&addressdetails=1`
-    fetch(url, { signal: controller.signal, headers: { 'Accept-Language': lang } })
-      .then((r) => r.json())
-      .then((data) => {
-        // display_name — длинная строка вида «6, Театральная улица,
-        // Новый Белград, ...» — обрезаем до 3 первых частей (дом+улица,
-        // район), дальше уже страна/почтовый индекс, никому не нужны.
-        const parts = (data?.display_name || '').split(',').map((s) => s.trim())
-        setMapAddress(parts.slice(0, 3).join(', ') || displayCity(listing.city, lang))
-      })
-      .catch(() => setMapAddress(displayCity(listing.city, lang)))
-    return () => controller.abort()
-  }, [mapOpen, listing?.location_lat, listing?.location_lng, listing?.city, lang])
-
   const copyAddress = () => {
     if (!mapAddress) return
     navigator.clipboard.writeText(mapAddress).then(() => {
@@ -461,6 +439,30 @@ export default function ListingDetail() {
   }
 
   const lang = i18n.language
+
+  // Адрес текстом — координаты у нас есть, а самой строки «улица, дом»
+  // в базе нет вовсе (только город), так что переводим координаты в
+  // читаемый адрес тем же бесплатным Nominatim, что уже используется
+  // в LocationPicker для обратной задачи (поиск адреса по тексту).
+  // Место вставки — строго после объявления и listing, и lang: тот же
+  // класс ошибки уже ловил вчера в другом файле (MyListings.jsx) —
+  // массив зависимостей useEffect вычисляется сразу при рендере, не
+  // откладывается, а прошлый раз этот блок стоял ДО обеих строк.
+  useEffect(() => {
+    if (!mapOpen || !listing?.location_lat) return
+    setMapAddress('')
+    const controller = new AbortController()
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${listing.location_lat}&lon=${listing.location_lng}&zoom=17&addressdetails=1`
+    fetch(url, { signal: controller.signal, headers: { 'Accept-Language': lang } })
+      .then((r) => r.json())
+      .then((data) => {
+        const parts = (data?.display_name || '').split(',').map((s) => s.trim())
+        setMapAddress(parts.slice(0, 3).join(', ') || displayCity(listing.city, lang))
+      })
+      .catch(() => setMapAddress(displayCity(listing.city, lang)))
+    return () => controller.abort()
+  }, [mapOpen, listing?.location_lat, listing?.location_lng, listing?.city, lang])
+
   const translation = listing.translations[lang] || Object.values(listing.translations)[0]
   // обложка идёт первой, остальные — следом
   const photos = (() => {
