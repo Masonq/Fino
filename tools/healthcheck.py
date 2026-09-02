@@ -69,6 +69,26 @@ check("лента объявлений работает", st == 200 and "items" 
 
 # ---------- авторизация ----------
 print("\nАвторизация")
+
+# Выдача одноразового билета — то, чем пользуется вход через Telegram.
+# Проверяем прямым вызовом, а не через сеть: бот дёргает эту же функцию
+# у себя в процессе.
+#
+# Зачем отдельная проверка: бот — самостоятельная служба, и деплой её
+# долго не перезапускал. Он работал со старым кодом, в памяти держал
+# прежнюю модель билета, и вход через Telegram падал, хотя сервер был
+# полностью исправен. Со стороны это выглядело как «не получилось
+# войти, попробуйте через минуту» — и найти причину можно было только в
+# журнале бота, куда никто не смотрит.
+try:
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "backend"))
+    from app.routers.auth_telegram import issue
+
+    key = issue(0, "проверка", "healthcheck")
+    check("вход через Telegram: билет выдаётся", bool(key))
+except Exception as exc:                                   # noqa: BLE001
+    check("вход через Telegram: билет выдаётся", False, str(exc)[:120])
+
 EMAIL = "healthcheck@plonk.local"
 
 st, res = call("POST", "/api/auth/request-code", {"destination": EMAIL, "channel": "email"})
