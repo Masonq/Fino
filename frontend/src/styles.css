@@ -136,7 +136,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .avatar-mini.is-company{ border-radius:10px; }
 .avito-login-pill .avatar-mini{ width:38px; height:38px; font-size:15px; }
 .avatar-mini.skeleton{
-  background:linear-gradient(90deg, #EDEDE8 25%, #F5F5F1 37%, #EDEDE8 63%); background-size:400% 100%; animation:sk-shimmer 1.4s ease-in-out infinite; will-change:opacity;
+  background:#EDEDE8; animation:sk-pulse 1.4s ease-in-out infinite; will-change:opacity;
 }
 
 .notif-bell{
@@ -383,7 +383,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   overflow:hidden; min-height:calc(1.35em * 2);
 }
 .l-card .s-title{ font-size:15px; font-weight:600; }
-.s-fav{ flex-shrink:0; color:var(--ink); margin-top:1px; position:relative; }
+.s-fav{ flex-shrink:0; color:var(--ink); margin-top:1px; }
 .s-fav.on{ color:var(--coral); }
 
 /* Отскок при добавлении в избранное — сердечко на карточке в ленте
@@ -397,20 +397,6 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   100%{ transform:scale(1); }
 }
 .fav-pop{ animation:fav-pop .45s cubic-bezier(.34,1.56,.64,1); }
-/* Точки разлетаются из центра сердца в момент добавления — короткая,
-   один раз, не повторяющаяся анимация: каждая точка на своём угле
-   (--a, задан инлайном по кругу), letит наружу и гаснет. */
-.fav-burst{ position:absolute; inset:0; pointer-events:none; }
-.fav-burst span{
-  position:absolute; top:50%; left:50%; width:4px; height:4px; border-radius:50%;
-  background:var(--coral); opacity:0;
-  animation:fav-burst-go .5s ease-out forwards;
-  transform:rotate(var(--a)) translateY(0);
-}
-@keyframes fav-burst-go{
-  0%{ opacity:1; transform:rotate(var(--a)) translateY(0) scale(1); }
-  100%{ opacity:0; transform:rotate(var(--a)) translateY(-20px) scale(0); }
-}
 
 .s-price{ font-size:17px; font-weight:800; padding:6px 10px 0; color:var(--ink); display:flex; align-items:center; gap:4px; }
 .s-price-arrow{ flex-shrink:0; }
@@ -616,24 +602,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .post-submit-btn{
   width:100%; padding:15px; border-radius:15px; background:var(--primary); color:#fff;
   font-weight:800; font-size:14.5px; box-shadow:0 8px 18px rgba(14,159,110,.3);
-  position:relative; overflow:hidden;
-  transition:width .4s cubic-bezier(.65,0,.35,1), border-radius .4s cubic-bezier(.65,0,.35,1), padding .3s ease;
 }
 .post-submit-btn:disabled{ background:var(--line); color:var(--muted); box-shadow:none; }
-/* Занято — кнопка стягивается в кружок сама, не подменяется спиннером
-   поверх: тот же элемент, просто другая форма. Полоса прогресса —
-   внутри него же, растёт под текстом (который в этот момент уже
-   спрятан) слева направо. */
-.post-submit-btn.busy{
-  width:52px; height:52px; padding:0; border-radius:50%; margin:0 auto;
-  display:block; box-shadow:0 8px 18px rgba(14,159,110,.3);
-}
-.post-submit-btn .btn-label{ position:relative; z-index:1; transition:opacity .15s ease; }
-.post-submit-btn.busy .btn-label{ opacity:0; }
-.post-submit-btn .btn-fill{
-  position:absolute; left:0; top:0; bottom:0; width:0%; background:rgba(255,255,255,.22);
-}
-.post-submit-btn.busy .btn-fill{ transition:width 1.1s cubic-bezier(.4,0,.2,1); width:100%; }
 .post-error{ color:var(--coral); font-size:12.5px; font-weight:600; margin-bottom:10px; }
 
 .post-success{ text-align:center; padding-top:60px; }
@@ -1138,8 +1108,6 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   background:var(--primary-soft); border-radius:8px; padding:3px 8px;
 }
 .infinite-grid.no-pad{ padding:0 12px; }
-.grid-stagger-in{ opacity:0; transform:scale(.9); animation:gridStaggerIn .35s cubic-bezier(.2,.9,.3,1.15) forwards; }
-@keyframes gridStaggerIn{ to{ opacity:1; transform:scale(1); } }
 .fav-empty{
   display:flex; flex-direction:column; align-items:center; text-align:center;
   gap:14px; padding:44px 32px;
@@ -1247,10 +1215,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .chat-row.skeleton{ pointer-events:none; }
 .chat-row .sk-block{
-  background:linear-gradient(90deg, #EDEDE8 25%, #F5F5F1 37%, #EDEDE8 63%); background-size:400% 100%; animation:sk-shimmer 1.4s ease-in-out infinite;
+  background:#EDEDE8; animation:sk-pulse 1.4s ease-in-out infinite;
 }
 .chat-row.skeleton .sk-line{
-  background:linear-gradient(90deg, #EDEDE8 25%, #F5F5F1 37%, #EDEDE8 63%); background-size:400% 100%; animation:sk-shimmer 1.4s ease-in-out infinite;
+  background:#EDEDE8; animation:sk-pulse 1.4s ease-in-out infinite;
   border-radius:5px;
 }
 .chat-row.skeleton .sk-line.title{ height:13px; width:55%; margin:2px 0 0; }
@@ -1371,12 +1339,6 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   background:#fff; border:1px solid rgba(20,30,25,.09); color:var(--ink);
 }
 .auth-code:focus{ outline:none; border-color:var(--primary); }
-.auth-code.shake{ animation:codeShake .4s ease; border-color:var(--coral); }
-@keyframes codeShake{
-  0%,100%{ transform:translateX(0); }
-  20%{ transform:translateX(-8px); } 40%{ transform:translateX(6px); }
-  60%{ transform:translateX(-5px); } 80%{ transform:translateX(3px); }
-}
 
 .auth-resend{
   margin-top:18px; font-size:13px; font-weight:700; color:var(--primary-deep);
@@ -1576,19 +1538,6 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   position:relative; flex:0 0 100%; height:100%;
   scroll-snap-align:start; overflow:hidden; background:#E9E9E4;
 }
-/* Двойной тап — сердце по центру, как в Instagram: выскакивает
-   пружиной и тает, не остаётся на фото. */
-.dbl-tap-heart{
-  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-  pointer-events:none; z-index:5; animation:dblTapHeart .7s ease;
-}
-.dbl-tap-heart svg{ width:64px; height:64px; color:#fff; filter:drop-shadow(0 2px 10px rgba(0,0,0,.35)); }
-@keyframes dblTapHeart{
-  0%{ opacity:0; transform:scale(.5); }
-  30%{ opacity:1; transform:scale(1.15); }
-  45%{ transform:scale(1); }
-  100%{ opacity:0; transform:scale(1); }
-}
 .detail-photo .photo-blur{
   position:absolute; inset:0; width:100%; height:100%;
   object-fit:cover; filter:blur(22px) saturate(1.15); transform:scale(1.18);
@@ -1601,26 +1550,15 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* ===== мои объявления ===== */
 .my-tabs{
   display:flex; gap:7px; padding:0 12px 14px;
-  overflow-x:auto; scrollbar-width:none; position:relative;
+  overflow-x:auto; scrollbar-width:none;
 }
 .my-tabs::-webkit-scrollbar{ display:none; }
-/* Подложка едет за активной вкладкой вместо мгновенной смены фона на
-   каждой по отдельности — позиция и ширина измеряются по-настоящему
-   (offsetLeft/offsetWidth в MyListings.jsx), не в процентах: вкладки
-   разной ширины (счётчик рядом с частью из них) и сам ряд
-   прокручивается горизонтально. */
-.my-tabs-thumb{
-  position:absolute; top:0; height:34px; border-radius:11px; background:var(--primary);
-  transition:left .25s cubic-bezier(.4,0,.2,1), width .25s cubic-bezier(.4,0,.2,1);
-  z-index:0;
-}
 .my-tab{
   flex-shrink:0; display:flex; align-items:center; gap:6px;
   padding:8px 13px; border-radius:11px; background:#F2F2EF;
   font-size:12.5px; font-weight:700; color:var(--ink-soft);
-  position:relative; z-index:1; transition:color .2s ease, background .2s ease .1s;
 }
-.my-tab.active{ color:#fff; background:transparent; }
+.my-tab.active{ background:var(--primary); color:#fff; }
 .my-tab-count{
   font-size:11px; font-weight:800; opacity:.75;
 }
@@ -1757,8 +1695,6 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .stars{ display:inline-flex; gap:2px; line-height:1; }
 .star{ color:#DDDDD8; }
 .star.on{ color:#FFB020; }
-.star.bump{ animation:starBump .3s ease; display:inline-block; }
-@keyframes starBump{ 50%{ transform:scale(1.3); } }
 .stars.pickable .star{ cursor:pointer; padding:2px; }
 
 .review-form{
@@ -2601,17 +2537,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* скелетон плитки категории на странице «Все категории» */
 .cats-item.skeleton{
-  background:linear-gradient(90deg, #F0F0EC 25%, #F7F7F3 37%, #F0F0EC 63%);
-  background-size:400% 100%; border-color:transparent; box-shadow:none;
-  animation:sk-shimmer 1.4s ease-in-out infinite;
+  background:#F0F0EC; border-color:transparent; box-shadow:none;
+  animation:sk-pulse 1.4s ease-in-out infinite;
 }
 .cats-back svg{ width:20px; height:20px; }
 /* блочный скелетон — для фото объявления при загрузке */
-.sk-block{
-  background:linear-gradient(90deg, #EDEDE8 25%, #F5F5F1 37%, #EDEDE8 63%);
-  background-size:400% 100%; animation:sk-shimmer 1.4s ease-in-out infinite;
-}
-@keyframes sk-shimmer{ 0%{ background-position:100% 0; } 100%{ background-position:0 0; } }
+.sk-block{ background:#EDEDE8; animation:sk-pulse 1.4s ease-in-out infinite; }
 .history-clear{
   margin-left:auto; padding:7px 12px; border-radius:10px;
   background:#F2F2EF; font-size:12.5px; font-weight:700; color:var(--ink-soft);
@@ -2700,7 +2631,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   border:1px solid rgba(20,30,25,.07); font-size:12.5px; font-weight:600; color:var(--ink-soft);
 }
 .sub-chip.active{ background:var(--primary); border-color:var(--primary); color:#fff; }
-.sub-chip.skeleton{ height:28px; background:linear-gradient(90deg, #EDEDE8 25%, #F5F5F1 37%, #EDEDE8 63%); background-size:400% 100%; animation:sk-shimmer 1.4s ease-in-out infinite; border-color:transparent; }
+.sub-chip.skeleton{ height:28px; background:#EDEDE8; animation:sk-pulse 1.4s ease-in-out infinite; border-color:transparent; }
 
 /* Чипы применённых фильтров над результатами — снять один фильтр,
    не открывая панель. Отличаются от sub-chip заливкой: sub-chip —
@@ -3514,7 +3445,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   background:var(--tile); border:1px solid rgba(20,30,25,.06);
   overflow:hidden; text-align:left;
 }
-.landing-sub.skeleton{ background:linear-gradient(90deg, #EDEDE8 25%, #F5F5F1 37%, #EDEDE8 63%); background-size:400% 100%; animation:sk-shimmer 1.4s ease-in-out infinite; border-color:transparent; }
+.landing-sub.skeleton{ background:#EDEDE8; animation:sk-pulse 1.4s ease-in-out infinite; border-color:transparent; }
 .landing-sub-name{
   position:relative; z-index:2; display:block; max-width:62%;
   font-size:13px; font-weight:700; color:var(--ink); line-height:1.25;

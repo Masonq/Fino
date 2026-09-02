@@ -68,7 +68,7 @@ export default function ReviewRequest({ chatId, targetId, listingId, targetName,
             {[1, 2, 3, 4, 5].map((n) => (
               <span
                 key={n}
-                className={n <= rating ? 'star on bump' : 'star'}
+                className={n <= rating ? 'star on' : 'star'}
                 onClick={() => setRating(n)}
               >
                 ★

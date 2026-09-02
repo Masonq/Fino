@@ -641,12 +641,11 @@ export default function PostAd() {
           </div>
           {error && <p className="post-error">{error}</p>}
           <button
-            className={submitting ? 'post-submit-btn busy' : 'post-submit-btn'}
+            className="post-submit-btn"
             disabled={submitting}
             onClick={handleSubmit}
           >
-            <span className="btn-label">{t('listing.publish')}</span>
-            <span className="btn-fill"></span>
+            {submitting ? '...' : t('listing.publish')}
           </button>
         </>
       )}
