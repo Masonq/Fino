@@ -27,6 +27,7 @@
     python3 -m app.core.retitle --limit 50
 """
 import argparse
+import re
 
 from app.core.ai_title import improve
 from app.core.audit import record
@@ -80,6 +81,31 @@ def _section_names(db) -> set:
             if value:
                 names.add(str(value).strip().lower())
     return names
+
+
+def _meaningful(title: str) -> list:
+    """Значимые слова заголовка: длинные и всё, что с цифрами."""
+    return [w for w in re.findall(r"[\w-]+", (title or "").lower())
+            if len(w) >= 4 or any(c.isdigit() for c in w)]
+
+
+def richer(new_title: str, old_title: str) -> bool:
+    """Стал ли заголовок содержательнее прежнего.
+
+    Холостой прогон показал две замены, которые делали хуже: «Завалялись
+    русскоязычные книги» → «серии книг» и «Требуется помощник электрика
+    до 35 лет» → «Вакансия: электрик». Формально оба новых заголовка
+    понятны, но сведений в них меньше: пропали «русскоязычные»,
+    «помощник», возраст.
+
+    Поэтому требуем двух вещей сразу: значимых слов не меньше, чем было,
+    и хотя бы одно из них новое. Иначе замена не стоит того, чтобы
+    трогать чужое объявление.
+    """
+    was, now = _meaningful(old_title), _meaningful(new_title)
+    if len(now) < len(was):
+        return False
+    return bool(set(now) - set(was))
 
 
 def acceptable(new_title: str, sections: set) -> bool:
@@ -143,13 +169,14 @@ def _better_title(db, listing, translation, sections) -> tuple[str | None, str]:
     root_slug = parent.slug if parent else (category.slug if category else None)
     sub_slug = category.slug if parent else None
 
+    old = translation.title or ""
     by_rules = build_title(root_slug, sub_slug, text, listing.attributes or {})
-    if by_rules and acceptable(by_rules, sections):
+    if by_rules and acceptable(by_rules, sections) and richer(by_rules, old):
         return by_rules, "правила"
 
-    answer = improve(text, translation.title)
+    answer = improve(text, old)
     title = (answer.get("title") or "").strip()
-    if title and acceptable(title, sections):
+    if title and acceptable(title, sections) and richer(title, old):
         return title, "нейросеть"
 
     return None, "не вышло"
