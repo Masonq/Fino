@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
@@ -57,17 +57,33 @@ export default function AdminAudit() {
       .finally(() => setLoaded(true))
   }, [filter, actor])
 
+  // Одна загрузка вместо двух — та же правка, что и на странице
+  // «Пользователи» (там замерил: три запроса списка на один заход, и
+  // скелет показывался заново после каждого). Загрузку запускали два
+  // эффекта: один по готовности авторизации, второй по паузе после
+  // ввода в поле «кто» — при первом открытии срабатывали оба.
+  //
+  // Следим за userId, а не за объектом пользователя: контекст обновляет
+  // его не один раз за загрузку, и каждая новая ссылка перезапускала
+  // эффект. Пауза нужна только печати — на первом заходе и при смене
+  // фильтра ждать нечего.
+  const userId = user?.id
+  const lastActor = useRef(null)
   useEffect(() => {
     if (authLoading) return
-    if (!user) { navigate('/login', { replace: true }); return }
-    load()
-    api.adminAuditSummary(7).then(setSummary).catch(() => {})
-  }, [authLoading, user, load, navigate])
-
-  useEffect(() => {
-    const id = setTimeout(load, 350)
+    if (!userId) { navigate('/login', { replace: true }); return }
+    const typing = lastActor.current !== null && lastActor.current !== actor
+    lastActor.current = actor
+    const id = setTimeout(load, typing ? 350 : 0)
     return () => clearTimeout(id)
-  }, [actor, load])
+  }, [authLoading, userId, load, navigate, actor])
+
+  // Сводка не зависит ни от фильтров, ни от строки поиска — грузим её
+  // один раз, а не вместе с каждой перезагрузкой списка.
+  useEffect(() => {
+    if (authLoading || !userId) return
+    api.adminAuditSummary(7).then(setSummary).catch(() => {})
+  }, [authLoading, userId])
 
   if (denied) {
     return (

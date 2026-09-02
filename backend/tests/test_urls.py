@@ -5,6 +5,7 @@
 нажимать ли. Набор цифр читается как случайная страница, а название вещи
 — как то, что он искал.
 """
+import ast
 import sys
 from pathlib import Path
 
@@ -77,16 +78,26 @@ def test_every_listing_response_has_a_path():
     source = (Path(__file__).resolve().parents[1]
               / "app" / "routers" / "listings.py").read_text()
 
-    lines = source.splitlines()
-    checked = 0
-    for i, line in enumerate(lines):
-        if "def serialize" not in line:
-            continue
-        checked += 1
-        block = "\n".join(lines[i:i + 24])
-        assert '"path"' in block, f"выдача на строке {i} без адреса"
+    # Границы функции берём разбором кода, а не отсчётом строк.
+    # Раньше тут читались ровно 24 строки после «def serialize» — и
+    # тест начал падать не потому, что адрес пропал, а потому что
+    # сериализатор оброс полями и «path» уехал на 27-ю строку. Правило
+    # осталось верным, мерка сломалась: у ast границы функции точные,
+    # сколько бы полей в неё ни добавили.
+    tree = ast.parse(source)
+    blocks = [
+        ast.get_source_segment(source, node)
+        for node in ast.walk(tree)
+        if isinstance(node, ast.FunctionDef) and node.name == "serialize"
+    ]
+    for node, block in zip(
+        [n for n in ast.walk(tree)
+         if isinstance(n, ast.FunctionDef) and n.name == "serialize"],
+        blocks,
+    ):
+        assert '"path"' in block, f"выдача на строке {node.lineno} без адреса"
 
-    assert checked >= 4
+    assert len(blocks) >= 4
 
 
 def test_path_shape_never_changes():
