@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
@@ -59,18 +59,34 @@ export default function AdminUsers() {
       .finally(() => setLoaded(true))
   }, [query, filter])
 
+  // Загрузку запускает один эффект, а не два.
+  //
+  // Раньше их было именно два: один грузил список, как только
+  // становилось известно, кто вошёл, второй ждал 350мс после ввода в
+  // поиске — и при первом открытии страницы срабатывали оба.
+  // Замерил в браузере: три запроса списка на один заход, и скелет
+  // показывался заново после каждого (load сбрасывает loaded и items).
+  // Со стороны это выглядит как страница, которая грузится дважды.
+  //
+  // Пауза нужна только печати: на первом заходе и при смене фильтра
+  // ждать нечего, поэтому задержку даём, лишь когда изменилась строка
+  // поиска.
+  //
+  // Следим за userId, а не за самим объектом: контекст обновляет его
+  // не один раз за загрузку (сперва то, что знали, потом ответ
+  // сервера), и каждая новая ссылка перезапускала эффект — после
+  // объединения двух эффектов в один это всё ещё давало два запроса
+  // вместо одного.
+  const userId = user?.id
+  const lastQuery = useRef(null)
   useEffect(() => {
     if (authLoading) return
-    if (!user) { navigate('/login', { replace: true }); return }
-    load()
-  }, [authLoading, user, load, navigate])
-
-  // Поиск ждёт, пока человек допечатает: запрос на каждую букву грузит
-  // сервер и мигает списком.
-  useEffect(() => {
-    const id = setTimeout(load, 350)
+    if (!userId) { navigate('/login', { replace: true }); return }
+    const typing = lastQuery.current !== null && lastQuery.current !== query
+    lastQuery.current = query
+    const id = setTimeout(load, typing ? 350 : 0)
     return () => clearTimeout(id)
-  }, [query, load])
+  }, [authLoading, userId, load, navigate, query])
 
   const openCard = async (id) => {
     if (openId === id) { setOpenId(null); setCard(null); return }
