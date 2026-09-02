@@ -870,25 +870,31 @@ export default function ListingDetail() {
       </div>
       )}
 
-        {listing.city && (
+        {/* Город и координаты — независимые поля в базе, может быть
+            только одно из двух: показываем блок, если есть хоть что-то,
+            и каждую часть — по своему условию. */}
+        {(listing.city || listing.location_lat != null) && (
           <>
-            <div className="desc-title">{t('detail.map_location_label')}</div>
-            <div className="detail-loc">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" />
-              </svg>
-              {displayCity(listing.city, lang)}
+            <div className="desc-title loc-title">{t('detail.map_location_label')}</div>
+            <div className="detail-loc-row">
+              {listing.city && (
+                <div className="detail-loc">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" />
+                  </svg>
+                  {displayCity(listing.city, lang)}
+                </div>
+              )}
+              {/* Ссылка на карту — справа от города, в той же строке.
+                  Сама карта открывается отдельным полноэкранным
+                  экраном, не разворачивается тут же. */}
+              {listing.location_lat != null && (
+                <button type="button" className="detail-map-link" onClick={() => setMapOpen(true)}>
+                  {t('detail.map_learn_more')}
+                </button>
+              )}
             </div>
           </>
-        )}
-        {/* Карта раньше открывалась сразу под адресом — занимала место
-            даже тем, кому это неважно. Теперь как отдельный экран по
-            запросу: ссылка тут, сама карта — во весь экран поверх,
-            открывается только по касанию. */}
-        {listing.location_lat != null && (
-          <button type="button" className="detail-map-link" onClick={() => setMapOpen(true)}>
-            {t('detail.map_learn_more')}
-          </button>
         )}
 
         <div className="badge-row">

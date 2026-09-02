@@ -725,9 +725,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .neg-pill{ font-size:10px; font-weight:700; color:var(--primary-dark); background:var(--primary-soft); padding:4px 9px; border-radius:8px; margin-top:7px; display:inline-block; }
 
 .detail-title{ font-size:17.5px; font-weight:800; margin-top:12px; line-height:1.3; letter-spacing:-0.01em; }
-.detail-loc{ font-size:12px; color:var(--muted); font-weight:600; margin-top:5px; display:flex; align-items:center; gap:5px; }
+/* Город и ссылка на карту — в одну строку, ссылка справа от города
+   (раньше шла отдельной строкой под ним). */
+.detail-loc-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:8px; }
+.detail-loc{ font-size:14px; color:var(--ink-soft); font-weight:600; display:flex; align-items:center; gap:6px; }
+.detail-loc svg{ width:15px; height:15px; flex-shrink:0; }
 .detail-map-link{
-  font-size:12.5px; font-weight:700; color:var(--primary-deep); margin-top:6px;
+  font-size:13.5px; font-weight:700; color:var(--primary-deep);
   text-decoration:underline; text-underline-offset:2px;
 }
 /* Отдельный полноэкранный экран карты — не подложка снизу, ровно как
@@ -788,7 +792,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .attr-row .v{ font-weight:700; }
 
 .desc-block{ margin-top:18px; }
-.desc-title{ font-size:13.5px; font-weight:800; margin-bottom:8px; }
+.desc-title{ font-size:16px; font-weight:800; margin-bottom:8px; }
+/* Отступ сверху — «Местоположение» шло вплотную к карточке продавца
+   над ним. У «Характеристик» и «Описания» отступ уже есть у самих
+   блоков (.attrs-block/.desc-block), тут блока-обёртки нет — заголовок
+   идёт прямо в потоке. */
+.desc-title.loc-title{ margin-top:22px; }
 .desc-text{ font-size:13px; line-height:1.65; color:var(--ink-soft); white-space:pre-wrap; }
 
 .seller-row{ margin-top:20px; display:flex; align-items:center; gap:12px; padding:15px; background:#F8F8F5; border-radius:17px; color:inherit; text-decoration:none; }
