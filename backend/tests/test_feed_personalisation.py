@@ -185,3 +185,27 @@ def test_pages_never_append_a_listing_twice():
     for page in ("Home.jsx", "Search.jsx", "CategoryLanding.jsx"):
         source = (frontend / page).read_text()
         assert "have.has(l.id)" in source, page
+
+
+def test_scroll_is_restored_in_one_place():
+    """Прокрутку возвращает один механизм, а не два.
+
+    Их было два: общий в App.jsx, по ключу истории, и собственный в
+    ленте, со своим сохранённым местом и восьмикратной поправкой. Они
+    спорили за прокрутку и перебивали друг друга разными значениями —
+    при возврате свайпом человека кидало то не туда, то в самое начало.
+
+    Проверено вживую: лента пролистана на 4500px, открыто объявление,
+    возврат — снова 4500px, разница ноль.
+    """
+    pages = Path(__file__).resolve().parents[2] / "frontend" / "src"
+
+    app = (pages / "App.jsx").read_text()
+    home = (pages / "pages" / "Home.jsx").read_text()
+
+    # Восстановление живёт в App и делает несколько попыток: списки
+    # грузятся порциями, и высота страницы растёт уже после первой.
+    assert "scrollPositions.current[location.key]" in app
+    assert "setTimeout(put, 60)" in app
+    # А в ленте своего восстановления нет.
+    assert "window.scrollTo" not in home

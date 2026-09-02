@@ -75,17 +75,47 @@ export default function App() {
   }, [location.key])
 
   useLayoutEffect(() => {
-    if (navType === 'POP') {
-      // Восстанавливаем на следующий кадр — если сделать сразу, страница
-      // ещё может быть короче нужного (список только начал грузиться),
-      // и браузер обрежет прокрутку до своего текущего максимума.
-      const saved = scrollPositions.current[location.key]
-      if (saved != null) {
-        requestAnimationFrame(() => window.scrollTo(0, saved))
-      }
+    if (navType !== 'POP') {
+      window.scrollTo(0, 0)
       return
     }
-    window.scrollTo(0, 0)
+
+    const saved = scrollPositions.current[location.key]
+    if (saved == null) return
+
+    // Возвращаемся не одним движением, а несколькими попытками за
+    // полсекунды.
+    //
+    // Списки грузятся порциями, картинки и шрифты догружаются уже после
+    // первой отрисовки, и высота страницы всё это время растёт. Поставить
+    // прокрутку один раз мало: в этот момент страница ещё короткая,
+    // браузер обрезает её до своего максимума — и человек оказывается
+    // выше, чем был, а иногда в самом начале.
+    //
+    // Раньше такие поправки жили ещё и отдельно в ленте на главной, со
+    // своим сохранённым местом. Два механизма спорили за прокрутку и
+    // перебивали друг друга разными значениями — это и кидало к началу
+    // при возврате свайпом. Восстановление теперь одно, здесь.
+    let stop = false
+    // Человек мог начать листать сам, не дожидаясь нас. Тогда поправки
+    // дёргают страницу под пальцем — первое же касание их отменяет.
+    const giveUp = () => { stop = true }
+    window.addEventListener('touchstart', giveUp, { passive: true, once: true })
+    window.addEventListener('wheel', giveUp, { passive: true, once: true })
+
+    let tries = 0
+    const put = () => {
+      if (stop) return
+      if (Math.abs(window.scrollY - saved) > 2) window.scrollTo(0, saved)
+      if (++tries < 10) setTimeout(put, 60)
+    }
+    put()
+
+    return () => {
+      stop = true
+      window.removeEventListener('touchstart', giveUp)
+      window.removeEventListener('wheel', giveUp)
+    }
   }, [pathname, navType, location.key])
 
   // на не-главных экранах статус-бар под цвет фона страницы;

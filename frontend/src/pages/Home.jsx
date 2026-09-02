@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
@@ -90,8 +90,6 @@ export default function Home() {
   // как оно установилось.
   const [collapsed, setCollapsed] = useState(() => (cached?.scroll || window.scrollY) > 48)
   // сколько прокрутки предстоит восстановить — до этого шапку не трогаем
-  const pendingScroll = useRef(cached?.scroll || 0)
-  const restored = useRef(false)
   const lastScroll = useRef(cached?.scroll || 0)
   const [settled, setSettled] = useState(false)
   // слайд выбирается один раз при загрузке страницы (как у Avito) — без автокарусели,
@@ -132,10 +130,6 @@ export default function Home() {
     let ticking = false
     const update = () => {
       ticking = false
-      // Пока положение не восстановлено, прокрутка равна нулю, и шапка
-      // разворачивалась — а сразу после восстановления схлопывалась обратно.
-      // Именно это и выглядело как рывок при возврате.
-      if (pendingScroll.current && !restored.current) return
       const y = window.scrollY
       // Запоминаем на ходу: к моменту ухода со страницы прокрутка успевает
       // обнулиться, и в память попадал ноль — возврат открывал ленту сверху.
@@ -250,39 +244,13 @@ export default function Home() {
   useEffect(() => { totalRef.current = feedTotal }, [feedTotal])
   useEffect(() => { langRef.current = i18n.language }, [i18n.language])
 
-  // Прокрутку выставляем до первой отрисовки — из useLayoutEffect. Через
-  // requestAnimationFrame страница успевала показаться сверху и лишь потом
-  // прыгала на место.
-  useLayoutEffect(() => {
-    if (restored.current || !cached?.scroll || !listings.length) return
-    restored.current = true
-    const target = cached.scroll
-    lastScroll.current = target
-    window.scrollTo(0, target)
-    // Картинки и шрифты догружаются после первой отрисовки и слегка меняют
-    // высоту, а iOS вдобавок правит прокрутку под свою панель. Повторяем
-    // пару раз в течение полусекунды — иначе положение уезжает уже после
-    // того, как мы его выставили.
-    let tries = 0
-    let stop = false
-    // Человек мог начать листать сразу, не дожидаясь нас. Тогда поправки
-    // дёргают ленту назад под пальцем — это выглядит поломкой. Первое же
-    // касание отменяет их: место он уже нашёл сам.
-    const giveUp = () => { stop = true }
-    window.addEventListener('touchstart', giveUp, { passive: true, once: true })
-    window.addEventListener('wheel', giveUp, { passive: true, once: true })
-
-    const id = setInterval(() => {
-      if (stop) { clearInterval(id); return }
-      if (Math.abs(window.scrollY - target) > 2) window.scrollTo(0, target)
-      if (++tries >= 8) clearInterval(id)
-    }, 60)
-    return () => {
-      clearInterval(id)
-      window.removeEventListener('touchstart', giveUp)
-      window.removeEventListener('wheel', giveUp)
-    }
-  }, [cached, listings.length])
+  // Прокрутку тут не трогаем: этим занимается App.jsx, один на всё
+  // приложение. Здесь когда-то было своё восстановление со своим
+  // сохранённым местом — два механизма спорили за прокрутку, перебивали
+  // друг друга разными значениями, и при возврате свайпом человека
+  // кидало то не туда, то в самое начало. Сохранённая лента (items,
+  // total) остаётся: без неё список сбросился бы к первой странице, и
+  // возвращаться было бы некуда.
 
   const handleRefresh = useCallback(async () => {
     await Promise.all([
