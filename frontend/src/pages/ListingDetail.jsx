@@ -1027,20 +1027,21 @@ export default function ListingDetail() {
       )}
 
       {mapOpen && listing.location_lat != null && (
-        <div className="map-sheet-overlay" onClick={() => setMapOpen(false)}>
-          <div className="map-sheet" onClick={(e) => e.stopPropagation()}>
-            <div className="map-sheet-head">
-              <span>{displayCity(listing.city, lang)}</span>
-              <button type="button" className="map-sheet-close" onClick={() => setMapOpen(false)} aria-label={t('actions.close')}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 6l12 12M18 6 6 18" /></svg>
-              </button>
-            </div>
-            <LocationMap
-              lat={listing.location_lat}
-              lng={listing.location_lng}
-              approximate={listing.location_approximate}
-              height="100%"
-            />
+        <div className="map-page">
+          <div className="map-page-head">
+            <button type="button" className="topbar-btn" onClick={() => setMapOpen(false)} aria-label={t('actions.back')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+            </button>
+            <span className="map-page-title">{translation?.title}</span>
+          </div>
+          <LocationMap
+            lat={listing.location_lat}
+            lng={listing.location_lng}
+            approximate={listing.location_approximate}
+            height="100%"
+          />
+          <div className="map-page-address">
+            {displayCity(listing.city, lang)}
           </div>
         </div>
       )}
