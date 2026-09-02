@@ -107,6 +107,25 @@ FALLBACK_ORDER = {
 }
 
 
+def _category_path(category) -> list[dict]:
+    """
+    Цепочка от верхнего раздела к самой категории объявления — для
+    «хлебных крошек» («Главная › Животные › Кролики»).
+
+    Идём вверх по parent циклом, а не двумя жёстко прописанными
+    обращениями (сейчас уровней всегда два — раздел и подраздел): если
+    когда-нибудь появится третий, тут ничего править не придётся.
+    Ограничение на 5 шагов — страховка от зацикливания, если в базе
+    вдруг окажется категория, ссылающаяся сама на себя через цепочку.
+    """
+    chain = []
+    node = category
+    while node is not None and len(chain) < 5:
+        chain.append({"slug": node.slug, "name": node.name})
+        node = node.parent
+    return list(reversed(chain))
+
+
 def pick_translation(listing, lang: str):
     """
     Выбирает перевод осмысленно: сначала нужный язык, потом английский
@@ -1094,6 +1113,11 @@ def get_listing(listing_id: str, request: Request, db: Session = Depends(get_db)
     query = db.query(Listing).options(
         joinedload(Listing.translations), joinedload(Listing.photos),
         joinedload(Listing.owner),
+        # Категория с родителем — для «хлебных крошек» (_category_path
+        # ниже идёт вверх по parent). Без этого на каждое открытие
+        # объявления уходило бы два лишних запроса в базу: сама
+        # категория и её родитель, по одному на каждое обращение.
+        joinedload(Listing.category).joinedload(Category.parent),
     )
 
     try:
@@ -1171,6 +1195,9 @@ def get_listing(listing_id: str, request: Request, db: Session = Depends(get_db)
         # продавцу впустую.
         "status": listing.status.value,
         "category_slug": listing.category.slug,
+        # Цепочка категорий для «хлебных крошек» — от верхнего раздела
+        # к самому объявлению.
+        "category_path": _category_path(listing.category),
         "source_language": listing.source_language,
         "translations": {t.language: {"title": t.title, "description": t.description, "is_auto_translated": t.is_auto_translated} for t in listing.translations},
         "price": float(listing.price) if listing.price else None,

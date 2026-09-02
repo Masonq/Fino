@@ -13,6 +13,7 @@ import SimilarListings from '../components/SimilarListings'
 import SellerListings from '../components/SellerListings'
 import { formatPrice } from '../utils/money'
 import { relativeDate } from '../utils/time'
+import { hasLanding } from '../data/landings'
 
 const REASON_KEYS = [
   'wrong_category', 'bad_photos', 'unclear_description',
@@ -719,6 +720,23 @@ export default function ListingDetail() {
       )}
 
       <div className="detail-sheet">
+        {/* Хлебные крошки — на десктопе держат верх страницы и дают
+            быстрый путь обратно в раздел. На мобильном скрыты (CSS):
+            там для этого есть кнопка «назад», а строка съедала бы
+            место у самого важного — цены и заголовка. */}
+        {listing.category_path?.length > 0 && (
+          <nav className="breadcrumbs">
+            <Link to="/">{t('nav.home')}</Link>
+            {listing.category_path.map((c) => (
+              <span key={c.slug}>
+                <span className="breadcrumbs-sep">›</span>
+                <Link to={hasLanding(c.slug) ? `/c/${c.slug}` : `/search?category=${c.slug}`}>
+                  {c.name?.[lang] || c.name?.ru || c.slug}
+                </Link>
+              </span>
+            ))}
+          </nav>
+        )}
         {/* Подтверждение оплаты продвижения — сразу после возврата
             с ЮKassa, пока не прочитано и не отброшено переходом на
             другую страницу. Три состояния: идёт проверка, подтвердилось,
