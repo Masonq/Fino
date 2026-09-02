@@ -139,9 +139,22 @@ def acceptable(new_title: str, sections: set) -> bool:
     return True
 
 
+# Действие в журнале для тех, кого улучшить не вышло. Нужно, чтобы
+# следующий прогон не начинал с них же: безнадёжные стоят в начале
+# списка и съедали бы весь запас запросов к модели, а партия не
+# сдвигалась бы с места.
+FAILED_ACTION = "listing_retitle_failed"
+
+
 def _candidates(db, limit: int):
     """Активные объявления, чей русский заголовок ничего не говорит."""
+    from app.models import AuditEntry
     from app.routers.listings import title_is_clear
+
+    tried = {
+        row[0] for row in
+        db.query(AuditEntry.target_id).filter(AuditEntry.action == FAILED_ACTION)
+    }
 
     rows = (
         db.query(Listing, ListingTranslation)
@@ -152,7 +165,8 @@ def _candidates(db, limit: int):
         )
         .all()
     )
-    out = [(l, t) for l, t in rows if not title_is_clear(t.title)]
+    out = [(l, t) for l, t in rows
+           if not title_is_clear(t.title) and str(l.id) not in tried]
     return out[:limit]
 
 
@@ -193,6 +207,10 @@ def run(limit: int = DEFAULT_LIMIT, dry_run: bool = False) -> int:
             new_title, how = _better_title(db, listing, translation, sections)
             if not new_title or new_title == translation.title:
                 print(f"  — {translation.title!r}: {how}")
+                if not dry_run:
+                    record(db, None, FAILED_ACTION,
+                           target_type="listing", target_id=str(listing.id),
+                           title=translation.title, why=how)
                 continue
 
             # Печатаем целиком: обрезка в выводе однажды уже сбила с
