@@ -73,6 +73,18 @@ systemctl restart fino
 # машине разработчика этой службы может не быть, и деплой не должен на
 # этом останавливаться.
 systemctl restart plonk-bot 2>/dev/null || true
+
+# Расписания: файлы лежат в репозитории, но на сервер попадают только
+# отсюда. Перенос из чатов до этого вообще не имел расписания —
+# запускался вручную, и когда заход завис, поднять его было некому:
+# лента не пополнялась трое суток.
+for unit in deploy/plonk-*.service deploy/plonk-*.timer; do
+  cp "$unit" /etc/systemd/system/
+done
+systemctl daemon-reload
+for timer in deploy/plonk-*.timer; do
+  systemctl enable --now "$(basename "$timer")" 2>/dev/null || true
+done
 # Статику теперь отдаёт nginx прямо из frontend/dist, а не vite preview:
 # один процесс на JavaScript, раздающий каждый файл каждому посетителю,
 # при наплыве становится узким местом. Сервис останавливаем, если он
