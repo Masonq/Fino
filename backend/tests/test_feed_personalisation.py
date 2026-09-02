@@ -84,18 +84,43 @@ def test_boost_never_outweighs_paid_promotion():
 
 
 def test_feed_is_diluted_by_section():
-    """В ранжировании есть штраф за место внутри своего раздела.
+    """Лента чередует разделы, а не идёт блоками.
 
-    Без него похожие объявления получают близкие оценки и слипаются в
-    блоки, а с персональной прибавкой наверх выходит целый раздел
-    разом. Штраф считается оконной функцией — до нарезки на страницы,
-    иначе разбивка едет и объявления повторяются между страницами.
+    Без этого похожие объявления получают близкие оценки и слипаются:
+    сначала десять машин, потом десять квартир. С персональной прибавкой
+    ещё хуже — наверх выходит целый раздел разом.
+
+    Считается на выбранной порции, а не оконной функцией в самом
+    запросе: там формула вычислялась для каждого объявления базы и
+    дважды за строку — 1.9 секунды против 0.24 на 2800 объявлениях.
+    Порция берётся с запасом и одинаковая для соседних страниц, иначе
+    на их границе порядок поедет.
     """
     source = (Path(__file__).resolve().parents[1]
               / "app" / "routers" / "listings.py").read_text()
-    assert "DIVERSITY" in source
-    assert "row_number().over(" in source
-    assert "partition_by=root_category_id" in source
+    assert "blend_by_section" in source
+    assert "POOL_STEP" in source
+    assert "pool[offset:offset + limit]" in source
+
+
+def test_blend_keeps_sections_apart():
+    """Больше трёх подряд из одного раздела не идёт."""
+    from app.core.interests import blend
+
+    items = [("авто", i) for i in range(6)] + [("дом", i) for i in range(6)]
+    mixed = blend(items, key=lambda pair: pair[0])
+
+    assert len(mixed) == len(items)
+    # Пока есть чем чередовать, больше трёх подряд не идёт. Хвост из
+    # одного раздела допустим: когда остальные кончились, разбавлять
+    # нечем, и выбрасывать оставшиеся объявления из ленты незачем.
+    head = mixed[:8]
+    longest, run = 1, 1
+    for a, b in zip(head, head[1:]):
+        run = run + 1 if a[0] == b[0] else 1
+        longest = max(longest, run)
+    assert longest <= 3
+    assert len({pair[0] for pair in head}) == 2
 
 
 def test_personalisation_stays_out_of_search_and_filters():
@@ -129,7 +154,9 @@ def test_seen_listings_sink_but_stay():
     assert "SEEN_PENALTY_MAX = 1.2" in source
     # Вычитаем, а не отбрасываем: объявление остаётся в выдаче.
     assert "- seen_penalty" in source
-    assert "ListingViewLog.viewer_key == str(viewer.id)" in source
+    # Смотрим на журнал просмотров именно этого человека. Соединением, а
+    # не подзапросом на каждую строку: подзапрос заметно замедлял выдачу.
+    assert "seen_alias.viewer_key == str(viewer.id)" in source
     # В поиске по слову и в выбранном разделе штрафа нет: там человек
     # ищет конкретное, и прятать от него уже открытое — издевательство.
     assert "if viewer and not q_text and not category_slug:" in source

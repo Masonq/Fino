@@ -168,3 +168,51 @@ def interest_boost(scores: dict, cap: float = 0.5) -> dict:
 # даёт не больше прежней общей прибавки — чтобы не перевесить штраф за
 # однообразие и не отобрать место у оплаченного продвижения.
 SUB_CAP = 0.7
+
+
+def blend(items, key, max_run: int = 3):
+    """
+    Разбавляет подряд идущие объявления одного раздела.
+
+    Ранжирование оценивает объявления поодиночке, поэтому похожие
+    получают близкие оценки и слипаются в блоки: сначала десять машин,
+    потом десять квартир. Человеку от второй одинаковой карточки пользы
+    почти нет, а остальное к нему не пробивается — тем более когда
+    сверху ещё и персональная прибавка тянет вверх целый раздел.
+
+    Считаем здесь, а не оконной функцией в самом запросе: там формула
+    вычислялась для каждого объявления базы и дважды за строку — 1.9
+    секунды против 0.24 на живом объёме. База отдаёт порцию лучших,
+    чередование раскладываем на ней.
+
+    Правило простое: больше max_run подряд из одного раздела не идёт —
+    следующим встаёт лучший из другого. Порядок внутри раздела не
+    трогаем, он задан ранжированием.
+    """
+    if len(items) < 3:
+        return items
+
+    order = {id(item): i for i, item in enumerate(items)}
+    groups: dict = {}
+    for item in items:
+        groups.setdefault(key(item), []).append(item)
+
+    out = []
+    run_key, run_len = None, 0
+    while groups:
+        # Кандидаты в порядке ранжирования: первый в каждой группе.
+        choices = sorted(groups.items(), key=lambda kv: order[id(kv[1][0])])
+        pick = None
+        for gkey, group in choices:
+            if gkey == run_key and run_len >= max_run and len(groups) > 1:
+                continue
+            pick = gkey
+            break
+        if pick is None:
+            pick = choices[0][0]
+        out.append(groups[pick].pop(0))
+        if not groups[pick]:
+            del groups[pick]
+        run_len = run_len + 1 if pick == run_key else 1
+        run_key = pick
+    return out
