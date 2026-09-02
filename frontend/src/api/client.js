@@ -282,6 +282,7 @@ export const api = {
   markNotificationRead: (id) => request(`/notifications/${id}/read`, { method: 'POST' }),
   deleteNotification: (id) => request(`/notifications/${id}`, { method: 'DELETE' }),
   markAllNotificationsRead: () => request('/notifications/read-all', { method: 'POST' }),
+  deleteAllNotifications: () => request('/notifications', { method: 'DELETE' }),
   markChatRead: (chatId) => request(`/chats/${chatId}/read`, { method: 'POST' }),
   blockChatPartner: (chatId) => request(`/chats/${chatId}/block`, { method: 'POST' }),
   unblockChatPartner: (chatId) => request(`/chats/${chatId}/unblock`, { method: 'POST' }),

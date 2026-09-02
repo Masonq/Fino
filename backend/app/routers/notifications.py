@@ -99,3 +99,12 @@ def mark_all_read(user: User = Depends(get_current_user), db: Session = Depends(
     )
     db.commit()
     return {"status": "ok"}
+
+
+@router.delete("")
+def delete_all(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Очистить весь список разом — по одному удалять два десятка
+    накопившихся уведомлений незачем."""
+    n = db.query(Notification).filter(Notification.user_id == user.id).delete()
+    db.commit()
+    return {"status": "ok", "deleted": n}

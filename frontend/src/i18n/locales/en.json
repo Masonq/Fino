@@ -696,7 +696,9 @@
     "title": "Notifications",
     "empty": "No notifications yet — listing decisions, chat replies, and matches for your saved searches will show up here.",
     "need_auth": "Sign in to see your notifications.",
-    "read_all": "Mark all read"
+    "read_all": "Mark all read",
+    "clear_all": "Clear",
+    "clear_all_confirm": "Delete all notifications?"
   },
   "ldash": {
     "title": "Listing stats",

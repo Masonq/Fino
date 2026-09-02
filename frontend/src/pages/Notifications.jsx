@@ -70,6 +70,14 @@ export default function Notifications() {
     api.deleteNotification(n.id).catch(() => {})
   }
 
+  const clearAll = () => {
+    if (!window.confirm(t('notif.clear_all_confirm'))) return
+    setOpenId(null)
+    setItems([])
+    setTotal(0)
+    api.deleteAllNotifications().catch(() => {})
+  }
+
   const hasUnread = items.some((n) => !n.is_read)
 
   if (!userId) {
@@ -97,6 +105,9 @@ export default function Notifications() {
       <PageHeader title={t('notif.title')}>
         {hasUnread && (
           <button className="notif-read-all" onClick={readAll}>{t('notif.read_all')}</button>
+        )}
+        {items.length > 0 && (
+          <button className="notif-clear-all" onClick={clearAll}>{t('notif.clear_all')}</button>
         )}
       </PageHeader>
 

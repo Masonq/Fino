@@ -166,7 +166,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   white-space:pre-line;
 }
 .notif-time{ font-size:11px; color:var(--muted); margin-top:5px; padding-left:14px; }
+/* margin-left:auto только у первой из кнопок в шапке — она отжимает
+   от заголовка сразу обе, вторая просто встаёт рядом. Раньше кнопка
+   была одна, и auto стоял прямо на ней. */
 .notif-read-all{ font-size:12.5px; font-weight:700; color:var(--primary-deep); margin-left:auto; }
+.notif-clear-all{ font-size:12.5px; font-weight:700; color:var(--muted); margin-left:auto; }
+.notif-read-all + .notif-clear-all{ margin-left:14px; }
 
 /* Свайп-удаление — красная кнопка лежит неподвижно под строкой,
    сама строка (.notif-row) едет по ней translateX'ом при свайпе, тем

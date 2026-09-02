@@ -697,7 +697,9 @@
     "title": "Obaveštenja",
     "empty": "Još nema obaveštenja — ovde će se pojaviti odluke o oglasima, odgovori u ćaskanjima i novo po vašim pretragama.",
     "need_auth": "Prijavite se da biste videli svoja obaveštenja.",
-    "read_all": "Označi sve kao pročitano"
+    "read_all": "Označi sve kao pročitano",
+    "clear_all": "Obriši",
+    "clear_all_confirm": "Obrisati sva obaveštenja?"
   },
   "ldash": {
     "title": "Statistika oglasa",
