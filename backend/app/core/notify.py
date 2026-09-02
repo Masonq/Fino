@@ -30,25 +30,103 @@ def _send_email(to: str, code: str) -> None:
     должен быть виден сразу, крупно, без поиска глазами: остальное
     вокруг него.
     """
-    # Без разметки. Apple отклоняет наше письмо с кодом по содержимому
-    # («554 5.7.1 [HM07] ... rejected due to local policy», в журнале
-    # Resend — «Blocked due to content»), и это уже третий заход: сперва
-    # убрали нарядность, потом все ссылки — не помогло ни то, ни другое.
+    # С разметкой — как и было. Разметку однажды убрали, решив, что
+    # из-за неё Apple отклоняет письмо. Проверка это опровергла: отказ
+    # пришёл и на письмо из шести цифр простым текстом. Дело в
+    # репутации домена, а не в содержимом — Apple прямо пишет, что
+    # решение о фильтрации принимает по репутации адресов и домена.
     #
-    # Значит дело не в отдельной детали оформления, а в самом сочетании:
-    # письмо с кодом, свёрстанное таблицами и цветными блоками, для
-    # фильтра неотличимо от поддельного. У простого текста анализировать
-    # нечего — три строки и цифры, — и такие письма проходят.
-    #
-    # Красивое письмо тут стоит дешевле, чем вход в аккаунт: если код не
-    # доходит, человек не может войти вообще никак.
-    _send_email_text(to, SUBJECT, BODY.format(code=code))
+    # Раз оформление ни при чём, письмо снова выглядит как письмо.
+    # Простой текст уходит вместе с ним (см. _send_via_resend): часть
+    # людей читает почту без разметки.
+    _send_email_text(to, SUBJECT, BODY.format(code=code),
+                     html=_code_letter(code))
 
 
-# Разметки у письма с кодом больше нет — см. _send_email выше. Держать
-# её «на всякий случай» неоткуда: два захода на переделку оформления
-# Apple не пропустил, а неиспользуемый код через полгода перестанут
-# понимать и вернут обратно, не разобравшись, почему его убрали.
+def _code_letter(code: str) -> str:
+    """
+    Разметка письма с кодом.
+
+    Apple отклонял письмо целиком: «554 5.7.1 [HM07] Message rejected
+    due to local policy» с советом «измените содержимое». Первая
+    попытка — убрать всю нарядность (цветной логотип, код в цветной
+    рамке) — тоже стоит проверить отдельно от второй гипотезы: код
+    вместе с кликабельной ссылкой в одном письме — классический
+    рисунок фишингового письма («подтвердите вход, вот код, вот
+    ссылка»), встречается чаще, чем цветные блоки сами по себе.
+    Возвращаю нарядный вид, но без единой ссылки в письме — ни в
+    логотипе (он и раньше не был ссылкой), ни в подвале.
+
+    Всё вписано прямо в разметку: почтовые службы не грузят внешние
+    стили, а половина из них ещё и режет то, чего не понимает.
+    """
+    return f"""<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>{SUBJECT}</title></head>
+<body style="margin:0;padding:0;background:#f4f6f5;
+             font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+       style="background:#f4f6f5;padding:32px 16px;">
+<tr><td align="center">
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+       style="max-width:440px;background:#ffffff;border-radius:20px;
+              overflow:hidden;box-shadow:0 1px 3px rgba(16,24,40,.06);">
+
+  <tr><td align="center" style="padding:32px 32px 8px;">
+    <!-- Логотип рисуем разметкой, а не картинкой: письмо с одним
+         изображением и коротким текстом почтовые службы считают
+         подозрительным, да и картинки многие не грузят вовсе. -->
+    <div style="width:52px;height:52px;line-height:52px;border-radius:14px;
+                background:#0E9F6E;color:#ffffff;
+                font-size:26px;font-weight:700;">P</div>
+  </td></tr>
+
+  <tr><td align="center" style="padding:12px 32px 0;">
+    <div style="font-size:19px;font-weight:700;color:#101828;">
+      Вход на PLONK
+    </div>
+  </td></tr>
+
+  <tr><td align="center" style="padding:24px 32px 8px;">
+    <div style="display:inline-block;padding:14px 28px;border-radius:14px;
+                background:#f0fdf6;border:1px solid #d1fae0;
+                font-size:32px;font-weight:700;letter-spacing:8px;
+                color:#0E9F6E;font-family:'SF Mono',Menlo,monospace;">
+      {code}
+    </div>
+  </td></tr>
+
+  <tr><td align="center" style="padding:4px 32px 28px;">
+    <div style="font-size:13px;color:#98a2b3;">
+      Код действует 15 минут
+    </div>
+  </td></tr>
+
+  <tr><td style="padding:0 32px;">
+    <div style="height:1px;background:#eaecf0;"></div>
+  </td></tr>
+
+  <tr><td align="center" style="padding:20px 32px 28px;">
+    <div style="font-size:13px;line-height:19px;color:#98a2b3;">
+      Если вы не запрашивали код — просто не отвечайте на письмо.
+      Без кода войти в ваш профиль нельзя.
+    </div>
+  </td></tr>
+
+</table>
+
+<!-- Раньше «PLONK» тут было ссылкой на сайт — убрал: во всём письме
+     теперь нет ни одной ссылки, только код, который вводят руками. -->
+<div style="margin-top:20px;font-size:12px;color:#98a2b3;">
+  PLONK &nbsp;·&nbsp; объявления в Сербии
+</div>
+
+</td></tr>
+</table>
+</body></html>"""
+
 
 def _send_telegram(chat_id: str, code: str) -> None:
     token = getattr(settings, "telegram_bot_token", None)
