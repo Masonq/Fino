@@ -453,16 +453,32 @@ export default function ListingDetail() {
   }
 
   if (!listing) {
-    // Скелетон вместо надписи: страница объявления загружается заметно,
-    // и пустой экран с текстом выглядит как ошибка.
+    // Скелетон повторяет реальную раскладку страницы блок в блок и по
+    // высотам (см. .detail-price/.detail-title/.seller-row/.attr-row в
+    // styles.css), а не четыре условные полоски: раньше настоящее
+    // содержимое при подстановке было заметно выше скелетона, и
+    // страница резко прыгала вниз в момент загрузки — особенно
+    // бросалось в глаза на карточке продавца, которой в скелетоне не
+    // было вовсе.
     return (
       <div className="detail-page">
         <div className="detail-photo sk-block" />
         <div className="detail-sheet">
-          <div className="sk-block sk-line" style={{ height: 26, width: '45%', marginTop: 4 }} />
-          <div className="sk-block sk-line" style={{ height: 17, width: '85%', marginTop: 14 }} />
-          <div className="sk-block sk-line" style={{ height: 17, width: '60%', marginTop: 8 }} />
-          <div className="sk-block sk-line" style={{ height: 13, width: '35%', marginTop: 18 }} />
+          {/* цена — 25px */}
+          <div className="sk-block sk-line" style={{ height: 25, width: '48%' }} />
+          {/* заголовок — 17.5px, line-height 1.3, marginTop 12 */}
+          <div className="sk-block sk-line" style={{ height: 23, width: '90%', marginTop: 12 }} />
+          <div className="sk-block sk-line" style={{ height: 23, width: '65%', marginTop: 4 }} />
+          {/* карточка продавца — .seller-row: 46px аватар + padding 15px, marginTop 20 */}
+          <div className="sk-block" style={{ height: 76, borderRadius: 17, marginTop: 20 }} />
+          {/* кнопки связи — .sticky-cta */}
+          <div className="sk-block" style={{ height: 48, borderRadius: 14, marginTop: 12 }} />
+          {/* «Местоположение» — заголовок 13.5px + строка города 12px */}
+          <div className="sk-block sk-line" style={{ height: 14, width: '38%', marginTop: 22 }} />
+          <div className="sk-block sk-line" style={{ height: 12, width: '30%', marginTop: 8 }} />
+          {/* «Характеристики» + две строки .attr-row по 11px padding */}
+          <div className="sk-block sk-line" style={{ height: 14, width: '42%', marginTop: 22 }} />
+          <div className="sk-block" style={{ height: 88, borderRadius: 14, marginTop: 8 }} />
         </div>
       </div>
     )
