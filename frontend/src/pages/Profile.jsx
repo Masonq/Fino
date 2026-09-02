@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -9,6 +10,7 @@ import LanguageSwitcher from '../components/LanguageSwitcher'
 import PushToggle from '../components/PushToggle'
 import BalanceCard from '../components/BalanceCard'
 import useStickyColumn from '../hooks/useStickyColumn'
+import { api } from '../api/client'
 
 /**
  * Почта в карточке — с точкой переноса перед «собакой».
@@ -38,6 +40,20 @@ export default function Profile() {
   // Вызываем до ранних возвратов ниже — порядок хуков должен быть
   // одинаковым при любом состоянии загрузки.
   const sidebar = useStickyColumn(28, Boolean(user))
+
+  // Сколько ждёт разбора — числом прямо в служебном разделе, чтобы
+  // из профиля было видно, что там есть работа, и не приходилось
+  // заходить в каждую очередь наугад.
+  const isStaff = user?.role === 'moderator' || user?.role === 'admin'
+  const [queues, setQueues] = useState(null)
+  useEffect(() => {
+    if (!isStaff) { setQueues(null); return }
+    let alive = true
+    api.modCounters()
+      .then((res) => { if (alive) setQueues(res) })
+      .catch(() => {})
+    return () => { alive = false }
+  }, [isStaff])
 
   if (loading) {
     return (
@@ -247,6 +263,9 @@ export default function Profile() {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M20 6 9 17l-5-5" /></svg>
               </span>
               {t('admin.moderation')}
+              {queues?.moderation > 0 && (
+                <span className="profile-row-count">{queues.moderation}</span>
+              )}
               <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
             </Link>
             <Link className="profile-row" to="/admin/users">
@@ -275,6 +294,9 @@ export default function Profile() {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><circle cx="12" cy="12" r="9" /><path d="M12 16v.01M12 13c0-1.8 2-1.8 2-3.5A2 2 0 0 0 12 7.5 2 2 0 0 0 10 9.5" /></svg>
               </span>
               {t('support.queue')}
+              {queues?.support > 0 && (
+                <span className="profile-row-count">{queues.support}</span>
+              )}
               <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
             </Link>
           </div>

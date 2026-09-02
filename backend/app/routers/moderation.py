@@ -88,6 +88,34 @@ def _after_approve(listing_id) -> None:
             pass
 
 
+@router.get("/counters")
+def counters(
+    moderator: User = Depends(require_moderator),
+    db: Session = Depends(get_db),
+):
+    """
+    Сколько всего ждёт разбора — для служебного раздела в профиле.
+
+    Отдельный лёгкий запрос, а не две выборки очередей: профиль должен
+    показать два числа, а не тянуть ради них по полсотни объявлений и
+    обращений со всеми переводами и снимками.
+    """
+    from app.models import Ticket, TicketStatus
+
+    return {
+        "moderation": (
+            db.query(Listing)
+            .filter(Listing.status == ListingStatus.pending_moderation)
+            .count()
+        ),
+        "support": (
+            db.query(Ticket)
+            .filter(Ticket.status != TicketStatus.closed)
+            .count()
+        ),
+    }
+
+
 @router.get("/queue")
 def queue(
     lang: str = Query("ru"),

@@ -173,6 +173,9 @@ export const api = {
   }),
 
   modQueue: (lang, offset) => request(`/moderation/queue?${new URLSearchParams({ lang, offset: offset || 0 })}`),
+  // Два числа для служебного раздела в профиле: сколько объявлений ждёт
+  // проверки и сколько обращений без ответа.
+  modCounters: () => request('/moderation/counters'),
   modApprove: (id) => request(`/moderation/${id}/approve`, { method: 'POST' }),
   modReject: (id, reason) => request(`/moderation/${id}/reject`, {
     method: 'POST',

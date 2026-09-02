@@ -209,7 +209,34 @@ export default function ListingDetail() {
     }
 
     el.addEventListener('touchmove', onMove, { passive: false })
-    return () => el.removeEventListener('touchmove', onMove)
+
+    // Жест может не закончиться вовсе: система забирает касание себе —
+    // свайп от края экрана, входящий звонок, шторка уведомлений, — и
+    // тогда браузер шлёт touchcancel, а touchend не приходит совсем.
+    // Обработчика на этот случай не было, и просмотр оставался ровно
+    // там, где его бросил палец: сдвинутым вниз и почти прозрачным
+    // (touchmove доводит прозрачность до 0.3, а сдвиг легко уносит
+    // картинку за нижний край). Со стороны экран выглядит обычной
+    // страницей объявления, но поверх неё во всю высоту лежит
+    // невидимый слой (position:fixed, z-index 80) и забирает себе все
+    // нажатия — корзина, «поделиться», «в избранное» перестают
+    // работать, и помогает только перезагрузка страницы. Именно этот
+    // случай и ловили как «иногда не нажимается кнопка удалить».
+    //
+    // Возвращаем просмотр на место, как при недотянутом свайпе: жест
+    // прерван, а не завершён, закрывать по нему нельзя.
+    const onCancel = () => {
+      lightboxTouch.current = null
+      el.style.transition = 'transform .25s ease, opacity .25s ease'
+      el.style.transform = ''
+      el.style.opacity = ''
+      setTimeout(() => { if (el) el.style.transition = '' }, 250)
+    }
+    el.addEventListener('touchcancel', onCancel)
+    return () => {
+      el.removeEventListener('touchmove', onMove)
+      el.removeEventListener('touchcancel', onCancel)
+    }
   }, [fullscreen])
   const { isFavorite, toggle } = useFavorites()
   // listingId — короткий хвост из адреса (см. комментарий выше про

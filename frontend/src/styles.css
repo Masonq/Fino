@@ -1563,6 +1563,20 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .profile-row-icon svg{ width:17px; height:17px; }
 .profile-row-arrow{ width:16px; height:16px; margin-left:auto; color:var(--muted); flex-shrink:0; }
+/* Счётчик очереди в служебной строке («Модерация», «Обращения»).
+   Стоит вплотную к стрелке, а не сразу за названием: у строк разной
+   длины числа тогда выстраиваются в одну колонку по правому краю, а
+   не пляшут вслед за текстом. margin-left:auto — на нём, поэтому
+   стрелка своего auto уже не получает и остаётся рядом.
+   Показываем только когда есть что разбирать (условие в Profile.jsx):
+   ноль в кружке — это шум, а не сведения. */
+.profile-row-count{
+  margin-left:auto; min-width:22px; height:22px; padding:0 7px;
+  display:inline-flex; align-items:center; justify-content:center;
+  border-radius:11px; background:var(--primary); color:#fff;
+  font-size:12.5px; font-weight:800; font-variant-numeric:tabular-nums;
+}
+.profile-row-count + .profile-row-arrow{ margin-left:8px; }
 /* Строка настройки языка — не ссылка, ничего не открывает, сам
    переключатель уже интерактивен внутри неё. */
 .profile-row-static{ cursor:default; }
