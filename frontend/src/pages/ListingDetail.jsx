@@ -43,6 +43,38 @@ export default function ListingDetail() {
   // а разглядеть вещь перед покупкой — половина смысла объявления.
   const [fullscreen, setFullscreen] = useState(null)
   const [mapOpen, setMapOpen] = useState(false)
+  const [mapAddress, setMapAddress] = useState('')
+  const [addressCopied, setAddressCopied] = useState(false)
+
+  // Адрес текстом — координаты у нас есть, а самой строки «улица, дом»
+  // в базе нет вовсе (только город), так что переводим координаты в
+  // читаемый адрес тем же бесплатным Nominatim, что уже используется
+  // в LocationPicker для обратной задачи (поиск адреса по тексту).
+  useEffect(() => {
+    if (!mapOpen || !listing?.location_lat) return
+    setMapAddress('')
+    const controller = new AbortController()
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${listing.location_lat}&lon=${listing.location_lng}&zoom=17&addressdetails=1`
+    fetch(url, { signal: controller.signal, headers: { 'Accept-Language': lang } })
+      .then((r) => r.json())
+      .then((data) => {
+        // display_name — длинная строка вида «6, Театральная улица,
+        // Новый Белград, ...» — обрезаем до 3 первых частей (дом+улица,
+        // район), дальше уже страна/почтовый индекс, никому не нужны.
+        const parts = (data?.display_name || '').split(',').map((s) => s.trim())
+        setMapAddress(parts.slice(0, 3).join(', ') || displayCity(listing.city, lang))
+      })
+      .catch(() => setMapAddress(displayCity(listing.city, lang)))
+    return () => controller.abort()
+  }, [mapOpen, listing?.location_lat, listing?.location_lng, listing?.city, lang])
+
+  const copyAddress = () => {
+    if (!mapAddress) return
+    navigator.clipboard.writeText(mapAddress).then(() => {
+      setAddressCopied(true)
+      setTimeout(() => setAddressCopied(false), 1500)
+    }).catch(() => {})
+  }
 
   // При открытом просмотре страница под ним не должна прокручиваться:
   // иначе закрываешь снимок и оказываешься в другом месте объявления.
@@ -1041,7 +1073,17 @@ export default function ListingDetail() {
             height="100%"
           />
           <div className="map-page-address">
-            {displayCity(listing.city, lang)}
+            <span className="map-page-address-label">{t('detail.map_location_label')}</span>
+            <div className="map-page-address-row">
+              <span className="map-page-address-text">{mapAddress || displayCity(listing.city, lang)}</span>
+              <button type="button" className="map-page-copy-btn" onClick={copyAddress} aria-label={t('actions.copy')}>
+                {addressCopied ? (
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l5 5L19 7" /></svg>
+                ) : (
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M4 16V5a1 1 0 0 1 1-1h11" /></svg>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

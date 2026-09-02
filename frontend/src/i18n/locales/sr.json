@@ -165,7 +165,8 @@
     "edit_filters": "Izmeni filtere",
     "cancel": "Otkaži",
     "clear": "Obriši",
-    "close": "Zatvori"
+    "close": "Zatvori",
+    "copy": "Kopiraj"
   },
   "post": {
     "step_params": "Detalji",
@@ -259,7 +260,8 @@
     "favorited_count": "{{count}} u omiljenima",
     "reserved_for_me": "Prodavac je ovo rezervisao za vas",
     "reserved_other": "Rezervisano od strane drugog kupca",
-    "map_learn_more": "Pogledaj na mapi"
+    "map_learn_more": "Pogledaj na mapi",
+    "map_location_label": "Lokacija"
   },
   "favorites": {
     "title": "Sačuvano",

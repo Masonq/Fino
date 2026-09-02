@@ -165,7 +165,8 @@
     "edit_filters": "Изменить фильтры",
     "cancel": "Отмена",
     "clear": "Очистить",
-    "close": "Закрыть"
+    "close": "Закрыть",
+    "copy": "Скопировать"
   },
   "post": {
     "step_params": "Параметры",
@@ -259,7 +260,8 @@
     "favorited_count": "{{count}} в избранном",
     "reserved_for_me": "Продавец забронировал это для вас",
     "reserved_other": "Забронировано другим покупателем",
-    "map_learn_more": "Узнать подробности"
+    "map_learn_more": "Узнать подробности",
+    "map_location_label": "Местоположение"
   },
   "favorites": {
     "title": "Избранное",

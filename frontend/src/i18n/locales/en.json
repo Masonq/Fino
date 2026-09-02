@@ -165,7 +165,8 @@
     "edit_filters": "Edit filters",
     "cancel": "Cancel",
     "clear": "Clear",
-    "close": "Close"
+    "close": "Close",
+    "copy": "Copy"
   },
   "post": {
     "step_params": "Details",
@@ -259,7 +260,8 @@
     "favorited_count": "{{count}} favorited",
     "reserved_for_me": "The seller reserved this for you",
     "reserved_other": "Reserved by another buyer",
-    "map_learn_more": "View on map"
+    "map_learn_more": "View on map",
+    "map_location_label": "Location"
   },
   "favorites": {
     "title": "Saved",
