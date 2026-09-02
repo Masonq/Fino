@@ -317,7 +317,10 @@ export default function PostAd() {
       // Показываем, что именно не так, а не общее «не получилось»
       const map = {
         empty_title: t('post.need_title'),
-        title_too_short: t('post.need_title'),
+        title_too_short: t('post.title_too_short'),
+        title_too_long: t('post.title_too_long'),
+        description_too_short: t('post.description_too_short'),
+        description_too_long: t('post.description_too_long'),
         bad_currency: t('post.err_currency'),
         too_many_listings_hour: t('limits.too_many_listings_hour'),
         too_many_listings_day: t('limits.too_many_listings_day'),
@@ -474,12 +477,12 @@ export default function PostAd() {
                   <div className="post-map-hint">{t('post.title_auto_hint')}</div>
                 </>
               ) : (
-                <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('post.title_ph')} />
+                <input type="text" maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('post.title_ph')} />
               )}
             </div>
             <div className="post-field">
               <label>{t('listing.description')}</label>
-              <textarea rows="4" value={description} onChange={(e) => setDescription(e.target.value)} />
+              <textarea rows="4" maxLength={4000} value={description} onChange={(e) => setDescription(e.target.value)} />
             </div>
             <div className="post-field">
               <label>{t('post.photos')} · {photos.length}/10</label>

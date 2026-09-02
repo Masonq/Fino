@@ -20,6 +20,22 @@ from app.core.clock import utcnow
 router = APIRouter(prefix="/api/listings", tags=["listings"])
 
 
+# Пороги длины. Нижняя граница — против заголовков вроде «Продам» и
+# описаний в одно слово: по такому объявлению нельзя понять, что
+# продают, и оно засоряет ленту. Верхняя — против полотен, вставленных
+# из чужого поста: в базе поле заголовка 255 знаков, а описания 4000, и
+# всё, что длиннее, молча обрезалось на середине слова.
+#
+# 10 знаков для заголовка — это «Стол Ikea» с запасом, но уже не
+# «Продам». 200 — предел читаемого в карточке: длиннее человек всё
+# равно не дочитает, а в ленте заголовок обрежется многоточием.
+TITLE_MIN, TITLE_MAX = 10, 200
+# Описание короче двадцати знаков не описывает ничего («Пишите в лс»),
+# но требовать больше нельзя: у половины вещей и правда нечего
+# добавить к названию и фотографии.
+DESCRIPTION_MIN, DESCRIPTION_MAX = 20, 4000
+
+
 class TranslationIn(BaseModel):
     language: str
     title: str
@@ -193,6 +209,20 @@ def create_listing(
     from app.core.rate_limit import check_listing_limit
     from app.models import UserRole
     check_listing_limit(db, user.id, is_business=user.role == UserRole.seller_business)
+
+    # Длину проверяем здесь, а не валидатором схемы: ошибка схемы
+    # уходит ответом 422 со списком внутри, а фронт читает код строкой —
+    # человек видел бы общее «не получилось» вместо причины.
+    for t in payload.translations:
+        title, description = (t.title or "").strip(), (t.description or "").strip()
+        if len(title) < TITLE_MIN:
+            raise HTTPException(400, "title_too_short")
+        if len(title) > TITLE_MAX:
+            raise HTTPException(400, "title_too_long")
+        if len(description) < DESCRIPTION_MIN:
+            raise HTTPException(400, "description_too_short")
+        if len(description) > DESCRIPTION_MAX:
+            raise HTTPException(400, "description_too_long")
 
     owner_id = user.id
     category = db.query(Category).get(payload.category_id)

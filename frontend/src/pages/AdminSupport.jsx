@@ -42,11 +42,17 @@ export default function AdminSupport() {
       .finally(() => setLoaded(true))
   }, [tab])
 
+  // Следим за userId, а не за объектом пользователя: контекст обновляет
+  // его не один раз за загрузку (сперва то, что знали, потом ответ
+  // сервера), и каждая новая ссылка перезапускает эффект — список
+  // грузился дважды, а скелет показывался по второму разу. Та же
+  // правка, что на «Пользователях» и в «Журнале действий».
+  const userId = user?.id
   useEffect(() => {
     if (authLoading) return
-    if (!user) { navigate('/login', { replace: true }); return }
+    if (!userId) { navigate('/login', { replace: true }); return }
     load()
-  }, [authLoading, user, load, navigate])
+  }, [authLoading, userId, load, navigate])
 
   const openCard = async (id) => {
     if (openId === id) { setOpenId(null); setCard(null); return }

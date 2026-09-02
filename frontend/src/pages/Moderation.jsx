@@ -128,8 +128,11 @@ export default function Moderation() {
     finally { setBusyId(null) }
   }
 
+  // userId, а не объект: контекст обновляет пользователя не один раз за
+  // загрузку, и на каждую новую ссылку очередь перезапрашивалась заново.
+  const userId = user?.id
   useEffect(() => {
-    if (!user) { setLoaded(true); return }
+    if (!userId) { setLoaded(true); return }
     // Кэш уже настоящий список с той же прокруткой, что видел
     // модератор — если он есть И не устарел, доверяем ему и не
     // спрашиваем сервер заново. Иначе load() всегда запрашивает первую
@@ -138,7 +141,7 @@ export default function Moderation() {
     if (cache && Date.now() - cache.fetchedAt < CACHE_TTL) return
     load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, i18n.language])
+  }, [userId, i18n.language])
 
   const decide = async (id, approve, reason = null) => {
     setBusyId(id)
