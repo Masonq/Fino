@@ -165,10 +165,13 @@ def run(limit: int = DEFAULT_LIMIT, dry_run: bool = False) -> int:
         for listing, translation in items:
             new_title, how = _better_title(db, listing, translation, sections)
             if not new_title or new_title == translation.title:
-                print(f"  — {translation.title[:40]!r}: {how}")
+                print(f"  — {translation.title!r}: {how}")
                 continue
 
-            print(f"  {how}: {translation.title[:36]!r} → {new_title[:44]!r}")
+            # Печатаем целиком: обрезка в выводе однажды уже сбила с
+            # толку — ровные 44 знака выглядели как обрыв ответа модели,
+            # хотя обрывал их сам этот print.
+            print(f"  {how}: {translation.title!r} → {new_title!r}")
             changed += 1
             if dry_run:
                 continue
