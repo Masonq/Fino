@@ -72,10 +72,6 @@ export const api = {
       referred_by: localStorage.getItem('fino_ref') || null,
     }),
   }),
-  loginPassword: (email, password) => request('/auth/login', {
-    method: 'POST',
-    body: JSON.stringify({ email, password }),
-  }),
   oauthLogin: (payload) => request('/auth/oauth', {
     method: 'POST',
     body: JSON.stringify(payload),

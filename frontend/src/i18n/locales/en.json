@@ -333,10 +333,7 @@
     "terms_prefix": "By continuing, you agree to the",
     "terms_link": "Terms of Use",
     "terms_and": "and",
-    "privacy_link": "Privacy Policy",
-    "by_password": "Log in with password",
-    "password_ph": "Password",
-    "err_wrong_password": "Wrong email or password"
+    "privacy_link": "Privacy Policy"
   },
   "my": {
     "title": "My listings",

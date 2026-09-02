@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.core.auth import (
     create_access_token, generate_code, hash_code, verify_code,
-    hash_password, verify_password, get_current_user,
+    get_current_user,
 )
 from app.core.database import get_db
 from app.core.notify import send_code
@@ -58,22 +58,6 @@ class VerifyCodeIn(BaseModel):
     # регистрации нового человека имеет значение; для уже
     # существующего аккаунта просто игнорируется.
     referred_by: str | None = None
-
-
-class PasswordLoginIn(BaseModel):
-    email: EmailStr
-    password: str
-
-
-class SetPasswordIn(BaseModel):
-    password: str
-
-    @field_validator("password")
-    @classmethod
-    def check_length(cls, v: str) -> str:
-        if len(v) < 8:
-            raise ValueError("password_too_short")
-        return v
 
 
 class OAuthIn(BaseModel):
@@ -213,29 +197,16 @@ def verify_code_endpoint(payload: VerifyCodeIn, request: Request, db: Session = 
     return {"token": create_access_token(user.id, user.token_version), "user": _user_payload(user)}
 
 
-# ---------- вход по паролю ----------
-@router.post("/login")
-def login(payload: PasswordLoginIn, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == payload.email.lower()).first()
-    # одинаковая ошибка в обоих случаях — чтобы нельзя было выяснить, есть ли такой email
-    if not user or not verify_password(payload.password, user.hashed_password):
-        raise HTTPException(401, "invalid_credentials")
-    if user.is_blocked:
-        raise HTTPException(403, "user_blocked")
-
-    return {"token": create_access_token(user.id, user.token_version), "user": _user_payload(user)}
-
-
-@router.post("/set-password")
-def set_password(
-    payload: SetPasswordIn,
-    user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    user.hashed_password = hash_password(payload.password)
-    db.commit()
-    return {"status": "ok"}
-
+# Входа по паролю больше нет.
+#
+# Паролем пользовались трое из пяти, и у каждого была ещё почта, телефон
+# или Telegram — то есть дверь была лишней, а не единственной. Лишняя
+# дверь в систему входа это лишний способ её выбить: подбор пароля,
+# утечка с другого сайта, где человек использовал тот же.
+#
+# Остаётся одноразовый код на почту или в Telegram и вход через внешние
+# службы ниже. Колонку hashed_password в базе не трогаем: она никому не
+# мешает, а менять устройство таблицы на живой базе ради этого незачем.
 
 # ---------- внешние сервисы ----------
 @router.post("/oauth")
