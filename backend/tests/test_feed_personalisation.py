@@ -42,9 +42,26 @@ def test_interest_fades_with_time():
 def test_boost_is_capped_and_proportional():
     """Сильнейший интерес получает потолок, остальные — свою долю."""
     boosts = interest_boost({"auto": 10.0, "pets": 5.0, "jobs": 1.0})
-    assert boosts["auto"] == 1.0
-    assert boosts["pets"] == 0.5
-    assert boosts["jobs"] == 0.1
+    assert boosts["auto"] == 0.5
+    assert boosts["pets"] == 0.25
+    assert boosts["jobs"] == 0.05
+
+
+def test_subsection_weighs_more_than_section():
+    """Подраздел точнее раздела: «наушники» против «электроники».
+
+    Тот, кто всю неделю открывает наушники, хочет видеть наушники, а не
+    всю «Электронику» подряд. Раздел тоже поднимаем, но слабее — он
+    подсказывает смежное, вроде автокресел к коляскам.
+    """
+    from app.core.interests import SUB_CAP
+
+    section = max(interest_boost({"electronics": 10.0}).values())
+    subsection = max(interest_boost({"headphones": 10.0}, cap=SUB_CAP).values())
+    assert subsection > section
+    # Вместе не выходят за прежний общий потолок и остаются ниже
+    # стартового буста новых объявлений.
+    assert section + subsection <= 1.2
 
 
 def test_boost_never_outweighs_paid_promotion():
@@ -54,8 +71,11 @@ def test_boost_never_outweighs_paid_promotion():
     1.2. Прибавка за интерес должна быть меньше обоих: иначе купленное
     место и первые показы новичка съедает чужая история просмотров.
     """
-    top = max(interest_boost({"auto": 10.0}).values())
-    assert top < 1.2
+    from app.core.interests import SUB_CAP
+
+    top = (max(interest_boost({"auto": 10.0}).values())
+           + max(interest_boost({"cars": 10.0}, cap=SUB_CAP).values()))
+    assert top <= 1.2
 
     source = (Path(__file__).resolve().parents[1]
               / "app" / "routers" / "listings.py").read_text()

@@ -722,14 +722,30 @@ def search_listings(
 
         personal_boost = 0.0
         if viewer and not q_text and not category_slug:
-            from app.core.interests import category_interests, interest_boost
+            from app.core.interests import (
+                SUB_CAP, category_interests, interest_boost,
+            )
 
-            boosts = interest_boost(category_interests(db, viewer.id))
-            if boosts:
+            roots, subs = category_interests(db, viewer.id)
+            # Раздел — куда человек смотрит вообще, подраздел — что
+            # именно ищет. Смотревшему наушники поднимаем наушники, а не
+            # всю «Электронику»; сам раздел тоже поднимаем, но слабее —
+            # он подсказывает смежное, вроде автокресел к коляскам.
+            root_boosts = interest_boost(roots)
+            sub_boosts = interest_boost(subs, cap=SUB_CAP)
+            if root_boosts:
                 personal_boost = case(
                     *[
                         (root_category_id == cid, weight)
-                        for cid, weight in boosts.items()
+                        for cid, weight in root_boosts.items()
+                    ],
+                    else_=0.0,
+                )
+            if sub_boosts:
+                personal_boost = personal_boost + case(
+                    *[
+                        (Listing.category_id == cid, weight)
+                        for cid, weight in sub_boosts.items()
                     ],
                     else_=0.0,
                 )

@@ -53,9 +53,18 @@ def _root_id(category: Category | None):
     return category.parent_id or category.id
 
 
-def category_interests(db: Session, user_id, now=None) -> dict:
+def category_interests(db: Session, user_id, now=None) -> tuple[dict, dict]:
     """
-    {id раздела: вес} по истории человека. Пустой словарь — истории нет.
+    Веса разделов и подразделов по истории человека.
+
+    Возвращает две пары {id: вес}: по разделам верхнего уровня и по
+    подразделам. Пустые словари — истории нет.
+
+    Два уровня, а не один: раздел говорит, куда человек смотрит вообще,
+    подраздел — что именно он ищет. Тот, кто всю неделю открывает
+    наушники, хочет видеть наушники, а не всю «Электронику» подряд.
+    Раздел при этом тоже нужен — он подсказывает смежное: у смотревшего
+    коляски уместны и автокресла.
 
     Момент отсчёта округляем до часа. Иначе вес каждого события плыл бы
     непрерывно, а вместе с ним и порядок ленты: человек листает,
@@ -64,18 +73,25 @@ def category_interests(db: Session, user_id, now=None) -> dict:
     неустойчивой сортировкой; здесь её проще не создавать вовсе.
     """
     if not user_id:
-        return {}
+        return {}, {}
 
     now = (now or utcnow()).replace(minute=0, second=0, microsecond=0)
     since = now - timedelta(days=HISTORY_DAYS)
-    scores: dict = {}
+    roots: dict = {}
+    subs: dict = {}
 
     def add(category, when, weight):
-        root = _root_id(category)
-        if not root or when is None:
+        if not category or when is None:
             return
         age_days = max((now - when).total_seconds(), 0) / 86400.0
-        scores[root] = scores.get(root, 0.0) + weight * _decay(age_days)
+        value = weight * _decay(age_days)
+        root = _root_id(category)
+        if root:
+            roots[root] = roots.get(root, 0.0) + value
+        # Подраздел — только если он и правда подраздел: у объявления
+        # прямо в разделе верхнего уровня второго уровня нет.
+        if category.parent_id:
+            subs[category.id] = subs.get(category.id, 0.0) + value
 
     # Написал продавцу.
     contacts = (
@@ -116,10 +132,10 @@ def category_interests(db: Session, user_id, now=None) -> dict:
     for when, category in views:
         add(category, when, WEIGHT_VIEW)
 
-    return scores
+    return roots, subs
 
 
-def interest_boost(scores: dict, cap: float = 1.0) -> dict:
+def interest_boost(scores: dict, cap: float = 0.5) -> dict:
     """
     Веса разделов, приведённые к прибавке в формуле ранжирования.
 
@@ -132,8 +148,12 @@ def interest_boost(scores: dict, cap: float = 1.0) -> dict:
     Значение подобрано против штрафа за однообразие в ранжировании
     (DIVERSITY в listings.py): при 1.5 интерес перевешивал штраф, и вся
     первая страница у вошедшего оказывалась одним разделом — проверил
-    на выдаче. При 1.0 наверх выходят первые два-три объявления
-    интересного раздела, дальше идут остальные.
+    на выдаче.
+
+    Разделу достаётся половина прежней прибавки: вторую половину теперь
+    даёт подраздел (SUB_CAP ниже), и вместе они не должны выходить за
+    прежний потолок. Иначе интерес снова начнёт перевешивать
+    разнообразие.
     """
     if not scores:
         return {}
@@ -141,3 +161,10 @@ def interest_boost(scores: dict, cap: float = 1.0) -> dict:
     if top <= 0:
         return {}
     return {cid: cap * (weight / top) for cid, weight in scores.items()}
+
+
+# Потолок прибавки за подраздел. Он весомее раздела: «наушники» точнее
+# говорят о том, что человек ищет, чем «электроника». Вместе с разделом
+# даёт не больше прежней общей прибавки — чтобы не перевесить штраф за
+# однообразие и не отобрать место у оплаченного продвижения.
+SUB_CAP = 0.7
