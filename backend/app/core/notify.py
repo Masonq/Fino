@@ -209,8 +209,19 @@ def _send_email_text(to: str, subject: str, body: str,
     # они не доходят вовсе, и пробовать бессмысленно.
     gmail_ready = bool(settings.gmail_user and settings.gmail_app_password)
     if gmail_ready and _is_apple(to):
-        _send_via_gmail(to, subject, body)
-        return
+        try:
+            _send_via_gmail(to, subject, body)
+            return
+        except Exception:                                  # noqa: BLE001
+            # Не вышло — идём прежним путём. Обычно причина в том, что
+            # хостер закрывает исходящий почтовый порт (587 и 465), и
+            # соединение просто отваливается по времени.
+            #
+            # Через Resend письмо на iCloud, скорее всего, тоже
+            # отклонят, но «скорее всего» лучше, чем гарантированная
+            # ошибка: у человека остаётся шанс, а у нас — запись в
+            # журнале вместо упавшего запроса.
+            log.warning("Gmail недоступен для %s, пробую основной путь", to)
 
     if getattr(settings, "resend_api_key", None):
         try:

@@ -155,3 +155,18 @@ def test_login_warns_about_apple_addresses():
     assert "icloud_blocked" in page
     # Кнопка остаётся доступной, а не подменяется предупреждением.
     assert "onClick={sendCode}" in page
+
+
+def test_gmail_failure_does_not_lose_the_letter():
+    """Если Gmail недоступен, письмо уходит прежним путём.
+
+    Хостер закрывает исходящий почтовый порт, и соединение отваливается
+    по времени. Пока этого не заметили, письма на iCloud вообще
+    перестали отправляться: запрос падал с ошибкой вместо того, чтобы
+    хотя бы попробовать основной путь. Стало хуже, чем было.
+    """
+    source = inspect.getsource(_send_email_text)
+    gmail_branch = source.split("_is_apple(to)")[1].split("if getattr")[0]
+
+    assert "try:" in gmail_branch
+    assert "except Exception" in gmail_branch
