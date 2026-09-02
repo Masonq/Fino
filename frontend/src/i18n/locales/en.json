@@ -318,6 +318,7 @@
     "enter_telegram": "Your Telegram",
     "enter_telegram_hint": "We'll send a code on Telegram — enter your username",
     "get_code": "Get code",
+    "icloud_blocked": "Emails to iCloud addresses are not getting through at the moment. Better use another address.",
     "enter_code": "Enter the code",
     "code_sent": "Code sent to",
     "resend": "Send code again",

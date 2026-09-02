@@ -1406,6 +1406,15 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .auth-error{
   margin-top:14px; font-size:13px; color:var(--coral); text-align:center; max-width:300px;
 }
+/* Предупреждение про адреса iCloud. Не красное: это не ошибка человека
+   и не отказ — почта просто может не дойти, а отправить он всё равно
+   вправе. Красным он прочитал бы это как «так нельзя». */
+.auth-warning{
+  /* Отступы с обеих сторон одинаковые: на снимке было видно, что снизу
+     текст прилипает к кнопке, а сверху отходит от поля. */
+  margin:14px 0; font-size:13px; line-height:1.45; color:var(--muted);
+  text-align:center; max-width:300px;
+}
 .auth-terms{
   margin-top:auto; padding-top:24px; font-size:11.5px; color:var(--muted);
   text-align:center; max-width:280px; line-height:1.4;

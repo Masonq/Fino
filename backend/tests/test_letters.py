@@ -139,3 +139,19 @@ def test_gmail_letter_is_sent_from_google_address():
     source = inspect.getsource(_send_via_gmail)
     assert 'msg["From"] = f"PLONK <{user}>"' in source
     assert "smtp.gmail.com" in source
+
+
+def test_login_warns_about_apple_addresses():
+    """На странице входа предупреждаем про адреса iCloud.
+
+    Пока Apple отклоняет наши письма, честнее сказать человеку сразу, а
+    не заставлять ждать код, который не придёт. Кнопку «получить код»
+    при этом не убираем: человек вправе попробовать, а решение — его.
+    """
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "Login.jsx").read_text()
+
+    assert "isAppleMail" in page
+    assert "icloud_blocked" in page
+    # Кнопка остаётся доступной, а не подменяется предупреждением.
+    assert "onClick={sendCode}" in page
