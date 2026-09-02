@@ -563,6 +563,21 @@ def search_listings(
     # «сначала дешёвые» порядок обещан выбранным правилом.
     blend_by_section = False
 
+    # Момент отсчёта для всех «возрастов» в формуле — начало текущего
+    # часа, а не сейчас.
+    #
+    # Иначе оценка каждого объявления плывёт непрерывно: пока человек
+    # листает, объявления с близкими оценками могут поменяться местами,
+    # и одна карточка попадёт на обе страницы, а другая пропадёт.
+    #
+    # Оговорка о честности: повторы в ленте (3 на 80 карточек) этим не
+    # объясняются — воспроизвести их подменой времени не удалось. В тот
+    # момент шёл перенос из чатов и добавлял объявления, то есть состав
+    # ленты менялся прямо во время листания. Округление времени —
+    # страховка, снимающая один из источников сдвига, а не лечение той
+    # находки.
+    NOW = func.date_trunc("hour", func.now())
+
     PRICE_DATE_SORTS = {"new", "old", "cheap", "expensive"}
     if sort in PRICE_DATE_SORTS:
         order = {
@@ -573,7 +588,7 @@ def search_listings(
         }[sort]
     else:
         q = q.join(User, Listing.owner_id == User.id)
-        age_days = func.extract("epoch", func.now() - Listing.published_at) / 86400.0
+        age_days = func.extract("epoch", NOW - Listing.published_at) / 86400.0
         freshness = 1.0 / (1.0 + age_days / 7.0)
 
         from app.models import ListingViewDaily, ListingSignalDaily, Favorite, Chat
@@ -654,7 +669,7 @@ def search_listings(
         # это не замена продвижению, а гарантия точки старта для всех.
         EXPLORE_BOOST_MAX = 1.2
         EXPLORE_DECAY_HOURS = 4.0
-        age_hours = func.extract("epoch", func.now() - Listing.published_at) / 3600.0
+        age_hours = func.extract("epoch", NOW - Listing.published_at) / 3600.0
         explore_boost = case(
             (Listing.published_at.isnot(None), EXPLORE_BOOST_MAX * func.exp(-age_hours / EXPLORE_DECAY_HOURS)),
             else_=0.0,
@@ -685,7 +700,7 @@ def search_listings(
             .correlate(Listing)
             .scalar_subquery()
         )
-        bump_hours = func.extract("epoch", func.now() - bump_started) / 3600.0
+        bump_hours = func.extract("epoch", NOW - bump_started) / 3600.0
         bump_boost = case(
             (bump_started.isnot(None), BUMP_BOOST_MAX * func.exp(-bump_hours / BUMP_DECAY_HOURS)),
             else_=0.0,
@@ -791,7 +806,7 @@ def search_listings(
             )
             last_seen = func.max(seen_alias.created_at).over(
                 partition_by=Listing.id)
-            seen_days = func.extract("epoch", func.now() - last_seen) / 86400.0
+            seen_days = func.extract("epoch", NOW - last_seen) / 86400.0
             seen_penalty = case(
                 (last_seen.isnot(None),
                  SEEN_PENALTY_MAX * func.exp(-seen_days / SEEN_FADE_DAYS)),
