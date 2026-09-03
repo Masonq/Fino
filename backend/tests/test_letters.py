@@ -297,3 +297,26 @@ def test_gmail_path_sends_the_same_letter():
     finally:
         notify.smtplib.SMTP = saved_smtp
         (notify.settings.gmail_user, notify.settings.gmail_app_password) = saved
+
+
+def test_only_login_codes_go_to_email_for_now():
+    """На почту временно уходят только коды входа.
+
+    Apple начал отклонять наши письма (554 5.7.1 [HM07]). Проверили всё
+    по отдельности — путь отправки, отправителя, разметку, ссылки,
+    обратный адрес, тему: каждое письмо в отдельности доходит. Осталось
+    общее: почтовые службы смотрят на отправителя целиком, а мы слали с
+    одного адреса и коды, и уведомления, и ежедневную сводку. Письма,
+    которые не открывают, тянут доверие вниз — а с ним и доставку кодов.
+
+    Код важнее: без него человек не войдёт вообще. Уведомления идут в
+    Telegram и push-сообщением, сводка выключена расписанием на сервере.
+
+    Тест сторожит, чтобы отправку на почту не вернули незаметно: вернуть
+    её надо осознанно, когда доставка кодов устоится.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "notifications.py").read_text()
+
+    assert "EMAIL_NOTIFICATIONS_ON = False" in source
+    assert "if EMAIL_NOTIFICATIONS_ON and (allow_email or force)" in source
