@@ -38,25 +38,40 @@ def test_code_is_the_main_thing():
 
 def test_code_is_in_the_text_too():
     """Простой текст тоже несёт код: часть людей читает почту без разметки."""
-    text = BODY.format(code="482915")
+    text = BODY.format(code="482915", support="account@plonk.rs")
 
     assert "482915" in text
     # Срок жизни кода: без него человек не понимает, торопиться ли.
     assert "15" in text
 
 
-def test_no_links_in_code_letter():
-    """Ссылок в письме с кодом нет — ни в тексте, ни в разметке.
+def test_no_login_link_in_code_letter():
+    """В письме нет ссылки, по которой «подтверждают вход».
 
-    Код рядом с кликабельной ссылкой — рисунок поддельного письма
-    («подтвердите вход, вот код, вот ссылка»), и на него срабатывают
-    фильтры у всех, не только у Apple.
+    Ссылки в письме есть — на сайт, на разделы, на нашу почту. А вот
+    ссылки вида «нажмите, чтобы войти» нет и быть не должно: именно она
+    делает письмо похожим на поддельное и приучает человека нажимать на
+    такие ссылки в почте, а завтра ему пришлют такую же от чужого
+    имени. Код вводят руками.
+
+    Простой текст письма остаётся вовсе без ссылок: там их нечем
+    оформить, и голый адрес среди цифр читается плохо.
     """
     from app.core.notify import _code_letter
 
-    assert "http://" not in BODY.format(code="482915")
-    assert "https://" not in BODY.format(code="482915")
-    assert "href=" not in _code_letter("482915")
+    letter = _code_letter("482915")
+
+    assert "http://" not in BODY.format(code="482915", support="account@plonk.rs")
+    assert "https://" not in BODY.format(code="482915", support="account@plonk.rs")
+    # Ссылки ведут на сайт и на почту — и никуда больше.
+    import re
+    targets = re.findall(r'href="([^"]+)"', letter)
+    assert targets, "ссылки в письме должны быть"
+    for target in targets:
+        assert target.startswith(("https://plonk.rs", "mailto:")), target
+    # Никаких одноразовых входов по ссылке.
+    for word in ("token", "login?", "verify?", "confirm"):
+        assert word not in letter
 
 
 def test_code_letter_styles_are_inline():
@@ -128,7 +143,7 @@ def test_apple_goes_through_gmail_others_through_own_domain():
         notify.settings.gmail_app_password = "y"
         notify.settings.resend_api_key = "ключ"
         notify._gmail_blocked_until = 0.0
-        notify._send_via_gmail = lambda to, s, b: calls.append("gmail")
+        notify._send_via_gmail = lambda to, s, b, h=None: calls.append("gmail")
 
         notify._send_via_resend = lambda to, s, b, h=None: calls.append("свой домен")
 
@@ -157,6 +172,8 @@ def test_gmail_letter_is_sent_from_google_address():
     source = inspect.getsource(_send_via_gmail)
     assert 'msg["From"] = f"PLONK <{user}>"' in source
     assert "smtp.gmail.com" in source
+    # Письмо уходит таким же, как основным путём: и текстом, и разметкой.
+    assert 'msg.add_alternative(html, subtype="html")' in source
 
 
 def test_login_has_no_stale_warning():
@@ -194,7 +211,7 @@ def test_gmail_is_not_retried_after_failure():
              notify._send_via_resend, notify._send_via_gmail)
     calls = {"gmail": 0}
 
-    def fail_gmail(to, subject, body):
+    def fail_gmail(to, subject, body, html=None):
         calls["gmail"] += 1
         raise TimeoutError("порт закрыт")
 
