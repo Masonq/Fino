@@ -105,17 +105,17 @@ def test_notification_letter_keeps_its_markup():
 
 
 # ── Запасная отправка ───────────────────────────────────────────────────────
-def test_own_domain_first_gmail_as_backup():
-    """Сперва свой домен, запасной путь — только при отказе.
+def test_apple_goes_through_gmail_others_through_own_domain():
+    """Ящики Apple — сразу через Gmail, остальные своим доменом.
 
-    Пока Apple отклонял письма, они уходили на iCloud сразу через Gmail,
-    минуя свой домен. Теперь это вредно: репутация домена растёт, только
-    когда с него шлют, а отправитель с чужого адреса выглядит хуже
-    собственного.
+    Пробовали иначе: сперва свой домен, Gmail запасным. Продержалось
+    недолго — письма на iCloud снова перестали доходить. Apple то
+    пропускает наши письма, то нет, и полагаться на это нельзя: человек
+    с таким ящиком просто не может войти, а понять почему ему неоткуда.
 
-    Запасной путь при этом остаётся — неизвестно, что именно помогло
-    (подтянувшаяся репутация или смена отправляющих адресов у Resend), и
-    откатиться может в любой день.
+    Репутация домена от этого на Apple не растёт, и отправитель с чужого
+    адреса выглядит хуже собственного — но работающий вход важнее
+    солидности. На всех остальных ящиках домен по-прежнему свой.
     """
     import app.core.notify as notify
 
@@ -130,20 +130,16 @@ def test_own_domain_first_gmail_as_backup():
         notify._gmail_blocked_until = 0.0
         notify._send_via_gmail = lambda to, s, b: calls.append("gmail")
 
-        # Обычный случай: письмо уходит со своего домена.
         notify._send_via_resend = lambda to, s, b, h=None: calls.append("свой домен")
+
+        # Ящик Apple — через Gmail, не пробуя свой домен.
         notify._send_email_text("a@icloud.com", "Код", "1")
-        assert calls == ["свой домен"]
-
-        # Свой домен отказал — подхватывает запасной.
-        calls.clear()
-
-        def refuse(*args, **kwargs):
-            raise RuntimeError("Apple отклонил")
-
-        notify._send_via_resend = refuse
-        notify._send_email_text("b@icloud.com", "Код", "2")
         assert calls == ["gmail"]
+
+        # Все прочие — своим доменом, как и раньше.
+        calls.clear()
+        notify._send_email_text("b@gmail.com", "Код", "2")
+        assert calls == ["свой домен"]
     finally:
         (notify.settings.gmail_user, notify.settings.gmail_app_password,
          notify.settings.resend_api_key, notify._gmail_blocked_until,
@@ -219,7 +215,9 @@ def test_gmail_is_not_retried_after_failure():
             except Exception:                              # noqa: BLE001
                 pass                                       # оба пути отказали
 
-        assert calls["gmail"] == 1        # пробуем один раз, дальше молча мимо
+        # Пробуем один раз: дальше идём сразу основным путём, не заставляя
+        # человека ждать те же секунды впустую.
+        assert calls["gmail"] == 1
         assert notify.GMAIL_TIMEOUT <= 5  # ждать дольше нельзя: это живой запрос
     finally:
         (notify.settings.gmail_user, notify.settings.gmail_app_password,
