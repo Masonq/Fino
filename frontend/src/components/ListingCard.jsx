@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { api } from '../api/client'
 import { useFavorites } from '../context/FavoritesContext'
 import { displayCity } from '../data/cities'
 import { formatPrice } from '../utils/money'
@@ -55,7 +56,15 @@ export default function ListingCard({ listing, large = false }) {
       {/* Адрес приходит от приложения: он одинаков везде — в ленте,
           в боте, в письме и в карте сайта. Запасной на случай старых
           записей. */}
-      <Link to={listing.path} className="s-photo-wrap">
+      <Link
+        to={listing.path}
+        className="s-photo-wrap"
+        // Пока палец лежит на карточке, объявление уже запрашивается: к
+        // моменту перехода ответ готов, и страница открывается без
+        // ожидания. На мышке — при наведении, по той же причине.
+        onTouchStart={() => api.prefetchListing(listing.id)}
+        onMouseEnter={() => api.prefetchListing(listing.id)}
+      >
         {listing.cover_is_video && listing.cover_video_url ? (
           <video
             className="s-cover-video"

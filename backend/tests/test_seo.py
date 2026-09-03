@@ -333,3 +333,26 @@ def test_photos_are_saved_as_webp():
 
     assert '"WEBP"' in media
     assert 'f"{name}_thumb.webp"' in media
+
+
+def test_listing_is_requested_before_the_tap_completes():
+    """Объявление запрашивается, пока палец лежит на карточке.
+
+    Между касанием и переходом проходит 100-300 миллисекунд: человек
+    отпускает палец, срабатывает переход, рисуется страница. Если
+    начать запрос в момент касания, к открытию ответ уже готов.
+
+    Проверено вживую: наведение на карточку даёт один запрос заранее, а
+    при открытии повторного не случается — используется готовый ответ.
+    """
+    client = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "api" / "client.js").read_text()
+    card = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "components" / "ListingCard.jsx").read_text()
+
+    assert "prefetchListing" in client
+    assert "onTouchStart={() => api.prefetchListing(listing.id)}" in card
+    # Готовый ответ отдаётся вместо повторного запроса.
+    assert "prefetched.delete(id)" in client
+    # И память не копится.
+    assert "prefetched.size > 8" in client

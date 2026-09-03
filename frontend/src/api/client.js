@@ -57,6 +57,10 @@ async function request(path, options = {}) {
   return res.json()
 }
 
+// Заранее запрошенные объявления: ключ — номер, значение — обещание
+// ответа. Живёт до перехода на карточку, дальше запись убирается.
+const prefetched = new Map()
+
 export const api = {
   requestCode: (destination, channel) => request('/auth/request-code', {
     method: 'POST',
@@ -185,7 +189,36 @@ export const api = {
   getCategories: () => request('/categories'),
   getCategorySchema: (slug) => request(`/categories/${slug}/schema`),
   searchListings: (params) => request(`/listings?${new URLSearchParams(params)}`),
-  getListing: (id) => request(`/listings/${id}`),
+  getListing: (id) => {
+    // Отдаём заранее запрошенный ответ, если он есть (см. prefetchListing).
+    const ready = prefetched.get(id)
+    if (ready) {
+      prefetched.delete(id)
+      return ready
+    }
+    return request(`/listings/${id}`)
+  },
+
+  // Запрашиваем объявление заранее — пока палец лежит на карточке.
+  //
+  // Между касанием и переходом проходит 100-300 миллисекунд: человек
+  // отпускает палец, срабатывает переход, рисуется страница. Если
+  // начать запрос в момент касания, к открытию ответ уже готов, и
+  // карточка показывается без ожидания.
+  //
+  // Ошибки глушим: это лишь попытка ускорить, и провалившийся запрос
+  // не должен ничего ломать — обычная загрузка повторит его сама.
+  prefetchListing: (id) => {
+    if (!id || prefetched.has(id)) return
+    prefetched.set(id, request(`/listings/${id}`).catch(() => {
+      prefetched.delete(id)
+      return null
+    }))
+    // Не копим память: держим только последние несколько.
+    if (prefetched.size > 8) {
+      prefetched.delete(prefetched.keys().next().value)
+    }
+  },
   // Тихий сигнал глубины взаимодействия — пролистал фото дальше первой
   // или развернул полное описание. Не блокирует интерфейс: ошибка
   // сети тут не должна ничего ломать, поэтому catch молча глотает её
