@@ -105,35 +105,49 @@ def test_notification_letter_keeps_its_markup():
 
 
 # ── Запасная отправка ───────────────────────────────────────────────────────
-def test_apple_addresses_go_through_gmail():
-    """Ящики Apple отправляем через Gmail.
+def test_own_domain_first_gmail_as_backup():
+    """Сперва свой домен, запасной путь — только при отказе.
 
-    Apple отклоняет наши письма целиком (554 5.7.1 [HM07] и [HM08]).
-    Проверено, что дело не в содержимом — отказ пришёл и на письмо из
-    шести цифр простым текстом, — и не в подписях: SPF, DKIM и DMARC на
-    месте. Apple не доверяет молодому домену, а репутация набирается
-    месяцами. Письмам с серверов Google он доверяет.
+    Пока Apple отклонял письма, они уходили на iCloud сразу через Gmail,
+    минуя свой домен. Теперь это вредно: репутация домена растёт, только
+    когда с него шлют, а отправитель с чужого адреса выглядит хуже
+    собственного.
+
+    Запасной путь при этом остаётся — неизвестно, что именно помогло
+    (подтянувшаяся репутация или смена отправляющих адресов у Resend), и
+    откатиться может в любой день.
     """
-    from app.core.notify import _is_apple
+    import app.core.notify as notify
 
-    assert _is_apple("maxsim@icloud.com")
-    assert _is_apple("ivan@me.com")
-    assert _is_apple("old@mac.com")
-    assert not _is_apple("person@gmail.com")
-    # Похожий, но чужой домен запасным путём не отправляем.
-    assert not _is_apple("x@icloud.com.ru")
+    saved = (notify.settings.gmail_user, notify.settings.gmail_app_password,
+             notify.settings.resend_api_key, notify._gmail_blocked_until,
+             notify._send_via_resend, notify._send_via_gmail)
+    calls = []
+    try:
+        notify.settings.gmail_user = "x@gmail.com"
+        notify.settings.gmail_app_password = "y"
+        notify.settings.resend_api_key = "ключ"
+        notify._gmail_blocked_until = 0.0
+        notify._send_via_gmail = lambda to, s, b: calls.append("gmail")
 
+        # Обычный случай: письмо уходит со своего домена.
+        notify._send_via_resend = lambda to, s, b, h=None: calls.append("свой домен")
+        notify._send_email_text("a@icloud.com", "Код", "1")
+        assert calls == ["свой домен"]
 
-def test_resend_failure_falls_back():
-    """Если основной путь отказал — пробуем запасной, а не теряем код.
+        # Свой домен отказал — подхватывает запасной.
+        calls.clear()
 
-    Молча потерять письмо нельзя: человек останется без входа и не
-    поймёт почему.
-    """
-    source = inspect.getsource(_send_email_text)
+        def refuse(*args, **kwargs):
+            raise RuntimeError("Apple отклонил")
 
-    assert "_send_via_gmail" in source
-    assert "except Exception" in source
+        notify._send_via_resend = refuse
+        notify._send_email_text("b@icloud.com", "Код", "2")
+        assert calls == ["gmail"]
+    finally:
+        (notify.settings.gmail_user, notify.settings.gmail_app_password,
+         notify.settings.resend_api_key, notify._gmail_blocked_until,
+         notify._send_via_resend, notify._send_via_gmail) = saved
 
 
 def test_gmail_letter_is_sent_from_google_address():
@@ -169,54 +183,45 @@ def test_login_has_no_stale_warning():
     assert "onClick={sendCode}" in page
 
 
-def test_gmail_failure_does_not_lose_the_letter():
-    """Если Gmail недоступен, письмо уходит прежним путём.
-
-    Хостер закрывает исходящий почтовый порт, и соединение отваливается
-    по времени. Пока этого не заметили, письма на iCloud вообще
-    перестали отправляться: запрос падал с ошибкой вместо того, чтобы
-    хотя бы попробовать основной путь. Стало хуже, чем было.
-    """
-    source = inspect.getsource(_send_email_text)
-    gmail_branch = source.split("_is_apple(to)")[1].split("if getattr")[0]
-
-    assert "try:" in gmail_branch
-    assert "except Exception" in gmail_branch
-
-
 def test_gmail_is_not_retried_after_failure():
-    """После первой неудачи Gmail не пробуем — человек не должен ждать.
+    """После неудачи запасной путь не пробуем полчаса.
 
-    Хостер закрывает исходящий почтовый порт, и соединение не
-    отказывается сразу, а молчит до истечения ожидания. Увидел на живом
-    экране: кнопка «отправляем…» висела серой все эти секунды, и так у
-    каждого, кто вводит адрес iCloud.
+    Хостер какое-то время закрывал исходящий почтовый порт, и соединение
+    не отказывалось сразу, а молчало до истечения ожидания. Кнопка
+    «отправляем…» висела серой все эти секунды — и так у каждого. Порт с
+    тех пор открыли, но зависеть от этого нельзя: закроют снова.
     """
     import app.core.notify as notify
 
     saved = (notify.settings.gmail_user, notify.settings.gmail_app_password,
-             notify.settings.resend_api_key, notify._gmail_blocked_until)
-    calls = {"gmail": 0, "resend": 0}
+             notify.settings.resend_api_key, notify._gmail_blocked_until,
+             notify._send_via_resend, notify._send_via_gmail)
+    calls = {"gmail": 0}
 
-    def fail(to, subject, body):
+    def fail_gmail(to, subject, body):
         calls["gmail"] += 1
         raise TimeoutError("порт закрыт")
+
+    def refuse(*args, **kwargs):
+        raise RuntimeError("Apple отклонил")
 
     try:
         notify.settings.gmail_user = "x@gmail.com"
         notify.settings.gmail_app_password = "y"
         notify.settings.resend_api_key = "ключ"
         notify._gmail_blocked_until = 0.0
-        notify._send_via_gmail = fail
-        notify._send_via_resend = lambda to, s, b, h=None: calls.__setitem__(
-            "resend", calls["resend"] + 1)
+        notify._send_via_gmail = fail_gmail
+        notify._send_via_resend = refuse
 
         for i in range(3):
-            notify._send_email_text(f"{i}@icloud.com", "Код", "123456")
+            try:
+                notify._send_email_text(f"{i}@icloud.com", "Код", "123456")
+            except Exception:                              # noqa: BLE001
+                pass                                       # оба пути отказали
 
         assert calls["gmail"] == 1        # пробуем один раз, дальше молча мимо
-        assert calls["resend"] == 3       # и ни одно письмо не потеряно
         assert notify.GMAIL_TIMEOUT <= 5  # ждать дольше нельзя: это живой запрос
     finally:
         (notify.settings.gmail_user, notify.settings.gmail_app_password,
-         notify.settings.resend_api_key, notify._gmail_blocked_until) = saved
+         notify.settings.resend_api_key, notify._gmail_blocked_until,
+         notify._send_via_resend, notify._send_via_gmail) = saved
