@@ -739,7 +739,10 @@
     "push_unsupported": "Nije podržano",
     "push_blocked": "Blokirano u pregledaču",
     "push_needs_install": "Dodajte sajt na početni ekran",
-    "push_error": "Nije uspelo uključivanje — pokušajte ponovo"
+    "push_error": "Nije uspelo uključivanje — pokušajte ponovo",
+    "sec_telegram": "MI NA TELEGRAMU",
+    "tg_chat": "PLONK ćaskanje",
+    "tg_bot": "Objavite oglas preko bota"
   },
   "verify": {
     "title": "Provera dokumenta",

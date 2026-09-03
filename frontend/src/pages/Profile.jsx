@@ -220,6 +220,30 @@ export default function Profile() {
         </Link>
       </div>
 
+      {/* Telegram: чат и бот.
+          Ссылки внешние, поэтому обычные <a>, а не Link — Link уводил бы
+          внутрь приложения по несуществующему адресу. Открываем в новой
+          вкладке: человек не должен терять то, что смотрел на сайте. */}
+      <div className="profile-section-title">{t('profile.sec_telegram')}</div>
+      <div className="profile-menu">
+        <a className="profile-row" href="https://t.me/Baraholka_Plonk"
+           target="_blank" rel="noopener noreferrer">
+          <span className="profile-row-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M21 4 3 11l6 2 2 6 3-4 5 4 2-15Z" /><path d="m9 13 8-6" /></svg>
+          </span>
+          {t('profile.tg_chat')}
+          <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+        </a>
+        <a className="profile-row" href="https://t.me/Baraholka_plonk_bot"
+           target="_blank" rel="noopener noreferrer">
+          <span className="profile-row-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><rect x="3" y="8" width="18" height="12" rx="3" /><circle cx="9" cy="14" r="1.2" fill="currentColor" stroke="none" /><circle cx="15" cy="14" r="1.2" fill="currentColor" stroke="none" /><path d="M12 8V4.5M10.5 4.5h3" /></svg>
+          </span>
+          {t('profile.tg_bot')}
+          <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+        </a>
+      </div>
+
       <div className="profile-section-title">{t('profile.sec_info')}</div>
       <div className="profile-menu">
         <Link className="profile-row" to="/support">

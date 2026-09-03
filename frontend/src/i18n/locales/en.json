@@ -738,7 +738,10 @@
     "push_unsupported": "Not supported",
     "push_blocked": "Blocked in browser",
     "push_needs_install": "Add to Home Screen first",
-    "push_error": "Could not turn on — try again"
+    "push_error": "Could not turn on — try again",
+    "sec_telegram": "WE ON TELEGRAM",
+    "tg_chat": "PLONK chat",
+    "tg_bot": "Post a listing via the bot"
   },
   "verify": {
     "title": "Identity verification",
