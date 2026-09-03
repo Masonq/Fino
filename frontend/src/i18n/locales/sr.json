@@ -51,7 +51,9 @@
     "delivery_available": "Dostava dostupna",
     "safe_deal": "Sigurna kupovina",
     "urgent": "Hitno",
-    "select_subcategory": "Izaberite odeljak"
+    "select_subcategory": "Izaberite odeljak",
+    "sound_on": "Uključi zvuk",
+    "sound_off": "Isključi zvuk"
   },
   "search": {
     "placeholder_full": "Šta tražite?",

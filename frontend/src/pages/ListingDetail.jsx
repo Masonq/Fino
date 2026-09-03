@@ -119,6 +119,9 @@ export default function ListingDetail() {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const [listing, setListing] = useState(null)
+  // Звук у видео: по умолчанию выключен — иначе объявление начинает
+  // говорить, едва человек его открыл, и это пугает.
+  const [videoMuted, setVideoMuted] = useState(true)
 
   // Запоминаем просмотр — чтобы человек мог вернуться к тому, что
   // смотрел.
@@ -693,20 +696,44 @@ export default function ListingDetail() {
                 onClick={ph.is_video ? undefined : () => setFullscreen(i)}
               >
                 {ph.is_video ? (
-                  // Видео — со своими элементами управления (звук,
-                  // полный экран), поэтому без onClick на весь слайд:
-                  // иначе тап по самим контролам открывал бы ещё и
-                  // лайтбокс поверх них.
-                  <video
-                    className="photo-main"
-                    src={ph.url}
-                    poster={ph.thumbnail_url}
-                    autoPlay
-                    muted
-                    loop
-                    controls
-                    playsInline
-                  />
+                  // Видео играет само, без звука и по кругу — как живое
+                  // фото. Кнопок браузера здесь нет намеренно: они
+                  // рисуются поверх видео крупными кружками — пауза, две
+                  // перемотки, раскрытие в углу — и закрывают наши
+                  // кнопки сверху, да и само видео. Видно на снимке
+                  // объявления с видео.
+                  //
+                  // Вместо них: своя кнопка звука в углу и тап по видео,
+                  // открывающий полный экран. Там кнопки браузера
+                  // остаются — на весь экран они уместны и никому не
+                  // мешают.
+                  <>
+                    <video
+                      className="photo-main"
+                      src={ph.url}
+                      poster={ph.thumbnail_url}
+                      autoPlay
+                      muted={videoMuted}
+                      loop
+                      playsInline
+                      onClick={() => setFullscreen(i)}
+                    />
+                    <button
+                      className="photo-sound"
+                      onClick={(e) => { e.stopPropagation(); setVideoMuted((m) => !m) }}
+                      aria-label={videoMuted ? t('listing.sound_on') : t('listing.sound_off')}
+                    >
+                      {videoMuted ? (
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M11 5 6 9H3v6h3l5 4V5z" /><path d="m17 9 4 6" /><path d="m21 9-4 6" />
+                        </svg>
+                      ) : (
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M11 5 6 9H3v6h3l5 4V5z" /><path d="M16 8a5 5 0 0 1 0 8" />
+                        </svg>
+                      )}
+                    </button>
+                  </>
                 ) : (
                   <>
                     <img className="photo-blur" src={ph.url} alt="" aria-hidden="true" />

@@ -51,7 +51,9 @@
     "delivery_available": "Доставка доступна",
     "safe_deal": "Безопасная сделка",
     "urgent": "Срочно",
-    "select_subcategory": "Уточните раздел"
+    "select_subcategory": "Уточните раздел",
+    "sound_on": "Включить звук",
+    "sound_off": "Выключить звук"
   },
   "search": {
     "placeholder_full": "Что ищете?",

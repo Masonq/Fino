@@ -51,7 +51,9 @@
     "delivery_available": "Delivery available",
     "safe_deal": "Safe deal",
     "urgent": "Urgent",
-    "select_subcategory": "Choose a section"
+    "select_subcategory": "Choose a section",
+    "sound_on": "Turn sound on",
+    "sound_off": "Turn sound off"
   },
   "search": {
     "placeholder_full": "What are you looking for?",

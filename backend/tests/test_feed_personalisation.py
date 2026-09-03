@@ -271,3 +271,29 @@ def test_history_stores_the_full_listing_id():
     assert "FULL_ID.test" in store
     # Сервер не отказывает всему запросу из-за одного негодного номера.
     assert 'raise HTTPException(400, "bad_ids")' not in api
+
+
+def test_video_has_no_browser_controls_in_the_card():
+    """У видео в карточке нет кнопок браузера.
+
+    Браузер рисует поверх видео крупные кружки — пауза, две перемотки,
+    раскрытие в углу — и они закрывают и наши кнопки сверху, и само
+    видео. Видно на снимке объявления с видео.
+
+    Вместо них своя кнопка звука в углу и тап по видео, открывающий
+    полный экран. Там кнопки браузера остаются: на весь экран они
+    уместны и никому не мешают.
+
+    Проверено вживую: кнопок браузера нет, звук выключен по умолчанию
+    (иначе объявление начинает говорить, едва его открыли), своя кнопка
+    не перекрывает кружки сверху.
+    """
+    detail = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "pages" / "ListingDetail.jsx").read_text()
+
+    card = detail.split("photo-main")[1].split(") : (")[0]
+    assert "controls" not in card
+    assert "muted={videoMuted}" in detail
+    assert "photo-sound" in detail
+    # А в полноэкранном просмотре — остаются.
+    assert "controls playsInline" in detail
