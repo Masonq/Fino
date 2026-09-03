@@ -167,6 +167,34 @@ def main() -> int:
                         page.wait_for_timeout(2500)
                         page.screenshot(
                             path=str(SHOTS / f"{device_name}-{label}.png"), full_page=True)
+
+                        # Вход проходим до конца, а не смотрим первый
+                        # экран.
+                        #
+                        # Однажды со страницы входа пропали две
+                        # константы — вырезал их вместе с соседним
+                        # блоком, — и экран с кодом падал прямо в
+                        # браузере: войти было нельзя вовсе. Проверка
+                        # этого не заметила, потому что дальше выбора
+                        # способа не заходила. Ошибка живёт на шаге,
+                        # куда никто не доходил.
+                        if label == "вход":
+                            page.click("text=/почт|Email|E-mail/i", timeout=5000)
+                            page.wait_for_timeout(600)
+                            page.fill("input", "проверка@plonk.rs")
+                            page.wait_for_timeout(400)
+                            page.screenshot(
+                                path=str(SHOTS / f"{device_name}-вход-адрес.png"))
+                            # Экран с кодом: открываем его напрямую,
+                            # чтобы не слать настоящее письмо.
+                            page.evaluate("""() => sessionStorage.setItem('plonk_login',
+                                JSON.stringify({step:'code', channel:'email',
+                                                destination:'проверка@plonk.rs',
+                                                sentAt: Date.now()}))""")
+                            page.reload(wait_until="networkidle", timeout=40000)
+                            page.wait_for_timeout(2000)
+                            page.screenshot(
+                                path=str(SHOTS / f"{device_name}-вход-код.png"))
                     except Exception as exc:
                         errors.append(f"страница не открылась: {exc}")
 

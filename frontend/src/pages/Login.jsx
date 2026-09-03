@@ -8,6 +8,15 @@ import { useAuth } from '../context/AuthContext'
 // надёжнее, чем повторять в разметке.
 const TELEGRAM_BOT = 'Baraholka_plonk_bot'
 
+// Длина кода и пауза до повторной отправки.
+//
+// Пропали однажды вместе с блоком про адреса iCloud: убирая его, я
+// вырезал кусок файла целиком и захватил заодно эти две строки. Страница
+// входа после этого падала с «Can't find variable: RESEND_SEC» — то
+// есть войти нельзя было вовсе, а сборка и проверки этого не заметили.
+const CODE_LEN = 6
+const RESEND_SEC = 60
+
 export default function Login() {
   const { t } = useTranslation()
   const navigate = useNavigate()
