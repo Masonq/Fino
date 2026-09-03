@@ -16,16 +16,18 @@ SUBJECT = "Код для входа на PLONK"
 
 # Текстовая версия письма. Уходит вместе с разметкой и должна нести то
 # же самое: часть людей читает почту без оформления, и обкрадывать их
-# незачем. Адреса здесь без разметки — голая ссылка среди цифр читается
-# плохо, поэтому только почта для связи, её всё равно копируют руками.
+# незачем.
+#
+# Приглашения написать нам здесь нет: ящика на домене не существует —
+# запись MX у plonk.rs ведёт на сервер, где почты нет, и письма
+# отбиваются. Звать людей писать туда, откуда ответа не будет, хуже,
+# чем не звать вовсе. Появится настоящий ящик — вернём.
 BODY = """Ваш код подтверждения: {code}
 
 Код действует 15 минут.
 
 Код запросили при входе на сайте. Если это были не вы — просто не
 отвечайте на письмо: без кода в профиль никто не войдёт.
-
-Не получается войти — напишите нам: {support}
 
 PLONK — объявления в Белграде и по всей Сербии
 """
@@ -48,8 +50,7 @@ def _send_email(to: str, code: str) -> None:
     # Раз оформление ни при чём, письмо снова выглядит как письмо.
     # Простой текст уходит вместе с ним (см. _send_via_resend): часть
     # людей читает почту без разметки.
-    support = getattr(settings, "support_email", "account@plonk.rs")
-    _send_email_text(to, SUBJECT, BODY.format(code=code, support=support),
+    _send_email_text(to, SUBJECT, BODY.format(code=code),
                      html=_code_letter(code))
 
 
@@ -77,7 +78,6 @@ def _code_letter(code: str) -> str:
     # портом, для файлов. Человек по нему попал бы на служебный адрес
     # вместо сайта.
     site = settings.site_base_url.rstrip("/")
-    support = getattr(settings, "support_email", "account@plonk.rs")
 
     return f"""<!DOCTYPE html>
 <html lang="ru"><head><meta charset="utf-8">
@@ -127,18 +127,10 @@ def _code_letter(code: str) -> str:
     <div style="height:1px;background:#eaecf0;"></div>
   </td></tr>
 
-  <tr><td align="center" style="padding:20px 32px 12px;">
+  <tr><td align="center" style="padding:20px 32px 28px;">
     <div style="font-size:13px;line-height:19px;color:#98a2b3;">
       Код запросили при входе на сайте. Если это были не вы — просто
       не отвечайте на письмо: без кода в профиль никто не войдёт.
-    </div>
-  </td></tr>
-
-  <tr><td align="center" style="padding:0 32px 28px;">
-    <div style="font-size:13px;line-height:19px;color:#98a2b3;">
-      Не получается войти — напишите нам:
-      <a href="mailto:{support}" style="color:#0E9F6E;text-decoration:none;">
-        {support}</a>
     </div>
   </td></tr>
 

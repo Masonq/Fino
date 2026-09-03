@@ -38,7 +38,7 @@ def test_code_is_the_main_thing():
 
 def test_code_is_in_the_text_too():
     """Простой текст тоже несёт код: часть людей читает почту без разметки."""
-    text = BODY.format(code="482915", support="account@plonk.rs")
+    text = BODY.format(code="482915")
 
     assert "482915" in text
     # Срок жизни кода: без него человек не понимает, торопиться ли.
@@ -61,8 +61,8 @@ def test_no_login_link_in_code_letter():
 
     letter = _code_letter("482915")
 
-    assert "http://" not in BODY.format(code="482915", support="account@plonk.rs")
-    assert "https://" not in BODY.format(code="482915", support="account@plonk.rs")
+    assert "http://" not in BODY.format(code="482915")
+    assert "https://" not in BODY.format(code="482915")
     # Ссылки ведут на сайт и на почту — и никуда больше.
     import re
     targets = re.findall(r'href="([^"]+)"', letter)
