@@ -248,3 +248,51 @@ def test_broken_listing_id_does_not_crash():
     listing_page = source.split("def listing_page")[1].split("def ")[0]
     assert "except Exception" in listing_page
     assert "db.rollback()" in listing_page
+
+
+def test_social_locale_codes_are_real():
+    """Коды языка для соцсетей — из тех, что они понимают.
+
+    Стояли ru_RS и en_RS: таких сочетаний в списке нет, и разборщик
+    либо пропускает их, либо откатывается к своему умолчанию. Сербский
+    sr_RS существует, русский пишется ru_RU, английский en_US.
+    """
+    html = (Path(__file__).resolve().parents[2]
+            / "frontend" / "index.html").read_text()
+
+    # Смотрим сами теги, а не весь файл: прежние коды остались в
+    # пояснении рядом — второй раз спотыкаюсь о собственный комментарий.
+    import re
+
+    codes = re.findall(r'property="og:locale[^"]*" content="([^"]+)"', html)
+    assert codes, "коды языка должны быть"
+    assert "ru_RU" in codes
+    assert "ru_RS" not in codes and "en_RS" not in codes
+
+
+def test_language_links_point_to_language_addresses():
+    """Языковые ссылки ведут на языковые адреса, а не все на главную.
+
+    Раньше их не было вовсе — оставался только x-default, потому что
+    языковых адресов у сайта не существовало. Теперь /en/ и /sr/ есть.
+    """
+    html = (Path(__file__).resolve().parents[2]
+            / "frontend" / "index.html").read_text()
+
+    assert 'hreflang="en" href="https://plonk.rs/en/"' in html
+    assert 'hreflang="sr" href="https://plonk.rs/sr/"' in html
+    assert 'hreflang="x-default"' in html
+
+
+def test_manifest_has_a_maskable_icon():
+    """В манифесте есть значок, который система может обрезать по-своему.
+
+    Без него Android рисует картинку целиком внутри белого круга, и
+    логотип на домашнем экране получается вдвое меньше положенного.
+    """
+    import json
+
+    manifest = json.loads((Path(__file__).resolve().parents[2]
+                           / "frontend" / "public" / "manifest.webmanifest").read_text())
+
+    assert any(i.get("purpose") == "maskable" for i in manifest["icons"])
