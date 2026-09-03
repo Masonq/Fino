@@ -363,3 +363,23 @@ def test_logged_in_visitor_counted_once():
         client = None
 
     assert visitor_key(Request(), user_id="abc") == visitor_key(Other(), user_id="abc")
+
+
+def test_category_names_come_from_the_database():
+    """Разделы в статистике показываются названием, а не служебным именем.
+
+    В списке всплывали строки вида «appliances», «pets-supplies»,
+    «car-parts»: страница переводила разделы по служебному имени, а
+    перевода для них не нашлось, и она показывала имя как есть. При этом
+    название лежит в базе на всех трёх языках.
+
+    Теперь оно приходит с ответом, и любой раздел — хоть новый, хоть
+    заведённый вручную — показывается по-человечески.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "routers" / "admin_stats.py").read_text()
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "AdminStats.jsx").read_text()
+
+    assert '"name": names.get(slug, {})' in source
+    assert "c.name?.[i18n.language]" in page

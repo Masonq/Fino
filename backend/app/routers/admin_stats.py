@@ -189,7 +189,18 @@ def by_category(
         .group_by(Category.slug, Category.parent_id)
         .all()
     )
-    parents = {c.id: c.slug for c in db.query(Category).all()}
+    everything = db.query(Category).all()
+    parents = {c.id: c.slug for c in everything}
+    # Названия берём из самой базы, а не переводим по служебному имени
+    # на стороне приложения.
+    #
+    # В списке попадались строки вида «appliances», «pets-supplies»,
+    # «car-parts» — это служебные имена разделов, для которых на
+    # странице не нашлось перевода, и она показывала имя как есть. При
+    # этом название лежит в базе на всех трёх языках. Отдаём его — и
+    # любой раздел, хоть новый, хоть заведённый вручную, показывается
+    # по-человечески.
+    names = {c.slug: (c.name or {}) for c in everything}
 
     totals: dict[str, int] = {}
     for slug, parent_id, count in rows:
@@ -199,11 +210,10 @@ def by_category(
         totals[key] = totals.get(key, 0) + count
 
     # Разделы без единого объявления показываем тоже — они и есть дыры
-    for slug in (c.slug for c in db.query(Category)
-                 .filter(Category.parent_id.is_(None)).all()):
+    for slug in (c.slug for c in everything if c.parent_id is None):
         totals.setdefault(slug, 0)
 
-    return {"items": [{"slug": slug, "count": count}
+    return {"items": [{"slug": slug, "count": count, "name": names.get(slug, {})}
                       for slug, count in sorted(totals.items(),
                                                 key=lambda kv: -kv[1])]}
 

@@ -10,7 +10,7 @@ import BarsChart from '../components/BarsChart'
 const PERIODS = [7, 14, 30]
 
 export default function AdminStats() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()
 
@@ -168,7 +168,13 @@ export default function AdminStats() {
             <div className="stats-rows">
               {categories.map((c) => (
                 <div key={c.slug} className={`stats-row ${c.count ? '' : 'stats-row-empty'}`}>
-                  <span>{t(`categories.${c.slug}`, c.slug)}</span>
+                  {/* Название берём из базы: там оно есть на всех трёх
+                      языках у любого раздела, даже заведённого вручную.
+                      Перевод по служебному имени оставлен запасным —
+                      без него в списке всплывали строки вида
+                      «appliances» и «pets-supplies». */}
+                  <span>{c.name?.[i18n.language] || c.name?.ru
+                         || t(`categories.${c.slug}`, c.slug)}</span>
                   <span>{c.count}</span>
                 </div>
               ))}
