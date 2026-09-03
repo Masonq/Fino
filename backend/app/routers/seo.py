@@ -12,7 +12,7 @@
 from datetime import timedelta
 from xml.sax.saxutils import escape
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, Response
 from sqlalchemy.orm import Session
 
@@ -281,7 +281,16 @@ def listing_page(listing_id: str, request: Request,
     from app.models import ListingPhoto, ListingTranslation
 
     site = settings.public_base_url.rstrip("/")
-    listing = db.query(Listing).filter(Listing.id == listing_id).first()
+
+    # Номер может оказаться не номером: адрес удалённого объявления или
+    # просто набранный от руки. Раньше такой запрос уходил в базу как
+    # есть и падал с ошибкой — поисковик получал «сервер сломался»
+    # вместо «страницы нет».
+    try:
+        listing = db.query(Listing).filter(Listing.id == listing_id).first()
+    except Exception:                                      # noqa: BLE001
+        db.rollback()
+        listing = None
 
     # Адрес страницы — понятный: его увидит поисковик в разметке, и он
     # должен совпадать с тем, что в карте сайта. Иначе выйдут две
@@ -626,3 +635,66 @@ def category_page(slug: str, request: Request, db: Session = Depends(get_db),
         items="\n".join(items),
         open_text=esc(words["open"]),
     ))
+
+
+# Ответ на несуществующий адрес.
+#
+# Раньше любой случайный путь отдавал приложение со статусом «всё
+# хорошо»: поисковик считал такую страницу настоящей и заносил в
+# индекс, а удалённые объявления оставались в выдаче живыми. Со стороны
+# человека это тоже неприятно — вместо честного «страницы нет» он видит
+# пустоту или бесконечное ожидание.
+#
+# Отвечаем честно, но только поисковику: человеку по-прежнему отдаётся
+# приложение (nginx до этого обработчика его просто не доводит), и
+# внутренние переходы в нём работают как раньше.
+NOT_FOUND_PAGE = """<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>Страница не найдена — PLONK</title>
+</head>
+<body>
+<h1>Страница не найдена</h1>
+<p>Возможно, объявление уже продано или снято с публикации.</p>
+<p><a href="{site}">Открыть PLONK</a></p>
+</body>
+</html>"""
+
+# Адреса, которые существуют в приложении и должны отвечать «всё
+# хорошо», даже когда собственной страницы для поисковика у них нет.
+# Всё прочее — несуществующий адрес.
+KNOWN_PATHS = ("/", "/search", "/categories", "/login", "/rules", "/terms",
+               "/privacy", "/support")
+
+
+@router.get("/{full_path:path}", include_in_schema=False)
+def not_found(full_path: str, request: Request):
+    """Последний обработчик: сюда попадает всё, что не разобрали выше.
+
+    Служебные адреса пропускаем дальше. Этот обработчик ловит любой
+    путь, а часть служебных объявлена в main.py уже после подключения
+    роутеров — их он перехватывал и отвечал «страницы нет». Поймал
+    сразу: проверка браузером перестала достукиваться до сервера.
+    """
+    site = settings.site_base_url.rstrip("/")
+    path = "/" + full_path.strip("/")
+
+    if path.startswith(("/api", "/media", "/docs", "/openapi", "/redoc")):
+        raise HTTPException(404, "not_found")
+
+    # Языковую приставку отбрасываем: /en/search — тот же поиск.
+    for lang in ("/en", "/sr"):
+        if path == lang or path.startswith(lang + "/"):
+            path = path[len(lang):] or "/"
+            break
+
+    if path in KNOWN_PATHS:
+        return HTMLResponse(
+            f'<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8">'
+            f'<title>PLONK — объявления в Белграде и Сербии</title>'
+            f'<link rel="canonical" href="{site}{path}">'
+            f'</head><body><a href="{site}">Открыть PLONK</a></body></html>')
+
+    return HTMLResponse(NOT_FOUND_PAGE.format(site=site), status_code=404)

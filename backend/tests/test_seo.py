@@ -210,3 +210,41 @@ def test_page_without_scripts_says_what_to_do():
 
     assert "<noscript>" in html
     assert "JavaScript" in html
+
+
+def test_unknown_address_answers_not_found():
+    """Несуществующий адрес отвечает «страницы нет», а не «всё хорошо».
+
+    Раньше любой случайный путь отдавал приложение со статусом 200:
+    поисковик считал такую страницу настоящей и заносил в индекс, а
+    удалённые объявления оставались в выдаче живыми.
+
+    Человека это не касается: ему по-прежнему отдаётся приложение —
+    nginx доводит до этого обработчика только поисковика.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "routers" / "seo.py").read_text()
+    conf = (Path(__file__).resolve().parents[2]
+            / "deploy" / "plonk.rs.conf").read_text()
+
+    assert 'status_code=404' in source
+    assert 'meta name="robots" content="noindex"' in source
+    # Настоящие страницы приложения отвечают как прежде.
+    assert '"/search"' in source and '"/categories"' in source
+    # Человеку — приложение, поисковику — ответ бэкенда.
+    assert "if ($is_crawler) { return 418; }" in conf
+
+
+def test_broken_listing_id_does_not_crash():
+    """Негодный номер объявления не роняет страницу.
+
+    В адресе удалённого объявления хвост может не разбираться как
+    номер. Такой запрос уходил в базу как есть и падал — поисковик
+    получал «сервер сломался» вместо «страницы нет».
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "routers" / "seo.py").read_text()
+
+    listing_page = source.split("def listing_page")[1].split("def ")[0]
+    assert "except Exception" in listing_page
+    assert "db.rollback()" in listing_page
