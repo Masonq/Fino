@@ -972,10 +972,22 @@ def listings_by_ids(
     Несколько объявлений одним запросом — для истории просмотров.
     Порядок сохраняем тот, что передали: он означает недавность.
     """
-    try:
-        wanted = [uuid.UUID(x) for x in ids.split(",") if x.strip()][:40]
-    except ValueError:
-        raise HTTPException(400, "bad_ids")
+    # Негодные номера просто пропускаем, а не отказываем всему запросу.
+    #
+    # В историю просмотров однажды писался обрезок из красивого адреса —
+    # восемь знаков вместо полного номера. Такие записи остались у людей
+    # в браузере, и один обрезок в списке обрушивал страницу «Вы
+    # смотрели» целиком, вместе с правильными записями.
+    wanted = []
+    for part in ids.split(","):
+        part = part.strip()
+        if not part:
+            continue
+        try:
+            wanted.append(uuid.UUID(part))
+        except ValueError:
+            continue
+    wanted = wanted[:40]
 
     if not wanted:
         return {"items": []}

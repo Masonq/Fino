@@ -241,3 +241,33 @@ def test_stats_show_sign_ins_and_sign_ups():
     assert '"logins": logins' in source
     assert '"signups"' in source
     assert 'valueKey="logins"' in page
+
+
+def test_history_stores_the_full_listing_id():
+    """В историю просмотров пишется полный номер объявления.
+
+    Он брался из адреса, а в красивом адресе
+    (/beograd/mebel/stol-45e17e58) последняя часть — лишь восемь знаков
+    от полного номера. В историю попадал обрезок, страница «Вы смотрели»
+    запрашивала объявления по нему, сервер отвечал отказом — и список
+    оставался пустым, даже сразу после просмотра.
+
+    Такие обрезки уже лежат у людей в браузере, поэтому чиним обе
+    стороны: страница их отбрасывает при чтении, а сервер пропускает
+    негодные номера вместо отказа всему запросу — один обрезок не должен
+    обрушивать список целиком.
+    """
+    detail = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "pages" / "ListingDetail.jsx").read_text()
+    store = (Path(__file__).resolve().parents[2]
+             / "frontend" / "src" / "data" / "history.js").read_text()
+    api = (Path(__file__).resolve().parents[1]
+           / "app" / "routers" / "listings.py").read_text()
+
+    # Номер берётся из загруженного объявления, а не из адреса.
+    assert "addToHistory(listing.id)" in detail
+    assert "addToHistory(listingId)" not in detail
+    # Старые обрезки отбрасываются при чтении.
+    assert "FULL_ID.test" in store
+    # Сервер не отказывает всему запросу из-за одного негодного номера.
+    assert 'raise HTTPException(400, "bad_ids")' not in api

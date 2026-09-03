@@ -85,11 +85,6 @@ export default function ListingDetail() {
     return () => { document.body.style.overflow = prev }
   }, [fullscreen])
 
-  // запоминаем просмотр — чтобы человек мог вернуться к тому, что смотрел
-  useEffect(() => {
-    if (listingId) addToHistory(listingId)
-  }, [listingId])
-
   // Шапка появляется, когда фото уехало вверх — как у Avito:
   // сначала кнопки полупрозрачными кружками на фото, потом панель на белом.
   //
@@ -124,6 +119,20 @@ export default function ListingDetail() {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const [listing, setListing] = useState(null)
+
+  // Запоминаем просмотр — чтобы человек мог вернуться к тому, что
+  // смотрел.
+  //
+  // Берём идентификатор из загруженного объявления, а не из адреса. В
+  // красивом адресе (/beograd/mebel/stol-45e17e58) последняя часть — это
+  // лишь восемь знаков от полного номера, и в историю попадал обрезок.
+  // Страница «Вы смотрели» запрашивала объявления по нему, сервер
+  // отвечал отказом, и список оставался пустым — открытое объявление в
+  // него не попадало вовсе.
+  useEffect(() => {
+    if (listing?.id) addToHistory(listing.id)
+  }, [listing?.id])
+
   const [schema, setSchema] = useState([])
 
   // Адрес текстом — координаты у нас есть, а самой строки «улица, дом»

@@ -8,10 +8,20 @@
 const KEY = 'plonk_viewed'
 const LIMIT = 40
 
+// Полный номер объявления, а не обрезок из адреса.
+//
+// Раньше в историю писалась последняя часть красивого адреса — восемь
+// знаков вместо тридцати шести. Такие записи уже лежат у людей в
+// браузере, и один негодный номер ломал запрос целиком: страница «Вы
+// смотрели» оставалась пустой, даже если в списке были и правильные
+// записи. Отбрасываем их при чтении.
+const FULL_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export function readHistory() {
   try {
     const raw = localStorage.getItem(KEY)
-    return raw ? JSON.parse(raw) : []
+    const list = raw ? JSON.parse(raw) : []
+    return list.filter((x) => FULL_ID.test(x?.id || ''))
   } catch {
     return []
   }
