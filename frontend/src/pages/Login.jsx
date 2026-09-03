@@ -44,11 +44,37 @@ export default function Login() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, channel, destination])
 
-  // обратный отсчёт до повторной отправки
+  // Обратный отсчёт до повторной отправки.
+  //
+  // Считаем от времени отправки, а не «минус секунда каждую секунду».
+  // Браузер притормаживает таймеры в свёрнутой вкладке и в фоне: человек
+  // уходил в почту за кодом, возвращался — а счётчик всё это время стоял
+  // и заставлял ждать заново, хотя минута давно прошла.
+  //
+  // Пересчитываем ещё и при возвращении на страницу: одного тика мало,
+  // ждать до него — та же пауза на ровном месте.
   useEffect(() => {
     if (left <= 0) return
-    const id = setTimeout(() => setLeft((s) => s - 1), 1000)
-    return () => clearTimeout(id)
+
+    const tick = () => {
+      const sentAt = (() => {
+        try { return JSON.parse(sessionStorage.getItem('plonk_login') || '{}').sentAt }
+        catch { return null }
+      })()
+      if (!sentAt) { setLeft(0); return }
+      setLeft(Math.max(0, RESEND_SEC - Math.floor((Date.now() - sentAt) / 1000)))
+    }
+
+    const id = setInterval(tick, 500)
+    document.addEventListener('visibilitychange', tick)
+    window.addEventListener('pageshow', tick)
+    window.addEventListener('focus', tick)
+    return () => {
+      clearInterval(id)
+      document.removeEventListener('visibilitychange', tick)
+      window.removeEventListener('pageshow', tick)
+      window.removeEventListener('focus', tick)
+    }
   }, [left])
 
   useEffect(() => {

@@ -225,3 +225,24 @@ def test_gmail_is_not_retried_after_failure():
         (notify.settings.gmail_user, notify.settings.gmail_app_password,
          notify.settings.resend_api_key, notify._gmail_blocked_until,
          notify._send_via_resend, notify._send_via_gmail) = saved
+
+
+def test_resend_countdown_runs_on_the_clock():
+    """Отсчёт до повторной отправки считается от времени отправки.
+
+    Раньше он тикал «минус секунда каждую секунду». Браузер
+    притормаживает таймеры в свёрнутой вкладке и в фоне: человек уходил
+    в почту за кодом, возвращался — а счётчик всё это время стоял и
+    заставлял ждать заново, хотя минута давно прошла.
+
+    Пересчёт нужен и при возвращении на страницу: ждать до ближайшего
+    тика — та же пауза на ровном месте.
+    """
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "Login.jsx").read_text()
+
+    assert "RESEND_SEC - Math.floor((Date.now() - sentAt) / 1000)" in page
+    for event in ("visibilitychange", "pageshow", "focus"):
+        assert f'addEventListener("{event}"' in page or f"'{event}'" in page, event
+    # Прежний способ не должен вернуться.
+    assert "setLeft((s) => s - 1)" not in page
