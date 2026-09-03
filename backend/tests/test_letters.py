@@ -244,3 +244,39 @@ def test_resend_countdown_runs_on_the_clock():
         assert f'addEventListener("{event}"' in page or f"'{event}'" in page, event
     # Прежний способ не должен вернуться.
     assert "setLeft((s) => s - 1)" not in page
+
+
+def test_gmail_path_sends_the_same_letter():
+    """Через запасной путь уходит такое же письмо, с разметкой.
+
+    Он отправлял голый текст, и владельцы ящиков iCloud получали письмо
+    хуже остальных — а причина отказов Apple не в оформлении: тот же
+    отказ приходил и на письмо из шести цифр простым текстом.
+    """
+    import app.core.notify as notify
+
+    sent = {}
+
+    class FakeSMTP:
+        def __init__(self, *a, **k): pass
+        def __enter__(self): return self
+        def __exit__(self, *a): pass
+        def starttls(self): pass
+        def login(self, *a): pass
+        def send_message(self, msg): sent["msg"] = msg
+
+    saved_smtp = notify.smtplib.SMTP
+    saved = (notify.settings.gmail_user, notify.settings.gmail_app_password)
+    try:
+        notify.smtplib.SMTP = FakeSMTP
+        notify.settings.gmail_user = "plonk.noreply@gmail.com"
+        notify.settings.gmail_app_password = "x"
+        notify._send_via_gmail("a@icloud.com", "Код", "Ваш код: 482915",
+                               notify._code_letter("482915"))
+
+        kinds = [part.get_content_type() for part in sent["msg"].walk()]
+        assert "text/plain" in kinds     # для тех, кто читает почту без разметки
+        assert "text/html" in kinds      # и само письмо
+    finally:
+        notify.smtplib.SMTP = saved_smtp
+        (notify.settings.gmail_user, notify.settings.gmail_app_password) = saved

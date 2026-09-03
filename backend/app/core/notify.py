@@ -260,7 +260,8 @@ def _is_apple(address: str) -> bool:
     return address.strip().lower().endswith(APPLE_DOMAINS)
 
 
-def _send_via_gmail(to: str, subject: str, body: str) -> None:
+def _send_via_gmail(to: str, subject: str, body: str,
+                    html: str | None = None) -> None:
     """
     Отправка через Gmail — для ящиков, куда иначе не доходит.
 
@@ -269,8 +270,11 @@ def _send_via_gmail(to: str, subject: str, body: str) -> None:
     гугловский адрес, подменять его своим нельзя: подпись не сойдётся с
     доменом, и письмо отклонят уже по этой причине.
 
-    Только простой текст: разметка тут ни к чему, а лишний повод для
-    фильтра — ни к чему тем более.
+    Письмо уходит таким же, как и основным путём: и текстом, и
+    разметкой. Отправлять через этот путь голый текст незачем — человек
+    с ящиком iCloud получал бы письмо хуже остальных, хотя причина
+    отказов Apple не в оформлении: тот же отказ пришёл и на письмо из
+    шести цифр простым текстом.
     """
     user = settings.gmail_user
     password = settings.gmail_app_password
@@ -284,6 +288,8 @@ def _send_via_gmail(to: str, subject: str, body: str) -> None:
     if getattr(settings, "support_email", None):
         msg["Reply-To"] = settings.support_email
     msg.set_content(body)
+    if html:
+        msg.add_alternative(html, subtype="html")
 
     with smtplib.SMTP("smtp.gmail.com", 587, timeout=GMAIL_TIMEOUT) as server:
         server.starttls()
@@ -322,7 +328,7 @@ def _send_email_text(to: str, subject: str, body: str,
     # остальных ящиках.
     if gmail_ready and _is_apple(to):
         try:
-            _send_via_gmail(to, subject, body)
+            _send_via_gmail(to, subject, body, html)
             return
         except Exception:                                  # noqa: BLE001
             # Запоминаем неудачу, чтобы следующий человек не ждал
@@ -343,7 +349,7 @@ def _send_email_text(to: str, subject: str, body: str,
                 raise
             log.warning("основной путь отказал для %s, отправляю через Gmail", to)
             try:
-                _send_via_gmail(to, subject, body)
+                _send_via_gmail(to, subject, body, html)
                 return
             except Exception:                              # noqa: BLE001
                 # Не вышло и здесь — запоминаем, чтобы следующий человек
