@@ -149,19 +149,23 @@ def test_gmail_letter_is_sent_from_google_address():
     assert "smtp.gmail.com" in source
 
 
-def test_login_warns_about_apple_addresses():
-    """На странице входа предупреждаем про адреса iCloud.
+def test_login_has_no_stale_warning():
+    """Предупреждения про iCloud на странице входа больше нет.
 
-    Пока Apple отклоняет наши письма, честнее сказать человеку сразу, а
-    не заставлять ждать код, который не придёт. Кнопку «получить код»
-    при этом не убираем: человек вправе попробовать, а решение — его.
+    Оно стояло, пока Apple отклонял наши письма. После того как домену
+    добавили запись SPF, отказ сменился с окончательного на временный, а
+    затем письма пошли — код на iCloud дошёл. Предупреждение с этого
+    момента вводит людей в заблуждение, поэтому убрано.
+
+    Если Apple снова начнёт отклонять, вернуть его недолго — но вешать
+    предупреждение «на всякий случай» нельзя: половина людей в Белграде
+    с iPhone, и они прочитают его как «мне сюда нельзя».
     """
     page = (Path(__file__).resolve().parents[2]
             / "frontend" / "src" / "pages" / "Login.jsx").read_text()
 
-    assert "isAppleMail" in page
-    assert "icloud_blocked" in page
-    # Кнопка остаётся доступной, а не подменяется предупреждением.
+    assert "isAppleMail" not in page
+    assert "icloud_blocked" not in page
     assert "onClick={sendCode}" in page
 
 

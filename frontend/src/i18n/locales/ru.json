@@ -318,7 +318,6 @@
     "enter_telegram": "Ваш Telegram",
     "enter_telegram_hint": "Отправим код в Telegram — укажите имя пользователя",
     "get_code": "Получить код",
-    "icloud_blocked": "На адреса iCloud письма сейчас временно не доходят. Лучше указать другую почту.",
     "enter_code": "Введите код",
     "code_sent": "Код отправлен на",
     "resend": "Отправить код заново",

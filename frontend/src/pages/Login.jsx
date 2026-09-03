@@ -8,26 +8,6 @@ import { useAuth } from '../context/AuthContext'
 // надёжнее, чем повторять в разметке.
 const TELEGRAM_BOT = 'Baraholka_plonk_bot'
 
-// Ящики, до которых наши письма сейчас не доходят.
-//
-// Apple отклоняет письма с нашего домена целиком («554 5.7.1 [HM07]»,
-// «rejected due to local policy») — не из-за содержимого и не из-за
-// подписей: проверено и то, и другое. Он просто не доверяет молодому
-// домену, а репутация набирается месяцами.
-//
-// Пока это так, честнее сказать человеку правду сразу, а не заставлять
-// ждать код, который не придёт. Тем более выход есть — вход через
-// Telegram работает.
-const APPLE_MAIL = ['@icloud.com', '@me.com', '@mac.com']
-
-function isAppleMail(address) {
-  const value = (address || '').trim().toLowerCase()
-  return APPLE_MAIL.some((domain) => value.endsWith(domain))
-}
-
-const CODE_LEN = 6
-const RESEND_SEC = 60
-
 export default function Login() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -213,14 +193,6 @@ export default function Login() {
         </div>
 
         {error && <p className="auth-error">{error}</p>}
-
-        {/* Предупреждаем до нажатия, а не после: человек иначе отправит
-            запрос, уйдёт проверять почту и вернётся ни с чем. Кнопку
-            «получить код» при этом не убираем и в Telegram не тащим —
-            человек сам решит, ввести другой адрес или войти иначе. */}
-        {channel === 'email' && isAppleMail(destination) && (
-          <p className="auth-warning">{t('auth.icloud_blocked')}</p>
-        )}
 
         <button className="auth-submit" onClick={sendCode} disabled={busy || !destination.trim()}>
           {busy ? '…' : t('auth.get_code')}
