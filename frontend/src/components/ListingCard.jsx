@@ -68,7 +68,12 @@ export default function ListingCard({ listing, large = false }) {
             preload="metadata"
           />
         ) : listing.cover_photo ? (
-          <img src={listing.cover_photo} alt="" />
+          // Картинка грузится, когда карточка подходит к экрану, а не все
+          // двадцать разом при открытии ленты: видны шесть, остальные
+          // тянут сеть впустую и задерживают те, что нужны сейчас.
+          // decoding=async — чтобы распаковка картинки не тормозила
+          // прокрутку.
+          <img src={listing.cover_photo} alt="" loading="lazy" decoding="async" />
         ) : (
           <div className="photo-placeholder" />
         )}

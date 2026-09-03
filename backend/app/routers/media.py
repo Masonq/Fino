@@ -71,17 +71,25 @@ async def upload_photo(
         img = Image.open(BytesIO(contents))
         img = img.convert("RGB") if img.mode in ("RGBA", "P", "LA") else img
 
-        full_path = os.path.join(settings.media_dir, f"{name}.jpg")
+        # WebP вместо JPEG: тот же кадр весит на четверть-треть меньше
+        # при том же виде. Лента из двадцати карточек — это двадцать
+        # превью, и на мобильном интернете разница ощутима. Читают его
+        # все браузеры уже много лет, включая Safari.
+        #
+        # method=4 — середина между скоростью сжатия и размером: 6 жмёт
+        # ещё чуть лучше, но в несколько раз дольше, а человек ждёт
+        # ответа прямо при загрузке фото.
+        full_path = os.path.join(settings.media_dir, f"{name}.webp")
         full = img.copy()
         full.thumbnail((MAX_DIM, MAX_DIM))
-        full.save(full_path, "JPEG", quality=85, optimize=True)
+        full.save(full_path, "WEBP", quality=84, method=4)
 
-        thumb_path = os.path.join(settings.media_dir, f"{name}_thumb.jpg")
+        thumb_path = os.path.join(settings.media_dir, f"{name}_thumb.webp")
         thumb = img.copy()
         thumb.thumbnail((THUMB_DIM, THUMB_DIM))
-        thumb.save(thumb_path, "JPEG", quality=82, optimize=True)
+        thumb.save(thumb_path, "WEBP", quality=80, method=4)
 
-        full_name, thumb_name = f"{name}.jpg", f"{name}_thumb.jpg"
+        full_name, thumb_name = f"{name}.webp", f"{name}_thumb.webp"
     except Exception:
         if not _looks_like_image(contents):
             raise HTTPException(400, "unsupported_format")

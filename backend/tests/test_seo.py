@@ -296,3 +296,40 @@ def test_manifest_has_a_maskable_icon():
                            / "frontend" / "public" / "manifest.webmanifest").read_text())
 
     assert any(i.get("purpose") == "maskable" for i in manifest["icons"])
+
+
+# ── Скорость ────────────────────────────────────────────────────────────────
+def test_pages_load_on_demand():
+    """Страницы, кроме первого захода, подгружаются по требованию.
+
+    Всё приложение уезжало в один файл на 808 КБ, и человек, открывший
+    одну карточку из рекламы, ждал, пока догрузятся служебный раздел,
+    чаты и подача объявления. Сразу грузятся только главная, объявление,
+    раздел и поиск; остальное — когда человек туда идёт.
+    """
+    app = (Path(__file__).resolve().parents[2]
+           / "frontend" / "src" / "App.jsx").read_text()
+
+    assert app.count("lazy(() => import('./pages/") >= 20
+    assert "<Suspense" in app
+    # Страницы первого захода — сразу, не по требованию.
+    for page in ("Home", "ListingDetail", "CategoryLanding", "Search"):
+        assert f"import {page} from './pages/{page}'" in app, page
+
+
+def test_card_images_load_lazily():
+    """Картинки в карточках грузятся по мере приближения к экрану."""
+    card = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "components" / "ListingCard.jsx").read_text()
+
+    assert 'loading="lazy"' in card
+    assert 'decoding="async"' in card
+
+
+def test_photos_are_saved_as_webp():
+    """Новые фото сохраняются в WebP — на четверть-треть легче JPEG."""
+    media = (Path(__file__).resolve().parents[1]
+             / "app" / "routers" / "media.py").read_text()
+
+    assert '"WEBP"' in media
+    assert 'f"{name}_thumb.webp"' in media

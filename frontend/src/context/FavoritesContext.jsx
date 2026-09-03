@@ -27,6 +27,14 @@ export function FavoritesProvider({ children }) {
     if (!uid) return { needAuth: true }
 
     const has = ids.has(listingId)
+    // Лёгкий толчок в руку на телефоне: сердечко и так меняется
+    // мгновенно, а вибрация подтверждает нажатие, не глядя на экран.
+    // Только при добавлении — снятие с избранного событие менее
+    // радостное, и отмечать его ни к чему. Где вибрации нет (ноутбук,
+    // iPhone в Safari), вызов просто ничего не делает.
+    if (!has && typeof navigator !== 'undefined' && navigator.vibrate) {
+      try { navigator.vibrate(12) } catch { /* не беда */ }
+    }
     // сразу меняем состояние, не дожидаясь сервера — так сердечко реагирует мгновенно
     setIds((prev) => {
       const next = new Set(prev)

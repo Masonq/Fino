@@ -1,36 +1,48 @@
 import { Routes, Route, useLocation, useNavigationType } from 'react-router-dom'
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { Suspense, lazy, useEffect, useLayoutEffect, useRef } from 'react'
 import Home from './pages/Home'
 import Search from './pages/Search'
-import PostAd from './pages/PostAd'
-import Categories from './pages/Categories'
 import CategoryLanding from './pages/CategoryLanding'
 import ListingDetail from './pages/ListingDetail'
-import ChatScreen from './pages/ChatScreen'
-import ComingSoon from './pages/ComingSoon'
-import Favorites from './pages/Favorites'
-import BlockedUsers from './pages/BlockedUsers'
-import InviteFriend from './pages/InviteFriend'
-import Notifications from './pages/Notifications'
-import ListingDashboard from './pages/ListingDashboard'
-import LegalDoc from './pages/LegalDoc'
-import Chats from './pages/Chats'
-import Login from './pages/Login'
-import Profile from './pages/Profile'
-import SellerProfile from './pages/SellerProfile'
-import MyListings from './pages/MyListings'
-import AdminAudit from './pages/AdminAudit'
-import EditProfile from './pages/EditProfile'
-import Enter from './pages/Enter'
-import AdminSupport from './pages/AdminSupport'
-import Support from './pages/Support'
-import AdminStats from './pages/AdminStats'
-import AdminUsers from './pages/AdminUsers'
-import Moderation from './pages/Moderation'
-import EditListing from './pages/EditListing'
-import SavedSearches from './pages/SavedSearches'
-import History from './pages/History'
 import NotFound from './pages/NotFound'
+
+// Остальные страницы — по требованию.
+//
+// Раньше всё приложение уезжало в один файл на 808 КБ, и человек,
+// открывший одну карточку из рекламы, ждал, пока догрузятся служебный
+// раздел, чаты, подача объявления и всё прочее, чем он не собирался
+// пользоваться. На мобильном интернете это разница между «открылось» и
+// «крутится».
+//
+// Сразу грузятся только страницы первого захода: главная, объявление,
+// раздел, поиск. Всё остальное подгружается, когда человек туда идёт —
+// это доли секунды, и он их не замечает.
+const PostAd = lazy(() => import('./pages/PostAd'))
+const Categories = lazy(() => import('./pages/Categories'))
+const ChatScreen = lazy(() => import('./pages/ChatScreen'))
+const ComingSoon = lazy(() => import('./pages/ComingSoon'))
+const Favorites = lazy(() => import('./pages/Favorites'))
+const BlockedUsers = lazy(() => import('./pages/BlockedUsers'))
+const InviteFriend = lazy(() => import('./pages/InviteFriend'))
+const Notifications = lazy(() => import('./pages/Notifications'))
+const ListingDashboard = lazy(() => import('./pages/ListingDashboard'))
+const LegalDoc = lazy(() => import('./pages/LegalDoc'))
+const Chats = lazy(() => import('./pages/Chats'))
+const Login = lazy(() => import('./pages/Login'))
+const Profile = lazy(() => import('./pages/Profile'))
+const SellerProfile = lazy(() => import('./pages/SellerProfile'))
+const MyListings = lazy(() => import('./pages/MyListings'))
+const AdminAudit = lazy(() => import('./pages/AdminAudit'))
+const EditProfile = lazy(() => import('./pages/EditProfile'))
+const Enter = lazy(() => import('./pages/Enter'))
+const AdminSupport = lazy(() => import('./pages/AdminSupport'))
+const Support = lazy(() => import('./pages/Support'))
+const AdminStats = lazy(() => import('./pages/AdminStats'))
+const AdminUsers = lazy(() => import('./pages/AdminUsers'))
+const Moderation = lazy(() => import('./pages/Moderation'))
+const EditListing = lazy(() => import('./pages/EditListing'))
+const SavedSearches = lazy(() => import('./pages/SavedSearches'))
+const History = lazy(() => import('./pages/History'))
 import { AuthProvider } from './context/AuthContext'
 import { FavoritesProvider } from './context/FavoritesContext'
 import BottomNav from './components/BottomNav'
@@ -208,6 +220,11 @@ export default function App() {
           быть на этих трёх страницах — там условие оставляем как было. */}
       <TopNav />
       <main className={hideNav ? '' : 'has-bottomnav'}>
+        {/* Пока подгружается страница по требованию — ничего не рисуем.
+            Пустая заглушка лучше вертушки: подгрузка занимает доли
+            секунды, а вертушка, мелькнувшая на миг, выглядит как
+            дёрганье. */}
+        <Suspense fallback={null}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/search" element={<Search />} />
@@ -257,6 +274,7 @@ export default function App() {
               единого объяснения или выхода. */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </Suspense>
       </main>
       <Footer />
       {!hideNav && <BottomNav />}
