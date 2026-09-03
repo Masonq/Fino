@@ -158,3 +158,55 @@ def test_section_page_is_translated_whole():
         assert set(CATEGORY_TEXTS[lang]) == set(CATEGORY_TEXTS["ru"])
     assert "classifieds" in CATEGORY_TEXTS["en"]["title"]
     assert "oglasi" in CATEGORY_TEXTS["sr"]["title"]
+
+
+def test_no_cache_busting_parameter_in_urls():
+    """К адресам не дописывается служебный параметр.
+
+    В шапке стоял скрипт, добавлявший ?_v=<время> и делавший переход на
+    новый адрес — против устаревших снимков страницы в Safari. Лечил
+    одно, ломая три: лишняя загрузка на каждом первом заходе, мусорный
+    хвост в ссылках, которые люди копируют и шлют друг другу, и переход
+    на неканонический адрес на глазах у поисковика.
+
+    Вместо него — событие возврата из снимка (pageshow с признаком
+    persisted), адрес при этом не меняется.
+    """
+    html = (Path(__file__).resolve().parents[2]
+            / "frontend" / "index.html").read_text()
+    app = (Path(__file__).resolve().parents[2]
+           / "frontend" / "src" / "App.jsx").read_text()
+
+    assert "searchParams.set('_v'" not in html
+    assert "location.replace" not in html
+    assert "event.persisted" in app
+
+
+def test_page_can_be_zoomed():
+    """Страницу можно увеличить пальцами.
+
+    maximum-scale=1.0 это запрещал. Ставят его, чтобы Safari не
+    увеличивал экран при вводе в поле, но платит за это человек,
+    которому нужно разглядеть мелкий текст или фото. Против увеличения
+    при вводе есть честный способ — шрифт в полях не меньше 16px.
+    """
+    html = (Path(__file__).resolve().parents[2]
+            / "frontend" / "index.html").read_text()
+
+    # Смотрим саму строку с настройками, а не весь файл: слово
+    # «maximum-scale» осталось в пояснении рядом, и проверка по всему
+    # файлу спотыкалась о собственный комментарий.
+    import re
+
+    viewport = re.search(r'<meta name="viewport" content="([^"]+)"', html).group(1)
+    assert "maximum-scale" not in viewport
+    assert "user-scalable=no" not in viewport
+
+
+def test_page_without_scripts_says_what_to_do():
+    """Без скриптов человек видит объяснение, а не пустоту."""
+    html = (Path(__file__).resolve().parents[2]
+            / "frontend" / "index.html").read_text()
+
+    assert "<noscript>" in html
+    assert "JavaScript" in html

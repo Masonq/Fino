@@ -5,30 +5,25 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <script>
-  // nginx уже шлёт index.html с Cache-Control: no-store, но мобильный
-  // Safari всё равно иногда показывает старый снимок страницы при
-  // возврате по истории или из свёрнутой вкладки — вообще без
-  // обращения к серверу. Заголовки тут бессильны: запроса не
-  // происходит, серверу нечего запретить кэшировать. Единственный
-  // надёжный способ — сделать адрес каждый раз новым: с другим
-  // query-параметром браузер не сможет подставить старый снимок,
-  // обязан сходить в сеть за настоящей страницей. Проверенное решение
-  // (тот же приём уже стоит в другом проекте) — once на вкладку, не в
-  // цикл, и через location.replace, не через обычный переход: не
-  // плодит лишнюю запись в истории браузера, кнопка «назад» ведёт
-  // туда же, что и раньше.
-  (function () {
-    try {
-      var u = new URL(location.href);
-      if (!u.searchParams.has('_v')) {
-        u.searchParams.set('_v', Date.now().toString(36));
-        location.replace(u.toString());
-      }
-    } catch (e) {}
-  })();
-  </script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+  <!-- Здесь стоял скрипт, дописывавший к адресу ?_v=<время> и делавший
+       переход на новый адрес. Ставился против устаревших снимков
+       страницы в Safari при возврате по истории.
+
+       Убран: он лечил одно, ломая три. При каждом первом заходе шёл
+       лишний переход с повторной загрузкой; ссылки, которые люди
+       копируют из адресной строки и шлют друг другу, содержали мусорный
+       хвост; поисковик, исполняющий скрипты, видел переход на адрес,
+       отличный от канонического.
+
+       Правильный способ — событие возврата из снимка (pageshow с
+       признаком persisted), оно и обрабатывается в приложении
+       (см. App.jsx). Адрес при этом не меняется. -->
+  <!-- Без maximum-scale: он запрещал увеличивать страницу пальцами.
+       Ставят его обычно, чтобы Safari не увеличивал экран при вводе в
+       поле, но платит за это человек, которому нужно разглядеть мелкий
+       текст или фото. Против увеличения при вводе есть честный способ —
+       шрифт в полях не меньше 16px, он и так соблюдён (см. styles.css). -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
   <meta name="theme-color" content="#0E9F6E" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -112,6 +107,21 @@
 </head>
 <body>
   <div id="root"></div>
+  <noscript>
+    <!-- Сайт собирается в браузере, и без скриптов человек видел пустоту.
+         Пусть хотя бы понимает, что происходит и куда идти. -->
+    <div style="max-width:520px;margin:80px auto;padding:0 24px;font:16px/1.5 system-ui,-apple-system,sans-serif;color:#141E19;text-align:center;">
+      <h1 style="font-size:22px;margin:0 0 12px;">PLONK — объявления в Сербии</h1>
+      <p style="margin:0 0 20px;color:#5B6B63;">
+        Для работы сайта нужен JavaScript — включите его в настройках браузера
+        и обновите страницу.
+      </p>
+      <p style="margin:0;color:#5B6B63;">
+        Или напишите нам в Telegram:
+        <a href="https://t.me/Baraholka_Plonk" style="color:#0E9F6E;">@Baraholka_Plonk</a>
+      </p>
+    </div>
+  </noscript>
   <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>

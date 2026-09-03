@@ -57,6 +57,42 @@ export default function App() {
   // истории (у каждого перехода свой) в переживающем переходы ref.
   const scrollPositions = useRef({})
 
+  // Возврат из снимка браузера.
+  //
+  // Safari при возврате по истории или из свёрнутой вкладки показывает
+  // сохранённый снимок страницы, вообще не обращаясь к серверу: данные
+  // на нём могут быть многодневной давности, а объявление — уже
+  // проданным.
+  //
+  // Раньше с этим боролись иначе: скрипт дописывал к адресу
+  // ?_v=<время> и делал переход, чтобы браузеру нечего было
+  // подставить. Лечило одно, ломая три — лишняя загрузка на каждом
+  // заходе, мусорный хвост в ссылках, которые люди копируют и шлют друг
+  // другу, и переход на неканонический адрес на глазах у поисковика.
+  //
+  // Правильный способ — само событие возврата из снимка. Обновляем
+  // страницу, только если снимок пролежал заметное время: вернулся
+  // человек через минуту — пусть видит то же, что и оставил, вместе с
+  // местом прокрутки; пролежало полчаса — данные точно стоит
+  // перечитать.
+  useEffect(() => {
+    const STALE_AFTER = 15 * 60 * 1000
+    const onShow = (event) => {
+      if (!event.persisted) return
+      const shownAt = Number(sessionStorage.getItem('plonk_left_at') || 0)
+      if (shownAt && Date.now() - shownAt > STALE_AFTER) window.location.reload()
+    }
+    const remember = () => {
+      try { sessionStorage.setItem('plonk_left_at', String(Date.now())) } catch { /* не беда */ }
+    }
+    window.addEventListener('pageshow', onShow)
+    window.addEventListener('pagehide', remember)
+    return () => {
+      window.removeEventListener('pageshow', onShow)
+      window.removeEventListener('pagehide', remember)
+    }
+  }, [])
+
   useLayoutEffect(() => {
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual'
