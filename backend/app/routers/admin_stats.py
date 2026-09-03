@@ -136,16 +136,37 @@ def daily(
         .all()
     )
 
+    # Посещаемость: сколько людей заходило и сколько было заходов.
+    #
+    # Людей считаем по строкам — их ровно по одной на посетителя в день
+    # (см. visit_daily.py), а заходы суммой. Разница между ними и есть
+    # ответ на вопрос «ходят много или заходят разные»: десять человек
+    # по разу и один человек десять раз выглядят одинаково, пока не
+    # развести эти два числа.
+    from app.models import VisitDaily
+
+    visits_by_day = {
+        day: (int(people), int(hits or 0))
+        for day, people, hits in db.query(
+            VisitDaily.day,
+            func.count(VisitDaily.id),
+            func.sum(VisitDaily.hits),
+        ).filter(VisitDaily.day >= since.date()).group_by(VisitDaily.day).all()
+    }
+
     out = []
     for step in range(days + 1):
         current = (since + timedelta(days=step)).date()
         key = str(current)
         total, own = by_day.get(key, (0, 0))
+        visitors, hits = visits_by_day.get(current, (0, 0))
         out.append({
             "day": key,
             "listings": total,
             "own": own,
             "people": int(users_by_day.get(current, 0) or 0),
+            "visitors": visitors,
+            "hits": hits,
         })
     return {"items": out}
 

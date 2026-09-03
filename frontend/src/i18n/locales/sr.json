@@ -535,7 +535,12 @@
     "own_source": "Svoji oglasi",
     "listings_count": "oglasa",
     "own_short": "sopstvenih",
-    "promo_legend": "dani sa plaćenim promovisanjem"
+    "promo_legend": "dani sa plaćenim promovisanjem",
+    "visits": "Posećenost",
+    "visitors": "Ljudi",
+    "hits": "Poseta",
+    "hits_count": "poseta",
+    "visitors_short": "ljudi"
   },
   "audit": {
     "title": "Dnevnik radnji",

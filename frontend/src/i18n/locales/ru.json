@@ -536,7 +536,12 @@
     "own_source": "Свои объявления",
     "listings_count": "объявлений",
     "own_short": "своих",
-    "promo_legend": "дни с платным продвижением"
+    "promo_legend": "дни с платным продвижением",
+    "visits": "Посещаемость",
+    "visitors": "Людей",
+    "hits": "Заходов",
+    "hits_count": "заходов",
+    "visitors_short": "людей"
   },
   "audit": {
     "title": "Журнал действий",

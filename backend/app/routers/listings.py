@@ -321,6 +321,9 @@ def search_listings(
     # разделы. Необязательный: лента открыта и без входа, просто без
     # персонализации.
     viewer: User | None = Depends(get_current_user_optional),
+    # Сам запрос — нужен, чтобы посчитать заход: из него берём адрес и
+    # браузер для ключа посетителя (см. visit_daily.py).
+    request: Request = None,
 ):
     q = db.query(Listing).options(
         joinedload(Listing.translations), joinedload(Listing.photos),
@@ -912,6 +915,17 @@ def search_listings(
     # по CTR из одной пустой выдачи.
     from app.core.signals import bump_impressions
     bump_impressions(db, [l.id for l in items])
+
+    # Заход на сайт — считаем здесь, а не отдельным запросом с браузера.
+    #
+    # Лента открывается на главной, в поиске и в разделах, то есть на
+    # любом входе в сайт, а лишний запрос ради счётчика — это лишняя
+    # задержка на телефоне и лишний повод для блокировщиков. Считаем на
+    # первой странице выдачи: подгрузка следующих — это тот же человек,
+    # и второй раз его записывать незачем.
+    if offset == 0:
+        from app.models import record_visit
+        record_visit(db, request, viewer.id if viewer else None)
 
     def serialize(listing: Listing):
         translation = pick_translation(listing, lang)

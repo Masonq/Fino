@@ -15,6 +15,7 @@ from app.models.login_ticket import LoginTicket
 from app.models.blocked_user import BlockedUser
 from app.models.phone_reveal import PhoneReveal
 from app.models.listing_view_log import ListingViewLog
+from app.models.visit_daily import VisitDaily, record_visit, visitor_key
 from app.models.document_verification import DocVerificationRequest, DocVerificationStatus, DocVerificationKind
 from app.models.login_event import LoginEvent
 from app.models.telegram_import_progress import TelegramImportProgress
@@ -29,6 +30,7 @@ __all__ = [
     "User", "UserRole", "Language",
     "Category",
     "Listing", "ListingTranslation", "ListingPhoto", "ListingStatus", "Currency",
+    "VisitDaily", "record_visit", "visitor_key",
     "Favorite", "SavedSearch", "SellerSubscription", "PushSubscription",
     "VerificationCode", "VerifyChannel",
     "ReviewInvite",

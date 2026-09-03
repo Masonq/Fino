@@ -13,7 +13,15 @@ import { useTranslation } from 'react-i18next'
 // unitKey — ключ перевода единицы измерения в строке над графиком
 // («объявлений», «просмотров» и т.п.) — раньше был жёстко зашит под
 // один-единственный случай использования в статистике админки.
-export default function BarsChart({ items, valueKey, secondKey, unitKey = 'stats.listings_count', promotions = [] }) {
+export default function BarsChart({
+  items, valueKey, secondKey,
+  unitKey = 'stats.listings_count',
+  // Подпись второго ряда. Раньше здесь было жёстко «своих» — годится
+  // для объявлений, но у посещаемости второй ряд это люди, и выходило
+  // «97 заходов (37 своих)». Увидел на снимке.
+  secondLabelKey = 'stats.own_short',
+  promotions = [],
+}) {
   const { t, i18n } = useTranslation()
   const [selectedDay, setSelectedDay] = useState(null)
   const peak = Math.max(1, ...items.map((d) => d[valueKey] || 0))
@@ -49,7 +57,7 @@ export default function BarsChart({ items, valueKey, secondKey, unitKey = 'stats
       {active && (
         <div className="stats-bars-info">
           <b>{activeDate}</b> — {activeValue} {t(unitKey)}
-          {!!secondKey && ` (${activeSecond} ${t('stats.own_short')})`}
+          {!!secondKey && ` (${activeSecond} ${t(secondLabelKey)})`}
           {activePromo && <span className="stats-bars-promo-tag">{t(`promo.type_${activePromo}`)}</span>}
         </div>
       )}

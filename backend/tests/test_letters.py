@@ -320,3 +320,46 @@ def test_only_login_codes_go_to_email_for_now():
 
     assert "EMAIL_NOTIFICATIONS_ON = False" in source
     assert "if EMAIL_NOTIFICATIONS_ON and (allow_email or force)" in source
+
+
+# ── Посещаемость ────────────────────────────────────────────────────────────
+def test_visitor_key_hides_the_person():
+    """Ключ посетителя не хранит ни адреса, ни браузера.
+
+    Считаем людей без cookies: ключ — отпечаток от адреса и браузера с
+    солью, которая меняется каждый день. За один день человека узнать
+    можно (значит, не посчитаем его десять раз), связать вчерашний заход
+    с сегодняшним — уже нельзя, даже нам.
+    """
+    from app.models import visitor_key
+
+    class Request:
+        headers = {"user-agent": "Mozilla/5.0 iPhone", "x-real-ip": "1.2.3.4"}
+        client = None
+
+    key = visitor_key(Request())
+
+    assert "1.2.3.4" not in key
+    assert "iPhone" not in key
+    assert len(key) == 64
+    # Один и тот же человек в один день — один ключ.
+    assert key == visitor_key(Request())
+
+
+def test_logged_in_visitor_counted_once():
+    """Вошедший считается по себе, а не по браузеру.
+
+    Иначе один человек с телефона и с ноутбука дал бы двух посетителей,
+    хотя мы точно знаем, что он один.
+    """
+    from app.models import visitor_key
+
+    class Request:
+        headers = {"user-agent": "A", "x-real-ip": "1.1.1.1"}
+        client = None
+
+    class Other:
+        headers = {"user-agent": "B", "x-real-ip": "2.2.2.2"}
+        client = None
+
+    assert visitor_key(Request(), user_id="abc") == visitor_key(Other(), user_id="abc")

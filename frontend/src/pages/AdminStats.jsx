@@ -114,6 +114,29 @@ export default function AdminStats() {
             <BarsChart key={days} items={daily} valueKey="listings" secondKey="own" />
           </div>
 
+          {/* Посещаемость отдельным графиком, а не вторым рядом в
+              предыдущем: числа разного порядка — объявлений за день
+              десятки, заходов сотни, — и в одном графике столбики
+              объявлений превратились бы в незаметную полоску у нуля. */}
+          <div className="stats-block">
+            <div className="stats-block-title">{t('stats.visits')}</div>
+            {/* Порядок подписей повторяет порядок рядов в графике:
+                светлым рисуется первый ряд (заходы), тёмным — второй
+                (люди). Подписал их наоборот и увидел на снимке. */}
+            <div className="stats-legend">
+              <span className="dot dot-all" /> {t('stats.hits')}
+              <span className="dot dot-own" /> {t('stats.visitors')}
+            </div>
+            <BarsChart
+              key={`visits-${days}`}
+              items={daily}
+              valueKey="hits"
+              secondKey="visitors"
+              unitKey="stats.hits_count"
+              secondLabelKey="stats.visitors_short"
+            />
+          </div>
+
           {quality && (
             <div className="stats-block">
               <div className="stats-block-title">{t('stats.quality')}</div>

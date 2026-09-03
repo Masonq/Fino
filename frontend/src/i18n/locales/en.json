@@ -534,7 +534,12 @@
     "own_source": "Own listings",
     "listings_count": "listings",
     "own_short": "own",
-    "promo_legend": "days with paid promotion"
+    "promo_legend": "days with paid promotion",
+    "visits": "Traffic",
+    "visitors": "People",
+    "hits": "Visits",
+    "hits_count": "visits",
+    "visitors_short": "people"
   },
   "audit": {
     "title": "Action log",
