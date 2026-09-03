@@ -137,6 +137,26 @@ export default function AdminStats() {
             />
           </div>
 
+          {/* Входы и регистрации — отдельным графиком: заходят сотни, а
+              входят единицы, и в одном графике вход был бы неразличимой
+              полоской у нуля. Разница между «зашли» и «вошли» и есть
+              главное, что тут видно. */}
+          <div className="stats-block">
+            <div className="stats-block-title">{t('stats.logins')}</div>
+            <div className="stats-legend">
+              <span className="dot dot-all" /> {t('stats.logins_count_label')}
+              <span className="dot dot-own" /> {t('stats.signups')}
+            </div>
+            <BarsChart
+              key={`logins-${days}`}
+              items={daily}
+              valueKey="logins"
+              secondKey="signups"
+              unitKey="stats.logins_unit"
+              secondLabelKey="stats.signups_short"
+            />
+          </div>
+
           {quality && (
             <div className="stats-block">
               <div className="stats-block-title">{t('stats.quality')}</div>

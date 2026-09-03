@@ -540,7 +540,12 @@
     "visitors": "Ljudi",
     "hits": "Poseta",
     "hits_count": "poseta",
-    "visitors_short": "ljudi"
+    "visitors_short": "ljudi",
+    "logins": "Prijave i registracije",
+    "logins_count_label": "Prijava",
+    "signups": "Registracija",
+    "logins_unit": "prijava",
+    "signups_short": "registracija"
   },
   "audit": {
     "title": "Dnevnik radnji",

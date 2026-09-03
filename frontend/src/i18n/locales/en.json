@@ -539,7 +539,12 @@
     "visitors": "People",
     "hits": "Visits",
     "hits_count": "visits",
-    "visitors_short": "people"
+    "visitors_short": "people",
+    "logins": "Sign-ins and sign-ups",
+    "logins_count_label": "Sign-ins",
+    "signups": "Sign-ups",
+    "logins_unit": "sign-ins",
+    "signups_short": "sign-ups"
   },
   "audit": {
     "title": "Action log",

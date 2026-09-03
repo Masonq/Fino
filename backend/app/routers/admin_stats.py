@@ -143,7 +143,21 @@ def daily(
     # ответ на вопрос «ходят много или заходят разные»: десять человек
     # по разу и один человек десять раз выглядят одинаково, пока не
     # развести эти два числа.
-    from app.models import VisitDaily
+    from app.models import LoginEvent, VisitDaily
+
+    # Входы: сколько раз люди входили в аккаунт и сколько человек это
+    # были. Отдельно от посещаемости — заходят все, а входят единицы, и
+    # разница между этими числами показывает, доходит ли человек от
+    # «посмотрел» до «завёл аккаунт».
+    logins_by_day = {
+        day: (int(times), int(people))
+        for day, times, people in db.query(
+            func.date(LoginEvent.created_at),
+            func.count(LoginEvent.id),
+            func.count(func.distinct(LoginEvent.user_id)),
+        ).filter(LoginEvent.created_at >= since)
+        .group_by(func.date(LoginEvent.created_at)).all()
+    }
 
     visits_by_day = {
         day: (int(people), int(hits or 0))
@@ -160,6 +174,7 @@ def daily(
         key = str(current)
         total, own = by_day.get(key, (0, 0))
         visitors, hits = visits_by_day.get(current, (0, 0))
+        logins, logged_people = logins_by_day.get(current, (0, 0))
         out.append({
             "day": key,
             "listings": total,
@@ -167,6 +182,9 @@ def daily(
             "people": int(users_by_day.get(current, 0) or 0),
             "visitors": visitors,
             "hits": hits,
+            "logins": logins,
+            "signups": int(users_by_day.get(current, 0) or 0),
+            "logged_people": logged_people,
         })
     return {"items": out}
 

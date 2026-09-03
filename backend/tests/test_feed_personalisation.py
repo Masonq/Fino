@@ -209,3 +209,35 @@ def test_scroll_is_restored_in_one_place():
     assert "setTimeout(put, 60)" in app
     # А в ленте своего восстановления нет.
     assert "window.scrollTo" not in home
+
+
+def test_charts_open_on_today():
+    """Графики открываются на сегодняшнем дне, а не на начале периода.
+
+    График шире экрана и прокручивается вбок. Без этого человек видел
+    двадцатые числа прошлого месяца, а сегодняшние столбики — те, ради
+    которых он и зашёл — оставались за краем, и до них надо было
+    доскроллить. Видно на снимке служебного раздела.
+    """
+    chart = (Path(__file__).resolve().parents[2]
+             / "frontend" / "src" / "components" / "BarsChart.jsx").read_text()
+
+    assert "el.scrollLeft = el.scrollWidth" in chart
+    assert "ref={barsRef}" in chart
+
+
+def test_stats_show_sign_ins_and_sign_ups():
+    """В статистике есть входы и регистрации, отдельным графиком.
+
+    Заходят сотни, а входят единицы: в одном графике с посещаемостью
+    вход был бы неразличимой полоской у нуля. Разница между «зашли» и
+    «вошли» — главное, что тут видно.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "routers" / "admin_stats.py").read_text()
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "AdminStats.jsx").read_text()
+
+    assert '"logins": logins' in source
+    assert '"signups"' in source
+    assert 'valueKey="logins"' in page

@@ -541,7 +541,12 @@
     "visitors": "Людей",
     "hits": "Заходов",
     "hits_count": "заходов",
-    "visitors_short": "людей"
+    "visitors_short": "людей",
+    "logins": "Входы и регистрации",
+    "logins_count_label": "Входов",
+    "signups": "Регистраций",
+    "logins_unit": "входов",
+    "signups_short": "регистраций"
   },
   "audit": {
     "title": "Журнал действий",

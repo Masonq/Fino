@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 // Столбики рисуем сами: ради одного графика тянуть библиотеку незачем,
@@ -44,6 +44,16 @@ export default function BarsChart({
     }
   }
 
+  // График шире экрана и прокручивается вбок. Открываем его сразу на
+  // сегодняшнем дне: свежие дни справа, и без этого человек видел
+  // начало периода — двадцатые числа прошлого месяца, — а сегодняшние
+  // столбики оставались за краем. Увидел на снимке служебного раздела.
+  const barsRef = useRef(null)
+  useEffect(() => {
+    const el = barsRef.current
+    if (el) el.scrollLeft = el.scrollWidth
+  }, [items])
+
   const active = items.find((d) => d.day === selectedDay) || items[items.length - 1]
   const activeValue = active ? (active[valueKey] || 0) : 0
   const activeSecond = active && secondKey ? (active[secondKey] || 0) : 0
@@ -61,7 +71,7 @@ export default function BarsChart({
           {activePromo && <span className="stats-bars-promo-tag">{t(`promo.type_${activePromo}`)}</span>}
         </div>
       )}
-      <div className="stats-bars">
+      <div className="stats-bars" ref={barsRef}>
         {items.map((d) => {
           const value = d[valueKey] || 0
           const second = secondKey ? d[secondKey] || 0 : 0
