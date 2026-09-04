@@ -392,3 +392,21 @@ def test_next_page_loads_well_before_the_end():
 
     assert "rootMargin: '1400px'" in home
     assert "rootMargin: '1400px'" in search
+
+
+def test_map_library_is_not_in_the_first_load():
+    """Библиотека карт грузится, когда карту открывают.
+
+    Она весит около 150 КБ и лежала в первом файле, хотя карта
+    открывается по нажатию и далеко не каждым. Подгрузка занимает доли
+    секунды, и они теряются на самой отрисовке карты.
+
+    Итог всей работы над весом: первый файл 377 КБ вместо 808.
+    """
+    detail = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "pages" / "ListingDetail.jsx").read_text()
+
+    assert "lazy(() => import('../components/LocationMap'))" in detail
+    assert "import LocationMap from" not in detail
+    # Пока едет — ровная подложка, а не белая дыра на весь экран.
+    assert 'className="map-loading"' in detail

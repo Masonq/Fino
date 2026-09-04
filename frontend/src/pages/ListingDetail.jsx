@@ -1,9 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { api } from '../api/client'
 import { displayCity } from '../data/cities'
-import LocationMap from '../components/LocationMap'
+// Карта — по требованию: библиотека карт весит около 150 КБ и лежала
+// в первом файле, хотя карта открывается только по нажатию, и далеко
+// не каждым. Подгружается в момент открытия — это доли секунды, и они
+// теряются на самой отрисовке карты.
+const LocationMap = lazy(() => import('../components/LocationMap'))
 import { addToHistory } from '../data/history'
 import { useAuth } from '../context/AuthContext'
 import { useFavorites } from '../context/FavoritesContext'
@@ -1098,12 +1102,14 @@ export default function ListingDetail() {
               </button>
               <span className="map-page-title">{translation?.title}</span>
             </div>
-            <LocationMap
-              lat={listing.location_lat}
-              lng={listing.location_lng}
-              approximate={listing.location_approximate}
-              height="100%"
-            />
+            <Suspense fallback={<div className="map-loading" />}>
+              <LocationMap
+                lat={listing.location_lat}
+                lng={listing.location_lng}
+                approximate={listing.location_approximate}
+                height="100%"
+              />
+            </Suspense>
             <div className="map-page-address">
               <span className="map-page-address-label">{t('detail.map_location_label')}</span>
               <div className="map-page-address-row">
