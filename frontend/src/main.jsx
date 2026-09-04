@@ -5,7 +5,6 @@ import './i18n'
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import './styles.css'
-import i18n from './i18n'
 
 // Языковые адреса: /en/... и /sr/... Русский живёт без приставки —
 // он основной, и ломать существующие ссылки на него нельзя.
@@ -24,7 +23,8 @@ const basename = urlLang ? `/${urlLang}` : '/'
 if (urlLang) {
   // Адрес главнее сохранённого выбора: человек пришёл по ссылке из
   // выдачи или от знакомого именно на этом языке.
-  i18n.changeLanguage(urlLang)
+  // Язык из адреса догружается тем же способом — сам i18n уже знает,
+  // что делать (см. i18n/index.js), поэтому здесь только сохраняем выбор.
   try { localStorage.setItem('fino_lang', urlLang) } catch { /* не беда */ }
 }
 

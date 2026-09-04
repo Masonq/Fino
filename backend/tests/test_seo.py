@@ -356,3 +356,39 @@ def test_listing_is_requested_before_the_tap_completes():
     assert "prefetched.delete(id)" in client
     # И память не копится.
     assert "prefetched.size > 8" in client
+
+
+def test_only_needed_language_is_loaded():
+    """В первый файл едет один язык, остальные догружаются.
+
+    Все три уезжали вместе — около 70 КБ, из которых человеку нужен
+    один. Русский оставлен сразу: он основной, на нём открывается сайт
+    по умолчанию, и с ним нет мигания при первой отрисовке.
+
+    Проверено вживую: все три языка работают, английский и сербский
+    приезжают отдельными файлами.
+    """
+    i18n = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "i18n" / "index.js").read_text()
+
+    assert "import ru from './locales/ru.json'" in i18n
+    assert "import en from" not in i18n and "import sr from" not in i18n
+    assert "() => import('./locales/en.json')" in i18n
+    # Не догрузилось — остаёмся на русском, а не показываем пустые подписи.
+    assert "i18n.changeLanguage('ru')" in i18n
+
+
+def test_next_page_loads_well_before_the_end():
+    """Следующая порция ленты грузится за полтора экрана до конца.
+
+    600px — меньше одного экрана телефона: человек долистывал до низа и
+    упирался в пустоту, пока летел запрос, и прокрутка при этом
+    останавливалась.
+    """
+    home = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "Home.jsx").read_text()
+    search = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "pages" / "Search.jsx").read_text()
+
+    assert "rootMargin: '1400px'" in home
+    assert "rootMargin: '1400px'" in search

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { useLanguage } from '../i18n'
 
 const LANGS = [
   { code: 'ru', label: 'RU' },
@@ -13,7 +14,9 @@ export default function LanguageSwitcher({ variant }) {
   const { i18n } = useTranslation()
 
   const change = (code) => {
-    i18n.changeLanguage(code)
+    // Через useLanguage, а не напрямую: английский и сербский лежат
+    // отдельными файлами и догружаются по требованию (см. i18n/index.js).
+    useLanguage(code)
     try { localStorage.setItem('fino_lang', code) } catch { /* не беда */ }
 
     // Вместе с языком меняем адрес: у каждого языка свой (/en/..., /sr/...,
