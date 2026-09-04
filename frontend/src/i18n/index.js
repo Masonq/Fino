@@ -35,10 +35,15 @@ const loaders = {
 /**
  * Догружает язык и переключается на него.
  *
+ * Имя без «use» в начале намеренно: это обычная функция, а не хук
+ * React. Назвал её useLanguage — и линт остановил деплой, потому что по
+ * такому имени он считает функцию хуком и требует вызывать её только
+ * внутри компонентов. Правило верное, имя было неудачным.
+ *
  * Пока перевод едет, на экране остаётся русский — это лучше пустых
  * подписей: человек видит рабочий сайт, а не рамки без слов.
  */
-export async function useLanguage(code) {
+export async function switchLanguage(code) {
   if (code === 'ru' || i18n.hasResourceBundle(code, 'translation')) {
     return i18n.changeLanguage(code)
   }
@@ -56,6 +61,6 @@ export async function useLanguage(code) {
 }
 
 // Язык по умолчанию — сразу после запуска, чтобы не ждать выбора.
-if (defaultLang !== 'ru') useLanguage(defaultLang)
+if (defaultLang !== 'ru') switchLanguage(defaultLang)
 
 export default i18n

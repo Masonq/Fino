@@ -376,6 +376,17 @@ def test_only_needed_language_is_loaded():
     assert "() => import('./locales/en.json')" in i18n
     # Не догрузилось — остаёмся на русском, а не показываем пустые подписи.
     assert "i18n.changeLanguage('ru')" in i18n
+    # Имя без «use» в начале: по такому имени линт считает функцию
+    # хуком React и требует вызывать её только внутри компонентов —
+    # деплой на этом и остановился.
+    #
+    # Смотрим строки кода, а не весь файл: прежнее имя осталось в
+    # пояснении рядом, и проверка по файлу спотыкалась бы о
+    # собственный комментарий. За вечер это третий такой случай.
+    code = [ln for ln in i18n.split("\n")
+            if not ln.strip().startswith(("//", "*", "/*"))]
+    assert "export async function switchLanguage" in i18n
+    assert not any("useLanguage" in ln for ln in code)
 
 
 def test_next_page_loads_well_before_the_end():
