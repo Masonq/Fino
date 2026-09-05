@@ -794,5 +794,10 @@
     "terms": "Uslovi korišćenja",
     "privacy": "Politika privatnosti",
     "made_in": "Napravljeno u Beogradu"
+  },
+  "move": {
+    "title": "Premesti u sekciju",
+    "now": "Sada",
+    "pick_sub": "Izaberite podsekciju, ne celu sekciju"
   }
 }

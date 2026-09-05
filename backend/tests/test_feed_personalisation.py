@@ -361,3 +361,49 @@ def test_empty_filters_do_not_reach_the_server():
     assert "searchListings: (params) => request(`/listings?${query(params)}`)" in client
     # Прямая сборка с объектом-переменной больше не используется.
     assert "new URLSearchParams(params)" not in client
+
+
+def test_listing_can_be_moved_to_another_category():
+    """Объявление переносится в другой раздел, не теряя ничего.
+
+    Из чатов объявления приезжают с разделом, угаданным по тексту, и
+    ошибается он нередко: коляска попадает в «Хобби», сантехник в
+    «Ремонт квартир». Раньше такое можно было только снять с
+    публикации — то есть выбросить настоящий товар вместе с ошибкой
+    разбора.
+
+    Меняется только раздел: заголовок, описание, фото, цена, автор и
+    переписка остаются как были.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "routers" / "moderation.py").read_text()
+
+    move = source.split("def move_to_category")[1].split("@router.post")[0]
+    assert "listing.category_id = target.id" in move
+    # Только раздел — ничего больше не трогаем.
+    #
+    # Смотрим именно присваивания: владелец в коде упоминается, но лишь
+    # затем, чтобы попасть в журнал — по нему видно, чьё объявление
+    # перенесли. Первая версия проверки этого не различала и падала на
+    # собственном же журнале.
+    for field in ("status", "price", "owner_id", "title"):
+        assert f"listing.{field} =" not in move, field
+    # В раздел верхнего уровня класть нельзя: там объявления не ищут.
+    assert "pick_subcategory" in move
+    # Действие попадает в журнал: видно, кто и куда перенёс.
+    assert '"listing.move"' in move
+
+
+def test_move_window_shows_names_not_slugs():
+    """В окне переноса — названия разделов, а не служебные имена.
+
+    Название приходит словарём с тремя языками. Рисовать его как строку
+    нельзя — страница падает с «Objects are not valid as a React child»,
+    что и случилось при первой проверке.
+    """
+    detail = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "pages" / "ListingDetail.jsx").read_text()
+
+    assert "const catName = (c) =>" in detail
+    assert "c.name?.[i18n.language]" in detail
+    assert "{catName(root)}" in detail

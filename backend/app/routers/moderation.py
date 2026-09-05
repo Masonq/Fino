@@ -185,6 +185,61 @@ class DecisionIn(BaseModel):
     reason: str | None = None
 
 
+class MoveIn(BaseModel):
+    category_id: uuid.UUID
+
+
+@router.post("/{listing_id}/move")
+def move_to_category(
+    listing_id: uuid.UUID,
+    payload: MoveIn,
+    moderator: User = Depends(require_moderator),
+    db: Session = Depends(get_db),
+):
+    """
+    Переносит объявление в другой раздел.
+
+    Из чатов объявления приезжают с разделом, угаданным по тексту, и
+    ошибается он нередко: коляска попадает в «Хобби», сантехник в
+    «Ремонт квартир». Раньше такое можно было только снять с
+    публикации, то есть выбросить настоящий товар вместе с ошибкой
+    разбора.
+
+    Меняем только раздел. Заголовок, описание, фото, цена, автор и
+    переписка остаются как были — человек, который его подал, ничего не
+    теряет.
+    """
+    from app.models import Category
+
+    listing = db.query(Listing).get(listing_id)
+    if not listing:
+        raise HTTPException(404, "not_found")
+
+    target = db.query(Category).get(payload.category_id)
+    if not target:
+        raise HTTPException(404, "category_not_found")
+
+    # В раздел верхнего уровня объявления не кладём: там их никто не
+    # ищет — люди заходят в подраздел. Исключение — разделы без
+    # подразделов, туда класть больше некуда.
+    if target.parent_id is None:
+        has_children = db.query(Category).filter(
+            Category.parent_id == target.id).count() > 0
+        if has_children:
+            raise HTTPException(400, "pick_subcategory")
+
+    was = listing.category_id
+    if was == target.id:
+        return {"status": "ok", "moved": False}
+
+    listing.category_id = target.id
+    record(db, moderator, "listing.move", target_type="listing",
+           target_id=listing.id, owner=str(listing.owner_id),
+           was=str(was), now=target.slug)
+    db.commit()
+    return {"status": "ok", "moved": True, "category": target.slug}
+
+
 @router.post("/{listing_id}/approve")
 def approve(
     listing_id: uuid.UUID,

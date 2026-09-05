@@ -449,6 +449,13 @@ export default function ListingDetail() {
   // что и на бэкенде).
   const isOwner = user?.id && listing?.owner?.id === user.id && listing?.status === 'active'
   const [deleting, setDeleting] = useState(false)
+  // Перенос в другой раздел — служебное действие: из чатов объявления
+  // приезжают с разделом, угаданным по тексту, и ошибается он нередко.
+  // Раньше такое можно было только снять с публикации, то есть
+  // выбросить настоящий товар вместе с ошибкой разбора.
+  const [movingOpen, setMovingOpen] = useState(false)
+  const [moveTree, setMoveTree] = useState([])
+  const [moving, setMoving] = useState(false)
   const [showReasons, setShowReasons] = useState(false)
   const [customReason, setCustomReason] = useState(false)
   const [reasonText, setReasonText] = useState('')
@@ -467,6 +474,36 @@ export default function ListingDetail() {
   // объявления владелец — тот, кто его разместил, и ему есть куда его
   // вернуть — через отклонение с причиной, как в очереди модерации.
   const canReturnToEdit = listing?.external_source !== 'telegram'
+
+  // Название раздела на языке интерфейса: с сервера оно приходит
+  // словарём {ru, en, sr}.
+  const catName = (c) => (c ? (c.name?.[i18n.language] || c.name?.ru || c.slug) : '')
+
+  const openMove = async () => {
+    setMovingOpen(true)
+    if (moveTree.length) return
+    try {
+      setMoveTree(await api.getCategories())
+    } catch {
+      setMoveTree([])
+    }
+  }
+
+  const doMove = async (categoryId) => {
+    setMoving(true)
+    try {
+      await api.modMove(listing.id, categoryId)
+      // Перечитываем объявление: раздел показан на самой странице, и
+      // человек должен увидеть новый, а не тот, что был.
+      const fresh = await api.getListing(listing.id)
+      setListing(fresh)
+      setMovingOpen(false)
+    } catch (e) {
+      alert(e.code === 'pick_subcategory' ? t('move.pick_sub') : errorText(e))
+    } finally {
+      setMoving(false)
+    }
+  }
 
   const handleDelete = async () => {
     if (!listing) return
@@ -754,6 +791,11 @@ export default function ListingDetail() {
           </button>
           <div className="topbar-right">
             {isStaff && (
+              <button className="topbar-btn" onClick={openMove} aria-label={t('move.title')}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7h7l2 2h9v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" /><path d="m12 12 3 3-3 3" /><path d="M15 15H9" /></svg>
+              </button>
+            )}
+            {isStaff && (
               <button className="topbar-btn danger" onClick={handleDelete} disabled={deleting} aria-label={t('my.delete')}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h16M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7m2 0-.7 12.4A2 2 0 0 1 14.3 21H9.7a2 2 0 0 1-2-1.6L7 7" /></svg>
               </button>
@@ -779,6 +821,11 @@ export default function ListingDetail() {
             </svg>
           </button>
           <div className="detail-nav-right">
+            {isStaff && (
+              <button className="circle-btn" onClick={openMove} aria-label={t('move.title')}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7h7l2 2h9v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" /><path d="m12 12 3 3-3 3" /><path d="M15 15H9" /></svg>
+              </button>
+            )}
             {isStaff && (
               <button className="circle-btn danger" onClick={handleDelete} disabled={deleting} aria-label={t('my.delete')}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h16M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7m2 0-.7 12.4A2 2 0 0 1 14.3 21H9.7a2 2 0 0 1-2-1.6L7 7" /></svg>
@@ -1257,6 +1304,61 @@ export default function ListingDetail() {
         </div>
       </div>
 
+
+      {/* Выбор раздела для переноса.
+          Тем же видом, что окно причин возврата, — служебные действия
+          должны выглядеть одинаково. Список разделов с подразделами:
+          в раздел верхнего уровня класть нельзя, там объявления никто
+          не ищет, поэтому такие строки только раскрывают вложенные. */}
+      {movingOpen && (
+        <div className="reasons-sheet" onClick={() => setMovingOpen(false)}>
+          <div className="reasons-card" onClick={(e) => e.stopPropagation()}>
+            <div className="reasons-title">{t('move.title')}</div>
+            <div className="move-current">
+              {t('move.now')}: <b>{
+                listing.category_name?.[i18n.language]
+                || listing.category_name?.ru
+                || listing.category_slug || '—'
+              }</b>
+            </div>
+
+            <div className="move-list">
+              {moveTree.map((root) => (
+                <div key={root.id} className="move-group">
+                  {/* Название приходит словарём с тремя языками, а не
+                      строкой: рисовать его как есть нельзя, страница
+                      падает. Берём язык интерфейса, запасной — русский. */}
+                  <div className="move-group-title">{catName(root)}</div>
+                  {(root.children || []).length > 0 ? (
+                    (root.children || []).map((sub) => (
+                      <button
+                        key={sub.id}
+                        className="reasons-item"
+                        disabled={moving}
+                        onClick={() => doMove(sub.id)}
+                      >
+                        {catName(sub)}
+                      </button>
+                    ))
+                  ) : (
+                    <button
+                      className="reasons-item"
+                      disabled={moving}
+                      onClick={() => doMove(root.id)}
+                    >
+                      {catName(root)}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <button className="reasons-cancel" onClick={() => setMovingOpen(false)}>
+              {t('actions.cancel')}
+            </button>
+          </div>
+        </div>
+      )}
 
       {showReasons && (
         <div className="reasons-sheet" onClick={() => { setShowReasons(false); setCustomReason(false); setReasonText('') }}>

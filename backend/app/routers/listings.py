@@ -1445,6 +1445,10 @@ def get_listing(listing_id: str, request: Request, db: Session = Depends(get_db)
         # продавцу впустую.
         "status": listing.status.value,
         "category_slug": listing.category.slug,
+        # Название раздела словарём — чтобы показать его на языке
+        # человека, не переспрашивая сервер отдельным запросом. Нужно
+        # для служебного переноса объявления в другой раздел.
+        "category_name": listing.category.name or {},
         # Цепочка категорий для «хлебных крошек» — от верхнего раздела
         # к самому объявлению.
         "category_path": _category_path(listing.category),

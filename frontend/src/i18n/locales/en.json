@@ -793,5 +793,10 @@
     "terms": "Terms of service",
     "privacy": "Privacy policy",
     "made_in": "Made in Belgrade"
+  },
+  "move": {
+    "title": "Move to section",
+    "now": "Now",
+    "pick_sub": "Pick a subsection, not the whole section"
   }
 }

@@ -194,6 +194,11 @@ export const api = {
   // проверки и сколько обращений без ответа.
   modCounters: () => request('/moderation/counters'),
   modApprove: (id) => request(`/moderation/${id}/approve`, { method: 'POST' }),
+  // Перенос объявления в другой раздел — только меняет раздел, всё
+  // остальное (текст, фото, автор, переписка) остаётся как было.
+  modMove: (id, categoryId) => request(`/moderation/${id}/move`, {
+    method: 'POST', body: { category_id: categoryId },
+  }),
   modReject: (id, reason) => request(`/moderation/${id}/reject`, {
     method: 'POST',
     body: JSON.stringify({ reason }),
