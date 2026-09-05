@@ -797,6 +797,9 @@
   "move": {
     "title": "Move to section",
     "now": "Now",
-    "pick_sub": "Pick a subsection, not the whole section"
+    "pick_sub": "Pick a subsection, not the whole section",
+    "no_category": "That section no longer exists",
+    "gone": "The listing has already been deleted",
+    "failed": "Could not move it — please try again"
   }
 }

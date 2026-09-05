@@ -499,7 +499,16 @@ export default function ListingDetail() {
       setListing(fresh)
       setMovingOpen(false)
     } catch (e) {
-      alert(e.code === 'pick_subcategory' ? t('move.pick_sub') : errorText(e))
+      // Разбираем ответ сами: общей функции для этого на странице нет,
+      // а errorText живёт только на странице входа и знает лишь её
+      // ошибки. Взял её по привычке — линт остановил деплой, и верно
+      // сделал.
+      const message = {
+        pick_subcategory: t('move.pick_sub'),
+        category_not_found: t('move.no_category'),
+        not_found: t('move.gone'),
+      }[e?.code] || t('move.failed')
+      alert(message)
     } finally {
       setMoving(false)
     }

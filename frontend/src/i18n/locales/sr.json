@@ -798,6 +798,9 @@
   "move": {
     "title": "Premesti u sekciju",
     "now": "Sada",
-    "pick_sub": "Izaberite podsekciju, ne celu sekciju"
+    "pick_sub": "Izaberite podsekciju, ne celu sekciju",
+    "no_category": "Ta sekcija više ne postoji",
+    "gone": "Oglas je već obrisan",
+    "failed": "Premeštanje nije uspelo — pokušajte ponovo"
   }
 }

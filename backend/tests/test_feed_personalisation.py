@@ -407,3 +407,25 @@ def test_move_window_shows_names_not_slugs():
     assert "const catName = (c) =>" in detail
     assert "c.name?.[i18n.language]" in detail
     assert "{catName(root)}" in detail
+
+
+def test_move_errors_are_explained_on_the_page():
+    """Ошибки переноса разбираются на самой странице.
+
+    Сперва я взял для этого errorText — но такая функция живёт только на
+    странице входа и знает лишь её ошибки. Линт остановил деплой на
+    «errorText is not defined», и верно сделал: на сервер бы уехала
+    страница, падающая при первой же неудаче переноса.
+    """
+    detail = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "pages" / "ListingDetail.jsx").read_text()
+
+    # Смотрим строки кода, а не весь файл: прежнее имя осталось в
+    # пояснении рядом. За день это четвёртый раз, когда проверка
+    # спотыкается о мой же комментарий — беру за правило сразу
+    # отбрасывать их.
+    code_lines = [ln for ln in detail.split("\n")
+                  if not ln.strip().startswith(("//", "*", "/*"))]
+    assert not any("errorText" in ln for ln in code_lines)
+    for code in ("pick_subcategory", "category_not_found", "not_found"):
+        assert code in detail, code
