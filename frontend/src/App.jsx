@@ -228,7 +228,7 @@ export default function App() {
     let stop = false
     // Человек мог начать листать сам, не дожидаясь нас. Тогда поправки
     // дёргают страницу под пальцем — первое же касание их отменяет.
-    const giveUp = () => { stop = true; navigating.current = false; clearTimeout(restoring.current) }
+    const giveUp = () => { stop = true; navigating.current = false; show(); clearTimeout(restoring.current) }
     window.addEventListener('touchstart', giveUp, { passive: true, once: true })
     window.addEventListener('wheel', giveUp, { passive: true, once: true })
 
@@ -254,6 +254,22 @@ export default function App() {
     // Отменяем предыдущее восстановление, если оно ещё идёт.
     clearTimeout(restoring.current)
 
+    // Пока возвращаемся — страницу не показываем.
+    //
+    // Иначе человек успевает увидеть её верх, и только потом она
+    // прыгает на нужное место: это и есть то мелькание при возврате.
+    // Спрятать на пару кадров честнее, чем показать заведомо не то
+    // место и дёрнуть.
+    //
+    // Прячем только если возвращаться есть куда: на самый верх страница
+    // и так открывается мгновенно, прятать нечего.
+    const hide = saved > 40
+    if (hide) document.documentElement.classList.add('restoring-scroll')
+    const show = () => document.documentElement.classList.remove('restoring-scroll')
+    // Страховка: что бы ни случилось, дольше полусекунды страница
+    // невидимой не останется.
+    const failsafe = setTimeout(show, 500)
+
     // Попадание засчитываем, только если оно удержалось.
     //
     // Иначе выходило так: страница на миг дорастала, мы попадали в
@@ -268,8 +284,13 @@ export default function App() {
       if (Math.abs(window.scrollY - saved) <= 2) {
         if (++held >= 3) {                                // держится — всё
           navigating.current = false
+          show()
+          clearTimeout(failsafe)
           return
         }
+        // Первое же попадание — можно показывать: место верное, дальше
+        // только убеждаемся, что оно удержалось.
+        show()
         restoring.current = setTimeout(put, 80)
         return
       }
@@ -284,11 +305,13 @@ export default function App() {
       // первом попадании и при первом касании: дёргать под человеком
       // нечего.
       if (++tries < 30) restoring.current = setTimeout(put, 80)
-      else navigating.current = false           // дальше не пробуем
+      else { navigating.current = false; show() }   // дальше не пробуем
     }
     put()
 
     return () => {
+      show()
+      clearTimeout(failsafe)
       // Восстановление намеренно не отменяем.
       //
       // Уборка эффекта срабатывает не только при уходе со страницы, но

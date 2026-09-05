@@ -3956,3 +3956,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   text-transform:uppercase; letter-spacing:.03em;
   padding:8px 4px 4px;
 }
+
+/* Возврат назад: пока страница встаёт на прежнее место, её не
+   показываем. Речь о паре кадров — человек видит короткую паузу вместо
+   рывка с верха страницы вниз. */
+.restoring-scroll body { opacity: 0; }

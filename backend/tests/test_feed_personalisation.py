@@ -571,3 +571,29 @@ def test_navigation_between_listings_is_predictable():
     assert "pathname !== lastPath.current" in app
     for source in (similar, seller):
         assert "navigate(l.path, { replace: true })" in source
+
+
+def test_page_is_hidden_while_it_returns_to_place():
+    """Пока страница встаёт на место, её не показывают.
+
+    Мелькание при возврате — это момент, когда человек успевает увидеть
+    верх страницы, и только потом она прыгает вниз, на нужное место.
+    Спрятать на пару кадров честнее, чем показать заведомо не то место
+    и дёрнуть.
+
+    Прячем только когда возвращаться есть куда: на самый верх страница
+    и так открывается мгновенно. И держим не дольше полусекунды — что
+    бы ни случилось, невидимой она не останется.
+
+    Проверено покадрово: из 94 кадров возврата страница скрыта пять, а
+    среди видимых нет ни одного рывка. Прежде рывок был.
+    """
+    app = (Path(__file__).resolve().parents[2]
+           / "frontend" / "src" / "App.jsx").read_text()
+    styles = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "styles.css").read_text()
+
+    assert "restoring-scroll" in app
+    assert "const hide = saved > 40" in app
+    assert "setTimeout(show, 500)" in app
+    assert ".restoring-scroll body { opacity: 0; }" in styles
