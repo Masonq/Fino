@@ -473,3 +473,22 @@ def test_category_page_keeps_the_spot_after_a_long_look():
     # Обновляем только первую порцию: если человек долистал далеко,
     # перетряхивать всё под ним нельзя — страница подпрыгнет.
     assert "prev.length > (res.items || []).length ? prev : res.items" in landing
+
+
+def test_move_window_shows_all_three_levels():
+    """В окне переноса виден весь третий уровень дерева.
+
+    Дерево трёхуровневое: раздел → подраздел → вложенный. Окно
+    показывало только два, и мультиварка уезжала в «Бытовую технику»
+    целиком, хотя внутри есть свои разделы. Проверено вживую: в списке
+    33 вложенных — ровно столько их и есть в дереве.
+    """
+    detail = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "pages" / "ListingDetail.jsx").read_text()
+    styles = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "styles.css").read_text()
+
+    assert "(sub.children || []).map((deep)" in detail
+    assert "doMove(deep.id)" in detail
+    # С отступом и точкой — иначе не понять, что одно внутри другого.
+    assert ".move-deep" in styles

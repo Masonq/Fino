@@ -1338,16 +1338,32 @@ export default function ListingDetail() {
                       строкой: рисовать его как есть нельзя, страница
                       падает. Берём язык интерфейса, запасной — русский. */}
                   <div className="move-group-title">{catName(root)}</div>
+                  {/* Дерево трёхуровневое: раздел → подраздел →
+                      вложенный. Показывали только два, и мультиварка
+                      уезжала в «Бытовую технику» целиком, хотя внутри
+                      есть свои разделы. Теперь видно всё, вложенные —
+                      с отступом. */}
                   {(root.children || []).length > 0 ? (
                     (root.children || []).map((sub) => (
-                      <button
-                        key={sub.id}
-                        className="reasons-item"
-                        disabled={moving}
-                        onClick={() => doMove(sub.id)}
-                      >
-                        {catName(sub)}
-                      </button>
+                      <div key={sub.id}>
+                        <button
+                          className="reasons-item"
+                          disabled={moving}
+                          onClick={() => doMove(sub.id)}
+                        >
+                          {catName(sub)}
+                        </button>
+                        {(sub.children || []).map((deep) => (
+                          <button
+                            key={deep.id}
+                            className="reasons-item move-deep"
+                            disabled={moving}
+                            onClick={() => doMove(deep.id)}
+                          >
+                            {catName(deep)}
+                          </button>
+                        ))}
+                      </div>
                     ))
                   ) : (
                     <button
