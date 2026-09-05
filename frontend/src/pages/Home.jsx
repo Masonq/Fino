@@ -26,7 +26,9 @@ import { hasLanding } from '../data/landings'
 // сбрасывает прокрутку и не мигает пустым списком, а настоящий возврат
 // спустя время подтягивает свежую ленту.
 const FEED_CACHE_TTL = 60_000
-let feedCache = { lang: null, items: [], total: 0, scroll: 0, fetchedAt: 0 }
+// Город в ключе кэша наравне с языком: без этого человек, выбравший
+// Нови-Сад, при возврате на главную видел бы сохранённую ленту Белграда.
+let feedCache = { lang: null, city: null, items: [], total: 0, scroll: 0, fetchedAt: 0 }
 
 // Фон страницы (--bg в styles.css). Держим тут же числом: значение
 // уходит в meta theme-color, а из CSS-переменной его пришлось бы
@@ -74,7 +76,12 @@ export default function Home() {
   const [categories, setCategories] = useState([])
   const [catsLoaded, setCatsLoaded] = useState(false)
   // объявляем до первого обращения: ниже с него начинается состояние ленты
-  const cached = feedCache.lang === i18n.language ? feedCache : null
+  const savedCity = (() => {
+    try { return localStorage.getItem('plonk_city') || '' } catch { return '' }
+  })()
+  const cached = (feedCache.lang === i18n.language && feedCache.city === savedCity)
+    ? feedCache
+    : null
 
   const [listings, setListings] = useState(() => cached?.items || [])
   const [feedLoaded, setFeedLoaded] = useState(() => Boolean(cached?.items.length))
@@ -83,7 +90,28 @@ export default function Home() {
   const [loadingMore, setLoadingMore] = useState(false)
   const sentinelRef = useRef(null)
   const [cols, setCols] = useState(2)
-  const [city, setCity] = useState(CITIES[0].slug)
+  // Город по умолчанию — вся Сербия, а не Белград.
+  //
+  // Раньше в списке стоял Белград, но лента показывала объявления
+  // отовсюду: человек видел выбранный город и объявления из Нови-Сада
+  // рядом. Пустое значение честно означает «везде».
+  //
+  // Выбор запоминаем: человек живёт в одном городе, и заставлять его
+  // выбирать заново при каждом заходе незачем.
+  const [city, setCity] = useState(() => {
+    try { return localStorage.getItem('plonk_city') || '' } catch { return '' }
+  })
+
+  const chooseCity = useCallback((value) => {
+    setCity(value)
+    try { localStorage.setItem('plonk_city', value) } catch { /* не беда */ }
+  }, [])
+
+  // Город — тоже через ref: обработчик ухода со страницы создаётся один
+  // раз и иначе запомнил бы город, выбранный при первой отрисовке.
+  const cityRef = useRef(city)
+  cityRef.current = city
+
   // Браузер восстанавливает прокрутку не мгновенно, и шапка успевала
   // развернуться и тут же схлопнуться — при возврате это читалось как рывок.
   // Берём положение прокрутки сразу, а переход включаем только после того,
@@ -160,7 +188,7 @@ export default function Home() {
   const PAGE = 12
 
   const loadFeed = useCallback(() => (
-    api.searchListings({ lang: i18n.language, limit: PAGE, offset: 0 })
+    api.searchListings({ lang: i18n.language, limit: PAGE, offset: 0, city: city || undefined })
       .then((res) => {
         setListings(res.items || [])
         setFeedTotal(res.total || 0)
@@ -169,14 +197,14 @@ export default function Home() {
       })
       .catch(() => { setListings([]); setFeedError(true) })
       .finally(() => setFeedLoaded(true))
-  ), [i18n.language])
+  ), [i18n.language, city])
 
   // Подгружаем следующую порцию, когда человек дочитал до низа —
   // иначе лента обрывается на двенадцатом объявлении.
   const loadMore = useCallback(() => {
     if (loadingMore) return
     setLoadingMore(true)
-    api.searchListings({ lang: i18n.language, limit: PAGE, offset: listings.length })
+    api.searchListings({ lang: i18n.language, limit: PAGE, offset: listings.length, city: city || undefined })
       .then((res) => setListings((prev) => {
         // Отсеиваем то, что уже в ленте.
         //
@@ -192,7 +220,7 @@ export default function Home() {
       }))
       .catch(() => {})
       .finally(() => setLoadingMore(false))
-  }, [i18n.language, listings.length, loadingMore])
+  }, [i18n.language, listings.length, loadingMore, city])
 
   useEffect(() => {
     if (!feedLoaded || listings.length >= feedTotal) return
@@ -231,6 +259,7 @@ export default function Home() {
     const save = () => {
       feedCache = {
         lang: langRef.current,
+        city: cityRef.current,
         items: itemsRef.current,
         total: totalRef.current,
         scroll: lastScroll.current || window.scrollY,
@@ -347,7 +376,8 @@ export default function Home() {
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
                       <path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" />
                     </svg>
-                    <select value={city} onChange={(e) => setCity(e.target.value)} aria-label={t('post.city')}>
+                    <select value={city} onChange={(e) => chooseCity(e.target.value)} aria-label={t('post.city')}>
+                      <option value="">{t('search.all_cities')}</option>
                       {CITIES.map((c) => <option key={c.slug} value={c.slug}>{cityLabel(c.slug, i18n.language)}</option>)}
                     </select>
                   </div>

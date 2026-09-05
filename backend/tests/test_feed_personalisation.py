@@ -297,3 +297,28 @@ def test_video_has_no_browser_controls_in_the_card():
     assert "photo-sound" in detail
     # А в полноэкранном просмотре — остаются.
     assert "controls playsInline" in detail
+
+
+def test_city_choice_filters_the_feed():
+    """Выбор города на главной действительно фильтрует ленту.
+
+    Город хранился в состоянии, но никуда не уходил: человек выбирал
+    Нови-Сад и продолжал видеть объявления отовсюду. Хуже того, по
+    умолчанию в списке стоял Белград — то есть выбранный город прямо
+    противоречил тому, что показано.
+
+    Теперь по умолчанию «Все города» (честное «везде»), выбор уходит в
+    запрос, запоминается между заходами и входит в ключ сохранённой
+    ленты — иначе при возврате показалась бы лента чужого города.
+
+    Проверено вживую: Нови-Сад показывает своё, Ниш своё, после
+    перезагрузки выбор на месте.
+    """
+    home = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "Home.jsx").read_text()
+
+    assert "city: city || undefined" in home
+    assert home.count("city: city || undefined") == 2      # лента и подгрузка
+    assert "localStorage.getItem('plonk_city')" in home
+    assert "feedCache.city === savedCity" in home
+    assert 'value=""' in home                              # пункт «все города»
