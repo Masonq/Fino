@@ -397,29 +397,16 @@ export default function CategoryLanding() {
   // место. Повторяем несколько раз: фото ниже ещё догружаются и слегка
   // меняют высоту страницы, отчего однократно выставленная прокрутка
   // уезжает через долю секунды после того, как её выставили.
-  const scrollRestored = useRef(false)
-  useLayoutEffect(() => {
-    if (scrollRestored.current || !cacheFresh || !cached.scroll || !results.length) return
-    scrollRestored.current = true
-    const target = cached.scroll
-    window.scrollTo(0, target)
-    let tries = 0
-    let stop = false
-    const giveUp = () => { stop = true }
-    window.addEventListener('touchstart', giveUp, { passive: true, once: true })
-    window.addEventListener('wheel', giveUp, { passive: true, once: true })
-    const id = setInterval(() => {
-      if (stop) { clearInterval(id); return }
-      if (Math.abs(window.scrollY - target) > 2) window.scrollTo(0, target)
-      if (++tries >= 8) clearInterval(id)
-    }, 60)
-    return () => {
-      clearInterval(id)
-      window.removeEventListener('touchstart', giveUp)
-      window.removeEventListener('wheel', giveUp)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [results.length])
+  // Своего восстановления прокрутки здесь больше нет.
+  //
+  // Оно спорило с общим (App.jsx): два механизма ставили прокрутку
+  // наперегонки, каждый со своими повторами, и человек видел, как
+  // страница дёргается при возврате. Ровно это уже случалось на главной,
+  // и лечится так же — механизм должен быть один.
+  //
+  // Сохранённый список при этом остаётся: без него странице неоткуда
+  // взять высоту, и возвращать прокрутку было бы некуда.
+
 
   const name = category?.name?.[i18n.language] || category?.name?.ru || ''
 

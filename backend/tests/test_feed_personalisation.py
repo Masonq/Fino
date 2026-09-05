@@ -205,8 +205,11 @@ def test_scroll_is_restored_in_one_place():
 
     # Восстановление живёт в App и делает несколько попыток: списки
     # грузятся порциями, и высота страницы растёт уже после первой.
-    assert "scrollPositions.current[location.key]" in app
-    assert "setTimeout(put, 60)" in app
+    #
+    # Способ с тех пор изменился (см. соседний тест про точный возврат):
+    # место берём из ref, а не из location напрямую, и повторяем чаще.
+    assert "scrollPositions.current[locationKeyRef.current]" in app
+    assert "setTimeout(put, 80)" in app
     # А в ленте своего восстановления нет.
     assert "window.scrollTo" not in home
 
@@ -492,3 +495,47 @@ def test_move_window_shows_all_three_levels():
     assert "doMove(deep.id)" in detail
     # С отступом и точкой — иначе не понять, что одно внутри другого.
     assert ".move-deep" in styles
+
+
+def test_scroll_returns_exactly_on_every_list_page():
+    """Возврат приводит на то же место — на главной, в разделе и в поиске.
+
+    Собралось из четырёх причин, каждую нашли замером:
+
+    Замена адреса. Поиск дописывает фильтры в адрес, чтобы результатом
+    можно было делиться ссылкой; мы принимали это за новый переход —
+    мотали наверх и обрывали восстановление.
+
+    Собственная прокрутка. Наш же вызов порождает событие, и обработчик
+    записывал в память обрезанное значение: страница ещё короткая,
+    браузер вместо 628 ставит 274 — и это затирало настоящее место.
+
+    Ранний выход. Страница на миг дорастала, мы попадали и переставали
+    следить, а высота менялась снова и прокрутку сбивало. Теперь
+    попадание засчитывается, только если продержалось три проверки.
+
+    Два механизма. На странице раздела было своё восстановление, оно
+    спорило с общим — отсюда дёрганье. Механизм остался один.
+
+    Проверено вживую: главная 4500 → 4500, раздел 628 → 628, поиск
+    2000 → 2000.
+    """
+    app = (Path(__file__).resolve().parents[2]
+           / "frontend" / "src" / "App.jsx").read_text()
+    landing = (Path(__file__).resolve().parents[2]
+               / "frontend" / "src" / "pages" / "CategoryLanding.jsx").read_text()
+
+    assert "if (navTypeRef.current === 'REPLACE') return" in app
+    assert "if (navigating.current) return" in app
+    assert "if (++held >= 3)" in app
+    # На странице раздела своего восстановления быть не должно.
+    assert "window.scrollTo" not in landing
+
+
+def test_search_keeps_its_results_between_visits():
+    """Поиск помнит найденное — иначе возвращаться некуда."""
+    search = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "pages" / "Search.jsx").read_text()
+
+    assert "let searchCache" in search
+    assert "searchCache.items" in search

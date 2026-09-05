@@ -20,6 +20,14 @@ const SORTS = [
 
 const PAGE = 20
 
+// Найденное держим между заходами, как на главной и на странице раздела.
+//
+// Без этого возврат из объявления перезапрашивал выдачу с первой
+// страницы: человек листал результаты, открывал карточку, возвращался —
+// и оказывался наверху короткого списка. Ключ — сам запрос: у разных
+// запросов разные результаты, общее хранилище перепутало бы их.
+let searchCache = { key: null, items: [], total: 0, fetchedAt: 0 }
+
 export default function Search() {
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
@@ -39,7 +47,13 @@ export default function Search() {
   // флаг, иначе не на что опереться, решая, показывать ли скелетон
   // строки подкатегорий или уже настоящую (пустую) строку.
   const [catsLoaded, setCatsLoaded] = useState(false)
-  const [items, setItems] = useState([])
+  // Начальное значение — из хранилища.
+  //
+  // Ключ (сам запрос) здесь ещё не собран: он считается ниже, и сверять
+  // с ним нельзя — четвёртый раз за сегодня спотыкаюсь об этот порядок.
+  // Поэтому берём как есть, а если запрос окажется другим, загрузка
+  // ниже сразу перезапишет список.
+  const [items, setItems] = useState(() => searchCache.items || [])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [loaded, setLoaded] = useState(false)
@@ -107,13 +121,36 @@ export default function Search() {
     // в фильтре, хотя это уже совсем другая категория. Сбрасываем
     // сразу, а не внутри setTimeout — иначе те же 350мс задержки
     // ощущались бы как повисшая старая выдача, а не как загрузка.
+    // Вернулись к тому же запросу — показываем найденное сразу и
+    // перезапрашиваем, только если оно уже несвежее. Иначе человек
+    // видел бы пустой экран на месте выдачи, которую только что листал.
+    const FRESH = 60_000
+    if (searchCache.key === JSON.stringify(query)
+        && searchCache.items.length
+        && Date.now() - searchCache.fetchedAt < FRESH) {
+      setItems(searchCache.items)
+      setTotal(searchCache.total)
+      setLoaded(true)
+      return
+    }
+
     setLoaded(false)
     const wait = firstRun.current ? 0 : 350
     firstRun.current = false
     const id = setTimeout(() => {
       setLoading(true)
       api.searchListings(query)
-        .then((res) => { setItems(res.items || []); setTotal(res.total || 0); setError(false) })
+        .then((res) => {
+          setItems(res.items || [])
+          setTotal(res.total || 0)
+          setError(false)
+          searchCache = {
+            key: JSON.stringify(query),
+            items: res.items || [],
+            total: res.total || 0,
+            fetchedAt: Date.now(),
+          }
+        })
         .catch(() => { setItems([]); setTotal(0); setError(true) })
         .finally(() => { setLoading(false); setLoaded(true) })
     }, wait)
@@ -147,11 +184,20 @@ export default function Search() {
     setLoadingMore(true)
     api.searchListings({ ...query, offset: items.length })
       .then((res) => setItems((prev) => {
+        // Подгруженное тоже кладём в хранилище: иначе при возврате
+        // список схлопнется к первой порции, и место потеряется.
         // Отсеиваем уже показанное — как в ленте на главной: когда
         // подгрузка накладывается на обычную загрузку списка, одни и те
         // же карточки дописываются второй раз.
         const have = new Set(prev.map((l) => l.id))
-        return [...prev, ...(res.items || []).filter((l) => !have.has(l.id))]
+        const grown = [...prev, ...(res.items || []).filter((l) => !have.has(l.id))]
+        searchCache = {
+          key: JSON.stringify(query),
+          items: grown,
+          total: searchCache.total,
+          fetchedAt: searchCache.fetchedAt || Date.now(),
+        }
+        return grown
       }))
       .catch(() => {})
       .finally(() => setLoadingMore(false))
