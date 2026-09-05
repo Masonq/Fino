@@ -525,7 +525,9 @@ def test_scroll_returns_exactly_on_every_list_page():
     landing = (Path(__file__).resolve().parents[2]
                / "frontend" / "src" / "pages" / "CategoryLanding.jsx").read_text()
 
-    assert "if (navTypeRef.current === 'REPLACE') return" in app
+    # Замена адреса той же страницы ничего не сбрасывает, а замена
+    # одного объявления другим — открывает сверху (см. соседний тест).
+    assert "if (navTypeRef.current === 'REPLACE') {" in app
     assert "if (navigating.current) return" in app
     assert "if (++held >= 3)" in app
     # На странице раздела своего восстановления быть не должно.
@@ -539,3 +541,33 @@ def test_search_keeps_its_results_between_visits():
 
     assert "let searchCache" in search
     assert "searchCache.items" in search
+
+
+def test_navigation_between_listings_is_predictable():
+    """Переходы между объявлениями ведут себя предсказуемо.
+
+    Три правила, все проверены живым прогоном:
+
+    Объявление из списка открывается сверху и поверх списка — «назад»
+    возвращает в список, на то же место.
+
+    Соседнее объявление из «Похожих» и «Ещё у продавца» открывается
+    взамен текущего и тоже сверху. Иначе «назад» уводил не в список, а к
+    предыдущей карточке — и так по цепочке: посмотрел пять похожих, жми
+    назад пять раз. Открывалось оно при этом там же, где человек листал
+    предыдущее, то есть внизу.
+
+    Страницы разделов (/c/...) всегда открываются сверху: там не список,
+    а плитки подразделов — возвращать человека в их середину незачем.
+    """
+    app = (Path(__file__).resolve().parents[2]
+           / "frontend" / "src" / "App.jsx").read_text()
+    similar = (Path(__file__).resolve().parents[2]
+               / "frontend" / "src" / "components" / "SimilarListings.jsx").read_text()
+    seller = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "components" / "SellerListings.jsx").read_text()
+
+    assert "pathname.startsWith('/c/')" in app
+    assert "pathname !== lastPath.current" in app
+    for source in (similar, seller):
+        assert "navigate(l.path, { replace: true })" in source

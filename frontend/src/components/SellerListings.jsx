@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { displayCity } from '../data/cities'
 import { formatPrice } from '../utils/money'
@@ -14,6 +14,7 @@ import HScroll from './HScroll'
 // пустого белого фона под кнопками), на мобильном — то же самое
 // просто ещё один блок в общей вертикальной ленте.
 export default function SellerListings({ sellerId, excludeListingId }) {
+  const navigate = useNavigate()
   const { t, i18n } = useTranslation()
   const [items, setItems] = useState([])
   const [loaded, setLoaded] = useState(false)
@@ -40,7 +41,21 @@ export default function SellerListings({ sellerId, excludeListingId }) {
 
       <HScroll className="similar-strip">
         {items.slice(0, 6).map((l) => (
-          <Link key={l.id} to={l.path} className="similar-card">
+          <Link
+            key={l.id}
+            to={l.path}
+            className="similar-card"
+            // Соседнее объявление открываем взамен текущего, а не поверх.
+            //
+            // Иначе «назад» уводил не в список, откуда человек пришёл, а
+            // к предыдущей карточке — и так по цепочке: посмотрел пять
+            // похожих, жмёшь назад пять раз. В список при этом
+            // возвращаешься в непонятном месте.
+            onClick={(e) => {
+              e.preventDefault()
+              navigate(l.path, { replace: true })
+            }}
+          >
             <div className="similar-photo">
               {l.cover_photo
                 ? <img src={l.cover_photo} alt="" loading="lazy" />
