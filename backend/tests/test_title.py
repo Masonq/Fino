@@ -2487,3 +2487,39 @@ def test_words_that_only_look_like_cities():
 
     assert extract_city("Ниша для книг, деревянная") is None
     assert extract_city("Отправлю почтой по всей Сербии") is None
+
+
+def test_new_categories_have_all_three_languages():
+    """У добавленных разделов есть названия на всех трёх языках.
+
+    Раздел без перевода показывается служебным именем — это уже
+    вылезало в статистике («appliances», «pets-supplies»). Проверяем
+    сам список, чтобы не завести такой раздел снова.
+    """
+    from app.core.seed_missing_categories import NEW
+
+    for parent, children in NEW.items():
+        for slug, ru, en, sr, deep in children:
+            assert ru and en and sr, slug
+            for dslug, dru, den, dsr in deep:
+                assert dru and den and dsr, dslug
+
+
+def test_new_categories_cover_the_known_gaps():
+    """Дыры, найденные при разборе ленты вручную, закрыты.
+
+    Плашки памяти и видеокарты лежали в «Настольных компьютерах»,
+    детские велосипеды некуда было деть (в «Игрушки» их не отнесёшь),
+    городского скейта в «Хобби» просто не было, а «Крупная техника» и
+    «Мелкая техника» стояли вовсе без подразделов.
+    """
+    from app.core.seed_missing_categories import NEW
+
+    everything = {slug for children in NEW.values()
+                  for slug, *_ , deep in children} | {
+        dslug for children in NEW.values()
+        for *_, deep in children for dslug, *_ in deep}
+
+    for needed in ("gpu", "ram", "kids-bikes", "skate-roller",
+                   "multicookers", "fridges", "washing-machines"):
+        assert needed in everything, needed
