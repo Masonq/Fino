@@ -149,7 +149,11 @@ export default function CategoryLanding() {
     // снова, сдвигая макет) — скелетон той же формы держит место.
     setFresh([])
     setFreshLoading(true)
-    api.searchListings({ category_slug: slug, limit: 8, lang: i18n.language })
+    const savedCity = (() => {
+      try { return localStorage.getItem('plonk_city') || '' } catch { return '' }
+    })()
+    api.searchListings({ category_slug: slug, limit: 8, lang: i18n.language,
+                         city: savedCity || undefined })
       .then((res) => setFresh(res.items || []))
       .catch(() => setFresh([]))
       .finally(() => setFreshLoading(false))
@@ -210,6 +214,16 @@ export default function CategoryLanding() {
   const buildQuery = (categorySlug = activeCategorySlug) => {
     const params = { category_slug: categorySlug, lang: i18n.language, limit: PAGE, offset: 0 }
     if (text.trim()) params.q = text.trim()
+
+    // Город — тот же, что выбран на главной.
+    //
+    // Здесь фильтра по городу не было вовсе: человек выбирал Нови-Сад,
+    // заходил в «Мебель» и снова видел всю Сербию. Выбор один на весь
+    // сайт, и странице раздела незачем его переспрашивать.
+    const city = (() => {
+      try { return localStorage.getItem('plonk_city') || '' } catch { return '' }
+    })()
+    if (city) params.city = city
 
     // «Купить/Снять/Посуточно» — структурный атрибут (attributes.deal_type),
     // отбирает по полю, а не по словам в тексте: раньше «Снять» словом

@@ -322,3 +322,21 @@ def test_city_choice_filters_the_feed():
     assert "localStorage.getItem('plonk_city')" in home
     assert "feedCache.city === savedCity" in home
     assert 'value=""' in home                              # пункт «все города»
+
+
+def test_city_choice_works_on_category_pages_too():
+    """Выбор города действует и на страницах разделов.
+
+    Там фильтра по городу не было вовсе: человек выбирал Нови-Сад,
+    заходил в «Мебель» и снова видел всю Сербию. Выбор один на весь
+    сайт, и странице раздела незачем его переспрашивать.
+
+    В поиске город работал и раньше — проверил, там всё в порядке:
+    уходит в запрос, попадает в адрес, показывается меткой.
+    """
+    landing = (Path(__file__).resolve().parents[2]
+               / "frontend" / "src" / "pages" / "CategoryLanding.jsx").read_text()
+
+    assert landing.count("localStorage.getItem('plonk_city')") == 2
+    assert "if (city) params.city = city" in landing
+    assert "city: savedCity || undefined" in landing
