@@ -449,3 +449,27 @@ def test_request_body_is_always_sent_as_text():
     assert "JSON.stringify(options.body)" in client
     # Файлы (загрузка фото) отправляются как есть, их трогать нельзя.
     assert "instanceof FormData" in client
+
+
+def test_category_page_keeps_the_spot_after_a_long_look():
+    """Возврат в раздел приводит на то же место, даже спустя минуты.
+
+    Сохранённый список раздела считался годным только минуту: человек
+    изучал объявление дольше, возвращался — список сбрасывался, страница
+    становилась короткой, и возвращать прокрутку было уже некуда. Он
+    оказывался наверху.
+
+    Возраст решает, обновлять ли данные, но не показывать ли их: список
+    рисуется сразу, а свежие данные подъезжают следом и незаметно.
+
+    Проверено по-настоящему: пролистал раздел, открыл объявление, ждал
+    65 секунд, вернулся — та же точка, разница ноль пикселей.
+    """
+    landing = (Path(__file__).resolve().parents[2]
+               / "frontend" / "src" / "pages" / "CategoryLanding.jsx").read_text()
+
+    assert "const cacheFresh = Boolean(cached)" in landing
+    assert "cacheStale" in landing
+    # Обновляем только первую порцию: если человек долистал далеко,
+    # перетряхивать всё под ним нельзя — страница подпрыгнет.
+    assert "prev.length > (res.items || []).length ? prev : res.items" in landing

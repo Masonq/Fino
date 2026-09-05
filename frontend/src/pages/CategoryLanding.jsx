@@ -59,7 +59,18 @@ export default function CategoryLanding() {
   // тот же принцип, но с привязкой к конкретному разделу: у категорий
   // разное содержимое, один общий кэш для всех перепутал бы их.
   const cached = landingCache[slug]
-  const cacheFresh = cached && Date.now() - cached.fetchedAt < LANDING_CACHE_TTL
+  // Возраст решает, обновлять ли данные, но не показывать ли их.
+  //
+  // Раньше сохранённый список считался годным только минуту: человек
+  // смотрел объявление дольше, возвращался — список сбрасывался, страница
+  // становилась короткой, и возвращать прокрутку было уже некуда, он
+  // оказывался наверху. Именно на это и пожаловались.
+  //
+  // Теперь список показывается всегда, если он есть, а по возрасту
+  // решаем только, перечитать ли его с сервера — это происходит следом
+  // и незаметно.
+  const cacheFresh = Boolean(cached)
+  const cacheStale = cached && Date.now() - cached.fetchedAt >= LANDING_CACHE_TTL
   const restoringFromCache = useRef(Boolean(cacheFresh && cached.searched))
   // Тот самый настоящий виновник — см. подробный комментарий у самого
   // места использования, в эффекте сброса при смене slug.
@@ -311,6 +322,27 @@ export default function CategoryLanding() {
       resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   }, [searched])
+
+  // Устаревший список обновляем тихо, уже показав его.
+  //
+  // Человек при возврате сразу видит то, что листал, и остаётся на своём
+  // месте; свежие данные подъезжают следом и меняют разве что порядок в
+  // самом низу. Обновляем только первую порцию: если человек долистал
+  // далеко, перетряхивать всё под ним нельзя — страница подпрыгнет.
+  const refreshed = useRef(false)
+  useEffect(() => {
+    if (refreshed.current || !cacheStale || !cached?.searched) return
+    refreshed.current = true
+    api.searchListings(buildQuery(cached.activeCategorySlug || slug))
+      .then((res) => {
+        if ((res.items || []).length) {
+          setResults((prev) => (prev.length > (res.items || []).length ? prev : res.items))
+          setResultsTotal(res.total || 0)
+        }
+      })
+      .catch(() => { /* показываем то, что уже есть */ })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const loadMore = () => {
     if (loadingMore || results.length >= resultsTotal) return
