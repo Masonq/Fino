@@ -429,3 +429,23 @@ def test_move_errors_are_explained_on_the_page():
     assert not any("errorText" in ln for ln in code_lines)
     for code in ("pick_subcategory", "category_not_found", "not_found"):
         assert code in detail, code
+
+
+def test_request_body_is_always_sent_as_text():
+    """Тело запроса всегда уходит строкой.
+
+    Передал объект как есть — fetch отправил «[object Object]», сервер
+    ответил «неверные данные», а человек увидел общее «не получилось
+    перенести». Ошибка тихая: ни в консоли, ни в журнале ничего
+    внятного, только код 422 в логе сервера.
+
+    Раз уж такое возможно, превращаем в строку в самой отправке, а не
+    полагаемся на память в каждом вызове.
+    """
+    client = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "api" / "client.js").read_text()
+
+    assert "typeof options.body === 'object'" in client
+    assert "JSON.stringify(options.body)" in client
+    # Файлы (загрузка фото) отправляются как есть, их трогать нельзя.
+    assert "instanceof FormData" in client

@@ -35,8 +35,22 @@ function getDeviceId() {
 
 async function request(path, options = {}) {
   const token = getToken()
+
+  // Тело запроса всегда строкой.
+  //
+  // Передал объект как есть — fetch отправил «[object Object]», сервер
+  // ответил «неверные данные», а на экране появилось общее «не
+  // получилось». Ошибка тихая: ни в консоли, ни в журнале ничего
+  // внятного, только код 422 в логе сервера. Раз уж такое возможно —
+  // превращаем сами, а не полагаемся на память.
+  const body = options.body && typeof options.body === 'object'
+    && !(options.body instanceof FormData)
+    ? JSON.stringify(options.body)
+    : options.body
+
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
+    ...(body === undefined ? {} : { body }),
     headers: {
       'Content-Type': 'application/json',
       'X-Device-Id': getDeviceId(),
@@ -197,7 +211,7 @@ export const api = {
   // Перенос объявления в другой раздел — только меняет раздел, всё
   // остальное (текст, фото, автор, переписка) остаётся как было.
   modMove: (id, categoryId) => request(`/moderation/${id}/move`, {
-    method: 'POST', body: { category_id: categoryId },
+    method: 'POST', body: JSON.stringify({ category_id: categoryId }),
   }),
   modReject: (id, reason) => request(`/moderation/${id}/reject`, {
     method: 'POST',
