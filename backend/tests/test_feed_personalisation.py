@@ -340,3 +340,24 @@ def test_city_choice_works_on_category_pages_too():
     assert landing.count("localStorage.getItem('plonk_city')") == 2
     assert "if (city) params.city = city" in landing
     assert "city: savedCity || undefined" in landing
+
+
+def test_empty_filters_do_not_reach_the_server():
+    """Пустые значения не уходят в запрос.
+
+    URLSearchParams превращает undefined в строку «undefined», и сервер
+    получал city=undefined как настоящее название города — при выборе
+    «Все города» лента становилась пустой.
+
+    Ошибка тихая: запрос выполняется, ответ приходит, просто в нём
+    ничего нет. Поэтому чиню не в одном месте, а в сборке запроса — и
+    перевожу на неё все запросы с необязательными полями.
+    """
+    client = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "api" / "client.js").read_text()
+
+    assert "function query(params)" in client
+    assert "value === undefined || value === null || value === ''" in client
+    assert "searchListings: (params) => request(`/listings?${query(params)}`)" in client
+    # Прямая сборка с объектом-переменной больше не используется.
+    assert "new URLSearchParams(params)" not in client

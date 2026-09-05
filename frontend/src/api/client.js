@@ -61,6 +61,23 @@ async function request(path, options = {}) {
 // ответа. Живёт до перехода на карточку, дальше запись убирается.
 const prefetched = new Map()
 
+/**
+ * Собирает строку запроса, выбрасывая пустые значения.
+ *
+ * URLSearchParams превращает undefined в строку «undefined», и сервер
+ * получал city=undefined как настоящее название города — лента при
+ * выборе «Все города» становилась пустой. Ошибка тихая: запрос
+ * выполняется, ответ приходит, просто в нём ничего нет.
+ */
+function query(params) {
+  const clean = {}
+  for (const [key, value] of Object.entries(params || {})) {
+    if (value === undefined || value === null || value === '') continue
+    clean[key] = value
+  }
+  return new URLSearchParams(clean).toString()
+}
+
 export const api = {
   requestCode: (destination, channel) => request('/auth/request-code', {
     method: 'POST',
@@ -109,7 +126,7 @@ export const api = {
     body: JSON.stringify({ action }),
   }),
   // ——— админка ———
-  adminUsers: (params) => request(`/admin/users?${new URLSearchParams(params)}`),
+  adminUsers: (params) => request(`/admin/users?${query(params)}`),
   adminUser: (id) => request(`/admin/users/${id}`),
   adminUserListings: (id) => request(`/admin/users/${id}/listings`),
   adminUserLogins: (id) => request(`/admin/users/${id}/logins`),
@@ -141,7 +158,7 @@ export const api = {
   adminStatsCategories: () => request('/admin/stats/categories'),
   adminStatsSources: () => request('/admin/stats/sources'),
   adminStatsQuality: () => request('/admin/stats/quality'),
-  adminAudit: (params) => request(`/admin/audit?${new URLSearchParams(params)}`),
+  adminAudit: (params) => request(`/admin/audit?${query(params)}`),
   adminAuditSummary: (days) => request(`/admin/audit/summary?${new URLSearchParams({ days })}`),
 
   // ——— техподдержка ———
@@ -152,7 +169,7 @@ export const api = {
   supportReply: (id, body) => request(`/support/${id}/reply`, {
     method: 'POST', body: JSON.stringify({ body }),
   }),
-  supportQueue: (params) => request(`/support/queue?${new URLSearchParams(params)}`),
+  supportQueue: (params) => request(`/support/queue?${query(params)}`),
   supportTicket: (id) => request(`/support/${id}`),
   supportAnswer: (id, body) => request(`/support/${id}/answer`, {
     method: 'POST', body: JSON.stringify({ body }),
@@ -188,7 +205,7 @@ export const api = {
 
   getCategories: () => request('/categories'),
   getCategorySchema: (slug) => request(`/categories/${slug}/schema`),
-  searchListings: (params) => request(`/listings?${new URLSearchParams(params)}`),
+  searchListings: (params) => request(`/listings?${query(params)}`),
   getListing: (id) => {
     // Отдаём заранее запрошенный ответ, если он есть (см. prefetchListing).
     const ready = prefetched.get(id)
