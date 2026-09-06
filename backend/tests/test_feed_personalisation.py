@@ -710,3 +710,12 @@ def test_trust_signs_are_in_the_card():
     # не говорит.
     assert "(listing.owner.rating_count or 0) >= 3" in api
     assert "listing.seller_rating.toFixed(1)" in card
+
+    # Отступ по бокам как у цены и города: без него строка стояла на
+    # десять пикселей левее всего остального, и левый край карточки
+    # получался рваным. Замерил: теперь заголовок, цена, оценка и город
+    # начинаются на одной линии.
+    styles = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "styles.css").read_text()
+    trust_rule = styles.split(".s-trust{")[1].split("}")[0]
+    assert "padding:2px 10px 0" in trust_rule

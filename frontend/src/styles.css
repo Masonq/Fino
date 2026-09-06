@@ -4004,7 +4004,11 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* Оценка продавца в карточке. Мелко и спокойно: это подсказка при
    выборе, а не украшение — крупная звезда перетянула бы внимание с
    самой вещи, ради которой человек и листает ленту. */
-.s-trust{ display:flex; align-items:center; gap:8px; margin-top:4px; }
+/* Отступ по бокам — как у цены и города (10px).
+   Без него строка стояла на десять пикселей левее всего остального:
+   у соседних блоков отступ внутри, а у этого его не было, и левый край
+   карточки получался рваным. Заметно глазом, поймали на проверке. */
+.s-trust{ display:flex; align-items:center; gap:8px; padding:2px 10px 0; }
 .s-trust-rating{
   display:inline-flex; align-items:center; gap:3px;
   font-size:12px; font-weight:700; color:#5B6B63;
