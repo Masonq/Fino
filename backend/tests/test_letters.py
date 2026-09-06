@@ -722,3 +722,34 @@ def test_active_seller_badge_is_earned_not_bought():
     # Ни денег, ни продвижения в условиях нет.
     for word in ("promotion", "paid", "payment", "оплат"):
         assert word not in source.lower()
+
+
+def test_saved_search_alerts_respect_the_person():
+    """Уведомления по сохранённому поиску не превращаются в спам.
+
+    Сохранять поиски мы умели, а сообщать по ним — нет: галочка
+    «уведомлять» стояла в базе и ничего не делала. А это главная
+    причина возвращаться на площадку: человек искал коляску, ничего не
+    нашёл и ушёл; появится через два дня — вернётся сам.
+
+    Правила приличия: не чаще раза в сутки на поиск, первым делом само
+    объявление, ничего не нашлось — молчим.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "saved_search_alerts.py").read_text()
+
+    assert "QUIET_PERIOD = timedelta(hours=20)" in source
+    assert "if not items:" in source          # пустых сообщений не шлём
+    assert "SHOW = 3" in source               # больше трёх — уже список
+    # Ищем ровно тем запросом, что человек сохранил: он подписывался на
+    # него, а не на нашу трактовку.
+    assert "filters.get(\"q\")" in source
+
+
+def test_saved_search_alerts_have_a_schedule():
+    """Рассылка запускается по расписанию, а не руками."""
+    timer = (Path(__file__).resolve().parents[2]
+             / "deploy" / "plonk-saved-search.timer").read_text()
+
+    assert "OnCalendar=*-*-* 0/3:00:00" in timer
+    assert "Persistent=true" in timer

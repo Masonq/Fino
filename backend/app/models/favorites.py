@@ -32,4 +32,10 @@ class SavedSearch(Base):
     filters: Mapped[dict] = mapped_column(JSONB, default=dict)
     notify_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
 
+    # Когда последний раз сообщали о новом по этому поиску.
+    #
+    # Нужно, чтобы не слать чаще раза в сутки: человек подписался на
+    # «коляску», а не на ленту новостей — десяток сообщений за день
+    # отучит его от уведомлений вообще.
+    notified_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)

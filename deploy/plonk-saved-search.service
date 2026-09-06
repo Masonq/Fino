@@ -1,0 +1,9 @@
+[Unit]
+Description=PLONK — уведомления о новом по сохранённому поиску
+After=network.target postgresql.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/fino/backend
+ExecStart=/opt/fino/backend/venv/bin/python3 -m app.core.saved_search_alerts
+User=root
