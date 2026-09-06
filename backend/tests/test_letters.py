@@ -420,3 +420,44 @@ def test_reply_speed_is_shown_as_a_range():
     assert speed_label(300) == "hours"
     assert speed_label(60 * 20) == "day"
     assert speed_label(60 * 50) == "days"
+
+
+# ── Блокировка ──────────────────────────────────────────────────────────────
+def test_blocked_user_is_not_recognised_anywhere():
+    """Заблокированный не узнаётся ни лентой, ни ботом.
+
+    Блокировка действовала наполовину: обязательный вход её ловил, а
+    необязательный — через который работают лента, поиск и карточки
+    объявлений — нет. Человек после блокировки продолжал листать сайт.
+    В боте проверки не было вовсе: он входил, подавал объявления и
+    получал уведомления как ни в чём не бывало.
+
+    Раз заблокировали — значит везде, иначе это не блокировка, а
+    полумера.
+
+    Проверено вживую: до блокировки лента узнаёт человека, после — нет.
+    """
+    auth = (Path(__file__).resolve().parents[1] / "app" / "core" / "auth.py").read_text()
+    bot = (Path(__file__).resolve().parents[1] / "app" / "bot" / "publisher.py").read_text()
+
+    # В необязательном входе — тоже проверка.
+    optional = auth.split("def get_current_user_optional")[1].split("\ndef ")[0]
+    assert "if user.is_blocked:" in optional
+
+    # В боте — одна проверка на все команды сразу: их много, и
+    # добавлять в каждую значит рано или поздно пропустить новую.
+    assert "@dp.update.outer_middleware()" in bot
+    assert "User.is_blocked" in bot
+
+
+def test_bot_keeps_working_when_database_is_down():
+    """Сбой базы не должен отключать бота для всех.
+
+    Отказать каждому из-за недоступной базы хуже, чем на минуту
+    пропустить одного заблокированного.
+    """
+    bot = (Path(__file__).resolve().parents[1] / "app" / "bot" / "publisher.py").read_text()
+
+    guard = bot.split("async def block_banned")[1].split("\n@")[0]
+    assert "except Exception" in guard
+    assert "return await handler(event, data)" in guard

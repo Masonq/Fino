@@ -267,6 +267,49 @@ def shrink(data: bytes, side: int = 1600) -> bytes:
 dp = Dispatcher()
 
 
+@dp.update.outer_middleware()
+async def block_banned(handler, event, data):
+    """
+    Заблокированного бот не слушает вовсе.
+
+    Раньше блокировка действовала только на сайте, да и то наполовину: в
+    боте человек продолжал входить, подавать объявления и получать
+    уведомления. Раз заблокировали — значит везде, иначе это не
+    блокировка, а полумера.
+
+    Проверка стоит одна на всё: команд у бота много, и добавлять её в
+    каждую — верный способ рано или поздно пропустить новую.
+    """
+    from app.core.database import SessionLocal
+    from app.models import User
+
+    user_id = None
+    message = getattr(event, "message", None) or getattr(event, "callback_query", None)
+    if message and getattr(message, "from_user", None):
+        user_id = message.from_user.id
+
+    if user_id:
+        try:
+            with SessionLocal() as db:
+                blocked = (
+                    db.query(User.is_blocked)
+                    .filter(User.telegram_id == str(user_id))
+                    .scalar()
+                )
+            if blocked:
+                # Молча: объяснять заблокированному, почему бот не
+                # отвечает, незачем — он это уже знает с сайта, а
+                # переписка с ним только тратит время.
+                return
+        except Exception:                                  # noqa: BLE001
+            # База недоступна — пропускаем дальше. Отказать всем из-за
+            # сбоя базы хуже, чем на минуту пропустить одного
+            # заблокированного.
+            pass
+
+    return await handler(event, data)
+
+
 # Имя бота нужно для ссылки в подсказке; узнаём его один раз при запуске.
 BOT_USERNAME = ""
 
