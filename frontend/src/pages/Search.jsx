@@ -179,10 +179,17 @@ export default function Search() {
   const [loadingMore, setLoadingMore] = useState(false)
   const sentinelRef = useRef(null)
 
+  // Сколько уже запрошено — отдельно от длины списка: показанное
+  // повторно мы отсеиваем, и при сместившемся порядке подгрузка иначе
+  // просит одну и ту же порцию без конца (см. Home.jsx).
+  const asked = useRef(0)
+
   const loadMore = useCallback(() => {
     if (loadingMore) return
     setLoadingMore(true)
-    api.searchListings({ ...query, offset: items.length })
+    const from = Math.max(asked.current, items.length)
+    asked.current = from + PAGE
+    api.searchListings({ ...query, offset: from })
       .then((res) => setItems((prev) => {
         // Подгруженное тоже кладём в хранилище: иначе при возврате
         // список схлопнется к первой порции, и место потеряется.
@@ -190,7 +197,14 @@ export default function Search() {
         // подгрузка накладывается на обычную загрузку списка, одни и те
         // же карточки дописываются второй раз.
         const have = new Set(prev.map((l) => l.id))
-        const grown = [...prev, ...(res.items || []).filter((l) => !have.has(l.id))]
+        const fresh = (res.items || []).filter((l) => !have.has(l.id))
+        // Ничего нового — дальше не просим (см. Home.jsx): иначе
+        // подгрузка идёт без конца, а список стоит на месте.
+        if (!fresh.length) {
+          setTotal(prev.length)
+          return prev
+        }
+        const grown = [...prev, ...fresh]
         searchCache = {
           key: JSON.stringify(query),
           items: grown,

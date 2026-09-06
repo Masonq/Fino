@@ -344,16 +344,27 @@ export default function CategoryLanding() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Сколько уже запрошено — отдельно от длины списка (см. Home.jsx).
+  const asked = useRef(0)
+
   const loadMore = () => {
     if (loadingMore || results.length >= resultsTotal) return
     setLoadingMore(true)
-    api.searchListings({ ...buildQuery(activeCategorySlug), offset: results.length })
+    const from = Math.max(asked.current, results.length)
+    asked.current = from + PAGE
+    api.searchListings({ ...buildQuery(activeCategorySlug), offset: from })
       .then((res) => setResults((prev) => {
         // Отсеиваем уже показанное — как в ленте на главной: когда
         // подгрузка накладывается на обычную загрузку списка, одни и те
         // же карточки дописываются второй раз.
         const have = new Set(prev.map((l) => l.id))
-        return [...prev, ...(res.items || []).filter((l) => !have.has(l.id))]
+        const fresh = (res.items || []).filter((l) => !have.has(l.id))
+        // Ничего нового — дальше не просим (см. Home.jsx).
+        if (!fresh.length) {
+          setResultsTotal(prev.length)
+          return prev
+        }
+        return [...prev, ...fresh]
       }))
       .catch(() => {})
       .finally(() => setLoadingMore(false))

@@ -597,3 +597,26 @@ def test_page_is_hidden_while_it_returns_to_place():
     assert "const hide = saved > 40" in app
     assert "setTimeout(show, 500)" in app
     assert ".restoring-scroll body { opacity: 0; }" in styles
+
+
+def test_feed_stops_when_nothing_new_arrives():
+    """Подгрузка останавливается, если новое не приходит.
+
+    Сломалось на живом сайте: объявления начали переносить в другие
+    разделы, порядок в ленте сместился, и сервер стал отдавать уже
+    показанное. Показанное повторно мы отсеиваем — список переставал
+    расти, а подгрузка просила порцию за порцией без конца. На экране
+    «Загружаем», которое дёргается и никогда не кончается.
+
+    Две правки: смещение считаем отдельно от длины списка (иначе просим
+    одну и ту же порцию), и останавливаемся, когда после отсева не
+    осталось ничего нового.
+
+    Проверено на худшем случае — сервер отдаёт одни и те же карточки:
+    было 186 запросов за шесть попыток долистать, стало 2.
+    """
+    for page in ("Home.jsx", "Search.jsx", "CategoryLanding.jsx"):
+        source = (Path(__file__).resolve().parents[2]
+                  / "frontend" / "src" / "pages" / page).read_text()
+        assert "asked" in source, page
+        assert "if (!fresh.length)" in source, page
