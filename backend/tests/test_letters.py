@@ -450,6 +450,25 @@ def test_blocked_user_is_not_recognised_anywhere():
     assert "User.is_blocked" in bot
 
 
+def test_bot_says_the_account_is_blocked():
+    """Бот прямо говорит о блокировке, но не спорит.
+
+    Сперва я сделал так, что бот просто молчит. Это выглядит поломкой:
+    человек не понимает, дошло ли сообщение, и пишет снова и снова.
+    Честнее сказать, что произошло, и куда идти, если он считает, что
+    вышла ошибка.
+
+    Но один раз за час: отвечать «вы заблокированы» на каждое сообщение
+    — это уже разговор, а разговаривать тут не о чем.
+    """
+    bot = (Path(__file__).resolve().parents[1] / "app" / "bot" / "publisher.py").read_text()
+
+    assert "Аккаунт заблокирован за нарушение правил" in bot
+    assert "напишите " in bot                     # куда идти с несогласием
+    assert "_should_tell_blocked" in bot
+    assert "TELL_BLOCKED_EVERY = 3600" in bot
+
+
 def test_bot_keeps_working_when_database_is_down():
     """Сбой базы не должен отключать бота для всех.
 

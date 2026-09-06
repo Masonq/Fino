@@ -267,6 +267,30 @@ def shrink(data: bytes, side: int = 1600) -> bytes:
 dp = Dispatcher()
 
 
+# Кому и когда уже говорили о блокировке.
+#
+# Держим в памяти процесса, без базы: сведения живут час, теряются при
+# перезапуске — и пусть, человек тогда просто услышит ответ ещё раз.
+# Ради этого лезть в базу незачем.
+_told_blocked: dict[int, float] = {}
+TELL_BLOCKED_EVERY = 3600
+
+
+def _should_tell_blocked(user_id: int) -> bool:
+    import time
+
+    now = time.time()
+    if now - _told_blocked.get(user_id, 0) < TELL_BLOCKED_EVERY:
+        return False
+    _told_blocked[user_id] = now
+    # Не копим память: заблокированных немного, но бот работает
+    # месяцами.
+    if len(_told_blocked) > 500:
+        oldest = min(_told_blocked, key=_told_blocked.get)
+        _told_blocked.pop(oldest, None)
+    return True
+
+
 @dp.update.outer_middleware()
 async def block_banned(handler, event, data):
     """
@@ -297,9 +321,33 @@ async def block_banned(handler, event, data):
                     .scalar()
                 )
             if blocked:
-                # Молча: объяснять заблокированному, почему бот не
-                # отвечает, незачем — он это уже знает с сайта, а
-                # переписка с ним только тратит время.
+                # Говорим прямо, но один раз за час.
+                #
+                # Молчащий бот выглядит поломкой: человек не понимает,
+                # дошло ли сообщение, и пишет снова и снова. Честнее
+                # сказать, что произошло.
+                #
+                # Один раз за час — чтобы ответ не превращался в
+                # переписку: на каждое сообщение отвечать «вы
+                # заблокированы» это уже разговор, а разговаривать тут
+                # не о чем.
+                if _should_tell_blocked(user_id):
+                    text = (
+                        "Аккаунт заблокирован за нарушение правил.\n\n"
+                        "Подать объявление и пользоваться ботом нельзя. "
+                        "Если считаете, что произошла ошибка — напишите "
+                        "в поддержку на сайте."
+                    )
+                    try:
+                        message_obj = getattr(event, "message", None)
+                        if message_obj:
+                            await message_obj.answer(text)
+                        else:
+                            query = getattr(event, "callback_query", None)
+                            if query:
+                                await query.answer(text, show_alert=True)
+                    except Exception:                      # noqa: BLE001
+                        pass
                 return
         except Exception:                                  # noqa: BLE001
             # База недоступна — пропускаем дальше. Отказать всем из-за
