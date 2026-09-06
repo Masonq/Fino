@@ -231,10 +231,6 @@ export const api = {
   //
   // Держим сутки и всё равно обновляем в фоне: если разделы поменялись,
   // человек увидит новое при следующем заходе, а не будет ждать сейчас.
-  // Сколько обычно просят за вещи из этого раздела.
-  priceHint: (slug, currency) =>
-    request(`/categories/${slug}/price-hint?${query({ currency })}`),
-
   getCategories: async () => {
     const CACHE_KEY = 'plonk_categories'
     const DAY = 24 * 60 * 60 * 1000

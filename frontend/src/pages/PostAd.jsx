@@ -32,20 +32,7 @@ export default function PostAd() {
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState('')
   const [currency, setCurrency] = useState('EUR')
-  const [hint, setHint] = useState(null)
 
-  // Подсказку берём, когда известен раздел: без него сравнивать не с
-  // чем. Меняется валюта — спрашиваем заново, вилка в динарах и в евро
-  // это разные числа.
-  useEffect(() => {
-    const slug = category?.slug
-    if (!slug) { setHint(null); return }
-    let alive = true
-    api.priceHint(slug, currency)
-      .then((res) => { if (alive) setHint(res) })
-      .catch(() => { if (alive) setHint(null) })
-    return () => { alive = false }
-  }, [category?.slug, currency])
   const [negotiable, setNegotiable] = useState(false)
   const [city, setCity] = useState('')
   const [locationLat, setLocationLat] = useState(null)
@@ -559,25 +546,6 @@ export default function PostAd() {
               <div className="post-field">
                 <label>{t('listing.price')}</label>
                 <input type="number" inputMode="decimal" pattern="[0-9]*" value={price} onChange={(e) => setPrice(e.target.value)} />
-                {/* Сколько просят за похожие вещи.
-                    Человек чаще всего не знает цену и ставит наугад:
-                    отсюда «Комод за 100 евро» рядом с «Комодом за 15».
-                    Показываем вилку, а не одно число — решение всё
-                    равно за ним, он лучше знает состояние своей вещи. */}
-                {hint && hint.count > 0 && (
-                  <div className="price-hint">
-                    {t('post.price_hint', {
-                      low: hint.low, high: hint.high, currency,
-                    })}
-                    {!hint.exact && hint.category && (
-                      <span className="price-hint-where">
-                        {' '}{t('post.price_hint_parent', {
-                          category: hint.category[i18n.language] || hint.category.ru,
-                        })}
-                      </span>
-                    )}
-                  </div>
-                )}
               </div>
               <div className="post-field" style={{ maxWidth: 90 }}>
                 <label>{t('post.currency')}</label>

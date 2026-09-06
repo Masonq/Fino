@@ -3970,7 +3970,3 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .seller-reply svg{ width:14px; height:14px; flex:0 0 auto; }
 
-/* Подсказка цены под полем. Сдержанно: это справка, а не требование —
-   человек лучше знает состояние своей вещи, и давить на него незачем. */
-.price-hint{ margin-top:6px; font-size:12.5px; line-height:1.4; color:var(--muted); }
-.price-hint-where{ opacity:.75; }
