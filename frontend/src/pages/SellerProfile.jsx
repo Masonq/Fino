@@ -158,6 +158,15 @@ export default function SellerProfile() {
           {/* Скорость ответа: для покупателя это первое, что он хочет
               знать перед тем, как написать. Показываем порядок, а не
               точные минуты — «за 47 минут» звучало бы как обещание. */}
+          {/* Значок активного продавца: отвечает быстро, есть отзывы,
+              нет подтверждённых жалоб. Купить его нельзя — иначе он
+              перестал бы что-либо значить. */}
+          {profile.active_seller && (
+            <div className="seller-active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z" /></svg>
+              {t('seller.active')}
+            </div>
+          )}
           {profile.reply_speed && (
             <div className="seller-reply">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>

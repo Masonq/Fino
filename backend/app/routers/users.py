@@ -50,6 +50,9 @@ def public_profile(user_id: uuid.UUID, lang: str = "ru", db: Session = Depends(g
 
     from app.core.reply_speed import reply_speed, speed_label
 
+    from app.core.active_seller import is_active_seller
+
+    active = is_active_seller(db, user.id)
     speed = reply_speed(db, user.id)
     reply = {"label": speed_label(speed["median_minutes"]),
              "answered": speed["answered"]} if speed else None
@@ -79,6 +82,13 @@ def public_profile(user_id: uuid.UUID, lang: str = "ru", db: Session = Depends(g
         # Пока ответов меньше трёх — не показываем ничего: два быстрых
         # ответа это случайность, а не отзывчивость.
         "reply_speed": reply,
+        # Значок активного продавца — за поведение, а не за деньги.
+        #
+        # У площадок такой значок работает как множитель: не заменяет
+        # качество объявления, но при прочих равных решает выбор.
+        # Ключевое — его нельзя купить, иначе он перестаёт что-либо
+        # значить, а вместе с ним обесцениваются и остальные знаки.
+        "active_seller": active,
     }
 
 

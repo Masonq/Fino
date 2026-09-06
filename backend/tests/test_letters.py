@@ -694,3 +694,31 @@ def test_new_columns_have_a_database_default():
     column = VisitDaily.__table__.c["last_hit_at"]
     assert not column.nullable
     assert column.server_default is not None
+
+
+def test_active_seller_badge_is_earned_not_bought():
+    """Значок активного продавца даётся за поведение, а не за деньги.
+
+    У площадок такой значок работает как множитель: не заменяет
+    качество объявления, но при прочих равных решает выбор. Ключевое —
+    его нельзя купить, иначе он перестаёт что-либо значить, а вместе с
+    ним обесцениваются и остальные знаки на площадке.
+
+    Условия: отвечать в среднем в течение дня, иметь отзывы и хотя бы
+    три объявления, не иметь подтверждённых жалоб за полгода.
+
+    Проверено вживую: после трёх быстрых ответов значок появился, после
+    подтверждённой жалобы пропал.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "active_seller.py").read_text()
+
+    assert "MAX_REPLY_MINUTES = 60 * 24" in source
+    assert "MIN_REVIEWS" in source and "MIN_LISTINGS" in source
+    # Считаем только жалобы, по которым приняли меры: просто поданная
+    # ничего не доказывает, иначе значок оказался бы в руках любого
+    # недовольного.
+    assert "ReportStatus.action_taken" in source
+    # Ни денег, ни продвижения в условиях нет.
+    for word in ("promotion", "paid", "payment", "оплат"):
+        assert word not in source.lower()

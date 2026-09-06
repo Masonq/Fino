@@ -473,7 +473,8 @@
     "reply_hours": "Usually replies the same day",
     "reply_day": "Usually replies within a day",
     "reply_days": "Takes a while to reply",
-    "verified": "Identity verified"
+    "verified": "Identity verified",
+    "active": "Active seller"
   },
   "admin": {
     "title": "Users",
