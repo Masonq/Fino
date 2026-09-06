@@ -130,17 +130,6 @@ export default function ListingCard({ listing, large = false }) {
       {meta && <div className="s-attrs">{meta}</div>}
       {/* Рисуем всегда, даже пустым: без города карточка была ниже соседней,
           и низ ряда получался рваным. */}
-      {/* Почему это здесь.
-          Лента без объяснения выглядит случайной: человек не понимает,
-          отчего ему показывают именно это. Короткая подпись снимает
-          вопрос и показывает, что лента подстраивается — есть смысл
-          смотреть дальше.
-
-          Говорим только правду и только про то, что человек сам делал:
-          его же просмотры в этом разделе. Никаких «специально для вас». */}
-      {listing.shown_because === 'interest' && (
-        <div className="s-because">{t('feed.because_viewed')}</div>
-      )}
       <div className="s-meta">
         <span>{listing.city ? displayCity(listing.city, i18n.language) : ''}</span>
         {listing.published_at && <span className="s-date">{relativeDate(listing.published_at, t)}</span>}

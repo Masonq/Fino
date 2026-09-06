@@ -819,10 +819,6 @@ def search_listings(
         q = q.outerjoin(cat_alias, cat_alias.id == Listing.category_id)
         root_category_id = func.coalesce(cat_alias.parent_id, cat_alias.id)
 
-        # Разделы, которыми человек интересовался — понадобятся, чтобы
-        # честно подписать причину показа под карточкой.
-        interest_roots: set = set()
-
         personal_boost = 0.0
         if viewer and not q_text and not category_slug:
             from app.core.interests import (
@@ -835,7 +831,6 @@ def search_listings(
             # всю «Электронику»; сам раздел тоже поднимаем, но слабее —
             # он подсказывает смежное, вроде автокресел к коляскам.
             root_boosts = interest_boost(roots)
-            interest_roots = set(root_boosts)
             sub_boosts = interest_boost(subs, cap=SUB_CAP)
             if root_boosts:
                 personal_boost = case(
@@ -1043,24 +1038,6 @@ def search_listings(
             "attributes": listing.attributes,
             "category_slug": listing.category.slug if listing.category else None,
             "is_company": bool(listing.owner and listing.owner.role == UserRole.seller_business),
-            # Почему объявление здесь.
-            #
-            # Лента без объяснения выглядит случайной: человек не
-            # понимает, отчего ему показывают именно это, и относится к
-            # порядку как к произволу. Короткая подпись «вы смотрели
-            # такое» снимает вопрос и заодно показывает, что лента
-            # подстраивается — есть смысл смотреть дальше.
-            #
-            # Говорим только правду и только то, что человек сам делал:
-            # его же просмотры в этом разделе. Никаких «специально для
-            # вас» — это пустые слова, за которыми ничего нет.
-            "shown_because": (
-                "interest" if (viewer and not q_text and not category_slug
-                               and listing.category
-                               and (listing.category.parent_id
-                                    or listing.category.id) in interest_roots)
-                else None
-            ),
             # Понятный адрес собираем здесь: он должен быть одинаков
             # везде — в ленте, в боте, в письме и в карте сайта.
             "path": listing_path(
