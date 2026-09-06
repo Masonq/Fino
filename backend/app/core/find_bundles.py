@@ -34,10 +34,20 @@ from app.core.database import SessionLocal
 # Нумерованный перечень: два пункта и больше.
 NUMBERED = re.compile(r"(?:^|[\s;])(\d{1,2})[.)]\s+\D")
 
-# «Название — 1500 дин», «Куртка - 20 евро». Считаем такие пары.
-PRICED_ITEM = re.compile(
-    r"[а-яёa-z]{3,}[^\n\d]{0,30}[—\-–:]\s*\d{2,6}\s*(?:дин|rsd|din|€|eur|евро)?",
-    re.IGNORECASE)
+# Просто цена с валютой: «120 евро», «1500 дин», «700 rsd».
+#
+# Раньше искали связку «название — цена», но названия сами содержат
+# цифры («Корпус JONSBO TK-1 — 120 евро»), и настоящие перечни
+# ускользали. Считать сами цены надёжнее и проще.
+#
+# Валюта обязательна: без неё примета ловила характеристики — «18 CPU
+# 20 GPU» у макбука, «Год выпуска: 2019 Пробег: 202 000» у ауди. На
+# живой базе такими были больше половины из 323 находок.
+#
+# Три цены и больше: у одной вещи цена обычно одна, изредка две —
+# сама цена и торг.
+PRICE_WITH_CURRENCY = re.compile(
+    r"\d[\d\s.,]{1,8}\s*(?:дин|din|rsd|рсд|€|eur|евро)\b", re.IGNORECASE)
 
 # Слова, которыми продают пакетом. Осторожно: «комплект белья» — одна
 # вещь, поэтому одного этого мало.
@@ -45,11 +55,20 @@ BUNDLE_WORDS = re.compile(
     r"\b(лот(?:ом)?|пакетом|одним лотом|всё вместе|все вместе|оптом|"
     r"комплект из|набор из)\b", re.IGNORECASE)
 
+# Услуги и работу не смотрим вовсе.
+#
+# Там перечень — норма и не мешает: «1. Ремонт бойлеров 2. Чистка
+# накипи 3. Замена ТЭНов» это одна услуга с описанием работ, а не пять
+# товаров в одном объявлении. На живой базе такие честные объявления
+# попадали в находки — кинолог и мастер по водонагревателям.
 SQL = """
     select l.id, t.title, t.description, l.price, l.currency
     from listings l
     join listing_translations t on t.listing_id = l.id and t.language = 'ru'
+    join categories c on c.id = l.category_id
+    left join categories p on p.id = c.parent_id
     where l.status = 'active'
+      and coalesce(p.slug, c.slug) not in ('services', 'jobs', 'real-estate')
 """
 
 
@@ -63,7 +82,7 @@ def why_bundle(title: str, description: str) -> list[str]:
 
     # Пары «название — цена»: три и больше почти наверняка перечень.
     # Две — это часто «цена 1500, торг 1300», поэтому порог выше.
-    if len(PRICED_ITEM.findall(text_all)) >= 3:
+    if len(PRICE_WITH_CURRENCY.findall(text_all)) >= 3:
         found.append("несколько цен подряд")
 
     if BUNDLE_WORDS.search(text_all):
