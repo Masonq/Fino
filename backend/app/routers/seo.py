@@ -594,7 +594,10 @@ def category_page(slug: str, request: Request, db: Session = Depends(get_db),
     # спрашивают вслух.
     from app.data.category_intros import intro as category_intro
 
-    own_text = category_intro(slug, lang)
+    # Родителя передаём, чтобы подраздел без своего текста показал
+    # описание раздела, а не пустоту.
+    parent_slug = category.parent.slug if category.parent else None
+    own_text = category_intro(slug, lang, parent_slug)
     if own_text:
         # В описание для выдачи — первое предложение: там всего полторы
         # сотни знаков, длинное всё равно обрежут на полуслове.

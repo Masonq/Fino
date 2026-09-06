@@ -158,9 +158,146 @@ INTROS: dict[str, dict[str, str]] = {
 }
 
 
-def intro(slug: str, lang: str = "ru") -> str | None:
-    """Текст раздела на нужном языке; None — если текста ещё нет."""
+# Подразделы, которые ищут чаще всего.
+#
+# У остальных текста нет — они берут родительский (см. intro ниже).
+# Писать своё каждому из девяноста подразделов работа не на один день, а
+# наследование закрывает их сразу и не оставляет пустых страниц.
+#
+# Здесь те, где запрос конкретнее: человек ищет не «недвижимость», а
+# «однушку на Врачаре», и слова у него другие.
+INTROS.update({
+    "flats": {
+        "ru": "Квартиры в аренду и на продажу в Белграде, Нови-Саде и других "
+              "городах Сербии — от студий до многокомнатных. Указан этаж, "
+              "площадь и что входит в цену; договаривайтесь о просмотре прямо в "
+              "переписке.",
+        "en": "Flats to rent and buy in Belgrade, Novi Sad and across Serbia — "
+              "from studios to family-sized. Floor, area and what's included in "
+              "the price; arrange a viewing in chat.",
+        "sr": "Stanovi za izdavanje i prodaju u Beogradu, Novom Sadu i širom "
+              "Srbije — od garsonjera do porodičnih. Sprat, kvadratura i šta "
+              "ulazi u cenu.",
+    },
+    "rooms": {
+        "ru": "Комнаты и места в общей квартире — вариант для студентов и тех, "
+              "кто только приехал. Дешевле отдельного жилья, а соседей и район "
+              "можно расспросить заранее в переписке.",
+        "en": "Rooms and shared flats — the option for students and newcomers. "
+              "Cheaper than renting alone; ask about flatmates and the "
+              "neighbourhood before you come.",
+        "sr": "Sobe i cimeri — opcija za studente i one koji su tek stigli. "
+              "Jeftinije od zasebnog stana; raspitajte se o cimerima unapred.",
+    },
+    "houses": {
+        "ru": "Дома и участки в пригородах Белграда и по Сербии — с садом, "
+              "гаражом или под строительство. Указана площадь дома и земли, "
+              "рядом фотографии участка.",
+        "en": "Houses and land near Belgrade and across Serbia — with a garden, "
+              "garage or a plot to build on. House and land area with photos.",
+        "sr": "Kuće i placevi u okolini Beograda i širom Srbije — sa baštom, "
+              "garažom ili za gradnju.",
+    },
+    "cars": {
+        "ru": "Легковые автомобили с пробегом и новые — в Белграде и по всей "
+              "Сербии. Марка, год, пробег и коробка видны сразу в списке, а "
+              "документы и историю можно обсудить с владельцем напрямую.",
+        "en": "Used and new cars in Belgrade and across Serbia. Make, year, "
+              "mileage and gearbox right in the list; discuss papers and history "
+              "with the owner directly.",
+        "sr": "Polovni i novi automobili u Beogradu i širom Srbije. Marka, "
+              "godište, kilometraža i menjač odmah u listi.",
+    },
+    "phones": {
+        "ru": "Телефоны и смартфоны с рук — iPhone, Samsung, Xiaomi и другие. "
+              "Смотрите состояние на фото, спрашивайте о ёмкости батареи и "
+              "проверяйте аппарат при встрече.",
+        "en": "Used phones and smartphones — iPhone, Samsung, Xiaomi and others. "
+              "Check the photos, ask about battery health and test the device "
+              "when you meet.",
+        "sr": "Polovni telefoni i pametni telefoni — iPhone, Samsung, Xiaomi i "
+              "drugi. Proverite stanje baterije i uređaj uživo.",
+    },
+    "laptops": {
+        "ru": "Ноутбуки и ультрабуки — рабочие, игровые и для учёбы. Процессор, "
+              "память и состояние экрана указаны в объявлении; включить и "
+              "проверить можно при встрече.",
+        "en": "Laptops and ultrabooks — for work, gaming and study. Processor, "
+              "memory and screen condition in the listing; test it when you meet.",
+        "sr": "Laptopovi i ultrabukovi — za posao, igre i studiranje. Procesor, "
+              "memorija i stanje ekrana u oglasu.",
+    },
+    "strollers": {
+        "ru": "Коляски и автокресла — прогулочные, люльки, трости и «два в "
+              "одном». Дети вырастают за сезон, поэтому коляски здесь часто "
+              "почти новые и заметно дешевле магазина.",
+        "en": "Prams and car seats — buggies, carrycots and 2-in-1 systems. Kids "
+              "outgrow them in a season, so most are nearly new and much cheaper "
+              "than in shops.",
+        "sr": "Kolica i auto-sedišta — sportska, nosiljke i „dva u jedan“. Deca "
+              "ih prerastu za sezonu, pa su često skoro nova.",
+    },
+    "toys": {
+        "ru": "Игрушки, настольные игры и конструкторы для любого возраста. "
+              "Многое отдают даром: ребёнок наигрался за месяц, а вещь как новая.",
+        "en": "Toys, board games and building sets for all ages. Much of it is "
+              "given away free — a month of play and it's as good as new.",
+        "sr": "Igračke, društvene igre i kocke za sve uzraste. Mnogo toga se "
+              "poklanja — dete se naigra za mesec dana.",
+    },
+    "furniture": {
+        "ru": "Диваны, шкафы, столы и стулья — новые и с рук, в том числе из "
+              "IKEA и JYSK. При переезде мебель отдают за половину цены просто "
+              "потому, что её некуда везти.",
+        "en": "Sofas, wardrobes, tables and chairs — new and used, including IKEA "
+              "and JYSK. People moving out sell at half price simply because they "
+              "can't take it along.",
+        "sr": "Sofe, ormari, stolovi i stolice — novo i polovno, uključujući IKEA "
+              "i JYSK. Pri selidbi se prodaje upola jeftinije.",
+    },
+    "repair": {
+        "ru": "Ремонт квартир и мелкие работы по дому: сантехника, электрика, "
+              "сборка мебели, покраска. Частные мастера с ценами за работу и "
+              "отзывами тех, кто уже вызывал.",
+        "en": "Flat renovation and small home jobs: plumbing, electrics, "
+              "furniture assembly, painting. Independent handymen with prices and "
+              "reviews.",
+        "sr": "Renoviranje stanova i sitni radovi: vodoinstalater, električar, "
+              "montaža nameštaja, krečenje.",
+    },
+    "nannies": {
+        "ru": "Няни и помощь с детьми в Белграде: на час, на полдня или "
+              "постоянно. Русскоязычные и сербские няни, с опытом и отзывами "
+              "родителей.",
+        "en": "Nannies and childcare in Belgrade — by the hour, half-day or "
+              "full-time. Russian- and Serbian-speaking, with experience and "
+              "parent reviews.",
+        "sr": "Dadilje i čuvanje dece u Beogradu — na sat, pola dana ili stalno.",
+    },
+    "kids-bikes": {
+        "ru": "Детские велосипеды, беговелы и самокаты — по росту и возрасту. "
+              "Ребёнок пересаживается на следующий размер за год, поэтому "
+              "покупать новый каждый раз незачем.",
+        "en": "Kids' bikes, balance bikes and scooters by age and height. "
+              "Children move up a size every year — no need to buy new each time.",
+        "sr": "Dečji bicikli, bicikli bez pedala i trotineti po uzrastu i visini.",
+    },
+})
+
+
+def intro(slug: str, lang: str = "ru", parent_slug: str | None = None) -> str | None:
+    """
+    Текст раздела на нужном языке.
+
+    Если у подраздела своего текста нет, берём родительский: «Квартиры»
+    без текста лучше покажут описание «Недвижимости», чем пустую
+    страницу. Подразделов почти сотня, и написать каждому своё — работа
+    не на один день; наследование закрывает их все сразу, а свои тексты
+    добавляются по мере надобности.
+    """
     texts = INTROS.get(slug)
+    if not texts and parent_slug:
+        texts = INTROS.get(parent_slug)
     if not texts:
         return None
     return texts.get(lang) or texts.get("ru")
