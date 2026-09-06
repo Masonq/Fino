@@ -183,6 +183,7 @@ export default function Search() {
   // повторно мы отсеиваем, и при сместившемся порядке подгрузка иначе
   // просит одну и ту же порцию без конца (см. Home.jsx).
   const asked = useRef(0)
+  const empty = useRef(0)
 
   const loadMore = useCallback(() => {
     if (loadingMore) return
@@ -201,9 +202,12 @@ export default function Search() {
         // Ничего нового — дальше не просим (см. Home.jsx): иначе
         // подгрузка идёт без конца, а список стоит на месте.
         if (!fresh.length) {
-          setTotal(prev.length)
+          // Три пустых порции подряд — тогда конец (см. Home.jsx).
+          empty.current += 1
+          if (empty.current >= 3) setTotal(prev.length)
           return prev
         }
+        empty.current = 0
         const grown = [...prev, ...fresh]
         searchCache = {
           key: JSON.stringify(query),

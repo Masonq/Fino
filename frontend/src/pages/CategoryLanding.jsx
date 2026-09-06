@@ -346,6 +346,7 @@ export default function CategoryLanding() {
 
   // Сколько уже запрошено — отдельно от длины списка (см. Home.jsx).
   const asked = useRef(0)
+  const empty = useRef(0)
 
   const loadMore = () => {
     if (loadingMore || results.length >= resultsTotal) return
@@ -361,9 +362,12 @@ export default function CategoryLanding() {
         const fresh = (res.items || []).filter((l) => !have.has(l.id))
         // Ничего нового — дальше не просим (см. Home.jsx).
         if (!fresh.length) {
-          setResultsTotal(prev.length)
+          // Три пустых порции подряд — тогда конец (см. Home.jsx).
+          empty.current += 1
+          if (empty.current >= 3) setResultsTotal(prev.length)
           return prev
         }
+        empty.current = 0
         return [...prev, ...fresh]
       }))
       .catch(() => {})

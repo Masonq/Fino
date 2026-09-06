@@ -620,3 +620,8 @@ def test_feed_stops_when_nothing_new_arrives():
                   / "frontend" / "src" / "pages" / page).read_text()
         assert "asked" in source, page
         assert "if (!fresh.length)" in source, page
+        # Одна пустая порция — не конец ленты: после переноса
+        # объявлений порядок смещается, и порция целиком из уже
+        # показанного попадается в середине. Так лента и обрывалась на
+        # второй сотне вместо четырёх тысяч. Конец — три подряд.
+        assert "empty.current >= 3" in source, page
