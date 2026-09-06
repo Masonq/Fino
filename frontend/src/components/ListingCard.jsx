@@ -89,25 +89,6 @@ export default function ListingCard({ listing, large = false }) {
         {listing.is_xl && <div className="badge-top xl">{t('misc.promoted')}</div>}
         {listing.is_company && <div className="badge-top company">{t('seller.company_badge')}</div>}
         {listing.is_reserved && <div className="badge-top reserved">{t('misc.reserved')}</div>}
-        {/* Оценка продавца — на самом фото, в нижнем углу.
-            Решение «стоит ли открывать» принимается в ленте, за
-            полсекунды, и здесь оценка попадается на глаза сразу — а
-            текст под фото при этом не трогается и карточка не растёт.
-            Верх фото занят: слева «Продвинуто» и «Забронировано»,
-            справа «Компания», — поэтому низ. */}
-        {(listing.seller_rating || listing.seller_verified) && (
-          <div className="photo-trust">
-            {listing.seller_rating && (
-              <>
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.6 7 .8-5.2 4.9 1.4 7L12 17.8 5.8 21.3l1.4-7L2 9.4l7-.8L12 2z" /></svg>
-                {listing.seller_rating.toFixed(1)}
-              </>
-            )}
-            {listing.seller_verified && (
-              <svg className="photo-trust-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="m4 12 5 5L20 6" /></svg>
-            )}
-          </div>
-        )}
       </Link>
       <div className="s-row">
         <Link to={listing.path} className="s-title">{listing.title}</Link>
