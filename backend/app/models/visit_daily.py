@@ -21,7 +21,7 @@ import hashlib
 import uuid
 from datetime import date as date_type, datetime, timedelta
 
-from sqlalchemy import Date, DateTime, Integer, String, UniqueConstraint, case
+from sqlalchemy import Date, DateTime, Integer, String, UniqueConstraint, case, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -53,7 +53,11 @@ class VisitDaily(Base):
     hits: Mapped[int] = mapped_column(Integer, default=1)
     # Когда человека видели в последний раз. По нему отличаем новый
     # заход от продолжения прежнего.
-    last_hit_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    # server_default обязателен: без него добавление колонки к таблице,
+    # где уже есть строки, падает — старым записям нечего подставить, а
+    # колонка объявлена обязательной. Ровно на этом и споткнулся деплой.
+    last_hit_at: Mapped[datetime] = mapped_column(
+        DateTime, default=utcnow, server_default=func.now())
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     __table_args__ = (

@@ -676,3 +676,21 @@ def test_newcomers_and_returning_are_separated():
     assert '"returning": returning_by_day.get(current, 0)' in stats
     assert '"newcomers"' in stats
     assert "stats.newcomers" in page
+
+
+def test_new_columns_have_a_database_default():
+    """У новых обязательных колонок есть значение по умолчанию в базе.
+
+    Без него добавление колонки к таблице, где уже есть строки, падает:
+    старым записям нечего подставить, а колонка объявлена обязательной.
+    Ровно на этом споткнулся деплой — «column last_hit_at contains null
+    values».
+
+    Значение только в коде (default=) базе не видно: она узнаёт о нём
+    лишь при вставке новых строк, а миграции идут мимо.
+    """
+    from app.models import VisitDaily
+
+    column = VisitDaily.__table__.c["last_hit_at"]
+    assert not column.nullable
+    assert column.server_default is not None
