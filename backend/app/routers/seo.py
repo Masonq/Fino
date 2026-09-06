@@ -586,6 +586,20 @@ def category_page(slug: str, request: Request, db: Session = Depends(get_db),
         head = words["plain"].format(name=name)
     description = head + words["tail"]
 
+    # Свой текст раздела, если он написан.
+    #
+    # Шаблонное «Недвижимость — 98 объявлений» одинаково у всех разделов
+    # и ничего не говорит ни поисковику, ни человеку. Живой текст
+    # объясняет, что тут можно найти, теми же словами, которыми люди
+    # спрашивают вслух.
+    from app.data.category_intros import intro as category_intro
+
+    own_text = category_intro(slug, lang)
+    if own_text:
+        # В описание для выдачи — первое предложение: там всего полторы
+        # сотни знаков, длинное всё равно обрежут на полуслове.
+        description = own_text.split(". ")[0] + "."
+
     items, schema_items = [], []
     for i, (listing, tr) in enumerate(rows, start=1):
         path = _nice_path(db, listing)
