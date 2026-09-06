@@ -268,7 +268,8 @@
     "reserved_for_me": "Prodavac je ovo rezervisao za vas",
     "reserved_other": "Rezervisano od strane drugog kupca",
     "map_learn_more": "Pogledaj na mapi",
-    "map_location_label": "Lokacija"
+    "map_location_label": "Lokacija",
+    "not_loaded_yet": "Oglas se još učitava — sačekajte trenutak"
   },
   "favorites": {
     "title": "Sačuvano",

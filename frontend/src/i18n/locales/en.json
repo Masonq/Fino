@@ -268,7 +268,8 @@
     "reserved_for_me": "The seller reserved this for you",
     "reserved_other": "Reserved by another buyer",
     "map_learn_more": "View on map",
-    "map_location_label": "Location"
+    "map_location_label": "Location",
+    "not_loaded_yet": "The listing is still loading — one moment"
   },
   "favorites": {
     "title": "Saved",

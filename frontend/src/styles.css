@@ -4027,3 +4027,11 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   font-size:12.5px; font-weight:700;
 }
 .seller-active svg{ width:13px; height:13px; }
+
+/* Удаление в окне возврата: отдельно и красным, но не первым — вернуть
+   объявление автору с причиной честнее, чем стереть его работу. */
+.reasons-delete{
+  width:100%; padding:12px; margin-top:6px; border-radius:12px;
+  border:1px solid #F0C9C9; background:#fff; color:#D93D3D;
+  font-size:15px; font-weight:700;
+}

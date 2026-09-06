@@ -515,7 +515,16 @@ export default function ListingDetail() {
   }
 
   const handleDelete = async () => {
-    if (!listing) return
+    // Объявление ещё не загрузилось — говорим об этом вслух.
+    //
+    // Раньше нажатие тут молча заканчивалось: кнопка выглядела живой,
+    // но не делала ничего, а после обновления страницы работала. Это и
+    // была та самая жалоба «иногда не срабатывает» — данных на руках
+    // не было, а признаков этого человек не видел.
+    if (!listing) {
+      alert(t('detail.not_loaded_yet'))
+      return
+    }
     if (canReturnToEdit) { setShowReasons(true); return }
     if (!window.confirm(t('my.confirm_delete'))) return
     setDeleting(true)
@@ -805,7 +814,7 @@ export default function ListingDetail() {
               </button>
             )}
             {isStaff && (
-              <button className="topbar-btn danger" onClick={handleDelete} disabled={deleting} aria-label={t('my.delete')}>
+              <button className="topbar-btn danger" onClick={handleDelete} disabled={deleting || !listing} aria-label={t('my.delete')}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h16M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7m2 0-.7 12.4A2 2 0 0 1 14.3 21H9.7a2 2 0 0 1-2-1.6L7 7" /></svg>
               </button>
             )}
@@ -836,7 +845,7 @@ export default function ListingDetail() {
               </button>
             )}
             {isStaff && (
-              <button className="circle-btn danger" onClick={handleDelete} disabled={deleting} aria-label={t('my.delete')}>
+              <button className="circle-btn danger" onClick={handleDelete} disabled={deleting || !listing} aria-label={t('my.delete')}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h16M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7m2 0-.7 12.4A2 2 0 0 1 14.3 21H9.7a2 2 0 0 1-2-1.6L7 7" /></svg>
               </button>
             )}
@@ -1427,6 +1436,35 @@ export default function ListingDetail() {
                   onClick={() => setCustomReason(true)}
                 >
                   {t('mod.reasons.other')}
+                </button>
+                {/* Прямое удаление — здесь же.
+                    Кнопка называется «Удалить», а открывается окно
+                    «Вернуть на доработку»: человек жмёт удаление и не
+                    получает удаления. Это и была жалоба «иногда не
+                    срабатывает» — на объявлениях, поданных на сайте,
+                    вместо удаления предлагался возврат автору.
+                    Возврат остаётся первым и главным: чужое объявление
+                    честнее вернуть с причиной, чем стереть. Но если
+                    решение — удалить, дорога для этого должна быть. */}
+                <button
+                  className="reasons-delete"
+                  disabled={deleting}
+                  onClick={async () => {
+                    setShowReasons(false)
+                    if (!window.confirm(t('my.confirm_delete'))) return
+                    setDeleting(true)
+                    try {
+                      await api.deleteListing(listing.id)
+                      navigate(listing.category_slug
+                        ? `/search?category=${listing.category_slug}` : '/',
+                        { replace: true })
+                    } catch (e) {
+                      alert(e.code === 'listing_has_history'
+                        ? t('my.delete_has_history') : t('auth.err_generic'))
+                    } finally { setDeleting(false) }
+                  }}
+                >
+                  {t('my.delete')}
                 </button>
                 <button className="reasons-cancel" onClick={() => setShowReasons(false)}>
                   {t('actions.cancel')}
