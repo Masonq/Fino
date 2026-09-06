@@ -711,11 +711,15 @@ def test_trust_signs_are_in_the_card():
     assert "(listing.owner.rating_count or 0) >= 3" in api
     assert "listing.seller_rating.toFixed(1)" in card
 
-    # Отступ по бокам как у цены и города: без него строка стояла на
-    # десять пикселей левее всего остального, и левый край карточки
-    # получался рваным. Замерил: теперь заголовок, цена, оценка и город
-    # начинаются на одной линии.
+    # Метка стоит на самом фото, в нижнем левом углу: текст под фото не
+    # трогается, карточка не растёт. Верх фото занят — слева
+    # «Продвинуто» и «Забронировано», справа «Компания».
+    assert 'className="photo-trust"' in card
+
     styles = (Path(__file__).resolve().parents[2]
               / "frontend" / "src" / "styles.css").read_text()
-    trust_rule = styles.split(".s-trust{")[1].split("}")[0]
-    assert "padding:2px 10px 0" in trust_rule
+    rule = styles.split(".photo-trust{")[1].split("}")[0]
+    # Подложка обязательна: фотографии бывают любые, на светлой белые
+    # цифры без неё исчезнут.
+    assert "background:rgba(20,30,25,.55)" in rule
+    assert "bottom:12px" in rule
