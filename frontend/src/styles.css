@@ -616,7 +616,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .post-success .empty-hint{ margin-bottom:24px; }
 
 /* ===== listing detail ===== */
-.detail-page{ padding-bottom:100px; }
+/* Место под кнопку «Написать продавцу» держит сам белый лист, а не
+   страница под ним.
+   Раньше отступ был на странице, за пределами листа, и красился её
+   фоном: под номером объявления тянулась серая полоса в сто пикселей,
+   будто страница оборвалась. */
+.detail-page{ padding-bottom:0; }
 .detail-photo{ position:relative; aspect-ratio:1/1; overflow:hidden; background:#E9E9E4; }
 /* Только для одиночного изображения-заглушки: у снимков в галерее свои
    правила ниже, а это, будучи записано на все img внутри, перебивало их
@@ -736,7 +741,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   color:var(--muted); font-size:14px; font-weight:600;
 }
 
-.detail-sheet{ background:#fff; border-radius:24px 24px 0 0; margin-top:-22px; position:relative; padding:20px 20px 20px; box-shadow:0 -6px 20px rgba(20,30,25,.05); }
+.detail-sheet{ background:#fff; border-radius:24px 24px 0 0; margin-top:-22px; position:relative; padding:20px 20px 100px; box-shadow:0 -6px 20px rgba(20,30,25,.05); }
 /* Хлебные крошки видны только на десктопе — см. медиазапрос ниже. */
 .breadcrumbs{ display:none; }
 .detail-price{ font-family:'IBM Plex Mono',monospace; font-weight:800; font-size:25px; color:var(--primary-deep); }

@@ -682,3 +682,21 @@ def test_search_survives_typos():
     # Короткие слова не ищем по похожести: на трёх буквах она находит
     # что угодно.
     assert "len(w) >= 4" in source
+
+
+def test_listing_page_has_no_grey_gap_at_the_bottom():
+    """Под номером объявления нет серой полосы.
+
+    Место под кнопку «Написать продавцу» держала страница, а не белый
+    лист объявления: отступ в сто пикселей лежал за пределами листа и
+    красился фоном страницы. Выглядело так, будто страница оборвалась.
+
+    Проверено вживую: белый лист доходит до самого низа, разница ноль
+    пикселей.
+    """
+    styles = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "styles.css").read_text()
+
+    sheet = styles.split(".detail-sheet{")[1].split("}")[0]
+    assert "padding:20px 20px 100px" in sheet
+    assert ".detail-page{ padding-bottom:0; }" in styles
