@@ -2755,3 +2755,29 @@ def test_bundles_are_deleted_for_good():
     assert "delete from listings where id = any(:ids)" in source
     assert "os.remove(path)" in source
     assert "json.dump" in source
+
+
+# ── Подсказка цены ──────────────────────────────────────────────────────────
+def test_price_hint_shows_a_range_not_a_number():
+    """Подсказка цены показывает вилку, а не одно число.
+
+    Человек, подающий объявление, чаще всего не знает цену — отсюда
+    «Комод за 100 евро» рядом с «Комодом за 15». Считаем по своим же
+    объявлениям: цены рынка Белграда лучше всего описывают объявления
+    самого Белграда.
+
+    Вилка, а не одно число: одно человек воспримет как указание («сайт
+    сказал 30»), а вилка оставляет решение за ним — он лучше знает
+    состояние своей вещи.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "price_hint.py").read_text()
+
+    assert "percentile_cont(0.25)" in source and "percentile_cont(0.75)" in source
+    # Мало цен — молчим: неверная подсказка хуже её отсутствия, человек
+    # ей поверит.
+    assert "MIN_SAMPLE = 8" in source
+    # Если в подразделе цен мало, поднимаемся к родителю и честно
+    # говорим, по какому разделу считали.
+    assert "node = node.parent" in source
+    assert '"exact": node.id == category.id' in source

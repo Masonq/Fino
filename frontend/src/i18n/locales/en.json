@@ -226,7 +226,9 @@
     "title_rooms": "{{n}}-room apartment",
     "title_no_rooms": "Apartment",
     "title_area_fmt": "{{head}}, {{area}} m²",
-    "title_auto_hint": "The title is built from the number of rooms and area — this makes listings easier to scan and compare"
+    "title_auto_hint": "The title is built from the number of rooms and area — this makes listings easier to scan and compare",
+    "price_hint": "Similar items usually sell for {{low}}–{{high}} {{currency}}",
+    "price_hint_parent": "(based on “{{category}}”)"
   },
   "detail": {
     "loading": "Loading…",

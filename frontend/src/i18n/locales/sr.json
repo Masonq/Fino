@@ -226,7 +226,9 @@
     "title_rooms": "Stan sa {{n}} sobe",
     "title_no_rooms": "Stan",
     "title_area_fmt": "{{head}}, {{area}} m²",
-    "title_auto_hint": "Naslov se sam sastavlja od broja soba i površine — tako se oglasi lakše pretražuju i upoređuju"
+    "title_auto_hint": "Naslov se sam sastavlja od broja soba i površine — tako se oglasi lakše pretražuju i upoređuju",
+    "price_hint": "Slični se obično prodaju za {{low}}–{{high}} {{currency}}",
+    "price_hint_parent": "(prema sekciji „{{category}}“)"
   },
   "detail": {
     "loading": "Učitavanje…",
