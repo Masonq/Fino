@@ -2668,6 +2668,11 @@ def test_only_reliable_signs_lead_to_deletion():
               / "app" / "core" / "find_bundles.py").read_text()
     assert "с перепиской или в избранном" in source
     assert "json.dump" in source
+    # Удаляем насовсем, вместе с фотографиями: архив не годится —
+    # объявление осталось бы в базе, в счётчиках и мешало бы глазами при
+    # разборе. Перечни нужны убранными, а не спрятанными.
+    assert "delete from listings where id = any(:ids)" in source
+    assert "os.remove(path)" in source
 
 
 def test_services_in_wrong_categories_are_still_spared():

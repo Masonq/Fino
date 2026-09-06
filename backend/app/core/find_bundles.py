@@ -202,7 +202,7 @@ def run(limit: int, apply: bool) -> None:
         print(f"активных объявлений: {len(rows)}")
         print(f"похоже на перечень: {len(hits)}"
               f" ({len(hits) * 100 // max(len(rows), 1)}%)")
-        print(f"  из них уверенно: {len(sure)} — их и снимаем с публикации")
+        print(f"  из них уверенно: {len(sure)} — их и удаляем")
         print(f"  сомнительных: {len(maybe)} — только показываем\n")
 
         for row, why in hits[:limit]:
@@ -222,7 +222,7 @@ def run(limit: int, apply: bool) -> None:
 
         ids = [r.id for r, _ in sure]
         if not ids:
-            print("нечего убирать")
+            print("нечего удалять")
             return
 
         # Объявления с перепиской или в избранном не трогаем: там уже
@@ -235,61 +235,64 @@ def run(limit: int, apply: bool) -> None:
         targets = [i for i in ids if i not in busy]
         print(f"с перепиской или в избранном: {len(busy)} — оставляем")
 
-        # Снимаем с публикации, а не удаляем.
+        # Удаляем насовсем.
         #
-        # Цель — убрать перечни из ленты и поиска, и архив её достигает:
-        # объявление перестаёт показываться, но остаётся целым. Удаление
-        # же необратимо — фотографии стираются с диска, и вернуть
-        # объявление нельзя даже по сохранённому тексту.
+        # Архив не годится: объявление остаётся в базе, попадает в
+        # счётчики и мешает глазами при разборе. Перечни нужны не
+        # спрятанными, а убранными.
         #
-        # Приметы я подкручивал пять раз подряд, и каждый раз находились
-        # новые ложные срабатывания. Значит и сейчас среди двух сотен
-        # найдётся десяток спорных — пусть они лежат в архиве, откуда их
-        # можно вернуть одной командой, а не пропадают навсегда.
+        # Перед удалением сохраняем текст: восстановить объявление
+        # целиком будет нельзя — фотографии стираются с диска, — но
+        # видеть, что именно ушло, всё же нужно. Приметы я подкручивал
+        # пять раз подряд, и каждый раз находились новые ложные
+        # срабатывания.
         import json
         from datetime import datetime
 
         dump = f"/tmp/bundles-{datetime.now():%Y%m%d-%H%M}.json"
         with open(dump, "w", encoding="utf-8") as f:
-            json.dump([{"id": str(r.id), "title": r.title, "why": w}
+            json.dump([{"id": str(r.id), "title": r.title,
+                        "description": r.description, "why": w}
                        for r, w in sure if r.id in targets],
                       f, ensure_ascii=False, indent=1)
 
-        db.execute(text("update listings set status = 'archived' where id = any(:ids)"),
-                   {"ids": targets})
+        # Фотографии с диска — тоже: иначе они останутся мёртвым грузом,
+        # а места занимают больше всего.
+        import os
+
+        from app.core.config import settings
+
+        files = [row[0] for row in db.execute(text(
+            "select url from listing_photos where listing_id = any(:ids)"),
+            {"ids": targets})]
+
+        for table in ("listing_photos", "favorites", "chats", "reviews", "reports",
+                      "promotions", "listing_view_logs", "listing_view_daily",
+                      "listing_signal_daily", "tickets", "review_invites",
+                      "listing_translations"):
+            db.execute(text(f"delete from {table} where listing_id = any(:ids)"),
+                       {"ids": targets})
+        db.execute(text("delete from listings where id = any(:ids)"), {"ids": targets})
         db.commit()
-        print(f"снято с публикации: {len(targets)}")
-        print(f"список сохранён: {dump}")
-        print("\nвернуть все обратно, если что-то пошло не так:")
-        print("  python3 -m app.core.find_bundles --restore " + dump)
 
+        wiped = 0
+        for url in files:
+            path = os.path.join(settings.media_dir, url.rsplit("/", 1)[-1])
+            try:
+                os.remove(path)
+                wiped += 1
+            except OSError:
+                pass
 
-def restore(path: str) -> None:
-    """Возвращает в ленту всё, что снял прошлый запуск."""
-    import json
-
-    with open(path, encoding="utf-8") as f:
-        saved = json.load(f)
-
-    ids = [item["id"] for item in saved]
-    with SessionLocal() as db:
-        db.execute(text(
-            "update listings set status = 'active' "
-            "where id = any(cast(:ids as uuid[])) and status = 'archived'"),
-            {"ids": ids})
-        db.commit()
-    print(f"возвращено в ленту: {len(ids)}")
+        print(f"удалено объявлений: {len(targets)}")
+        print(f"стёрто снимков: {wiped}")
+        print(f"текст сохранён на всякий случай: {dump}")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--limit", type=int, default=15)
     parser.add_argument("--apply", action="store_true",
-                        help="снять уверенные находки с публикации")
-    parser.add_argument("--restore", metavar="ФАЙЛ",
-                        help="вернуть в ленту всё из сохранённого списка")
+                        help="удалить уверенные находки (необратимо)")
     args = parser.parse_args()
-    if args.restore:
-        restore(args.restore)
-    else:
-        run(args.limit, args.apply)
+    run(args.limit, args.apply)
