@@ -1044,6 +1044,25 @@ export default function ListingDetail() {
         </div>
       ) : listing.external_source === 'telegram' && listing.external_author ? (
         <div className={ctaHidden ? 'sticky-cta hidden' : 'sticky-cta'}>
+          {/* Не вошёл — сперва вход, потом Telegram.
+              Прямая ссылка была открыта всем, и блокировка обходилась в
+              один клик: заблокированный не мог написать через сайт, но
+              спокойно писал тому же человеку в Telegram. Раз доступ
+              закрыт — значит закрыт весь, а не наполовину.
+              Гостю вход тоже полезен: продавцу приятнее отвечать
+              человеку с аккаунтом, а не безымянной ссылке. */}
+          {!user ? (
+            <button
+              className="cta-btn primary telegram"
+              onClick={() => navigate(
+                `/login?returnTo=${encodeURIComponent(window.location.pathname)}`)}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21.9 4.3 18.8 19c-.2 1-.9 1.3-1.7.8l-4.7-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.4-4.9 9-8.1c.4-.3-.1-.5-.6-.2L7 10.7 2.4 9.2c-1-.3-1-1 .2-1.5l18-6.9c.8-.3 1.5.2 1.3 1.5Z" />
+              </svg>
+              {t('detail.open_telegram')}
+            </button>
+          ) : (
           <a
             className="cta-btn primary telegram"
             href={`https://t.me/${listing.external_author}`}
@@ -1055,6 +1074,7 @@ export default function ListingDetail() {
             </svg>
             {t('detail.open_telegram')}
           </a>
+          )}
         </div>
       ) : (
       <div className={ctaHidden ? 'sticky-cta hidden' : 'sticky-cta'}>

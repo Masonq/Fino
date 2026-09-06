@@ -500,3 +500,27 @@ def test_bot_keeps_working_when_database_is_down():
     guard = bot.split("async def block_banned")[1].split("\n@")[0]
     assert "except Exception" in guard
     assert "return await handler(event, data)" in guard
+
+
+def test_telegram_contact_needs_a_signed_in_user():
+    """Связаться с продавцом в Telegram может только вошедший.
+
+    Прямая ссылка была открыта всем, и блокировка обходилась в один
+    клик: заблокированный не мог написать через сайт, но спокойно писал
+    тому же человеку в Telegram.
+
+    Прятать кнопку мало — ник приходил в ответе сервера, и ссылку
+    собирали руками. Теперь он отдаётся только вошедшему, а
+    заблокированный для сервера тоже гость: одной проверки хватает на
+    оба случая.
+
+    Проверено: гостю ник не приходит, вошедшему приходит.
+    """
+    api = (Path(__file__).resolve().parents[1]
+           / "app" / "routers" / "listings.py").read_text()
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "ListingDetail.jsx").read_text()
+
+    assert '"external_author": listing.external_author if viewer else None' in api
+    # На странице невошедшему предлагаем вход вместо ссылки.
+    assert "{!user ? (" in page
