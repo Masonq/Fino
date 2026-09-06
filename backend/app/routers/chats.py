@@ -261,6 +261,32 @@ async def send_message(
     )
     db.add(message)
     chat.last_message_at = utcnow()
+
+    # Смотрим, не прозвучало ли в сообщении что-то из известных приёмов
+    # обмана: просьба предоплаты, кода из СМС, увод в мессенджер со
+    # скидкой.
+    #
+    # Сообщение при этом уходит всегда: это не цензура, а пометка для
+    # служебной очереди. Жалобы приходят уже после того, как человека
+    # обманули, — так есть шанс успеть раньше.
+    if payload.text and not chat.flagged_at:
+        from app.core.chat_watch import ALARM, suspicion
+
+        # Первое сообщение в переписке считаем отдельно: уводы в нём
+        # опаснее всего, обычный человек сперва спрашивает про вещь.
+        first = db.query(Message).filter(Message.chat_id == chat_id).count() <= 1
+        score, why = suspicion(payload.text, first_message=first)
+        if score >= ALARM:
+            chat.flagged_at = utcnow()
+            chat.flag_reason = ", ".join(why)
+            try:
+                from app.core.audit import record
+                record(db, None, "chat.suspicious", target_type="chat",
+                       target_id=str(chat_id), reason=chat.flag_reason,
+                       sender=str(sender_id))
+            except Exception:                              # noqa: BLE001
+                pass
+
     db.commit()
     db.refresh(message)
 
