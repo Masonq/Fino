@@ -297,7 +297,7 @@ export default function Profile() {
                 перевёл деньги. */}
             <Link className="profile-row" to="/admin/flagged">
               <span className="profile-row-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M12 3 3 20h18L12 3z" /><path d="M12 9v5M12 17h.01" /></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M10.3 3.9 1.8 18.2A2 2 0 0 0 3.5 21h17a2 2 0 0 0 1.7-2.8L13.7 3.9a2 2 0 0 0-3.4 0Z" /><path d="M12 9.5v4.5" /><path d="M12 17.5h.01" /></svg>
               </span>
               {t('flagged.title')}
               {queues?.flagged_chats > 0 && (
@@ -307,7 +307,7 @@ export default function Profile() {
             </Link>
             <Link className="profile-row" to="/admin/users">
               <span className="profile-row-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><circle cx="9" cy="8" r="3.3" /><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 8.5a3 3 0 1 1 3.6 3M21.5 20c0-2.8-2-5-4.7-5.7" /></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="8" r="3.2" /><path d="M2.5 20c0-3.4 2.9-5.8 6.5-5.8s6.5 2.4 6.5 5.8" /><circle cx="17.5" cy="8.5" r="2.6" /><path d="M17.5 14c2.6 0 4.5 1.8 4.5 4.4" /></svg>
               </span>
               {t('admin.title')}
               <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
