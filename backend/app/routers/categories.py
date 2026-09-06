@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -92,3 +92,22 @@ def get_category_schema(slug: str, db: Session = Depends(get_db)):
         "parent_slug": cat.parent.slug if cat.parent else None,
         "attribute_schema": schema or [],
     }
+
+
+@router.get("/{slug}/price-hint")
+def category_price_hint(slug: str, currency: str = "RSD",
+                        db: Session = Depends(get_db)):
+    """
+    Сколько обычно просят за вещи из этого раздела.
+
+    Нужно при подаче объявления: человек чаще всего не знает цену и
+    ставит наугад — отсюда «Комод за 100 евро» рядом с «Комодом за 15».
+    """
+    from app.core.price_hint import price_hint
+
+    category = db.query(Category).filter(Category.slug == slug).first()
+    if not category:
+        raise HTTPException(404, "not_found")
+
+    hint = price_hint(db, category, currency.upper())
+    return hint or {"count": 0}
