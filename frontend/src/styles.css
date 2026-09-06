@@ -4015,3 +4015,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   font-size:13px; color:var(--muted);
 }
 .stats-split b{ color:var(--ink); }
+
+/* Почему объявление в ленте. Совсем тихо: это пояснение, а не часть
+   предложения — оно не должно спорить ни с ценой, ни с городом. */
+.s-because{
+  padding:0 10px; margin-top:2px;
+  font-size:10.5px; color:var(--muted); opacity:.8;
+}

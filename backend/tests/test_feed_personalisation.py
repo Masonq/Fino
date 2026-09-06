@@ -721,3 +721,30 @@ def test_profile_icons_are_all_different():
     icons = re.findall(r'<svg viewBox="0 0 24 24".*?</svg>', page, re.S)
     shapes = [re.sub(r"\s+", " ", i) for i in icons]
     assert len(shapes) == len(set(shapes)), "в профиле есть одинаковые значки"
+
+
+def test_feed_explains_why_a_listing_is_shown():
+    """Под карточкой видно, почему она в ленте.
+
+    Лента без объяснения выглядит случайной: человек не понимает,
+    отчего ему показывают именно это, и относится к порядку как к
+    произволу. Короткая подпись снимает вопрос и заодно показывает, что
+    лента подстраивается — есть смысл смотреть дальше.
+
+    Говорим только правду и только про то, что человек сам делал: его же
+    просмотры в этом разделе. Никаких «специально для вас» — за такими
+    словами ничего не стоит.
+
+    Проверено вживую: подпись появилась на трёх карточках, стоит под
+    ценой и не спорит ни с ней, ни с городом.
+    """
+    api = (Path(__file__).resolve().parents[1]
+           / "app" / "routers" / "listings.py").read_text()
+    card = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "components" / "ListingCard.jsx").read_text()
+
+    assert '"shown_because"' in api
+    # Только в общей ленте: в поиске и разделе человек сам выбрал, что
+    # смотреть, и объяснять ему нечего.
+    assert "viewer and not q_text and not category_slug" in api
+    assert "listing.shown_because === 'interest'" in card
