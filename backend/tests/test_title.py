@@ -2521,5 +2521,13 @@ def test_new_categories_cover_the_known_gaps():
         for *_, deep in children for dslug, *_ in deep}
 
     for needed in ("gpu", "ram", "kids-bikes", "skate-roller",
-                   "multicookers", "fridges", "washing-machines"):
+                   "multicookers", "fridges", "washing-machines",
+                   # Второй проход по дереву: услуги были самым бедным
+                   # разделом — няня, фотограф и переводчик подать
+                   # объявление попросту не могли.
+                   "nannies", "photo-video", "translation",
+                   # Белград стоит на двух реках, лодки тут продают.
+                   "boats",
+                   # У «Товаров для животных» не было ни одного подраздела.
+                   "pet-food", "aquariums"):
         assert needed in everything, needed

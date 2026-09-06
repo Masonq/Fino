@@ -39,6 +39,8 @@ NEW = {
         ]),
         ("monitors", "Мониторы", "Monitors", "Monitori", []),
         ("network-gear", "Сетевое оборудование", "Networking", "Mrežna oprema", []),
+        ("tv-projectors", "Телевизоры и проекторы", "TVs and projectors", "Televizori i projektori", []),
+        ("smart-home", "Умный дом", "Smart home", "Pametna kuća", []),
     ],
     # Раздел стоял пустым: холодильник и стиральную машину класть было
     # некуда, кроме как в него самого.
@@ -77,6 +79,29 @@ NEW = {
         ("hunting-fishing", "Охота и рыбалка", "Hunting and fishing", "Lov i ribolov", []),
         ("board-games", "Настольные игры", "Board games", "Društvene igre", []),
         ("crafts", "Рукоделие и творчество", "Crafts and hobbies", "Ručni rad i hobi", []),
+        ("martial-arts", "Единоборства", "Martial arts", "Borilačke veštine", []),
+        ("sport-nutrition", "Спортивное питание", "Sports nutrition", "Sportska ishrana", []),
+    ],
+    # Услуги — самый бедный раздел: няня, фотограф и переводчик подать
+    # объявление попросту не могли, кроме как «в общее».
+    "services": [
+        ("nannies", "Няни и уход за детьми", "Nannies and childcare", "Dadilje i čuvanje dece", []),
+        ("photo-video", "Фото и видеосъёмка", "Photo and video", "Foto i video", []),
+        ("translation", "Переводы", "Translation", "Prevodi", []),
+        ("pet-services", "Уход за животными", "Pet services", "Usluge za ljubimce", []),
+        ("events", "Праздники и мероприятия", "Events", "Proslave i događaji", []),
+        ("car-service", "Автосервис и шиномонтаж", "Car service", "Auto-servis i vulkanizer", []),
+    ],
+    # Белград стоит на двух реках, и лодки тут продают всерьёз.
+    "auto": [
+        ("boats", "Водный транспорт", "Boats and watercraft", "Plovila", []),
+    ],
+    # У «Товаров для животных» не было ни одного подраздела.
+    "pets-supplies": [
+        ("pet-food", "Корма и лакомства", "Pet food", "Hrana za ljubimce", []),
+        ("aquariums", "Аквариумы и террариумы", "Aquariums and terrariums", "Akvarijumi i terarijumi", []),
+        ("cages-carriers", "Клетки и переноски", "Cages and carriers", "Kavezi i transporteri", []),
+        ("pet-grooming", "Уход и груминг", "Grooming supplies", "Nega i timarenje", []),
     ],
     "home-garden": [
         ("lighting", "Освещение", "Lighting", "Rasveta", []),
