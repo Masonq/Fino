@@ -454,4 +454,4 @@ def test_category_pictures_are_not_lazy():
 
     code = [ln for ln in art.split("\n") if not ln.strip().startswith("//")]
     assert not any('loading="lazy"' in ln for ln in code)
-    assert 'fetchPriority="high"' in art
+    assert 'fetchpriority="high"' in art

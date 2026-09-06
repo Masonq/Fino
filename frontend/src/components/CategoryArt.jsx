@@ -42,7 +42,10 @@ export default function CategoryArt({ slug, parentSlug }) {
       //
       // fetchpriority=high — просим браузер взять их раньше прочего:
       // это первое, что человек видит на странице раздела.
-      fetchPriority="high"
+      // Именно fetchpriority строчными: эта версия React передаёт в
+      // разметку как есть только известные ей свойства, а camelCase-имя
+      // не узнаёт и ругается в консоли. Поймала проверка браузером.
+      fetchpriority="high"
       decoding="async"
       onError={() => setStep((n) => n + 1)}
     />
