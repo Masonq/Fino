@@ -421,3 +421,37 @@ def test_map_library_is_not_in_the_first_load():
     assert "import LocationMap from" not in detail
     # Пока едет — ровная подложка, а не белая дыра на весь экран.
     assert 'className="map-loading"' in detail
+
+
+def test_category_tree_is_kept_in_the_browser():
+    """Дерево разделов не запрашивается заново при каждом заходе.
+
+    Страница раздела без него не может нарисовать ни одной плитки:
+    сперва ждём ответа сервера, потом рисуем плитки, потом грузим
+    картинки — раздел «доезжает» на глазах. Из памяти браузера он
+    открывается сразу.
+
+    Держим сутки и всё равно обновляем в фоне: поменялись разделы —
+    человек увидит новое при следующем заходе, а не будет ждать сейчас.
+    """
+    client = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "api" / "client.js").read_text()
+
+    assert "plonk_categories" in client
+    assert "if (saved?.tree?.length)" in client
+
+
+def test_category_pictures_are_not_lazy():
+    """Значки разделов грузятся сразу, а не лениво.
+
+    Плитки почти всегда в первом экране, и откладывать их незачем:
+    браузер начинал грузить картинку позже, и раздел заполнялся на
+    глазах, плитка за плиткой. Ленивость полезна для длинной ленты, а не
+    для десятка значков наверху.
+    """
+    art = (Path(__file__).resolve().parents[2]
+           / "frontend" / "src" / "components" / "CategoryArt.jsx").read_text()
+
+    code = [ln for ln in art.split("\n") if not ln.strip().startswith("//")]
+    assert not any('loading="lazy"' in ln for ln in code)
+    assert 'fetchPriority="high"' in art

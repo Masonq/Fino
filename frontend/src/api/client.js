@@ -222,7 +222,39 @@ export const api = {
     body: JSON.stringify(payload),
   }),
 
-  getCategories: () => request('/categories'),
+  // Дерево разделов держим в браузере.
+  //
+  // Оно почти не меняется, а страница раздела без него не может
+  // нарисовать ни одной плитки: сперва ждём ответа сервера, потом
+  // рисуем плитки, потом грузим их картинки — раздел «доезжает» на
+  // глазах. Из памяти он открывается сразу.
+  //
+  // Держим сутки и всё равно обновляем в фоне: если разделы поменялись,
+  // человек увидит новое при следующем заходе, а не будет ждать сейчас.
+  getCategories: async () => {
+    const CACHE_KEY = 'plonk_categories'
+    const DAY = 24 * 60 * 60 * 1000
+
+    let saved = null
+    try {
+      const raw = localStorage.getItem(CACHE_KEY)
+      if (raw) saved = JSON.parse(raw)
+    } catch { /* хранилище недоступно — не беда */ }
+
+    const refresh = () => request('/categories').then((fresh) => {
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), tree: fresh }))
+      } catch { /* не беда */ }
+      return fresh
+    })
+
+    if (saved?.tree?.length) {
+      // Устарело — обновим в фоне, но покажем сразу то, что есть.
+      if (Date.now() - (saved.at || 0) > DAY) refresh().catch(() => {})
+      return saved.tree
+    }
+    return refresh()
+  },
   getCategorySchema: (slug) => request(`/categories/${slug}/schema`),
   searchListings: (params) => request(`/listings?${query(params)}`),
   getListing: (id) => {
