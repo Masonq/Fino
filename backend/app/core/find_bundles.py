@@ -202,7 +202,7 @@ def run(limit: int, apply: bool) -> None:
         print(f"активных объявлений: {len(rows)}")
         print(f"похоже на перечень: {len(hits)}"
               f" ({len(hits) * 100 // max(len(rows), 1)}%)")
-        print(f"  из них уверенно: {len(sure)} — их и удаляем")
+        print(f"  из них уверенно: {len(sure)} — их и снимаем с публикации")
         print(f"  сомнительных: {len(maybe)} — только показываем\n")
 
         for row, why in hits[:limit]:
@@ -222,7 +222,7 @@ def run(limit: int, apply: bool) -> None:
 
         ids = [r.id for r, _ in sure]
         if not ids:
-            print("нечего удалять")
+            print("нечего убирать")
             return
 
         # Объявления с перепиской или в избранном не трогаем: там уже
@@ -235,34 +235,61 @@ def run(limit: int, apply: bool) -> None:
         targets = [i for i in ids if i not in busy]
         print(f"с перепиской или в избранном: {len(busy)} — оставляем")
 
-        # Сохраняем перед удалением: восстановить объявление иначе
-        # неоткуда, а ошибиться в приметах я вполне мог.
+        # Снимаем с публикации, а не удаляем.
+        #
+        # Цель — убрать перечни из ленты и поиска, и архив её достигает:
+        # объявление перестаёт показываться, но остаётся целым. Удаление
+        # же необратимо — фотографии стираются с диска, и вернуть
+        # объявление нельзя даже по сохранённому тексту.
+        #
+        # Приметы я подкручивал пять раз подряд, и каждый раз находились
+        # новые ложные срабатывания. Значит и сейчас среди двух сотен
+        # найдётся десяток спорных — пусть они лежат в архиве, откуда их
+        # можно вернуть одной командой, а не пропадают навсегда.
         import json
         from datetime import datetime
 
         dump = f"/tmp/bundles-{datetime.now():%Y%m%d-%H%M}.json"
         with open(dump, "w", encoding="utf-8") as f:
-            json.dump([{"id": str(r.id), "title": r.title,
-                        "description": r.description, "why": w}
+            json.dump([{"id": str(r.id), "title": r.title, "why": w}
                        for r, w in sure if r.id in targets],
                       f, ensure_ascii=False, indent=1)
 
-        for table in ("listing_photos", "favorites", "chats", "reviews", "reports",
-                      "promotions", "listing_view_logs", "listing_view_daily",
-                      "listing_signal_daily", "tickets", "review_invites",
-                      "listing_translations"):
-            db.execute(text(f"delete from {table} where listing_id = any(:ids)"),
-                       {"ids": targets})
-        db.execute(text("delete from listings where id = any(:ids)"), {"ids": targets})
+        db.execute(text("update listings set status = 'archived' where id = any(:ids)"),
+                   {"ids": targets})
         db.commit()
-        print(f"удалено: {len(targets)}")
-        print(f"сохранено перед удалением: {dump}")
+        print(f"снято с публикации: {len(targets)}")
+        print(f"список сохранён: {dump}")
+        print("\nвернуть все обратно, если что-то пошло не так:")
+        print("  python3 -m app.core.find_bundles --restore " + dump)
+
+
+def restore(path: str) -> None:
+    """Возвращает в ленту всё, что снял прошлый запуск."""
+    import json
+
+    with open(path, encoding="utf-8") as f:
+        saved = json.load(f)
+
+    ids = [item["id"] for item in saved]
+    with SessionLocal() as db:
+        db.execute(text(
+            "update listings set status = 'active' "
+            "where id = any(cast(:ids as uuid[])) and status = 'archived'"),
+            {"ids": ids})
+        db.commit()
+    print(f"возвращено в ленту: {len(ids)}")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--limit", type=int, default=15)
     parser.add_argument("--apply", action="store_true",
-                        help="удалить уверенные находки (необратимо)")
+                        help="снять уверенные находки с публикации")
+    parser.add_argument("--restore", metavar="ФАЙЛ",
+                        help="вернуть в ленту всё из сохранённого списка")
     args = parser.parse_args()
-    run(args.limit, args.apply)
+    if args.restore:
+        restore(args.restore)
+    else:
+        run(args.limit, args.apply)
