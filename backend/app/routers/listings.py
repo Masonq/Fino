@@ -360,6 +360,10 @@ def search_listings(
     # текстовый поиск по заголовку и описанию на любом из языков
     title_hit = None
     early_desc_hit = None
+    # Запрос без фильтра по словам — понадобится, если поиск ничего не
+    # найдёт и мы будем пробовать с опечатками.
+    before_words = None
+
     if q_text:
         words = q_text.strip()
         # Марку пишут и латиницей, и кириллицей: «айфон» должен находить
@@ -371,6 +375,11 @@ def search_listings(
             func.coalesce(ListingTranslation.title, "") + " " +
             func.coalesce(ListingTranslation.description, ""),
         )
+        # Запоминаем запрос без фильтра по словам: если поиск ничего не
+        # найдёт, повторим по похожести, сохранив остальные условия —
+        # город, цену, раздел человек задал осознанно.
+        before_words = q
+
         matches = []
         for spelling in spellings:
             # Поиск по словам через полнотекстовый индекс. Дополнительно
@@ -520,6 +529,49 @@ def search_listings(
                     q = q.filter(looks_numeric, numeric_value <= float(hi))
 
     total = q.count()
+
+    # Ничего не нашлось — пробуем с опечатками.
+    #
+    # Поиск у нас точный по словам, и «каляска» или «диваан» не находят
+    # ничего. Человек при этом решает, что вещи нет, и уходит — а она
+    # лежит в ленте. Для площадки с тремя языками и вечной путаницей
+    # латиницы с кириллицей это потеря на ровном месте.
+    #
+    # Включаем только когда обычный поиск пуст: на каждый запрос такое
+    # сравнение считать дорого, а пустых запросов немного.
+    fuzzy = False
+    if q_text and total == 0 and before_words is not None:
+        words = [w for w in q_text.strip().split() if len(w) >= 4]
+        if words:
+            from sqlalchemy import text as sql_text
+
+            # Если расширения нет (база другая, деплой не прошёл) —
+            # молча остаёмся без запасного поиска: пустая выдача хуже
+            # ошибки, но ошибка хуже пустой выдачи.
+            similar = []
+            try:
+                similar = db.execute(sql_text("""
+                select distinct t.listing_id
+                from listing_translations t
+                where """ + " or ".join(
+                    # Сравниваем слово со словом внутри заголовка, а не с
+                    # заголовком целиком: «каляска» против «Коляска
+                    # Bugaboo» даёт 0.26 и не проходит порог, а по слову
+                    # — 0.5. Проверил на живых данных.
+                    f"word_similarity(lower(:w{i}), lower(t.title)) > 0.45"
+                    for i in range(len(words))
+                ) + " limit 200"), {f"w{i}": w for i, w in enumerate(words)}).fetchall()
+            except Exception:                              # noqa: BLE001
+                db.rollback()
+
+            found = [row[0] for row in similar]
+            if found:
+                # Пересобираем запрос: прежний фильтр по словам ничего не
+                # дал, а остальные условия (город, цена, раздел) должны
+                # остаться — человек их задал осознанно.
+                q = before_words.filter(Listing.id.in_(found))
+                total = q.count()
+                fuzzy = True
 
     # Формула релевантности — свой аналог того же принципа, что у
     # крупных досок объявлений (Avito Ranker и подобные): не просто

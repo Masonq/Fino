@@ -22,6 +22,14 @@ if alembic check 2>&1 | grep -q "New upgrade operations detected"; then
 fi
 
 echo "→ применяю миграции"
+# Расширение для поиска с опечатками.
+#
+# Без него запасной поиск падает с ошибкой: функции word_similarity в
+# базе просто нет. Ставим здесь, а не миграцией — команда безопасна при
+# повторе и не требует разбираться, была ли она уже.
+psql "$DATABASE_URL" -c "create extension if not exists pg_trgm" >/dev/null 2>&1 \
+  || echo "  ! не удалось включить pg_trgm — поиск с опечатками работать не будет"
+
 alembic upgrade head
 cd ..
 
