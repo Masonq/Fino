@@ -72,6 +72,14 @@ SQL = """
 """
 
 
+# Сравнение цен на одну вещь: «новый стоит 7.500 дин, продаю за 4000».
+# Это не перечень, а обычный приём продавца — поймал на живой выгрузке
+# («Стол VIHALS, IKEA»).
+PRICE_COMPARISON = re.compile(
+    r"\b(новый стоит|в магазине|купил[аи]? за|покупал[аи]? за|"
+    r"изначальн\w* стоимост\w*|цена в магазине|при покупке)\b", re.IGNORECASE)
+
+
 def why_bundle(title: str, description: str) -> list[str]:
     """Возвращает список сработавших примет — пустой, если это одна вещь."""
     text_all = f"{title or ''}\n{description or ''}"
@@ -82,7 +90,9 @@ def why_bundle(title: str, description: str) -> list[str]:
 
     # Пары «название — цена»: три и больше почти наверняка перечень.
     # Две — это часто «цена 1500, торг 1300», поэтому порог выше.
-    if len(PRICE_WITH_CURRENCY.findall(text_all)) >= 3:
+    # Сравнение цен («новый стоит X, продаю за Y») — это одна вещь.
+    if (len(PRICE_WITH_CURRENCY.findall(text_all)) >= 3
+            and not PRICE_COMPARISON.search(text_all)):
         found.append("несколько цен подряд")
 
     if BUNDLE_WORDS.search(text_all):
@@ -111,7 +121,22 @@ def why_bundle(title: str, description: str) -> list[str]:
     return found
 
 
-def run(limit: int) -> None:
+# Что удаляем без спроса, а что только показываем.
+#
+# Нумерованный перечень — примета надёжная: на выгрузке с живой базы
+# почти все её находки оказались настоящими перечнями («Домашнее всякое
+# по 200 динар за штуку», «Книги по 300 RSD за штуку», «Одежда —
+# бесплатно (1/3)»).
+#
+# «Несколько цен подряд» — примета слабее: она ошибалась на
+# характеристиках и на сравнении цен, и хотя обе дыры закрыты, доверять
+# ей в одиночку я бы не стал. Удаляем по ней, только если сработала и
+# вторая примета.
+def safe_to_delete(why: list[str]) -> bool:
+    return "нумерованный перечень" in why or len(why) >= 2
+
+
+def run(limit: int, apply: bool) -> None:
     with SessionLocal() as db:
         rows = db.execute(text(SQL)).fetchall()
         hits = []
@@ -120,22 +145,73 @@ def run(limit: int) -> None:
             if why:
                 hits.append((row, why))
 
+        sure = [(r, w) for r, w in hits if safe_to_delete(w)]
+        maybe = [(r, w) for r, w in hits if not safe_to_delete(w)]
+
         print(f"активных объявлений: {len(rows)}")
         print(f"похоже на перечень: {len(hits)}"
-              f" ({len(hits) * 100 // max(len(rows), 1)}%)\n")
+              f" ({len(hits) * 100 // max(len(rows), 1)}%)")
+        print(f"  из них уверенно: {len(sure)} — их и удаляем")
+        print(f"  сомнительных: {len(maybe)} — только показываем\n")
 
         for row, why in hits[:limit]:
+            mark = "×" if safe_to_delete(why) else "?"
             head = " ".join((row.title or "").split())[:44]
             body = " ".join((row.description or "").split())[:70]
-            print(f"  {head}")
+            print(f"  {mark} {head}")
             print(f"    приметы: {', '.join(why)}")
             print(f"    текст: {body}\n")
 
         if len(hits) > limit:
-            print(f"... и ещё {len(hits) - limit}")
+            print(f"... и ещё {len(hits) - limit}\n")
+
+        if not apply:
+            print("это был показ, ничего не удалено. Для удаления — с ключом --apply")
+            return
+
+        ids = [r.id for r, _ in sure]
+        if not ids:
+            print("нечего удалять")
+            return
+
+        # Объявления с перепиской или в избранном не трогаем: там уже
+        # завязались люди, и решать за них нельзя.
+        busy = {row[0] for row in db.execute(text("""
+            select distinct listing_id from chats where listing_id = any(:ids)
+            union
+            select distinct listing_id from favorites where listing_id = any(:ids)
+        """), {"ids": ids})}
+        targets = [i for i in ids if i not in busy]
+        print(f"с перепиской или в избранном: {len(busy)} — оставляем")
+
+        # Сохраняем перед удалением: восстановить объявление иначе
+        # неоткуда, а ошибиться в приметах я вполне мог.
+        import json
+        from datetime import datetime
+
+        dump = f"/tmp/bundles-{datetime.now():%Y%m%d-%H%M}.json"
+        with open(dump, "w", encoding="utf-8") as f:
+            json.dump([{"id": str(r.id), "title": r.title,
+                        "description": r.description, "why": w}
+                       for r, w in sure if r.id in targets],
+                      f, ensure_ascii=False, indent=1)
+
+        for table in ("listing_photos", "favorites", "chats", "reviews", "reports",
+                      "promotions", "listing_view_logs", "listing_view_daily",
+                      "listing_signal_daily", "tickets", "review_invites",
+                      "listing_translations"):
+            db.execute(text(f"delete from {table} where listing_id = any(:ids)"),
+                       {"ids": targets})
+        db.execute(text("delete from listings where id = any(:ids)"), {"ids": targets})
+        db.commit()
+        print(f"удалено: {len(targets)}")
+        print(f"сохранено перед удалением: {dump}")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--limit", type=int, default=15)
-    run(parser.parse_args().limit)
+    parser.add_argument("--apply", action="store_true",
+                        help="удалить уверенные находки (необратимо)")
+    args = parser.parse_args()
+    run(args.limit, args.apply)

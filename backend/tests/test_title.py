@@ -2632,3 +2632,39 @@ def test_services_are_left_alone():
               / "app" / "core" / "find_bundles.py").read_text()
 
     assert "not in ('services', 'jobs', 'real-estate')" in source
+
+
+def test_price_comparison_is_not_a_bundle():
+    """«Новый стоит 7500, продаю за 4000» — это одна вещь.
+
+    Обычный приём продавца: показать, сколько вещь стоила новой. Примета
+    считала это перечнем — поймал на живой выгрузке, объявление «Стол
+    VIHALS, IKEA».
+    """
+    from app.core.find_bundles import why_bundle
+
+    assert not why_bundle("Стол VIHALS IKEA",
+                          "Новый стоит 7.500 дин., продаю за 4000 дин, торг 3500 дин")
+
+
+def test_only_reliable_signs_lead_to_deletion():
+    """Удаляем только по надёжным приметам.
+
+    Нумерованный перечень на выгрузке почти не ошибался. «Несколько цен
+    подряд» слабее: ошибалась на характеристиках и на сравнении цен, и
+    хотя обе дыры закрыты, доверять ей в одиночку не стоит — по ней
+    удаляем, только если сработала и вторая примета.
+
+    Объявления с перепиской или в избранном не трогаются никогда: там
+    завязались люди. Перед удалением всё сохраняется в файл.
+    """
+    from app.core.find_bundles import safe_to_delete
+
+    assert safe_to_delete(["нумерованный перечень"])
+    assert safe_to_delete(["несколько цен подряд", "слова про пакет"])
+    assert not safe_to_delete(["несколько цен подряд"])
+
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "find_bundles.py").read_text()
+    assert "с перепиской или в избранном" in source
+    assert "json.dump" in source
