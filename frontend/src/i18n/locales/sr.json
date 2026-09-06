@@ -807,5 +807,13 @@
     "no_category": "Ta sekcija više ne postoji",
     "gone": "Oglas je već obrisan",
     "failed": "Premeštanje nije uspelo — pokušajte ponovo"
+  },
+  "flagged": {
+    "title": "Sumnjive prepiske",
+    "empty": "Za sada ništa sumnjivo",
+    "clear": "Pregledano",
+    "seller_profile": "Profil prodavca",
+    "buyer": "Kupac",
+    "seller": "Prodavac"
   }
 }

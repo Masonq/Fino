@@ -32,6 +32,10 @@ class Chat(Base):
     # раньше.
     flagged_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     flag_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Когда служебный раздел разобрался с пометкой. Не удаляем её, а
+    # отмечаем разобранной: если тот же человек попадётся снова, полезно
+    # видеть, что это уже второй раз.
+    flag_cleared_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     # Какое сообщение уже получило напоминание о молчании — чтобы не
     # слать его на одно и то же сообщение повторно на каждом заходе

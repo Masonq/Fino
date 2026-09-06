@@ -292,6 +292,19 @@ export default function Profile() {
               )}
               <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
             </Link>
+            {/* Разговоры с приметами обмана. Со счётчиком, как у
+                обращений: разбирать их надо быстро, пока человек не
+                перевёл деньги. */}
+            <Link className="profile-row" to="/admin/flagged">
+              <span className="profile-row-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M12 3 3 20h18L12 3z" /><path d="M12 9v5M12 17h.01" /></svg>
+              </span>
+              {t('flagged.title')}
+              {queues?.flagged_chats > 0 && (
+                <span className="profile-row-count">{queues.flagged_chats}</span>
+              )}
+              <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+            </Link>
             <Link className="profile-row" to="/admin/users">
               <span className="profile-row-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><circle cx="9" cy="8" r="3.3" /><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 8.5a3 3 0 1 1 3.6 3M21.5 20c0-2.8-2-5-4.7-5.7" /></svg>

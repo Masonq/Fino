@@ -36,6 +36,7 @@ const AdminAudit = lazy(() => import('./pages/AdminAudit'))
 const EditProfile = lazy(() => import('./pages/EditProfile'))
 const Enter = lazy(() => import('./pages/Enter'))
 const AdminSupport = lazy(() => import('./pages/AdminSupport'))
+const AdminFlaggedChats = lazy(() => import('./pages/AdminFlaggedChats'))
 const Support = lazy(() => import('./pages/Support'))
 const AdminStats = lazy(() => import('./pages/AdminStats'))
 const AdminUsers = lazy(() => import('./pages/AdminUsers'))
@@ -419,6 +420,7 @@ export default function App() {
           <Route path="/admin/stats" element={<AdminStats />} />
           <Route path="/admin/audit" element={<AdminAudit />} />
           <Route path="/admin/support" element={<AdminSupport />} />
+          <Route path="/admin/flagged" element={<AdminFlaggedChats />} />
           <Route path="/support" element={<Support />} />
           <Route path="/enter" element={<Enter />} />
           <Route path="/profile/edit" element={<EditProfile />} />

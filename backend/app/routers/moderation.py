@@ -100,7 +100,7 @@ def counters(
     показать два числа, а не тянуть ради них по полсотни объявлений и
     обращений со всеми переводами и снимками.
     """
-    from app.models import Ticket, TicketStatus
+    from app.models import Chat, Ticket, TicketStatus
 
     return {
         "moderation": (
@@ -111,6 +111,12 @@ def counters(
         "support": (
             db.query(Ticket)
             .filter(Ticket.status != TicketStatus.closed)
+            .count()
+        ),
+        # Разговоры, где прозвучали известные приёмы обмана.
+        "flagged_chats": (
+            db.query(Chat)
+            .filter(Chat.flagged_at.isnot(None), Chat.flag_cleared_at.is_(None))
             .count()
         ),
     }
@@ -313,3 +319,85 @@ def reject(
     background_tasks.add_task(_after_reject, listing.id, payload.reason)
 
     return {"status": "rejected"}
+
+
+@router.get("/flagged-chats")
+def flagged_chats(
+    offset: int = 0,
+    moderator: User = Depends(require_moderator),
+    db: Session = Depends(get_db),
+):
+    """
+    Разговоры, в которых прозвучали известные приёмы обмана.
+
+    Показываем сам разговор целиком: без него пометка бесполезна —
+    решить, обман это или нет, можно только прочитав переписку.
+    Например, «переведите предоплату» от знакомых друг другу людей,
+    договорившихся о доставке, — обычное дело.
+    """
+    from app.models import Chat, Message
+
+    rows = (
+        db.query(Chat)
+        .filter(Chat.flagged_at.isnot(None), Chat.flag_cleared_at.is_(None))
+        .order_by(Chat.flagged_at.desc())
+        .offset(offset)
+        .limit(20)
+        .all()
+    )
+
+    out = []
+    for chat in rows:
+        messages = (
+            db.query(Message)
+            .filter(Message.chat_id == chat.id, Message.text.isnot(None))
+            .order_by(Message.created_at)
+            .limit(30)
+            .all()
+        )
+        listing = db.query(Listing).get(chat.listing_id)
+        title = None
+        if listing and listing.translations:
+            title = next((t.title for t in listing.translations if t.title), None)
+
+        out.append({
+            "id": str(chat.id),
+            "flagged_at": chat.flagged_at.isoformat(),
+            "reason": chat.flag_reason,
+            "listing": {"id": str(chat.listing_id), "title": title},
+            "buyer_id": str(chat.buyer_id),
+            "seller_id": str(chat.seller_id),
+            "messages": [
+                {"from": "buyer" if m.sender_id == chat.buyer_id else "seller",
+                 "text": m.text,
+                 "at": m.created_at.isoformat()}
+                for m in messages
+            ],
+        })
+
+    return {"items": out}
+
+
+@router.post("/flagged-chats/{chat_id}/clear")
+def clear_flag(
+    chat_id: uuid.UUID,
+    moderator: User = Depends(require_moderator),
+    db: Session = Depends(get_db),
+):
+    """
+    Разобрались: снимаем пометку.
+
+    Не удаляем её, а отмечаем разобранной — если тот же человек
+    попадётся снова, полезно видеть, что это уже второй раз.
+    """
+    from app.models import Chat
+
+    chat = db.query(Chat).get(chat_id)
+    if not chat:
+        raise HTTPException(404, "not_found")
+
+    chat.flag_cleared_at = utcnow()
+    record(db, moderator, "chat.flag_cleared", target_type="chat",
+           target_id=str(chat_id), reason=chat.flag_reason)
+    db.commit()
+    return {"status": "ok"}

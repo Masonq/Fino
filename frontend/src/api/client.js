@@ -207,6 +207,10 @@ export const api = {
   // Два числа для служебного раздела в профиле: сколько объявлений ждёт
   // проверки и сколько обращений без ответа.
   modCounters: () => request('/moderation/counters'),
+  // Разговоры с приметами обмана — для служебного раздела.
+  flaggedChats: () => request('/moderation/flagged-chats'),
+  clearChatFlag: (id) => request(`/moderation/flagged-chats/${id}/clear`, { method: 'POST' }),
+
   modApprove: (id) => request(`/moderation/${id}/approve`, { method: 'POST' }),
   // Перенос объявления в другой раздел — только меняет раздел, всё
   // остальное (текст, фото, автор, переписка) остаётся как было.

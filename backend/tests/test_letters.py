@@ -569,3 +569,42 @@ def test_normal_messages_are_left_alone():
     ):
         score, _ = suspicion(text, first_message=False)
         assert score < ALARM, text
+
+
+def test_flagged_chats_have_their_own_screen():
+    """Помеченные разговоры собраны в отдельный список.
+
+    Раньше их было видно только в журнале действий, среди прочих
+    записей — то есть практически никак. Разбирать такое надо быстро,
+    пока человек не перевёл деньги.
+
+    Показываем переписку целиком: решить, обман это или нет, можно
+    только прочитав разговор. «Переведите предоплату» от людей,
+    договорившихся о доставке в другой город, — обычное дело, а то же
+    самое в первом сообщении незнакомцу — уже нет.
+    """
+    api = (Path(__file__).resolve().parents[1]
+           / "app" / "routers" / "moderation.py").read_text()
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "AdminFlaggedChats.jsx").read_text()
+    profile = (Path(__file__).resolve().parents[2]
+               / "frontend" / "src" / "pages" / "Profile.jsx").read_text()
+
+    assert '@router.get("/flagged-chats")' in api
+    assert '"flagged_chats"' in api               # счётчик рядом с обращениями
+    assert '"messages": [' in api                 # разговор целиком
+    assert "chat.messages.map" in page
+    assert 'to="/admin/flagged"' in profile
+
+
+def test_cleared_flag_is_kept_not_erased():
+    """Разобранная пометка не стирается, а помечается разобранной.
+
+    Если тот же человек попадётся снова, полезно видеть, что это уже
+    второй раз.
+    """
+    api = (Path(__file__).resolve().parents[1]
+           / "app" / "routers" / "moderation.py").read_text()
+
+    assert "chat.flag_cleared_at = utcnow()" in api
+    assert "Chat.flag_cleared_at.is_(None)" in api

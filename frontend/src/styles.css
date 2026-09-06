@@ -3970,3 +3970,33 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .seller-reply svg{ width:14px; height:14px; flex:0 0 auto; }
 
+
+/* Подозрительные переписки. Разговор показываем целиком: решить, обман
+   это или нет, можно только прочитав его. */
+.flagged-card{
+  background:#fff; border:1px solid var(--line); border-radius:16px;
+  padding:14px; margin-bottom:12px;
+}
+.flagged-head{ display:flex; justify-content:space-between; gap:10px; align-items:baseline; }
+.flagged-reason{ font-weight:700; font-size:14px; color:#D93D3D; }
+.flagged-when{ font-size:12px; color:var(--muted); white-space:nowrap; }
+.flagged-listing{
+  display:block; margin:8px 0 10px; padding:0;
+  font-size:13px; color:var(--muted); text-align:left; text-decoration:underline;
+}
+.flagged-messages{
+  max-height:260px; overflow-y:auto; border-top:1px solid var(--line);
+  padding-top:10px; display:flex; flex-direction:column; gap:8px;
+}
+.flagged-msg{ font-size:13.5px; line-height:1.45; }
+/* Кто говорит — подписью, а не выравниванием по сторонам: в служебном
+   разборе важнее читать подряд, чем узнавать «свои» сообщения. */
+.flagged-who{ font-weight:700; margin-right:6px; }
+.flagged-msg.buyer .flagged-who{ color:#0E9F6E; }
+.flagged-msg.seller .flagged-who{ color:#5B6B63; }
+.flagged-actions{ display:flex; gap:8px; margin-top:12px; }
+.flagged-clear, .flagged-open{
+  flex:1; padding:10px; border-radius:12px; font-size:14px; font-weight:600;
+  border:1px solid var(--line); background:#fff;
+}
+.flagged-clear{ background:var(--green); color:#fff; border-color:transparent; }
