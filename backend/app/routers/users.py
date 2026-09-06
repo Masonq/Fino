@@ -48,6 +48,12 @@ def public_profile(user_id: uuid.UUID, lang: str = "ru", db: Session = Depends(g
             .first() is not None
         )
 
+    from app.core.reply_speed import reply_speed, speed_label
+
+    speed = reply_speed(db, user.id)
+    reply = {"label": speed_label(speed["median_minutes"]),
+             "answered": speed["answered"]} if speed else None
+
     return {
         "id": str(user.id),
         "display_name": user.display_name,
@@ -63,6 +69,16 @@ def public_profile(user_id: uuid.UUID, lang: str = "ru", db: Session = Depends(g
         "created_at": user.created_at.isoformat() if user.created_at else None,
         "last_seen_at": user.last_seen_at.isoformat() if user.last_seen_at else None,
         "is_subscribed": is_subscribed,
+        # Как быстро отвечает — по своим же перепискам.
+        #
+        # Люди ждут ответа быстро, и там, где он приходит скоро, чаще
+        # доходит до сделки. Показываем не точные минуты, а порядок:
+        # «обычно отвечает в течение часа». Точная цифра звучала бы как
+        # обещание, которого продавец не давал.
+        #
+        # Пока ответов меньше трёх — не показываем ничего: два быстрых
+        # ответа это случайность, а не отзывчивость.
+        "reply_speed": reply,
     }
 
 

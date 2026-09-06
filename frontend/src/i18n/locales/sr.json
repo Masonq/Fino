@@ -468,7 +468,12 @@
     "show_all": "Prikaži sve oglase · {{count}}",
     "company_badge": "Kompanija",
     "subscribe": "Prati",
-    "subscribed": "Pratite"
+    "subscribed": "Pratite",
+    "reply_minutes": "Obično odgovara za nekoliko minuta",
+    "reply_hour": "Obično odgovara u roku od sat vremena",
+    "reply_hours": "Obično odgovara istog dana",
+    "reply_day": "Obično odgovara u roku od dana",
+    "reply_days": "Ne odgovara odmah"
   },
   "admin": {
     "title": "Korisnici",

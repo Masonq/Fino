@@ -383,3 +383,40 @@ def test_category_names_come_from_the_database():
 
     assert '"name": names.get(slug, {})' in source
     assert "c.name?.[i18n.language]" in page
+
+
+# ── Скорость ответа продавца ────────────────────────────────────────────────
+def test_reply_speed_counts_first_answer_only():
+    """Считаем ожидание первого ответа, а не среднее по переписке.
+
+    Люди ждут ответа быстро, и там, где он приходит скоро, чаще доходит
+    до сделки: у OLX за скорость дают значок и он приносит вдвое больше
+    обращений, у Etsy порог — ответ на 95% первых сообщений за сутки.
+
+    Важно именно первое «да, актуально»: дальше разговор может тянуться
+    днями по обоюдному согласию, и это уже не про отзывчивость.
+
+    Медиана, а не среднее: один ответ через неделю не должен портить
+    картину тому, кто обычно отвечает за десять минут.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "reply_speed.py").read_text()
+
+    assert "median(waits)" in source
+    assert "MIN_ANSWERS = 3" in source          # два ответа — случайность
+    assert "MAX_WAIT" in source                 # неделю спустя это не ответ
+
+
+def test_reply_speed_is_shown_as_a_range():
+    """Показываем порядок, а не точные минуты.
+
+    «Отвечает за 47 минут» звучит как обещание, которого продавец не
+    давал. Человеку нужно понять: сегодня или через день.
+    """
+    from app.core.reply_speed import speed_label
+
+    assert speed_label(5) == "minutes"
+    assert speed_label(20) == "hour"
+    assert speed_label(300) == "hours"
+    assert speed_label(60 * 20) == "day"
+    assert speed_label(60 * 50) == "days"

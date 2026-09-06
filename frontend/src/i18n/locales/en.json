@@ -467,7 +467,12 @@
     "show_all": "Show all listings · {{count}}",
     "company_badge": "Business",
     "subscribe": "Follow",
-    "subscribed": "Following"
+    "subscribed": "Following",
+    "reply_minutes": "Usually replies within minutes",
+    "reply_hour": "Usually replies within an hour",
+    "reply_hours": "Usually replies the same day",
+    "reply_day": "Usually replies within a day",
+    "reply_days": "Takes a while to reply"
   },
   "admin": {
     "title": "Users",

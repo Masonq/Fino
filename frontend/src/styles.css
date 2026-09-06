@@ -3961,3 +3961,11 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    показываем. Речь о паре кадров — человек видит короткую паузу вместо
    рывка с верха страницы вниз. */
 .restoring-scroll body { opacity: 0; }
+
+/* Скорость ответа продавца. Сдержанно, без цвета: это справка, а не
+   награда — хвалить за неё нечего, а знать полезно. */
+.seller-reply{
+  display:flex; align-items:center; gap:6px;
+  margin-top:4px; font-size:13px; color:var(--muted);
+}
+.seller-reply svg{ width:14px; height:14px; flex:0 0 auto; }

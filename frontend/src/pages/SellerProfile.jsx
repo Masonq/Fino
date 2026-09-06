@@ -155,6 +155,15 @@ export default function SellerProfile() {
               <span className="seller-head-count">{t('rev.count', { count: profile.rating_count })}</span>
             </div>
           )}
+          {/* Скорость ответа: для покупателя это первое, что он хочет
+              знать перед тем, как написать. Показываем порядок, а не
+              точные минуты — «за 47 минут» звучало бы как обещание. */}
+          {profile.reply_speed && (
+            <div className="seller-reply">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+              {t(`seller.reply_${profile.reply_speed.label}`)}
+            </div>
+          )}
           {since && <div className="seller-since">{t('seller.since', { date: since })}</div>}
         </div>
         {(!user || user.id !== profile.id) && (
