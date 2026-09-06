@@ -2804,3 +2804,28 @@ def test_accessories_do_not_follow_the_word():
     assert target_for("Подставка для ноутбука алюминиевая") == "peripherals"
     assert target_for("Кабель HDMI для монитора 2м") == "peripherals"
     assert target_for("Сумка для ноутбука 15.6") == "peripherals"
+
+
+def test_the_first_word_decides_where_it_goes():
+    """Решает то слово, которое стоит в заголовке первым.
+
+    Люди пишут главное в начале. «Монитор с подключением ТВ кабеля» —
+    это монитор, а не кабель; «Кулер для ноутбука» — кулер, а не
+    ноутбук; «ПК на базе RTX 4090» — компьютер, а не видеокарта.
+
+    Первая версия шла по списку правил подряд и путала ровно это:
+    половина ошибок в живой выгрузке была из заголовков с двумя
+    ключевыми словами сразу.
+    """
+    from app.core.split_computers import target_for
+
+    assert target_for("Монитор с возможностью подключения ТВ кабеля") == "monitors"
+    assert target_for("Кулер для ноутбука Flydigi BS2 pro") == "psu-cooling"
+    assert target_for("Видеокарта и переходник Palit rtx 5070ti") == "gpu"
+    assert target_for("Игровой ноутбук Dell G15 / i5-10200H / RTX 3050") == "laptops"
+
+    # Целые компьютеры остаются, даже когда в названии есть части.
+    assert target_for("ПК на базе rtx 4090") is None
+    assert target_for("Маленький компьютер AMD Ryzen 9800x3d") is None
+    # А корпус — не компьютер: там первое слово другое.
+    assert target_for("Корпус для компьютера") == "pc-cases"
