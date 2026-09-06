@@ -2755,3 +2755,52 @@ def test_bundles_are_deleted_for_good():
     assert "delete from listings where id = any(:ids)" in source
     assert "os.remove(path)" in source
     assert "json.dump" in source
+
+
+# ── Разбор настольных компьютеров ───────────────────────────────────────────
+def test_computers_are_split_by_what_they_are():
+    """Мониторы, ноутбуки и части раскладываются по своим разделам.
+
+    Раздел «Настольные компьютеры» собрал всё подряд: мониторы,
+    ноутбуки, видеокарты и мыши лежали вперемешку с системными блоками.
+    Человек, ищущий монитор, листал чужое, а разделы под это стояли
+    пустыми.
+
+    Разбираем по заголовку: технику называют своими именами. Описание не
+    смотрим — там слишком много лишнего вроде «подойдёт к любому
+    ноутбуку» у сумки.
+    """
+    from app.core.split_computers import target_for
+
+    assert target_for("Монитор Dell 24 дюйма IPS") == "monitors"
+    assert target_for("Ноутбук Lenovo ThinkPad T480") == "laptops"
+    assert target_for("Видеокарта RTX 3060 12GB") == "gpu"
+    assert target_for("Оперативная память DDR4 16GB") == "ram"
+    assert target_for("SSD Samsung 970 EVO 1TB") == "storage-drives"
+    assert target_for("Клавиатура механическая Logitech") == "peripherals"
+
+
+def test_system_units_stay_where_they_are():
+    """Системные блоки и моноблоки остаются в разделе.
+
+    Их и должен найти тот, кто заходит в «Настольные компьютеры».
+    """
+    from app.core.split_computers import target_for
+
+    assert target_for("Системный блок игровой i5 + RTX 2060") is None
+    assert target_for("Моноблок HP 24 дюйма") is None
+    assert target_for("iMac 27 2019") is None
+
+
+def test_accessories_do_not_follow_the_word():
+    """Принадлежности не уезжают вслед за словом в названии.
+
+    «Подставка для ноутбука» это не ноутбук, «кабель для монитора» не
+    монитор. Слово в заголовке есть, и без отдельной проверки вещь
+    уехала бы не туда — поймал на своих же примерах.
+    """
+    from app.core.split_computers import target_for
+
+    assert target_for("Подставка для ноутбука алюминиевая") == "peripherals"
+    assert target_for("Кабель HDMI для монитора 2м") == "peripherals"
+    assert target_for("Сумка для ноутбука 15.6") == "peripherals"
