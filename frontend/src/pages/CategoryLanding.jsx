@@ -674,7 +674,7 @@ export default function CategoryLanding() {
                 <span className="landing-sub-name">
                   {sub.name?.[i18n.language] || sub.name?.ru}
                 </span>
-                <span className="landing-sub-art"><CategoryArt slug={sub.slug} /></span>
+                <span className="landing-sub-art"><CategoryArt slug={sub.slug} parentSlug={slug} /></span>
               </button>
             ))}
             {showLimit && (

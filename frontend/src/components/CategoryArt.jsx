@@ -9,20 +9,33 @@ import { CATEGORY_ICONS, FALLBACK_ICON } from './CategoryIcons'
  * Все картинки приведены к общему квадрату 512×512 с равными полями, так
  * что подгонять масштаб и сдвиг под каждую категорию не нужно.
  */
-export default function CategoryArt({ slug }) {
-  const [failed, setFailed] = useState(false)
+export default function CategoryArt({ slug, parentSlug }) {
+  // Пробуем по очереди: своя картинка, картинка родителя, контурная
+  // иконка.
+  //
+  // Новые разделы заводятся без своей картинки, и плитка показывала
+  // серый квадрат-заглушку: рядом с объёмными значками соседей это
+  // выглядело поломкой. Увидел на записи экрана — «Корма» и
+  // «Аквариумы» стояли пустыми квадратами среди нарядных плиток.
+  //
+  // Картинка родителя тут честнее любой случайной: подраздел и есть
+  // часть своего раздела, «Аквариумы» с картинкой «Товаров для
+  // животных» не соврут.
+  const [step, setStep] = useState(0)
 
-  if (failed || !slug) {
-    return CATEGORY_ICONS[slug] || FALLBACK_ICON
+  const source = step === 0 ? slug : (step === 1 ? parentSlug : null)
+
+  if (!source) {
+    return CATEGORY_ICONS[slug] || CATEGORY_ICONS[parentSlug] || FALLBACK_ICON
   }
 
   return (
     <img
       className="cat-art"
-      src={`/cat/${slug}.png`}
+      src={`/cat/${source}.png`}
       alt=""
       loading="lazy"
-      onError={() => setFailed(true)}
+      onError={() => setStep((n) => n + 1)}
     />
   )
 }

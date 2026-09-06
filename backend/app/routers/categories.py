@@ -40,18 +40,32 @@ def list_categories(db: Session = Depends(get_db)):
         """Объявления раздела вместе с подразделами."""
         return counts.get(cat.id, 0) + sum(total(c) for c in cat.children)
 
-    def serialize(cat: Category):
+    def serialize(cat: Category, inherited=None):
         count = total(cat)
+        # Картинку и цвет берём у родителя, если своих нет.
+        #
+        # Новые разделы заводятся без оформления, и на странице они
+        # выглядели чужеродно: вместо объёмных значков — пустые
+        # квадраты, а шапка меняла цвет с родительского на общий
+        # зелёный при каждом заходе внутрь. Увидел на записи экрана.
+        #
+        # Наследование честнее подстановки случайной картинки: раздел
+        # «Корма» показывает то же, что «Товары для животных», и это
+        # ровно то, чем он и является — их частью.
+        image = cat.image_url or (inherited or {}).get("image_url")
+        color = cat.color or (inherited or {}).get("color")
+        mine = {"image_url": image, "color": color}
         return {
             "id": str(cat.id),
             "slug": cat.slug,
             "name": cat.name,
-            "icon": cat.icon,
-            "image_url": cat.image_url,
-            "color": cat.color,
+            "icon": cat.icon or (inherited or {}).get("icon"),
+            "image_url": image,
+            "color": color,
             "count": count,
             "ready": True,
-            "children": [serialize(c) for c in cat.children] if cat.children else [],
+            "children": [serialize(c, {**mine, "icon": cat.icon})
+                         for c in cat.children] if cat.children else [],
         }
 
     return [serialize(c) for c in top_level]

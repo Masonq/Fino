@@ -2528,6 +2528,35 @@ def test_new_categories_cover_the_known_gaps():
                    "nannies", "photo-video", "translation",
                    # Белград стоит на двух реках, лодки тут продают.
                    "boats",
-                   # У «Товаров для животных» не было ни одного подраздела.
-                   "pet-food", "aquariums"):
+                   # У «Товаров для животных» подразделов почти не было.
+                   #
+                   # Корма и переноски отсюда убраны: такие разделы там
+                   # уже существовали, а я завёл вторые по
+                   # невнимательности — увидел на снимке, две плитки
+                   # рядом с одним смыслом.
+                   "aquariums", "pet-grooming"):
         assert needed in everything, needed
+
+
+def test_new_categories_do_not_repeat_existing_ones():
+    """Новые разделы не повторяют существующие.
+
+    Дважды завёл по невнимательности одно и то же: «Корма и лакомства»
+    при живом «Корме», «Клетки и переноски» при «Переносках и клетках».
+    На снимке это выглядело как две плитки рядом с одним смыслом.
+
+    Проверка грубая — по совпадению слов внутри одного родителя, — но
+    ровно этот случай ловит.
+    """
+    import re
+
+    from app.core.seed_missing_categories import NEW
+
+    for parent, children in NEW.items():
+        names = [ru for _, ru, *_ in children]
+        words = [set(re.findall(r"[а-яё]{4,}", n.lower())) for n in names]
+        for i, a in enumerate(words):
+            for j, b in enumerate(words[i + 1:], start=i + 1):
+                # Полное совпадение слов — это одно и то же название,
+                # переставленное местами.
+                assert a != b, f"{parent}: {names[i]} и {names[j]}"

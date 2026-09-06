@@ -98,9 +98,13 @@ NEW = {
     ],
     # У «Товаров для животных» не было ни одного подраздела.
     "pets-supplies": [
-        ("pet-food", "Корма и лакомства", "Pet food", "Hrana za ljubimce", []),
+        # «Корм» в этом разделе уже есть — второй такой же завёл по
+        # невнимательности, увидел на записи экрана: «Food» и «Pet food»
+        # стояли рядом.
         ("aquariums", "Аквариумы и террариумы", "Aquariums and terrariums", "Akvarijumi i terarijumi", []),
-        ("cages-carriers", "Клетки и переноски", "Cages and carriers", "Kavezi i transporteri", []),
+        # «Переноски и клетки» в этом разделе уже есть — второй такой же
+        # завёл по невнимательности, увидел на снимке: две плитки рядом,
+        # с одинаковым смыслом и разными словами.
         ("pet-grooming", "Уход и груминг", "Grooming supplies", "Nega i timarenje", []),
     ],
     "home-garden": [
