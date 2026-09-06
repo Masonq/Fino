@@ -4000,3 +4000,15 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   border:1px solid var(--line); background:#fff;
 }
 .flagged-clear{ background:var(--green); color:#fff; border-color:transparent; }
+
+/* Оценка продавца в карточке. Мелко и спокойно: это подсказка при
+   выборе, а не украшение — крупная звезда перетянула бы внимание с
+   самой вещи, ради которой человек и листает ленту. */
+.s-trust{ display:flex; align-items:center; gap:8px; margin-top:4px; }
+.s-trust-rating{
+  display:inline-flex; align-items:center; gap:3px;
+  font-size:12px; font-weight:700; color:#5B6B63;
+}
+.s-trust-rating svg{ width:11px; height:11px; color:#F5A623; }
+.s-trust-verified{ display:inline-flex; color:var(--green); }
+.s-trust-verified svg{ width:12px; height:12px; }

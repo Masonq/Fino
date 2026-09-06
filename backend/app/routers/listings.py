@@ -1038,6 +1038,27 @@ def search_listings(
             "attributes": listing.attributes,
             "category_slug": listing.category.slug if listing.category else None,
             "is_company": bool(listing.owner and listing.owner.role == UserRole.seller_business),
+            # Признаки доверия прямо в карточке.
+            #
+            # Раньше оценку продавца было видно только внутри
+            # объявления, то есть после того, как человек уже потратил
+            # нажатие. А решение «стоит ли открывать» принимается в
+            # ленте, за полсекунды: между двумя одинаковыми диванами
+            # выберут тот, у продавца которого есть оценка.
+            #
+            # Показываем только то, что заработано: оценку при трёх
+            # отзывах и подтверждённый документ. Ничего не выдумываем и
+            # не даём значков «просто так» — иначе они перестают что-то
+            # значить.
+            "seller_rating": (
+                float(listing.owner.rating_avg)
+                if listing.owner and (listing.owner.rating_count or 0) >= 3
+                else None
+            ),
+            "seller_reviews": (
+                int(listing.owner.rating_count or 0) if listing.owner else 0
+            ),
+            "seller_verified": bool(listing.owner and listing.owner.document_verified),
             # Понятный адрес собираем здесь: он должен быть одинаков
             # везде — в ленте, в боте, в письме и в карте сайта.
             "path": listing_path(

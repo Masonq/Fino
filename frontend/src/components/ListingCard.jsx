@@ -130,6 +130,26 @@ export default function ListingCard({ listing, large = false }) {
       {meta && <div className="s-attrs">{meta}</div>}
       {/* Рисуем всегда, даже пустым: без города карточка была ниже соседней,
           и низ ряда получался рваным. */}
+      {/* Оценка продавца и подтверждение — прямо в карточке.
+          Решение «стоит ли открывать» принимается здесь, за полсекунды:
+          между двумя одинаковыми диванами выберут тот, у продавца
+          которого есть оценка. Раньше её было видно только внутри
+          объявления, то есть после потраченного нажатия. */}
+      {(listing.seller_rating || listing.seller_verified) && (
+        <div className="s-trust">
+          {listing.seller_rating && (
+            <span className="s-trust-rating">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.6 7 .8-5.2 4.9 1.4 7L12 17.8 5.8 21.3l1.4-7L2 9.4l7-.8L12 2z" /></svg>
+              {listing.seller_rating.toFixed(1)}
+            </span>
+          )}
+          {listing.seller_verified && (
+            <span className="s-trust-verified" title={t('seller.verified')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="m4 12 5 5L20 6" /></svg>
+            </span>
+          )}
+        </div>
+      )}
       <div className="s-meta">
         <span>{listing.city ? displayCity(listing.city, i18n.language) : ''}</span>
         {listing.published_at && <span className="s-date">{relativeDate(listing.published_at, t)}</span>}

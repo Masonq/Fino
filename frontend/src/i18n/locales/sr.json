@@ -473,7 +473,8 @@
     "reply_hour": "Obično odgovara u roku od sat vremena",
     "reply_hours": "Obično odgovara istog dana",
     "reply_day": "Obično odgovara u roku od dana",
-    "reply_days": "Ne odgovara odmah"
+    "reply_days": "Ne odgovara odmah",
+    "verified": "Identitet potvrđen"
   },
   "admin": {
     "title": "Korisnici",
