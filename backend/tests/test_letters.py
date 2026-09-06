@@ -753,3 +753,36 @@ def test_saved_search_alerts_have_a_schedule():
 
     assert "OnCalendar=*-*-* 0/3:00:00" in timer
     assert "Persistent=true" in timer
+
+
+def test_price_drop_alerts_are_not_noisy():
+    """Сообщаем о подешевевшем, но только когда есть о чём.
+
+    Часть лучших сделок — не свежие объявления, а те, что повисели без
+    покупателя и подешевели. Заметить это самому нельзя, разве что
+    заходить в избранное каждый день.
+
+    Пишем тем, у кого объявление в избранном: это прямой знак интереса.
+    Просмотревшим не пишем — посмотреть можно и случайно.
+
+    Молчим: о повышении цены (это не новость, а огорчение), о
+    копеечных изменениях и о том, о чём уже сообщали.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "price_drop_alerts.py").read_text()
+
+    assert 'MIN_DROP = Decimal("0.10")' in source
+    assert "MIN_ABS" in source                  # и не меньше суммы в деньгах
+    assert "if now >= was" in source            # о подорожании молчим
+    assert "notified_price_drop" in source      # дважды об одном не пишем
+
+
+def test_price_drop_ignores_currency_change():
+    """Смена валюты не считается подорожанием.
+
+    100 евро против 12 000 динар — не «подорожало», а другая единица.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "price_drop_alerts.py").read_text()
+
+    assert 'last.get("currency") !=' in source

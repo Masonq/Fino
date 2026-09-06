@@ -126,6 +126,13 @@ class Listing(Base):
     # для формулы релевантности в поиске (see search_listings()).
     chats_count: Mapped[int] = mapped_column(Integer, default=0)
 
+    # Кому и о какой цене уже сообщали, что подешевело.
+    #
+    # Продавец правит цену несколько раз, а сообщение об одном и том же
+    # человек должен получить один. Держим по человеку: у каждого свой
+    # момент, когда он отложил объявление.
+    notified_price_drop: Mapped[dict] = mapped_column(JSONB, default=dict)
+
     price_history: Mapped[list] = mapped_column(JSONB, default=list)  # [{"price": 1000, "changed_at": "..."}]
 
     published_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, index=True)
