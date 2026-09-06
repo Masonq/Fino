@@ -553,7 +553,9 @@
     "logins_count_label": "Prijava",
     "signups": "Registracija",
     "logins_unit": "prijava",
-    "signups_short": "registracija"
+    "signups_short": "registracija",
+    "newcomers": "Novih",
+    "returning": "Vraćenih"
   },
   "audit": {
     "title": "Dnevnik radnji",

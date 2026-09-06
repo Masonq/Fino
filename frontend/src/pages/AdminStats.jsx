@@ -135,6 +135,16 @@ export default function AdminStats() {
               unitKey="stats.hits_count"
               secondLabelKey="stats.visitors_short"
             />
+            {/* Новые и вернувшиеся: общее число посетителей само по себе
+                мало что говорит. Новые показывают, работает ли реклама;
+                вернувшиеся — стоит ли сайт того, чтобы к нему
+                возвращаться. Для площадки объявлений второе важнее. */}
+            {daily.length > 0 && (
+              <div className="stats-split">
+                <span>{t('stats.newcomers')}: <b>{daily[daily.length - 1].newcomers ?? 0}</b></span>
+                <span>{t('stats.returning')}: <b>{daily[daily.length - 1].returning ?? 0}</b></span>
+              </div>
+            )}
           </div>
 
           {/* Входы и регистрации — отдельным графиком: заходят сотни, а

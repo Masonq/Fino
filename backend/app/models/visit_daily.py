@@ -19,9 +19,9 @@
 """
 import hashlib
 import uuid
-from datetime import date as date_type, datetime
+from datetime import date as date_type, datetime, timedelta
 
-from sqlalchemy import Date, DateTime, Integer, String, UniqueConstraint
+from sqlalchemy import Date, DateTime, Integer, String, UniqueConstraint, case
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -34,9 +34,14 @@ class VisitDaily(Base):
     Одна строка на посетителя в день.
 
     Уникальность по паре (день, ключ) — она же защита от накрутки:
-    сколько бы человек ни обновлял страницу, в счётчике он один. Число
-    заходов при этом растёт: hits показывает, насколько активно ходили,
-    а количество строк за день — сколько было людей.
+    сколько бы человек ни обновлял страницу, в счётчике он один.
+
+    hits — это заходы, а не загрузки страницы. Раньше он рос при каждом
+    открытии ленты, а она открывается при обновлении, возврате назад,
+    смене города и языка — и число выходило втрое-впятеро больше
+    правды. Теперь новый заход считаем, только если человека не было
+    полчаса: это общепринятая мера, тот же порядок используют
+    счётчики посещаемости.
     """
 
     __tablename__ = "visits_daily"
@@ -46,6 +51,9 @@ class VisitDaily(Base):
     day: Mapped[date_type] = mapped_column(Date, index=True)
     visitor_key: Mapped[str] = mapped_column(String(64))
     hits: Mapped[int] = mapped_column(Integer, default=1)
+    # Когда человека видели в последний раз. По нему отличаем новый
+    # заход от продолжения прежнего.
+    last_hit_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     __table_args__ = (
@@ -79,6 +87,41 @@ def visitor_key(request, user_id=None) -> str:
     return hashlib.sha256(f"{salt}|{ip}|{agent}".encode()).hexdigest()[:64]
 
 
+# Сколько молчания считаем концом захода. Полчаса — общепринятая мера:
+# человек отвлёкся, вернулся через час — это уже другой приход.
+SESSION_GAP = timedelta(minutes=30)
+
+# Кого не считаем вовсе.
+#
+# Свои заходы. Первое, что советуют убирать во всех руководствах по
+# статистике: пока людей мало, десяток заходов администратора за день
+# перебивает настоящую картину, и по ней уже ничего не решишь.
+#
+# Ботов. Поисковики и всевозможные проверялки ходят по сайту постоянно;
+# в счётчике посещаемости им делать нечего.
+BOT_MARKS = (
+    "bot", "crawler", "spider", "slurp", "curl", "wget", "python-requests",
+    "headlesschrome", "phantomjs", "playwright", "puppeteer", "lighthouse",
+    "monitoring", "uptime", "pingdom", "gtmetrix", "preview", "scraper",
+)
+
+
+def is_bot(user_agent: str | None) -> bool:
+    ua = (user_agent or "").lower()
+    if not ua:
+        # Браузер всегда представляется. Пустое поле — не человек.
+        return True
+    return any(mark in ua for mark in BOT_MARKS)
+
+
+def _is_staff(db, user_id) -> bool:
+    """Администратор или модератор — свой, в счётчик не идёт."""
+    from app.models import User, UserRole
+
+    role = db.query(User.role).filter(User.id == user_id).scalar()
+    return role in (UserRole.admin, UserRole.moderator)
+
+
 def record_visit(db, request, user_id=None) -> None:
     """
     Отмечает заход. Молча ничего не делает, если что-то пошло не так:
@@ -87,15 +130,37 @@ def record_visit(db, request, user_id=None) -> None:
     from sqlalchemy.dialects.postgresql import insert
 
     try:
+        if is_bot(request.headers.get("user-agent")):
+            return
+
+        # Свои заходы не считаем: администратор и модератор ходят по
+        # сайту по работе, и в посещаемости их быть не должно.
+        if user_id is not None and _is_staff(db, user_id):
+            return
+
         key = visitor_key(request, user_id)
+        now = utcnow()
         statement = (
             insert(VisitDaily)
-            .values(day=date_type.today(), visitor_key=key, hits=1)
-            # Уже заходил сегодня — просто прибавляем заход, новой строки
-            # не будет: человек в счётчике остаётся одним.
+            .values(day=date_type.today(), visitor_key=key, hits=1,
+                    last_hit_at=now)
+            # Уже заходил сегодня — новой строки не будет: человек в
+            # счётчике остаётся одним.
+            #
+            # А вот заход прибавляем, только если его не было полчаса.
+            # Иначе считали бы каждое обновление страницы и каждый
+            # возврат назад — так число заходов и оказывалось втрое
+            # больше настоящего.
             .on_conflict_do_update(
                 constraint="uq_visits_daily",
-                set_={"hits": VisitDaily.hits + 1},
+                set_={
+                    "hits": case(
+                        (VisitDaily.last_hit_at < now - SESSION_GAP,
+                         VisitDaily.hits + 1),
+                        else_=VisitDaily.hits,
+                    ),
+                    "last_hit_at": now,
+                },
             )
         )
         db.execute(statement)

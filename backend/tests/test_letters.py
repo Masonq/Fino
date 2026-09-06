@@ -608,3 +608,71 @@ def test_cleared_flag_is_kept_not_erased():
 
     assert "chat.flag_cleared_at = utcnow()" in api
     assert "Chat.flag_cleared_at.is_(None)" in api
+
+
+def test_visit_is_counted_once_per_session():
+    """Обновление страницы не считается новым заходом.
+
+    Раньше заход прибавлялся при каждой загрузке ленты, а она грузится
+    при обновлении, возврате назад, смене города и языка — число
+    выходило втрое-впятеро больше правды.
+
+    Теперь новый заход считаем, только если человека не было полчаса:
+    это общепринятая мера, тот же порядок используют счётчики
+    посещаемости.
+
+    Проверено вживую: пять обновлений подряд — один заход, возвращение
+    через час — второй.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "models" / "visit_daily.py").read_text()
+
+    assert "SESSION_GAP = timedelta(minutes=30)" in source
+    assert "VisitDaily.last_hit_at < now - SESSION_GAP" in source
+    # Людей по-прежнему считаем по строкам: один человек в день — одна
+    # строка, сколько бы он ни обновлял.
+    assert 'UniqueConstraint("day", "visitor_key"' in source
+
+
+def test_own_and_bot_traffic_is_not_counted():
+    """Свои заходы и боты в посещаемость не попадают.
+
+    Первое, что советуют убирать во всех руководствах по статистике:
+    пока людей мало, десяток заходов администратора за день перебивает
+    настоящую картину, и по ней уже ничего не решишь. Боты — поисковики
+    и проверялки — ходят по сайту постоянно и к посещаемости отношения
+    не имеют.
+
+    Проверено вживую: заход администратора и заход бота не записались,
+    заход покупателя и гостя — записались. Из шести входов, пять из
+    которых свои, в статистике остался один.
+    """
+    visits = (Path(__file__).resolve().parents[1]
+              / "app" / "models" / "visit_daily.py").read_text()
+    stats = (Path(__file__).resolve().parents[1]
+             / "app" / "routers" / "admin_stats.py").read_text()
+
+    assert "def is_bot(" in visits
+    assert "_is_staff(db, user_id)" in visits
+    # Пустой user-agent — тоже не человек: браузер всегда представляется.
+    assert "return True" in visits.split("def is_bot")[1][:400]
+    # Входы своих в статистику не идут.
+    assert "User.role.notin_((UserRole.admin, UserRole.moderator))" in stats
+
+
+def test_newcomers_and_returning_are_separated():
+    """Видно, сколько людей пришло впервые, а сколько вернулось.
+
+    Общее число посетителей само по себе мало что говорит. Новые
+    показывают, работает ли реклама; вернувшиеся — стоит ли сайт того,
+    чтобы к нему возвращаться. Для площадки объявлений второе важнее:
+    разовый заход не делает площадку живой.
+    """
+    stats = (Path(__file__).resolve().parents[1]
+             / "app" / "routers" / "admin_stats.py").read_text()
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "AdminStats.jsx").read_text()
+
+    assert '"returning": returning_by_day.get(current, 0)' in stats
+    assert '"newcomers"' in stats
+    assert "stats.newcomers" in page

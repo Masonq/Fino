@@ -15,7 +15,7 @@
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import case, func
+from sqlalchemy import case, func, text
 from sqlalchemy.orm import Session
 
 from app.core.clock import utcnow
@@ -113,6 +113,7 @@ def daily(
     Ряд отдаём сплошным, включая дни без единого объявления: без них
     провал выглядит как обычный промежуток, и на глаз его не поймать.
     """
+    from app.models import User, UserRole
     since = (utcnow() - timedelta(days=days)).replace(
         hour=0, minute=0, second=0, microsecond=0)
 
@@ -155,8 +156,38 @@ def daily(
             func.date(LoginEvent.created_at),
             func.count(LoginEvent.id),
             func.count(func.distinct(LoginEvent.user_id)),
-        ).filter(LoginEvent.created_at >= since)
+        ).join(User, User.id == LoginEvent.user_id)
+        .filter(LoginEvent.created_at >= since,
+                # Свои входы в счёт не идут: администратор и модератор
+                # входят по работе, и в статистике их быть не должно.
+                # Именно из-за них числа выглядели живее, чем есть.
+                User.role.notin_((UserRole.admin, UserRole.moderator)))
         .group_by(func.date(LoginEvent.created_at)).all()
+    }
+
+    # Новые и вернувшиеся.
+    #
+    # Из руководств по статистике: общее число посетителей само по себе
+    # мало что говорит. Новые показывают, работает ли реклама;
+    # вернувшиеся — стоит ли сайт того, чтобы к нему возвращаться. Для
+    # площадки объявлений второе важнее: разовый заход не делает
+    # площадку живой.
+    #
+    # Вернувшийся — тот, чей ключ уже встречался в предыдущие дни.
+    # Ключ меняется каждые сутки (в нём соль дня), поэтому сверяем не
+    # ключи, а самих вошедших: у них ключ и есть их номер.
+    returning_by_day = {
+        day: int(count)
+        for day, count in db.execute(text("""
+            select v.day, count(*)
+            from visits_daily v
+            where v.day >= :since
+              and exists (
+                select 1 from visits_daily p
+                where p.visitor_key = v.visitor_key and p.day < v.day
+              )
+            group by v.day
+        """), {"since": since.date()}).all()
     }
 
     visits_by_day = {
@@ -182,6 +213,8 @@ def daily(
             "people": int(users_by_day.get(current, 0) or 0),
             "visitors": visitors,
             "hits": hits,
+            "returning": returning_by_day.get(current, 0),
+            "newcomers": max(visitors - returning_by_day.get(current, 0), 0),
             "logins": logins,
             "signups": int(users_by_day.get(current, 0) or 0),
             "logged_people": logged_people,

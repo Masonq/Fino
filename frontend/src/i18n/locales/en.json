@@ -552,7 +552,9 @@
     "logins_count_label": "Sign-ins",
     "signups": "Sign-ups",
     "logins_unit": "sign-ins",
-    "signups_short": "sign-ups"
+    "signups_short": "sign-ups",
+    "newcomers": "New",
+    "returning": "Returning"
   },
   "audit": {
     "title": "Action log",

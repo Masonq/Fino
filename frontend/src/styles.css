@@ -4006,3 +4006,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .flagged-clear{ background:var(--green); color:#fff; border-color:transparent; }
 
+
+/* Новые и вернувшиеся — строкой под графиком посещаемости. Без своего
+   графика: два числа не стоят отдельной картинки, а рядом с общим
+   графиком читаются как его расшифровка. */
+.stats-split{
+  display:flex; gap:16px; margin-top:10px;
+  font-size:13px; color:var(--muted);
+}
+.stats-split b{ color:var(--ink); }
