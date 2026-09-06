@@ -229,7 +229,7 @@ export default function Profile() {
         <a className="profile-row" href="https://t.me/Baraholka_Plonk"
            target="_blank" rel="noopener noreferrer">
           <span className="profile-row-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M21 4 3 11l6 2 2 6 3-4 5 4 2-15Z" /><path d="m9 13 8-6" /></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3 18.8 19c-.2 1-.9 1.3-1.7.8l-4.7-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.4-4.9 9-8.1c.4-.3-.1-.5-.6-.2L7 10.7 2.4 9.2c-1-.3-1-1 .2-1.5l18-6.9c.8-.3 1.5.2 1.3 1.5Z" /></svg>
           </span>
           {t('profile.tg_chat')}
           <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
@@ -237,7 +237,7 @@ export default function Profile() {
         <a className="profile-row" href="https://t.me/Baraholka_plonk_bot"
            target="_blank" rel="noopener noreferrer">
           <span className="profile-row-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><rect x="3" y="8" width="18" height="12" rx="3" /><circle cx="9" cy="14" r="1.2" fill="currentColor" stroke="none" /><circle cx="15" cy="14" r="1.2" fill="currentColor" stroke="none" /><path d="M12 8V4.5M10.5 4.5h3" /></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v3" /><circle cx="12" cy="2.5" r="1.2" fill="currentColor" stroke="none" /><rect x="4" y="6" width="16" height="12" rx="4" /><circle cx="9" cy="12" r="1.3" fill="currentColor" stroke="none" /><circle cx="15" cy="12" r="1.3" fill="currentColor" stroke="none" /><path d="M2 11v3M22 11v3" /></svg>
           </span>
           {t('profile.tg_bot')}
           <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
@@ -255,14 +255,14 @@ export default function Profile() {
         </Link>
         <Link className="profile-row" to="/rules">
           <span className="profile-row-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M9 12h6M9 16h6M9 8h1" /><rect x="4" y="3" width="16" height="18" rx="2" /></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="m3 6 2 2 3-3M3 13l2 2 3-3M3 20l2 2 3-3" /><path d="M12 7h9M12 14h9M12 21h9" /></svg>
           </span>
           {t('nav.rules')}
           <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
         </Link>
         <Link className="profile-row" to="/terms">
           <span className="profile-row-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M6 2.5h9l3 3V21H6V2.5Z" /><path d="M9 9h6M9 13h6M9 17h4" /></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z" /><path d="M14 3v5h5" /><path d="M9 13h6M9 17h4" /></svg>
           </span>
           {t('nav.terms')}
           <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
@@ -321,14 +321,14 @@ export default function Profile() {
             </Link>
             <Link className="profile-row" to="/admin/audit">
               <span className="profile-row-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M6 2.5h9l3 3V21H6V2.5Z" /><path d="M9 9h6M9 13h6M9 17h4" /></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 4v4h4" /><path d="M12 8v4l3 2" /></svg>
               </span>
               {t('audit.title')}
               <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
             </Link>
             <Link className="profile-row" to="/admin/support">
               <span className="profile-row-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><circle cx="12" cy="12" r="9" /><path d="M12 16v.01M12 13c0-1.8 2-1.8 2-3.5A2 2 0 0 0 12 7.5 2 2 0 0 0 10 9.5" /></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M3 13h4l2 3h6l2-3h4" /><path d="M5 5h14l3 8v5a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-5L5 5Z" /></svg>
               </span>
               {t('support.queue')}
               {queues?.support > 0 && (

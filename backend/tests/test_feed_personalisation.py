@@ -700,3 +700,24 @@ def test_listing_page_has_no_grey_gap_at_the_bottom():
     sheet = styles.split(".detail-sheet{")[1].split("}")[0]
     assert "padding:20px 20px 100px" in sheet
     assert ".detail-page{ padding-bottom:0; }" in styles
+
+
+def test_profile_icons_are_all_different():
+    """Значки в профиле не повторяются.
+
+    Три строки подряд — «Правила», «Условия» и «Журнал действий» —
+    показывали почти одинаковый документ с полосками, и различить их
+    было нельзя. Заметно глазом на снимке профиля.
+
+    Теперь у правил список с галочками, у условий документ с загнутым
+    углом, у журнала часы со стрелкой назад.
+    """
+    import re
+
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "Profile.jsx").read_text()
+
+    # Берём содержимое каждого значка и сверяем на повторы.
+    icons = re.findall(r'<svg viewBox="0 0 24 24".*?</svg>', page, re.S)
+    shapes = [re.sub(r"\s+", " ", i) for i in icons]
+    assert len(shapes) == len(set(shapes)), "в профиле есть одинаковые значки"
