@@ -464,9 +464,29 @@ def test_bot_says_the_account_is_blocked():
     bot = (Path(__file__).resolve().parents[1] / "app" / "bot" / "publisher.py").read_text()
 
     assert "Аккаунт заблокирован за нарушение правил" in bot
-    assert "напишите " in bot                     # куда идти с несогласием
     assert "_should_tell_blocked" in bot
     assert "TELL_BLOCKED_EVERY = 3600" in bot
+
+
+def test_blocked_user_gets_a_working_way_to_object():
+    """Заблокированному даём прямую ссылку, а не «напишите в поддержку».
+
+    Сперва я написал «напишите в поддержку на сайте» — и отправил
+    человека туда, куда он не попадёт: заблокированный видит сайт как
+    гость, профиля у него нет, и найти страницу поддержки ему неоткуда.
+
+    Теперь в сообщении прямая ссылка. Путь при этом настоящий, а не
+    отписка: форма поддержки работает без входа, там есть поле для
+    обратной связи — проверено, обращение от гостя попадает в очередь.
+    Блокировка бывает и ошибочной, и человеку нужен способ возразить.
+    """
+    bot = (Path(__file__).resolve().parents[1] / "app" / "bot" / "publisher.py").read_text()
+    support = (Path(__file__).resolve().parents[1]
+               / "app" / "routers" / "support.py").read_text()
+
+    assert "{site}/support" in bot
+    # Обращение принимается и без входа.
+    assert "user: User | None = Depends(optional_user)" in support
 
 
 def test_bot_keeps_working_when_database_is_down():
