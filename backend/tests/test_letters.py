@@ -959,7 +959,10 @@ def test_apple_gets_the_code_by_both_routes():
     # Берём ветку целиком, до отказа: внутри неё есть своя проверка
     # ключа Resend, и обрывать по ней нельзя — на этом проверка сама
     # себя и обманула.
-    block = source.split("if _is_apple(to):")[1].split("raise MailUndeliverable")[0]
+    # Берём ветку выбора пути, а не проверку вида письма: условие
+    # «if _is_apple(to)» теперь встречается дважды, и по первому
+    # совпадению проверка ловила не то.
+    block = source.split("delivered = False")[1].split("raise MailUndeliverable")[0]
     assert "_send_via_gmail" in block
     assert "_send_via_resend" in block
     assert "if delivered:" in block
