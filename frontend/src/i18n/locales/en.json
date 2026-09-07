@@ -338,7 +338,12 @@
     "terms_and": "and",
     "privacy_link": "Privacy Policy",
     "err_apple_mail": "Mail to iCloud is not getting through right now — that is on Apple’s side. Try another email address or sign in with Telegram.",
-    "err_not_sent": "Could not send the code. Repeat in a minute or try another way to sign in."
+    "err_not_sent": "Could not send the code. Repeat in a minute or try another way to sign in.",
+    "typo_question": "Did you mean {{address}}?",
+    "typo_fix": "Yes, fix it",
+    "typo_keep": "No, it is correct",
+    "email_malformed": "Check the address — it looks mistyped",
+    "email_domain_unknown": "No such mail service. Check the part after the “@”"
   },
   "my": {
     "title": "My listings",

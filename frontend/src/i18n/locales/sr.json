@@ -338,7 +338,12 @@
     "terms_and": "i",
     "privacy_link": "politiku privatnosti",
     "err_apple_mail": "Poruka na iCloud trenutno ne stiže — to je na strani Apple-a. Probajte drugu adresu ili se prijavite preko Telegrama.",
-    "err_not_sent": "Slanje koda nije uspelo. Ponovite za minut ili probajte drugi način prijave."
+    "err_not_sent": "Slanje koda nije uspelo. Ponovite za minut ili probajte drugi način prijave.",
+    "typo_question": "Da li ste mislili {{address}}?",
+    "typo_fix": "Da, ispravi",
+    "typo_keep": "Ne, tačno je",
+    "email_malformed": "Proverite adresu — izgleda da ima grešku",
+    "email_domain_unknown": "Takva poštanska usluga ne postoji. Proverite deo posle „@“"
   },
   "my": {
     "title": "Moji oglasi",

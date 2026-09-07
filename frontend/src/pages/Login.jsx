@@ -38,6 +38,8 @@ export default function Login() {
   const [name, setName] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  // Исправленный адрес, если в домене похоже на опечатку.
+  const [suggestion, setSuggestion] = useState('')
   const [left, setLeft] = useState(() => {
     if (!saved.sentAt) return 0
     const passed = Math.floor((Date.now() - saved.sentAt) / 1000)
@@ -98,6 +100,8 @@ export default function Login() {
       invalid_code: t('auth.err_wrong_code'),
       code_expired: t('auth.err_expired'),
       user_blocked: t('auth.err_blocked'),
+      email_malformed: t('auth.email_malformed'),
+      email_domain_unknown: t('auth.email_domain_unknown'),
       // Письмо не ушло — говорим прямо и показываем выход.
       // Человек пришёл регистрироваться; если он увидит «что-то пошло
       // не так» и не получит код, второй раз он может не прийти.
@@ -107,7 +111,7 @@ export default function Login() {
     return map[e?.code] || t('auth.err_generic')
   }
 
-  const sendCode = async () => {
+  const sendCode = async (force = false) => {
     const dest = destination.trim()
     if (!dest) return
     if (channel === 'email' && !/^\S+@\S+\.\S+$/.test(dest)) {
@@ -115,7 +119,19 @@ export default function Login() {
     }
     setBusy(true); setError('')
     try {
-      await api.requestCode(dest, channel)
+      const res = await api.requestCode(dest, channel)
+
+      // Похоже на опечатку в домене: «gmial.com» вместо «gmail.com».
+      //
+      // Не отказываем — домен существует, и человек может быть правда
+      // там. Показываем исправленный адрес и даём выбрать: письмо
+      // отправится только после его решения.
+      if (!force && res?.status === 'typo_suspected' && res.suggestion) {
+        setSuggestion(res.suggestion)
+        setBusy(false)
+        return
+      }
+
       const sentAt = Date.now()
       sessionStorage.setItem('plonk_login', JSON.stringify({ step: 'code', channel, destination: dest, sentAt }))
       setStep('code')
@@ -183,6 +199,31 @@ export default function Login() {
         </a>
 
         {error && <p className="auth-error">{error}</p>}
+
+        {/* Похоже на опечатку в домене почты.
+            Не отказ, а вопрос: домен существует, и человек может быть
+            правда там. Настоять на своём можно одним нажатием — иначе
+            мы бы просто не пустили того, у кого почта на редком
+            домене. */}
+        {suggestion && (
+          <div className="auth-typo">
+            <span>{t('auth.typo_question', { address: suggestion })}</span>
+            <div className="auth-typo-actions">
+              <button
+                className="auth-typo-yes"
+                onClick={() => { setDestination(suggestion); setSuggestion(''); }}
+              >
+                {t('auth.typo_fix')}
+              </button>
+              <button
+                className="auth-typo-no"
+                onClick={() => { setSuggestion(''); sendCode(true); }}
+              >
+                {t('auth.typo_keep')}
+              </button>
+            </div>
+          </div>
+        )}
         <p className="auth-terms">
           {t('auth.terms_prefix')}{' '}
           <Link to="/terms" target="_blank" rel="noopener">{t('auth.terms_link')}</Link>

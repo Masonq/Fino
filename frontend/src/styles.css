@@ -4035,3 +4035,16 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   border:1px solid #F0C9C9; background:#fff; color:#D93D3D;
   font-size:15px; font-weight:700;
 }
+
+/* Похоже на опечатку в домене почты. Спрашиваем, а не отказываем:
+   домен существует, и человек может быть правда там. */
+.auth-typo{
+  margin-top:10px; padding:12px; border-radius:12px;
+  background:var(--primary-soft); font-size:14px; color:var(--ink);
+}
+.auth-typo-actions{ display:flex; gap:8px; margin-top:10px; }
+.auth-typo-yes, .auth-typo-no{
+  flex:1; padding:9px; border-radius:10px; font-size:14px; font-weight:600;
+}
+.auth-typo-yes{ background:var(--green); color:#fff; }
+.auth-typo-no{ background:#fff; border:1px solid var(--line); color:var(--ink); }

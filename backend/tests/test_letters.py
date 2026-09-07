@@ -998,3 +998,55 @@ def test_person_is_told_why_the_code_did_not_come():
     assert 'HTTPException(503, "apple_mail_unavailable")' in api
     assert 'HTTPException(503, "code_not_sent")' in api
     assert "apple_mail_unavailable: t('auth.err_apple_mail')" in page
+
+
+def test_made_up_addresses_are_refused():
+    """Выдуманный адрес не принимается.
+
+    Раньше принималось что угодно: «wwendjsjsj@icloud», «просто текст».
+    Человек не получал код, пробовал ещё раз и уходил, а мы тратили
+    письмо и место в базе на адрес, которого нет.
+    """
+    from app.core.email_check import check
+
+    for bad in ("wwendjsjsj@icloud", "просто текст", "a@b", "две..точки@mail.ru"):
+        ok, why, _ = check(bad)
+        assert not ok, bad
+        assert why
+
+
+def test_typos_are_suggested_not_refused():
+    """Опечатку в домене подсказываем, а не отвергаем.
+
+    «gmial.com» существует — такие домены скупают перекупщики. Человек
+    почти наверняка ошибся, но решать должен он: у кого-то почта и
+    правда на редком домене.
+    """
+    from app.core.email_check import check
+
+    ok, why, hint = check("ivan@gmial.com")
+    assert ok and not why
+    assert hint == "ivan@gmail.com"
+
+
+def test_real_addresses_pass():
+    """Настоящие адреса проходят без помех."""
+    from app.core.email_check import check
+
+    for good in ("maxsim@icloud.com", "ana@gmail.com", "petar@yandex.ru"):
+        ok, why, hint = check(good)
+        assert ok and not why and not hint, good
+
+
+def test_mail_server_is_not_probed():
+    """Не стучимся на почтовый сервер, чтобы спросить про ящик.
+
+    Такая проверка ненадёжна — крупные службы отвечают «да» на любой
+    адрес, чтобы не выдавать своих людей, — и выглядит как поведение
+    рассыльщика спама, за что можно попасть в чёрные списки.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "email_check.py").read_text()
+
+    assert "smtplib" not in source
+    assert "RCPT" not in source.upper()

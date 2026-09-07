@@ -100,6 +100,23 @@ def request_code(payload: RequestCodeIn, db: Session = Depends(get_db)):
         raise HTTPException(429, "too_many_requests")
 
     code = generate_code()
+    # Проверяем адрес до того, как заводить код и слать письмо.
+    #
+    # Раньше принимали что угодно: «wwendjsjsj@icloud», «ivan@gmial.com».
+    # Человек не получал код, пробовал ещё раз и уходил, а мы тратили
+    # письмо и место в базе на адрес, которого нет.
+    if payload.channel == VerifyChannel.email:
+        from app.core.email_check import check as check_email
+
+        ok, why, hint = check_email(destination)
+        if not ok:
+            raise HTTPException(400, why)
+        if hint:
+            # Домен существует, но похож на опечатку. Не отказываем —
+            # вдруг человек и правда там, — но подсказываем: пусть
+            # решает сам.
+            return {"status": "typo_suspected", "suggestion": hint}
+
     db.add(VerificationCode(
         destination=destination,
         channel=payload.channel,
