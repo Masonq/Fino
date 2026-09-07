@@ -226,11 +226,16 @@ _working_from = 0
 #
 # Groq не принимает список моделей в одном запросе, как OpenRouter,
 # поэтому пробуем по одной.
-GROQ_MODELS = [
-    "llama-3.3-70b-versatile",
-    "llama-3.1-8b-instant",
-    "gemma2-9b-it",
-]
+# Список пуст намеренно.
+#
+# Ключ Groq отдаёт 403 даже на запрос списка моделей — он недействителен
+# или отозван. Пока это так, обращаться к Groq незачем: каждая попытка
+# тратит время и уводит от провайдера, который отвечает.
+#
+# Имена моделей я трижды подряд называл по памяти, и все три раза они
+# оказывались несуществующими. Когда ключ починится, список надо взять
+# у самого Groq — запросом к /openai/v1/models, а не из головы.
+GROQ_MODELS: list[str] = []
 
 
 def _ask_with_fallbacks(url: str, key: str, body: dict, provider: str,
@@ -307,6 +312,8 @@ def _ask_openai_like(url: str, key: str, model: str, provider: str,
     if "openrouter" in (provider or "").lower():
         data = _ask_openrouter(url, key, body, provider)
     elif "groq" in (provider or "").lower():
+        if not GROQ_MODELS:
+            return None
         data = _ask_with_fallbacks(url, key, body, provider, GROQ_MODELS)
     else:
         data = _post(url, body, {"Authorization": f"Bearer {key}"}, provider)
