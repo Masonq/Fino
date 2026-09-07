@@ -1195,32 +1195,32 @@ def test_code_is_easy_to_copy():
     assert BODY.format(code="483920").splitlines()[0] == "483920"
 
 
-def test_code_letter_says_nothing_extra():
-    """В письме с кодом нет ничего, кроме кода и срока.
+def test_code_letter_keeps_its_words_but_not_links():
+    """Текст письма остался прежним, убраны только ссылки.
 
-    Resend вернул прямой отказ: «Blocked due to content — the
-    recipient\'s server doesn\'t allow this content». Первый честный
-    ответ за весь день, до этого письма исчезали молча.
+    Я вырезал из письма предупреждение «если это были не вы» и подпись
+    про Белград и Сербию, решив, что они делают его похожим на
+    рассылку. Оказалось, зря: письмо с этим текстом доходило — снимок
+    от 05:10 это показал.
 
-    Убрано то, что делало письмо похожим на рассылку. Предупреждение
-    «если это были не вы» — стандартная фраза мошеннических писем, к
-    ней придирчивы почтовые службы, а человеку она бесполезна: без кода
-    в профиль всё равно никто не войдёт. И подпись «объявления в
-    Белграде и по всей Сербии» с перечнем разделов — реклама, которой в
-    письме с кодом делать нечего.
+    Отбивались письма со ссылками: код рядом с ними это рисунок
+    поддельного письма, и Apple режет такое молча. Виноваты были
+    ссылки, а не слова.
     """
     import re
 
     from app.core.notify import BODY, _code_letter
 
-    plain = BODY.format(code="483920")
-    assert "не вы" not in plain
-    assert "Сербии" not in plain
+    letter = _code_letter("682759")
+    text = re.sub(r"<[^>]+>", " ", letter)
 
-    letter = re.sub(r"<[^>]+>", " ", _code_letter("483920"))
-    assert "не вы" not in letter
-    assert "Недвижимость" not in letter
-    assert "483920" in letter
+    assert "682759" in letter
+    assert "не вы" in text, "предупреждение должно остаться"
+    assert "Сербии" in text, "подпись должна остаться"
+    # А ссылок быть не должно.
+    assert not re.search(r"<a\b", letter)
+    assert "http" not in letter
+    assert "http" not in BODY.format(code="682759")
 
 
 def test_healthcheck_address_gets_no_real_letter():
