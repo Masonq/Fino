@@ -895,3 +895,56 @@ def test_hopeless_listings_are_deleted_after_two_tries():
     assert "HOPELESS_TRIES = 2" in source
     assert "count >= HOPELESS_TRIES" in source
     assert "select distinct listing_id from chats" in source
+
+
+def test_gmail_failure_is_shared_between_processes():
+    """Отметка о сбое Gmail видна всем процессам, а не одному.
+
+    Это и была причина загадочного «то приходит, то нет». Процессов у
+    нас несколько, память у каждого своя: один пометил Gmail
+    недоступным, остальные об этом не знали. Письмо уходило то через
+    Gmail, то мимо него — смотря какому процессу достался запрос.
+    """
+    import os
+    import time
+
+    from app.core import notify
+
+    if os.path.exists(notify._GMAIL_FLAG):
+        os.remove(notify._GMAIL_FLAG)
+    try:
+        assert not notify._gmail_failed_recently()
+        notify._remember_gmail_failure()
+        assert notify._gmail_failed_recently()
+    finally:
+        if os.path.exists(notify._GMAIL_FLAG):
+            os.remove(notify._GMAIL_FLAG)
+
+
+def test_apple_mail_never_goes_through_own_domain():
+    """Ящикам Apple через свой домен не отправляем.
+
+    Проверено вживую: письмо с нашего домена Apple принимает и молча
+    выбрасывает — ни отказа, ни папки «спам». Отправить туда значит
+    сделать вид, что код ушёл, и оставить человека без входа. Лучше
+    честная ошибка: он увидит её и войдёт через Telegram.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "notify.py").read_text()
+
+    assert "if _is_apple(to) and not gmail_ready:" in source
+    assert "raise RuntimeError(" in source
+
+
+def test_gmail_gets_enough_time():
+    """Gmail не считается упавшим из-за пары лишних секунд.
+
+    Ждали четыре секунды, а разговор с почтовым сервером — рукопожатие,
+    вход, отправка — редко в них укладывается, особенно из Парижа.
+    Каждая заминка считалась отказом и выключала Gmail на полчаса: всё
+    это время люди с iCloud оставались без кода.
+    """
+    from app.core.notify import GMAIL_RETRY_AFTER, GMAIL_TIMEOUT
+
+    assert GMAIL_TIMEOUT >= 10
+    assert GMAIL_RETRY_AFTER <= 300

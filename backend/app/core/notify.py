@@ -276,8 +276,54 @@ APPLE_DOMAINS = ("icloud.com", "me.com", "mac.com")
 # Поэтому: короткое ожидание, а после первой же неудачи полчаса даже не
 # пробуем — сразу идём основным путём.
 _gmail_blocked_until = 0.0
-GMAIL_RETRY_AFTER = 1800
-GMAIL_TIMEOUT = 4
+
+# Отключаем Gmail на две минуты, а не на полчаса.
+#
+# Полчаса — это окно, в котором каждый человек с ящиком iCloud уходит
+# через Resend, а Apple такие письма отбивает молча. Отсюда и «то
+# приходит, то нет»: попал в окно — кода нет, не попал — есть.
+#
+# Двух минут довольно, чтобы переждать разовую заминку, и мало, чтобы
+# оставить людей без входа надолго.
+GMAIL_RETRY_AFTER = 120
+
+# Ждём двенадцать секунд вместо четырёх.
+#
+# Разговор с почтовым сервером — рукопожатие, вход, отправка — редко
+# укладывается в четыре секунды, особенно из Парижа. Каждая такая
+# заминка считалась отказом и выключала Gmail, хотя письмо, скорее
+# всего, уходило.
+GMAIL_TIMEOUT = 12
+
+
+
+# Отметка о неудаче Gmail — в файле, а не только в памяти.
+#
+# Процессов у нас несколько, и память у каждого своя: один пометил
+# Gmail недоступным, остальные об этом не знают. Отсюда и загадочное
+# «то приходит, то нет» — письмо уходило то через Gmail, то мимо него,
+# смотря какому процессу достался запрос.
+#
+# Файл в /tmp: переживает разные процессы, не переживает перезагрузку —
+# ровно то, что нужно для отметки на пару минут.
+_GMAIL_FLAG = "/tmp/plonk-gmail-failed"
+
+
+def _remember_gmail_failure() -> None:
+    try:
+        with open(_GMAIL_FLAG, "w") as flag:
+            flag.write(str(time.time()))
+    except OSError:
+        pass
+
+
+def _gmail_failed_recently() -> bool:
+    try:
+        with open(_GMAIL_FLAG) as flag:
+            when = float(flag.read().strip())
+    except (OSError, ValueError):
+        return False
+    return time.time() - when < GMAIL_RETRY_AFTER
 
 
 def _is_apple(address: str) -> bool:
@@ -337,6 +383,7 @@ def _send_email_text(to: str, subject: str, body: str,
     gmail_ready = (
         bool(settings.gmail_user and settings.gmail_app_password)
         and time.time() > _gmail_blocked_until
+        and not _gmail_failed_recently()
     )
 
     # Ящики Apple — сразу через Gmail, минуя свой домен.
@@ -359,8 +406,20 @@ def _send_email_text(to: str, subject: str, body: str,
             # впустую, и всё же пробуем основной путь: шанс лучше, чем
             # гарантированная ошибка.
             _gmail_blocked_until = time.time() + GMAIL_RETRY_AFTER
+            _remember_gmail_failure()
             gmail_ready = False        # второй раз в этом же письме не пробуем
             log.warning("Gmail недоступен для %s, пробую основной путь", to)
+
+    # Ящикам Apple через Resend не отправляем.
+    #
+    # Проверено вживую: письмо с нашего домена Apple принимает и молча
+    # выбрасывает — ни отказа, ни папки «спам». Отправить туда значит
+    # сделать вид, что код ушёл, и оставить человека без входа. Лучше
+    # честная ошибка: он увидит её и попробует войти через Telegram.
+    if _is_apple(to) and not gmail_ready:
+        raise RuntimeError(
+            "почта Apple: Gmail временно недоступен, "
+            "а свой домен туда не доходит")
 
     if getattr(settings, "resend_api_key", None):
         try:
