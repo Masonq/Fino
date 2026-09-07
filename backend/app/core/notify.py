@@ -436,30 +436,37 @@ def _send_email_text(to: str, subject: str, body: str,
     # адреса выглядит хуже собственного. Но работающий вход важнее
     # солидности, а домен продолжает набирать репутацию на всех
     # остальных ящиках.
-    if gmail_ready and _is_apple(to):
-        try:
-            _send_via_gmail(to, subject, body, html)
-            return
-        except Exception:                                  # noqa: BLE001
-            # Запоминаем неудачу, чтобы следующий человек не ждал
-            # впустую, и всё же пробуем основной путь: шанс лучше, чем
-            # гарантированная ошибка.
-            _gmail_blocked_until = time.time() + GMAIL_RETRY_AFTER
-            _remember_gmail_failure()
-            gmail_ready = False        # второй раз в этом же письме не пробуем
-            log.warning("Gmail недоступен для %s, пробую основной путь", to)
-
-    # Ящикам Apple через Resend не отправляем.
+    # Ящикам Apple — сразу двумя путями.
     #
-    # Проверено вживую: письмо с нашего домена Apple принимает и молча
-    # выбрасывает — ни отказа, ни папки «спам». Отправить туда значит
-    # сделать вид, что код ушёл, и оставить человека без входа. Лучше
-    # честная ошибка: он увидит её и попробует войти через Telegram.
-    if _is_apple(to) and not gmail_ready:
-        # Своё имя ошибки, чтобы сайт мог сказать человеку понятное:
-        # «на iCloud письмо сейчас не доходит, войдите через Telegram».
-        # Общее «что-то пошло не так» оставило бы его в тупике — а он
-        # пришёл регистрироваться, и второй раз может не прийти.
+    # Письмо от службы то доходит, то нет: в 04:34 и 04:45 пришло, в
+    # 04:48 нет. Ни отказа, ни спама — Apple молча решает по своему
+    # усмотрению, и предсказать это нельзя.
+    #
+    # Поэтому отправляем и через Gmail, и через Resend: у них разные
+    # отправители и разная репутация, и хотя бы одно письмо дойдёт.
+    # Человек получит два одинаковых кода — это лучше, чем ни одного.
+    # Код в обоих письмах один и тот же, так что войти можно по любому.
+    if _is_apple(to):
+        delivered = False
+
+        if gmail_ready:
+            try:
+                _send_via_gmail(to, subject, body, html)
+                delivered = True
+            except Exception:                              # noqa: BLE001
+                _gmail_blocked_until = time.time() + GMAIL_RETRY_AFTER
+                _remember_gmail_failure()
+                log.warning("Gmail недоступен для %s", to)
+
+        if getattr(settings, "resend_api_key", None):
+            try:
+                _send_via_resend(to, subject, body, html)
+                delivered = True
+            except Exception:                              # noqa: BLE001
+                log.warning("Resend недоступен для %s", to)
+
+        if delivered:
+            return
         raise MailUndeliverable("apple_mail_unavailable")
 
     if getattr(settings, "resend_api_key", None):

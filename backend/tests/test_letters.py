@@ -149,7 +149,15 @@ def test_apple_goes_through_gmail_others_through_own_domain():
 
         # Ящик Apple — через Gmail, не пробуя свой домен.
         notify._send_email_text("a@icloud.com", "Код", "1")
-        assert calls == ["gmail"]
+        # Для Apple теперь оба пути сразу.
+        #
+        # Письмо от службы то доходило, то нет — в 04:34 и 04:45
+        # пришло, в 04:48 нет. Ни отказа, ни спама: Apple молча решает
+        # по своему усмотрению, и предсказать это нельзя. У Gmail и
+        # Resend разные отправители и разная репутация, так что хотя бы
+        # одно письмо дойдёт. Человек получит два одинаковых кода — это
+        # лучше, чем ни одного.
+        assert calls == ["gmail", "свой домен"]
 
         # Все прочие — своим доменом, как и раньше.
         calls.clear()
@@ -930,19 +938,29 @@ def test_gmail_failure_is_shared_between_processes():
             os.remove(notify._GMAIL_FLAG)
 
 
-def test_apple_mail_never_goes_through_own_domain():
-    """Ящикам Apple через свой домен не отправляем.
+def test_apple_gets_the_code_by_both_routes():
+    """Ящикам Apple код уходит двумя путями сразу.
 
-    Проверено вживую: письмо с нашего домена Apple принимает и молча
-    выбрасывает — ни отказа, ни папки «спам». Отправить туда значит
-    сделать вид, что код ушёл, и оставить человека без входа. Лучше
-    честная ошибка: он увидит её и войдёт через Telegram.
+    Письмо от службы то доходило, то нет: в 04:34 и 04:45 пришло, в
+    04:48 нет. Ни отказа, ни папки «спам» — Apple молча решает по
+    своему усмотрению, и предсказать это нельзя.
+
+    Раньше мы выбирали один путь и надеялись. Теперь шлём обоими: у
+    Gmail и Resend разные отправители и разная репутация, и хотя бы
+    одно письмо дойдёт. Человек получит два одинаковых кода — это лучше,
+    чем ни одного, а войти можно по любому из них.
+
+    Отказываем только если не сработал ни один путь: тогда человек
+    увидит честное сообщение, а не тишину.
     """
     source = (Path(__file__).resolve().parents[1]
               / "app" / "core" / "notify.py").read_text()
 
-    assert "if _is_apple(to) and not gmail_ready:" in source
-    assert "raise RuntimeError(" in source
+    block = source.split("if _is_apple(to):")[1].split("if getattr(settings")[0]
+    assert "_send_via_gmail" in block
+    assert "_send_via_resend" in block
+    assert "if delivered:" in block
+    assert 'raise MailUndeliverable("apple_mail_unavailable")' in block
 
 
 def test_gmail_gets_enough_time():
