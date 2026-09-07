@@ -2836,3 +2836,27 @@ def test_the_first_word_decides_where_it_goes():
     assert target_for("Память для ноутбука DDR3") == "ram"
     # Карта памяти при этом накопитель, а не оперативка.
     assert target_for("Карта памяти SanDisk 128GB") == "storage-drives"
+
+
+def test_ai_model_is_not_pinned_to_one_free_model():
+    """Не привязываемся к одной бесплатной модели.
+
+    Мы указывали llama-3.3-70b-instruct:free — и в один день она стала
+    платной. Перевод и переписывание заголовков встали разом, с ответом
+    404 «эта модель недоступна бесплатно»: за ночь не перевелось ничего,
+    а полторы сотни заголовков остались кривыми.
+
+    Бесплатный список у провайдера меняется без предупреждения, поэтому
+    берём маршрутизатор, который сам выбирает доступную, и передаём
+    запасные — не ответила первая, возьмёт вторую.
+    """
+    from app.core.config import settings
+
+    assert settings.openrouter_model == "openrouter/free"
+
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "ai_title.py").read_text()
+    assert 'body["models"] = [' in source
+    # Запасных несколько: одной мало, она тоже может стать платной.
+    block = source.split('body["models"] = [')[1].split("]")[0]
+    assert block.count(":free") >= 2

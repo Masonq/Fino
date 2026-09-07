@@ -200,12 +200,27 @@ def _ask_openai_like(url: str, key: str, model: str, provider: str,
     Так отвечают и Groq, и Mistral, и OpenRouter — код у них общий, разнятся
     только адрес, ключ и название модели.
     """
-    data = _post(url, {
+    body = {
         "model": model,
         "temperature": 0,
         "max_tokens": limit,
         "messages": [{"role": "user", "content": prompt}],
-    }, {"Authorization": f"Bearer {key}"}, provider)
+    }
+
+    # Запасные модели — на случай, если основная занята или её убрали.
+    #
+    # OpenRouter умеет сам перебрать список: не ответила первая, берёт
+    # вторую. Без этого мы вставали целиком, когда бесплатная модель
+    # переставала быть бесплатной — так и случилось с llama-3.3.
+    if "openrouter" in (provider or "").lower():
+        body["models"] = [
+            model,
+            "meta-llama/llama-3.1-405b-instruct:free",
+            "qwen/qwen3-next-80b-a3b-instruct:free",
+            "openai/gpt-oss-20b:free",
+        ]
+
+    data = _post(url, body, {"Authorization": f"Bearer {key}"}, provider)
     if not data:
         return None
     try:
