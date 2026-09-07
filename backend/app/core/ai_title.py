@@ -216,10 +216,15 @@ def _ask_openai_like(url: str, key: str, model: str, provider: str,
         # Ровно три: больше провайдер не принимает — «models array must
         # have 3 items or fewer». Передал четыре и получил отказ на
         # каждый запрос.
+        #
+        # Список взят с живой страницы бесплатных моделей провайдера, а
+        # не по памяти: тот, что я поставил в прошлый раз, оказался
+        # платным или несуществующим. Эти три — из первой десятки по
+        # использованию, то есть их точно держат.
         body["models"] = [
-            model,
-            "meta-llama/llama-3.1-405b-instruct:free",
-            "openai/gpt-oss-20b:free",
+            model,                                   # openrouter/free
+            "nvidia/nemotron-3-super-120b-a12b:free",
+            "minimax/minimax-m2.7:free",
         ]
 
     data = _post(url, body, {"Authorization": f"Bearer {key}"}, provider)

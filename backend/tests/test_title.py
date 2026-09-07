@@ -2862,4 +2862,7 @@ def test_ai_model_is_not_pinned_to_one_free_model():
     # включая основную: передал четыре и получил отказ на каждый запрос.
     block = source.split('body["models"] = [')[1].split("]")[0]
     assert block.count(":free") == 2
+    # Модели взяты с живой страницы бесплатных у провайдера, а не по
+    # памяти: список, поставленный по памяти, оказался платным.
+    assert "nvidia/nemotron" in block or "minimax" in block
     assert len([line for line in block.splitlines() if line.strip()]) == 3
