@@ -820,9 +820,11 @@ def test_nightly_deletes_only_the_obvious():
               / "app" / "core" / "nightly.py").read_text()
 
     assert 'label="без фото"' in source
-    # Перечни только считаем.
-    assert "done[\"похоже на перечни\"] = bundles" in source
-    assert "purge" not in source.split("# 5. Что осталось человеку")[1]
+    # Перечни только считаем — по ним решает человек.
+    assert 'done["похоже на перечни"] = bundles' in source
+    # А безнадёжные заголовки удаляются, но лишь со второй попытки в
+    # разные ночи: с первого раза могла не ответить нейросеть.
+    assert "HOPELESS_TRIES = 2" in source
 
 
 def test_nightly_report_skips_zeros():
