@@ -1102,3 +1102,28 @@ def test_domain_check_is_out_of_the_login_path():
     for bad in ("wwendjsjsj@icloud", "просто текст", "две..точки@mail.ru"):
         ok, why, _ = check(bad)
         assert not ok and why == "email_malformed", bad
+
+
+def test_apple_gets_a_plain_letter():
+    """Ящикам Apple код уходит простым письмом, без оформления.
+
+    Выяснено перебором, шаг за шагом: простые письма от нас доходят все
+    — и с латинской темой, и с кириллической, и через Gmail, и через
+    Resend, и двумя путями сразу. А оформленное письмо сайта не дошло
+    ни разу.
+
+    Отказа Apple не даёт, в спам не кладёт — просто выбрасывает. Что
+    именно ему не нравится в разметке, выяснить не удалось, да и
+    неважно: код виден и в обычном тексте, а войти человек должен.
+
+    Остальным ящикам письмо остаётся оформленным: там оно доходит, и
+    обеднять его ради Apple незачем.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "notify.py").read_text()
+
+    block = source.split("def _send_email(")[1].split("\ndef ")[0]
+    assert "if _is_apple(to):" in block
+    assert "html=None" in block
+    # Остальным — как было.
+    assert "html=_code_letter(code)" in block
