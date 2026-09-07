@@ -779,14 +779,15 @@ def test_saved_feed_lives_long_enough_to_read_a_listing():
     никуда не уходил. В поиске это обиднее вдвойне: запрос он набирал
     руками.
 
-    Три с половиной минуты. За это время в ленте всё равно почти ничего
-    не меняется: за сутки прибавляется несколько сотен объявлений на
-    четыре тысячи.
+    Пять минут. За это время в ленте всё равно почти ничего не
+    меняется: за сутки прибавляется несколько сотен объявлений на
+    четыре тысячи. А цена ошибки несимметрична: показать ленту на пару
+    минут несвежей — мелочь, потерять место человека — обидно.
     """
     home = (Path(__file__).resolve().parents[2]
             / "frontend" / "src" / "pages" / "Home.jsx").read_text()
     search = (Path(__file__).resolve().parents[2]
               / "frontend" / "src" / "pages" / "Search.jsx").read_text()
 
-    assert "FEED_CACHE_TTL = 210_000" in home
-    assert "FRESH = 210_000" in search
+    assert "FEED_CACHE_TTL = 300_000" in home
+    assert "FRESH = 300_000" in search
