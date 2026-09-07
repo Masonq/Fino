@@ -2900,8 +2900,11 @@ def test_empty_answer_is_not_an_answer():
 
     real_post, ai._post = ai._post, fake_post
     try:
+        # Список Groq сейчас пуст (ключ отозван), поэтому проверяем
+        # сам приём на любых двух именах: важно, что пустой ответ
+        # уводит к следующей модели.
         data = ai._ask_with_fallbacks("u", "k", {"messages": []}, "groq",
-                                      ai.GROQ_MODELS)
+                                      ["первая", "вторая"])
         assert data["choices"][0]["message"]["content"] == "Диван IKEA"
         assert len(calls) == 2, "пустой ответ должен был увести к следующей"
     finally:
