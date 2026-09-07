@@ -1077,25 +1077,28 @@ def test_mail_server_is_not_probed():
     assert "RCPT" not in source.upper()
 
 
-def test_domain_check_never_locks_a_real_person_out():
-    """Проверка домена отказывает только при явном «домена нет».
+def test_domain_check_is_out_of_the_login_path():
+    """Проверка домена через DNS убрана из пути входа.
 
-    Правило написано кровью: на сервере проверка отклонила настоящий
-    адрес и закрыла человеку вход — «email_domain_unknown» на живую
-    почту.
+    Она дважды закрыла вход настоящему человеку —
+    «email_domain_unknown» на живую почту — и не отсеяла ни одного
+    выдуманного адреса. На сервере ответ DNS отличался от нашего, и
+    предсказать это оказалось нельзя.
 
-    Не пустить живого хуже, чем принять сомнительный адрес:
-    сомнительному мы просто отправим письмо в никуда, а живой уйдёт и
-    не вернётся. Поэтому сеть подвела, служба молчит, библиотеки нет —
-    пропускаем.
+    Вреда больше, чем пользы: несуществующий адрес просто не получит
+    письмо, а живой человек, которого не пустили, уходит навсегда.
+
+    Вид адреса и опечатки проверяем по-прежнему — они работают
+    одинаково везде.
     """
-    source = (Path(__file__).resolve().parents[1]
-              / "app" / "core" / "email_check.py").read_text()
+    from app.core.email_check import check
 
-    block = source.split("def _domain_takes_mail")[1]
-    # Единственный отказ — NXDOMAIN.
-    assert block.count("return False") == 1
-    assert "NXDOMAIN" in block
-    # Без библиотеки не проверяем вовсе: системный резолвер отвечает
-    # по-разному на разных машинах.
-    assert "except ImportError:\n        return True" in block
+    # Живые адреса проходят.
+    for good in ("maxsim@icloud.com", "ana@gmail.com", "petar@yandex.ru"):
+        ok, why, _ = check(good)
+        assert ok and not why, good
+
+    # Явный мусор — нет.
+    for bad in ("wwendjsjsj@icloud", "просто текст", "две..точки@mail.ru"):
+        ok, why, _ = check(bad)
+        assert not ok and why == "email_malformed", bad
