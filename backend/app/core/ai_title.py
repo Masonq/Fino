@@ -213,10 +213,12 @@ def _ask_openai_like(url: str, key: str, model: str, provider: str,
     # вторую. Без этого мы вставали целиком, когда бесплатная модель
     # переставала быть бесплатной — так и случилось с llama-3.3.
     if "openrouter" in (provider or "").lower():
+        # Ровно три: больше провайдер не принимает — «models array must
+        # have 3 items or fewer». Передал четыре и получил отказ на
+        # каждый запрос.
         body["models"] = [
             model,
             "meta-llama/llama-3.1-405b-instruct:free",
-            "qwen/qwen3-next-80b-a3b-instruct:free",
             "openai/gpt-oss-20b:free",
         ]
 

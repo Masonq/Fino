@@ -2857,6 +2857,9 @@ def test_ai_model_is_not_pinned_to_one_free_model():
     source = (Path(__file__).resolve().parents[1]
               / "app" / "core" / "ai_title.py").read_text()
     assert 'body["models"] = [' in source
-    # Запасных несколько: одной мало, она тоже может стать платной.
+    # Запасных две: одной мало, она тоже может стать платной. Но и
+    # больше нельзя — провайдер принимает не больше трёх в списке,
+    # включая основную: передал четыре и получил отказ на каждый запрос.
     block = source.split('body["models"] = [')[1].split("]")[0]
-    assert block.count(":free") >= 2
+    assert block.count(":free") == 2
+    assert len([line for line in block.splitlines() if line.strip()]) == 3
