@@ -977,7 +977,11 @@ def test_every_code_attempt_is_logged():
     source = (Path(__file__).resolve().parents[1]
               / "app" / "core" / "notify.py").read_text()
     block = source.split("def send_code(")[1].split("\ndef ")[0]
-    assert "log.info" in block and "log.warning" in block
+    # Уровень «предупреждение» даже для успеха: служба на сервере пишет
+    # в журнал только предупреждения и ошибки, обычные сообщения
+    # глотает. Отправка кода должна быть видна всегда — человек без
+    # кода не войдёт, а выяснять это вслепую мы уже пробовали.
+    assert block.count("log.warning") >= 3
 
 
 def test_person_is_told_why_the_code_did_not_come():

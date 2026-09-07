@@ -198,10 +198,16 @@ def send_code(destination: str, code: str, channel: VerifyChannel) -> None:
     try:
         if channel == VerifyChannel.telegram:
             _send_telegram(destination, code)
-            log.info("код для %s отправлен в telegram", hidden)
+            # Уровень «предупреждение», хотя это успех.
+            #
+            # Служба на сервере пишет в журнал только предупреждения и
+            # ошибки, обычные сообщения глотает. Отправка кода — как раз
+            # то, что должно быть видно всегда: человек без кода не
+            # войдёт, и выяснять это вслепую мы уже пробовали.
+            log.warning("код для %s отправлен в telegram", hidden)
         else:
             _send_email(destination, code)
-            log.info("код для %s отправлен на почту", hidden)
+            log.warning("код для %s отправлен на почту", hidden)
     except Exception as exc:                               # noqa: BLE001
         log.warning("код для %s НЕ отправлен: %s", hidden, exc)
         raise
