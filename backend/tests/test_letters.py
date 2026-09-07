@@ -786,3 +786,52 @@ def test_price_drop_ignores_currency_change():
               / "app" / "core" / "price_drop_alerts.py").read_text()
 
     assert 'last.get("currency") !=' in source
+
+
+def test_nightly_does_the_work_by_itself():
+    """Ночной уход делает то, что раньше требовало ручного запуска.
+
+    Мы написали с десяток полезных скриптов, но каждый нужно было
+    запускать руками — и половина так и не дошла до дела. Перевод
+    работал сам и почти закончил (99 непереведённых из четырёх тысяч),
+    разбор компьютеров запустили один раз и он сработал (95 → 28). А
+    чистка не запускалась ни разу: 105 объявлений без фото, тысяча без
+    города, две сотни кривых заголовков.
+
+    Работает то, что работает само.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "nightly.py").read_text()
+
+    assert "translate_pending" in source
+    assert "from app.core.retitle import run as retitle" in source
+    assert "fill_cities(db, apply=True)" in source
+
+
+def test_nightly_deletes_only_the_obvious():
+    """Ночью удаляется только заведомо мёртвое.
+
+    Объявления без фото на доске не открывают — их удаляем. А перечни и
+    объявления без города только считаем и показываем в отчёте: приметы
+    ошибаются, я это проходил пять раз подряд, и решать по ним должен
+    человек.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "nightly.py").read_text()
+
+    assert 'label="без фото"' in source
+    # Перечни только считаем.
+    assert "done[\"похоже на перечни\"] = bundles" in source
+    assert "purge" not in source.split("# 5. Что осталось человеку")[1]
+
+
+def test_nightly_report_skips_zeros():
+    """Отчёт не перечисляет то, чего не было.
+
+    «Переведено: 0, удалено: 0» — не отчёт, а шум: человек перестанет
+    его читать. Всё чисто — молчим вовсе.
+    """
+    from app.core.nightly import report
+
+    assert report({"переведено": 0, "удалено без фото": 0}) == ""
+    assert "переведено: 12" in report({"переведено": 12, "удалено без фото": 0})

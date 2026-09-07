@@ -1,0 +1,12 @@
+[Unit]
+Description=PLONK — ночной уход за лентой
+After=network.target postgresql.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/fino/backend
+ExecStart=/opt/fino/backend/venv/bin/python3 -m app.core.nightly
+User=root
+# Перевод идёт через внешнюю службу и бывает медленным: даём час,
+# после чего прерываем — недоделанное подхватит следующая ночь.
+TimeoutStartSec=3600
