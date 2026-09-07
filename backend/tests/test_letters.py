@@ -1198,3 +1198,31 @@ def test_code_is_easy_to_copy():
     assert ">483920</div>" in letter
 
     assert BODY.format(code="483920").splitlines()[0] == "483920"
+
+
+def test_code_letter_says_nothing_extra():
+    """В письме с кодом нет ничего, кроме кода и срока.
+
+    Resend вернул прямой отказ: «Blocked due to content — the
+    recipient\'s server doesn\'t allow this content». Первый честный
+    ответ за весь день, до этого письма исчезали молча.
+
+    Убрано то, что делало письмо похожим на рассылку. Предупреждение
+    «если это были не вы» — стандартная фраза мошеннических писем, к
+    ней придирчивы почтовые службы, а человеку она бесполезна: без кода
+    в профиль всё равно никто не войдёт. И подпись «объявления в
+    Белграде и по всей Сербии» с перечнем разделов — реклама, которой в
+    письме с кодом делать нечего.
+    """
+    import re
+
+    from app.core.notify import BODY, _code_letter
+
+    plain = BODY.format(code="483920")
+    assert "не вы" not in plain
+    assert "Сербии" not in plain
+
+    letter = re.sub(r"<[^>]+>", " ", _code_letter("483920"))
+    assert "не вы" not in letter
+    assert "Недвижимость" not in letter
+    assert "483920" in letter
