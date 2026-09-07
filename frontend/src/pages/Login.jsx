@@ -126,7 +126,13 @@ export default function Login() {
       // Не отказываем — домен существует, и человек может быть правда
       // там. Показываем исправленный адрес и даём выбрать: письмо
       // отправится только после его решения.
-      if (!force && res?.status === 'typo_suspected' && res.suggestion) {
+      // Сравниваем именно с true.
+      //
+      // Эту функцию вызывает и кнопка «Получить код», а React передаёт
+      // ей событие нажатия — оно считалось бы признаком «отправить всё
+      // равно», и подсказка не показывалась бы никогда. Поймал на
+      // снимке: сайт сразу переходил к вводу кода для ivan@gmial.com.
+      if (force !== true && res?.status === 'typo_suspected' && res.suggestion) {
         setSuggestion(res.suggestion)
         setBusy(false)
         return
@@ -200,30 +206,6 @@ export default function Login() {
 
         {error && <p className="auth-error">{error}</p>}
 
-        {/* Похоже на опечатку в домене почты.
-            Не отказ, а вопрос: домен существует, и человек может быть
-            правда там. Настоять на своём можно одним нажатием — иначе
-            мы бы просто не пустили того, у кого почта на редком
-            домене. */}
-        {suggestion && (
-          <div className="auth-typo">
-            <span>{t('auth.typo_question', { address: suggestion })}</span>
-            <div className="auth-typo-actions">
-              <button
-                className="auth-typo-yes"
-                onClick={() => { setDestination(suggestion); setSuggestion(''); }}
-              >
-                {t('auth.typo_fix')}
-              </button>
-              <button
-                className="auth-typo-no"
-                onClick={() => { setSuggestion(''); sendCode(true); }}
-              >
-                {t('auth.typo_keep')}
-              </button>
-            </div>
-          </div>
-        )}
         <p className="auth-terms">
           {t('auth.terms_prefix')}{' '}
           <Link to="/terms" target="_blank" rel="noopener">{t('auth.terms_link')}</Link>
@@ -274,6 +256,31 @@ export default function Login() {
         </div>
 
         {error && <p className="auth-error">{error}</p>}
+
+        {/* Похоже на опечатку в домене почты.
+            Не отказ, а вопрос: домен существует, и человек может быть
+            правда там. Настоять на своём можно одним нажатием — иначе
+            мы бы просто не пустили того, у кого почта на редком
+            домене. */}
+        {suggestion && (
+          <div className="auth-typo">
+            <span>{t('auth.typo_question', { address: suggestion })}</span>
+            <div className="auth-typo-actions">
+              <button
+                className="auth-typo-yes"
+                onClick={() => { setDestination(suggestion); setSuggestion(''); }}
+              >
+                {t('auth.typo_fix')}
+              </button>
+              <button
+                className="auth-typo-no"
+                onClick={() => { setSuggestion(''); sendCode(true); }}
+              >
+                {t('auth.typo_keep')}
+              </button>
+            </div>
+          </div>
+        )}
 
         <button className="auth-submit" onClick={sendCode} disabled={busy || !destination.trim()}>
           {busy ? '…' : t('auth.get_code')}
