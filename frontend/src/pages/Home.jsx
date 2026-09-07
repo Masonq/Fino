@@ -79,7 +79,17 @@ export default function Home() {
   const savedCity = (() => {
     try { return localStorage.getItem('plonk_city') || '' } catch { return '' }
   })()
-  const cached = (feedCache.lang === i18n.language && feedCache.city === savedCity)
+  // Возраст проверяем и здесь, а не только перед повторной загрузкой.
+  //
+  // Раньше при открытии страницы карточки брались из памяти без
+  // проверки: показывалось всё, что там лежало, хоть суточной
+  // давности. После ночной чистки в этой памяти оставались уже
+  // удалённые объявления, и лента выглядела обрывком — три карточки
+  // вместо четырёх тысяч. Обновление страницы всё чинило, потому что
+  // память жила в самой странице.
+  const cached = (feedCache.lang === i18n.language
+                  && feedCache.city === savedCity
+                  && Date.now() - feedCache.fetchedAt < FEED_CACHE_TTL)
     ? feedCache
     : null
 
