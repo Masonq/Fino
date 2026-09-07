@@ -2875,3 +2875,34 @@ def test_ai_survives_models_going_paid():
     finally:
         ai._post = real_post
         ai._working_from = 0
+
+
+def test_empty_answer_is_not_an_answer():
+    """Пустой ответ модели считается отказом, а не результатом.
+
+    У Groq стояла openai/gpt-oss-120b — рассуждающая модель: она кладёт
+    ответ в отдельное поле, а обычное оставляет пустым. Groq честно
+    отвечал, код видел пустую строку и считал отказом, и провайдер с
+    самыми щедрыми бесплатными лимитами простаивал всё это время, пока
+    остальные упирались в свои пределы.
+
+    Теперь при пустом ответе пробуем следующую модель.
+    """
+    import app.core.ai_title as ai
+
+    calls = []
+
+    def fake_post(url, payload, headers, provider):
+        calls.append(payload["model"])
+        if len(calls) == 1:
+            return {"choices": [{"message": {"content": "   "}}]}
+        return {"choices": [{"message": {"content": "Диван IKEA"}}]}
+
+    real_post, ai._post = ai._post, fake_post
+    try:
+        data = ai._ask_with_fallbacks("u", "k", {"messages": []}, "groq",
+                                      ai.GROQ_MODELS)
+        assert data["choices"][0]["message"]["content"] == "Диван IKEA"
+        assert len(calls) == 2, "пустой ответ должен был увести к следующей"
+    finally:
+        ai._post = real_post

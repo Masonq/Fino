@@ -221,6 +221,43 @@ FREE_MODELS = [
 _working_from = 0
 
 
+# Модели Groq по убыванию пригодности. Первая — рабочая лошадка,
+# остальные на случай, если её снимут или она окажется занята.
+#
+# Groq не принимает список моделей в одном запросе, как OpenRouter,
+# поэтому пробуем по одной.
+GROQ_MODELS = [
+    "llama-3.3-70b-versatile",
+    "llama-3.1-8b-instant",
+    "gemma2-9b-it",
+]
+
+
+def _ask_with_fallbacks(url: str, key: str, body: dict, provider: str,
+                        models: list[str]):
+    """
+    Пробует модели одну за другой, пока какая-нибудь не ответит.
+
+    Пустой ответ считаем отказом наравне с ошибкой: рассуждающие модели
+    возвращают пустое поле, и такой ответ нам не годится — на этом
+    Groq и простаивал.
+    """
+    headers = {"Authorization": f"Bearer {key}"}
+    for name in models:
+        attempt = dict(body)
+        attempt["model"] = name
+        data = _post(url, attempt, headers, provider)
+        if not data:
+            continue
+        try:
+            content = data["choices"][0]["message"]["content"]
+        except (KeyError, IndexError):
+            continue
+        if content and content.strip():
+            return data
+    return None
+
+
 def _ask_openrouter(url: str, key: str, body: dict, provider: str):
     """
     Спрашивает провайдера, перебирая бесплатные модели тройками.
@@ -269,6 +306,8 @@ def _ask_openai_like(url: str, key: str, model: str, provider: str,
 
     if "openrouter" in (provider or "").lower():
         data = _ask_openrouter(url, key, body, provider)
+    elif "groq" in (provider or "").lower():
+        data = _ask_with_fallbacks(url, key, body, provider, GROQ_MODELS)
     else:
         data = _post(url, body, {"Authorization": f"Bearer {key}"}, provider)
 
