@@ -956,11 +956,14 @@ def test_apple_gets_the_code_by_both_routes():
     source = (Path(__file__).resolve().parents[1]
               / "app" / "core" / "notify.py").read_text()
 
-    block = source.split("if _is_apple(to):")[1].split("if getattr(settings")[0]
+    # Берём ветку целиком, до отказа: внутри неё есть своя проверка
+    # ключа Resend, и обрывать по ней нельзя — на этом проверка сама
+    # себя и обманула.
+    block = source.split("if _is_apple(to):")[1].split("raise MailUndeliverable")[0]
     assert "_send_via_gmail" in block
     assert "_send_via_resend" in block
     assert "if delivered:" in block
-    assert 'raise MailUndeliverable("apple_mail_unavailable")' in block
+    assert 'raise MailUndeliverable("apple_mail_unavailable")' in source
 
 
 def test_gmail_gets_enough_time():
