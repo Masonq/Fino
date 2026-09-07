@@ -130,12 +130,22 @@ def _code_letter(code: str) -> str:
   </td></tr>
 
   <tr><td align="center" style="padding:24px 32px 8px;">
+    <!-- Код выделяется одним касанием.
+         Кнопку «скопировать» в письме сделать нельзя: почта не
+         выполняет код страниц, нажатия там не работают. Но user-select
+         заставляет почтовые приложения выделять весь код целиком по
+         одному касанию вместо возни с ползунками — дальше остаётся
+         только «Копировать».
+
+         Промежуток между цифрами убран из отступа справа: с ним
+         выделение прихватывало пустое место, и в буфер попадал код с
+         хвостом пробелов. -->
     <div style="display:inline-block;padding:14px 28px;border-radius:14px;
                 background:#f0fdf6;border:1px solid #d1fae0;
                 font-size:32px;font-weight:700;letter-spacing:8px;
-                color:#0E9F6E;font-family:'SF Mono',Menlo,monospace;">
-      {code}
-    </div>
+                text-indent:8px;
+                color:#0E9F6E;font-family:'SF Mono',Menlo,monospace;
+                -webkit-user-select:all;-moz-user-select:all;user-select:all;">{code}</div>
   </td></tr>
 
   <tr><td align="center" style="padding:4px 32px 28px;">
