@@ -337,8 +337,8 @@
     "terms_link": "uslove korišćenja",
     "terms_and": "i",
     "privacy_link": "politiku privatnosti",
-    "err_apple_mail": "Poruka na iCloud trenutno ne stiže. Prijavite se preko Telegrama — brže je i pouzdanije.",
-    "err_not_sent": "Slanje koda nije uspelo. Probajte Telegram ili ponovite za minut."
+    "err_apple_mail": "Poruka na iCloud trenutno ne stiže — to je na strani Apple-a. Probajte drugu adresu ili se prijavite preko Telegrama.",
+    "err_not_sent": "Slanje koda nije uspelo. Ponovite za minut ili probajte drugi način prijave."
   },
   "my": {
     "title": "Moji oglasi",

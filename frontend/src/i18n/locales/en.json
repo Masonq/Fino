@@ -337,8 +337,8 @@
     "terms_link": "Terms of Use",
     "terms_and": "and",
     "privacy_link": "Privacy Policy",
-    "err_apple_mail": "Mail to iCloud is not getting through right now. Sign in with Telegram — it is faster and more reliable.",
-    "err_not_sent": "Could not send the code. Try Telegram or repeat in a minute."
+    "err_apple_mail": "Mail to iCloud is not getting through right now — that is on Apple’s side. Try another email address or sign in with Telegram.",
+    "err_not_sent": "Could not send the code. Repeat in a minute or try another way to sign in."
   },
   "my": {
     "title": "My listings",
