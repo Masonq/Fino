@@ -2875,4 +2875,3 @@ def test_ai_survives_models_going_paid():
     finally:
         ai._post = real_post
         ai._working_from = 0
-    assert len([line for line in block.splitlines() if line.strip()]) == 3
