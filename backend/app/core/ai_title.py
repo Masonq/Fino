@@ -192,6 +192,66 @@ def _ask_gemini(prompt: str, limit: int = 200,
         return None
 
 
+# Бесплатные модели провайдера, по убыванию надёжности.
+#
+# Список взят с их живой страницы бесплатных моделей. Держим длинный:
+# бесплатные то и дело становятся платными, и когда это случилось с
+# llama-3.3, встали разом и перевод, и заголовки — на несколько дней,
+# пока я не заметил.
+#
+# Провайдер принимает не больше трёх моделей в одном запросе, поэтому
+# перебираем список тройками, пока какая-нибудь не ответит.
+FREE_MODELS = [
+    "openrouter/free",                          # сам выбирает доступную
+    "nvidia/nemotron-3-super-120b-a12b:free",
+    "minimax/minimax-m2.7:free",
+    "nvidia/nemotron-3.5-lightning:free",
+    "minimax/minimax-m3:free",
+    "z-ai/glm-5.2:free",
+    "thinkingmachines/inkling-small:free",
+    "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "dots-studio/dots-3-note-preview:free",
+    "cohere/north-mini-code:free",
+    "liquid/lfm-2.5-2.6b:free",
+    "inclusionai/ling-3.0-flash-fin:free",
+]
+
+# Какая тройка сработала в прошлый раз. Начинаем с неё: если модель
+# отвечает, незачем каждый раз проверять список с начала.
+_working_from = 0
+
+
+def _ask_openrouter(url: str, key: str, body: dict, provider: str):
+    """
+    Спрашивает провайдера, перебирая бесплатные модели тройками.
+
+    Одна модель — одна точка отказа: стала платной, и вся работа встала.
+    Двенадцать моделей по три за запрос — четыре попытки, и чтобы всё
+    легло разом, должны отвалиться все двенадцать сразу.
+    """
+    global _working_from
+
+    headers = {"Authorization": f"Bearer {key}"}
+    groups = [FREE_MODELS[i:i + 3] for i in range(0, len(FREE_MODELS), 3)]
+
+    # Начинаем с той тройки, что работала в прошлый раз, и по кругу.
+    order = list(range(len(groups)))
+    order = order[_working_from:] + order[:_working_from]
+
+    for index in order:
+        group = groups[index]
+        attempt = dict(body)
+        attempt["model"] = group[0]
+        attempt["models"] = group
+
+        data = _post(url, attempt, headers, provider)
+        if data:
+            _working_from = index
+            return data
+
+    return None
+
+
 def _ask_openai_like(url: str, key: str, model: str, provider: str,
                      prompt: str, limit: int) -> str | None:
     """
@@ -207,27 +267,11 @@ def _ask_openai_like(url: str, key: str, model: str, provider: str,
         "messages": [{"role": "user", "content": prompt}],
     }
 
-    # Запасные модели — на случай, если основная занята или её убрали.
-    #
-    # OpenRouter умеет сам перебрать список: не ответила первая, берёт
-    # вторую. Без этого мы вставали целиком, когда бесплатная модель
-    # переставала быть бесплатной — так и случилось с llama-3.3.
     if "openrouter" in (provider or "").lower():
-        # Ровно три: больше провайдер не принимает — «models array must
-        # have 3 items or fewer». Передал четыре и получил отказ на
-        # каждый запрос.
-        #
-        # Список взят с живой страницы бесплатных моделей провайдера, а
-        # не по памяти: тот, что я поставил в прошлый раз, оказался
-        # платным или несуществующим. Эти три — из первой десятки по
-        # использованию, то есть их точно держат.
-        body["models"] = [
-            model,                                   # openrouter/free
-            "nvidia/nemotron-3-super-120b-a12b:free",
-            "minimax/minimax-m2.7:free",
-        ]
+        data = _ask_openrouter(url, key, body, provider)
+    else:
+        data = _post(url, body, {"Authorization": f"Bearer {key}"}, provider)
 
-    data = _post(url, body, {"Authorization": f"Bearer {key}"}, provider)
     if not data:
         return None
     try:

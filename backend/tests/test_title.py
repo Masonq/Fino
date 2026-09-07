@@ -2838,31 +2838,41 @@ def test_the_first_word_decides_where_it_goes():
     assert target_for("Карта памяти SanDisk 128GB") == "storage-drives"
 
 
-def test_ai_model_is_not_pinned_to_one_free_model():
-    """Не привязываемся к одной бесплатной модели.
+def test_ai_survives_models_going_paid():
+    """Работа не встаёт, когда бесплатная модель становится платной.
 
-    Мы указывали llama-3.3-70b-instruct:free — и в один день она стала
-    платной. Перевод и переписывание заголовков встали разом, с ответом
-    404 «эта модель недоступна бесплатно»: за ночь не перевелось ничего,
-    а полторы сотни заголовков остались кривыми.
+    Так уже было: мы указывали llama-3.3-70b-instruct:free, провайдер
+    перевёл её в платные, и разом встали перевод и заголовки — на
+    несколько дней, пока я не заметил.
 
-    Бесплатный список у провайдера меняется без предупреждения, поэтому
-    берём маршрутизатор, который сам выбирает доступную, и передаём
-    запасные — не ответила первая, возьмёт вторую.
+    Одна модель — одна точка отказа. Держим двенадцать и перебираем
+    тройками (больше трёх в запросе провайдер не принимает): чтобы всё
+    легло разом, должны отвалиться все двенадцать.
+
+    Рабочую тройку запоминаем: если модель отвечает, незачем каждый раз
+    проверять список с начала.
     """
-    from app.core.config import settings
+    import app.core.ai_title as ai
 
-    assert settings.openrouter_model == "openrouter/free"
+    assert len(ai.FREE_MODELS) >= 9
 
-    source = (Path(__file__).resolve().parents[1]
-              / "app" / "core" / "ai_title.py").read_text()
-    assert 'body["models"] = [' in source
-    # Запасных две: одной мало, она тоже может стать платной. Но и
-    # больше нельзя — провайдер принимает не больше трёх в списке,
-    # включая основную: передал четыре и получил отказ на каждый запрос.
-    block = source.split('body["models"] = [')[1].split("]")[0]
-    assert block.count(":free") == 2
-    # Модели взяты с живой страницы бесплатных у провайдера, а не по
-    # памяти: список, поставленный по памяти, оказался платным.
-    assert "nvidia/nemotron" in block or "minimax" in block
+    calls = []
+
+    def fake_post(url, payload, headers, provider):
+        calls.append(payload["model"])
+        # Первые две тройки молчат, третья отвечает.
+        return {"ok": True} if len(calls) >= 3 else None
+
+    real_post, ai._post = ai._post, fake_post
+    try:
+        assert ai._ask_openrouter("url", "key", {"messages": []}, "openrouter")
+        assert len(calls) == 3, "должен был перебрать три тройки"
+
+        # Во второй раз начинаем с рабочей.
+        calls.clear()
+        ai._ask_openrouter("url", "key", {"messages": []}, "openrouter")
+        assert calls[0] == "thinkingmachines/inkling-small:free"
+    finally:
+        ai._post = real_post
+        ai._working_from = 0
     assert len([line for line in block.splitlines() if line.strip()]) == 3
