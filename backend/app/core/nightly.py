@@ -89,7 +89,22 @@ def run() -> dict:
     except Exception as e:                                 # noqa: BLE001
         done["чистка не вышла"] = str(e)[:60]
 
-    # 5. Что осталось человеку.
+    # 5. Удаляем безнадёжные.
+    #
+    # Объявление, у которого заголовок непонятен и починить его не
+    # удалось, в ленте бесполезно: «Даром», «Коляски», «Белград» —
+    # человек не знает, что там, и не открывает. Из описания взять
+    # нечего, иначе заголовок бы починился.
+    #
+    # Удаляем только после двух неудачных попыток в разные ночи: с
+    # первого раза могла просто не ответить нейросеть, и выбрасывать
+    # живое объявление из-за этого нельзя.
+    try:
+        done["удалено безнадёжных"] = _purge_hopeless()
+    except Exception as e:                                 # noqa: BLE001
+        done["удаление безнадёжных не вышло"] = str(e)[:60]
+
+    # 6. Что осталось человеку.
     with SessionLocal() as db:
         done["осталось без города"] = db.execute(text(
             "select count(*) from listings "
@@ -107,6 +122,64 @@ def run() -> dict:
             pass
 
     return done
+
+
+
+# Сколько раз заголовок должен не поддаться, прежде чем удалять.
+#
+# Два: с первого раза могла не ответить нейросеть — сегодня лимит
+# кончился, завтра ответит. А вот если и во вторую ночь взять из
+# описания нечего, там и правда пусто.
+HOPELESS_TRIES = 2
+
+
+def _purge_hopeless() -> int:
+    """Удаляет объявления, чей заголовок не удалось починить дважды."""
+    from collections import Counter
+
+    from app.core.retitle import FAILED_ACTION
+    from app.models import AuditEntry, Listing, ListingStatus
+
+    with SessionLocal() as db:
+        tries = Counter(
+            row[0] for row in
+            db.query(AuditEntry.target_id)
+            .filter(AuditEntry.action == FAILED_ACTION)
+        )
+        hopeless = [key for key, count in tries.items()
+                    if count >= HOPELESS_TRIES]
+        if not hopeless:
+            return 0
+
+        # Объявления с перепиской или в избранном не трогаем: там
+        # завязались люди, и плохой заголовок этого не отменяет.
+        busy = {str(row[0]) for row in db.execute(text("""
+            select distinct listing_id from chats
+            union
+            select distinct listing_id from favorites
+        """))}
+        targets = [key for key in hopeless if key not in busy]
+        if not targets:
+            return 0
+
+        rows = (db.query(Listing)
+                .filter(Listing.id.in_(targets),
+                        Listing.status == ListingStatus.active)
+                .all())
+        ids = [r.id for r in rows]
+        if not ids:
+            return 0
+
+        for table in ("listing_photos", "favorites", "chats", "reviews",
+                      "reports", "promotions", "listing_view_logs",
+                      "listing_view_daily", "listing_signal_daily",
+                      "tickets", "review_invites", "listing_translations"):
+            db.execute(text(f"delete from {table} where listing_id = any(:ids)"),
+                       {"ids": ids})
+        db.execute(text("delete from listings where id = any(:ids)"),
+                   {"ids": ids})
+        db.commit()
+        return len(ids)
 
 
 def report(done: dict) -> str:

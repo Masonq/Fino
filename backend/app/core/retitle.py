@@ -233,6 +233,15 @@ def run(limit: int = DEFAULT_LIMIT, dry_run: bool = False) -> int:
                     record(db, None, FAILED_ACTION,
                            target_type="listing", target_id=str(listing.id),
                            title=translation.title, why=how)
+                    # Сохраняем сразу.
+                    #
+                    # Раньше commit стоял только в ветке успеха, и
+                    # пометки безнадёжных копились в памяти, а потом
+                    # пропадали. Оттого одни и те же «Даром», «Коляски»,
+                    # «Белград» всплывали в каждом запуске и съедали весь
+                    # запас запросов к нейросети, не давая дойти до
+                    # остальных.
+                    db.commit()
                 continue
 
             # Печатаем целиком: обрезка в выводе однажды уже сбила с

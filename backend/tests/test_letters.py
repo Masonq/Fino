@@ -856,3 +856,40 @@ def test_night_work_is_not_done_twice():
     assert "clean-media.py" not in learn
     # Учёба осталась при своём.
     assert "train-categories.py" in learn
+
+
+def test_failed_titles_are_remembered():
+    """Заголовок, который не поддался, больше не пробуют без конца.
+
+    Пометка о неудаче писалась, но не сохранялась: db.commit() стоял
+    только в ветке успеха. Оттого одни и те же «Даром», «Коляски»,
+    «Белград» всплывали в каждом запуске и съедали весь запас запросов к
+    нейросети, не давая дойти до остальных.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "retitle.py").read_text()
+
+    failed_branch = source.split("if not new_title or new_title == translation.title:")[1]
+    failed_branch = failed_branch.split("continue")[0]
+    assert "db.commit()" in failed_branch
+
+
+def test_hopeless_listings_are_deleted_after_two_tries():
+    """Объявления с непонятным заголовком удаляются, но не сразу.
+
+    «Даром», «Коляски», «Белград» — человек не знает, что там, и не
+    открывает. Из описания взять нечего, иначе заголовок бы починился.
+
+    Два раза, а не один: с первого могла просто не ответить нейросеть —
+    сегодня лимит кончился, завтра ответит. Выбрасывать живое
+    объявление из-за этого нельзя.
+
+    Объявления с перепиской или в избранном не трогаем никогда: там
+    завязались люди, и плохой заголовок этого не отменяет.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "nightly.py").read_text()
+
+    assert "HOPELESS_TRIES = 2" in source
+    assert "count >= HOPELESS_TRIES" in source
+    assert "select distinct listing_id from chats" in source
