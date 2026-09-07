@@ -45,33 +45,32 @@ def test_code_is_in_the_text_too():
     assert "15" in text
 
 
-def test_no_login_link_in_code_letter():
-    """В письме нет ссылки, по которой «подтверждают вход».
+def test_no_links_at_all_in_code_letter():
+    """В письме с кодом нет ни одной ссылки — даже на сам сайт.
 
-    Ссылки в письме есть — на сайт, на разделы, на нашу почту. А вот
-    ссылки вида «нажмите, чтобы войти» нет и быть не должно: именно она
-    делает письмо похожим на поддельное и приучает человека нажимать на
-    такие ссылки в почте, а завтра ему пришлют такую же от чужого
-    имени. Код вводят руками.
+    Прежняя проверка требовала обратного: «ссылки в письме должны
+    быть», лишь бы не вели на вход. Ровно поэтому их когда-то и
+    вернули, убрав однажды.
 
-    Простой текст письма остаётся вовсе без ссылок: там их нечем
-    оформить, и голый адрес среди цифр читается плохо.
+    А дело было именно в них: Apple молча выбрасывал письмо, где рядом с
+    кодом стоят четыре ссылки на сайт и разделы. Код плюс ссылки —
+    рисунок поддельного письма. Ни отказа, ни папки «спам», просто
+    исчезало; выясняли перебором полдня.
+
+    Оформление при этом осталось: рамка, крупный код, подпись.
     """
-    from app.core.notify import _code_letter
+    import re
+
+    from app.core.notify import BODY, _code_letter
 
     letter = _code_letter("482915")
+    assert "482915" in letter
+    assert "<table" in letter, "оформление должно остаться"
+    assert not re.search(r"<a\b", letter), "ссылок быть не должно"
+    assert "http" not in letter
 
-    assert "http://" not in BODY.format(code="482915")
-    assert "https://" not in BODY.format(code="482915")
-    # Ссылки ведут на сайт и на почту — и никуда больше.
-    import re
-    targets = re.findall(r'href="([^"]+)"', letter)
-    assert targets, "ссылки в письме должны быть"
-    for target in targets:
-        assert target.startswith(("https://plonk.rs", "mailto:")), target
-    # Никаких одноразовых входов по ссылке.
-    for word in ("token", "login?", "verify?", "confirm"):
-        assert word not in letter
+    # И в текстовой версии тоже.
+    assert "http" not in BODY.format(code="482915")
 
 
 def test_code_letter_styles_are_inline():
