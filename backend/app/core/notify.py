@@ -484,28 +484,30 @@ def _send_email_text(to: str, subject: str, body: str,
     # отправители и разная репутация, и хотя бы одно письмо дойдёт.
     # Человек получит два одинаковых кода — это лучше, чем ни одного.
     # Код в обоих письмах один и тот же, так что войти можно по любому.
+    # Ящикам Apple — только через Gmail.
+    #
+    # Resend туда не отправляем вовсе: Apple отбивает письма с нашего
+    # домена с ответом «554 5.7.1 [HM08] Message rejected due to local
+    # policy». Это про репутацию plonk.rs у Apple, а не про содержимое —
+    # то же самое письмо через Gmail доходит.
+    #
+    # Двойная отправка, которую я добавил раньше, тут не помогала:
+    # второе письмо гарантированно отбивалось. А каждый такой отказ ещё
+    # и портит репутацию домена в самом Resend, то есть вредит доставке
+    # на все остальные ящики.
+    #
+    # Когда репутация plonk.rs у Apple подтянется, это можно будет
+    # вернуть. Пока Gmail — единственный рабочий путь туда.
     if _is_apple(to):
-        delivered = False
-
-        if gmail_ready:
-            try:
-                _send_via_gmail(to, subject, body, html)
-                delivered = True
-            except Exception:                              # noqa: BLE001
-                _gmail_blocked_until = time.time() + GMAIL_RETRY_AFTER
-                _remember_gmail_failure()
-                log.warning("Gmail недоступен для %s", to)
-
-        if getattr(settings, "resend_api_key", None):
-            try:
-                _send_via_resend(to, subject, body, html)
-                delivered = True
-            except Exception:                              # noqa: BLE001
-                log.warning("Resend недоступен для %s", to)
-
-        if delivered:
+        if not gmail_ready:
+            raise MailUndeliverable("apple_mail_unavailable")
+        try:
+            _send_via_gmail(to, subject, body, html)
             return
-        raise MailUndeliverable("apple_mail_unavailable")
+        except Exception as exc:                           # noqa: BLE001
+            _gmail_blocked_until = time.time() + GMAIL_RETRY_AFTER
+            _remember_gmail_failure()
+            raise MailUndeliverable("apple_mail_unavailable") from exc
 
     if getattr(settings, "resend_api_key", None):
         try:
