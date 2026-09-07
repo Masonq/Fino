@@ -336,7 +336,9 @@
     "terms_prefix": "By continuing, you agree to the",
     "terms_link": "Terms of Use",
     "terms_and": "and",
-    "privacy_link": "Privacy Policy"
+    "privacy_link": "Privacy Policy",
+    "err_apple_mail": "Mail to iCloud is not getting through right now. Sign in with Telegram — it is faster and more reliable.",
+    "err_not_sent": "Could not send the code. Try Telegram or repeat in a minute."
   },
   "my": {
     "title": "My listings",

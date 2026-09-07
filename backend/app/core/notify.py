@@ -176,11 +176,44 @@ def _send_telegram(chat_id: str, code: str) -> None:
         raise
 
 
+class MailUndeliverable(Exception):
+    """Письмо доставить нельзя — и мы знаем почему."""
+
+
 def send_code(destination: str, code: str, channel: VerifyChannel) -> None:
-    if channel == VerifyChannel.telegram:
-        _send_telegram(destination, code)
-    else:
-        _send_email(destination, code)
+    """
+    Отправляет код входа и записывает, чем это кончилось.
+
+    Записываем всегда — и успех, и отказ. Раньше не записывали ничего, и
+    когда коды перестали доходить, в журнале было пусто: пришлось
+    выяснять причину вслепую, запрос за запросом, вместо того чтобы
+    просто прочесть. Человек без кода не может войти вовсе, и такое
+    нельзя оставлять невидимым.
+
+    Адрес пишем не целиком: журнал читают несколько человек, а почта —
+    личные данные. Первых букв и домена довольно, чтобы найти нужную
+    запись.
+    """
+    hidden = _short(destination)
+    try:
+        if channel == VerifyChannel.telegram:
+            _send_telegram(destination, code)
+            log.info("код для %s отправлен в telegram", hidden)
+        else:
+            _send_email(destination, code)
+            log.info("код для %s отправлен на почту", hidden)
+    except Exception as exc:                               # noqa: BLE001
+        log.warning("код для %s НЕ отправлен: %s", hidden, exc)
+        raise
+
+
+def _short(address: str) -> str:
+    """«maxsim@icloud.com» → «max***@icloud.com»."""
+    address = (address or "").strip()
+    if "@" not in address:
+        return address[:3] + "***"
+    name, _, domain = address.partition("@")
+    return f"{name[:3]}***@{domain}"
 
 def _notification_letter(title: str, body_text: str) -> str:
     """
@@ -417,9 +450,11 @@ def _send_email_text(to: str, subject: str, body: str,
     # сделать вид, что код ушёл, и оставить человека без входа. Лучше
     # честная ошибка: он увидит её и попробует войти через Telegram.
     if _is_apple(to) and not gmail_ready:
-        raise RuntimeError(
-            "почта Apple: Gmail временно недоступен, "
-            "а свой домен туда не доходит")
+        # Своё имя ошибки, чтобы сайт мог сказать человеку понятное:
+        # «на iCloud письмо сейчас не доходит, войдите через Telegram».
+        # Общее «что-то пошло не так» оставило бы его в тупике — а он
+        # пришёл регистрироваться, и второй раз может не прийти.
+        raise MailUndeliverable("apple_mail_unavailable")
 
     if getattr(settings, "resend_api_key", None):
         try:

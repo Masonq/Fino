@@ -336,7 +336,9 @@
     "terms_prefix": "Nastavkom prihvatate",
     "terms_link": "uslove korišćenja",
     "terms_and": "i",
-    "privacy_link": "politiku privatnosti"
+    "privacy_link": "politiku privatnosti",
+    "err_apple_mail": "Poruka na iCloud trenutno ne stiže. Prijavite se preko Telegrama — brže je i pouzdanije.",
+    "err_not_sent": "Slanje koda nije uspelo. Probajte Telegram ili ponovite za minut."
   },
   "my": {
     "title": "Moji oglasi",

@@ -108,7 +108,21 @@ def request_code(payload: RequestCodeIn, db: Session = Depends(get_db)):
     ))
     db.commit()
 
-    send_code(destination, code, payload.channel)
+    try:
+        send_code(destination, code, payload.channel)
+    except Exception as exc:                               # noqa: BLE001
+        # Говорим прямо, что письмо не ушло, и куда идти дальше.
+        #
+        # Раньше сбой отправки поднимался как обычная ошибка, и человек
+        # видел «что-то пошло не так»: он ждал код, не получал его и
+        # уходил. Сколько людей так и не зарегистрировалось, мы уже не
+        # узнаем, но повторять это нельзя.
+        from app.core.notify import MailUndeliverable
+
+        if isinstance(exc, MailUndeliverable):
+            raise HTTPException(503, "apple_mail_unavailable") from exc
+        raise HTTPException(503, "code_not_sent") from exc
+
     return {"status": "sent", "channel": payload.channel.value}
 
 

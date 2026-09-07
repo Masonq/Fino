@@ -957,3 +957,44 @@ def test_gmail_gets_enough_time():
 
     assert GMAIL_TIMEOUT >= 10
     assert GMAIL_RETRY_AFTER <= 300
+
+
+def test_every_code_attempt_is_logged():
+    """Каждая отправка кода попадает в журнал — и успех, и отказ.
+
+    Когда коды перестали доходить, в журнале было пусто: причину
+    искали вслепую, запрос за запросом, вместо того чтобы просто
+    прочесть. Человек без кода не может войти вовсе, и такое нельзя
+    оставлять невидимым.
+
+    Адрес пишем не целиком: журнал читают несколько человек, а почта —
+    личные данные.
+    """
+    from app.core.notify import _short
+
+    assert _short("maxsim@icloud.com") == "max***@icloud.com"
+
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "notify.py").read_text()
+    block = source.split("def send_code(")[1].split("\ndef ")[0]
+    assert "log.info" in block and "log.warning" in block
+
+
+def test_person_is_told_why_the_code_did_not_come():
+    """Человек видит причину и выход, а не «что-то пошло не так».
+
+    Он пришёл регистрироваться: ждал код, не получил и ушёл. Сколько
+    людей так и не зарегистрировалось из-за молчаливого сбоя, мы уже не
+    узнаем, но повторять это нельзя.
+
+    Теперь при недоступной почте он читает, что на iCloud письмо сейчас
+    не доходит, и что войти можно через Telegram.
+    """
+    api = (Path(__file__).resolve().parents[1]
+           / "app" / "routers" / "auth.py").read_text()
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "Login.jsx").read_text()
+
+    assert 'HTTPException(503, "apple_mail_unavailable")' in api
+    assert 'HTTPException(503, "code_not_sent")' in api
+    assert "apple_mail_unavailable: t('auth.err_apple_mail')" in page

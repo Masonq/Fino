@@ -98,6 +98,11 @@ export default function Login() {
       invalid_code: t('auth.err_wrong_code'),
       code_expired: t('auth.err_expired'),
       user_blocked: t('auth.err_blocked'),
+      // Письмо не ушло — говорим прямо и показываем выход.
+      // Человек пришёл регистрироваться; если он увидит «что-то пошло
+      // не так» и не получит код, второй раз он может не прийти.
+      apple_mail_unavailable: t('auth.err_apple_mail'),
+      code_not_sent: t('auth.err_not_sent'),
     }
     return map[e?.code] || t('auth.err_generic')
   }
