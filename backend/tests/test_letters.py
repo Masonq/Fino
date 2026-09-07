@@ -1149,3 +1149,21 @@ def test_code_stands_on_its_own_line():
 
     first = BODY.format(code="483920").strip().splitlines()[0]
     assert first == "483920", "код должен быть первой строкой и один"
+
+
+def test_resend_sends_plain_text_only():
+    """Через Resend уходит только текст, без разметки.
+
+    Он шлёт с нашего домена, а у того репутация ниже, чем у Gmail:
+    почтовые службы смотрят на отправителя строже, и лишний повод для
+    подозрений тут ни к чему. Оформленное письмо от малознакомого
+    домена — как раз такой повод.
+
+    Основной путь, Gmail, оформление сохраняет: там письмо доходит.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "notify.py").read_text()
+
+    block = source.split("def _send_via_resend(")[1].split("\ndef ")[0]
+    assert 'letter["html"]' not in block
+    assert '"text":' in block
