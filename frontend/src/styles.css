@@ -4055,3 +4055,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    подложки не читались вовсе — увидел на снимке. */
 .auth-typo-yes{ background:var(--primary-deep); color:#fff; }
 .auth-typo-no{ background:#fff; border:1px solid var(--line); color:var(--ink); }
+
+/* Кнопка «Показать ещё» — на случай, когда подгрузка сама остановилась.
+   Заметная, но не кричащая: это запасной путь, а не основной способ
+   листать ленту. */
+.feed-more{
+  display:block; margin:12px auto 24px; padding:12px 28px;
+  border-radius:14px; border:1px solid var(--line); background:#fff;
+  font-size:15px; font-weight:700; color:var(--primary-deep);
+}

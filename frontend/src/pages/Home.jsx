@@ -104,8 +104,18 @@ export default function Home() {
   const [listings, setListings] = useState(() => cached?.items || [])
   const [feedLoaded, setFeedLoaded] = useState(() => Boolean(cached?.items.length))
   const [feedError, setFeedError] = useState(false)
-  const [feedTotal, setFeedTotal] = useState(() => cached?.total || 0)
+  // Ноль из памяти — не повод считать ленту законченной.
+  //
+  // Подгрузка включается, только если показано меньше, чем всего. Если
+  // в памяти total почему-либо оказался нулём, а карточки есть, условие
+  // сразу ложно: сторож прокрутки не ставится, и лента замирает
+  // навсегда. Обновление страницы чинило — потому и ловилось так
+  // редко.
+  const [feedTotal, setFeedTotal] = useState(
+    () => cached?.total || (cached?.items.length ? cached.items.length + 1 : 0))
   const [loadingMore, setLoadingMore] = useState(false)
+  // Подгрузка сама остановилась — показываем кнопку «Показать ещё».
+  const [stalled, setStalled] = useState(false)
   const sentinelRef = useRef(null)
   const [cols, setCols] = useState(2)
   // Город по умолчанию — вся Сербия, а не Белград.
@@ -263,10 +273,23 @@ export default function Home() {
             // Концом считаем три пустых порции подряд: случайный
             // повтор так переживём, а настоящий конец поймаем.
             empty.current += 1
-            if (empty.current >= 3) setFeedTotal(prev.length)
+            if (empty.current >= 3) {
+              // Останавливаемся, но не насмерть.
+              //
+              // Раньше здесь ставился feedTotal = показанному, и
+              // подгрузка отключалась до перезагрузки страницы. Если
+              // три пустых порции попались посреди ленты — а после
+              // ночных чисток порядок смещается, и это возможно —
+              // человек оставался с обрывком и без всякого способа
+              // это исправить, кроме F5.
+              //
+              // Теперь показываем кнопку: он нажмёт и продолжит.
+              setStalled(true)
+            }
             return prev
           }
           empty.current = 0
+          setStalled(false)
           return [...prev, ...fresh]
         })
       })
@@ -507,6 +530,19 @@ export default function Home() {
 
       <div ref={sentinelRef} className="feed-sentinel">
         {loadingMore && <span className="feed-loading">{t('actions.loading')}</span>}
+
+        {/* Подгрузка встала — даём человеку кнопку.
+            Раньше в этом случае лента просто заканчивалась, и починить
+            это можно было только обновлением страницы. Человек при этом
+            не знает, что объявления есть: для него лента кончилась. */}
+        {stalled && !loadingMore && (
+          <button
+            className="feed-more"
+            onClick={() => { empty.current = 0; setStalled(false); loadMore() }}
+          >
+            {t('feed.show_more')}
+          </button>
+        )}
       </div>
     </div>
 

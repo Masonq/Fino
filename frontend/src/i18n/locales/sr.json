@@ -827,5 +827,8 @@
     "seller_profile": "Profil prodavca",
     "buyer": "Kupac",
     "seller": "Prodavac"
+  },
+  "feed": {
+    "show_more": "Prikaži još"
   }
 }

@@ -826,5 +826,8 @@
     "seller_profile": "Seller profile",
     "buyer": "Buyer",
     "seller": "Seller"
+  },
+  "feed": {
+    "show_more": "Show more"
   }
 }
