@@ -28,7 +28,7 @@
 Запуск по расписанию:
     python3 -m app.core.nightly
 """
-from sqlalchemy import text
+from sqlalchemy import or_, text
 
 from app.core.database import SessionLocal
 
@@ -89,7 +89,21 @@ def run() -> dict:
     except Exception as e:                                 # noqa: BLE001
         done["чистка не вышла"] = str(e)[:60]
 
-    # 5. Удаляем безнадёжные.
+    # 5. Удаляем объявления без города.
+    #
+    # Город дописать не удалось — значит его нет ни в заголовке, ни в
+    # описании, ни в самом объявлении. Такое не найдут ни поиском по
+    # городу, ни фильтром: человек в Белграде его не увидит, человек в
+    # Нови-Саде тоже. Оно просто занимает место в ленте.
+    #
+    # Удаляем после того, как отработала дописка города: сперва спасаем
+    # что можно, и только потом убираем остальное.
+    try:
+        done["удалено без города"] = _purge_without_city()
+    except Exception as e:                                 # noqa: BLE001
+        done["удаление без города не вышло"] = str(e)[:60]
+
+    # 6. Удаляем безнадёжные.
     #
     # Объявление, у которого заголовок непонятен и починить его не
     # удалось, в ленте бесполезно: «Даром», «Коляски», «Белград» —
@@ -104,7 +118,7 @@ def run() -> dict:
     except Exception as e:                                 # noqa: BLE001
         done["удаление безнадёжных не вышло"] = str(e)[:60]
 
-    # 6. Что осталось человеку.
+    # 7. Что осталось человеку.
     with SessionLocal() as db:
         done["осталось без города"] = db.execute(text(
             "select count(*) from listings "
@@ -180,6 +194,51 @@ def _purge_hopeless() -> int:
                    {"ids": ids})
         db.commit()
         return len(ids)
+
+
+def _purge_without_city() -> int:
+    """
+    Удаляет объявления, у которых так и не нашлось города.
+
+    За ночь берём не больше двухсот: восемьсот удалённых разом — это
+    пятая часть ленты, и если в приметах ошибка, откатить будет нечего.
+    Порциями заметно, что происходит, и есть время остановиться.
+    """
+    from app.models import Listing, ListingStatus
+
+    with SessionLocal() as db:
+        rows = (
+            db.query(Listing.id)
+            .filter(Listing.status == ListingStatus.active,
+                    or_(Listing.city.is_(None), Listing.city == ""))
+            .limit(200)
+            .all()
+        )
+        ids = [row[0] for row in rows]
+        if not ids:
+            return 0
+
+        # Объявления с перепиской или в избранном не трогаем: там
+        # завязались люди, и отсутствие города этого не отменяет.
+        busy = {row[0] for row in db.execute(text("""
+            select distinct listing_id from chats where listing_id = any(:ids)
+            union
+            select distinct listing_id from favorites where listing_id = any(:ids)
+        """), {"ids": ids})}
+        targets = [i for i in ids if i not in busy]
+        if not targets:
+            return 0
+
+        for table in ("listing_photos", "favorites", "chats", "reviews",
+                      "reports", "promotions", "listing_view_logs",
+                      "listing_view_daily", "listing_signal_daily",
+                      "tickets", "review_invites", "listing_translations"):
+            db.execute(text(f"delete from {table} where listing_id = any(:ids)"),
+                       {"ids": targets})
+        db.execute(text("delete from listings where id = any(:ids)"),
+                   {"ids": targets})
+        db.commit()
+        return len(targets)
 
 
 def report(done: dict) -> str:

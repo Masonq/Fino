@@ -1242,3 +1242,29 @@ def test_healthcheck_address_gets_no_real_letter():
     # Выход до отправки, а не после.
     before_send = source.split("send_code(destination")[0]
     assert '@plonk.local' in before_send
+
+
+def test_listings_without_city_are_deleted_in_batches():
+    """Объявления без города удаляются, но порциями.
+
+    Город дописать не удалось — значит его нет ни в заголовке, ни в
+    описании. Такое объявление не найдут ни поиском по городу, ни
+    фильтром: человек в Белграде его не увидит, человек в Нови-Саде
+    тоже. Оно просто занимает место в ленте, и таких набралось
+    восемьсот сорок пять.
+
+    По двести за ночь, а не всё разом: восемьсот удалённых сразу — это
+    пятая часть ленты, и если в приметах ошибка, откатить будет нечего.
+    Порциями заметно, что происходит, и есть время остановиться.
+
+    Объявления с перепиской или в избранном не трогаем: там завязались
+    люди, и отсутствие города этого не отменяет.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "nightly.py").read_text()
+
+    block = source.split("def _purge_without_city")[1]
+    assert ".limit(200)" in block
+    assert "select distinct listing_id from chats" in block
+    # Удаляем после дописки города, а не до неё.
+    assert source.index("fill_cities") < source.index('done["удалено без города"]')
