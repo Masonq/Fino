@@ -1050,3 +1050,27 @@ def test_mail_server_is_not_probed():
 
     assert "smtplib" not in source
     assert "RCPT" not in source.upper()
+
+
+def test_domain_check_never_locks_a_real_person_out():
+    """Проверка домена отказывает только при явном «домена нет».
+
+    Правило написано кровью: на сервере проверка отклонила настоящий
+    адрес и закрыла человеку вход — «email_domain_unknown» на живую
+    почту.
+
+    Не пустить живого хуже, чем принять сомнительный адрес:
+    сомнительному мы просто отправим письмо в никуда, а живой уйдёт и
+    не вернётся. Поэтому сеть подвела, служба молчит, библиотеки нет —
+    пропускаем.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "email_check.py").read_text()
+
+    block = source.split("def _domain_takes_mail")[1]
+    # Единственный отказ — NXDOMAIN.
+    assert block.count("return False") == 1
+    assert "NXDOMAIN" in block
+    # Без библиотеки не проверяем вовсе: системный резолвер отвечает
+    # по-разному на разных машинах.
+    assert "except ImportError:\n        return True" in block
