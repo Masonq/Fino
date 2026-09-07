@@ -131,7 +131,12 @@ class Listing(Base):
     # Продавец правит цену несколько раз, а сообщение об одном и том же
     # человек должен получить один. Держим по человеку: у каждого свой
     # момент, когда он отложил объявление.
-    notified_price_drop: Mapped[dict] = mapped_column(JSONB, default=dict)
+    # server_default обязателен: без него миграция падает на объявлениях,
+    # которые уже есть — им нечего подставить в обязательную колонку.
+    # Ровно на этом деплой споткнулся с last_hit_at, и я повторил ту же
+    # ошибку здесь.
+    notified_price_drop: Mapped[dict] = mapped_column(
+        JSONB, default=dict, server_default=text("'{}'::jsonb"))
 
     price_history: Mapped[list] = mapped_column(JSONB, default=list)  # [{"price": 1000, "changed_at": "..."}]
 
