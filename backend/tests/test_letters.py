@@ -1221,3 +1221,24 @@ def test_code_letter_says_nothing_extra():
     assert "не вы" not in letter
     assert "Недвижимость" not in letter
     assert "483920" in letter
+
+
+def test_healthcheck_address_gets_no_real_letter():
+    """На проверочный адрес письмо не отправляется.
+
+    tools/healthcheck.py запрашивает код на healthcheck@plonk.local,
+    чтобы убедиться, что вход работает. Такого домена не существует, и
+    каждый прогон давал отказ, который бил по репутации нашего домена у
+    почтовых служб — той самой, что мы восстанавливаем после истории с
+    Apple. А гоняли мы проверку десятки раз за день.
+
+    Код при этом заводится как обычно: проверке важно, что он выдан и
+    принимается, а письмо ей ни к чему.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "routers" / "auth.py").read_text()
+
+    assert 'destination.endswith("@plonk.local")' in source
+    # Выход до отправки, а не после.
+    before_send = source.split("send_code(destination")[0]
+    assert '@plonk.local' in before_send

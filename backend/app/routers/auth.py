@@ -125,6 +125,18 @@ def request_code(payload: RequestCodeIn, db: Session = Depends(get_db)):
     ))
     db.commit()
 
+    # Проверочный адрес письмом не тревожим.
+    #
+    # tools/healthcheck.py запрашивает код на healthcheck@plonk.local,
+    # чтобы убедиться, что вход работает. Такого домена не существует,
+    # и каждый прогон давал отказ, который бил по репутации нашего
+    # домена у почтовых служб — той самой, что мы восстанавливаем.
+    #
+    # Код при этом заводится как обычно: проверке важно, что он выдан и
+    # принимается, а письмо ей ни к чему.
+    if destination.endswith("@plonk.local"):
+        return {"status": "sent", "channel": payload.channel.value}
+
     try:
         send_code(destination, code, payload.channel)
     except Exception as exc:                               # noqa: BLE001
