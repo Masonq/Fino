@@ -88,7 +88,11 @@ def test_plain_text_is_always_sent():
     source = inspect.getsource(_send_via_resend)
 
     assert '"text"' in source
-    assert 'letter["html"] = html' in source
+    # Разметку через Resend больше не отправляем: он шлёт с нашего
+    # домена, а у того репутация ниже — оформленное письмо от
+    # малознакомого отправителя лишний повод для подозрений. Оформление
+    # остаётся на основном пути, через Gmail.
+    assert 'letter["html"] = html' not in source
 
 
 def test_subject_has_no_code():
