@@ -3082,3 +3082,47 @@ def test_shoes_are_recognised_by_their_many_names():
 
     # Заколки и резинки — аксессуары, а не одежда.
     assert classify_sub("fashion", "заколка крабик") == "watches"
+
+
+def test_clothing_sections_inside_women_and_men():
+    """Внутри женской и мужской одежды есть свои разделы.
+
+    Раньше там не было ничего, и пятьсот объявлений висели в
+    родительском разделе — искать в них невозможно.
+
+    Слова по самой вещи: пол уже задан тем, что объявление лежит в
+    «Женском» или «Мужском», и повторять его в приметах незачем.
+    """
+    from app.core.tg_classify import classify_sub
+
+    women = {
+        "платье zara": "women-dresses",
+        "футболка lime размер s": "women-tops",
+        "куртка massimo dutti": "women-outerwear",
+        "джинсы рваные бенетон": "women-pants",
+        "худи новое": "women-knitwear",
+        "юбка миди": "women-skirts",
+    }
+    for text, expected in women.items():
+        assert classify_sub("women", text) == expected, text
+
+    men = {
+        "красное поло stradivarius": "men-tops",
+        "рубашка белая": "men-shirts",
+        "костюм тройка": "men-suits",
+    }
+    for text, expected in men.items():
+        assert classify_sub("men", text) == expected, text
+
+
+def test_accessories_have_their_own_shelves():
+    """Шапки, очки, ремни и зонты — свои разделы.
+
+    Раньше в аксессуарах были только сумки и украшения, а шапки со
+    шарфами шли отдельным потоком и оседали в родительском разделе.
+    """
+    from app.core.tg_classify import classify_sub
+
+    assert classify_sub("fashion", "шапка зимняя") == "hats-scarves"
+    assert classify_sub("fashion", "солнцезащитные очки ray-ban") == "glasses"
+    assert classify_sub("fashion", "зонт автомат") == "umbrellas"

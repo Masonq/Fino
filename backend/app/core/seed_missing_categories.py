@@ -25,6 +25,46 @@ from app.models import Category
 # Названия сразу на трёх языках: раздел без перевода показывается
 # служебным именем, и мы это уже проходили.
 NEW = {
+    # Одежда: внутри «Женского» и «Мужского» не было ничего, и пятьсот
+    # объявлений висели в родительском разделе — искать в них
+    # невозможно.
+    #
+    # Набор собран по тому, что реально лежит в базе: платья, футболки,
+    # куртки, джинсы, худи, костюмы. Свитеры и куртки держим порознь —
+    # это разные сезоны, и вместе их искать неудобно.
+    "women": [
+        ("women-dresses", "Платья и сарафаны", "Dresses", "Haljine", []),
+        ("women-skirts", "Юбки", "Skirts", "Suknje", []),
+        ("women-tops", "Футболки, майки и топы", "T-shirts and tops", "Majice i topovi", []),
+        ("women-shirts", "Рубашки и блузки", "Shirts and blouses", "Košulje i bluze", []),
+        ("women-knitwear", "Свитеры, худи и кардиганы", "Sweaters and hoodies", "Džemperi i duksevi", []),
+        ("women-outerwear", "Куртки, пальто и пуховики", "Jackets and coats", "Jakne i kaputi", []),
+        ("women-pants", "Джинсы, брюки и шорты", "Jeans, trousers and shorts", "Farmerke, pantalone i šorc", []),
+        ("women-suits", "Костюмы и комбинезоны", "Suits and jumpsuits", "Odela i kombinezoni", []),
+        ("women-underwear", "Бельё и купальники", "Underwear and swimwear", "Donji veš i kupaći", []),
+        ("women-sportswear", "Спортивная одежда", "Sportswear", "Sportska odeća", []),
+    ],
+    "men": [
+        ("men-tops", "Футболки и поло", "T-shirts and polos", "Majice i polo majice", []),
+        ("men-shirts", "Рубашки", "Shirts", "Košulje", []),
+        ("men-knitwear", "Свитеры, худи и толстовки", "Sweaters and hoodies", "Džemperi i duksevi", []),
+        ("men-outerwear", "Куртки, пальто и пуховики", "Jackets and coats", "Jakne i kaputi", []),
+        ("men-pants", "Джинсы, брюки и шорты", "Jeans, trousers and shorts", "Farmerke, pantalone i šorc", []),
+        ("men-suits", "Костюмы и пиджаки", "Suits and blazers", "Odela i sakoi", []),
+        ("men-underwear", "Бельё и носки", "Underwear and socks", "Donji veš i čarape", []),
+        ("men-sportswear", "Спортивная одежда", "Sportswear", "Sportska odeća", []),
+    ],
+
+    # Аксессуары: шапки, шарфы и очки шли отдельным потоком и оседали в
+    # родительском разделе — своих полок для них не было.
+    "fashion": [
+        ("hats-scarves", "Шапки и шарфы", "Hats and scarves", "Kape i šalovi", []),
+        ("gloves", "Перчатки и варежки", "Gloves", "Rukavice", []),
+        ("belts", "Ремни", "Belts", "Kaiševi", []),
+        ("glasses", "Очки", "Glasses", "Naočare", []),
+        ("umbrellas", "Зонты", "Umbrellas", "Kišobrani", []),
+    ],
+
     # Комплектующие: сейчас видеокарты и память лежат в «Настольных
     # компьютерах» вперемешку с целыми системными блоками.
     "electronics": [
