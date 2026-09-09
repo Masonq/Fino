@@ -3316,3 +3316,36 @@ def test_brand_case_respects_how_brands_write_themselves():
     assert "MHz" in capitalize_brands("память 3200 mhz")
     # А чистые числа не трогаем: «16/256» и «295х155х110» это размеры.
     assert "16/256" in capitalize_brands("macbook air m1 16/256")
+
+
+def test_english_titles_are_left_alone():
+    """Английские и сербские заголовки не переписываются с большой буквы.
+
+    Первая проба поднимала латиницу везде подряд, и вышло скверно: «PS4
+    With Three Games», «Board Games In Russian Are For Sale», «Prodaju
+    SE Društvene Igre» — «se» ещё и приняло за модель iPhone.
+
+    Обычные слова с большой буквы выглядят как ошибка. В таких
+    заголовках правим только известные марки: «Ikea chair» → «IKEA
+    chair», остальное человек написал сам.
+    """
+    from app.core.title_rules import capitalize_brands
+
+    assert capitalize_brands("PS4 with three games") == "PS4 with three games"
+    assert capitalize_brands("Board games in Russian") == "Board games in Russian"
+    assert capitalize_brands("Prodaju se društvene igre") == "Prodaju se društvene igre"
+
+    # А марку поправим и тут.
+    assert capitalize_brands("Ikea chair") == "IKEA chair"
+    assert capitalize_brands("Macbook air m1") == "MacBook air m1"
+
+
+def test_measurements_are_not_models():
+    """Размеры не превращаются в модели.
+
+    «90x200», «55-56 cm», «40mm» — это мерка, а не название. Первая
+    проба делала из них «90X200» и «55-56 CM».
+    """
+    from app.core.title_rules import capitalize_brands
+
+    assert "90x200" in capitalize_brands("Кровать malm белая 90x200")
