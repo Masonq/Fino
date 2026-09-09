@@ -3202,3 +3202,21 @@ def test_shoes_are_sorted_by_gender_with_a_fallback():
     # А обуви среди бесполых больше нет.
     assert "shoes" not in GENDERLESS
     assert GENDERLESS["jewelry"] == "watches"
+
+
+def test_photo_prompt_explains_the_difference():
+    """В вопросе к нейросети объяснено, чем блузка отличается от футболки.
+
+    Она отвечала по-разному от раза к разу: «Блуза Copenhagen muse» в
+    одном прогоне встала в рубашки, в другом — в футболки. Разница
+    очевидна человеку и не очевидна ей: и то, и другое верх без
+    рукавов на фотографии.
+
+    Подсказка простая: рубашки на пуговицах или с воротником, футболки
+    без них.
+    """
+    from app.core.sort_clothes import PROMPT
+
+    assert "блузки" in PROMPT
+    assert "на пуговицах" in PROMPT
+    assert "knitwear" in PROMPT and "outerwear" in PROMPT
