@@ -2961,3 +2961,42 @@ def test_new_computer_sections_are_known_to_the_classifier():
     }
     for text, expected in cases.items():
         assert classify_sub("electronics", text) == expected, text
+
+
+def test_all_late_sections_are_known_to_the_classifier():
+    """Раскладка знает про все разделы, а не только про давние.
+
+    Разделов завели много, а слова были написаны лишь для части.
+    Остальные стояли пустыми: холодильники, пылесосы, освещение,
+    сантехника, няни, переводы, детский транспорт — всё валилось в
+    родительский раздел, а мы разгребали руками и получали новую партию
+    назавтра.
+
+    Отдельная беда — одинаковые слова в разных разделах. Выбор идёт по
+    очкам, и два раздела с одним словом гасили друг друга: вещь не
+    попадала никуда. Так «унитаз» стоял и в сантехнике, и в
+    инструментах, «стеллаж» в хранении и в мебели, «перевод документов»
+    в переводах и в юридических услугах, «няня» в нянях и в уборке.
+    """
+    from app.core.tg_classify import classify_sub
+
+    cases = {
+        ("appliances-major", "холодильник samsung"): "fridges",
+        ("appliances-major", "стиральная машина lg"): "washing-machines",
+        ("appliances-major", "кондиционер настенный"): "climate",
+        ("appliances-small", "пылесос dyson"): "vacuum-cleaners",
+        ("kitchen-small", "микроволновка"): "microwaves",
+        ("kids-transport", "беговел"): "balance-bikes",
+        ("hobby-sport", "боксёрские перчатки"): "martial-arts",
+        ("hobby-sport", "спиннинг для рыбалки"): "hunting-fishing",
+        ("services", "перевод документов"): "translation",
+        ("services", "няня на полдня"): "nannies",
+        ("services", "груминг собак"): "pet-services",
+        ("electronics", "роутер tp-link"): "network-gear",
+        ("electronics", "телевизор samsung"): "tv-projectors",
+        ("home-garden", "смеситель для ванной"): "plumbing",
+        ("home-garden", "стеллаж для книг"): "storage-home",
+        ("home-garden", "дрель bosch"): "tools",
+    }
+    for (parent, text), expected in cases.items():
+        assert classify_sub(parent, text) == expected, text
