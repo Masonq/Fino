@@ -822,3 +822,44 @@ def test_feed_never_stops_for_good():
     assert "setFeedTotal(prev.length)" not in page
     # И есть кнопка.
     assert "feed-more" in page and "feed.show_more" in page
+
+
+def test_search_also_never_stops_for_good():
+    """В поиске подгрузка тоже не останавливается навсегда.
+
+    Та же ошибка, что была на главной: после трёх пустых порций
+    ставился total = показанному, и подгрузка выключалась до
+    перезагрузки страницы. Здесь это обиднее — запрос человек набирал
+    руками.
+    """
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "Search.jsx").read_text()
+
+    assert "setStalled(true)" in page
+    assert "setTotal(prev.length)" not in page
+    assert "feed.show_more" in page
+
+
+def test_images_load_by_one_rule_everywhere():
+    """Картинки грузятся по одному правилу на всех страницах.
+
+    Первые четыре карточки — сразу: они видны в тот же миг, и ленивая
+    загрузка для них лишняя задержка. Остальные лениво: до них человек
+    может и не долистать.
+
+    decoding=async везде, чтобы распаковка картинки не тормозила
+    прокрутку. Раньше он стоял только в карточке ленты, а в объявлении,
+    похожих и списке продавца его не было.
+    """
+    root = Path(__file__).resolve().parents[2] / "frontend" / "src"
+
+    card = (root / "components" / "ListingCard.jsx").read_text()
+    assert "priority ? 'eager' : 'lazy'" in card
+    assert "priority ? 'high' : 'auto'" in card
+
+    for name in ("pages/ListingDetail.jsx", "pages/Moderation.jsx",
+                 "components/SimilarListings.jsx",
+                 "components/SellerListings.jsx"):
+        text = (root / name).read_text()
+        if 'loading="lazy"' in text:
+            assert 'decoding="async"' in text, name

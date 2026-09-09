@@ -58,7 +58,7 @@ export default function SellerListings({ sellerId, excludeListingId }) {
           >
             <div className="similar-photo">
               {l.cover_photo
-                ? <img src={l.cover_photo} alt="" loading="lazy" />
+                ? <img src={l.cover_photo} alt="" loading="lazy" decoding="async" />
                 : <div className="photo-placeholder" />}
             </div>
             <div className="similar-price">

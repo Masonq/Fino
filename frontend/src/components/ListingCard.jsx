@@ -8,7 +8,7 @@ import { formatPrice } from '../utils/money'
 import { cardMeta } from '../data/cardMeta'
 import { relativeDate } from '../utils/time'
 
-export default function ListingCard({ listing, large = false }) {
+export default function ListingCard({ listing, large = false, priority = false }) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { isFavorite, toggle } = useFavorites()
@@ -77,12 +77,23 @@ export default function ListingCard({ listing, large = false }) {
             preload="metadata"
           />
         ) : listing.cover_photo ? (
-          // Картинка грузится, когда карточка подходит к экрану, а не все
-          // двадцать разом при открытии ленты: видны шесть, остальные
-          // тянут сеть впустую и задерживают те, что нужны сейчас.
-          // decoding=async — чтобы распаковка картинки не тормозила
-          // прокрутку.
-          <img src={listing.cover_photo} alt="" loading="lazy" decoding="async" />
+          // Картинки грузятся по мере приближения к экрану, а не все
+          // двадцать разом: видны шесть, остальные тянут сеть впустую и
+          // задерживают те, что нужны сейчас.
+          //
+          // Первые четыре — исключение: они видны в тот же миг, и лень
+          // для них лишняя задержка. Браузер сперва решает, нужна ли
+          // картинка, и только потом просит её.
+          //
+          // decoding=async везде — чтобы распаковка не тормозила
+          // прокрутку. Это же правило теперь на всех страницах сайта.
+          <img
+            src={listing.cover_photo}
+            alt=""
+            loading={priority ? 'eager' : 'lazy'}
+            fetchpriority={priority ? 'high' : 'auto'}
+            decoding="async"
+          />
         ) : (
           <div className="photo-placeholder" />
         )}

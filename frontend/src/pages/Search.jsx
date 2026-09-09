@@ -55,6 +55,8 @@ export default function Search() {
   // ниже сразу перезапишет список.
   const [items, setItems] = useState(() => searchCache.items || [])
   const [total, setTotal] = useState(0)
+  // Подгрузка сама остановилась — показываем кнопку «Показать ещё».
+  const [stalled, setStalled] = useState(false)
   const [loading, setLoading] = useState(true)
   const [loaded, setLoaded] = useState(false)
   const [error, setError] = useState(false)
@@ -210,10 +212,19 @@ export default function Search() {
         if (!fresh.length) {
           // Три пустых порции подряд — тогда конец (см. Home.jsx).
           empty.current += 1
-          if (empty.current >= 3) setTotal(prev.length)
+          if (empty.current >= 3) {
+            // Останавливаемся, но не насмерть — как на главной.
+            //
+            // Раньше здесь ставился total = показанному, и подгрузка
+            // отключалась до перезагрузки страницы. Человек оставался с
+            // обрывком выдачи и без всякого способа это исправить,
+            // притом что запрос он набирал руками.
+            setStalled(true)
+          }
           return prev
         }
         empty.current = 0
+        setStalled(false)
         const grown = [...prev, ...fresh]
         searchCache = {
           key: JSON.stringify(query),
@@ -520,8 +531,8 @@ export default function Search() {
       <div className={cols === 2 ? 'infinite-grid' : 'infinite-list'}>
         {!loaded
           ? <CardSkeletons count={cols === 2 ? 4 : 2} large={cols === 1} />
-          : items.map((l) => (
-              <ListingCard key={l.id} listing={l} large={cols === 1} />
+          : items.map((l, i) => (
+              <ListingCard key={l.id} listing={l} large={cols === 1} priority={i < 4} />
             ))}
       </div>
 
@@ -545,6 +556,16 @@ export default function Search() {
 
       <div ref={sentinelRef} className="feed-sentinel">
         {loadingMore && <span className="feed-loading">{t('actions.loading')}</span>}
+
+        {/* Подгрузка встала — даём кнопку, как на главной. */}
+        {stalled && !loadingMore && (
+          <button
+            className="feed-more"
+            onClick={() => { empty.current = 0; setStalled(false); loadMore() }}
+          >
+            {t('feed.show_more')}
+          </button>
+        )}
       </div>
         </div>
       </div>

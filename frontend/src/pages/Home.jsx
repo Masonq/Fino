@@ -518,8 +518,8 @@ export default function Home() {
       <div className={cols === 2 ? 'infinite-grid' : 'infinite-list'}>
         {!feedLoaded
           ? <CardSkeletons count={cols === 2 ? 4 : 2} large={cols === 1} />
-          : listings.map((l) => (
-              <ListingCard key={l.id} listing={l} large={cols === 1} />
+          : listings.map((l, i) => (
+              <ListingCard key={l.id} listing={l} large={cols === 1} priority={i < 4} />
             ))}
       </div>
       {feedLoaded && listings.length === 0 && (

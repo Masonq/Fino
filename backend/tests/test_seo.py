@@ -322,7 +322,9 @@ def test_card_images_load_lazily():
     card = (Path(__file__).resolve().parents[2]
             / "frontend" / "src" / "components" / "ListingCard.jsx").read_text()
 
-    assert 'loading="lazy"' in card
+    # Первые четыре карточки грузятся сразу, остальные лениво: верхние
+    # видны в тот же миг, и лень для них — лишняя задержка.
+    assert "priority ? 'eager' : 'lazy'" in card
     assert 'decoding="async"' in card
 
 

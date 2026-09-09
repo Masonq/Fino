@@ -908,7 +908,7 @@ export default function ListingDetail() {
               onClick={() => goToPhoto(i)}
               aria-label={`${i + 1} / ${photos.length}`}
             >
-              <img src={ph.is_video ? ph.thumbnail_url : ph.url} alt="" loading="lazy" />
+              <img src={ph.is_video ? ph.thumbnail_url : ph.url} alt="" loading="lazy" decoding="async" />
               {ph.is_video && (
                 <span className="photo-thumb-play">
                   <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>

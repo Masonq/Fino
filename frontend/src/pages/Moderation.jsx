@@ -259,7 +259,7 @@ export default function Moderation() {
               <Link to={l.path} className="mod-open-link">
                 {l.photos?.length > 0 && (
                   <div className="mod-photos">
-                    {l.photos.map((url, i) => <img key={i} src={url} alt="" loading="lazy" />)}
+                    {l.photos.map((url, i) => <img key={i} src={url} alt="" loading="lazy" decoding="async" />)}
                   </div>
                 )}
 

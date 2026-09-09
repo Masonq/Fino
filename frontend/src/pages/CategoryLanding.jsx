@@ -742,7 +742,7 @@ export default function CategoryLanding() {
         <div className="landing-fresh">
           <h2>{t('landing.fresh')}</h2>
           <div className="feed-grid">
-            {fresh.map((l) => <ListingCard key={l.id} listing={l} />)}
+            {fresh.map((l, i) => <ListingCard key={l.id} listing={l} priority={i < 4} />)}
           </div>
         </div>
       )}
@@ -770,7 +770,7 @@ export default function CategoryLanding() {
           ) : (
             <>
               <div className="feed-grid">
-                {results.map((l) => <ListingCard key={l.id} listing={l} />)}
+                {results.map((l, i) => <ListingCard key={l.id} listing={l} priority={i < 4} />)}
               </div>
               {results.length < resultsTotal && (
                 <button className="load-more" disabled={loadingMore} onClick={loadMore}>
