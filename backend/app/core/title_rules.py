@@ -608,12 +608,31 @@ def capitalize_brands(title: str) -> str:
     if not title:
         return title
 
-    # Нет кириллицы — правим только известные марки.
+    # Считаем, на каком языке заголовок.
+    #
+    # «Turnkey balcony landscaping in Белград» — английская фраза с
+    # одним русским словом, а правило приняло её за русскую и подняло
+    # каждое слово. Смотрим, чего больше.
+    # Считаем слова, а не буквы: «палатка Quechua arpenaz» по буквам
+    # выходила английской, хотя это русский заголовок с маркой.
+    cyr = lat = 0
+    for word in re.findall(r"[^\W\d_]+", title):
+        if any("а" <= ch.lower() <= "я" or ch.lower() == "ё" for ch in word):
+            cyr += 1
+        elif any("a" <= ch.lower() <= "z" for ch in word):
+            lat += 1
+
+    # Нет кириллицы или её меньше — правим только известные марки.
     #
     # «Macbook air m1» стоит поправить и здесь, но остальные слова
     # трогать нельзя: в английском и сербском заголовке это обычная
     # речь, а не названия.
-    if not any("а" <= ch.lower() <= "я" or ch.lower() == "ё" for ch in title):
+    # Русским считаем заголовок, где кириллических слов хотя бы вдвое
+    # меньше латинских: «палатка quechua arpenaz 2xl» — два русских
+    # слова против трёх латинских, и это по-прежнему русский заголовок с
+    # маркой. А «Turnkey balcony landscaping in Белград» — одно против
+    # четырёх, это английская фраза.
+    if cyr == 0 or cyr * 2 < lat:
         out = []
         for word in title.split():
             bare = word.strip("()[],.:;\"'")
@@ -623,6 +642,10 @@ def capitalize_brands(title: str) -> str:
                 out.append(word)
                 continue
             fixed = KNOWN_BRANDS.get(bare.lower())
+            # Не понижаем написанное с большой: «Adidas Samba» не должно
+            # стать «adidas Samba».
+            if fixed and bare and bare[0].isupper() and fixed[0].islower():
+                fixed = None
             out.append(word.replace(bare, fixed) if fixed else word)
         return " ".join(out)
 
@@ -642,7 +665,16 @@ def capitalize_brands(title: str) -> str:
             return word
 
         if low in KNOWN_BRANDS:
-            return word.replace(bare, KNOWN_BRANDS[low])
+            fixed = KNOWN_BRANDS[low]
+            # Не понижаем то, что человек написал с большой.
+            #
+            # «Adidas Samba» превращалось в «adidas Samba»: в словаре
+            # марка записана так, как пишет её сама компания. Но
+            # исправлять человека, который написал верно по правилам
+            # языка, — перебор.
+            if bare[0].isupper() and fixed[0].islower():
+                return word
+            return word.replace(bare, fixed)
 
         if low in UNITS_UPPER:
             return word.replace(bare, UNITS_UPPER[low])
@@ -661,10 +693,21 @@ def capitalize_brands(title: str) -> str:
         if re.search(r"\d\s*[x×*-]\s*\d", low):
             return word
 
+        # Буквенные размеры тоже: «xs-s», «m-l», «xl». Поймал на живой
+        # выгрузке — «Лёгкий топ на xs-s» стало «на Xs-s».
+        if re.fullmatch(r"(xxs|xs|s|m|l|xl|xxl|xxxl)([-/](xxs|xs|s|m|l|xl|xxl|xxxl))?",
+                        low):
+            return word
+
         # Модель с цифрами — целиком заглавными: «g2730hsu» → «G2730HSU».
         if any(ch.isdigit() for ch in bare):
             if any(ch.isalpha() for ch in bare):
                 return word.replace(bare, bare.upper())
+            return word
+
+        # Слова короче трёх букв не трогаем: «Nikon Z fc», «Logitech mx
+        # keys» — это части названий моделей, и заглавная там наугад.
+        if len(bare) < 3:
             return word
 
         return word.replace(bare, bare[0].upper() + bare[1:])
