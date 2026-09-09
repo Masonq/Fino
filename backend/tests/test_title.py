@@ -3244,3 +3244,33 @@ def test_kids_clothes_go_to_the_kids_section():
               / "app" / "core" / "sort_clothes.py").read_text()
     # Детское решается до пола: вид вещи тут не важен.
     assert source.index('if "kids" in words') < source.index('gender = next(')
+
+
+def test_titles_can_be_fixed_by_photo():
+    """Непонятные заголовки чинятся по фотографии.
+
+    «Серый новый -700 XL», «Одежда, размер 32, Врачар», «Майк с Тему» —
+    человек не поймёт, что продают. Сто пятьдесят таких помечены
+    безнадёжными и ждут удаления: собрать заголовок из описания не
+    вышло, потому что описания часто нет вовсе.
+
+    Но есть фотография, и разбор одежды показал, что нейросеть видит
+    вещи верно — отличает блузку от футболки, балетки от кед.
+
+    Осторожность: не уверена — оставляем как есть. Плохой заголовок
+    лучше неверного: «Свитер» вместо кроссовок отпугнёт того, кому
+    кроссовки нужны.
+    """
+    from app.core.retitle_by_photo import PROMPT, SIZE_RE
+
+    assert "unclear" in PROMPT
+    assert "не выдумывай" in PROMPT
+
+    # Размер из старого заголовка не теряем.
+    assert SIZE_RE.search("Серый новый -700 XL").group(0) == "XL"
+
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "retitle_by_photo.py").read_text()
+    # Пометку снимаем при успехе, иначе объявление удалят ночью.
+    assert "AuditEntry.action == FAILED_ACTION" in source
+    assert ".delete(synchronize_session=False)" in source
