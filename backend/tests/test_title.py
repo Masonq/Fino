@@ -3351,3 +3351,22 @@ def test_measurements_are_not_models():
     from app.core.title_rules import capitalize_brands
 
     assert "90x200" in capitalize_brands("Кровать malm белая 90x200")
+
+
+def test_brand_case_does_not_lower_what_person_wrote_upper():
+    """Марку, написанную заглавными, не понижаем.
+
+    «Cipele ZARA» превращалось в «Cipele Zara»: словарь знал марку и
+    уверенно её правил. Но человек написал так намеренно, и спорить с
+    ним незачем.
+
+    Предлоги внутри названий тоже оставляем строчными: «United Colors
+    of Benetton», а не «Of Benetton». И единицы веса: «12 oz», а не
+    «12 Oz».
+    """
+    from app.core.title_rules import capitalize_brands
+
+    assert capitalize_brands("Cipele ZARA") == "Cipele ZARA"
+    assert capitalize_brands("Все вещи United Colors of Benetton") == \
+        "Все вещи United Colors of Benetton"
+    assert "12 oz" in capitalize_brands("Green Hill 12 oz перчатки")

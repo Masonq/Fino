@@ -564,6 +564,12 @@ KNOWN_BRANDS = {
 # мешает.
 KEEP_LOWER = {
     "new", "b/u", "и", "с", "в", "на", "для", "из", "по",
+    # Предлоги внутри названий: «United Colors of Benetton», «Bang &
+    # Olufsen». С большой буквы они выглядят нелепо.
+    "of", "and", "the", "de", "du", "da", "von", "van",
+    # Единицы веса и объёма, где заглавная ни к чему: «12 oz»,
+    # «500 ml» пишут строчными.
+    "oz", "lb", "pcs", "шт",
 }
 
 # Единицы — заглавными: так пишут производители, и в перечне
@@ -611,6 +617,11 @@ def capitalize_brands(title: str) -> str:
         out = []
         for word in title.split():
             bare = word.strip("()[],.:;\"'")
+            # Заглавными целиком — оставляем: «Cipele ZARA» не должно
+            # стать «Cipele Zara», человек написал так намеренно.
+            if bare.isupper() and len(bare) > 1:
+                out.append(word)
+                continue
             fixed = KNOWN_BRANDS.get(bare.lower())
             out.append(word.replace(bare, fixed) if fixed else word)
         return " ".join(out)
@@ -621,6 +632,14 @@ def capitalize_brands(title: str) -> str:
             return word
 
         low = bare.lower()
+
+        # Написано заглавными целиком — оставляем.
+        #
+        # «Cipele ZARA» превращалось в «Cipele Zara»: словарь знает
+        # марку и уверенно её понижал. Но человек написал так намеренно,
+        # и спорить с ним незачем.
+        if bare.isupper() and len(bare) > 1:
+            return word
 
         if low in KNOWN_BRANDS:
             return word.replace(bare, KNOWN_BRANDS[low])
