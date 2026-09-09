@@ -2932,3 +2932,32 @@ def test_manual_move_beats_the_model():
     api = (Path(__file__).resolve().parents[1]
            / "app" / "routers" / "moderation.py").read_text()
     assert 'record(db, moderator, "listing.move"' in api
+
+
+def test_new_computer_sections_are_known_to_the_classifier():
+    """Мониторы и части ПК раскладываются по своим разделам сразу.
+
+    Разделы для мониторов, видеокарт, памяти и накопителей завели позже,
+    а раскладка при переносе о них не знала: всё сваливалось в
+    «Настольные компьютеры». Оттуда разгребали руками, а назавтра
+    приезжала новая партия — и так по кругу.
+
+    Выбор идёт по очкам, а не по порядку в списке, поэтому составные
+    слова весомее одиночных: «кулер для процессора» уходил в процессоры,
+    потому что слово «процессор» длиннее и перевешивало.
+    """
+    from app.core.tg_classify import classify_sub
+
+    cases = {
+        "монитор lg 27": "monitors",
+        "видеокарта rtx 3060": "gpu",
+        "процессор ryzen 5": "cpu",
+        "оперативная память ddr5": "ram",
+        "ssd 1tb": "storage-drives",
+        "материнская плата asus": "motherboards",
+        "кулер для процессора": "psu-cooling",
+        "блок питания 650w": "psu-cooling",
+        "системный блок": "computers",
+    }
+    for text, expected in cases.items():
+        assert classify_sub("electronics", text) == expected, text
