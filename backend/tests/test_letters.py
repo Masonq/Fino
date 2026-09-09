@@ -1288,3 +1288,22 @@ def test_photo_retitle_runs_before_deleting():
     assert source.index("retitle_photo(") < source.index("_purge_hopeless()")
     # И объём заметный: это главная работа ночи.
     assert "PHOTO_RETITLE_LIMIT = 150" in source
+
+
+def test_clothes_sorting_runs_at_night_too():
+    """Разбор одежды идёт ночью, а не руками.
+
+    Сперва я оставил его на ручной запуск — а работать должно само,
+    как и всё остальное. Вручную запускают один раз и забывают.
+
+    Порядок: после починки заголовков, до удаления безнадёжных. У
+    объявления с починенным названием больше шансов, что вид вещи
+    определится верно.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "nightly.py").read_text()
+
+    assert "sort_clothes(apply=True" in source
+    assert source.index("retitle_photo(") < source.index("sort_clothes(")
+    assert source.index("sort_clothes(") < source.index("_purge_hopeless()")
+    assert "CLOTHES_LIMIT = 100" in source
