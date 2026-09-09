@@ -25,7 +25,7 @@ from sqlalchemy import Date, DateTime, Integer, String, UniqueConstraint, case, 
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.clock import utcnow
+from app.core.clock import local_today, utcnow
 from app.core.database import Base
 
 
@@ -146,7 +146,9 @@ def record_visit(db, request, user_id=None) -> None:
         now = utcnow()
         statement = (
             insert(VisitDaily)
-            .values(day=date_type.today(), visitor_key=key, hits=1,
+            # День по времени площадки: по UTC «сегодня» наступает на
+            # час-два позже, и заходы утром попадали во вчерашний день.
+            .values(day=local_today(), visitor_key=key, hits=1,
                     last_hit_at=now)
             # Уже заходил сегодня — новой строки не будет: человек в
             # счётчике остаётся одним.

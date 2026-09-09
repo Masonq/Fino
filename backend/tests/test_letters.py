@@ -1325,3 +1325,32 @@ def test_deploy_does_not_wake_disabled_timers():
     assert "SKIP_TIMERS=" in deploy
     assert "plonk-tg-import.timer" in deploy.split("SKIP_TIMERS=")[1][:120]
     assert "plonk-digest.timer" in deploy.split("SKIP_TIMERS=")[1][:120]
+
+
+def test_stats_count_days_by_local_time():
+    """Дни в статистике считаются по времени площадки, а не по UTC.
+
+    UTC отстаёт от Белграда на час летом и на два зимой. Оттого десятое
+    число не появлялось в графике, хотя на часах уже десятое: по UTC
+    ещё длилось девятое.
+
+    Та же беда была с заходами: утренние попадали во вчерашний день.
+    """
+    from datetime import datetime, timezone
+
+    from app.core.clock import local_date, local_today
+
+    # Момент, когда в Белграде уже завтра, а по UTC ещё сегодня.
+    late = datetime(2026, 9, 9, 22, 30, tzinfo=timezone.utc)
+    assert local_date(late).day == 10
+
+    assert local_today().isoformat()
+
+    stats = (Path(__file__).resolve().parents[1]
+             / "app" / "routers" / "admin_stats.py").read_text()
+    assert 'func.timezone("Europe/Belgrade"' in stats
+    assert "last = local_today()" in stats
+
+    visits = (Path(__file__).resolve().parents[1]
+              / "app" / "models" / "visit_daily.py").read_text()
+    assert "day=local_today()" in visits

@@ -117,7 +117,11 @@ def daily(
     since = (utcnow() - timedelta(days=days)).replace(
         hour=0, minute=0, second=0, microsecond=0)
 
-    day = func.date(Listing.created_at)
+    # Дни по времени площадки, а не по UTC.
+    #
+    # UTC отстаёт от Белграда на час летом и на два зимой: десятое число
+    # не появлялось в графике, хотя на часах уже десятое.
+    day = func.date(func.timezone("Europe/Belgrade", Listing.created_at))
     rows = (
         db.query(
             day.label("day"),
@@ -131,9 +135,10 @@ def daily(
     by_day = {str(d): (int(total), int(own or 0)) for d, total, own in rows}
 
     users_by_day = dict(
-        db.query(func.date(User.created_at), func.count(User.id))
+        db.query(func.date(func.timezone("Europe/Belgrade", User.created_at)),
+                 func.count(User.id))
         .filter(User.created_at >= since)
-        .group_by(func.date(User.created_at))
+        .group_by(func.date(func.timezone("Europe/Belgrade", User.created_at)))
         .all()
     )
 
@@ -153,7 +158,7 @@ def daily(
     logins_by_day = {
         day: (int(times), int(people))
         for day, times, people in db.query(
-            func.date(LoginEvent.created_at),
+            func.date(func.timezone("Europe/Belgrade", LoginEvent.created_at)),
             func.count(LoginEvent.id),
             func.count(func.distinct(LoginEvent.user_id)),
         ).join(User, User.id == LoginEvent.user_id)
@@ -162,7 +167,8 @@ def daily(
                 # входят по работе, и в статистике их быть не должно.
                 # Именно из-за них числа выглядели живее, чем есть.
                 User.role.notin_((UserRole.admin, UserRole.moderator)))
-        .group_by(func.date(LoginEvent.created_at)).all()
+        .group_by(func.date(func.timezone("Europe/Belgrade",
+                                          LoginEvent.created_at))).all()
     }
 
     # Новые и вернувшиеся.
@@ -199,9 +205,17 @@ def daily(
         ).filter(VisitDaily.day >= since.date()).group_by(VisitDaily.day).all()
     }
 
+    # Список дней отсчитываем от сегодняшнего по времени площадки.
+    #
+    # Раньше он строился от utcnow(), и последним днём выходило вчера:
+    # в Белграде уже десятое, а по UTC ещё длилось девятое — десятого в
+    # графике просто не было.
+    from app.core.clock import local_today
+
+    last = local_today()
     out = []
     for step in range(days + 1):
-        current = (since + timedelta(days=step)).date()
+        current = last - timedelta(days=days - step)
         key = str(current)
         total, own = by_day.get(key, (0, 0))
         visitors, hits = visits_by_day.get(current, (0, 0))
