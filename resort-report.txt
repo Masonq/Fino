@@ -1,0 +1,103 @@
+объявлений в разделах с подразделами: 1243
+переедет: 84
+
+  appliances-small → vacuum-cleaners: 15
+      Моющий пылесос Rowenta
+      Робот-пылесос Xiaomi Robot Vacuum E5
+      Робот пылесос Xiaomi e5
+
+  home-garden → storage-home: 10
+      Органайзер для ватных палочек и дисков
+      Органайзер, Икея
+      Органайзер для хранения ikea
+
+  appliances-small → kitchen-small: 9
+      Микроволновка candy
+      Кофемашина Nescafe Dolce Gusto Krups
+      Кофеварка рожкового типа DeLonghi aparat za espresso EC2
+
+  hobby-sport → board-games: 7
+      Настольная игра на английском Shitty choices
+      Настольная игра Дорога Приключений
+      Пазлы 3000 и 1000 деталей
+
+  home-garden → lighting: 5
+      Встраиваемый LED светильник 24W (новый)
+      Люстра
+      Лампа икея, 500 динар, Белград, Бигфешн
+
+  appliances-major → fridges: 5
+      Холодильник Beko l54265
+      Старый рабочий холодильник
+      Холодильник
+
+  appliances-major → washing-machines: 4
+      Стиральная машина LG Direct Drive на 6 кг
+      Стиральная машина gorenje SensoCare
+      Стиральная машина в идеале
+
+  appliances-small → irons-steamers: 4
+      Парогенератор утюг Morphy Richards
+      Утюг Tefal
+      Утюг gorenje
+
+  services → photo-video: 3
+      Фотографии-коллажи
+      Фотосессия по цене одного ужина в Белграде
+      Фотосессия в Белграде в стиле City Lights с большой скид
+
+  fashion → shoes: 2
+      Босоножки с SHEIN
+      Босоножки catwalk
+
+  hobby-sport → skate-roller: 2
+      Лонгборд Fish 70 мм
+      Лонгборд Loaded Chinchiller 34”
+
+  electronics → psu-cooling: 2
+      Блок питания
+      Блок питания AeroCool KCAS 1000W
+
+  electronics → tv-projectors: 2
+      Проектор Wanbo T2 Max
+      Проектор Kettz KT-P200
+
+  electronics → gaming: 2
+      Steam Deck LCD 512GB
+      Nintendo Switch OLED (Чипованная)
+
+  electronics → phones: 2
+      iPhone 14 Pro Max
+      iPhone 12 Pro 128 ГБ
+
+  electronics → tv-audio: 1
+      Наушники shark butterfly
+
+  appliances-major → stoves-ovens: 1
+      Электрическая варочная панель
+
+  appliances-small → personal-care-devices: 1
+      Фен Franko FHD‑1052
+
+  services → tutoring: 1
+      Уроки сербского
+
+  kids → kids-furniture: 1
+      Детская кроватка 120 см
+
+  electronics → laptops: 1
+      Makbook Air m2/8/256 silver
+
+  electronics → peripherals: 1
+      Док-станция Baseus UnionJoy 17-in-1
+
+  electronics → smart-home: 1
+      Умный дом
+
+  kids → kids-clothing: 1
+      Детская обувь
+
+  electronics → network-gear: 1
+      Wi-Fi адаптер TP-Link Archer T2U Plus
+
+это был показ, ничего не перенесено. Для переноса — с ключом --apply
