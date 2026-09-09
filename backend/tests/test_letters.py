@@ -1268,3 +1268,23 @@ def test_listings_without_city_are_deleted_in_batches():
     assert "select distinct listing_id from chats" in block
     # Удаляем после дописки города, а не до неё.
     assert source.index("fill_cities") < source.index('done["удалено без города"]')
+
+
+def test_photo_retitle_runs_before_deleting():
+    """Заголовки чинятся по фотографии до удаления безнадёжных.
+
+    Порядок важен: сперва даём объявлению шанс, потом убираем. Иначе
+    удалим то, что можно было спасти — а спасается восемь из десяти.
+
+    Собрать заголовок из описания часто не выходит: описания нет вовсе.
+    А на фотографии видно вещь: «Мякиши» становятся «Игрушкой мягкой
+    зелёной», «Завалялись русскоязычные книги» — «Мангой Истребитель
+    демонов».
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "nightly.py").read_text()
+
+    assert "retitle_by_photo" in source
+    assert source.index("retitle_photo(") < source.index("_purge_hopeless()")
+    # И объём заметный: это главная работа ночи.
+    assert "PHOTO_RETITLE_LIMIT = 150" in source
