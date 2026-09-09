@@ -3024,3 +3024,19 @@ def test_resort_works_on_our_own_database():
     assert "moved_by_hand" in source
     # И ничего не меняем без ключа.
     assert 'if not apply:' in source
+
+
+def test_lamp_goes_to_lighting_not_decor():
+    """Лампа — это освещение, а не декор.
+
+    «Лампа» и «торшер» стояли и в освещении, и в декоре. Выбор идёт по
+    очкам, и два раздела с одним словом гасили друг друга: лампа из
+    IKEA не попадала никуда, а в живой выгрузке уехала в декор.
+    """
+    from app.core.tg_classify import classify_sub
+
+    assert classify_sub("home-garden", "лампа икея 500 динар") == "lighting"
+    assert classify_sub("home-garden", "торшер напольный") == "lighting"
+    # А декор остаётся декором.
+    assert classify_sub("home-garden", "ваза керамическая") == "decor"
+    assert classify_sub("home-garden", "картина на холсте") == "decor"
