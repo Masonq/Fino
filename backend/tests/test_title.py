@@ -3040,3 +3040,23 @@ def test_lamp_goes_to_lighting_not_decor():
     # А декор остаётся декором.
     assert classify_sub("home-garden", "ваза керамическая") == "decor"
     assert classify_sub("home-garden", "картина на холсте") == "decor"
+
+
+def test_cooler_bag_is_not_a_fridge():
+    """Сумка-холодильник — это сумка, а не техника.
+
+    Слово «холодильник» тут внутри составного, и раскладка честно его
+    находила: термосумка уезжала в холодильники. Поймал на живой
+    выгрузке, причём с первого раза сузить приметы не вышло — дефис
+    разбивал слово, и оно всё равно совпадало.
+
+    Подменяем на слово без омонима, как уже сделано для баскетбольного
+    кольца и кольца диафрагмы.
+    """
+    from app.core.tg_classify import classify_sub
+
+    assert classify_sub("appliances-major", "термосумка / сумка-холодильник") is None
+    assert classify_sub("appliances-major", "сумка-холодильник") is None
+    # Настоящие холодильники не пострадали.
+    assert classify_sub("appliances-major", "холодильник beko l54265") == "fridges"
+    assert classify_sub("appliances-major", "старый рабочий холодильник") == "fridges"
