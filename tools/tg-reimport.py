@@ -185,9 +185,25 @@ def _apply_to(db, row: Listing, msg, chat_id: int, stats: dict, apply: bool) -> 
             tr.description = new_desc
 
     # Категория: правила с тех пор перестали путать разделы.
+    #
+    # Но человека не переспориваем. Если объявление переносили руками —
+    # в журнале есть запись listing.move, — раздел оставляем как есть.
+    #
+    # Раньше раскладка меняла его безусловно: перенёс объявление днём, а
+    # ночью оно возвращалось обратно. Человек видел, что его работа
+    # отменяется, и не понимал почему.
+    #
+    # Правило простое: живое решение сильнее угаданного. Модель ошибается
+    # чаще, чем тот, кто держал объявление в руках.
     slug = parsed["sub_slug"] or parsed["category_slug"]
     category = db.query(Category).filter(Category.slug == slug).first()
-    if category and category.id != row.category_id:
+
+    moved_by_hand = db.query(AuditEntry).filter(
+        AuditEntry.action == "listing.move",
+        AuditEntry.target_id == str(row.id),
+    ).first() is not None
+
+    if category and category.id != row.category_id and not moved_by_hand:
         # Без названия рядом судить о смене раздела невозможно.
         print(f"  К {row_category(db, row)} → {slug:<14} "
               f"{(new_title or was_title)[:44]}")

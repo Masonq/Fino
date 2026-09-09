@@ -2909,3 +2909,26 @@ def test_empty_answer_is_not_an_answer():
         assert len(calls) == 2, "пустой ответ должен был увести к следующей"
     finally:
         ai._post = real_post
+
+
+def test_manual_move_beats_the_model():
+    """Ночная раскладка не отменяет ручной перенос.
+
+    Раньше она меняла раздел безусловно: перенёс объявление днём, а
+    ночью оно возвращалось обратно. Человек видел, что его работа
+    отменяется, и не понимал почему.
+
+    Теперь если в журнале есть запись listing.move — раздел оставляем
+    как есть. Правило простое: живое решение сильнее угаданного, модель
+    ошибается чаще, чем тот, кто держал объявление в руках.
+    """
+    source = (Path(__file__).resolve().parents[2]
+              / "tools" / "tg-reimport.py").read_text()
+
+    assert 'AuditEntry.action == "listing.move"' in source
+    assert "not moved_by_hand" in source
+
+    # И сам перенос эту запись оставляет.
+    api = (Path(__file__).resolve().parents[1]
+           / "app" / "routers" / "moderation.py").read_text()
+    assert 'record(db, moderator, "listing.move"' in api
