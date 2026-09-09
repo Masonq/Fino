@@ -3126,3 +3126,29 @@ def test_accessories_have_their_own_shelves():
     assert classify_sub("fashion", "шапка зимняя") == "hats-scarves"
     assert classify_sub("fashion", "солнцезащитные очки ray-ban") == "glasses"
     assert classify_sub("fashion", "зонт автомат") == "umbrellas"
+
+
+def test_clothes_sorting_is_cautious():
+    """Разбор одежды по фотографии осторожен.
+
+    В «Одежде» застряли пятьсот объявлений: «Куртка Zara», «Футболка
+    Lime». Вещь названа, а пол — нет, и по заголовку не понять. Зато
+    видно на фотографии.
+
+    Правила осторожности: не уверена — оставляем как есть, пусть висит
+    в «Одежде»; это лучше, чем женская вещь в мужском разделе.
+    Объявления без фотографии не трогаем — смотреть не на что. Ручные
+    переносы не отменяем.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "sort_clothes.py").read_text()
+
+    # Нейросети прямо велено молчать при сомнении.
+    assert "unclear" in source
+    assert "Ошибиться хуже, чем" in source
+    # Без фотографии не трогаем.
+    assert "if not photo:" in source
+    # Ручной перенос уважаем.
+    assert "action = 'listing.move'" in source
+    # И ничего не меняем без ключа.
+    assert "if apply:" in source
