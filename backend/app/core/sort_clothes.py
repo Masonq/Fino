@@ -154,7 +154,15 @@ def run(apply: bool, limit: int) -> None:
                 title = next((t.title for t in listing.translations
                               if t.language == "ru" and t.title), "")
 
+            # Пробуем дважды.
+            #
+            # Треть снимков не укладывалась даже в шестьдесят секунд, и
+            # объявление просто терялось. Вторая попытка обычно
+            # проходит: нейросеть не отказывает, она бывает занята.
             answer = ask_photo(f"{PROMPT}\n\nЗаголовок: {title}", data)
+            if not answer:
+                answer = ask_photo(f"{PROMPT}\n\nЗаголовок: {title}", data)
+
             if not answer:
                 unclear += 1
                 continue
