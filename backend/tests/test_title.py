@@ -3060,3 +3060,25 @@ def test_cooler_bag_is_not_a_fridge():
     # Настоящие холодильники не пострадали.
     assert classify_sub("appliances-major", "холодильник beko l54265") == "fridges"
     assert classify_sub("appliances-major", "старый рабочий холодильник") == "fridges"
+
+
+def test_shoes_are_recognised_by_their_many_names():
+    """Обувь узнаётся по всем словам, какими её называют.
+
+    Стояло восемь слов, а обувь называют десятком: «Кеды Converse»,
+    «Балетки», «Лодочки», «New Balance» проходили мимо и оставались в
+    родительском разделе — поймал на живой выгрузке, где в «Одежде»
+    застряли пятьсот объявлений.
+
+    «кед» без пробела: с пробелом не совпадало с «кеды», а именно так
+    их и называют.
+    """
+    from app.core.tg_classify import classify_sub
+
+    for text in ("кеды converse all star", "new balance 2002r",
+                 "балетки в размере 36", "лодочки/слингбэки zara",
+                 "stella mccartney sneakers", "мокасины кожаные"):
+        assert classify_sub("fashion", text) == "shoes", text
+
+    # Заколки и резинки — аксессуары, а не одежда.
+    assert classify_sub("fashion", "заколка крабик") == "watches"
