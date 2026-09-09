@@ -3176,3 +3176,29 @@ def test_photo_question_is_free_form():
     block = source.split("def ask_photo(")[1].split("\ndef ")[0]
     assert "responseSchema" not in block, "ответ свободный, без схемы"
     assert "wait=PHOTO_TIMEOUT" in block
+
+
+def test_shoes_are_sorted_by_gender_with_a_fallback():
+    """Обувь раскладывается по полу, а неясная — в общий раздел.
+
+    Сперва я сделал обувь общей, решив, что раздел один на всех. Верно
+    было замечено: туфли бывают и женские, и мужские, и в одной куче их
+    искать неудобно.
+
+    Общий раздел при этом оставлен запасным: если пол не определился,
+    обувь уходит туда. Это лучше, чем оставлять её в «Одежде»
+    вперемешку с платьями. Со временем, когда живых объявлений станет
+    больше, общий раздел можно будет убрать.
+
+    Украшения и зонты остаются без пола: серьги женские почти всегда, а
+    зонт вообще ничей.
+    """
+    from app.core.sort_clothes import FALLBACK, GENDERLESS, SECTIONS
+
+    assert SECTIONS[("women", "shoes")] == "women-shoes"
+    assert SECTIONS[("men", "shoes")] == "men-shoes"
+    # Пол не ясен — общий раздел.
+    assert FALLBACK["shoes"] == "shoes"
+    # А обуви среди бесполых больше нет.
+    assert "shoes" not in GENDERLESS
+    assert GENDERLESS["jewelry"] == "watches"

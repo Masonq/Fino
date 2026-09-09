@@ -43,6 +43,10 @@ NEW = {
         ("women-suits", "Костюмы и комбинезоны", "Suits and jumpsuits", "Odela i kombinezoni", []),
         ("women-underwear", "Бельё и купальники", "Underwear and swimwear", "Donji veš i kupaći", []),
         ("women-sportswear", "Спортивная одежда", "Sportswear", "Sportska odeća", []),
+        # Обувь внутри пола: женские босоножки и мужские ботинки в одной
+        # куче искать неудобно. Общий раздел «Обувь» при этом остаётся —
+        # туда идёт то, где пол не определить.
+        ("women-shoes", "Женская обувь", "Women's shoes", "Ženska obuća", []),
     ],
     "men": [
         ("men-tops", "Футболки и поло", "T-shirts and polos", "Majice i polo majice", []),
@@ -53,6 +57,7 @@ NEW = {
         ("men-suits", "Костюмы и пиджаки", "Suits and blazers", "Odela i sakoi", []),
         ("men-underwear", "Бельё и носки", "Underwear and socks", "Donji veš i čarape", []),
         ("men-sportswear", "Спортивная одежда", "Sportswear", "Sportska odeća", []),
+        ("men-shoes", "Мужская обувь", "Men's shoes", "Muška obuća", []),
     ],
 
     # Аксессуары: шапки, шарфы и очки шли отдельным потоком и оседали в

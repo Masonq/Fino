@@ -540,7 +540,12 @@ def ask_photo(prompt: str, photo: bytes) -> str | None:
             {"text": prompt},
             {"inline_data": {"mime_type": "image/jpeg", "data": small}},
         ]}],
-        "generationConfig": {"temperature": 0, "maxOutputTokens": 20},
+        # Сто, а не двадцать.
+        #
+        # Двадцати не хватало даже на два слова: ответ обрывался на
+        # «{ "title":» — модель начинала отвечать по-своему, а мы видели
+        # огрызок и считали, что она не поняла.
+        "generationConfig": {"temperature": 0, "maxOutputTokens": 100},
     }, {}, "gemini", wait=PHOTO_TIMEOUT)
 
     if not data:

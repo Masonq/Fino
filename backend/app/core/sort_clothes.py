@@ -38,7 +38,8 @@ PROMPT = """Посмотри на фотографию одежды и отве�
 
 Первое слово — для кого вещь: women, men или unclear.
 Второе слово — что это: dresses, skirts, tops, shirts, knitwear,
-outerwear, pants, suits, underwear, sportswear или unclear.
+outerwear, pants, suits, underwear, sportswear, shoes, bags, hats,
+gloves, belts, glasses, umbrella, jewelry или unclear.
 
 Если сомневаешься хоть в чём-то — пиши unclear. Ошибиться хуже, чем
 промолчать.
@@ -65,7 +66,34 @@ SECTIONS = {
     ("men", "suits"): "men-suits",
     ("men", "underwear"): "men-underwear",
     ("men", "sportswear"): "men-sportswear",
+    # Обувь тоже по полу: женские босоножки и мужские ботинки в одной
+    # куче искать неудобно.
+    ("women", "shoes"): "women-shoes",
+    ("men", "shoes"): "men-shoes",
 }
+
+# Вещи, которым пол не нужен.
+#
+# Кеды остаются кедами независимо от того, чьи они, и раздел «Обувь» у
+# нас общий. Раньше такие объявления уходили в «не поняла»: нейросеть
+# честно писала unclear про пол, и мы их пропускали — хотя вид вещи она
+# определила верно.
+GENDERLESS = {
+    # Обуви здесь нет: у неё теперь свои разделы внутри пола. Если пол
+    # не определился, обувь уйдёт в общий раздел ниже — он оставлен как
+    # запасной, пока живых объявлений от людей мало.
+    "bags": "bags",
+    "hats": "hats-scarves",
+    "gloves": "gloves",
+    "belts": "belts",
+    "glasses": "glasses",
+    "umbrella": "umbrellas",
+    "jewelry": "watches",
+}
+
+
+# Куда класть вещь, если пол не определился, а вид понятен.
+FALLBACK = {"shoes": "shoes"}
 
 
 def run(apply: bool, limit: int) -> None:
@@ -131,15 +159,38 @@ def run(apply: bool, limit: int) -> None:
                 unclear += 1
                 continue
 
-            parts = answer.strip().lower().split()
-            if len(parts) < 2:
+            # Ищем свои слова где угодно в ответе.
+            #
+            # Модель бывает многословна: то обернёт ответ в кавычки, то
+            # начнёт с пояснения. Просить её молчать бесполезно —
+            # проще найти в тексте то, что нам нужно.
+            words = answer.strip().lower().replace('"', " ").split()
+            gender = next((w for w in words if w in ("women", "men")), None)
+            kinds = {k[1] for k in SECTIONS} | set(GENDERLESS)
+            kind = next((w for w in words if w in kinds), None)
+
+            if not kind:
                 unclear += 1
+                print(f"  ? {title[:44]:46s} — {answer.strip()[:40]}")
                 continue
 
-            target = SECTIONS.get((parts[0], parts[1]))
+            # Обувь, сумки и аксессуары кладём без оглядки на пол: раздел
+            # у них общий.
+            if kind in GENDERLESS:
+                target = GENDERLESS[kind]
+            elif gender:
+                target = SECTIONS.get((gender, kind))
+            elif kind in FALLBACK:
+                # Пол не определился, но вещь ясна: кладём в общий
+                # раздел. Обувь без пола в «Обуви» лучше, чем в
+                # «Одежде» вперемешку с платьями.
+                target = FALLBACK[kind]
+            else:
+                unclear += 1
+                print(f"  ? {title[:44]:46s} — пол не ясен ({kind})")
+                continue
             if not target or target not in slugs:
                 unclear += 1
-                print(f"  ? {title[:44]:46s} — {' '.join(parts[:2])}")
                 continue
 
             print(f"  → {target:18s} {title[:44]}")
