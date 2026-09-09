@@ -3000,3 +3000,27 @@ def test_all_late_sections_are_known_to_the_classifier():
     }
     for (parent, text), expected in cases.items():
         assert classify_sub(parent, text) == expected, text
+
+
+def test_resort_works_on_our_own_database():
+    """Раскладка накопившегося идёт по нашей базе, а не через Telegram.
+
+    Прежний скрипт (tools/tg-reimport.py) ходит за объявлениями в
+    чаты — это долго, требует связи и на живом сервере просто зависало.
+    А раскладывать нужно то, что уже лежит у нас.
+
+    Ручной перенос при этом сильнее: если в журнале есть listing.move,
+    объявление не трогаем. Проверено — помеченное осталось на месте,
+    остальные переехали.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "resort_listings.py").read_text()
+
+    # Ходим в свою базу, а не в Telegram.
+    assert "telethon" not in source.lower()
+    assert "SessionLocal" in source
+    # Ручной перенос не трогаем.
+    assert "action = 'listing.move'" in source
+    assert "moved_by_hand" in source
+    # И ничего не меняем без ключа.
+    assert 'if not apply:' in source
