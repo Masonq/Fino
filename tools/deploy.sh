@@ -96,8 +96,26 @@ for unit in deploy/plonk-*.service deploy/plonk-*.timer; do
   cp "$unit" /etc/systemd/system/
 done
 systemctl daemon-reload
+# Расписания, которые деплой не включает.
+#
+# Перенос из чатов и сводку мы выключаем сознательно, а деплой ставил
+# их обратно при каждом раскате: между раскатом и командой выключения
+# перенос успевал отработать один раз и привезти партию объявлений.
+# Так и вышло вчера в 21:21 — сотня разом, одной минутой.
+#
+# Теперь они просто не включаются. Понадобятся — включишь руками:
+#   systemctl enable --now plonk-tg-import.timer
+SKIP_TIMERS="plonk-tg-import.timer plonk-digest.timer"
+
 for timer in deploy/plonk-*.timer; do
-  systemctl enable --now "$(basename "$timer")" 2>/dev/null || true
+  name="$(basename "$timer")"
+  case " $SKIP_TIMERS " in
+    *" $name "*)
+      echo "  ~ $name не включаю (выключен сознательно)"
+      continue
+      ;;
+  esac
+  systemctl enable --now "$name" 2>/dev/null || true
 done
 # Статику теперь отдаёт nginx прямо из frontend/dist, а не vite preview:
 # один процесс на JavaScript, раздающий каждый файл каждому посетителю,

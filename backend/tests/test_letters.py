@@ -1307,3 +1307,21 @@ def test_clothes_sorting_runs_at_night_too():
     assert source.index("retitle_photo(") < source.index("sort_clothes(")
     assert source.index("sort_clothes(") < source.index("_purge_hopeless()")
     assert "CLOTHES_LIMIT = 100" in source
+
+
+def test_deploy_does_not_wake_disabled_timers():
+    """Деплой не включает расписания, выключенные сознательно.
+
+    Перенос из чатов и сводку мы выключаем, а деплой ставил их обратно
+    при каждом раскате. Между раскатом и командой выключения перенос
+    успевал отработать один раз и привезти партию объявлений — так и
+    вышло: сотня разом, одной минутой.
+
+    Теперь они не включаются вовсе. Понадобятся — включаются руками.
+    """
+    deploy = (Path(__file__).resolve().parents[2]
+              / "tools" / "deploy.sh").read_text()
+
+    assert "SKIP_TIMERS=" in deploy
+    assert "plonk-tg-import.timer" in deploy.split("SKIP_TIMERS=")[1][:120]
+    assert "plonk-digest.timer" in deploy.split("SKIP_TIMERS=")[1][:120]
