@@ -863,3 +863,22 @@ def test_images_load_by_one_rule_everywhere():
         text = (root / name).read_text()
         if 'loading="lazy"' in text:
             assert 'decoding="async"' in text, name
+
+
+def test_category_tree_updates_within_an_hour():
+    """Новые разделы появляются на сайте в тот же час, а не назавтра.
+
+    Дерево разделов хранилось в браузере сутки, и при устаревании
+    показывалось старое, а свежее подтягивалось в фоне: новые разделы
+    появлялись только со второго захода на следующий день. Завели
+    двадцать три раздела — а на сайте их нет, и непонятно, сломалось
+    что-то или нет.
+
+    Теперь срок час, и при устаревании показываем свежее. Если запрос
+    не удался — сохранённое: пустое дерево хуже устаревшего.
+    """
+    client = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "api" / "client.js").read_text()
+
+    assert "FRESH_FOR = 60 * 60 * 1000" in client
+    assert "return refresh().catch(() => saved.tree)" in client
