@@ -3274,3 +3274,38 @@ def test_titles_can_be_fixed_by_photo():
     # Пометку снимаем при успехе, иначе объявление удалят ночью.
     assert "AuditEntry.action == FAILED_ACTION" in source
     assert ".delete(synchronize_session=False)" in source
+
+
+def test_brands_are_capitalised():
+    """Марки в заголовке пишутся с большой буквы.
+
+    «палатка quechua arpenaz», «монитор iiyama», «юбка maccain sport» —
+    латиница строчными выглядит небрежно, будто человек торопился и не
+    перечитал. А марка это первое, за что цепляется глаз при выборе.
+    """
+    from app.core.title_rules import capitalize_brands
+
+    assert capitalize_brands("палатка quechua arpenaz") == "палатка Quechua Arpenaz"
+    assert capitalize_brands("юбка maccain sport") == "юбка Maccain Sport"
+    assert capitalize_brands("пылесос dyson v11") == "пылесос Dyson v11"
+
+
+def test_brand_case_respects_how_brands_write_themselves():
+    """Устоявшиеся написания не ломаем.
+
+    «MacBook» не становится «Macbook», «iPhone» не становится
+    «Iphone» — так пишет сам производитель, и спорить с ним незачем.
+
+    Модели с цифрами, единицы и слова, уже написанные заглавными
+    целиком, тоже не трогаем: заглавная буква там ничего не добавляет,
+    а «SHEIN» человек написал так намеренно.
+    """
+    from app.core.title_rules import capitalize_brands
+
+    assert "MacBook" in capitalize_brands("Macbook air m1")
+    assert "iPhone" in capitalize_brands("iphone 14 pro")
+    assert "SHEIN" in capitalize_brands("футболка с shein")
+    # Модель с цифрами остаётся как есть.
+    assert "g2730hsu" in capitalize_brands("монитор iiyama g2730hsu")
+    # Единицы не трогаем.
+    assert "gb" in capitalize_brands("память 16 gb")

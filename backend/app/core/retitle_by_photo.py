@@ -110,7 +110,12 @@ def run(apply: bool, limit: int) -> None:
                 unclear += 1
                 continue
 
+            from app.core.title_rules import capitalize_brands
+
             name = " ".join(answer.strip().strip('"').split())[:60]
+            # Марку с большой буквы: латиница строчными выглядит
+            # небрежно, будто человек торопился и не перечитал.
+            name = capitalize_brands(name)
             if len(name) < 4:
                 unclear += 1
                 continue

@@ -535,3 +535,86 @@ def needs_help(title: str | None, description: str | None,
     if not (description or "").strip():
         return True
     return False
+
+
+# Как пишутся марки, у которых заглавные буквы стоят не в начале.
+#
+# «MacBook», «iPhone», «G-Master» — их написание устоялось, и делать из
+# них «Macbook» или «Iphone» значит спорить с самим производителем.
+KNOWN_BRANDS = {
+    "macbook": "MacBook", "iphone": "iPhone", "ipad": "iPad",
+    "imac": "iMac", "ipod": "iPod", "airpods": "AirPods",
+    "playstation": "PlayStation", "xbox": "Xbox", "nintendo": "Nintendo",
+    "iiyama": "iiyama", "lg": "LG", "hp": "HP", "asus": "ASUS",
+    "msi": "MSI", "acer": "Acer", "benq": "BenQ", "aoc": "AOC",
+    "jbl": "JBL", "bmw": "BMW", "kfc": "KFC", "ikea": "IKEA",
+    "zara": "Zara", "hm": "H&M", "nike": "Nike", "adidas": "adidas",
+    "puma": "Puma", "reebok": "Reebok", "levis": "Levi's",
+    "uniqlo": "Uniqlo", "shein": "SHEIN", "temu": "Temu",
+    "samsung": "Samsung", "xiaomi": "Xiaomi", "huawei": "Huawei",
+    "sony": "Sony", "canon": "Canon", "nikon": "Nikon",
+    "dyson": "Dyson", "bosch": "Bosch", "beko": "Beko",
+    "gorenje": "Gorenje", "tefal": "Tefal", "philips": "Philips",
+    "delonghi": "De'Longhi", "krups": "Krups", "quechua": "Quechua",
+    "decathlon": "Decathlon", "converse": "Converse",
+}
+
+# Слова, которые пишутся строчными, даже будучи латиницей: единицы,
+# приставки к моделям и прочая мелочь, где заглавная буква только
+# мешает.
+KEEP_LOWER = {
+    "gb", "tb", "mb", "kb", "ghz", "mhz", "mm", "cm", "kg", "ml",
+    "new", "b/u", "pro", "max", "mini", "plus", "ultra", "lite",
+    "и", "с", "в", "на", "для", "из", "по",
+}
+
+
+def capitalize_brands(title: str) -> str:
+    """
+    Пишет латинские слова в заголовке с большой буквы.
+
+    «Двухместная палатка quechua arpenaz» → «... Quechua Arpenaz».
+    Латиница в объявлении почти всегда марка или модель, а строчными она
+    выглядит небрежно — будто человек торопился и не перечитал.
+
+    Чего не трогаем:
+
+      • слова из цифр и единиц: «16/256», «27», «gb» — заглавная буква
+        там ни к чему;
+
+      • устоявшиеся написания: «MacBook» не становится «Macbook»,
+        «iPhone» не становится «Iphone»;
+
+      • слова, уже написанные заглавными целиком: «SHEIN», «ASUS» —
+        человек написал их так намеренно.
+    """
+    if not title:
+        return title
+
+    def fix(word: str) -> str:
+        bare = word.strip("()[],.:;\"'")
+        if not bare or not _LATIN_RE.search(bare):
+            return word
+
+        low = bare.lower()
+
+        # Устоявшееся написание — как у производителя.
+        if low in KNOWN_BRANDS:
+            return word.replace(bare, KNOWN_BRANDS[low])
+
+        # Единицы и приставки к моделям оставляем строчными.
+        if low in KEEP_LOWER:
+            return word
+
+        # Уже заглавными целиком — не трогаем: так и хотели.
+        if bare.isupper():
+            return word
+
+        # Есть цифры — это модель: «g2730hsu», «m1», «16/256». Заглавная
+        # буква тут ничего не добавляет.
+        if any(ch.isdigit() for ch in bare):
+            return word
+
+        return word.replace(bare, bare[0].upper() + bare[1:])
+
+    return " ".join(fix(w) for w in title.split())
