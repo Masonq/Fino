@@ -3287,7 +3287,8 @@ def test_brands_are_capitalised():
 
     assert capitalize_brands("палатка quechua arpenaz") == "палатка Quechua Arpenaz"
     assert capitalize_brands("юбка maccain sport") == "юбка Maccain Sport"
-    assert capitalize_brands("пылесос dyson v11") == "пылесос Dyson v11"
+    # Модель заглавными: «V11», а не «v11».
+    assert capitalize_brands("пылесос dyson v11") == "пылесос Dyson V11"
 
 
 def test_brand_case_respects_how_brands_write_themselves():
