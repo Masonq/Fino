@@ -563,9 +563,23 @@ KNOWN_BRANDS = {
 # приставки к моделям и прочая мелочь, где заглавная буква только
 # мешает.
 KEEP_LOWER = {
-    "gb", "tb", "mb", "kb", "ghz", "mhz", "mm", "cm", "kg", "ml",
-    "new", "b/u", "pro", "max", "mini", "plus", "ultra", "lite",
-    "и", "с", "в", "на", "для", "из", "по",
+    "new", "b/u", "и", "с", "в", "на", "для", "из", "по",
+}
+
+# Единицы — заглавными: так пишут производители, и в перечне
+# характеристик они читаются быстрее.
+UNITS_UPPER = {
+    "gb": "GB", "tb": "TB", "mb": "MB", "kb": "KB",
+    "ghz": "GHz", "mhz": "MHz", "hz": "Hz",
+    "mm": "MM", "cm": "CM", "kg": "KG", "ml": "ML",
+    "w": "W", "v": "V", "ah": "Ah",
+}
+
+# Приставки к моделям — с большой буквы: «Pro», «Max», «Ultra» это часть
+# названия, а не служебное слово.
+MODEL_WORDS = {
+    "pro": "Pro", "max": "Max", "mini": "Mini", "plus": "Plus",
+    "ultra": "Ultra", "lite": "Lite", "air": "Air", "se": "SE",
 }
 
 
@@ -593,7 +607,12 @@ def capitalize_brands(title: str) -> str:
 
     def fix(word: str) -> str:
         bare = word.strip("()[],.:;\"'")
-        if not bare or not _LATIN_RE.search(bare):
+        # Своя проверка на латиницу, а не _LATIN_RE.
+        #
+        # Та требует двух букв подряд — для поиска названий вещей это
+        # верно, но «m1» и «v11» тогда остаются строчными, хотя это
+        # тоже модели.
+        if not bare or not any("a" <= ch.lower() <= "z" for ch in bare):
             return word
 
         low = bare.lower()
@@ -602,7 +621,15 @@ def capitalize_brands(title: str) -> str:
         if low in KNOWN_BRANDS:
             return word.replace(bare, KNOWN_BRANDS[low])
 
-        # Единицы и приставки к моделям оставляем строчными.
+        # Единицы — своим написанием.
+        if low in UNITS_UPPER:
+            return word.replace(bare, UNITS_UPPER[low])
+
+        # Приставки к моделям — с большой буквы.
+        if low in MODEL_WORDS:
+            return word.replace(bare, MODEL_WORDS[low])
+
+        # Служебные слова оставляем как есть.
         if low in KEEP_LOWER:
             return word
 
@@ -610,9 +637,15 @@ def capitalize_brands(title: str) -> str:
         if bare.isupper():
             return word
 
-        # Есть цифры — это модель: «g2730hsu», «m1», «16/256». Заглавная
-        # буква тут ничего не добавляет.
+        # Модель с цифрами — целиком заглавными: «g2730hsu» → «G2730HSU»,
+        # «m1» → «M1». Так пишут производители, и человек, ищущий модель,
+        # найдёт совпадение глазами быстрее.
+        #
+        # Но только если буквы там есть: «16/256» и «295х155х110» это
+        # размеры, их поднимать незачем.
         if any(ch.isdigit() for ch in bare):
+            if any(ch.isalpha() for ch in bare):
+                return word.replace(bare, bare.upper())
             return word
 
         return word.replace(bare, bare[0].upper() + bare[1:])

@@ -3305,7 +3305,13 @@ def test_brand_case_respects_how_brands_write_themselves():
     assert "MacBook" in capitalize_brands("Macbook air m1")
     assert "iPhone" in capitalize_brands("iphone 14 pro")
     assert "SHEIN" in capitalize_brands("футболка с shein")
-    # Модель с цифрами остаётся как есть.
-    assert "g2730hsu" in capitalize_brands("монитор iiyama g2730hsu")
-    # Единицы не трогаем.
-    assert "gb" in capitalize_brands("память 16 gb")
+    # Модели — целиком заглавными: так пишут производители, и человек,
+    # ищущий модель, найдёт совпадение глазами быстрее.
+    assert "G2730HSU" in capitalize_brands("монитор iiyama g2730hsu")
+    assert "M1" in capitalize_brands("macbook air m1")
+    assert "V11" in capitalize_brands("пылесос dyson v11")
+    # Единицы тоже: «16 GB», а не «16 gb».
+    assert "GB" in capitalize_brands("память 16 gb")
+    assert "MHz" in capitalize_brands("память 3200 mhz")
+    # А чистые числа не трогаем: «16/256» и «295х155х110» это размеры.
+    assert "16/256" in capitalize_brands("macbook air m1 16/256")
