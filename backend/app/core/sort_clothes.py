@@ -36,7 +36,10 @@ from app.core.database import SessionLocal
 # длинные рассуждения тут только мешают разбирать.
 PROMPT = """Посмотри на фотографию одежды и ответь ровно двумя словами через пробел.
 
-Первое слово — для кого вещь: women, men или unclear.
+Первое слово — для кого вещь: women, men, kids или unclear.
+Пиши kids, если вещь детская: в заголовке указан детский возраст или
+рост, названы «мальчик», «девочка», «детское», либо на снимке видно, что
+вещь мала для взрослого.
 Второе слово — что это: dresses, skirts, tops, shirts, knitwear,
 outerwear, pants, suits, underwear, sportswear, shoes, bags, hats,
 gloves, belts, glasses, umbrella, jewelry или unclear.
@@ -100,6 +103,13 @@ GENDERLESS = {
 
 # Куда класть вещь, если пол не определился, а вид понятен.
 FALLBACK = {"shoes": "shoes"}
+
+# Детская одежда — в свой раздел, а не в мужской или женский.
+#
+# «Лонгслив для мальчика» и «Шорты для мальчика 9-10 лет» уезжали в
+# мужское: нейросеть видела вещь и не видела возраста. Теперь
+# спрашиваем про детское прямо.
+KIDS_SECTION = "kids-clothing"
 
 
 def run(apply: bool, limit: int) -> None:
@@ -179,6 +189,16 @@ def run(apply: bool, limit: int) -> None:
             # начнёт с пояснения. Просить её молчать бесполезно —
             # проще найти в тексте то, что нам нужно.
             words = answer.strip().lower().replace('"', " ").split()
+            # Детское — сразу в детский раздел, вид вещи не важен.
+            if "kids" in words:
+                target = KIDS_SECTION
+                if target in slugs:
+                    print(f"  → {target:18s} {title[:44]}")
+                    done += 1
+                    if apply:
+                        listing.category_id = slugs[target]
+                    continue
+
             gender = next((w for w in words if w in ("women", "men")), None)
             kinds = {k[1] for k in SECTIONS} | set(GENDERLESS)
             kind = next((w for w in words if w in kinds), None)

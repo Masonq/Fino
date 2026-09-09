@@ -3220,3 +3220,27 @@ def test_photo_prompt_explains_the_difference():
     assert "блузки" in PROMPT
     assert "на пуговицах" in PROMPT
     assert "knitwear" in PROMPT and "outerwear" in PROMPT
+
+
+def test_kids_clothes_go_to_the_kids_section():
+    """Детская одежда не уезжает в мужскую или женскую.
+
+    «Лонгслив для мальчика» и «Шорты us polo assn для мальчика 9-10
+    лет» ушли в мужское: нейросеть видела вещь и не видела возраста.
+    Ребёнку эти вещи и правда впору, но искать их будут в детском
+    разделе.
+
+    Теперь спрашиваем прямо: детский возраст или рост в заголовке,
+    слова «мальчик», «девочка», либо на снимке видно, что вещь мала для
+    взрослого.
+    """
+    from app.core.sort_clothes import KIDS_SECTION, PROMPT
+
+    assert "kids" in PROMPT
+    assert "мальчик" in PROMPT and "девочка" in PROMPT
+    assert KIDS_SECTION == "kids-clothing"
+
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "sort_clothes.py").read_text()
+    # Детское решается до пола: вид вещи тут не важен.
+    assert source.index('if "kids" in words') < source.index('gender = next(')
