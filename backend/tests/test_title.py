@@ -3309,7 +3309,9 @@ def test_brand_case_respects_how_brands_write_themselves():
     # Модели — целиком заглавными: так пишут производители, и человек,
     # ищущий модель, найдёт совпадение глазами быстрее.
     assert "G2730HSU" in capitalize_brands("монитор iiyama g2730hsu")
-    assert "M1" in capitalize_brands("macbook air m1")
+    # Модели поднимаем в русских заголовках: там латиница и правда
+    # название. В английских трогаем только известные марки.
+    assert "M1" in capitalize_brands("Ноутбук macbook air m1")
     assert "V11" in capitalize_brands("пылесос dyson v11")
     # Единицы тоже: «16 GB», а не «16 gb».
     assert "GB" in capitalize_brands("память 16 gb")
