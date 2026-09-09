@@ -69,7 +69,7 @@ SECTIONS = {
 
 
 def run(apply: bool, limit: int) -> None:
-    from app.core.ai_title import _ask_gemini_photos
+    from app.core.ai_title import ask_photo
     from app.core.config import settings
     from app.models import Category, Listing, ListingPhoto, ListingStatus
 
@@ -126,7 +126,7 @@ def run(apply: bool, limit: int) -> None:
                 title = next((t.title for t in listing.translations
                               if t.language == "ru" and t.title), "")
 
-            answer = _ask_gemini_photos(f"{PROMPT}\n\nЗаголовок: {title}", [data])
+            answer = ask_photo(f"{PROMPT}\n\nЗаголовок: {title}", data)
             if not answer:
                 unclear += 1
                 continue

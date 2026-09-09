@@ -3152,3 +3152,27 @@ def test_clothes_sorting_is_cautious():
     assert "action = 'listing.move'" in source
     # И ничего не меняем без ключа.
     assert "if apply:" in source
+
+
+def test_photo_question_is_free_form():
+    """Вопрос по фотографии задаётся свободно, а не по схеме заголовка.
+
+    _ask_gemini_photos заточен под заголовки: требует ответ с полями
+    «title» и «summary». Для вопроса «женское или мужское» это не
+    годится, нужен обычный текст.
+
+    И ждём дольше: двадцати секунд хватает на заголовок, но не на
+    снимок — его надо передать, распаковать и рассмотреть. Первый же
+    прогон разбора одежды упёрся в «read operation timed out», хотя
+    нейросеть была жива.
+    """
+    from app.core.ai_title import PHOTO_TIMEOUT, TIMEOUT
+
+    assert PHOTO_TIMEOUT >= 45
+    assert TIMEOUT <= 30, "для текста долгое ожидание ни к чему"
+
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "ai_title.py").read_text()
+    block = source.split("def ask_photo(")[1].split("\ndef ")[0]
+    assert "responseSchema" not in block, "ответ свободный, без схемы"
+    assert "wait=PHOTO_TIMEOUT" in block

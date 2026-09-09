@@ -34,6 +34,16 @@ from app.core.title_rules import rejects_as_title
 log = logging.getLogger(__name__)
 
 TIMEOUT = 20
+
+# Разбор фотографии — дольше текста.
+#
+# Двадцати секунд хватает на заголовок, но не на снимок: его надо
+# передать, распаковать и рассмотреть. Первый же прогон разбора одежды
+# упёрся в «read operation timed out», хотя нейросеть была жива.
+#
+# Шестьдесят: человек этого ожидания не видит, работа идёт по ночам, а
+# лишний обрыв стоит дороже лишних секунд — снимок передан впустую.
+PHOTO_TIMEOUT = 60
 MAX_TITLE = 70
 # Сколько текста отдаём модели: заголовок всегда в начале, а длинные
 # объявления только жгут лимит токенов.
@@ -127,7 +137,7 @@ def _wait_turn() -> None:
 
 
 def _post(url: str, payload: dict, headers: dict,
-          provider: str | None = None) -> dict | None:
+          provider: str | None = None, wait: int = TIMEOUT) -> dict | None:
     body = json.dumps(payload).encode()
     # Без имени приложения часть провайдеров отвечает отказом: запрос без
     # него выглядит как обращение робота. У OpenRouter это ещё и способ
@@ -139,7 +149,7 @@ def _post(url: str, payload: dict, headers: dict,
         "X-Title": "PLONK",
         **headers})
     try:
-        with urlrequest.urlopen(req, timeout=TIMEOUT) as resp:
+        with urlrequest.urlopen(req, timeout=wait) as resp:
             return json.loads(resp.read().decode())
     except urlerror.HTTPError as exc:
         # 429 — упёрлись в бесплатный лимит: это не поломка, просто на
@@ -506,7 +516,43 @@ def _shrink(data: bytes) -> str | None:
         return None
 
 
+
+def ask_photo(prompt: str, photo: bytes) -> str | None:
+    """
+    Простой вопрос по фотографии — свободным ответом.
+
+    _ask_gemini_photos заточен под заголовки: он требует ответ в жёстком
+    виде, с полями «title» и «summary». Для вопроса «женское или
+    мужское» это не годится, нужен обычный текст.
+    """
+    if not settings.gemini_api_key:
+        return None
+
+    small = _shrink(photo)
+    if not small:
+        return None
+
+    url = ("https://generativelanguage.googleapis.com/v1beta/models/"
+           f"{settings.gemini_model}:generateContent"
+           f"?key={settings.gemini_api_key}")
+    data = _post(url, {
+        "contents": [{"parts": [
+            {"text": prompt},
+            {"inline_data": {"mime_type": "image/jpeg", "data": small}},
+        ]}],
+        "generationConfig": {"temperature": 0, "maxOutputTokens": 20},
+    }, {}, "gemini", wait=PHOTO_TIMEOUT)
+
+    if not data:
+        return None
+    try:
+        return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+    except (KeyError, IndexError):
+        return None
+
+
 def _ask_gemini_photos(text: str, photos: list[bytes]) -> str | None:
+    """Разбор по фотографии: ждём дольше, снимок тяжелее текста."""
     parts: list[dict] = [{"text": PHOTO_PROMPT + text}]
     for raw in photos[:PHOTO_LIMIT]:
         encoded = _shrink(raw)
@@ -525,7 +571,7 @@ def _ask_gemini_photos(text: str, photos: list[bytes]) -> str | None:
             "responseMimeType": "application/json",
             "responseSchema": TITLE_SCHEMA,
         },
-    }, {}, "gemini")
+    }, {}, "gemini", wait=PHOTO_TIMEOUT)
     if not data:
         return None
     try:
