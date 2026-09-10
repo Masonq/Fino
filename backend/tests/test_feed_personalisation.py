@@ -1052,3 +1052,26 @@ def test_swipe_changes_the_tab():
     assert "Math.abs(dx) < Math.abs(dy) * 1.8" in page
     grid = page.split("cols === 2 ? 'infinite-grid'")[1][:250]
     assert "onTouchStart={onTouchStart}" in grid
+
+
+def test_tab_change_slides_the_feed():
+    """При смене вкладки лента приезжает сбоку, а не сменяется рывком.
+
+    Приезжает с той стороны, откуда пришёл палец: смахнул влево —
+    новая лента въезжает справа. Так понятно, что произошло.
+
+    Кнопки двигают ленту так же, по направлению перехода: с «Все» на
+    «Даром» — влево, обратно — вправо.
+
+    Коротко, четверть секунды: жест уже сделан, ждать нечего, движение
+    лишь объясняет случившееся. И карточки при этом по очереди не
+    появляются — два движения разом выглядят суетливо.
+    """
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "Home.jsx").read_text()
+    styles = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "styles.css").read_text()
+
+    assert "switchTab(TABS[next], dx < 0 ? 'left' : 'right')" in page
+    assert "@keyframes slide-from-right" in styles
+    assert ".slide-left .s-card, .slide-right .s-card{ animation:none; }" in styles

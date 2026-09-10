@@ -248,6 +248,10 @@ export default function Home() {
   // тянется к этому жесту.
   const TABS = ['all', 'new', 'free']
   const swipe = useRef(null)
+  // В какую сторону сменили вкладку: лента уезжает туда же, куда ушёл
+  // палец, а новая приезжает с другой стороны. Без этого смена
+  // происходит рывком, и непонятно, что случилось.
+  const [tabSlide, setTabSlide] = useState(null)
 
   const onTouchStart = (e) => {
     if (e.touches.length !== 1) return
@@ -271,9 +275,17 @@ export default function Home() {
     const next = dx < 0 ? i + 1 : i - 1
     if (next < 0 || next >= TABS.length) return
 
-    setTab(TABS[next])
+    switchTab(TABS[next], dx < 0 ? 'left' : 'right')
+  }
+
+  const switchTab = (key, direction) => {
+    setTabSlide(direction)
+    setTab(key)
     asked.current = 0
-    try { sessionStorage.setItem('plonk_feed_tab', TABS[next]) } catch { /* не беда */ }
+    try { sessionStorage.setItem('plonk_feed_tab', key) } catch { /* не беда */ }
+    // Снимаем метку после того, как движение отыграло: иначе оно
+    // повторится при следующей отрисовке.
+    setTimeout(() => setTabSlide(null), 260)
   }
 
   const PAGE = 12
@@ -595,9 +607,9 @@ export default function Home() {
               className={tab === key ? 'feed-tab active' : 'feed-tab'}
               onClick={() => {
                 if (tab === key) return
-                setTab(key)
-                asked.current = 0
-                try { sessionStorage.setItem('plonk_feed_tab', key) } catch { /* не беда */ }
+                const to = ['all', 'new', 'free'].indexOf(key)
+                const from = ['all', 'new', 'free'].indexOf(tab)
+                switchTab(key, to > from ? 'left' : 'right')
               }}
             >
               {label}
@@ -618,7 +630,10 @@ export default function Home() {
           по плиткам разделов, которые и так листаются вбок, меняло бы
           вкладку заодно. */}
       <div
-        className={cols === 2 ? 'infinite-grid' : 'infinite-list'}
+        className={[
+          cols === 2 ? 'infinite-grid' : 'infinite-list',
+          tabSlide ? `slide-${tabSlide}` : '',
+        ].filter(Boolean).join(' ')}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
