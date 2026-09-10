@@ -506,6 +506,57 @@ def _listing_schema(listing, title: str, body: str, url: str,
         data["image"] = image
     if listing.city:
         data["areaServed"] = _city_words(listing.city)
+
+    # Раздел объявления. Google показывает его в карточке товара и
+    # понимает, к чему вещь относится, — а у нас это знание есть и
+    # пропадало зря.
+    if listing.category and listing.category.name:
+        section = (listing.category.name or {}).get("ru")
+        if section:
+            data["category"] = section
+
+    # Продавец. Для доски объявлений это частное лицо, и так и пишем:
+    # выдавать частника за магазин нельзя, да и незачем.
+    if listing.owner and getattr(listing.owner, "display_name", None):
+        data["offers"]["seller"] = {
+            "@type": "Person",
+            "name": listing.owner.display_name,
+        }
+
+    # Цена действует, пока висит объявление. Без этого поля Google
+    # считает цену просроченной через полгода и перестаёт её показывать.
+    if listing.expires_at:
+        data["offers"]["priceValidUntil"] = listing.expires_at.date().isoformat()
+
+    # Путь до объявления: город → раздел → вещь.
+    #
+    # Google показывает его в выдаче вместо длинного адреса: вместо
+    # «plonk.rs/beograd/computers/igrovoy-...» человек видит
+    # «Белград › Настольные компьютеры». Понятнее и заметнее.
+    crumbs = []
+    if listing.city:
+        crumbs.append(_city_words(listing.city))
+    if listing.category and listing.category.name:
+        section = (listing.category.name or {}).get("ru")
+        if section:
+            crumbs.append(section)
+
+    if crumbs:
+        site_root = url.split("/", 3)[:3]
+        site_root = "/".join(site_root)
+        trail = {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {"@type": "ListItem", "position": i + 1, "name": name}
+                for i, name in enumerate(crumbs)
+            ],
+        }
+        trail["itemListElement"].append(
+            {"@type": "ListItem", "position": len(crumbs) + 1,
+             "name": title, "item": url})
+        return json.dumps([data, trail], ensure_ascii=False, indent=1)
+
     return json.dumps(data, ensure_ascii=False, indent=1)
 
 

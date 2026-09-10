@@ -516,3 +516,49 @@ def test_listing_page_links_its_language_versions():
     block = source.split("path_for_langs =")[1].split(")\n")[0]
     for code in ("x-default", "ru", "en", "sr"):
         assert f'"{code}"' in block, code
+
+
+def test_listing_markup_has_section_seller_and_trail():
+    """В разметке объявления есть раздел, продавец и путь.
+
+    Раньше было только название, цена и картинка. Раздел и продавца
+    Google показывает в карточке товара, а путь — вместо длинного
+    адреса в выдаче: вместо «plonk.rs/beograd/computers/igrovoy-...»
+    человек видит «Белград › Настольные компьютеры». Понятнее и
+    заметнее.
+
+    Продавец указан частным лицом, а не магазином: выдавать частника за
+    магазин нельзя, да и незачем.
+    """
+    import json
+    import re
+
+    from app.core.database import SessionLocal
+    from app.models import Listing
+    from app.routers.seo import listing_page
+
+    class FakeUrl:
+        scheme, netloc, path = "https", "plonk.rs", "/x"
+
+    class FakeRequest:
+        headers, url = {}, FakeUrl()
+
+    with SessionLocal() as db:
+        listing = db.query(Listing).first()
+        if not listing:
+            return
+
+        html = listing_page(listing_id=str(listing.id),
+                            request=FakeRequest(), db=db).body.decode()
+
+    blocks = json.loads(
+        re.search(r'ld\+json">(.*?)</script>', html, re.S).group(1))
+    if not isinstance(blocks, list):
+        blocks = [blocks]
+
+    kinds = {b["@type"] for b in blocks}
+    assert "Product" in kinds
+    assert "BreadcrumbList" in kinds, "путь до объявления должен быть"
+
+    product = next(b for b in blocks if b["@type"] == "Product")
+    assert product["offers"]["seller"]["@type"] == "Person"
