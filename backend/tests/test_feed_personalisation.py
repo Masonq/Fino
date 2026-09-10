@@ -211,7 +211,15 @@ def test_scroll_is_restored_in_one_place():
     assert "scrollPositions.current[locationKeyRef.current]" in app
     assert "setTimeout(put, 80)" in app
     # А в ленте своего восстановления нет.
-    assert "window.scrollTo" not in home
+    # Единственное исключение — возврат на прежнюю вкладку ленты.
+    #
+    # Общий возврат прокрутки работает по адресу страницы, а вкладки
+    # адрес не меняют: для него «Все» и «Даром» — одно и то же место.
+    # Поэтому память по вкладкам возвращает прокрутку сама, иначе
+    # случайное смахивание сбрасывало бы ленту к началу.
+    scrolls = [l for l in home.splitlines() if "window.scrollTo" in l]
+    assert len(scrolls) == 1, "прокрутку возвращаем только для вкладок"
+    assert "saved.scroll" in scrolls[0]
 
 
 def test_charts_open_on_today():
@@ -1104,3 +1112,24 @@ def test_tab_change_shows_skeletons():
     assert "setFeedLoaded(false)" in block
 
     assert ".slide-left .sk-block, .slide-right .sk-block{" in styles
+
+
+def test_each_tab_remembers_its_place():
+    """У каждой вкладки своя память: карточки и место прокрутки.
+
+    Случайное смахивание стоило дорого: вернулся на прежнюю вкладку, а
+    лента с начала, и всё, что пролистал, потеряно.
+
+    Теперь при уходе вкладка запоминается целиком, а при возврате
+    восстанавливается вместе с местом. Заодно и загрузки нет — карточки
+    уже есть.
+    """
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "Home.jsx").read_text()
+
+    assert "let tabCache = {}" in page
+    assert "tabCache[tab] = {" in page
+    # Восстановленную вкладку не перезагружаем: иначе память
+    # бесполезна — карточки сбросятся к двенадцати.
+    assert "const saved = tabCache[tab]" in page
+    assert "saved?.items?.length && Date.now() - saved.fetchedAt" in page

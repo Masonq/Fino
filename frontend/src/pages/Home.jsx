@@ -41,6 +41,13 @@ const FEED_CACHE_TTL = 300_000
 // вернулся — и оказывался на «Все». Работа выбора пропадала.
 let feedCache = { lang: null, city: null, tab: 'all', items: [], total: 0, scroll: 0, fetchedAt: 0 }
 
+// Своя память у каждой вкладки: карточки, сколько всего и где человек
+// остановился.
+//
+// Без неё случайное смахивание стоило дорого: вернулся на прежнюю
+// вкладку, а лента с начала, и всё, что пролистал, потеряно.
+let tabCache = {}
+
 // Фон страницы (--bg в styles.css). Держим тут же числом: значение
 // уходит в meta theme-color, а из CSS-переменной его пришлось бы
 // вычитывать через getComputedStyle на каждый вызов.
@@ -279,15 +286,34 @@ export default function Home() {
   }
 
   const switchTab = (key, direction) => {
+    // Прежнюю вкладку запоминаем целиком: карточки, сколько всего и
+    // место прокрутки.
+    tabCache[tab] = {
+      items: itemsRef.current,
+      total: totalRef.current,
+      scroll: window.scrollY,
+      fetchedAt: fetchedAtRef.current,
+    }
+
     setTabSlide(direction)
     setTab(key)
-    asked.current = 0
 
-    // Показываем серые заготовки, пока едет новая лента.
-    //
-    // Раньше старые карточки висели до последнего и потом резко
-    // сменялись новыми: выходил рывок, будто фотографии
-    // перезагружаются. Заготовки честнее — видно, что идёт загрузка.
+    const saved = tabCache[key]
+    if (saved?.items?.length) {
+      // Уже смотрели — возвращаем как было, вместе с местом.
+      setListings(saved.items)
+      setFeedTotal(saved.total)
+      setFeedLoaded(true)
+      asked.current = saved.items.length
+      fetchedAtRef.current = saved.fetchedAt
+      requestAnimationFrame(() => window.scrollTo(0, saved.scroll || 0))
+      return
+    }
+
+    // Первый заход на вкладку — показываем серые заготовки, пока едет
+    // новая лента. Раньше старые карточки висели до последнего и потом
+    // резко сменялись новыми: выходил рывок.
+    asked.current = 0
     setListings([])
     setFeedLoaded(false)
     try { sessionStorage.setItem('plonk_feed_tab', key) } catch { /* не беда */ }
@@ -424,6 +450,15 @@ export default function Home() {
     // объявлениям и снова уронила прокрутку. Но только пока кэш не устарел —
     // иначе тот же снимок остался бы навсегда.
     if (cached?.items.length && Date.now() - cached.fetchedAt < FEED_CACHE_TTL) return
+
+    // Вкладку восстановили из памяти — грузить нечего.
+    //
+    // Без этой проверки лента перезагружалась сразу после возврата:
+    // карточки сбрасывались к двенадцати, место прокрутки терялось, и
+    // память по вкладкам не работала вовсе.
+    const saved = tabCache[tab]
+    if (saved?.items?.length && Date.now() - saved.fetchedAt < FEED_CACHE_TTL) return
+
     loadFeed()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadFeed])
