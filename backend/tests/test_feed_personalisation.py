@@ -882,3 +882,21 @@ def test_category_tree_updates_within_an_hour():
 
     assert "FRESH_FOR = 60 * 60 * 1000" in client
     assert "return refresh().catch(() => saved.tree)" in client
+
+
+def test_pull_indicator_clears_the_notch():
+    """Полоса обновления не прячется под «островом» айфона.
+
+    В приложении с домашнего экрана страница занимает весь экран,
+    включая место под островом. Шапка это учитывала, а полоса
+    обновления начиналась от самого верха — и остров её перегораживал.
+
+    В браузере беды не было: там сверху адресная строка, и полоса
+    оказывалась ниже. Оттого и не находилась долго — на компьютере всё
+    выглядело правильно.
+    """
+    styles = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "styles.css").read_text()
+
+    block = styles.split(".ptr-indicator{")[1].split("}")[0]
+    assert "padding-top:env(safe-area-inset-top)" in block
