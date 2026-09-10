@@ -708,10 +708,85 @@ def not_found(full_path: str, request: Request):
             break
 
     if path in KNOWN_PATHS:
-        return HTMLResponse(
-            f'<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8">'
-            f'<title>PLONK — объявления в Белграде и Сербии</title>'
-            f'<link rel="canonical" href="{site}{path}">'
-            f'</head><body><a href="{site}">Открыть PLONK</a></body></html>')
+        # Настоящая страница, а не заглушка с одной ссылкой.
+        #
+        # Раньше поисковику и проверяющим отдавалось это:
+        #   <title>PLONK</title><a href="...">Открыть PLONK</a>
+        # Человек при этом видел полноценный сайт. Такое расхождение —
+        # классическая примета обмана: роботу одно, людям другое. Именно
+        # за это сайты и помечают как мошеннические, а у нас как раз
+        # появилось предупреждение в Safari при чистом домене по всем
+        # спискам безопасности.
+        #
+        # Теперь отдаём то же, что видит человек: чем занимается сайт,
+        # какие разделы есть, сколько объявлений.
+        return HTMLResponse(_plain_page(site, path, request))
 
     return HTMLResponse(NOT_FOUND_PAGE.format(site=site), status_code=404)
+
+
+def _plain_page(site: str, path: str, request: Request) -> str:
+    """Простая, но настоящая страница для поисковиков и проверяющих."""
+    from xml.sax.saxutils import escape as esc
+
+    from sqlalchemy import text
+
+    from app.core.database import SessionLocal
+    from app.data.category_intros import intro
+
+    titles = {
+        "/": "PLONK — объявления в Белграде и по всей Сербии",
+        "/search": "Поиск объявлений — PLONK",
+        "/categories": "Все разделы — PLONK",
+        "/login": "Вход на PLONK",
+        "/rules": "Правила публикации — PLONK",
+        "/terms": "Условия использования — PLONK",
+        "/privacy": "Политика конфиденциальности — PLONK",
+        "/support": "Поддержка — PLONK",
+    }
+    title = titles.get(path, "PLONK — объявления в Белграде и Сербии")
+
+    rows, total = [], 0
+    try:
+        with SessionLocal() as db:
+            total = db.execute(text(
+                "select count(*) from listings where status = 'active'"
+            )).scalar() or 0
+            rows = db.execute(text("""
+                select c.slug, c.name->>'ru'
+                from categories c
+                where c.parent_id is null
+                order by c.sort_order nulls last, c.slug
+                limit 14
+            """)).fetchall()
+    except Exception:                                      # noqa: BLE001
+        pass
+
+    links = "\n".join(
+        f'<li><a href="{site}/c/{esc(slug)}">{esc(name or slug)}</a></li>'
+        for slug, name in rows
+    )
+
+    about = intro("real-estate", "ru") or ""
+
+    return f"""<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>{esc(title)}</title>
+<meta name="description" content="Объявления в Белграде и по всей Сербии: недвижимость, авто, электроника, работа, услуги. Сейчас на сайте {total} объявлений.">
+<link rel="canonical" href="{site}{path}">
+</head>
+<body>
+<h1>{esc(title)}</h1>
+<p>Бесплатная доска объявлений для Белграда и всей Сербии. Аренда и
+продажа жилья, автомобили, электроника, мебель, работа, услуги —
+на русском, английском и сербском.</p>
+<p>Сейчас опубликовано объявлений: {total}.</p>
+<h2>Разделы</h2>
+<ul>
+{links}
+</ul>
+<p><a href="{site}">Все объявления</a></p>
+</body>
+</html>"""

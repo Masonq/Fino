@@ -457,3 +457,32 @@ def test_category_pictures_are_not_lazy():
     code = [ln for ln in art.split("\n") if not ln.strip().startswith("//")]
     assert not any('loading="lazy"' in ln for ln in code)
     assert 'fetchpriority="high"' in art
+
+
+def test_robots_see_a_real_page_not_a_stub():
+    """Поисковику отдаётся настоящая страница, а не заглушка.
+
+    Раньше на главной робот получал это:
+
+        <title>PLONK</title><a href="...">Открыть PLONK</a>
+
+    Человек при этом видел полноценный сайт. Такое расхождение —
+    классическая примета обмана: роботу одно, людям другое. Именно за
+    это сайты и помечают как мошеннические, а у нас как раз появилось
+    предупреждение в Safari при домене, чистом по всем девяноста
+    спискам безопасности.
+
+    Теперь отдаём то же, что видит человек: чем занимается сайт, какие
+    разделы есть, сколько объявлений.
+    """
+    from app.routers.seo import _plain_page
+
+    class FakeRequest:
+        pass
+
+    html = _plain_page("https://plonk.rs", "/", FakeRequest())
+
+    assert len(html) > 900, "страница не должна быть заглушкой"
+    assert "<h1>" in html and "<h2>" in html
+    assert html.count("<li>") >= 5, "разделы должны быть перечислены"
+    assert 'name="description"' in html
