@@ -282,6 +282,14 @@ export default function Home() {
     setTabSlide(direction)
     setTab(key)
     asked.current = 0
+
+    // Показываем серые заготовки, пока едет новая лента.
+    //
+    // Раньше старые карточки висели до последнего и потом резко
+    // сменялись новыми: выходил рывок, будто фотографии
+    // перезагружаются. Заготовки честнее — видно, что идёт загрузка.
+    setListings([])
+    setFeedLoaded(false)
     try { sessionStorage.setItem('plonk_feed_tab', key) } catch { /* не беда */ }
     // Метку не снимаем.
     //

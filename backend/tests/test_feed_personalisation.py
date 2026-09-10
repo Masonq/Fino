@@ -1082,3 +1082,25 @@ def test_tab_change_slides_the_feed():
     # а не снимает метку по таймеру — от этого оно запускалось дважды.
     assert "key={tab}" in page
     assert "setTimeout(() => setTabSlide(null)" not in page
+
+
+def test_tab_change_shows_skeletons():
+    """При смене вкладки показываются серые заготовки.
+
+    Раньше старые карточки висели до последнего и потом резко сменялись
+    новыми: выходил рывок, будто фотографии перезагружаются. Заготовки
+    честнее — видно, что идёт загрузка.
+
+    Пульсировать они должны и во время движения ленты, иначе выглядят
+    как пустые прямоугольники.
+    """
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "Home.jsx").read_text()
+    styles = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "styles.css").read_text()
+
+    block = page.split("const switchTab =")[1].split("\n  }")[0]
+    assert "setListings([])" in block
+    assert "setFeedLoaded(false)" in block
+
+    assert ".slide-left .sk-block, .slide-right .sk-block{" in styles

@@ -4161,6 +4161,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .slide-left .s-card, .slide-right .s-card{ animation:none; }
 .slide-left .s-photo-wrap img, .slide-right .s-photo-wrap img{ animation:none; }
 
+/* Кроме серых заготовок: они должны пульсировать и во время движения,
+   иначе выглядят как пустые прямоугольники. */
+.slide-left .sk-block, .slide-right .sk-block{
+  animation:sk-pulse 1.4s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce){
   .infinite-grid.slide-left, .infinite-list.slide-left,
   .infinite-grid.slide-right, .infinite-list.slide-right{ animation:none; }
