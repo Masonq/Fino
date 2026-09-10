@@ -319,9 +319,23 @@ def listing_page(listing_id: str, request: Request,
             status_code=404,
         )
 
-    lang = (listing.source_language.value
-            if hasattr(listing.source_language, "value")
-            else str(listing.source_language or "ru"))
+    # Язык берём из адреса, а не из объявления.
+    #
+    # Раньше смотрели на источник объявления: приехало из русского чата
+    # — значит и основная версия русская, даже когда открыт /en/...
+    # Google на это и жаловался: «канонические версии не совпадают».
+    #
+    # Языка в адресе нет — берём язык объявления, как раньше: значит
+    # открыта версия по умолчанию.
+    path = request.url.path if hasattr(request, "url") else "/"
+    if path.startswith("/en/"):
+        lang = "en"
+    elif path.startswith("/sr/"):
+        lang = "sr"
+    else:
+        lang = (listing.source_language.value
+                if hasattr(listing.source_language, "value")
+                else str(listing.source_language or "ru"))
 
     # Адрес на том же языке, что открыт.
     #

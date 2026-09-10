@@ -508,6 +508,10 @@ def test_listing_page_links_its_language_versions():
 
     # Адрес на том же языке, что открыт.
     assert "url = _lang_url(site, _nice_path(db, listing), lang)" in source
+    # А язык берётся из адреса, не из объявления: приехало из русского
+    # чата — это не повод считать русской версию, открытую на /en/.
+    assert 'if path.startswith("/en/")' in source
+    assert 'elif path.startswith("/sr/")' in source
     # И четыре языковые связи.
     block = source.split("path_for_langs =")[1].split(")\n")[0]
     for code in ("x-default", "ru", "en", "sr"):
