@@ -486,3 +486,29 @@ def test_robots_see_a_real_page_not_a_stub():
     assert "<h1>" in html and "<h2>" in html
     assert html.count("<li>") >= 5, "разделы должны быть перечислены"
     assert 'name="description"' in html
+
+
+def test_listing_page_links_its_language_versions():
+    """У объявления есть связи между языковыми версиями.
+
+    Google писал: «Страница является копией. Канонические версии,
+    выбранные Google и пользователем, не совпадают». Из-за этого
+    объявления выпадали из поиска.
+
+    Причин было две, и обе здесь. Основным адресом всегда указывался
+    русский, даже когда страница отдавалась на английском: Google
+    заходил на /en/..., читал «основная версия — русская» и записывал
+    страницу в копии. И связей между языками не было вовсе — у разделов
+    они были, у объявлений забыли.
+    """
+    import re
+
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "routers" / "seo.py").read_text()
+
+    # Адрес на том же языке, что открыт.
+    assert "url = _lang_url(site, _nice_path(db, listing), lang)" in source
+    # И четыре языковые связи.
+    block = source.split("path_for_langs =")[1].split(")\n")[0]
+    for code in ("x-default", "ru", "en", "sr"):
+        assert f'"{code}"' in block, code

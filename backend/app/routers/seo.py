@@ -174,6 +174,7 @@ LISTING_PAGE = """<!DOCTYPE html>
 <title>{title} — {price} · {city} | PLONK</title>
 <meta name="description" content="{description}">
 <link rel="canonical" href="{url}">
+{alternates}
 <meta property="og:type" content="product">
 <meta property="og:site_name" content="PLONK">
 <meta property="og:title" content="{title}">
@@ -292,10 +293,17 @@ def listing_page(listing_id: str, request: Request,
         db.rollback()
         listing = None
 
-    # Адрес страницы — понятный: его увидит поисковик в разметке, и он
-    # должен совпадать с тем, что в карте сайта. Иначе выйдут две
-    # страницы вместо одной.
-    url = site + _nice_path(db, listing) if listing else f"{site}/go/{listing_id}"
+    # Адрес страницы — понятный и на том же языке, что открыт.
+    #
+    # Раньше здесь всегда указывался русский адрес, даже когда страница
+    # отдавалась на английском. Google заходил на /en/..., читал «основная
+    # версия — русская» и записывал страницу в копии: «канонические
+    # версии, выбранные Google и пользователем, не совпадают». Из-за
+    # этого объявления выпадали из поиска.
+    #
+    # Языковые версии связаны отдельно, через hreflang ниже, — там и
+    # сказано, что это одна страница на трёх языках.
+    url = f"{site}/go/{listing_id}"   # ниже заменим на понятный адрес
 
     if not listing:
         # Объявления нет — так и говорим. Перенаправлять на главную
@@ -314,6 +322,28 @@ def listing_page(listing_id: str, request: Request,
     lang = (listing.source_language.value
             if hasattr(listing.source_language, "value")
             else str(listing.source_language or "ru"))
+
+    # Адрес на том же языке, что открыт.
+    #
+    # Раньше здесь всегда стоял русский, даже когда страница отдавалась
+    # на английском: Google заходил на /en/..., читал «основная версия —
+    # русская» и записывал страницу в копии. Оттого объявления и
+    # выпадали из поиска.
+    if listing:
+        url = _lang_url(site, _nice_path(db, listing), lang)
+
+    # Языковые версии одного объявления.
+    #
+    # У разделов такие связи были, у объявлений — нет вовсе. Google
+    # видел три страницы с одним товаром и не знал, что это одна вещь на
+    # трёх языках: выбирал одну сам, остальные записывал в копии.
+    path_for_langs = _nice_path(db, listing) if listing else f"/go/{listing_id}"
+    alternates = "\n".join(
+        f'<link rel="alternate" hreflang="{code}" '
+        f'href="{_lang_url(site, path_for_langs, code_lang)}">'
+        for code, code_lang in (("x-default", "ru"), ("ru", "ru"),
+                                ("en", "en"), ("sr", "sr"))
+    )
     translation = (
         db.query(ListingTranslation)
         .filter(ListingTranslation.listing_id == listing.id,
@@ -377,6 +407,7 @@ def listing_page(listing_id: str, request: Request,
         city_line=f" · {esc(city)}" if city else "",
         description=esc(description),
         url=url,
+        alternates=alternates,
         og_locale={"ru": "ru_RS", "en": "en_RS", "sr": "sr_RS"}.get(lang, "ru_RS"),
         price_tags=price_tags,
         image_tag=image_tag,
