@@ -380,12 +380,10 @@ export default function Home() {
           collapsed ? 'collapsed' : '',
           settled ? '' : 'no-anim',
         ].filter(Boolean).join(' ')}
-        // Шапка без цвета и без картинки.
-        //
-        // Цветной блок со щитом занимал треть первого экрана и спорил с
-        // объявлениями за внимание: человек приходит смотреть вещи, а
-        // видит рекламу площадки. Белый фон отдаёт этот экран ленте.
-        style={{ backgroundColor: '#FFFFFF', backgroundImage: 'none' }}
+        style={{
+          backgroundColor: collapsed ? '#FFFFFF' : PROMO_SLIDES[slide].top,
+          backgroundImage: collapsed ? 'none' : PROMO_SLIDES[slide].grad,
+        }}
       >
         <div className="avito-toprow">
           <button type="button" className="avito-search" onClick={() => setSearchOpen(true)}>
@@ -416,9 +414,17 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* Иллюстрация убрана вместе с цветом: без фона она повисала
-            в воздухе и становилась главной на экране, хотя должна была
-            быть фоном. */}
+        {/* Иллюстрация фоном, а не в углу: так заголовку достаётся вся ширина,
+            и картинка не спорит с ним за место при длинном тексте. */}
+        <div className="promo-backdrop" aria-hidden="true">
+          {PROMO_SLIDES.map((s, i) => (
+            <div key={s.key} className={i === slide ? 'promo-glyph active' : 'promo-glyph'}>
+              {PROMO_IMAGES[s.key]
+                ? <img src={PROMO_IMAGES[s.key]} alt="" onError={(e) => { e.currentTarget.style.display = 'none' }} />
+                : PROMO_FALLBACK}
+            </div>
+          ))}
+        </div>
 
         <div className="promo-collapse">
           <div>
