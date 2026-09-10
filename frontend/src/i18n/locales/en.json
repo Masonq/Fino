@@ -828,6 +828,9 @@
     "seller": "Seller"
   },
   "feed": {
-    "show_more": "Show more"
+    "show_more": "Show more",
+    "tab_all": "All",
+    "tab_new": "New",
+    "tab_free": "Free"
   }
 }

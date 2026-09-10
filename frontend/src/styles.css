@@ -4124,3 +4124,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   ::view-transition-old(root),
   ::view-transition-new(root){ animation:none; }
 }
+
+/* Переключатель лент на главной: «Все», «Новое», «Даром».
+   Названия короткие — с длинными третья вкладка заезжала под
+   переключатель колонок. */
+.feed-tabs{ display:flex; gap:18px; align-items:center; flex:1; min-width:0; }
+.feed-tab{
+  flex:0 0 auto; padding:0 0 7px; font-size:17px; font-weight:800;
+  letter-spacing:-.01em; color:var(--muted); background:none; border:none;
+  border-bottom:2.5px solid transparent; white-space:nowrap;
+}
+.feed-tab.active{ color:var(--ink); border-bottom-color:var(--green); }

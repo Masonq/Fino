@@ -955,3 +955,26 @@ def test_photo_travels_from_card_to_page():
     assert "viewTransitionName: `photo-${listing.id}`" in page
     assert "@view-transition" in styles
     assert "prefers-reduced-motion" in styles
+
+
+def test_home_has_three_feed_tabs():
+    """На главной три взгляда на ленту: все, новое, даром.
+
+    Три ленты подряд для четырёх тысяч объявлений выглядели бы жидко, а
+    переключатель честнее: одна лента, три взгляда на неё.
+
+    Названия короткие нарочно. С длинным «Рекомендации» третья вкладка
+    заезжала под переключатель колонок — увидел на наброске, до того
+    как делать.
+    """
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "Home.jsx").read_text()
+    api = (Path(__file__).resolve().parents[1]
+           / "app" / "routers" / "listings.py").read_text()
+
+    assert "feed-tabs" in page
+    assert "tab === 'new' ? { sort: 'new' }" in page
+    assert "tab === 'free' ? { only_free: true }" in page
+    # И отбор бесплатных на сервере: признак был, отбирать было нельзя.
+    assert "only_free: bool = Query(False)" in api
+    assert "q.filter(Listing.is_free.is_(True))" in api

@@ -113,6 +113,11 @@ export default function Home() {
   // редко.
   const [feedTotal, setFeedTotal] = useState(
     () => cached?.total || (cached?.items.length ? cached.items.length + 1 : 0))
+  // Какая лента показана: «Все», «Новое», «Даром».
+  //
+  // Три ленты подряд для четырёх тысяч объявлений выглядели бы жидко, а
+  // переключатель честнее: одна лента, три взгляда на неё.
+  const [tab, setTab] = useState('all')
   const [loadingMore, setLoadingMore] = useState(false)
   // Подгрузка сама остановилась — показываем кнопку «Показать ещё».
   const [stalled, setStalled] = useState(false)
@@ -219,7 +224,11 @@ export default function Home() {
   const PAGE = 12
 
   const loadFeed = useCallback(() => (
-    api.searchListings({ lang: i18n.language, limit: PAGE, offset: 0, city: city || undefined })
+    api.searchListings({
+      lang: i18n.language, limit: PAGE, offset: 0, city: city || undefined,
+      ...(tab === 'new' ? { sort: 'new' } : {}),
+      ...(tab === 'free' ? { only_free: true } : {}),
+    })
       .then((res) => {
         setListings(res.items || [])
         setFeedTotal(res.total || 0)
@@ -228,7 +237,7 @@ export default function Home() {
       })
       .catch(() => { setListings([]); setFeedError(true) })
       .finally(() => setFeedLoaded(true))
-  ), [i18n.language, city])
+  ), [i18n.language, city, tab])
 
   // Подгружаем следующую порцию, когда человек дочитал до низа —
   // иначе лента обрывается на двенадцатом объявлении.
@@ -507,7 +516,23 @@ export default function Home() {
       })()}
 
       <div className="feed-head-row">
-        <div className="feed-heading">{t('common.recommendations')}</div>
+        {/* Три взгляда на одну ленту.
+            Названия короткие нарочно: с длинными «Рекомендации» третья
+            вкладка заезжала под переключатель колонок — увидел на
+            наброске. */}
+        <div className="feed-tabs">
+          {[['all', t('feed.tab_all')],
+            ['new', t('feed.tab_new')],
+            ['free', t('feed.tab_free')]].map(([key, label]) => (
+            <button
+              key={key}
+              className={tab === key ? 'feed-tab active' : 'feed-tab'}
+              onClick={() => { if (tab !== key) { setTab(key); asked.current = 0 } }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
         <div className="col-toggle">
           <button className={cols === 2 ? 'col-btn active' : 'col-btn'} onClick={() => setCols(2)} aria-label={t('misc.cols_2')}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="3" y="4" width="7" height="16" rx="1.5" /><rect x="14" y="4" width="7" height="16" rx="1.5" /></svg>

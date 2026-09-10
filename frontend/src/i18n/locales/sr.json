@@ -829,6 +829,9 @@
     "seller": "Prodavac"
   },
   "feed": {
-    "show_more": "Prikaži još"
+    "show_more": "Prikaži još",
+    "tab_all": "Sve",
+    "tab_new": "Novo",
+    "tab_free": "Besplatno"
   }
 }

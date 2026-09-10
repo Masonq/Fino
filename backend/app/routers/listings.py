@@ -313,6 +313,12 @@ def search_listings(
     attr_eq: str | None = Query(None),
     attr_range: str | None = Query(None),
     sort: str = Query("relevance"),
+    # Только то, что отдают даром.
+    #
+    # Признак у объявлений был, а отбирать по нему было нельзя. Нужен
+    # для вкладки «Даром» на главной: люди листают её из любопытства и
+    # остаются.
+    only_free: bool = Query(False),
     lang: str = Query("ru"),
     limit: int = Query(20, le=100),
     offset: int = 0,
@@ -466,6 +472,9 @@ def search_listings(
             q = q.filter(price_in_eur <= price_max)
     if currency:
         q = q.filter(Listing.currency == currency)
+    if only_free:
+        q = q.filter(Listing.is_free.is_(True))
+
     if with_photo:
         q = q.filter(Listing.photos.any())
     if delivery:
