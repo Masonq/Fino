@@ -1030,3 +1030,25 @@ def test_free_tab_excludes_services():
 
     block = api.split("if only_free:")[1].split("if with_photo:")[0]
     assert '"services", "jobs", "real-estate"' in block
+
+
+def test_swipe_changes_the_tab():
+    """Смахивание вбок меняет вкладку ленты.
+
+    Влево — следующая, вправо — предыдущая: так листают ленты во всех
+    приложениях, и палец сам тянется к этому жесту.
+
+    Жест висит на самой ленте, а не на всей странице: иначе смахивание
+    по плиткам разделов, которые и так листаются вбок, меняло бы
+    вкладку заодно.
+
+    И не путается с прокруткой: боковым считается только тот жест, где
+    по горизонтали прошли заметно дальше, чем по вертикали.
+    """
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "Home.jsx").read_text()
+
+    assert "const TABS = ['all', 'new', 'free']" in page
+    assert "Math.abs(dx) < Math.abs(dy) * 1.8" in page
+    grid = page.split("cols === 2 ? 'infinite-grid'")[1][:250]
+    assert "onTouchStart={onTouchStart}" in grid

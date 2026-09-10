@@ -240,6 +240,42 @@ export default function Home() {
       .finally(() => setCatsLoaded(true))
   }, [])
 
+
+  // Смахивание вбок меняет вкладку.
+  //
+  // Порядок тот же, что у кнопок: влево — следующая, вправо —
+  // предыдущая. Так листают ленты во всех приложениях, и палец сам
+  // тянется к этому жесту.
+  const TABS = ['all', 'new', 'free']
+  const swipe = useRef(null)
+
+  const onTouchStart = (e) => {
+    if (e.touches.length !== 1) return
+    swipe.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+  }
+
+  const onTouchEnd = (e) => {
+    const start = swipe.current
+    swipe.current = null
+    if (!start) return
+
+    const t = e.changedTouches[0]
+    const dx = t.clientX - start.x
+    const dy = t.clientY - start.y
+
+    // Не путаем с прокруткой: жест считается боковым, только если по
+    // горизонтали прошли заметно дальше, чем по вертикали.
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.8) return
+
+    const i = TABS.indexOf(tab)
+    const next = dx < 0 ? i + 1 : i - 1
+    if (next < 0 || next >= TABS.length) return
+
+    setTab(TABS[next])
+    asked.current = 0
+    try { sessionStorage.setItem('plonk_feed_tab', TABS[next]) } catch { /* не беда */ }
+  }
+
   const PAGE = 12
 
   const loadFeed = useCallback(() => (
@@ -578,7 +614,14 @@ export default function Home() {
         </div>
       </div>
 
-      <div className={cols === 2 ? 'infinite-grid' : 'infinite-list'}>
+      {/* Жест на самой ленте, а не на всей странице: иначе смахивание
+          по плиткам разделов, которые и так листаются вбок, меняло бы
+          вкладку заодно. */}
+      <div
+        className={cols === 2 ? 'infinite-grid' : 'infinite-list'}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
         {!feedLoaded
           ? <CardSkeletons count={cols === 2 ? 4 : 2} large={cols === 1} />
           : listings.map((l, i) => (
