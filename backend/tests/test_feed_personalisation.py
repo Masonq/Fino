@@ -882,3 +882,27 @@ def test_category_tree_updates_within_an_hour():
 
     assert "FRESH_FOR = 60 * 60 * 1000" in client
     assert "return refresh().catch(() => saved.tree)" in client
+
+
+def test_header_has_no_colour_and_no_picture():
+    """Шапка главной без цветного фона и без картинки.
+
+    Цветной блок со щитом занимал треть первого экрана и спорил с
+    объявлениями за внимание: человек приходит смотреть вещи, а видит
+    рекламу площадки.
+
+    Текст при этом перекрашен в тёмный: он был белым, и на белом фоне
+    пропадал вместе с подложками города и языков — увидел на снимке,
+    «Verified sellers» было не разобрать.
+    """
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "Home.jsx").read_text()
+    styles = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "styles.css").read_text()
+
+    assert "backgroundColor: '#FFFFFF', backgroundImage: 'none'" in page
+    assert "promo-backdrop" not in page, "картинка должна быть убрана"
+
+    # Текст тёмный, подложки серые.
+    promo = styles.split(".avito-promo-text{")[1].split("}")[0]
+    assert "color:var(--ink)" in promo

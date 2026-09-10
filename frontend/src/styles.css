@@ -189,7 +189,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* картинка ушла в фон, делить строку больше не с кем */
 .avito-promo-row{ display:block; padding:0; }
 .avito-promo-left{ display:flex; flex-direction:column; gap:5px; min-width:0; }
-.avito-promo-text{ display:flex; align-items:center; gap:5px; font-size:22px; font-weight:800; color:#fff; letter-spacing:-0.015em; line-height:1.15; }
+/* Текст в шапке тёмный: фон стал белым, и белые буквы на нём пропадали.
+   Поймал на снимке — «Verified sellers» было не разобрать. */
+.avito-promo-text{ display:flex; align-items:center; gap:5px; font-size:22px; font-weight:800; color:var(--ink); letter-spacing:-0.015em; line-height:1.15; }
 /* стрелка не должна сжиматься и переезжать при смене длины заголовка */
 .promo-text-label{ white-space:nowrap; }
 .promo-chevron{ flex-shrink:0; position:relative; top:1px; }
@@ -228,13 +230,15 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .avito-banner .promo-collapse{ position:relative; z-index:2; }
 
 .city-pill{
-  position:relative; display:flex; align-items:center; gap:5px; background:rgba(255,255,255,.24); border-radius:10px;
-  padding:7px 11px; color:#fff; backdrop-filter:blur(4px);
+  /* Подложка серая, а не полупрозрачная белая: на белом фоне
+     прозрачная становилась невидимой. */
+  position:relative; display:flex; align-items:center; gap:5px; background:#F1F3F2; border-radius:10px;
+  padding:7px 11px; color:var(--ink);
 }
 .city-pill svg{ width:13px; height:13px; }
 .city-pill select{
   appearance:none; -webkit-appearance:none; border:none; background:transparent; font-family:inherit;
-  font-size:13px; font-weight:700; color:#fff; padding-right:2px; max-width:110px; outline:none;
+  font-size:13px; font-weight:700; color:var(--ink); padding-right:2px; max-width:110px; outline:none;
 }
 /* На iPhone тап по <select> подсвечивает его синей рамкой браузера —
    не наша обводка, дефолт Safari. Прячем на тач-выбор, но оставляем
@@ -245,8 +249,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    всё равно показывалась. Просто убираю совсем. */
 .city-pill select option{ color:var(--ink); }
 .city-pill-chevron{ opacity:.5; pointer-events:none; }
-.lang-switch{ display:flex; background:rgba(255,255,255,.24); border-radius:10px; padding:3px; backdrop-filter:blur(4px); }
-.lang-btn{ font-size:12px; font-weight:700; padding:5px 10px; border-radius:8px; color:rgba(255,255,255,.8); }
+/* Переключатель языков на светлом фоне: полупрозрачная белая подложка
+   на белом пропадала вместе с буквами. */
+.lang-switch{ display:flex; background:#F1F3F2; border-radius:10px; padding:3px; }
+.lang-btn{ font-size:12px; font-weight:700; padding:5px 10px; border-radius:8px; color:var(--muted); }
 .lang-btn.active{ background:#fff; color:var(--primary-deep); }
 .lang-switch.light{ background:#F2F2EF; backdrop-filter:none; }
 .lang-switch.light .lang-btn{ color:var(--muted); }
