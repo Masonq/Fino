@@ -1223,10 +1223,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    естественно, а вот лупа и надпись за ним пропадали.
    Отступ ставим здесь, а не на всей полосе: иначе над шапкой
    открывается пустота — это уже пробовали. */
-.ptr-inner{
-  display:flex; flex-direction:column; align-items:center; gap:8px;
-  padding-top:env(safe-area-inset-top);
-}
+/* Отступ здесь не нужен: содержимое прижато к низу полосы, и верхний
+   отступ просто уходил за её край — оттого лупа и надпись и обрезались.
+   Место под остров даёт сама полоса, она выше на величину выреза. */
+.ptr-inner{ display:flex; flex-direction:column; align-items:center; gap:8px; }
 
 /* сцена: ряд «карточек» и лупа, которая их сканирует */
 .ptr-scene{ position:relative; width:104px; height:30px; transition:opacity .2s ease; }

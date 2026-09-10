@@ -908,7 +908,10 @@ def test_pull_indicator_clears_the_notch():
             / "frontend" / "src" / "pages" / "Home.jsx").read_text()
     assert "setProperty('--pull-bg'" in home
 
-    # А содержимое полосы — ниже острова. Отступ именно здесь: на всей
-    # полосе он открывал пустоту над шапкой, это уже пробовали.
-    inner = styles.split(".ptr-inner{")[1].split("}")[0]
-    assert "padding-top:env(safe-area-inset-top)" in inner
+    # Место под остров даёт высота самой полосы: она выше на величину
+    # выреза, а содержимое прижато к низу. Отступ внутри не работал —
+    # при выравнивании по низу он уходил за край, и надпись обрезалась.
+    source = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "components" / "PullToRefresh.jsx").read_text()
+    assert "height: `calc(${pull}px + env(safe-area-inset-top))`" in source
+    assert "translateY(calc(${pull}px + env(safe-area-inset-top)))" in source
