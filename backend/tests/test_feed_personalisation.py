@@ -997,3 +997,19 @@ def test_feed_tab_survives_going_back():
     assert "sessionStorage.setItem('plonk_feed_tab', key)" in page
     # И в памяти страницы тоже — для быстрого возврата без перезагрузки.
     assert "tab: tabRef.current" in page
+
+
+def test_tab_filter_applies_to_further_pages_too():
+    """Отбор вкладки действует и на подгружаемые порции.
+
+    Лента замирала на двенадцати карточках во вкладке «Даром», хотя
+    всего их сто четыре. Причина: подгрузка про вкладку не знала.
+    Первая порция приходила «даром», а следующие — обычной лентой:
+    новое в них было чужое, дубли отсеивались, и лента вставала.
+    """
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "Home.jsx").read_text()
+
+    # Отбор задан дважды: в первой загрузке и в подгрузке.
+    assert page.count("tab === 'free' ? { only_free: true }") == 2
+    assert page.count("tab === 'new' ? { sort: 'new' }") == 2

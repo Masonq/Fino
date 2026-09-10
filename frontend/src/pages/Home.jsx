@@ -277,7 +277,17 @@ export default function Home() {
     setLoadingMore(true)
     const from = Math.max(asked.current, listings.length)
     asked.current = from + PAGE
-    api.searchListings({ lang: i18n.language, limit: PAGE, offset: from, city: city || undefined })
+    // Отбор тот же, что у первой порции.
+    //
+    // Раньше подгрузка про вкладку не знала: первая порция приходила
+    // «даром», а следующие — обычной лентой. Новое в них было чужое,
+    // дубли отсеивались, и лента замирала на двенадцати карточках,
+    // хотя всего их сто четыре.
+    api.searchListings({
+      lang: i18n.language, limit: PAGE, offset: from, city: city || undefined,
+      ...(tab === 'new' ? { sort: 'new' } : {}),
+      ...(tab === 'free' ? { only_free: true } : {}),
+    })
       .then((res) => {
         // Пусто — дальше просить нечего: помечаем, что лента кончилась,
         // иначе наблюдатель будет дёргать подгрузку до бесконечности.
@@ -326,7 +336,7 @@ export default function Home() {
       })
       .catch(() => {})
       .finally(() => setLoadingMore(false))
-  }, [i18n.language, listings.length, loadingMore, city])
+  }, [i18n.language, listings.length, loadingMore, city, tab])
 
   useEffect(() => {
     if (!feedLoaded || listings.length >= feedTotal) return
