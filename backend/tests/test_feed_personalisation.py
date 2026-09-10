@@ -219,7 +219,10 @@ def test_scroll_is_restored_in_one_place():
     # случайное смахивание сбрасывало бы ленту к началу.
     scrolls = [l for l in home.splitlines() if "window.scrollTo" in l]
     assert len(scrolls) == 1, "прокрутку возвращаем только для вкладок"
-    assert "saved.scroll" in scrolls[0]
+    # Возвращаем после отрисовки карточек, а не сразу: иначе человек
+    # успевает увидеть верх страницы, а потом прыжок вниз — это и
+    # читалось как мелькание.
+    assert "useLayoutEffect" in home
 
 
 def test_charts_open_on_today():

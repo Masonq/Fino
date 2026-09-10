@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
@@ -259,6 +259,15 @@ export default function Home() {
   // палец, а новая приезжает с другой стороны. Без этого смена
   // происходит рывком, и непонятно, что случилось.
   const [tabSlide, setTabSlide] = useState(null)
+  // Куда вернуть прокрутку, когда карточки вкладки уже отрисованы.
+  const pendingScroll = useRef(null)
+  // Высота ленты на момент смены вкладки.
+  //
+  // Лента пересоздаётся, её высота падает до нуля, и браузер сам
+  // подтягивает страницу вверх — человек видит шапку вместо карточек.
+  // Держим прежнюю высоту, пока не приедут новые.
+  const holdHeight = useRef(null)
+  const gridRef = useRef(null)
 
   const onTouchStart = (e) => {
     if (e.touches.length !== 1) return
@@ -286,6 +295,8 @@ export default function Home() {
   }
 
   const switchTab = (key, direction) => {
+    holdHeight.current = gridRef.current?.offsetHeight || null
+
     // Прежнюю вкладку запоминаем целиком: карточки, сколько всего и
     // место прокрутки.
     tabCache[tab] = {
@@ -306,7 +317,12 @@ export default function Home() {
       setFeedLoaded(true)
       asked.current = saved.items.length
       fetchedAtRef.current = saved.fetchedAt
-      requestAnimationFrame(() => window.scrollTo(0, saved.scroll || 0))
+      // Место вернём после отрисовки — см. эффект ниже.
+      //
+      // Раньше возвращали сразу: карточки ещё не нарисованы, страница
+      // короткая, и человек успевал увидеть её верх, а потом прыжок
+      // вниз. Это и читалось как мелькание.
+      pendingScroll.current = saved.scroll || 0
       return
     }
 
@@ -326,6 +342,18 @@ export default function Home() {
     // Один проигрыш обеспечивает key на ленте ниже: при смене вкладки
     // браузер создаёт её заново, и движение играет ровно один раз.
   }
+
+  // Возврат на место после отрисовки карточек.
+  //
+  // useLayoutEffect, а не обычный: он срабатывает до того, как браузер
+  // покажет кадр, и человек не видит ни верха страницы, ни прыжка.
+  useLayoutEffect(() => {
+    if (listings.length) holdHeight.current = null
+    if (pendingScroll.current === null) return
+    const y = pendingScroll.current
+    pendingScroll.current = null
+    window.scrollTo(0, y)
+  }, [listings])
 
   const PAGE = 12
 
@@ -679,6 +707,8 @@ export default function Home() {
           вкладку заодно. */}
       <div
         key={tab}
+        ref={gridRef}
+        style={holdHeight.current ? { minHeight: holdHeight.current } : undefined}
         className={[
           cols === 2 ? 'infinite-grid' : 'infinite-list',
           tabSlide ? `slide-${tabSlide}` : '',
