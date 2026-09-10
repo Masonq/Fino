@@ -907,3 +907,24 @@ def test_pull_indicator_clears_the_notch():
     home = (Path(__file__).resolve().parents[2]
             / "frontend" / "src" / "pages" / "Home.jsx").read_text()
     assert "setProperty('--pull-bg'" in home
+
+
+def test_cards_appear_one_after_another():
+    """Карточки в ленте появляются по очереди, а не разом.
+
+    Приём подсмотрен в anime.js — там он зовётся stagger, — но без
+    самой библиотеки: она весит сотню килобайт, а нужен один эффект,
+    который делается парой строк в стилях.
+
+    Сдвиг маленький, по три сотых секунды: лента оживает, но ждать
+    никого не заставляет. Только первые восемь карточек — дальше
+    человек уже листает, и задержка стала бы помехой.
+
+    Кому движение мешает, тому не показываем вовсе.
+    """
+    styles = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "styles.css").read_text()
+
+    assert "@keyframes card-in" in styles
+    assert ".s-card:nth-child(n+9){ animation:none; }" in styles
+    assert "prefers-reduced-motion" in styles
