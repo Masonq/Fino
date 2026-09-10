@@ -907,3 +907,8 @@ def test_pull_indicator_clears_the_notch():
     home = (Path(__file__).resolve().parents[2]
             / "frontend" / "src" / "pages" / "Home.jsx").read_text()
     assert "setProperty('--pull-bg'" in home
+
+    # А содержимое полосы — ниже острова. Отступ именно здесь: на всей
+    # полосе он открывал пустоту над шапкой, это уже пробовали.
+    inner = styles.split(".ptr-inner{")[1].split("}")[0]
+    assert "padding-top:env(safe-area-inset-top)" in inner
