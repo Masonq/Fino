@@ -727,7 +727,13 @@ export default function ListingDetail() {
           остаётся первой строкой правой колонки, ровно на одной линии
           с ним. На телефоне заголовок идёт под ценой, как и был. */}
       {wide && <div className="detail-title detail-title-wide">{translation?.title}</div>}
-      <div className="detail-photo">
+      {/* То же имя, что у фотографии в карточке ленты: браузер переносит
+          снимок с одной страницы на другую, а не гасит и показывает
+          заново. */}
+      <div
+        className="detail-photo"
+        style={listing ? { viewTransitionName: `photo-${listing.id}` } : undefined}
+      >
         {photos.length > 0 ? (
           <div
             className="photo-strip"

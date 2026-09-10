@@ -928,3 +928,30 @@ def test_cards_appear_one_after_another():
     assert "@keyframes card-in" in styles
     assert ".s-card:nth-child(n+9){ animation:none; }" in styles
     assert "prefers-reduced-motion" in styles
+
+
+def test_photo_travels_from_card_to_page():
+    """Фотография переносится с карточки на страницу объявления.
+
+    Раньше страница просто сменялась рывком. Теперь снимок из карточки
+    разворачивается в страницу — так делают приложения, и от этого сайт
+    перестаёт ощущаться набором отдельных страниц.
+
+    Имя своё у каждого объявления, иначе браузер не поймёт, какую
+    именно карточку переносить.
+
+    Работает через встроенное умение браузера. Кто его не умеет, увидит
+    обычный переход: ничего не сломается. Кому движение мешает —
+    переходов нет вовсе.
+    """
+    card = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "components" / "ListingCard.jsx").read_text()
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "ListingDetail.jsx").read_text()
+    styles = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "styles.css").read_text()
+
+    assert "viewTransitionName: `photo-${listing.id}`" in card
+    assert "viewTransitionName: `photo-${listing.id}`" in page
+    assert "@view-transition" in styles
+    assert "prefers-reduced-motion" in styles

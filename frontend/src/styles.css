@@ -4103,3 +4103,24 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 @media (prefers-reduced-motion: reduce){
   .s-card{ animation:none; }
 }
+
+/* Плавный переход с ленты на объявление.
+   Фотография из карточки разворачивается в страницу, а не сменяется
+   рывком. Так делают приложения, и от этого сайт перестаёт ощущаться
+   набором страниц.
+
+   Работает через View Transitions — встроенное умение браузера. Кто
+   его не умеет, увидит обычный переход: ничего не сломается. */
+@view-transition{ navigation:auto; }
+
+::view-transition-old(root),
+::view-transition-new(root){
+  animation-duration:.22s;
+  animation-timing-function:cubic-bezier(.4,0,.2,1);
+}
+
+/* Кому движение мешает — переходов нет. */
+@media (prefers-reduced-motion: reduce){
+  ::view-transition-old(root),
+  ::view-transition-new(root){ animation:none; }
+}

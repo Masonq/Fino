@@ -90,6 +90,13 @@ export default function ListingCard({ listing, large = false, priority = false }
           <img
             src={listing.cover_photo}
             alt=""
+            // Имя для переноса фотографии на страницу объявления.
+            //
+            // Браузер видит одно и то же имя на карточке и на странице —
+            // и переносит снимок между ними, а не гасит один и не
+            // показывает другой. Имя своё у каждого объявления, иначе
+            // браузер не поймёт, какую именно карточку переносить.
+            style={{ viewTransitionName: `photo-${listing.id}` }}
             loading={priority ? 'eager' : 'lazy'}
             fetchpriority={priority ? 'high' : 'auto'}
             decoding="async"
