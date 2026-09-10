@@ -101,15 +101,10 @@ export default function PullToRefresh({ onRefresh, children }) {
 
       <div
         className="ptr-content"
-        // Страница не двигается вовсе.
-        //
-        // Раньше она уезжала вниз, и шапка вместе с ней: человек тянет
-        // ленту, а видит, как всё съезжает. Уменьшение сдвига не
-        // помогло — на глаз это то же самое.
-        //
-        // Теперь полоса обновления ложится поверх, а страница стоит на
-        // месте. Жест виден по самой полосе, и этого довольно.
-        style={undefined}
+        style={{
+          transform: `translateY(${pull}px)`,
+          transition: active.current ? 'none' : 'transform .32s cubic-bezier(.25,.46,.45,.94)',
+        }}
       >
         {children}
       </div>

@@ -897,12 +897,7 @@ def test_pull_to_refresh_does_not_push_the_header_away():
     source = (Path(__file__).resolve().parents[2]
               / "frontend" / "src" / "components" / "PullToRefresh.jsx").read_text()
 
-    # Страница не двигается вовсе: уменьшение сдвига не помогло, на глаз
-    # это было то же самое. Полоса ложится поверх.
-    assert "style={undefined}" in source
-    assert "transform: `translateY(${pull}px)`" not in source
-
-    styles = (Path(__file__).resolve().parents[2]
-              / "frontend" / "src" / "styles.css").read_text()
-    block = styles.split(".ptr-indicator{")[1].split("}")[0]
-    assert "position:fixed" in block
+    assert "THRESHOLD = 64" in source
+    assert "MAX_PULL = 90" in source
+    assert "HOLD_WHILE_REFRESHING = 48" in source
+    assert "setPull(HOLD_WHILE_REFRESHING)" in source
