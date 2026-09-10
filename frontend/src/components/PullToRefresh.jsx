@@ -64,13 +64,7 @@ export default function PullToRefresh({ onRefresh, children }) {
       <div
         className="ptr-indicator"
         style={{
-          // Высота с запасом на вырез экрана.
-          //
-          // В приложении сверху «остров» айфона — почти шестьдесят
-          // точек. Полоса была ровно той высоты, на сколько оттянули, и
-          // содержимое в неё не помещалось: лупа с надписью обрезались
-          // сверху, потому что отступ под остров съедал всё место.
-          height: `calc(${pull}px + env(safe-area-inset-top))`,
+          height: pull,
           opacity: pull > 4 ? 1 : 0,
         }}
       >
@@ -96,9 +90,7 @@ export default function PullToRefresh({ onRefresh, children }) {
       <div
         className="ptr-content"
         style={{
-          // Сдвигаем на столько же, на сколько выросла полоса, — иначе
-          // она накроет шапку своей нижней частью.
-          transform: `translateY(calc(${pull}px + env(safe-area-inset-top)))`,
+          transform: `translateY(${pull}px)`,
           transition: active.current ? 'none' : 'transform .32s cubic-bezier(.25,.46,.45,.94)',
         }}
       >
