@@ -978,3 +978,22 @@ def test_home_has_three_feed_tabs():
     # И отбор бесплатных на сервере: признак был, отбирать было нельзя.
     assert "only_free: bool = Query(False)" in api
     assert "q.filter(Listing.is_free.is_(True))" in api
+
+
+def test_feed_tab_survives_going_back():
+    """Выбранная вкладка не сбрасывается при возврате.
+
+    Человек смотрел «Даром», открыл объявление, вернулся свайпом — и
+    оказывался на «Все». Работа выбора пропадала.
+
+    Держим выбор в хранилище страницы, а не только в памяти: память
+    живёт, пока жива сама страница, а возврат из объявления —
+    особенно свайпом в приложении — нередко перезагружает её целиком.
+    """
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "Home.jsx").read_text()
+
+    assert "sessionStorage.getItem('plonk_feed_tab')" in page
+    assert "sessionStorage.setItem('plonk_feed_tab', key)" in page
+    # И в памяти страницы тоже — для быстрого возврата без перезагрузки.
+    assert "tab: tabRef.current" in page

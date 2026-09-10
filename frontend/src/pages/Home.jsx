@@ -37,7 +37,9 @@ import { hasLanding } from '../data/landings'
 const FEED_CACHE_TTL = 300_000
 // Город в ключе кэша наравне с языком: без этого человек, выбравший
 // Нови-Сад, при возврате на главную видел бы сохранённую ленту Белграда.
-let feedCache = { lang: null, city: null, items: [], total: 0, scroll: 0, fetchedAt: 0 }
+// Вкладка тоже в памяти: человек смотрел «Даром», открыл объявление,
+// вернулся — и оказывался на «Все». Работа выбора пропадала.
+let feedCache = { lang: null, city: null, tab: 'all', items: [], total: 0, scroll: 0, fetchedAt: 0 }
 
 // Фон страницы (--bg в styles.css). Держим тут же числом: значение
 // уходит в meta theme-color, а из CSS-переменной его пришлось бы
@@ -117,7 +119,19 @@ export default function Home() {
   //
   // Три ленты подряд для четырёх тысяч объявлений выглядели бы жидко, а
   // переключатель честнее: одна лента, три взгляда на неё.
-  const [tab, setTab] = useState('all')
+  // Вкладку держим в хранилище страницы, а не только в памяти.
+  //
+  // Память живёт, пока жива сама страница. А возврат из объявления —
+  // особенно свайпом в приложении — нередко перезагружает её целиком, и
+  // выбор пропадал: человек смотрел «Даром», вернулся и оказался на
+  // «Все».
+  const [tab, setTab] = useState(() => {
+    try {
+      return sessionStorage.getItem('plonk_feed_tab') || cached?.tab || 'all'
+    } catch {
+      return cached?.tab || 'all'
+    }
+  })
   const [loadingMore, setLoadingMore] = useState(false)
   // Подгрузка сама остановилась — показываем кнопку «Показать ещё».
   const [stalled, setStalled] = useState(false)
@@ -144,6 +158,11 @@ export default function Home() {
   // раз и иначе запомнил бы город, выбранный при первой отрисовке.
   const cityRef = useRef(city)
   cityRef.current = city
+
+  // Вкладка — по той же причине: обработчик ухода со страницы создаётся
+  // один раз и иначе запомнил бы ту, что была при первой отрисовке.
+  const tabRef = useRef(tab)
+  tabRef.current = tab
 
   // Браузер восстанавливает прокрутку не мгновенно, и шапка успевала
   // развернуться и тут же схлопнуться — при возврате это читалось как рывок.
@@ -347,6 +366,7 @@ export default function Home() {
       feedCache = {
         lang: langRef.current,
         city: cityRef.current,
+        tab: tabRef.current,
         items: itemsRef.current,
         total: totalRef.current,
         scroll: lastScroll.current || window.scrollY,
@@ -527,7 +547,12 @@ export default function Home() {
             <button
               key={key}
               className={tab === key ? 'feed-tab active' : 'feed-tab'}
-              onClick={() => { if (tab !== key) { setTab(key); asked.current = 0 } }}
+              onClick={() => {
+                if (tab === key) return
+                setTab(key)
+                asked.current = 0
+                try { sessionStorage.setItem('plonk_feed_tab', key) } catch { /* не беда */ }
+              }}
             >
               {label}
             </button>
