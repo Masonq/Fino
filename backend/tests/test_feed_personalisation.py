@@ -1075,3 +1075,10 @@ def test_tab_change_slides_the_feed():
     assert "switchTab(TABS[next], dx < 0 ? 'left' : 'right')" in page
     assert "@keyframes slide-from-right" in styles
     assert ".slide-left .s-card, .slide-right .s-card{ animation:none; }" in styles
+    # Фотографии тоже не проявляются заново: вместе с движением ленты
+    # это читалось как двойное мигание, будто снимок перезагружается.
+    assert ".slide-left .s-photo-wrap img" in styles
+    # И движение играет один раз: лента пересоздаётся по ключу вкладки,
+    # а не снимает метку по таймеру — от этого оно запускалось дважды.
+    assert "key={tab}" in page
+    assert "setTimeout(() => setTabSlide(null)" not in page

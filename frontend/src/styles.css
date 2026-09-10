@@ -4154,9 +4154,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   animation:slide-from-left .24s cubic-bezier(.25,.46,.45,.94);
 }
 
-/* Карточки при смене вкладки по очереди не появляются: они и так
-   приезжают вместе с лентой, два движения разом выглядят суетливо. */
+/* При смене вкладки внутри ленты ничего своего не двигается.
+   Лента едет целиком, и этого довольно. Раньше поверх неё карточки
+   появлялись по очереди, а фотографии проявлялись заново — выходило
+   двойное мигание, будто снимок перезагружается. */
 .slide-left .s-card, .slide-right .s-card{ animation:none; }
+.slide-left .s-photo-wrap img, .slide-right .s-photo-wrap img{ animation:none; }
 
 @media (prefers-reduced-motion: reduce){
   .infinite-grid.slide-left, .infinite-list.slide-left,
