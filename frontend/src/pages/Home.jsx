@@ -175,6 +175,9 @@ export default function Home() {
       const meta = document.createElement('meta')
       meta.setAttribute('name', 'theme-color')
       meta.setAttribute('content', mq.matches ? PAGE_BG : PROMO_SLIDES[slide].top)
+      // Тот же цвет — области потягивания, чтобы при обновлении над
+      // шапкой не открывалась белая пустота.
+      document.documentElement.style.setProperty('--pull-bg', PROMO_SLIDES[slide].top)
       document.head.appendChild(meta)
     }
     apply()

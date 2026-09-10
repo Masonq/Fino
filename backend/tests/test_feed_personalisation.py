@@ -899,4 +899,11 @@ def test_pull_indicator_clears_the_notch():
               / "frontend" / "src" / "styles.css").read_text()
 
     block = styles.split(".ptr-indicator{")[1].split("}")[0]
-    assert "padding-top:env(safe-area-inset-top)" in block
+    # Отступ под вырез не помог: он только увеличил белый разрыв над
+    # цветной шапкой. Красим область в цвет шапки — тогда стыка нет
+    # вовсе, и остров ложится на тот же цвет, что и всегда.
+    assert "background:var(--pull-bg" in block
+
+    home = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "Home.jsx").read_text()
+    assert "setProperty('--pull-bg'" in home

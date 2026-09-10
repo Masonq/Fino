@@ -1206,17 +1206,17 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .ptr-root{ position:relative; }
 .ptr-indicator{
   position:absolute; top:0; left:0; right:0; z-index:5;
-  display:flex; align-items:center; justify-content:center;
+  display:flex; align-items:flex-end; justify-content:center;
   overflow:hidden; pointer-events:none;
   transition:opacity .2s ease;
 
-  /* Отступ под вырез экрана.
-     В приложении с домашнего экрана страница занимает весь экран,
-     включая место под «островом» айфона. Шапка это учитывала, а полоса
-     обновления начиналась от самого верха — и остров её перегораживал.
-     В браузере беды не было: там сверху адресная строка. */
-  padding-top:env(safe-area-inset-top);
-  box-sizing:content-box;
+  /* Фон — цвет шапки, а не белый.
+     В приложении при потягивании над цветной шапкой открывалась белая
+     пустота: резкий разрыв во весь экран, да ещё и под «островом»
+     айфона. Теперь тянется тот же цвет, и стыка не видно.
+     Цвет ставит Home.jsx — он же выбирает слайд шапки. */
+  background:var(--pull-bg, var(--bg));
+  padding-bottom:6px;
 }
 .ptr-inner{ display:flex; flex-direction:column; align-items:center; gap:8px; }
 
@@ -1250,6 +1250,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   50%{ transform:translateX(30px) rotate(10deg) }
 }
 
+.ptr-indicator .ptr-label{ color:rgba(255,255,255,.9); }
 .ptr-label{
   font-size:11px; font-weight:700; color:var(--muted);
   transition:color .25s ease;
