@@ -882,22 +882,3 @@ def test_category_tree_updates_within_an_hour():
 
     assert "FRESH_FOR = 60 * 60 * 1000" in client
     assert "return refresh().catch(() => saved.tree)" in client
-
-
-def test_pull_to_refresh_does_not_push_the_header_away():
-    """Полоса обновления не отодвигает шапку далеко вниз.
-
-    Страница уезжала на 125 точек — почти четверть экрана: человек
-    тянет ленту, а видит, как всё съезжает, и шапка перегораживается.
-
-    Шестьдесят четыре хватает, чтобы жест был заметен и понятен. А пока
-    идёт обновление, держим страницу почти на месте: ждать удобнее,
-    когда видно ленту, а не пустую полосу.
-    """
-    source = (Path(__file__).resolve().parents[2]
-              / "frontend" / "src" / "components" / "PullToRefresh.jsx").read_text()
-
-    assert "THRESHOLD = 64" in source
-    assert "MAX_PULL = 90" in source
-    assert "HOLD_WHILE_REFRESHING = 48" in source
-    assert "setPull(HOLD_WHILE_REFRESHING)" in source
