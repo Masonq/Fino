@@ -1,8 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-const THRESHOLD = 86   // сколько нужно протянуть, чтобы сработало
-const MAX_PULL = 125   // дальше не растягиваем
+// Насколько уезжает страница при потягивании.
+//
+// Было 86 и 125 — почти четверть экрана: шапка уходила вниз и
+// перегораживалась полосой обновления. Человек тянет ленту, а видит,
+// как всё съезжает.
+//
+// Шестьдесят четыре хватает, чтобы жест был заметен и понятен, а
+// девяносто — предел, дальше страница просто пружинит.
+const THRESHOLD = 64   // сколько нужно протянуть, чтобы сработало
+const MAX_PULL = 90    // дальше не растягиваем
+
+// Пока идёт обновление, держим страницу почти на месте: ждать удобнее,
+// когда видно ленту, а не пустую полосу.
+const HOLD_WHILE_REFRESHING = 48
 
 export default function PullToRefresh({ onRefresh, children }) {
   const { t } = useTranslation()
@@ -34,7 +46,7 @@ export default function PullToRefresh({ onRefresh, children }) {
 
       if (pull >= THRESHOLD) {
         setRefreshing(true)
-        setPull(THRESHOLD)
+        setPull(HOLD_WHILE_REFRESHING)
         try { await onRefresh?.() } finally {
           setRefreshing(false)
           setPull(0)
