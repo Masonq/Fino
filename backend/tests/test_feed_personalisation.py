@@ -1013,3 +1013,20 @@ def test_tab_filter_applies_to_further_pages_too():
     # Отбор задан дважды: в первой загрузке и в подгрузке.
     assert page.count("tab === 'free' ? { only_free: true }") == 2
     assert page.count("tab === 'new' ? { sort: 'new' }") == 2
+
+
+def test_free_tab_excludes_services():
+    """Во вкладке «Даром» нет услуг, работы и жилья.
+
+    «Бесплатно» у них значит другое: массажист без цены — это не
+    подарок, а «цена по договорённости». Человек заходит сюда за
+    вещами, которые отдают, и объявления мастеров ему только мешают.
+
+    Тот же приём применён при поиске перечней: там эти разделы
+    исключены по той же причине.
+    """
+    api = (Path(__file__).resolve().parents[1]
+           / "app" / "routers" / "listings.py").read_text()
+
+    block = api.split("if only_free:")[1].split("if with_photo:")[0]
+    assert '"services", "jobs", "real-estate"' in block

@@ -475,6 +475,23 @@ def search_listings(
     if only_free:
         q = q.filter(Listing.is_free.is_(True))
 
+        # Услуги, работу и жильё сюда не пускаем.
+        #
+        # «Бесплатно» у них значит другое: массажист без цены — это не
+        # подарок, а «цена по договорённости». Человек заходит во
+        # вкладку «Даром» за вещами, которые отдают, и объявления
+        # мастеров ему только мешают.
+        #
+        # Тот же приём применён при поиске перечней (см.
+        # app/core/find_bundles.py): там эти разделы исключены по той же
+        # причине.
+        parent = aliased(Category)
+        free_cat = aliased(Category)
+        q = (q.join(free_cat, free_cat.id == Listing.category_id)
+              .outerjoin(parent, parent.id == free_cat.parent_id)
+              .filter(func.coalesce(parent.slug, free_cat.slug).notin_(
+                  ("services", "jobs", "real-estate"))))
+
     if with_photo:
         q = q.filter(Listing.photos.any())
     if delivery:
