@@ -527,6 +527,13 @@ def forget_photos(item: dict) -> None:
                 pass
 
 
+def strip_links_from(text: str) -> str:
+    """Убирает чужие адреса из описания — см. app/core/strip_links.py."""
+    from app.core.strip_links import clean
+
+    return clean(text or "")
+
+
 def store(db, item: dict) -> bool:
     """
     Записывает объявление. False — если такое уже переносили.
@@ -827,7 +834,10 @@ def _write(db, item: dict) -> bool:
     # первый попавшийся — то есть переводит сербский текст как русский.
     db.add(ListingTranslation(
         listing_id=listing.id, language=listing.source_language or "ru",
-        title=(item["title"] or "")[:255], description=item["description"][:4000],
+        # Ссылки вырезаем сразу при сохранении: чужой адрес в описании
+        # связывает наш домен с чужим, и проверяющие это видят.
+        title=(item["title"] or "")[:255],
+        description=strip_links_from(item["description"])[:4000],
     ))
     # Перевод запускается при одобрении модератором, а импорт публикует
     # объявления сам — и они оставались только на русском: на английской

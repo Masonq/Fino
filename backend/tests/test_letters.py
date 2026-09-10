@@ -1354,3 +1354,45 @@ def test_stats_count_days_by_local_time():
     visits = (Path(__file__).resolve().parents[1]
               / "app" / "models" / "visit_daily.py").read_text()
     assert "day=local_today()" in visits
+
+
+def test_foreign_links_are_stripped_from_descriptions():
+    """Чужие ссылки вырезаются из описаний объявлений.
+
+    Люди приносят их из чатов: на свой магазин, на маркетплейс, иногда
+    на мошеннический сайт. Кликабельными они не становятся, но
+    проверяющие читают текст страницы и видят адрес — этого хватило,
+    чтобы Instagram начал показывать предупреждение о мошенническом
+    сайте, хотя по всем спискам безопасности домен чист.
+
+    Имя сайта при этом остаётся словом: «магазин на wildberries» так же
+    понятно, а перейти по нему нельзя.
+
+    Свои адреса и телеграм-имена не трогаем — по ним человек находит
+    продавца.
+    """
+    from app.core.strip_links import clean
+
+    assert clean("смотрите на https://moy-shop.com/kurtki") == \
+        "смотрите на moy-shop"
+    assert "wildberries" in clean("больше на www.wildberries.ru")
+    assert "http" not in clean("заказ тут: shop-scam.xyz/order")
+
+    # Своё оставляем.
+    assert "t.me/prodavec" in clean("пишите t.me/prodavec")
+    assert "plonk.rs" in clean("объявление на plonk.rs")
+
+
+def test_links_are_stripped_on_import_and_at_night():
+    """Ссылки чистятся и при переносе, и ночью.
+
+    При переносе — чтобы новое приходило уже чистым. Ночью — чтобы
+    разобрать накопившееся.
+    """
+    imp = (Path(__file__).resolve().parents[1]
+           / "app" / "core" / "tg_import.py").read_text()
+    night = (Path(__file__).resolve().parents[1]
+             / "app" / "core" / "nightly.py").read_text()
+
+    assert "strip_links_from(item[\"description\"])" in imp
+    assert "strip_links(apply=True" in night
