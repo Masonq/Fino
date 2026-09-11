@@ -1136,3 +1136,23 @@ def test_each_tab_remembers_its_place():
     # бесполезна — карточки сбросятся к двенадцати.
     assert "const saved = tabCache[tab]" in page
     assert "saved?.items?.length && Date.now() - saved.fetchedAt" in page
+
+
+def test_held_height_is_released_after_cards_arrive():
+    """Удержанная высота снимается, когда приехали карточки.
+
+    Высоту держим на время смены вкладки — иначе лента схлопывается и
+    браузер подтягивает страницу вверх. Но держали её в ссылке, а
+    ссылка не перерисовывает: высота оставалась от прежней, длинной
+    ленты, и под парой карточек зияла пустота во весь экран.
+
+    Держим в состоянии: снятие перерисовывает ленту, и пустоты нет.
+    """
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "Home.jsx").read_text()
+
+    assert "const [holdHeight, setHoldHeight] = useState(null)" in page
+    assert "setHoldHeight(gridRef.current?.offsetHeight || null)" in page
+    assert "if (listings.length && holdHeight !== null) setHoldHeight(null)" in page
+    # И высота снимается в том же эффекте, что возвращает прокрутку.
+    assert "}, [listings, holdHeight])" in page

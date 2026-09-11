@@ -266,7 +266,7 @@ export default function Home() {
   // Лента пересоздаётся, её высота падает до нуля, и браузер сам
   // подтягивает страницу вверх — человек видит шапку вместо карточек.
   // Держим прежнюю высоту, пока не приедут новые.
-  const holdHeight = useRef(null)
+  const [holdHeight, setHoldHeight] = useState(null)
   const gridRef = useRef(null)
 
   const onTouchStart = (e) => {
@@ -295,7 +295,7 @@ export default function Home() {
   }
 
   const switchTab = (key, direction) => {
-    holdHeight.current = gridRef.current?.offsetHeight || null
+    setHoldHeight(gridRef.current?.offsetHeight || null)
 
     // Прежнюю вкладку запоминаем целиком: карточки, сколько всего и
     // место прокрутки.
@@ -348,12 +348,17 @@ export default function Home() {
   // useLayoutEffect, а не обычный: он срабатывает до того, как браузер
   // покажет кадр, и человек не видит ни верха страницы, ни прыжка.
   useLayoutEffect(() => {
-    if (listings.length) holdHeight.current = null
+    // Снимаем удержание, как только приехали карточки.
+    //
+    // Раньше держали в ссылке — а ссылка не перерисовывает: высота
+    // оставалась от прежней, длинной ленты, и под парой карточек зияла
+    // пустота во весь экран.
+    if (listings.length && holdHeight !== null) setHoldHeight(null)
     if (pendingScroll.current === null) return
     const y = pendingScroll.current
     pendingScroll.current = null
     window.scrollTo(0, y)
-  }, [listings])
+  }, [listings, holdHeight])
 
   const PAGE = 12
 
@@ -708,7 +713,7 @@ export default function Home() {
       <div
         key={tab}
         ref={gridRef}
-        style={holdHeight.current ? { minHeight: holdHeight.current } : undefined}
+        style={holdHeight ? { minHeight: holdHeight } : undefined}
         className={[
           cols === 2 ? 'infinite-grid' : 'infinite-list',
           tabSlide ? `slide-${tabSlide}` : '',
