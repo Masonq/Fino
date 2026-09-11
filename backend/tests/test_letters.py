@@ -1396,3 +1396,22 @@ def test_links_are_stripped_on_import_and_at_night():
 
     assert "strip_links_from(item[\"description\"])" in imp
     assert "strip_links(apply=True" in night
+
+
+def test_review_invites_actually_run():
+    """Приглашения оставить отзыв рассылаются ночью.
+
+    Рассылка была написана и не запускалась нигде: отзывов пять на всю
+    площадку, приглашений — ни одного. Оттого у продавцов пустые
+    оценки, а человек боится писать незнакомцу — без отзывов доска
+    объявлений не работает.
+
+    Сам механизм осторожен: спрашивает только при высокой вероятности
+    сделки, по одному покупателю на объявление, одно напоминание через
+    три дня — и больше не беспокоит того, кто дважды промолчал.
+    """
+    source = (Path(__file__).resolve().parents[1]
+              / "app" / "core" / "nightly.py").read_text()
+
+    assert "scan_recent_deals(db)" in source
+    assert "send_reminders(db)" in source
