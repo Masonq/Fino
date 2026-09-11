@@ -831,6 +831,9 @@
     "show_more": "Show more",
     "tab_all": "All",
     "tab_new": "New",
-    "tab_free": "Free"
+    "tab_free": "Free",
+    "sell_title": "Got something to sell?",
+    "sell_text": "Post a listing — it is free and takes a minute.",
+    "sell_button": "Post a listing"
   }
 }

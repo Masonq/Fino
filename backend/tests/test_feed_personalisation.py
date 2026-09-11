@@ -1174,3 +1174,24 @@ def test_whole_card_opens_the_listing():
     assert '<Link to={listing.path} className="s-attrs">' in card
     assert '<Link to={listing.path} className="s-meta">' in card
     assert "'s-fav on' : 's-fav'" in card
+
+
+def test_feed_invites_to_post_a_listing():
+    """В ленте есть призыв подать своё объявление.
+
+    Числа вскрыли главное: объявлений из чатов 3791, своих — два.
+    Одиннадцать зарегистрированных, ноль переписок. Человек листает
+    чужое и не догадывается, что может выставить своё: кнопка
+    «Разместить» внизу экрана, и её не замечают.
+
+    Ставим после шестой карточки: человек уже втянулся, но ещё не ушёл.
+    Раньше — помешает, позже — не увидит.
+    """
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "Home.jsx").read_text()
+    styles = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "styles.css").read_text()
+
+    assert "i === 6 &&" in page
+    assert 'to="/post" className="post-cta"' in page
+    assert ".post-cta{" in styles

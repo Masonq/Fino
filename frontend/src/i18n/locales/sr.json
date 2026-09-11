@@ -832,6 +832,9 @@
     "show_more": "Prikaži još",
     "tab_all": "Sve",
     "tab_new": "Novo",
-    "tab_free": "Besplatno"
+    "tab_free": "Besplatno",
+    "sell_title": "Prodajete nešto?",
+    "sell_text": "Postavite oglas — besplatno je i traje minut.",
+    "sell_button": "Postavi oglas"
   }
 }
