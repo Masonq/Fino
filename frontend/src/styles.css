@@ -4184,12 +4184,17 @@ a.s-attrs{ display:block; }
    чужое и не догадывается, что может выставить своё. */
 .post-cta{
   grid-column:1 / -1; display:block; text-decoration:none;
-  background:var(--primary-soft); border-radius:14px; padding:18px 16px;
-  border:1px dashed var(--green);
+  background:#E4F6EE; border-radius:14px; padding:18px 16px;
+  border:1px dashed #0E9F6E;
+  /* Цвет задаём числом, а не переменной.
+     Карточка — ссылка, и текст внутри наследовал цвет ссылки: на
+     светло-зелёном он выходил белым и пропадал целиком. */
+  color:#1A2420;
 }
-.post-cta-title{ font-size:17px; font-weight:800; color:var(--ink); }
-.post-cta-text{ font-size:14px; color:var(--muted); margin-top:4px; line-height:1.35; }
+.post-cta-title{ font-size:17px; font-weight:800; color:#1A2420; }
+.post-cta-text{ font-size:14px; color:#4A5450; margin-top:4px; line-height:1.35; }
 .post-cta-btn{
   display:inline-block; margin-top:12px; padding:9px 18px; border-radius:11px;
-  background:var(--green); color:#fff; font-size:14px; font-weight:700;
+  /* Кнопка — белым по зелёному, тут цвет числом по той же причине. */
+  background:#0E9F6E; color:#FFFFFF; font-size:14px; font-weight:700;
 }
