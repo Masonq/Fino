@@ -4171,3 +4171,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   .infinite-grid.slide-left, .infinite-list.slide-left,
   .infinite-grid.slide-right, .infinite-list.slide-right{ animation:none; }
 }
+
+/* Цена, признаки и город — ссылки, но выглядят как текст.
+   Нажимается вся карточка, а не только фото с заголовком: палец
+   попадал в цену, и ничего не происходило. */
+a.s-price, a.s-attrs, a.s-meta{ color:inherit; text-decoration:none; display:flex; }
+a.s-meta{ justify-content:space-between; align-items:center; }
+a.s-attrs{ display:block; }

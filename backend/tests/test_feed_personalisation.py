@@ -1156,3 +1156,21 @@ def test_held_height_is_released_after_cards_arrive():
     assert "if (listings.length && holdHeight !== null) setHoldHeight(null)" in page
     # И высота снимается в том же эффекте, что возвращает прокрутку.
     assert "}, [listings, holdHeight])" in page
+
+
+def test_whole_card_opens_the_listing():
+    """Вся карточка ведёт в объявление, а не только фото с заголовком.
+
+    Палец попадал в цену или в город — и ничего не происходило. Человек
+    не разбирается, что тут ссылка, а что нет: он нажимает на карточку.
+
+    Сердечко при этом остаётся кнопкой — оно в своей области и ссылку
+    не задевает.
+    """
+    card = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "components" / "ListingCard.jsx").read_text()
+
+    assert '<Link to={listing.path} className="s-price">' in card
+    assert '<Link to={listing.path} className="s-attrs">' in card
+    assert '<Link to={listing.path} className="s-meta">' in card
+    assert "'s-fav on' : 's-fav'" in card

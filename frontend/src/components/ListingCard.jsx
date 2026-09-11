@@ -124,7 +124,11 @@ export default function ListingCard({ listing, large = false, priority = false }
           </svg>
         </button>
       </div>
-      <div className="s-price">
+      {/* Цена, город и дата тоже ведут в объявление.
+          Раньше нажималось только фото и заголовок: палец попадал в
+          цену — и ничего не происходило. Человек не разбирается, что
+          тут ссылка, а что нет, он нажимает на карточку. */}
+      <Link to={listing.path} className="s-price">
         {/* «Бесплатно» и «цена не указана» — разные вещи: мимо второго
             читатель проходит, а первое как раз и ищут. */}
         {listing.is_free
@@ -142,16 +146,16 @@ export default function ListingCard({ listing, large = false, priority = false }
               : <path d="M12 19V5M6 11l6-6 6 6" />}
           </svg>
         )}
-      </div>
+      </Link>
       {/* «2-комн., 45 м², 3/9 эт.» — то, что человек заполнил на форме
           публикации, иначе никуда дальше формы не попадало. */}
-      {meta && <div className="s-attrs">{meta}</div>}
+      {meta && <Link to={listing.path} className="s-attrs">{meta}</Link>}
       {/* Рисуем всегда, даже пустым: без города карточка была ниже соседней,
           и низ ряда получался рваным. */}
-      <div className="s-meta">
+      <Link to={listing.path} className="s-meta">
         <span>{listing.city ? displayCity(listing.city, i18n.language) : ''}</span>
         {listing.published_at && <span className="s-date">{relativeDate(listing.published_at, t)}</span>}
-      </div>
+      </Link>
     </div>
   )
 }
