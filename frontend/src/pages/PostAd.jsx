@@ -22,6 +22,14 @@ export default function PostAd() {
   const { user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
 
+  // Те же пределы, что на сервере (app/routers/listings.py).
+  //
+  // Раньше страница пропускала заголовок из трёх знаков и любое
+  // описание, а сервер требовал десять и двадцать — и человек узнавал
+  // об этом в самом конце, после всех шагов и загрузки фотографий.
+  const TITLE_MIN = 10
+  const DESCRIPTION_MIN = 20
+
   const [step, setStep] = useState(0)
   const [categories, setCategories] = useState([])
   const [category, setCategory] = useState(null)
@@ -616,7 +624,18 @@ export default function PostAd() {
               не понимает, почему нельзя продолжить. */}
           {(() => {
             const missing = []
-            if (title.trim().length < 3) missing.push(t('post.need_title'))
+            // Пустое поле и слишком короткое — разные случаи, и говорить
+            // о них надо по-разному: «напишите заголовок» против
+            // «заголовок слишком короткий».
+            if (!title.trim()) missing.push(t('post.need_title'))
+            else if (title.trim().length < TITLE_MIN) {
+              missing.push(t('post.title_too_short'))
+            }
+
+            if (!description.trim()) missing.push(t('post.need_description'))
+            else if (description.trim().length < DESCRIPTION_MIN) {
+              missing.push(t('post.description_too_short'))
+            }
             if (!city) missing.push(t('post.need_city'))
             return missing.length > 0 ? (
               <p className="post-hint">{missing.join(' · ')}</p>
@@ -624,7 +643,11 @@ export default function PostAd() {
           })()}
           <button
             className="post-submit-btn"
-            disabled={title.trim().length < 3 || !city}
+            disabled={
+              title.trim().length < TITLE_MIN
+              || description.trim().length < DESCRIPTION_MIN
+              || !city
+            }
             onClick={() => setStep(3)}
           >
             {t('actions.next')}

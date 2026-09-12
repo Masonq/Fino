@@ -1415,3 +1415,29 @@ def test_review_invites_actually_run():
 
     assert "scan_recent_deals(db)" in source
     assert "send_reminders(db)" in source
+
+
+def test_post_form_checks_lengths_on_the_step():
+    """Ошибки длины показываются на шаге, а не после отправки.
+
+    Страница пропускала заголовок из трёх знаков и любое описание, а
+    сервер требовал десять и двадцать. Человек проходил все шаги,
+    загружал фотографии, нажимал «опубликовать» — и только тогда
+    узнавал, что название короткое.
+
+    Пределы теперь те же, что на сервере, и кнопка «дальше» не пускает,
+    пока они не соблюдены. Пустое поле и слишком короткое — разные
+    случаи, и говорится о них по-разному.
+    """
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "PostAd.jsx").read_text()
+    api = (Path(__file__).resolve().parents[1]
+           / "app" / "routers" / "listings.py").read_text()
+
+    assert "TITLE_MIN, TITLE_MAX = 10, 200" in api
+    assert "DESCRIPTION_MIN, DESCRIPTION_MAX = 20, 4000" in api
+    assert "const TITLE_MIN = 10" in page
+    assert "const DESCRIPTION_MIN = 20" in page
+    assert "title.trim().length < TITLE_MIN" in page
+    assert "description.trim().length < DESCRIPTION_MIN" in page
+    assert "post.need_description" in page
