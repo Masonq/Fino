@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-
-import LottieOnce from '../components/LottieOnce'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import CategoryFields, { fieldsKeyFor } from '../components/CategoryFields'
@@ -543,13 +541,7 @@ export default function Search() {
           ? <LoadError onRetry={() => { setLoaded(false); setRetry((n) => n + 1) }} />
           : (
             <div className="empty-state">
-              <>
-                {/* Ничего не нашлось — смягчаем разочарование.
-                    Пустой экран с одной строкой выглядит как поломка, а
-                    человек просто искал редкую вещь. */}
-                <LottieOnce name="empty-search" size={150} />
-                <p className="empty-hint">{t('search.nothing')}</p>
-              </>
+              <p className="empty-hint">{t('search.nothing')}</p>
               {(activeChips.length > 0 || text.trim()) && (
                 <button
                   className="empty-reset"

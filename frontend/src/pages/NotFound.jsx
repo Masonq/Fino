@@ -1,8 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
-import LottieOnce from '../components/LottieOnce'
-
 // Раньше несуществующий адрес (битая ссылка, опечатка, старая
 // закладка) просто открывал пустой экран — ни ошибки, ни объяснения,
 // ни выхода. Ловим это здесь: маршрут стоит последним, после /:city/
@@ -15,10 +13,6 @@ export default function NotFound() {
   return (
     <div className="fav-page">
       <div className="fav-empty">
-        {/* Страница не найдена — показываем это живо, а не значком.
-            Человек попал сюда по битой ссылке или опечатке, и ему
-            досадно; картинка смягчает, а лупа ничего не объясняет. */}
-        <LottieOnce name="not-found" size={180} />
         <div className="fav-empty-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
             <circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" />

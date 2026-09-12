@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import LottieOnce from './LottieOnce'
-
 /**
  * Сообщение о проблемах со связью.
  *
@@ -48,10 +46,6 @@ export function LoadError({ onRetry }) {
   const { t } = useTranslation()
   return (
     <div className="fav-empty">
-      {/* Не загрузилось — показываем живо.
-          В узкую полосу «нет сети» анимация не влезла бы, а здесь, на
-          целом экране, она к месту: человек ждал ленту и не дождался. */}
-      <LottieOnce name="offline" size={160} />
       <div className="fav-empty-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" />
