@@ -40,12 +40,10 @@ export default function LottieOnce({ name, size = 160, onDone }) {
   if (reduced || !data) return null
 
   return (
-    // Свойство зовётся animation, а не animationData: в этой версии
-    // библиотеки имя другое, и с прежним анимация просто не рисовалась —
-    // ни ошибки, ни картинки.
     <Lottie
-      animation={data}
+      animationData={data}
       loop={false}
+      onComplete={onDone}
       style={{ width: size, height: size, margin: '0 auto' }}
     />
   )
