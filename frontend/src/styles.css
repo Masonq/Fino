@@ -4198,7 +4198,3 @@ a.s-attrs{ display:block; }
   /* Кнопка — белым по зелёному, тут цвет числом по той же причине. */
   background:#0E9F6E; color:#FFFFFF; font-size:14px; font-weight:700;
 }
-
-/* Запасная галочка прячется, когда анимация загрузилась: иначе на
-   экране оказались бы обе. */
-.post-success svg[width] ~ .seal-fallback{ display:none; }
