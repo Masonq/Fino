@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+
+import LottieOnce from '../components/LottieOnce'
 import { api } from '../api/client'
 import { CITIES, CITY_COORDS, cityLabel } from '../data/cities'
 import { shrinkImage } from '../data/shrinkImage'
@@ -335,7 +337,14 @@ export default function PostAd() {
   if (done) {
     return (
       <div className="post-ad-page post-success">
-        <div className="seal" style={{ width: 56, height: 56, margin: '0 auto 16px' }}>
+        {/* Анимация вместо галочки — если файл положен.
+            Публикация объявления редкое и важное мгновение: человек
+            первый раз что-то выставил, и стоит его поздравить.
+
+            Галочка остаётся запасным видом: файла нет или движение
+            отключено — показываем её, как раньше. */}
+        <LottieOnce name="published" size={140} />
+        <div className="seal seal-fallback" style={{ width: 56, height: 56, margin: '0 auto 16px' }}>
           <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4"><path d="M20 6 9 17l-5-5" /></svg>
         </div>
         <h2>{t('post.sent_title')}</h2>
