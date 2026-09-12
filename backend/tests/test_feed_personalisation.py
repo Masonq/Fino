@@ -1195,3 +1195,29 @@ def test_feed_invites_to_post_a_listing():
     assert "i === 6 &&" in page
     assert 'to="/post" className="post-cta"' in page
     assert ".post-cta{" in styles
+
+
+def test_lottie_files_are_in_place():
+    """Анимации лежат на месте и подключены к нужным экранам.
+
+    Каждая — на редком важном мгновении, а не в ленте: движение
+    уместно там, где человек бывает раз, а не сто раз.
+
+    Посылка — после публикации объявления. Ноутбук с ошибкой — на
+    несуществующем адресе. Отсутствие сети — на экране, где лента не
+    загрузилась. Пузырь — когда поиск ничего не нашёл.
+    """
+    root = Path(__file__).resolve().parents[2] / "frontend"
+
+    for name in ("published", "not-found", "offline", "empty-search"):
+        assert (root / "public" / "lottie" / f"{name}.json").exists(), name
+
+    post = (root / "src" / "pages" / "PostAd.jsx").read_text()
+    search = (root / "src" / "pages" / "Search.jsx").read_text()
+    nf = (root / "src" / "pages" / "NotFound.jsx").read_text()
+    off = (root / "src" / "components" / "OfflineNotice.jsx").read_text()
+
+    assert 'name="published"' in post
+    assert 'name="empty-search"' in search
+    assert 'name="not-found"' in nf
+    assert 'name="offline"' in off
