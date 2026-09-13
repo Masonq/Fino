@@ -1441,3 +1441,25 @@ def test_post_form_checks_lengths_on_the_step():
     assert "title.trim().length < TITLE_MIN" in page
     assert "description.trim().length < DESCRIPTION_MIN" in page
     assert "post.need_description" in page
+
+
+def test_nginx_rules_live_in_the_repo():
+    """Настройки nginx правятся в репозитории, а не на сервере.
+
+    deploy.sh копирует deploy/plonk.rs.conf поверх настроек при каждом
+    раскате. Ручные правки на сервере от этого терялись — так у нас уже
+    пропали запрет чужих адресов и перенаправление со слэша: вечером
+    сделали, утром их не стало.
+
+    Проверка простая: то, что мы правили руками, должно быть в файле
+    репозитория.
+    """
+    conf = (Path(__file__).resolve().parents[2]
+            / "deploy" / "plonk.rs.conf").read_text()
+
+    # Чужие админки — 404, а не 200: иначе сайт выглядит как подделка.
+    assert "wp-admin" in conf and "return 404;" in conf
+    # Короткие ссылки идут на приложение, а не на мёртвый порт.
+    assert '"127.0.0.1:8002"' in conf
+    # Адрес со слэшем перенаправляется, а не открывает копию страницы.
+    assert "return 301 https://$host$1;" in conf
