@@ -4195,7 +4195,7 @@ a.s-attrs{ display:block; }
      Раньше картинка масштабировалась по высоте, ширины не хватало, и
      половина блока оставалась пустой зеленью со швом посередине. */
   background:
-    linear-gradient(90deg, #E4F6EE 0%, rgba(228,246,238,.92) 42%, rgba(228,246,238,0) 72%),
+    linear-gradient(90deg, rgba(255,255,255,.82) 0%, rgba(255,255,255,.5) 38%, rgba(255,255,255,0) 64%),
     url('/promo/sell-cta.jpg') center right / cover no-repeat,
     #E4F6EE;
   min-height:150px;
