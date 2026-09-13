@@ -340,7 +340,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .feed-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px 8px; }
 .infinite-list{ display:flex; flex-direction:column; gap:20px; padding:0 12px; }
 
-.s-card{ background:#fff; border-radius:12px; overflow:hidden; }
+/* Карточка — колонка, чтобы низ у соседей совпадал.
+   У объявлений с признаками («3-комн. · 58 м²») город с датой
+   опускались ниже, чем у соседней карточки без них, и ряд выходил
+   рваным. Теперь нижняя строка прижата к низу, а лишнее место
+   распределяется выше. */
+.s-card{ background:#fff; border-radius:12px; overflow:hidden; display:flex; flex-direction:column; }
+.s-card a.s-meta{ margin-top:auto; }
 .s-photo-wrap{ position:relative; display:block; border-radius:0; overflow:hidden; aspect-ratio:1/0.95; background:#ddd; }
 .l-card .s-photo-wrap{ aspect-ratio:16/10.5; border-radius:18px; }
 .s-photo-wrap img{ width:100%; height:100%; object-fit:cover; display:block; animation:photo-fade-in .25s ease; }
