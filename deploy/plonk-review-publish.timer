@@ -1,0 +1,9 @@
+[Unit]
+Description=PLONK — публикация отзывов, раз в сутки
+
+[Timer]
+OnCalendar=*-*-* 04:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

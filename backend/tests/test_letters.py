@@ -1463,3 +1463,24 @@ def test_nginx_rules_live_in_the_repo():
     assert '"127.0.0.1:8002"' in conf
     # Адрес со слэшем перенаправляется, а не открывает копию страницы.
     assert "return 301 https://$host$1;" in conf
+
+
+def test_all_running_timers_are_in_the_repo():
+    """Все работающие расписания лежат в репозитории.
+
+    Два из них — архивация просроченных объявлений и публикация
+    односторонних отзывов — были заведены прямо на сервере и в
+    репозитории отсутствовали. Работали исправно, но при переносе на
+    другой сервер пропали бы молча: деплой ставит только то, что у него
+    есть.
+
+    Нашлись при сверке сервера с репозиторием, затеянной после того, как
+    так же молча потерялись правки nginx.
+    """
+    deploy = Path(__file__).resolve().parents[2] / "deploy"
+
+    for name in ("plonk-nightly", "plonk-price-drop", "plonk-saved-search",
+                 "plonk-dedup-sweep", "plonk-reply-reminder",
+                 "plonk-listing-expiry", "plonk-review-publish"):
+        assert (deploy / f"{name}.service").exists(), name
+        assert (deploy / f"{name}.timer").exists(), name

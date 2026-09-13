@@ -1,0 +1,10 @@
+[Unit]
+Description=PLONK — публикация просроченных односторонних отзывов
+After=network.target postgresql.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/fino/backend
+ExecStart=/opt/fino/backend/venv/bin/python3 -m app.routers.reviews
+User=root
+TimeoutStartSec=600

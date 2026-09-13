@@ -1,0 +1,10 @@
+[Unit]
+Description=PLONK — предупреждение и архивация по истечению объявлений
+After=network.target postgresql.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/fino/backend
+ExecStart=/opt/fino/backend/venv/bin/python3 -m app.core.listing_expiry
+User=root
+TimeoutStartSec=1800
