@@ -4184,15 +4184,22 @@ a.s-attrs{ display:block; }
    чужое и не догадывается, что может выставить своё. */
 .post-cta{
   grid-column:1 / -1; display:block; text-decoration:none;
-  background:#E4F6EE; border-radius:14px; padding:18px 16px;
+  border-radius:14px; padding:18px 16px;
   border:1px dashed #0E9F6E;
+
+  /* Картинка фоном, прижата вправо.
+     Человек с телефоном и вещами — справа, слева свободное поле, там и
+     ложится текст. Соотношение сторон у неё как раз под этот блок. */
+  background:#E4F6EE url('/promo/sell-cta.jpg') right center / auto 100% no-repeat;
+  min-height:150px;
   /* Цвет задаём числом, а не переменной.
      Карточка — ссылка, и текст внутри наследовал цвет ссылки: на
      светло-зелёном он выходил белым и пропадал целиком. */
   color:#1A2420;
 }
-.post-cta-title{ font-size:17px; font-weight:800; color:#1A2420; }
-.post-cta-text{ font-size:14px; color:#4A5450; margin-top:4px; line-height:1.35; }
+/* Текст занимает левую половину: правую держит картинка. */
+.post-cta-title{ font-size:17px; font-weight:800; color:#1A2420; max-width:58%; }
+.post-cta-text{ font-size:14px; color:#4A5450; margin-top:4px; line-height:1.35; max-width:58%; }
 .post-cta-btn{
   display:inline-block; margin-top:12px; padding:9px 18px; border-radius:11px;
   /* Кнопка — белым по зелёному, тут цвет числом по той же причине. */
