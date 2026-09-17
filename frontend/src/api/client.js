@@ -235,8 +235,8 @@ export const api = {
   //
   // Держим сутки и всё равно обновляем в фоне: если разделы поменялись,
   // человек увидит новое при следующем заходе, а не будет ждать сейчас.
-  // Пульс площадки для шапки главной: всего, за сутки, даром.
-  getPulse: (city) => request(`/listings/pulse${city ? `?city=${encodeURIComponent(city)}` : ''}`),
+  // Свежие объявления для полоски «Только что» в шапке главной.
+  getFresh: (city, lang) => request(`/listings/fresh?${new URLSearchParams({ lang, ...(city ? { city } : {}) })}`),
 
   getCategories: async () => {
     const CACHE_KEY = 'plonk_categories'

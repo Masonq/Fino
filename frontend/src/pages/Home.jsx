@@ -9,7 +9,8 @@ import SearchOverlay from '../components/SearchOverlay'
 import OfflineNotice, { LoadError } from '../components/OfflineNotice'
 import { useAuth } from '../context/AuthContext'
 import { CITIES, cityLabel, nearestCity } from '../data/cities'
-import usePulse from '../hooks/usePulse'
+import useFresh from '../hooks/useFresh'
+import FreshStories from '../components/FreshStories'
 import CategoryArt from '../components/CategoryArt'
 import { hasLanding } from '../data/landings'
 
@@ -53,8 +54,6 @@ let tabCache = {}
 // вычитывать через getComputedStyle на каждый вызов.
 const PAGE_BG = '#FAFAF9'
 
-// «4 012», а не «4012»: тонкий пробел между тысячами читается быстрее.
-const fmtCount = (n) => (n ?? 0).toLocaleString('ru-RU').replace(/\u00a0/g, '\u2009')
 
 // Шапка одного цвета — фирменный зелёный. Раньше здесь были пять
 // случайных цветов с обещаниями («Безопасная сделка», «Проверенные
@@ -199,7 +198,7 @@ export default function Home() {
   const lastScroll = useRef(cached?.scroll || 0)
   const [settled, setSettled] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
-  const pulse = usePulse(city)
+  const stories = useFresh(city, i18n.language)
   const { user, loading: authLoading } = useAuth()
 
   // Статус-бар на iOS 26 Safari больше НЕ управляется theme-color: браузер берёт цвет
@@ -602,37 +601,17 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* Пульс площадки. Цифры настоящие, из базы: главная говорит
-            «здесь четыре тысячи объявлений, полторы сотни за сутки», а
-            не «безопасная сделка», которой нет. Число всего — крупно,
-            за сутки и даром — плашками; город справа, потому что цифры
-            считаются для выбранного города. */}
+        {/* «Только что» — свежие объявления кружками, как сторис. Шапка
+            меняется сама с каждым заходом, и в ней видно, что площадка
+            живая: не обещание, а вещи, которые выложили час назад. Город
+            справа от заголовка — полоска считается для выбранного. */}
         <div className="promo-collapse">
           <div>
             <div className="avito-promo-row">
-              <div className="pulse-row">
-                <div className="pulse-main">
-                  <div className="pulse-number">
-                    <span className="pulse-count">{pulse ? fmtCount(pulse.total) : '—'}</span>
-                    <span className="pulse-label">{t('pulse.listings', { count: pulse?.total ?? 0 })}</span>
-                  </div>
-                  <div className="pulse-sub">
-                    <button
-                      type="button"
-                      className="pulse-chip today"
-                      onClick={() => { if (tab !== 'new') switchTab('new', 'left') }}
-                    >
-                      <span className="pulse-dot" />
-                      {pulse ? `+${fmtCount(pulse.today)}` : '+…'} {t('pulse.today')}
-                    </button>
-                    <button
-                      type="button"
-                      className="pulse-chip free"
-                      onClick={() => { if (tab !== 'free') switchTab('free', 'left') }}
-                    >
-                      {pulse ? fmtCount(pulse.free) : '…'} {t('pulse.free')}
-                    </button>
-                  </div>
+              <div className="fresh-head">
+                <div className="fresh-title">
+                  <span className="pulse-dot" aria-hidden="true" />
+                  {t('fresh.title')}
                 </div>
                 <div className="city-pill">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
@@ -645,6 +624,7 @@ export default function Home() {
                   <svg className="city-pill-chevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="m6 9 6 6 6-6" /></svg>
                 </div>
               </div>
+              <FreshStories items={stories.items} seen={stories.seen} onOpen={stories.markSeen} />
             </div>
           </div>
         </div>

@@ -1075,33 +1075,57 @@ def search_listings(
     return {"total": total, "items": [serialize(l) for l in items]}
 
 
-# Пульс площадки для шапки главной: сколько всего активных объявлений,
-# сколько появилось за сутки и сколько отдают даром. Цифры настоящие,
-# из базы — они и есть содержание шапки, вместо обещаний, за которыми
-# ничего не стоит. Считается три раза в минуту максимум: значения
-# держатся в памяти процесса 60 секунд, потому что три COUNT по
-# индексу status/published_at на каждый заход главной — лишняя работа
-# ради цифры, которая за минуту не меняется.
-_pulse_cache: dict = {}
-_PULSE_TTL = 60
+# «Только что» — полоска свежих объявлений в шапке главной.
+#
+# Берём последние объявления с фото за сутки, по одному на продавца
+# (иначе один человек, выложивший десять вещей, займёт всю полоску).
+# Если за сутки в городе мало — добираем более старыми, чтобы полоска
+# не пустела: пустая шапка выглядит как сломанная площадка. Каждое
+# помечено fresh, чтобы кольцо у совсем свежих было ярче.
+_FRESH_LIMIT = 14
 
 
-@router.get("/pulse")
-def listings_pulse(city: str | None = None, db: Session = Depends(get_db)):
-    key = city or ""
+@router.get("/fresh")
+def fresh_listings(
+    city: str | None = None,
+    lang: str = Query("ru"),
+    db: Session = Depends(get_db),
+):
     now = utcnow()
-    hit = _pulse_cache.get(key)
-    if hit and (now - hit["at"]).total_seconds() < _PULSE_TTL:
-        return hit["data"]
-    base = db.query(func.count(Listing.id)).filter(Listing.status == ListingStatus.active)
+    q = (
+        db.query(Listing)
+        .options(joinedload(Listing.photos), joinedload(Listing.translations), joinedload(Listing.category))
+        .filter(Listing.status == ListingStatus.active, Listing.published_at.isnot(None))
+        .filter(exists().where(ListingPhoto.listing_id == Listing.id))
+    )
     if city:
-        base = base.filter(Listing.city == city)
-    total = base.scalar() or 0
-    today = base.filter(Listing.published_at >= now - timedelta(hours=24)).scalar() or 0
-    free = base.filter(Listing.is_free.is_(True)).scalar() or 0
-    data = {"total": int(total), "today": int(today), "free": int(free)}
-    _pulse_cache[key] = {"at": now, "data": data}
-    return data
+        q = q.filter(Listing.city == city)
+    rows = q.order_by(Listing.published_at.desc()).limit(_FRESH_LIMIT * 4).all()
+
+    seen_owners: set = set()
+    out = []
+    for l in rows:
+        if l.owner_id in seen_owners:
+            continue
+        cover = next((p for p in l.photos if p.is_cover), l.photos[0] if l.photos else None)
+        if not cover or cover.is_video or not (cover.thumbnail_url or cover.url):
+            continue
+        seen_owners.add(l.owner_id)
+        tr = pick_translation(l, lang) or (l.translations[0] if l.translations else None)
+        out.append({
+            "id": str(l.id),
+            "title": tr.title if tr else "",
+            "price": float(l.price) if l.price else None,
+            "currency": l.currency,
+            "is_free": bool(l.is_free),
+            "cover_photo": cover.thumbnail_url or cover.url,
+            "published_at": l.published_at.isoformat(),
+            "fresh": (now - l.published_at) < timedelta(hours=24),
+            "path": listing_path(l.id, tr.title if tr else "", l.city, l.category.slug if l.category else None),
+        })
+        if len(out) >= _FRESH_LIMIT:
+            break
+    return {"items": out}
 
 
 @router.get("/by-ids")

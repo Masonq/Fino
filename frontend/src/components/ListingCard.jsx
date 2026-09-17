@@ -110,7 +110,7 @@ export default function ListingCard({ listing, large = false, priority = false }
         {/* Свежее — заметно. Лента должна показывать, что площадка
             живая: на карточках моложе суток — метка внизу фото. Внизу,
             а не сверху: сверху уже стоят «Продвинуто» и «Компания». */}
-        {isFresh(listing.published_at) && <div className="badge-fresh">{t('pulse.fresh')}</div>}
+        {isFresh(listing.published_at) && <div className="badge-fresh">{t('fresh.badge')}</div>}
       </Link>
       <div className="s-row">
         <Link to={listing.path} className="s-title">{listing.title}</Link>

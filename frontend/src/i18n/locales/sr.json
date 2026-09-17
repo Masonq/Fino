@@ -841,12 +841,9 @@
     "geo_yes": "Prikaži",
     "geo_no": "Ne treba"
   },
-  "pulse": {
-    "listings_one": "oglas",
-    "listings_few": "oglasa",
-    "listings_other": "oglasa",
-    "today": "danas",
-    "free": "besplatno",
-    "fresh": "Novo"
+  "fresh": {
+    "title": "Upravo",
+    "post": "Prodaj",
+    "badge": "Novo"
   }
 }

@@ -840,11 +840,9 @@
     "geo_yes": "Show",
     "geo_no": "No thanks"
   },
-  "pulse": {
-    "listings_one": "listing",
-    "listings_other": "listings",
-    "today": "today",
-    "free": "free",
-    "fresh": "New"
+  "fresh": {
+    "title": "Just now",
+    "post": "Sell",
+    "badge": "New"
   }
 }

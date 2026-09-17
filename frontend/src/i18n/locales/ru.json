@@ -842,13 +842,9 @@
     "geo_yes": "Показать",
     "geo_no": "Не надо"
   },
-  "pulse": {
-    "listings_one": "объявление",
-    "listings_few": "объявления",
-    "listings_many": "объявлений",
-    "listings_other": "объявлений",
-    "today": "за сутки",
-    "free": "даром",
-    "fresh": "Новое"
+  "fresh": {
+    "title": "Только что",
+    "post": "Продать",
+    "badge": "Новое"
   }
 }
