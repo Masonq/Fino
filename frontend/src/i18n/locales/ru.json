@@ -843,6 +843,8 @@
     "geo_no": "Не надо",
     "cat_fresh": "{{fresh}} новых сегодня · всего {{total}}",
     "cat_total": "{{total}} объявлений",
-    "cat_more": "ещё {{count}}"
+    "cat_more": "ещё {{count}}",
+    "cat_fresh_one": "{{fresh}} новое сегодня · всего {{total}}",
+    "cat_fresh_few": "{{fresh}} новых сегодня · всего {{total}}"
   }
 }

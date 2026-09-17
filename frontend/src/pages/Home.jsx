@@ -695,9 +695,26 @@ export default function Home() {
           )
         }
 
-        const withFresh = [...categories].sort(
-          (a, b) => (b.fresh || 0) - (a.fresh || 0) || (b.count || 0) - (a.count || 0),
+        // Крупным — по свежести, но только когда свежего хватает.
+        //
+        // Иначе выходит нелепо: на живом сайте крупным стал раздел с
+        // одним новым объявлением и двумя сотнями всего, а рядом лежала
+        // одежда с тысячей. Один новый — не повод объявлять раздел
+        // главным.
+        //
+        // Порог пять: меньше — это случайность, больше — уже заметное
+        // движение.
+        const FRESH_ENOUGH = 5
+        const byFresh = [...categories].sort(
+          (a, b) => (b.fresh || 0) - (a.fresh || 0),
         )
+        const byCount = [...categories].sort(
+          (a, b) => (b.count || 0) - (a.count || 0),
+        )
+        const leader = byFresh[0]
+        const withFresh = (leader?.fresh || 0) >= FRESH_ENOUGH
+          ? [leader, ...byCount.filter((c) => c.id !== leader.id)]
+          : byCount
         const hero = withFresh[0]
         const rest = withFresh.slice(1, 3)
         if (!hero) return null
@@ -714,8 +731,10 @@ export default function Home() {
               <div className="cat-hero-text">
                 <div className="cat-hero-name">{nameOf(hero)}</div>
                 <div className="cat-hero-sub">
+                  {/* Склонение: «1 новое», но «5 новых». */}
                   {hero.fresh > 0
-                    ? t('feed.cat_fresh', { fresh: hero.fresh, total: hero.count })
+                    ? t(hero.fresh === 1 ? 'feed.cat_fresh_one' : 'feed.cat_fresh_few',
+                        { fresh: hero.fresh, total: hero.count })
                     : t('feed.cat_total', { total: hero.count })}
                 </div>
               </div>
