@@ -1525,7 +1525,10 @@ def _fuzz_coord(value: float, listing_id) -> float:
     h = int(hashlib.sha256(seed).hexdigest()[:8], 16)
     # ~350 метров в градусах — грубо, но fuzz и не претендует на точность
     offset = ((h % 1000) / 1000 - 0.5) * 0.006
-    return round(value + offset, 5)
+    # Координата приходит из базы как Decimal, а смещение — float;
+    # складывать их напрямую Python отказывается, и страница объявления
+    # со скрытым адресом падала целиком.
+    return round(float(value) + offset, 5)
 
 
 @router.get("/{listing_id}")
