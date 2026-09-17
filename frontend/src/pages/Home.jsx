@@ -3,12 +3,13 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import ListingCard from '../components/ListingCard'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 import { CardSkeletons, CategorySkeletons } from '../components/Skeletons'
 import PullToRefresh from '../components/PullToRefresh'
 import SearchOverlay from '../components/SearchOverlay'
 import OfflineNotice, { LoadError } from '../components/OfflineNotice'
 import { useAuth } from '../context/AuthContext'
-import { nearestCity } from '../data/cities'
+import { CITIES, cityLabel, nearestCity } from '../data/cities'
 import CategoryArt from '../components/CategoryArt'
 import { hasLanding } from '../data/landings'
 
@@ -586,10 +587,10 @@ export default function Home() {
           collapsed ? 'collapsed' : '',
           settled ? '' : 'no-anim',
         ].filter(Boolean).join(' ')}
-        /* Шапка без цвета и без картинки: только поиск.
-           Цветной блок с обещанием и щитом занимал треть экрана, и
-           человек его пролистывал — на живом снимке это было видно. */
-        style={{ backgroundColor: '#FFFFFF', backgroundImage: 'none' }}
+        style={{
+          backgroundColor: collapsed ? '#FFFFFF' : PROMO_SLIDES[slide].top,
+          backgroundImage: collapsed ? 'none' : PROMO_SLIDES[slide].grad,
+        }}
       >
         <div className="avito-toprow">
           <button type="button" className="avito-search" onClick={() => setSearchOpen(true)}>
@@ -620,19 +621,50 @@ export default function Home() {
           </Link>
         </div>
 
+        {/* Иллюстрация фоном, а не в углу: так заголовку достаётся вся ширина,
+            и картинка не спорит с ним за место при длинном тексте. */}
+        <div className="promo-backdrop" aria-hidden="true">
+          {PROMO_SLIDES.map((s, i) => (
+            <div key={s.key} className={i === slide ? 'promo-glyph active' : 'promo-glyph'}>
+              {PROMO_IMAGES[s.key]
+                ? <img src={PROMO_IMAGES[s.key]} alt="" onError={(e) => { e.currentTarget.style.display = 'none' }} />
+                : PROMO_FALLBACK}
+            </div>
+          ))}
+        </div>
+
         <div className="promo-collapse">
           <div>
             <div className="avito-promo-row">
               <div className="avito-promo-left">
-                {/* Обещание убрано вместе с цветным блоком: оно менялось
-                    при каждом заходе и никуда не вело — человек его не
-                    читал. Остались город и язык: без них не переключиться. */}
+                <div className="promo-slides">
+                  {PROMO_SLIDES.map((s, i) => (
+                    <Link
+                      key={s.key}
+                      to={s.to}
+                      className={i === slide ? 'promo-slide active' : 'promo-slide'}
+                      aria-hidden={i !== slide}
+                    >
+                      <span className="avito-promo-text">
+                        <span className="promo-text-label">{t(`promo.${s.key}`)}</span>
+                        <svg className="promo-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="m9 6 6 6-6 6" /></svg>
+                      </span>
+                    </Link>
+                  ))}
+                </div>
 
-                {/* Город и язык убраны из шапки.
-                    Язык переключается в профиле, город — в фильтрах
-                    поиска. В шапке они занимали место каждый заход,
-                    хотя меняют их один раз и больше не трогают. */}
-
+                <div className="banner-meta">
+                  <div className="city-pill">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+                      <path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" />
+                    </svg>
+                    <select value={city} onChange={(e) => chooseCity(e.target.value)} aria-label={t('post.city')}>
+                      <option value="">{t('search.all_cities')}</option>
+                      {CITIES.map((c) => <option key={c.slug} value={c.slug}>{cityLabel(c.slug, i18n.language)}</option>)}
+                    </select>
+                  </div>
+                  <LanguageSwitcher />
+                </div>
               </div>
 
             </div>
