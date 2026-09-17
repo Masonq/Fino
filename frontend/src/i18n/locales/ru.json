@@ -762,7 +762,16 @@
     "push_error": "Не получилось включить — попробуйте ещё раз",
     "sec_telegram": "МЫ В TELEGRAM",
     "tg_chat": "Чат PLONK",
-    "tg_bot": "Подать объявление через бота"
+    "tg_bot": "Подать объявление через бота",
+    "stat_listings_one": "объявление",
+    "stat_listings_few": "объявления",
+    "stat_listings_many": "объявлений",
+    "stat_listings_other": "объявлений",
+    "stat_views_one": "просмотр",
+    "stat_views_few": "просмотра",
+    "stat_views_many": "просмотров",
+    "stat_views_other": "просмотров",
+    "stat_favorites": "в избранном"
   },
   "verify": {
     "title": "Проверка документа",

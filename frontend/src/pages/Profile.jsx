@@ -29,6 +29,9 @@ function ContactEmail({ value }) {
   return <>{value.slice(0, at)}<wbr />{value.slice(at)}</>
 }
 
+// «1 240», а не «1240» — тысячи с тонким пробелом.
+const fmt = (n) => (n ?? 0).toLocaleString('ru-RU').replace(/\u00a0/g, '\u2009')
+
 export default function Profile() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -45,6 +48,11 @@ export default function Profile() {
   // из профиля было видно, что там есть работа, и не приходилось
   // заходить в каждую очередь наугад.
   const isStaff = user?.role === 'moderator' || user?.role === 'admin'
+  const [stats, setStats] = useState(null)
+  useEffect(() => {
+    if (!user) return
+    api.myStats().then(setStats).catch(() => setStats({ listings: 0, views: 0, favorites: 0 }))
+  }, [user?.id])
   const [queues, setQueues] = useState(null)
   useEffect(() => {
     if (!isStaff) { setQueues(null); return }
@@ -142,6 +150,25 @@ export default function Profile() {
               <Link className="profile-edit-btn" to="/profile/edit" aria-label={t('edit_profile.edit')}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
               </Link>
+            </div>
+          </div>
+
+          {/* Три цифры о своих объявлениях — то, ради чего продавец
+              заходит в профиль: живо ли, смотрят ли, сохраняют ли. Пока
+              не ответил сервер — прочерки того же размера, чтобы блок
+              не прыгал. */}
+          <div className="profile-stats">
+            <Link to="/my" className="profile-stat">
+              <b>{stats ? stats.listings : '–'}</b>
+              <span>{t('profile.stat_listings', { count: stats?.listings ?? 0 })}</span>
+            </Link>
+            <div className="profile-stat">
+              <b>{stats ? fmt(stats.views) : '–'}</b>
+              <span>{t('profile.stat_views', { count: stats?.views ?? 0 })}</span>
+            </div>
+            <div className="profile-stat">
+              <b>{stats ? fmt(stats.favorites) : '–'}</b>
+              <span>{t('profile.stat_favorites')}</span>
             </div>
           </div>
 

@@ -410,6 +410,7 @@ export const api = {
   unblockChatPartner: (chatId) => request(`/chats/${chatId}/unblock`, { method: 'POST' }),
   listBlockedUsers: () => request('/users/blocked'),
   myReferrals: () => request('/users/me/referrals'),
+  myStats: () => request('/users/me/stats'),
   unblockUser: (userId) => request(`/users/blocked/${userId}/unblock`, { method: 'POST' }),
   requestCall: (chatId) => request(`/chats/${chatId}/call-request`, { method: 'POST' }),
   allowCall: (chatId) => request(`/chats/${chatId}/call-allow`, { method: 'POST' }),

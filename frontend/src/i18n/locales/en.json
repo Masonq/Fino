@@ -760,7 +760,12 @@
     "push_error": "Could not turn on — try again",
     "sec_telegram": "WE ON TELEGRAM",
     "tg_chat": "PLONK chat",
-    "tg_bot": "Post a listing via the bot"
+    "tg_bot": "Post a listing via the bot",
+    "stat_listings_one": "listing",
+    "stat_listings_other": "listings",
+    "stat_views_one": "view",
+    "stat_views_other": "views",
+    "stat_favorites": "saved"
   },
   "verify": {
     "title": "Identity verification",

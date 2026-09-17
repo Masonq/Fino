@@ -1,12 +1,13 @@
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field, field_validator
 
 from app.core.auth import get_current_user, get_current_user_optional
 from app.core.database import get_db
-from app.models import User, UserRole, Language, BlockedUser, SellerSubscription
+from app.models import User, UserRole, Language, BlockedUser, SellerSubscription, Listing, ListingStatus, Favorite
 
 router = APIRouter(prefix="/api/users", tags=["users"])
 
@@ -251,6 +252,28 @@ def my_referrals(
     rewarded = db.query(User).filter(
         User.referred_by == user.id, User.referral_reward_given.is_(True)).count()
     return {"invited_total": total, "invited_rewarded": rewarded}
+
+
+@router.get("/me/stats")
+def my_stats(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Три цифры для шапки профиля: активных объявлений, просмотров по
+    всем активным и сколько раз их добавили в избранное. Отдельным
+    эндпоинтом — по той же причине, что и /me/referrals: не грузить
+    /auth/me лишними COUNT при каждом запуске приложения.
+    """
+    active = db.query(Listing.id, Listing.views_count).filter(
+        Listing.owner_id == user.id, Listing.status == ListingStatus.active).all()
+    ids = [row[0] for row in active]
+    favorites = db.query(func.count(Favorite.id)).filter(Favorite.listing_id.in_(ids)).scalar() if ids else 0
+    return {
+        "listings": len(ids),
+        "views": int(sum((row[1] or 0) for row in active)),
+        "favorites": int(favorites or 0),
+    }
 
 
 @router.get("/blocked")
