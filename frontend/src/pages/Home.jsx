@@ -55,14 +55,9 @@ let tabCache = {}
 const PAGE_BG = '#FAFAF9'
 
 
-// Шапка одного цвета — фирменный зелёный. Раньше здесь были пять
-// случайных цветов с обещаниями («Безопасная сделка», «Проверенные
-// продавцы»), за которыми ничего не стояло. Теперь в шапке живые цифры
-// площадки: сколько объявлений, сколько за сутки, сколько даром.
-const BRAND = {
-  top: '#0B7A55',
-  grad: 'linear-gradient(160deg, #0B7A55 0%, #0E9F6E 55%, #21C08A 100%)',
-}
+// Шапка без цвета: тот же фон, что у страницы. Цвет в шапке спорил с
+// фотографиями в кружках сторис, а они и есть главное, что там есть.
+const BRAND = { top: '#FAFAF9', grad: 'none' }
 
 export default function Home() {
   const { t, i18n } = useTranslation()
@@ -568,7 +563,7 @@ export default function Home() {
           settled ? '' : 'no-anim',
         ].filter(Boolean).join(' ')}
         style={{
-          backgroundColor: collapsed ? '#FFFFFF' : BRAND.top,
+          backgroundColor: BRAND.top,
           backgroundImage: collapsed ? 'none' : BRAND.grad,
         }}
       >
