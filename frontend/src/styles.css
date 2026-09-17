@@ -4146,7 +4146,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    переключатель колонок. */
 .feed-tabs{ display:flex; gap:18px; align-items:center; flex:1; min-width:0; }
 .feed-tab{
-  flex:0 0 auto; padding:0 0 7px; font-size:17px; font-weight:800;
+  /* Помельче: вровень с названиями разделов они перетягивали внимание
+     на себя, хотя это переключатель, а не заголовок. */
+  flex:0 0 auto; padding:0 0 7px; font-size:15px; font-weight:800;
   letter-spacing:-.01em; color:var(--muted); background:none; border:none;
   border-bottom:2.5px solid transparent; white-space:nowrap;
 }
@@ -4252,40 +4254,50 @@ a.s-attrs{ display:block; }
    Крупным становится тот, где за сутки появилось больше всего нового —
    так главная не приедается. Раньше все четырнадцать лежали ровным
    ковром одинаковых плиток и занимали треть экрана. */
-.cat-hero-wrap{ padding:0 12px 4px; }
+.cat-hero-wrap{ padding:10px 12px 4px; }
 
 .cat-hero{
-  display:block; position:relative; height:118px; border-radius:14px;
-  overflow:hidden; text-decoration:none; margin-bottom:9px;
-  /* Светлая подложка, а не тёмная.
-     Тёмно-зелёные плитки спорили с шапкой, которая меняет цвет каждый
-     заход, а перламутровые картинки рисовались для светлого фона и на
-     тёмном выглядели чужеродно — увидел на живом сайте. */
-  background:#FFFFFF; border:1px solid #E7EAE8;
+  display:block; position:relative; height:112px; border-radius:14px;
+  overflow:hidden; text-decoration:none; margin-bottom:8px;
+  /* Плитка светлее фона страницы, а не одного с ним цвета.
+     На белом фоне белые плитки терялись — границы не было видно
+     вовсе, и разделы сливались в одно пятно. */
+  background:#FFFFFF; border:1px solid #E4E8E5;
+  box-shadow:0 1px 2px rgba(20,30,25,.04);
 }
 .cat-hero-art{
-  position:absolute; right:-6px; bottom:-10px; width:132px; height:132px;
+  /* Картинка крупнее и не вылезает за край: раньше она сидела мелко в
+     углу, а слева зияло пустое поле в половину плитки. */
+  position:absolute; right:10px; top:50%; transform:translateY(-50%);
+  width:104px; height:104px;
   display:flex; align-items:center; justify-content:center;
 }
 .cat-hero-art img{ width:100%; height:100%; object-fit:contain; }
-.cat-hero-text{ position:absolute; left:14px; bottom:12px; right:126px; z-index:2; }
+.cat-hero-text{
+  /* Текст по середине высоты, а не прижат к низу. */
+  position:absolute; left:16px; top:50%; transform:translateY(-50%);
+  right:126px;
+}
 .cat-hero-name{ font-size:17px; font-weight:800; color:#1A2420; letter-spacing:-.015em; }
-.cat-hero-sub{ font-size:11.5px; color:#7A857F; margin-top:3px; }
+.cat-hero-sub{ font-size:12px; color:#8A9490; margin-top:4px; }
 
 .cat-small-row{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
 .cat-small{
-  display:block; position:relative; height:78px; border-radius:12px;
+  display:block; position:relative; height:84px; border-radius:12px;
   overflow:hidden; text-decoration:none;
-  background:#FFFFFF; border:1px solid #E7EAE8;
+  background:#FFFFFF; border:1px solid #E4E8E5;
+  box-shadow:0 1px 2px rgba(20,30,25,.04);
 }
 .cat-small-art{
-  position:absolute; right:-8px; bottom:-8px; width:68px; height:68px;
-  display:flex; align-items:center; justify-content:center; opacity:.95;
+  /* Внутри плитки целиком, без обрезки краем — и ниже текста, чтобы
+     они не налезали друг на друга. */
+  position:absolute; right:6px; bottom:6px; width:46px; height:46px;
+  display:flex; align-items:center; justify-content:center;
 }
 .cat-small-art img{ width:100%; height:100%; object-fit:contain; }
-.cat-small-text{ position:absolute; left:9px; bottom:8px; right:40px; z-index:2; }
-.cat-small-name{ font-size:11.5px; font-weight:800; color:#1A2420; line-height:1.15; }
-.cat-small-cnt{ font-size:9.5px; color:#9AA5A0; margin-top:2px; }
+.cat-small-text{ position:absolute; left:10px; top:11px; right:10px; }
+.cat-small-name{ font-size:11.5px; font-weight:800; color:#1A2420; line-height:1.2; }
+.cat-small-cnt{ font-size:10px; color:#9AA5A0; margin-top:2px; }
 
 /* Серые заготовки того же размера — чтобы страница не прыгала. */
 .cat-hero.sk-block{ background:#EDEDE8; }
