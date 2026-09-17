@@ -737,27 +737,7 @@ export default function Home() {
       >
         {!feedLoaded
           ? <CardSkeletons count={cols === 2 ? 4 : 2} large={cols === 1} />
-          : listings.map((l, i) => [
-            // Призыв подать своё объявление — прямо в ленте.
-            //
-            // Объявлений из чатов почти четыре тысячи, своих — два.
-            // Человек листает чужое и не догадывается, что может
-            // выставить своё: кнопка «Разместить» внизу экрана, и её
-            // не замечают.
-            //
-            // Ставим после шестой карточки: человек уже втянулся, но
-            // ещё не ушёл. Раньше — помешает, позже — не увидит.
-            i === 6 && (
-              <Link key="post-cta" to="/post" className="post-cta">
-                <div className="post-cta-title">{t('feed.sell_title')}</div>
-                <div className="post-cta-text">{t('feed.sell_text')}</div>
-                <span className="post-cta-btn">{t('feed.sell_button')}</span>
-              </Link>
-            ),
-            (
-              <ListingCard key={l.id} listing={l} large={cols === 1} priority={i < 4} />
-            ),
-          ])}
+          : listings.map((l, i) => <ListingCard key={l.id} listing={l} large={cols === 1} priority={i < 4} />)}
       </div>
       {feedLoaded && listings.length === 0 && (
         feedError
