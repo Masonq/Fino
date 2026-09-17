@@ -4257,7 +4257,7 @@ a.s-attrs{ display:block; }
 .cat-hero-wrap{ padding:10px 12px 4px; }
 
 .cat-hero{
-  display:block; position:relative; height:132px; border-radius:14px;
+  display:block; position:relative; height:112px; border-radius:14px;
   overflow:hidden; text-decoration:none; margin-bottom:8px;
   /* Плитка светлее фона страницы, а не одного с ним цвета.
      На белом фоне белые плитки терялись — границы не было видно
@@ -4268,25 +4268,22 @@ a.s-attrs{ display:block; }
 .cat-hero-art{
   /* Картинка крупнее и не вылезает за край: раньше она сидела мелко в
      углу, а слева зияло пустое поле в половину плитки. */
-  /* Картинка — главное в плитке, а не подпись в углу. Пусть занимает
-     почти всю высоту: перламутровые рисунки для того и делались, чтобы
-     их разглядывали. */
-  position:absolute; right:10px; top:50%; transform:translateY(-50%);
-  width:146px; height:146px;
+  position:absolute; right:12px; top:50%; transform:translateY(-50%);
+  width:118px; height:118px;
   display:flex; align-items:center; justify-content:center;
 }
 .cat-hero-art img{ width:100%; height:100%; object-fit:contain; }
 .cat-hero-text{
   /* Текст по середине высоты, а не прижат к низу. */
   position:absolute; left:16px; top:50%; transform:translateY(-50%);
-  right:158px;
+  right:140px;
 }
 .cat-hero-name{ font-size:17px; font-weight:800; color:#1A2420; letter-spacing:-.015em; }
 .cat-hero-sub{ font-size:12px; color:#8A9490; margin-top:4px; }
 
 .cat-small-row{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
 .cat-small{
-  display:block; position:relative; height:112px; border-radius:12px;
+  display:block; position:relative; height:92px; border-radius:12px;
   overflow:hidden; text-decoration:none;
   background:#FFFFFF; border:1px solid #E4E8E5;
   box-shadow:0 1px 2px rgba(20,30,25,.04);
@@ -4298,7 +4295,7 @@ a.s-attrs{ display:block; }
 
      Внутри плитки целиком, без обрезки краем, и ниже текста, чтобы они
      не налезали друг на друга. */
-  position:absolute; right:4px; bottom:2px; width:82px; height:82px;
+  position:absolute; right:5px; bottom:4px; width:60px; height:60px;
   display:flex; align-items:center; justify-content:center;
 }
 .cat-small-art img{ width:100%; height:100%; object-fit:contain; }
