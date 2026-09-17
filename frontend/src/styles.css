@@ -1541,6 +1541,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   flex:1; min-width:0; background:#fff; border:1px solid rgba(20,30,25,.06); border-radius:16px; padding:11px 12px 10px;
   display:flex; flex-direction:column; gap:2px; color:var(--ink);
 }
+.profile-stat.is-link{ position:relative; }
+/* Стрелка у первой карточки: она ведёт в «Мои объявления», и без
+   стрелки ссылка была бы невидимой. */
+.profile-stat.is-link::after{
+  content:""; position:absolute; right:10px; top:12px; width:7px; height:7px;
+  border-right:2px solid var(--muted); border-top:2px solid var(--muted); transform:rotate(45deg);
+}
 .profile-stat b{ font-size:18px; font-weight:800; letter-spacing:-0.02em; line-height:1.1; font-variant-numeric:tabular-nums; }
 .profile-stat span{ font-size:11px; font-weight:600; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .balance-card{

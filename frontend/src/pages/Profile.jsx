@@ -158,7 +158,7 @@ export default function Profile() {
               не ответил сервер — прочерки того же размера, чтобы блок
               не прыгал. */}
           <div className="profile-stats">
-            <Link to="/my" className="profile-stat">
+            <Link to="/my" className="profile-stat is-link">
               <b>{stats ? stats.listings : '–'}</b>
               <span>{t('profile.stat_listings', { count: stats?.listings ?? 0 })}</span>
             </Link>
@@ -193,13 +193,8 @@ export default function Profile() {
           уже есть в нижнем меню на каждом экране, дублировать незачем. */}
       <div className="profile-section-title">{t('profile.sec_listings')}</div>
       <div className="profile-menu">
-        <Link className="profile-row" to="/my">
-          <span className="profile-row-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><rect x="3" y="4" width="18" height="17" rx="2.5" /><path d="M7 9h10M7 13h10M7 17h6" /></svg>
-          </span>
-          {t('my.title')}
-          <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
-        </Link>
+        {/* «Мои объявления» отсюда убраны: туда ведёт карточка с числом
+            объявлений над балансом, вторая ссылка была дублем. */}
         <Link className="profile-row" to="/saved">
           <span className="profile-row-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m20 20-4.35-4.35" /></svg>
