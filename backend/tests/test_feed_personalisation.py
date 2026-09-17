@@ -335,7 +335,10 @@ def test_city_choice_filters_the_feed():
     assert home.count("city: city || undefined") == 2      # лента и подгрузка
     assert "localStorage.getItem('plonk_city')" in home
     assert "feedCache.city === savedCity" in home
-    assert 'value=""' in home                              # пункт «все города»
+    # Выбор города из шапки убран: она оставлена под один поиск.
+    # Город меняется в фильтрах поиска, а сам отбор ленты по нему
+    # работает по-прежнему — это и проверяют строки выше.
+    assert "banner-meta" not in home
 
 
 def test_city_choice_works_on_category_pages_too():
