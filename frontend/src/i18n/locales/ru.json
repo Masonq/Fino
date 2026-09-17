@@ -411,7 +411,17 @@
     "done_approve": "Одобрено",
     "done_reject": "Отклонено",
     "undo": "Отменить",
-    "keys_hint": "A — одобрить · R — отклонить · J/K — по очереди"
+    "keys_hint": "A — одобрить · R — отклонить · J/K — по очереди",
+    "day_mine": "мои за сутки",
+    "day_team": "всего за сутки",
+    "day_oldest": "ч ждёт старейшее",
+    "pick": "Отметить",
+    "pick_owner": "Отметить все {{count}}",
+    "picked_one": "{{count}} отмечено",
+    "picked_few": "{{count}} отмечено",
+    "picked_many": "{{count}} отмечено",
+    "picked_other": "{{count}} отмечено",
+    "duplicate_hint": "Похоже на дубль: у продавца уже есть такое в ленте"
   },
   "rev": {
     "title": "Отзывы",

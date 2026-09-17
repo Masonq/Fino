@@ -214,6 +214,11 @@ export const api = {
 
   modApprove: (id) => request(`/moderation/${id}/approve`, { method: 'POST' }),
   modReturn: (id) => request(`/moderation/${id}/return`, { method: 'POST' }),
+  modBulk: (ids, approve, reason) => request('/moderation/bulk', {
+    method: 'POST',
+    body: JSON.stringify({ ids, approve, reason: reason || null }),
+  }),
+  modMyDay: () => request('/moderation/my-day'),
   // Перенос объявления в другой раздел — только меняет раздел, всё
   // остальное (текст, фото, автор, переписка) остаётся как было.
   modMove: (id, categoryId) => request(`/moderation/${id}/move`, {

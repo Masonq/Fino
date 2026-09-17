@@ -403,7 +403,15 @@
     "done_approve": "Approved",
     "done_reject": "Rejected",
     "undo": "Undo",
-    "keys_hint": "A — approve · R — reject · J/K — next/prev"
+    "keys_hint": "A — approve · R — reject · J/K — next/prev",
+    "day_mine": "yours today",
+    "day_team": "team today",
+    "day_oldest": "h oldest waiting",
+    "pick": "Select",
+    "pick_owner": "Select all {{count}}",
+    "picked_one": "{{count}} selected",
+    "picked_other": "{{count}} selected",
+    "duplicate_hint": "Looks like a duplicate: seller already has this live"
   },
   "rev": {
     "title": "Reviews",

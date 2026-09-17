@@ -7,7 +7,7 @@ import { displayCity } from '../data/cities'
 import PageHeader from '../components/PageHeader'
 import { ModCardSkeletons } from '../components/Skeletons'
 import { formatPrice } from '../utils/money'
-import { since } from '../utils/time'
+import { timeAgo } from '../utils/time'
 
 // Переживает размонтирование страницы — заполняется при первой загрузке
 // и читается при возврате назад. Модератор открывает объявление,
@@ -72,6 +72,10 @@ export default function Moderation() {
   // стрелки — по очереди, A — одобрить, R — отклонить, 1–6 — причина,
   // Esc — закрыть причины. На телефоне не видна и не мешает.
   const [focus, setFocus] = useState(0)
+  // Отбор нескольких разом: один продавец часто выкладывает пачкой, и
+  // разбирать их по одному — десять раз прочитать то же имя.
+  const [picked, setPicked] = useState(() => new Set())
+  const [day, setDay] = useState(null)
 
   const load = () => {
     api.modQueue(i18n.language)
@@ -220,6 +224,46 @@ export default function Moderation() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, denied, total])
 
+  useEffect(() => {
+    if (!userId || denied || tab !== 'listings') return
+    api.modMyDay().then(setDay).catch(() => {})
+  }, [userId, denied, tab, total])
+
+  const togglePick = (id) => setPicked((prev) => {
+    const next = new Set(prev)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    return next
+  })
+
+  const pickOwner = (ownerId) => setPicked((prev) => {
+    const next = new Set(prev)
+    items.filter((l) => l.owner_id === ownerId).forEach((l) => next.add(l.id))
+    return next
+  })
+
+  const bulk = async (approve, reason = null) => {
+    const ids = [...picked]
+    if (!ids.length) return
+    setBusyId('bulk')
+    try {
+      await api.modBulk(ids, approve, reason)
+      setItems((prev) => {
+        const next = prev.filter((l) => !picked.has(l.id))
+        cache = { ...cache, items: next }
+        return next
+      })
+      setTotal((n) => {
+        const next = Math.max(0, n - ids.length)
+        cache = { ...cache, total: next }
+        return next
+      })
+      setPicked(new Set())
+      setRejectingId(null)
+    } catch { /* оставляем в очереди */ }
+    finally { setBusyId(null) }
+  }
+
   const showArrived = () => {
     setArrived(0)
     cache = null
@@ -298,6 +342,18 @@ export default function Moderation() {
         </button>
       </div>
 
+      {tab === 'listings' && day && (
+        <div className="mod-day">
+          <span><b>{day.mine.approved + day.mine.rejected}</b> {t('mod.day_mine')}</span>
+          <span><b>{day.team.approved + day.team.rejected}</b> {t('mod.day_team')}</span>
+          {day.oldest_waiting_hours != null && (
+            <span className={day.oldest_waiting_hours > 24 ? 'warn' : ''}>
+              <b>{day.oldest_waiting_hours < 1 ? '<1' : Math.round(day.oldest_waiting_hours)}</b> {t('mod.day_oldest')}
+            </span>
+          )}
+        </div>
+      )}
+
       {tab === 'listings' && <div className="mod-keys-hint">{t('mod.keys_hint')}</div>}
 
       {arrived > 0 && tab === 'listings' && (
@@ -353,7 +409,14 @@ export default function Moderation() {
       ) : (
         <div className="mod-list">
           {items.map((l, i) => (
-            <div className={`mod-card${i === focus ? ' focused' : ''}`} key={l.id} onClick={() => setFocus(i)}>
+            <div className={`mod-card${i === focus ? ' focused' : ''}${picked.has(l.id) ? ' picked' : ''}`} key={l.id} onClick={() => setFocus(i)}>
+              <button
+                className={`mod-pick${picked.has(l.id) ? ' on' : ''}`}
+                onClick={(e) => { e.stopPropagation(); togglePick(l.id) }}
+                aria-label={t('mod.pick')}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12.5 5 5L19 7" /></svg>
+              </button>
               {/* Открывается как обычное объявление — та же страница,
                   тот же переход, что и везде на сайте, а не отдельная
                   ссылка сбоку. */}
@@ -368,6 +431,9 @@ export default function Moderation() {
                   {l.forbidden_warning && (
                     <div className="mod-forbidden-warning">{l.forbidden_warning}</div>
                   )}
+                  {l.looks_duplicate && (
+                    <div className="mod-dup">{t('mod.duplicate_hint')}</div>
+                  )}
                   {l.category_name && <div className="mod-category">{l.category_name}</div>}
                   <div className="mod-title">{l.title}</div>
                   <div className="mod-price">
@@ -376,7 +442,7 @@ export default function Moderation() {
                   {l.description && <p className="mod-desc">{l.description}</p>}
                   <div className="mod-meta">
                     {displayCity(l.city, i18n.language)}
-                    {l.created_at && <> · {t('mod.waiting', { when: since(l.created_at, t, i18n.language) })}</>}
+                    {l.created_at && <> · {t('mod.waiting', { when: timeAgo(l.created_at, t, i18n.language) })}</>}
                   </div>
                 </div>
               </Link>
@@ -390,6 +456,14 @@ export default function Moderation() {
                   {l.owner_verified && <span className="tag tag-ok">{t('admin.tag_verified')}</span>}
                   {l.owner_days != null && l.owner_days < 3 && <span className="tag tag-new">{t('admin.tag_new')}</span>}
                 </span>
+                {l.owner_pending > 1 && (
+                  <button
+                    className="mod-seller-pick"
+                    onClick={(e) => { e.stopPropagation(); pickOwner(l.owner_id) }}
+                  >
+                    {t('mod.pick_owner', { count: items.filter((x) => x.owner_id === l.owner_id).length })}
+                  </button>
+                )}
                 <span className="mod-seller-facts">
                   <span>{t('mod.seller_active', { count: l.owner_active })}</span>
                   <span className={l.owner_rejected ? 'warn' : ''}>{t('mod.seller_rejected', { count: l.owner_rejected })}</span>
@@ -472,7 +546,22 @@ export default function Moderation() {
         </div>
       )}
 
-      {undo && (
+      {picked.size > 0 && (
+        <div className="mod-bulkbar">
+          <button className="mod-bulk-clear" onClick={() => setPicked(new Set())} aria-label={t('actions.cancel')}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
+          <span className="mod-bulk-count">{t('mod.picked', { count: picked.size })}</span>
+          <button className="mod-bulk-reject" disabled={busyId === 'bulk'} onClick={() => bulk(false, t('mod.reasons.prohibited'))}>
+            {t('mod.reject')}
+          </button>
+          <button className="mod-bulk-approve" disabled={busyId === 'bulk'} onClick={() => bulk(true)}>
+            {t('mod.approve')}
+          </button>
+        </div>
+      )}
+
+      {undo && !picked.size && (
         <div className="mod-undo" role="status">
           <span>{undo.approve ? t('mod.done_approve') : t('mod.done_reject')}</span>
           <button onClick={undoDecision}>{t('mod.undo')}</button>

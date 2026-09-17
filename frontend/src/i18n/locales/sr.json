@@ -407,7 +407,16 @@
     "done_approve": "Odobreno",
     "done_reject": "Odbijeno",
     "undo": "Poništi",
-    "keys_hint": "A — odobri · R — odbij · J/K — sledeći/prethodni"
+    "keys_hint": "A — odobri · R — odbij · J/K — sledeći/prethodni",
+    "day_mine": "tvoji danas",
+    "day_team": "ukupno danas",
+    "day_oldest": "h čeka najstariji",
+    "pick": "Označi",
+    "pick_owner": "Označi svih {{count}}",
+    "picked_one": "{{count}} označen",
+    "picked_few": "{{count}} označena",
+    "picked_other": "{{count}} označenih",
+    "duplicate_hint": "Liči na duplikat: prodavac već ima ovo aktivno"
   },
   "rev": {
     "title": "Recenzije",

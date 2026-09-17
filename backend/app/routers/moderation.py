@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.core.audit import record
 from app.core.auth import get_current_user
 from app.core.database import get_db, SessionLocal
-from app.models import Category, Listing, ListingStatus, User, UserRole
+from app.models import Category, Listing, ListingStatus, User, UserRole, ListingTranslation
 from app.core.clock import utcnow
 
 router = APIRouter(prefix="/api/moderation", tags=["moderation"])
@@ -152,6 +152,31 @@ def queue(
     # ждёт. Новичок с нулём объявлений и пачкой отклонённых — совсем
     # другой разговор, чем продавец с сотней в ленте; модератор должен
     # видеть это, не открывая карточку человека.
+    # Похоже на дубль: у того же продавца уже есть живое объявление с
+    # тем же заголовком и той же ценой. Самая частая история в очереди —
+    # человек выкладывает одно и то же по второму разу, не найдя первое.
+    # Не решаем за модератора, просто помечаем.
+    titles = {}
+    for l in items:
+        tr0 = pick_translation(l, lang)
+        if tr0 and tr0.title:
+            titles[l.id] = tr0.title.strip().lower()
+    dup_ids: set = set()
+    if titles:
+        pairs = [(l.owner_id, titles.get(l.id)) for l in items if titles.get(l.id)]
+        owners = list({p[0] for p in pairs})
+        existing = (db.query(Listing.owner_id, ListingTranslation.title, Listing.price)
+                    .join(ListingTranslation, ListingTranslation.listing_id == Listing.id)
+                    .filter(Listing.owner_id.in_(owners),
+                            Listing.status == ListingStatus.active)
+                    .all())
+        have = {(oid, (title or "").strip().lower(), float(price) if price else None)
+                for oid, title, price in existing}
+        for l in items:
+            key = (l.owner_id, titles.get(l.id), float(l.price) if l.price else None)
+            if titles.get(l.id) and key in have:
+                dup_ids.add(l.id)
+
     owner_ids = list({l.owner_id for l in items if l.owner_id})
     owner_stats: dict = {}
     if owner_ids:
@@ -197,6 +222,7 @@ def queue(
             "owner_rejected": st["rejected"],
             "owner_pending": st["pending"],
             "owner_verified": bool(l.owner and l.owner.document_verified),
+            "looks_duplicate": l.id in dup_ids,
             "created_at": l.created_at.isoformat() if l.created_at else None,
             "category_name": category_name,
             # Заполнено только когда быстрый фильтр (moderation_ai.py)
@@ -349,6 +375,93 @@ def reject(
     background_tasks.add_task(_after_reject, listing.id, payload.reason)
 
     return {"status": "rejected"}
+
+
+class BulkIn(BaseModel):
+    ids: list[uuid.UUID]
+    approve: bool
+    reason: str | None = None
+
+
+@router.post("/bulk")
+def bulk_decide(
+    payload: BulkIn,
+    background_tasks: BackgroundTasks,
+    moderator: User = Depends(require_moderator),
+    db: Session = Depends(get_db),
+):
+    """
+    Решение сразу по нескольким объявлениям.
+
+    Один продавец нередко выкладывает десяток разом — разбирать их по
+    одному значит десять раз прочитать то же имя и нажать ту же кнопку.
+    Ограничение в полсотни за раз: больше — уже не разбор, а слепое
+    нажатие, и откатывать такое нечем.
+    """
+    ids = payload.ids[:50]
+    if not ids:
+        return {"changed": 0}
+    listings = (db.query(Listing)
+                .filter(Listing.id.in_(ids),
+                        Listing.status == ListingStatus.pending_moderation)
+                .all())
+    now = utcnow()
+    from app.routers.listings import LISTING_TTL_DAYS
+    for l in listings:
+        if payload.approve:
+            l.status = ListingStatus.active
+            if not l.published_at:
+                l.published_at = now
+            l.expires_at = now + timedelta(days=LISTING_TTL_DAYS)
+            l.expiry_warned = False
+        else:
+            l.status = ListingStatus.rejected
+            l.rejection_reason = payload.reason
+        record(db, moderator,
+               "listing.approve" if payload.approve else "listing.reject",
+               target_type="listing", target_id=l.id, reason=payload.reason,
+               owner=str(l.owner_id), bulk=True)
+    db.commit()
+    for l in listings:
+        if payload.approve:
+            background_tasks.add_task(_after_approve, l.id)
+        else:
+            background_tasks.add_task(_after_reject, l.id, payload.reason)
+    return {"changed": len(listings)}
+
+
+@router.get("/my-day")
+def my_day(
+    moderator: User = Depends(require_moderator),
+    db: Session = Depends(get_db),
+):
+    """
+    Сколько разобрано за сутки: всего, одобрено, отклонено — самим
+    модератором и всей командой, плюс возраст самого старого в очереди.
+    Разбор очереди — работа без видимого результата: список всё время
+    непустой, и без счётчика непонятно, движется ли дело вообще.
+    """
+    from app.models import AuditEntry
+
+    since_ = utcnow() - timedelta(hours=24)
+    rows = (db.query(AuditEntry.actor_id, AuditEntry.action, func.count(AuditEntry.id))
+            .filter(AuditEntry.created_at >= since_,
+                    AuditEntry.action.in_(("listing.approve", "listing.reject")))
+            .group_by(AuditEntry.actor_id, AuditEntry.action).all())
+    mine = {"approved": 0, "rejected": 0}
+    team = {"approved": 0, "rejected": 0}
+    for actor_id, action, n in rows:
+        key = "approved" if action == "listing.approve" else "rejected"
+        team[key] += n
+        if actor_id == moderator.id:
+            mine[key] += n
+    oldest = (db.query(func.min(Listing.created_at))
+              .filter(Listing.status == ListingStatus.pending_moderation).scalar())
+    return {
+        "mine": mine,
+        "team": team,
+        "oldest_waiting_hours": round((utcnow() - oldest).total_seconds() / 3600, 1) if oldest else None,
+    }
 
 
 @router.post("/{listing_id}/return")
