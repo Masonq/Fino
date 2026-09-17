@@ -2,11 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from datetime import timedelta
-
 from sqlalchemy import func
 
-from app.core.clock import utcnow
 from app.models import Category, Listing, ListingStatus
 
 router = APIRouter(prefix="/api/categories", tags=["categories"])
@@ -39,26 +36,9 @@ def list_categories(db: Session = Depends(get_db)):
         .all()
     )
 
-    # Сколько появилось за сутки — по тому же приёму, одним запросом.
-    #
-    # Нужно главной: крупным на ней показывается тот раздел, где сегодня
-    # больше всего нового. Так страница не приедается и честно
-    # показывает, где идёт жизнь.
-    fresh_counts = dict(
-        db.query(Listing.category_id, func.count(Listing.id))
-        .filter(Listing.status == ListingStatus.active,
-                Listing.published_at >= utcnow() - timedelta(hours=24))
-        .group_by(Listing.category_id)
-        .all()
-    )
-
     def total(cat: Category) -> int:
         """Объявления раздела вместе с подразделами."""
         return counts.get(cat.id, 0) + sum(total(c) for c in cat.children)
-
-    def fresh(cat: Category) -> int:
-        """Сколько появилось за сутки, вместе с подразделами."""
-        return fresh_counts.get(cat.id, 0) + sum(fresh(c) for c in cat.children)
 
     def serialize(cat: Category, inherited=None):
         count = total(cat)
@@ -83,7 +63,6 @@ def list_categories(db: Session = Depends(get_db)):
             "image_url": image,
             "color": color,
             "count": count,
-            "fresh": fresh(cat),
             "ready": True,
             "children": [serialize(c, {**mine, "icon": cat.icon})
                          for c in cat.children] if cat.children else [],

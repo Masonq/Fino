@@ -673,74 +673,39 @@ export default function Home() {
       </div>
 
       {(() => {
-        // Разделы: один крупным, три помельче.
-        //
-        // Крупным становится тот, где за сутки появилось больше всего
-        // нового. Так главная не приедается и честно показывает, где
-        // идёт жизнь: в понедельник это мебель, в пятницу — квартиры.
-        //
-        // Раньше все четырнадцать разделов лежали ровным ковром из
-        // одинаковых плиток — они занимали треть экрана, и человек их
-        // пролистывал, не разглядывая.
+        const all = [{ id: '__all', slug: null, isAll: true }, ...categories]
+        const top = all.filter((_, i) => i % 2 === 0)
+        const bottom = all.filter((_, i) => i % 2 === 1)
+        const renderTile = (cat) => cat.isAll ? (
+          <Link key="__all" to="/categories" className="cat-tile-2row all">
+            <div className="cat-tile-2row-label">{t('common.all')}</div>
+            <div className="cat-tile-2row-glyph"><CategoryArt slug="all" /></div>
+          </Link>
+        ) : (
+          /* Раздел без выбора гасим: три объявления обещают выбор и
+             не дают его. Но заходить не мешаем — вдруг человек ищет
+             именно это. */
+          <Link
+            key={cat.id}
+            to={hasLanding(cat.slug) ? `/c/${cat.slug}` : `/search?category=${cat.slug}`}
+            className={`cat-tile-2row${cat.ready === false ? ' soon' : ''}`}
+          >
+            <div className="cat-tile-2row-label">{cat.name?.[i18n.language] || cat.name?.ru}</div>
+            <div className="cat-tile-2row-glyph"><CategoryArt slug={cat.slug} /></div>
+          </Link>
+        )
         if (!catsLoaded) {
           return (
-            <div className="cat-hero-wrap">
-              <div className="cat-hero sk-block" />
-              <div className="cat-small-row">
-                <div className="cat-small sk-block" />
-                <div className="cat-small sk-block" />
-                <div className="cat-small sk-block" />
-              </div>
+            <div className="cat-rows">
+              <div className="cat-row"><CategorySkeletons count={5} /></div>
+              <div className="cat-row"><CategorySkeletons count={5} /></div>
             </div>
           )
         }
-
-        const withFresh = [...categories].sort(
-          (a, b) => (b.fresh || 0) - (a.fresh || 0) || (b.count || 0) - (a.count || 0),
-        )
-        const hero = withFresh[0]
-        const rest = withFresh.slice(1, 3)
-        if (!hero) return null
-
-        const linkTo = (cat) => (hasLanding(cat.slug)
-          ? `/c/${cat.slug}`
-          : `/search?category=${cat.slug}`)
-        const nameOf = (cat) => cat.name?.[i18n.language] || cat.name?.ru
-
         return (
-          <div className="cat-hero-wrap">
-            <Link to={linkTo(hero)} className="cat-hero">
-              <div className="cat-hero-art"><CategoryArt slug={hero.slug} /></div>
-              <div className="cat-hero-text">
-                <div className="cat-hero-name">{nameOf(hero)}</div>
-                <div className="cat-hero-sub">
-                  {hero.fresh > 0
-                    ? t('feed.cat_fresh', { fresh: hero.fresh, total: hero.count })
-                    : t('feed.cat_total', { total: hero.count })}
-                </div>
-              </div>
-            </Link>
-
-            <div className="cat-small-row">
-              {rest.map((cat) => (
-                <Link key={cat.id} to={linkTo(cat)} className="cat-small">
-                  <div className="cat-small-art"><CategoryArt slug={cat.slug} /></div>
-                  <div className="cat-small-text">
-                    <div className="cat-small-name">{nameOf(cat)}</div>
-                    <div className="cat-small-cnt">{cat.count}</div>
-                  </div>
-                </Link>
-              ))}
-              <Link to="/categories" className="cat-small all">
-                <div className="cat-small-art"><CategoryArt slug="all" /></div>
-                <div className="cat-small-text">
-                  <div className="cat-small-name">{t('common.all')}</div>
-                  <div className="cat-small-cnt">
-                    {t('feed.cat_more', { count: Math.max(categories.length - 3, 0) })}
-                  </div>
-                </div>
-              </Link>
-            </div>
+          <div className="cat-rows">
+            <div className="cat-row">{top.map(renderTile)}</div>
+            <div className="cat-row">{bottom.map(renderTile)}</div>
           </div>
         )
       })()}

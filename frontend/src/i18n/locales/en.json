@@ -838,9 +838,6 @@
     "sell_button": "Post a listing",
     "geo_ask": "Show listings near you?",
     "geo_yes": "Show",
-    "geo_no": "No thanks",
-    "cat_fresh": "{{fresh}} new today · {{total}} total",
-    "cat_total": "{{total}} listings",
-    "cat_more": "{{count}} more"
+    "geo_no": "No thanks"
   }
 }
