@@ -28,8 +28,14 @@ export default function FreshStories({ items, seen, onOpen }) {
           aria-label={l.title}
         >
           <div className="story-ring">
+            {/* Фото целиком, а не обрезанное кругом: у вещи важен весь
+                силуэт, велосипед без колёс — не велосипед. Вписываем
+                целиком, а пустые края закрывает размытая копия того же
+                фото — круг остаётся заполненным. */}
             <div className="story-photo">
+              <img className="story-blur" src={l.cover_photo} alt="" aria-hidden="true" loading={i < 6 ? 'eager' : 'lazy'} decoding="async" />
               <img
+                className="story-img"
                 src={l.cover_photo}
                 alt=""
                 loading={i < 6 ? 'eager' : 'lazy'}
