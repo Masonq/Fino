@@ -9,7 +9,7 @@ import PullToRefresh from '../components/PullToRefresh'
 import SearchOverlay from '../components/SearchOverlay'
 import OfflineNotice, { LoadError } from '../components/OfflineNotice'
 import { useAuth } from '../context/AuthContext'
-import { CITIES, cityLabel } from '../data/cities'
+import { CITIES, cityLabel, nearestCity } from '../data/cities'
 import CategoryArt from '../components/CategoryArt'
 import { hasLanding } from '../data/landings'
 
@@ -160,6 +160,42 @@ export default function Home() {
     setCity(value)
     try { localStorage.setItem('plonk_city', value) } catch { /* не беда */ }
   }, [])
+
+  // Предложение подобрать город по месту.
+  //
+  // Спрашиваем не сразу при заходе: внезапный запрос места пугает, и
+  // половина отказывает не глядя. Показываем полоску, и запрос уходит
+  // только когда человек сам нажал.
+  //
+  // Один раз: отказался — больше не пристаём.
+  const [askGeo, setAskGeo] = useState(() => {
+    try {
+      return !localStorage.getItem('plonk_city')
+        && !localStorage.getItem('plonk_geo_asked')
+    } catch { return false }
+  })
+  const [geoBusy, setGeoBusy] = useState(false)
+
+  const dismissGeo = useCallback(() => {
+    setAskGeo(false)
+    try { localStorage.setItem('plonk_geo_asked', '1') } catch { /* не беда */ }
+  }, [])
+
+  const detectCity = useCallback(() => {
+    if (!navigator.geolocation) { dismissGeo(); return }
+    setGeoBusy(true)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setGeoBusy(false)
+        const slug = nearestCity(pos.coords.latitude, pos.coords.longitude)
+        // Не в Сербии — города не подставляем, показываем всё подряд.
+        if (slug) chooseCity(slug)
+        dismissGeo()
+      },
+      () => { setGeoBusy(false); dismissGeo() },
+      { timeout: 8000, maximumAge: 600000 },
+    )
+  }, [chooseCity, dismissGeo])
 
   // Город — тоже через ref: обработчик ухода со страницы создаётся один
   // раз и иначе запомнил бы город, выбранный при первой отрисовке.
@@ -673,6 +709,20 @@ export default function Home() {
           </div>
         )
       })()}
+
+      {/* Предложение подобрать город по месту.
+          Стоит над лентой, а не всплывает окном: человек сперва видит
+          объявления и только потом решает, сужать ли их до своего
+          города. */}
+      {askGeo && (
+        <div className="geo-ask">
+          <span className="geo-ask-text">{t('feed.geo_ask')}</span>
+          <button className="geo-ask-yes" onClick={detectCity} disabled={geoBusy}>
+            {geoBusy ? t('actions.loading') : t('feed.geo_yes')}
+          </button>
+          <button className="geo-ask-no" onClick={dismissGeo}>{t('feed.geo_no')}</button>
+        </div>
+      )}
 
       <div className="feed-head-row">
         {/* Три взгляда на одну ленту.

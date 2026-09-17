@@ -68,3 +68,31 @@ export function displayCity(value, lang = 'ru') {
   )
   return found ? (found[lang] || found.ru) : value
 }
+
+
+/**
+ * Ближайший город к точке — по координатам, без обращения к чужим службам.
+ *
+ * Города Сербии разнесены на десятки километров, поэтому хватает простой
+ * меры: разница широт и долгот с поправкой на сжатие по долготе на этой
+ * широте. Точные расстояния по дуге тут лишни.
+ *
+ * Если ближе ста километров ничего нет — значит человек не в Сербии, и
+ * подставлять ему город незачем.
+ */
+export function nearestCity(lat, lon) {
+  let best = null
+  let bestDist = Infinity
+
+  for (const [slug, [clat, clon]] of Object.entries(CITY_COORDS)) {
+    const dLat = (lat - clat) * 111
+    const dLon = (lon - clon) * 111 * Math.cos((lat * Math.PI) / 180)
+    const dist = Math.sqrt(dLat * dLat + dLon * dLon)
+    if (dist < bestDist) {
+      bestDist = dist
+      best = slug
+    }
+  }
+
+  return bestDist <= 100 ? best : null
+}

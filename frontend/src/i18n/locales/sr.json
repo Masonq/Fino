@@ -836,6 +836,9 @@
     "tab_free": "Besplatno",
     "sell_title": "Prodajete nešto?",
     "sell_text": "Postavite oglas — besplatno je i traje minut.",
-    "sell_button": "Postavi oglas"
+    "sell_button": "Postavi oglas",
+    "geo_ask": "Prikazati oglase u vašoj blizini?",
+    "geo_yes": "Prikaži",
+    "geo_no": "Ne treba"
   }
 }

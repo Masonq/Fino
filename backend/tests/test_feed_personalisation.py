@@ -1195,3 +1195,32 @@ def test_feed_invites_to_post_a_listing():
     assert "i === 6 &&" in page
     assert 'to="/post" className="post-cta"' in page
     assert ".post-cta{" in styles
+
+
+def test_city_can_be_detected_by_location():
+    """Город подбирается по месту, но только по нажатию.
+
+    Спрашивать при заходе нельзя: внезапный запрос места пугает, и
+    половина отказывает не глядя. Показываем полоску над лентой —
+    человек сперва видит объявления и решает сам.
+
+    Один раз: отказался — больше не пристаём.
+
+    Ближайший город считаем по координатам, без обращения к чужим
+    службам: города Сербии разнесены на десятки километров, и простой
+    меры расстояния хватает. Дальше ста километров — значит человек не
+    в Сербии, и подставлять ему город незачем.
+    """
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "Home.jsx").read_text()
+    cities = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "data" / "cities.js").read_text()
+
+    assert "export function nearestCity" in cities
+    assert "bestDist <= 100 ? best : null" in cities
+
+    # Запрос уходит по нажатию, а не сам.
+    assert "onClick={detectCity}" in page
+    assert "geolocation.getCurrentPosition" in page
+    # И спрашиваем один раз.
+    assert "plonk_geo_asked" in page

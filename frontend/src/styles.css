@@ -4223,3 +4223,22 @@ a.s-attrs{ display:block; }
   /* Кнопка — белым по зелёному, тут цвет числом по той же причине. */
   background:#0E9F6E; color:#FFFFFF; font-size:14px; font-weight:700;
 }
+
+/* Полоска «показать объявления рядом».
+   Не окно поверх экрана: внезапный запрос места пугает, и половина
+   отказывает не глядя. Здесь человек сперва видит ленту и решает сам. */
+.geo-ask{
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  margin:0 12px 10px; padding:11px 13px; border-radius:12px;
+  background:#EEF6F2; border:1px solid rgba(14,159,110,.18);
+}
+.geo-ask-text{ flex:1; min-width:150px; font-size:13.5px; color:#1A2420; line-height:1.3; }
+.geo-ask-yes{
+  padding:7px 14px; border-radius:9px; border:none;
+  background:#0E9F6E; color:#FFFFFF; font-size:13px; font-weight:700;
+}
+.geo-ask-yes:disabled{ opacity:.6; }
+.geo-ask-no{
+  padding:7px 12px; border-radius:9px; border:none;
+  background:transparent; color:#6B7670; font-size:13px; font-weight:600;
+}
