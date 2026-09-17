@@ -842,8 +842,6 @@
     "geo_no": "Ne treba",
     "cat_fresh": "{{fresh}} novih danas · ukupno {{total}}",
     "cat_total": "{{total}} oglasa",
-    "cat_more": "još {{count}}",
-    "cat_fresh_one": "{{fresh}} novi danas · ukupno {{total}}",
-    "cat_fresh_few": "{{fresh}} novih danas · ukupno {{total}}"
+    "cat_more": "još {{count}}"
   }
 }

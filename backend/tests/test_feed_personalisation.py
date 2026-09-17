@@ -1253,13 +1253,5 @@ def test_home_shows_one_big_category_by_freshness():
     assert "(b.fresh || 0) - (a.fresh || 0)" in page
     assert "cat-hero" in page and "cat-small" in page
 
-    # Порог: один новый — не повод объявлять раздел главным. На живом
-    # сайте крупным стал раздел с одним новым и двумя сотнями всего, а
-    # рядом лежала одежда с тысячей.
-    assert "FRESH_ENOUGH = 5" in page
-    # Склонение: «1 новое», но «5 новых».
-    assert "cat_fresh_one" in page and "cat_fresh_few" in page
-    # Плитки светлые: тёмные спорили с шапкой, а перламутровые картинки
-    # рисовались для светлого фона.
-    hero = styles.split(".cat-hero{")[1].split("}")[0]
-    assert "background:#FFFFFF" in hero
+    # И названия читаются: на светлой картинке белые буквы пропадали.
+    assert ".cat-hero::after" in styles

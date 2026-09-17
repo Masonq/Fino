@@ -841,8 +841,6 @@
     "geo_no": "No thanks",
     "cat_fresh": "{{fresh}} new today · {{total}} total",
     "cat_total": "{{total}} listings",
-    "cat_more": "{{count}} more",
-    "cat_fresh_one": "{{fresh}} new today · {{total}} total",
-    "cat_fresh_few": "{{fresh}} new today · {{total}} total"
+    "cat_more": "{{count}} more"
   }
 }
