@@ -1077,8 +1077,10 @@ def search_listings(
 
 # «Только что» — полоска свежих объявлений в шапке главной.
 #
-# Берём последние объявления с фото за сутки, по одному на продавца
-# (иначе один человек, выложивший десять вещей, займёт всю полоску).
+# Берём последние объявления с фото за сутки, по одному на живого
+# продавца (иначе один человек, выложивший десять вещей, займёт всю
+# полоску); импортированные из чатов не ограничиваем — у них общий
+# служебный владелец.
 # Если за сутки в городе мало — добираем более старыми, чтобы полоска
 # не пустела: пустая шапка выглядит как сломанная площадка. Каждое
 # помечено fresh, чтобы кольцо у совсем свежих было ярче.
@@ -1105,12 +1107,17 @@ def fresh_listings(
     seen_owners: set = set()
     out = []
     for l in rows:
-        if l.owner_id in seen_owners:
-            continue
+        # Импортированные из чатов висят на одном служебном владельце —
+        # для них отбор «один на продавца» оставил бы одно объявление
+        # из тысяч. Ограничиваем только живых продавцов.
+        if not l.external_source:
+            if l.owner_id in seen_owners:
+                continue
         cover = next((p for p in l.photos if p.is_cover), l.photos[0] if l.photos else None)
         if not cover or cover.is_video or not (cover.thumbnail_url or cover.url):
             continue
-        seen_owners.add(l.owner_id)
+        if not l.external_source:
+            seen_owners.add(l.owner_id)
         tr = pick_translation(l, lang) or (l.translations[0] if l.translations else None)
         out.append({
             "id": str(l.id),

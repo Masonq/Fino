@@ -573,13 +573,27 @@ export default function Home() {
         }}
       >
         <div className="avito-toprow">
-          <button type="button" className="avito-search" onClick={() => setSearchOpen(true)}>
-            <svg className="avito-search-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.6-3.6" /></svg>
-            <span>{t('search.placeholder')}</span>
-            <span className="avito-search-filter" aria-label={t('misc.filters')} data-label={t('misc.find')}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
-            </span>
-          </button>
+          {/* Город — слева в строке поиска, как у Avito: поиск и город
+              меняют одно и то же, и держать город отдельной плашкой ниже
+              было незачем. Это <select> поверх подписи: тап открывает
+              системный выбор, а сама строка поиска — по остальной площади. */}
+          <div className="avito-search">
+            <label className="search-city" aria-label={t('post.city')}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" /></svg>
+              <span>{city ? cityLabel(city, i18n.language) : t('search.all_cities')}</span>
+              <svg className="search-city-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8"><path d="m6 9 6 6 6-6" /></svg>
+              <select value={city} onChange={(e) => chooseCity(e.target.value)}>
+                <option value="">{t('search.all_cities')}</option>
+                {CITIES.map((c) => <option key={c.slug} value={c.slug}>{cityLabel(c.slug, i18n.language)}</option>)}
+              </select>
+            </label>
+            <button type="button" className="avito-search-main" onClick={() => setSearchOpen(true)}>
+              <span>{t('search.placeholder')}</span>
+              <span className="avito-search-filter" aria-label={t('misc.filters')} data-label={t('misc.find')}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
+              </span>
+            </button>
+          </div>
           <Link to={user ? '/profile' : '/login'} className="avito-login-pill">
             {/* Пока идёт проверка токена, user ещё null — раньше тут
                 на секунду показывалось «Войти» текстом, а затем резко
@@ -601,29 +615,13 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* «Только что» — свежие объявления кружками, как сторис. Шапка
-            меняется сама с каждым заходом, и в ней видно, что площадка
-            живая: не обещание, а вещи, которые выложили час назад. Город
-            справа от заголовка — полоска считается для выбранного. */}
+        {/* Свежие объявления кружками, как сторис, без заголовка: кружки
+            с фото говорят сами за себя. Шапка меняется с каждым заходом,
+            и в ней видно, что площадка живая. Полоска считается для
+            города из строки поиска. */}
         <div className="promo-collapse">
           <div>
             <div className="avito-promo-row">
-              <div className="fresh-head">
-                <div className="fresh-title">
-                  <span className="pulse-dot" aria-hidden="true" />
-                  {t('fresh.title')}
-                </div>
-                <div className="city-pill">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                    <path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" />
-                  </svg>
-                  <select value={city} onChange={(e) => chooseCity(e.target.value)} aria-label={t('post.city')}>
-                    <option value="">{t('search.all_cities')}</option>
-                    {CITIES.map((c) => <option key={c.slug} value={c.slug}>{cityLabel(c.slug, i18n.language)}</option>)}
-                  </select>
-                  <svg className="city-pill-chevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="m6 9 6 6 6-6" /></svg>
-                </div>
-              </div>
               <FreshStories items={stories.items} seen={stories.seen} onOpen={stories.markSeen} />
             </div>
           </div>

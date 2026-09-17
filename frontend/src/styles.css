@@ -123,18 +123,34 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .avito-banner .avito-search,
 .avito-banner .avito-login-pill{ transition:background .7s ease, box-shadow .7s ease; }
 .avito-banner.collapsed .avito-search{ background:#F2F2EF; box-shadow:none; }
+.avito-banner.collapsed .search-city{ background:#fff; }
 .avito-banner.collapsed .avito-login-pill{ background:#F2F2EF; }
 .avito-toprow{ display:flex; gap:7px; margin-bottom:8px; }
 .avito-search{
-  flex:1; display:flex; align-items:center; gap:9px; background:#FDFDFB; border-radius:15px;
-  padding:14px 14px 14px 14px; box-shadow:0 1px 2px rgba(20,30,25,.03); color:var(--muted); font-size:13.5px; font-weight:500;
-  min-width:0;
+  flex:1; display:flex; align-items:stretch; background:#FDFDFB; border-radius:15px;
+  box-shadow:0 1px 2px rgba(20,30,25,.03); min-width:0; height:48px; overflow:hidden;
 }
-.avito-search-icon{ width:19px; height:19px; flex-shrink:0; color:var(--ink); opacity:.55; }
-.avito-search > span:first-of-type{ flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.avito-search-main{
+  flex:1; display:flex; align-items:center; gap:9px; padding:0 14px 0 10px; min-width:0;
+  color:var(--muted); font-size:13.5px; font-weight:500; text-align:left;
+}
+.avito-search-main > span:first-of-type{ flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .avito-search-filter{
   color:var(--ink); display:flex; align-items:center; justify-content:center; flex-shrink:0;
 }
+/* Город в строке поиска: плашка слева, <select> лежит прозрачным поверх
+   неё — нажатие открывает системный выбор города, а подпись рисуем сами,
+   чтобы она была в стиле сайта, а не в стиле браузера. */
+.search-city{
+  position:relative; display:flex; align-items:center; gap:4px; flex-shrink:0;
+  padding:0 8px 0 12px; margin:6px 0 6px 6px; border-radius:10px;
+  background:var(--primary-soft); color:var(--primary-deep); font-size:12.5px; font-weight:700;
+  max-width:46%;
+}
+.search-city > span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.search-city svg{ flex-shrink:0; }
+.search-city-chevron{ opacity:.6; }
+.search-city select{ position:absolute; inset:0; width:100%; height:100%; opacity:0; appearance:none; -webkit-appearance:none; font-size:16px; }
 .avito-login-pill{
   flex-shrink:0; display:flex; align-items:center; justify-content:center; background:#F1F1EC;
   border-radius:15px; padding:0 15px; font-size:13.5px; font-weight:600; color:var(--ink);
@@ -205,16 +221,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .avito-promo-row{ display:block; padding:0; }
 
 /* ===== «Только что» — сторис свежих объявлений в шапке ===== */
-.fresh-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:0 2px; }
-.fresh-title{ display:flex; align-items:center; gap:7px; color:#fff; font-size:15px; font-weight:800; letter-spacing:-0.01em; line-height:1; }
-.pulse-dot{ width:7px; height:7px; border-radius:50%; background:var(--accent); animation:pulse-dot 1.6s ease-in-out infinite; }
-@keyframes pulse-dot{ 0%,100%{ opacity:1; transform:scale(1);} 50%{ opacity:.45; transform:scale(.75);} }
-@media (prefers-reduced-motion: reduce){ .pulse-dot{ animation:none; } }
-
 /* Полоска выезжает за края шапки: первый кружок стоит вровень с
    поиском, последний уходит под правый край — видно, что дальше есть. */
 .stories{
-  display:flex; gap:10px; margin:11px -14px 0; padding:2px 14px 0;
+  display:flex; gap:10px; margin:6px -14px 0; padding:2px 14px 0;
   overflow-x:auto; overscroll-behavior-x:contain; -webkit-overflow-scrolling:touch;
   scroll-snap-type:x proximity; scroll-padding-left:14px;
 }
