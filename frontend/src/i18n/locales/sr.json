@@ -298,7 +298,8 @@
     "price_down": "Cena je pala",
     "price_up": "Cena je porasla",
     "promoted": "Izdvojeno",
-    "reserved": "Rezervisano"
+    "reserved": "Rezervisano",
+    "ago": "pre {{when}}"
   },
   "chats": {
     "need_auth": "Predstavite se da biste videli svoje razgovore.",
@@ -389,7 +390,24 @@
       "suspicious_price": "Sumnjiva cena",
       "other": "Drugi razlog"
     },
-    "open": "Otvori"
+    "open": "Otvori",
+    "arrived_one": "+{{count}} novi — prikaži",
+    "arrived_few": "+{{count}} nova — prikaži",
+    "arrived_other": "+{{count}} novih — prikaži",
+    "waiting": "čeka {{when}}",
+    "seller_active_one": "{{count}} aktivan",
+    "seller_active_few": "{{count}} aktivna",
+    "seller_active_other": "{{count}} aktivnih",
+    "seller_rejected_one": "{{count}} odbijen",
+    "seller_rejected_few": "{{count}} odbijena",
+    "seller_rejected_other": "{{count}} odbijenih",
+    "seller_pending_one": "još {{count}} u redu",
+    "seller_pending_few": "još {{count}} u redu",
+    "seller_pending_other": "još {{count}} u redu",
+    "done_approve": "Odobreno",
+    "done_reject": "Odbijeno",
+    "undo": "Poništi",
+    "keys_hint": "A — odobri · R — odbij · J/K — sledeći/prethodni"
   },
   "rev": {
     "title": "Recenzije",
@@ -530,7 +548,22 @@
     "err_reverify": "Nije uspelo slanje zahteva, pokušajte ponovo",
     "suspicious_device": "Uređaj i zemlja su se naglo promenili istovremeno (poslednja prijava iz {{location}}) — deluje kao da nalog koristi neko drugi.",
     "logins_title": "Nedavne prijave",
-    "no_logins": "Nije zabeležena nijedna prijava — osoba se ili nije prijavljivala otkako je praćenje uključeno, ili se prijavila pre toga."
+    "no_logins": "Nije zabeležena nijedna prijava — osoba se ili nije prijavljivala otkako je praćenje uključeno, ili se prijavila pre toga.",
+    "found_one": "{{count}} osoba",
+    "found_few": "{{count}} osobe",
+    "found_other": "{{count}} osoba",
+    "f_today": "za 24 h",
+    "f_week": "ove nedelje",
+    "f_online": "sada na sajtu",
+    "sort": "Sortiranje",
+    "sort_new": "Prvo novi",
+    "sort_seen": "Nedavno aktivni",
+    "sort_listings": "Najviše oglasa",
+    "tag_new": "novi",
+    "tag_verified": "proveren",
+    "registered": "reg. {{when}}",
+    "seen": "bio {{when}}",
+    "never_seen": "nije se prijavljivao"
   },
   "stats": {
     "title": "Brojevi",

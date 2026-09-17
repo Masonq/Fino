@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from pydantic import BaseModel
+from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
 from app.core.audit import record
@@ -146,8 +147,31 @@ def queue(
     from app.core.urls import listing_path
     from app.routers.listings import pick_translation
 
+    # Контекст о продавце — одним запросом на всю страницу очереди:
+    # сколько у него уже в ленте, сколько раз отклоняли, сколько ещё
+    # ждёт. Новичок с нулём объявлений и пачкой отклонённых — совсем
+    # другой разговор, чем продавец с сотней в ленте; модератор должен
+    # видеть это, не открывая карточку человека.
+    owner_ids = list({l.owner_id for l in items if l.owner_id})
+    owner_stats: dict = {}
+    if owner_ids:
+        rows = (db.query(Listing.owner_id, Listing.status, func.count(Listing.id))
+                .filter(Listing.owner_id.in_(owner_ids))
+                .group_by(Listing.owner_id, Listing.status).all())
+        for oid, status, n in rows:
+            d = owner_stats.setdefault(oid, {"active": 0, "rejected": 0, "pending": 0})
+            if status == ListingStatus.active:
+                d["active"] += n
+            elif status == ListingStatus.rejected:
+                d["rejected"] += n
+            elif status == ListingStatus.pending_moderation:
+                d["pending"] += n
+    now = utcnow()
+
     def serialize(l: Listing):
         tr = pick_translation(l, lang)
+        st = owner_stats.get(l.owner_id, {"active": 0, "rejected": 0, "pending": 0})
+        owner_days = (now - l.owner.created_at).days if (l.owner and l.owner.created_at) else None
         # «Раздел → Подраздел» — модератору важно видеть, куда объявление
         # реально попадёт, до того как решать, пропускать его или нет.
         category_name = None
@@ -167,6 +191,12 @@ def queue(
             "city": l.city,
             "photos": [p.url for p in l.photos],
             "owner_name": l.owner.display_name if l.owner else None,
+            "owner_id": str(l.owner_id) if l.owner_id else None,
+            "owner_days": owner_days,
+            "owner_active": st["active"],
+            "owner_rejected": st["rejected"],
+            "owner_pending": st["pending"],
+            "owner_verified": bool(l.owner and l.owner.document_verified),
             "created_at": l.created_at.isoformat() if l.created_at else None,
             "category_name": category_name,
             # Заполнено только когда быстрый фильтр (moderation_ai.py)
@@ -319,6 +349,32 @@ def reject(
     background_tasks.add_task(_after_reject, listing.id, payload.reason)
 
     return {"status": "rejected"}
+
+
+@router.post("/{listing_id}/return")
+def return_to_queue(
+    listing_id: uuid.UUID,
+    moderator: User = Depends(require_moderator),
+    db: Session = Depends(get_db),
+):
+    """
+    «Отменить» после одобрения или отклонения: объявление возвращается в
+    очередь, как будто решения не было. Нужен для кнопки отмены в
+    подсказке, что появляется на несколько секунд после решения, —
+    палец на телефоне промахивается, и без отмены ошибка стоила бы
+    объявлению публикации или, наоборот, ленте — спама.
+    """
+    listing = db.query(Listing).get(listing_id)
+    if not listing:
+        raise HTTPException(404, "not_found")
+    if listing.status not in (ListingStatus.active, ListingStatus.rejected):
+        raise HTTPException(409, "not_decided")
+    listing.status = ListingStatus.pending_moderation
+    listing.rejection_reason = None
+    record(db, moderator, "listing.return_to_queue", target_type="listing",
+           target_id=listing.id, owner=str(listing.owner_id))
+    db.commit()
+    return {"status": "pending_moderation"}
 
 
 @router.get("/flagged-chats")

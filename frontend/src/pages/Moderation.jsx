@@ -7,6 +7,7 @@ import { displayCity } from '../data/cities'
 import PageHeader from '../components/PageHeader'
 import { ModCardSkeletons } from '../components/Skeletons'
 import { formatPrice } from '../utils/money'
+import { since } from '../utils/time'
 
 // Переживает размонтирование страницы — заполняется при первой загрузке
 // и читается при возврате назад. Модератор открывает объявление,
@@ -57,6 +58,20 @@ export default function Moderation() {
   const [reasonText, setReasonText] = useState('')
   const [loadingMore, setLoadingMore] = useState(false)
   const sentinelRef = useRef(null)
+  // Последнее решение — для «Отменить» в подсказке снизу. Живёт
+  // шесть секунд; палец на телефоне промахивается, и без отмены ошибка
+  // стоила бы объявлению публикации или ленте — спама.
+  const [undo, setUndo] = useState(null)
+  const undoTimer = useRef(null)
+  // Очередь растёт, пока модератор её разбирает: раз в полминуты
+  // спрашиваем счётчик и, если появилось новое, показываем плашку
+  // «+N новых» — а не подсовываем их в список молча, сдвигая карточки
+  // под пальцем.
+  const [arrived, setArrived] = useState(0)
+  // Карточка «в фокусе» для горячих клавиш на клавиатуре: J/K или
+  // стрелки — по очереди, A — одобрить, R — отклонить, 1–6 — причина,
+  // Esc — закрыть причины. На телефоне не видна и не мешает.
+  const [focus, setFocus] = useState(0)
 
   const load = () => {
     api.modQueue(i18n.language)
@@ -148,7 +163,11 @@ export default function Moderation() {
     try {
       if (approve) await api.modApprove(id)
       else await api.modReject(id, reason)
+      let removed = null
+      let index = 0
       setItems((prev) => {
+        index = prev.findIndex((l) => l.id === id)
+        removed = prev[index] || null
         const next = prev.filter((l) => l.id !== id)
         cache = { ...cache, items: next }
         return next
@@ -161,9 +180,83 @@ export default function Moderation() {
       setRejectingId(null)
       setCustomReason(false)
       setReasonText('')
+      setFocus((f) => Math.max(0, Math.min(f, index)))
+      clearTimeout(undoTimer.current)
+      setUndo({ item: removed, index, approve })
+      undoTimer.current = setTimeout(() => setUndo(null), 6000)
     } catch { /* оставляем в очереди */ }
     finally { setBusyId(null) }
   }
+
+  const undoDecision = async () => {
+    if (!undo?.item) return
+    clearTimeout(undoTimer.current)
+    const { item, index } = undo
+    setUndo(null)
+    try {
+      await api.modReturn(item.id)
+      setItems((prev) => {
+        const next = [...prev]
+        next.splice(Math.min(index, next.length), 0, item)
+        cache = { ...cache, items: next }
+        return next
+      })
+      setTotal((n) => { const next = n + 1; cache = { ...cache, total: next }; return next })
+    } catch { /* решение уже не отменить */ }
+  }
+
+  // Новые в очереди — плашкой, не молча.
+  useEffect(() => {
+    if (!userId || denied) return
+    const tick = () => {
+      if (document.hidden) return
+      api.modCounters().then((c) => {
+        const known = (cache?.total ?? total)
+        if (c.moderation > known) setArrived(c.moderation - known)
+      }).catch(() => {})
+    }
+    const timer = setInterval(tick, 30_000)
+    return () => clearInterval(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, denied, total])
+
+  const showArrived = () => {
+    setArrived(0)
+    cache = null
+    setLoaded(false)
+    load()
+    window.scrollTo({ top: 0 })
+  }
+
+  // Горячие клавиши — только с физической клавиатуры и только на
+  // вкладке объявлений; в текстовом поле не перехватываем.
+  useEffect(() => {
+    if (tab !== 'listings') return
+    const onKey = (e) => {
+      const tag = (e.target?.tagName || '').toLowerCase()
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') return
+      const cur = items[focus]
+      const k = e.key.toLowerCase()
+      if (k === 'j' || e.key === 'ArrowDown') { e.preventDefault(); setFocus((f) => Math.min(f + 1, items.length - 1)) }
+      else if (k === 'k' || e.key === 'ArrowUp') { e.preventDefault(); setFocus((f) => Math.max(f - 1, 0)) }
+      else if (!cur || busyId) return
+      else if (k === 'a') { e.preventDefault(); decide(cur.id, true) }
+      else if (k === 'r') { e.preventDefault(); setRejectingId(cur.id); setCustomReason(false); setReasonText('') }
+      else if (k === 'escape') { setRejectingId(null); setCustomReason(false) }
+      else if (rejectingId === cur.id && /^[1-6]$/.test(e.key)) {
+        e.preventDefault()
+        decide(cur.id, false, t(`mod.reasons.${REASON_KEYS[Number(e.key) - 1]}`))
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, items, focus, busyId, rejectingId])
+
+  useEffect(() => {
+    const el = document.querySelector('.mod-card.focused')
+    if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }, [focus])
 
   if (authLoading) return <div className="fav-page mod-page"><PageHeader title={t('mod.title')} /></div>
 
@@ -204,6 +297,14 @@ export default function Moderation() {
           {reportsTotal > 0 && <span className="my-tab-count">{reportsTotal}</span>}
         </button>
       </div>
+
+      {tab === 'listings' && <div className="mod-keys-hint">{t('mod.keys_hint')}</div>}
+
+      {arrived > 0 && tab === 'listings' && (
+        <button className="mod-arrived" onClick={showArrived}>
+          {t('mod.arrived', { count: arrived })}
+        </button>
+      )}
 
       {tab === 'reports' ? (
         !reportsLoaded ? (
@@ -251,8 +352,8 @@ export default function Moderation() {
         <p className="empty-hint">{t('mod.empty')}</p>
       ) : (
         <div className="mod-list">
-          {items.map((l) => (
-            <div className="mod-card" key={l.id}>
+          {items.map((l, i) => (
+            <div className={`mod-card${i === focus ? ' focused' : ''}`} key={l.id} onClick={() => setFocus(i)}>
               {/* Открывается как обычное объявление — та же страница,
                   тот же переход, что и везде на сайте, а не отдельная
                   ссылка сбоку. */}
@@ -274,10 +375,27 @@ export default function Moderation() {
                   </div>
                   {l.description && <p className="mod-desc">{l.description}</p>}
                   <div className="mod-meta">
-                    {l.owner_name} · {displayCity(l.city, i18n.language)}
+                    {displayCity(l.city, i18n.language)}
+                    {l.created_at && <> · {t('mod.waiting', { when: since(l.created_at, t, i18n.language) })}</>}
                   </div>
                 </div>
               </Link>
+
+              {/* Кто выложил: новичок с нулём в ленте и парой отклонённых —
+                  повод присмотреться; продавец с сотней в ленте —
+                  наоборот. Видно сразу, без карточки человека. */}
+              <div className="mod-seller">
+                <span className="mod-seller-name">
+                  {l.owner_name || '—'}
+                  {l.owner_verified && <span className="tag tag-ok">{t('admin.tag_verified')}</span>}
+                  {l.owner_days != null && l.owner_days < 3 && <span className="tag tag-new">{t('admin.tag_new')}</span>}
+                </span>
+                <span className="mod-seller-facts">
+                  <span>{t('mod.seller_active', { count: l.owner_active })}</span>
+                  <span className={l.owner_rejected ? 'warn' : ''}>{t('mod.seller_rejected', { count: l.owner_rejected })}</span>
+                  {l.owner_pending > 1 && <span>{t('mod.seller_pending', { count: l.owner_pending })}</span>}
+                </span>
+              </div>
 
               {rejectingId === l.id ? (
                 <div className="mod-reason-box">
@@ -351,6 +469,13 @@ export default function Moderation() {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {undo && (
+        <div className="mod-undo" role="status">
+          <span>{undo.approve ? t('mod.done_approve') : t('mod.done_reject')}</span>
+          <button onClick={undoDecision}>{t('mod.undo')}</button>
         </div>
       )}
 

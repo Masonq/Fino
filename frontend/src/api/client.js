@@ -141,6 +141,7 @@ export const api = {
   }),
   // ——— админка ———
   adminUsers: (params) => request(`/admin/users?${query(params)}`),
+  adminUsersOverview: () => request('/admin/users/overview'),
   adminUser: (id) => request(`/admin/users/${id}`),
   adminUserListings: (id) => request(`/admin/users/${id}/listings`),
   adminUserLogins: (id) => request(`/admin/users/${id}/logins`),
@@ -212,6 +213,7 @@ export const api = {
   clearChatFlag: (id) => request(`/moderation/flagged-chats/${id}/clear`, { method: 'POST' }),
 
   modApprove: (id) => request(`/moderation/${id}/approve`, { method: 'POST' }),
+  modReturn: (id) => request(`/moderation/${id}/return`, { method: 'POST' }),
   // Перенос объявления в другой раздел — только меняет раздел, всё
   // остальное (текст, фото, автор, переписка) остаётся как было.
   modMove: (id, categoryId) => request(`/moderation/${id}/move`, {

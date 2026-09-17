@@ -5,6 +5,7 @@ import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
 import { AdminRowSkeletons } from '../components/Skeletons'
+import { since } from '../utils/time'
 
 // Роли показываем словами: «seller_private» в списке ничего не говорит
 // тому, кто не писал этот код.
@@ -12,12 +13,28 @@ const ROLES = [
   'guest', 'buyer', 'seller_private', 'seller_business', 'moderator', 'admin',
 ]
 
+// Срезы списка — те же, что цифры в сводке над ним: нажал на «сегодня»
+// — увидел ровно тех, кого сводка посчитала.
 const FILTERS = [
-  { key: 'all', label: 'admin.all' },
-  { key: 'blocked', label: 'admin.blocked' },
-  { key: 'moderator', label: 'admin.moderators' },
-  { key: 'seller_business', label: 'admin.companies' },
+  { key: 'all', label: 'admin.all', stat: 'total' },
+  { key: 'today', label: 'admin.f_today', stat: 'new_today', params: { since: 'today' } },
+  { key: 'week', label: 'admin.f_week', stat: 'new_week', params: { since: 'week' } },
+  { key: 'online', label: 'admin.f_online', stat: 'online', params: { online: true } },
+  { key: 'blocked', label: 'admin.blocked', stat: 'blocked', params: { blocked: true } },
+  { key: 'seller_business', label: 'admin.companies', stat: 'business', params: { role: 'seller_business' } },
+  { key: 'moderator', label: 'admin.moderators', params: { role: 'moderator' } },
 ]
+
+const SORTS = ['new', 'seen', 'listings']
+const PAGE = 50
+
+// Буквы для кружка вместо аватара — по имени, а без имени по почте.
+const initials = (u) => {
+  const src = (u.company_name || u.display_name || u.email || '').trim()
+  if (!src) return '?'
+  const parts = src.split(/\s+/).filter(Boolean)
+  return (parts.length > 1 ? parts[0][0] + parts[1][0] : src.slice(0, 1)).toUpperCase()
+}
 
 export default function AdminUsers() {
   const { t, i18n } = useTranslation()
@@ -28,6 +45,10 @@ export default function AdminUsers() {
   const [total, setTotal] = useState(0)
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState('all')
+  const [sort, setSort] = useState('new')
+  const [overview, setOverview] = useState(null)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const sentinelRef = useRef(null)
   const [loaded, setLoaded] = useState(false)
   const [denied, setDenied] = useState(false)
   const [openId, setOpenId] = useState(null)
@@ -48,16 +69,50 @@ export default function AdminUsers() {
     // при смене query/filter.
     setLoaded(false)
     setItems([])
-    const params = { limit: 50 }
+    const params = { limit: PAGE, sort }
     if (query.trim()) params.q = query.trim()
-    if (filter === 'blocked') params.blocked = true
-    else if (filter !== 'all') params.role = filter
+    Object.assign(params, FILTERS.find((f) => f.key === filter)?.params || {})
 
     api.adminUsers(params)
       .then((res) => { setItems(res.items || []); setTotal(res.total || 0); setDenied(false) })
       .catch((e) => { if (e.status === 403) setDenied(true) })
       .finally(() => setLoaded(true))
-  }, [query, filter])
+  }, [query, filter, sort])
+
+  // Сводка — отдельно от списка и реже: цифры не меняются от поиска.
+  useEffect(() => {
+    if (authLoading || !user) return
+    const tick = () => api.adminUsersOverview().then(setOverview).catch(() => {})
+    tick()
+    const timer = setInterval(tick, 60_000)
+    return () => clearInterval(timer)
+  }, [authLoading, user?.id])
+
+  // Подгрузка по прокрутке: людей будут тысячи, и первые пятьдесят —
+  // не список, а его начало.
+  const loadMore = useCallback(() => {
+    if (loadingMore || !loaded || items.length >= total) return
+    setLoadingMore(true)
+    const params = { limit: PAGE, offset: items.length, sort }
+    if (query.trim()) params.q = query.trim()
+    Object.assign(params, FILTERS.find((f) => f.key === filter)?.params || {})
+    api.adminUsers(params)
+      .then((res) => setItems((prev) => {
+        const have = new Set(prev.map((u) => u.id))
+        return [...prev, ...(res.items || []).filter((u) => !have.has(u.id))]
+      }))
+      .catch(() => {})
+      .finally(() => setLoadingMore(false))
+  }, [loadingMore, loaded, items.length, total, sort, query, filter])
+
+  useEffect(() => {
+    if (!loaded || items.length === 0 || items.length >= total) return
+    const el = sentinelRef.current
+    if (!el) return
+    const io = new IntersectionObserver((e) => { if (e[0].isIntersecting) loadMore() }, { rootMargin: '600px' })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [loaded, items.length, total, loadMore])
 
   // Загрузку запускает один эффект, а не два.
   //
@@ -162,17 +217,48 @@ export default function AdminUsers() {
 
   return (
     <div className="page admin-users">
-      <PageHeader title={t('admin.title')} subtitle={loaded ? `${total}` : null} />
+      <PageHeader title={t('admin.title')} subtitle={loaded ? t('admin.found', { count: total }) : null} />
 
-      <input
-        className="admin-search"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder={t('admin.search')}
-      />
+      {/* Сводка: каждая цифра — фильтр списка. */}
+      <div className="admin-overview">
+        {FILTERS.filter((f) => f.stat).map((f) => (
+          <button
+            key={f.key}
+            className={`admin-stat${filter === f.key ? ' active' : ''}${f.key === 'today' ? ' accent' : ''}`}
+            onClick={() => setFilter(f.key)}
+          >
+            <b>{overview ? (f.key === 'today' || f.key === 'week' ? `+${overview[f.stat]}` : overview[f.stat]) : '–'}</b>
+            <span>{t(f.label)}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="admin-toolbar">
+        <div className="admin-search-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.6-3.6" /></svg>
+          <input
+            className="admin-search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t('admin.search')}
+            inputMode="search"
+          />
+          {query && (
+            <button className="admin-search-clear" onClick={() => setQuery('')} aria-label={t('actions.cancel')}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>
+            </button>
+          )}
+        </div>
+        <label className="admin-sort">
+          <select value={sort} onChange={(e) => setSort(e.target.value)} aria-label={t('admin.sort')}>
+            {SORTS.map((k) => <option key={k} value={k}>{t(`admin.sort_${k}`)}</option>)}
+          </select>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="m6 9 6 6 6-6" /></svg>
+        </label>
+      </div>
 
       <div className="admin-filters">
-        {FILTERS.map((f) => (
+        {FILTERS.filter((f) => f.key === 'all' || f.key === 'moderator' || f.key === 'blocked').map((f) => (
           <button
             key={f.key}
             className={`chip ${filter === f.key ? 'chip-active' : ''}`}
@@ -187,24 +273,39 @@ export default function AdminUsers() {
       {loaded && !items.length && <p className="empty">{t('admin.empty')}</p>}
 
       <div className="admin-list">
-        {items.map((u) => (
-          <div key={u.id} className={`admin-row ${u.is_blocked ? 'blocked' : ''}`}>
+        {items.map((u) => {
+          const isNew = u.created_at && Date.now() - new Date(u.created_at + 'Z').getTime() < 86400000
+          const online = u.last_seen_at && Date.now() - new Date(u.last_seen_at + 'Z').getTime() < 15 * 60000
+          return (
+          <div key={u.id} className={`admin-row ${u.is_blocked ? 'blocked' : ''} ${openId === u.id ? 'open' : ''}`}>
             <button className="admin-row-main" onClick={() => openCard(u.id)}>
-              <div className="admin-row-name">
-                {u.display_name || t('admin.no_name')}
-                {u.is_blocked && <span className="tag tag-danger">{t('admin.tag_blocked')}</span>}
-                {u.role !== 'buyer' && (
-                  <span className="tag">{roleName(u.role)}</span>
-                )}
-              </div>
-              <div className="admin-row-meta">
-                {u.email || u.phone || '—'}
-                {' · '}
-                {t('admin.listings', { count: u.listings })}
-                {u.listings_active
-                  ? ` (${t('admin.in_feed', { count: u.listings_active })})`
-                  : ''}
-              </div>
+              <span className={`admin-avatar${u.role === 'seller_business' ? ' is-company' : ''}`}>
+                {u.avatar_url ? <img src={u.avatar_url} alt="" /> : initials(u)}
+                {online && <i className="admin-online" aria-hidden="true" />}
+              </span>
+              <span className="admin-row-text">
+                <span className="admin-row-name">
+                  {u.company_name || u.display_name || t('admin.no_name')}
+                  {isNew && <span className="tag tag-new">{t('admin.tag_new')}</span>}
+                  {u.is_blocked && <span className="tag tag-danger">{t('admin.tag_blocked')}</span>}
+                  {u.document_verified && <span className="tag tag-ok">{t('admin.tag_verified')}</span>}
+                  {u.role !== 'buyer' && u.role !== 'seller_private' && (
+                    <span className="tag">{roleName(u.role)}</span>
+                  )}
+                </span>
+                <span className="admin-row-meta">
+                  {u.email || u.phone || '—'}
+                </span>
+                <span className="admin-row-meta">
+                  {t('admin.registered', { when: u.created_at ? since(u.created_at, t, i18n.language) : '—' })}
+                  {' · '}
+                  {u.last_seen_at ? t('admin.seen', { when: since(u.last_seen_at, t, i18n.language) }) : t('admin.never_seen')}
+                </span>
+              </span>
+              <span className={`admin-row-count${u.listings_active ? ' has' : ''}`}>
+                <b>{u.listings_active || 0}</b>
+                <span>{u.listings > u.listings_active ? `/ ${u.listings}` : ''}</span>
+              </span>
             </button>
 
             {openId === u.id && (
@@ -352,8 +453,15 @@ export default function AdminUsers() {
               </div>
             )}
           </div>
-        ))}
+          )
+        })}
       </div>
+
+      {loaded && items.length > 0 && items.length < total && (
+        <div ref={sentinelRef} className="feed-sentinel">
+          {loadingMore && <span className="feed-loading">{t('actions.loading')}</span>}
+        </div>
+      )}
     </div>
   )
 }

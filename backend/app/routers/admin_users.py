@@ -54,6 +54,7 @@ def serialize(user: User, listings: int = 0, active: int = 0) -> dict:
     return {
         "id": str(user.id),
         "display_name": user.display_name,
+        "avatar_url": user.avatar_url,
         "email": user.email,
         "phone": user.phone,
         "role": user.role.value,
@@ -72,11 +73,53 @@ def serialize(user: User, listings: int = 0, active: int = 0) -> dict:
     }
 
 
+def _people(query):
+    """
+    Только живые люди — без служебных аккаунтов.
+
+    Владельцы объявлений, перенесённых из Telegram-каналов (по одному на
+    канал, см. service_account() в tg_import.py), не люди: вход в них
+    закрыт. Отличаем по телефону — настоящий не начинается с букв «tg»,
+    а сгенерированный строится именно так: f"tg{abs(chat_id)}".
+    Технический аккаунт healthcheck.py — по домену .local: общепринятое
+    «служебный, не настоящий», подхватит и будущие такие же.
+    """
+    query = query.filter(or_(User.phone.is_(None), ~User.phone.like("tg%")))
+    return query.filter(or_(User.email.is_(None), ~User.email.ilike("%@plonk.local")))
+
+
+@router.get("/overview")
+def users_overview(
+    staff: User = Depends(require_staff),
+    db: Session = Depends(get_db),
+):
+    """
+    Сводка над списком: сколько всего, сколько пришло сегодня и за
+    неделю, сколько сейчас на сайте, сколько заблокировано и компаний.
+    Каждая цифра — одновременно фильтр списка на фронте.
+    """
+    now = utcnow()
+    base = _people(db.query(func.count(User.id)))
+    return {
+        "total": base.scalar() or 0,
+        "new_today": base.filter(User.created_at >= now - timedelta(hours=24)).scalar() or 0,
+        "new_week": base.filter(User.created_at >= now - timedelta(days=7)).scalar() or 0,
+        "online": base.filter(User.last_seen_at >= now - timedelta(minutes=15)).scalar() or 0,
+        "blocked": base.filter(User.is_blocked.is_(True)).scalar() or 0,
+        "business": base.filter(User.role == UserRole.seller_business).scalar() or 0,
+    }
+
+
 @router.get("")
 def list_users(
     q: str | None = Query(None, description="имя, почта или телефон"),
     role: UserRole | None = None,
     blocked: bool | None = None,
+    # «сегодня», «неделя», «онлайн» — те же срезы, что в сводке,
+    # чтобы нажатие на цифру показывало ровно тех, кого она считает.
+    since: str | None = Query(None, pattern="^(today|week)$"),
+    online: bool | None = None,
+    sort: str = Query("new", pattern="^(new|seen|listings)$"),
     limit: int = Query(50, le=200),
     offset: int = 0,
     staff: User = Depends(require_staff),
@@ -88,24 +131,7 @@ def list_users(
     Число объявлений считаем сразу: без него список бесполезен — по имени
     не понять, продавец это или случайный посетитель.
     """
-    query = db.query(User)
-
-    # Служебные аккаунты-владельцы для объявлений, перенесённых из
-    # Telegram-каналов (по одному на канал-источник, см. service_account()
-    # в tg_import.py) — не живые люди, вход в них закрыт. В списке людей
-    # для модерации им не место, только засоряют — отличаем по телефону:
-    # реальный телефон так не выглядит (у него не может начинаться с
-    # буквенного 'tg', только сгенерированный service_account() именно так
-    # и строит его — f"tg{abs(chat_id)}").
-    query = query.filter(or_(User.phone.is_(None), ~User.phone.like("tg%")))
-    # Тот же класс проблемы — technical-аккаунт healthcheck.py
-    # (healthcheck@plonk.local), заводится настоящим входом при первом
-    # запуске проверки и переиспользуется дальше, не человек. .local —
-    # общепринятое обозначение «не настоящий, служебный домен» — фильтр
-    # по всему домену, не по одному этому адресу: подхватит и любой
-    # будущий похожий служебный аккаунт с тем же соглашением, не только
-    # этот конкретный.
-    query = query.filter(or_(User.email.is_(None), ~User.email.ilike("%@plonk.local")))
+    query = _people(db.query(User))
 
     if q:
         like = f"%{q.strip()}%"
@@ -119,10 +145,27 @@ def list_users(
         query = query.filter(User.role == role)
     if blocked is not None:
         query = query.filter(User.is_blocked.is_(blocked))
+    now = utcnow()
+    if since == "today":
+        query = query.filter(User.created_at >= now - timedelta(hours=24))
+    elif since == "week":
+        query = query.filter(User.created_at >= now - timedelta(days=7))
+    if online:
+        query = query.filter(User.last_seen_at >= now - timedelta(minutes=15))
 
     total = query.count()
-    users = (query.order_by(User.created_at.desc())
-             .offset(offset).limit(limit).all())
+    if sort == "seen":
+        order = (User.last_seen_at.desc().nullslast(), User.created_at.desc())
+    elif sort == "listings":
+        # Сортировка по числу объявлений — подзапросом, чтобы не тянуть
+        # всех людей в память ради сортировки.
+        cnt = (db.query(func.count(Listing.id))
+               .filter(Listing.owner_id == User.id)
+               .correlate(User).scalar_subquery())
+        order = (cnt.desc(), User.created_at.desc())
+    else:
+        order = (User.created_at.desc(),)
+    users = query.order_by(*order).offset(offset).limit(limit).all()
 
     # Считаем объявления одним запросом на всех, а не по одному на каждого:
     # полсотни отдельных запросов на страницу — заметная задержка.

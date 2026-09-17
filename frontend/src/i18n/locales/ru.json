@@ -298,7 +298,8 @@
     "price_down": "Цена снизилась",
     "price_up": "Цена выросла",
     "promoted": "Продвигается",
-    "reserved": "Забронировано"
+    "reserved": "Забронировано",
+    "ago": "{{when}} назад"
   },
   "chats": {
     "need_auth": "Представьтесь, чтобы видеть свои переписки.",
@@ -389,7 +390,28 @@
       "suspicious_price": "Подозрительная цена",
       "other": "Другая причина"
     },
-    "open": "Открыть"
+    "open": "Открыть",
+    "arrived_one": "+{{count}} новое — показать",
+    "arrived_few": "+{{count}} новых — показать",
+    "arrived_many": "+{{count}} новых — показать",
+    "arrived_other": "+{{count}} новых — показать",
+    "waiting": "ждёт {{when}}",
+    "seller_active_one": "{{count}} в ленте",
+    "seller_active_few": "{{count}} в ленте",
+    "seller_active_many": "{{count}} в ленте",
+    "seller_active_other": "{{count}} в ленте",
+    "seller_rejected_one": "{{count}} отклонено",
+    "seller_rejected_few": "{{count}} отклонено",
+    "seller_rejected_many": "{{count}} отклонено",
+    "seller_rejected_other": "{{count}} отклонено",
+    "seller_pending_one": "ещё {{count}} в очереди",
+    "seller_pending_few": "ещё {{count}} в очереди",
+    "seller_pending_many": "ещё {{count}} в очереди",
+    "seller_pending_other": "ещё {{count}} в очереди",
+    "done_approve": "Одобрено",
+    "done_reject": "Отклонено",
+    "undo": "Отменить",
+    "keys_hint": "A — одобрить · R — отклонить · J/K — по очереди"
   },
   "rev": {
     "title": "Отзывы",
@@ -531,7 +553,23 @@
     "err_reverify": "Не получилось отправить запрос, попробуйте ещё раз",
     "suspicious_device": "Резко сменились и устройство, и страна разом (последний вход — {{location}}) — похоже на то, что аккаунтом пользуется кто-то другой.",
     "logins_title": "Последние входы",
-    "no_logins": "Ни одного входа не зафиксировано — либо человек не входил с тех пор, как это стали отслеживать, либо вошёл ещё до включения слежения."
+    "no_logins": "Ни одного входа не зафиксировано — либо человек не входил с тех пор, как это стали отслеживать, либо вошёл ещё до включения слежения.",
+    "found_one": "{{count}} человек",
+    "found_few": "{{count}} человека",
+    "found_many": "{{count}} человек",
+    "found_other": "{{count}} человек",
+    "f_today": "за сутки",
+    "f_week": "за неделю",
+    "f_online": "сейчас на сайте",
+    "sort": "Сортировка",
+    "sort_new": "Сначала новые",
+    "sort_seen": "Недавно были",
+    "sort_listings": "Больше объявлений",
+    "tag_new": "новый",
+    "tag_verified": "проверен",
+    "registered": "зарег. {{when}}",
+    "seen": "был {{when}}",
+    "never_seen": "не заходил"
   },
   "stats": {
     "title": "Показатели",

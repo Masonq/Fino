@@ -53,3 +53,20 @@ export function isFresh(iso) {
   if (!iso) return false
   return Date.now() - new Date(iso).getTime() < 86400000
 }
+
+/**
+ * «2 ч назад» или, если прошло больше недели, короткая дата «5 сент.».
+ *
+ * timeAgo() для давних дат отдаёт голую дату, и подпись «зарег.
+ * 05.09.2026 назад» читалась как ошибка — потому что ею и была.
+ */
+export function since(iso, t, lang) {
+  if (!iso) return ''
+  const d = new Date(iso + 'Z')
+  const days = (Date.now() - d.getTime()) / 86400000
+  if (days < 7) return t('misc.ago', { when: timeAgo(iso, t, lang) })
+  const sameYear = d.getFullYear() === new Date().getFullYear()
+  return d.toLocaleDateString(lang || undefined, sameYear
+    ? { day: 'numeric', month: 'short' }
+    : { day: 'numeric', month: 'short', year: 'numeric' })
+}

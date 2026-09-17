@@ -298,7 +298,8 @@
     "price_down": "Price dropped",
     "price_up": "Price increased",
     "promoted": "Promoted",
-    "reserved": "Reserved"
+    "reserved": "Reserved",
+    "ago": "{{when}} ago"
   },
   "chats": {
     "need_auth": "Introduce yourself to see your conversations.",
@@ -389,7 +390,20 @@
       "suspicious_price": "Suspicious price",
       "other": "Other reason"
     },
-    "open": "Open"
+    "open": "Open",
+    "arrived_one": "+{{count}} new — show",
+    "arrived_other": "+{{count}} new — show",
+    "waiting": "waiting {{when}}",
+    "seller_active_one": "{{count}} live",
+    "seller_active_other": "{{count}} live",
+    "seller_rejected_one": "{{count}} rejected",
+    "seller_rejected_other": "{{count}} rejected",
+    "seller_pending_one": "{{count}} more in queue",
+    "seller_pending_other": "{{count}} more in queue",
+    "done_approve": "Approved",
+    "done_reject": "Rejected",
+    "undo": "Undo",
+    "keys_hint": "A — approve · R — reject · J/K — next/prev"
   },
   "rev": {
     "title": "Reviews",
@@ -529,7 +543,21 @@
     "err_reverify": "Couldn't send the request, please try again",
     "suspicious_device": "Both device and country changed at once (last login from {{location}}) — this looks like someone else is using the account.",
     "logins_title": "Recent logins",
-    "no_logins": "No logins recorded yet — either the person hasn’t signed in since tracking started, or they signed in before it was enabled."
+    "no_logins": "No logins recorded yet — either the person hasn’t signed in since tracking started, or they signed in before it was enabled.",
+    "found_one": "{{count}} person",
+    "found_other": "{{count}} people",
+    "f_today": "last 24h",
+    "f_week": "this week",
+    "f_online": "online now",
+    "sort": "Sort",
+    "sort_new": "Newest first",
+    "sort_seen": "Recently active",
+    "sort_listings": "Most listings",
+    "tag_new": "new",
+    "tag_verified": "verified",
+    "registered": "joined {{when}}",
+    "seen": "seen {{when}}",
+    "never_seen": "never signed in"
   },
   "stats": {
     "title": "Numbers",
