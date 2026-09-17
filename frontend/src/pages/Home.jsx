@@ -3,13 +3,13 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import ListingCard from '../components/ListingCard'
-import LanguageSwitcher from '../components/LanguageSwitcher'
 import { CardSkeletons, CategorySkeletons } from '../components/Skeletons'
 import PullToRefresh from '../components/PullToRefresh'
 import SearchOverlay from '../components/SearchOverlay'
 import OfflineNotice, { LoadError } from '../components/OfflineNotice'
 import { useAuth } from '../context/AuthContext'
 import { CITIES, cityLabel, nearestCity } from '../data/cities'
+import usePulse from '../hooks/usePulse'
 import CategoryArt from '../components/CategoryArt'
 import { hasLanding } from '../data/landings'
 
@@ -53,34 +53,17 @@ let tabCache = {}
 // вычитывать через getComputedStyle на каждый вызов.
 const PAGE_BG = '#FAFAF9'
 
-const PROMO_SLIDES = [
-  { key: 'safe_deal', to: '/search', icon: 'shield', top: '#0E9F6E', grad: 'linear-gradient(180deg, #0E9F6E 0%, #0E9F6E 22%, #1DB388 48%, #34D8A8 78%, #5CE8CC 100%)' },
-  { key: 'free_post', to: '/post', icon: 'tag', top: '#F2860C', grad: 'linear-gradient(180deg, #F2860C 0%, #F2860C 22%, #F5A524 48%, #FFC259 78%, #FFD98A 100%)' },
-  { key: 'три_языка', to: '/search', icon: 'globe', top: '#3B5BF6', grad: 'linear-gradient(180deg, #3B5BF6 0%, #3B5BF6 22%, #4F7BF7 48%, #6D9BFB 78%, #93BAFF 100%)' },
-  { key: 'verified', to: '/search', icon: 'check', top: '#6D3DFC', grad: 'linear-gradient(180deg, #6D3DFC 0%, #6D3DFC 22%, #8156FD 48%, #9E7BFE 78%, #BEA4FF 100%)' },
-  { key: 'local', to: '/search', icon: 'pin', top: '#E0326B', grad: 'linear-gradient(180deg, #E0326B 0%, #E0326B 22%, #F0507F 48%, #FA7A9D 78%, #FFA8BF 100%)' },
-]
+// «4 012», а не «4012»: тонкий пробел между тысячами читается быстрее.
+const fmtCount = (n) => (n ?? 0).toLocaleString('ru-RU').replace(/\u00a0/g, '\u2009')
 
-// Иллюстрации слайдов. Пока картинка не готова — показываем запасную SVG-иконку.
-// На картинках с несколькими предметами каждый выходит мельче, поэтому
-// показываем их крупнее — чтобы визуальный вес всех плиток был одинаковым.
-// Все картинки приведены к единой высоте и общей базовой линии прямо в файлах,
-// поэтому индивидуальная подгонка масштаба больше не нужна.
-// Точная подгонка отдельных категорий поверх общего выравнивания.
-// Точная подгонка отдельных категорий поверх общего выравнивания.
-const PROMO_IMAGES = {
-  safe_deal: '/promo/safe_deal.png',
-  free_post: '/promo/free_post.png',
-  'три_языка': '/promo/lang.png',
-  verified: '/promo/verified.png',
-  local: '/promo/nearby.png',
+// Шапка одного цвета — фирменный зелёный. Раньше здесь были пять
+// случайных цветов с обещаниями («Безопасная сделка», «Проверенные
+// продавцы»), за которыми ничего не стояло. Теперь в шапке живые цифры
+// площадки: сколько объявлений, сколько за сутки, сколько даром.
+const BRAND = {
+  top: '#0B7A55',
+  grad: 'linear-gradient(160deg, #0B7A55 0%, #0E9F6E 55%, #21C08A 100%)',
 }
-
-const PROMO_FALLBACK = (
-  <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 3 5 6v6c0 4.2 2.9 7.6 7 9 4.1-1.4 7-4.8 7-9V6l-7-3Z" /><path d="m9 12 2.2 2.2L15.5 10" />
-  </svg>
-)
 
 export default function Home() {
   const { t, i18n } = useTranslation()
@@ -215,10 +198,8 @@ export default function Home() {
   // сколько прокрутки предстоит восстановить — до этого шапку не трогаем
   const lastScroll = useRef(cached?.scroll || 0)
   const [settled, setSettled] = useState(false)
-  // слайд выбирается один раз при загрузке страницы (как у Avito) — без автокарусели,
-  // иначе цвет статус-бара не успевает за сменой и отстаёт
-  const [slide] = useState(() => Math.floor(Math.random() * PROMO_SLIDES.length))
   const [searchOpen, setSearchOpen] = useState(false)
+  const pulse = usePulse(city)
   const { user, loading: authLoading } = useAuth()
 
   // Статус-бар на iOS 26 Safari больше НЕ управляется theme-color: браузер берёт цвет
@@ -241,16 +222,16 @@ export default function Home() {
       document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.remove())
       const meta = document.createElement('meta')
       meta.setAttribute('name', 'theme-color')
-      meta.setAttribute('content', mq.matches ? PAGE_BG : PROMO_SLIDES[slide].top)
+      meta.setAttribute('content', mq.matches ? PAGE_BG : BRAND.top)
       // Тот же цвет — области потягивания, чтобы при обновлении над
       // шапкой не открывалась белая пустота.
-      document.documentElement.style.setProperty('--pull-bg', PROMO_SLIDES[slide].top)
+      document.documentElement.style.setProperty('--pull-bg', BRAND.top)
       document.head.appendChild(meta)
     }
     apply()
     mq.addEventListener('change', apply)
     return () => mq.removeEventListener('change', apply)
-  }, [slide])
+  }, [])
 
   useEffect(() => {
     let ticking = false
@@ -588,13 +569,13 @@ export default function Home() {
           settled ? '' : 'no-anim',
         ].filter(Boolean).join(' ')}
         style={{
-          backgroundColor: collapsed ? '#FFFFFF' : PROMO_SLIDES[slide].top,
-          backgroundImage: collapsed ? 'none' : PROMO_SLIDES[slide].grad,
+          backgroundColor: collapsed ? '#FFFFFF' : BRAND.top,
+          backgroundImage: collapsed ? 'none' : BRAND.grad,
         }}
       >
         <div className="avito-toprow">
           <button type="button" className="avito-search" onClick={() => setSearchOpen(true)}>
-            <img className="search-logo-mark" src="/logo-mark.png" alt="PLONK" />
+            <svg className="avito-search-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.6-3.6" /></svg>
             <span>{t('search.placeholder')}</span>
             <span className="avito-search-filter" aria-label={t('misc.filters')} data-label={t('misc.find')}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
@@ -621,52 +602,49 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* Иллюстрация фоном, а не в углу: так заголовку достаётся вся ширина,
-            и картинка не спорит с ним за место при длинном тексте. */}
-        <div className="promo-backdrop" aria-hidden="true">
-          {PROMO_SLIDES.map((s, i) => (
-            <div key={s.key} className={i === slide ? 'promo-glyph active' : 'promo-glyph'}>
-              {PROMO_IMAGES[s.key]
-                ? <img src={PROMO_IMAGES[s.key]} alt="" onError={(e) => { e.currentTarget.style.display = 'none' }} />
-                : PROMO_FALLBACK}
-            </div>
-          ))}
-        </div>
-
+        {/* Пульс площадки. Цифры настоящие, из базы: главная говорит
+            «здесь четыре тысячи объявлений, полторы сотни за сутки», а
+            не «безопасная сделка», которой нет. Число всего — крупно,
+            за сутки и даром — плашками; город справа, потому что цифры
+            считаются для выбранного города. */}
         <div className="promo-collapse">
           <div>
             <div className="avito-promo-row">
-              <div className="avito-promo-left">
-                <div className="promo-slides">
-                  {PROMO_SLIDES.map((s, i) => (
-                    <Link
-                      key={s.key}
-                      to={s.to}
-                      className={i === slide ? 'promo-slide active' : 'promo-slide'}
-                      aria-hidden={i !== slide}
-                    >
-                      <span className="avito-promo-text">
-                        <span className="promo-text-label">{t(`promo.${s.key}`)}</span>
-                        <svg className="promo-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="m9 6 6 6-6 6" /></svg>
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-
-                <div className="banner-meta">
-                  <div className="city-pill">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                      <path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" />
-                    </svg>
-                    <select value={city} onChange={(e) => chooseCity(e.target.value)} aria-label={t('post.city')}>
-                      <option value="">{t('search.all_cities')}</option>
-                      {CITIES.map((c) => <option key={c.slug} value={c.slug}>{cityLabel(c.slug, i18n.language)}</option>)}
-                    </select>
+              <div className="pulse-row">
+                <div className="pulse-main">
+                  <div className="pulse-number">
+                    <span className="pulse-count">{pulse ? fmtCount(pulse.total) : '—'}</span>
+                    <span className="pulse-label">{t('pulse.listings', { count: pulse?.total ?? 0 })}</span>
                   </div>
-                  <LanguageSwitcher />
+                  <div className="pulse-sub">
+                    <button
+                      type="button"
+                      className="pulse-chip today"
+                      onClick={() => { if (tab !== 'new') switchTab('new', 'left') }}
+                    >
+                      <span className="pulse-dot" />
+                      {pulse ? `+${fmtCount(pulse.today)}` : '+…'} {t('pulse.today')}
+                    </button>
+                    <button
+                      type="button"
+                      className="pulse-chip free"
+                      onClick={() => { if (tab !== 'free') switchTab('free', 'left') }}
+                    >
+                      {pulse ? fmtCount(pulse.free) : '…'} {t('pulse.free')}
+                    </button>
+                  </div>
+                </div>
+                <div className="city-pill">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+                    <path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" />
+                  </svg>
+                  <select value={city} onChange={(e) => chooseCity(e.target.value)} aria-label={t('post.city')}>
+                    <option value="">{t('search.all_cities')}</option>
+                    {CITIES.map((c) => <option key={c.slug} value={c.slug}>{cityLabel(c.slug, i18n.language)}</option>)}
+                  </select>
+                  <svg className="city-pill-chevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="m6 9 6 6 6-6" /></svg>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
@@ -679,7 +657,15 @@ export default function Home() {
         const renderTile = (cat) => cat.isAll ? (
           <Link key="__all" to="/categories" className="cat-tile-2row all">
             <div className="cat-tile-2row-label">{t('common.all')}</div>
-            <div className="cat-tile-2row-glyph"><CategoryArt slug="all" /></div>
+            {/* Сетка из четырёх плиток вместо стеклянных кубиков:
+                кубики ничего не значили, сетка читается как «все
+                разделы» без подписи. */}
+            <div className="cat-tile-2row-glyph all-glyph" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3.5" y="3.5" width="7" height="7" rx="2" /><rect x="13.5" y="3.5" width="7" height="7" rx="2" />
+                <rect x="3.5" y="13.5" width="7" height="7" rx="2" /><rect x="13.5" y="13.5" width="7" height="7" rx="2" />
+              </svg>
+            </div>
           </Link>
         ) : (
           /* Раздел без выбора гасим: три объявления обещают выбор и

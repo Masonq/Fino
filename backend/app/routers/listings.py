@@ -1075,6 +1075,35 @@ def search_listings(
     return {"total": total, "items": [serialize(l) for l in items]}
 
 
+# Пульс площадки для шапки главной: сколько всего активных объявлений,
+# сколько появилось за сутки и сколько отдают даром. Цифры настоящие,
+# из базы — они и есть содержание шапки, вместо обещаний, за которыми
+# ничего не стоит. Считается три раза в минуту максимум: значения
+# держатся в памяти процесса 60 секунд, потому что три COUNT по
+# индексу status/published_at на каждый заход главной — лишняя работа
+# ради цифры, которая за минуту не меняется.
+_pulse_cache: dict = {}
+_PULSE_TTL = 60
+
+
+@router.get("/pulse")
+def listings_pulse(city: str | None = None, db: Session = Depends(get_db)):
+    key = city or ""
+    now = utcnow()
+    hit = _pulse_cache.get(key)
+    if hit and (now - hit["at"]).total_seconds() < _PULSE_TTL:
+        return hit["data"]
+    base = db.query(func.count(Listing.id)).filter(Listing.status == ListingStatus.active)
+    if city:
+        base = base.filter(Listing.city == city)
+    total = base.scalar() or 0
+    today = base.filter(Listing.published_at >= now - timedelta(hours=24)).scalar() or 0
+    free = base.filter(Listing.is_free.is_(True)).scalar() or 0
+    data = {"total": int(total), "today": int(today), "free": int(free)}
+    _pulse_cache[key] = {"at": now, "data": data}
+    return data
+
+
 @router.get("/by-ids")
 def listings_by_ids(
     ids: str = Query(..., description="идентификаторы через запятую"),

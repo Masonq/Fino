@@ -839,5 +839,12 @@
     "geo_ask": "Show listings near you?",
     "geo_yes": "Show",
     "geo_no": "No thanks"
+  },
+  "pulse": {
+    "listings_one": "listing",
+    "listings_other": "listings",
+    "today": "today",
+    "free": "free",
+    "fresh": "New"
   }
 }

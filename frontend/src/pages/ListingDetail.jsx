@@ -1342,7 +1342,7 @@ export default function ListingDetail() {
           {listing.favorites_count > 0 && (
             <span>{t('detail.favorited_count', { count: listing.favorites_count })}</span>
           )}
-          {listing.published_at && <span>{relativeDate(listing.published_at, t)}</span>}
+          {listing.published_at && <span>{relativeDate(listing.published_at, t, i18n.language)}</span>}
           {listing.number && <span>{t('detail.id', { id: listing.number })}</span>}
         </div>
         </div>

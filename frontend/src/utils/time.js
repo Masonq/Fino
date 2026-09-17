@@ -32,11 +32,24 @@ export function monthYear(iso, lang) {
  * только внутри ListingCard.jsx — теперь общая, использует её и
  * карточка объявления в ленте, и сама страница объявления.
  */
-export function relativeDate(iso, t) {
+export function relativeDate(iso, t, lang) {
   if (!iso) return ''
-  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000)
+  const d = new Date(iso)
+  const days = Math.floor((Date.now() - d.getTime()) / 86400000)
   if (days <= 0) return t('misc.date_today')
   if (days === 1) return t('misc.date_yesterday')
   if (days < 7) return t('misc.date_days_ago', { count: days })
-  return new Date(iso).toLocaleDateString()
+  // Дальше недели — короткая дата «9 сент.», а не «09.09.2026»:
+  // рядом с «вчера» полная дата с годом выглядела чужеродно и
+  // читалась дольше. Год добавляем, только если он другой.
+  const sameYear = d.getFullYear() === new Date().getFullYear()
+  return d.toLocaleDateString(lang || undefined, sameYear
+    ? { day: 'numeric', month: 'short' }
+    : { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+/** Моложе суток — для метки «Новое» на карточке. */
+export function isFresh(iso) {
+  if (!iso) return false
+  return Date.now() - new Date(iso).getTime() < 86400000
 }

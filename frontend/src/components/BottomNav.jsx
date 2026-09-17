@@ -57,11 +57,20 @@ export default function BottomNav() {
         <Link
           key={item.to}
           to={item.to}
-          className={pathname === item.to ? 'nav-item active' : 'nav-item'}
+          className={[
+            'nav-item',
+            pathname === item.to ? 'active' : '',
+            item.to === '/post' ? 'nav-item-post' : '',
+          ].filter(Boolean).join(' ')}
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-            {item.icon}
-          </svg>
+          {/* «Разместить» — главное действие площадки, и оно не должно
+              выглядеть как ещё один пункт меню. Плюс в цветном круге
+              читается как кнопка, а не как вкладка. */}
+          <span className="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={item.to === '/post' ? 2.6 : 1.9} strokeLinecap="round" strokeLinejoin="round">
+              {item.icon}
+            </svg>
+          </span>
           {t(item.key)}
           {item.key === 'nav.chats' && unread > 0 && (
             <span className="nav-badge">{unread > 9 ? '9+' : unread}</span>

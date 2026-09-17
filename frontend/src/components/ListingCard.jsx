@@ -6,7 +6,7 @@ import { useFavorites } from '../context/FavoritesContext'
 import { displayCity } from '../data/cities'
 import { formatPrice } from '../utils/money'
 import { cardMeta } from '../data/cardMeta'
-import { relativeDate } from '../utils/time'
+import { relativeDate, isFresh } from '../utils/time'
 
 export default function ListingCard({ listing, large = false, priority = false }) {
   const { t, i18n } = useTranslation()
@@ -107,6 +107,10 @@ export default function ListingCard({ listing, large = false, priority = false }
         {listing.is_xl && <div className="badge-top xl">{t('misc.promoted')}</div>}
         {listing.is_company && <div className="badge-top company">{t('seller.company_badge')}</div>}
         {listing.is_reserved && <div className="badge-top reserved">{t('misc.reserved')}</div>}
+        {/* Свежее — заметно. Лента должна показывать, что площадка
+            живая: на карточках моложе суток — метка внизу фото. Внизу,
+            а не сверху: сверху уже стоят «Продвинуто» и «Компания». */}
+        {isFresh(listing.published_at) && <div className="badge-fresh">{t('pulse.fresh')}</div>}
       </Link>
       <div className="s-row">
         <Link to={listing.path} className="s-title">{listing.title}</Link>
@@ -154,7 +158,7 @@ export default function ListingCard({ listing, large = false, priority = false }
           и низ ряда получался рваным. */}
       <Link to={listing.path} className="s-meta">
         <span>{listing.city ? displayCity(listing.city, i18n.language) : ''}</span>
-        {listing.published_at && <span className="s-date">{relativeDate(listing.published_at, t)}</span>}
+        {listing.published_at && <span className="s-date">{relativeDate(listing.published_at, t, i18n.language)}</span>}
       </Link>
     </div>
   )
