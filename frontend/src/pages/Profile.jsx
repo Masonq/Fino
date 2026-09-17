@@ -110,13 +110,11 @@ export default function Profile() {
           style={sidebar.style}
         >
           <div className="profile-head-card">
-            {/* Картинка — фон всей этой строки целиком (аватар, имя,
-                рейтинг), не отдельная полоса сверху, которую аватар
-                только слегка перекрывает снизу. Сам фон — в styles.css
-                (.profile-head), спокойная часть картинки специально
-                слева, под аватаром. Текст светлый — на фотографии
-                тёмный мог бы потеряться, светлый читается почти на
-                любом фоне. */}
+            {/* Шапка без картинки и без карточки — аватар и имя прямо на
+                фоне страницы, как в шапке главной. Зелёная плашка с
+                пузырями спорила с остальным сайтом и старила его.
+                Карандаш справа — редактирование, вместо отдельной
+                строки-кнопки под шапкой. */}
             <div className="profile-head">
               <div className={isCompany ? 'profile-avatar is-company' : 'profile-avatar'}>
                 {user.avatar_url ? <img src={user.avatar_url} alt="" /> : initial}
@@ -141,10 +139,10 @@ export default function Profile() {
                     : t('edit_profile.no_rating')}
                 </div>
               </div>
+              <Link className="profile-edit-btn" to="/profile/edit" aria-label={t('edit_profile.edit')}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+              </Link>
             </div>
-            <Link className="profile-edit-btn" to="/profile/edit">
-              {t('edit_profile.edit')}
-            </Link>
           </div>
 
           <BalanceCard />

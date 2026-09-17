@@ -413,6 +413,7 @@ export default function PostAd() {
               </button>
             )}
             <h2>{isRoot ? t('listing.select_category') : t('listing.select_subcategory')}</h2>
+            {isRoot && <p className="post-cat-hint">{t('listing.select_category_hint')}</p>}
             <div className={isRoot ? 'post-cat-grid' : 'post-sub-list'}>
               {items.map((cat) => (
                 <button
@@ -422,10 +423,10 @@ export default function PostAd() {
                 >
                   {isRoot ? (
                     <>
+                      <span className="post-cat-img"><CategoryArt slug={cat.slug} /></span>
                       <span className="post-cat-label">
                         {cat.name?.[i18n.language] || cat.name?.ru}
                       </span>
-                      <span className="post-cat-img"><CategoryArt slug={cat.slug} /></span>
                     </>
                   ) : (
                     cat.name?.[i18n.language] || cat.name?.ru

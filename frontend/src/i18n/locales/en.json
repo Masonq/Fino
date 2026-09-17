@@ -43,7 +43,7 @@
     "city": "City",
     "views": "views",
     "post_new": "New listing",
-    "select_category": "Select a category",
+    "select_category": "What are you selling?",
     "title": "Title",
     "description": "Description",
     "photos": "Photos",
@@ -53,7 +53,8 @@
     "urgent": "Urgent",
     "select_subcategory": "Choose a section",
     "sound_on": "Turn sound on",
-    "sound_off": "Turn sound off"
+    "sound_off": "Turn sound off",
+    "select_category_hint": "Pick a section — you'll choose the subsection next"
   },
   "search": {
     "placeholder_full": "What are you looking for?",

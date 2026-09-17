@@ -43,7 +43,7 @@
     "city": "Grad",
     "views": "pregleda",
     "post_new": "Novi oglas",
-    "select_category": "Izaberite kategoriju",
+    "select_category": "Šta prodajete?",
     "title": "Naslov",
     "description": "Opis",
     "photos": "Fotografije",
@@ -53,7 +53,8 @@
     "urgent": "Hitno",
     "select_subcategory": "Izaberite odeljak",
     "sound_on": "Uključi zvuk",
-    "sound_off": "Isključi zvuk"
+    "sound_off": "Isključi zvuk",
+    "select_category_hint": "Izaberite rubriku — podrubriku birate u sledećem koraku"
   },
   "search": {
     "placeholder_full": "Šta tražite?",

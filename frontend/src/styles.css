@@ -498,27 +498,32 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .draft-discard-btn{ padding:7px 10px; font-size:12.5px; font-weight:700; color:var(--muted); }
 
-/* Выбор категории — теми же плитками, что на главной: раньше здесь
-   был отдельный вид с картинкой из поля image_url, которое не заполнено,
-   поэтому вместо иллюстраций показывались серые квадраты. */
+/* Выбор раздела — 12 плиток в один экран, сеткой 3×4: раньше плитки
+   были по две в ряд и высокие, и первый шаг формы занимал шесть
+   экранов прокрутки. Картинка сверху в одинаковом слоте у всех,
+   подпись под ней по центру. */
+.post-cat-hint{ font-size:13px; color:var(--muted); margin:-4px 0 14px; line-height:1.35; }
 .post-cat-grid{
-  display:grid; grid-template-columns:repeat(2,1fr);
-  gap:9px; margin-bottom:12px;
+  display:grid; grid-template-columns:repeat(3, minmax(0, 1fr));
+  gap:8px; margin-bottom:12px;
 }
 .post-cat-item{
-  position:relative; height:92px; border-radius:15px; overflow:hidden;
-  padding:12px 70px 12px 14px; text-align:left;
-  background:var(--tile); border:1px solid rgba(20,30,25,.06);
+  display:flex; flex-direction:column; align-items:center; justify-content:space-between;
+  height:106px; border-radius:16px; padding:10px 6px 9px; text-align:center;
+  background:var(--tile); border:1px solid rgba(20,30,25,.07); box-shadow:0 1px 2px rgba(20,30,25,.03);
+  transition:transform .15s ease;
 }
+.post-cat-item:active{ transform:scale(.96); }
+.post-cat-img{ width:52px; height:52px; color:var(--primary); pointer-events:none; }
+.post-cat-img svg{ width:60%; height:60%; margin:20%; display:block; opacity:.5; }
+.post-cat-img img{ width:100%; height:100%; object-fit:contain; display:block; }
+/* Подпись живёт в боксе на две строки и центрирована в нём: иначе
+   однострочная «Авто» сидела ниже двухстрочной «Хобби, спорт» у
+   соседней плитки, и ряд читался рваным. */
 .post-cat-label{
-  position:relative; z-index:2;
-  font-size:13.5px; font-weight:700; color:var(--ink); line-height:1.25;
+  height:28px; display:flex; align-items:center; justify-content:center; overflow:hidden;
+  font-size:11.5px; font-weight:700; color:var(--ink); line-height:1.2; letter-spacing:-0.01em;
 }
-.post-cat-img{
-  position:absolute; right:-7px; bottom:-9px; width:90px; height:90px;
-  color:var(--primary); z-index:0; pointer-events:none;
-}
-.post-cat-img svg{ width:52%; height:52%; margin:24%; display:block; opacity:.32; }
 
 .post-fields{ display:flex; flex-direction:column; gap:14px; margin-bottom:20px; }
 
@@ -1492,26 +1497,18 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    секунды, пока сама картинка ещё не загрузилась, и не будет ни
    пустого, ни белого фона в этот момент. */
 .profile-head{
-  display:flex; align-items:center; gap:14px; padding:20px 14px;
-  background:
-    url('/profile-banner.jpg') left center / cover no-repeat,
-    linear-gradient(135deg, var(--primary), #6BC9A0);
+  display:flex; align-items:center; gap:14px; padding:6px 12px 18px;
 }
 .profile-avatar{
-  width:66px; height:66px; border-radius:50%; flex-shrink:0; overflow:hidden;
-  background:rgba(255,255,255,.18); color:#fff;
+  width:64px; height:64px; border-radius:50%; flex-shrink:0; overflow:hidden;
+  background:linear-gradient(135deg,var(--violet),#9B8FFF); color:#fff;
   display:flex; align-items:center; justify-content:center;
   font-size:24px; font-weight:800;
-  border:3px solid #fff;
-  box-shadow:0 2px 8px rgba(20,30,25,.12);
 }
-.profile-avatar.is-company{ border-radius:20px; }
+.profile-avatar.is-company{ border-radius:18px; }
 .profile-avatar img{ width:100%; height:100%; object-fit:cover; }
-.profile-info{ min-width:0; }
-/* Текст поверх картинки — светлый, а не тёмный: неизвестно заранее,
-   какой яркости выйдет сама картинка, светлый читается почти на любом
-   фоне, тёмный на тёмном участке фото мог бы потеряться совсем. */
-.profile-name{ font-size:17px; font-weight:800; color:#fff; }
+.profile-info{ min-width:0; flex:1; }
+.profile-name{ font-size:19px; font-weight:800; color:var(--ink); letter-spacing:-0.02em; line-height:1.15; }
 /* Почта и телефон — с переносом в любом месте: адрес вроде
    maxsim_kolesnikov@icloud.com — одно длинное «слово» без пробелов,
    переносить его браузеру негде, и он уезжал за правый край карточки
@@ -1519,7 +1516,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    Перенос, а не многоточие: свою же почту человек должен видеть
    целиком. */
 .profile-contact{
-  font-size:13px; color:rgba(255,255,255,.85); margin-top:2px;
+  font-size:12.5px; color:var(--muted); margin-top:3px;
   overflow-wrap:anywhere; line-height:1.35;
 }
 
@@ -1534,16 +1531,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    Теперь шапка — своя карточка, а пункты меню разбиты на подписанные
    смысловые группы (см. .profile-section-title/.profile-menu ниже),
    каждая — отдельная карточка с воздухом между ними. */
-.profile-head-card{
-  margin:0 12px 22px; border-radius:16px; background:#fff;
-  border:1px solid rgba(20,30,25,.06); overflow:hidden;
-}
+.profile-head-card{ margin:0 0 6px; }
 .profile-edit-btn{
-  display:block; text-align:center; padding:12px; font-size:13px; font-weight:700;
-  color:var(--primary-deep); border-top:1px solid rgba(20,30,25,.06);
+  flex-shrink:0; width:38px; height:38px; border-radius:50%; background:#F1F1EC; color:var(--ink);
+  display:flex; align-items:center; justify-content:center; align-self:flex-start; margin-top:2px;
 }
 .balance-card{
-  margin:0 12px 22px; padding:14px; border-radius:16px; background:#fff;
+  margin:0 12px 10px; padding:14px; border-radius:16px; background:#fff;
   border:1px solid rgba(20,30,25,.06);
 }
 .balance-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; }
@@ -1565,7 +1559,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    чтобы не выглядело чужеродной вставкой рядом с ней. */
 .invite-card{
   display:flex; align-items:center; gap:12px;
-  margin:10px 12px 0; padding:14px; border-radius:16px;
+  margin:0 12px 0; padding:14px; border-radius:16px;
   background:#fff; border:1px solid rgba(20,30,25,.06);
 }
 .invite-card-icon{
@@ -2172,7 +2166,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
      большой цветной области сайдбара, выглядел слишком тесно. Без
      трогать мобильный размер — только тут, где сама заметность
      проблемы другая. */
-  .profile-sidebar .profile-head{ padding:26px 22px; }
+  .profile-sidebar .profile-head{ padding:10px 8px 18px; }
   /* Тот же самый мобильный отступ 12px, что уже чинили у аватара и
      баланса выше — нашли измерением: баннер стоял на 12px правее,
      чем всё остальное на странице, не по одной линии. */
@@ -2888,13 +2882,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* выбор категории при публикации — на десктопе шире */
 @media (min-width: 900px) {
   .post-cat-grid{
-    grid-template-columns:repeat(4, 206px);
+    grid-template-columns:repeat(6, 132px);
     gap:10px; justify-content:start;
   }
-  .post-cat-item{ height:86px; }
-}
-@media (min-width: 620px) and (max-width: 899px) {
-  .post-cat-grid{ grid-template-columns:repeat(3, 1fr); }
 }
 
 
@@ -3589,10 +3579,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .enter-page .support-send{ max-width:260px; }
 
 /* Правка своих данных */
-.profile-rating{ margin-top:4px; font-size:13px; color:rgba(255,255,255,.85); }
+.profile-rating{ margin-top:5px; font-size:12.5px; font-weight:600; color:var(--ink-soft); }
 /* .seller-badge переиспользуется и на белом фоне (SellerProfile.jsx)
    — тут, поверх картинки, свой цвет, не трогая общее правило. */
-.profile-head .seller-badge{ background:rgba(255,255,255,.22); color:#fff; }
 .edit-avatar{ display:flex; flex-direction:column; align-items:center;
   gap:12px; padding:8px 0 20px; }
 .edit-avatar-pick{

@@ -43,7 +43,7 @@
     "city": "Город",
     "views": "просмотров",
     "post_new": "Новое объявление",
-    "select_category": "Выберите категорию",
+    "select_category": "Что продаёте?",
     "title": "Заголовок",
     "description": "Описание",
     "photos": "Фотографии",
@@ -53,7 +53,8 @@
     "urgent": "Срочно",
     "select_subcategory": "Уточните раздел",
     "sound_on": "Включить звук",
-    "sound_off": "Выключить звук"
+    "sound_off": "Выключить звук",
+    "select_category_hint": "Выберите раздел — подраздел уточним на следующем шаге"
   },
   "search": {
     "placeholder_full": "Что ищете?",
