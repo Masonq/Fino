@@ -1224,3 +1224,34 @@ def test_city_can_be_detected_by_location():
     assert "geolocation.getCurrentPosition" in page
     # И спрашиваем один раз.
     assert "plonk_geo_asked" in page
+
+
+def test_home_shows_one_big_category_by_freshness():
+    """На главной один раздел крупным — тот, где больше нового за сутки.
+
+    Раньше все четырнадцать разделов лежали ровным ковром одинаковых
+    плиток: занимали треть экрана, и человек их пролистывал, не
+    разглядывая. Ни один не выделялся, хотя в недвижимости тысяча
+    объявлений, а в услугах сто восемьдесят.
+
+    Крупным становится тот, где за сутки появилось больше всего нового.
+    Так главная не приедается и честно показывает, где идёт жизнь: в
+    понедельник это мебель, в пятницу — квартиры.
+    """
+    page = (Path(__file__).resolve().parents[2]
+            / "frontend" / "src" / "pages" / "Home.jsx").read_text()
+    api = (Path(__file__).resolve().parents[1]
+           / "app" / "routers" / "categories.py").read_text()
+    styles = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "styles.css").read_text()
+
+    # Сервер отдаёт, сколько появилось за сутки.
+    assert '"fresh": fresh(cat)' in api
+    assert "timedelta(hours=24)" in api
+
+    # Крупный выбирается по этому числу.
+    assert "(b.fresh || 0) - (a.fresh || 0)" in page
+    assert "cat-hero" in page and "cat-small" in page
+
+    # И названия читаются: на светлой картинке белые буквы пропадали.
+    assert ".cat-hero::after" in styles
