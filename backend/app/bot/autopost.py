@@ -89,7 +89,7 @@ def is_good_import(listing: Listing) -> bool:
         return False
     if not any(not p.is_video for p in listing.photos):
         return False
-    tr = listing.translations[0] if listing.translations else None
+    tr = text_of(listing)
     title = (tr.title if tr else "") or ""
     return len(title.strip()) >= MIN_TITLE
 
@@ -130,9 +130,25 @@ def pick(db, limit: int = POST_LIMIT) -> list[Listing]:
     return good
 
 
+def text_of(listing: Listing):
+    """
+    Перевод на языке чата.
+
+    Брался первый попавшийся, а порядок в базе произвольный — в чат
+    уходили сербские тексты, хотя чат русскоязычный и рядом лежал
+    русский перевод. Берём русский, при его отсутствии — английский,
+    в последнюю очередь сербский.
+    """
+    by_lang = {t.language: t for t in listing.translations}
+    for lang in ("ru", "en", "sr"):
+        if lang in by_lang:
+            return by_lang[lang]
+    return listing.translations[0] if listing.translations else None
+
+
 def caption_for(listing: Listing) -> tuple[str, str]:
     """Подпись и ссылка на объявление."""
-    tr = listing.translations[0] if listing.translations else None
+    tr = text_of(listing)
     title = (tr.title if tr else "") or "Объявление"
     site = settings.public_base_url.rstrip("/")
     path = listing_path(listing.id, title, listing.city,
