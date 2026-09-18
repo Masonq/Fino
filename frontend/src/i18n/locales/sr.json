@@ -844,7 +844,14 @@
     "conversion": "Konverzija",
     "avg_per_day": "Prosečno dnevno",
     "days_left": "Preostalo do skidanja",
-    "expires_today": "Danas"
+    "expires_today": "Danas",
+    "week_line": "Ove nedelje: {{views}} pregleda, {{favorites}} u omiljenima, {{chats}} se javilo.",
+    "tip_few_photos": "Samo {{count}} fotografije — oglasi sa tri i više otvaraju se znatno češće. Dodajte druge uglove i krupni plan onoga što je važno.",
+    "tip_short_description": "Opis je kratak. Napišite stanje, starost i razlog prodaje — to kupci prvo pitaju.",
+    "tip_price_high": "Cena je viša nego kod sličnih stvari. Ili je spustite, ili u opisu objasnite zašto je takva.",
+    "tip_views_no_contacts": "Oglas gledaju ({{count}} ove nedelje), ali se ne javljaju. Obično je u pitanju cena ili nešto što se na slikama ne vidi.",
+    "tip_few_views": "Oglas skoro niko ne vidi ({{count}} ove nedelje) — ne pronalaze ga. Proverite naslov i rubriku: u naslovu treba da stoji naziv stvari onako kako je traže.",
+    "tip_all_good": "Sa oglasom je sve u redu: dovoljno slika, opis postoji, cena nije iznad tržišne."
   },
   "profile": {
     "sec_listings": "Oglasi",

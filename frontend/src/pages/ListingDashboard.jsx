@@ -80,6 +80,23 @@ export default function ListingDashboard() {
         <p className="empty-hint">{t('actions.loading')}</p>
       ) : (
         <>
+          {/* Итог неделей и человеческим языком: цифры сами по себе не
+              говорят, много это или мало, и что поправить. */}
+          <div className="ldash-summary">
+            {t('ldash.week_line', {
+              views: data.views_week ?? 0,
+              favorites: data.favorites_count,
+              chats: data.chats_count,
+            })}
+          </div>
+
+          {(data.tips || []).map((tip) => (
+            <div className={`ldash-tip ${tip.level}`} key={tip.code}>
+              <span className="ldash-tip-dot" aria-hidden="true" />
+              <span>{t(`ldash.tip_${tip.code}`, { count: tip.count ?? 0 })}</span>
+            </div>
+          ))}
+
           <div className="stats-cards">
             <div className="stats-card">
               <div className="stats-value">{data.views_total}</div>

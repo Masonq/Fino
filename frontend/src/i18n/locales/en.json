@@ -836,7 +836,14 @@
     "conversion": "Conversion",
     "avg_per_day": "Avg. per day",
     "days_left": "Days until removal",
-    "expires_today": "Today"
+    "expires_today": "Today",
+    "week_line": "This week: {{views}} views, {{favorites}} saved, {{chats}} messaged.",
+    "tip_few_photos": "Only {{count}} photos — listings with three or more get opened noticeably more often. Add other angles and close-ups of what matters.",
+    "tip_short_description": "The description is short. Write the condition, age and reason for selling — that's what buyers ask first.",
+    "tip_price_high": "The price is higher than similar items. Either lower it or explain in the description why it is what it is.",
+    "tip_views_no_contacts": "People look ({{count}} this week) but don't write. Usually it's the price, or something the photos don't show.",
+    "tip_few_views": "Almost nobody sees it ({{count}} this week) — it isn't being found. Check the title and the section: the title should name the thing the way people search for it.",
+    "tip_all_good": "The listing is fine: enough photos, a proper description, price not above market."
   },
   "profile": {
     "sec_listings": "Listings",

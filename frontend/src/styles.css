@@ -4460,3 +4460,17 @@ a.s-attrs{ display:block; }
   font-size:12.5px; font-weight:700; color:var(--ink); white-space:nowrap;
 }
 .attr-chip svg{ width:16px; height:16px; color:var(--primary-deep); flex-shrink:0; }
+
+/* ===== статистика объявления: итог и советы ===== */
+.ldash-summary{
+  margin:0 12px 10px; font-size:14.5px; font-weight:700; line-height:1.35; color:var(--ink);
+}
+.ldash-tip{
+  display:flex; gap:10px; margin:0 12px 8px; padding:11px 13px; border-radius:13px;
+  background:var(--warn-bg); color:var(--warn-ink);
+  font-size:13px; line-height:1.4; font-weight:600;
+}
+.ldash-tip.ok{ background:var(--primary-soft); color:var(--primary-deep); }
+.ldash-tip-dot{
+  width:7px; height:7px; border-radius:50%; background:currentColor; margin-top:6px; flex-shrink:0;
+}

@@ -1946,10 +1946,46 @@ def listing_dashboard(
         for p in promos
     ]
 
+    # Что не так с объявлением.
+    #
+    # Цифры сами по себе ничего не говорят: «42 просмотра» — это много
+    # или мало? Человеку нужен вывод, что поправить. Считаем по тому,
+    # что видно из данных, и не выдумываем того, чего не знаем: про
+    # тёмное фото или плохой ракурс сказать нечем, а про число снимков,
+    # длину описания, цену выше рынка и просмотры без единого отклика —
+    # есть.
+    week_views = sum(d["views"] for d in daily[-7:])
+    photos = [p for p in listing.photos if not p.is_video]
+    tr = next((t for t in listing.translations), None)
+    description = (tr.description if tr else "") or ""
+
+    tips: list[dict] = []
+    if len(photos) < 3:
+        tips.append({"code": "few_photos", "level": "warn", "count": len(photos)})
+    if len(description.strip()) < 60:
+        tips.append({"code": "short_description", "level": "warn"})
+
+    price_check = compute_price_check(db, listing, "ru")
+    if price_check.get("verdict") == "expensive":
+        tips.append({"code": "price_high", "level": "warn"})
+
+    # Смотрят, но не пишут: с самим объявлением всё в порядке, дело в
+    # цене или в том, чего не видно на снимках.
+    if week_views >= 30 and chats_count == 0:
+        tips.append({"code": "views_no_contacts", "level": "warn", "count": week_views})
+    # Не смотрят вовсе: объявление не находят — дело в заголовке или в
+    # разделе, а не в цене.
+    if listing.published_at and (utcnow() - listing.published_at).days >= 7 and week_views < 10:
+        tips.append({"code": "few_views", "level": "warn", "count": week_views})
+    if not tips:
+        tips.append({"code": "all_good", "level": "ok"})
+
     return {
         "views_total": listing.views_count,
+        "views_week": week_views,
         "favorites_count": favorites_count,
         "chats_count": chats_count,
+        "tips": tips,
         "status": listing.status.value,
         "is_complete": listing.is_complete,
         "published_at": listing.published_at.isoformat() if listing.published_at else None,
