@@ -109,10 +109,12 @@ systemctl daemon-reload
 #
 # Включить обратно, когда понадобится:
 #   systemctl enable --now plonk-tg-import.timer
-# Автопостинг тоже не включаем сам: он пишет в живой чат с людьми, и
-# включать такое молча, раскатом, нельзя. Включается руками:
-#   systemctl enable --now plonk-autopost.timer
-SKIP_TIMERS="plonk-digest.timer plonk-tg-import.timer plonk-autopost.timer"
+# Перенос из чатов и автопостинг включены по решению владельца:
+# перенос раз в три часа, автопостинг по одному объявлению раз в
+# десять минут. Расписания — в их .timer-файлах.
+#
+# Рассылку дайджеста читателям деплой по-прежнему не поднимает.
+SKIP_TIMERS="plonk-digest.timer"
 
 for timer in deploy/plonk-*.timer; do
   name="$(basename "$timer")"
