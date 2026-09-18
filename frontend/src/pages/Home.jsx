@@ -83,7 +83,24 @@ export default function Home() {
   // Свежесть при этом не страдает: ниже, если память старше минуты,
   // лента перезагружается в фоне — человек видит своё место сразу, а
   // данные обновляются через мгновение.
-  const cached = (feedCache.lang === i18n.language && feedCache.city === savedCity)
+  // Вкладку, на которой человек был, определяем здесь же — до ленты:
+  // сохранённая лента годится, только если она от той же вкладки.
+  const savedTab = (() => {
+    try { return sessionStorage.getItem('plonk_feed_tab') || feedCache.tab || 'all' } catch { return feedCache.tab || 'all' }
+  })()
+
+  // Вкладка в условии наравне с языком и городом.
+  //
+  // Без неё случалось так: человек смотрел «Все», открыл объявление,
+  // вернулся — страница перезагрузилась, вкладка восстановилась как
+  // «Даром» из sessionStorage, а сохранённая лента осталась от «Все».
+  // Условие её принимало, и дальше эффект загрузки видел «память
+  // свежая» и не запрашивал ничего: под вкладкой «Даром» висели серые
+  // заготовки, и снять их можно было только перезагрузкой. Ровно это и
+  // было видно на снимке.
+  const cached = (feedCache.lang === i18n.language
+    && feedCache.city === savedCity
+    && feedCache.tab === savedTab)
     ? feedCache
     : null
 
@@ -109,13 +126,7 @@ export default function Home() {
   // особенно свайпом в приложении — нередко перезагружает её целиком, и
   // выбор пропадал: человек смотрел «Даром», вернулся и оказался на
   // «Все».
-  const [tab, setTab] = useState(() => {
-    try {
-      return sessionStorage.getItem('plonk_feed_tab') || cached?.tab || 'all'
-    } catch {
-      return cached?.tab || 'all'
-    }
-  })
+  const [tab, setTab] = useState(savedTab)
   const [loadingMore, setLoadingMore] = useState(false)
   // Подгрузка сама остановилась — показываем кнопку «Показать ещё».
   const [stalled, setStalled] = useState(false)
@@ -319,6 +330,11 @@ export default function Home() {
 
     setTabSlide(direction)
     setTab(key)
+    // Выбор вкладки запоминаем всегда, а не только при первом заходе на
+    // неё. Прежде запись стояла ниже, в ветке «вкладку видим впервые», и
+    // возврат на уже просмотренную её не обновлял: в памяти оставалась
+    // другая вкладка, а после перезагрузки страница открывалась на ней.
+    try { sessionStorage.setItem('plonk_feed_tab', key) } catch { /* не беда */ }
 
     const saved = tabCache[key]
     if (saved?.items?.length) {
@@ -343,7 +359,6 @@ export default function Home() {
     asked.current = 0
     setListings([])
     setFeedLoaded(false)
-    try { sessionStorage.setItem('plonk_feed_tab', key) } catch { /* не беда */ }
     // Метку не снимаем.
     //
     // Раньше снимали через четверть секунды — и карточки
@@ -490,10 +505,17 @@ export default function Home() {
   }, [feedLoaded, listings.length, feedTotal, loadMore])
 
   useEffect(() => {
+    // Ничего не грузим, только если на экране уже есть карточки этой
+    // вкладки. Прежде условие смотрело на память, а не на экран, и
+    // достаточно было памяти от другой вкладки, чтобы загрузка не
+    // случилась вовсе — а на экране оставались серые заготовки.
+    const showing = itemsRef.current.length > 0
+
     // при возврате лента уже есть — перезагрузка сбросила бы её к двенадцати
     // объявлениям и снова уронила прокрутку. Но только пока кэш не устарел —
     // иначе тот же снимок остался бы навсегда.
-    if (cached?.items.length && Date.now() - cached.fetchedAt < FEED_CACHE_TTL) return
+    if (showing && cached?.items.length && feedCache.tab === tab
+      && Date.now() - cached.fetchedAt < FEED_CACHE_TTL) return
 
     // Вкладку восстановили из памяти — грузить нечего.
     //
@@ -501,7 +523,7 @@ export default function Home() {
     // карточки сбрасывались к двенадцати, место прокрутки терялось, и
     // память по вкладкам не работала вовсе.
     const saved = tabCache[tab]
-    if (saved?.items?.length && Date.now() - saved.fetchedAt < FEED_CACHE_TTL) return
+    if (showing && saved?.items?.length && Date.now() - saved.fetchedAt < FEED_CACHE_TTL) return
 
     loadFeed()
     // eslint-disable-next-line react-hooks/exhaustive-deps
