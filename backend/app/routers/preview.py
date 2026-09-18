@@ -100,10 +100,12 @@ def listing_preview(
     if not listing:
         return HTMLResponse(f"<!doctype html><title>{SITE}</title>", status_code=404)
 
-    tr = next((t for t in listing.translations), None)
+    # Русский перевод, а не первый попавшийся: порядок в базе
+    # произвольный, и в превью уходил сербский текст.
+    by_lang = {t.language: t for t in listing.translations}
+    tr = next((by_lang[l] for l in ("ru", "en", "sr") if l in by_lang),
+              listing.translations[0] if listing.translations else None)
     title = tr.title if tr else SITE
-    if listing.price:
-        title = f"{title} — {listing.price:.0f} {listing.currency}"
 
     # Красивый постоянный адрес, а не короткий — под него и canonical
     # выдают лучше, и это тот же адрес, что человек видит в приложении.
@@ -112,10 +114,39 @@ def listing_preview(
         listing.category.slug if listing.category else None,
     )
 
-    description = (tr.description if tr else "") or ""
-    description = " ".join(description.split())[:200]
+    # Описание под заголовком: цена, город и — если оно правда добавляет
+    # что-то новое — текст продавца.
+    #
+    # У перенесённых объявлений описание часто слово в слово повторяет
+    # заголовок: заголовок из него и собирали. В превью это выглядело
+    # так, будто одно и то же написано дважды подряд.
+    code = getattr(listing.currency, "value", listing.currency) or ""
+    if listing.is_free:
+        price_line = "Бесплатно"
+    elif listing.price:
+        amount = f"{float(listing.price):,.0f}".replace(",", "\u2009")
+        price_line = f"{amount} {'€' if code.upper() == 'EUR' else code}".strip()
+    else:
+        price_line = ""
+
+    body = " ".join(((tr.description if tr else "") or "").split())
+
+    def _words(text: str) -> set:
+        return {w.strip(".,!?()»«\"'").lower() for w in text.split() if len(w) > 3}
+
+    if body and not (_words(body) - _words(title)):
+        body = ""
+
+    city_name = ""
     if listing.city:
-        description = f"{listing.city}. {description}".strip()
+        from app.data.cities_data import _CITIES
+
+        variants = _CITIES.get(listing.city) or []
+        city_name = variants[0].title() if variants else listing.city.title()
+
+    head = " · ".join(p for p in (price_line, city_name) if p)
+    description = f"{head}. {body}".strip(" .") if body else head
+    description = description[:200]
 
     # Собранная карточка вместо голой фотографии: с ценой, городом и
     # домом. Размер указываем явно — иначе Telegram показывает её

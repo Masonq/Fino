@@ -386,7 +386,17 @@ def listing_page(listing_id: str, request: Request,
     # обрезается по ширине, и цена из него пропадает; в самом описании
     # она видна всегда. Тот же порядок, что у Avito при вставке ссылки.
     body_text = _clean(body)
-    description = f"{price} · {city}. {body_text}" if city else f"{price}. {body_text}"
+    # У перенесённых объявлений описание часто слово в слово повторяет
+    # заголовок — его из описания и собирали. В превью это выглядело
+    # так, будто одно и то же написано дважды подряд.
+    def _words(text: str) -> set:
+        return {w.strip(".,!?()»«\"'").lower() for w in text.split() if len(w) > 3}
+
+    if body_text and not (_words(body_text) - _words(title)):
+        body_text = ""
+
+    head = f"{price} · {city}" if city else price
+    description = f"{head}. {body_text}".strip(" .") if body_text else head
     description = _cut(description, 300) or title
 
     # Собранная карточка: фотография слева, цена, город и раздел справа,
