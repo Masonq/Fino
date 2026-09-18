@@ -1030,15 +1030,17 @@ export default function ListingDetail() {
             и по нажатию честно показываем, на чём считали. */}
         {priceCheck && !isResume && (
           <button className={`price-check ${priceCheck.verdict}`} onClick={() => setPriceOpen(true)}>
-            <span className="price-check-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                {priceCheck.verdict === 'expensive'
-                  ? <><path d="M12 19V5" /><path d="m6 11 6-6 6 6" /></>
-                  : priceCheck.verdict === 'cheap'
-                    ? <><path d="M12 5v14" /><path d="m6 13 6 6 6-6" /></>
-                    : <><path d="M5 12h14" /><path d="M5 7h14M5 17h14" opacity=".35" /></>}
-              </svg>
-            </span>
+            {/* Картинка, а не значок: оценку читают мельком, и цветная
+                монета узнаётся быстрее контурной стрелки. Все три
+                приведены к одному размеру плашки, чтобы при разных
+                оценках ничего не прыгало. */}
+            <img
+              className="price-check-icon"
+              src={`/price/price-${priceCheck.verdict}.png`}
+              alt=""
+              width="44"
+              height="44"
+            />
             <span className="price-check-text">
               <b>{t(`price_check.${priceCheck.verdict}`)}</b>
               <span>{t('price_check.subtitle')}</span>
