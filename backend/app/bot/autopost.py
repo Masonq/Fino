@@ -37,6 +37,8 @@ from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.partner_chats import BARAHOLKA_TEST, topic_for
 from app.core.urls import listing_path
+from sqlalchemy.orm import joinedload
+
 from app.models import Listing, ListingStatus
 
 log = logging.getLogger(__name__)
@@ -51,6 +53,24 @@ PAUSE_SEC = 20
 
 # Заголовок короче этого — не заголовок, а обрывок («стол», «продам»).
 MIN_TITLE = 12
+
+
+def root_slug(category) -> str | None:
+    """
+    Слаг раздела верхнего уровня.
+
+    Ветки чата расписаны по двенадцати разделам, а у объявления стоит
+    подраздел — «Легковые», «Комнатные растения». Без подъёма к корню
+    совпадения не находилось, и всё честно уезжало в «Прочие товары»:
+    именно это и было видно в чате. Поднимаемся по родителям, пока они
+    есть; глубина дерева три уровня, но цикл не завязан на это число.
+    """
+    node = category
+    seen = 0
+    while node is not None and getattr(node, "parent", None) is not None and seen < 5:
+        node = node.parent
+        seen += 1
+    return node.slug if node is not None else None
 
 
 def is_good_import(listing: Listing) -> bool:
@@ -85,6 +105,12 @@ def pick(db, limit: int = POST_LIMIT) -> list[Listing]:
     """
     rows = (
         db.query(Listing)
+        .options(
+            joinedload(Listing.category),
+            joinedload(Listing.photos),
+            joinedload(Listing.translations),
+            joinedload(Listing.owner),
+        )
         .filter(
             Listing.status == ListingStatus.active,
             Listing.tg_post_id.is_(None),
@@ -157,8 +183,10 @@ async def run() -> int:
             photos = [p for p in listing.photos if not p.is_video][:3]
             topic = topic_for(
                 TARGET_CHAT,
-                listing.category.slug if listing.category else None,
+                root_slug(listing.category),
+                sub=listing.category.slug if listing.category else None,
                 is_free=bool(listing.is_free),
+                is_wanted=(listing.attributes or {}).get("listing_kind") == "wanted",
             )
             try:
                 if len(photos) > 1:
