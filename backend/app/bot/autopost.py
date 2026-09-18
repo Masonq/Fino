@@ -162,9 +162,18 @@ async def run() -> int:
             )
             try:
                 if len(photos) > 1:
-                    media = [InputMediaPhoto(media=p.url) for p in photos]
-                    media[0].caption = caption
-                    media[0].parse_mode = "HTML"
+                    # Подпись задаётся при создании первого снимка, а не
+                    # присваиванием после: в aiogram 3 эти объекты
+                    # неизменяемы, и присваивание падает проверкой
+                    # («Instance is frozen»), а объявление не уходит.
+                    media = [
+                        InputMediaPhoto(
+                            media=p.url,
+                            caption=caption if i == 0 else None,
+                            parse_mode="HTML" if i == 0 else None,
+                        )
+                        for i, p in enumerate(photos)
+                    ]
                     posted = (await bot.send_media_group(
                         TARGET_CHAT, media, message_thread_id=topic))[0]
                 elif photos:

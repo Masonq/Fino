@@ -1387,9 +1387,17 @@ async def publish(message: Message, bot: Bot) -> None:
 
     try:
         if len(draft.photos) > 1:
-            media = [InputMediaPhoto(media=_file(p)) for p in draft.photos]
-            media[0].caption = caption
-            media[0].parse_mode = "HTML"
+            # Подпись — при создании первого снимка: в aiogram 3 эти
+            # объекты неизменяемы, присваивание после падает проверкой
+            # («Instance is frozen»), и объявление не уходит вовсе.
+            media = [
+                InputMediaPhoto(
+                    media=_file(p),
+                    caption=caption if i == 0 else None,
+                    parse_mode="HTML" if i == 0 else None,
+                )
+                for i, p in enumerate(draft.photos)
+            ]
             sent = await bot.send_media_group(
                 TARGET_CHAT, media, message_thread_id=draft.topic_id)
             posted = sent[0]
