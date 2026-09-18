@@ -7,10 +7,13 @@
 ценой и ссылкой. Для чата это поток свежих вещей, для сайта — переходы
 от людей, которые иначе о нём бы не вспомнили.
 
-Что постим. Только своё: объявления, поданные на сайте живыми
-продавцами и прошедшие проверку. Перенесённые из чужих чатов не
-трогаем — они уже были опубликованы там, откуда их взяли, и класть их
-обратно в барахолку значит гонять по кругу чужое.
+Что постим. Своё — всё, что подали на сайте и прошло проверку.
+Перенесённое из чужих чатов — только хорошее: с полным заголовком,
+ценой, фотографией и ником автора, по которому ему можно написать.
+Смысл отбора простой: в наш чат должно попадать то, на что человек
+откликнется. Объявление без цены («продам шкаф, пишите в личку») или
+без фото в ленте чата бесполезно, а без ника ещё и тупиково — писать
+некуда, у перенесённых нет владельца на сайте.
 
 Сколько. Не больше POST_LIMIT за заход и не чаще, чем раз в паузу:
 десять объявлений подряд — это не лента, а спам, от которого чат
@@ -46,20 +49,59 @@ POST_LIMIT = 5
 PAUSE_SEC = 20
 
 
+# Заголовок короче этого — не заголовок, а обрывок («стол», «продам»).
+MIN_TITLE = 12
+
+
+def is_good_import(listing: Listing) -> bool:
+    """
+    Годится ли перенесённое объявление для нашего чата.
+
+    Четыре условия, и каждое из своей беды. Ник автора — иначе
+    откликнуться некуда: у перенесённых нет владельца на сайте и
+    написать через сайт нельзя. Цена — «пишите в личку» в ленте чата
+    пролистывают. Фотография — вещь без снимка в чате не существует.
+    Заголовок — по обрывку в две буквы никто не остановится.
+    """
+    if not listing.external_author:
+        return False
+    if not listing.is_free and not listing.price:
+        return False
+    if not any(not p.is_video for p in listing.photos):
+        return False
+    tr = listing.translations[0] if listing.translations else None
+    title = (tr.title if tr else "") or ""
+    return len(title.strip()) >= MIN_TITLE
+
+
 def pick(db, limit: int = POST_LIMIT) -> list[Listing]:
-    """Что отправить: свои, активные, ещё не отправленные, старые первыми."""
-    return (
+    """
+    Что отправить: активные, ещё не отправленные, старые первыми.
+
+    Своё и перенесённое берём вперемешку по времени публикации, но
+    перенесённое проходит отбор по качеству (см. is_good_import). Из-за
+    отбора запрашиваем с запасом: половина перенесённых отсеется, и
+    брать ровно limit значит отправить два поста вместо пяти.
+    """
+    rows = (
         db.query(Listing)
         .filter(
             Listing.status == ListingStatus.active,
-            Listing.external_source.is_(None),
             Listing.tg_post_id.is_(None),
             Listing.published_at.isnot(None),
         )
         .order_by(Listing.published_at.asc())
-        .limit(limit)
+        .limit(limit * 6)
         .all()
     )
+    good = []
+    for listing in rows:
+        if listing.external_source and not is_good_import(listing):
+            continue
+        good.append(listing)
+        if len(good) >= limit:
+            break
+    return good
 
 
 def caption_for(listing: Listing) -> tuple[str, str]:
@@ -69,7 +111,16 @@ def caption_for(listing: Listing) -> tuple[str, str]:
     site = settings.public_base_url.rstrip("/")
     path = listing_path(listing.id, title, listing.city,
                         listing.category.slug if listing.category else None)
-    seller = listing.owner.display_name if listing.owner else "Продавец"
+    # У перенесённого объявления владелец на сайте служебный — писать
+    # ему бессмысленно. Автор там один: ник в Telegram, с ним и
+    # связываются.
+    if listing.external_source and listing.external_author:
+        seller = f"@{listing.external_author}"
+        author_id = None
+    else:
+        seller = listing.owner.display_name if listing.owner else "Продавец"
+        author_id = listing.owner.telegram_id if listing.owner else None
+
     caption = build_caption(
         title=title,
         price=float(listing.price) if listing.price else None,
@@ -80,7 +131,7 @@ def caption_for(listing: Listing) -> tuple[str, str]:
         author_name=seller,
         # Телеграма у продавца с сайта может не быть вовсе — тогда имя
         # без ссылки, а писать ему предлагаем на сайте.
-        author_id=listing.owner.telegram_id if listing.owner else None,
+        author_id=author_id,
         site_url=site,
     )
     return caption, f"{site}{path}"
