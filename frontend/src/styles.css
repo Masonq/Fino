@@ -3217,6 +3217,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .admin-user-page .my-tabs{ margin-top:14px; }
 
 /* Кто что решил */
+.funnel{ display:flex; flex-direction:column; gap:8px; margin:4px 0 12px; }
+.funnel-step{ position:relative; padding:10px 12px; border-radius:11px; background:#F4F4F0; overflow:hidden; }
+.funnel-bar{ position:absolute; left:0; top:0; bottom:0; background:var(--primary-soft); }
+.funnel-text{ position:relative; display:flex; align-items:baseline; gap:8px; }
+.funnel-name{ flex:1; min-width:0; font-size:12.5px; font-weight:600; color:var(--ink-soft); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.funnel-text b{ font-size:15px; font-weight:800; font-variant-numeric:tabular-nums; }
+.funnel-pct{ font-size:12px; font-weight:800; color:var(--primary-deep); min-width:38px; text-align:right; }
+
 .audit-actors{ display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
 .audit-actor{
   display:flex; align-items:center; justify-content:space-between; gap:10px;

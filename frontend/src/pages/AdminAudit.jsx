@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
@@ -11,6 +11,12 @@ const FILTERS = [
   { key: 'user', label: 'audit.about_people' },
   { key: 'listing', label: 'audit.about_listings' },
 ]
+
+// Служебные записи (ночные скрипты, перенос из чатов, переписывание
+// заголовков) идут без сотрудника: за сутки их сотни против десятка
+// решений человека, и в общем списке решения в них тонут. Показываем
+// людей, служебное — отдельной вкладкой.
+const KINDS = ['staff', 'system']
 
 // Час и минута важнее даты: смотрят журнал обычно сразу после события.
 function when(iso, locale) {
@@ -38,6 +44,7 @@ export default function AdminAudit() {
   const [actors, setActors] = useState([])
   const [loaded, setLoaded] = useState(false)
   const [denied, setDenied] = useState(false)
+  const [kind, setKind] = useState('staff')
 
   const load = useCallback(() => {
     // Проверено: items.map ниже рендерится вообще без условия на
@@ -47,7 +54,7 @@ export default function AdminAudit() {
     // до прихода новых. Сбрасываем оба явно.
     setLoaded(false)
     setItems([])
-    const params = { days: 30, limit: 100 }
+    const params = { days: 30, limit: 100, actor_kind: kind }
     if (filter) params.action = filter
     if (actor.trim()) params.actor = actor.trim()
 
@@ -55,7 +62,7 @@ export default function AdminAudit() {
       .then((res) => { setItems(res.items || []); setTotal(res.total || 0); setDenied(false) })
       .catch((e) => { if (e.status === 403) setDenied(true) })
       .finally(() => setLoaded(true))
-  }, [filter, actor])
+  }, [filter, actor, kind])
 
   // Одна загрузка вместо двух — та же правка, что и на странице
   // «Пользователи» (там замерил: три запроса списка на один заход, и
@@ -105,6 +112,14 @@ export default function AdminAudit() {
         placeholder={t('audit.who')}
       />
 
+      <div className="my-tabs">
+        {KINDS.map((k) => (
+          <button key={k} className={kind === k ? 'my-tab active' : 'my-tab'} onClick={() => setKind(k)}>
+            {t(`audit.kind_${k}`)}
+          </button>
+        ))}
+      </div>
+
       <div className="admin-filters">
         {FILTERS.map((f) => (
           <button
@@ -144,14 +159,21 @@ export default function AdminAudit() {
       {loaded && !items.length && <p className="empty">{t('audit.empty')}</p>}
 
       <div className="audit-list">
-        {items.map((row) => (
-          <div key={row.id} className="audit-row">
+        {items.map((row) => {
+          // Каждая запись — про что-то конкретное: объявление или
+          // человека. Раньше по ней нельзя было перейти, и проверить
+          // решение значило искать объявление руками.
+          const to = row.target_type === 'listing' ? `/go/${row.target_id}`
+            : row.target_type === 'user' ? `/admin/users/${row.target_id}` : null
+          const Row = to ? Link : 'div'
+          return (
+          <Row key={row.id} className="audit-row" {...(to ? { to } : {})}>
             <div className="audit-head">
               <span className="audit-action">{t(`audit.act.${row.action}`, row.action)}</span>
               <span className="audit-time">{when(row.created_at, i18n.language)}</span>
             </div>
             <div className="audit-meta">
-              {row.actor}
+              {row.actor_id ? row.actor : t('audit.by_system')}
               {row.details?.about ? ` → ${row.details.about}` : ''}
               {row.details?.was && row.details?.became
                 ? ` · ${row.details.was} → ${row.details.became}`
@@ -161,8 +183,9 @@ export default function AdminAudit() {
                 : ''}
             </div>
             {row.reason && <div className="audit-reason">{row.reason}</div>}
-          </div>
-        ))}
+          </Row>
+          )
+        })}
       </div>
     </div>
   )

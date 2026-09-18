@@ -63,6 +63,11 @@ def entries(
     action: str | None = Query(None, description="вид действия целиком или начало"),
     actor: str | None = Query(None, description="кто — имя или его часть"),
     target_id: str | None = Query(None, description="над кем или чем"),
+    # Служебные записи (ночные скрипты, перенос из чатов, переписывание
+    # заголовков) идут без сотрудника и числом забивают журнал: за сутки
+    # их сотни, а решений человека — десяток. По умолчанию показываем
+    # людей, служебные — отдельной вкладкой.
+    actor_kind: str = Query("staff", pattern="^(staff|system|all)$"),
     days: int = Query(30, ge=1, le=365),
     limit: int = Query(100, le=500),
     offset: int = 0,
@@ -81,6 +86,10 @@ def entries(
         query = query.filter(AuditEntry.actor_name.ilike(f"%{actor.strip()}%"))
     if target_id:
         query = query.filter(AuditEntry.target_id == target_id.strip())
+    if actor_kind == "staff":
+        query = query.filter(AuditEntry.actor_id.isnot(None))
+    elif actor_kind == "system":
+        query = query.filter(AuditEntry.actor_id.is_(None))
 
     total = query.count()
     rows = (query.order_by(AuditEntry.created_at.desc())

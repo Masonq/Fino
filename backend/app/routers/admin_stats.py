@@ -236,6 +236,85 @@ def daily(
     return {"items": out}
 
 
+@router.get("/funnel")
+def funnel(
+    days: int = Query(14, ge=1, le=90),
+    staff: User = Depends(require_staff),
+    db: Session = Depends(get_db),
+):
+    """
+    Воронка и ликвидность — то, по чему площадки объявлений судят о себе.
+
+    Число объявлений и посетителей говорит, сколько всего происходит, но
+    не говорит, работает ли площадка. Работает она, когда объявление
+    находят и по нему пишут. Отсюда два набора чисел.
+
+    Воронка: показ в ленте → открытие карточки → контакт (сообщение или
+    просмотр телефона). Проценты между ступенями — то, что читают в
+    первую очередь: провал на первой ступени значит, что фото и
+    заголовки не цепляют, на второй — что объявления плохие или цены не
+    те.
+
+    Ликвидность: какая доля объявлений вообще получила хоть один
+    контакт, за сколько часов приходит первый и какая доля доходит до
+    «продано». По этим числам продавец решает, возвращаться ли, и они
+    же отличают живую площадку от кладбища объявлений.
+    """
+    from app.models import Chat, ListingSignalDaily, ListingViewDaily, PhoneReveal
+
+    since = utcnow() - timedelta(days=days)
+    since_day = since.date()
+
+    impressions = (db.query(func.coalesce(func.sum(ListingSignalDaily.impressions), 0))
+                   .filter(ListingSignalDaily.day >= since_day).scalar() or 0)
+    views = (db.query(func.coalesce(func.sum(ListingViewDaily.count), 0))
+             .filter(ListingViewDaily.day >= since_day).scalar() or 0)
+    chats = (db.query(func.count(Chat.id))
+             .filter(Chat.created_at >= since).scalar() or 0)
+    reveals = (db.query(func.count(PhoneReveal.id))
+               .filter(PhoneReveal.created_at >= since).scalar() or 0)
+    contacts = chats + reveals
+
+    # Ликвидность считаем по объявлениям, опубликованным за период и
+    # прожившим хотя бы сутки: у вчерашних контакта может ещё не быть
+    # просто потому, что их никто не успел увидеть.
+    grown = (db.query(Listing.id, Listing.published_at, Listing.status)
+             .filter(Listing.published_at >= since,
+                     Listing.published_at <= utcnow() - timedelta(hours=24))
+             .all())
+    ids = [row[0] for row in grown]
+    first_contact: dict = {}
+    if ids:
+        for lid, when in (db.query(Chat.listing_id, func.min(Chat.created_at))
+                          .filter(Chat.listing_id.in_(ids))
+                          .group_by(Chat.listing_id).all()):
+            first_contact[lid] = when
+    published_at = {row[0]: row[1] for row in grown}
+    hours = sorted(
+        (first_contact[lid] - published_at[lid]).total_seconds() / 3600
+        for lid in first_contact if published_at.get(lid)
+    )
+    median_hours = round(hours[len(hours) // 2], 1) if hours else None
+    sold = sum(1 for row in grown if row[2] == ListingStatus.sold)
+
+    return {
+        "days": days,
+        "funnel": {
+            "impressions": int(impressions),
+            "views": int(views),
+            "contacts": int(contacts),
+            "messages": int(chats),
+            "phone_reveals": int(reveals),
+        },
+        "liquidity": {
+            "listings": len(ids),
+            "with_contact": len(first_contact),
+            "median_hours_to_contact": median_hours,
+            "sold": sold,
+        },
+    }
+
+
 @router.get("/categories")
 def by_category(
     staff: User = Depends(require_staff),

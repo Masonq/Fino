@@ -639,7 +639,21 @@
     "logins_unit": "входов",
     "signups_short": "регистраций",
     "newcomers": "Новых",
-    "returning": "Вернувшихся"
+    "returning": "Вернувшихся",
+    "funnel": "Воронка",
+    "step_impressions": "Показы в ленте",
+    "step_views": "Открыли объявление",
+    "step_contacts": "Написали или взяли телефон",
+    "by_message": "сообщением",
+    "by_phone": "телефон",
+    "liquidity": "Ликвидность",
+    "with_contact": "Объявлений с контактом",
+    "time_to_contact": "Медиана до первого контакта",
+    "sold_share": "Дошло до «продано»",
+    "hours_one": "{{count}} час",
+    "hours_few": "{{count}} часа",
+    "hours_many": "{{count}} часов",
+    "hours_other": "{{count}} часов"
   },
   "audit": {
     "title": "Журнал действий",
@@ -659,8 +673,16 @@
       "ticket.answer": "Ответил в обращении",
       "ticket.close": "Закрыл обращение",
       "import.run": "Перенос из чатов",
-      "listing.return_to_queue": "Вернул в очередь"
-    }
+      "listing.return_to_queue": "Вернул в очередь",
+      "listing.move": "Перенёс в другой раздел",
+      "listing_retitled": "Переписал заголовок",
+      "listing_retitle_failed": "Заголовок переписать не вышло",
+      "chat.suspicious": "Пометил переписку подозрительной",
+      "chat.flag_cleared": "Снял пометку с переписки"
+    },
+    "kind_staff": "Сотрудники",
+    "kind_system": "Служебные",
+    "by_system": "Автоматически"
   },
   "support": {
     "title": "Написать в поддержку",

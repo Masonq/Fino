@@ -632,7 +632,20 @@
     "logins_unit": "prijava",
     "signups_short": "registracija",
     "newcomers": "Novih",
-    "returning": "Vraćenih"
+    "returning": "Vraćenih",
+    "funnel": "Levak",
+    "step_impressions": "Prikazano u listi",
+    "step_views": "Otvoreno",
+    "step_contacts": "Poruka ili telefon",
+    "by_message": "poruka",
+    "by_phone": "telefon",
+    "liquidity": "Likvidnost",
+    "with_contact": "Oglasa sa kontaktom",
+    "time_to_contact": "Medijana do prvog kontakta",
+    "sold_share": "Stiglo do „prodato“",
+    "hours_one": "{{count}} sat",
+    "hours_few": "{{count}} sata",
+    "hours_other": "{{count}} sati"
   },
   "audit": {
     "title": "Dnevnik radnji",
@@ -652,8 +665,16 @@
       "ticket.answer": "Odgovorio na tiket",
       "ticket.close": "Zatvorio tiket",
       "import.run": "Uvoz iz ćaskanja",
-      "listing.return_to_queue": "Vratio u red"
-    }
+      "listing.return_to_queue": "Vratio u red",
+      "listing.move": "Premestio u drugu rubriku",
+      "listing_retitled": "Prepisao naslov",
+      "listing_retitle_failed": "Naslov nije prepisan",
+      "chat.suspicious": "Označio prepisku",
+      "chat.flag_cleared": "Skinuo oznaku sa prepiske"
+    },
+    "kind_staff": "Osoblje",
+    "kind_system": "Sistemske",
+    "by_system": "Automatski"
   },
   "support": {
     "title": "Pišite podršci",

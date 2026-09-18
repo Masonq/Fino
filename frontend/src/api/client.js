@@ -173,6 +173,7 @@ export const api = {
   adminStatsDaily: (days) => request(`/admin/stats/daily?${new URLSearchParams({ days })}`),
   adminStatsCategories: () => request('/admin/stats/categories'),
   adminStatsSources: () => request('/admin/stats/sources'),
+  adminStatsFunnel: (days) => request(`/admin/stats/funnel?${new URLSearchParams({ days })}`),
   adminStatsQuality: () => request('/admin/stats/quality'),
   adminAudit: (params) => request(`/admin/audit?${query(params)}`),
   adminAuditActors: (days) => request(`/admin/audit/actors?${new URLSearchParams({ days })}`),

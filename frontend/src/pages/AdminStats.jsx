@@ -20,6 +20,7 @@ export default function AdminStats() {
   const [categories, setCategories] = useState([])
   const [sources, setSources] = useState([])
   const [quality, setQuality] = useState(null)
+  const [funnel, setFunnel] = useState(null)
   const [denied, setDenied] = useState(false)
   const [loaded, setLoaded] = useState(false)
 
@@ -34,13 +35,15 @@ export default function AdminStats() {
       api.adminStatsCategories().catch(() => ({ items: [] })),
       api.adminStatsSources().catch(() => ({ items: [] })),
       api.adminStatsQuality().catch(() => null),
+      api.adminStatsFunnel(days).catch(() => null),
     ])
-      .then(([overview, byDay, cats, srcs, qual]) => {
+      .then(([overview, byDay, cats, srcs, qual, fun]) => {
         setData(overview)
         setDaily(byDay.items || [])
         setCategories(cats.items || [])
         setSources(srcs.items || [])
         setQuality(qual)
+        setFunnel(fun)
         setDenied(false)
       })
       .catch((e) => { if (e.status === 403) setDenied(true) })
@@ -104,6 +107,67 @@ export default function AdminStats() {
               <div className="stats-label">{t('stats.new_people')}</div>
             </div>
           </div>
+
+          {/* Воронка — первым блоком после чисел: по ней судят, работает
+              площадка или просто наполняется. Показ в ленте → открытие
+              карточки → контакт; проценты между ступенями важнее самих
+              чисел. */}
+          {funnel && funnel.funnel.impressions > 0 && (
+            <div className="stats-block">
+              <div className="stats-block-title">{t('stats.funnel')}</div>
+              <div className="funnel">
+                {[
+                  ['impressions', funnel.funnel.impressions, null],
+                  ['views', funnel.funnel.views, share(funnel.funnel.views, funnel.funnel.impressions)],
+                  ['contacts', funnel.funnel.contacts, share(funnel.funnel.contacts, funnel.funnel.views)],
+                ].map(([key, value, pct]) => (
+                  <div key={key} className="funnel-step">
+                    <div className="funnel-bar" style={{ width: `${Math.max(share(value, funnel.funnel.impressions), 4)}%` }} />
+                    <div className="funnel-text">
+                      <span className="funnel-name">{t(`stats.step_${key}`)}</span>
+                      <b>{value.toLocaleString(i18n.language)}</b>
+                      {pct !== null && <span className="funnel-pct">{pct}%</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="stats-split">
+                <span>{t('stats.by_message')}: <b>{funnel.funnel.messages}</b></span>
+                <span>{t('stats.by_phone')}: <b>{funnel.funnel.phone_reveals}</b></span>
+              </div>
+            </div>
+          )}
+
+          {/* Ликвидность: доля объявлений, получивших хоть один контакт,
+              и сколько до него ждать. Ради этого продавец возвращается —
+              или не возвращается. */}
+          {funnel && funnel.liquidity.listings > 0 && (
+            <div className="stats-block">
+              <div className="stats-block-title">{t('stats.liquidity')}</div>
+              <div className="stats-rows">
+                <div className="stats-row">
+                  <span>{t('stats.with_contact')}</span>
+                  <span>
+                    {funnel.liquidity.with_contact} · {share(funnel.liquidity.with_contact, funnel.liquidity.listings)}%
+                  </span>
+                </div>
+                <div className="stats-row">
+                  <span>{t('stats.time_to_contact')}</span>
+                  <span>
+                    {funnel.liquidity.median_hours_to_contact == null
+                      ? '—'
+                      : t('stats.hours', { count: Math.round(funnel.liquidity.median_hours_to_contact) })}
+                  </span>
+                </div>
+                <div className="stats-row">
+                  <span>{t('stats.sold_share')}</span>
+                  <span>
+                    {funnel.liquidity.sold} · {share(funnel.liquidity.sold, funnel.liquidity.listings)}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="stats-block">
             <div className="stats-block-title">{t('stats.by_day')}</div>

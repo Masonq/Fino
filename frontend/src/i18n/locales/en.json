@@ -625,7 +625,19 @@
     "logins_unit": "sign-ins",
     "signups_short": "sign-ups",
     "newcomers": "New",
-    "returning": "Returning"
+    "returning": "Returning",
+    "funnel": "Funnel",
+    "step_impressions": "Shown in feed",
+    "step_views": "Opened",
+    "step_contacts": "Messaged or got phone",
+    "by_message": "by message",
+    "by_phone": "phone",
+    "liquidity": "Liquidity",
+    "with_contact": "Listings with a contact",
+    "time_to_contact": "Median time to first contact",
+    "sold_share": "Reached “sold”",
+    "hours_one": "{{count}} hour",
+    "hours_other": "{{count}} hours"
   },
   "audit": {
     "title": "Action log",
@@ -645,8 +657,16 @@
       "ticket.answer": "Answered a ticket",
       "ticket.close": "Closed a ticket",
       "import.run": "Chat import run",
-      "listing.return_to_queue": "Returned to queue"
-    }
+      "listing.return_to_queue": "Returned to queue",
+      "listing.move": "Moved to another section",
+      "listing_retitled": "Rewrote the title",
+      "listing_retitle_failed": "Could not rewrite the title",
+      "chat.suspicious": "Flagged a chat",
+      "chat.flag_cleared": "Cleared a chat flag"
+    },
+    "kind_staff": "Staff",
+    "kind_system": "System",
+    "by_system": "Automatic"
   },
   "support": {
     "title": "Contact support",
