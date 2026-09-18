@@ -9,6 +9,7 @@
 а описание идёт ниже: его читают, только если первые две строки
 зацепили.
 """
+import re
 from html import escape
 
 # Подпись под постом. Одна строка мелким текстом, без картинок и
@@ -73,6 +74,65 @@ def _shorten(text: str, limit: int) -> str:
     return cut.rsplit(" ", 1)[0].strip() + "…"
 
 
+# Строки, которым в нашем посте не место.
+#
+# В перенесённых объявлениях у продавцов свои хвосты: приглашение в свой
+# канал, «полная информация тут», ссылка на другой чат, повтор цены,
+# которая у нас и так стоит второй строкой. Всё это либо уводит людей из
+# нашего чата, либо занимает место впустую.
+_PROMO_LINE_RE = re.compile(
+    r"(t\.me/|https?://|@[a-z0-9_]{4,}"
+    r"|больше\s+(объявлен|в\s+канале|тут|здесь)"
+    r"|подпис(ыв|ат|ка|ыв)"
+    r"|наш\s+(канал|чат|телеграм)"
+    r"|подробн\w*\s+(тут|здесь|в\s+)"
+    r"|полн\w*\s+информац\w*"
+    r"|все\s+объявлен\w*"
+    r"|пишите\s+в\s+(лич|дир)"
+    r"|vise\s+na\s+|više\s+na\s+|prati\w*\s+nas)",
+    re.I)
+# Строка, состоящая только из цены: «Цена 12.200€», «12200 rsd».
+_PRICE_LINE_RE = re.compile(
+    r"^(цена|cena|price)?\s*[:\-—]?\s*\d[\d\s.,\u00a0]*"
+    r"\s*(€|\$|eur|евро|e|rsd|рсд|дин\w*|din\w*)?\s*"
+    # Хвост в скобках — «(возможен небольшой торг)», «(fiksno)»: он про
+    # цену, а цена у нас и так стоит второй строкой.
+    r"(\([^)]*\))?\s*(торг\w*|fiksno)?$", re.I)
+
+
+def strip_promo(text: str) -> str:
+    """
+    Убирает из описания чужие приглашения и повтор цены.
+
+    Разбираем по строкам, а не по всему тексту: выбросить надо ровно
+    строку с приглашением, а не весь абзац вокруг неё. Двоеточие в конце
+    оставшейся строки («Полная информация тут:» ушла, а «Пробег:»
+    осталась) не трогаем — это нормальная строка характеристики.
+    """
+    kept = []
+    for line in (text or "").splitlines():
+        stripped = line.strip()
+        if not stripped:
+            kept.append("")
+            continue
+        if _PROMO_LINE_RE.search(stripped):
+            continue
+        if _PRICE_LINE_RE.match(stripped):
+            continue
+        kept.append(stripped)
+    # Схлопываем пустые строки, оставшиеся от выброшенных.
+    out, blank = [], False
+    for line in kept:
+        if not line:
+            blank = True
+            continue
+        if out and blank:
+            out.append("")
+        blank = False
+        out.append(line)
+    return "\n".join(out).strip()
+
+
 def _useful_body(title: str, description: str | None) -> str:
     """
     Что из описания стоит показывать под заголовком.
@@ -82,7 +142,7 @@ def _useful_body(title: str, description: str | None) -> str:
     динар» под заголовком «Рюкзак» и ценой «500 RSD», — показывать его
     незачем: строка занимает место и выглядит небрежно.
     """
-    body = (description or "").strip()
+    body = strip_promo(description or "")
     if not body:
         return ""
 
