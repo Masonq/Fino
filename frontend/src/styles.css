@@ -3841,6 +3841,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* Вход через телеграм: ссылка на бота, но выглядит как кнопка рядом с
    остальными способами — человеку разница не важна. */
+.auth-google{ display:flex; justify-content:center; margin:4px 0 8px; min-height:44px; }
 .auth-method.telegram{
   display:flex; align-items:center; justify-content:center; gap:9px;
   text-decoration:none;

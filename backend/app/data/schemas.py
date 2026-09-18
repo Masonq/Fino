@@ -346,6 +346,52 @@ _MEGAPIXELS = {
 }
 
 
+# Комнатность по-сербски.
+#
+# Числовое поле «Комнат» не давало записать полуторку и двушку с
+# половиной — а в Сербии жильё описывают именно так: jednoiposoban,
+# dvoiposoban. Человек с «1.5» вписывал 1 или 2, и объявление
+# терялось в фильтре у тех, кто искал ровно полуторку.
+ROOMS = {
+    "key": "rooms", "type": "select", "required": False,
+    "label": _label("Комнат", "Rooms", "Sobe"),
+    "options": _options(
+        ("studio", "Студия", "Studio", "Garsonjera"),
+        ("1", "1 комната", "1 room", "Jednosoban"),
+        ("1.5", "1.5 комнаты", "1.5 rooms", "Jednoiposoban"),
+        ("2", "2 комнаты", "2 rooms", "Dvosoban"),
+        ("2.5", "2.5 комнаты", "2.5 rooms", "Dvoiposoban"),
+        ("3", "3 комнаты", "3 rooms", "Trosoban"),
+        ("4", "4 и больше", "4 or more", "Četvorosoban i više"),
+    ),
+}
+
+# Как платить и как передавать вещь.
+#
+# Самые частые вопросы в первом же сообщении покупателя — «наличными
+# или на карту?» и «встретимся или отправите почтой?». Спрашивать это
+# перепиской значит терять время обеих сторон; спрошенное один раз при
+# размещении экономит по два сообщения на каждой сделке.
+PAYMENT_WAY = {
+    "key": "payment_way", "type": "select", "required": False,
+    "label": _label("Оплата", "Payment", "Plaćanje"),
+    "options": _options(
+        ("cash", "Наличными", "Cash", "Gotovina"),
+        ("card", "Переводом на карту", "Bank transfer", "Uplata na račun"),
+        ("any", "Наличными или переводом", "Cash or transfer", "Gotovina ili uplata"),
+    ),
+}
+HANDOVER = {
+    "key": "handover", "type": "select", "required": False,
+    "label": _label("Как передать", "Handover", "Preuzimanje"),
+    "options": _options(
+        ("meet", "Личная встреча", "In person", "Lično preuzimanje"),
+        ("post", "Отправлю почтой", "By courier", "Slanje kurirskom službom"),
+        ("any", "Встреча или почта", "In person or courier", "Lično ili kurirom"),
+    ),
+}
+
+
 SCHEMAS: dict[str, list[dict]] = {
     "real-estate": [
         {"key": "deal_type", "type": "select", "required": True,
@@ -357,8 +403,7 @@ SCHEMAS: dict[str, list[dict]] = {
          )},
         {"key": "area_m2", "type": "number", "required": True,
          "label": _label("Площадь, м²", "Area, m²", "Površina, m²")},
-        {"key": "rooms", "type": "number", "required": False,
-         "label": _label("Комнат", "Rooms", "Sobe")},
+        ROOMS,
         {"key": "floor", "type": "number", "required": False,
          "label": _label("Этаж", "Floor", "Sprat")},
         TOTAL_FLOORS, BATHROOM, RENOVATION, FURNISHED, BALCONY,
@@ -369,12 +414,12 @@ SCHEMAS: dict[str, list[dict]] = {
              _BODY_TYPE, _FUEL_TYPE, _ENGINE_VOLUME, COLOR, _AUTO_VIN],
     "electronics": [
         BRAND, MODEL, CONDITION, _STORAGE_GB, _RAM_GB, _SCREEN_INCH,
-        _BATTERY_HEALTH, WARRANTY,
+        _BATTERY_HEALTH, WARRANTY, PAYMENT_WAY, HANDOVER,
     ],
-    "fashion": [BRAND, CONDITION_SIMPLE, SIZE_TEXT, GENDER],
-    "home-garden": [BRAND, CONDITION_SIMPLE, MATERIAL, DIMENSIONS],
-    "kids": [BRAND, CONDITION_SIMPLE, AGE_GROUP, SIZE_TEXT],
-    "hobby-sport": [BRAND, CONDITION_SIMPLE, SIZE_TEXT],
+    "fashion": [BRAND, CONDITION_SIMPLE, SIZE_TEXT, GENDER, PAYMENT_WAY, HANDOVER],
+    "home-garden": [BRAND, CONDITION_SIMPLE, MATERIAL, DIMENSIONS, PAYMENT_WAY, HANDOVER],
+    "kids": [BRAND, CONDITION_SIMPLE, AGE_GROUP, SIZE_TEXT, PAYMENT_WAY, HANDOVER],
+    "hobby-sport": [BRAND, CONDITION_SIMPLE, SIZE_TEXT, PAYMENT_WAY, HANDOVER],
     "pets": [
         {"key": "listing_kind", "type": "select", "required": False,
          "label": _label("Тип объявления", "Listing type", "Vrsta oglasa"),
@@ -387,8 +432,37 @@ SCHEMAS: dict[str, list[dict]] = {
         {"key": "vaccinated", "type": "boolean", "required": False,
          "label": _label("Привит", "Vaccinated", "Vakcinisan")},
     ],
-    "beauty": [BRAND, CONDITION_SIMPLE],
-    "business": [BRAND, CONDITION_SIMPLE, YEAR],
+    "beauty": [BRAND, CONDITION_SIMPLE, PAYMENT_WAY, HANDOVER],
+    # Вакансии: первое, что смотрят — можно ли удалённо и сколько часов.
+    # До сих пор у раздела «Работа» не было полей вовсе, и это стояло в
+    # описании вперемешку с обязанностями.
+    "jobs": [
+        {"key": "work_format", "type": "select", "required": False,
+         "label": _label("Формат работы", "Work format", "Način rada"),
+         "options": _options(
+             ("office", "В офисе", "On-site", "U kancelariji"),
+             ("remote", "Удалённо", "Remote", "Rad od kuće"),
+             ("hybrid", "Гибрид", "Hybrid", "Hibridno"),
+         )},
+        {"key": "schedule", "type": "select", "required": False,
+         "label": _label("График", "Schedule", "Radno vreme"),
+         "options": _options(
+             ("full", "Полный день", "Full time", "Puno radno vreme"),
+             ("shift", "Сменный", "Shifts", "Smenski rad"),
+             ("part", "Частичная занятость", "Part time", "Skraćeno radno vreme"),
+             ("task", "Разовое задание", "One-off task", "Povremeni posao"),
+         )},
+        {"key": "experience", "type": "select", "required": False,
+         "label": _label("Опыт", "Experience", "Iskustvo"),
+         "options": _options(
+             ("none", "Без опыта", "No experience needed", "Bez iskustva"),
+             ("some", "От года", "1+ years", "Od godinu dana"),
+             ("senior", "От трёх лет", "3+ years", "Od tri godine"),
+         )},
+        {"key": "serbian_needed", "type": "boolean", "required": False,
+         "label": _label("Нужен сербский", "Serbian required", "Potreban srpski")},
+    ],
+    "business": [BRAND, CONDITION_SIMPLE, YEAR, PAYMENT_WAY, HANDOVER],
 }
 
 
@@ -406,8 +480,7 @@ SUB_SCHEMAS: dict[str, list[dict]] = {
          )},
         {"key": "area_m2", "type": "number", "required": True,
          "label": _label("Площадь, м²", "Area, m²", "Površina, m²")},
-        {"key": "rooms", "type": "number", "required": False,
-         "label": _label("Комнат", "Rooms", "Sobe")},
+        ROOMS,
         {"key": "floor", "type": "number", "required": False,
          "label": _label("Этаж", "Floor", "Sprat")},
         TOTAL_FLOORS, BATHROOM, RENOVATION, FURNISHED, BALCONY,

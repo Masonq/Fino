@@ -17,13 +17,16 @@ const TELEGRAM_BOT = 'Baraholka_plonk_bot'
 const CODE_LEN = 6
 const RESEND_SEC = 60
 
+const GOOGLE_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
+
 export default function Login() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const { signIn } = useAuth()
 
   const returnTo = params.get('returnTo') || '/'
+  const googleRef = useRef(null)
 
   // iOS выгружает вкладку из памяти, когда уходишь в другое приложение за кодом.
   // Поэтому шаг и введённый адрес держим в хранилище сессии и восстанавливаем.
@@ -172,6 +175,44 @@ export default function Login() {
   }
 
   // ——— выбор способа ———
+  // Кнопку рисует сам Google — свою нарисовать нельзя, правила
+  // Google этого не разрешают. Токен приходит сюда и уходит на сервер,
+  // где проверяется его подпись: браузеру в этом вопросе доверия нет.
+  useEffect(() => {
+    if (!GOOGLE_ID || step !== 'choose' || !googleRef.current) return
+    let cancelled = false
+
+    const draw = () => {
+      if (cancelled || !window.google?.accounts?.id || !googleRef.current) return
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_ID,
+        callback: async ({ credential }) => {
+          try {
+            const res = await api.googleLogin(credential)
+            signIn(res.token, res.user)
+            navigate(returnTo, { replace: true })
+          } catch (e) {
+            setError(e.code === 'user_blocked' ? t('auth.err_blocked') : t('auth.err_generic'))
+          }
+        },
+      })
+      window.google.accounts.id.renderButton(googleRef.current, {
+        theme: 'outline', size: 'large', width: 320,
+        text: 'continue_with', shape: 'pill',
+        locale: i18n.language,
+      })
+    }
+
+    if (window.google?.accounts?.id) { draw(); return () => { cancelled = true } }
+    const script = document.createElement('script')
+    script.src = 'https://accounts.google.com/gsi/client'
+    script.async = true
+    script.onload = draw
+    document.head.appendChild(script)
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step])
+
   if (step === 'choose') {
     return (
       <div className="auth-page">
@@ -203,6 +244,14 @@ export default function Login() {
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3 18.7 19c-.2 1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9.1-8.2c.4-.4-.1-.6-.6-.2L6.3 12.9l-4.8-1.5c-1-.3-1-1 .2-1.5l18.8-7.2c.9-.3 1.6.2 1.4 1.6Z" /></svg>
           {t('auth.by_telegram')}
         </a>
+
+        {/* Вход через Google — кнопка появляется, только если
+            идентификатор приложения задан в сборке: без него Google
+            ничего не покажет, а пустая кнопка хуже её отсутствия.
+            Скрипт Google подгружается один раз и только на этом
+            экране — на остальных страницах он не нужен и только
+            смотрел бы за человеком зря. */}
+        {GOOGLE_ID && <div ref={googleRef} className="auth-google" />}
 
         {error && <p className="auth-error">{error}</p>}
 

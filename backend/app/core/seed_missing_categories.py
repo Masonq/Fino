@@ -120,6 +120,12 @@ NEW = {
         ]),
         ("kids-feeding", "Кормление и гигиена", "Feeding and care", "Ishrana i nega", []),
     ],
+    # Бюро находок: потерянные и найденные вещи. В диаспорных чатах это
+    # постоянный жанр — «нашли ключи у Калемегдана», «потерял рюкзак в
+    # 26-м автобусе», — а деваться таким объявлениям было некуда.
+    "services": [
+        ("lost-found", "Бюро находок", "Lost and found", "Izgubljeno i nađeno", []),
+    ],
     "hobby-sport": [
         ("tickets", "Билеты и сертификаты", "Tickets and gift cards", "Karte i vaučeri", []),
         ("skate-roller", "Скейтборды и ролики", "Skateboards and rollerblades", "Skejtbordi i rolere", []),

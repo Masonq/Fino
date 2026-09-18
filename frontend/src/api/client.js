@@ -107,9 +107,9 @@ export const api = {
       referred_by: localStorage.getItem('fino_ref') || null,
     }),
   }),
-  oauthLogin: (payload) => request('/auth/oauth', {
+  googleLogin: (credential) => request('/auth/google', {
     method: 'POST',
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ credential }),
   }),
   me: () => request('/auth/me'),
   logout: () => request('/auth/logout', { method: 'POST' }),

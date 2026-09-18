@@ -15,6 +15,7 @@ from app.core.database import get_db
 from app.core.notify import send_code
 from app.models import User, VerificationCode, VerifyChannel
 from app.core.clock import utcnow
+from app.core.config import settings
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -58,14 +59,6 @@ class VerifyCodeIn(BaseModel):
     # регистрации нового человека имеет значение; для уже
     # существующего аккаунта просто игнорируется.
     referred_by: str | None = None
-
-
-class OAuthIn(BaseModel):
-    provider: str             # google | apple | telegram | viber
-    external_id: str
-    email: str | None = None
-    display_name: str | None = None
-    avatar_url: str | None = None
 
 
 def _user_payload(user: User) -> dict:
@@ -252,11 +245,17 @@ def verify_code_endpoint(payload: VerifyCodeIn, request: Request, db: Session = 
 # мешает, а менять устройство таблицы на живой базе ради этого незачем.
 
 # ---------- внешние сервисы ----------
-@router.post("/oauth")
-def oauth_login(payload: OAuthIn, db: Session = Depends(get_db)):
+def _link_oauth(db: Session, provider: str, external_id: str,
+                email: str | None, display_name: str | None,
+                avatar_url: str | None) -> User:
     """
-    Вход через Google / Apple / Telegram / Viber.
-    Проверка подписи провайдера делается до вызова — здесь только связывание аккаунта.
+    Находит или заводит человека по внешнему аккаунту и связывает их.
+
+    Вызывается только после того, как подлинность внешнего аккаунта уже
+    проверена (см. google_login ниже). Прежде здесь был открытый
+    эндпоинт, принимавший внешний идентификатор прямо из запроса — то
+    есть войти под чужой учётной записью мог кто угодно, кто знал её
+    google_id. Эндпоинт убран, осталась только эта внутренняя функция.
     """
     field_map = {
         "google": User.google_id,
@@ -264,35 +263,67 @@ def oauth_login(payload: OAuthIn, db: Session = Depends(get_db)):
         "telegram": User.telegram_id,
         "viber": User.viber_id,
     }
-    if payload.provider not in field_map:
-        raise HTTPException(400, "unknown_provider")
+    column = field_map[provider]
+    user = db.query(User).filter(column == external_id).first()
 
-    column = field_map[payload.provider]
-    user = db.query(User).filter(column == payload.external_id).first()
-
-    # если аккаунта нет — пробуем связать по email, иначе создаём
-    if not user and payload.email:
-        user = db.query(User).filter(User.email == payload.email.lower()).first()
+    # Аккаунта нет — связываем с существующим по почте. Почта от Google
+    # приходит уже подтверждённой им самим, так что это не дыра: подтвердить
+    # чужую почту в Google, не владея ею, нельзя.
+    if not user and email:
+        user = db.query(User).filter(User.email == email.lower()).first()
 
     if not user:
         user = User(
-            display_name=payload.display_name or payload.provider.capitalize(),
-            email=payload.email.lower() if payload.email else None,
-            email_verified=bool(payload.email),
-            avatar_url=payload.avatar_url,
+            display_name=display_name or provider.capitalize(),
+            email=email.lower() if email else None,
+            email_verified=bool(email),
+            avatar_url=avatar_url,
         )
         db.add(user)
 
-    setattr(user, column.key, payload.external_id)
-    if payload.avatar_url and not user.avatar_url:
-        user.avatar_url = payload.avatar_url
+    setattr(user, column.key, external_id)
+    if avatar_url and not user.avatar_url:
+        user.avatar_url = avatar_url
 
     db.commit()
     db.refresh(user)
-
     if user.is_blocked:
         raise HTTPException(403, "user_blocked")
+    return user
 
+
+class GoogleIn(BaseModel):
+    credential: str
+
+
+@router.post("/google")
+def google_login(payload: GoogleIn, db: Session = Depends(get_db)):
+    """
+    Вход через Google — по ID-токену из Google Identity Services.
+
+    Браузер получает от Google подписанный токен и присылает его сюда;
+    мы проверяем подпись открытыми ключами Google, издателя, срок и то,
+    что токен выписан именно нашему приложению. Без последней проверки
+    подошёл бы токен, выданный любому другому сайту, — обычная ошибка в
+    таких обработчиках.
+    """
+    if not settings.google_client_id:
+        raise HTTPException(503, "google_disabled")
+
+    from app.core.google_auth import verify_google_token
+
+    try:
+        claims = verify_google_token(payload.credential, settings.google_client_id)
+    except ValueError:
+        raise HTTPException(401, "bad_token")
+
+    user = _link_oauth(
+        db, "google",
+        external_id=claims["sub"],
+        email=claims.get("email") if claims.get("email_verified") else None,
+        display_name=claims.get("name"),
+        avatar_url=claims.get("picture"),
+    )
     return {"token": create_access_token(user.id, user.token_version), "user": _user_payload(user)}
 
 
