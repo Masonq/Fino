@@ -16,6 +16,7 @@ import PromoteButton from '../components/PromoteButton'
 import SimilarListings from '../components/SimilarListings'
 import SellerListings from '../components/SellerListings'
 import HScroll from '../components/HScroll'
+import { lastListPage } from '../utils/lastList'
 import { formatPrice } from '../utils/money'
 import { relativeDate } from '../utils/time'
 import { hasLanding } from '../data/landings'
@@ -357,6 +358,8 @@ export default function ListingDetail() {
     // компонент с нуля.
     setDeleting(false)
     setShowReasons(false)
+    setConfirmDelete(false)
+    setDeleteError('')
     setCustomReason(false)
     setReasonText('')
     // Одного сброса состояния мало — сам DOM-элемент полосы фото
@@ -391,7 +394,7 @@ export default function ListingDetail() {
       }
       navigate(`/chat/${chat.id}`)
     } catch (e) {
-      alert(t('detail.own_listing'))
+      setDeleteError(t('detail.own_listing'))
     } finally {
       setStarting(false)
     }
@@ -458,6 +461,9 @@ export default function ListingDetail() {
   const [moveTree, setMoveTree] = useState([])
   const [moving, setMoving] = useState(false)
   const [showReasons, setShowReasons] = useState(false)
+  // false | true (обычное подтверждение) | 'force' (с историей)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
   const [customReason, setCustomReason] = useState(false)
   const [reasonText, setReasonText] = useState('')
   // Подсказки перед первым сообщением продавцу — хук должен жить тут,
@@ -533,56 +539,50 @@ export default function ListingDetail() {
         category_not_found: t('move.no_category'),
         not_found: t('move.gone'),
       }[e?.code] || t('move.failed')
-      alert(message)
+      setDeleteError(message)
     } finally {
       setMoving(false)
     }
   }
 
-  const handleDelete = async () => {
-    // Объявление ещё не загрузилось — говорим об этом вслух.
-    //
-    // Раньше нажатие тут молча заканчивалось: кнопка выглядела живой,
-    // но не делала ничего, а после обновления страницы работала. Это и
-    // была та самая жалоба «иногда не срабатывает» — данных на руках
-    // не было, а признаков этого человек не видел.
-    if (!listing) {
-      alert(t('detail.not_loaded_yet'))
-      return
-    }
-    if (canReturnToEdit) { setShowReasons(true); return }
-    if (!window.confirm(t('my.confirm_delete'))) return
+  // Куда уходить после удаления: на ту же страницу-список, с которой
+  // пришли, со всеми условиями поиска. Раздел удалённого объявления —
+  // запасной вариант на случай прямого захода по ссылке.
+  const afterDelete = () => {
+    const back = lastListPage()
+    navigate(back !== '/' ? back
+      : (listing?.category_slug ? `/search?category=${listing.category_slug}` : '/'),
+      { replace: true })
+  }
+
+  const doDelete = async (force = false) => {
+    setConfirmDelete(false)
+    setShowReasons(false)
     setDeleting(true)
     try {
-      await api.deleteListing(listing.id)
-      navigate(listing.category_slug ? `/search?category=${listing.category_slug}` : '/', { replace: true })
+      await api.deleteListing(listing.id, force)
+      afterDelete()
     } catch (e) {
-      // Раньше тут любая ошибка проглатывалась молча — модератор
-      // видел, что кнопка просто перестала крутиться, без объяснения.
-      if (e.code === 'listing_has_history' && isStaff) {
-        // Сюда попадают только объявления без «настоящего» владельца —
-        // canReturnToEdit=false, то есть перенесённые из Telegram
-        // (у обычных объявлений выше уже сработал бы путь «отклонить
-        // с причиной», не удаление вовсе — отклонение не трогает
-        // историю, конфликта внешнего ключа там просто не бывает).
-        // У такого объявления второе, отдельное и явное подтверждение —
-        // это стирает настоящую переписку/жалобы/отзывы, не просто
-        // мусорную карточку.
-        if (window.confirm(t('my.delete_has_history_force_confirm'))) {
-          setDeleting(true)
-          try {
-            await api.deleteListing(listing.id, true)
-            navigate(listing.category_slug ? `/search?category=${listing.category_slug}` : '/', { replace: true })
-            return
-          } catch {
-            alert(t('auth.err_generic'))
-          }
-        }
+      if (e.code === 'listing_has_history' && isStaff && !force) {
+        // Такое удаление стирает настоящую переписку, жалобы и отзывы —
+        // спрашиваем второй раз, отдельно и явно.
+        setConfirmDelete('force')
       } else {
-        alert(e.code === 'listing_has_history' ? t('my.delete_has_history') : t('auth.err_generic'))
+        setDeleteError(e.code === 'listing_has_history' ? t('my.delete_has_history') : t('auth.err_generic'))
       }
-    }
-    finally { setDeleting(false) }
+    } finally { setDeleting(false) }
+  }
+
+  const handleDelete = () => {
+    // Объявление ещё не загрузилось — говорим об этом вслух.
+    if (!listing) { setDeleteError(t('detail.not_loaded_yet')); return }
+    // Ни confirm, ни alert: страницу открывают из Telegram, а его
+    // встроенный браузер такие окна иногда просто не показывает —
+    // нажатие на корзину выглядело как «ничего не произошло», и
+    // помогала только перезагрузка в обычном браузере. Спрашиваем
+    // своей панелью, которая рисуется на странице и видна всегда.
+    if (canReturnToEdit) { setShowReasons(true); return }
+    setConfirmDelete(true)
   }
 
   const returnToEdit = async (reason) => {
@@ -591,7 +591,7 @@ export default function ListingDetail() {
     setDeleting(true)
     try {
       await api.modReject(listing.id, reason)
-      navigate(listing.category_slug ? `/search?category=${listing.category_slug}` : '/', { replace: true })
+      afterDelete()
     } catch { /* оставляем как было */ }
     finally { setDeleting(false) }
   }
@@ -1508,20 +1508,7 @@ export default function ListingDetail() {
                 <button
                   className="reasons-delete"
                   disabled={deleting}
-                  onClick={async () => {
-                    setShowReasons(false)
-                    if (!window.confirm(t('my.confirm_delete'))) return
-                    setDeleting(true)
-                    try {
-                      await api.deleteListing(listing.id)
-                      navigate(listing.category_slug
-                        ? `/search?category=${listing.category_slug}` : '/',
-                        { replace: true })
-                    } catch (e) {
-                      alert(e.code === 'listing_has_history'
-                        ? t('my.delete_has_history') : t('auth.err_generic'))
-                    } finally { setDeleting(false) }
-                  }}
+                  onClick={() => { setShowReasons(false); setConfirmDelete(true) }}
                 >
                   {t('my.delete')}
                 </button>
@@ -1552,6 +1539,40 @@ export default function ListingDetail() {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Подтверждение удаления — своей панелью, а не окном браузера. */}
+      {confirmDelete && (
+        <div className="reasons-sheet" onClick={() => setConfirmDelete(false)}>
+          <div className="reasons-card" onClick={(e) => e.stopPropagation()}>
+            <div className="reasons-title">
+              {confirmDelete === 'force' ? t('my.delete_has_history_force_confirm') : t('my.confirm_delete')}
+            </div>
+            <div className="reasons-actions-row">
+              <button className="reasons-cancel" onClick={() => setConfirmDelete(false)}>
+                {t('actions.cancel')}
+              </button>
+              <button
+                className="reasons-item primary"
+                disabled={deleting}
+                onClick={() => doDelete(confirmDelete === 'force')}
+              >
+                {t('my.delete')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteError && (
+        <div className="reasons-sheet" onClick={() => setDeleteError('')}>
+          <div className="reasons-card" onClick={(e) => e.stopPropagation()}>
+            <div className="reasons-title">{deleteError}</div>
+            <button className="reasons-cancel" onClick={() => setDeleteError('')}>
+              {t('actions.close')}
+            </button>
           </div>
         </div>
       )}

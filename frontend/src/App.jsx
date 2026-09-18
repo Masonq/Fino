@@ -48,6 +48,7 @@ const SavedSearches = lazy(() => import('./pages/SavedSearches'))
 const History = lazy(() => import('./pages/History'))
 import { AuthProvider } from './context/AuthContext'
 import { FavoritesProvider } from './context/FavoritesContext'
+import { rememberListPage } from './utils/lastList'
 import BottomNav from './components/BottomNav'
 import Footer from './components/Footer'
 import TopNav from './components/TopNav'
@@ -62,6 +63,11 @@ export default function App() {
   // страниц такого нет.
   const isListing = /\/[a-z0-9-]+-[0-9a-f]{8}\/?$/.test(pathname)
   const hideNav = isListing || pathname.startsWith('/chat/') || pathname === '/login'
+
+  // Запоминаем последнюю страницу-список (поиск, главную, избранное,
+  // очередь): после удаления объявления возвращаться надо туда, откуда
+  // человек пришёл, а не в раздел удалённого объявления.
+  rememberListPage(pathname, location.search)
 
   const navType = useNavigationType()
 
