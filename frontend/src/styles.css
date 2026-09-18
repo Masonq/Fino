@@ -4122,6 +4122,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* Выбор раздела при переносе. Список длинный — 14 разделов и под сотню
    подразделов, — поэтому прокручивается внутри окна, а не растягивает
    его на весь экран. */
+.move-search{
+  width:100%; height:42px; padding:0 14px; margin:10px 0 8px; border-radius:11px;
+  border:1px solid rgba(20,30,25,.1); background:#F7F7F4; font-size:16px; font-family:inherit; color:var(--ink);
+}
+.move-found{ display:flex; flex-direction:column; align-items:flex-start; gap:2px; }
+.move-found b{ font-size:14.5px; font-weight:700; }
+.move-found span{ font-size:11.5px; color:var(--muted); }
 .move-current{ font-size:13px; color:var(--muted); margin-bottom:10px; text-align:center; }
 .move-list{ max-height:52vh; overflow-y:auto; -webkit-overflow-scrolling:touch; }
 .move-group{ margin-bottom:8px; }

@@ -454,6 +454,7 @@ export default function ListingDetail() {
   // Раньше такое можно было только снять с публикации, то есть
   // выбросить настоящий товар вместе с ошибкой разбора.
   const [movingOpen, setMovingOpen] = useState(false)
+  const [moveQuery, setMoveQuery] = useState('')
   const [moveTree, setMoveTree] = useState([])
   const [moving, setMoving] = useState(false)
   const [showReasons, setShowReasons] = useState(false)
@@ -478,6 +479,30 @@ export default function ListingDetail() {
   // Название раздела на языке интерфейса: с сервера оно приходит
   // словарём {ru, en, sr}.
   const catName = (c) => (c ? (c.name?.[i18n.language] || c.name?.ru || c.slug) : '')
+
+  // Плоский список всех разделов для поиска: слаг и название на всех
+  // трёх языках, чтобы «rukavice» находилось так же, как «перчатки», и
+  // путь родителей — по одному названию «Обувь» не понять, детская она
+  // или мужская.
+  const moveMatches = (() => {
+    const q = moveQuery.trim().toLowerCase()
+    if (!q) return []
+    const out = []
+    const walk = (node, trail) => {
+      const path = [...trail, catName(node)]
+      const hay = [node.slug, node.name?.ru, node.name?.en, node.name?.sr]
+        .filter(Boolean).join(' ').toLowerCase()
+      const leaf = !(node.children || []).length
+      // В раздел верхнего уровня класть нельзя — предлагаем только то,
+      // куда перенос разрешён.
+      if (hay.includes(q) && trail.length > 0) {
+        out.push({ ...node, path: path.slice(0, -1).join(' → '), leaf })
+      }
+      ;(node.children || []).forEach((c) => walk(c, path))
+    }
+    moveTree.forEach((root) => walk(root, []))
+    return out.slice(0, 40)
+  })()
 
   const openMove = async () => {
     setMovingOpen(true)
@@ -1366,6 +1391,33 @@ export default function ListingDetail() {
               }</b>
             </div>
 
+            {/* Поиск по разделам. Их больше сотни в три уровня, и
+                листать весь список ради «перчаток» — это минута
+                прокрутки на каждое объявление. */}
+            <input
+              className="move-search"
+              value={moveQuery}
+              onChange={(e) => setMoveQuery(e.target.value)}
+              placeholder={t('move.search')}
+              autoComplete="off"
+            />
+
+            {moveQuery.trim() ? (
+              <div className="move-list">
+                {moveMatches.length === 0 && <p className="empty-hint">{t('move.nothing')}</p>}
+                {moveMatches.map((m) => (
+                  <button
+                    key={m.id}
+                    className="reasons-item move-found"
+                    disabled={moving}
+                    onClick={() => doMove(m.id)}
+                  >
+                    <b>{catName(m)}</b>
+                    <span>{m.path}</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
             <div className="move-list">
               {moveTree.map((root) => (
                 <div key={root.id} className="move-group">
@@ -1412,6 +1464,7 @@ export default function ListingDetail() {
                 </div>
               ))}
             </div>
+            )}
 
             <button className="reasons-cancel" onClick={() => setMovingOpen(false)}>
               {t('actions.cancel')}

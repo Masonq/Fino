@@ -886,7 +886,9 @@
     "pick_sub": "Pick a subsection, not the whole section",
     "no_category": "That section no longer exists",
     "gone": "The listing has already been deleted",
-    "failed": "Could not move it — please try again"
+    "failed": "Could not move it — please try again",
+    "search": "Search sections",
+    "nothing": "Nothing found"
   },
   "flagged": {
     "title": "Suspicious chats",

@@ -111,6 +111,7 @@ NEW = {
     # Детский транспорт — не игрушки: велосипед, самокат и беговел
     # покупают как транспорт и ищут отдельно.
     "kids": [
+        ("kids-hygiene", "Детская гигиена и подгузники", "Nappies and baby care", "Pelene i nega bebe", []),
         ("kids-transport", "Детский транспорт", "Kids' ride-ons", "Dečji prevoz", [
             ("kids-bikes", "Детские велосипеды", "Kids' bikes", "Dečji bicikli"),
             ("balance-bikes", "Беговелы", "Balance bikes", "Bicikli bez pedala"),
@@ -120,6 +121,7 @@ NEW = {
         ("kids-feeding", "Кормление и гигиена", "Feeding and care", "Ishrana i nega", []),
     ],
     "hobby-sport": [
+        ("tickets", "Билеты и сертификаты", "Tickets and gift cards", "Karte i vaučeri", []),
         ("skate-roller", "Скейтборды и ролики", "Skateboards and rollerblades", "Skejtbordi i rolere", []),
         ("hunting-fishing", "Охота и рыбалка", "Hunting and fishing", "Lov i ribolov", []),
         ("board-games", "Настольные игры", "Board games", "Društvene igre", []),
@@ -152,7 +154,20 @@ NEW = {
         # с одинаковым смыслом и разными словами.
         ("pet-grooming", "Уход и груминг", "Grooming supplies", "Nega i timarenje", []),
     ],
+    # Медицина и гигиена: перчатки, маски, тесты и бинты приезжают
+    # пачками (их продают и отдают после болезни), а деть их было
+    # некуда — уходили в «Расходники и упаковку» к бизнесу, где их
+    # никто не ищет. «Здоровье и уход» рядом — но это витамины и
+    # тонометры, а не расходники.
+    "beauty": [
+        ("medical-supplies", "Медтовары и расходники", "Medical supplies", "Medicinski materijal", []),
+        ("personal-hygiene", "Личная гигиена", "Personal hygiene", "Lična higijena", []),
+    ],
+    # Еду в диаспорных чатах продают всерьёз: домашняя выпечка, мёд,
+    # кофе, сыры из деревни. Раздела под это не было вовсе.
     "home-garden": [
+        ("food", "Продукты и напитки", "Food and drinks", "Hrana i piće", []),
+        ("household-goods", "Бытовая химия и уборка", "Household supplies", "Sredstva za domaćinstvo", []),
         ("lighting", "Освещение", "Lighting", "Rasveta", []),
         ("building-materials", "Стройматериалы", "Building materials", "Građevinski materijal", []),
         ("plumbing", "Сантехника", "Plumbing", "Vodovodna oprema", []),
