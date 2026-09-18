@@ -8,6 +8,7 @@ from pydantic import BaseModel, field_validator
 
 from app.core.auth import get_current_user, require_named_user, decode_token
 from app.core.database import get_db, SessionLocal
+from app.core.urls import listing_path
 from app.core.chat_ws import manager
 from app.routers.listings import pick_translation
 from app.models import Chat, Message, Listing, User, BlockedUser, PhoneReveal
@@ -92,6 +93,19 @@ def _serialize_chat(chat: Chat, db: Session, lang: str = "ru", viewer_id=None):
         "listing_price": float(listing.price) if listing and listing.price is not None else None,
         "listing_currency": listing.currency.value if listing and listing.currency else None,
         "listing_price_negotiable": bool(listing.price_negotiable) if listing else False,
+        # Снимок и адрес объявления — для полоски над перепиской: из
+        # чата надо уметь вернуться к вещи, о которой идёт речь, не
+        # вспоминая её через поиск.
+        "listing_photo": (lambda cover: cover.thumbnail_url or cover.url if cover else None)(
+            next((p for p in listing.photos if p.is_cover and not p.is_video),
+                 next((p for p in listing.photos if not p.is_video), None))
+            if listing else None
+        ),
+        "listing_path": listing_path(
+            str(listing.id), title or "", listing.city,
+            listing.category.slug if listing and listing.category else None,
+        ) if listing else None,
+        "listing_is_free": bool(listing.is_free) if listing else False,
         "listing_status": listing.status.value if listing else None,
         "listing_is_reserved": reserved_active,
         "listing_reserved_for_me": bool(

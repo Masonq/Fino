@@ -116,7 +116,9 @@
     "reservation_active_seller": "Reserved by you for 48 hours",
     "reservation_active_for_me": "The seller reserved this for you",
     "reservation_active_other": "This listing is reserved by another buyer",
-    "typing": "{{name}} is typing…"
+    "typing": "{{name}} is typing…",
+    "listing_sold": "sold",
+    "listing_archived": "removed"
   },
   "promo": {
     "safe_deal": "Safe deal",

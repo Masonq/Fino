@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api, chatWsUrl } from '../api/client'
 import { useAuth } from '../context/AuthContext'
@@ -372,10 +372,17 @@ export default function ChatScreen() {
         <button className="cats-back" onClick={() => navigate(-1)} aria-label={t('actions.back')}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
         </button>
-        <div>
+        {/* В шапке — только собеседник: заголовок объявления переехал
+            в полоску ниже, где он с фотографией, ценой и ссылкой.
+            Держать его в двух местах подряд незачем. */}
+        <div className="chat-head-who">
           <div className="chat-head-name">{otherName() || '...'}</div>
-          {chat?.listing_title && <div className="chat-head-listing">{chat.listing_title}</div>}
+          {!chat?.listing_path && chat?.listing_title && (
+            <div className="chat-head-listing">{chat.listing_title}</div>
+          )}
         </div>
+
+
         {chat && (
           <div className="chat-head-actions">
             {/* Номер уже раскрыт — вместо кнопки «Позвонить» снизу
@@ -495,6 +502,34 @@ export default function ChatScreen() {
           </div>
         )}
       </div>
+
+      {/* Объявление, о котором речь, — полоской под шапкой и со
+          ссылкой на него. Переписка тянется днями, и вспомнить, о чём
+          она, бывает нечем: имя собеседника ни о чём не говорит, а
+          заголовок в шапке не нажимается. Снимок и цена возвращают
+          разговор к вещи, а нажатие — к самому объявлению. */}
+      {chat?.listing_path && (
+        <Link to={chat.listing_path} className="chat-listing-bar">
+          <div className="chat-listing-thumb">
+            {chat.listing_photo
+              ? <img src={chat.listing_photo} alt="" />
+              : <div className="photo-placeholder" />}
+          </div>
+          <div className="chat-listing-text">
+            <div className="chat-listing-title">{chat.listing_title}</div>
+            <div className="chat-listing-price">
+              {chat.listing_is_free
+                ? t('detail.free')
+                : chat.listing_price != null
+                  ? formatPrice(chat.listing_price, chat.listing_currency, i18n.language)
+                  : t('detail.no_price')}
+              {chat.listing_status === 'sold' && <span className="chat-listing-gone">{t('chat.listing_sold')}</span>}
+              {chat.listing_status === 'archived' && <span className="chat-listing-gone">{t('chat.listing_archived')}</span>}
+            </div>
+          </div>
+          <svg className="chat-listing-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+        </Link>
+      )}
 
       <div
         className="chat-messages"

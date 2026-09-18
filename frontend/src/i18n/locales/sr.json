@@ -116,7 +116,9 @@
     "reservation_active_seller": "Rezervisano od vas na 48 sati",
     "reservation_active_for_me": "Prodavac je ovo rezervisao za vas",
     "reservation_active_other": "Oglas je rezervisan od strane drugog kupca",
-    "typing": "{{name}} kuca…"
+    "typing": "{{name}} kuca…",
+    "listing_sold": "prodato",
+    "listing_archived": "skinuto"
   },
   "promo": {
     "safe_deal": "Sigurna kupovina",

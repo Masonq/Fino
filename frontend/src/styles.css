@@ -4504,3 +4504,24 @@ a.s-attrs{ display:block; }
   font-size:12.5px; font-weight:800; flex-shrink:0;
 }
 .my-expiry button:disabled{ opacity:.5; }
+
+/* ===== объявление над перепиской ===== */
+.chat-listing-bar{
+  display:flex; align-items:center; gap:11px; padding:9px 12px;
+  background:var(--surface); border-bottom:1px solid var(--line);
+  color:var(--ink); text-decoration:none;
+}
+.chat-head-who{ min-width:0; flex:1; }
+.chat-head-name{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.chat-listing-thumb{
+  width:44px; height:44px; border-radius:10px; overflow:hidden; flex-shrink:0; background:var(--surface-sunken);
+}
+.chat-listing-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+.chat-listing-text{ flex:1; min-width:0; }
+.chat-listing-title{
+  font-size:13.5px; font-weight:700; line-height:1.25; color:var(--ink);
+  display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden;
+}
+.chat-listing-price{ font-size:12.5px; font-weight:800; color:var(--primary-deep); margin-top:3px; display:flex; align-items:center; gap:7px; }
+.chat-listing-gone{ font-size:11px; font-weight:700; color:var(--muted); text-transform:lowercase; }
+.chat-listing-arrow{ width:17px; height:17px; color:var(--muted); flex-shrink:0; }

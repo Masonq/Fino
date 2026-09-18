@@ -116,7 +116,9 @@
     "reservation_active_seller": "Забронировано вами на 48 часов",
     "reservation_active_for_me": "Продавец забронировал это для вас",
     "reservation_active_other": "Объявление забронировано другим покупателем",
-    "typing": "{{name}} печатает…"
+    "typing": "{{name}} печатает…",
+    "listing_sold": "продано",
+    "listing_archived": "снято"
   },
   "promo": {
     "safe_deal": "Безопасная сделка",
