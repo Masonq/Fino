@@ -1338,12 +1338,15 @@ def _title_words(listing, lang: str) -> tuple[set[str], set[str]]:
 RSD_PER_EUR = 117
 
 
-@router.get("/{listing_id}/price-check")
-def price_check(
-    listing_id: uuid.UUID,
-    lang: str = Query("ru"),
-    db: Session = Depends(get_db),
-):
+# Оценка считается по сотням похожих объявлений и разбору их названий —
+# на каждое открытие карточки это дорого. Держим готовый ответ в памяти
+# процесса десять минут: цены на доске за это время не двигаются, а
+# ключ включает саму цену, так что правка цены обнуляет оценку сразу.
+_price_cache: dict = {}
+_PRICE_TTL = 600
+
+
+def compute_price_check(db, listing, lang: str) -> dict:
     """
     Оценка цены: дорого, дёшево или в рынке.
 
@@ -1363,11 +1366,14 @@ def price_check(
     них цена обычная, ниже — дёшево, выше — дорого. Проценты не
     показываем: точность тут кажущаяся.
     """
-    base = (db.query(Listing)
-            .options(joinedload(Listing.translations))
-            .filter(Listing.id == listing_id).first())
+    base = listing
     if not base or not base.price or base.is_free:
         return {"verdict": None}
+
+    key = (str(base.id), str(base.price), base.currency, lang)
+    hit = _price_cache.get(key)
+    if hit and (utcnow() - hit["at"]).total_seconds() < _PRICE_TTL:
+        return hit["data"]
 
     base_things, _ = _title_words(base, lang)
     if not base_things:
@@ -1376,7 +1382,7 @@ def price_check(
     def prices_for(city: str | None) -> list[float]:
         q = (db.query(Listing)
              .options(joinedload(Listing.translations))
-             .filter(Listing.id != listing_id,
+             .filter(Listing.id != base.id,
                      Listing.status == ListingStatus.active,
                      Listing.category_id == base.category_id,
                      Listing.price.isnot(None),
@@ -1404,6 +1410,7 @@ def price_check(
         if len(wider) > len(prices):
             prices, scope = wider, "country"
     if len(prices) < 5:
+        _price_cache[key] = {"at": utcnow(), "data": {"verdict": None}}
         return {"verdict": None}
 
     prices.sort()
@@ -1422,7 +1429,7 @@ def price_check(
     else:
         verdict = "fair"
 
-    return {
+    data = {
         "verdict": verdict,
         "scope": scope,
         "based_on": len(prices),
@@ -1431,6 +1438,23 @@ def price_check(
         "median_eur": round(mid, 2),
         "high_eur": round(high, 2),
     }
+    _price_cache[key] = {"at": utcnow(), "data": data}
+    return data
+
+
+@router.get("/{listing_id}/price-check")
+def price_check(
+    listing_id: uuid.UUID,
+    lang: str = Query("ru"),
+    db: Session = Depends(get_db),
+):
+    """Та же оценка отдельным запросом — на случай внешних обращений."""
+    base = (db.query(Listing)
+            .options(joinedload(Listing.translations))
+            .filter(Listing.id == listing_id).first())
+    if not base:
+        raise HTTPException(404, "not_found")
+    return compute_price_check(db, base, lang)
 
 
 @router.get("/{listing_id}/similar")
@@ -1738,6 +1762,11 @@ def get_listing(listing_id: str, request: Request, db: Session = Depends(get_db)
         "previous_price": previous_price_of(listing),
         "is_free": bool(listing.is_free),
         "currency": listing.currency,
+        # Оценка цены приходит вместе с карточкой, а не отдельным
+        # запросом: иначе блок появлялся через секунду после загрузки и
+        # сдвигал вниз всё, что под ним. Расчёт кэширован, так что
+        # лишним запросом в базу это не становится.
+        "price_check": compute_price_check(db, listing, request.query_params.get("lang", "ru")),
         "price_negotiable": listing.price_negotiable,
         # Для объявлений из Telegram: связь идёт с автором напрямую, поэтому
         # отдаём его ник. Название чата-источника наружу не выносим — оно

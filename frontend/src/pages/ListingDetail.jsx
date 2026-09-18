@@ -460,9 +460,9 @@ export default function ListingDetail() {
   // выбросить настоящий товар вместе с ошибкой разбора.
   const [movingOpen, setMovingOpen] = useState(false)
   const [moveQuery, setMoveQuery] = useState('')
-  // Оценка цены — отдельным запросом: она считается по похожим
-  // объявлениям и не должна задерживать показ самой карточки.
-  const [priceCheck, setPriceCheck] = useState(null)
+  // Оценка цены приходит вместе с карточкой: отдельным запросом блок
+  // появлялся через секунду после загрузки и сдвигал вниз всё под
+  // собой — заголовок, продавца, описание.
   const [priceOpen, setPriceOpen] = useState(false)
   const [moveTree, setMoveTree] = useState([])
   const [moving, setMoving] = useState(false)
@@ -515,15 +515,6 @@ export default function ListingDetail() {
     moveTree.forEach((root) => walk(root, []))
     return out.slice(0, 40)
   })()
-
-  useEffect(() => {
-    if (!listing?.id || listing.is_free || listing.price == null) { setPriceCheck(null); return }
-    let alive = true
-    api.priceCheck(listing.id, i18n.language)
-      .then((r) => { if (alive && r.verdict) setPriceCheck(r) })
-      .catch(() => {})
-    return () => { alive = false }
-  }, [listing?.id, listing?.price, listing?.is_free, i18n.language])
 
   const openMove = async () => {
     setMovingOpen(true)
@@ -660,6 +651,11 @@ export default function ListingDetail() {
     if (!field) return key
     return field.label?.[lang] || field.label?.ru || key
   }
+  // Оценка цены приходит внутри самой карточки — см. price_check в
+  // listings.py. Отдельным запросом блок появлялся через секунду после
+  // загрузки и сдвигал вниз всё под собой.
+  const priceCheck = listing?.price_check || null
+
   // Резюме — не товар: человек не продаёт себя, у него нет цены и он не
   // «продавец». Отличается только подачей, поэтому отдельной категории не
   // заводим, а правим формулировки там, где они не годятся.
@@ -1042,7 +1038,7 @@ export default function ListingDetail() {
         {/* Оценка цены. Покупатель всё равно делает это сам — открывает
             десяток похожих и смотрит, из чего выбирать. Считаем за него,
             и по нажатию честно показываем, на чём считали. */}
-        {priceCheck && !isResume && (
+        {priceCheck?.verdict && !isResume && (
           <button className={`price-check ${priceCheck.verdict}`} onClick={() => setPriceOpen(true)}>
             {/* Картинка, а не значок: оценку читают мельком, и цветная
                 монета узнаётся быстрее контурной стрелки. Все три
