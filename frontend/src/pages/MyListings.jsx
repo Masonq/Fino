@@ -56,6 +56,26 @@ export default function MyListings() {
   const { user, loading: authLoading } = useAuth()
 
   const [items, setItems] = useState([])
+  const [renewing, setRenewing] = useState(null)
+
+  // Сколько дней осталось до снятия. Округляем вверх: «остался 1 день»
+  // честнее, чем «0 дней», когда до снятия ещё несколько часов.
+  const daysLeft = (l) => {
+    if (!l.expires_at) return null
+    const ms = new Date(l.expires_at + 'Z').getTime() - Date.now()
+    return ms <= 0 ? 0 : Math.ceil(ms / 86400000)
+  }
+
+  const renew = async (l) => {
+    setRenewing(l.id)
+    try {
+      const res = await api.renewListing(l.id)
+      setItems((prev) => prev.map((x) => (
+        x.id === l.id ? { ...x, expires_at: res.expires_at, status: 'active' } : x
+      )))
+    } catch { /* не вышло — строка останется, человек нажмёт ещё раз */ }
+    finally { setRenewing(null) }
+  }
   const [counts, setCounts] = useState({})
   const [tab, setTab] = useState('active')
   const [loaded, setLoaded] = useState(false)
@@ -294,6 +314,21 @@ export default function MyListings() {
                     open={promoteFor === l.id}
                     onOpenChange={(v) => setPromoteFor(v ? l.id : null)}
                   />
+                </div>
+              )}
+              {/* Скоро снимут — и что с этим делать. Напоминание
+                  приходило, а продлить можно было только правкой
+                  объявления наугад: объявления умирали не потому, что
+                  вещь продана. */}
+              {daysLeft(l) !== null && daysLeft(l) <= 7 && l.status === 'active' && (
+                <div className="my-expiry">
+                  <span>{t('my.expires_in', { count: daysLeft(l) })}</span>
+                  <button
+                    disabled={renewing === l.id}
+                    onClick={() => renew(l)}
+                  >
+                    {t('my.renew')}
+                  </button>
                 </div>
               )}
             </div>

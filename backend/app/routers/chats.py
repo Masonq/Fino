@@ -701,11 +701,16 @@ async def chat_ws(websocket: WebSocket, chat_id: uuid.UUID, token: str = Query(.
     await manager.connect(str(chat_id), websocket)
     try:
         while True:
-            # От клиента ничего не ждём по смыслу — держим соединение
-            # открытым, пока оно живо. receive_text() кинет
-            # WebSocketDisconnect, когда клиент закроет вкладку или
-            # потеряет сеть — этим и ловим отключение.
-            await websocket.receive_text()
+            # Единственное, что приходит от клиента, — «я печатаю» и «я
+            # перестал». Эти события живут только в соединении: писать
+            # их в базу незачем, через минуту они не значат ничего.
+            raw = await websocket.receive_text()
+            if raw in ("typing", "typing_stop"):
+                await manager.broadcast(
+                    str(chat_id),
+                    {"type": raw, "user_id": str(user_id)},
+                    skip=websocket,
+                )
     except WebSocketDisconnect:
         pass
     finally:

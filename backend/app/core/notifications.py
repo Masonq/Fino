@@ -273,3 +273,22 @@ def notify_expired(db: Session, user_id, title: str) -> bool:
     )
     return notify(db, user_id, text, allow_email=True,
                   subject="PLONK — объявление снято с публикации", link="/my")
+
+
+def notify_report_resolved(db: Session, user_id, acted: bool,
+                           listing_title: str | None = None) -> bool:
+    """
+    Ответ тому, кто пожаловался.
+
+    Жалоба уходила в пустоту: человек не узнавал, посмотрел ли её
+    кто-нибудь. Тот, кому один раз ответили, жалуется и во второй раз, а
+    из таких людей и состоит уборка ленты. Подробностей не пишем —
+    решение по чужому объявлению не его дело; говорим только, что
+    разобрались.
+    """
+    thing = f" «{listing_title}»" if listing_title else ""
+    text = (f"Спасибо за жалобу{thing} — объявление снято."
+            if acted else
+            f"Мы проверили объявление{thing} по вашей жалобе. "
+            f"Правила оно не нарушает, поэтому осталось на сайте.")
+    return notify(db, user_id, text)

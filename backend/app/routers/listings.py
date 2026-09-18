@@ -1269,6 +1269,9 @@ def my_listings(
             "cover_is_video": bool(cover.is_video) if cover else False,
             "is_reserved": bool(l.reserved_until and l.reserved_until > utcnow()),
             "cover_video_url": cover.url if (cover and cover.is_video) else None,
+            # Когда объявление снимут само: показываем предупреждение и
+            # кнопку продления, пока не поздно.
+            "expires_at": l.expires_at.isoformat() if l.expires_at else None,
             "status": l.status.value,
             # Автор должен видеть, почему объявление отклонили — без
             # этого оно просто пропадало из виду без объяснений.
@@ -1878,6 +1881,43 @@ def send_signal(listing_id: uuid.UUID, payload: dict, db: Session = Depends(get_
     from app.core.signals import bump_signal
     bump_signal(db, listing_id, field)
     return {"ok": True}
+
+
+@router.post("/{listing_id}/renew")
+def renew_listing(
+    listing_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Продлить объявление ещё на срок жизни, одним нажатием.
+
+    Напоминание о скором снятии приходило, а сделать по нему было
+    нечего: чтобы продлить, человек открывал объявление, правил что-то
+    наугад и сохранял. Объявления тихо умирали не потому, что вещь
+    продана, а потому, что продлить было неочевидно.
+
+    Продлеваем от сегодняшнего дня, а не от прежнего срока: иначе у
+    того, кто вспомнил за день до снятия, и у того, кто нажал сразу
+    после напоминания, вышло бы по-разному.
+    """
+    listing = db.query(Listing).get(listing_id)
+    if not listing:
+        raise HTTPException(404, "not_found")
+    if listing.owner_id != user.id:
+        raise HTTPException(403, "not_owner")
+    if listing.status not in (ListingStatus.active, ListingStatus.archived):
+        raise HTTPException(409, "bad_status")
+
+    listing.status = ListingStatus.active
+    listing.expires_at = utcnow() + timedelta(days=LISTING_TTL_DAYS)
+    listing.expiry_warned = False
+    db.commit()
+    return {
+        "status": "active",
+        "expires_at": listing.expires_at.isoformat(),
+        "days": LISTING_TTL_DAYS,
+    }
 
 
 @router.get("/{listing_id}/dashboard")

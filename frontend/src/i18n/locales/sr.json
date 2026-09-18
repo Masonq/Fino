@@ -115,7 +115,8 @@
     "reservation_cancel": "Otkaži rezervaciju",
     "reservation_active_seller": "Rezervisano od vas na 48 sati",
     "reservation_active_for_me": "Prodavac je ovo rezervisao za vas",
-    "reservation_active_other": "Oglas je rezervisan od strane drugog kupca"
+    "reservation_active_other": "Oglas je rezervisan od strane drugog kupca",
+    "typing": "{{name}} kuca…"
   },
   "promo": {
     "safe_deal": "Sigurna kupovina",
@@ -368,7 +369,11 @@
     "confirm_delete": "Obrisati oglas? Ovo se ne može poništiti.",
     "tab_rejected": "Odbijeno",
     "delete_has_history": "Nije moguće obrisati — ovaj oglas već ima poruke, prijavu, recenziju ili prijavu podrške. Umesto brisanja, arhivirajte ga.",
-    "delete_has_history_force_confirm": "Ovaj oglas već ima prepisku, prijave, recenzije ili tikete podrške — biće trajno obrisani zajedno sa oglasom. Ipak obrisati?"
+    "delete_has_history_force_confirm": "Ovaj oglas već ima prepisku, prijave, recenzije ili tikete podrške — biće trajno obrisani zajedno sa oglasom. Ipak obrisati?",
+    "renew": "Produži",
+    "expires_in_one": "Skidamo za {{count}} dan",
+    "expires_in_few": "Skidamo za {{count}} dana",
+    "expires_in_other": "Skidamo za {{count}} dana"
   },
   "mod": {
     "title": "Moderacija",

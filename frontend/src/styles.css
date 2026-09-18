@@ -4474,3 +4474,33 @@ a.s-attrs{ display:block; }
 .ldash-tip-dot{
   width:7px; height:7px; border-radius:50%; background:currentColor; margin-top:6px; flex-shrink:0;
 }
+
+/* ===== галочки и «печатает…» ===== */
+.chat-bubble.mine{ position:relative; }
+.chat-ticks{ display:inline-flex; margin-left:6px; vertical-align:-2px; color:rgba(255,255,255,.6); }
+.chat-ticks svg{ width:15px; height:15px; }
+.chat-ticks.read{ color:#BFF5D9; }
+.chat-typing{
+  display:flex; align-items:center; gap:4px; margin:6px 0 0 4px;
+  font-size:12px; color:var(--muted); font-weight:600;
+}
+.chat-typing span{
+  width:5px; height:5px; border-radius:50%; background:var(--muted);
+  animation:typing-dot 1.2s infinite ease-in-out;
+}
+.chat-typing span:nth-child(2){ animation-delay:.15s; }
+.chat-typing span:nth-child(3){ animation-delay:.3s; margin-right:4px; }
+@keyframes typing-dot{ 0%,60%,100%{ opacity:.25; transform:translateY(0);} 30%{ opacity:1; transform:translateY(-3px);} }
+@media (prefers-reduced-motion: reduce){ .chat-typing span{ animation:none; opacity:.6; } }
+
+/* ===== скоро снимем ===== */
+.my-expiry{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  margin:0 12px 12px; padding:9px 12px; border-radius:11px;
+  background:var(--warn-bg); color:var(--warn-ink); font-size:12.5px; font-weight:700;
+}
+.my-expiry button{
+  padding:7px 12px; border-radius:9px; background:var(--surface); color:var(--ink);
+  font-size:12.5px; font-weight:800; flex-shrink:0;
+}
+.my-expiry button:disabled{ opacity:.5; }

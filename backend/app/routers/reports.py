@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.core.auth import get_current_user
 from app.core.database import get_db
+from app.core.notifications import notify_report_resolved
 from app.models import (
     Report, ReportReason, ReportStatus,
     Listing, ListingStatus, User, UserRole,
@@ -235,5 +236,33 @@ def resolve(
     else:
         raise HTTPException(400, "bad_action")
 
+    # Кому ответить: всем, кто жаловался на этот объект и чьи жалобы
+    # сейчас закрылись. Собираем до commit — после него у объектов в
+    # сессии уже новый статус, и отличить «только что закрытые» от
+    # закрытых неделю назад будет нечем.
+    if report.listing_id:
+        reporters = [r[0] for r in db.query(Report.reporter_id).filter(
+            Report.listing_id == report.listing_id,
+            Report.resolved_at == now,
+            Report.reporter_id.isnot(None),
+        ).all()]
+    else:
+        reporters = [report.reporter_id] if report.reporter_id else []
+
+    db.commit()
+
+    acted = payload.action != "dismiss"
+    title = None
+    if report.listing_id:
+        listing = db.query(Listing).get(report.listing_id)
+        if listing and listing.translations:
+            title = listing.translations[0].title
+    for reporter_id in set(reporters):
+        try:
+            notify_report_resolved(db, reporter_id, acted, title)
+        except Exception:                                # noqa: BLE001
+            # Не смогли уведомить — жалоба всё равно разобрана, это
+            # главное; падать здесь значило бы терять решение модератора.
+            pass
     db.commit()
     return {"status": "ok"}

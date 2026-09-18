@@ -115,7 +115,8 @@
     "reservation_cancel": "Cancel reservation",
     "reservation_active_seller": "Reserved by you for 48 hours",
     "reservation_active_for_me": "The seller reserved this for you",
-    "reservation_active_other": "This listing is reserved by another buyer"
+    "reservation_active_other": "This listing is reserved by another buyer",
+    "typing": "{{name}} is typing…"
   },
   "promo": {
     "safe_deal": "Safe deal",
@@ -368,7 +369,10 @@
     "confirm_delete": "Delete this listing? This can't be undone.",
     "tab_rejected": "Rejected",
     "delete_has_history": "Can't delete — this listing already has messages, a report, a review, or a support ticket tied to it. Archive it instead.",
-    "delete_has_history_force_confirm": "This listing has chat history, reports, reviews, or support tickets attached — they will be permanently deleted along with the listing. Delete anyway?"
+    "delete_has_history_force_confirm": "This listing has chat history, reports, reviews, or support tickets attached — they will be permanently deleted along with the listing. Delete anyway?",
+    "renew": "Extend",
+    "expires_in_one": "Expires in {{count}} day",
+    "expires_in_other": "Expires in {{count}} days"
   },
   "mod": {
     "title": "Moderation",

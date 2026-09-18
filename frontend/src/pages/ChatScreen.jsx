@@ -19,6 +19,11 @@ export default function ChatScreen() {
   const [messages, setMessages] = useState([])
   const [messagesLoaded, setMessagesLoaded] = useState(false)
   const [text, setText] = useState('')
+  const [typing, setTyping] = useState(false)
+  const typingTimer = useRef(0)
+  const typingStopTimer = useRef(0)
+  const lastTypingSent = useRef(0)
+  const wsRef = useRef(null)
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState(null)
   const [blockBusy, setBlockBusy] = useState(false)
@@ -110,6 +115,7 @@ export default function ChatScreen() {
       const url = chatWsUrl(id)
       if (!url) return
       ws = new WebSocket(url)
+      wsRef.current = ws
 
       ws.onmessage = (event) => {
         let data
@@ -120,6 +126,15 @@ export default function ChatScreen() {
             prev.some((m) => m.id === data.message.id) ? prev : [...prev, data.message]
           ))
           if (data.message.sender_id !== myId) api.markChatRead(id).catch(() => {})
+        } else if (data.type === 'typing' && data.user_id !== myId) {
+          setTyping(true)
+          clearTimeout(typingTimer.current)
+          // Если собеседник просто закрыл вкладку, «перестал печатать»
+          // не придёт — гасим сами через три секунды.
+          typingTimer.current = setTimeout(() => setTyping(false), 3000)
+        } else if (data.type === 'typing_stop' && data.user_id !== myId) {
+          clearTimeout(typingTimer.current)
+          setTyping(false)
         } else if (data.type === 'chat_updated') {
           // Не рассылаем сериализованный чат целиком (он разный для
           // покупателя и продавца — номер телефона видит только один) —
@@ -199,6 +214,23 @@ export default function ChatScreen() {
       bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
   }, [messages])
+
+  // Сообщаем собеседнику, что печатаем — но не на каждую букву:
+  // одно событие в две секунды, и «перестал» через паузу в молчании.
+  const notifyTyping = () => {
+    const ws = wsRef.current
+    if (!ws || ws.readyState !== WebSocket.OPEN) return
+    const now = Date.now()
+    if (now - lastTypingSent.current > 2000) {
+      ws.send('typing')
+      lastTypingSent.current = now
+    }
+    clearTimeout(typingStopTimer.current)
+    typingStopTimer.current = setTimeout(() => {
+      if (ws.readyState === WebSocket.OPEN) ws.send('typing_stop')
+      lastTypingSent.current = 0
+    }, 2500)
+  }
 
   const send = async () => {
     if (!text.trim() || !myId) return
@@ -524,11 +556,29 @@ export default function ChatScreen() {
               ) : (
                 <div key={m.id} className={m.sender_id === myId ? 'chat-bubble mine' : 'chat-bubble'}>
                   {m.text}
+                  {/* Галочка у своих сообщений: одна — доставлено,
+                      две — собеседник открыл чат и прочитал. Без неё
+                      переписка ощущается односторонней: написал и не
+                      знаешь, видели ли вообще. */}
+                  {m.sender_id === myId && (
+                    <span className={m.is_read ? 'chat-ticks read' : 'chat-ticks'} aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m4 13 4 4 8-9" />
+                        {m.is_read && <path d="m12 17 8-9" />}
+                      </svg>
+                    </span>
+                  )}
                 </div>
               )
             ))}
             {messages.length === 0 && <p className="empty-hint">{t('chat.empty')}</p>}
           </>
+        )}
+        {typing && (
+          <div className="chat-typing">
+            <span /><span /><span />
+            {t('chat.typing', { name: otherName() })}
+          </div>
         )}
         <div ref={bottomRef} />
       </div>
@@ -630,7 +680,7 @@ export default function ChatScreen() {
             <input
               type="text"
               value={text}
-              onChange={(e) => { setText(e.target.value); if (sendError) setSendError(null) }}
+              onChange={(e) => { setText(e.target.value); notifyTyping(); if (sendError) setSendError(null) }}
               onKeyDown={(e) => e.key === 'Enter' && send()}
               placeholder={t('chat.message_ph')}
             />

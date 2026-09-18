@@ -26,13 +26,18 @@ class ChatConnectionManager:
         if not self.connections.get(chat_id):
             self.connections.pop(chat_id, None)
 
-    async def broadcast(self, chat_id: str, payload: dict) -> None:
+    async def broadcast(self, chat_id: str, payload: dict,
+                        skip: WebSocket | None = None) -> None:
         """Рассылка всем, кто сейчас открыл именно этот чат. Мёртвые
         соединения (вкладку закрыли, связь оборвалась) тихо убираем
         по пути — ждать следующего исходящего сообщения, чтобы это
         заметить, незачем."""
         dead = []
         for ws in self.connections.get(chat_id, []):
+            # «Печатает…» отправителю показывать незачем — он и так
+            # знает, что печатает.
+            if ws is skip:
+                continue
             try:
                 await ws.send_json(payload)
             except Exception:
