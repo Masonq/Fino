@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import Avatar from '../components/Avatar'
 import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
@@ -134,11 +135,11 @@ export default function SellerProfile() {
       </PageHeader>
 
       <div className="seller-head">
-        <div className={profile.is_company ? 'seller-avatar lg is-company' : 'seller-avatar lg'}>
-          {profile.avatar_url
-            ? <img src={profile.avatar_url} alt="" />
-            : (profile.company_name || profile.display_name)?.[0] || '?'}
-        </div>
+        <Avatar
+          src={profile.avatar_url}
+          name={profile.company_name || profile.display_name}
+          className={profile.is_company ? 'seller-avatar lg is-company' : 'seller-avatar lg'}
+        />
         <div className="seller-head-info">
           <div className="seller-name lg">
             {profile.company_name || profile.display_name}

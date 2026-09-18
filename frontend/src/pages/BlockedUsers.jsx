@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Avatar from '../components/Avatar'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import PageHeader from '../components/PageHeader'
@@ -43,7 +44,7 @@ export default function BlockedUsers() {
           {items.map((u) => (
             <div className="blocked-row" key={u.id}>
               <span className="avatar-mini">
-                {u.avatar_url ? <img src={u.avatar_url} alt="" /> : (u.display_name || '?').trim().charAt(0).toUpperCase()}
+                <Avatar src={u.avatar_url} name={u.display_name} className="avatar-inner" />
               </span>
               <span className="blocked-name">{u.display_name}</span>
               <button

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Avatar from '../components/Avatar'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { api } from '../api/client'
@@ -120,9 +121,11 @@ export default function AdminUser() {
       <PageHeader title={name} />
 
       <div className="admin-user-head">
-        <span className={`admin-avatar big${card.role === 'seller_business' ? ' is-company' : ''}`}>
-          {card.avatar_url ? <img src={card.avatar_url} alt="" /> : name.slice(0, 1).toUpperCase()}
-        </span>
+        <Avatar
+          src={card.avatar_url}
+          name={name}
+          className={`admin-avatar big${card.role === 'seller_business' ? ' is-company' : ''}`}
+        />
         <div className="admin-user-facts">
           <div className="admin-row-name">
             {name}

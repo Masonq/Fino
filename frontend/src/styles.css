@@ -3316,6 +3316,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   display:flex; align-items:center; justify-content:center;
 }
 .admin-avatar img{ width:100%; height:100%; border-radius:inherit; object-fit:cover; }
+/* Буква или фотография внутри кружка: сам кружок остаётся снаружи —
+   на нём висит точка «сейчас на сайте». */
+.admin-avatar-inner, .avatar-inner{
+  display:flex; align-items:center; justify-content:center;
+  width:100%; height:100%; border-radius:inherit;
+}
 .admin-avatar.is-company{ border-radius:12px; background:#EEEDF7; color:#4B4FA8; }
 .admin-online{ position:absolute; right:-1px; bottom:-1px; width:11px; height:11px; border-radius:50%; background:#22C55E; border:2px solid #fff; }
 .admin-row-text{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import Avatar from '../components/Avatar'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
@@ -203,7 +204,7 @@ export default function AdminUsers() {
           <div key={u.id} className={`admin-row ${u.is_blocked ? 'blocked' : ''}`}>
             <Link className="admin-row-main" to={`/admin/users/${u.id}`}>
               <span className={`admin-avatar${u.role === 'seller_business' ? ' is-company' : ''}`}>
-                {u.avatar_url ? <img src={u.avatar_url} alt="" /> : initials(u)}
+                <Avatar src={u.avatar_url} name={initials(u)} className="admin-avatar-inner" />
                 {online && <i className="admin-online" aria-hidden="true" />}
               </span>
               <span className="admin-row-text">

@@ -1,4 +1,5 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
+import Avatar from '../components/Avatar'
 import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { api } from '../api/client'
@@ -1021,11 +1022,11 @@ export default function ListingDetail() {
         )}
         {listing.owner && (
           <Link to={`/seller/${listing.owner.id}`} className="seller-row">
-            <div className={listing.owner.is_company ? 'seller-avatar is-company' : 'seller-avatar'}>
-              {listing.owner.avatar_url
-                ? <img src={listing.owner.avatar_url} alt="" />
-                : (listing.owner.company_name || listing.owner.display_name)?.[0] || '?'}
-            </div>
+            <Avatar
+              src={listing.owner.avatar_url}
+              name={listing.owner.company_name || listing.owner.display_name}
+              className={listing.owner.is_company ? 'seller-avatar is-company' : 'seller-avatar'}
+            />
             <div>
               <div className="seller-name">
                 {listing.owner.company_name || listing.owner.display_name}

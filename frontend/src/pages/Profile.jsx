@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Avatar from '../components/Avatar'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -124,9 +125,11 @@ export default function Profile() {
                 Карандаш справа — редактирование, вместо отдельной
                 строки-кнопки под шапкой. */}
             <div className="profile-head">
-              <div className={isCompany ? 'profile-avatar is-company' : 'profile-avatar'}>
-                {user.avatar_url ? <img src={user.avatar_url} alt="" /> : initial}
-              </div>
+              <Avatar
+                src={user.avatar_url}
+                name={initial}
+                className={isCompany ? 'profile-avatar is-company' : 'profile-avatar'}
+              />
               <div className="profile-info">
                 <div className="profile-name">{user.company_name || user.display_name}</div>
                 {isCompany && <div className="seller-badge">{t('seller.company_badge')}</div>}
