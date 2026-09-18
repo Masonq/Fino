@@ -16,10 +16,36 @@ function readSeen() {
   try { return new Set(JSON.parse(localStorage.getItem(SEEN_KEY) || '[]')) } catch { return new Set() }
 }
 
+// Просмотренные держим здесь, а не только в состоянии компонента.
+//
+// Отметка ставится в тот же миг, когда человек нажал на кружок, —
+// и сразу после этого страница уходит на объявление, а шапка
+// размонтируется. Запись в хранилище стояла внутри обновления
+// состояния, а такое обновление React у размонтированного
+// компонента просто выбрасывает: до хранилища дело не доходило, и
+// кольцо после возврата оставалось прежним. Отсюда «иногда не
+// отмечается»: успевало или нет, зависело от того, когда React
+// добрался до очереди.
+let seenSet = null
+
+function seenNow() {
+  if (!seenSet) seenSet = readSeen()
+  return seenSet
+}
+
+function remember(id) {
+  const set = seenNow()
+  if (set.has(id)) return set
+  set.add(id)
+  // Сразу и без участия React: переход уже начался.
+  try { localStorage.setItem(SEEN_KEY, JSON.stringify([...set].slice(-SEEN_CAP))) } catch { /* не беда */ }
+  return set
+}
+
 export default function useFresh(city, lang) {
   const key = `${city}|${lang}`
   const [items, setItems] = useState(() => (last.key === key ? last.items : null))
-  const [seen, setSeen] = useState(readSeen)
+  const [seen, setSeen] = useState(() => new Set(seenNow()))
 
   useEffect(() => {
     let alive = true
@@ -41,15 +67,13 @@ export default function useFresh(city, lang) {
   // Просмотренное — кольцо гаснет, как у сторис. Помним последние
   // триста, чтобы хранилище не росло бесконечно.
   const markSeen = useCallback((id) => {
-    setSeen((prev) => {
-      if (prev.has(id)) return prev
-      const next = new Set(prev)
-      next.add(id)
-      const arr = [...next].slice(-SEEN_CAP)
-      try { localStorage.setItem(SEEN_KEY, JSON.stringify(arr)) } catch { /* не беда */ }
-      return new Set(arr)
-    })
+    setSeen(new Set(remember(id)))
   }, [])
+
+  // При возврате на главную состояние берём из общей памяти: пока
+  // человек смотрел объявление, отметка уже была поставлена, а
+  // состояние в этом новом монтировании о ней ещё не знает.
+  useEffect(() => { setSeen(new Set(seenNow())) }, [])
 
   return { items, seen, markSeen }
 }
