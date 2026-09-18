@@ -4476,21 +4476,9 @@ a.s-attrs{ display:block; }
   background:transparent; color:#6B7670; font-size:13px; font-weight:600;
 }
 
-/* ===== Картинки разделов в тёмной теме =====
-   Картинки нарисованы на белом листе с тенью, и вырезать этот лист
-   нельзя: пробовал — вместе с фоном уходят светлые части самих
-   предметов, а тень оставляет серое пятно. Поэтому не воюем с
-   картинкой, а даём ей то, на чём она нарисована: светлую подложку
-   ровно под ней. Выглядит нарочно — как наклейка на карточке, — и в
-   светлой теме ничего не меняется. */
-:root[data-theme="dark"] .cat-tile-2row-glyph:not(.all-glyph),
-:root[data-theme="dark"] .post-cat-img,
-:root[data-theme="dark"] .cats-img{
-  background:#F4F5F2;
-  border-radius:14px;
-}
-:root[data-theme="dark"] .cat-tile-2row-glyph:not(.all-glyph) img,
-:root[data-theme="dark"] .post-cat-img img,
-:root[data-theme="dark"] .cats-img img{
-  border-radius:inherit;
-}
+/* Контурный значок легче объёмной картинки: в том же слоте он кажется
+   мельче, поэтому в тёмной теме даём ему больше места и полную
+   непрозрачность. */
+:root[data-theme="dark"] .cat-tile-2row-glyph svg{ width:74%; height:74%; margin:13%; opacity:1; }
+:root[data-theme="dark"] .post-cat-img svg{ width:76%; height:76%; margin:12%; opacity:1; }
+:root[data-theme="dark"] .cats-img svg{ width:62%; height:62%; margin:19%; opacity:.55; }
