@@ -939,7 +939,7 @@
   },
   "price_check": {
     "cheap": "Below market price",
-    "fair": "Market price",
+    "fair": "Usual price",
     "expensive": "Above market price",
     "subtitle": "PLONK estimate",
     "explain_cheap": "Similar items usually sell for more. Worth messaging early — cheap ones go first.",

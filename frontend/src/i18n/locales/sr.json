@@ -949,7 +949,7 @@
   },
   "price_check": {
     "cheap": "Ispod tržišne cene",
-    "fair": "Tržišna cena",
+    "fair": "Uobičajena cena",
     "expensive": "Iznad tržišne cene",
     "subtitle": "PLONK procena",
     "explain_cheap": "Slične stvari obično koštaju više. Vredi se javiti brzo — jeftine prve odu.",
