@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import Avatar from '../components/Avatar'
+import AttrChips from '../components/AttrChips'
 import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { api } from '../api/client'
@@ -1035,6 +1036,16 @@ export default function ListingDetail() {
         {listing.external_source === 'telegram' && (
           <div className="from-telegram">{t('detail.from_telegram')}</div>
         )}
+        {/* Главные характеристики значками — для квартир и машин их
+            смотрят раньше описания и раньше цены соседей. */}
+        <AttrChips
+          rootSlug={listing.category_path?.[0]?.slug}
+          attributes={listing.attributes}
+          schema={schema}
+          attrLabel={attrLabel}
+          attrValue={attrValue}
+        />
+
         {/* Оценка цены. Покупатель всё равно делает это сам — открывает
             десяток похожих и смотрит, из чего выбирать. Считаем за него,
             и по нажатию честно показываем, на чём считали. */}
