@@ -38,7 +38,7 @@ export default class ErrorBoundary extends Component {
       <div style={{
         minHeight: '100vh', display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center', padding: '32px 20px',
-        textAlign: 'center', fontFamily: '-apple-system, sans-serif', background: '#F6F6F2',
+        textAlign: 'center', fontFamily: '-apple-system, sans-serif', background: 'var(--bg, #F6F6F2)', color: 'var(--ink, #1C2620)',
       }}>
         <div style={{ fontSize: 40, marginBottom: 12 }}>⚠️</div>
         <div style={{ fontSize: 17, fontWeight: 800, color: '#1C2620', marginBottom: 6 }}>
@@ -62,7 +62,7 @@ export default class ErrorBoundary extends Component {
             Техническая информация
           </summary>
           <pre style={{
-            marginTop: 10, padding: 10, background: '#fff', borderRadius: 10,
+            marginTop: 10, padding: 10, background: 'var(--card, #fff)', borderRadius: 10,
             fontSize: 10.5, color: '#1C2620', textAlign: 'left', overflowX: 'auto',
             whiteSpace: 'pre-wrap', wordBreak: 'break-word', border: '1px solid rgba(20,30,25,.08)',
           }}>

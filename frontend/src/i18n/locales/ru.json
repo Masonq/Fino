@@ -867,7 +867,11 @@
     "stat_views_few": "просмотра",
     "stat_views_many": "просмотров",
     "stat_views_other": "просмотров",
-    "stat_favorites": "в избранном"
+    "stat_favorites": "в избранном",
+    "theme": "Оформление",
+    "theme_auto": "Как в системе",
+    "theme_light": "Светлое",
+    "theme_dark": "Тёмное"
   },
   "verify": {
     "title": "Проверка документа",

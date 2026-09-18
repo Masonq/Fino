@@ -25,10 +25,85 @@
   --violet:#6D5DFC;
   --blue:#3B7BF6;
   --amber:#F2A11D;
+  /* Оттенки поверхностей: карточка, «утопленная» плашка (поиск, чипы),
+     ещё более тёмная заготовка. Раньше они стояли числами прямо в
+     правилах — из-за этого тёмную тему нельзя было включить, не
+     переписав полсотни мест. */
+  --surface:#FFFFFF;
+  --surface-sunken:#F2F2EF;
+  --surface-sunken-2:#EDEDE8;
+  --border:rgba(20,30,25,.07);
+  --border-strong:rgba(20,30,25,.14);
+  --warn-bg:#FBF3E3;
+  --warn-ink:#8A6100;
+  --danger-bg:#FFF0EE;
+  --danger-ink:#B3261E;
   --r-sm:12px; --r-md:16px; --r-lg:20px; --r-xl:24px;
   --shadow: 0 1px 2px rgba(20,30,25,.04), 0 6px 20px rgba(20,30,25,.06);
   --shadow-lg: 0 4px 10px rgba(20,30,25,.05), 0 18px 36px rgba(20,30,25,.11);
 }
+
+/* ===== Тёмная тема =====
+   Не инверсия светлой: на чёрном фоне тот же зелёный выглядит ядовитым,
+   а чистый белый текст режет глаз. Фон — тёплый тёмно-серый (#15181A),
+   карточки чуть светлее фона, чтобы граница читалась без рамки, зелёный
+   и оранжевый осветлены до уровня, читаемого на тёмном.
+
+   Применяется двумя путями: data-theme="dark" на <html> (человек выбрал
+   сам) и системная настройка, когда выбора нет (data-theme="auto" или
+   атрибута нет вовсе). */
+:root[data-theme="dark"]{ color-scheme:dark; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ color-scheme:dark; }
+}
+
+:root[data-theme="dark"]{
+  --bg:#15181A;
+  --card:#1E2225;
+  --surface:#1E2225;
+  --surface-sunken:#24282B;
+  --surface-sunken-2:#2B3034;
+  --tile:#1E2225;
+  --ink:#ECEFED;
+  --ink-soft:#B6BDB9;
+  --muted:#8A928D;
+  --line:#2C3134;
+  --border:rgba(255,255,255,.09);
+  --border-strong:rgba(255,255,255,.18);
+  --primary:#2BBE8A;
+  --primary-dark:#24A276;
+  --primary-deep:#7FE0BC;
+  --primary-soft:#15342A;
+  --accent:#FF7A50;
+  --accent-deep:#FFA285;
+  --accent-soft:#3A2019;
+  --coral:#FF7A50;
+  --warn-bg:#33291A;
+  --warn-ink:#E9BE72;
+  --danger-bg:#3A1F1D;
+  --danger-ink:#FF9B92;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.35);
+  --shadow-lg: 0 4px 10px rgba(0,0,0,.4), 0 18px 36px rgba(0,0,0,.5);
+  --page-edge:#0E1011;
+}
+
+
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]):not([data-theme="dark"]){
+    --bg:#15181A; --card:#1E2225; --surface:#1E2225; --surface-sunken:#24282B;
+    --surface-sunken-2:#2B3034; --tile:#1E2225;
+    --ink:#ECEFED; --ink-soft:#B6BDB9; --muted:#8A928D; --line:#2C3134;
+    --border:rgba(255,255,255,.09); --border-strong:rgba(255,255,255,.18);
+    --primary:#2BBE8A; --primary-dark:#24A276; --primary-deep:#7FE0BC; --primary-soft:#15342A;
+    --accent:#FF7A50; --accent-deep:#FFA285; --accent-soft:#3A2019; --coral:#FF7A50;
+    --warn-bg:#33291A; --warn-ink:#E9BE72; --danger-bg:#3A1F1D; --danger-ink:#FF9B92;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.35);
+    --shadow-lg: 0 4px 10px rgba(0,0,0,.4), 0 18px 36px rgba(0,0,0,.5);
+    /* Поля по бокам на широком экране — тоже темнее фона страницы. */
+    --page-edge:#0E1011;
+  }
+}
+
 *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
 /* Фон body должен совпадать с фоном страниц: Safari берёт цвет статус-бара
    отсюда, если у края экрана нет фиксированного элемента. Серый фон по бокам
@@ -36,7 +111,7 @@
 /* overscroll-behavior нужен и на html: без него Safari включает своё
    обновление страницы, и наш «потяни, чтобы обновить» перестаёт работать.
    При разделении html и body ради цвета статус-бара это правило потерялось. */
-html{ background:#E7E7E2; overscroll-behavior-y:none; }
+html{ background:var(--page-edge, #E7E7E2); overscroll-behavior-y:none; }
 body{ background:var(--bg); font-family:'Plus Jakarta Sans',sans-serif; color:var(--ink); overscroll-behavior-y:none; -webkit-overflow-scrolling:touch; }
 a{ text-decoration:none; color:inherit; -webkit-touch-callout:none; }
 button{ border:none; background:none; font-family:inherit; cursor:pointer; user-select:none; -webkit-touch-callout:none; touch-action:manipulation; }
@@ -48,8 +123,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .app-shell > main.has-bottomnav{ padding-bottom:calc(86px + env(safe-area-inset-bottom)); }
 
 .bottomnav{
-  position:fixed; left:0; right:0; bottom:0; max-width:480px; margin:0 auto; background:#fff;
-  border-top:1px solid rgba(20,30,25,.07); display:flex; align-items:stretch;
+  position:fixed; left:0; right:0; bottom:0; max-width:480px; margin:0 auto; background:var(--surface);
+  border-top:1px solid var(--border); display:flex; align-items:stretch;
   padding:10px 2px calc(9px + env(safe-area-inset-bottom)); z-index:20;
 }
 .nav-item{
@@ -85,7 +160,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   transition:padding-bottom .5s cubic-bezier(.25,.46,.45,.94), box-shadow .3s ease;
 }
 /* схлопнутое состояние при скролле — как у Avito: промо уезжает, поиск липнет сверху */
-.avito-banner.collapsed{ box-shadow:0 1px 0 rgba(20,30,25,.07); }
+.avito-banner.collapsed{ box-shadow:0 1px 0 var(--border); }
 .avito-banner .promo-collapse{
   display:grid; grid-template-rows:1fr;
   transition:grid-template-rows .65s cubic-bezier(.25,.46,.45,.94);
@@ -109,10 +184,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .avito-banner.collapsed .avito-toprow{ margin-bottom:0; }
 .avito-banner .avito-search,
 .avito-banner .avito-login-pill{ transition:background .7s ease, box-shadow .7s ease; }
-.avito-banner.collapsed{ box-shadow:0 1px 0 rgba(20,30,25,.07); }
+.avito-banner.collapsed{ box-shadow:0 1px 0 var(--border); }
 .avito-toprow{ display:flex; gap:7px; margin-bottom:8px; }
 .avito-search{
-  flex:1; display:flex; align-items:stretch; background:#F1F1EC; border-radius:15px;
+  flex:1; display:flex; align-items:stretch; background:var(--surface-sunken); border-radius:15px;
   min-width:0; height:48px; overflow:hidden;
 }
 .avito-search-main{
@@ -129,7 +204,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .search-city{
   position:relative; display:flex; align-items:center; gap:4px; flex-shrink:0;
   padding:0 8px 0 12px; margin:6px 0 6px 6px; border-radius:10px;
-  background:#fff; color:var(--ink); box-shadow:0 1px 2px rgba(20,30,25,.06); font-size:12.5px; font-weight:700;
+  background:var(--surface); color:var(--ink); box-shadow:0 1px 2px var(--border); font-size:12.5px; font-weight:700;
   max-width:46%;
 }
 .search-city > span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -137,7 +212,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .search-city-chevron{ opacity:.6; }
 .search-city select{ position:absolute; inset:0; width:100%; height:100%; opacity:0; appearance:none; -webkit-appearance:none; font-size:16px; }
 .avito-login-pill{
-  flex-shrink:0; display:flex; align-items:center; justify-content:center; background:#F1F1EC;
+  flex-shrink:0; display:flex; align-items:center; justify-content:center; background:var(--surface-sunken);
   border-radius:15px; padding:0 15px; font-size:13.5px; font-weight:600; color:var(--ink);
   /* Высота задаётся явно: раньше она бралась от текста, и при входе,
      когда вместо надписи остаётся аватар, кнопка схлопывалась. */
@@ -153,7 +228,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .avatar-mini.is-company{ border-radius:10px; }
 .avito-login-pill .avatar-mini{ width:38px; height:38px; font-size:15px; }
 .avatar-mini.skeleton{
-  background:#EDEDE8; animation:sk-pulse 1.4s ease-in-out infinite; will-change:opacity;
+  background:var(--surface-sunken-2); animation:sk-pulse 1.4s ease-in-out infinite; will-change:opacity;
 }
 
 .notif-bell{
@@ -170,8 +245,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .notif-list{ display:flex; flex-direction:column; }
 .notif-row{
   display:block; width:100%; text-align:left; padding:14px 16px;
-  border-bottom:1px solid rgba(20,30,25,.06); position:relative;
-  background:#fff;
+  border-bottom:1px solid var(--border); position:relative;
+  background:var(--surface);
 }
 .notif-row.unread{ background:var(--primary-soft); }
 .notif-row.unread::before{
@@ -234,7 +309,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .story:active .story-ring{ transform:scale(.94); }
 .story.hot .story-ring::before{ background:conic-gradient(from 210deg, #FF6A3D, #FFB03D, #FF6A3D); }
 .story-photo{
-  width:100%; height:100%; border-radius:50%; overflow:hidden; background:#EDEDE8;
+  width:100%; height:100%; border-radius:50%; overflow:hidden; background:var(--surface-sunken-2);
   display:flex; align-items:center; justify-content:center;
 }
 .story-photo{ position:relative; }
@@ -250,9 +325,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    это кнопка, а не объявление. */
 .story-plus{ background:var(--accent); color:#fff; }
 .story-plus svg{ width:26px; height:26px; }
-.story-skeleton .story-ring::before{ background:rgba(20,30,25,.08); }
-.story-skeleton .story-photo{ background:#EDEDE8; animation:sk-pulse 1.4s ease-in-out infinite; }
-.story-skeleton .story-label{ width:36px; height:11px; border-radius:6px; background:#EDEDE8; }
+.story-skeleton .story-ring::before{ background:var(--border); }
+.story-skeleton .story-photo{ background:var(--surface-sunken-2); animation:sk-pulse 1.4s ease-in-out infinite; }
+.story-skeleton .story-label{ width:36px; height:11px; border-radius:6px; background:var(--surface-sunken-2); }
 
 /* содержимое поверх фона */
 .avito-banner .avito-toprow,
@@ -276,12 +351,20 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    всё равно показывалась. Просто убираю совсем. */
 .city-pill select option{ color:var(--ink); }
 .city-pill-chevron{ opacity:.7; pointer-events:none; flex-shrink:0; }
+.theme-switch{ display:flex; gap:4px; margin-left:auto; background:var(--surface-sunken); border-radius:10px; padding:3px; }
+.theme-btn{
+  width:32px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+  color:var(--muted);
+}
+.theme-btn svg{ width:17px; height:17px; }
+.theme-btn.on{ background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,.08); }
+
 .lang-switch{ display:flex; background:rgba(255,255,255,.24); border-radius:10px; padding:3px; backdrop-filter:blur(4px); }
 .lang-btn{ font-size:12px; font-weight:700; padding:5px 10px; border-radius:8px; color:rgba(255,255,255,.8); }
-.lang-btn.active{ background:#fff; color:var(--primary-deep); }
-.lang-switch.light{ background:#F2F2EF; backdrop-filter:none; }
+.lang-btn.active{ background:var(--surface); color:var(--primary-deep); }
+.lang-switch.light{ background:var(--surface-sunken); backdrop-filter:none; }
 .lang-switch.light .lang-btn{ color:var(--muted); }
-.lang-switch.light .lang-btn.active{ background:#fff; color:var(--ink); box-shadow:0 1px 3px rgba(20,30,25,.1); }
+.lang-switch.light .lang-btn.active{ background:var(--surface); color:var(--ink); box-shadow:0 1px 3px var(--border-strong); }
 
 /* ===== категории — сетка в 2 ряда, подпись сверху-слева, фото снизу-справа внахлёст ===== */
 .cat-rows{
@@ -294,7 +377,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   position:relative; height:94px; width:132px; flex-shrink:0; border-radius:16px;
   padding:10px 8px 6px 12px;
   background:var(--tile);
-  border:1px solid rgba(20,30,25,.07);
+  border:1px solid var(--border);
   box-shadow:0 1px 2px rgba(20,30,25,.03);
   overflow:hidden;
   display:flex; flex-direction:column; justify-content:space-between;
@@ -342,7 +425,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* ===== feed header + column toggle ===== */
 .feed-head-row{ display:flex; justify-content:space-between; align-items:center; padding:12px 12px 10px; }
 .feed-heading{ font-size:19px; font-weight:800; letter-spacing:-0.01em; }
-.col-toggle{ display:flex; background:#fff; border-radius:11px; padding:3px; box-shadow:var(--shadow); gap:2px; }
+.col-toggle{ display:flex; background:var(--surface); border-radius:11px; padding:3px; box-shadow:var(--shadow); gap:2px; }
 .col-btn{ width:32px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--muted); }
 .col-btn.active{ background:var(--primary); color:#fff; }
 .col-btn svg{ width:15px; height:15px; }
@@ -369,7 +452,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    опускались ниже, чем у соседней карточки без них, и ряд выходил
    рваным. Теперь нижняя строка прижата к низу, а лишнее место
    распределяется выше. */
-.s-card{ background:#fff; border-radius:14px; overflow:hidden; display:flex; flex-direction:column; border:1px solid rgba(20,30,25,.05); }
+.s-card{ background:var(--surface); border-radius:14px; overflow:hidden; display:flex; flex-direction:column; border:1px solid rgba(20,30,25,.05); }
 .badge-fresh{
   position:absolute; left:10px; bottom:10px; background:var(--accent); color:#fff; font-size:10px; font-weight:800;
   padding:5px 8px; border-radius:7px; letter-spacing:.02em; text-transform:uppercase; line-height:1;
@@ -390,7 +473,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .photo-placeholder{ width:100%; height:100%; background:linear-gradient(135deg,#DDE3DF,#C9D2CC); }
 
-.badge-top{ position:absolute; top:10px; left:10px; background:#fff; font-size:10px; font-weight:800; padding:5px 9px; border-radius:8px; }
+.badge-top{ position:absolute; top:10px; left:10px; background:var(--surface); font-size:10px; font-weight:800; padding:5px 9px; border-radius:8px; }
 .badge-top.xl{ background:var(--ink); color:#fff; }
 .badge-top.company{ left:auto; right:10px; background:var(--primary-soft); color:var(--primary-deep); }
 .badge-top.reserved{ background:#8A6A1F; color:#fff; }
@@ -410,7 +493,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* Куплено выделение цветом — тёплый приглушённый фон и тонкая рамка,
    заметно на фоне соседей, но не режет глаз. Значения утверждены
    отдельно, до самой реализации — сравнивали несколько вариантов. */
-.s-card.highlighted{ background:#FBF3E3; border:1.5px solid #D9A857; }
+.s-card.highlighted{ background:var(--warn-bg); border:1.5px solid #D9A857; }
 
 .s-row{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; padding:9px 10px 0; }
 /* Заголовок держим ровно в двух строках: короткий добивается пустым местом,
@@ -453,7 +536,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* ===== categories page ===== */
 .cats-head{ display:flex; align-items:center; padding:calc(12px + env(safe-area-inset-top)) 16px 4px; position:relative; }
-.cats-back{ width:36px; height:36px; border-radius:50%; background:#fff; box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.cats-back{ width:36px; height:36px; border-radius:50%; background:var(--surface); box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .cats-title{ position:absolute; left:0; right:0; text-align:center; font-size:16px; font-weight:800; }
 /* Все категории — теми же плитками, что на главной и в форме публикации.
    Раньше здесь была своя раскладка с картинкой из пустого поля image_url. */
@@ -464,7 +547,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .cats-item{
   position:relative; height:98px; border-radius:15px; overflow:hidden;
   padding:12px 86px 12px 14px;
-  background:var(--tile); border:1px solid rgba(20,30,25,.06);
+  background:var(--tile); border:1px solid var(--border);
 }
 .cats-label{
   position:relative; z-index:2;
@@ -478,7 +561,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* ===== stub pages ===== */
 .search-page, .post-ad-page{ padding:calc(14px + env(safe-area-inset-top)) 18px 14px; }
-.search-input{ width:100%; padding:14px 16px; border-radius:14px; border:1px solid var(--line); background:#fff; font-size:16px; }
+.search-input{ width:100%; padding:14px 16px; border-radius:14px; border:1px solid var(--line); background:var(--surface); font-size:16px; }
 
 /* ===== post ad form ===== */
 .post-steps{ display:flex; gap:6px; margin-bottom:12px; }
@@ -490,7 +573,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .draft-banner{
   display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
   padding:12px 14px; border-radius:12px; margin-bottom:14px;
-  background:var(--primary-soft); border:1px solid rgba(20,30,25,.08);
+  background:var(--primary-soft); border:1px solid var(--border);
   font-size:13px; font-weight:600; color:var(--ink);
 }
 .draft-banner-actions{ display:flex; gap:8px; flex-shrink:0; }
@@ -512,7 +595,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .post-cat-item{
   display:flex; flex-direction:column; align-items:center; justify-content:space-between;
   height:118px; border-radius:16px; padding:10px 6px 9px; text-align:center;
-  background:var(--tile); border:1px solid rgba(20,30,25,.07); box-shadow:0 1px 2px rgba(20,30,25,.03);
+  background:var(--tile); border:1px solid var(--border); box-shadow:0 1px 2px rgba(20,30,25,.03);
   transition:transform .15s ease;
 }
 .post-cat-item:active{ transform:scale(.96); }
@@ -554,7 +637,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   background:rgba(0,0,0,.55); color:#fff; font-size:9.5px; font-weight:700;
 }
 .photo-add{
-  aspect-ratio:1/1; border-radius:12px; border:1.5px dashed var(--line); background:#fff;
+  aspect-ratio:1/1; border-radius:12px; border:1.5px dashed var(--line); background:var(--surface);
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
   color:var(--muted); font-size:10.5px; font-weight:700; text-align:center; padding:0 6px;
 }
@@ -562,7 +645,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .post-field{ display:flex; flex-direction:column; gap:6px; flex:1; }
 .post-field label{ font-size:12px; font-weight:700; color:var(--ink-soft); }
 .post-field input, .post-field select, .post-field textarea{
-  padding:12px 14px; border-radius:12px; border:1px solid var(--line); background:#fff; font-size:16px;
+  padding:12px 14px; border-radius:12px; border:1px solid var(--line); background:var(--surface); font-size:16px;
   font-family:inherit; color:var(--ink);
 }
 .post-field-row{ display:flex; gap:10px; }
@@ -583,11 +666,11 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .location-search-row{ display:flex; gap:8px; margin-top:8px; align-items:stretch; }
 .location-search-input{
   flex:1; min-width:0; padding:11px 13px; border-radius:11px;
-  background:var(--tile); border:1px solid rgba(20,30,25,.07); font-size:16px;
+  background:var(--tile); border:1px solid var(--border); font-size:16px;
 }
 .location-geo-btn{
   width:44px; flex-shrink:0; border-radius:11px;
-  background:var(--tile); border:1px solid rgba(20,30,25,.07); color:var(--primary-deep,#0A7A54);
+  background:var(--tile); border:1px solid var(--border); color:var(--primary-deep,#0A7A54);
   display:flex; align-items:center; justify-content:center;
 }
 .location-geo-btn:disabled{ opacity:.6; }
@@ -599,7 +682,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .toggle-switch:disabled{ opacity:.6; }
 .toggle-switch-knob{
   position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%;
-  background:#fff; box-shadow:0 1px 3px rgba(20,30,25,.25); transition:transform .18s;
+  background:var(--surface); box-shadow:0 1px 3px rgba(20,30,25,.25); transition:transform .18s;
 }
 .toggle-switch.on .toggle-switch-knob{ transform:translateX(18px); }
 .push-toggle-wrap{ position:relative; margin-left:auto; flex-shrink:0; display:flex; }
@@ -607,7 +690,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   position:absolute; top:100%; right:0; margin-top:6px; width:180px;
   padding:8px 10px; border-radius:9px; background:var(--coral); color:#fff;
   font-size:11px; font-weight:600; line-height:1.4; z-index:5;
-  box-shadow:0 4px 14px rgba(20,30,25,.18);
+  box-shadow:0 4px 14px var(--border-strong);
 }
 .push-toggle-unsupported{ font-size:11.5px; color:var(--muted); margin-left:auto; }
 .location-geo-spinner{
@@ -618,12 +701,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .location-search-hint{ font-size:11.5px; color:var(--muted); margin-top:5px; }
 .location-search-hint.error{ color:var(--coral); }
 .location-search-results{
-  margin-top:5px; border-radius:11px; background:#fff; border:1px solid rgba(20,30,25,.07);
+  margin-top:5px; border-radius:11px; background:var(--surface); border:1px solid var(--border);
   overflow:hidden;
 }
 .location-search-result{
   display:block; width:100%; text-align:left; padding:10px 13px; font-size:13px;
-  color:var(--ink); border-bottom:1px solid rgba(20,30,25,.06);
+  color:var(--ink); border-bottom:1px solid var(--border);
 }
 .location-search-result:last-child{ border-bottom:none; }
 .post-map-hint{ font-size:11.5px; color:var(--muted); margin-top:6px; line-height:1.4; }
@@ -661,7 +744,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    фоном: под номером объявления тянулась серая полоса в сто пикселей,
    будто страница оборвалась. */
 .detail-page{ padding-bottom:0; }
-.detail-photo{ position:relative; aspect-ratio:1/1; overflow:hidden; background:#E9E9E4; }
+.detail-photo{ position:relative; aspect-ratio:1/1; overflow:hidden; background:var(--surface-sunken-2); }
 /* Только для одиночного изображения-заглушки: у снимков в галерее свои
    правила ниже, а это, будучи записано на все img внутри, перебивало их
    вложенностью — и фото по-прежнему обрезалось. */
@@ -680,7 +763,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   display:flex; justify-content:space-between; align-items:center;
   padding:calc(8px + env(safe-area-inset-top)) 12px 8px;
   background:var(--bg);
-  box-shadow:0 1px 0 rgba(20,30,25,.07);
+  box-shadow:0 1px 0 var(--border);
   opacity:0; pointer-events:none;
   transform:translateY(-6px);
   transition:opacity .22s ease, transform .22s ease;
@@ -697,11 +780,11 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   width:44px; height:44px; border-radius:50%;
   background:rgba(20,30,25,.38); backdrop-filter:blur(10px);
   display:flex; align-items:center; justify-content:center; color:#fff;
-  box-shadow:0 2px 10px rgba(20,30,25,.18);
+  box-shadow:0 2px 10px var(--border-strong);
 }
 .circle-btn svg{ width:22px; height:22px; }
 .circle-btn.on{ color:#FF6152; }
-.circle-btn.danger, .topbar-btn.danger{ color:#D93D3D; }
+.circle-btn.danger, .topbar-btn.danger{ color:var(--danger-ink); }
 /* Кнопка звука у видео. Тем же кружком, что и остальные кнопки на фото:
    вид один, привычка одна.
 
@@ -714,7 +797,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   width:40px; height:40px; border-radius:50%;
   background:rgba(20,30,25,.38); backdrop-filter:blur(10px);
   display:flex; align-items:center; justify-content:center; color:#fff;
-  box-shadow:0 2px 10px rgba(20,30,25,.18);
+  box-shadow:0 2px 10px var(--border-strong);
 }
 .photo-sound svg{ width:20px; height:20px; }
 .topbar-right, .detail-nav-right{ display:flex; align-items:center; gap:6px; }
@@ -765,14 +848,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .quick-reply-backdrop{ position:fixed; inset:0; z-index:40; background:rgba(20,30,25,.4); }
 .quick-reply-sheet{
   position:fixed; left:0; right:0; bottom:0; z-index:41;
-  background:#fff; border-radius:20px 20px 0 0;
+  background:var(--surface); border-radius:20px 20px 0 0;
   padding:18px 16px calc(18px + env(safe-area-inset-bottom));
   max-width:480px; margin:0 auto;
 }
 .quick-reply-title{ font-size:15px; font-weight:800; color:var(--ink); margin-bottom:12px; }
 .quick-reply-option{
   display:block; width:100%; text-align:left; padding:13px 14px; margin-bottom:8px;
-  background:#F2F2EF; border-radius:12px; font-size:14px; font-weight:600; color:var(--ink);
+  background:var(--surface-sunken); border-radius:12px; font-size:14px; font-weight:600; color:var(--ink);
 }
 .quick-reply-own{ background:transparent; border:1px solid rgba(20,30,25,.14); color:var(--primary-deep); }
 .quick-reply-cancel{
@@ -780,7 +863,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   color:var(--muted); font-size:14px; font-weight:600;
 }
 
-.detail-sheet{ background:#fff; border-radius:24px 24px 0 0; margin-top:-22px; position:relative; padding:20px 20px 100px; box-shadow:0 -6px 20px rgba(20,30,25,.05); }
+.detail-sheet{ background:var(--surface); border-radius:24px 24px 0 0; margin-top:-22px; position:relative; padding:20px 20px 100px; box-shadow:0 -6px 20px rgba(20,30,25,.05); }
 /* Хлебные крошки видны только на десктопе — см. медиазапрос ниже. */
 .breadcrumbs{ display:none; }
 .detail-price{ font-family:'IBM Plex Mono',monospace; font-weight:800; font-size:25px; color:var(--primary-deep); }
@@ -804,12 +887,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    на скриншотах, что прислали (стрелка «назад» вверху, карточка
    адреса снизу поверх самой карты). */
 .map-page{
-  position:fixed; inset:0; z-index:60; background:#fff;
+  position:fixed; inset:0; z-index:60; background:var(--surface);
   display:flex; flex-direction:column;
 }
 .map-page-head{
   display:flex; align-items:center; gap:12px; padding:12px 16px;
-  border-bottom:1px solid rgba(20,30,25,.06); flex-shrink:0; background:#fff; z-index:1;
+  border-bottom:1px solid var(--border); flex-shrink:0; background:var(--surface); z-index:1;
 }
 .map-page-title{
   font-size:15px; font-weight:700; color:var(--ink);
@@ -824,7 +907,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    попросту нет. */
 .map-page-address{
   flex-shrink:0; margin:0 12px 16px; z-index:1;
-  background:#fff; border-radius:14px; padding:12px 14px;
+  background:var(--surface); border-radius:14px; padding:12px 14px;
   box-shadow:0 6px 20px rgba(20,30,25,.14);
 }
 .map-page-address-label{ font-size:11px; font-weight:700; color:var(--muted); }
@@ -847,9 +930,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .badge-row{ display:flex; gap:7px; margin-top:14px; flex-wrap:wrap; }
 .info-badge{ font-size:11px; font-weight:700; padding:7px 11px; border-radius:11px; display:flex; align-items:center; gap:5px; }
 .info-badge.green{ background:var(--primary-soft); color:var(--primary-dark); }
-.info-badge.grey{ background:#F3F3F1; color:var(--ink-soft); }
+.info-badge.grey{ background:var(--surface-sunken); color:var(--ink-soft); }
 
-.attr-card{ background:#F8F8F5; border-radius:17px; padding:5px 15px; }
+.attr-card{ background:var(--surface-sunken); border-radius:17px; padding:5px 15px; }
 .attrs-block{ margin-top:18px; }
 .attrs-block .desc-more{ margin-top:10px; }
 .attr-row{ display:flex; justify-content:space-between; padding:11px 0; border-bottom:1px solid #ECECE6; font-size:12.5px; }
@@ -866,8 +949,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .desc-title.loc-title{ margin-top:22px; }
 .desc-text{ font-size:13px; line-height:1.65; color:var(--ink-soft); white-space:pre-wrap; }
 
-.seller-row{ margin-top:20px; display:flex; align-items:center; gap:12px; padding:15px; background:#F8F8F5; border-radius:17px; color:inherit; text-decoration:none; }
-.seller-row:active{ background:#F1F1EC; }
+.seller-row{ margin-top:20px; display:flex; align-items:center; gap:12px; padding:15px; background:var(--surface-sunken); border-radius:17px; color:inherit; text-decoration:none; }
+.seller-row:active{ background:var(--surface-sunken); }
 .seller-chevron{ margin-left:auto; color:var(--muted); flex-shrink:0; }
 .seller-avatar{ width:46px; height:46px; border-radius:50%; background:linear-gradient(135deg,var(--violet),#9B8FFF); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:15px; flex-shrink:0; overflow:hidden; }
 .seller-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
@@ -878,9 +961,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .seal-sm svg{ width:10px; height:10px; }
 
 .sticky-cta{
-  position:fixed; left:0; right:0; bottom:0; max-width:480px; margin:0 auto; background:#fff;
+  position:fixed; left:0; right:0; bottom:0; max-width:480px; margin:0 auto; background:var(--surface);
   padding:13px 18px calc(13px + env(safe-area-inset-bottom)); display:flex; gap:10px;
-  box-shadow:0 -4px 24px rgba(20,30,25,.08); border-radius:22px 22px 0 0; z-index:20;
+  box-shadow:0 -4px 24px var(--border); border-radius:22px 22px 0 0; z-index:20;
   transition:transform .25s ease;
 }
 /* Прячется при прокрутке вниз, тут же возвращается при прокрутке
@@ -890,11 +973,11 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .sticky-cta.hidden{ transform:translateY(150%); }
 .cta-btn{ flex:1; text-align:center; padding:14px; border-radius:15px; font-weight:800; font-size:14px; }
 .cta-btn.primary{ background:var(--primary); color:#fff; box-shadow:0 8px 18px rgba(14,159,110,.3); }
-.cta-btn.icon{ flex:0 0 50px; background:#F3F3F1; color:var(--ink); display:flex; align-items:center; justify-content:center; }
+.cta-btn.icon{ flex:0 0 50px; background:var(--surface-sunken); color:var(--ink); display:flex; align-items:center; justify-content:center; }
 
 /* ===== chat screen ===== */
 .chat-page{ display:flex; flex-direction:column; height:100vh; height:100dvh; }
-.chat-head{ display:flex; align-items:center; gap:12px; padding:calc(14px + env(safe-area-inset-top)) 16px 14px; box-shadow:var(--shadow); background:#fff; }
+.chat-head{ display:flex; align-items:center; gap:12px; padding:calc(14px + env(safe-area-inset-top)) 16px 14px; box-shadow:var(--shadow); background:var(--surface); }
 .chat-head-name{ font-size:14.5px; font-weight:800; }
 .chat-head-listing{ font-size:11.5px; color:var(--muted); font-weight:500; margin-top:1px; }
 /* Меню по трём точкам в шапке чата — «Разрешить звонок» (только
@@ -908,28 +991,28 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .chat-menu-backdrop{ position:fixed; inset:0; z-index:40; }
 .chat-menu{
   position:absolute; top:calc(100% + 6px); right:0; z-index:41; min-width:200px;
-  background:#fff; border-radius:14px; box-shadow:0 8px 28px rgba(20,30,25,.16);
-  border:1px solid rgba(20,30,25,.06); overflow:hidden; padding:6px;
+  background:var(--surface); border-radius:14px; box-shadow:0 8px 28px rgba(20,30,25,.16);
+  border:1px solid var(--border); overflow:hidden; padding:6px;
 }
 .chat-menu-item{
   display:flex; align-items:center; gap:10px; width:100%; text-align:left;
   padding:10px 12px; border-radius:9px; font-size:13.5px; font-weight:600; color:var(--ink);
 }
-.chat-menu-item:hover{ background:#F2F2EF; }
+.chat-menu-item:hover{ background:var(--surface-sunken); }
 .chat-menu-item:disabled{ opacity:.5; }
 .chat-menu-item svg{ flex-shrink:0; color:var(--muted); }
 
 .chat-blocked-notice{
   padding:14px 16px; text-align:center; font-size:12.5px; color:var(--muted);
-  background:#F7F7F3; border-top:1px solid rgba(20,30,25,.06);
+  background:var(--surface-sunken); border-top:1px solid var(--border);
 }
 .chat-messages{ flex:1; min-height:0; overflow-y:auto; padding:16px 16px 8px; display:flex; flex-direction:column; gap:8px; overscroll-behavior-y:contain; -webkit-overflow-scrolling:touch; }
-.chat-bubble{ align-self:flex-start; background:#F3F3F1; padding:10px 14px; border-radius:16px 16px 16px 4px; font-size:13.5px; max-width:78%; line-height:1.4; }
+.chat-bubble{ align-self:flex-start; background:var(--surface-sunken); padding:10px 14px; border-radius:16px 16px 16px 4px; font-size:13.5px; max-width:78%; line-height:1.4; }
 .chat-bubble.mine{ align-self:flex-end; background:var(--primary); color:#fff; border-radius:16px 16px 4px 16px; }
 /* Скелетон переписки: и «своя», и «чужая» форма пузыря на нейтральном
    фоне — цветной фон «своей» стороны спорил бы с пульсирующей линией
    внутри, а тут и так видно, чья сторона, по одной лишь форме угла. */
-.chat-bubble.skeleton{ background:#F3F3F1 !important; padding:12px 14px; }
+.chat-bubble.skeleton{ background:var(--surface-sunken) !important; padding:12px 14px; }
 
 /* Запись о звонке в истории — не пузырь диалога, простая строка по
    центру, тем же духом, что и .chat-blocked-notice ниже. */
@@ -995,8 +1078,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .chat-menu-item.disabled-note svg{ color:var(--muted); }
 
 .chat-input-row{
-  display:flex; gap:10px; padding:12px 16px calc(12px + env(safe-area-inset-bottom)); background:#fff;
-  box-shadow:0 -4px 20px rgba(20,30,25,.06); flex-shrink:0;
+  display:flex; gap:10px; padding:12px 16px calc(12px + env(safe-area-inset-bottom)); background:var(--surface);
+  box-shadow:0 -4px 20px var(--border); flex-shrink:0;
 }
 .chat-input-row input{ flex:1; padding:12px 16px; border-radius:20px; border:1px solid var(--line); font-size:16px; font-family:inherit; }
 .chat-send-btn{ width:42px; height:42px; border-radius:50%; background:var(--primary); color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
@@ -1006,7 +1089,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    нужно место под сумму крупным шрифтом и, у получателя, под две
    кнопки ответа — обычный .chat-bubble для этого тесноват. */
 .chat-offer{
-  align-self:flex-start; max-width:78%; background:#fff;
+  align-self:flex-start; max-width:78%; background:var(--surface);
   border:1.5px solid var(--primary); border-radius:16px 16px 16px 4px;
   padding:12px 14px;
 }
@@ -1026,7 +1109,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* Панель «Предложить цену» — раскрывается по кнопке над полем ввода,
    не отдельным экраном ради одной цифры. */
-.offer-panel{ padding:0 16px; background:#fff; }
+.offer-panel{ padding:0 16px; background:var(--surface); }
 .offer-panel-open-row{ display:flex; gap:8px; align-items:center; margin:10px 0; }
 .offer-panel-open{
   flex:1; padding:11px;
@@ -1055,7 +1138,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    встроена в поток страницы, всегда на своём месте, пока бронь активна. */
 .reservation-banner{
   display:flex; align-items:center; gap:8px; margin:0 16px 10px; padding:10px 14px;
-  border-radius:12px; background:#FBF3E3; color:#8A6A1F;
+  border-radius:12px; background:var(--warn-bg); color:var(--warn-ink);
   font-size:12.5px; font-weight:700; line-height:1.4;
 }
 .reservation-banner svg{ flex-shrink:0; }
@@ -1073,12 +1156,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .search-topbar{
   position:sticky; top:0; z-index:14; display:flex; align-items:center; gap:8px;
   padding:calc(10px + env(safe-area-inset-top)) 12px 10px;
-  background:#FAFAF9; box-shadow:0 1px 0 rgba(20,30,25,.07);
+  background:var(--surface-sunken); box-shadow:0 1px 0 var(--border);
 }
 .search-back{ width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--ink); flex-shrink:0; }
 .search-field{
   flex:1; display:flex; align-items:center; gap:8px; min-width:0;
-  background:#fff; border:1px solid rgba(20,30,25,.08); border-radius:13px; padding:10px 12px;
+  background:var(--surface); border:1px solid var(--border); border-radius:13px; padding:10px 12px;
 }
 .search-field svg{ opacity:.4; flex-shrink:0; }
 .search-field input{
@@ -1088,7 +1171,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .search-field input::-webkit-search-cancel-button{ display:none; }
 .search-clear{ width:20px; height:20px; border-radius:50%; background:#EDEDE9; color:var(--muted); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .search-filter-btn{
-  position:relative; width:38px; height:38px; border-radius:11px; background:#F1F1EC;
+  position:relative; width:38px; height:38px; border-radius:11px; background:var(--surface-sunken);
   display:flex; align-items:center; justify-content:center; color:var(--ink); flex-shrink:0;
 }
 .search-filter-btn.on{ background:var(--primary); color:#fff; }
@@ -1106,7 +1189,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    правило перекрывается и она видна независимо от .open. */
 .filters-panel{
   display:none; flex-direction:column; gap:12px; padding:14px 12px;
-  background:#fff; border-bottom:1px solid rgba(20,30,25,.06);
+  background:var(--surface); border-bottom:1px solid var(--border);
 }
 .filters-panel.open{ display:flex; }
 /* Тот же вид поля, что и на странице категории (.landing-input) —
@@ -1117,15 +1200,15 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    используется и в форме размещения объявления, там менять незачем. */
 .filters-panel .post-field input,
 .filters-panel .post-field select{
-  padding:13px 14px; border-radius:13px; border:1px solid rgba(20,30,25,.08);
-  background:#F7F8F6; font-size:16px; font-weight:600;
+  padding:13px 14px; border-radius:13px; border:1px solid var(--border);
+  background:var(--surface-sunken); font-size:16px; font-weight:600;
 }
 .filters-panel .post-field label{ font-size:13px; margin-bottom:2px; }
 .filter-check{ display:flex; align-items:center; gap:9px; font-size:13.5px; font-weight:600; color:var(--ink); }
 .filter-check input{ width:19px; height:19px; accent-color:var(--primary); }
 .sort-row{ display:flex; gap:7px; flex-wrap:wrap; }
 .sort-chip{
-  padding:8px 12px; border-radius:10px; background:#F2F2EF; color:var(--ink-soft);
+  padding:8px 12px; border-radius:10px; background:var(--surface-sunken); color:var(--ink-soft);
   font-size:12px; font-weight:700;
 }
 .sort-chip.active{ background:var(--primary); color:#fff; }
@@ -1142,12 +1225,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .sort-dd{ position:relative; flex-shrink:0; }
 .sort-dd-btn{
   display:flex; align-items:center; gap:5px; padding:7px 11px; border-radius:10px;
-  background:#F2F2EF; color:var(--ink); font-size:12.5px; font-weight:700; white-space:nowrap;
+  background:var(--surface-sunken); color:var(--ink); font-size:12.5px; font-weight:700; white-space:nowrap;
 }
 .sort-dd-backdrop{ position:fixed; inset:0; z-index:20; }
 .sort-dd-menu{
   position:absolute; top:calc(100% + 6px); left:0; z-index:21; min-width:168px;
-  background:#fff; border-radius:13px; box-shadow:0 8px 28px rgba(16,24,40,.16);
+  background:var(--surface); border-radius:13px; box-shadow:0 8px 28px rgba(16,24,40,.16);
   padding:6px; display:flex; flex-direction:column; gap:2px;
 }
 .sort-dd-item{
@@ -1157,13 +1240,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .sort-dd-item.active{ background:var(--primary-soft); color:var(--primary-dark); font-weight:700; }
 .load-more{
   display:block; margin:18px auto 0; padding:12px 22px; border-radius:13px;
-  background:#fff; border:1px solid rgba(20,30,25,.08); color:var(--ink);
+  background:var(--surface); border:1px solid var(--border); color:var(--ink);
   font-size:13.5px; font-weight:700;
 }
 .load-more:disabled{ color:var(--muted); }
 
 /* скелетоны карточек, пока идёт первая загрузка */
-.card-skeleton{ background:#fff; border-radius:12px; overflow:hidden; }
+.card-skeleton{ background:var(--surface); border-radius:12px; overflow:hidden; }
 .sk-photo{ width:100%; aspect-ratio:1/0.95; }
 /* Вариант для списка (одна широкая карточка в ряд, Search.jsx cols=1):
    те же пропорции, что у настоящей .l-card, иначе скелетон одной формы
@@ -1189,7 +1272,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .card-skeleton .sk-photo,
 .card-skeleton .sk-line,
 .sk-cat-line, .sk-cat-glyph{
-  background:#EDEDE8;
+  background:var(--surface-sunken-2);
   animation:sk-pulse 1.4s ease-in-out infinite;
   will-change:opacity;
 }
@@ -1202,7 +1285,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    подмене на настоящие плитки. */
 .cat-skeleton{
   position:relative; height:82px; width:126px; border-radius:14px; padding:9px 12px 9px 11px;
-  background:#fff; border:1px solid rgba(20,30,25,.05); flex-shrink:0; box-sizing:border-box;
+  background:var(--surface); border:1px solid rgba(20,30,25,.05); flex-shrink:0; box-sizing:border-box;
 }
 .sk-cat-line{ width:66%; height:10px; border-radius:5px; }
 .sk-cat-glyph{ position:absolute; right:9px; bottom:8px; width:26px; height:26px; border-radius:7px; }
@@ -1300,14 +1383,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .chat-list{ display:flex; flex-direction:column; }
 .chat-row{
   display:flex; gap:12px; padding:12px; align-items:flex-start;
-  border-bottom:1px solid rgba(20,30,25,.06);
+  border-bottom:1px solid var(--border);
 }
 .chat-row.unread{ background:var(--primary-soft); }
 /* Подсветка открытой сейчас переписки — имеет смысл только там, где
    список и открытый чат видны одновременно (десктоп), но класс
    ставится всегда через activeId, поэтому именно тут решаем, когда
    его вообще показывать. */
-.chat-row.active{ background:#F2F2EF; }
+.chat-row.active{ background:var(--surface-sunken); }
 
 /* Список переписок и сама открытая переписка — на мобильном это два
    разных экрана (было так и раньше), на десктопе — одна страница в
@@ -1318,7 +1401,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .chats-layout:not(.in-chat) .chats-content-pane{ display:none; }
 
 .chat-thumb{
-  width:52px; height:52px; border-radius:11px; overflow:hidden; flex-shrink:0; background:#EFEFEB;
+  width:52px; height:52px; border-radius:11px; overflow:hidden; flex-shrink:0; background:var(--surface-sunken);
 }
 .chat-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
 .chat-row-body{ flex:1; min-width:0; }
@@ -1342,10 +1425,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .chat-row.skeleton{ pointer-events:none; }
 .chat-row .sk-block{
-  background:#EDEDE8; animation:sk-pulse 1.4s ease-in-out infinite;
+  background:var(--surface-sunken-2); animation:sk-pulse 1.4s ease-in-out infinite;
 }
 .chat-row.skeleton .sk-line{
-  background:#EDEDE8; animation:sk-pulse 1.4s ease-in-out infinite;
+  background:var(--surface-sunken-2); animation:sk-pulse 1.4s ease-in-out infinite;
   border-radius:5px;
 }
 .chat-row.skeleton .sk-line.title{ height:13px; width:55%; margin:2px 0 0; }
@@ -1400,7 +1483,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .auth-input-wrap{
   width:100%; max-width:340px; display:flex; align-items:center; gap:11px;
   padding:15px 16px; border-radius:14px; margin-bottom:6px;
-  background:#fff; border:1.5px solid rgba(20,30,25,.09);
+  background:var(--surface); border:1.5px solid rgba(20,30,25,.09);
 }
 .auth-input-wrap:focus-within{ border-color:var(--primary); }
 .auth-input-wrap svg{ width:20px; height:20px; flex-shrink:0; color:var(--muted); }
@@ -1416,7 +1499,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    все. */
 .auth-input{
   width:100%; max-width:340px; padding:15px 16px; border-radius:14px;
-  margin-bottom:10px; background:#fff; border:1.5px solid rgba(20,30,25,.09);
+  margin-bottom:10px; background:var(--surface); border:1.5px solid rgba(20,30,25,.09);
   font-size:16px; color:var(--ink);
 }
 .auth-input:focus{ outline:none; border-color:var(--primary); }
@@ -1427,7 +1510,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .auth-method{
   width:100%; max-width:340px; display:flex; align-items:center; justify-content:center; gap:10px;
   padding:15px; border-radius:14px; margin-bottom:10px;
-  background:#fff; border:1px solid rgba(20,30,25,.09);
+  background:var(--surface); border:1px solid rgba(20,30,25,.09);
   font-size:14.5px; font-weight:700; color:var(--ink);
 }
 .auth-method svg{ width:20px; height:20px; flex-shrink:0; }
@@ -1441,13 +1524,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   margin:18px 0; color:var(--muted); font-size:12px;
 }
 .auth-divider::before, .auth-divider::after{
-  content:''; flex:1; height:1px; background:rgba(20,30,25,.1);
+  content:''; flex:1; height:1px; background:var(--border-strong);
 }
 .auth-socials{ display:flex; gap:8px; width:100%; max-width:340px; }
 .auth-social{
   flex:1; display:flex; flex-direction:column; align-items:center; gap:6px;
   padding:12px 6px; border-radius:13px;
-  background:#fff; border:1px solid rgba(20,30,25,.09);
+  background:var(--surface); border:1px solid rgba(20,30,25,.09);
   font-size:11.5px; font-weight:600; color:var(--ink-soft);
 }
 .auth-social svg{ width:22px; height:22px; }
@@ -1457,13 +1540,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   background:var(--primary); color:#fff; font-size:14.5px; font-weight:700;
   box-shadow:0 6px 18px rgba(14,159,110,.26);
 }
-.auth-submit:disabled{ background:#D6DCD8; color:#fff; box-shadow:none; }
+.auth-submit:disabled{ background:var(--surface-sunken-2); color:#fff; box-shadow:none; }
 
 .auth-code{
   width:100%; max-width:240px; text-align:center;
   font-size:30px; font-weight:800; letter-spacing:.32em; text-indent:.32em;
   padding:14px 10px; border-radius:14px;
-  background:#fff; border:1px solid rgba(20,30,25,.09); color:var(--ink);
+  background:var(--surface); border:1px solid rgba(20,30,25,.09); color:var(--ink);
 }
 .auth-code:focus{ outline:none; border-color:var(--primary); }
 
@@ -1535,12 +1618,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    каждая — отдельная карточка с воздухом между ними. */
 .profile-head-card{ margin:0 0 6px; }
 .profile-edit-btn{
-  flex-shrink:0; width:38px; height:38px; border-radius:50%; background:#F1F1EC; color:var(--ink);
+  flex-shrink:0; width:38px; height:38px; border-radius:50%; background:var(--surface-sunken); color:var(--ink);
   display:flex; align-items:center; justify-content:center; align-self:flex-start; margin-top:2px;
 }
 .profile-stats{ display:flex; gap:8px; margin:0 12px 10px; }
 .profile-stat{
-  flex:1; min-width:0; background:#fff; border:1px solid rgba(20,30,25,.06); border-radius:16px; padding:11px 12px 10px;
+  flex:1; min-width:0; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:11px 12px 10px;
   display:flex; flex-direction:column; gap:2px; color:var(--ink);
 }
 .profile-stat.is-link{ position:relative; }
@@ -1554,8 +1637,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .profile-stat b{ font-size:18px; font-weight:800; letter-spacing:-0.02em; line-height:1.1; font-variant-numeric:tabular-nums; }
 .profile-stat span{ font-size:11px; font-weight:600; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .balance-card{
-  margin:0 12px 10px; padding:14px; border-radius:16px; background:#fff;
-  border:1px solid rgba(20,30,25,.06);
+  margin:0 12px 10px; padding:14px; border-radius:16px; background:var(--surface);
+  border:1px solid var(--border);
 }
 .balance-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; }
 .balance-label{ font-size:12px; color:var(--muted); font-weight:600; }
@@ -1564,10 +1647,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   flex-shrink:0; padding:10px 16px; border-radius:11px;
   background:var(--primary); color:#fff; font-size:13px; font-weight:700;
 }
-.balance-topup-form{ margin-top:14px; padding-top:14px; border-top:1px solid rgba(20,30,25,.06); }
+.balance-topup-form{ margin-top:14px; padding-top:14px; border-top:1px solid var(--border); }
 .balance-presets{ display:flex; gap:7px; margin-bottom:12px; }
 .balance-preset{
-  flex:1; padding:10px 4px; border-radius:10px; background:#F2F2EF;
+  flex:1; padding:10px 4px; border-radius:10px; background:var(--surface-sunken);
   color:var(--ink); font-size:13px; font-weight:700;
 }
 .balance-preset.active{ background:var(--primary); color:#fff; }
@@ -1577,7 +1660,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .invite-card{
   display:flex; align-items:center; gap:12px;
   margin:0 12px 0; padding:14px; border-radius:16px;
-  background:#fff; border:1px solid rgba(20,30,25,.06);
+  background:var(--surface); border:1px solid var(--border);
 }
 .invite-card-icon{
   width:32px; height:32px; border-radius:10px; flex-shrink:0;
@@ -1601,7 +1684,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .invite-hero p{ font-size:13.5px; color:var(--ink-soft); line-height:1.5; }
 .invite-link-row{
   margin:0 18px; padding:13px 14px; border-radius:12px;
-  background:var(--tile); border:1px solid rgba(20,30,25,.07);
+  background:var(--tile); border:1px solid var(--border);
 }
 .invite-link-text{
   display:block; font-size:12.5px; color:var(--ink-soft); font-weight:600;
@@ -1628,12 +1711,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   color:var(--muted);
 }
 .profile-menu{
-  margin:0 12px 22px; border-radius:16px; background:#fff;
-  border:1px solid rgba(20,30,25,.06); overflow:hidden;
+  margin:0 12px 22px; border-radius:16px; background:var(--surface);
+  border:1px solid var(--border); overflow:hidden;
 }
 .profile-row{
   display:flex; align-items:center; gap:12px;
-  padding:13px 14px; border-bottom:1px solid rgba(20,30,25,.06);
+  padding:13px 14px; border-bottom:1px solid var(--border);
   font-size:14.5px; font-weight:600; color:var(--ink);
 }
 .profile-menu .profile-row:last-child{ border-bottom:none; }
@@ -1665,10 +1748,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* Список заблокированных — своя простая строка: аватар, имя,
    кнопка разблокировать, тем же духом, что и у .profile-row рядом. */
-.blocked-list{ background:#fff; border-radius:16px; overflow:hidden; margin:0 12px; }
+.blocked-list{ background:var(--surface); border-radius:16px; overflow:hidden; margin:0 12px; }
 .blocked-row{
   display:flex; align-items:center; gap:12px; padding:12px 14px;
-  border-bottom:1px solid rgba(20,30,25,.06);
+  border-bottom:1px solid var(--border);
 }
 .blocked-list .blocked-row:last-child{ border-bottom:none; }
 .blocked-name{ flex:1; font-size:14px; font-weight:700; color:var(--ink); }
@@ -1680,7 +1763,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 .profile-logout{
   display:block; margin:24px auto 0; padding:12px 26px; border-radius:13px;
-  background:#fff; border:1px solid rgba(255,97,82,.28);
+  background:var(--surface); border:1px solid rgba(255,97,82,.28);
   font-size:13.5px; font-weight:700; color:var(--coral);
 }
 
@@ -1699,7 +1782,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .photo-strip::-webkit-scrollbar{ display:none; }
 .photo-slide{
   position:relative; flex:0 0 100%; height:100%;
-  scroll-snap-align:start; overflow:hidden; background:#E9E9E4;
+  scroll-snap-align:start; overflow:hidden; background:var(--surface-sunken-2);
 }
 .detail-photo .photo-blur{
   position:absolute; inset:0; width:100%; height:100%;
@@ -1718,7 +1801,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .my-tabs::-webkit-scrollbar{ display:none; }
 .my-tab{
   flex-shrink:0; display:flex; align-items:center; gap:6px;
-  padding:8px 13px; border-radius:11px; background:#F2F2EF;
+  padding:8px 13px; border-radius:11px; background:var(--surface-sunken);
   font-size:12.5px; font-weight:700; color:var(--ink-soft);
 }
 .my-tab.active{ background:var(--primary); color:#fff; }
@@ -1727,7 +1810,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .my-list{ display:flex; flex-direction:column; }
 .my-row{
-  padding:12px; border-bottom:1px solid rgba(20,30,25,.06);
+  padding:12px; border-bottom:1px solid var(--border);
   /* Колонка, не просто блок — чтобы «Поднять просмотры» ниже можно
      было прижать к низу карточки через margin-top:auto, независимо
      от того, есть ли между ним и остальным содержимым бейдж
@@ -1739,12 +1822,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .my-main{ display:flex; gap:12px; align-items:flex-start; }
 .my-thumb{
-  width:76px; height:76px; border-radius:11px; overflow:hidden; flex-shrink:0; background:#EFEFEB;
+  width:76px; height:76px; border-radius:11px; overflow:hidden; flex-shrink:0; background:var(--surface-sunken);
 }
 .my-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
 .my-quick-actions{ display:flex; flex-direction:column; gap:6px; flex-shrink:0; }
 .my-quick-icon{
-  width:30px; height:30px; border-radius:50%; background:#F2F2EF; color:var(--ink-soft);
+  width:30px; height:30px; border-radius:50%; background:var(--surface-sunken); color:var(--ink-soft);
   display:flex; align-items:center; justify-content:center;
 }
 .my-quick-icon svg{ width:15px; height:15px; }
@@ -1762,7 +1845,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .my-actions{ display:flex; gap:7px; margin-top:10px; }
 .my-actions button{
   flex:1; padding:9px; border-radius:10px;
-  background:#F2F2EF; color:var(--ink); font-size:12.5px; font-weight:700;
+  background:var(--surface-sunken); color:var(--ink); font-size:12.5px; font-weight:700;
 }
 .my-actions button.danger{ color:var(--coral); }
 .my-actions button:disabled{ opacity:.5; }
@@ -1779,7 +1862,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .my-promo-icon-wrap{ position:relative; }
 .my-promo-icon{
   width:20px; height:20px; padding:3px; border-radius:6px;
-  color:#8A6100; background:#FBF3E3;
+  color:var(--warn-ink); background:var(--warn-bg);
 }
 .my-promo-icon svg{ width:100%; height:100%; }
 .my-promo-info{
@@ -1802,7 +1885,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* ===== модерация ===== */
 .mod-list{ display:flex; flex-direction:column; gap:12px; padding:0 12px; }
-.mod-card{ background:#fff; border-radius:14px; overflow:hidden; border:1px solid rgba(20,30,25,.06); }
+.mod-card{ background:var(--surface); border-radius:14px; overflow:hidden; border:1px solid var(--border); }
 .mod-photos{ display:flex; gap:4px; overflow-x:auto; scrollbar-width:none; }
 .mod-photos::-webkit-scrollbar{ display:none; }
 .mod-photos img{ width:112px; height:112px; object-fit:cover; flex-shrink:0; }
@@ -1818,10 +1901,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    список всегда непустой. Цифры показывают, что дело движется. */
 .mod-day{ display:flex; gap:16px; padding:0 12px 10px; font-size:11.5px; color:var(--muted); font-weight:600; }
 .mod-day b{ font-size:14px; font-weight:800; color:var(--ink); letter-spacing:-0.01em; margin-right:3px; font-variant-numeric:tabular-nums; }
-.mod-day .warn b{ color:#B3261E; }
+.mod-day .warn b{ color:var(--danger-ink); }
 .mod-dup{
   display:inline-block; margin-bottom:6px; padding:5px 9px; border-radius:8px;
-  background:#FBF3E3; color:#8A6100; font-size:11.5px; font-weight:700;
+  background:var(--warn-bg); color:var(--warn-ink); font-size:11.5px; font-weight:700;
 }
 .mod-card{ position:relative; }
 .mod-card.picked{ box-shadow:0 0 0 2px var(--primary); }
@@ -1833,7 +1916,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .mod-pick svg{ width:16px; height:16px; }
 .mod-pick.on{ background:var(--primary); color:#fff; }
 .mod-seller-pick{
-  font-size:11.5px; font-weight:700; color:var(--primary-deep); background:#fff;
+  font-size:11.5px; font-weight:700; color:var(--primary-deep); background:var(--surface);
   padding:5px 9px; border-radius:8px; border:1px solid rgba(14,159,110,.3);
 }
 .mod-bulkbar{
@@ -1853,11 +1936,11 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 @media (hover:none){ .mod-card.focused{ box-shadow:none; } }
 .mod-seller{
   display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
-  margin:0 12px 10px; padding:9px 11px; border-radius:11px; background:#F6F6F2;
+  margin:0 12px 10px; padding:9px 11px; border-radius:11px; background:var(--surface-sunken);
 }
 .mod-seller-name{ display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; color:var(--ink); min-width:0; }
 .mod-seller-facts{ display:flex; gap:10px; font-size:11.5px; font-weight:600; color:var(--muted); white-space:nowrap; }
-.mod-seller-facts .warn{ color:#B3261E; }
+.mod-seller-facts .warn{ color:var(--danger-ink); }
 .mod-arrived{
   display:block; width:100%; margin:0 0 10px; padding:11px; border-radius:12px;
   background:var(--accent); color:#fff; font-size:13.5px; font-weight:800; text-align:center;
@@ -1882,24 +1965,24 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .mod-reason-box .mod-actions{ padding:0 0 12px; }
 .mod-reason-chips{ display:flex; flex-wrap:wrap; gap:7px; margin-bottom:10px; }
 .mod-reason-chip{
-  padding:9px 13px; border-radius:11px; background:#F7F8F6;
-  border:1px solid rgba(20,30,25,.1); font-size:12.5px; font-weight:600; color:var(--ink);
+  padding:9px 13px; border-radius:11px; background:var(--surface-sunken);
+  border:1px solid var(--border-strong); font-size:12.5px; font-weight:600; color:var(--ink);
 }
 .mod-reason-chip:disabled{ opacity:.5; }
 .mod-reason-input{
   width:100%; min-height:70px; padding:10px 12px; border-radius:11px;
-  border:1px solid rgba(20,30,25,.12); background:#F7F8F6; font-size:16px;
+  border:1px solid rgba(20,30,25,.12); background:var(--surface-sunken); font-size:16px;
   font-family:inherit; resize:vertical; margin-bottom:8px;
 }
 .mod-actions{ display:flex; gap:8px; padding:0 12px 12px; }
 .mod-actions button{ flex:1; padding:11px; border-radius:11px; font-size:13px; font-weight:700; }
 .mod-approve{ background:var(--primary); color:#fff; }
-.mod-reject{ background:#FFF0EE; color:var(--coral); }
+.mod-reject{ background:var(--danger-bg); color:var(--coral); }
 .mod-actions button:disabled{ opacity:.5; }
 
 /* ===== отзывы о продавце ===== */
 .reviews-block{
-  background:#fff; border:1px solid rgba(20,30,25,.06); border-radius:16px;
+  background:var(--surface); border:1px solid var(--border); border-radius:16px;
   padding:16px; margin-top:16px;
 }
 .reviews-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
@@ -1920,17 +2003,17 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 .review-form{
   margin-top:14px; padding:14px; border-radius:13px;
-  background:#fff; border:1px solid rgba(20,30,25,.08);
+  background:var(--surface); border:1px solid var(--border);
 }
 .review-form textarea{
   width:100%; margin-top:12px; padding:11px; border-radius:11px;
-  border:1px solid rgba(20,30,25,.1); background:var(--bg);
+  border:1px solid var(--border-strong); background:var(--bg);
   font-family:inherit; font-size:16px; color:var(--ink); resize:none;
 }
 .review-form textarea:focus{ outline:none; border-color:var(--primary); }
 .review-form-actions{ display:flex; gap:8px; margin-top:12px; }
 .review-form-actions button{ flex:1; padding:11px; border-radius:11px; font-size:13px; font-weight:700; }
-.review-cancel{ background:#F2F2EF; color:var(--ink-soft); }
+.review-cancel{ background:var(--surface-sunken); color:var(--ink-soft); }
 .review-send{ background:var(--primary); color:#fff; }
 .review-send:disabled{ opacity:.6; }
 
@@ -1945,8 +2028,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .review-request{
   align-self:center; width:100%; max-width:320px; margin:10px 0;
   padding:14px; border-radius:15px;
-  background:#fff; border:1px solid rgba(14,159,110,.18);
-  box-shadow:0 4px 14px rgba(20,30,25,.06);
+  background:var(--surface); border:1px solid rgba(14,159,110,.18);
+  box-shadow:0 4px 14px var(--border);
   text-align:center;
 }
 .rr-title{ font-size:13.5px; font-weight:700; color:var(--ink); line-height:1.35; }
@@ -1961,7 +2044,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .rr-stars{ display:flex; justify-content:center; gap:4px; font-size:26px; }
 .rr-detail textarea{
   width:100%; margin-top:10px; padding:10px; border-radius:11px;
-  border:1px solid rgba(20,30,25,.1); background:var(--bg);
+  border:1px solid var(--border-strong); background:var(--bg);
   font-family:inherit; font-size:16px; color:var(--ink); resize:none;
 }
 .rr-detail textarea:focus{ outline:none; border-color:var(--primary); }
@@ -1989,24 +2072,24 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .report-icon-btn{
   width:34px; height:34px; border-radius:50%; flex-shrink:0;
   display:flex; align-items:center; justify-content:center;
-  background:#fff; border:1px solid rgba(20,30,25,.08); color:var(--muted);
+  background:var(--surface); border:1px solid var(--border); color:var(--muted);
 }
 .report-icon-btn svg{ width:18px; height:18px; }
 .page-header .report-icon-btn{ margin-left:auto; }
 .report-sheet{
   margin:20px 0 8px; padding:14px; border-radius:14px;
-  background:#fff; border:1px solid rgba(20,30,25,.08);
+  background:var(--surface); border:1px solid var(--border);
 }
 .report-title{ font-size:14px; font-weight:800; color:var(--ink); }
 .report-reasons{ display:flex; flex-wrap:wrap; gap:7px; margin-top:12px; }
 .report-reason{
-  padding:8px 12px; border-radius:10px; background:#F2F2EF;
+  padding:8px 12px; border-radius:10px; background:var(--surface-sunken);
   font-size:12.5px; font-weight:600; color:var(--ink-soft);
 }
 .report-reason.active{ background:var(--coral); color:#fff; }
 .report-sheet textarea{
   width:100%; margin-top:12px; padding:11px; border-radius:11px;
-  border:1px solid rgba(20,30,25,.1); background:var(--bg);
+  border:1px solid var(--border-strong); background:var(--bg);
   font-family:inherit; font-size:16px; color:var(--ink); resize:none;
 }
 .report-sheet textarea:focus{ outline:none; border-color:var(--primary); }
@@ -2017,18 +2100,18 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .report-done{ font-size:13.5px; font-weight:700; color:var(--primary-deep); text-align:center; padding:8px; }
 .report-badge{
   display:inline-flex; align-items:center; gap:6px; margin-bottom:8px;
-  padding:5px 10px; border-radius:8px; background:#FFF0EE;
+  padding:5px 10px; border-radius:8px; background:var(--danger-bg);
   font-size:11.5px; font-weight:800; color:var(--coral);
 }
 
 /* ===== продвижение объявления ===== */
 .promo-trigger{
-  padding:9px; border-radius:10px; background:#F2F2EF;
+  padding:9px; border-radius:10px; background:var(--surface-sunken);
   color:var(--ink); font-size:12.5px; font-weight:700;
 }
 .promo-sheet{
   margin:10px 0 4px; padding:18px; border-radius:20px;
-  background:#fff; border:1px solid rgba(20,30,25,.08);
+  background:var(--surface); border:1px solid var(--border);
 }
 .promo-title{ font-size:16px; font-weight:800; color:var(--ink); margin-bottom:3px; }
 .promo-sub{ font-size:12.5px; color:var(--muted); margin-bottom:15px; }
@@ -2059,7 +2142,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   display:flex; align-items:center; justify-content:center; margin-bottom:14px;
 }
 .promo-card-image.bump{ background:var(--primary-soft); }
-.promo-card-image.highlight{ background:#FBF3E3; }
+.promo-card-image.highlight{ background:var(--warn-bg); }
 .promo-card-image.xl{ background:#EAEAF7; }
 .promo-card-image img{
   position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1;
@@ -2103,7 +2186,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .balance-topup-form .auth-error{ max-width:none; margin-left:0; margin-right:0; }
 .promo-sheet .review-cancel{
   display:block; width:100%; margin-top:10px; padding:13px;
-  border-radius:12px; background:#FFF0EE; color:var(--coral);
+  border-radius:12px; background:var(--danger-bg); color:var(--coral);
   font-size:13.5px; font-weight:700; text-align:center;
 }
 
@@ -2142,8 +2225,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   background:var(--primary); color:#fff;
   box-shadow:0 6px 18px rgba(14,159,110,.26);
 }
-.edit-save:disabled{ background:#D6DCD8; box-shadow:none; }
-.edit-cancel{ background:#F2F2EF; color:var(--ink-soft); }
+.edit-save:disabled{ background:var(--surface-sunken-2); box-shadow:none; }
+.edit-cancel{ background:var(--surface-sunken); color:var(--ink-soft); }
 
 /* ===== сохранённые поиски ===== */
 .save-search{
@@ -2153,7 +2236,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .save-search.done{ background:var(--primary); color:#fff; }
 
 .saved-list{ display:flex; flex-direction:column; }
-.saved-row{ padding:12px; border-bottom:1px solid rgba(20,30,25,.06); }
+.saved-row{ padding:12px; border-bottom:1px solid var(--border); }
 .saved-main{ display:block; width:100%; text-align:left; }
 .saved-name{ font-size:14px; font-weight:700; color:var(--ink); }
 .saved-desc{ font-size:12.5px; color:var(--muted); margin-top:3px; }
@@ -2170,7 +2253,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .feed-loading{ font-size:12.5px; color:var(--muted); }
 
 /* ===== похожие объявления ===== */
-.similar-block{ margin-top:20px; padding-top:18px; border-top:1px solid rgba(20,30,25,.07); }
+.similar-block{ margin-top:20px; padding-top:18px; border-top:1px solid var(--border); }
 .similar-title{ font-size:15px; font-weight:800; color:var(--ink); margin-bottom:12px; }
 .similar-strip{
   display:flex; gap:10px; overflow-x:auto; scrollbar-width:none;
@@ -2181,7 +2264,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .similar-card{ flex:0 0 132px; }
 .similar-photo{
   width:132px; height:132px; border-radius:12px; overflow:hidden;
-  background:#EFEFEB; margin-bottom:7px;
+  background:var(--surface-sunken); margin-bottom:7px;
 }
 .similar-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
 .similar-price{ font-size:14.5px; font-weight:800; color:var(--ink); }
@@ -2266,8 +2349,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;
   }
   .notif-row{
-    border-radius:14px; border:1px solid rgba(20,30,25,.08);
-    background:#fff;
+    border-radius:14px; border:1px solid var(--border);
+    background:var(--surface);
   }
   .notif-row.unread{ background:var(--primary-soft); border-color:transparent; }
   /* Свайп — жест для пальца, мышью его не сделать: на десктопе
@@ -2288,7 +2371,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;
   }
   .saved-row{
-    border-radius:14px; border:1px solid rgba(20,30,25,.08); background:#fff;
+    border-radius:14px; border:1px solid var(--border); background:var(--surface);
     padding:16px;
   }
 
@@ -2310,7 +2393,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     border-radius:0; background:none; margin:0;
   }
   .blocked-row{
-    border-radius:14px; border:1px solid rgba(20,30,25,.08); background:#fff;
+    border-radius:14px; border:1px solid var(--border); background:var(--surface);
   }
 
   /* нижнее меню на десктопе не нужно — навигация уходит в шапку */
@@ -2369,8 +2452,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   .infinite-grid .s-card.xl-span, .feed-grid .s-card.xl-span{
     grid-column:1 / -1;
     display:grid; grid-template-columns:280px 1fr; gap:20px;
-    background:#fff; border-radius:16px; padding:16px;
-    border:1px solid rgba(20,30,25,.06);
+    background:var(--surface); border-radius:16px; padding:16px;
+    border:1px solid var(--border);
   }
   .infinite-grid .s-card.xl-span .s-photo-wrap,
   .feed-grid .s-card.xl-span .s-photo-wrap{ aspect-ratio:4/3; border-radius:12px; }
@@ -2388,10 +2471,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
      есть на этой же странице у «простой» шапки без градиента
      (.landing-head.plain-head), просто теперь и здесь. */
   .landing-hero{ background:var(--bg) !important; padding-bottom:10px; }
-  .landing-back.on-hero{ background:#F2F4F3 !important; color:var(--ink) !important; }
+  .landing-back.on-hero{ background:var(--surface-sunken) !important; color:var(--ink) !important; }
   .landing-title.on-hero{ color:var(--ink) !important; }
   .landing-count.on-hero{ color:var(--muted) !important; }
-  .landing-hero .search-field{ box-shadow:0 1px 2px rgba(20,30,25,.06); border:1px solid rgba(20,30,25,.08); }
+  .landing-hero .search-field{ box-shadow:0 1px 2px var(--border); border:1px solid var(--border); }
   /* Настоящая десктопная раскладка вместо узкой колонки на пустом
      фоне: сайдбар слева держит шапку раздела и весь блок сужения
      (поиск, тип сделки, комнаты, цена, кнопка «Показать») — липнет
@@ -2408,7 +2491,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   .landing-sidebar{
     position:sticky; top:28px;
     width:300px; flex-shrink:0;
-    background:#fff; border:1px solid rgba(20,30,25,.08); border-radius:16px;
+    background:var(--surface); border:1px solid var(--border); border-radius:16px;
   }
   /* Распорка — держит место в ряду flex, пока сайдбар вынут из потока
      (.is-fixed и .is-bottom ниже). */
@@ -2452,8 +2535,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   }
   .infinite-list .s-card{
     display:grid; grid-template-columns:200px 1fr; gap:14px;
-    background:#fff; border-radius:14px; padding:12px;
-    border:1px solid rgba(20,30,25,.06);
+    background:var(--surface); border-radius:14px; padding:12px;
+    border:1px solid var(--border);
   }
   .infinite-list .s-photo-wrap{ aspect-ratio:4/3; border-radius:10px; }
   .infinite-list .s-body{ padding:2px 0; justify-content:flex-start; }
@@ -2500,7 +2583,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     grid-template-columns:minmax(0,1fr) 360px;
     column-gap:28px; padding:24px; padding-bottom:40px;
     max-width:1180px; margin:24px auto;
-    background:#fff; border-radius:16px;
+    background:var(--surface); border-radius:16px;
   }
   .breadcrumbs{ grid-column:1/-1; }
   .detail-gallery{ grid-column:1; min-width:0; }
@@ -2518,7 +2601,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   .photo-thumbs::-webkit-scrollbar{ display:none; }
   .photo-thumb{
     position:relative; flex:0 0 74px; width:74px; height:74px; padding:0;
-    border-radius:10px; overflow:hidden; background:#E9E9E4;
+    border-radius:10px; overflow:hidden; background:var(--surface-sunken-2);
     border:2px solid transparent; transition:border-color .15s ease;
   }
   .photo-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
@@ -2618,10 +2701,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   .quick-ask-title{ font-size:15px; font-weight:800; color:var(--ink); margin-bottom:10px; }
   .quick-ask-option{
     display:block; width:100%; text-align:left; padding:12px 14px; margin-bottom:8px;
-    background:#F2F2EF; border-radius:12px; font-size:13.5px; font-weight:600; color:var(--ink);
+    background:var(--surface-sunken); border-radius:12px; font-size:13.5px; font-weight:600; color:var(--ink);
     transition:background .15s ease;
   }
-  .quick-ask-option:hover{ background:#E9E9E4; }
+  .quick-ask-option:hover{ background:var(--surface-sunken-2); }
   .quick-ask-option:last-child{ margin-bottom:0; }
 
   /* Карта на десктопе — не всплывающее окно, а обычный блок прямо в
@@ -2642,7 +2725,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     position:relative; inset:auto; transform:none; width:auto;
     height:420px; margin-top:0; margin-bottom:26px;
     border-radius:14px; overflow:hidden; box-shadow:none;
-    border:1px solid rgba(20,30,25,.08);
+    border:1px solid var(--border);
   }
   /* Шапка со стрелкой «назад» и заголовком — на десктопе не нужна
      целиком (заголовок объявления и так на странице выше), но
@@ -2653,8 +2736,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     padding:0; border:none; background:none; gap:0;
   }
   .map-page-head .topbar-btn{
-    width:34px; height:34px; border-radius:50%; background:#fff;
-    box-shadow:0 2px 10px rgba(20,30,25,.18);
+    width:34px; height:34px; border-radius:50%; background:var(--surface);
+    box-shadow:0 2px 10px var(--border-strong);
   }
   .map-page-head .topbar-btn svg{ width:18px; height:18px; }
   .map-page-title{ display:none; }
@@ -2695,8 +2778,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     display:grid; grid-template-columns:repeat(2, 1fr); gap:14px; align-items:stretch;
   }
   .my-row{
-    border:1px solid rgba(20,30,25,.08); border-radius:14px; border-bottom:1px solid rgba(20,30,25,.08);
-    background:#fff;
+    border:1px solid var(--border); border-radius:14px; border-bottom:1px solid var(--border);
+    background:var(--surface);
   }
   .my-actions button{ flex:0 1 auto; padding:9px 16px; }
 
@@ -2746,14 +2829,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
      занимать всё оставшееся место рядом с сайдбаром. */
   .search-results{ flex:1; min-width:0; }
   .search-sidebar .filters-panel{
-    display:flex !important; background:#fff; border:1px solid rgba(20,30,25,.08);
+    display:flex !important; background:var(--surface); border:1px solid var(--border);
     border-radius:16px; padding:16px;
   }
   /* Параметры раздела и подразделы — те же карточки-контейнеры, что и
      фильтры сверху, чтобы боковая колонка читалась одним целым, а не
      набором случайных кусков. */
   .search-sidebar .cat-fields, .search-sidebar .sub-row{
-    background:#fff; border:1px solid rgba(20,30,25,.08); border-radius:16px; padding:16px;
+    background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px;
     flex-wrap:wrap;
   }
   /* «Цена от / до» в ряд — на всю ширину страницы уместно, но 264px
@@ -2808,7 +2891,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
   .chats-layout{
     display:grid; grid-template-columns:320px 1fr; align-items:stretch;
-    border:1px solid rgba(20,30,25,.08); border-radius:16px; overflow:hidden;
+    border:1px solid var(--border); border-radius:16px; overflow:hidden;
     min-height:65vh;
   }
   /* /chat/:id прячет верхнюю навигацию сайта целиком (App.jsx,
@@ -2826,7 +2909,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
      целиком). Вычитаем эти 68px, как и предполагалось изначально. */
   .chats-layout.in-chat{ height:calc(100vh - 68px); height:calc(100dvh - 68px); }
   .chats-list-pane{
-    border-right:1px solid rgba(20,30,25,.08); overflow-y:auto; background:#fff;
+    border-right:1px solid var(--border); overflow-y:auto; background:var(--surface);
   }
   .chats-content-pane{ min-width:0; min-height:0; height:100%; }
   /* .chats-layout .chats-content-pane.chats-placeholder — не просто
@@ -2872,7 +2955,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   .topnav{
     display:flex; align-items:center; gap:28px;
     padding:14px 0; margin-bottom:4px;
-    border-bottom:1px solid rgba(20,30,25,.07);
+    border-bottom:1px solid var(--border);
   }
   .topnav-brand{
     display:flex; align-items:center; gap:9px;
@@ -2892,7 +2975,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   .topnav-search{
     display:flex; align-items:center; gap:8px; flex-shrink:0;
     padding:9px 14px; margin-right:12px; border-radius:11px;
-    background:#F1F1EC; color:var(--muted); font-size:13.5px; font-weight:600;
+    background:var(--surface-sunken); color:var(--muted); font-size:13.5px; font-weight:600;
     max-width:240px; overflow:hidden;
   }
   .topnav-search:hover{ background:#EAEAE3; }
@@ -2904,7 +2987,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     box-shadow:0 4px 12px rgba(14,159,110,.24);
   }
   .topnav-login{
-    padding:10px 16px; border-radius:12px; background:#F1F1EC;
+    padding:10px 16px; border-radius:12px; background:var(--surface-sunken);
     font-size:13.5px; font-weight:700; color:var(--ink);
   }
   .topnav-user .avatar-mini{ width:34px; height:34px; font-size:14px; }
@@ -2937,7 +3020,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   .avito-search{
     max-width:720px; border:1px solid rgba(20,30,25,.14);
     border-radius:12px; padding:0 0 0 16px; height:48px;
-    background:#fff; box-shadow:none;
+    background:var(--surface); box-shadow:none;
   }
   .avito-search > span:first-of-type{ color:var(--muted); }
 
@@ -2988,17 +3071,17 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .cats-back svg{ width:20px; height:20px; }
 /* блочный скелетон — для фото объявления при загрузке */
-.sk-block{ background:#EDEDE8; animation:sk-pulse 1.4s ease-in-out infinite; }
+.sk-block{ background:var(--surface-sunken-2); animation:sk-pulse 1.4s ease-in-out infinite; }
 .history-clear{
   margin-left:auto; padding:7px 12px; border-radius:10px;
-  background:#F2F2EF; font-size:12.5px; font-weight:700; color:var(--ink-soft);
+  background:var(--surface-sunken); font-size:12.5px; font-weight:700; color:var(--ink-soft);
 }
 
 /* ===== нет связи ===== */
 .offline-bar{
   position:sticky; top:0; z-index:40;
   display:flex; align-items:center; justify-content:center; gap:8px;
-  padding:10px 14px; background:#FFF0EE; color:var(--coral);
+  padding:10px 14px; background:var(--danger-bg); color:var(--coral);
   font-size:12.5px; font-weight:700;
 }
 .offline-bar svg{ width:16px; height:16px; flex-shrink:0; }
@@ -3013,7 +3096,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .photo-failed svg{ width:22px; height:22px; }
 .chat-error{
   padding:8px 16px; font-size:12.5px; color:var(--coral);
-  background:#FFF0EE; text-align:center;
+  background:var(--danger-bg); text-align:center;
 }
 
 .reviews-empty{
@@ -3033,7 +3116,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   flex-shrink:0; padding:9px 16px; border-radius:11px; align-self:center;
   background:var(--primary); color:#fff; font-size:13px; font-weight:700;
 }
-.seller-sub-btn.active{ background:var(--tile); color:var(--ink); border:1px solid rgba(20,30,25,.1); }
+.seller-sub-btn.active{ background:var(--tile); color:var(--ink); border:1px solid var(--border-strong); }
 .seller-sub-btn:disabled{ opacity:.6; }
 .seller-badge{
   display:inline-block; margin-top:5px; padding:3px 9px; border-radius:8px;
@@ -3046,7 +3129,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .seller-section-title{ font-size:15px; font-weight:800; margin-bottom:11px; }
 .seller-show-all{
   display:block; width:100%; margin-top:12px; padding:12px;
-  border-radius:12px; border:1px solid rgba(20,30,25,.09); background:#fff;
+  border-radius:12px; border:1px solid rgba(20,30,25,.09); background:var(--surface);
   font-size:13.5px; font-weight:700; color:var(--primary-deep);
 }
 .seller-missing{ padding:28px 16px; color:var(--muted); text-align:center; }
@@ -3074,10 +3157,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .sub-row::-webkit-scrollbar{ display:none; }
 .sub-chip{
   flex-shrink:0; padding:7px 13px; border-radius:11px; background:var(--tile);
-  border:1px solid rgba(20,30,25,.07); font-size:12.5px; font-weight:600; color:var(--ink-soft);
+  border:1px solid var(--border); font-size:12.5px; font-weight:600; color:var(--ink-soft);
 }
 .sub-chip.active{ background:var(--primary); border-color:var(--primary); color:#fff; }
-.sub-chip.skeleton{ height:28px; background:#EDEDE8; animation:sk-pulse 1.4s ease-in-out infinite; border-color:transparent; }
+.sub-chip.skeleton{ height:28px; background:var(--surface-sunken-2); animation:sk-pulse 1.4s ease-in-out infinite; border-color:transparent; }
 
 /* Чипы применённых фильтров над результатами — снять один фильтр,
    не открывая панель. Отличаются от sub-chip заливкой: sub-chip —
@@ -3119,9 +3202,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .post-sub-list{ display:flex; flex-direction:column; gap:8px; }
 .post-sub-item{
   text-align:left; padding:14px 16px; border-radius:14px; background:var(--tile);
-  border:1px solid rgba(20,30,25,.07); font-size:14.5px; font-weight:600; color:var(--ink);
+  border:1px solid var(--border); font-size:14.5px; font-weight:600; color:var(--ink);
 }
-.post-sub-item:active{ background:#F2F2EF; }
+.post-sub-item:active{ background:var(--surface-sunken); }
 
 /* Накладка поиска при пустом запросе */
 .suggest-block{ padding:14px 16px 4px; }
@@ -3139,7 +3222,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .suggest-cats{ display:flex; flex-wrap:wrap; gap:7px; }
 .suggest-cat{
   padding:8px 13px; border-radius:11px; background:var(--tile);
-  border:1px solid rgba(20,30,25,.07); font-size:13px; font-weight:600; color:var(--ink-soft);
+  border:1px solid var(--border); font-size:13px; font-weight:600; color:var(--ink-soft);
 }
 
 /* Просмотр фото во весь экран */
@@ -3182,7 +3265,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; margin:10px 0 12px;
 }
 .admin-stat{
-  background:#fff; border:1px solid rgba(20,30,25,.07); border-radius:14px; padding:10px 11px 9px;
+  background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:10px 11px 9px;
   display:flex; flex-direction:column; gap:2px; text-align:left; color:var(--ink);
   transition:border-color .15s ease, background .15s ease;
 }
@@ -3195,9 +3278,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* Тревоги */
 .admin-alert{
   display:flex; align-items:flex-start; gap:10px; padding:12px 13px; border-radius:14px;
-  background:#fff; border:1px solid rgba(20,30,25,.07); color:var(--ink);
+  background:var(--surface); border:1px solid var(--border); color:var(--ink);
 }
-.admin-alert.danger{ border-color:#F0B9B4; background:#FFF8F7; }
+.admin-alert.danger{ border-color:#F0B9B4; background:var(--danger-bg); }
 .admin-alert-dot{ width:8px; height:8px; border-radius:50%; background:#E0A11D; margin-top:5px; flex-shrink:0; }
 .admin-alert.danger .admin-alert-dot{ background:#B3261E; }
 .admin-alert-text{ display:flex; flex-direction:column; gap:3px; min-width:0; }
@@ -3220,7 +3303,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* Кто что решил */
 .funnel{ display:flex; flex-direction:column; gap:8px; margin:4px 0 12px; }
-.funnel-step{ position:relative; padding:10px 12px; border-radius:11px; background:#F4F4F0; overflow:hidden; }
+.funnel-step{ position:relative; padding:10px 12px; border-radius:11px; background:var(--surface-sunken); overflow:hidden; }
 .funnel-bar{ position:absolute; left:0; top:0; bottom:0; background:var(--primary-soft); }
 .funnel-text{ position:relative; display:flex; align-items:baseline; gap:8px; }
 .funnel-name{ flex:1; min-width:0; font-size:12.5px; font-weight:600; color:var(--ink-soft); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -3230,27 +3313,27 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .audit-actors{ display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
 .audit-actor{
   display:flex; align-items:center; justify-content:space-between; gap:10px;
-  padding:10px 12px; border-radius:12px; background:#fff; border:1px solid rgba(20,30,25,.07);
+  padding:10px 12px; border-radius:12px; background:var(--surface); border:1px solid var(--border);
   font-size:13.5px; color:var(--ink);
 }
 .audit-actor.active{ border-color:var(--ink); }
 .audit-actor-name{ font-weight:700; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .audit-actor-nums{ display:flex; gap:10px; font-size:12.5px; font-weight:700; font-variant-numeric:tabular-nums; flex-shrink:0; }
 .audit-actor-nums .ok{ color:var(--primary-deep); }
-.audit-actor-nums .no{ color:#B3261E; }
-.audit-actor-nums .blk{ color:#8A6100; }
+.audit-actor-nums .no{ color:var(--danger-ink); }
+.audit-actor-nums .blk{ color:var(--warn-ink); }
 .audit-actor-nums .all{ color:var(--muted); }
 
 .admin-toolbar{ display:flex; gap:8px; margin-bottom:10px; }
 .admin-search-wrap{
   flex:1; min-width:0; display:flex; align-items:center; gap:8px; padding:0 10px 0 12px;
-  background:#F1F1EC; border-radius:12px; color:var(--muted); height:44px;
+  background:var(--surface-sunken); border-radius:12px; color:var(--muted); height:44px;
 }
 .admin-search{ flex:1; min-width:0; border:0; background:none; font-size:16px; font-family:inherit; color:var(--ink); outline:none; padding:0; }
-.admin-search-clear{ width:26px; height:26px; border-radius:50%; background:rgba(20,30,25,.08); color:var(--ink); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.admin-search-clear{ width:26px; height:26px; border-radius:50%; background:var(--border); color:var(--ink); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .admin-sort{
   position:relative; flex-shrink:0; display:flex; align-items:center; gap:4px; padding:0 10px 0 12px; height:44px;
-  background:#F1F1EC; border-radius:12px; font-size:13px; font-weight:700; color:var(--ink);
+  background:var(--surface-sunken); border-radius:12px; font-size:13px; font-weight:700; color:var(--ink);
 }
 .admin-sort select{ appearance:none; -webkit-appearance:none; border:0; background:none; font:inherit; color:inherit; outline:none; padding-right:2px; max-width:140px; }
 .admin-sort svg{ opacity:.6; }
@@ -3267,9 +3350,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   padding: 7px 14px;
   border: 1px solid var(--line, #e6e6e6);
   border-radius: 999px;
-  background: #fff;
+  background: var(--surface);
   font-size: 14px;
-  color: #444;
+  color:var(--ink-soft);
 }
 .admin-filters .chip-active {
   background: var(--brand, #0E9F6E);
@@ -3280,12 +3363,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .admin-list { display: flex; flex-direction: column; gap: 8px; }
 
 .admin-row {
-  border: 1px solid rgba(20,30,25,.07);
+  border: 1px solid var(--border);
   border-radius: 14px;
-  background: #fff;
+  background: var(--surface);
   overflow: hidden;
 }
-.admin-row.blocked { border-color: #f3c2c2; background: #fffafa; }
+.admin-row.blocked { border-color: #f3c2c2; background: var(--danger-bg); }
 .admin-row.open{ border-color:rgba(20,30,25,.2); }
 
 .admin-row-main {
@@ -3298,7 +3381,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .admin-avatar{
   position:relative; width:42px; height:42px; border-radius:50%; flex-shrink:0; overflow:visible;
-  background:#EEF6F1; color:var(--primary-deep); font-size:14px; font-weight:800;
+  background:var(--primary-soft); color:var(--primary-deep); font-size:14px; font-weight:800;
   display:flex; align-items:center; justify-content:center;
 }
 .admin-avatar img{ width:100%; height:100%; border-radius:inherit; object-fit:cover; }
@@ -3325,21 +3408,21 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .tag {
   padding: 2px 7px;
   border-radius: 6px;
-  background: #F1F1EC;
+  background: var(--surface-sunken);
   color: var(--ink-soft);
   font-size: 10.5px;
   font-weight: 700;
   line-height:1.4;
 }
-.tag-danger { background: #fdeaea; color: #b3261e; }
+.tag-danger { background: var(--danger-bg); color:var(--danger-ink); }
 
 .admin-card {
   padding: 12px 14px 14px;
   border-top: 1px solid var(--line, #f0f0f0);
   background: #fafafa;
 }
-.admin-note { margin: 0 0 10px; font-size: 13px; color: #b3261e; }
-.admin-note-warn { color: #8a6100; }
+.admin-note { margin: 0 0 10px; font-size: 13px; color:var(--danger-ink); }
+.admin-note-warn { color:var(--warn-ink); }
 /* «Ни одного входа не зафиксировано» — не тревога, а нейтральное
    пояснение отсутствия данных (человек мог войти до включения
    слежения). Красный (обычный .admin-note) для этого слишком
@@ -3362,10 +3445,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   padding: 10px;
   border: 1px solid var(--line, #e6e6e6);
   border-radius: 10px;
-  background: #fff;
+  background: var(--surface);
   font-size: 14px;
 }
-.admin-actions .danger { color: #b3261e; border-color: #f0c4c4; }
+.admin-actions .danger { color:var(--danger-ink); border-color: #f0c4c4; }
 
 .admin-listings { display: flex; flex-direction: column; gap: 6px; }
 .admin-listing {
@@ -3375,17 +3458,17 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   padding: 9px 11px;
   border: 1px solid var(--line, #eee);
   border-radius: 10px;
-  background: #fff;
+  background: var(--surface);
   font-size: 13px;
   text-align: left;
 }
-.admin-listing-status { color: #888; flex: 0 0 auto; }
+.admin-listing-status { color:var(--muted); flex: 0 0 auto; }
 
 .admin-subtitle{ font-size:12px; font-weight:700; color:var(--muted); margin:12px 0 6px; }
 .admin-logins{ display:flex; flex-direction:column; gap:6px; }
 .admin-login-row{
   padding:9px 11px; border:1px solid var(--line, #eee); border-radius:10px;
-  background:#fff;
+  background:var(--surface);
 }
 .admin-login-line1{
   display:flex; align-items:baseline; justify-content:space-between; gap:8px;
@@ -3409,24 +3492,24 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   padding: 14px;
   border: 1px solid var(--line, #e6e6e6);
   border-radius: 14px;
-  background: #fff;
+  background: var(--surface);
 }
 .stats-value { font-size: 24px; font-weight: 700; line-height: 1.1; }
-.stats-label { margin-top: 4px; font-size: 13px; color: #777; }
+.stats-label { margin-top: 4px; font-size: 13px; color:var(--muted); }
 
 .stats-block {
   margin-bottom: 16px;
   padding: 14px;
   border: 1px solid var(--line, #e6e6e6);
   border-radius: 14px;
-  background: #fff;
+  background: var(--surface);
 }
 .stats-block-title { font-weight: 600; margin-bottom: 10px; }
 .edit-company-desc{ resize:vertical; min-height:90px; font-family:inherit; line-height:1.4; }
 
 .verify-card{
-  margin:0 12px 22px; padding:16px; border-radius:16px; background:#fff;
-  border:1px solid rgba(20,30,25,.06);
+  margin:0 12px 22px; padding:16px; border-radius:16px; background:var(--surface);
+  border:1px solid var(--border);
 }
 .verify-hint{ font-size:13px; color:var(--muted); line-height:1.5; margin-bottom:12px; }
 .verify-status{
@@ -3444,14 +3527,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .verify-upload.disabled{ opacity:.6; pointer-events:none; }
 .ldash-listing-title{ padding:0 12px 14px; font-size:14px; font-weight:700; color:var(--ink); }
-.ldash-hint{ margin:14px 12px 0; padding:12px 14px; border-radius:12px; background:#FFF8E8; font-size:12.5px; line-height:1.5; color:#8a6d1f; }
+.ldash-hint{ margin:14px 12px 0; padding:12px 14px; border-radius:12px; background:var(--warn-bg); font-size:12.5px; line-height:1.5; color:#8a6d1f; }
 
 .stats-legend {
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #777;
+  color:var(--muted);
   margin-bottom: 10px;
 }
 .stats-legend .dot {
@@ -3506,7 +3589,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   background: var(--brand, #0E9F6E);
   border-radius: 4px 4px 0 0;
 }
-.stats-bar-day { margin-top: 4px; font-size: 10px; color: #999; overflow: hidden; white-space: nowrap; }
+.stats-bar-day { margin-top: 4px; font-size: 10px; color:var(--muted); overflow: hidden; white-space: nowrap; }
 .stats-bar-promo-dot{
   width: 5px; height: 5px; border-radius: 50%; background: #E0A030; margin-top: 3px; flex-shrink: 0;
 }
@@ -3515,7 +3598,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   font-size: 11.5px; color: var(--muted, #8a8a85);
 }
 .stats-bars-promo-tag{
-  margin-left: 6px; padding: 2px 7px; border-radius: 7px; background: #FBF3E3; color: #8A6A1F;
+  margin-left: 6px; padding: 2px 7px; border-radius: 7px; background: var(--warn-bg); color:var(--warn-ink);
   font-size: 11px; font-weight: 700;
 }
 
@@ -3530,7 +3613,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .stats-row:last-child { border-bottom: 0; }
 /* Пустой раздел — это не мелочь: человек в него заходит и уходит ни с чем */
-.stats-row-empty { color: #b3261e; }
+.stats-row-empty { color:var(--danger-ink); }
 
 /* ——— админка: журнал ——— */
 .audit-list { display: flex; flex-direction: column; gap: 6px; }
@@ -3538,7 +3621,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   padding: 11px 13px;
   border: 1px solid var(--line, #eee);
   border-radius: 12px;
-  background: #fff;
+  background: var(--surface);
 }
 .audit-head {
   display: flex;
@@ -3547,7 +3630,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   align-items: baseline;
 }
 .audit-action { font-weight: 600; font-size: 14px; }
-.audit-time { font-size: 12px; color: #999; flex: 0 0 auto; }
+.audit-time { font-size: 12px; color:var(--muted); flex: 0 0 auto; }
 .audit-meta { margin-top: 3px; font-size: 13px; color: #666; }
 /* Причина — то, ради чего журнал и заводят: выделяем её */
 .audit-reason {
@@ -3556,7 +3639,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   background: #f7f7f7;
   border-radius: 8px;
   font-size: 13px;
-  color: #444;
+  color:var(--ink-soft);
 }
 
 /* ——— техподдержка ——— */
@@ -3574,7 +3657,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   font-size: 16px;      /* меньше — и телефон приближает страницу при вводе */
   font-family: inherit;
   resize: vertical;
-  background: #fff;
+  background: var(--surface);
 }
 .support-send {
   padding: 14px;
@@ -3589,7 +3672,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .support-sent {
   padding: 11px 13px;
   border-radius: 12px;
-  background: #eaf6f1;
+  background: var(--primary-soft);
   color: #0E7A56;
   font-size: 14px;
 }
@@ -3600,9 +3683,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   padding: 12px 13px;
   border: 1px solid var(--line, #eee);
   border-radius: 12px;
-  background: #fff;
+  background: var(--surface);
 }
-.tag-muted { background: #f0f0f0; color: #777; }
+.tag-muted { background: #f0f0f0; color:var(--muted); }
 
 /* Ответы сотрудника прижаты вправо: так видно, где чей голос */
 .support-thread { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
@@ -3616,9 +3699,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .support-msg.from-staff {
   align-self: flex-end;
-  background: #eaf6f1;
+  background: var(--primary-soft);
 }
-.support-author { display: block; margin-top: 4px; font-size: 11px; color: #888; }
+.support-author { display: block; margin-top: 4px; font-size: 11px; color:var(--muted); }
 
 .support-reply { display: flex; gap: 8px; }
 .support-reply input {
@@ -3632,7 +3715,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   padding: 10px 14px;
   border: 1px solid var(--line, #e6e6e6);
   border-radius: 10px;
-  background: #fff;
+  background: var(--surface);
   font-size: 14px;
 }
 
@@ -3693,7 +3776,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     display:flex; position:absolute; top:50%; transform:translateY(-50%);
     width:38px; height:38px; border-radius:50%; z-index:2;
     align-items:center; justify-content:center;
-    background:#fff; color:var(--ink); box-shadow:0 2px 10px rgba(20,30,25,.15);
+    background:var(--surface); color:var(--ink); box-shadow:0 2px 10px rgba(20,30,25,.15);
   }
   .promo-arrow svg{ width:18px; height:18px; }
   .promo-arrow.prev{ left:-8px; }
@@ -3710,7 +3793,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     width:380px; max-height:calc(100vh - 120px); overflow-y:auto;
     z-index:60;
   }
-  .promo-sheet{ box-shadow:0 12px 40px rgba(20,30,25,.18); }
+  .promo-sheet{ box-shadow:0 12px 40px var(--border-strong); }
 }
 
 @media (min-width: 900px) {
@@ -3719,14 +3802,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   .profile-head{ padding:18px 0 24px; }
   .profile-menu{
     display:grid; grid-template-columns:1fr 1fr;
-    border-radius:16px; border:1px solid rgba(20,30,25,.07);
-    border-top:1px solid rgba(20,30,25,.07);
+    border-radius:16px; border:1px solid var(--border);
+    border-top:1px solid var(--border);
     overflow:hidden;
   }
   /* Разделительная линия только между соседями по строке, иначе снизу
      у последнего ряда висит лишняя черта. */
   .profile-menu .profile-row:nth-child(odd){
-    border-right:1px solid rgba(20,30,25,.06);
+    border-right:1px solid var(--border);
   }
   .profile-staff{ margin-top:18px; }
   .profile-staff-title{ padding:0 0 8px; }
@@ -3749,16 +3832,16 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   gap:12px; padding:8px 0 20px; }
 .edit-avatar-pick{
   padding:9px 16px; border:1px solid var(--line,#e6e6e6);
-  border-radius:999px; font-size:14px; color:#444; background:#fff;
+  border-radius:999px; font-size:14px; color:var(--ink-soft); background:var(--surface);
 }
-.edit-label{ font-size:13px; color:#777; margin-top:6px; }
+.edit-label{ font-size:13px; color:var(--muted); margin-top:6px; }
 .edit-hint-warn{
-  margin-top:6px; padding:10px 12px; border-radius:10px; background:#FFF8E8;
+  margin-top:6px; padding:10px 12px; border-radius:10px; background:var(--warn-bg);
   font-size:12px; line-height:1.5; color:#8a6d1f;
 }
 .edit-input-wrap{ position:relative; }
 .edit-input-wrap.locked .admin-search{
-  padding-right:42px; background:#F7F7F3; color:var(--muted);
+  padding-right:42px; background:var(--surface-sunken); color:var(--muted);
 }
 .email-row{
   display:flex; align-items:center; justify-content:space-between; gap:10px;
@@ -3786,7 +3869,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    ввода без своей рамки, сросшееся с ним в одну общую. */
 .phone-input-wrap{
   display:flex; align-items:center; margin:12px 0 8px;
-  border:1px solid var(--line, #e6e6e6); border-radius:12px; background:#fff;
+  border:1px solid var(--line, #e6e6e6); border-radius:12px; background:var(--surface);
   overflow:hidden;
 }
 .phone-prefix{
@@ -3804,7 +3887,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   background:#f3f4f6;
 }
 .gone-banner-title{ font-size:17px; font-weight:700; color:#374151; }
-.gone-banner-note{ margin-top:2px; font-size:13px; color:#9ca3af; }
+.gone-banner-note{ margin-top:2px; font-size:13px; color:var(--muted); }
 
 /* Подтверждение оплаты продвижения после возврата с ЮKassa — три
    состояния разным цветом, тот же принцип, что и у .my-promo-badge
@@ -3814,7 +3897,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   margin:-4px 0 14px; padding:12px 14px; border-radius:14px;
   font-size:14px; font-weight:600;
 }
-.promo-check-banner.checking{ background:#FBF3E3; color:#8A6100; }
+.promo-check-banner.checking{ background:var(--warn-bg); color:var(--warn-ink); }
 .promo-check-banner.confirmed{ background:#E3F5EC; color:#0A7A54; }
 .promo-check-banner.pending{ background:#f3f4f6; color:#374151; }
 
@@ -3824,18 +3907,18 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .phone-reminder{
   display:flex; align-items:center; gap:10px; margin:0 12px 14px;
   padding:11px 12px 11px 14px; border-radius:14px;
-  background:#FBF3E3; color:#8A6100;
+  background:var(--warn-bg); color:var(--warn-ink);
 }
 .phone-reminder-text{ flex:1; font-size:13px; font-weight:600; line-height:1.35; }
 .phone-reminder-link{
-  flex-shrink:0; font-size:12.5px; font-weight:800; color:#8A6100;
+  flex-shrink:0; font-size:12.5px; font-weight:800; color:var(--warn-ink);
   padding:7px 12px; border-radius:10px; background:rgba(138,97,0,.12);
 }
-.phone-reminder-close{ flex-shrink:0; color:#8A6100; opacity:.6; padding:4px; }
+.phone-reminder-close{ flex-shrink:0; color:var(--warn-ink); opacity:.6; padding:4px; }
 
 /* Цена и фотографии гасятся: вещь неактуальна, и держать её яркой —
    значит выдавать за живое объявление. */
-.detail-page:has(.gone-banner) .detail-price{ color:#9ca3af; }
+.detail-page:has(.gone-banner) .detail-price{ color:var(--muted); }
 .detail-page:has(.gone-banner) .detail-photo img,
 .detail-page:has(.gone-banner) .detail-photo{ filter:grayscale(1); opacity:.75; }
 
@@ -3882,7 +3965,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 .cat-modes{
   display:flex; gap:6px; padding:4px;
-  background:#f2f4f3; border-radius:14px; margin-bottom:10px;
+  background:var(--surface-sunken); border-radius:14px; margin-bottom:10px;
 }
 .cat-mode{
   flex:1; padding:10px 8px; border:0; border-radius:11px;
@@ -3890,7 +3973,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   font-size:14px; font-weight:600;
 }
 .cat-mode.on{
-  background:#fff; color:#101828;
+  background:var(--surface); color:#101828;
   box-shadow:0 1px 3px rgba(16,24,40,.08);
 }
 
@@ -3901,7 +3984,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .cat-chips::-webkit-scrollbar{ display:none; }
 .cat-chip{
   flex:0 0 auto; padding:9px 15px; border-radius:999px;
-  border:1px solid var(--line,#e6e6e6); background:#fff;
+  border:1px solid var(--line,#e6e6e6); background:var(--surface);
   font-size:14px; color:#344054; white-space:nowrap;
 }
 .cat-chip.on{
@@ -3925,7 +4008,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .landing-title.on-hero{ color:#fff; }
 .landing-count.on-hero{ color:rgba(255,255,255,.85); }
 .landing-hero .landing-search{ position:relative; z-index:1; padding-top:10px; }
-.landing-hero .search-field{ background:#fff; border-color:transparent; box-shadow:0 4px 14px rgba(16,24,40,.14); }
+.landing-hero .search-field{ background:var(--surface); border-color:transparent; box-shadow:0 4px 14px rgba(16,24,40,.14); }
 
 
 .landing-head{ display:flex; align-items:center; gap:10px; padding:14px 14px 6px; flex-wrap:wrap; }
@@ -3934,7 +4017,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    здесь свой, без градиента и без white-текста «on-hero». */
 .landing-head.plain-head{ padding:calc(14px + env(safe-area-inset-top)) 14px 10px; }
 .landing-back{
-  width:36px; height:36px; border-radius:50%; background:#F2F4F3;
+  width:36px; height:36px; border-radius:50%; background:var(--surface-sunken);
   display:flex; align-items:center; justify-content:center; color:var(--ink); flex-shrink:0;
 }
 .landing-title{ font-size:24px; font-weight:800; color:var(--ink); flex:1; min-width:0; }
@@ -3945,8 +4028,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .landing-label{ font-size:13px; font-weight:700; color:var(--ink-soft); margin-bottom:8px; }
 
 .landing-input{
-  width:100%; padding:13px 14px; border-radius:13px; border:1px solid rgba(20,30,25,.08);
-  background:#F7F8F6; font-size:16px; color:var(--ink); font-weight:600;
+  width:100%; padding:13px 14px; border-radius:13px; border:1px solid var(--border);
+  background:var(--surface-sunken); font-size:16px; color:var(--ink); font-weight:600;
 }
 .landing-input::placeholder{ color:var(--muted); font-weight:500; }
 .landing-select{
@@ -3975,10 +4058,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    тут был серый фон и картинка в отдельной белой рамке — не то. */
 .landing-sub{
   position:relative; height:104px; padding:12px 14px; border-radius:16px;
-  background:var(--tile); border:1px solid rgba(20,30,25,.06);
+  background:var(--tile); border:1px solid var(--border);
   overflow:hidden; text-align:left;
 }
-.landing-sub.skeleton{ background:#EDEDE8; animation:sk-pulse 1.4s ease-in-out infinite; border-color:transparent; }
+.landing-sub.skeleton{ background:var(--surface-sunken-2); animation:sk-pulse 1.4s ease-in-out infinite; border-color:transparent; }
 .landing-sub-name{
   position:relative; z-index:2; display:block; max-width:62%;
   font-size:13px; font-weight:700; color:var(--ink); line-height:1.25;
@@ -4005,13 +4088,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    категории», как у Авито: заголовок с крестиком и обычный список строк,
    без картинок — тут это уже не нужно, выбор словами быстрее. */
 .subs-modal{
-  position:fixed; inset:0; z-index:40; background:#fff;
+  position:fixed; inset:0; z-index:40; background:var(--surface);
   display:flex; flex-direction:column;
 }
 .subs-modal-head{
   display:flex; align-items:center; gap:14px;
   padding:calc(14px + env(safe-area-inset-top)) 16px 14px;
-  border-bottom:1px solid rgba(20,30,25,.07);
+  border-bottom:1px solid var(--border);
 }
 .subs-modal-close{ width:28px; height:28px; display:flex; align-items:center; justify-content:center; color:var(--ink); flex-shrink:0; }
 .subs-modal-title{ font-size:16px; font-weight:800; color:var(--ink); }
@@ -4019,7 +4102,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .subs-modal-row{
   display:block; width:100%; text-align:left; padding:16px;
   font-size:15px; font-weight:600; color:var(--ink);
-  border-bottom:1px solid rgba(20,30,25,.06);
+  border-bottom:1px solid var(--border);
 }
 
 /* Причина отклонения — тот же прицел, что у очереди модерации: выбрать
@@ -4029,18 +4112,18 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   display:flex; align-items:flex-end;
 }
 .reasons-card{
-  width:100%; background:#fff; border-radius:20px 20px 0 0;
+  width:100%; background:var(--surface); border-radius:20px 20px 0 0;
   padding:8px 14px calc(20px + env(safe-area-inset-bottom));
   display:flex; flex-direction:column;
 }
 .reasons-title{ font-size:15px; font-weight:800; color:var(--ink); padding:12px 6px 6px; }
 .reasons-item{
   text-align:left; padding:14px 6px; font-size:14.5px; font-weight:600; color:var(--ink);
-  border-bottom:1px solid rgba(20,30,25,.06);
+  border-bottom:1px solid var(--border);
 }
 .reasons-item:last-of-type{ border-bottom:none; }
 .reasons-cancel{
-  margin-top:10px; padding:13px; border-radius:13px; background:#F2F2EF;
+  margin-top:10px; padding:13px; border-radius:13px; background:var(--surface-sunken);
   font-size:14px; font-weight:700; color:var(--ink-soft); text-align:center;
 }
 .reasons-actions-row{ display:flex; gap:8px; margin-top:10px; }
@@ -4062,7 +4145,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 @media (min-width: 900px){
   .site-footer{
     display:block; margin-top:56px; padding:40px 24px 0;
-    background:#fff; border-top:1px solid rgba(20,30,25,.08);
+    background:var(--surface); border-top:1px solid var(--border);
   }
   .site-footer-inner{
     max-width:1180px; margin:0 auto; display:grid;
@@ -4080,7 +4163,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   .footer-col a:hover{ color:var(--primary-deep); }
   .site-footer-bottom{
     max-width:1180px; margin:32px auto 0; padding:16px 0 24px;
-    border-top:1px solid rgba(20,30,25,.06);
+    border-top:1px solid var(--border);
     font-size:11.5px; color:var(--muted); display:flex; gap:8px; align-items:center;
   }
   .footer-sep{ opacity:.5; }
@@ -4100,8 +4183,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     display:flex; align-items:center; justify-content:center;
     position:absolute; top:50%; transform:translateY(-50%); z-index:3;
     width:34px; height:34px; border-radius:50%;
-    background:#fff; color:var(--ink);
-    box-shadow:0 2px 10px rgba(20,30,25,.18);
+    background:var(--surface); color:var(--ink);
+    box-shadow:0 2px 10px var(--border-strong);
     opacity:0; transition:opacity .16s ease;
   }
   .hscroll-arrow svg{ width:18px; height:18px; }
@@ -4128,14 +4211,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* Пока едет библиотека карт — ровная подложка вместо белой дыры на
    весь экран. Карта открывается на всю страницу, и пустота в полэкрана
    выглядела бы поломкой. */
-.map-loading{ width:100%; height:100%; background:#EFEFEB; }
+.map-loading{ width:100%; height:100%; background:var(--surface-sunken); }
 
 /* Выбор раздела при переносе. Список длинный — 14 разделов и под сотню
    подразделов, — поэтому прокручивается внутри окна, а не растягивает
    его на весь экран. */
 .move-search{
   width:100%; height:42px; padding:0 14px; margin:10px 0 8px; border-radius:11px;
-  border:1px solid rgba(20,30,25,.1); background:#F7F7F4; font-size:16px; font-family:inherit; color:var(--ink);
+  border:1px solid var(--border-strong); background:#F7F7F4; font-size:16px; font-family:inherit; color:var(--ink);
 }
 .move-found{ display:flex; flex-direction:column; align-items:flex-start; gap:2px; }
 .move-found b{ font-size:14.5px; font-weight:700; }
@@ -4180,11 +4263,11 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* Подозрительные переписки. Разговор показываем целиком: решить, обман
    это или нет, можно только прочитав его. */
 .flagged-card{
-  background:#fff; border:1px solid var(--line); border-radius:16px;
+  background:var(--surface); border:1px solid var(--line); border-radius:16px;
   padding:14px; margin-bottom:12px;
 }
 .flagged-head{ display:flex; justify-content:space-between; gap:10px; align-items:baseline; }
-.flagged-reason{ font-weight:700; font-size:14px; color:#D93D3D; }
+.flagged-reason{ font-weight:700; font-size:14px; color:var(--danger-ink); }
 .flagged-when{ font-size:12px; color:var(--muted); white-space:nowrap; }
 .flagged-listing{
   display:block; margin:8px 0 10px; padding:0;
@@ -4203,7 +4286,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .flagged-actions{ display:flex; gap:8px; margin-top:12px; }
 .flagged-clear, .flagged-open{
   flex:1; padding:10px; border-radius:12px; font-size:14px; font-weight:600;
-  border:1px solid var(--line); background:#fff;
+  border:1px solid var(--line); background:var(--surface);
 }
 .flagged-clear{ background:var(--green); color:#fff; border-color:transparent; }
 
@@ -4233,7 +4316,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    объявление автору с причиной честнее, чем стереть его работу. */
 .reasons-delete{
   width:100%; padding:12px; margin-top:6px; border-radius:12px;
-  border:1px solid #F0C9C9; background:#fff; color:#D93D3D;
+  border:1px solid #F0C9C9; background:var(--surface); color:var(--danger-ink);
   font-size:15px; font-weight:700;
 }
 
@@ -4255,14 +4338,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* Тёмно-зелёный, а не светлый: белые буквы на светло-зелёном фоне
    подложки не читались вовсе — увидел на снимке. */
 .auth-typo-yes{ background:var(--primary-deep); color:#fff; }
-.auth-typo-no{ background:#fff; border:1px solid var(--line); color:var(--ink); }
+.auth-typo-no{ background:var(--surface); border:1px solid var(--line); color:var(--ink); }
 
 /* Кнопка «Показать ещё» — на случай, когда подгрузка сама остановилась.
    Заметная, но не кричащая: это запасной путь, а не основной способ
    листать ленту. */
 .feed-more{
   display:block; margin:12px auto 24px; padding:12px 28px;
-  border-radius:14px; border:1px solid var(--line); background:#fff;
+  border-radius:14px; border:1px solid var(--line); background:var(--surface);
   font-size:15px; font-weight:700; color:var(--primary-deep);
 }
 
@@ -4380,9 +4463,9 @@ a.s-attrs{ display:block; }
 .geo-ask{
   display:flex; align-items:center; gap:8px; flex-wrap:wrap;
   margin:0 12px 10px; padding:11px 13px; border-radius:12px;
-  background:#EEF6F2; border:1px solid rgba(14,159,110,.18);
+  background:var(--primary-soft); border:1px solid rgba(14,159,110,.18);
 }
-.geo-ask-text{ flex:1; min-width:150px; font-size:13.5px; color:#1A2420; line-height:1.3; }
+.geo-ask-text{ flex:1; min-width:150px; font-size:13.5px; color:var(--ink); line-height:1.3; }
 .geo-ask-yes{
   padding:7px 14px; border-radius:9px; border:none;
   background:#0E9F6E; color:#FFFFFF; font-size:13px; font-weight:700;

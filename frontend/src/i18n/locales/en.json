@@ -847,7 +847,11 @@
     "stat_listings_other": "listings",
     "stat_views_one": "view",
     "stat_views_other": "views",
-    "stat_favorites": "saved"
+    "stat_favorites": "saved",
+    "theme": "Appearance",
+    "theme_auto": "Match system",
+    "theme_light": "Light",
+    "theme_dark": "Dark"
   },
   "verify": {
     "title": "Identity verification",

@@ -7,6 +7,7 @@ import PhoneReminder from '../components/PhoneReminder'
 import { ProfileSkeleton } from '../components/Skeletons'
 import NotificationBell from '../components/NotificationBell'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+import ThemeSwitcher from '../components/ThemeSwitcher'
 import PushToggle from '../components/PushToggle'
 import BalanceCard from '../components/BalanceCard'
 import useStickyColumn from '../hooks/useStickyColumn'
@@ -223,6 +224,13 @@ export default function Profile() {
           </span>
           {t('profile.language')}
           <LanguageSwitcher variant="light" />
+        </div>
+        <div className="profile-row profile-row-static">
+          <span className="profile-row-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><circle cx="12" cy="12" r="4.5" /><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4" /></svg>
+          </span>
+          {t('profile.theme')}
+          <ThemeSwitcher />
         </div>
         <div className="profile-row profile-row-static">
           <span className="profile-row-icon">

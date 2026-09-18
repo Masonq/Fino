@@ -857,7 +857,11 @@
     "stat_views_one": "pregled",
     "stat_views_few": "pregleda",
     "stat_views_other": "pregleda",
-    "stat_favorites": "u omiljenim"
+    "stat_favorites": "u omiljenim",
+    "theme": "Izgled",
+    "theme_auto": "Kao u sistemu",
+    "theme_light": "Svetla",
+    "theme_dark": "Tamna"
   },
   "verify": {
     "title": "Provera dokumenta",
