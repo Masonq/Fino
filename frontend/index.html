@@ -25,22 +25,6 @@
        шрифт в полях не меньше 16px, он и так соблюдён (см. styles.css). -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
   <meta name="theme-color" content="#FAFAF9" />
-  <script>
-    // Тема ставится до первой отрисовки: иначе тёмная тема моргает
-    // белым экраном на каждой загрузке — сначала рисуется светлая,
-    // и только потом приложение успевает переключить.
-    (function () {
-      try {
-        var saved = localStorage.getItem('plonk_theme') || 'auto';
-        var dark = saved === 'dark' || (saved === 'auto'
-          && window.matchMedia('(prefers-color-scheme: dark)').matches);
-        document.documentElement.setAttribute('data-theme', saved === 'auto' ? (dark ? 'dark' : 'light') : saved);
-        document.documentElement.style.setProperty('--page-edge', dark ? '#0E1011' : '#E7E7E2');
-        var meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.setAttribute('content', dark ? '#15181A' : '#FAFAF9');
-      } catch (e) { /* приватный режим — останется светлая */ }
-    })();
-  </script>
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="PLONK" />

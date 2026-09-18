@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { CATEGORY_ICONS, FALLBACK_ICON } from './CategoryIcons'
-import useDarkTheme from '../hooks/useDarkTheme'
 
 /**
  * Картинка категории. Если файла нет или он не загрузился — показываем
@@ -23,20 +22,6 @@ export default function CategoryArt({ slug, parentSlug }) {
   // часть своего раздела, «Аквариумы» с картинкой «Товаров для
   // животных» не соврут.
   const [step, setStep] = useState(0)
-
-  // В тёмной теме — контурные значки вместо картинок.
-  //
-  // Картинки нарисованы на белом листе с тенью, и на тёмном фоне лист
-  // виден светлым квадратом. Вырезать его нельзя: вместе с ним уходят
-  // светлые части самих предметов. Подкладывать под картинку белое
-  // тоже плохо — получается наклейка поверх карточки. А контурный
-  // значок в тёмной теме выглядит ровно так, как и должен: линия
-  // цветом текста на тёмном, без всякого фона. Значки те же, что уже
-  // служат заменой, когда картинки нет.
-  const dark = useDarkTheme()
-  if (dark) {
-    return CATEGORY_ICONS[slug] || CATEGORY_ICONS[parentSlug] || FALLBACK_ICON
-  }
 
   const source = step === 0 ? slug : (step === 1 ? parentSlug : null)
 

@@ -43,67 +43,6 @@
   --shadow-lg: 0 4px 10px rgba(20,30,25,.05), 0 18px 36px rgba(20,30,25,.11);
 }
 
-/* ===== Тёмная тема =====
-   Не инверсия светлой: на чёрном фоне тот же зелёный выглядит ядовитым,
-   а чистый белый текст режет глаз. Фон — тёплый тёмно-серый (#15181A),
-   карточки чуть светлее фона, чтобы граница читалась без рамки, зелёный
-   и оранжевый осветлены до уровня, читаемого на тёмном.
-
-   Применяется двумя путями: data-theme="dark" на <html> (человек выбрал
-   сам) и системная настройка, когда выбора нет (data-theme="auto" или
-   атрибута нет вовсе). */
-:root[data-theme="dark"]{ color-scheme:dark; }
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){ color-scheme:dark; }
-}
-
-:root[data-theme="dark"]{
-  --bg:#15181A;
-  --card:#1E2225;
-  --surface:#1E2225;
-  --surface-sunken:#24282B;
-  --surface-sunken-2:#2B3034;
-  --tile:#1E2225;
-  --ink:#ECEFED;
-  --ink-soft:#B6BDB9;
-  --muted:#8A928D;
-  --line:#2C3134;
-  --border:rgba(255,255,255,.09);
-  --border-strong:rgba(255,255,255,.18);
-  --primary:#2BBE8A;
-  --primary-dark:#24A276;
-  --primary-deep:#7FE0BC;
-  --primary-soft:#15342A;
-  --accent:#FF7A50;
-  --accent-deep:#FFA285;
-  --accent-soft:#3A2019;
-  --coral:#FF7A50;
-  --warn-bg:#33291A;
-  --warn-ink:#E9BE72;
-  --danger-bg:#3A1F1D;
-  --danger-ink:#FF9B92;
-  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.35);
-  --shadow-lg: 0 4px 10px rgba(0,0,0,.4), 0 18px 36px rgba(0,0,0,.5);
-  --page-edge:#0E1011;
-}
-
-
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]):not([data-theme="dark"]){
-    --bg:#15181A; --card:#1E2225; --surface:#1E2225; --surface-sunken:#24282B;
-    --surface-sunken-2:#2B3034; --tile:#1E2225;
-    --ink:#ECEFED; --ink-soft:#B6BDB9; --muted:#8A928D; --line:#2C3134;
-    --border:rgba(255,255,255,.09); --border-strong:rgba(255,255,255,.18);
-    --primary:#2BBE8A; --primary-dark:#24A276; --primary-deep:#7FE0BC; --primary-soft:#15342A;
-    --accent:#FF7A50; --accent-deep:#FFA285; --accent-soft:#3A2019; --coral:#FF7A50;
-    --warn-bg:#33291A; --warn-ink:#E9BE72; --danger-bg:#3A1F1D; --danger-ink:#FF9B92;
-    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.35);
-    --shadow-lg: 0 4px 10px rgba(0,0,0,.4), 0 18px 36px rgba(0,0,0,.5);
-    /* Поля по бокам на широком экране — тоже темнее фона страницы. */
-    --page-edge:#0E1011;
-  }
-}
-
 *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
 /* Фон body должен совпадать с фоном страниц: Safari берёт цвет статус-бара
    отсюда, если у края экрана нет фиксированного элемента. Серый фон по бокам
@@ -111,7 +50,7 @@
 /* overscroll-behavior нужен и на html: без него Safari включает своё
    обновление страницы, и наш «потяни, чтобы обновить» перестаёт работать.
    При разделении html и body ради цвета статус-бара это правило потерялось. */
-html{ background:var(--page-edge, #E7E7E2); overscroll-behavior-y:none; }
+html{ background:#E7E7E2; overscroll-behavior-y:none; }
 body{ background:var(--bg); font-family:'Plus Jakarta Sans',sans-serif; color:var(--ink); overscroll-behavior-y:none; -webkit-overflow-scrolling:touch; }
 a{ text-decoration:none; color:inherit; -webkit-touch-callout:none; }
 button{ border:none; background:none; font-family:inherit; cursor:pointer; user-select:none; -webkit-touch-callout:none; touch-action:manipulation; }
@@ -351,14 +290,6 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    всё равно показывалась. Просто убираю совсем. */
 .city-pill select option{ color:var(--ink); }
 .city-pill-chevron{ opacity:.7; pointer-events:none; flex-shrink:0; }
-.theme-switch{ display:flex; gap:4px; margin-left:auto; background:var(--surface-sunken); border-radius:10px; padding:3px; }
-.theme-btn{
-  width:32px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center;
-  color:var(--muted);
-}
-.theme-btn svg{ width:17px; height:17px; }
-.theme-btn.on{ background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,.08); }
-
 .lang-switch{ display:flex; background:rgba(255,255,255,.24); border-radius:10px; padding:3px; backdrop-filter:blur(4px); }
 .lang-btn{ font-size:12px; font-weight:700; padding:5px 10px; border-radius:8px; color:rgba(255,255,255,.8); }
 .lang-btn.active{ background:var(--surface); color:var(--primary-deep); }
@@ -4476,9 +4407,3 @@ a.s-attrs{ display:block; }
   background:transparent; color:#6B7670; font-size:13px; font-weight:600;
 }
 
-/* Контурный значок легче объёмной картинки: в том же слоте он кажется
-   мельче, поэтому в тёмной теме даём ему больше места и полную
-   непрозрачность. */
-:root[data-theme="dark"] .cat-tile-2row-glyph svg{ width:74%; height:74%; margin:13%; opacity:1; }
-:root[data-theme="dark"] .post-cat-img svg{ width:76%; height:76%; margin:12%; opacity:1; }
-:root[data-theme="dark"] .cats-img svg{ width:62%; height:62%; margin:19%; opacity:.55; }
