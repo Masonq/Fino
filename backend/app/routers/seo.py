@@ -196,7 +196,6 @@ LISTING_PAGE = """<!DOCTYPE html>
 <p><strong>{price}</strong>{city_line}</p>
 <p>{description}</p>
 <p><a href="{url}">Открыть объявление на PLONK</a></p>
-<script>location.replace("{url}")</script>
 </body>
 </html>"""
 
@@ -207,10 +206,17 @@ def _is_crawler(agent: str) -> bool:
 
     Человеку отдавать урезанную страницу нельзя — он ждёт живой сайт.
     """
+    # Applebot здесь нарочно нет. Он собран на WebKit и исполняет
+    # JavaScript, то есть видит обычный сайт таким же, каким его видит
+    # Safari. Отдавать ему отдельную страницу — значит показывать
+    # роботу Apple одно, а людям в Safari другое: это и есть
+    # «подмена содержимого», один из главных признаков мошеннического
+    # сайта в классификаторе Safari. Google-боту отдельная страница
+    # нужна (он не всегда дожидается сборки приложения), Apple — нет.
     agent = (agent or "").lower()
     return any(bot in agent for bot in (
         "googlebot", "yandex", "bingbot", "duckduckbot", "baiduspider",
-        "applebot", "facebookexternalhit", "twitterbot", "telegrambot",
+        "facebookexternalhit", "twitterbot", "telegrambot",
         "whatsapp", "slackbot", "linkedinbot", "petalbot", "ahrefsbot",
     ))
 

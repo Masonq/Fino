@@ -132,6 +132,7 @@ echo "→ обновляю конфиг nginx"
 # nginx -t до перезагрузки — не дать битому конфигу положить сайт
 # совсем: reload с ошибкой в файле останавливает nginx на всех
 # сайтах разом, не только на этом.
+mkdir -p /etc/nginx/snippets && cp deploy/plonk-headers.inc /etc/nginx/snippets/plonk-headers.inc
 cp deploy/plonk.rs.conf /etc/nginx/sites-available/plonk
 if ! nginx -t 2>&1; then
   echo "  ✗ конфиг nginx не прошёл проверку — деплой остановлен, nginx не тронут"

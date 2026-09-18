@@ -11,7 +11,7 @@ import html
 import uuid
 
 from fastapi import APIRouter, Depends, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session, joinedload
 
 from app.core.database import get_db
@@ -42,7 +42,6 @@ TEMPLATE = """<!doctype html>
 <meta name="twitter:description" content="{description}" />
 
 <link rel="canonical" href="{url}" />
-<script>location.replace("{app_url}")</script>
 </head>
 <body>
 <h1>{title}</h1>
@@ -55,7 +54,7 @@ TEMPLATE = """<!doctype html>
 BOTS = (
     "telegrambot", "whatsapp", "viber", "facebookexternalhit", "twitterbot",
     "slackbot", "discordbot", "googlebot", "yandexbot", "bingbot",
-    "linkedinbot", "skypeuripreview", "vkshare", "applebot",
+    "linkedinbot", "skypeuripreview", "vkshare",
 )
 
 
@@ -79,13 +78,13 @@ def listing_preview(
     # главную вместо объявления.
     go_url = f"{base}/go/{listing_id}"
 
+    # Человеку — обычное перенаправление, а не пустая страница с одним
+    # скриптом. Страница, в которой нет ничего, кроме
+    # location.replace(...), — ровно то, как выглядят прокладки
+    # фишинговых сайтов, и классификаторы Safe Browsing на неё смотрят
+    # в первую очередь.
     if not is_bot(request):
-        # обычный посетитель — сразу в приложение
-        return HTMLResponse(
-            f'<!doctype html><meta charset="utf-8">'
-            f'<script>location.replace("{go_url}")</script>',
-            status_code=200,
-        )
+        return RedirectResponse(go_url, status_code=302)
 
     listing = (
         db.query(Listing)

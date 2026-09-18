@@ -1,0 +1,6 @@
+# Куда писать, если нашли уязвимость на PLONK.
+Contact: https://plonk.rs/support
+Contact: https://t.me/Baraholka_Plonk
+Preferred-Languages: ru, sr, en
+Canonical: https://plonk.rs/.well-known/security.txt
+Expires: 2027-12-31T00:00:00.000Z
