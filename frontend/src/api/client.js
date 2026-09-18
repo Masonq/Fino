@@ -142,6 +142,7 @@ export const api = {
   // ——— админка ———
   adminUsers: (params) => request(`/admin/users?${query(params)}`),
   adminUsersOverview: () => request('/admin/users/overview'),
+  adminAlerts: () => request('/admin/users/alerts'),
   adminUser: (id) => request(`/admin/users/${id}`),
   adminUserListings: (id) => request(`/admin/users/${id}/listings`),
   adminUserLogins: (id) => request(`/admin/users/${id}/logins`),
@@ -174,7 +175,7 @@ export const api = {
   adminStatsSources: () => request('/admin/stats/sources'),
   adminStatsQuality: () => request('/admin/stats/quality'),
   adminAudit: (params) => request(`/admin/audit?${query(params)}`),
-  adminAuditSummary: (days) => request(`/admin/audit/summary?${new URLSearchParams({ days })}`),
+  adminAuditActors: (days) => request(`/admin/audit/actors?${new URLSearchParams({ days })}`),
 
   // ——— техподдержка ———
   supportCreate: (payload) => request('/support', {

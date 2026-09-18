@@ -22,6 +22,42 @@ from app.routers.admin_users import require_staff
 router = APIRouter(prefix="/api/admin/audit", tags=["admin"])
 
 
+@router.get("/actors")
+def actors(
+    days: int = Query(30, ge=1, le=365),
+    staff: User = Depends(require_staff),
+    db: Session = Depends(get_db),
+):
+    """
+    Кто из сотрудников что делал за период: одобрено, отклонено,
+    заблокировано, всего действий. Когда модераторов больше одного,
+    журнал построчно уже не читают — нужна сводка, а спорные случаи
+    открываются фильтром по человеку.
+    """
+    since = utcnow() - timedelta(days=days)
+    rows = (db.query(AuditEntry.actor_id, AuditEntry.actor_name,
+                     AuditEntry.action, func.count(AuditEntry.id))
+            .filter(AuditEntry.created_at >= since, AuditEntry.actor_id.isnot(None))
+            .group_by(AuditEntry.actor_id, AuditEntry.actor_name, AuditEntry.action)
+            .all())
+    by_actor: dict = {}
+    for actor_id, name, action, n in rows:
+        key = str(actor_id)
+        d = by_actor.setdefault(key, {
+            "id": key, "name": name or "—",
+            "approved": 0, "rejected": 0, "blocked": 0, "total": 0,
+        })
+        d["total"] += n
+        if action == "listing.approve":
+            d["approved"] += n
+        elif action == "listing.reject":
+            d["rejected"] += n
+        elif action == "user.block":
+            d["blocked"] += n
+    items = sorted(by_actor.values(), key=lambda d: -d["total"])
+    return {"items": items, "days": days}
+
+
 @router.get("")
 def entries(
     action: str | None = Query(None, description="вид действия целиком или начало"),

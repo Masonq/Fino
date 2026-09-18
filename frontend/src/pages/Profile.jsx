@@ -325,6 +325,15 @@ export default function Profile() {
               )}
               <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
             </Link>
+            {/* Тревоги — первым пунктом: это то, ради чего сотрудник
+                заходит в служебный раздел, а не список людей. */}
+            <Link className="profile-row" to="/admin/alerts">
+              <span className="profile-row-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3 2 20h20L12 3Z" /><path d="M12 10v4M12 17.2v.1" /></svg>
+              </span>
+              {t('admin.alerts')}
+              <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+            </Link>
             <Link className="profile-row" to="/admin/users">
               <span className="profile-row-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="8" r="3.2" /><path d="M2.5 20c0-3.4 2.9-5.8 6.5-5.8s6.5 2.4 6.5 5.8" /><circle cx="17.5" cy="8.5" r="2.6" /><path d="M17.5 14c2.6 0 4.5 1.8 4.5 4.4" /></svg>

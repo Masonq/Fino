@@ -110,6 +110,71 @@ def users_overview(
     }
 
 
+@router.get("/alerts")
+def alerts(
+    staff: User = Depends(require_staff),
+    db: Session = Depends(get_db),
+):
+    """
+    Тревоги: то, что стоит посмотреть сегодня, собранное в одном месте.
+
+    Всё это и раньше можно было найти руками — но искать надо было
+    знать, где и зачем. Здесь четыре вопроса, ответы на которые обычно
+    и означают неприятность: кто-то регистрирует аккаунты пачкой с
+    одного адреса, у кого-то отклоняют всё подряд, одни и те же фото
+    выкладывают разные люди, и как давно вообще ждёт очередь.
+    """
+    now = utcnow()
+    day = now - timedelta(hours=24)
+    out: list[dict] = []
+
+    # Пачка регистраций с одного адреса за сутки.
+    rows = (db.query(LoginEvent.ip_address, func.count(func.distinct(LoginEvent.user_id)))
+            .filter(LoginEvent.created_at >= day, LoginEvent.ip_address.isnot(None))
+            .group_by(LoginEvent.ip_address)
+            .having(func.count(func.distinct(LoginEvent.user_id)) >= 4)
+            .order_by(func.count(func.distinct(LoginEvent.user_id)).desc())
+            .limit(5).all())
+    for ip, n in rows:
+        out.append({"kind": "same_ip", "level": "warn", "count": int(n), "value": ip})
+
+    # Люди, которым за сутки отклонили три и больше объявлений.
+    rows = (db.query(Listing.owner_id, User.display_name, func.count(Listing.id))
+            .join(User, User.id == Listing.owner_id)
+            .filter(Listing.status == ListingStatus.rejected, Listing.updated_at >= day)
+            .group_by(Listing.owner_id, User.display_name)
+            .having(func.count(Listing.id) >= 3)
+            .order_by(func.count(Listing.id).desc())
+            .limit(5).all())
+    for owner_id, name, n in rows:
+        out.append({"kind": "many_rejected", "level": "warn", "count": int(n),
+                    "value": name or "—", "user_id": str(owner_id)})
+
+    # Одно и то же фото у разных людей — обычно перепродажа чужих
+    # объявлений или мошенник, меняющий аккаунты. Считаем по хешу
+    # первого снимка, который уже пишет импорт из чатов.
+    rows = (db.query(Listing.external_photo_hash, func.count(func.distinct(Listing.owner_id)))
+            .filter(Listing.external_photo_hash.isnot(None),
+                    Listing.created_at >= now - timedelta(days=7))
+            .group_by(Listing.external_photo_hash)
+            .having(func.count(func.distinct(Listing.owner_id)) >= 2)
+            .order_by(func.count(func.distinct(Listing.owner_id)).desc())
+            .limit(5).all())
+    for _, n in rows:
+        out.append({"kind": "same_photo", "level": "warn", "count": int(n), "value": None})
+
+    # Очередь: сколько ждёт самое старое.
+    oldest = (db.query(func.min(Listing.created_at))
+              .filter(Listing.status == ListingStatus.pending_moderation).scalar())
+    if oldest:
+        hours = (now - oldest).total_seconds() / 3600
+        if hours >= 12:
+            out.append({"kind": "queue_stale", "level": "danger" if hours >= 48 else "warn",
+                        "count": round(hours), "value": None})
+
+    return {"items": out, "checked_at": now.isoformat()}
+
+
 @router.get("")
 def list_users(
     q: str | None = Query(None, description="имя, почта или телефон"),

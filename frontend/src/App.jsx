@@ -40,6 +40,8 @@ const AdminFlaggedChats = lazy(() => import('./pages/AdminFlaggedChats'))
 const Support = lazy(() => import('./pages/Support'))
 const AdminStats = lazy(() => import('./pages/AdminStats'))
 const AdminUsers = lazy(() => import('./pages/AdminUsers'))
+const AdminUser = lazy(() => import('./pages/AdminUser'))
+const AdminAlerts = lazy(() => import('./pages/AdminAlerts'))
 const Moderation = lazy(() => import('./pages/Moderation'))
 const EditListing = lazy(() => import('./pages/EditListing'))
 const SavedSearches = lazy(() => import('./pages/SavedSearches'))
@@ -417,6 +419,8 @@ export default function App() {
           <Route path="/my" element={<MyListings />} />
           <Route path="/moderation" element={<Moderation />} />
           <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/users/:id" element={<AdminUser />} />
+          <Route path="/admin/alerts" element={<AdminAlerts />} />
           <Route path="/admin/stats" element={<AdminStats />} />
           <Route path="/admin/audit" element={<AdminAudit />} />
           <Route path="/admin/support" element={<AdminSupport />} />

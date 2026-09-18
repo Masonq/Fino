@@ -3190,6 +3190,47 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .admin-stat.active{ border-color:var(--ink); background:var(--ink); color:#fff; }
 .admin-stat.active b, .admin-stat.active span{ color:#fff; }
 
+/* Тревоги */
+.admin-alert{
+  display:flex; align-items:flex-start; gap:10px; padding:12px 13px; border-radius:14px;
+  background:#fff; border:1px solid rgba(20,30,25,.07); color:var(--ink);
+}
+.admin-alert.danger{ border-color:#F0B9B4; background:#FFF8F7; }
+.admin-alert-dot{ width:8px; height:8px; border-radius:50%; background:#E0A11D; margin-top:5px; flex-shrink:0; }
+.admin-alert.danger .admin-alert-dot{ background:#B3261E; }
+.admin-alert-text{ display:flex; flex-direction:column; gap:3px; min-width:0; }
+.admin-alert-text b{ font-size:14px; font-weight:800; letter-spacing:-0.01em; line-height:1.25; }
+.admin-alert-text span{ font-size:12px; color:var(--muted); }
+.admin-calm{
+  display:flex; flex-direction:column; gap:4px; padding:22px 16px; border-radius:16px;
+  background:var(--primary-soft); color:var(--primary-deep); text-align:center; margin-bottom:12px;
+}
+.admin-calm b{ font-size:15px; font-weight:800; }
+.admin-calm span{ font-size:12.5px; color:var(--ink-soft); }
+
+/* Карточка человека */
+.admin-user-head{ display:flex; gap:14px; align-items:flex-start; margin:4px 0 12px; }
+.admin-avatar.big{ width:60px; height:60px; font-size:20px; }
+.admin-user-facts{ min-width:0; display:flex; flex-direction:column; gap:3px; }
+.admin-user-stats{ grid-template-columns:repeat(3, minmax(0,1fr)); }
+.admin-user-actions{ margin:10px 0 4px; }
+.admin-user-page .my-tabs{ margin-top:14px; }
+
+/* Кто что решил */
+.audit-actors{ display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
+.audit-actor{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:10px 12px; border-radius:12px; background:#fff; border:1px solid rgba(20,30,25,.07);
+  font-size:13.5px; color:var(--ink);
+}
+.audit-actor.active{ border-color:var(--ink); }
+.audit-actor-name{ font-weight:700; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.audit-actor-nums{ display:flex; gap:10px; font-size:12.5px; font-weight:700; font-variant-numeric:tabular-nums; flex-shrink:0; }
+.audit-actor-nums .ok{ color:var(--primary-deep); }
+.audit-actor-nums .no{ color:#B3261E; }
+.audit-actor-nums .blk{ color:#8A6100; }
+.audit-actor-nums .all{ color:var(--muted); }
+
 .admin-toolbar{ display:flex; gap:8px; margin-bottom:10px; }
 .admin-search-wrap{
   flex:1; min-width:0; display:flex; align-items:center; gap:8px; padding:0 10px 0 12px;

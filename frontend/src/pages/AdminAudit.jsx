@@ -35,7 +35,7 @@ export default function AdminAudit() {
   const [total, setTotal] = useState(0)
   const [filter, setFilter] = useState('')
   const [actor, setActor] = useState('')
-  const [summary, setSummary] = useState(null)
+  const [actors, setActors] = useState([])
   const [loaded, setLoaded] = useState(false)
   const [denied, setDenied] = useState(false)
 
@@ -82,7 +82,7 @@ export default function AdminAudit() {
   // один раз, а не вместе с каждой перезагрузкой списка.
   useEffect(() => {
     if (authLoading || !userId) return
-    api.adminAuditSummary(7).then(setSummary).catch(() => {})
+    api.adminAuditActors(7).then((r) => setActors(r.items || [])).catch(() => {})
   }, [authLoading, userId])
 
   if (denied) {
@@ -117,17 +117,26 @@ export default function AdminAudit() {
         ))}
       </div>
 
-      {summary?.by_actor?.length > 0 && (
-        <div className="stats-block">
-          <div className="stats-block-title">{t('audit.week')}</div>
-          <div className="stats-rows">
-            {summary.by_actor.slice(0, 5).map((row) => (
-              <div key={row.actor} className="stats-row">
-                <span>{row.actor}</span>
-                <span>{row.count}</span>
-              </div>
-            ))}
-          </div>
+      {/* Кто что решил — построчный журнал при нескольких модераторах
+          уже не читают. Сначала сводка по людям, нажатие на строку
+          показывает журнал только этого человека. */}
+      {actors.length > 0 && (
+        <div className="audit-actors">
+          {actors.map((row) => (
+            <button
+              key={row.id}
+              className={`audit-actor${actor === row.name ? ' active' : ''}`}
+              onClick={() => setActor(actor === row.name ? '' : row.name)}
+            >
+              <span className="audit-actor-name">{row.name}</span>
+              <span className="audit-actor-nums">
+                <span className="ok">+{row.approved}</span>
+                <span className="no">−{row.rejected}</span>
+                {row.blocked > 0 && <span className="blk">⌀{row.blocked}</span>}
+                <span className="all">{row.total}</span>
+              </span>
+            </button>
+          ))}
         </div>
       )}
 
