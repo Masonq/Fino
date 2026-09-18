@@ -936,5 +936,16 @@
     "title": "Just now",
     "post": "Sell",
     "badge": "New"
+  },
+  "price_check": {
+    "cheap": "Below market price",
+    "fair": "Market price",
+    "expensive": "Above market price",
+    "subtitle": "PLONK estimate",
+    "explain_cheap": "Similar items usually sell for more. Worth messaging early — cheap ones go first.",
+    "explain_fair": "A usual price for this kind of item — neither above nor below what others ask.",
+    "explain_expensive": "Similar items usually cost less. You can bargain or keep looking.",
+    "how_city": "Compared with {{count}} similar listings in this city over the last six months: most are between {{low}} and {{high}}.",
+    "how_country": "Few similar ones in this city, so compared with {{count}} across Serbia over the last six months: most are between {{low}} and {{high}}."
   }
 }

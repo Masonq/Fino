@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field, field_validator
 from app.core.auth import get_current_user, require_named_user, get_current_user_optional
 from app.core.database import get_db
 from app.core.search_terms import variants as search_variants
-from app.models import Listing, ListingStatus, ListingTranslation, ListingPhoto, Category, User, UserRole, PromotionType
+from app.models import Listing, ListingStatus, ListingTranslation, ListingPhoto, Category, Currency, User, UserRole, PromotionType
 from app.core.clock import utcnow
 
 router = APIRouter(prefix="/api/listings", tags=["listings"])
@@ -1330,6 +1330,107 @@ def _title_words(listing, lang: str) -> tuple[set[str], set[str]]:
         (traits if part in ("ADJF", "ADJS", "PRTF") else things).add(base)
 
     return things, traits
+
+
+# Тот же курс, что в поиске и сортировке по цене: сравнивать RSD с EUR
+# напрямую нельзя, а точный курс дня тут не нужен — оценка грубая по
+# своей природе.
+RSD_PER_EUR = 117
+
+
+@router.get("/{listing_id}/price-check")
+def price_check(
+    listing_id: uuid.UUID,
+    lang: str = Query("ru"),
+    db: Session = Depends(get_db),
+):
+    """
+    Оценка цены: дорого, дёшево или в рынке.
+
+    Покупатель с доски объявлений всё равно делает это сам — открывает
+    десяток похожих и смотрит, из чего выбирать. Считаем за него, и
+    честно показываем, на чём считали: без этого любая оценка выглядит
+    гаданием, и доверия к ней нет.
+
+    Сравниваем с похожими по названию из того же раздела и города:
+    раздела мало («Мебель» — это и табурет, и кухня), а название
+    отличает стол от шкафа. Города — потому что одна и та же вещь в
+    Белграде и в Нише стоит по-разному. Если в городе набралось меньше
+    пяти похожих, смотрим по всей стране: лучше сравнение пошире, чем
+    оценка по двум объявлениям.
+
+    Границы «в рынке» — от четверти до трёх четвертей выборки: внутри
+    них цена обычная, ниже — дёшево, выше — дорого. Проценты не
+    показываем: точность тут кажущаяся.
+    """
+    base = (db.query(Listing)
+            .options(joinedload(Listing.translations))
+            .filter(Listing.id == listing_id).first())
+    if not base or not base.price or base.is_free:
+        return {"verdict": None}
+
+    base_things, _ = _title_words(base, lang)
+    if not base_things:
+        return {"verdict": None}
+
+    def prices_for(city: str | None) -> list[float]:
+        q = (db.query(Listing)
+             .options(joinedload(Listing.translations))
+             .filter(Listing.id != listing_id,
+                     Listing.status == ListingStatus.active,
+                     Listing.category_id == base.category_id,
+                     Listing.price.isnot(None),
+                     Listing.is_free.is_(False),
+                     Listing.created_at >= utcnow() - timedelta(days=180)))
+        if city:
+            q = q.filter(Listing.city == city)
+        out = []
+        for other in q.limit(400).all():
+            things, _ = _title_words(other, lang)
+            # Совпасть должен сам предмет, а не признак: «стол» и
+            # «стол письменный» — одно, «стол» и «стул» — разное.
+            if not (things & base_things):
+                continue
+            price = float(other.price)
+            if other.currency != Currency.eur:
+                price /= RSD_PER_EUR
+            out.append(price)
+        return out
+
+    prices = prices_for(base.city)
+    scope = "city"
+    if len(prices) < 5:
+        wider = prices_for(None)
+        if len(wider) > len(prices):
+            prices, scope = wider, "country"
+    if len(prices) < 5:
+        return {"verdict": None}
+
+    prices.sort()
+    def at(share: float) -> float:
+        return prices[min(len(prices) - 1, int(len(prices) * share))]
+
+    low, mid, high = at(0.25), at(0.5), at(0.75)
+    mine = float(base.price)
+    if base.currency != Currency.eur:
+        mine /= RSD_PER_EUR
+
+    if mine < low:
+        verdict = "cheap"
+    elif mine > high:
+        verdict = "expensive"
+    else:
+        verdict = "fair"
+
+    return {
+        "verdict": verdict,
+        "scope": scope,
+        "based_on": len(prices),
+        # Отдаём в евро: клиент показывает в валюте объявления сам.
+        "low_eur": round(low, 2),
+        "median_eur": round(mid, 2),
+        "high_eur": round(high, 2),
+    }
 
 
 @router.get("/{listing_id}/similar")

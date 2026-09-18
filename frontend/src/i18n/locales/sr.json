@@ -946,5 +946,16 @@
     "title": "Upravo",
     "post": "Prodaj",
     "badge": "Novo"
+  },
+  "price_check": {
+    "cheap": "Ispod tržišne cene",
+    "fair": "Tržišna cena",
+    "expensive": "Iznad tržišne cene",
+    "subtitle": "PLONK procena",
+    "explain_cheap": "Slične stvari obično koštaju više. Vredi se javiti brzo — jeftine prve odu.",
+    "explain_fair": "Uobičajena cena za ovakve stvari — ni iznad ni ispod onoga što traže drugi.",
+    "explain_expensive": "Za ovakve stvari obično traže manje. Možete se cenkati ili tražiti jeftinije.",
+    "how_city": "Upoređeno sa {{count}} sličnih oglasa u ovom gradu za poslednjih pola godine: većina je između {{low}} i {{high}}.",
+    "how_country": "U ovom gradu ima malo sličnih, pa je upoređeno sa {{count}} širom Srbije za poslednjih pola godine: većina je između {{low}} i {{high}}."
   }
 }

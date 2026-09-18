@@ -329,6 +329,7 @@ export const api = {
   }),
   getListingDashboard: (id, days) => request(`/listings/${id}/dashboard?${new URLSearchParams({ days: days || 30 })}`),
   listingsByIds: (ids, lang) => request(`/listings/by-ids?${new URLSearchParams({ ids: ids.join(','), lang })}`),
+  priceCheck: (id, lang) => request(`/listings/${id}/price-check?${new URLSearchParams({ lang })}`),
   similarListings: (id, lang) => request(`/listings/${id}/similar?${new URLSearchParams({ lang })}`),
   myListings: (lang) => request(`/listings/my/list?${new URLSearchParams({ lang })}`),
   sellerProfile: (userId, lang) => request(`/users/${userId}/public?${new URLSearchParams({ lang })}`),

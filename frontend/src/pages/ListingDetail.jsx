@@ -460,6 +460,10 @@ export default function ListingDetail() {
   // выбросить настоящий товар вместе с ошибкой разбора.
   const [movingOpen, setMovingOpen] = useState(false)
   const [moveQuery, setMoveQuery] = useState('')
+  // Оценка цены — отдельным запросом: она считается по похожим
+  // объявлениям и не должна задерживать показ самой карточки.
+  const [priceCheck, setPriceCheck] = useState(null)
+  const [priceOpen, setPriceOpen] = useState(false)
   const [moveTree, setMoveTree] = useState([])
   const [moving, setMoving] = useState(false)
   const [showReasons, setShowReasons] = useState(false)
@@ -511,6 +515,15 @@ export default function ListingDetail() {
     moveTree.forEach((root) => walk(root, []))
     return out.slice(0, 40)
   })()
+
+  useEffect(() => {
+    if (!listing?.id || listing.is_free || listing.price == null) { setPriceCheck(null); return }
+    let alive = true
+    api.priceCheck(listing.id, i18n.language)
+      .then((r) => { if (alive && r.verdict) setPriceCheck(r) })
+      .catch(() => {})
+    return () => { alive = false }
+  }, [listing?.id, listing?.price, listing?.is_free, i18n.language])
 
   const openMove = async () => {
     setMovingOpen(true)
@@ -1010,6 +1023,28 @@ export default function ListingDetail() {
         </div>
         {isResume && listing.price != null && (
           <div className="price-note">{t('detail.desired_salary')}</div>
+        )}
+
+        {/* Оценка цены. Покупатель всё равно делает это сам — открывает
+            десяток похожих и смотрит, из чего выбирать. Считаем за него,
+            и по нажатию честно показываем, на чём считали. */}
+        {priceCheck && !isResume && (
+          <button className={`price-check ${priceCheck.verdict}`} onClick={() => setPriceOpen(true)}>
+            <span className="price-check-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                {priceCheck.verdict === 'expensive'
+                  ? <><path d="M12 19V5" /><path d="m6 11 6-6 6 6" /></>
+                  : priceCheck.verdict === 'cheap'
+                    ? <><path d="M12 5v14" /><path d="m6 13 6 6 6-6" /></>
+                    : <><path d="M5 12h14" /><path d="M5 7h14M5 17h14" opacity=".35" /></>}
+              </svg>
+            </span>
+            <span className="price-check-text">
+              <b>{t(`price_check.${priceCheck.verdict}`)}</b>
+              <span>{t('price_check.subtitle')}</span>
+            </span>
+            <svg className="price-check-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+          </button>
         )}
         {listing.price_negotiable && <div className="neg-pill">{t('detail.negotiable')}</div>}
         {listing.is_reserved && (
@@ -1577,6 +1612,27 @@ export default function ListingDetail() {
           <div className="reasons-card" onClick={(e) => e.stopPropagation()}>
             <div className="reasons-title">{deleteError}</div>
             <button className="reasons-cancel" onClick={() => setDeleteError('')}>
+              {t('actions.close')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {priceOpen && priceCheck && (
+        <div className="reasons-sheet" onClick={() => setPriceOpen(false)}>
+          <div className="reasons-card" onClick={(e) => e.stopPropagation()}>
+            <div className="reasons-title">{t(`price_check.${priceCheck.verdict}`)}</div>
+            <p className="price-check-explain">
+              {t(`price_check.explain_${priceCheck.verdict}`)}
+            </p>
+            <p className="price-check-explain">
+              {t(priceCheck.scope === 'city' ? 'price_check.how_city' : 'price_check.how_country', {
+                count: priceCheck.based_on,
+                low: formatPrice(priceCheck.low_eur, 'EUR', lang),
+                high: formatPrice(priceCheck.high_eur, 'EUR', lang),
+              })}
+            </p>
+            <button className="reasons-cancel" onClick={() => setPriceOpen(false)}>
               {t('actions.close')}
             </button>
           </div>
