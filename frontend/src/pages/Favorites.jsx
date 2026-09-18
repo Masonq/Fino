@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { withoutRemoved } from '../utils/removedListings'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
@@ -67,7 +68,7 @@ export default function Favorites() {
         </div>
       ) : (
         <div className="infinite-grid no-pad">
-          {visible.map((l) => <ListingCard key={l.id} listing={l} />)}
+          {withoutRemoved(visible).map((l) => <ListingCard key={l.id} listing={l} />)}
         </div>
       )}
     </div>

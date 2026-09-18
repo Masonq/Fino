@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { withoutRemoved } from '../utils/removedListings'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
@@ -531,7 +532,7 @@ export default function Search() {
       <div className={cols === 2 ? 'infinite-grid' : 'infinite-list'}>
         {!loaded
           ? <CardSkeletons count={cols === 2 ? 4 : 2} large={cols === 1} />
-          : items.map((l, i) => (
+          : withoutRemoved(items).map((l, i) => (
               <ListingCard key={l.id} listing={l} large={cols === 1} priority={i < 4} />
             ))}
       </div>

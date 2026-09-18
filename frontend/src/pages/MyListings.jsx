@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { withoutRemoved } from '../utils/removedListings'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
@@ -166,7 +167,7 @@ export default function MyListings() {
         </div>
       ) : (
         <div className="my-list">
-          {visible.map((l) => (
+          {withoutRemoved(visible).map((l) => (
             <div className="my-row" key={l.id}>
               <Link to={l.path} className="my-main">
                 <div className="my-thumb">

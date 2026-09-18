@@ -18,6 +18,7 @@ import SimilarListings from '../components/SimilarListings'
 import SellerListings from '../components/SellerListings'
 import HScroll from '../components/HScroll'
 import { lastListPage } from '../utils/lastList'
+import { rememberRemoved } from '../utils/removedListings'
 import { formatPrice } from '../utils/money'
 import { relativeDate } from '../utils/time'
 import { hasLanding } from '../data/landings'
@@ -562,6 +563,9 @@ export default function ListingDetail() {
     setDeleting(true)
     try {
       await api.deleteListing(listing.id, force)
+      // Списки держатся в памяти несколько минут — без этой отметки
+      // удалённое объявление возвращалось на экран при возврате назад.
+      rememberRemoved(listing.id)
       afterDelete()
     } catch (e) {
       if (e.code === 'listing_has_history' && isStaff && !force) {
@@ -592,6 +596,7 @@ export default function ListingDetail() {
     setDeleting(true)
     try {
       await api.modReject(listing.id, reason)
+      rememberRemoved(listing.id)
       afterDelete()
     } catch { /* оставляем как было */ }
     finally { setDeleting(false) }

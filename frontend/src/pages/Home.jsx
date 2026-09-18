@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { withoutRemoved } from '../utils/removedListings'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
@@ -756,7 +757,7 @@ export default function Home() {
       >
         {!feedLoaded
           ? <CardSkeletons count={cols === 2 ? 4 : 2} large={cols === 1} />
-          : listings.map((l, i) => <ListingCard key={l.id} listing={l} large={cols === 1} priority={i < 4} />)}
+          : withoutRemoved(listings).map((l, i) => <ListingCard key={l.id} listing={l} large={cols === 1} priority={i < 4} />)}
       </div>
       {feedLoaded && listings.length === 0 && (
         feedError
