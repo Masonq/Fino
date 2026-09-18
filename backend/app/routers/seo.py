@@ -389,22 +389,19 @@ def listing_page(listing_id: str, request: Request,
     description = f"{price} · {city}. {body_text}" if city else f"{price}. {body_text}"
     description = _cut(description, 300) or title
 
-    # og:image:alt даём, а вот width/height — нет: фото приводятся к
-    # 1600px по большей стороне с сохранением пропорций (MAX_DIM в
-    # media.py), то есть вторая сторона у каждого своя, и указать
-    # честные числа неоткуда. Соврать хуже, чем не указать: площадки,
-    # увидев несовпадение с реальным файлом, обрежут превью по
-    # заявленным пропорциям.
-    image_tag = ""
-    twitter_image = ""
-    twitter_card = "summary"
-    if photo:
-        image_tag = (
-            f'<meta property="og:image" content="{esc(photo.url)}">\n'
-            f'<meta property="og:image:alt" content="{esc(title)}">'
-        )
-        twitter_image = f'<meta name="twitter:image" content="{esc(photo.url)}">'
-        twitter_card = "summary_large_image"
+    # Собранная карточка: фотография слева, цена, город и раздел справа,
+    # снизу домен. Размер у неё всегда 1200×630, поэтому width/height
+    # указываем честно — раньше их не было вовсе, потому что размер
+    # присланной продавцом фотографии заранее неизвестен.
+    card = f"{site}/api/og/listing/{listing.id}.png"
+    image_tag = (
+        f'<meta property="og:image" content="{esc(card)}">\n'
+        f'<meta property="og:image:width" content="1200">\n'
+        f'<meta property="og:image:height" content="630">\n'
+        f'<meta property="og:image:alt" content="{esc(title)}">'
+    )
+    twitter_image = f'<meta name="twitter:image" content="{esc(card)}">'
+    twitter_card = "summary_large_image"
 
     # og:type=product ожидает эти поля — без них разметка неполная и
     # часть площадок просто игнорирует тип, показывая ссылку как
