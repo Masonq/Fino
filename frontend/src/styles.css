@@ -4407,3 +4407,23 @@ a.s-attrs{ display:block; }
   background:transparent; color:#6B7670; font-size:13px; font-weight:600;
 }
 
+/* Длинное имя не ломает экран.
+   У одного продавца имя было рядом значков во всю строку — заголовок
+   карточки уезжал за край, а с ним и вся страница. Имя человека
+   приходит от него самого, поэтому везде, где оно показывается, оно
+   переносится и обрезается: чистка на входе не спасает записи, которые
+   уже есть. */
+.admin-row-name, .admin-user-facts .admin-row-name,
+.profile-name, .seller-name, .chat-title, .mod-seller-name{
+  overflow-wrap:anywhere;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+/* Заголовок страницы — это может быть имя человека, а его пишет он сам.
+   Переносим по любому месту и обрезаем двумя строками, иначе строка
+   значков во всю ширину уносит за собой весь экран. */
+.page-header h2{ min-width:0; }
+.page-title-text{
+  min-width:0; overflow-wrap:anywhere;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.tag-warn{ background:var(--warn-bg); color:var(--warn-ink); }

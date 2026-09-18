@@ -6,7 +6,7 @@ from sqlalchemy import or_, func
 from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel, field_validator
 
-from app.core.auth import get_current_user, decode_token
+from app.core.auth import get_current_user, require_named_user, decode_token
 from app.core.database import get_db, SessionLocal
 from app.core.chat_ws import manager
 from app.routers.listings import pick_translation
@@ -130,7 +130,7 @@ def _serialize_message(m: Message) -> dict:
 def start_chat(
     payload: StartChatIn,
     lang: str = Query("ru"),
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_named_user),
     db: Session = Depends(get_db),
 ):
     """
@@ -225,7 +225,7 @@ def list_messages(
 async def send_message(
     chat_id: uuid.UUID,
     payload: SendMessageIn,
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_named_user),
     db: Session = Depends(get_db),
 ):
     chat = _require_participant(chat_id, user, db)

@@ -77,6 +77,15 @@ export default function AdminUser() {
     finally { setBusy(false) }
   }
 
+  const resetName = async () => {
+    setBusy(true)
+    try {
+      const res = await api.adminResetName(id)
+      setCard((c) => ({ ...c, display_name: res.display_name, must_rename: true }))
+    } catch { alert(t('auth.err_generic')) }
+    finally { setBusy(false) }
+  }
+
   const unblock = async () => {
     setBusy(true)
     try {
@@ -118,6 +127,7 @@ export default function AdminUser() {
           <div className="admin-row-name">
             {name}
             {card.is_blocked && <span className="tag tag-danger">{t('admin.tag_blocked')}</span>}
+            {card.must_rename && <span className="tag tag-warn">{t('admin.tag_renaming')}</span>}
             {card.document_verified && <span className="tag tag-ok">{t('admin.tag_verified')}</span>}
             <span className="tag">{roleName(card.role)}</span>
           </div>
@@ -161,6 +171,11 @@ export default function AdminUser() {
           {card.is_blocked
             ? <button disabled={busy} onClick={unblock}>{t('admin.unblock')}</button>
             : <button className="danger" disabled={busy} onClick={() => setBlocking(true)}>{t('admin.block')}</button>}
+          {/* Сбросить имя — мягче блокировки: человек ничего не нарушил,
+              кроме того, что назвался рядом значков. */}
+          <button disabled={busy || card.must_rename} onClick={resetName}>
+            {card.must_rename ? t('admin.name_reset_done') : t('admin.reset_name')}
+          </button>
         </div>
       )}
 

@@ -37,6 +37,9 @@ export default function EditProfile() {
   // подтверждение), пока код не подтверждён, менять по сути нечего.
   const [email, setEmail] = useState('')
   const [emailStep, setEmailStep] = useState('view')   // view | enter | code
+  // Имя сбросил модератор: пока не введено новое, ни выложить, ни
+  // написать нельзя — говорим об этом прямо, а не молчим до отказа.
+  const [mustRename, setMustRename] = useState(false)
   const [newEmail, setNewEmail] = useState('')
   const [emailCode, setEmailCode] = useState('')
   const [emailBusy, setEmailBusy] = useState(false)
@@ -47,6 +50,7 @@ export default function EditProfile() {
     if (!user) { navigate('/login', { replace: true }); return }
     api.myProfile().then((me) => {
       setName(me.display_name || '')
+      setMustRename(Boolean(me.must_rename))
       setAvatar(me.avatar_url || '')
       setCompany(me.company_name || '')
       setCompanyDescription(me.company_description || '')
@@ -162,6 +166,10 @@ export default function EditProfile() {
   return (
     <div className="page edit-profile">
       <PageHeader title={t('edit_profile.title')} />
+
+      {mustRename && (
+        <p className="admin-note admin-note-warn">{t('edit_profile.must_rename')}</p>
+      )}
 
       <div className="edit-avatar">
         <div className="profile-avatar">

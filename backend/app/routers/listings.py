@@ -11,7 +11,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, aliased, joinedload
 from pydantic import BaseModel, Field, field_validator
 
-from app.core.auth import get_current_user, get_current_user_optional
+from app.core.auth import get_current_user, require_named_user, get_current_user_optional
 from app.core.database import get_db
 from app.core.search_terms import variants as search_variants
 from app.models import Listing, ListingStatus, ListingTranslation, ListingPhoto, Category, User, UserRole, PromotionType
@@ -202,7 +202,7 @@ def _active_promo_ids(db: Session, listing_ids) -> dict:
 @router.post("")
 def create_listing(
     payload: ListingCreate,
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_named_user),
     db: Session = Depends(get_db),
 ):
     """Создаёт объявление от имени вошедшего пользователя."""

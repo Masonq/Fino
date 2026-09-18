@@ -34,6 +34,11 @@ class User(Base):
     email: Mapped[str | None] = mapped_column(String(255), unique=True, index=True, nullable=True)
     hashed_password: Mapped[str | None] = mapped_column(String(255), nullable=True)
     display_name: Mapped[str] = mapped_column(String(120))
+    # Имя пришлось сбросить принудительно: непристойное, нечитаемое или
+    # ломающее вёрстку (ряды «зарисованных» символов, эмодзи во всю
+    # строку). Пока флаг стоит, человек при заходе попадает на смену
+    # имени и ничего другого делать не может.
+    must_rename: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     # Внешние сервисы входа — храним идентификатор в каждом
     telegram_id: Mapped[str | None] = mapped_column(String(64), unique=True, index=True, nullable=True)

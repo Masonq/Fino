@@ -54,6 +54,7 @@ def serialize(user: User, listings: int = 0, active: int = 0) -> dict:
     return {
         "id": str(user.id),
         "display_name": user.display_name,
+        "must_rename": bool(user.must_rename),
         "avatar_url": user.avatar_url,
         "email": user.email,
         "phone": user.phone,
@@ -253,6 +254,30 @@ def list_users(
         "total": total,
         "items": [serialize(u, *counts.get(u.id, (0, 0))) for u in users],
     }
+
+
+@router.post("/{user_id}/reset-name")
+def reset_name(
+    user_id: uuid.UUID,
+    staff: User = Depends(require_staff),
+    db: Session = Depends(get_db),
+):
+    """
+    Сбросить имя и потребовать новое.
+
+    Блокировать за плохое имя слишком: человек ничего не нарушил, кроме
+    того, что назвался рядом значков. Сбрасываем имя на нейтральное и
+    ставим запрет: при следующем заходе он попадёт на смену имени и,
+    пока не введёт нормальное, не сможет ни писать, ни размещать.
+    """
+    person = db.query(User).get(user_id)
+    if not person:
+        raise HTTPException(404, "not_found")
+    person.display_name = "Пользователь"
+    person.must_rename = True
+    record(db, staff, "user.reset_name", target_type="user", target_id=person.id)
+    db.commit()
+    return {"ok": True, "display_name": person.display_name}
 
 
 @router.get("/{user_id}")

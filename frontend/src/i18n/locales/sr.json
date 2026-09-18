@@ -596,7 +596,10 @@
     "st_rejected": "odbijen",
     "st_draft": "nacrt",
     "st_sold": "prodato",
-    "st_archived": "arhivirano"
+    "st_archived": "arhivirano",
+    "reset_name": "Poništi ime",
+    "name_reset_done": "Ime poništeno",
+    "tag_renaming": "menja ime"
   },
   "stats": {
     "title": "Brojevi",
@@ -741,7 +744,9 @@
     "email_taken": "Ovaj email već koristi drugi nalog",
     "email_too_soon": "Kod je već poslat — sačekajte malo pre ponovnog slanja",
     "email_wrong_code": "Pogrešan kod",
-    "email_code_expired": "Kod je istekao — zatražite novi"
+    "email_code_expired": "Kod je istekao — zatražite novi",
+    "must_rename": "Moderator je poništio vaše ime — staro se nije moglo pročitati. Unesite novo; do tada ne možete postavljati oglase ni pisati prodavcima.",
+    "bad_name": "To ime ne može: nema slova ili su skoro sami znakovi."
   },
   "landing": {
     "deal": "Šta tražite",

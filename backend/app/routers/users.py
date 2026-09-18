@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from app.core.auth import get_current_user, get_current_user_optional
 from app.core.database import get_db
+from app.core.names import clean_display_name, is_unusable_name
 from app.models import User, UserRole, Language, BlockedUser, SellerSubscription, Listing, ListingStatus, Favorite
 
 router = APIRouter(prefix="/api/users", tags=["users"])
@@ -152,9 +153,13 @@ class ProfileEdit(BaseModel):
         # это один символ. Обрезаем здесь же, до самой проверки длины.
         if v is None:
             return v
-        v = v.strip()
+        v = clean_display_name(v)
         if len(v) < 2:
             raise ValueError("too_short")
+        # Имя без букв или состоящее почти из одних значков не годится:
+        # оно не читается, ломает вёрстку и прячет продавца от узнавания.
+        if is_unusable_name(v):
+            raise ValueError("bad_name")
         return v
 
 
@@ -176,6 +181,7 @@ def my_profile(user: User = Depends(get_current_user)):
         "rating_avg": round(user.rating_avg or 0, 2),
         "rating_count": user.rating_count,
         "created_at": user.created_at.isoformat() if user.created_at else None,
+        "must_rename": bool(user.must_rename),
     }
 
 
@@ -192,7 +198,9 @@ def edit_profile(
     не «стереть» — иначе правка имени обнулила бы всё остальное.
     """
     if payload.display_name is not None:
-        user.display_name = payload.display_name.strip()
+        user.display_name = payload.display_name
+        # Имя сменили — запрет снят.
+        user.must_rename = False
     if payload.avatar_url is not None:
         user.avatar_url = payload.avatar_url or None
     if payload.default_language is not None:

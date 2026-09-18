@@ -23,7 +23,9 @@ export default function PageHeader({ title, count, back = true, children }) {
         </button>
       )}
       <h2>
-        {title}
+        {/* Заголовком бывает имя человека, а его пишет он сам: строка
+            значков во всю ширину уносила за собой весь экран. */}
+        <span className="page-title-text">{title}</span>
         {count > 0 && <span className="fav-count">{count}</span>}
       </h2>
       {children}

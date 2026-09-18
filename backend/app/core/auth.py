@@ -138,3 +138,17 @@ def get_current_user_optional(request: Request, db: Session = Depends(get_db)) -
     if user.is_blocked:
         return None
     return user
+
+
+def require_named_user(user: User = Depends(get_current_user)) -> User:
+    """
+    Тот же вошедший человек, но со сброшенным именем ему сюда нельзя.
+
+    Модератор сбрасывает имя, когда оно непристойное или нечитаемое
+    (ряды значков во всю строку). Пока новое не введено, человек может
+    ходить по сайту и читать, но не выкладывать объявления и не писать
+    продавцам: имя видно и там, и там.
+    """
+    if getattr(user, "must_rename", False):
+        raise HTTPException(403, "must_rename")
+    return user

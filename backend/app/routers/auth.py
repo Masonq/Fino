@@ -16,6 +16,7 @@ from app.core.notify import send_code
 from app.models import User, VerificationCode, VerifyChannel
 from app.core.clock import utcnow
 from app.core.config import settings
+from app.core.names import clean_display_name
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -70,6 +71,7 @@ def _user_payload(user: User) -> dict:
         "avatar_url": user.avatar_url,
         "email_verified": user.email_verified,
         "role": user.role.value if user.role else None,
+        "must_rename": bool(user.must_rename),
     }
 
 
@@ -274,7 +276,7 @@ def _link_oauth(db: Session, provider: str, external_id: str,
 
     if not user:
         user = User(
-            display_name=display_name or provider.capitalize(),
+            display_name=clean_display_name(display_name) or provider.capitalize(),
             email=email.lower() if email else None,
             email_verified=bool(email),
             avatar_url=avatar_url,

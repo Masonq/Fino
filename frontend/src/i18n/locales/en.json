@@ -589,7 +589,10 @@
     "st_rejected": "rejected",
     "st_draft": "draft",
     "st_sold": "sold",
-    "st_archived": "archived"
+    "st_archived": "archived",
+    "reset_name": "Reset name",
+    "name_reset_done": "Name reset",
+    "tag_renaming": "renaming"
   },
   "stats": {
     "title": "Numbers",
@@ -733,7 +736,9 @@
     "email_taken": "This email is already used by another account",
     "email_too_soon": "Code already sent — wait a bit before requesting again",
     "email_wrong_code": "Wrong code",
-    "email_code_expired": "Code expired — request a new one"
+    "email_code_expired": "Code expired — request a new one",
+    "must_rename": "A moderator reset your name — the old one was unreadable. Enter a new one; until then you can't post listings or message sellers.",
+    "bad_name": "That name won't do: it has no letters, or almost only symbols."
   },
   "landing": {
     "deal": "What do you need",
