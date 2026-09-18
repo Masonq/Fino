@@ -168,7 +168,10 @@ def og_card(listing_id: uuid.UUID, db: Session = Depends(get_db)):
         price_text = "Бесплатно"
     elif listing.price:
         amount = f"{float(listing.price):,.0f}".replace(",", "\u2009")
-        price_text = f"{amount} {'€' if (listing.currency or '').upper() == 'EUR' else (listing.currency or '')}".strip()
+        # Валюта — перечисление, а не строка: в подпись уезжало
+        # «Currency.rsd» вместо «RSD». Берём значение, а не сам элемент.
+        code = getattr(listing.currency, "value", listing.currency) or ""
+        price_text = f"{amount} {'€' if code.upper() == 'EUR' else code}".strip()
     else:
         price_text = "Цена не указана"
 

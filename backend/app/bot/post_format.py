@@ -52,7 +52,11 @@ def money(price: float | None, currency: str | None, is_free: bool) -> str:
     if price is None:
         return "Цена не указана"
     whole = f"{int(price):,}".replace(",", " ")
-    sign = "€" if (currency or "").upper() == "EUR" else "RSD"
+    # Валюта приходит и строкой, и перечислением (Currency.rsd): у
+    # перечисления .upper() дал бы «CURRENCY.RSD» и цена печаталась бы
+    # в динарах там, где евро.
+    code = getattr(currency, "value", currency) or ""
+    sign = "€" if code.upper() == "EUR" else "RSD"
     return f"{whole} {sign}"
 
 
