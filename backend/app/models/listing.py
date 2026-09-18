@@ -86,6 +86,12 @@ class Listing(Base):
     external_photo_hash: Mapped[str | None] = mapped_column(
         String(64), nullable=True, index=True)
 
+    # Объявление уже уходило в наш Telegram-чат: номер сообщения там.
+    # Нужно, чтобы автопостинг не publikoval одно и то же дважды и чтобы
+    # позже можно было пометить пост проданным или снятым.
+    tg_post_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    tg_posted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
     # Вещь отдают даром. Отдельно от пустой цены: «цена не указана» и
     # «бесплатно» — разные вещи, и читатель проходит мимо первого, хотя
     # второе ему бы подошло.
