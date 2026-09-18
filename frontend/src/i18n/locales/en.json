@@ -643,7 +643,9 @@
       "listing.approve": "Approved listing",
       "listing.reject": "Rejected listing",
       "ticket.answer": "Answered a ticket",
-      "ticket.close": "Closed a ticket"
+      "ticket.close": "Closed a ticket",
+      "import.run": "Chat import run",
+      "listing.return_to_queue": "Returned to queue"
     }
   },
   "support": {

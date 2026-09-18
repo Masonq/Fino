@@ -228,7 +228,7 @@ export default function AdminUser() {
             {audit.map((a) => (
               <div key={a.id} className="admin-login-row">
                 <div className="admin-login-line1">
-                  <span className="admin-login-when">{t(`audit.a_${a.action}`, a.action)}</span>
+                  <span className="admin-login-when">{t(`audit.act.${a.action}`, a.action)}</span>
                   <span className="admin-login-where">{a.actor}</span>
                 </div>
                 <div className="admin-login-line2">

@@ -657,7 +657,9 @@
       "listing.approve": "Одобрил объявление",
       "listing.reject": "Отклонил объявление",
       "ticket.answer": "Ответил в обращении",
-      "ticket.close": "Закрыл обращение"
+      "ticket.close": "Закрыл обращение",
+      "import.run": "Перенос из чатов",
+      "listing.return_to_queue": "Вернул в очередь"
     }
   },
   "support": {

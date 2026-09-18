@@ -650,7 +650,9 @@
       "listing.approve": "Odobrio oglas",
       "listing.reject": "Odbio oglas",
       "ticket.answer": "Odgovorio na tiket",
-      "ticket.close": "Zatvorio tiket"
+      "ticket.close": "Zatvorio tiket",
+      "import.run": "Uvoz iz ćaskanja",
+      "listing.return_to_queue": "Vratio u red"
     }
   },
   "support": {

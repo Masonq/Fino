@@ -426,7 +426,7 @@ async def collect(client, chat_id: int, meta: dict, days: int,
         # Хеш только первого (обложка) — второе и следующие фото у
         # одного и того же товара часто разные ракурсы, а первое обычно
         # переиспользуют без изменений при перевыставлении.
-        photo_hash = hashlib.sha256(raw_photos[0]).hexdigest() if raw_photos else None
+        photo_hash = photo_fingerprint(raw_photos[0]) if raw_photos else None
 
         if watermarked:
             # Часть снимков успели сохраниться до того, как знак нашёлся
@@ -509,6 +509,53 @@ async def collect(client, chat_id: int, meta: dict, days: int,
     return out, max((m.id for m in messages), default=min_id)
 
 
+def photo_fingerprint(data: bytes) -> str | None:
+    """
+    Отпечаток снимка, устойчивый к пересжатию.
+
+    Раньше брали sha256 от байтов. Но объявление, прошедшее через
+    пересылку, скриншот или другой чат, приезжает пережатым: картинка
+    та же, байты другие, и повтор проходил как новое объявление. Отсюда
+    в ленте и висели по три одинаковых дивана из трёх барахолок.
+
+    dHash: приводим к 9×8 в сером, сравниваем соседние пиксели по
+    строке — получается 64 бита о том, где картинка светлеет, а где
+    темнеет. Пересжатие такие переходы почти не двигает, а разные
+    снимки расходятся на десятки бит. Префикс «d» отличает новый вид
+    отпечатка от старых sha256 в базе: они остаются как есть и
+    сверяются точным совпадением, как и сверялись.
+    """
+    try:
+        img = Image.open(BytesIO(data)).convert("L").resize((9, 8), Image.LANCZOS)
+    except Exception:
+        return hashlib.sha256(data).hexdigest()
+    px = img.load()
+    bits = 0
+    for y in range(8):
+        for x in range(8):
+            bits = (bits << 1) | (1 if px[x, y] > px[x + 1, y] else 0)
+    return "d" + format(bits, "016x")
+
+
+def photo_distance(a: str, b: str) -> int:
+    """Насколько два отпечатка непохожи — в битах (для «d»-вида)."""
+    if not a or not b or not a.startswith("d") or not b.startswith("d"):
+        return 64 if a != b else 0
+    try:
+        return bin(int(a[1:], 16) ^ int(b[1:], 16)).count("1")
+    except ValueError:
+        return 64
+
+
+# Порог похожести снимков, в битах из шестидесяти четырёх. Мерил на
+# собранных картинках: пересжатие до 40% качества и уменьшение вдвое
+# дают расхождение в один бит, обрезка пяти процентов по краям — около
+# одиннадцати, разные вещи — двадцать и больше. Шесть берёт пересылки и
+# пересжатия и не склеивает разное; обрезанные копии этот порог
+# пропускает — их ловит сверка по автору и отпечатку текста ниже.
+PHOTO_CLOSE_BITS = 6
+
+
 def forget_photos(item: dict) -> None:
     """
     Удаляет снимки объявления, которое не попало в ленту.
@@ -561,16 +608,38 @@ def store(db, item: dict) -> bool:
     # набор слов, фото остаётся тем же) и не требует известного
     # username, в отличие от проверки по автору ниже.
     if item.get("photo_hash"):
-        photo_twin = (
-            db.query(Listing)
-            .filter(
-                Listing.external_source == "telegram",
-                Listing.external_photo_hash == item["photo_hash"],
-                Listing.status == ListingStatus.active,
-                Listing.created_at >= utcnow() - timedelta(days=DUP_DAYS),
+        photo_twin = None
+        if item["photo_hash"].startswith("d"):
+            # Похожий, а не в точности такой же: сравниваем отпечатки
+            # недавних объявлений по битам. Их немного — за две недели
+            # это сотни строк, и перебрать их в памяти дешевле, чем
+            # держать в базе поиск по расстоянию.
+            recent_photos = (
+                db.query(Listing)
+                .filter(
+                    Listing.external_source == "telegram",
+                    Listing.external_photo_hash.startswith("d"),
+                    Listing.status == ListingStatus.active,
+                    Listing.created_at >= utcnow() - timedelta(days=DUP_DAYS),
+                )
+                .limit(1500)
+                .all()
             )
-            .first()
-        )
+            for other in recent_photos:
+                if photo_distance(item["photo_hash"], other.external_photo_hash) <= PHOTO_CLOSE_BITS:
+                    photo_twin = other
+                    break
+        else:
+            photo_twin = (
+                db.query(Listing)
+                .filter(
+                    Listing.external_source == "telegram",
+                    Listing.external_photo_hash == item["photo_hash"],
+                    Listing.status == ListingStatus.active,
+                    Listing.created_at >= utcnow() - timedelta(days=DUP_DAYS),
+                )
+                .first()
+            )
         if photo_twin:
             same_price = (
                 photo_twin.price is None and item["price"] is None
@@ -939,6 +1008,8 @@ async def main() -> None:
 
     db = SessionLocal()
     added = skipped = 0
+    per_chat: dict = {}
+    started = utcnow()
     try:
         for chat_id, meta in CHATS.items():
             # При обычном заходе берём только то, что появилось после
@@ -958,11 +1029,15 @@ async def main() -> None:
                       f"({exc.seconds} с). Заход остановлен, срок записан.")
                 break
             print(f"{meta['title']}: отобрано {len(items)}")
+            chat_added = chat_skipped = 0
             for item in items:
                 if store(db, item):
                     added += 1
+                    chat_added += 1
                 else:
                     skipped += 1
+                    chat_skipped += 1
+            per_chat[meta["title"]] = {"added": chat_added, "duplicates": chat_skipped}
             # Метка прогресса — от того, до чего реально дочитали в этот
             # заход, не от того, что из прочитанного осталось в базе
             # (см. докстринг TelegramImportProgress). Только после
@@ -978,6 +1053,22 @@ async def main() -> None:
         await client.disconnect()
 
     print(f"\nдобавлено: {added}, пропущено как уже перенесённые: {skipped}")
+
+    # След в журнале: заход идёт по расписанию, и его итог виден только
+    # в системном логе, куда никто не смотрит. Строка в журнале админки
+    # отвечает на вопрос «а перенос вообще работает» без похода на
+    # сервер: когда был, сколько привёз, сколько отсеял как повторы.
+    try:
+        with SessionLocal() as log_db:
+            from app.core.audit import record
+
+            record(log_db, None, "import.run", target_type="import",
+                   added=added, duplicates=skipped,
+                   minutes=round((utcnow() - started).total_seconds() / 60, 1),
+                   chats=per_chat)
+            log_db.commit()
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":
