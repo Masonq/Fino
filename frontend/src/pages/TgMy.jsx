@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { api } from '../api/client'
 import { formatPrice } from '../utils/money'
@@ -23,12 +23,29 @@ const tg = () => window.Telegram?.WebApp
 
 export default function TgMy() {
   const { t, i18n } = useTranslation()
+  const navigate = useNavigate()
 
   const [items, setItems] = useState(null)
   const [busy, setBusy] = useState(null)
   const [editing, setEditing] = useState(null)
   const [draft, setDraft] = useState({ title: '', description: '', price: '', free: false })
   const [error, setError] = useState('')
+
+  // Кнопка «назад» — своя у Telegram, в его же шапке: рисовать вторую
+  // внутри страницы значит показать человеку две кнопки, которые
+  // делают одно и то же. На странице публикатора она не нужна —
+  // оттуда выходят кнопкой «Закрыть».
+  useEffect(() => {
+    const back = tg()?.BackButton
+    if (!back) return
+    const go = () => navigate('/tg/post')
+    back.onClick?.(go)
+    back.show?.()
+    return () => {
+      back.offClick?.(go)
+      back.hide?.()
+    }
+  }, [navigate])
 
   useEffect(() => {
     const app = tg()

@@ -5109,3 +5109,19 @@ a.s-attrs{ display:block; }
   font-size:12.5px; font-weight:800; text-decoration:none; line-height:1.2;
   text-align:center; max-width:92px;
 }
+
+/* Кнопки в карточке объявления.
+   Раньше они наследовали общий вид кнопок-фишек, но без рамки и фона —
+   и читались как обычный текст: непонятно, что это можно нажать.
+   Высота одна у всех, включая ссылку «Открыть», иначе ряд выглядит
+   собранным из разного. */
+.tg-my-actions .chip{
+  display:inline-flex; align-items:center; justify-content:center;
+  height:36px; padding:0 14px; border-radius:10px;
+  border:1px solid var(--border-strong); background:var(--surface);
+  color:var(--ink); font-size:13px; font-weight:700; line-height:1;
+}
+.tg-my-actions .chip-active{
+  background:var(--primary); border-color:var(--primary); color:#fff;
+}
+.tg-my-actions .chip:disabled{ opacity:.5; }
