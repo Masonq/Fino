@@ -693,7 +693,13 @@
       "chat.suspicious": "Flagged a chat",
       "chat.flag_cleared": "Cleared a chat flag",
       "translate.run": "Listing translation run",
-      "listing.unclear_title": "Removed: unclear title"
+      "listing.unclear_title": "Removed: unclear title",
+      "user.reset_name": "Reset the name",
+      "listing.renew": "Extended the listing",
+      "chat": "Chat",
+      "listing": "Listing",
+      "ticket": "Request",
+      "user": "User"
     },
     "kind_staff": "Staff",
     "kind_system": "System",

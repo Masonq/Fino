@@ -702,7 +702,13 @@
       "chat.suspicious": "Označio prepisku",
       "chat.flag_cleared": "Skinuo oznaku sa prepiske",
       "translate.run": "Prevod oglasa",
-      "listing.unclear_title": "Skinuto: nejasan naslov"
+      "listing.unclear_title": "Skinuto: nejasan naslov",
+      "user.reset_name": "Resetovao ime",
+      "listing.renew": "Produžio oglas",
+      "chat": "Prepiska",
+      "listing": "Oglas",
+      "ticket": "Zahtev",
+      "user": "Korisnik"
     },
     "kind_staff": "Osoblje",
     "kind_system": "Sistemske",

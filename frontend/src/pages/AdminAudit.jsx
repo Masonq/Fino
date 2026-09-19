@@ -50,11 +50,14 @@ export default function AdminAudit() {
   const [actors, setActors] = useState([])
   const [loaded, setLoaded] = useState(false)
   const [denied, setDenied] = useState(false)
+  const [kind, setKind] = useState(() => readValue('audit-kind', 'staff'))
 
+  // Запоминаем выбор ПОСЛЕ того, как все состояния объявлены: иначе
+  // эффект ссылается на kind, объявленный ниже, и страница падает с
+  // «Cannot access before initialization».
   useEffect(() => { keepValue('audit-kind', kind) }, [kind])
   useEffect(() => { keepValue('audit-filter', filter) }, [filter])
   useEffect(() => { keepValue('audit-actor', actor) }, [actor])
-  const [kind, setKind] = useState(() => readValue('audit-kind', 'staff'))
 
   const load = useCallback(() => {
     // Проверено: items.map ниже рендерится вообще без условия на

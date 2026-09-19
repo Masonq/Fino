@@ -711,7 +711,13 @@
       "chat.suspicious": "Пометил переписку подозрительной",
       "chat.flag_cleared": "Снял пометку с переписки",
       "translate.run": "Перевод объявлений",
-      "listing.unclear_title": "Снял: непонятный заголовок"
+      "listing.unclear_title": "Снял: непонятный заголовок",
+      "user.reset_name": "Сбросил имя",
+      "listing.renew": "Продлил объявление",
+      "chat": "Переписка",
+      "listing": "Объявление",
+      "ticket": "Обращение",
+      "user": "Пользователь"
     },
     "kind_staff": "Сотрудники",
     "kind_system": "Служебные",
