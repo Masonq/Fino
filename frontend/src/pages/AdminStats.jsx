@@ -84,30 +84,45 @@ export default function AdminStats() {
 
       {data && (
         <>
-          <div className="stats-cards">
-            <div className="stats-card">
-              <div className="stats-value">{data.listings.active}</div>
-              <div className="stats-label">{t('stats.in_feed')}</div>
+          {/* Иерархия вместо шести одинаковых плиток.
+              Раньше все числа были равны по весу, и на вопрос «как
+              дела» страница не отвечала: приходилось читать все шесть
+              и сравнивать самому. Теперь сверху два главных — сколько
+              всего в ленте и сколько прибавилось за выбранный срок, —
+              а остальное строками под ними: они нужны, но не первыми.
+
+              Подпись срока стоит у того числа, которое от срока
+              зависит: «320» без «за 14 дней» ничего не значит. */}
+          <div className="stats-hero">
+            <div className="stats-hero-item">
+              <div className="stats-hero-value">{data.listings.active}</div>
+              <div className="stats-hero-label">{t('stats.in_feed')}</div>
             </div>
-            <div className="stats-card">
-              <div className="stats-value">{data.listings.fresh}</div>
-              <div className="stats-label">{t('stats.added')}</div>
+            <div className="stats-hero-item">
+              <div className="stats-hero-value accent">+{data.listings.fresh}</div>
+              <div className="stats-hero-label">
+                {t('stats.added')}
+                <span className="stats-period">{t('stats.days', { count: days })}</span>
+              </div>
             </div>
-            <div className="stats-card">
-              <div className="stats-value">{data.listings.fresh_own}</div>
-              <div className="stats-label">{t('stats.added_own')}</div>
+          </div>
+
+          <div className="stats-rows">
+            <div className="stats-row">
+              <span>{t('stats.added_own')}</span>
+              <b>{data.listings.fresh_own}</b>
             </div>
-            <div className="stats-card">
-              <div className="stats-value">{data.listings.pending}</div>
-              <div className="stats-label">{t('stats.pending')}</div>
+            <div className="stats-row">
+              <span>{t('stats.pending')}</span>
+              <b>{data.listings.pending}</b>
             </div>
-            <div className="stats-card">
-              <div className="stats-value">{data.people.sellers}</div>
-              <div className="stats-label">{t('stats.sellers')}</div>
+            <div className="stats-row">
+              <span>{t('stats.sellers')}</span>
+              <b>{data.people.sellers}</b>
             </div>
-            <div className="stats-card">
-              <div className="stats-value">{data.people.fresh}</div>
-              <div className="stats-label">{t('stats.new_people')}</div>
+            <div className="stats-row">
+              <span>{t('stats.new_people')}</span>
+              <b>+{data.people.fresh}</b>
             </div>
           </div>
 
