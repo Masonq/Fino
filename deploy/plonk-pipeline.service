@@ -1,0 +1,11 @@
+[Unit]
+Description=PLONK — суточный конвейер: перенос, уборка, перевод
+After=network.target postgresql.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/fino/backend
+ExecStart=/opt/fino/backend/venv/bin/python3 -m app.core.pipeline --target 50
+User=root
+# Конвейер ходит в Telegram и к нейросети: час с запасом.
+TimeoutStartSec=5400

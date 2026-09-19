@@ -116,7 +116,12 @@ systemctl daemon-reload
 #
 # Деплой поднимает только автопостинг (раз в десять минут по одному
 # объявлению). Рассылку дайджеста читателям — тоже нет.
-SKIP_TIMERS="plonk-digest.timer plonk-tg-import.timer"
+# Перенос, уборка и перевод теперь идут внутри суточного конвейера
+# (plonk-pipeline.timer) — по порядку и с общим счётом обращений к
+# нейросети. Поодиночке они дрались за один дневной запас: перевод,
+# работавший каждый час, выбирал его к утру, и уборка приходила к
+# пустому.
+SKIP_TIMERS="plonk-digest.timer plonk-tg-import.timer plonk-cleanup.timer plonk-translate.timer"
 
 for timer in deploy/plonk-*.timer; do
   name="$(basename "$timer")"
