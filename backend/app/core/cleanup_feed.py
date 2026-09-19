@@ -78,8 +78,11 @@ _GENERIC = frozenset("""
 # Цена в заголовке. У Avito это прямой отказ: цена живёт в своём поле,
 # а в названии занимает место и устаревает первой. «Куртка 3000 динар»,
 # «- 4000 за все», «2000 rsd».
+# Предлог перед ценой съедаем вместе с ней: иначе «по 1000 динар за
+# бутылку» превращалось в «по за бутылку», а «все за 2000 дин» — в
+# «все за». Дыра в фразе хуже самой цены.
 _PRICE_IN_TITLE_RE = re.compile(
-    r"[\s\-—,:(]*\b\d[\d\s.,\u00a0]*\s*"
+    r"[\s\-—,:(]*\b(по|за|всего|цена)?\s*\d[\d\s.,\u00a0]*\s*"
     r"(€|\$|eur|евро|rsd|рсд|дин\w*|din\w*|руб\w*|₽)"
     r"(\s*за\s+(все|всё|штуку|шт\.?))?[\s)]*", re.I)
 _PRICE_TAIL_RE = re.compile(r"[\s\-—,:(]*\b\d[\d\s.,\u00a0]*\s*за\s+(все|всё)\b[\s)]*", re.I)
@@ -119,6 +122,14 @@ def _tidy(title: str | None) -> str:
     # Знаки препинания подряд — «Стол,, новый!!» — и хвосты по краям.
     body = re.sub(r"\s{2,}", " ", body)
     body = re.sub(r"([,.!?;:—-])\1+", r"\1", body)
+    # Разделители, оставшиеся от вырезанного: «Монитор BenQ — / (Белград».
+    body = re.sub(r"[\s]*[—\-/|]{1,}[\s]*(?=[)\s]*$)", " ", body)
+    body = re.sub(r"[—\-/|]\s*[—\-/|]+", " ", body)
+    body = re.sub(r"\(\s*\)", " ", body)
+    # Открытая скобка без закрывающей — тоже след вырезанного.
+    if body.count("(") > body.count(")"):
+        body = body.replace("(", " ")
+    body = re.sub(r"\s{2,}", " ", body)
     return body.strip(" ,.;:-—|/\\").strip()
 
 
@@ -244,9 +255,29 @@ def _ai_available() -> bool:
     return bool(_ready())
 
 
-def _try_fix(listing: Listing, tr: ListingTranslation, use_ai: bool) -> str | None:
-    """Новый заголовок или None. Сначала правила, потом нейросеть."""
+def _try_fix(listing: Listing, tr: ListingTranslation, use_ai: bool,
+             sections: set[str] | None = None) -> str | None:
+    """
+    Новый заголовок или None. Сначала правила, потом нейросеть.
+
+    Что бы ни вышло, оно должно быть лучше прежнего. Правила при
+    нехватке фактов собирают заголовок из раздела и свойств — так
+    «Электрочайник» превращался в «Красота, new», а «Футболки, все» в
+    «Одежда, размер L, used». Это не исправление, а ухудшение, и такие
+    ответы мы отбрасываем.
+    """
+    sections = sections or set()
     description = (tr.description or "").strip()
+
+    def acceptable(candidate: str) -> bool:
+        if not candidate or not _clear(candidate):
+            return False
+        if _is_section_name(candidate, sections):
+            return False
+        # Заголовок, начинающийся с названия раздела, — тот же случай:
+        # «Красота, new», «Для дома, б/у».
+        head = candidate.split(",")[0].strip().lower()
+        return head not in sections
 
     if description:
         built = build_title(
@@ -255,7 +286,7 @@ def _try_fix(listing: Listing, tr: ListingTranslation, use_ai: bool) -> str | No
             description,
             listing.attributes or {},
         )
-        if built and _clear(built):
+        if built and acceptable(built):
             return built
 
     if not use_ai:
@@ -264,7 +295,7 @@ def _try_fix(listing: Listing, tr: ListingTranslation, use_ai: bool) -> str | No
     source = f"{tr.title}\n{description}".strip()
     better = ai_improve(source, tr.title) or {}
     candidate = (better.get("title") or "").strip()
-    return candidate if candidate and _clear(candidate) else None
+    return candidate if acceptable(candidate) else None
 
 
 def run(limit: int | None, apply: bool, use_ai: bool = True,
@@ -354,7 +385,7 @@ def run(limit: int | None, apply: bool, use_ai: bool = True,
                 log.warning("запас нейросети кончился, дальше только правила")
                 use_ai = False
 
-            fixed = _try_fix(listing, tr, use_ai)
+            fixed = _try_fix(listing, tr, use_ai, sections)
             if fixed:
                 counts["заголовков переписано"] += 1
                 report.append({
