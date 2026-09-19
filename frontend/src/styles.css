@@ -5025,3 +5025,14 @@ a.s-attrs{ display:block; }
   opacity:0; pointer-events:none; transition:opacity .15s ease;
 }
 .field-row:focus-within .field-done{ opacity:1; pointer-events:auto; }
+
+/* Видео среди фотографий: помечаем значком, иначе от снимка не
+   отличить — в списке обе плитки выглядят одинаково. */
+.tg-photo.is-video video{ width:100%; height:100%; object-fit:cover; display:block; }
+.tg-photo-play{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:26px; height:26px; border-radius:50%;
+  background:rgba(20,24,22,.55); color:#fff;
+  display:flex; align-items:center; justify-content:center; pointer-events:none;
+}
+.tg-photo-play svg{ width:14px; height:14px; margin-left:1px; }

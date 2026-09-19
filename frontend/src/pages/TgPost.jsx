@@ -93,9 +93,22 @@ export default function TgPost() {
     const chosen = Array.from(event.target.files || []).slice(0, 8 - photos.length)
     if (!chosen.length) return
     setUploading(true)
+    setError('')
     try {
       const uploaded = []
       for (const file of chosen) {
+        // Видео и фотографии выбираются одной кнопкой: человек не
+        // обязан знать заранее, что у него в галерее, — разбираемся
+        // сами по типу файла. Видео к объявлению одно: два ролика
+        // подряд никто не смотрит.
+        if (file.type.startsWith('video/')) {
+          if (photos.some((p) => p.is_video)) { setError('video_one'); continue }
+          const res = await api.uploadVideo(file)
+          uploaded.push({
+            url: res.url, thumbnail_url: res.thumbnail_url, is_video: true,
+          })
+          continue
+        }
         const res = await api.uploadPhoto(file)
         uploaded.push({ url: res.url, thumbnail_url: res.thumbnail_url })
       }
@@ -108,7 +121,9 @@ export default function TgPost() {
     }
   }
 
-  const canSend = photos.length > 0 && title.trim().length >= 5
+  // Видео вместо фотографии не годится: в ленте видна обложка, а у
+  // ролика её может не быть — вещь без снимка не продаётся.
+  const canSend = photos.some((p) => !p.is_video) && title.trim().length >= 5
     && (free || Number(price) > 0) && !sending
 
   const send = async () => {
@@ -121,7 +136,9 @@ export default function TgPost() {
         price: free ? null : Number(price),
         is_free: free,
         city,
-        photos,
+        photos: photos.map((p) => ({
+          url: p.url, thumbnail_url: p.thumbnail_url, is_video: !!p.is_video,
+        })),
         lang: i18n.language,
         category_id: category?.id || guess?.category?.id || null,
       })
@@ -203,8 +220,15 @@ export default function TgPost() {
           после того, как человек уже всё описал, поздно. */}
       <div className="tg-photos">
         {photos.map((p, i) => (
-          <div className="tg-photo" key={p.url}>
-            <img src={p.thumbnail_url || p.url} alt="" />
+          <div className={p.is_video ? 'tg-photo is-video' : 'tg-photo'} key={p.url}>
+            {p.thumbnail_url || !p.is_video
+              ? <img src={p.thumbnail_url || p.url} alt="" />
+              : <video src={p.url} muted playsInline />}
+            {p.is_video && (
+              <span className="tg-photo-play" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+              </span>
+            )}
             <button onClick={() => setPhotos(photos.filter((_, j) => j !== i))} aria-label={t('actions.delete')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="M18 6 6 18M6 6l12 12" /></svg>
             </button>
@@ -215,7 +239,14 @@ export default function TgPost() {
             {uploading ? '…' : (
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 5v14M5 12h14" /></svg>
             )}
-            <input ref={fileInput} type="file" accept="image/*" multiple hidden onChange={pickPhotos} />
+            <input
+              ref={fileInput}
+              type="file"
+              accept="image/*,video/*"
+              multiple
+              hidden
+              onChange={pickPhotos}
+            />
           </label>
         )}
       </div>

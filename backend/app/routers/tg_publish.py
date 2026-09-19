@@ -39,6 +39,7 @@ router = APIRouter(prefix="/api/tg", tags=["telegram-webapp"])
 class PhotoIn(BaseModel):
     url: str
     thumbnail_url: str | None = None
+    is_video: bool = False
 
 
 class PublishIn(BaseModel):
@@ -154,7 +155,9 @@ def publish(
     user: User = Depends(require_named_user),
     db: Session = Depends(get_db),
 ):
-    if not payload.photos:
+    # Одно видео можно, но снимок обязателен: в ленте показывается
+    # обложка, и объявление с одним роликом выглядит пустым.
+    if not any(not p.is_video for p in payload.photos):
         raise HTTPException(422, "photo_required")
     if not payload.is_free and not payload.price:
         raise HTTPException(422, "price_required")
@@ -217,10 +220,14 @@ def publish(
         title=payload.title.strip()[:255],
         description=payload.description.strip(),
     ))
-    for order, photo in enumerate(payload.photos[:8]):
+    # Обложкой всегда снимок, а не видео: ролик в ленте нечем показать.
+    ordered = ([p for p in payload.photos if not p.is_video]
+               + [p for p in payload.photos if p.is_video])
+    for order, photo in enumerate(ordered[:8]):
         db.add(ListingPhoto(
             id=uuid.uuid4(), listing_id=listing.id,
             url=photo.url, thumbnail_url=photo.thumbnail_url,
+            is_video=photo.is_video,
             sort_order=order, is_cover=order == 0,
         ))
     db.commit()

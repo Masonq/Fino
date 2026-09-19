@@ -1068,7 +1068,9 @@
     "not_sure": "Nismo sigurni — izaberite:",
     "mode_price": "Cena",
     "mode_free": "Besplatno",
-    "pick_sub": "Precizirajte da bi stvar našli:"
+    "pick_sub": "Precizirajte da bi stvar našli:",
+    "err_video_one": "Jedan snimak je dovoljan — ostalo fotografijama.",
+    "photo_needed": "Dodajte bar jednu fotografiju: ona se prikazuje u listi."
   },
   "errors": {
     "generic": "Nešto nije u redu. Pokušajte ponovo."

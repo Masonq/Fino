@@ -1053,7 +1053,9 @@
     "not_sure": "Not sure — pick one:",
     "mode_price": "Price",
     "mode_free": "Free",
-    "pick_sub": "Narrow it down so buyers find it:"
+    "pick_sub": "Narrow it down so buyers find it:",
+    "err_video_one": "One video is enough — add photos for the rest.",
+    "photo_needed": "Add at least one photo: it's what shows in the feed."
   },
   "errors": {
     "generic": "Something went wrong. Try again."
