@@ -48,6 +48,10 @@ class PublishIn(BaseModel):
     description: str = ""
     price: float | None = None
     is_free: bool = False
+    # Валюта: в Сербии квартиры и машины считают в евро, а вещи — в
+    # динарах. Заставлять переводить одно в другое значит получать
+    # цены, которым никто не верит.
+    currency: str = "RSD"
     city: str
     photos: list[PhotoIn] = []
     lang: str = "ru"
@@ -206,7 +210,7 @@ def publish(
         city=payload.city,
         price=None if payload.is_free else payload.price,
         is_free=payload.is_free,
-        currency="RSD",
+        currency="EUR" if payload.currency.upper() == "EUR" else "RSD",
         source_language=payload.lang,
         status=ListingStatus.active if trusted else ListingStatus.pending_moderation,
         published_at=utcnow() if trusted else None,
@@ -299,6 +303,7 @@ def _translate_later(listing_id) -> None:
 class PriceIn(BaseModel):
     price: float | None = None
     is_free: bool = False
+    currency: str = "RSD"
 
 
 class EditIn(BaseModel):
@@ -379,9 +384,11 @@ def change_price(listing_id: str, payload: PriceIn,
         raise HTTPException(422, "price_required")
     listing.is_free = payload.is_free
     listing.price = None if payload.is_free else payload.price
+    if not payload.is_free:
+        listing.currency = "EUR" if payload.currency.upper() == "EUR" else "RSD"
     db.commit()
     return {"price": float(listing.price) if listing.price else None,
-            "is_free": listing.is_free}
+            "is_free": listing.is_free, "currency": listing.currency}
 
 
 @router.post("/my/{listing_id}/renew")

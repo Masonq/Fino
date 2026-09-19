@@ -33,6 +33,8 @@ export default function TgPost() {
   const [title, setTitle] = useState('')
   const [price, setPrice] = useState('')
   const [free, setFree] = useState(false)
+  // Динары по умолчанию: ими считают почти всё, кроме жилья и машин.
+  const [currency, setCurrency] = useState('RSD')
   const [city, setCity] = useState(() => {
     try { return localStorage.getItem('plonk_city') || 'beograd' } catch { return 'beograd' }
   })
@@ -140,6 +142,7 @@ export default function TgPost() {
         description: description.trim(),
         price: free ? null : Number(price),
         is_free: free,
+        currency,
         city,
         photos: photos.map((p) => ({
           url: p.url, thumbnail_url: p.thumbnail_url, is_video: !!p.is_video,
@@ -377,7 +380,20 @@ export default function TgPost() {
                 enterKeyHint="done"
                 onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }}
               />
-              <span className="tg-currency">RSD</span>
+              {/* Динары или евро: жильё и машины в Сербии считают в
+                  евро, и перевод в динары по дороге даёт цену, которой
+                  никто не верит. */}
+              <div className="tg-currency-switch">
+                {['RSD', 'EUR'].map((code) => (
+                  <button
+                    key={code}
+                    className={currency === code ? 'tg-currency-btn on' : 'tg-currency-btn'}
+                    onClick={() => setCurrency(code)}
+                  >
+                    {code === 'EUR' ? '€' : 'RSD'}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -430,6 +446,15 @@ export default function TgPost() {
         {sending ? t('tg_post.sending') : t('tg_post.publish')}
       </button>
       <p className="tg-note">{t('tg_post.note')}</p>
+
+      {/* Полная форма на сайте: здесь пять полей, и этого хватает для
+          вещи, но не для квартиры или машины — там нужны комнаты,
+          площадь, пробег, год. Человека, пришедшего с таким
+          объявлением, надо отправить туда, где его примут целиком, а
+          не заставлять ужимать в пять полей. */}
+      <a className="tg-full-form" href="https://plonk.rs/post" target="_blank" rel="noopener noreferrer">
+        {t('tg_post.full_form')}
+      </a>
     </div>
   )
 }
