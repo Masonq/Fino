@@ -977,5 +977,10 @@
     "explain_expensive": "Similar items usually cost less. You can bargain or keep looking.",
     "how_city": "Compared with {{count}} similar listings in this city over the last six months: most are between {{low}} and {{high}}.",
     "how_country": "Few similar ones in this city, so compared with {{count}} across Serbia over the last six months: most are between {{low}} and {{high}}."
+  },
+  "reviews": {
+    "waiting_title": "Waiting for your review",
+    "waiting_empty": "Nobody is waiting. Invitations appear after a conversation that looks like a deal.",
+    "someone": "The other person"
   }
 }

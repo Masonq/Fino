@@ -988,5 +988,10 @@
     "explain_expensive": "Za ovakve stvari obično traže manje. Možete se cenkati ili tražiti jeftinije.",
     "how_city": "Upoređeno sa {{count}} sličnih oglasa u ovom gradu za poslednjih pola godine: većina je između {{low}} i {{high}}.",
     "how_country": "U ovom gradu ima malo sličnih, pa je upoređeno sa {{count}} širom Srbije za poslednjih pola godine: većina je između {{low}} i {{high}}."
+  },
+  "reviews": {
+    "waiting_title": "Čekaju vašu ocenu",
+    "waiting_empty": "Niko ne čeka ocenu. Pozivi se pojavljuju posle prepiske koja liči na dogovor.",
+    "someone": "Sagovornik"
   }
 }

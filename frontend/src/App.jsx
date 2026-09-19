@@ -26,6 +26,7 @@ const BlockedUsers = lazy(() => import('./pages/BlockedUsers'))
 const InviteFriend = lazy(() => import('./pages/InviteFriend'))
 const Notifications = lazy(() => import('./pages/Notifications'))
 const ListingDashboard = lazy(() => import('./pages/ListingDashboard'))
+const WaitingReviews = lazy(() => import('./pages/WaitingReviews'))
 const LegalDoc = lazy(() => import('./pages/LegalDoc'))
 const Chats = lazy(() => import('./pages/Chats'))
 const Login = lazy(() => import('./pages/Login'))
@@ -416,6 +417,7 @@ export default function App() {
           <Route path="/profile/invite" element={<InviteFriend />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/my/:id/stats" element={<ListingDashboard />} />
+          <Route path="/reviews/waiting" element={<WaitingReviews />} />
           <Route path="/terms" element={<LegalDoc doc="terms" />} />
           <Route path="/privacy" element={<LegalDoc doc="privacy" />} />
           <Route path="/rules" element={<LegalDoc doc="rules" />} />

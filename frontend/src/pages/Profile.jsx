@@ -205,6 +205,20 @@ export default function Profile() {
           их открывают раз в жизни, и место наравне с тем, чем
           пользуются каждый день, им ни к чему. */}
       <div className="profile-menu">
+        {/* Ждут вашего отзыва. Приглашения живут в переписках, и без
+            этой строки человек о них не узнаёт — а отзывы и есть то, на
+            чём держится доверие к продавцам. Строки нет, когда ждать
+            некому: пустой пункт со счётчиком «0» только мозолит глаз. */}
+        {stats?.reviews_waiting > 0 && (
+          <Link className="profile-row" to="/reviews/waiting">
+            <span className="profile-row-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6-5.4-2.8-5.4 2.8 1-6L3.2 9.4l6.1-.9L12 3Z" /></svg>
+            </span>
+            {t('reviews.waiting_title')}
+            <span className="profile-row-count accent">{stats.reviews_waiting}</span>
+            <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+          </Link>
+        )}
         <Link className="profile-row" to="/saved">
           <span className="profile-row-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m20 20-4.35-4.35" /></svg>

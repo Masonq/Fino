@@ -4702,3 +4702,25 @@ a.s-attrs{ display:block; }
 .field-chips .chip-active{
   background:var(--primary); border-color:var(--primary); color:#fff;
 }
+
+/* ===== ждут вашего отзыва ===== */
+.profile-row-count.accent{ background:var(--accent); color:#fff; }
+.waiting-row{
+  display:flex; align-items:center; gap:12px; padding:13px 15px;
+  color:inherit; text-decoration:none; border-top:1px solid var(--line);
+}
+.profile-menu > .waiting-row:first-child{ border-top:none; }
+.waiting-text{ flex:1; min-width:0; }
+.waiting-name{ font-size:14px; font-weight:800; }
+.waiting-listing{
+  font-size:12px; color:var(--muted); font-weight:600; margin-top:2px;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.waiting-thumb{ width:40px; height:40px; border-radius:9px; overflow:hidden; flex-shrink:0; background:var(--surface-sunken); }
+.waiting-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+/* Размеры задаём здесь: у аватара и стрелки классы общие, но их
+   размеры прописаны внутри других блоков и сюда не доезжают —
+   картинка растягивалась во всю строку, а стрелка выходила больше
+   самого ряда. */
+.waiting-row .seller-avatar{ width:44px; height:44px; flex-shrink:0; }
+.waiting-row .seller-chevron{ width:18px; height:18px; flex-shrink:0; margin-left:0; }

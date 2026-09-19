@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import func, or_
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.core.auth import get_current_user
 from app.core.database import get_db
@@ -110,6 +110,67 @@ def user_reviews(
             for r in rows
         ],
     }
+
+
+@router.get("/waiting")
+def waiting_reviews(
+    lang: str = Query("ru"),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Люди, которые ждут вашего отзыва.
+
+    Приглашение появляется после переписки, похожей на сделку, но живёт
+    только в самой переписке: не открыл её — не узнал. Здесь они
+    собраны вместе, с вещью и собеседником, чтобы вспомнить, о ком
+    речь: «оставьте отзыв» без имени и товара ничего человеку не
+    говорит.
+    """
+    from app.models import Chat, Listing, ListingTranslation, ListingPhoto
+
+    invites = (db.query(ReviewInvite)
+               .filter(ReviewInvite.user_id == user.id,
+                       ReviewInvite.responded.is_(False),
+                       ReviewInvite.dismissed.is_(False))
+               .order_by(ReviewInvite.sent_at.desc())
+               .limit(30).all())
+    if not invites:
+        return {"items": []}
+
+    target_ids = {i.target_id for i in invites}
+    listing_ids = {i.listing_id for i in invites if i.listing_id}
+    people = {u.id: u for u in db.query(User).filter(User.id.in_(target_ids)).all()}
+    listings = {}
+    if listing_ids:
+        rows = (db.query(Listing)
+                .options(joinedload(Listing.translations), joinedload(Listing.photos))
+                .filter(Listing.id.in_(listing_ids)).all())
+        listings = {l.id: l for l in rows}
+
+    items = []
+    for invite in invites:
+        person = people.get(invite.target_id)
+        listing = listings.get(invite.listing_id)
+        title, photo = None, None
+        if listing:
+            by_lang = {t.language: t for t in listing.translations}
+            tr = next((by_lang[l] for l in (lang, "ru", "en", "sr") if l in by_lang), None)
+            title = tr.title if tr else None
+            cover = next((p for p in listing.photos if p.is_cover and not p.is_video),
+                         next((p for p in listing.photos if not p.is_video), None))
+            photo = cover.thumbnail_url or cover.url if cover else None
+        items.append({
+            "chat_id": str(invite.chat_id),
+            "target_id": str(invite.target_id),
+            "target_name": person.display_name if person else None,
+            "target_avatar": person.avatar_url if person else None,
+            "listing_id": str(invite.listing_id) if invite.listing_id else None,
+            "listing_title": title,
+            "listing_photo": photo,
+            "sent_at": invite.sent_at.isoformat() if invite.sent_at else None,
+        })
+    return {"items": items}
 
 
 @router.get("/can-review/{target_id}")

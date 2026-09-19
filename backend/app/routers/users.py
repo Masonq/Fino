@@ -277,10 +277,26 @@ def my_stats(
         Listing.owner_id == user.id, Listing.status == ListingStatus.active).all()
     ids = [row[0] for row in active]
     favorites = db.query(func.count(Favorite.id)).filter(Favorite.listing_id.in_(ids)).scalar() if ids else 0
+    # Сколько людей ждут отзыва от вас.
+    #
+    # Приглашение появляется после переписки, похожей на сделку, но
+    # живёт только в самой переписке: не открыл её — не узнал. В
+    # профиле это строка, на которую можно нажать, и главный повод
+    # вернуться, когда покупать сейчас нечего. Отзывов у площадки почти
+    # нет, а доверие держится на них.
+    from app.models import ReviewInvite
+
+    waiting = (db.query(func.count(ReviewInvite.id))
+               .filter(ReviewInvite.user_id == user.id,
+                       ReviewInvite.responded.is_(False),
+                       ReviewInvite.dismissed.is_(False))
+               .scalar() or 0)
+
     return {
         "listings": len(ids),
         "views": int(sum((row[1] or 0) for row in active)),
         "favorites": int(favorites or 0),
+        "reviews_waiting": int(waiting),
     }
 
 
