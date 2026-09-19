@@ -5193,3 +5193,76 @@ a.s-attrs{ display:block; }
   display:block; margin-top:4px;
   font-size:12px; font-weight:600; color:var(--muted); line-height:1.35;
 }
+
+/* ===== приглашение друзей ===== */
+.invite-page{ padding-bottom:200px; }
+.invite-hero{
+  padding:8px 20px 24px; text-align:center;
+}
+.invite-hero img{ width:100%; max-width:280px; height:auto; display:block; margin:0 auto 14px; }
+.invite-hero h1{ font-size:24px; font-weight:800; letter-spacing:-0.02em; margin:0 0 8px; }
+.invite-hero p{ font-size:14.5px; color:var(--muted); font-weight:600; line-height:1.45; margin:0; }
+
+.invite-cards{ display:flex; flex-direction:column; gap:10px; padding:0 14px; }
+.invite-card{
+  display:flex; align-items:center; gap:14px;
+  padding:14px; border-radius:16px; background:var(--surface); box-shadow:var(--shadow);
+}
+.invite-card img{ width:56px; height:56px; flex-shrink:0; object-fit:contain; }
+.invite-card-text{ flex:1; min-width:0; }
+.invite-card-title{ font-size:13px; font-weight:700; color:var(--muted); }
+.invite-card-sub{ margin-top:2px; font-size:14.5px; font-weight:700; line-height:1.35; }
+
+.invite-block-title{ font-size:17px; font-weight:800; margin-bottom:12px; }
+.invite-steps{ padding:26px 18px 0; }
+.invite-step{
+  display:flex; align-items:flex-start; gap:12px; padding:9px 0;
+  font-size:14px; font-weight:600; line-height:1.4;
+}
+.invite-step-num{
+  width:24px; height:24px; border-radius:50%; flex-shrink:0;
+  background:var(--primary-soft); color:var(--primary-deep);
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:800;
+}
+
+.invite-stats{
+  display:flex; gap:10px; margin:24px 14px 0;
+  padding:16px 12px; border-radius:16px; background:var(--surface); box-shadow:var(--shadow);
+}
+.invite-stats > div{ flex:1; text-align:center; }
+.invite-stats strong{ display:block; font-size:20px; font-weight:800; }
+.invite-stats span{ display:block; margin-top:2px; font-size:11.5px; color:var(--muted); font-weight:600; }
+
+.invite-faq{ padding:26px 18px 0; }
+.invite-faq-item{ border-bottom:1px solid var(--border); }
+.invite-faq-item button{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  width:100%; padding:15px 0; text-align:left;
+  font-size:15px; font-weight:700; color:var(--ink); background:none;
+}
+.invite-faq-item svg{ width:18px; height:18px; flex-shrink:0; color:var(--muted); transition:transform .18s ease; }
+.invite-faq-item svg.open{ transform:rotate(180deg); }
+.invite-faq-item p{
+  margin:0; padding:0 0 15px; font-size:13.5px; color:var(--muted);
+  font-weight:600; line-height:1.5;
+}
+
+/* Кнопка у низа экрана: человек дочитал — и она уже здесь. */
+.invite-bottom{
+  /* Над нижним меню, а не под ним: прижатая к самому низу кнопка
+     пряталась за меню — оно фиксировано и рисуется поверх. */
+  position:fixed; left:0; right:0; bottom:calc(62px + env(safe-area-inset-bottom));
+  z-index:19; max-width:480px; margin:0 auto;
+  padding:12px 14px;
+  background:rgba(250,250,249,.94);
+  backdrop-filter:saturate(1.4) blur(14px);
+  -webkit-backdrop-filter:saturate(1.4) blur(14px);
+  border-top:1px solid var(--border);
+}
+.invite-link{
+  font-size:12px; color:var(--muted); font-weight:600;
+  text-align:center; margin-bottom:8px;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.invite-bottom .form-save{ width:100%; margin:0; }
