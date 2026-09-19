@@ -31,6 +31,13 @@ class BalanceTopup(Base):
 
     amount: Mapped[float] = mapped_column(Numeric(10, 2))
     currency: Mapped[str] = mapped_column(String(3), default="RUB")
+    # Сколько и в какой валюте реально взяли в платёжной системе и по
+    # какому курсу пересчитали. Баланс в динарах, платёж в рублях —
+    # без этих трёх полей спор о сумме разрешить нечем.
+    paid_amount: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
+    paid_currency: Mapped[str | None] = mapped_column(String(3), nullable=True)
+    rate: Mapped[float | None] = mapped_column(Numeric(10, 4), nullable=True)
+
     status: Mapped[BalanceTopupStatus] = mapped_column(
         Enum(BalanceTopupStatus), default=BalanceTopupStatus.pending, index=True)
 

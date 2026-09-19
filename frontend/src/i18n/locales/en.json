@@ -142,18 +142,18 @@
     "desc_highlight": "A colored background in the feed makes the card harder to scroll past. 7 days",
     "type_xl_card": "Large card",
     "desc_xl_card": "A large full-width photo that stands out from neighboring cards. 7 days",
-    "price": "{{price}} ₽",
+    "price": "{{price}} RSD",
     "active_now": "Active",
     "active_until": "Until {{date}}",
     "err_unavailable": "Promotion is temporarily unavailable, try again later",
     "err_generic": "Couldn't start the payment, please try again",
     "subtitle": "Choose an option",
     "all_active": "Everything is already promoted",
-    "cta": "Boost views — {{price}} ₽",
-    "balance": "Balance: {{amount}} ₽",
-    "pay_balance": "Pay from balance — {{price}} ₽",
+    "cta": "Boost views — {{price}} RSD",
+    "balance": "Balance: {{amount}} RSD",
+    "pay_balance": "Pay from balance — {{price}} RSD",
     "pay_card": "Pay by card",
-    "not_enough_balance": "Balance is {{amount}} ₽ — not enough, pay by card instead",
+    "not_enough_balance": "Balance is {{amount}} RSD — not enough, pay by card instead",
     "paid_ok": "Paid from balance",
     "next": "Next",
     "checking": "Checking your payment…",
@@ -945,7 +945,7 @@
   "balance": {
     "title": "Balance",
     "topup": "Top up",
-    "topup_cta": "Top up {{amount}} ₽"
+    "topup_cta": "Top up {{amount}} RSD"
   },
   "home": {
     "phone_reminder": "Add your phone — buyers will be able to call you directly",
@@ -957,7 +957,7 @@
   },
   "invite": {
     "card_title": "Invite a friend",
-    "card_subtitle": "Get 100₽ credit for each one",
+    "card_subtitle": "Get 100RSD credit for each one",
     "title": "Invite a friend",
     "hero_title": "Invite your friends",
     "hero_text": "Your friend posts their first listing — you both get {{amount}} on balance",

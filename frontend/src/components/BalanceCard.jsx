@@ -3,7 +3,10 @@ import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 
 // Готовые суммы — быстрее тыкнуть, чем каждый раз набирать вручную.
-const PRESETS = [200, 500, 1000, 2000]
+// Суммы в динарах: поднятие стоит 150, выделение 300, крупная
+// карточка 450 — набор подобран так, чтобы каждой кнопки хватало на
+// что-то целое, а не «почти хватило».
+const PRESETS = [500, 1000, 2000, 5000]
 
 export default function BalanceCard() {
   const { t } = useTranslation()
@@ -53,7 +56,7 @@ export default function BalanceCard() {
                 className={amount === p ? 'balance-preset active' : 'balance-preset'}
                 onClick={() => setAmount(p)}
               >
-                {p} ₽
+                {p} RSD
               </button>
             ))}
           </div>

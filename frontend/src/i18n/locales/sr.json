@@ -142,18 +142,18 @@
     "desc_highlight": "Kartica sa obojenom pozadinom teže se preskače pri skrolovanju. 7 dana",
     "type_xl_card": "Velika kartica",
     "desc_xl_card": "Velika fotografija preko cele širine izdvaja se među susedima. 7 dana",
-    "price": "{{price}} ₽",
+    "price": "{{price}} RSD",
     "active_now": "Aktivno",
     "active_until": "Do {{date}}",
     "err_unavailable": "Izdvajanje je privremeno nedostupno, pokušajte kasnije",
     "err_generic": "Nije uspelo pokretanje plaćanja, pokušajte ponovo",
     "subtitle": "Izaberite opciju",
     "all_active": "Sve je već izdvojeno",
-    "cta": "Povećaj preglede — {{price}} ₽",
-    "balance": "Stanje: {{amount}} ₽",
-    "pay_balance": "Plati sa stanja — {{price}} ₽",
+    "cta": "Povećaj preglede — {{price}} RSD",
+    "balance": "Stanje: {{amount}} RSD",
+    "pay_balance": "Plati sa stanja — {{price}} RSD",
     "pay_card": "Plati karticom",
-    "not_enough_balance": "Stanje je {{amount}} ₽ — nedovoljno, platite karticom",
+    "not_enough_balance": "Stanje je {{amount}} RSD — nedovoljno, platite karticom",
     "paid_ok": "Plaćeno sa stanja",
     "next": "Dalje",
     "checking": "Proveravamo uplatu…",
@@ -960,7 +960,7 @@
   "balance": {
     "title": "Stanje",
     "topup": "Dopuni",
-    "topup_cta": "Dopuni za {{amount}} ₽"
+    "topup_cta": "Dopuni za {{amount}} RSD"
   },
   "home": {
     "phone_reminder": "Dodajte broj telefona — kupci će moći direktno da vas pozovu",
@@ -972,7 +972,7 @@
   },
   "invite": {
     "card_title": "Pozovite prijatelja",
-    "card_subtitle": "Dobijte 100₽ za svakog",
+    "card_subtitle": "Dobijte 100RSD za svakog",
     "title": "Pozovite prijatelja",
     "hero_title": "Pozovite prijatelje",
     "hero_text": "Prijatelj objavi prvi oglas — obojici po {{amount}} na račun",

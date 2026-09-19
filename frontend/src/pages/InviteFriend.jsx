@@ -17,7 +17,10 @@ import PageHeader from '../components/PageHeader'
  * их разворачивает тот, кому действительно интересно, а место они
  * занимали бы у всех.
  */
-const BONUS = 100
+// Столько же, сколько начисляет сервер (REFERRAL_BONUS). Два числа в
+// двух местах разъезжаются при первой же правке, но тянуть его
+// запросом ради одной цифры — дороже, чем польза.
+const BONUS = 200
 
 export default function InviteFriend() {
   const { t } = useTranslation()
