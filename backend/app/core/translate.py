@@ -268,7 +268,15 @@ def translate_listing(db, listing) -> int:
     if source_lang == "ru" and set(missing) <= {"en", "sr"} and missing:
         from app.core.ai_title import translate_listing_text
 
-        bulk = translate_listing_text(source.title, source.description) or {}
+        # Раздел и город дают модели понять, о чём речь: «стол» в
+        # мебели и «стол» в общепите переводятся по-разному, а район
+        # в описании нельзя переводить как слово.
+        names = (listing.category.name or {}) if listing.category else {}
+        bulk = translate_listing_text(
+            source.title, source.description,
+            category=names.get("ru") or names.get("en"),
+            city=listing.city,
+        ) or {}
 
     for lang in missing:
         ready = bulk.get(lang)

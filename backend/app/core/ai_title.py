@@ -696,12 +696,33 @@ LISTING_SCHEMA = {
     "required": ["en_title", "sr_title"],
 }
 
-LISTING_PROMPT = """Переведи объявление с барахолки на английский и сербский.
+# Подсказка собрана по тому, что советуют делать с переводом товарных
+# карточек: дать модели контекст (что это и из какого раздела), список
+# слов, которые трогать нельзя, и правила про числа и единицы. Список
+# короткий нарочно: длинный глоссарий модель начинает путать и
+# применяет через раз.
+LISTING_PROMPT = """Ты переводишь объявление с доски объявлений в Сербии.
+Читатель — обычный человек, который ищет вещь. Переводи так, как пишут
+живые продавцы, а не как в инструкции.
 
-Сербский — латиницей, как пишут на KupujemProdajem.
-- Марки, модели и числа оставь как есть: «IKEA MICKE», «iPhone 13», «256gb».
-- Названия районов и городов не переводи.
-- Не пересказывай и не сокращай: сколько сказано, столько и переводи.
+Раздел: {category}
+Город: {city}
+
+Переведи на английский и на сербский (латиница, как на KupujemProdajem).
+
+Не переводить, оставить ровно как в оригинале:
+- марки и модели: IKEA MICKE, iPhone 13 Pro, Samsung S21, Trek FX 2;
+- буквенно-цифровые обозначения: 256gb, A1707, XL, 42EU;
+- названия районов, улиц и городов: Врачар, Vračar, Dorćol, Земун;
+- числа, размеры, цены и единицы: 86 м², 122.300 km, 2.5, 300 RSD.
+
+Правила:
+- Сколько сказано, столько и переводи: не сокращай и не пересказывай.
+- Не добавляй ничего от себя: ни призывов, ни «отличное состояние».
+- Состояние вещи переводи как принято у продавцов: «б/у» → used /
+  polovno, «новое» → new / novo.
+- В сербском используй латиницу и сербские слова, а не хорватские
+  (stan, а не apartman; sto, а не stol).
 - Если описания нет, оставь поля описания пустыми.
 
 Заголовок: {title}
@@ -710,7 +731,9 @@ LISTING_PROMPT = """Переведи объявление с барахолки 
 """
 
 
-def translate_listing_text(title: str, description: str | None) -> dict | None:
+def translate_listing_text(title: str, description: str | None,
+                           category: str | None = None,
+                           city: str | None = None) -> dict | None:
     """
     Переводит объявление сразу на оба языка одним запросом.
 
@@ -725,6 +748,8 @@ def translate_listing_text(title: str, description: str | None) -> dict | None:
         return None
 
     prompt = LISTING_PROMPT.format(
+        category=category or "без раздела",
+        city=city or "не указан",
         title=title.strip()[:300],
         description=(description or "").strip()[:1500] or "—",
     )
@@ -743,8 +768,28 @@ def translate_listing_text(title: str, description: str | None) -> dict | None:
         # Перевод втрое короче исходника — это пересказ, а не перевод.
         if description and got_description and len(got_description) * 3 < len(description.strip()):
             got_description = ""
+        if not _keeps_numbers(title, got_title):
+            # В заголовке потерялись числа — это размер, объём памяти или
+            # год, то есть ровно то, по чему вещь и выбирают. Такой
+            # перевод хуже отсутствия.
+            continue
         out[lang] = {"title": got_title, "description": got_description}
     return out or None
+
+
+def _keeps_numbers(source: str, translated: str) -> bool:
+    """
+    Сохранились ли числа из оригинала.
+
+    Дешёвая проверка вместо доверия на слово: модель иногда «округляет»
+    («256gb» → «large storage») или теряет год выпуска. Сравниваем
+    наборы чисел, а не порядок: перестановка при переводе нормальна.
+    """
+    import re as _re
+
+    want = set(_re.findall(r"\d+", source or ""))
+    got = set(_re.findall(r"\d+", translated or ""))
+    return want <= got
 
 
 def translate_text(text: str, target: str) -> str | None:
