@@ -57,13 +57,22 @@ export default function TgPost() {
       .catch(() => setError('auth_failed'))
   }, [])
 
-  // Цвет окна под наш фон: иначе вокруг формы остаётся тёмная рамка
-  // телеграмной темы, и экран выглядит чужим.
+  // Цвет окна под наш фон и запрет случайного закрытия.
+  //
+  // Telegram по умолчанию закрывает окно смахиванием вниз — тем же
+  // движением, которым прокручивают форму. Заполнил четыре поля,
+  // потянул список вверх чуть резче — и всё пропало. Просим Telegram
+  // спрашивать подтверждение и, где умеет, вовсе отключить смахивание.
   useEffect(() => {
     const app = tg()
-    if (app?.setBackgroundColor) {
-      try { app.setBackgroundColor('#FAFAF9') } catch { /* не беда */ }
-    }
+    if (!app) return
+    try { app.setBackgroundColor?.('#FAFAF9') } catch { /* не беда */ }
+    // Появилось в Bot API 7.7; на старых клиентах метода нет, и тогда
+    // остаётся подтверждение ниже.
+    try { app.disableVerticalSwipes?.() } catch { /* не беда */ }
+    // Подтверждение при закрытии: даже если смахивание сработает,
+    // Telegram переспросит, а не выбросит заполненное молча.
+    try { app.enableClosingConfirmation?.() } catch { /* не беда */ }
   }, [])
 
   // Спрашиваем раздел, когда человек перестал печатать: на каждую
@@ -117,6 +126,10 @@ export default function TgPost() {
         category_id: category?.id || guess?.category?.id || null,
       })
       setDone(res)
+      // Объявление ушло, терять больше нечего: подтверждение при
+      // закрытии снимаем, иначе человек жмёт «вернуться в чат» и
+      // получает лишний вопрос.
+      try { tg()?.disableClosingConfirmation?.() } catch { /* не беда */ }
       tg()?.HapticFeedback?.notificationOccurred?.('success')
     } catch (err) {
       setError(err?.message === 'must_rename' ? 'must_rename' : 'send_failed')
