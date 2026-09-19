@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { formatPrice } from '../utils/money'
 import Avatar from '../components/Avatar'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
@@ -54,7 +55,19 @@ export default function Profile() {
     if (!user) return
     api.myStats().then(setStats).catch(() => setStats({ listings: 0, views: 0, favorites: 0 }))
   }, [user?.id])
+
+  // Подборка «может быть интересно» — внизу профиля. Запрашиваем здесь,
+  // до любых ранних возвратов: хук нельзя вызывать после них, иначе
+  // порядок хуков между отрисовками меняется.
+  useEffect(() => {
+    if (!user) return
+    api.forYou(i18n.language).then((r) => setForYou(r.items || [])).catch(() => {})
+  }, [user?.id, i18n.language])
+
   const [queues, setQueues] = useState(null)
+  // Подборка «может быть интересно» — внизу профиля: человек сюда
+  // заходит между делом, и уходить ни с чем ему незачем.
+  const [forYou, setForYou] = useState([])
   useEffect(() => {
     if (!isStaff) { setQueues(null); return }
     let alive = true
@@ -389,6 +402,26 @@ export default function Profile() {
       >
         {t('auth.logout')}
       </button>
+
+      {forYou.length > 0 && (
+        <div className="for-you">
+          <div className="for-you-title">{t('profile.for_you')}</div>
+          <div className="for-you-row">
+            {forYou.map((l) => (
+              <Link key={l.id} to={l.path} className="for-you-card">
+                <div className="for-you-photo">
+                  {l.cover_photo ? <img src={l.cover_photo} alt="" loading="lazy" />
+                    : <div className="photo-placeholder" />}
+                </div>
+                <div className="for-you-price">
+                  {l.is_free ? t('detail.free') : formatPrice(l.price, l.currency, i18n.language)}
+                </div>
+                <div className="for-you-name">{l.title}</div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Подвал: то, что открывают раз в жизни — правила, условия,
           ссылки на наш чат и бота. Ссылки на Telegram внешние, поэтому

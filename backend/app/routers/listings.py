@@ -1445,6 +1445,77 @@ def compute_price_check(db, listing, lang: str) -> dict:
     return data
 
 
+@router.get("/for-you")
+def for_you(
+    lang: str = Query("ru"),
+    limit: int = Query(12, le=30),
+    user: User | None = Depends(get_current_user_optional),
+    db: Session = Depends(get_db),
+):
+    """
+    «Может быть интересно» — подборка под конкретного человека.
+
+    Лента на главной уже учитывает его интересы, но там их перебивает
+    свежесть: наверху то, что выложили час назад, а не то, что человеку
+    нужно. Здесь наоборот — сначала совпадение с интересами, свежесть
+    только как поправка.
+
+    Истории нет — отдаём пусто, а не «популярное»: подборка «для вас»,
+    собранная из случайного, обесценивает сам приём.
+    """
+    from app.core.interests import category_interests
+
+    if not user:
+        return {"items": []}
+
+    roots, subs = category_interests(db, user.id)
+    if not roots and not subs:
+        return {"items": []}
+
+    # Берём объявления из интересных разделов, свежие первыми, и уже
+    # среди них расставляем по весу интереса. Ограничение по времени —
+    # чтобы не показывать позапрошлогоднее: подборка должна быть про
+    # то, что можно купить сейчас.
+    wanted = list(subs.keys()) or list(roots.keys())
+    rows = (
+        db.query(Listing)
+        .options(joinedload(Listing.translations), joinedload(Listing.photos),
+                 joinedload(Listing.category))
+        .filter(Listing.status == ListingStatus.active,
+                Listing.category_id.in_(wanted),
+                Listing.published_at >= utcnow() - timedelta(days=60))
+        .order_by(Listing.published_at.desc())
+        .limit(limit * 6)
+        .all()
+    )
+    if user:
+        # Своё в подборке «может быть интересно» — насмешка.
+        rows = [l for l in rows if l.owner_id != user.id]
+
+    def weight(listing) -> float:
+        return float(subs.get(listing.category_id, 0) or roots.get(listing.category_id, 0) or 0)
+
+    rows.sort(key=weight, reverse=True)
+
+    def card(l: Listing) -> dict:
+        tr = pick_translation(l, lang)
+        cover = next((p for p in l.photos if p.is_cover and not p.is_video),
+                     next((p for p in l.photos if not p.is_video), None))
+        return {
+            "id": str(l.id),
+            "title": tr.title if tr else None,
+            "price": float(l.price) if l.price else None,
+            "is_free": bool(l.is_free),
+            "currency": l.currency,
+            "city": l.city,
+            "path": listing_path(l.id, tr.title if tr else "", l.city,
+                                 l.category.slug if l.category else None),
+            "cover_photo": cover.thumbnail_url if cover else None,
+        }
+
+    return {"items": [card(l) for l in rows[:limit]]}
+
+
 @router.get("/{listing_id}/price-check")
 def price_check(
     listing_id: uuid.UUID,

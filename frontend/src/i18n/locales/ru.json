@@ -931,7 +931,8 @@
     "att_expiring_other": "{{count}} объявлений скоро снимем — можно продлить",
     "att_pending_one": "{{count}} объявление на проверке",
     "att_pending_few": "{{count}} объявления на проверке",
-    "att_pending_other": "{{count}} объявлений на проверке"
+    "att_pending_other": "{{count}} объявлений на проверке",
+    "for_you": "Может быть интересно"
   },
   "verify": {
     "title": "Проверка документа",

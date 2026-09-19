@@ -920,7 +920,8 @@
     "att_expiring_other": "{{count}} oglasa uskoro skidamo — možete produžiti",
     "att_pending_one": "{{count}} oglas je na proveri",
     "att_pending_few": "{{count}} oglasa su na proveri",
-    "att_pending_other": "{{count}} oglasa je na proveri"
+    "att_pending_other": "{{count}} oglasa je na proveri",
+    "for_you": "Možda vas zanima"
   },
   "verify": {
     "title": "Provera dokumenta",

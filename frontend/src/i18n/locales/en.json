@@ -906,7 +906,8 @@
     "att_expiring_one": "{{count}} listing expires soon — you can extend it",
     "att_expiring_other": "{{count}} listings expire soon — you can extend them",
     "att_pending_one": "{{count}} listing is being checked",
-    "att_pending_other": "{{count}} listings are being checked"
+    "att_pending_other": "{{count}} listings are being checked",
+    "for_you": "You might like"
   },
   "verify": {
     "title": "Identity verification",
