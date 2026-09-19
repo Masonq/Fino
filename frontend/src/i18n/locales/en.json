@@ -802,7 +802,10 @@
     "tg_none": "Not linked",
     "tg_link": "Link",
     "tg_hint": "To post right from Telegram and avoid a second account",
-    "tg_failed": "Couldn't start linking. Try again."
+    "tg_failed": "Couldn't start linking. Try again.",
+    "tg_unlink": "Unlink",
+    "tg_need_email": "Add an email before unlinking Telegram — otherwise there's no way left to sign in",
+    "tg_linked_hint": "You can post listings right from Telegram"
   },
   "landing": {
     "deal": "What do you need",

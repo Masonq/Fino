@@ -132,6 +132,21 @@ export default function EditProfile() {
     }
   }
 
+  // Отвязать можно, только если есть чем войти вместо телеграма.
+  const canUnlinkTelegram = Boolean(user?.email && user?.email_verified)
+
+  const unlinkTelegram = async () => {
+    setEmailError('')
+    try {
+      await api.unlinkTelegram()
+      updateUser({ telegram_linked: false })
+    } catch (err) {
+      setEmailError(err?.code === 'no_other_login'
+        ? t('edit_profile.tg_need_email')
+        : t('edit_profile.tg_failed'))
+    }
+  }
+
   const confirmEmailCode = async () => {
     if (!emailCode.trim()) return
     setEmailBusy(true); setEmailError('')
@@ -309,15 +324,26 @@ export default function EditProfile() {
                 ? t('edit_profile.tg_linked')
                 : t('edit_profile.tg_none')}
             </span>
-            {!user?.telegram_linked && (
+            {!user?.telegram_linked ? (
               <button type="button" className="field-action" onClick={linkTelegram}>
                 {t('edit_profile.tg_link')}
               </button>
+            ) : canUnlinkTelegram && (
+              <button type="button" className="field-action" onClick={unlinkTelegram}>
+                {t('edit_profile.tg_unlink')}
+              </button>
             )}
           </div>
-          {!user?.telegram_linked && (
-            <span className="field-sub-hint">{t('edit_profile.tg_hint')}</span>
-          )}
+          {/* Пока другого входа нет, отвязка заперла бы человека
+              снаружи: нажал — и войти больше нечем. Поэтому кнопки нет,
+              а вместо неё сказано, что нужно сделать раньше. */}
+          <span className="field-sub-hint">
+            {!user?.telegram_linked
+              ? t('edit_profile.tg_hint')
+              : !canUnlinkTelegram
+                ? t('edit_profile.tg_need_email')
+                : t('edit_profile.tg_linked_hint')}
+          </span>
         </div>
       </div>
 

@@ -813,7 +813,10 @@
     "tg_none": "Nije povezan",
     "tg_link": "Poveži",
     "tg_hint": "Da objavljujete iz Telegrama i ne pravite drugi nalog",
-    "tg_failed": "Povezivanje nije počelo. Pokušajte ponovo."
+    "tg_failed": "Povezivanje nije počelo. Pokušajte ponovo.",
+    "tg_unlink": "Odveži",
+    "tg_need_email": "Dodajte imejl pre nego što odvežete Telegram — inače nećete imati čime da se prijavite",
+    "tg_linked_hint": "Možete objavljivati oglase direktno iz Telegrama"
   },
   "landing": {
     "deal": "Šta tražite",

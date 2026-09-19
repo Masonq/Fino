@@ -467,3 +467,23 @@ def link_telegram_start(user: User = Depends(get_current_user),
 
     bot = (settings.telegram_bot_username or "Baraholka_plonk_bot").lstrip("@")
     return {"status": "ok", "url": f"https://t.me/{bot}?start=link_{key}"}
+
+
+@router.delete("/me/link-telegram")
+def unlink_telegram(user: User = Depends(get_current_user),
+                    db: Session = Depends(get_db)):
+    """
+    Отвязать Telegram.
+
+    Отказываем, если другого способа войти нет: человек нажмёт кнопку,
+    выйдет — и обратно уже не попадёт. Пусть сперва добавит почту.
+    """
+    if not user.telegram_id:
+        return {"status": "not_linked"}
+
+    if not (user.email and user.email_verified):
+        raise HTTPException(409, "no_other_login")
+
+    user.telegram_id = None
+    db.commit()
+    return {"status": "unlinked"}

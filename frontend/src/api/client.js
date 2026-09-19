@@ -380,6 +380,7 @@ export const api = {
     body: JSON.stringify(payload),
   }),
   linkTelegramStart: () => request('/users/me/link-telegram', { method: 'POST' }),
+  unlinkTelegram: () => request('/users/me/link-telegram', { method: 'DELETE' }),
   tgLinkTelegram: (initData) => request('/tg/link', {
     method: 'POST',
     body: JSON.stringify({ init_data: initData }),
