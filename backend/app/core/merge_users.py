@@ -89,23 +89,21 @@ def merge_users(db: Session, keep: User, drop: User) -> dict:
             if result.rowcount:
                 moved[f"{table}.{column}"] = result.rowcount
 
-    # Данные для связи: берём у исчезающего то, чего нет у остающегося.
-    # Своё человек вводил сам, и затирать его чужим нельзя.
-    if not keep.telegram_id and drop.telegram_id:
-        keep.telegram_id = drop.telegram_id
-    if not keep.email and drop.email:
-        keep.email = drop.email
-        keep.email_verified = drop.email_verified
-    if not keep.phone and drop.phone:
-        keep.phone = drop.phone
-    if not keep.avatar_url and drop.avatar_url:
-        keep.avatar_url = drop.avatar_url
-
-    # Отметка о проверке личности — наследуется: документ проверяли у
+    # Что забираем у исчезающего. Считаем заранее, а присваиваем после
+    # его удаления — порядок тут решает всё.
+    #
+    # Телеграм-идентификатор и почта в базе уникальны. Если присвоить
+    # их остающемуся, пока исчезающий ещё существует, база справедливо
+    # скажет: такой уже есть. Так и вышло при первой же привязке —
+    # «duplicate key ix_users_telegram_id».
+    take_telegram = drop.telegram_id if not keep.telegram_id else None
+    take_email = (drop.email, drop.email_verified) if not keep.email else None
+    take_phone = drop.phone if not keep.phone else None
+    take_avatar = drop.avatar_url if not keep.avatar_url else None
+    # Отметка о проверке личности наследуется: документ проверяли у
     # того же человека, и заставлять его проходить сверку заново было
     # бы издевательством.
-    if drop.document_verified:
-        keep.document_verified = True
+    take_verified = bool(drop.document_verified)
 
     # Переписки сами с собой после переноса: человек писал со второго
     # аккаунта на объявление первого. Оставлять их нельзя — в списке
@@ -121,7 +119,22 @@ def merge_users(db: Session, keep: User, drop: User) -> dict:
     if result.rowcount:
         moved["беседы с самим собой удалены"] = result.rowcount
 
+    # Сперва убираем исчезающего — и только потом забираем его
+    # уникальные данные: пока он есть, они заняты им.
     db.delete(drop)
+    db.flush()
+
+    if take_telegram:
+        keep.telegram_id = take_telegram
+    if take_email:
+        keep.email, keep.email_verified = take_email
+    if take_phone:
+        keep.phone = take_phone
+    if take_avatar:
+        keep.avatar_url = take_avatar
+    if take_verified:
+        keep.document_verified = True
+
     db.commit()
     log.info("объединены %s ← %s: %s", keep.id, drop.id, moved)
     return moved
