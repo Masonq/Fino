@@ -70,6 +70,10 @@ def _user_payload(user: User) -> dict:
         "phone": user.phone,
         "avatar_url": user.avatar_url,
         "email_verified": user.email_verified,
+        # Привязан ли Telegram. Признак нужен странице «Мои данные», а
+        # она читает именно этот эндпоинт — в /users/me его добавить
+        # было мало: там его никто не спрашивает.
+        "telegram_linked": bool(user.telegram_id),
         "role": user.role.value if user.role else None,
         "must_rename": bool(user.must_rename),
     }
