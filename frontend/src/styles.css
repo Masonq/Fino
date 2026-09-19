@@ -3941,14 +3941,30 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* Цветная шапка раздела — своя на каждую категорию, вместо голой белой
    полосы. Картинку предмета пока не ставим — только градиент; поле
    поиска лежит на нём белой капсулой, как у Авито. */
+/* Шапка раздела с картинкой. Предметы на ней стоят по краям, поэтому
+   картинку кладём во всю ширину и прижимаем к низу: середина остаётся
+   пустой под название и поиск. Тёмная плёнка сверху — чтобы белый
+   текст читался и на светлых картинках (детские товары, животные). */
 .landing-hero{
   position:relative; overflow:hidden; padding-top:env(safe-area-inset-top);
   padding-bottom:18px; margin-bottom:4px;
+  /* Картинка 2:1, и по краям у неё предметы. Держим шапку такой
+     высоты, чтобы они помещались целиком: при меньшей видна одна
+     середина, то есть пустой фон. */
+  /* Половина ширины экрана — ровно пропорции картинки 2:1, так предметы
+     по краям видны целиком, а не одной серединой. */
+  min-height:50vw; display:flex; flex-direction:column; justify-content:flex-end;
+  background-size:cover, cover; background-position:center, center; background-repeat:no-repeat, no-repeat;
 }
+.landing-hero::before{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(180deg, rgba(0,0,0,.28) 0%, rgba(0,0,0,.12) 45%, rgba(0,0,0,.32) 100%);
+}
+.landing-hero > *{ position:relative; z-index:1; }
 .landing-back.on-hero{ background:rgba(255,255,255,.22); color:#fff; }
-.landing-title.on-hero{ color:#fff; }
-.landing-count.on-hero{ color:rgba(255,255,255,.85); }
-.landing-hero .landing-search{ position:relative; z-index:1; padding-top:10px; }
+.landing-title.on-hero{ color:#fff; text-shadow:0 1px 10px rgba(0,0,0,.35); }
+.landing-count.on-hero{ color:rgba(255,255,255,.92); text-shadow:0 1px 8px rgba(0,0,0,.35); }
+.landing-search{ padding:10px 14px 2px; }
 .landing-hero .search-field{ background:var(--surface); border-color:transparent; box-shadow:0 4px 14px rgba(16,24,40,.14); }
 
 

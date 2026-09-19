@@ -25,19 +25,22 @@ import useStickyColumn from '../hooks/useStickyColumn'
 // (свой градиент на категорию), а не голая белая полоса. Своей
 // фотокомпозиции под каждый раздел ещё нет, поэтому вместо неё —
 // крупный контурный значок раздела поверх градиента.
-const BANNER_GRADIENTS = {
-  'real-estate': 'linear-gradient(135deg, #0E9F6E 0%, #1DB388 55%, #5CE8CC 100%)',
-  auto: 'linear-gradient(135deg, #3B5BF6 0%, #4F7BF7 55%, #93BAFF 100%)',
-  electronics: 'linear-gradient(135deg, #2B6CE0 0%, #4A8AF0 55%, #8FC1FF 100%)',
-  'home-garden': 'linear-gradient(135deg, #0E9F6E 0%, #34D8A8 55%, #B7F5E1 100%)',
-  fashion: 'linear-gradient(135deg, #E0326B 0%, #F0507F 55%, #FFA8BF 100%)',
-  kids: 'linear-gradient(135deg, #F2860C 0%, #F5A524 55%, #FFD98A 100%)',
-  'hobby-sport': 'linear-gradient(135deg, #6D3DFC 0%, #8156FD 55%, #BEA4FF 100%)',
-  pets: 'linear-gradient(135deg, #E0326B 0%, #F0507F 55%, #FFC2D3 100%)',
-  beauty: 'linear-gradient(135deg, #C0399B 0%, #DD5DBB 55%, #FBC6EE 100%)',
-  services: 'linear-gradient(135deg, #0A7A54 0%, #0E9F6E 55%, #7EE4C1 100%)',
-  jobs: 'linear-gradient(135deg, #3B5BF6 0%, #6D9BFB 55%, #C6DBFF 100%)',
-  business: 'linear-gradient(135deg, #1B2A4A 0%, #3B5BF6 55%, #93BAFF 100%)',
+// Картинка-шапка раздела. Предметы стоят по краям, середина пустая —
+// туда ложатся название и поиск. Градиент остаётся запасным вариантом:
+// если картинка не загрузилась, шапка не станет белым пятном.
+const HERO_FALLBACK = {
+  'real-estate': 'linear-gradient(135deg, #8E9BE8 0%, #A6B1F0 55%, #C9D0F8 100%)',
+  auto: 'linear-gradient(135deg, #2E7CC4 0%, #4D97D8 55%, #A8D2F0 100%)',
+  electronics: 'linear-gradient(135deg, #4FB8A8 0%, #6FCCBC 55%, #B8E8DF 100%)',
+  'home-garden': 'linear-gradient(135deg, #C87A52 0%, #DB9A72 55%, #F0C8A8 100%)',
+  fashion: 'linear-gradient(135deg, #E88A6B 0%, #F2A488 55%, #FBD0BE 100%)',
+  kids: 'linear-gradient(135deg, #E092A0 0%, #EFAEB8 55%, #F8D5DB 100%)',
+  'hobby-sport': 'linear-gradient(135deg, #4C9E52 0%, #68B86E 55%, #ABDCAE 100%)',
+  pets: 'linear-gradient(135deg, #E0A85C 0%, #E8B878 55%, #F5DCB4 100%)',
+  beauty: 'linear-gradient(135deg, #B99BC4 0%, #CBB2D4 55%, #E6D8EC 100%)',
+  services: 'linear-gradient(135deg, #7E93A8 0%, #9AACBE 55%, #CAD6E0 100%)',
+  jobs: 'linear-gradient(135deg, #3B4B94 0%, #5A6CB0 55%, #A8B4DA 100%)',
+  business: 'linear-gradient(135deg, #7C8794 0%, #98A2AE 55%, #CCD2D8 100%)',
 }
 
 // Кэш результатов поиска внутри раздела — по одному на каждый slug,
@@ -467,7 +470,16 @@ export default function CategoryLanding() {
         className={`landing-sidebar${sidebar.className}`}
         style={sidebar.style}
       >
-      <div className="landing-hero" style={{ background: BANNER_GRADIENTS[slug] || BANNER_GRADIENTS['real-estate'] }}>
+      <div
+        className="landing-hero"
+        // Обе заливки одним свойством: если писать сокращённое
+        // `background` для запасного градиента, оно сбрасывает размер и
+        // положение картинки, заданные в CSS, — шапка показывала кусок
+        // середины вместо всей картинки.
+        style={{
+          backgroundImage: `url(/hero/${slug}.webp), ${HERO_FALLBACK[slug] || HERO_FALLBACK['real-estate']}`,
+        }}
+      >
         <div className="landing-head">
           <button className="landing-back on-hero" onClick={goBack}
                   aria-label={t('actions.back')}>
@@ -523,6 +535,8 @@ export default function CategoryLanding() {
       })()}
 
 
+      </div>
+
       {/* Раньше здесь были только фильтры (комнаты, цена) — можно было
             сузить раздел, но не поискать конкретную вещь словом. Теперь
             можно и то, и другое: слово уходит в q вместе с остальными
@@ -545,7 +559,6 @@ export default function CategoryLanding() {
           )}
         </div>
         </div>
-      </div>
 
       {/* Первый вопрос делит раздел надвое: без ответа на него
           остальное бессмысленно. */}
