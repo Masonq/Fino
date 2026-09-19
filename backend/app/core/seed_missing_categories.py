@@ -44,6 +44,7 @@ NEW = {
         ("water", "Лодки и катера", "Boats", "Čamci i plovila", []),
         ("agri", "Сельхозтехника", "Farm machinery", "Poljoprivredne mašine", []),
         ("e-transport", "Самокаты и электротранспорт", "Scooters and e-transport", "Trotineti i e-prevoz", []),
+        ("car-rental", "Аренда авто", "Car rental", "Rent a car", []),
     ],
     "electronics": [
         ("components", "Комплектующие", "PC components", "Komponente", []),
@@ -53,6 +54,7 @@ NEW = {
         ("building", "Стройматериалы", "Building materials", "Građevinski materijal", []),
         ("plumbing", "Сантехника и отопление", "Plumbing and heating", "Vodovod i grejanje", []),
         ("textile", "Текстиль для дома", "Home textile", "Tekstil za kuću", []),
+        ("food", "Продукты и домашнее", "Food and homemade", "Hrana i domaći proizvodi", []),
     ],
     "fashion": [
         ("jewelry", "Украшения", "Jewellery", "Nakit", []),
@@ -65,6 +67,7 @@ NEW = {
         ("winter-sport", "Зимний спорт", "Winter sports", "Zimski sportovi", []),
         ("fishing-hunting", "Рыбалка и охота", "Fishing and hunting", "Pecanje i lov", []),
         ("board-games", "Настольные игры", "Board games", "Društvene igre", []),
+        ("tickets", "Билеты и сертификаты", "Tickets and vouchers", "Karte i vaučeri", []),
     ],
     "pets": [
         ("pets-birds", "Птицы", "Birds", "Ptice", []),
@@ -77,9 +80,12 @@ NEW = {
         ("events", "Праздники и мероприятия", "Events", "Proslave i događaji", []),
         ("docs-visa", "Документы и визы", "Documents and visas", "Dokumenti i vize", []),
         ("medical", "Здоровье и медицина", "Health and medical", "Zdravlje i medicina", []),
+        ("auto-services", "Автосервис и шиномонтаж", "Car service and tyres", "Auto servis i vulkanizer", []),
+        ("lost-found", "Находки и пропажи", "Lost and found", "Izgubljeno i nađeno", []),
     ],
     "business": [
         ("agriculture", "Сельское хозяйство", "Agriculture", "Poljoprivreda", []),
+        ("rental-equipment", "Аренда оборудования", "Equipment rental", "Iznajmljivanje opreme", []),
     ],
     # Одежда: внутри «Женского» и «Мужского» не было ничего, и пятьсот
     # объявлений висели в родительском разделе — искать в них

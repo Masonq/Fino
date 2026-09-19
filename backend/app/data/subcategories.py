@@ -35,6 +35,7 @@ SUBCATEGORIES: dict[str, list[dict]] = {
         {"slug": "water", "name": {"ru": "Лодки и катера", "en": "Boats", "sr": "Čamci i plovila"}},
         {"slug": "agri", "name": {"ru": "Сельхозтехника", "en": "Farm machinery", "sr": "Poljoprivredne mašine"}},
         {"slug": "e-transport", "name": {"ru": "Самокаты и электротранспорт", "en": "Scooters & e-transport", "sr": "Trotineti i e-prevoz"}},
+        {"slug": "car-rental", "name": {"ru": "Аренда авто", "en": "Car rental", "sr": "Rent a car"}},
     ],
     "electronics": [
         {"slug": "phones", "name": {"ru": "Телефоны", "en": "Phones", "sr": "Telefoni"}},
@@ -69,6 +70,7 @@ SUBCATEGORIES: dict[str, list[dict]] = {
         {"slug": "building", "name": {"ru": "Стройматериалы", "en": "Building materials", "sr": "Građevinski materijal"}},
         {"slug": "plumbing", "name": {"ru": "Сантехника и отопление", "en": "Plumbing & heating", "sr": "Vodovod i grejanje"}},
         {"slug": "textile", "name": {"ru": "Текстиль и посуда для дома", "en": "Home textile", "sr": "Tekstil za kuću"}},
+        {"slug": "food", "name": {"ru": "Продукты и домашнее", "en": "Food and homemade", "sr": "Hrana i domaći proizvodi"}},
     ],
     "fashion": [
         {"slug": "women", "name": {"ru": "Женская одежда", "en": "Women's clothing", "sr": "Ženska odeća"}},
@@ -97,6 +99,7 @@ SUBCATEGORIES: dict[str, list[dict]] = {
         {"slug": "winter-sport", "name": {"ru": "Зимний спорт", "en": "Winter sports", "sr": "Zimski sportovi"}},
         {"slug": "fishing-hunting", "name": {"ru": "Рыбалка и охота", "en": "Fishing & hunting", "sr": "Pecanje i lov"}},
         {"slug": "board-games", "name": {"ru": "Настольные игры", "en": "Board games", "sr": "Društvene igre"}},
+        {"slug": "tickets", "name": {"ru": "Билеты и сертификаты", "en": "Tickets and vouchers", "sr": "Karte i vaučeri"}},
     ],
     "pets": [
         {"slug": "pets-dogs", "name": {"ru": "Собаки", "en": "Dogs", "sr": "Psi"}},
@@ -125,6 +128,8 @@ SUBCATEGORIES: dict[str, list[dict]] = {
         {"slug": "events", "name": {"ru": "Праздники и мероприятия", "en": "Events", "sr": "Proslave i događaji"}},
         {"slug": "docs-visa", "name": {"ru": "Документы и визы", "en": "Documents & visas", "sr": "Dokumenti i vize"}},
         {"slug": "medical", "name": {"ru": "Здоровье и медицина", "en": "Health & medical", "sr": "Zdravlje i medicina"}},
+        {"slug": "auto-services", "name": {"ru": "Автосервис и шиномонтаж", "en": "Car service and tyres", "sr": "Auto servis i vulkanizer"}},
+        {"slug": "lost-found", "name": {"ru": "Находки и пропажи", "en": "Lost and found", "sr": "Izgubljeno i nađeno"}},
     ],
     "jobs": [
         {"slug": "vacancies", "name": {"ru": "Вакансии", "en": "Vacancies", "sr": "Poslovi"}},
@@ -135,6 +140,7 @@ SUBCATEGORIES: dict[str, list[dict]] = {
         {"slug": "ready-business", "name": {"ru": "Готовый бизнес", "en": "Businesses for sale", "sr": "Biznis na prodaju"}},
         {"slug": "supplies", "name": {"ru": "Расходники и упаковка", "en": "Supplies & packaging", "sr": "Potrošni materijal"}},
         {"slug": "agriculture", "name": {"ru": "Сельское хозяйство", "en": "Agriculture", "sr": "Poljoprivreda"}},
+        {"slug": "rental-equipment", "name": {"ru": "Аренда оборудования", "en": "Equipment rental", "sr": "Iznajmljivanje opreme"}},
     ],
 }
 
