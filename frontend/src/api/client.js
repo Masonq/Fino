@@ -375,6 +375,10 @@ export const api = {
     method: 'POST',
     body: JSON.stringify({ init_data: initData }),
   }),
+  tgGuessCategory: (payload) => request('/tg/guess-category', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }),
   tgPublish: (payload) => request('/tg/publish', {
     method: 'POST',
     body: JSON.stringify(payload),

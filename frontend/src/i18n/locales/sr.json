@@ -1061,7 +1061,10 @@
     "err_auth_failed": "Prijava nije uspela. Zatvorite prozor i otvorite ponovo.",
     "err_upload_failed": "Slika nije otpremljena. Pokušajte ponovo.",
     "err_send_failed": "Objavljivanje nije uspelo. Pokušajte ponovo.",
-    "err_must_rename": "Prvo unesite ime u profilu na sajtu."
+    "err_must_rename": "Prvo unesite ime u profilu na sajtu.",
+    "section": "Rubrika",
+    "change": "Promeni",
+    "not_sure": "Nismo sigurni — izaberite:"
   },
   "errors": {
     "generic": "Nešto nije u redu. Pokušajte ponovo."

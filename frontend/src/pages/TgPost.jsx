@@ -36,6 +36,11 @@ export default function TgPost() {
     try { return localStorage.getItem('plonk_city') || 'beograd' } catch { return 'beograd' }
   })
   const [description, setDescription] = useState('')
+  // Что мы поняли из названия: раздел, уверенность и что предложить,
+  // если не уверены.
+  const [guess, setGuess] = useState(null)
+  const [category, setCategory] = useState(null)
+  const [picking, setPicking] = useState(false)
   const [sending, setSending] = useState(false)
   const [done, setDone] = useState(null)
   const fileInput = useRef(null)
@@ -60,6 +65,20 @@ export default function TgPost() {
       try { app.setBackgroundColor('#FAFAF9') } catch { /* не беда */ }
     }
   }, [])
+
+  // Спрашиваем раздел, когда человек перестал печатать: на каждую
+  // букву — это полсотни запросов на одно объявление.
+  useEffect(() => {
+    if (!ready || title.trim().length < 4) { setGuess(null); return }
+    const timer = setTimeout(() => {
+      api.tgGuessCategory({ title, description, lang: i18n.language })
+        .then((res) => { setGuess(res); if (res.sure) setCategory(null) })
+        .catch(() => setGuess(null))
+    }, 600)
+    return () => clearTimeout(timer)
+  }, [ready, title, description, i18n.language])
+
+  const shown = category || guess?.category
 
   const pickPhotos = async (event) => {
     const chosen = Array.from(event.target.files || []).slice(0, 8 - photos.length)
@@ -95,6 +114,7 @@ export default function TgPost() {
         city,
         photos,
         lang: i18n.language,
+        category_id: category?.id || guess?.category?.id || null,
       })
       setDone(res)
       tg()?.HapticFeedback?.notificationOccurred?.('success')
@@ -190,6 +210,37 @@ export default function TgPost() {
             placeholder={t('tg_post.what_ph')}
             maxLength={120}
           />
+
+          {/* Что мы поняли — сразу под названием. Человек не выбирает
+              раздел из дерева, но видит наш выбор и правит в одно
+              нажатие. Когда разбор не уверен, показываем подходящие
+              кнопками: верный обычно среди них. */}
+          {shown && (
+            <div className={guess?.sure || category ? 'tg-guess' : 'tg-guess unsure'}>
+              <span className="tg-guess-text">
+                {t('tg_post.section')}: <b>{shown.title}</b>
+              </span>
+              <button onClick={() => setPicking((v) => !v)}>
+                {t('tg_post.change')}
+              </button>
+            </div>
+          )}
+          {guess && !guess.sure && !category && (
+            <div className="tg-guess-note">{t('tg_post.not_sure')}</div>
+          )}
+          {(picking || (guess && !guess.sure && !category)) && guess?.options?.length > 0 && (
+            <div className="field-chips tg-guess-options">
+              {guess.options.map((option) => (
+                <button
+                  key={option.id}
+                  className={shown?.id === option.id ? 'chip chip-active' : 'chip'}
+                  onClick={() => { setCategory(option); setPicking(false) }}
+                >
+                  {option.title}
+                </button>
+              ))}
+            </div>
+          )}
         </label>
 
         <div className="field-row">

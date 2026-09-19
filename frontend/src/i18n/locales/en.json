@@ -1046,7 +1046,10 @@
     "err_auth_failed": "Sign-in failed. Close the window and open it again.",
     "err_upload_failed": "The photo didn't upload. Try again.",
     "err_send_failed": "Couldn't publish. Try again.",
-    "err_must_rename": "Set your name in the profile on the site first."
+    "err_must_rename": "Set your name in the profile on the site first.",
+    "section": "Section",
+    "change": "Change",
+    "not_sure": "Not sure — pick one:"
   },
   "errors": {
     "generic": "Something went wrong. Try again."
