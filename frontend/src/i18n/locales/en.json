@@ -689,7 +689,8 @@
       "listing_retitled": "Rewrote the title",
       "listing_retitle_failed": "Could not rewrite the title",
       "chat.suspicious": "Flagged a chat",
-      "chat.flag_cleared": "Cleared a chat flag"
+      "chat.flag_cleared": "Cleared a chat flag",
+      "translate.run": "Listing translation run"
     },
     "kind_staff": "Staff",
     "kind_system": "System",
@@ -808,7 +809,9 @@
     "condition": "Condition",
     "condition_new": "New",
     "condition_like_new": "Like new",
-    "condition_used": "Used"
+    "condition_used": "Used",
+    "show_count_one": "Show {{count}} listing",
+    "show_count_other": "Show {{count}} listings"
   },
   "fields": {
     "real-estate": {

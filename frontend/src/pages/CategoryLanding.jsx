@@ -487,7 +487,43 @@ export default function CategoryLanding() {
           </div>
         </div>
 
-        {/* Раньше здесь были только фильтры (комнаты, цена) — можно было
+        {category?.children?.length > 0 && (() => {
+        const subs = category.children
+        const showLimit = subs.length > 6
+        const visible = showLimit ? subs.slice(0, 5) : subs
+        return (
+          <div className="landing-subs">
+            {visible.map((sub) => (
+              <button
+                key={sub.id}
+                className="landing-sub"
+                onClick={() => (
+                  sub.children?.length > 0
+                    ? navigate(`/c/${sub.slug}`)
+                    : navigate(`/search?category=${sub.slug}`)
+                )}
+              >
+                <span className="landing-sub-name">
+                  {sub.name?.[i18n.language] || sub.name?.ru}
+                </span>
+                <span className="landing-sub-art"><CategoryArt slug={sub.slug} parentSlug={slug} /></span>
+              </button>
+            ))}
+            {showLimit && (
+              <button
+                className="landing-sub landing-sub-all"
+                onClick={() => setShowAllSubs(true)}
+              >
+                <span className="landing-sub-name">{t('common.all_categories')}</span>
+                <svg className="landing-sub-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 6 6 6-6 6" /></svg>
+              </button>
+            )}
+          </div>
+        )
+      })()}
+
+
+      {/* Раньше здесь были только фильтры (комнаты, цена) — можно было
             сузить раздел, но не поискать конкретную вещь словом. Теперь
             можно и то, и другое: слово уходит в q вместе с остальными
             отборами. */}
@@ -642,7 +678,9 @@ export default function CategoryLanding() {
       })}
 
       <button className="landing-go" onClick={() => search()}>
-        {t('landing.show')}
+        {category?.count > 0
+          ? t('landing.show_count', { count: category.count })
+          : t('landing.show')}
       </button>
       </div>
 
@@ -670,41 +708,6 @@ export default function CategoryLanding() {
           и «Все категории» последней, а не весь список сразу: длинный
           список подряд читается хуже, чем несколько картинок и явный
           переход дальше. */}
-      {category?.children?.length > 0 && (() => {
-        const subs = category.children
-        const showLimit = subs.length > 6
-        const visible = showLimit ? subs.slice(0, 5) : subs
-        return (
-          <div className="landing-subs">
-            {visible.map((sub) => (
-              <button
-                key={sub.id}
-                className="landing-sub"
-                onClick={() => (
-                  sub.children?.length > 0
-                    ? navigate(`/c/${sub.slug}`)
-                    : navigate(`/search?category=${sub.slug}`)
-                )}
-              >
-                <span className="landing-sub-name">
-                  {sub.name?.[i18n.language] || sub.name?.ru}
-                </span>
-                <span className="landing-sub-art"><CategoryArt slug={sub.slug} parentSlug={slug} /></span>
-              </button>
-            ))}
-            {showLimit && (
-              <button
-                className="landing-sub landing-sub-all"
-                onClick={() => setShowAllSubs(true)}
-              >
-                <span className="landing-sub-name">{t('common.all_categories')}</span>
-                <svg className="landing-sub-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 6 6 6-6 6" /></svg>
-              </button>
-            )}
-          </div>
-        )
-      })()}
-
       {showAllSubs && (
         <div className="subs-modal">
           <div className="subs-modal-head">

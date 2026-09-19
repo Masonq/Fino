@@ -257,15 +257,32 @@ def translate_listing(db, listing) -> int:
         return 0
 
     added = 0
-    for lang in LANGS:
-        if lang in existing:
-            continue
+    missing = [lang for lang in LANGS if lang not in existing]
 
-        title = translate(source.title, source_lang, lang)
-        if not title:
-            continue   # без заголовка перевод бесполезен
+    # Сначала — один запрос к нейросети на оба языка сразу. Раньше на
+    # объявление уходило четыре обращения (заголовок и описание × два
+    # языка), и дневной запас бесплатных тарифов кончался на пятнадцатом
+    # объявлении. Один запрос вместо четырёх — вчетверо больше
+    # переведённых за те же сутки.
+    bulk = {}
+    if source_lang == "ru" and set(missing) <= {"en", "sr"} and missing:
+        from app.core.ai_title import translate_listing_text
 
-        description = translate(source.description, source_lang, lang) if source.description else None
+        bulk = translate_listing_text(source.title, source.description) or {}
+
+    for lang in missing:
+        ready = bulk.get(lang)
+        if ready:
+            title = ready["title"]
+            description = ready.get("description") or None
+        else:
+            # Нейросеть не ответила или язык не её — прежний путь: по
+            # отдельности, через тот же translate() с его запасными
+            # переводчиками.
+            title = translate(source.title, source_lang, lang)
+            if not title:
+                continue   # без заголовка перевод бесполезен
+            description = translate(source.description, source_lang, lang) if source.description else None
 
         db.add(ListingTranslation(
             listing_id=listing.id,
@@ -356,9 +373,12 @@ def translate_pending(db, limit: int = 50) -> int:
             failures = 0
         else:
             failures += 1
-            # Сервис перевода недоступен — прекращаем, а не перебираем
-            # весь список впустую. Следующий запуск через час попробует снова.
-            if failures >= 3:
+            # Раньше прекращали на трёх подряд. Но неудача бывает и у
+            # самого объявления — пустой заголовок, одни цифры, — и из-за
+            # трёх таких вся ночная работа останавливалась. Прекращаем
+            # только когда подряд не переводится десять: столько
+            # негодных подряд не бывает, это уже недоступный сервис.
+            if failures >= 10:
                 log.warning("Перевод недоступен, откладываем до следующего запуска")
                 break
 
@@ -371,7 +391,21 @@ if __name__ == "__main__":
 
     session = SessionLocal()
     try:
-        n = translate_pending(session)
+        # За заход берём столько, сколько успеет разойтись до следующего
+        # часа: один запрос к нейросети на объявление плюс пауза между
+        # обращениями — это примерно полторы сотни в час.
+        n = translate_pending(session, limit=150)
         print(f"Переведено объявлений: {n}")
+
+        # След в журнале админки: иначе темп перевода видно только в
+        # системном логе, куда никто не смотрит.
+        if n:
+            try:
+                from app.core.audit import record
+
+                record(session, None, "translate.run", target_type="translate", added=n)
+                session.commit()
+            except Exception:
+                pass
     finally:
         session.close()

@@ -707,7 +707,8 @@
       "listing_retitled": "Переписал заголовок",
       "listing_retitle_failed": "Заголовок переписать не вышло",
       "chat.suspicious": "Пометил переписку подозрительной",
-      "chat.flag_cleared": "Снял пометку с переписки"
+      "chat.flag_cleared": "Снял пометку с переписки",
+      "translate.run": "Перевод объявлений"
     },
     "kind_staff": "Сотрудники",
     "kind_system": "Служебные",
@@ -792,7 +793,7 @@
   "landing": {
     "deal": "Что нужно",
     "buy": "Купить",
-    "rent": "Снять на длительный срок",
+    "rent": "Снять надолго",
     "daily": "Посуточно",
     "rooms": "Комнаты",
     "price": "Цена",
@@ -826,7 +827,11 @@
     "condition": "Состояние",
     "condition_new": "Новое",
     "condition_like_new": "Как новое",
-    "condition_used": "Б/у"
+    "condition_used": "Б/у",
+    "show_count_one": "Показать {{count}} объявление",
+    "show_count_few": "Показать {{count}} объявления",
+    "show_count_many": "Показать {{count}} объявлений",
+    "show_count_other": "Показать {{count}} объявлений"
   },
   "fields": {
     "real-estate": {

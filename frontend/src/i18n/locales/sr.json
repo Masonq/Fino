@@ -698,7 +698,8 @@
       "listing_retitled": "Prepisao naslov",
       "listing_retitle_failed": "Naslov nije prepisan",
       "chat.suspicious": "Označio prepisku",
-      "chat.flag_cleared": "Skinuo oznaku sa prepiske"
+      "chat.flag_cleared": "Skinuo oznaku sa prepiske",
+      "translate.run": "Prevod oglasa"
     },
     "kind_staff": "Osoblje",
     "kind_system": "Sistemske",
@@ -783,7 +784,7 @@
   "landing": {
     "deal": "Šta tražite",
     "buy": "Kupovina",
-    "rent": "Dugoročni najam",
+    "rent": "Dugoročno",
     "daily": "Dnevno",
     "rooms": "Sobe",
     "price": "Cena",
@@ -817,7 +818,10 @@
     "condition": "Stanje",
     "condition_new": "Novo",
     "condition_like_new": "Kao novo",
-    "condition_used": "Polovno"
+    "condition_used": "Polovno",
+    "show_count_one": "Prikaži {{count}} oglas",
+    "show_count_few": "Prikaži {{count}} oglasa",
+    "show_count_other": "Prikaži {{count}} oglasa"
   },
   "fields": {
     "real-estate": {

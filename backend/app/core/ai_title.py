@@ -685,6 +685,68 @@ TRANSLATE_PROMPT = """Переведи текст объявления с бар
 """
 
 
+LISTING_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "en_title": {"type": "string"},
+        "en_description": {"type": "string"},
+        "sr_title": {"type": "string"},
+        "sr_description": {"type": "string"},
+    },
+    "required": ["en_title", "sr_title"],
+}
+
+LISTING_PROMPT = """Переведи объявление с барахолки на английский и сербский.
+
+Сербский — латиницей, как пишут на KupujemProdajem.
+- Марки, модели и числа оставь как есть: «IKEA MICKE», «iPhone 13», «256gb».
+- Названия районов и городов не переводи.
+- Не пересказывай и не сокращай: сколько сказано, столько и переводи.
+- Если описания нет, оставь поля описания пустыми.
+
+Заголовок: {title}
+
+Описание: {description}
+"""
+
+
+def translate_listing_text(title: str, description: str | None) -> dict | None:
+    """
+    Переводит объявление сразу на оба языка одним запросом.
+
+    Раньше на объявление уходило четыре запроса: заголовок и описание,
+    каждое на два языка. При паузе в четыре секунды между обращениями и
+    дневном запасе бесплатных тарифов это и давало те самые десять-
+    пятнадцать переведённых объявлений в сутки. Один запрос вместо
+    четырёх — вчетверо больше объявлений на том же запасе, и модель
+    видит заголовок с описанием вместе, то есть переводит связно.
+    """
+    if not _ready() or not title or not title.strip():
+        return None
+
+    prompt = LISTING_PROMPT.format(
+        title=title.strip()[:300],
+        description=(description or "").strip()[:1500] or "—",
+    )
+
+    _wait_turn()
+    answer = _parse_answer(_ask(prompt, limit=1600, schema=LISTING_SCHEMA))
+    if not answer:
+        return None
+
+    out = {}
+    for lang in ("en", "sr"):
+        got_title = (answer.get(f"{lang}_title") or "").strip()
+        if not got_title:
+            continue
+        got_description = (answer.get(f"{lang}_description") or "").strip()
+        # Перевод втрое короче исходника — это пересказ, а не перевод.
+        if description and got_description and len(got_description) * 3 < len(description.strip()):
+            got_description = ""
+        out[lang] = {"title": got_title, "description": got_description}
+    return out or None
+
+
 def translate_text(text: str, target: str) -> str | None:
     """
     Переводит объявление нейросетью.
