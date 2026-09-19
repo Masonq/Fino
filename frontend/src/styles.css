@@ -3970,9 +3970,15 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   min-height:66vw; display:flex; flex-direction:column; justify-content:flex-start;
   padding-bottom:14px;
   background-size:cover, cover; background-position:center, center; background-repeat:no-repeat, no-repeat;
+  /* Скруглены только нижние углы: сверху картинка подходит вплотную к
+     строке поиска, а снизу отделяется от списка подразделов — как
+     карточка, а не как приклеенная полоса. */
+  border-radius:0 0 22px 22px;
+  margin-bottom:10px;
 }
 .landing-hero::before{
   content:""; position:absolute; inset:0; pointer-events:none;
+  border-radius:inherit;
   /* Тень гуще сверху, где стоит заголовок, и почти сходит на нет
      внизу: там картинка, и затемнять её незачем. */
   background:linear-gradient(180deg, rgba(0,0,0,.34) 0%, rgba(0,0,0,.14) 40%, rgba(0,0,0,0) 75%);
