@@ -2257,6 +2257,24 @@ _PROMO_LINE_RE = re.compile(
     re.I)
 
 
+# Разметка, которую мы не показываем. Жирный (**…**) оставляем: его
+# интерфейс умеет. А заголовки решёткой, зачёркнутое, código в
+# обратных кавычках и ссылки вида [текст](адрес) на экране выглядят
+# мусором, и продавец их писал не для нас, а для Telegram.
+_MD_LINK_RE = re.compile(r"\[([^\]]+)\]\((https?://[^)]+)\)")
+_MD_JUNK_RE = re.compile(r"^#{1,6}\s*|~~|`{1,3}|^>\s?", re.M)
+_MD_RULE_RE = re.compile(r"^\s*[-_*]{3,}\s*$", re.M)
+
+
+def strip_markdown(text: str | None) -> str:
+    """Убирает телеграмную разметку, кроме жирного."""
+    body = (text or "")
+    body = _MD_LINK_RE.sub(r"\1", body)
+    body = _MD_RULE_RE.sub("", body)
+    body = _MD_JUNK_RE.sub("", body)
+    return body.strip()
+
+
 def strip_promo_lines(text: str | None) -> str:
     """
     Убирает из описания строки-приглашения в чужие каналы.

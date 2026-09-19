@@ -47,7 +47,7 @@ from app.core.title_rules import SUBJECT_BY_CATEGORY, SUBJECT_BY_SUB
 from app.core.title_rules import looks_like_question, needs_help
 from app.core.tg_parse import (
     build_title, fingerprint, same_thing, source_language, drop_attribute_lines, extract_attributes, plausible_price,
-    strip_promo_lines,
+    strip_promo_lines, strip_markdown,
     looks_like_ad, looks_like_spam, looks_sold, parse,
 )
 from app.core.tg_sources import CHATS, is_resume, topic_category, topic_sub_hint
@@ -282,7 +282,7 @@ def screen(text: str, chat_id: int, topic_id: int | None,
     # Чужие приглашения («Больше товаров тут», «Подписывайтесь на наш
     # канал») уводят покупателя к другому продавцу и занимают место,
     # где человек ищет состояние и размер.
-    parsed["description"] = strip_promo_lines(parsed["description"])
+    parsed["description"] = strip_promo_lines(strip_markdown(parsed["description"]))
     # Правила сказали своё слово; если вышло сухо — просим модель назвать
     # предмет. Её ответ проверяется теми же правилами, так что хуже не
     # станет: не подойдёт — останется то, что есть.

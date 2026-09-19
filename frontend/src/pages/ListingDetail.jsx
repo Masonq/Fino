@@ -1,4 +1,5 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
+import RichText from '../components/RichText'
 import Avatar from '../components/Avatar'
 import AttrChips from '../components/AttrChips'
 import { useTranslation } from 'react-i18next'
@@ -1335,11 +1336,12 @@ export default function ListingDetail() {
                 пишут на пол-экрана, и до продавца человек не
                 доскроллит. Короткие показываем целиком — прятать в них
                 нечего. */}
-            <div className={`desc-text${
-              !descOpen && (translation.description || '').length > 320
-                ? ' clipped' : ''}`}>
-              {translation.description}
-            </div>
+            <RichText
+              className={`desc-text${
+                !descOpen && (translation.description || '').length > 320
+                  ? ' clipped' : ''}`}
+              text={translation.description}
+            />
             {(translation.description || '').length > 320 && !descOpen && (
               <button
                 className="desc-more"
