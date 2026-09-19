@@ -748,7 +748,10 @@
     "email_wrong_code": "Wrong code",
     "email_code_expired": "Code expired — request a new one",
     "must_rename": "A moderator reset your name — the old one was unreadable. Enter a new one; until then you can't post listings or message sellers.",
-    "bad_name": "That name won't do: it has no letters, or almost only symbols."
+    "bad_name": "That name won't do: it has no letters, or almost only symbols.",
+    "photo_title": "Profile photo",
+    "company_title": "Business account",
+    "company_locked_ph": "Available after identity check"
   },
   "landing": {
     "deal": "What do you need",

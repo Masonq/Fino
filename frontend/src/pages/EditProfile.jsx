@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Avatar from '../components/Avatar'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
@@ -171,151 +172,160 @@ export default function EditProfile() {
         <p className="admin-note admin-note-warn">{t('edit_profile.must_rename')}</p>
       )}
 
-      <div className="edit-avatar">
-        <div className="profile-avatar">
-          {avatar ? <img src={avatar} alt="" />
-            : (name || '?').trim().charAt(0).toUpperCase()}
+      {/* Фото и имя — первой карточкой: это то, что видит покупатель
+          в объявлении и переписке. Остальное ниже, по назначению. */}
+      <div className="form-card form-card-avatar">
+        <Avatar src={avatar} name={name} className="profile-avatar" />
+        <div className="form-avatar-text">
+          <div className="form-avatar-title">{t('edit_profile.photo_title')}</div>
+          <label className="form-avatar-pick">
+            {t('edit_profile.photo')}
+            <input type="file" accept="image/*" onChange={pickPhoto} hidden />
+          </label>
         </div>
-        <label className="edit-avatar-pick">
-          {t('edit_profile.photo')}
-          <input type="file" accept="image/*" onChange={pickPhoto} hidden />
-        </label>
       </div>
 
-      <div className="support-form">
-        <label className="edit-label">{t('edit_profile.name')}</label>
-        <input
-          className="admin-search"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder={t('edit_profile.name_hint')}
-        />
-
-        {/* Код страны зашит прямо в саму строку ввода, не отдельным
-            полем выбора — сайт работает в Сербии, спрашивать код у
-            каждого просто лишний шаг. Без этого номера вся функция
-            звонка в чате (см. ChatScreen.jsx) скрыта целиком —
-            нечего раскрывать покупателю. */}
-        <label className="edit-label">{t('edit_profile.phone')}</label>
-        <div className="phone-input-wrap">
-          <span className="phone-prefix">+381</span>
+      {/* Поля одной карточкой со строками, а не россыпью подписей и
+          полей: так это выглядит настройками, а не анкетой, и видно,
+          что всё относится к одному — к тому, как с вами связаться. */}
+      <div className="form-card">
+        <label className="field-row">
+          <span className="field-label">{t('edit_profile.name')}</span>
           <input
-            className="admin-search phone-input"
-            type="tel"
-            inputMode="numeric"
-            value={phoneLocal}
-            onChange={(e) => setPhoneLocal(e.target.value.replace(/[^\d]/g, ''))}
-            placeholder={t('edit_profile.phone_hint')}
+            className="field-input"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={t('edit_profile.name_hint')}
           />
-        </div>
+        </label>
 
-        <label className="edit-label">{t('edit_profile.email')}</label>
-        {emailStep === 'view' && (
-          <div className="email-row">
-            <span className="email-current">{email || t('edit_profile.email_none')}</span>
-            <button type="button" className="email-change-btn" onClick={() => setEmailStep('enter')}>
-              {t('edit_profile.email_change')}
-            </button>
-          </div>
-        )}
-        {emailStep === 'enter' && (
-          <div className="email-form">
+        {/* Код страны зашит в саму строку: сайт работает в Сербии,
+            спрашивать код у каждого — лишний шаг. */}
+        <label className="field-row">
+          <span className="field-label">{t('edit_profile.phone')}</span>
+          <span className="field-phone">
+            <span className="field-prefix">+381</span>
             <input
-              className="admin-search"
-              type="email"
-              inputMode="email"
-              autoCapitalize="none"
-              value={newEmail}
-              onChange={(e) => setNewEmail(e.target.value)}
-              placeholder={t('edit_profile.email_new_ph')}
-              autoFocus
-            />
-            <div className="email-form-actions">
-              <button type="button" disabled={emailBusy || !newEmail.trim()} onClick={requestEmailCode}>
-                {t('edit_profile.email_send_code')}
-              </button>
-              <button type="button" className="email-form-cancel"
-                     onClick={() => { setEmailStep('view'); setNewEmail(''); setEmailError('') }}>
-                {t('actions.cancel')}
-              </button>
-            </div>
-          </div>
-        )}
-        {emailStep === 'code' && (
-          <div className="email-form">
-            <div className="edit-hint-warn">{t('edit_profile.email_code_sent', { email: newEmail.trim() })}</div>
-            <input
-              className="admin-search"
-              type="text"
+              className="field-input"
+              type="tel"
               inputMode="numeric"
-              value={emailCode}
-              onChange={(e) => setEmailCode(e.target.value.replace(/\D/g, ''))}
-              placeholder={t('edit_profile.email_code_ph')}
-              autoFocus
+              value={phoneLocal}
+              onChange={(e) => setPhoneLocal(e.target.value.replace(/[^\d]/g, ''))}
+              placeholder={t('edit_profile.phone_hint')}
             />
-            <div className="email-form-actions">
-              <button type="button" disabled={emailBusy || !emailCode.trim()} onClick={confirmEmailCode}>
-                {t('edit_profile.email_confirm')}
-              </button>
-              <button type="button" className="email-form-cancel"
-                     onClick={() => { setEmailStep('view'); setNewEmail(''); setEmailCode(''); setEmailError('') }}>
-                {t('actions.cancel')}
+          </span>
+        </label>
+
+        <div className="field-row">
+          <span className="field-label">{t('edit_profile.email')}</span>
+          {emailStep === 'view' ? (
+            <div className="field-value-row">
+              <span className={email ? 'field-value' : 'field-value empty'}>
+                {email || t('edit_profile.email_none')}
+              </span>
+              <button type="button" className="field-action" onClick={() => setEmailStep('enter')}>
+                {t('edit_profile.email_change')}
               </button>
             </div>
-          </div>
-        )}
-        {emailError && <p className="auth-error">{emailError}</p>}
-
-        <label className="edit-label">{t('edit_profile.company')}</label>
-        <div className={locked ? 'edit-input-wrap locked' : 'edit-input-wrap'}>
-          <input
-            className="admin-search"
-            value={company}
-            onChange={(e) => setCompany(e.target.value)}
-            placeholder={t('edit_profile.company_hint')}
-            disabled={locked}
-            readOnly={locked}
-          />
-          {locked && (
-            <svg className="edit-lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
-              <rect x="4.5" y="10.5" width="15" height="10" rx="2.5" />
-              <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
-            </svg>
+          ) : emailStep === 'enter' ? (
+            <div className="field-sub">
+              <input
+                className="field-input"
+                type="email"
+                inputMode="email"
+                autoCapitalize="none"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                placeholder={t('edit_profile.email_new_ph')}
+                autoFocus
+              />
+              <div className="field-sub-actions">
+                <button type="button" disabled={emailBusy || !newEmail.trim()} onClick={requestEmailCode}>
+                  {t('edit_profile.email_send_code')}
+                </button>
+                <button type="button" className="ghost"
+                        onClick={() => { setEmailStep('view'); setNewEmail(''); setEmailError('') }}>
+                  {t('actions.cancel')}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="field-sub">
+              <div className="field-note">{t('edit_profile.email_code_sent', { email: newEmail.trim() })}</div>
+              <input
+                className="field-input"
+                type="text"
+                inputMode="numeric"
+                value={emailCode}
+                onChange={(e) => setEmailCode(e.target.value.replace(/\D/g, ''))}
+                placeholder={t('edit_profile.email_code_ph')}
+                autoFocus
+              />
+              <div className="field-sub-actions">
+                <button type="button" disabled={emailBusy || !emailCode.trim()} onClick={confirmEmailCode}>
+                  {t('edit_profile.email_confirm')}
+                </button>
+                <button type="button" className="ghost"
+                        onClick={() => { setEmailStep('view'); setNewEmail(''); setEmailCode(''); setEmailError('') }}>
+                  {t('actions.cancel')}
+                </button>
+              </div>
+            </div>
           )}
+          {emailError && <p className="auth-error">{emailError}</p>}
         </div>
-        {/* Пока не пройдена проверка личности, само поле недоступно для
-            ввода — подсказка должна быть видна сразу, а не только
-            после того, как что-то в него напечатали (напечатать и
-            так нельзя). Уже бизнес-аккаунт — правит своё же название,
-            замок к нему не относится вовсе. */}
-        {locked && (
-          <p className="edit-hint-warn">{t('edit_profile.verify_first')}</p>
-        )}
+      </div>
 
-        {company.trim() && (
-          <>
-            <label className="edit-label">{t('edit_profile.company_description')}</label>
+      {/* Бизнес — отдельной карточкой: это не «ещё одно поле анкеты», а
+          другой способ продавать. Пока проверка не пройдена, поле
+          закрыто, и сказано это одной строкой рядом, а не плашкой в
+          три строки, как было. */}
+      <div className="form-card">
+        <div className="form-card-title">{t('edit_profile.company_title')}</div>
+        <label className="field-row">
+          <span className="field-label">{t('edit_profile.company')}</span>
+          <span className="field-phone">
+            <input
+              className="field-input"
+              value={company}
+              onChange={(e) => setCompany(e.target.value)}
+              placeholder={locked ? t('edit_profile.company_locked_ph') : t('edit_profile.company_hint')}
+              disabled={locked}
+              readOnly={locked}
+            />
+            {locked && (
+              <svg className="field-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
+                <rect x="4.5" y="10.5" width="15" height="10" rx="2.5" />
+                <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
+              </svg>
+            )}
+          </span>
+        </label>
+
+        {company.trim() && !locked && (
+          <label className="field-row">
+            <span className="field-label">{t('edit_profile.company_description')}</span>
             <textarea
-              className="admin-search edit-company-desc"
+              className="field-input field-textarea"
               value={companyDescription}
               onChange={(e) => setCompanyDescription(e.target.value)}
               placeholder={t('edit_profile.company_description_hint')}
               rows={4}
               maxLength={2000}
             />
-          </>
+          </label>
         )}
-
-        <button className="support-send" disabled={saving} onClick={save}>
-          {done ? t('edit_profile.saved') : t('edit_profile.save')}
-        </button>
       </div>
+
+      <button className="form-save" disabled={saving} onClick={save}>
+        {done ? t('edit_profile.saved') : t('edit_profile.save')}
+      </button>
 
       {/* Проверка документа — отдельное действие от правки профиля,
           со своим статусом и загрузкой, поэтому вне общей формы и
           кнопки «Сохранить». */}
-      <div className="profile-section-title">{t('verify.title')}</div>
-      <div className="verify-card">
+      <div className="form-card">
+        <div className="form-card-title">{t('verify.title')}</div>
         {!verify ? (
           <p className="verify-hint">{t('actions.loading')}</p>
         ) : verify.status === 'verified' ? (
