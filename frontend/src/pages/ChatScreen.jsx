@@ -542,7 +542,19 @@ export default function ChatScreen() {
         ) : (
           <>
             {messages.map((m) => (
-              m.kind === 'review_request' ? (
+              m.kind === 'safety_note' ? (
+                /* Памятка о безопасности. Не пугаем и не поучаем: одна
+                   фраза о том, как обманывают чаще всего, и как этого
+                   не допустить. Стоит первым сообщением, видят оба. */
+                <div key={m.id} className="chat-safety-note">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
+                       strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 3 4 6.5v5c0 4.6 3.4 8.4 8 9.5 4.6-1.1 8-4.9 8-9.5v-5z" />
+                    <path d="m9 12 2 2 4-4" />
+                  </svg>
+                  <span>{t('chat.safety_note')}</span>
+                </div>
+              ) : m.kind === 'review_request' ? (
                 <ReviewRequest
                   key={m.id}
                   chatId={id}

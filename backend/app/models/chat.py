@@ -78,7 +78,7 @@ class Message(Base):
     # call_allowed/call_declined — запись в истории переписки о том,
     # чем кончился запрос; само разрешение живёт в PhoneReveal (пара
     # продавец-покупатель целиком), не в этих сообщениях.
-    kind: Mapped[str] = mapped_column(String(24), default="user")   # user | review_request | call_request | call_allowed | call_declined | call_revoked | price_offer
+    kind: Mapped[str] = mapped_column(String(24), default="user")   # user | review_request | call_request | call_allowed | call_declined | call_revoked | price_offer | safety_note
 
     is_read: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)

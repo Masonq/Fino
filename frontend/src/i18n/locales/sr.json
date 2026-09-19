@@ -126,7 +126,8 @@
     "reservation_active_other": "Oglas je rezervisan od strane drugog kupca",
     "typing": "{{name}} kuca…",
     "listing_sold": "prodato",
-    "listing_archived": "skinuto"
+    "listing_archived": "skinuto",
+    "safety_note": "Nađite se uživo i platite kada preuzmete stvar. Molba da pošaljete kaparu unapred je najčešća prevara."
   },
   "promo": {
     "safe_deal": "Sigurna kupovina",

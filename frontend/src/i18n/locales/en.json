@@ -126,7 +126,8 @@
     "reservation_active_other": "This listing is reserved by another buyer",
     "typing": "{{name}} is typing…",
     "listing_sold": "sold",
-    "listing_archived": "removed"
+    "listing_archived": "removed",
+    "safety_note": "Meet in person and pay when you get the item. A request to send a deposit up front is the most common scam."
   },
   "promo": {
     "safe_deal": "Safe deal",
