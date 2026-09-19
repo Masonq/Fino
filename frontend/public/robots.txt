@@ -8,6 +8,10 @@ Allow: /
 
 Disallow: /profile
 Disallow: /admin
+# Публикатор в Telegram: страница работает только внутри мессенджера,
+# в поиске от неё один вред — люди попадают на экран «откройте из
+# бота» и уходят.
+Disallow: /tg
 Disallow: /chats
 Disallow: /enter
 Disallow: /favorites

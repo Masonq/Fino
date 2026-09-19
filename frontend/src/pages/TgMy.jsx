@@ -49,7 +49,7 @@ export default function TgMy() {
 
   useEffect(() => {
     const app = tg()
-    if (!app) { setItems([]); return }
+    if (!app?.initData) { setItems([]); setError('not_in_telegram'); return }
     app.ready()
     app.expand()
     api.tgWebAppAuth(app.initData)
@@ -113,7 +113,9 @@ export default function TgMy() {
         </div>
       </div>
 
-      {error && <p className="auth-error">{t(`tg_my.err_${error}`, t('errors.generic'))}</p>}
+      {error === 'not_in_telegram'
+        ? <p className="empty-hint">{t('tg_post.open_in_telegram')}</p>
+        : error && <p className="auth-error">{t(`tg_my.err_${error}`, t('errors.generic'))}</p>}
 
       {items.length === 0 ? (
         <div className="tg-empty">

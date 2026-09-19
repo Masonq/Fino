@@ -50,7 +50,11 @@ export default function TgPost() {
   // некому, а просить заполнить и потом отказать — худшее из решений.
   useEffect(() => {
     const app = tg()
-    if (!app) { setError('not_in_telegram'); return }
+    // Мост Telegram грузится на любой странице сайта, и сам по себе он
+    // ничего не доказывает: в обычном браузере объект есть, а данных в
+    // нём нет. Проверяем именно подписанную строку — без неё это не
+    // Telegram, а человек, открывший адрес руками.
+    if (!app?.initData) { setError('not_in_telegram'); return }
     app.ready()
     app.expand()
     api.tgWebAppAuth(app.initData)
