@@ -5081,3 +5081,31 @@ a.s-attrs{ display:block; }
   display:block; text-align:center; margin-top:14px;
   font-size:13.5px; font-weight:800; color:var(--primary-deep); text-decoration:none;
 }
+
+/* Пустой список объявлений: значок, строка о том, что здесь будет, и
+   одна кнопка. Раньше тут было два одинаковых по смыслу призыва —
+   «Разместить первое» и «Разместить ещё» — и второй из них при пустом
+   списке выглядел ошибкой. */
+.tg-empty{
+  display:flex; flex-direction:column; align-items:center; text-align:center;
+  gap:8px; padding:48px 24px 24px;
+}
+.tg-empty-mark{
+  width:64px; height:64px; border-radius:50%; margin-bottom:6px;
+  background:var(--primary-soft); color:var(--primary-deep);
+  display:flex; align-items:center; justify-content:center;
+}
+.tg-empty-mark svg{ width:30px; height:30px; }
+.tg-empty-title{ font-size:17px; font-weight:800; }
+.tg-empty-text{ font-size:13.5px; color:var(--muted); font-weight:600; line-height:1.45; max-width:280px; }
+.tg-empty .form-save{ margin-top:14px; text-align:center; line-height:50px; text-decoration:none; }
+
+/* Шапка публикатора: знак, название, ссылка на свои объявления. */
+.tg-head-text{ flex:1; min-width:0; }
+.tg-head-link{
+  flex-shrink:0; align-self:center;
+  padding:8px 12px; border-radius:11px;
+  background:var(--primary-soft); color:var(--primary-deep);
+  font-size:12.5px; font-weight:800; text-decoration:none; line-height:1.2;
+  text-align:center; max-width:92px;
+}

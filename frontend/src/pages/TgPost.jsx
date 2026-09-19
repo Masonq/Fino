@@ -211,10 +211,14 @@ export default function TgPost() {
           нечем. */}
       <div className="tg-head">
         <img className="tg-logo" src="/logo-mark.png" alt="PLONK" />
-        <div>
+        <div className="tg-head-text">
           <div className="tg-title">{t('tg_post.title')}</div>
           <div className="tg-sub">{t('tg_post.subtitle')}</div>
         </div>
+        {/* Путь к своим объявлениям в шапке, а не внизу страницы:
+            внизу его не видно, пока не долистаешь до конца, а нужен он
+            как раз тем, кто пришёл не размещать, а поправить своё. */}
+        <Link className="tg-head-link" to="/tg/my">{t('tg_post.my_listings')}</Link>
       </div>
 
       {/* Фотографии первыми: вещь без снимка не продаётся, и просить их
@@ -398,9 +402,6 @@ export default function TgPost() {
         {sending ? t('tg_post.sending') : t('tg_post.publish')}
       </button>
       <p className="tg-note">{t('tg_post.note')}</p>
-      {/* Путь к своим объявлениям прямо отсюда: иначе, разместив вещь,
-          человек не знает, где её потом снять или поправить. */}
-      <Link className="tg-my-link" to="/tg/my">{t('tg_post.my_listings')}</Link>
     </div>
   )
 }

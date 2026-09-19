@@ -1079,7 +1079,7 @@
   "tg_my": {
     "title": "Moji oglasi",
     "subtitle": "Skinuti, promeniti cenu, ispraviti odbijeni",
-    "empty": "Još ništa nije objavljeno.",
+    "empty": "Ovde će biti vaši oglasi",
     "post_first": "Objavi prvi",
     "new": "Objavi još",
     "state_active": "U listi",
@@ -1098,6 +1098,7 @@
     "send_again": "Pošalji na proveru",
     "err_auth_failed": "Prijava nije uspela. Zatvorite prozor i otvorite ponovo.",
     "err_action_failed": "Nije uspelo. Pokušajte ponovo.",
-    "days_left_many": "ostalo {{count}} dana"
+    "days_left_many": "ostalo {{count}} dana",
+    "empty_hint": "Objavite stvar i videćete koliko su je gledali i ko je pisao."
   }
 }

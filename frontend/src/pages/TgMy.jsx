@@ -90,7 +90,7 @@ export default function TgMy() {
     <div className="tg-page">
       <div className="tg-head">
         <img className="tg-logo" src="/logo-mark.png" alt="PLONK" />
-        <div>
+        <div className="tg-head-text">
           <div className="tg-title">{t('tg_my.title')}</div>
           <div className="tg-sub">{t('tg_my.subtitle')}</div>
         </div>
@@ -99,8 +99,16 @@ export default function TgMy() {
       {error && <p className="auth-error">{t(`tg_my.err_${error}`, t('errors.generic'))}</p>}
 
       {items.length === 0 ? (
-        <div className="tg-done">
-          <p className="tg-done-text">{t('tg_my.empty')}</p>
+        <div className="tg-empty">
+          <div className="tg-empty-mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"
+                 strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="16" rx="3" />
+              <path d="M8 10h8M8 14h5" />
+            </svg>
+          </div>
+          <div className="tg-empty-title">{t('tg_my.empty')}</div>
+          <p className="tg-empty-text">{t('tg_my.empty_hint')}</p>
           <Link className="form-save" to="/tg/post">{t('tg_my.post_first')}</Link>
         </div>
       ) : (
@@ -206,7 +214,9 @@ export default function TgMy() {
         </div>
       )}
 
-      <Link className="form-secondary tg-my-new" to="/tg/post">{t('tg_my.new')}</Link>
+      {items.length > 0 && (
+        <Link className="form-secondary tg-my-new" to="/tg/post">{t('tg_my.new')}</Link>
+      )}
     </div>
   )
 }

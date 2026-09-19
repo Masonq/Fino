@@ -1064,7 +1064,7 @@
   "tg_my": {
     "title": "My listings",
     "subtitle": "Mark sold, fix the price, correct a rejected one",
-    "empty": "Nothing posted yet.",
+    "empty": "Your listings will be here",
     "post_first": "Post the first one",
     "new": "Post another",
     "state_active": "Live",
@@ -1081,6 +1081,7 @@
     "open": "Open",
     "send_again": "Send for review",
     "err_auth_failed": "Sign-in failed. Close the window and open it again.",
-    "err_action_failed": "Didn't work. Try again."
+    "err_action_failed": "Didn't work. Try again.",
+    "empty_hint": "Post an item and you'll see how many people opened it and who wrote."
   }
 }
