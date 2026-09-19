@@ -47,6 +47,7 @@ from app.core.title_rules import SUBJECT_BY_CATEGORY, SUBJECT_BY_SUB
 from app.core.title_rules import looks_like_question, needs_help
 from app.core.tg_parse import (
     build_title, fingerprint, same_thing, source_language, drop_attribute_lines, extract_attributes, plausible_price,
+    strip_promo_lines,
     looks_like_ad, looks_like_spam, looks_sold, parse,
 )
 from app.core.tg_sources import CHATS, is_resume, topic_category, topic_sub_hint
@@ -278,6 +279,10 @@ def screen(text: str, chat_id: int, topic_id: int | None,
         fallback_title=parsed.get("title"),
     )
     parsed["description"] = drop_attribute_lines(parsed["description"], attrs)
+    # Чужие приглашения («Больше товаров тут», «Подписывайтесь на наш
+    # канал») уводят покупателя к другому продавцу и занимают место,
+    # где человек ищет состояние и размер.
+    parsed["description"] = strip_promo_lines(parsed["description"])
     # Правила сказали своё слово; если вышло сухо — просим модель назвать
     # предмет. Её ответ проверяется теми же правилами, так что хуже не
     # станет: не подойдёт — останется то, что есть.
@@ -484,6 +489,33 @@ async def collect(client, chat_id: int, meta: dict, days: int,
             attrs["listing_kind"] = "resume"
         elif category_slug == "jobs":
             attrs["listing_kind"] = "vacancy"
+
+        # Последняя проверка перед лентой: по заголовку должно быть
+        # понятно, что продают.
+        #
+        # Раньше непонятный заголовок просто опускал объявление ниже в
+        # выдаче (is_complete), но оно всё равно висело в ленте:
+        # «Hutschenreuther», «Чем занимался», «Продам». Человек не
+        # поймёт, что там, пока не откроет — а открывать вслепую он не
+        # станет. Лучше пропустить объявление, чем засорить ленту:
+        # отсеется половина, зато остальное читается с первого взгляда.
+        from app.routers.listings import title_is_clear
+
+        if not title_is_clear(parsed.get("title")):
+            # Ещё одна попытка нейросетью, если запас на заход остался:
+            # часто предмет назван в описании, просто заголовком стала
+            # первая строка поста.
+            if ai_budget[0] > 0:
+                retry = ai_improve(text, parsed.get("title"))
+                ai_budget[0] -= 1
+                if retry.get("title") and title_is_clear(retry["title"]):
+                    parsed["title"] = retry["title"]
+                    bar.bump("заголовок переписан")
+
+        if not title_is_clear(parsed.get("title")):
+            forget_photos({"photos": photos})
+            bar.bump("непонятный заголовок")
+            continue
 
         bar.bump("отобрано")
         out.append({

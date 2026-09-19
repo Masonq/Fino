@@ -690,7 +690,8 @@
       "listing_retitle_failed": "Could not rewrite the title",
       "chat.suspicious": "Flagged a chat",
       "chat.flag_cleared": "Cleared a chat flag",
-      "translate.run": "Listing translation run"
+      "translate.run": "Listing translation run",
+      "listing.unclear_title": "Removed: unclear title"
     },
     "kind_staff": "Staff",
     "kind_system": "System",

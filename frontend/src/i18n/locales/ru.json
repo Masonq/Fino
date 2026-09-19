@@ -708,7 +708,8 @@
       "listing_retitle_failed": "Заголовок переписать не вышло",
       "chat.suspicious": "Пометил переписку подозрительной",
       "chat.flag_cleared": "Снял пометку с переписки",
-      "translate.run": "Перевод объявлений"
+      "translate.run": "Перевод объявлений",
+      "listing.unclear_title": "Снял: непонятный заголовок"
     },
     "kind_staff": "Сотрудники",
     "kind_system": "Служебные",

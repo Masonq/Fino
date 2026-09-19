@@ -699,7 +699,8 @@
       "listing_retitle_failed": "Naslov nije prepisan",
       "chat.suspicious": "Označio prepisku",
       "chat.flag_cleared": "Skinuo oznaku sa prepiske",
-      "translate.run": "Prevod oglasa"
+      "translate.run": "Prevod oglasa",
+      "listing.unclear_title": "Skinuto: nejasan naslov"
     },
     "kind_staff": "Osoblje",
     "kind_system": "Sistemske",
