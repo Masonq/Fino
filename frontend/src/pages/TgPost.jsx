@@ -219,11 +219,21 @@ export default function TgPost() {
           <div className="tg-title">{t('tg_post.title')}</div>
           <div className="tg-sub">{t('tg_post.subtitle')}</div>
         </div>
-        {/* Путь к своим объявлениям в шапке, а не внизу страницы:
-            внизу его не видно, пока не долистаешь до конца, а нужен он
-            как раз тем, кто пришёл не размещать, а поправить своё. */}
-        <Link className="tg-head-link" to="/tg/my">{t('tg_post.my_listings')}</Link>
       </div>
+
+      {/* Путь к своим объявлениям — строкой во всю ширину под шапкой.
+          В самой шапке кнопка не помещалась в одну строку и делала ряд
+          кривым: переносилась на две и становилась выше заголовка.
+          Внизу страницы её не видно, пока не долистаешь. */}
+      <Link className="tg-my-entry" to="/tg/my">
+        <span className="tg-my-entry-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"
+               strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h10" /></svg>
+        </span>
+        {t('tg_post.my_listings')}
+        <svg className="tg-my-entry-arrow" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+      </Link>
 
       {/* Фотографии первыми: вещь без снимка не продаётся, и просить их
           после того, как человек уже всё описал, поздно. */}

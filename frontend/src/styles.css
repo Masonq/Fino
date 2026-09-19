@@ -5100,15 +5100,25 @@ a.s-attrs{ display:block; }
 .tg-empty-text{ font-size:13.5px; color:var(--muted); font-weight:600; line-height:1.45; max-width:280px; }
 .tg-empty .form-save{ margin-top:14px; text-align:center; line-height:50px; text-decoration:none; }
 
-/* Шапка публикатора: знак, название, ссылка на свои объявления. */
+/* Шапка публикатора: знак и название. */
 .tg-head-text{ flex:1; min-width:0; }
-.tg-head-link{
-  flex-shrink:0; align-self:center;
-  padding:8px 12px; border-radius:11px;
-  background:var(--primary-soft); color:var(--primary-deep);
-  font-size:12.5px; font-weight:800; text-decoration:none; line-height:1.2;
-  text-align:center; max-width:92px;
+
+/* Вход в свои объявления — строкой во всю ширину: так он и заметен, и
+   не ломает ряд шапки, где кнопка переносилась на две строки. */
+.tg-my-entry{
+  display:flex; align-items:center; gap:10px;
+  margin:0 12px 14px; padding:12px 14px; border-radius:14px;
+  background:var(--surface); box-shadow:var(--shadow);
+  color:var(--ink); font-size:14px; font-weight:700; text-decoration:none;
 }
+.tg-my-entry-icon{
+  width:30px; height:30px; border-radius:9px; flex-shrink:0;
+  background:var(--primary-soft); color:var(--primary-deep);
+  display:flex; align-items:center; justify-content:center;
+}
+.tg-my-entry-icon svg{ width:16px; height:16px; }
+.tg-my-entry{ justify-content:flex-start; }
+.tg-my-entry-arrow{ width:17px; height:17px; margin-left:auto; color:var(--muted); flex-shrink:0; }
 
 /* Кнопки в карточке объявления.
    Раньше они наследовали общий вид кнопок-фишек, но без рамки и фона —
