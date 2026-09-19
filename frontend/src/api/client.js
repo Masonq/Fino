@@ -379,6 +379,7 @@ export const api = {
     method: 'POST',
     body: JSON.stringify(payload),
   }),
+  linkTelegramStart: () => request('/users/me/link-telegram', { method: 'POST' }),
   tgLinkTelegram: (initData) => request('/tg/link', {
     method: 'POST',
     body: JSON.stringify({ init_data: initData }),

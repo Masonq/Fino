@@ -92,6 +92,71 @@ async def start_login(message: Message) -> None:
     )
 
 
+@dp.message(CommandStart(deep_link=True), F.text.contains("link_"))
+async def start_link(message: Message) -> None:
+    """
+    Человек пришёл с сайта привязать Telegram.
+
+    Ключ выдан там, где он уже вошёл, поэтому нам остаётся сказать,
+    кто он в Telegram. Если этот телеграм уже привязан к другому
+    аккаунту — значит, у человека их два, и мы их объединяем.
+    """
+    from app.core.clock import utcnow
+    from app.core.database import SessionLocal
+    from app.core.merge_users import merge_users
+    from app.models import LinkTicket, User
+
+    key = (message.text or "").split("link_", 1)[-1].strip()
+    if not key:
+        await message.answer("Ссылка не сработала. Попробуйте ещё раз с сайта.")
+        return
+
+    telegram_id = str(message.from_user.id)
+    with SessionLocal() as db:
+        ticket = (db.query(LinkTicket)
+                  .filter(LinkTicket.key == key,
+                          LinkTicket.used.is_(False),
+                          LinkTicket.expires_at > utcnow())
+                  .first())
+        if not ticket:
+            await message.answer(
+                "Ссылка устарела — она живёт пять минут. "
+                "Откройте привязку на сайте заново.")
+            return
+
+        site_user = db.query(User).get(ticket.user_id)
+        if not site_user:
+            await message.answer("Не нашли ваш аккаунт на сайте.")
+            return
+
+        ticket.used = True
+        other = db.query(User).filter(User.telegram_id == telegram_id).first()
+
+        if other and other.id == site_user.id:
+            db.commit()
+            await message.answer("Telegram уже привязан к этому аккаунту.",
+                                 reply_markup=_post_button())
+            return
+
+        if other:
+            # Два аккаунта одного человека. Оставляем тот, что на
+            # сайте: там объявления, переписки и отзывы, нажитые
+            # дольше.
+            merge_users(db, keep=site_user, drop=other)
+            await message.answer(
+                "<b>Готово</b>\n\nАккаунты объединены: объявления, переписки "
+                "и отзывы теперь в одном месте.",
+                reply_markup=_post_button())
+            return
+
+        site_user.telegram_id = telegram_id
+        db.commit()
+        await message.answer(
+            "<b>Готово</b>\n\nTelegram привязан — теперь можно размещать "
+            "объявления прямо отсюда.",
+            reply_markup=_post_button())
+
+
 @dp.message(CommandStart())
 async def start(message: Message) -> None:
     await message.answer(

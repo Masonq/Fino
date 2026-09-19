@@ -5185,3 +5185,11 @@ a.s-attrs{ display:block; }
   background:var(--primary-soft); color:var(--primary-deep);
   font-size:13px; font-weight:800;
 }
+
+/* Пояснение под строкой профиля: мельче и приглушённее самой строки,
+   иначе подсказка читается как значение поля — что и вышло со строкой
+   про Telegram. */
+.field-sub-hint{
+  display:block; margin-top:4px;
+  font-size:12px; font-weight:600; color:var(--muted); line-height:1.35;
+}

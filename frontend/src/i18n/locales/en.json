@@ -782,7 +782,12 @@
     "bad_name": "That name won't do: it has no letters, or almost only symbols.",
     "photo_title": "Profile photo",
     "company_title": "Business account",
-    "company_locked_ph": "Available after identity check"
+    "company_locked_ph": "Available after identity check",
+    "tg_linked": "Linked",
+    "tg_none": "Not linked",
+    "tg_link": "Link",
+    "tg_hint": "To post right from Telegram and avoid a second account",
+    "tg_failed": "Couldn't start linking. Try again."
   },
   "landing": {
     "deal": "What do you need",

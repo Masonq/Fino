@@ -177,6 +177,9 @@ def my_profile(user: User = Depends(get_current_user)):
         "role": user.role.value,
         "default_language": user.default_language.value,
         "email_verified": user.email_verified,
+        # Привязан ли Telegram: по этому странице решать, предлагать
+        # привязку или нет. Сам идентификатор не отдаём, он ни к чему.
+        "telegram_linked": bool(user.telegram_id),
         "company_name": user.company_name,
         "company_description": user.company_description,
         "company_verified": user.company_verified,
@@ -378,3 +381,39 @@ def unblock_user(
     ).delete()
     db.commit()
     return {"status": "unblocked"}
+
+
+@router.post("/me/link-telegram")
+def link_telegram_start(user: User = Depends(get_current_user),
+                        db: Session = Depends(get_db)):
+    """
+    Ссылка, по которой человек привяжет свой Telegram.
+
+    На сайте подписи Telegram нет и взяться ей неоткуда, поэтому
+    доказательство приходит с другой стороны: мы выдаём одноразовый
+    ключ, человек открывает по нему бота, и бот говорит нам, кто он в
+    Telegram. Пять минут и один раз — чтобы ключ, попавший не туда, был
+    бесполезен.
+    """
+    import secrets
+    from datetime import timedelta
+
+    from app.core.config import settings
+    from app.models import LinkTicket
+
+    if user.telegram_id:
+        return {"status": "already_linked"}
+
+    # Прежние ключи этого человека гасим: две живые ссылки на одно и то
+    # же — лишний способ ошибиться.
+    (db.query(LinkTicket)
+     .filter(LinkTicket.user_id == user.id, LinkTicket.used.is_(False))
+     .update({LinkTicket.used: True}))
+
+    key = secrets.token_urlsafe(18)
+    db.add(LinkTicket(key=key, user_id=user.id,
+                      expires_at=utcnow() + timedelta(minutes=5)))
+    db.commit()
+
+    bot = (settings.telegram_bot_username or "Baraholka_plonk_bot").lstrip("@")
+    return {"status": "ok", "url": f"https://t.me/{bot}?start=link_{key}"}

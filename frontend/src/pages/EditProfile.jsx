@@ -110,6 +110,20 @@ export default function EditProfile() {
     } finally { setEmailBusy(false) }
   }
 
+  // Привязка Telegram: сайт выдаёт одноразовый ключ, бот по нему
+  // говорит, кто человек в Telegram. Ссылку открываем в новой
+  // вкладке — на телефоне её перехватит само приложение.
+  const linkTelegram = async () => {
+    try {
+      const res = await api.linkTelegramStart()
+      if (res.url) window.open(res.url, '_blank', 'noopener')
+    } catch {
+      // Молча ничего не делаем только в одном случае — когда уже
+      // привязан; остальное покажем тем же местом, что и ошибки почты.
+      setEmailError(t('edit_profile.tg_failed'))
+    }
+  }
+
   const confirmEmailCode = async () => {
     if (!emailCode.trim()) return
     setEmailBusy(true); setEmailError('')
@@ -273,6 +287,29 @@ export default function EditProfile() {
             </div>
           )}
           {emailError && <p className="auth-error">{emailError}</p>}
+        </div>
+
+        {/* Telegram. Человек, размещавший объявления через бота, и
+            человек, вошедший сюда по почте, — для нас до сих пор двое
+            разных. Привязка сводит их в одного: объявления, переписки
+            и отзывы оказываются в одном месте. */}
+        <div className="field-row">
+          <span className="field-label">Telegram</span>
+          <div className="field-value-row">
+            <span className={user?.telegram_linked ? 'field-value' : 'field-value empty'}>
+              {user?.telegram_linked
+                ? t('edit_profile.tg_linked')
+                : t('edit_profile.tg_none')}
+            </span>
+            {!user?.telegram_linked && (
+              <button type="button" className="field-action" onClick={linkTelegram}>
+                {t('edit_profile.tg_link')}
+              </button>
+            )}
+          </div>
+          {!user?.telegram_linked && (
+            <span className="field-sub-hint">{t('edit_profile.tg_hint')}</span>
+          )}
         </div>
       </div>
 

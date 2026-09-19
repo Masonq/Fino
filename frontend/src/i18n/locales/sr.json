@@ -791,7 +791,12 @@
     "bad_name": "To ime ne može: nema slova ili su skoro sami znakovi.",
     "photo_title": "Profilna slika",
     "company_title": "Poslovni nalog",
-    "company_locked_ph": "Dostupno nakon provere identiteta"
+    "company_locked_ph": "Dostupno nakon provere identiteta",
+    "tg_linked": "Povezan",
+    "tg_none": "Nije povezan",
+    "tg_link": "Poveži",
+    "tg_hint": "Da objavljujete iz Telegrama i ne pravite drugi nalog",
+    "tg_failed": "Povezivanje nije počelo. Pokušajte ponovo."
   },
   "landing": {
     "deal": "Šta tražite",

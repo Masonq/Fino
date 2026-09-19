@@ -11,6 +11,7 @@ from app.models.trust import Review, Report, ReportReason, ReportStatus
 from app.models.promotion import Promotion, PromotionType, PromotionStatus
 from app.models.balance_topup import BalanceTopup, BalanceTopupStatus
 from app.models.audit import AuditEntry
+from app.models.link_ticket import LinkTicket
 from app.models.login_ticket import LoginTicket
 from app.models.blocked_user import BlockedUser
 from app.models.phone_reveal import PhoneReveal
@@ -38,7 +39,8 @@ __all__ = [
     "Review", "Report", "ReportReason", "ReportStatus",
     "Promotion", "PromotionType", "PromotionStatus",
     "BalanceTopup", "BalanceTopupStatus",
-    "AuditEntry", "LoginTicket",
+    "AuditEntry", "LinkTicket",
+    "LoginTicket",
     "BlockedUser",
     "PhoneReveal",
     "ListingViewLog",
