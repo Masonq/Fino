@@ -4629,7 +4629,9 @@ a.s-attrs{ display:block; }
   color:var(--primary-deep); cursor:pointer;
 }
 
-.field-row{ display:block; padding:12px 0; border-top:1px solid var(--line); }
+/* Разделитель ведём во всю ширину карточки, а не от поля до поля:
+   короткая линия с воздухом по краям выглядела недочерченной рамкой. */
+.field-row{ display:block; padding:12px 0; border-top:1px solid var(--line); margin:0 -15px; padding-left:15px; padding-right:15px; }
 .form-card > .field-row:first-child,
 .form-card > .form-card-title + .field-row{ border-top:none; }
 .field-label{ display:block; font-size:11.5px; font-weight:700; color:var(--muted); margin-bottom:3px; }
@@ -4641,7 +4643,9 @@ a.s-attrs{ display:block; }
 }
 .field-input::placeholder{ color:#B6BDB8; font-weight:500; }
 .field-input:disabled{ color:var(--muted); }
-.field-textarea{ resize:vertical; line-height:1.4; min-height:76px; }
+/* Без ручки изменения размера: в углу карточки она читалась как
+   обрывок обводки и цеплялась за прокрутку на телефоне. */
+.field-textarea{ resize:none; line-height:1.4; min-height:96px; }
 .field-phone{ display:flex; align-items:center; gap:7px; }
 .field-prefix{ font-size:16px; font-weight:800; color:var(--ink-soft); flex-shrink:0; }
 .field-lock{ width:17px; height:17px; color:var(--muted); flex-shrink:0; }
