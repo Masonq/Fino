@@ -22,6 +22,8 @@ SUBCATEGORIES: dict[str, list[dict]] = {
         {"slug": "rooms", "name": {"ru": "Комнаты", "en": "Rooms", "sr": "Sobe"}},
         {"slug": "commercial", "name": {"ru": "Коммерческая", "en": "Commercial", "sr": "Poslovni prostor"}},
         {"slug": "garages", "name": {"ru": "Гаражи и паркинг", "en": "Garages & parking", "sr": "Garaže i parking"}},
+        {"slug": "land", "name": {"ru": "Участки и земля", "en": "Land & plots", "sr": "Placevi i zemljište"}},
+        {"slug": "daily-rent", "name": {"ru": "Посуточно и на отдых", "en": "Daily & holiday rent", "sr": "Dnevni najam i vikendice"}},
     ],
     "auto": [
         {"slug": "cars", "name": {"ru": "Легковые", "en": "Cars", "sr": "Automobili"}},
@@ -29,6 +31,10 @@ SUBCATEGORIES: dict[str, list[dict]] = {
         {"slug": "trucks", "name": {"ru": "Грузовые и спецтехника", "en": "Trucks & machinery", "sr": "Kamioni i mašine"}},
         {"slug": "car-parts", "name": {"ru": "Запчасти", "en": "Parts", "sr": "Delovi"}},
         {"slug": "tyres", "name": {"ru": "Шины и диски", "en": "Tyres & wheels", "sr": "Gume i felne"}},
+        {"slug": "trailers", "name": {"ru": "Прицепы и дома на колёсах", "en": "Trailers & campers", "sr": "Prikolice i kamperi"}},
+        {"slug": "water", "name": {"ru": "Лодки и катера", "en": "Boats", "sr": "Čamci i plovila"}},
+        {"slug": "agri", "name": {"ru": "Сельхозтехника", "en": "Farm machinery", "sr": "Poljoprivredne mašine"}},
+        {"slug": "e-transport", "name": {"ru": "Самокаты и электротранспорт", "en": "Scooters & e-transport", "sr": "Trotineti i e-prevoz"}},
     ],
     "electronics": [
         {"slug": "phones", "name": {"ru": "Телефоны", "en": "Phones", "sr": "Telefoni"}},
@@ -50,6 +56,8 @@ SUBCATEGORIES: dict[str, list[dict]] = {
         {"slug": "charging", "name": {"ru": "Зарядки и повербанки", "en": "Chargers & power banks", "sr": "Punjači i pauerbanke"}},
         {"slug": "peripherals", "name": {"ru": "Периферия для компьютера", "en": "Computer peripherals", "sr": "Periferija za računar"}},
         {"slug": "cases", "name": {"ru": "Чехлы и защита", "en": "Cases & protection", "sr": "Maske i zaštita"}},
+        {"slug": "components", "name": {"ru": "Комплектующие", "en": "PC components", "sr": "Komponente"}},
+        {"slug": "smart-home", "name": {"ru": "Умный дом", "en": "Smart home", "sr": "Pametna kuća"}},
     ],
     "home-garden": [
         {"slug": "furniture", "name": {"ru": "Мебель", "en": "Furniture", "sr": "Nameštaj"}},
@@ -58,6 +66,9 @@ SUBCATEGORIES: dict[str, list[dict]] = {
         {"slug": "decor", "name": {"ru": "Декор и текстиль", "en": "Decor & textiles", "sr": "Dekoracija i tekstil"}},
         {"slug": "garden", "name": {"ru": "Сад и растения", "en": "Garden & plants", "sr": "Bašta i biljke"}},
         {"slug": "tools", "name": {"ru": "Инструменты и ремонт", "en": "Tools & DIY", "sr": "Alati"}},
+        {"slug": "building", "name": {"ru": "Стройматериалы", "en": "Building materials", "sr": "Građevinski materijal"}},
+        {"slug": "plumbing", "name": {"ru": "Сантехника и отопление", "en": "Plumbing & heating", "sr": "Vodovod i grejanje"}},
+        {"slug": "textile", "name": {"ru": "Текстиль и посуда для дома", "en": "Home textile", "sr": "Tekstil za kuću"}},
     ],
     "fashion": [
         {"slug": "women", "name": {"ru": "Женская одежда", "en": "Women's clothing", "sr": "Ženska odeća"}},
@@ -65,6 +76,7 @@ SUBCATEGORIES: dict[str, list[dict]] = {
         {"slug": "shoes", "name": {"ru": "Обувь", "en": "Shoes", "sr": "Obuća"}},
         {"slug": "bags", "name": {"ru": "Сумки и аксессуары", "en": "Bags & accessories", "sr": "Torbe i dodaci"}},
         {"slug": "watches", "name": {"ru": "Часы и украшения", "en": "Watches & jewellery", "sr": "Satovi i nakit"}},
+        {"slug": "jewelry", "name": {"ru": "Украшения", "en": "Jewellery", "sr": "Nakit"}},
     ],
     "kids": [
         {"slug": "kids-clothing", "name": {"ru": "Детская одежда и обувь", "en": "Kids' clothing", "sr": "Dečja odeća"}},
@@ -72,6 +84,8 @@ SUBCATEGORIES: dict[str, list[dict]] = {
         {"slug": "toys", "name": {"ru": "Игрушки", "en": "Toys", "sr": "Igračke"}},
         {"slug": "kids-furniture", "name": {"ru": "Детская мебель", "en": "Kids' furniture", "sr": "Dečji nameštaj"}},
         {"slug": "school", "name": {"ru": "Школьные товары", "en": "School supplies", "sr": "Školski pribor"}},
+        {"slug": "car-seats", "name": {"ru": "Автокресла", "en": "Car seats", "sr": "Auto-sedišta"}},
+        {"slug": "kids-transport", "name": {"ru": "Детский транспорт", "en": "Kids bikes & scooters", "sr": "Bicikli i trotineti za decu"}},
     ],
     "hobby-sport": [
         {"slug": "bikes", "name": {"ru": "Велосипеды и самокаты", "en": "Bikes & scooters", "sr": "Bicikli i trotineti"}},
@@ -80,12 +94,17 @@ SUBCATEGORIES: dict[str, list[dict]] = {
         {"slug": "music", "name": {"ru": "Музыкальные инструменты", "en": "Musical instruments", "sr": "Muzički instrumenti"}},
         {"slug": "books", "name": {"ru": "Книги", "en": "Books", "sr": "Knjige"}},
         {"slug": "collecting", "name": {"ru": "Коллекционирование и винтаж", "en": "Collectibles & vintage", "sr": "Kolekcionarstvo"}},
+        {"slug": "winter-sport", "name": {"ru": "Зимний спорт", "en": "Winter sports", "sr": "Zimski sportovi"}},
+        {"slug": "fishing-hunting", "name": {"ru": "Рыбалка и охота", "en": "Fishing & hunting", "sr": "Pecanje i lov"}},
+        {"slug": "board-games", "name": {"ru": "Настольные игры", "en": "Board games", "sr": "Društvene igre"}},
     ],
     "pets": [
         {"slug": "pets-dogs", "name": {"ru": "Собаки", "en": "Dogs", "sr": "Psi"}},
         {"slug": "pets-cats", "name": {"ru": "Кошки", "en": "Cats", "sr": "Mačke"}},
         {"slug": "pets-other", "name": {"ru": "Другие животные", "en": "Other animals", "sr": "Ostale životinje"}},
         {"slug": "pets-supplies", "name": {"ru": "Товары для животных", "en": "Pet supplies", "sr": "Oprema za ljubimce"}},
+        {"slug": "pets-birds", "name": {"ru": "Птицы", "en": "Birds", "sr": "Ptice"}},
+        {"slug": "pets-farm", "name": {"ru": "Домашний скот и птица", "en": "Farm animals", "sr": "Domaće životinje"}},
     ],
     "beauty": [
         {"slug": "cosmetics", "name": {"ru": "Косметика и парфюмерия", "en": "Cosmetics & perfume", "sr": "Kozmetika i parfemi"}},
@@ -100,6 +119,12 @@ SUBCATEGORIES: dict[str, list[dict]] = {
         {"slug": "cleaning", "name": {"ru": "Уборка и помощь по дому", "en": "Cleaning & household", "sr": "Čišćenje i pomoć"}},
         {"slug": "it-design", "name": {"ru": "IT и дизайн", "en": "IT & design", "sr": "IT i dizajn"}},
         {"slug": "legal", "name": {"ru": "Документы и юристы", "en": "Legal & paperwork", "sr": "Dokumenti i pravo"}},
+        {"slug": "construction", "name": {"ru": "Строительство и ремонт", "en": "Construction & renovation", "sr": "Građevina i renoviranje"}},
+        {"slug": "childcare", "name": {"ru": "Няни и уход", "en": "Childcare & care", "sr": "Čuvanje dece i nega"}},
+        {"slug": "photo-video", "name": {"ru": "Фото и видео", "en": "Photo & video", "sr": "Foto i video"}},
+        {"slug": "events", "name": {"ru": "Праздники и мероприятия", "en": "Events", "sr": "Proslave i događaji"}},
+        {"slug": "docs-visa", "name": {"ru": "Документы и визы", "en": "Documents & visas", "sr": "Dokumenti i vize"}},
+        {"slug": "medical", "name": {"ru": "Здоровье и медицина", "en": "Health & medical", "sr": "Zdravlje i medicina"}},
     ],
     "jobs": [
         {"slug": "vacancies", "name": {"ru": "Вакансии", "en": "Vacancies", "sr": "Poslovi"}},
@@ -109,6 +134,7 @@ SUBCATEGORIES: dict[str, list[dict]] = {
         {"slug": "equipment", "name": {"ru": "Оборудование", "en": "Equipment", "sr": "Oprema"}},
         {"slug": "ready-business", "name": {"ru": "Готовый бизнес", "en": "Businesses for sale", "sr": "Biznis na prodaju"}},
         {"slug": "supplies", "name": {"ru": "Расходники и упаковка", "en": "Supplies & packaging", "sr": "Potrošni materijal"}},
+        {"slug": "agriculture", "name": {"ru": "Сельское хозяйство", "en": "Agriculture", "sr": "Poljoprivreda"}},
     ],
 }
 

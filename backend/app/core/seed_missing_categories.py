@@ -25,6 +25,62 @@ from app.models import Category
 # Названия сразу на трёх языках: раздел без перевода показывается
 # служебным именем, и мы это уже проходили.
 NEW = {
+    # Разделы, которых не хватало по сравнению с сербскими площадками.
+    #
+    # Собрано по KupujemProdajem и OLX.ba — тому, чем здесь и правда
+    # торгуют. Часть из этого для Сербии обязательна: участки и
+    # посуточная аренда (сплавы, Златибор, Копаоник), сельхозтехника и
+    # домашний скот, стройматериалы, зимний спорт, рыбалка.
+    #
+    # Услуги расширены сильнее всего: у нас было семь видов, а люди
+    # ищут мастеров, нянь, фотографов, помощь с документами и визами —
+    # без этих разделов объявления оседали в «Разном».
+    "real-estate": [
+        ("land", "Участки и земля", "Land and plots", "Placevi i zemljište", []),
+        ("daily-rent", "Посуточно и на отдых", "Daily and holiday rent", "Dnevni najam i vikendice", []),
+    ],
+    "auto": [
+        ("trailers", "Прицепы и дома на колёсах", "Trailers and campers", "Prikolice i kamperi", []),
+        ("water", "Лодки и катера", "Boats", "Čamci i plovila", []),
+        ("agri", "Сельхозтехника", "Farm machinery", "Poljoprivredne mašine", []),
+        ("e-transport", "Самокаты и электротранспорт", "Scooters and e-transport", "Trotineti i e-prevoz", []),
+    ],
+    "electronics": [
+        ("components", "Комплектующие", "PC components", "Komponente", []),
+        ("smart-home", "Умный дом", "Smart home", "Pametna kuća", []),
+    ],
+    "home-garden": [
+        ("building", "Стройматериалы", "Building materials", "Građevinski materijal", []),
+        ("plumbing", "Сантехника и отопление", "Plumbing and heating", "Vodovod i grejanje", []),
+        ("textile", "Текстиль для дома", "Home textile", "Tekstil za kuću", []),
+    ],
+    "fashion": [
+        ("jewelry", "Украшения", "Jewellery", "Nakit", []),
+    ],
+    "kids": [
+        ("car-seats", "Автокресла", "Car seats", "Auto-sedišta", []),
+        ("kids-transport", "Детский транспорт", "Kids bikes and scooters", "Bicikli i trotineti za decu", []),
+    ],
+    "hobby-sport": [
+        ("winter-sport", "Зимний спорт", "Winter sports", "Zimski sportovi", []),
+        ("fishing-hunting", "Рыбалка и охота", "Fishing and hunting", "Pecanje i lov", []),
+        ("board-games", "Настольные игры", "Board games", "Društvene igre", []),
+    ],
+    "pets": [
+        ("pets-birds", "Птицы", "Birds", "Ptice", []),
+        ("pets-farm", "Домашний скот и птица", "Farm animals", "Domaće životinje", []),
+    ],
+    "services": [
+        ("construction", "Строительство и ремонт", "Construction and renovation", "Građevina i renoviranje", []),
+        ("childcare", "Няни и уход", "Childcare and care", "Čuvanje dece i nega", []),
+        ("photo-video", "Фото и видео", "Photo and video", "Foto i video", []),
+        ("events", "Праздники и мероприятия", "Events", "Proslave i događaji", []),
+        ("docs-visa", "Документы и визы", "Documents and visas", "Dokumenti i vize", []),
+        ("medical", "Здоровье и медицина", "Health and medical", "Zdravlje i medicina", []),
+    ],
+    "business": [
+        ("agriculture", "Сельское хозяйство", "Agriculture", "Poljoprivreda", []),
+    ],
     # Одежда: внутри «Женского» и «Мужского» не было ничего, и пятьсот
     # объявлений висели в родительском разделе — искать в них
     # невозможно.
