@@ -96,6 +96,26 @@ export default function TgPost() {
 
   const shown = category || guess?.category
 
+  // Переход к полной форме — сразу со входом.
+  //
+  // В публикаторе вход не нужен вовсе, Telegram сам говорит, кто это.
+  // А на сайте человек упрётся в «Войдите» и, скорее всего, уйдёт:
+  // он шёл размещать квартиру, а не вспоминать пароль. Просим у
+  // сервера одноразовый ключ и открываем сайт уже вошедшим.
+  const openFullForm = async (event) => {
+    const app = tg()
+    if (!app?.initData) return           // не в Telegram — обычная ссылка
+    event.preventDefault()
+    try {
+      const res = await api.tgSiteLink(app.initData, '/post')
+      app.openLink ? app.openLink(res.url) : window.open(res.url, '_blank')
+    } catch {
+      // Ключ не выдали — отправляем как есть: на сайте его встретит
+      // обычный вход, и это лучше, чем никуда не отправить.
+      window.open('https://plonk.rs/post', '_blank')
+    }
+  }
+
   const pickPhotos = async (event) => {
     const chosen = Array.from(event.target.files || []).slice(0, 8 - photos.length)
     if (!chosen.length) return
@@ -459,6 +479,7 @@ export default function TgPost() {
         href="https://plonk.rs/post"
         target="_blank"
         rel="noopener noreferrer"
+        onClick={openFullForm}
       >
         <span className="tg-my-entry-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"

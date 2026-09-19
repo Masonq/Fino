@@ -379,6 +379,10 @@ export const api = {
     method: 'POST',
     body: JSON.stringify(payload),
   }),
+  tgSiteLink: (initData, next) => request('/tg/site-link', {
+    method: 'POST',
+    body: JSON.stringify({ init_data: initData, next }),
+  }),
   tgMyListings: (lang) => request(`/tg/my?${new URLSearchParams({ lang })}`),
   tgMarkSold: (id) => request(`/tg/my/${id}/sold`, { method: 'POST' }),
   tgRenewListing: (id) => request(`/tg/my/${id}/renew`, { method: 'POST' }),

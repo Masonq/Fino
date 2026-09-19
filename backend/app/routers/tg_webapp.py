@@ -134,3 +134,34 @@ def webapp_auth(payload: WebAppIn, request: Request, db: Session = Depends(get_d
             "must_rename": bool(user.must_rename),
         },
     }
+
+
+class SiteLinkIn(BaseModel):
+    init_data: str
+    next: str = "/post"
+
+
+@router.post("/site-link")
+def site_link(payload: SiteLinkIn):
+    """
+    Ссылка на сайт, по которой человек попадает уже вошедшим.
+
+    Он только что работал в публикаторе, где вход не нужен вовсе, — и
+    упереться на сайте в «Войдите» значит потерять его на ровном месте.
+    Выдаём тот же одноразовый ключ, что бот выдаёт по кнопке «Войти на
+    сайт»: действует пять минут и только для него.
+    """
+    data = check_init_data(payload.init_data)
+    if not data:
+        raise HTTPException(401, "bad_init_data")
+
+    from app.routers.auth_telegram import issue
+
+    name = " ".join(x for x in (data.get("first_name"), data.get("last_name")) if x)
+    key = issue(int(data["id"]), name or None, data.get("username"))
+
+    # Адрес внутри сайта и только: «next» приходит со страницы, и без
+    # проверки им можно было бы увести человека куда угодно.
+    where = payload.next if payload.next.startswith("/") else "/post"
+    site = settings.public_base_url.rstrip("/")
+    return {"url": f"{site}/enter?key={key}&next={where}"}

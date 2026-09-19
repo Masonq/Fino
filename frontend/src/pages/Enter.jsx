@@ -26,7 +26,11 @@ export default function Enter() {
       .then((res) => {
         signIn(res.access_token, res.user)
         // Ведём сразу к объявлениям: за ними человек и шёл.
-        navigate('/my', { replace: true })
+        // Куда человек шёл. Раньше всех уводило в «Мои объявления»,
+        // и тот, кто нажал «разместить квартиру», попадал в список
+        // вместо формы — и заново искал, куда нажать.
+        const next = params.get('next')
+        navigate(next && next.startsWith('/') ? next : '/my', { replace: true })
       })
       .catch((e) => { if (e.code === 'user_blocked') setBlocked(true); else setFailed(true) })
   }, [params, signIn, navigate])
