@@ -34,7 +34,7 @@ function ContactEmail({ value }) {
 const fmt = (n) => (n ?? 0).toLocaleString('ru-RU').replace(/\u00a0/g, '\u2009')
 
 export default function Profile() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { user, loading, lastKnownRole, signOut } = useAuth()
   // Липкая боковая колонка — тот же хук, что и на лендинге раздела
