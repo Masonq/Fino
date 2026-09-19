@@ -352,6 +352,10 @@ def run(limit: int | None, apply: bool, use_ai: bool = True,
     # Запас кончился ещё до начала — предупреждаем и идём по правилам.
     # Раньше проход в этом случае зависал: на каждое объявление он шёл
     # к четырём провайдерам подряд, ждал отказа и выдерживал паузу.
+    # Двадцать секунд на ответ плюс пауза между обращениями: если
+    # запас кончился, каждое спорное объявление стоит этой паузы. При
+    # трёх с половиной тысячах это часы ожидания впустую, поэтому
+    # ниже мы выключаем модель после трёх молчаний подряд.
     if use_ai and not _ai_available():
         log.warning("у нейросети кончился дневной запас — работаем по правилам")
         use_ai = False
@@ -363,6 +367,8 @@ def run(limit: int | None, apply: bool, use_ai: bool = True,
     # неудобно: адрес объявления, старый и новый заголовок рядом дают
     # проверить решение глазами и вернуть лишнее.
     report: list[dict] = []
+    # Сколько раз подряд модель промолчала.
+    silent = 0
     try:
         from app.core.retitle import _section_names
 
@@ -376,8 +382,10 @@ def run(limit: int | None, apply: bool, use_ai: bool = True,
 
         for listing in query.all():
             counts["проверено"] += 1
-            if counts["проверено"] % 200 == 0:
-                log.info("разобрано %s", counts["проверено"])
+            if counts["проверено"] % 250 == 0:
+                # В консоль, а не только в лог: иначе долгий проход
+                # выглядит зависшим.
+                print(f"  разобрано {counts['проверено']}…", flush=True)
             translations = list(listing.translations)
             if not translations:
                 continue
@@ -426,10 +434,20 @@ def run(limit: int | None, apply: bool, use_ai: bool = True,
                     if listing.category and listing.category.name else None,
                 )
                 if answer is None:
-                    # Запас кончился: спорное откладываем до следующего
-                    # захода, очевидное продолжаем разбирать.
+                    # Запас кончился или сеть отказала. Спорное
+                    # откладываем, а после трёх отказов подряд
+                    # перестаём звать модель вовсе: иначе каждый
+                    # следующий заход к ней — это ожидание ответа,
+                    # которого не будет, и проход выглядит зависшим.
                     counts["отложено"] += 1
+                    silent += 1
+                    if silent >= 3:
+                        log.warning("нейросеть не отвечает — дальше только правила")
+                        print("нейросеть не отвечает — спорные откладываем, "
+                              "разбираем очевидное")
+                        use_ai = False
                     continue
+                silent = 0
                 if answer["verdict"] == "keep":
                     continue
                 if answer["verdict"] == "fix" and _acceptable(answer["title"], title, sections):
@@ -452,6 +470,7 @@ def run(limit: int | None, apply: bool, use_ai: bool = True,
                     continue
                 reason = answer["reason"] or "непонятно, что продают"
             elif verdict_name == "unsure":
+                # Модель выключена: спорное не трогаем.
                 # Спорное без запаса — не трогаем вовсе.
                 counts["отложено"] += 1
                 continue
