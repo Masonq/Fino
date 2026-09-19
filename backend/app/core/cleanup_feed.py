@@ -112,8 +112,12 @@ def _is_shouting(body: str) -> bool:
     прогоне. По-русски же заглавные в названии вещи не нужны, и «ПРОДАМ
     СРОЧНО» остаётся криком.
     """
+    # Порог по длине выше прежнего: «Стул ИКЕА» — восемь кириллических
+    # букв, из них пять заглавных, и по старому счёту это был крик,
+    # хотя ИКЕА так и пишется. Крик — это когда заглавными набрана
+    # целая фраза, а не одно название.
     cyr = [c for c in body if "а" <= c.lower() <= "я" or c.lower() == "ё"]
-    return len(cyr) >= 8 and sum(c.isupper() for c in cyr) > len(cyr) * 0.6
+    return len(cyr) >= 12 and sum(c.isupper() for c in cyr) > len(cyr) * 0.6
 
 
 def _tidy(title: str | None) -> str:
@@ -280,6 +284,12 @@ def _obvious(title: str, sections: set[str]) -> str:
     промахивались.
     """
     body = (title or "").strip()
+    if len(body) < 3:
+        return "пустой заголовок"
+    # Три-четыре знака — это может быть и мусор («Все»), и модель
+    # («PS5», «iMac»). Решать вслепую нельзя, отдаём модели.
+    if len(body) < 5 and not body.isalpha():
+        return "unsure"
     if len(body) < 4:
         return "пустой заголовок"
     if _is_section_name(body, sections):
