@@ -16,14 +16,27 @@ import { useEffect, useRef } from 'react'
  */
 export function useKeepPlace(key) {
   const restored = useRef(false)
+  // Пока возвращаем страницу на место, запись выключена: иначе наш же
+  // scrollTo поднимает событие прокрутки, оно записывает новое
+  // значение, а восстановление ставит старое — и страница дёргается
+  // между двумя позициями, что и было видно.
+  const restoring = useRef(false)
 
   useEffect(() => {
     if (restored.current) return
     restored.current = true
 
+    // Браузер умеет возвращать страницу на место сам — но по своему
+    // разумению и в свой момент. Вдвоём с нашим восстановлением они
+    // тянут страницу каждый к своей позиции; просим браузер не
+    // вмешиваться.
+    try { window.history.scrollRestoration = 'manual' } catch { /* не беда */ }
+
     let saved = 0
     try { saved = Number(sessionStorage.getItem(`place:${key}`) || 0) } catch { /* не беда */ }
     if (saved <= 0) return
+
+    restoring.current = true
 
     // Список при возврате грузится заново: сперва скелетоны, потом
     // записи. Прокручивать в этот момент ещё некуда — страница
@@ -37,22 +50,32 @@ export function useKeepPlace(key) {
       if (reachable >= saved - 4) {
         window.scrollTo(0, saved)
         clearInterval(timer)
+        // Отпускаем запись через кадр: событие от нашего же scrollTo
+        // придёт следующим, и до него писать нельзя.
+        requestAnimationFrame(() => { restoring.current = false })
         return
       }
       // Полторы секунды — это дольше любой загрузки списка. Если за это
       // время страница не выросла, записей стало меньше: прокручивать
       // некуда, и настаивать незачем.
-      if (tries >= 15) clearInterval(timer)
+      if (tries >= 15) {
+        clearInterval(timer)
+        restoring.current = false
+      }
     }, 100)
 
-    return () => clearInterval(timer)
+    return () => {
+      clearInterval(timer)
+      restoring.current = false
+    }
   }, [key])
 
   useEffect(() => {
     const remember = () => {
       // Ноль не запоминаем: он приходит и в тот момент, когда страница
       // только открылась и ещё ничего не прокручено, — и затирал бы
-      // настоящее место.
+      // настоящее место. И не пишем, пока идёт восстановление.
+      if (restoring.current) return
       if (window.scrollY > 0) {
         try { sessionStorage.setItem(`place:${key}`, String(window.scrollY)) } catch { /* не беда */ }
       }
