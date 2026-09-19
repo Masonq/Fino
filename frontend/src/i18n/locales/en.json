@@ -239,7 +239,9 @@
     "title_no_rooms": "Apartment",
     "title_area_fmt": "{{head}}, {{area}} m²",
     "title_auto_hint": "The title is built from the number of rooms and area — this makes listings easier to scan and compare",
-    "need_description": "Add a description"
+    "need_description": "Add a description",
+    "contact_hint": "The description contains contacts ({{found}}). Remove them: buyers message through the site, and a number in the text stays in search forever.",
+    "contact_fix": "Remove"
   },
   "detail": {
     "loading": "Loading…",

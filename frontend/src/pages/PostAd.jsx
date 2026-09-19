@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import ContactHint from '../components/ContactHint'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
@@ -493,6 +494,11 @@ export default function PostAd() {
             <div className="post-field">
               <label>{t('listing.description')}</label>
               <textarea rows="4" maxLength={4000} value={description} onChange={(e) => setDescription(e.target.value)} />
+              {/* Телефон в описании продавцу кажется удобством, а на
+                  деле уводит переписку мимо сайта — вместе с историей
+                  сделки, отзывом и возможностью пожаловаться. Не
+                  запрещаем, а показываем и предлагаем убрать. */}
+              <ContactHint text={description} onFix={setDescription} />
             </div>
             <div className="post-field">
               <label>{t('post.photos')} · {photos.length}/10</label>

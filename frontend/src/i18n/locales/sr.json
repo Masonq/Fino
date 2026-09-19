@@ -239,7 +239,9 @@
     "title_no_rooms": "Stan",
     "title_area_fmt": "{{head}}, {{area}} m²",
     "title_auto_hint": "Naslov se sam sastavlja od broja soba i površine — tako se oglasi lakše pretražuju i upoređuju",
-    "need_description": "Dodajte opis"
+    "need_description": "Dodajte opis",
+    "contact_hint": "U opisu su kontakti ({{found}}). Uklonite ih: kupci pišu preko sajta, a broj u tekstu zauvek ostaje u pretrazi.",
+    "contact_fix": "Ukloni"
   },
   "detail": {
     "loading": "Učitavanje…",

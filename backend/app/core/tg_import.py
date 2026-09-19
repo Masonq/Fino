@@ -51,6 +51,7 @@ from app.core.tg_parse import (
     looks_like_ad, looks_like_spam, looks_sold, parse,
 )
 from app.core.tg_sources import CHATS, is_resume, topic_category, topic_sub_hint
+from app.core.contacts import strip_contacts
 from app.core.translate import translate_listing
 from app.core.watermark import has_watermark, ready as watermark_ready
 from app.models import (
@@ -283,6 +284,11 @@ def screen(text: str, chat_id: int, topic_id: int | None,
     # канал») уводят покупателя к другому продавцу и занимают место,
     # где человек ищет состояние и размер.
     parsed["description"] = strip_promo_lines(strip_markdown(parsed["description"]))
+    # Чужой телефон и ник в нашей ленте: по ним пишут мимо сайта, а сам
+    # номер остаётся в поиске навсегда. Спросить автора мы не можем —
+    # вырезаем. Ник автора при этом сохраняется отдельным полем, и
+    # связаться с ним по-прежнему можно.
+    parsed["description"] = strip_contacts(parsed["description"])
     # Правила сказали своё слово; если вышло сухо — просим модель назвать
     # предмет. Её ответ проверяется теми же правилами, так что хуже не
     # станет: не подойдёт — останется то, что есть.

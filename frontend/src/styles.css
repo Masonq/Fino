@@ -4845,3 +4845,15 @@ a.s-attrs{ display:block; }
   margin-top:2px; font-size:12.5px; color:var(--muted); font-weight:600; line-height:1.3;
   display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
 }
+
+/* ===== контакты в описании ===== */
+.contact-hint{
+  display:flex; align-items:center; gap:10px; margin-top:8px;
+  padding:10px 12px; border-radius:12px;
+  background:var(--warn-bg); color:var(--warn-ink);
+}
+.contact-hint-text{ flex:1; min-width:0; font-size:12.5px; line-height:1.4; font-weight:600; }
+.contact-hint button{
+  flex-shrink:0; padding:7px 12px; border-radius:9px;
+  background:var(--surface); color:var(--ink); font-size:12.5px; font-weight:800;
+}

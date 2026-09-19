@@ -34,6 +34,7 @@ import re
 
 from app.core.ai_title import clean_listing_title
 from app.core.audit import record
+from app.core.contacts import strip_contacts
 from app.core.clock import utcnow
 from app.core.database import SessionLocal
 from app.core.tg_parse import build_title, strip_promo_lines
@@ -403,6 +404,10 @@ def run(limit: int | None, apply: bool, use_ai: bool = True,
 
             # 1. Описание
             cleaned = strip_promo_lines(tr.description)
+            if listing.external_source:
+                # Только у перенесённых: своего продавца мы просим
+                # убрать номер сами, а не правим за него.
+                cleaned = strip_contacts(cleaned)
             if cleaned != (tr.description or "").strip():
                 counts["описаний почищено"] += 1
                 report.append({
