@@ -976,7 +976,7 @@
     "step_1": "Send your friend the link",
     "step_2": "They follow it and post a listing",
     "step_3": "The listing passes review — both balances are topped up",
-    "stat_earned": "RSD",
+    "stat_earned": "earned RSD",
     "q_who": "Who can I invite?",
     "a_who": "Anyone without a PLONK account yet. Someone already registered won't count — the link simply won't recognise them.",
     "q_what": "What does my friend have to do?",
@@ -984,7 +984,12 @@
     "q_when": "When does the money arrive?",
     "a_when": "Right after the listing is approved. Usually within minutes; overnight, by morning.",
     "q_spend": "What can I spend it on?",
-    "a_spend": "On promoting your own listings: bump, highlight, bigger card. Withdrawal isn't possible."
+    "a_spend": "On promoting your own listings: bump, highlight, bigger card. Withdrawal isn't possible.",
+    "stat_posted": "posted a listing",
+    "people_title": "Who you invited",
+    "state_joined": "Signed up — waiting for the first listing",
+    "state_posted": "Posted a listing — the bonus comes after review",
+    "state_rewarded": "Bonus paid: {{amount}} RSD"
   },
   "footer": {
     "about": "Classifieds in Serbia — in Russian, English and Serbian. Buy and sell close to home.",

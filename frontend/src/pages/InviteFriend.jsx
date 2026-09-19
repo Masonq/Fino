@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Avatar from '../components/Avatar'
 import { useTranslation } from 'react-i18next'
 
 import { api } from '../api/client'
@@ -96,21 +97,46 @@ export default function InviteFriend() {
         ))}
       </div>
 
-      {stats && (stats.invited > 0 || stats.rewarded > 0) && (
-        <div className="invite-stats">
-          <div>
-            <strong>{stats.invited}</strong>
-            <span>{t('invite.stat_invited')}</span>
+      {stats && stats.invited > 0 && (
+        <>
+          {/* Три цифры отвечают на разные вопросы: сколько ссылок
+              разошлось, сколько людей дошли до объявления и сколько
+              вышло денег. Одной цифрой это не сказать. */}
+          <div className="invite-stats">
+            <div>
+              <strong>{stats.invited}</strong>
+              <span>{t('invite.stat_invited')}</span>
+            </div>
+            <div>
+              <strong>{stats.posted}</strong>
+              <span>{t('invite.stat_posted')}</span>
+            </div>
+            <div>
+              <strong>{stats.earned}</strong>
+              <span>{t('invite.stat_earned')}</span>
+            </div>
           </div>
-          <div>
-            <strong>{stats.rewarded}</strong>
-            <span>{t('invite.stat_rewarded')}</span>
-          </div>
-          <div>
-            <strong>{(stats.rewarded || 0) * BONUS}</strong>
-            <span>{t('invite.stat_earned')}</span>
-          </div>
-        </div>
+
+          {/* Сами приглашённые. Без них цифры висят в воздухе: человек
+              не понимает, кто дошёл, а кто застрял на полпути, и не
+              знает, кому напомнить. */}
+          {stats.people?.length > 0 && (
+            <div className="invite-people">
+              <div className="invite-block-title">{t('invite.people_title')}</div>
+              {stats.people.map((person, i) => (
+                <div className="invite-person" key={i}>
+                  <Avatar url={person.avatar_url} name={person.name} size={38} />
+                  <div className="invite-person-text">
+                    <div className="invite-person-name">{person.name}</div>
+                    <div className={`invite-person-state ${person.state}`}>
+                      {t(`invite.state_${person.state}`, { amount: stats.bonus })}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       <div className="invite-faq">

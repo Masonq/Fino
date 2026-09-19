@@ -256,15 +256,65 @@ def my_referrals(
     db: Session = Depends(get_db),
 ):
     """
-    Сколько людей привёл и скольким уже начислен бонус — id для самой
-    ссылки (plonk.rs/?ref=<id>) строится на фронте из user.id, тут
-    только счётчик, отдельным эндпоинтом: не вешаем лишний COUNT-запрос
-    на /auth/me, который дёргается при каждой загрузке приложения.
+    Что вышло из приглашений: сколько позвал, сколько из них дошли до
+    объявления, сколько получено.
+
+    Три цифры, а не одна, потому что они отвечают на разные вопросы.
+    «Позвал» говорит, сколько ссылок разошлось. «Разместили» — сколько
+    из них оказались живыми людьми, а не просто переходами. «Получено»
+    — ради чего всё и затевалось.
+
+    Ниже — сами приглашённые: имя, когда пришёл, что с ним. Без этого
+    цифры висят в воздухе: человек не понимает, кто из позванных
+    дошёл, а кто застрял, и не знает, кому напомнить.
+
+    Отдельным эндпоинтом, а не в /auth/me: тот дёргается при каждом
+    запуске приложения, и вешать на него четыре запроса ради страницы,
+    куда заходят раз в месяц, незачем.
     """
-    total = db.query(User).filter(User.referred_by == user.id).count()
-    rewarded = db.query(User).filter(
-        User.referred_by == user.id, User.referral_reward_given.is_(True)).count()
-    return {"invited_total": total, "invited_rewarded": rewarded}
+    from app.core.referrals import REFERRAL_BONUS
+
+    invited = (db.query(User)
+               .filter(User.referred_by == user.id)
+               .order_by(User.created_at.desc())
+               .all())
+
+    rewarded = [u for u in invited if u.referral_reward_given]
+
+    # Кто дошёл до объявления. Считаем всех, у кого есть хоть одно
+    # объявление в любом состоянии, кроме черновика: человек своё дело
+    # сделал, а что оно на проверке — уже наша забота.
+    ids = [u.id for u in invited]
+    with_listing = set()
+    if ids:
+        rows = (db.query(Listing.owner_id)
+                .filter(Listing.owner_id.in_(ids),
+                        Listing.status != ListingStatus.draft)
+                .distinct().all())
+        with_listing = {row[0] for row in rows}
+
+    def state(person: User) -> str:
+        if person.referral_reward_given:
+            return "rewarded"
+        if person.id in with_listing:
+            return "posted"
+        return "joined"
+
+    return {
+        "invited": len(invited),
+        "posted": len(with_listing),
+        "rewarded": len(rewarded),
+        "earned": int(REFERRAL_BONUS) * len(rewarded),
+        "bonus": int(REFERRAL_BONUS),
+        # Десяти хватает: страница не список контактов, а напоминание,
+        # что приглашения работают.
+        "people": [{
+            "name": person.display_name or "—",
+            "avatar_url": person.avatar_url,
+            "joined_at": person.created_at.isoformat() if person.created_at else None,
+            "state": state(person),
+        } for person in invited[:10]],
+    }
 
 
 @router.get("/me/stats")

@@ -979,7 +979,7 @@
     "share_btn": "Podeli link",
     "copied": "Link kopiran",
     "share_title": "Pridruži se PLONK-u — oglasi Srbije",
-    "stat_invited": "pozvano",
+    "stat_invited": "pozvali",
     "stat_rewarded": "objavilo oglas",
     "fineprint": "Bonus se dodeljuje za svakog pozvanog prijatelja čiji prvi oglas bude odobren. Dodeljuje se jednom po osobi.",
     "link_label": "Vaš link",
@@ -991,7 +991,7 @@
     "step_1": "Pošaljite prijatelju svoj link",
     "step_2": "On uđe preko njega i objavi oglas",
     "step_3": "Oglas prođe proveru — obojici stiže na račun",
-    "stat_earned": "RSD",
+    "stat_earned": "zarađeno RSD",
     "q_who": "Koga mogu da pozovem?",
     "a_who": "Bilo koga ko još nema nalog na PLONK-u. Za već registrovanog bonus ne stiže — link ga jednostavno neće prepoznati.",
     "q_what": "Šta prijatelj treba da uradi?",
@@ -999,7 +999,12 @@
     "q_when": "Kada stiže novac?",
     "a_when": "Odmah nakon odobrenja oglasa. Obično za par minuta, noću — do jutra.",
     "q_spend": "Na šta da potrošim?",
-    "a_spend": "Na promociju svojih oglasa: podizanje, isticanje, veća kartica. Isplata nije moguća."
+    "a_spend": "Na promociju svojih oglasa: podizanje, isticanje, veća kartica. Isplata nije moguća.",
+    "stat_posted": "objavili oglas",
+    "people_title": "Koga ste pozvali",
+    "state_joined": "Registrovao se — čekamo prvi oglas",
+    "state_posted": "Objavio oglas — bonus stiže posle provere",
+    "state_rewarded": "Bonus uplaćen: {{amount}} RSD"
   },
   "footer": {
     "about": "Oglasi u Srbiji — na ruskom, engleskom i srpskom. Kupujte i prodajte u svom komšiluku.",

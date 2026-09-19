@@ -5268,3 +5268,16 @@ a.s-attrs{ display:block; }
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
 .invite-bottom .form-save{ width:100%; margin:0; }
+
+/* Кого позвали: список приглашённых под цифрами. */
+.invite-people{ padding:26px 18px 0; }
+.invite-person{
+  display:flex; align-items:center; gap:12px; padding:10px 0;
+  border-bottom:1px solid var(--border);
+}
+.invite-person:last-child{ border-bottom:none; }
+.invite-person-text{ flex:1; min-width:0; }
+.invite-person-name{ font-size:14px; font-weight:700; }
+.invite-person-state{ margin-top:2px; font-size:12px; font-weight:600; color:var(--muted); line-height:1.35; }
+.invite-person-state.rewarded{ color:var(--primary-deep); }
+.invite-person-state.posted{ color:var(--warn-ink); }
