@@ -238,16 +238,6 @@ export default function Profile() {
           </div>
 
           <BalanceCard />
-          <Link className="invite-card" to="/profile/invite">
-            <span className="invite-card-icon">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
-            </span>
-            <span className="invite-card-text">
-              <b>{t('invite.card_title')}</b>
-              <span>{t('invite.card_subtitle')}</span>
-            </span>
-            <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
-          </Link>
         </div>
 
         <div className="profile-main">
@@ -267,6 +257,18 @@ export default function Profile() {
           их открывают раз в жизни, и место наравне с тем, чем
           пользуются каждый день, им ни к чему. */}
       <div className="profile-menu">
+        {/* Приглашение друзей — обычной строкой списка, а не отдельной
+            карточкой. Карточка висела сама по себе между балансом и
+            списком и читалась как чужая вставка; при этом ведёт она
+            туда же, куда и остальные строки, — на страницу. */}
+        <Link className="profile-row" to="/profile/invite">
+          <span className="profile-row-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+          </span>
+          {t('invite.card_title')}
+          <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+        </Link>
+
         {/* Ждут вашего отзыва. Приглашения живут в переписках, и без
             этой строки человек о них не узнаёт — а отзывы и есть то, на
             чём держится доверие к продавцам. Строки нет, когда ждать
