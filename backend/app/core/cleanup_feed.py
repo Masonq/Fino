@@ -341,6 +341,12 @@ def _acceptable(proposed: str, original: str, sections: set[str]) -> bool:
     return _clear(body)
 
 
+# Сколько раз за заход можно позвать модель. Запас общий с переводом
+# объявлений и переносом из чатов; выбрать его весь одной уборкой
+# значит оставить ленту одноязычной.
+AI_BUDGET = 120
+
+
 def run(limit: int | None, apply: bool, use_ai: bool = True,
         show: int = 0, report_path: str | None = None) -> dict:
     # Показ ничего не меняет, поэтому и нейросеть в нём не зовём: она
@@ -369,6 +375,7 @@ def run(limit: int | None, apply: bool, use_ai: bool = True,
     report: list[dict] = []
     # Сколько раз подряд модель промолчала.
     silent = 0
+    asked = 0
     try:
         from app.core.retitle import _section_names
 
@@ -427,7 +434,14 @@ def run(limit: int | None, apply: bool, use_ai: bool = True,
             if verdict_name == "good":
                 continue
 
+            if verdict_name == "unsure" and use_ai and asked >= AI_BUDGET:
+                # Запас на этот заход исчерпан: спорное ждёт следующей
+                # ночи, а не съедает то, что нужно переводу.
+                counts["отложено"] += 1
+                continue
+
             if verdict_name == "unsure" and use_ai:
+                asked += 1
                 answer = clean_listing_title(
                     title, tr.description,
                     listing.category.name.get("ru")

@@ -1,0 +1,12 @@
+[Unit]
+Description=PLONK — ночная уборка ленты: заголовки и описания
+After=network.target postgresql.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/fino/backend
+# Ограничение на заход: уборка зовёт нейросеть на спорных заголовках,
+# и без предела она выберет весь суточный запас, оставив перевод
+# объявлений без единого обращения. Триста — примерно треть запаса.
+ExecStart=/opt/fino/backend/venv/bin/python3 -m app.core.cleanup_feed --apply --limit 300 --report /opt/fino/reports/cleanup-feed.md
+User=root
