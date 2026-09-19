@@ -98,7 +98,12 @@ def guess_category(payload: GuessIn, db: Session = Depends(get_db)):
         return {"category": None, "sure": False, "options": []}
 
     found, score = _category(db, text)
-    sure = bool(found) and score >= SURE_ENOUGH
+    # Остановились на верхнем разделе, у которого есть подразделы —
+    # считаем, что не уверены: покупателю нужен подраздел, а мы его не
+    # определили.
+    has_children = bool(found) and db.query(Category).filter(
+        Category.parent_id == found.id).first() is not None
+    sure = bool(found) and score >= SURE_ENOUGH and not has_children
 
     def show(category: Category) -> dict:
         names = category.name or {}
@@ -109,16 +114,27 @@ def guess_category(payload: GuessIn, db: Session = Depends(get_db)):
             title = f"{head} → {title}" if head else title
         return {"id": str(category.id), "slug": category.slug, "title": title}
 
-    # Что предложить на выбор: сам угаданный раздел и его соседи —
-    # обычно верный оказывается рядом, а не на другом конце дерева.
+    # Что предложить на выбор.
+    #
+    # Если разбор остановился на верхнем разделе — предлагаем его
+    # подразделы: «Костюм» это «Одежда и обувь», но покупателю нужно
+    # знать, мужской он или женский, а по одному слову этого не понять.
+    # Если подраздел уже найден — предлагаем соседей: верный обычно
+    # рядом, а не на другом конце дерева.
     options = []
     if found:
-        options.append(found)
-        siblings = (db.query(Category)
-                    .filter(Category.parent_id == found.parent_id,
-                            Category.id != found.id)
-                    .limit(3).all()) if found.parent_id else []
-        options.extend(siblings)
+        children = (db.query(Category)
+                    .filter(Category.parent_id == found.id)
+                    .order_by(Category.sort_order, Category.id)
+                    .limit(8).all())
+        if children:
+            options = children
+        else:
+            options = [found]
+            options.extend(db.query(Category)
+                           .filter(Category.parent_id == found.parent_id,
+                                   Category.id != found.id)
+                           .limit(3).all() if found.parent_id else [])
     else:
         options = (db.query(Category)
                    .filter(Category.parent_id.is_(None))

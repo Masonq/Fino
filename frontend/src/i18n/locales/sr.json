@@ -1066,7 +1066,8 @@
     "change": "Promeni",
     "not_sure": "Nismo sigurni — izaberite:",
     "mode_price": "Cena",
-    "mode_free": "Besplatno"
+    "mode_free": "Besplatno",
+    "pick_sub": "Precizirajte da bi stvar našli:"
   },
   "errors": {
     "generic": "Nešto nije u redu. Pokušajte ponovo."

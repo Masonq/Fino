@@ -245,10 +245,16 @@ export default function TgPost() {
               </button>
             </div>
           )}
-          {guess && !guess.sure && !category && (
-            <div className="tg-guess-note">{t('tg_post.not_sure')}</div>
+          {guess && !guess.sure && !category && guess.options?.length > 1 && (
+            <div className="tg-guess-note">
+              {guess.category ? t('tg_post.pick_sub') : t('tg_post.not_sure')}
+            </div>
           )}
-          {(picking || (guess && !guess.sure && !category)) && guess?.options?.length > 0 && (
+          {/* Кнопки показываем, только когда есть из чего выбирать:
+              одна кнопка с тем же разделом, что в строке выше, —
+              бессмысленный повтор. */}
+          {(picking || (guess && !guess.sure && !category))
+            && guess?.options?.length > 1 && (
             <div className="field-chips tg-guess-options">
               {guess.options.map((option) => (
                 <button
