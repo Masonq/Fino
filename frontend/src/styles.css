@@ -4074,7 +4074,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    всю первую страницу — до фильтров и объявлений человек доходил
    только прокруткой. */
 .landing-sub{
-  position:relative; height:82px; padding:11px 12px; border-radius:14px;
+  position:relative; height:68px; padding:10px 12px; border-radius:14px;
   background:var(--tile); border:1px solid var(--border);
   overflow:hidden; text-align:left;
 }
@@ -4083,8 +4083,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   position:relative; z-index:2; display:block; max-width:60%;
   font-size:12.5px; font-weight:700; color:var(--ink); line-height:1.25;
 }
+/* Картинка прежнего размера, а плитка ниже: снимок выходит за верхний
+   и нижний край и обрезается плиткой. Так предмет остаётся крупным и
+   различимым, а ряд занимает меньше места. */
 .landing-sub-art{
-  position:absolute; right:-10px; bottom:-10px; width:74px; height:74px;
+  position:absolute; right:-10px; top:50%; transform:translateY(-50%);
+  width:74px; height:74px;
   z-index:1; pointer-events:none;
 }
 .landing-sub-art img, .landing-sub-art svg{ width:100%; height:100%; object-fit:cover; display:block; }
