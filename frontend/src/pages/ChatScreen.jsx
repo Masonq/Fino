@@ -601,7 +601,8 @@ export default function ChatScreen() {
                   )}
                 </div>
               ) : (
-                <div key={m.id} className={m.sender_id === myId ? 'chat-bubble mine' : 'chat-bubble'}>
+                <div key={m.id} className={m.sender_id === myId ? 'chat-bubble-wrap mine' : 'chat-bubble-wrap'}>
+                <div className={m.sender_id === myId ? 'chat-bubble mine' : 'chat-bubble'}>
                   {m.text}
                   {/* Галочка у своих сообщений: одна — доставлено,
                       две — собеседник открыл чат и прочитал. Без неё
@@ -615,6 +616,22 @@ export default function ChatScreen() {
                       </svg>
                     </span>
                   )}
+                </div>
+
+                {/* На что похоже чужое сообщение. Не прячем и не
+                    блокируем — те же слова пишет и честный продавец, —
+                    но говорим получателю, чего остеречься. Только под
+                    чужими: предупреждать человека о его собственных
+                    словах глупо. */}
+                {m.risk && m.sender_id !== myId && (
+                  <div className="chat-risk">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"
+                         strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 9v4M12 17h.01M10.3 3.9 2.6 17.2a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
+                    </svg>
+                    <span>{t(`chat.risk_${m.risk}`)}</span>
+                  </div>
+                )}
                 </div>
               )
             ))}

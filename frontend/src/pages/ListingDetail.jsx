@@ -30,6 +30,15 @@ const REASON_KEYS = [
   'duplicate', 'prohibited', 'suspicious_price',
 ]
 
+// «Здесь с марта 2025» — дата, которую человек читает, а не разбирает.
+function monthYear(iso, lang) {
+  try {
+    return new Date(iso).toLocaleDateString(lang || 'ru', { month: 'long', year: 'numeric' })
+  } catch {
+    return ''
+  }
+}
+
 export default function ListingDetail() {
   const { slug } = useParams()
 
@@ -1094,6 +1103,30 @@ export default function ListingDetail() {
                 {listing.owner.rating_count > 0
                   ? `${listing.owner.rating_avg?.toFixed(1)} · ${t('rev.count', { count: listing.owner.rating_count })}`
                   : t('rev.none_yet')}
+              </div>
+
+              {/* Факты, по которым человек решает, верить ли продавцу.
+                  Не выдуманный «рейтинг доверия» из формулы, которую
+                  никто не проверит, а то, что проверяется само: сколько
+                  он здесь, подтверждена ли личность, как быстро
+                  отвечает. Вывод человек делает сам. */}
+              <div className="seller-facts">
+                {listing.owner.document_verified && (
+                  <span className="seller-fact ok">{t('seller.fact_verified')}</span>
+                )}
+                {listing.owner.since && (
+                  <span className="seller-fact">
+                    {t('seller.fact_since', { date: monthYear(listing.owner.since, i18n.language) })}
+                  </span>
+                )}
+                {listing.owner.reply_speed && (
+                  <span className="seller-fact">{listing.owner.reply_speed}</span>
+                )}
+                {listing.owner.listings_count > 1 && (
+                  <span className="seller-fact">
+                    {t('seller.fact_listings', { count: listing.owner.listings_count })}
+                  </span>
+                )}
               </div>
             </div>
             {/* шеврон: без него строка не читается как ведущая куда-то */}

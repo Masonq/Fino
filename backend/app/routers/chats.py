@@ -127,6 +127,19 @@ def _serialize_chat(chat: Chat, db: Session, lang: str = "ru", viewer_id=None):
     }
 
 
+def _risk_for(message) -> str | None:
+    """
+    На что похоже сообщение — для предупреждения получателю.
+
+    Считаем на лету, а не храним: правила будут меняться, и старые
+    сообщения должны разбираться по нынешним, а не по тем, что
+    действовали в день отправки.
+    """
+    from app.core.chat_risk import risk_of
+
+    return risk_of(message.text)
+
+
 def _serialize_message(m: Message) -> dict:
     return {
         "id": str(m.id),
@@ -136,6 +149,11 @@ def _serialize_message(m: Message) -> dict:
         "is_read": m.is_read,
         "offer_price": float(m.offer_price) if m.offer_price else None,
         "offer_status": m.offer_status,
+        # На что похоже сообщение: просьба о предоплате, увод в другой
+        # мессенджер, ссылка на «оплату». Не блокируем и не прячем —
+        # те же слова пишет и честный продавец, — а показываем
+        # получателю строку под сообщением.
+        "risk": _risk_for(m),
         "created_at": m.created_at.isoformat(),
     }
 

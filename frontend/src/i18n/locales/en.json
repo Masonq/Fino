@@ -127,7 +127,10 @@
     "typing": "{{name}} is typing…",
     "listing_sold": "sold",
     "listing_archived": "removed",
-    "safety_note": "Meet in person and pay when you get the item. A request to send a deposit up front is the most common scam."
+    "safety_note": "Meet in person and pay when you get the item. A request to send a deposit up front is the most common scam.",
+    "risk_prepay": "They're asking for money up front. Almost every scam starts this way — pay when you get the item.",
+    "risk_elsewhere": "They're moving you to another messenger. No chat history will be left there, and nothing to report.",
+    "risk_paylink": "They sent a payment link. Real sellers don't do that — the page may be collecting your card details."
   },
   "promo": {
     "safe_deal": "Safe deal",
@@ -536,7 +539,11 @@
     "reply_day": "Usually replies within a day",
     "reply_days": "Takes a while to reply",
     "verified": "Identity verified",
-    "active": "Active seller"
+    "active": "Active seller",
+    "fact_verified": "Identity confirmed",
+    "fact_since": "Here since {{date}}",
+    "fact_listings_one": "{{count}} listing",
+    "fact_listings_other": "{{count}} listings"
   },
   "admin": {
     "title": "Users",

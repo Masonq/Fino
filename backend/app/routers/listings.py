@@ -1932,6 +1932,20 @@ def get_listing(listing_id: str, request: Request, db: Session = Depends(get_db)
             # раскрывать номер или нет; если его нет в профиле у
             # продавца совсем, показывать саму иконку незачем.
             "has_phone": bool(listing.owner.phone),
+            # Факты, по которым человек решает, верить ли продавцу.
+            #
+            # Не выдуманный «рейтинг доверия» из формулы, которую никто
+            # не проверит, а то, что проверяется само: сколько он
+            # здесь, сколько у него объявлений, как быстро отвечает.
+            # Выводы человек делает сам — это честнее любой оценки,
+            # выставленной нами.
+            "since": listing.owner.created_at.isoformat() if listing.owner.created_at else None,
+            "listings_count": (
+                db.query(func.count(Listing.id))
+                .filter(Listing.owner_id == listing.owner.id,
+                        Listing.status == ListingStatus.active)
+                .scalar() or 0),
+            "reply_speed": _reply_speed_label(db, listing.owner.id),
         },
         "delivery_available": listing.delivery_available,
         "safe_deal_available": listing.safe_deal_available,
@@ -2628,6 +2642,25 @@ _MID_SENTENCE_RE = re.compile(
     r"вроде|кстати|также|тоже|ещё|еще|потом|затем|поэтому|уже|"
     r"наш|наша|наше|наши|нашего|нашей|моя|мой|моё|мои|"
     r"если|чтобы|пока|хотя|причём|причем)\b", re.I)
+
+
+def _reply_speed_label(db, user_id) -> str | None:
+    """
+    Как быстро продавец отвечает — словами, а не минутами.
+
+    «Отвечает за час» человек понимает сразу, «медиана 47 минут» — нет.
+    Считаем по его же перепискам; если отвечал меньше трёх раз, молчим:
+    по двум ответам вывода не сделать.
+    """
+    try:
+        from app.core.reply_speed import reply_speed, speed_label
+
+        speed = reply_speed(db, user_id)
+        if not speed or speed.get("answered", 0) < 3:
+            return None
+        return speed_label(speed["median_minutes"])
+    except Exception:                                   # noqa: BLE001
+        return None
 
 
 def title_is_clear(title: str | None) -> bool:

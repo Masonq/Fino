@@ -127,7 +127,10 @@
     "typing": "{{name}} kuca…",
     "listing_sold": "prodato",
     "listing_archived": "skinuto",
-    "safety_note": "Nađite se uživo i platite kada preuzmete stvar. Molba da pošaljete kaparu unapred je najčešća prevara."
+    "safety_note": "Nađite se uživo i platite kada preuzmete stvar. Molba da pošaljete kaparu unapred je najčešća prevara.",
+    "risk_prepay": "Traže novac unapred. Tako počinje skoro svaka prevara — platite kada preuzmete stvar.",
+    "risk_elsewhere": "Zovu vas u drugi mesindžer. Tamo neće ostati istorija prepiske, pa nema na šta da se žalite.",
+    "risk_paylink": "Poslali su link za plaćanje. Pravi prodavci to ne rade — stranica može da prikuplja podatke vaše kartice."
   },
   "promo": {
     "safe_deal": "Sigurna kupovina",
@@ -543,7 +546,12 @@
     "reply_day": "Obično odgovara u roku od dana",
     "reply_days": "Ne odgovara odmah",
     "verified": "Identitet potvrđen",
-    "active": "Aktivan prodavac"
+    "active": "Aktivan prodavac",
+    "fact_verified": "Identitet potvrđen",
+    "fact_since": "Ovde od {{date}}",
+    "fact_listings_one": "{{count}} oglas",
+    "fact_listings_few": "{{count}} oglasa",
+    "fact_listings_other": "{{count}} oglasa"
   },
   "admin": {
     "title": "Korisnici",
