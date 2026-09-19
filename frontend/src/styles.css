@@ -5612,3 +5612,76 @@ a.s-attrs{ display:block; }
   display:block; margin-top:1px;
   font-size:11px; font-weight:500; color:var(--muted); opacity:.8;
 }
+
+/* ===== шкала админки =====
+   На одном экране было до двенадцати размеров шрифта и семи радиусов:
+   каждый блок делался отдельно и приносил свои. Глаз читает это как
+   неряшливость, даже не понимая почему.
+
+   Ступеней пять, и каждой отведена своя работа. Радиуса два: мелкое и
+   крупное. Всё в админке пользуется только ими. */
+:root{
+  --a-text-xs: 11px;    /* метки состояния */
+  --a-text-sm: 12.5px;  /* пояснения, даты */
+  --a-text-md: 14.5px;  /* основное: имена, заголовки строк */
+  --a-text-lg: 17px;    /* заголовки блоков */
+  --a-text-xl: 30px;    /* главные числа */
+  --a-round-sm: 10px;   /* фишки, метки, мелкие кнопки */
+  --a-round-lg: 16px;   /* карточки и списки */
+}
+
+.page .admin-list,
+.page .jobs-list,
+.page .stats-list,
+.page .stats-hero-item,
+.page .stats-block,
+.page .alerts-list{ border-radius:var(--a-round-lg); }
+
+.page .admin-chips .chip,
+.page .admin-bar-search,
+.page .admin-sort,
+.page .admin-list .tag,
+.page .mod-seller-pick{ border-radius:var(--a-round-sm); }
+
+.page .admin-row-name,
+.page .audit-what,
+.page .job-name,
+.page .admin-empty-title{ font-size:var(--a-text-md); }
+
+.page .admin-row-sub,
+.page .audit-sub,
+.page .job-done,
+.page .job-reason,
+.page .stats-list-row,
+.page .admin-empty-text{ font-size:var(--a-text-sm); }
+
+.page .admin-list .tag,
+.page .job-numbers,
+.page .job-runs,
+.page .stats-period,
+.page .stats-row-hint{ font-size:var(--a-text-xs); }
+
+.page .stats-block-title,
+.page .invite-block-title{ font-size:var(--a-text-lg); }
+.page .stats-hero-value{ font-size:var(--a-text-xl); }
+
+/* Воронка и ликвидность — на ту же шкалу. Они делались раньше и
+   принесли свои 12, 13, 14 и 15 точек: на одном экране это читается
+   как четыре разных почерка. */
+.page .funnel-name,
+.page .liq-name{ font-size:var(--a-text-sm); }
+.page .funnel-pct,
+.page .liq-hint{ font-size:var(--a-text-xs); }
+.page .funnel-value,
+.page .liq-value,
+.page .stats-sub b{ font-size:var(--a-text-md); font-variant-numeric:tabular-nums; }
+.page .funnel-row,
+.page .liq-row{ border-radius:var(--a-round-sm); }
+
+/* Числа внутри блоков — одной ступени. Были 13 и 15: воронка и
+   список показателей заводили свои размеры, и цифры на одном экране
+   выглядели по-разному значимыми, хотя равны по смыслу. */
+.page .stats-list-row b,
+.page .stats-block b,
+.page .funnel-row b,
+.page .liq-row b{ font-size:var(--a-text-md); font-variant-numeric:tabular-nums; }
