@@ -51,8 +51,12 @@ REASON = "Непонятный заголовок: по названию не в
 # читаться с первого взгляда, а не «в среднем быть ничего».
 _EMOJI_RE = re.compile(
     "[\U0001F300-\U0001FAFF\U00002600-\U000027BF\U0001F1E6-\U0001F1FF]")
-_PHONE_RE = re.compile(r"(\+?\d[\d\s().-]{7,})")
-_SHOUT_RE = re.compile(r"[!?]{2,}|[А-ЯЁA-Z]{5,}\s+[А-ЯЁA-Z]{5,}")
+# Телефон, а не номер модели. «Clarks Chantry Walk 26155071» — артикул,
+# и по прежнему правилу он считался телефоном: восьми цифр подряд для
+# этого хватало. Теперь либо явный плюс с кодом страны, либо девять
+# цифр подряд и больше — короче номера в Сербии не бывает.
+_PHONE_RE = re.compile(r"(\+\d[\d\s().-]{8,}|\b\d{9,}\b)")
+_SHOUT_RE = re.compile(r"[!?]{2,}")
 
 # Слова, которые в заголовке ничего не сообщают о вещи.
 _EMPTY_WORDS = frozenset("""
@@ -87,7 +91,15 @@ def _clear(title: str | None) -> bool:
         return False
 
     # Крик: «СРОЧНО!!!», «ПРОДАМ ДЁШЕВО».
+    #
+    # Заглавные считаем по всей строке, а не по двум словам подряд:
+    # «Велосипед CANNONDALE TOPSTONE» и «MSI GeForce RTX VENTUS» — это
+    # названия моделей, они пишутся заглавными по делу. Криком считаем
+    # строку, где заглавными набрано больше половины букв.
     if _SHOUT_RE.search(body):
+        return False
+    letters = [c for c in body if c.isalpha()]
+    if len(letters) >= 10 and sum(c.isupper() for c in letters) > len(letters) * 0.6:
         return False
 
     # Больше одного значка: «🔥 Диван 🔥 дёшево 🔥».
@@ -116,7 +128,14 @@ def _clear(title: str | None) -> bool:
         return False
 
     # Слишком длинный — это уже не название, а первая строка описания.
-    if len(words) > 10 or len(body) > 90:
+    #
+    # Считаем только слова: у техники заголовок законно длинный из-за
+    # характеристик — «Ноутбук HP 255 G7 / Ryzen 5 / 8 GB / SSD 256 GB»
+    # это четырнадцать «слов», но каждое по делу. Поэтому числа,
+    # обозначения и разделители в счёт не идут.
+    wordy = [w for w in words if len(w) > 2 and not any(c.isdigit() for c in w)
+             and w not in {"gb", "tb", "ssd", "hdd"}]
+    if len(wordy) > 10 or len(body) > 110:
         return False
 
     return True
