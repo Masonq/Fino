@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Plonk from './Plonk'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 
@@ -39,7 +40,7 @@ export default function BalanceCard() {
         <div>
           <div className="balance-label">{t('balance.title')}</div>
           <div className="balance-amount">
-            {balance === null ? '…' : t('promo.price', { price: balance })}
+            {balance === null ? '…' : <Plonk amount={balance} />}
           </div>
         </div>
         <button className="balance-topup-btn" onClick={() => setOpen((v) => !v)}>
@@ -56,7 +57,7 @@ export default function BalanceCard() {
                 className={amount === p ? 'balance-preset active' : 'balance-preset'}
                 onClick={() => setAmount(p)}
               >
-                {t('money.plonk', { count: p })}
+                <Plonk amount={p} />
               </button>
             ))}
           </div>

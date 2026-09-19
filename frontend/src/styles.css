@@ -5268,3 +5268,9 @@ a.s-attrs{ display:block; }
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
 .invite-bottom .form-save{ width:100%; margin:0; }
+
+/* ===== плонки ===== */
+.plonk{ display:inline-flex; align-items:center; gap:.28em; white-space:nowrap; }
+/* Значок ростом с цифры, а не с прописную букву: вровень с текстом он
+   выглядит частью числа, а не приклеенной картинкой. */
+.plonk-icon{ width:.92em; height:.92em; flex-shrink:0; }
