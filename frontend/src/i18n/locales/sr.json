@@ -758,7 +758,7 @@
     "email_code_expired": "Kod je istekao — zatražite novi",
     "must_rename": "Moderator je poništio vaše ime — staro se nije moglo pročitati. Unesite novo; do tada ne možete postavljati oglase ni pisati prodavcima.",
     "bad_name": "To ime ne može: nema slova ili su skoro sami znakovi.",
-    "photo_title": "Slika profila",
+    "photo_title": "Profilna slika",
     "company_title": "Poslovni nalog",
     "company_locked_ph": "Dostupno nakon provere identiteta"
   },

@@ -4578,7 +4578,7 @@ a.s-attrs{ display:block; }
 .field-prefix{ font-size:16px; font-weight:800; color:var(--ink); flex-shrink:0; }
 .field-lock{ width:17px; height:17px; color:var(--muted); flex-shrink:0; }
 .field-value-row{ display:flex; align-items:center; gap:10px; }
-.field-value{ flex:1; min-width:0; font-size:15.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.field-value{ flex:1; min-width:0; font-size:16px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .field-value.empty{ color:var(--muted); font-weight:500; }
 .field-action{ font-size:13px; font-weight:800; color:var(--primary-deep); flex-shrink:0; }
 .field-sub{ display:flex; flex-direction:column; gap:9px; }
@@ -4607,3 +4607,75 @@ a.s-attrs{ display:block; }
 .form-card .verify-upload.disabled{ opacity:.5; }
 .form-card .verify-status{ display:flex; align-items:center; gap:9px; padding:10px 0 14px; font-size:14px; font-weight:700; }
 .form-card .verify-status svg{ width:20px; height:20px; }
+
+/* ===== «Мои данные»: карточки со строками =====
+   Было: подписи и поля вперемешку, каждое со своим фоном — экран
+   выглядел анкетой из разных кусков. Стало: карточки, внутри строки
+   «подпись сверху, значение снизу», разделённые тонкой линией. */
+.form-card{
+  background:var(--surface); border-radius:17px; margin:0 12px 12px;
+  padding:4px 15px; box-shadow:var(--shadow);
+}
+.form-card-title{
+  font-size:12px; font-weight:800; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--muted); padding:14px 0 6px;
+}
+.form-card-avatar{ display:flex; align-items:center; gap:14px; padding:15px; }
+.form-card-avatar .profile-avatar{ width:62px; height:62px; font-size:22px; flex-shrink:0; }
+.form-avatar-text{ min-width:0; }
+.form-avatar-title{ font-size:14.5px; font-weight:800; }
+.form-avatar-pick{
+  display:inline-block; margin-top:6px; font-size:13px; font-weight:700;
+  color:var(--primary-deep); cursor:pointer;
+}
+
+.field-row{ display:block; padding:12px 0; border-top:1px solid var(--line); }
+.form-card > .field-row:first-child,
+.form-card > .form-card-title + .field-row{ border-top:none; }
+.field-label{ display:block; font-size:11.5px; font-weight:700; color:var(--muted); margin-bottom:3px; }
+/* 16px — не вкусовщина: на меньшем iOS увеличивает страницу при
+   касании поля, и вёрстка уезжает. */
+.field-input{
+  width:100%; border:none; background:transparent; padding:0; font-size:16px;
+  font-family:inherit; color:var(--ink); font-weight:600;
+}
+.field-input::placeholder{ color:#B6BDB8; font-weight:500; }
+.field-input:disabled{ color:var(--muted); }
+.field-textarea{ resize:vertical; line-height:1.4; min-height:76px; }
+.field-phone{ display:flex; align-items:center; gap:7px; }
+.field-prefix{ font-size:16px; font-weight:800; color:var(--ink-soft); flex-shrink:0; }
+.field-lock{ width:17px; height:17px; color:var(--muted); flex-shrink:0; }
+.field-value-row{ display:flex; align-items:center; gap:10px; }
+.field-value{ flex:1; min-width:0; font-size:16px; font-weight:600; overflow:hidden; text-overflow:ellipsis; }
+.field-value.empty{ color:#B6BDB8; font-weight:500; }
+.field-action{ font-size:13px; font-weight:800; color:var(--primary-deep); flex-shrink:0; }
+.field-sub{ display:flex; flex-direction:column; gap:9px; }
+.field-sub input{
+  border:1px solid var(--border-strong); border-radius:11px; padding:11px 12px; background:var(--surface-sunken);
+}
+.field-sub-actions{ display:flex; gap:8px; }
+.field-sub-actions button{
+  flex:1; height:40px; border-radius:11px; background:var(--primary); color:#fff;
+  font-size:13.5px; font-weight:800;
+}
+.field-sub-actions button:disabled{ opacity:.5; }
+.field-sub-actions button.ghost{ background:var(--surface-sunken); color:var(--ink); }
+.field-note{ font-size:12.5px; line-height:1.45; color:var(--muted); margin:8px 0; }
+
+.form-save{
+  display:block; width:calc(100% - 24px); margin:4px 12px 14px; height:50px;
+  border-radius:15px; background:var(--primary); color:#fff; font-size:15px; font-weight:800;
+}
+.form-save:disabled{ opacity:.6; }
+.form-secondary{
+  width:100%; height:44px; margin:4px 0 14px; border-radius:12px;
+  background:var(--surface-sunken); color:var(--ink); font-size:14px; font-weight:800;
+}
+.verify-line{
+  display:flex; align-items:center; gap:9px; padding:10px 0 14px;
+  font-size:14px; font-weight:700; color:var(--ink);
+}
+.verify-line svg{ width:19px; height:19px; }
+.verify-line.ok{ color:var(--primary-deep); }
+.verify-line.wait{ color:var(--warn-ink); }
+.verify-line.bad{ display:block; color:var(--danger-ink); }

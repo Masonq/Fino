@@ -321,39 +321,41 @@ export default function EditProfile() {
         {done ? t('edit_profile.saved') : t('edit_profile.save')}
       </button>
 
-      {/* Проверка документа — отдельное действие от правки профиля,
-          со своим статусом и загрузкой, поэтому вне общей формы и
-          кнопки «Сохранить». */}
+      {/* Проверка личности — отдельное действие со своим статусом,
+          поэтому вне формы и кнопки «Сохранить». Длинное объяснение
+          показываем только тем, кто ещё не начал: прошедшему проверку
+          достаточно строки со статусом. */}
       <div className="form-card">
         <div className="form-card-title">{t('verify.title')}</div>
         {!verify ? (
-          <p className="verify-hint">{t('actions.loading')}</p>
+          <p className="field-note">{t('actions.loading')}</p>
         ) : verify.status === 'verified' ? (
-          <div className="verify-status verified">
+          <div className="verify-line ok">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M20 6 9 17l-5-5" /></svg>
             {t('verify.verified')}
           </div>
         ) : verify.status === 'pending' ? (
-          <div className="verify-status pending">
+          <div className="verify-line wait">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></svg>
             {t('verify.pending')}
           </div>
         ) : (
           <>
             {verify.status === 'rejected' && (
-              <div className="verify-status rejected">
+              <div className="verify-line bad">
                 {t('verify.rejected')}
-                {verify.reason && <div className="verify-reason">{verify.reason}</div>}
+                {verify.reason && <div className="field-note">{verify.reason}</div>}
               </div>
             )}
-            <p className="verify-hint">{t('verify.hint')}</p>
-            <button className={verifyBusy ? 'verify-upload disabled' : 'verify-upload'} disabled={verifyBusy} onClick={submitDoc}>
+            <p className="field-note">{t('verify.hint')}</p>
+            <button className="form-secondary" disabled={verifyBusy} onClick={submitDoc}>
               {verifyBusy ? '…' : t('verify.upload')}
             </button>
             {verifyError && <p className="auth-error">{verifyError}</p>}
           </>
         )}
       </div>
+
     </div>
   )
 }
