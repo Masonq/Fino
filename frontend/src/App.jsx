@@ -28,6 +28,7 @@ const Notifications = lazy(() => import('./pages/Notifications'))
 const ListingDashboard = lazy(() => import('./pages/ListingDashboard'))
 const WaitingReviews = lazy(() => import('./pages/WaitingReviews'))
 const TgPost = lazy(() => import('./pages/TgPost'))
+const TgMy = lazy(() => import('./pages/TgMy'))
 const LegalDoc = lazy(() => import('./pages/LegalDoc'))
 const Chats = lazy(() => import('./pages/Chats'))
 const Login = lazy(() => import('./pages/Login'))
@@ -426,6 +427,7 @@ export default function App() {
           {/* Публикатор внутри Telegram — без общей оболочки сайта:
               нижнего меню и шапки там быть не должно. */}
           <Route path="/tg/post" element={<TgPost />} />
+          <Route path="/tg/my" element={<TgMy />} />
           <Route path="/terms" element={<LegalDoc doc="terms" />} />
           <Route path="/privacy" element={<LegalDoc doc="privacy" />} />
           <Route path="/rules" element={<LegalDoc doc="rules" />} />

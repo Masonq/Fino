@@ -20,13 +20,14 @@ import uuid
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy import func
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.core.auth import get_current_user, require_named_user
 from app.core.clock import utcnow
 from app.core.contacts import find_contacts
 from app.core.database import SessionLocal, get_db
 from app.core.tg_classify import classify, classify_sub
+from app.routers.listings import pick_translation
 from app.core.urls import listing_path
 from app.models import (
     Category, Listing, ListingPhoto, ListingStatus, ListingTranslation, User,
@@ -285,3 +286,160 @@ def _translate_later(listing_id) -> None:
             db.commit()
         except Exception as exc:                        # noqa: BLE001
             log.warning("перевод не удался для %s: %s", listing_id, exc)
+
+
+# ---------- свои объявления в публикаторе ----------
+#
+# Отдельного экрана для отклонённых нет нарочно: человек не делит свои
+# вещи на «ждущие проверки» и «отклонённые», он помнит их как «мои
+# объявления». Поэтому один список, а состояние — пометкой в строке:
+# «на проверке», «отклонено, вот почему», «скоро снимем». И действие
+# рядом с той строкой, где оно нужно.
+
+class PriceIn(BaseModel):
+    price: float | None = None
+    is_free: bool = False
+
+
+class EditIn(BaseModel):
+    title: str = Field(min_length=5, max_length=120)
+    description: str = ""
+    price: float | None = None
+    is_free: bool = False
+    category_id: str | None = None
+
+
+def _my_listing(db: Session, listing_id, user: User) -> Listing:
+    listing = db.query(Listing).get(listing_id)
+    if not listing:
+        raise HTTPException(404, "not_found")
+    if listing.owner_id != user.id:
+        raise HTTPException(403, "not_owner")
+    return listing
+
+
+@router.get("/my")
+def my_listings(
+    lang: str = "ru",
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    rows = (db.query(Listing)
+            .options(joinedload(Listing.translations), joinedload(Listing.photos),
+                     joinedload(Listing.category))
+            .filter(Listing.owner_id == user.id,
+                    Listing.status != ListingStatus.draft)
+            .order_by(Listing.created_at.desc())
+            .limit(30).all())
+
+    items = []
+    for listing in rows:
+        tr = pick_translation(listing, lang)
+        cover = next((p for p in listing.photos if p.is_cover and not p.is_video),
+                     next((p for p in listing.photos if not p.is_video), None))
+        days_left = None
+        if listing.status == ListingStatus.active and listing.expires_at:
+            left = (listing.expires_at - utcnow()).days
+            days_left = max(left, 0)
+        items.append({
+            "id": str(listing.id),
+            "title": tr.title if tr else "",
+            "description": tr.description if tr else "",
+            "price": float(listing.price) if listing.price is not None else None,
+            "is_free": bool(listing.is_free),
+            "status": listing.status.value,
+            "reason": listing.rejection_reason,
+            "photo": cover.thumbnail_url or cover.url if cover else None,
+            "days_left": days_left,
+            "url": f"https://plonk.rs{listing_path(listing.id, tr.title if tr else '', listing.city, listing.category.slug if listing.category else None)}",
+        })
+    return {"items": items}
+
+
+@router.post("/my/{listing_id}/sold")
+def mark_sold(listing_id: str, user: User = Depends(get_current_user),
+              db: Session = Depends(get_db)):
+    """Продано. Снимаем с ленты, но не удаляем: отзыв ещё впереди."""
+    listing = _my_listing(db, listing_id, user)
+    listing.status = ListingStatus.sold
+    db.commit()
+    return {"status": listing.status.value}
+
+
+@router.post("/my/{listing_id}/price")
+def change_price(listing_id: str, payload: PriceIn,
+                 user: User = Depends(get_current_user),
+                 db: Session = Depends(get_db)):
+    """
+    Цена — единственное, что правят чаще всего и чему проверка не нужна:
+    в ней нельзя спрятать ни рекламу, ни контакты.
+    """
+    listing = _my_listing(db, listing_id, user)
+    if not payload.is_free and not payload.price:
+        raise HTTPException(422, "price_required")
+    listing.is_free = payload.is_free
+    listing.price = None if payload.is_free else payload.price
+    db.commit()
+    return {"price": float(listing.price) if listing.price else None,
+            "is_free": listing.is_free}
+
+
+@router.post("/my/{listing_id}/renew")
+def renew(listing_id: str, user: User = Depends(get_current_user),
+          db: Session = Depends(get_db)):
+    """Продлить: то же, что кнопка на сайте, только под рукой."""
+    from datetime import timedelta
+
+    from app.routers.listings import LISTING_TTL_DAYS
+
+    listing = _my_listing(db, listing_id, user)
+    if listing.status not in (ListingStatus.active, ListingStatus.archived):
+        raise HTTPException(409, "bad_status")
+    listing.status = ListingStatus.active
+    listing.expires_at = utcnow() + timedelta(days=LISTING_TTL_DAYS)
+    listing.expiry_warned = False
+    db.commit()
+    return {"days": LISTING_TTL_DAYS}
+
+
+@router.post("/my/{listing_id}/edit")
+def edit_listing(listing_id: str, payload: EditIn,
+                 background: BackgroundTasks,
+                 user: User = Depends(get_current_user),
+                 db: Session = Depends(get_db)):
+    """
+    Исправление отклонённого.
+
+    После правки объявление снова идёт на проверку — даже тому, кому мы
+    обычно верим: его уже отклонили, и второй раз без взгляда человека
+    публиковать нельзя.
+    """
+    listing = _my_listing(db, listing_id, user)
+    if find_contacts(payload.description):
+        raise HTTPException(422, "contacts_in_description")
+
+    tr = next((t for t in listing.translations
+               if t.language == (listing.source_language or "ru")),
+              listing.translations[0] if listing.translations else None)
+    if not tr:
+        raise HTTPException(409, "no_translation")
+
+    tr.title = payload.title.strip()[:255]
+    tr.description = payload.description.strip()
+    # Переводы собраны со старого текста — удаляем, соберутся заново.
+    for other in list(listing.translations):
+        if other is not tr and other.is_auto_translated:
+            listing.translations.remove(other)
+
+    if payload.category_id:
+        category = db.query(Category).get(payload.category_id)
+        if category:
+            listing.category_id = category.id
+    listing.is_free = payload.is_free
+    listing.price = None if payload.is_free else payload.price
+    listing.status = ListingStatus.pending_moderation
+    listing.rejection_reason = None
+    db.commit()
+
+    background.add_task(_translate_later, listing.id)
+    return {"status": listing.status.value}

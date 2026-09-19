@@ -379,6 +379,13 @@ export const api = {
     method: 'POST',
     body: JSON.stringify(payload),
   }),
+  tgMyListings: (lang) => request(`/tg/my?${new URLSearchParams({ lang })}`),
+  tgMarkSold: (id) => request(`/tg/my/${id}/sold`, { method: 'POST' }),
+  tgRenewListing: (id) => request(`/tg/my/${id}/renew`, { method: 'POST' }),
+  tgEditListing: (id, payload) => request(`/tg/my/${id}/edit`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }),
   tgPublish: (payload) => request('/tg/publish', {
     method: 'POST',
     body: JSON.stringify(payload),

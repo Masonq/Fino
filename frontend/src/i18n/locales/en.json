@@ -1055,9 +1055,32 @@
     "mode_free": "Free",
     "pick_sub": "Narrow it down so buyers find it:",
     "err_video_one": "One video is enough — add photos for the rest.",
-    "photo_needed": "Add at least one photo: it's what shows in the feed."
+    "photo_needed": "Add at least one photo: it's what shows in the feed.",
+    "my_listings": "My listings"
   },
   "errors": {
     "generic": "Something went wrong. Try again."
+  },
+  "tg_my": {
+    "title": "My listings",
+    "subtitle": "Mark sold, fix the price, correct a rejected one",
+    "empty": "Nothing posted yet.",
+    "post_first": "Post the first one",
+    "new": "Post another",
+    "state_active": "Live",
+    "state_pending_moderation": "Under review",
+    "state_rejected": "Rejected",
+    "state_sold": "Sold",
+    "state_archived": "Removed",
+    "days_left_one": "{{count}} day left",
+    "days_left_other": "{{count}} days left",
+    "sold": "Sold",
+    "edit": "Edit",
+    "fix": "Fix",
+    "renew": "Extend",
+    "open": "Open",
+    "send_again": "Send for review",
+    "err_auth_failed": "Sign-in failed. Close the window and open it again.",
+    "err_action_failed": "Didn't work. Try again."
   }
 }

@@ -1070,9 +1070,34 @@
     "mode_free": "Besplatno",
     "pick_sub": "Precizirajte da bi stvar našli:",
     "err_video_one": "Jedan snimak je dovoljan — ostalo fotografijama.",
-    "photo_needed": "Dodajte bar jednu fotografiju: ona se prikazuje u listi."
+    "photo_needed": "Dodajte bar jednu fotografiju: ona se prikazuje u listi.",
+    "my_listings": "Moji oglasi"
   },
   "errors": {
     "generic": "Nešto nije u redu. Pokušajte ponovo."
+  },
+  "tg_my": {
+    "title": "Moji oglasi",
+    "subtitle": "Skinuti, promeniti cenu, ispraviti odbijeni",
+    "empty": "Još ništa nije objavljeno.",
+    "post_first": "Objavi prvi",
+    "new": "Objavi još",
+    "state_active": "U listi",
+    "state_pending_moderation": "Na proveri",
+    "state_rejected": "Odbijeno",
+    "state_sold": "Prodato",
+    "state_archived": "Skinuto",
+    "days_left_one": "ostao {{count}} dan",
+    "days_left_few": "ostalo {{count}} dana",
+    "days_left_other": "ostalo {{count}} dana",
+    "sold": "Prodato",
+    "edit": "Promeni",
+    "fix": "Ispravi",
+    "renew": "Produži",
+    "open": "Otvori",
+    "send_again": "Pošalji na proveru",
+    "err_auth_failed": "Prijava nije uspela. Zatvorite prozor i otvorite ponovo.",
+    "err_action_failed": "Nije uspelo. Pokušajte ponovo.",
+    "days_left_many": "ostalo {{count}} dana"
   }
 }

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 import { api } from '../api/client'
@@ -397,6 +398,9 @@ export default function TgPost() {
         {sending ? t('tg_post.sending') : t('tg_post.publish')}
       </button>
       <p className="tg-note">{t('tg_post.note')}</p>
+      {/* Путь к своим объявлениям прямо отсюда: иначе, разместив вещь,
+          человек не знает, где её потом снять или поправить. */}
+      <Link className="tg-my-link" to="/tg/my">{t('tg_post.my_listings')}</Link>
     </div>
   )
 }

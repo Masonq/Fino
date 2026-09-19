@@ -5039,3 +5039,45 @@ a.s-attrs{ display:block; }
   display:flex; align-items:center; justify-content:center; pointer-events:none;
 }
 .tg-photo-play svg{ width:14px; height:14px; margin-left:1px; }
+
+/* ===== свои объявления в публикаторе ===== */
+.tg-my-list{ display:flex; flex-direction:column; gap:10px; padding:0 12px; }
+.tg-my-card{
+  background:var(--surface); border-radius:16px; padding:12px;
+  box-shadow:var(--shadow);
+}
+.tg-my-row{ display:flex; gap:12px; align-items:flex-start; }
+.tg-my-photo{
+  width:60px; height:60px; border-radius:12px; overflow:hidden; flex-shrink:0;
+  background:var(--surface-sunken);
+}
+.tg-my-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
+.tg-my-text{ flex:1; min-width:0; }
+.tg-my-title{
+  font-size:14px; font-weight:700; line-height:1.3;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.tg-my-price{ margin-top:3px; font-size:14px; font-weight:800; }
+.tg-my-state{ margin-top:3px; font-size:12px; font-weight:700; color:var(--muted); }
+.tg-my-state.active{ color:var(--primary-deep); }
+.tg-my-state.rejected{ color:var(--danger-ink); }
+.tg-my-state.pending_moderation{ color:var(--warn-ink); }
+.tg-my-reason{
+  margin-top:10px; padding:9px 11px; border-radius:11px;
+  background:var(--danger-bg); color:var(--danger-ink);
+  font-size:12.5px; font-weight:600; line-height:1.4;
+}
+.tg-my-actions{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.tg-my-actions .chip{ font-size:13px; padding:8px 13px; text-decoration:none; }
+.tg-my-actions .form-save,
+.tg-my-actions .form-secondary{ width:auto; flex:1; margin:0; height:42px; }
+.tg-my-edit{ display:flex; flex-direction:column; gap:10px; margin-top:12px; }
+.tg-my-edit .field-input{
+  border:1px solid var(--border-strong); border-radius:11px; padding:11px 12px;
+  background:var(--surface-sunken);
+}
+.tg-my-new{ width:calc(100% - 24px); margin:16px 12px 0; }
+.tg-my-link{
+  display:block; text-align:center; margin-top:14px;
+  font-size:13.5px; font-weight:800; color:var(--primary-deep); text-decoration:none;
+}
