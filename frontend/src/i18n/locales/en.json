@@ -183,7 +183,8 @@
     "close": "Close",
     "copy": "Copy",
     "delete": "Delete",
-    "retry": "Try again"
+    "retry": "Try again",
+    "done": "Done"
   },
   "post": {
     "step_params": "Details",

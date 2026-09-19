@@ -5016,3 +5016,12 @@ a.s-attrs{ display:block; }
 .tg-price{ display:flex; align-items:baseline; gap:8px; margin-top:10px; }
 .tg-price .field-input{ flex:1; min-width:0; }
 .tg-currency{ font-size:14px; font-weight:800; color:var(--muted); flex-shrink:0; }
+
+/* Кнопка «Готово» у многострочного поля: закрыть клавиатуру, когда
+   Enter занят переносом строки. Видна только при вводе — в покое она
+   ничего не значит и только шумит. */
+.field-done{
+  float:right; font-size:12px; font-weight:800; color:var(--primary-deep);
+  opacity:0; pointer-events:none; transition:opacity .15s ease;
+}
+.field-row:focus-within .field-done{ opacity:1; pointer-events:auto; }

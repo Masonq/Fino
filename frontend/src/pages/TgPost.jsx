@@ -229,6 +229,13 @@ export default function TgPost() {
             onChange={(e) => setTitle(e.target.value)}
             placeholder={t('tg_post.what_ph')}
             maxLength={120}
+            // На iOS клавиатура закрывается клавишей «Готово», а она
+            // появляется, только если поле внутри формы или ему задан
+            // enterKeyHint. Формы тут нет — задаём подсказку сами,
+            // иначе клавиатуру нечем убрать, и она закрывает половину
+            // экрана вместе с кнопкой «Опубликовать».
+            enterKeyHint="done"
+            onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }}
           />
 
           {/* Что мы поняли — сразу под названием. Человек не выбирает
@@ -303,6 +310,8 @@ export default function TgPost() {
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder={t('tg_post.price_ph')}
                 autoFocus={false}
+                enterKeyHint="done"
+                onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }}
               />
               <span className="tg-currency">RSD</span>
             </div>
@@ -323,7 +332,22 @@ export default function TgPost() {
         </div>
 
         <label className="field-row">
-          <span className="field-label">{t('tg_post.about')}</span>
+          <span className="field-label">
+            {t('tg_post.about')}
+            {/* В многострочном поле Enter переносит строку, поэтому
+                закрыть клавиатуру им нельзя — даём кнопку рядом с
+                подписью. Она появляется, только когда пишут. */}
+            <button
+              type="button"
+              className="field-done"
+              onClick={(e) => {
+                e.preventDefault()
+                document.activeElement?.blur?.()
+              }}
+            >
+              {t('actions.done')}
+            </button>
+          </span>
           <textarea
             className="field-input field-textarea"
             value={description}
