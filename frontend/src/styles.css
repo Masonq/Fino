@@ -5277,6 +5277,6 @@ a.s-attrs{ display:block; }
    смотрелась осевшей. Подъём в четыре сотых кегля ставит её ровно
    между верхом и низом цифр. */
 .plonk-icon{
-  width:.79em; height:.79em; flex-shrink:0;
-  align-self:baseline; transform:translateY(.03em);
+  width:.82em; height:.82em; flex-shrink:0;
+  align-self:baseline; transform:translateY(.055em);
 }
