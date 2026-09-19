@@ -1610,33 +1610,45 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .invite-card-text b{ font-size:13.5px; color:var(--ink); }
 .invite-card-text span{ font-size:11.5px; color:var(--muted); }
 
-/* Страница «Пригласить друга» */
-.invite-hero{
-  text-align:center; padding:8px 24px 20px;
+/* ===== страница «Пригласить друга» =====
+   Стили прежней версии страницы (заголовок по центру, строка ссылки,
+   зелёная кнопка во всю ширину) убраны: страница переписана, а они
+   продолжали спорить с новыми — и после чистки от них осталась
+   картинка героя без ограничения ширины, которая распирала страницу
+   до тысячи точек. */
+.invite-page{ padding-bottom:200px; }
+
+.invite-hero{ padding:8px 20px 24px; text-align:center; }
+.invite-hero img{
+  width:100%; max-width:320px; height:auto; display:block; margin:0 auto 10px;
 }
-.invite-hero-icon{
-  width:64px; height:64px; border-radius:50%; margin:0 auto 14px;
-  background:var(--primary-soft); color:var(--primary-deep,#0A7A54);
+.invite-hero h1{ font-size:24px; font-weight:800; letter-spacing:-0.02em; margin:0 0 8px; }
+.invite-hero p{ font-size:14.5px; color:var(--muted); font-weight:600; line-height:1.45; margin:0; }
+
+.invite-cards{ display:flex; flex-direction:column; gap:10px; padding:0 14px; }
+.invite-card{
+  display:flex; align-items:center; gap:14px;
+  padding:14px; border-radius:16px; background:var(--surface); box-shadow:var(--shadow);
+}
+.invite-card img{ width:64px; height:64px; flex-shrink:0; object-fit:contain; }
+.invite-card-text{ flex:1; min-width:0; }
+.invite-card-title{ font-size:13px; font-weight:700; color:var(--muted); }
+.invite-card-sub{ margin-top:2px; font-size:14.5px; font-weight:700; line-height:1.35; }
+
+.invite-block-title{ font-size:17px; font-weight:800; margin-bottom:12px; }
+.invite-steps{ padding:26px 18px 0; }
+.invite-step{
+  display:flex; align-items:flex-start; gap:12px; padding:9px 0;
+  font-size:14px; font-weight:600; line-height:1.4;
+}
+.invite-step-num{
+  width:24px; height:24px; border-radius:50%; flex-shrink:0;
+  background:var(--primary-soft); color:var(--primary-deep);
   display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:800;
 }
-.invite-hero h2{ font-size:19px; font-weight:800; color:var(--ink); margin-bottom:6px; }
-.invite-hero p{ font-size:13.5px; color:var(--ink-soft); line-height:1.5; }
-.invite-link-row{
-  margin:0 18px; padding:13px 14px; border-radius:12px;
-  background:var(--tile); border:1px solid var(--border);
-}
-.invite-link-text{
-  display:block; font-size:12.5px; color:var(--ink-soft); font-weight:600;
-  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-}
-.invite-share-btn{
-  display:block; width:calc(100% - 36px); margin:12px 18px 0; padding:14px;
-  border-radius:13px; background:var(--primary); color:#fff;
-  font-size:14.5px; font-weight:700; text-align:center;
-}
-/* Итог приглашений. Не табло из цифр в колонках — оно заставляет
-   человека соображать, что из «четыре, два, двести» хорошо, — а фраза
-   и путь каждого приглашённого. */
+
+/* Итог приглашений: фраза и путь каждого, а не табло из цифр. */
 .invite-progress{ padding:26px 18px 0; }
 .invite-summary{
   padding:14px 16px; border-radius:14px; margin-bottom:14px;
@@ -1647,9 +1659,6 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .invite-person + .invite-person{ border-top:1px solid var(--border); }
 .invite-person-text{ flex:1; min-width:0; }
 .invite-person-name{ font-size:14.5px; font-weight:700; }
-
-/* Три шага пути: зарегистрировался, разместил, получил. Видно, где
-   человек остановился, и чего ждать дальше. */
 .invite-track{ display:flex; align-items:center; gap:5px; margin-top:5px; }
 .invite-dot{
   width:7px; height:7px; border-radius:50%; flex-shrink:0;
@@ -1660,9 +1669,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   margin-left:5px; font-size:12.5px; font-weight:600; color:var(--muted);
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
-.invite-more{
-  padding:10px 0 0; font-size:12.5px; font-weight:600; color:var(--muted);
-}
+.invite-more{ padding:10px 0 0; font-size:12.5px; font-weight:600; color:var(--muted); }
 
 .invite-faq{ padding:26px 18px 0; }
 .invite-faq-item{ border-bottom:1px solid var(--border); }
