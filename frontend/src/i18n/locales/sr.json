@@ -1104,6 +1104,14 @@
     "err_auth_failed": "Prijava nije uspela. Zatvorite prozor i otvorite ponovo.",
     "err_action_failed": "Nije uspelo. Pokušajte ponovo.",
     "days_left_many": "ostalo {{count}} dana",
-    "empty_hint": "Objavite stvar i videćete koliko su je gledali i ko je pisao."
+    "empty_hint": "Objavite stvar i videćete koliko su je gledali i ko je pisao.",
+    "link_email": "Dodajte imejl",
+    "link_email_sub": "Da se prijavite na sajt istim nalogom",
+    "email_ph": "Vaš imejl",
+    "send_code": "Pošalji kod",
+    "code_sent": "Kod je poslat na {{email}}",
+    "code_ph": "Kod iz imejla",
+    "confirm": "Potvrdi",
+    "linked": "Gotovo — sada je to jedan nalog."
   }
 }

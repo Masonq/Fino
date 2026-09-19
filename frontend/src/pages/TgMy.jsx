@@ -30,6 +30,13 @@ export default function TgMy() {
   const [editing, setEditing] = useState(null)
   const [draft, setDraft] = useState({ title: '', description: '', price: '', free: false })
   const [error, setError] = useState('')
+  // Почта у аккаунта, созданного через Telegram, не спрашивается
+  // вовсе. Без неё человек, зашедший потом на сайт по почте, заводит
+  // себе второй аккаунт и теряет объявления.
+  const [account, setAccount] = useState(null)
+  const [linkStep, setLinkStep] = useState('idle')
+  const [email, setEmail] = useState('')
+  const [code, setCode] = useState('')
 
   // Кнопка «назад» — своя у Telegram, в его же шапке: рисовать вторую
   // внутри страницы значит показать человеку две кнопки, которые
@@ -55,6 +62,7 @@ export default function TgMy() {
     api.tgWebAppAuth(app.initData)
       .then((res) => {
         api.setToken(res.token)
+        setAccount(res.user)
         return api.tgMyListings(i18n.language)
       })
       .then((res) => setItems(res.items || []))
@@ -244,6 +252,82 @@ export default function TgMy() {
 
       {items.length > 0 && (
         <Link className="form-secondary tg-my-new" to="/tg/post">{t('tg_my.new')}</Link>
+      )}
+
+      {/* Привязка почты: без неё тот же человек, зайдя на сайт по
+          почте, заведёт второй аккаунт и не найдёт своих объявлений.
+          Если почта уже есть — строки нет, предлагать нечего. */}
+      {account && !account.email && (
+        <div className="tg-link">
+          {linkStep === 'idle' && (
+            <button className="tg-link-row" onClick={() => setLinkStep('email')}>
+              <span className="tg-my-entry-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
+                  <rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" />
+                </svg>
+              </span>
+              <span className="tg-full-form-text">
+                <span className="tg-full-form-title">{t('tg_my.link_email')}</span>
+                <span className="tg-full-form-sub">{t('tg_my.link_email_sub')}</span>
+              </span>
+            </button>
+          )}
+
+          {linkStep === 'email' && (
+            <div className="tg-link-form">
+              <input
+                className="field-input"
+                type="email"
+                inputMode="email"
+                autoCapitalize="none"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t('tg_my.email_ph')}
+                enterKeyHint="done"
+              />
+              <button
+                className="form-save"
+                disabled={!email.includes('@') || busy === 'link'}
+                onClick={() => act('link', async () => {
+                  await api.tgLinkEmail(email.trim())
+                  setLinkStep('code')
+                })}
+              >
+                {t('tg_my.send_code')}
+              </button>
+            </div>
+          )}
+
+          {linkStep === 'code' && (
+            <div className="tg-link-form">
+              <div className="tg-full-form-sub">{t('tg_my.code_sent', { email })}</div>
+              <input
+                className="field-input"
+                inputMode="numeric"
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+                placeholder={t('tg_my.code_ph')}
+                enterKeyHint="done"
+              />
+              <button
+                className="form-save"
+                disabled={code.length < 4 || busy === 'link'}
+                onClick={() => act('link', async () => {
+                  const res = await api.tgLinkEmailConfirm(email.trim(), code)
+                  setLinkStep('done')
+                  setAccount({ ...account, email })
+                  if (res.status === 'merged') await reload()
+                })}
+              >
+                {t('tg_my.confirm')}
+              </button>
+            </div>
+          )}
+
+          {linkStep === 'done' && (
+            <div className="tg-link-done">{t('tg_my.linked')}</div>
+          )}
+        </div>
       )}
     </div>
   )

@@ -379,6 +379,18 @@ export const api = {
     method: 'POST',
     body: JSON.stringify(payload),
   }),
+  tgLinkTelegram: (initData) => request('/tg/link', {
+    method: 'POST',
+    body: JSON.stringify({ init_data: initData }),
+  }),
+  tgLinkEmail: (email) => request('/tg/link-email', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  }),
+  tgLinkEmailConfirm: (email, code) => request('/tg/link-email/confirm', {
+    method: 'POST',
+    body: JSON.stringify({ email, code }),
+  }),
   tgSiteLink: (initData, next) => request('/tg/site-link', {
     method: 'POST',
     body: JSON.stringify({ init_data: initData, next }),

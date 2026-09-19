@@ -1087,6 +1087,14 @@
     "send_again": "Send for review",
     "err_auth_failed": "Sign-in failed. Close the window and open it again.",
     "err_action_failed": "Didn't work. Try again.",
-    "empty_hint": "Post an item and you'll see how many people opened it and who wrote."
+    "empty_hint": "Post an item and you'll see how many people opened it and who wrote.",
+    "link_email": "Add your email",
+    "link_email_sub": "To sign in on the site as the same person",
+    "email_ph": "Your email",
+    "send_code": "Send the code",
+    "code_sent": "Code sent to {{email}}",
+    "code_ph": "Code from the email",
+    "confirm": "Confirm",
+    "linked": "Done — it's one account now."
   }
 }

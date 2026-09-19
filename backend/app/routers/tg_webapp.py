@@ -25,7 +25,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.core.auth import create_access_token
+from app.core.auth import create_access_token, get_current_user
 from app.core.config import settings
 from app.core.database import get_db
 from app.models import User
@@ -132,6 +132,9 @@ def webapp_auth(payload: WebAppIn, request: Request, db: Session = Depends(get_d
             "display_name": user.display_name,
             "avatar_url": user.avatar_url,
             "must_rename": bool(user.must_rename),
+            # Почта нужна экрану: без неё он предлагает её привязать,
+            # чтобы человек не завёл себе второй аккаунт на сайте.
+            "email": user.email,
         },
     }
 
@@ -165,3 +168,49 @@ def site_link(payload: SiteLinkIn):
     where = payload.next if payload.next.startswith("/") else "/post"
     site = settings.public_base_url.rstrip("/")
     return {"url": f"{site}/enter?key={key}&next={where}"}
+
+
+# ---------- привязка второго входа ----------
+#
+# Человек может прийти дважды: по почте на сайт и через Telegram в
+# публикатор. Тогда у него два аккаунта, и он этого не понимает —
+# просто видит, что «его» объявления пропали. Чиним двумя путями: из
+# публикатора привязываем почту, с сайта — Telegram. Если второй
+# аккаунт уже есть, объединяем: один остаётся, второй отдаёт ему всё.
+
+class LinkTelegramIn(BaseModel):
+    init_data: str
+
+
+@router.post("/link")
+def link_telegram(payload: LinkTelegramIn,
+                  user: User = Depends(get_current_user),
+                  db: Session = Depends(get_db)):
+    """
+    Привязать Telegram к тому, кто уже вошёл на сайте.
+
+    Три случая. Не привязан никому — просто записываем. Привязан этому
+    же — говорим, что всё в порядке. Привязан другому аккаунту — это и
+    есть второй аккаунт того же человека: объединяем.
+    """
+    data = check_init_data(payload.init_data)
+    if not data:
+        raise HTTPException(401, "bad_init_data")
+
+    telegram_id = str(data["id"])
+    other = db.query(User).filter(User.telegram_id == telegram_id).first()
+
+    if other and other.id == user.id:
+        return {"status": "already_yours"}
+
+    if not other:
+        user.telegram_id = telegram_id
+        db.commit()
+        return {"status": "linked"}
+
+    # Оставляем тот аккаунт, в котором человек сейчас: он только что
+    # им пользовался, и терять текущую сессию ему незачем.
+    from app.core.merge_users import merge_users
+
+    moved = merge_users(db, keep=user, drop=other)
+    return {"status": "merged", "moved": sum(moved.values()) if moved else 0}

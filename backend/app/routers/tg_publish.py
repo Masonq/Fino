@@ -450,3 +450,92 @@ def edit_listing(listing_id: str, payload: EditIn,
 
     background.add_task(_translate_later, listing.id)
     return {"status": listing.status.value}
+
+
+# ---------- привязка почты из публикатора ----------
+
+class LinkEmailIn(BaseModel):
+    email: str
+
+
+class ConfirmEmailIn(BaseModel):
+    email: str
+    code: str
+
+
+@router.post("/link-email")
+def link_email_request(payload: LinkEmailIn,
+                       user: User = Depends(get_current_user),
+                       db: Session = Depends(get_db)):
+    """
+    Шлём код на почту. Подтверждать обязательно: без этого любой мог бы
+    приписать себе чужой адрес и забрать вместе с ним чужой аккаунт.
+    """
+    from app.core.auth import generate_code, hash_code
+    from app.core.notify import send_code
+    from app.models import VerificationCode, VerifyChannel
+    from app.routers.auth import CODE_TTL
+
+    email = payload.email.strip().lower()
+    if "@" not in email or len(email) < 5:
+        raise HTTPException(422, "bad_email")
+
+    # Код храним хэшем и с коротким сроком — тем же порядком, что при
+    # обычном входе: второй способ хранить одноразовые коды означал бы
+    # второе место, где можно ошибиться.
+    code = generate_code()
+    db.add(VerificationCode(
+        destination=email,
+        channel=VerifyChannel.email,
+        code_hash=hash_code(code),
+        expires_at=utcnow() + CODE_TTL,
+    ))
+    db.commit()
+    try:
+        send_code(email, code, VerifyChannel.email)
+    except Exception as exc:                            # noqa: BLE001
+        log.warning("код не ушёл на %s: %s", email, exc)
+        raise HTTPException(502, "send_failed")
+    return {"status": "sent"}
+
+
+@router.post("/link-email/confirm")
+def link_email_confirm(payload: ConfirmEmailIn,
+                       user: User = Depends(get_current_user),
+                       db: Session = Depends(get_db)):
+    """
+    Код сошёлся — привязываем. Если на эту почту уже есть аккаунт, это
+    и есть второй аккаунт того же человека: объединяем, оставляя тот, в
+    котором он сейчас.
+    """
+    from app.core.auth import verify_code
+    from app.core.merge_users import merge_users
+    from app.models import VerificationCode
+
+    email = payload.email.strip().lower()
+    ticket = (db.query(VerificationCode)
+              .filter(VerificationCode.destination == email,
+                      VerificationCode.used.is_(False),
+                      VerificationCode.expires_at > utcnow())
+              .order_by(VerificationCode.created_at.desc())
+              .first())
+    if not ticket:
+        raise HTTPException(400, "code_expired")
+    if ticket.attempts >= 5:
+        raise HTTPException(429, "too_many_attempts")
+    if not verify_code(payload.code.strip(), ticket.code_hash):
+        ticket.attempts += 1
+        db.commit()
+        raise HTTPException(400, "invalid_code")
+    ticket.used = True
+    db.commit()
+
+    other = db.query(User).filter(User.email == email).first()
+    if other and other.id != user.id:
+        moved = merge_users(db, keep=user, drop=other)
+        return {"status": "merged", "moved": sum(moved.values()) if moved else 0}
+
+    user.email = email
+    user.email_verified = True
+    db.commit()
+    return {"status": "linked"}

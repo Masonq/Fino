@@ -5161,3 +5161,27 @@ a.s-attrs{ display:block; }
 .tg-full-form-text{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
 .tg-full-form-title{ font-size:14px; font-weight:700; color:var(--ink); }
 .tg-full-form-sub{ font-size:12px; font-weight:600; color:var(--muted); line-height:1.3; }
+
+/* Привязка почты в публикаторе. */
+.tg-link{ margin:16px 12px 0; }
+.tg-link-row{
+  display:flex; align-items:center; gap:10px; width:100%;
+  /* Значок держим по центру строки: при переносе подписи он уезжал
+     вверх и строка выглядела косой. */
+  padding:12px 14px; border-radius:14px; text-align:left;
+  background:var(--surface); box-shadow:var(--shadow); color:var(--ink);
+}
+.tg-link-form{
+  display:flex; flex-direction:column; gap:10px;
+  padding:14px; border-radius:14px; background:var(--surface); box-shadow:var(--shadow);
+}
+.tg-link-form .field-input{
+  border:1px solid var(--border-strong); border-radius:11px; padding:11px 12px;
+  background:var(--surface-sunken);
+}
+.tg-link-form .form-save{ width:100%; margin:0; }
+.tg-link-done{
+  padding:12px 14px; border-radius:12px; text-align:center;
+  background:var(--primary-soft); color:var(--primary-deep);
+  font-size:13px; font-weight:800;
+}
