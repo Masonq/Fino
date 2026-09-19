@@ -14,30 +14,50 @@ import { useEffect, useRef } from 'react'
  * при этом пропадает. sessionStorage переживает перезагрузку и
  * очищается сам, когда человек закрывает вкладку.
  */
-export function useKeepPlace(key, ready = true) {
+export function useKeepPlace(key) {
   const restored = useRef(false)
 
   useEffect(() => {
-    if (!ready || restored.current) return
+    if (restored.current) return
     restored.current = true
+
     let saved = 0
     try { saved = Number(sessionStorage.getItem(`place:${key}`) || 0) } catch { /* не беда */ }
-    if (saved > 0) {
-      // Два кадра: за первый список успевает отрисоваться, иначе
-      // прокручивать ещё нечего и браузер остаётся наверху.
-      requestAnimationFrame(() => requestAnimationFrame(() => {
+    if (saved <= 0) return
+
+    // Список при возврате грузится заново: сперва скелетоны, потом
+    // записи. Прокручивать в этот момент ещё некуда — страница
+    // короткая, и браузер молча оставляет её наверху. Поэтому не
+    // «через пару кадров», а пока не получится: пробуем каждые сто
+    // миллисекунд, пока страница не дорастёт до нужной высоты.
+    let tries = 0
+    const timer = setInterval(() => {
+      tries += 1
+      const reachable = document.documentElement.scrollHeight - window.innerHeight
+      if (reachable >= saved - 4) {
         window.scrollTo(0, saved)
-      }))
-    }
-  }, [key, ready])
+        clearInterval(timer)
+        return
+      }
+      // Полторы секунды — это дольше любой загрузки списка. Если за это
+      // время страница не выросла, записей стало меньше: прокручивать
+      // некуда, и настаивать незачем.
+      if (tries >= 15) clearInterval(timer)
+    }, 100)
+
+    return () => clearInterval(timer)
+  }, [key])
 
   useEffect(() => {
     const remember = () => {
-      try { sessionStorage.setItem(`place:${key}`, String(window.scrollY)) } catch { /* не беда */ }
+      // Ноль не запоминаем: он приходит и в тот момент, когда страница
+      // только открылась и ещё ничего не прокручено, — и затирал бы
+      // настоящее место.
+      if (window.scrollY > 0) {
+        try { sessionStorage.setItem(`place:${key}`, String(window.scrollY)) } catch { /* не беда */ }
+      }
     }
     window.addEventListener('scroll', remember, { passive: true })
-    // Уход со страницы — последний момент, когда позицию ещё можно
-    // записать: событие прокрутки к тому времени уже не придёт.
     window.addEventListener('pagehide', remember)
     return () => {
       remember()
