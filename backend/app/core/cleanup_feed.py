@@ -88,6 +88,20 @@ _PRICE_TAIL_RE = re.compile(r"[\s\-—,:(]*\b\d[\d\s.,\u00a0]*\s*за\s+(все|
 _CONTACT_RE = re.compile(r"(@[a-zA-Z0-9_]{3,}|t\.me/\S+|https?://\S+)")
 
 
+def _is_shouting(body: str) -> bool:
+    """
+    Кричащий заголовок — только про кириллицу.
+
+    Латиницей заглавными пишутся названия моделей: «IKEA MELLTORP»,
+    «ASUS TUF FX506QM», «DeepCool MATREXX ADD-RGB». Считать их криком —
+    значит выбрасывать всю мебель и технику, что и случилось на прошлом
+    прогоне. По-русски же заглавные в названии вещи не нужны, и «ПРОДАМ
+    СРОЧНО» остаётся криком.
+    """
+    cyr = [c for c in body if "а" <= c.lower() <= "я" or c.lower() == "ё"]
+    return len(cyr) >= 8 and sum(c.isupper() for c in cyr) > len(cyr) * 0.6
+
+
 def _tidy(title: str | None) -> str:
     """
     Прибирает заголовок, не переписывая его.
@@ -121,7 +135,7 @@ def _why(title: str | None, sections: set[str]) -> str:
         return "хэштеги"
     if _PHONE_RE.search(body):
         return "телефон"
-    if _SHOUT_RE.search(body):
+    if _SHOUT_RE.search(body) or _is_shouting(body):
         return "крик"
     if len(_EMOJI_RE.findall(body)) > 1:
         return "значки"
@@ -177,8 +191,7 @@ def _clear(title: str | None) -> bool:
     # строку, где заглавными набрано больше половины букв.
     if _SHOUT_RE.search(body):
         return False
-    letters = [c for c in body if c.isalpha()]
-    if len(letters) >= 10 and sum(c.isupper() for c in letters) > len(letters) * 0.6:
+    if _is_shouting(body):
         return False
 
     # Больше одного значка: «🔥 Диван 🔥 дёшево 🔥».
@@ -193,7 +206,11 @@ def _clear(title: str | None) -> bool:
     # после выброса пустых слов осталось хотя бы два.
     meaningful = [w for w in words if w not in _EMPTY_WORDS]
     if len(meaningful) < 2:
-        return False
+        # Исключение — узнаваемая модель: «PS5», «iMac», «RTX 4070».
+        # Буква с цифрой или заглавная посреди слова означают, что перед
+        # нами название вещи, а не общее слово.
+        if not re.search(r"[A-Za-z]{2,}\s?\d|\d\s?[A-Za-z]{2,}|[A-Za-z][a-z]*[A-Z]", body):
+            return False
 
     # Родовое слово вместо вещи: «отличная вещь», «набор разное».
     # Годится, только если рядом сказано, чего именно набор.
