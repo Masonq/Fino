@@ -417,6 +417,16 @@ export default function Profile() {
               {t('audit.title')}
               <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
             </Link>
+            {/* Ночные работы. Они идут сами, и без этой страницы
+                поломку замечаешь через день — по пустой ленте или по
+                письму, которое кто-то не получил. */}
+            <Link className="profile-row" to="/admin/jobs">
+              <span className="profile-row-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+              </span>
+              {t('jobs.title')}
+              <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+            </Link>
             <Link className="profile-row" to="/admin/support">
               <span className="profile-row-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M3 13h4l2 3h6l2-3h4" /><path d="M5 5h14l3 8v5a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-5L5 5Z" /></svg>

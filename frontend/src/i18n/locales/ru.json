@@ -1172,5 +1172,27 @@
     "code_ph": "Код из письма",
     "confirm": "Подтвердить",
     "linked": "Готово — теперь это один аккаунт."
+  },
+  "jobs": {
+    "title": "Ночные работы",
+    "empty": "Работы ещё не отчитывались.",
+    "just_now": "только что",
+    "hours_ago_one": "{{count}} час назад",
+    "hours_ago_few": "{{count}} часа назад",
+    "hours_ago_many": "{{count}} часов назад",
+    "hours_ago_other": "{{count}} часов назад",
+    "days_ago_one": "{{count}} день назад",
+    "days_ago_few": "{{count}} дня назад",
+    "days_ago_many": "{{count}} дней назад",
+    "days_ago_other": "{{count}} дней назад",
+    "done_one": "сделано {{count}}",
+    "done_few": "сделано {{count}}",
+    "done_many": "сделано {{count}}",
+    "done_other": "сделано {{count}}",
+    "nothing": "ничего не сделано",
+    "runs_one": "{{count}} запуск за {{days}} дней",
+    "runs_few": "{{count}} запуска за {{days}} дней",
+    "runs_many": "{{count}} запусков за {{days}} дней",
+    "runs_other": "{{count}} запусков за {{days}} дней"
   }
 }

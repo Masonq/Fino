@@ -144,6 +144,16 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     result = run(args.target, dry_run=args.dry_run)
+
+    # Отчёт в журнал: работа идёт сама, и без записи о ней поломку
+    # замечаешь только через день, по пустой ленте.
+    if not args.dry_run:
+        from app.core.job_report import report
+
+        report("конвейер", done=result["добавлено"],
+               skipped=None if result["добавлено"] else
+               "в чатах не нашлось объявлений, годных для ленты",
+               цель=result["цель"], кругов=result["кругов"])
     print()
     for row in result["по кругам"]:
         print(f"круг {row['круг']}: спарсено {row['спарсено']}, "

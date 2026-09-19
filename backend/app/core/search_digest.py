@@ -150,4 +150,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     count = run(dry_run=args.dry_run, limit=args.limit)
+
+    if not args.dry_run:
+        from app.core.job_report import report
+
+        report("сводка по поискам", done=count,
+               skipped=None if count else
+               "по сохранённым поискам за сутки ничего не появилось")
     print(f"\nсводок: {count}")

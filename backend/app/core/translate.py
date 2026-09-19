@@ -411,14 +411,11 @@ if __name__ == "__main__":
         print(f"Переведено объявлений: {n}")
 
         # След в журнале админки: иначе темп перевода видно только в
-        # системном логе, куда никто не смотрит.
-        if n:
-            try:
-                from app.core.audit import record
+        # системном логе, куда никто не смотрит. Пишем и когда
+        # переводить было нечего — тишина не отличается от поломки.
+        from app.core.job_report import report
 
-                record(session, None, "translate.run", target_type="translate", added=n)
-                session.commit()
-            except Exception:
-                pass
+        report("перевод объявлений", done=n,
+               skipped=None if n else "все объявления уже переведены")
     finally:
         session.close()

@@ -1156,5 +1156,22 @@
     "code_ph": "Kod iz imejla",
     "confirm": "Potvrdi",
     "linked": "Gotovo — sada je to jedan nalog."
+  },
+  "jobs": {
+    "title": "Noćni poslovi",
+    "empty": "Još nema izveštaja.",
+    "just_now": "upravo sada",
+    "hours_ago_one": "pre {{count}} sat",
+    "hours_ago_few": "pre {{count}} sata",
+    "hours_ago_other": "pre {{count}} sati",
+    "days_ago_one": "pre {{count}} dan",
+    "days_ago_few": "pre {{count}} dana",
+    "days_ago_other": "pre {{count}} dana",
+    "done_one": "urađeno {{count}}",
+    "done_other": "urađeno {{count}}",
+    "nothing": "ništa nije urađeno",
+    "runs_one": "{{count}} pokretanje za {{days}} dana",
+    "runs_few": "{{count}} pokretanja za {{days}} dana",
+    "runs_other": "{{count}} pokretanja za {{days}} dana"
   }
 }

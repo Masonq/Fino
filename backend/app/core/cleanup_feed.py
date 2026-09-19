@@ -624,6 +624,18 @@ if __name__ == "__main__":
     result = run(args.limit, apply=args.apply and not args.dry_run,
                  use_ai=not args.no_ai, show=args.show,
                  report_path=args.report)
+
+    if args.apply and not args.dry_run:
+        from app.core.job_report import report as job_report
+
+        job_report("уборка ленты",
+                   done=result["снято"] + result["заголовков переписано"],
+                   skipped=None if (result["снято"] or result["заголовков переписано"])
+                   else "все заголовки и описания в порядке",
+                   проверено=result["проверено"],
+                   снято=result["снято"],
+                   переписано=result["заголовков переписано"],
+                   отложено=result.get("отложено", 0))
     print()
     for key, value in result.items():
         print(f"{key}: {value}")

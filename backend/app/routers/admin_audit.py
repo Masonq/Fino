@@ -148,3 +148,49 @@ def summary(
                                                 key=lambda kv: -kv[1])],
         "by_actor": [{"actor": name, "count": count} for name, count in by_actor],
     }
+
+
+@router.get("/jobs")
+def jobs(
+    days: int = Query(7, ge=1, le=90),
+    staff: User = Depends(require_staff),
+    db: Session = Depends(get_db),
+):
+    """
+    Чем кончились ночные работы: конвейер, сводки, уборка, перевод.
+
+    Показываем последний отчёт каждой работы и сколько их было за срок.
+    Так видно главное — когда работа была в последний раз: если
+    конвейер молчит третьи сутки, это заметно сразу, а в общем журнале
+    потерялось бы среди сотен служебных записей.
+    """
+    from app.core.job_report import ACTION
+
+    since = utcnow() - timedelta(days=days)
+    rows = (db.query(AuditEntry)
+            .filter(AuditEntry.action == ACTION,
+                    AuditEntry.created_at >= since)
+            .order_by(AuditEntry.created_at.desc())
+            .limit(500).all())
+
+    latest: dict[str, dict] = {}
+    for row in rows:
+        name = row.target_id or "—"
+        details = row.details or {}
+        if name not in latest:
+            latest[name] = {
+                "name": name,
+                "at": row.created_at.isoformat(),
+                "done": details.get("done", 0),
+                "error": bool(details.get("error")),
+                "reason": row.reason,
+                # Остальные цифры работы — как есть, без разбора: у
+                # каждой они свои, и перечислять их здесь значит
+                # править это место при каждой правке работы.
+                "numbers": {k: v for k, v in details.items()
+                            if k not in ("done", "error")},
+                "runs": 0,
+            }
+        latest[name]["runs"] += 1
+
+    return {"days": days, "jobs": sorted(latest.values(), key=lambda j: j["at"], reverse=True)}

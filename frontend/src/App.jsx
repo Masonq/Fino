@@ -36,6 +36,7 @@ const Profile = lazy(() => import('./pages/Profile'))
 const SellerProfile = lazy(() => import('./pages/SellerProfile'))
 const MyListings = lazy(() => import('./pages/MyListings'))
 const AdminAudit = lazy(() => import('./pages/AdminAudit'))
+const AdminJobs = lazy(() => import('./pages/AdminJobs'))
 const EditProfile = lazy(() => import('./pages/EditProfile'))
 const Enter = lazy(() => import('./pages/Enter'))
 const AdminSupport = lazy(() => import('./pages/AdminSupport'))
@@ -441,6 +442,7 @@ export default function App() {
           <Route path="/admin/alerts" element={<AdminAlerts />} />
           <Route path="/admin/stats" element={<AdminStats />} />
           <Route path="/admin/audit" element={<AdminAudit />} />
+          <Route path="/admin/jobs" element={<AdminJobs />} />
           <Route path="/admin/support" element={<AdminSupport />} />
           <Route path="/admin/flagged" element={<AdminFlaggedChats />} />
           <Route path="/support" element={<Support />} />

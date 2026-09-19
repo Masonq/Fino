@@ -1135,5 +1135,19 @@
     "code_ph": "Code from the email",
     "confirm": "Confirm",
     "linked": "Done — it's one account now."
+  },
+  "jobs": {
+    "title": "Night jobs",
+    "empty": "No job reports yet.",
+    "just_now": "just now",
+    "hours_ago_one": "{{count}} hour ago",
+    "hours_ago_other": "{{count}} hours ago",
+    "days_ago_one": "{{count}} day ago",
+    "days_ago_other": "{{count}} days ago",
+    "done_one": "done {{count}}",
+    "done_other": "done {{count}}",
+    "nothing": "nothing done",
+    "runs_one": "{{count}} run in {{days}} days",
+    "runs_other": "{{count}} runs in {{days}} days"
   }
 }

@@ -392,6 +392,7 @@ export const api = {
     method: 'POST',
     body: JSON.stringify({ email, code }),
   }),
+  adminJobs: (days = 7) => request(`/admin/audit/jobs?days=${days}`),
   tgSiteLink: (initData, next) => request('/tg/site-link', {
     method: 'POST',
     body: JSON.stringify({ init_data: initData, next }),

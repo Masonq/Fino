@@ -5378,3 +5378,27 @@ a.s-attrs{ display:block; }
   font-size:12px; font-weight:600; line-height:1.4;
 }
 .chat-risk svg{ width:15px; height:15px; flex-shrink:0; margin-top:1px; }
+
+/* ===== ночные работы ===== */
+.jobs-list{ display:flex; flex-direction:column; gap:10px; padding:0 14px; }
+.job-card{
+  padding:14px; border-radius:16px; background:var(--surface); box-shadow:var(--shadow);
+}
+.job-card.bad{ background:var(--danger-bg); }
+.job-head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+.job-name{ font-size:15px; font-weight:800; }
+.job-when{ font-size:12px; font-weight:600; color:var(--muted); flex-shrink:0; }
+/* Зелёным — только когда работа что-то сделала. «Ничего не сделано»
+   зелёным читалось как успех, хотя это просто «сегодня нечего». */
+.job-done{ margin-top:6px; font-size:14px; font-weight:700; color:var(--muted); }
+.job-done.some{ color:var(--primary-deep); }
+.job-card.bad .job-done{ color:var(--danger-ink); }
+/* Причина всегда рядом с нулём: «ничего не сделано» само по себе
+   ничего не говорит — непонятно, всё в порядке или сломалось. */
+.job-reason{ margin-top:4px; font-size:12.5px; font-weight:600; color:var(--muted); line-height:1.4; }
+.job-reason.bad{ color:var(--danger-ink); }
+.job-numbers{
+  display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;
+  font-size:12px; font-weight:600; color:var(--muted);
+}
+.job-runs{ margin-top:8px; font-size:11.5px; font-weight:600; color:var(--muted); }
