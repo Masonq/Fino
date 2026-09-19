@@ -65,7 +65,13 @@ export default function AdminFlaggedChats() {
       {!loaded && <AdminRowSkeletons count={3} />}
 
       {loaded && items.length === 0 && (
-        <div className="empty-hint">{t('flagged.empty')}</div>
+        <div className="admin-empty">
+          <span className="admin-empty-mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4v16" /><path d="M4 5h11l-1.5 3.5L15 12H4" /></svg>
+          </span>
+          <span className="admin-empty-title">{t('flagged.empty')}</span>
+          <span className="admin-empty-text">{t('flagged.empty_hint')}</span>
+        </div>
       )}
 
       {items.map((chat) => (

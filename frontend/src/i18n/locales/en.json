@@ -629,7 +629,8 @@
     "st_archived": "archived",
     "reset_name": "Reset name",
     "name_reset_done": "Name reset",
-    "tag_renaming": "renaming"
+    "tag_renaming": "renaming",
+    "empty_hint": "Nobody matches the filter. Change it or search by name."
   },
   "stats": {
     "title": "Numbers",
@@ -749,7 +750,8 @@
     "topic_label": "What it's about",
     "subject_label": "In short",
     "body_label": "What happened",
-    "contact_label": "Where to reply"
+    "contact_label": "Where to reply",
+    "queue_empty_hint": "All tickets handled. New ones will show up here right away."
   },
   "enter": {
     "working": "Signing you in…",
@@ -1035,7 +1037,8 @@
     "clear": "Reviewed",
     "seller_profile": "Seller profile",
     "buyer": "Buyer",
-    "seller": "Seller"
+    "seller": "Seller",
+    "empty_hint": "Chats where someone asked for prepayment or moved the talk elsewhere land here."
   },
   "feed": {
     "show_more": "Show more",

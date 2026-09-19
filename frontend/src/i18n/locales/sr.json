@@ -638,7 +638,8 @@
     "st_archived": "arhivirano",
     "reset_name": "Poništi ime",
     "name_reset_done": "Ime poništeno",
-    "tag_renaming": "menja ime"
+    "tag_renaming": "menja ime",
+    "empty_hint": "Niko ne odgovara filteru. Promenite ga ili pretražite po imenu."
   },
   "stats": {
     "title": "Brojevi",
@@ -760,7 +761,8 @@
     "topic_label": "O čemu je reč",
     "subject_label": "Ukratko",
     "body_label": "Šta se desilo",
-    "contact_label": "Gde da odgovorimo"
+    "contact_label": "Gde da odgovorimo",
+    "queue_empty_hint": "Svi zahtevi su rešeni. Novi će se odmah pojaviti ovde."
   },
   "enter": {
     "working": "Prijavljujemo vas…",
@@ -1055,7 +1057,8 @@
     "clear": "Pregledano",
     "seller_profile": "Profil prodavca",
     "buyer": "Kupac",
-    "seller": "Prodavac"
+    "seller": "Prodavac",
+    "empty_hint": "Ovde stižu prepiske gde je traženo plaćanje unapred ili odlazak u drugi mesindžer."
   },
   "feed": {
     "show_more": "Prikaži još",

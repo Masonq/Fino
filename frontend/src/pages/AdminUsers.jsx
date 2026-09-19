@@ -199,7 +199,15 @@ export default function AdminUsers() {
       </div>
 
       {!loaded && <div className="admin-list"><AdminRowSkeletons count={6} /></div>}
-      {loaded && !items.length && <p className="empty">{t('admin.empty')}</p>}
+      {loaded && !items.length && (
+        <div className="admin-empty">
+          <span className="admin-empty-mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" /></svg>
+          </span>
+          <span className="admin-empty-title">{t('admin.empty')}</span>
+          <span className="admin-empty-text">{t('admin.empty_hint')}</span>
+        </div>
+      )}
 
       <div className="admin-list">
         {items.map((u) => {
