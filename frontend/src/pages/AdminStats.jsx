@@ -120,23 +120,23 @@ export default function AdminStats() {
             </div>
           </div>
 
-          <div className="stats-rows">
-            <div className="stats-row">
+          <div className="stats-list">
+            <div className="stats-list-row">
               <span>
                 {t('stats.added_total')}
                 <span className="stats-row-hint">{t('stats.added_total_hint')}</span>
               </span>
               <b>+{data.listings.fresh}</b>
             </div>
-            <div className="stats-row">
+            <div className="stats-list-row">
               <span>{t('stats.pending')}</span>
               <b>{data.listings.pending}</b>
             </div>
-            <div className="stats-row">
+            <div className="stats-list-row">
               <span>{t('stats.sellers')}</span>
               <b>{data.people.sellers}</b>
             </div>
-            <div className="stats-row">
+            <div className="stats-list-row">
               <span>{t('stats.new_people')}</span>
               <b>+{data.people.fresh}</b>
             </div>

@@ -1710,8 +1710,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .my-tabs::-webkit-scrollbar{ display:none; }
 .my-tab{
+  /* Та же норма касания, что у фишек админки: 36 точек. */
   flex-shrink:0; display:flex; align-items:center; gap:6px;
-  padding:8px 13px; border-radius:11px; background:var(--surface-sunken);
+  min-height:36px; padding:0 13px; border-radius:11px; background:var(--surface-sunken);
   font-size:12.5px; font-weight:700; color:var(--ink-soft);
 }
 .my-tab.active{ background:var(--primary); color:#fff; }
@@ -1826,8 +1827,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .mod-pick svg{ width:16px; height:16px; }
 .mod-pick.on{ background:var(--primary); color:#fff; }
 .mod-seller-pick{
+  /* Было 24 точки высотой — вдвое меньше нормы касания, и кнопка
+     стоит вплотную к карточке объявления: промахнувшись, открываешь
+     не то. */
+  display:inline-flex; align-items:center; min-height:34px;
   font-size:11.5px; font-weight:700; color:var(--primary-deep); background:var(--surface);
-  padding:5px 9px; border-radius:8px; border:1px solid rgba(14,159,110,.3);
+  padding:0 11px; border-radius:9px; border:1px solid rgba(14,159,110,.3);
 }
 .mod-bulkbar{
   position:fixed; left:12px; right:12px; bottom:calc(96px + env(safe-area-inset-bottom)); max-width:456px; margin:0 auto;
@@ -3287,10 +3292,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
    Цвет оставлен только состоянию: заблокированный — красной полосой
    слева, а не заливкой всей строки, чтобы список не полыхал. */
+/* Поля не задаём: страница уже даёт шестнадцать точек по бокам, а
+   свои складывались с ними — блок начинался с тридцати, соседние с
+   шестнадцати, и край получался рваным. */
 .admin-list {
   display: flex; flex-direction: column;
   background: var(--surface); border-radius: 16px; overflow: hidden;
-  margin: 0 14px; box-shadow: var(--shadow);
+  box-shadow: var(--shadow);
 }
 .admin-row { position: relative; background: var(--surface); }
 .admin-row + .admin-row { border-top: 1px solid var(--border); }
@@ -5397,7 +5405,7 @@ a.s-attrs{ display:block; }
 .jobs-list{
   display:flex; flex-direction:column;
   background:var(--surface); border-radius:16px; overflow:hidden;
-  margin:0 14px; box-shadow:var(--shadow);
+  box-shadow:var(--shadow);
 }
 .job-card{ position:relative; padding:13px 14px; }
 .job-card + .job-card{ border-top:1px solid var(--border); }
@@ -5466,7 +5474,7 @@ a.s-attrs{ display:block; }
 /* Полоса поиска и отборов в админке. Раньше поле, вкладки и фишки шли
    тремя рядами и занимали треть экрана — до самого журнала надо было
    прокручивать. */
-.admin-bar{ padding:0 14px 10px; }
+.admin-bar{ padding:0 0 10px; }
 .admin-bar-search{ background:var(--surface); box-shadow:0 1px 3px rgba(16,24,40,.08); }
 .admin-chips{
   display:flex; gap:7px; margin-top:9px; overflow-x:auto;
@@ -5477,8 +5485,11 @@ a.s-attrs{ display:block; }
    живёт внутри .field-chips — и без него кнопки выглядели простым
    текстом, по которому непонятно, что можно нажать. */
 .admin-chips .chip{
+  /* Высота 36: в 29 точек пальцем попадаешь через раз, а это главный
+     способ переключения на всех экранах админки. Обмерил — до правки
+     все фишки были мельче нормы касания. */
   flex-shrink:0; display:inline-flex; align-items:center;
-  padding:7px 13px; border-radius:10px;
+  min-height:36px; padding:0 13px; border-radius:10px;
   border:1px solid var(--border-strong); background:var(--surface);
   color:var(--ink); font-size:12.5px; font-weight:700; line-height:1;
 }
@@ -5537,7 +5548,7 @@ a.s-attrs{ display:block; }
 /* Метки состояния: одинаковые везде, цветом различаются только те,
    что означают состояние, — остальные серые. */
 .admin-list .tag{
-  padding:2px 7px; border-radius:6px; font-size:10.5px; font-weight:800;
+  padding:3px 7px; border-radius:6px; font-size:11px; font-weight:800;
   background:var(--surface-sunken); color:var(--muted);
   text-transform:none; letter-spacing:0;
 }
@@ -5563,7 +5574,7 @@ a.s-attrs{ display:block; }
    Два главных числа крупно, остальное строками. Правило из гайдов по
    дашбордам: меньше чисел, но крупнее — они убеждают сильнее, чем
    шесть равнозначных плиток, среди которых не видно главного. */
-.stats-hero{ display:flex; gap:10px; padding:0 14px; }
+.stats-hero{ display:flex; gap:10px; }
 .stats-hero-item{
   /* Одинаковая ширина и содержимое, прижатое к низу: числа стоят на
      одной линии, даже если подписи разной длины. */
@@ -5581,16 +5592,19 @@ a.s-attrs{ display:block; }
 /* Срок — легче значения: это единица измерения, а не само число. */
 .stats-period{ display:block; font-size:11px; font-weight:500; opacity:.75; }
 
-.stats-rows{
-  margin:10px 14px 0; border-radius:16px; overflow:hidden;
+/* Имя своё, не stats-rows: такой класс в файле уже был — для строк
+   внутри блоков воронки и ликвидности, — и мои стили налезали на них,
+   рисуя карточку внутри карточки. */
+.stats-list{
+  margin:10px 0 0; border-radius:16px; overflow:hidden;
   background:var(--surface); box-shadow:var(--shadow);
 }
-.stats-row{
+.stats-list-row{
   display:flex; align-items:center; justify-content:space-between; gap:12px;
   padding:11px 14px; font-size:13.5px; font-weight:600; color:var(--muted);
 }
-.stats-row + .stats-row{ border-top:1px solid var(--border); }
-.stats-row b{ font-size:15px; font-weight:800; color:var(--ink); font-variant-numeric:tabular-nums; }
+.stats-list-row + .stats-list-row{ border-top:1px solid var(--border); }
+.stats-list-row b{ font-size:15px; font-weight:800; color:var(--ink); font-variant-numeric:tabular-nums; }
 
 /* Пояснение к строке показателя: мельче и тише самой подписи — оно
    уточняет, а не спорит с ней за внимание. */

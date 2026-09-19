@@ -34,7 +34,7 @@ export default function AdminJobs() {
   }
 
   return (
-    <div className="fav-page">
+    <div className="page">
       <PageHeader title={t('jobs.title')} />
 
       {!data ? (
