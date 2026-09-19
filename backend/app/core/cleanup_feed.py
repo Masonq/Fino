@@ -153,7 +153,7 @@ def _try_fix(listing: Listing, tr: ListingTranslation, use_ai: bool) -> str | No
 
 
 def run(limit: int | None, apply: bool, use_ai: bool = True,
-        show: int = 0) -> dict:
+        show: int = 0, report_path: str | None = None) -> dict:
     # Показ ничего не меняет, поэтому и нейросеть в нём не зовём: она
     # тратит суточный запас, общий с переводом и переносом из чатов, и
     # тянет по несколько секунд на объявление. Для счёта хватает правил.
@@ -170,6 +170,10 @@ def run(limit: int | None, apply: bool, use_ai: bool = True,
     db = SessionLocal()
     counts = {"проверено": 0, "описаний почищено": 0,
               "заголовков переписано": 0, "снято": 0}
+    # Что именно тронули — построчно. Смотреть в базе, кого сняли,
+    # неудобно: адрес объявления, старый и новый заголовок рядом дают
+    # проверить решение глазами и вернуть лишнее.
+    report: list[dict] = []
     try:
         query = (db.query(Listing)
                  .filter(Listing.status == ListingStatus.active)
@@ -193,6 +197,13 @@ def run(limit: int | None, apply: bool, use_ai: bool = True,
             cleaned = strip_promo_lines(tr.description)
             if cleaned != (tr.description or "").strip():
                 counts["описаний почищено"] += 1
+                report.append({
+                    "действие": "описание почищено",
+                    "id": str(listing.id),
+                    "заголовок": tr.title,
+                    "было": (tr.description or "").strip()[:400],
+                    "стало": cleaned[:400],
+                })
                 if apply:
                     tr.description = cleaned
 
@@ -209,6 +220,12 @@ def run(limit: int | None, apply: bool, use_ai: bool = True,
             fixed = _try_fix(listing, tr, use_ai)
             if fixed:
                 counts["заголовков переписано"] += 1
+                report.append({
+                    "действие": "заголовок переписан",
+                    "id": str(listing.id),
+                    "было": tr.title,
+                    "стало": fixed,
+                })
                 if apply:
                     old = tr.title
                     tr.title = fixed[:255]
@@ -223,6 +240,13 @@ def run(limit: int | None, apply: bool, use_ai: bool = True,
 
             # 3. Снимаем с ленты
             counts["снято"] += 1
+            report.append({
+                "действие": "снято",
+                "id": str(listing.id),
+                "заголовок": tr.title,
+                "раздел": listing.category.slug if listing.category else None,
+                "источник": listing.external_source or "сайт",
+            })
             if show and counts["снято"] <= show:
                 print(f"  снимаем: {tr.title}")
             if apply:
@@ -241,7 +265,62 @@ def run(limit: int | None, apply: bool, use_ai: bool = True,
             db.commit()
     finally:
         db.close()
+
+    if report_path:
+        _write_report(report_path, counts, report, apply)
     return counts
+
+
+def _write_report(path: str, counts: dict, rows: list[dict], apply: bool) -> None:
+    """
+    Отчёт файлом рядом с кодом: его видно в репозитории и можно
+    посмотреть глазами, не заходя в базу. Пишем Markdown, а не CSV:
+    заголовки объявлений читают, а не считают, и в таблице они видны
+    сразу.
+    """
+    from pathlib import Path
+
+    out = Path(path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+
+    lines = [
+        f"# Уборка ленты — {utcnow():%d.%m.%Y %H:%M} UTC",
+        "",
+        "Показ, ничего не изменено." if not apply else "Изменения применены.",
+        "",
+        "| что | сколько |",
+        "| --- | --- |",
+    ]
+    lines += [f"| {key} | {value} |" for key, value in counts.items()]
+
+    for action, title in (("снято", "Сняты с публикации"),
+                          ("заголовок переписан", "Заголовки переписаны"),
+                          ("описание почищено", "Описания почищены")):
+        chosen = [r for r in rows if r["действие"] == action]
+        if not chosen:
+            continue
+        lines += ["", f"## {title} ({len(chosen)})", ""]
+        if action == "снято":
+            lines += ["| заголовок | раздел | источник | id |", "| --- | --- | --- | --- |"]
+            lines += [f"| {_cell(r['заголовок'])} | {r['раздел'] or ''} | "
+                      f"{r['источник']} | {r['id'][:8]} |" for r in chosen]
+        elif action == "заголовок переписан":
+            lines += ["| было | стало | id |", "| --- | --- | --- |"]
+            lines += [f"| {_cell(r['было'])} | {_cell(r['стало'])} | {r['id'][:8]} |"
+                      for r in chosen]
+        else:
+            lines += ["| заголовок | убрали строк | id |", "| --- | --- | --- |"]
+            for r in chosen:
+                dropped = len(r["было"].splitlines()) - len(r["стало"].splitlines())
+                lines.append(f"| {_cell(r['заголовок'])} | {dropped} | {r['id'][:8]} |")
+
+    out.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    log.info("отчёт: %s", out)
+
+
+def _cell(text: str | None) -> str:
+    """Ячейка таблицы: переносы и палки ломают разметку."""
+    return (text or "").replace("|", "¦").replace("\n", " ").strip()[:120]
 
 
 if __name__ == "__main__":
@@ -254,10 +333,13 @@ if __name__ == "__main__":
                         help="только правила, без обращений к нейросети")
     parser.add_argument("--show", type=int, default=0,
                         help="напечатать N заголовков, которые будут сняты")
+    parser.add_argument("--report", default="reports/cleanup-feed.md",
+                        help="куда положить отчёт (по умолчанию reports/cleanup-feed.md)")
     args = parser.parse_args()
 
     result = run(args.limit, apply=args.apply and not args.dry_run,
-                 use_ai=not args.no_ai, show=args.show)
+                 use_ai=not args.no_ai, show=args.show,
+                 report_path=args.report)
     print()
     for key, value in result.items():
         print(f"{key}: {value}")
