@@ -57,47 +57,64 @@ export default function Support() {
 
       {sent && <p className="support-sent">{t('support.sent')}</p>}
 
-      <div className="support-form">
-        <div className="admin-filters">
-          {TOPICS.map((key) => (
-            <button
-              key={key}
-              className={`chip ${topic === key ? 'chip-active' : ''}`}
-              onClick={() => setTopic(key)}
-            >
-              {t(`support.topic.${key}`)}
-            </button>
-          ))}
+      {/* Та же карточка со строками, что и в «Моих данных»: тема,
+          заголовок, текст — одно обращение, а не три отдельных поля,
+          расставленных по экрану. */}
+      <div className="form-card">
+        <div className="field-row">
+          <span className="field-label">{t('support.topic_label')}</span>
+          <div className="field-chips">
+            {TOPICS.map((key) => (
+              <button
+                key={key}
+                className={`chip ${topic === key ? 'chip-active' : ''}`}
+                onClick={() => setTopic(key)}
+              >
+                {t(`support.topic.${key}`)}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <input
-          className="admin-search"
-          value={subject}
-          onChange={(e) => setSubject(e.target.value)}
-          placeholder={t('support.subject')}
-        />
-        <textarea
-          className="support-body"
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          placeholder={t('support.body')}
-          rows={5}
-        />
+        <label className="field-row">
+          <span className="field-label">{t('support.subject_label')}</span>
+          <input
+            className="field-input"
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            placeholder={t('support.subject')}
+          />
+        </label>
+
+        <label className="field-row">
+          <span className="field-label">{t('support.body_label')}</span>
+          <textarea
+            className="field-input field-textarea"
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            placeholder={t('support.body')}
+            rows={5}
+          />
+        </label>
+
         {/* Не вошедшего спрашиваем, куда ответить: без обратного адреса
             обращение бесполезно обеим сторонам. */}
         {!user && (
-          <input
-            className="admin-search"
-            value={contact}
-            onChange={(e) => setContact(e.target.value)}
-            placeholder={t('support.contact')}
-          />
+          <label className="field-row">
+            <span className="field-label">{t('support.contact_label')}</span>
+            <input
+              className="field-input"
+              value={contact}
+              onChange={(e) => setContact(e.target.value)}
+              placeholder={t('support.contact')}
+            />
+          </label>
         )}
-
-        <button className="support-send" disabled={sending} onClick={send}>
-          {t('support.send')}
-        </button>
       </div>
+
+      <button className="form-save" disabled={sending} onClick={send}>
+        {t('support.send')}
+      </button>
 
       {!!mine.length && (
         <div className="support-mine">

@@ -708,7 +708,11 @@
       "open": "Waiting",
       "answered": "Answered",
       "closed": "Closed"
-    }
+    },
+    "topic_label": "What it's about",
+    "subject_label": "In short",
+    "body_label": "What happened",
+    "contact_label": "Where to reply"
   },
   "enter": {
     "working": "Signing you in…",
@@ -914,7 +918,8 @@
     "share_title": "Join PLONK — Serbian classifieds",
     "stat_invited": "invited",
     "stat_rewarded": "published a listing",
-    "fineprint": "The bonus is credited for each invited friend whose first listing gets published and approved. Credited once per person."
+    "fineprint": "The bonus is credited for each invited friend whose first listing gets published and approved. Credited once per person.",
+    "link_label": "Your link"
   },
   "footer": {
     "about": "Classifieds in Serbia — in Russian, English and Serbian. Buy and sell close to home.",

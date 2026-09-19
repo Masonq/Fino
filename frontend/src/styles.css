@@ -4679,3 +4679,4 @@ a.s-attrs{ display:block; }
 .verify-line.ok{ color:var(--primary-deep); }
 .verify-line.wait{ color:var(--warn-ink); }
 .verify-line.bad{ display:block; color:var(--danger-ink); }
+.field-chips{ display:flex; flex-wrap:wrap; gap:7px; padding-top:2px; }

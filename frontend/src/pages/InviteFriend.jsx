@@ -43,10 +43,19 @@ export default function InviteFriend() {
         <p>{t('invite.hero_text', { amount: 100 })}</p>
       </div>
 
-      <div className="invite-link-row">
-        <span className="invite-link-text">{link}</span>
+      {/* Ссылка — такой же строкой карточки, как поля в «Моих данных»:
+          подпись сверху, значение снизу. Раньше она висела серой
+          плашкой без объяснения, что это за адрес. */}
+      <div className="form-card">
+        <div className="field-row">
+          <span className="field-label">{t('invite.link_label')}</span>
+          <div className="field-value-row">
+            <span className="field-value">{link}</span>
+          </div>
+        </div>
       </div>
-      <button type="button" className="invite-share-btn" onClick={share}>
+
+      <button type="button" className="form-save" onClick={share}>
         {copied ? t('invite.copied') : t('invite.share_btn')}
       </button>
 

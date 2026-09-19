@@ -717,7 +717,11 @@
       "open": "Čeka odgovor",
       "answered": "Odgovoreno",
       "closed": "Zatvoreno"
-    }
+    },
+    "topic_label": "O čemu je reč",
+    "subject_label": "Ukratko",
+    "body_label": "Šta se desilo",
+    "contact_label": "Gde da odgovorimo"
   },
   "enter": {
     "working": "Prijavljujemo vas…",
@@ -925,7 +929,8 @@
     "share_title": "Pridruži se PLONK-u — oglasi Srbije",
     "stat_invited": "pozvano",
     "stat_rewarded": "objavilo oglas",
-    "fineprint": "Bonus se dodeljuje za svakog pozvanog prijatelja čiji prvi oglas bude odobren. Dodeljuje se jednom po osobi."
+    "fineprint": "Bonus se dodeljuje za svakog pozvanog prijatelja čiji prvi oglas bude odobren. Dodeljuje se jednom po osobi.",
+    "link_label": "Vaš link"
   },
   "footer": {
     "about": "Oglasi u Srbiji — na ruskom, engleskom i srpskom. Kupujte i prodajte u svom komšiluku.",
