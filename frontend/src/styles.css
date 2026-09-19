@@ -4942,7 +4942,8 @@ a.s-attrs{ display:block; }
 .tg-page input, .tg-page textarea, .tg-page select{
   caret-color:var(--ink); color-scheme:light;
 }
-.tg-head{ padding:0 16px 14px; }
+.tg-head{ display:flex; align-items:center; gap:12px; padding:0 16px 14px; }
+.tg-logo{ width:42px; height:42px; flex-shrink:0; border-radius:12px; }
 .tg-title{ font-size:21px; font-weight:800; letter-spacing:-0.02em; }
 .tg-sub{ margin-top:4px; font-size:13px; color:var(--muted); font-weight:600; }
 

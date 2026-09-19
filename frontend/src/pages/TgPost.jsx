@@ -174,9 +174,16 @@ export default function TgPost() {
 
   return (
     <div className="tg-page">
+      {/* Знак сайта: человек открыл окно из переписки и должен сразу
+          понимать, куда попал. В шапке Telegram название обрезано
+          («PLONK — публикация объявле…»), и кроме неё опознать нас
+          нечем. */}
       <div className="tg-head">
-        <div className="tg-title">{t('tg_post.title')}</div>
-        <div className="tg-sub">{t('tg_post.subtitle')}</div>
+        <img className="tg-logo" src="/logo-mark.png" alt="PLONK" />
+        <div>
+          <div className="tg-title">{t('tg_post.title')}</div>
+          <div className="tg-sub">{t('tg_post.subtitle')}</div>
+        </div>
       </div>
 
       {/* Фотографии первыми: вещь без снимка не продаётся, и просить их
