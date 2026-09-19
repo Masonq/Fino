@@ -6,6 +6,10 @@ export function getToken() {
   return localStorage.getItem(TOKEN_KEY)
 }
 
+export function setToken(value) {
+  try { localStorage.setItem(TOKEN_KEY, value) } catch { /* не беда */ }
+}
+
 // Адрес живого чата — тот же хост, что и у обычных запросов, только
 // http(s) меняем на ws(s) и добавляем токен параметром: браузер не
 // даёт выставить заголовок Authorization при открытии WebSocket,
@@ -362,6 +366,16 @@ export const api = {
     body: JSON.stringify({ photo_ids: photoIds }),
   }),
   createListing: (payload) => request('/listings', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }),
+  setToken,
+  // Публикатор в боте: вход по подписи Telegram и быстрая публикация.
+  tgWebAppAuth: (initData) => request('/tg/webapp/auth', {
+    method: 'POST',
+    body: JSON.stringify({ init_data: initData }),
+  }),
+  tgPublish: (payload) => request('/tg/publish', {
     method: 'POST',
     body: JSON.stringify(payload),
   }),

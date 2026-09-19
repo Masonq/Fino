@@ -27,6 +27,7 @@ const InviteFriend = lazy(() => import('./pages/InviteFriend'))
 const Notifications = lazy(() => import('./pages/Notifications'))
 const ListingDashboard = lazy(() => import('./pages/ListingDashboard'))
 const WaitingReviews = lazy(() => import('./pages/WaitingReviews'))
+const TgPost = lazy(() => import('./pages/TgPost'))
 const LegalDoc = lazy(() => import('./pages/LegalDoc'))
 const Chats = lazy(() => import('./pages/Chats'))
 const Login = lazy(() => import('./pages/Login'))
@@ -63,7 +64,11 @@ export default function App() {
   // Объявление узнаём по хвосту адреса из восьми знаков — у прочих
   // страниц такого нет.
   const isListing = /\/[a-z0-9-]+-[0-9a-f]{8}\/?$/.test(pathname)
-  const hideNav = isListing || pathname.startsWith('/chat/') || pathname === '/login'
+  // Публикатор в боте — тоже без оболочки: человек пришёл из
+  // переписки на одну минуту, и нижнее меню сайта ему только мешает,
+  // уводя из формы в разделы, куда он не собирался.
+  const hideNav = isListing || pathname.startsWith('/chat/')
+    || pathname === '/login' || pathname.startsWith('/tg/')
 
   // Запоминаем последнюю страницу-список (поиск, главную, избранное,
   // очередь): после удаления объявления возвращаться надо туда, откуда
@@ -418,6 +423,9 @@ export default function App() {
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/my/:id/stats" element={<ListingDashboard />} />
           <Route path="/reviews/waiting" element={<WaitingReviews />} />
+          {/* Публикатор внутри Telegram — без общей оболочки сайта:
+              нижнего меню и шапки там быть не должно. */}
+          <Route path="/tg/post" element={<TgPost />} />
           <Route path="/terms" element={<LegalDoc doc="terms" />} />
           <Route path="/privacy" element={<LegalDoc doc="privacy" />} />
           <Route path="/rules" element={<LegalDoc doc="rules" />} />

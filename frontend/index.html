@@ -111,6 +111,11 @@
     "availableLanguage": ["ru", "en", "sr"]
   }
   </script>
+  <!-- Мост Telegram для публикатора в боте: он сообщает, кто открыл
+       окно, и умеет закрывать его по кнопке «вернуться в чат».
+       Грузится только внутри Telegram, на обычном сайте ничего не
+       делает и весит полтора килобайта. -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
   <div id="root"></div>

@@ -181,7 +181,8 @@
     "cancel": "Otkaži",
     "clear": "Obriši",
     "close": "Zatvori",
-    "copy": "Kopiraj"
+    "copy": "Kopiraj",
+    "delete": "Obriši"
   },
   "post": {
     "step_params": "Detalji",
@@ -1037,5 +1038,31 @@
     "waiting_title": "Čekaju vašu ocenu",
     "waiting_empty": "Niko ne čeka ocenu. Pozivi se pojavljuju posle prepiske koja liči na dogovor.",
     "someone": "Sagovornik"
+  },
+  "tg_post": {
+    "title": "Šta prodajete?",
+    "subtitle": "Oglas ide na sajt i u ćaskanje",
+    "what": "Naziv",
+    "what_ph": "Na primer: Sto IKEA MICKE, beli",
+    "price": "Cena",
+    "price_ph": "u dinarima",
+    "about": "Par reči",
+    "about_ph": "Stanje, dimenzije, zašto prodajete",
+    "publish": "Objavi",
+    "sending": "Šaljemo…",
+    "published": "Gotovo",
+    "published_site": "Oglas je na proveri — obično par minuta.",
+    "published_channel": "Oglas je objavljen i poslat u ćaskanje.",
+    "open_listing": "Pogledaj oglas",
+    "back_to_chat": "Nazad u ćaskanje",
+    "note": "Rubriku biramo sami po nazivu.",
+    "open_in_telegram": "Ovu stranicu otvorite iz našeg Telegram bota.",
+    "err_auth_failed": "Prijava nije uspela. Zatvorite prozor i otvorite ponovo.",
+    "err_upload_failed": "Slika nije otpremljena. Pokušajte ponovo.",
+    "err_send_failed": "Objavljivanje nije uspelo. Pokušajte ponovo.",
+    "err_must_rename": "Prvo unesite ime u profilu na sajtu."
+  },
+  "errors": {
+    "generic": "Nešto nije u redu. Pokušajte ponovo."
   }
 }

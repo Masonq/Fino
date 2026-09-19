@@ -181,7 +181,8 @@
     "cancel": "Cancel",
     "clear": "Clear",
     "close": "Close",
-    "copy": "Copy"
+    "copy": "Copy",
+    "delete": "Delete"
   },
   "post": {
     "step_params": "Details",
@@ -1022,5 +1023,31 @@
     "waiting_title": "Waiting for your review",
     "waiting_empty": "Nobody is waiting. Invitations appear after a conversation that looks like a deal.",
     "someone": "The other person"
+  },
+  "tg_post": {
+    "title": "What are you selling?",
+    "subtitle": "Your listing goes to the site and the chat",
+    "what": "Title",
+    "what_ph": "For example: IKEA MICKE desk, white",
+    "price": "Price",
+    "price_ph": "in dinars",
+    "about": "A few words",
+    "about_ph": "Condition, size, why you're selling",
+    "publish": "Publish",
+    "sending": "Sending…",
+    "published": "Done",
+    "published_site": "The listing is under review — usually a few minutes.",
+    "published_channel": "The listing is published and sent to the chat.",
+    "open_listing": "View listing",
+    "back_to_chat": "Back to chat",
+    "note": "We'll pick the section by the title.",
+    "open_in_telegram": "Open this page from our Telegram bot.",
+    "err_auth_failed": "Sign-in failed. Close the window and open it again.",
+    "err_upload_failed": "The photo didn't upload. Try again.",
+    "err_send_failed": "Couldn't publish. Try again.",
+    "err_must_rename": "Set your name in the profile on the site first."
+  },
+  "errors": {
+    "generic": "Something went wrong. Try again."
   }
 }

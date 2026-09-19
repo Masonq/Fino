@@ -4926,3 +4926,49 @@ a.s-attrs{ display:block; }
   flex-shrink:0; padding:7px 12px; border-radius:9px;
   background:var(--surface); color:var(--ink); font-size:12.5px; font-weight:800;
 }
+
+/* ===== публикатор в Telegram =====
+   Отдельный экран без шапки и нижнего меню: человек пришёл сюда из
+   переписки на одну минуту, и всё, что не относится к публикации,
+   только мешает. */
+.tg-page{ padding:16px 0 28px; min-height:100dvh; background:var(--bg); }
+.tg-head{ padding:0 16px 14px; }
+.tg-title{ font-size:21px; font-weight:800; letter-spacing:-0.02em; }
+.tg-sub{ margin-top:4px; font-size:13px; color:var(--muted); font-weight:600; }
+
+.tg-photos{
+  display:flex; gap:8px; overflow-x:auto; padding:0 16px 14px;
+  -webkit-overflow-scrolling:touch;
+}
+.tg-photos::-webkit-scrollbar{ display:none; }
+.tg-photo{
+  position:relative; width:84px; height:84px; flex:0 0 auto;
+  border-radius:14px; overflow:hidden; background:var(--surface-sunken);
+}
+.tg-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
+.tg-photo button{
+  position:absolute; top:4px; right:4px; width:22px; height:22px; border-radius:50%;
+  background:rgba(20,24,22,.62); color:#fff; display:flex; align-items:center; justify-content:center;
+}
+.tg-photo button svg{ width:12px; height:12px; }
+.tg-photo-add{
+  display:flex; align-items:center; justify-content:center;
+  border:1.5px dashed var(--border-strong); background:var(--surface); color:var(--muted);
+  cursor:pointer; font-size:20px;
+}
+.tg-photo-add svg{ width:24px; height:24px; }
+
+.tg-price{ display:flex; align-items:center; gap:10px; }
+.tg-price .field-input{ flex:1; min-width:0; }
+.tg-note{ padding:8px 16px 0; font-size:12px; color:var(--muted); text-align:center; }
+
+.tg-done{ display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:10px; text-align:center; padding:60px 20px; }
+.tg-done-mark{
+  width:64px; height:64px; border-radius:50%; background:var(--primary-soft); color:var(--primary-deep);
+  display:flex; align-items:center; justify-content:center; margin-bottom:6px;
+}
+.tg-done-mark svg{ width:30px; height:30px; }
+.tg-done-title{ font-size:20px; font-weight:800; }
+.tg-done-text{ font-size:13.5px; color:var(--muted); font-weight:600; line-height:1.45; max-width:300px; }
+.tg-done .form-save{ margin-top:14px; text-align:center; line-height:50px; text-decoration:none; }
