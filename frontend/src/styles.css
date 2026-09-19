@@ -3959,6 +3959,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
      разделах без подразделов кнопка уезжала на середину экрана.
      Высота — две трети ширины, пропорции картинки 3:2. */
   min-height:66vw; display:flex; flex-direction:column; justify-content:flex-start;
+  padding-bottom:14px;
   background-size:cover, cover; background-position:center, center; background-repeat:no-repeat, no-repeat;
 }
 .landing-hero::before{
@@ -3971,7 +3972,16 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .landing-back.on-hero{ background:rgba(255,255,255,.22); color:#fff; }
 .landing-title.on-hero{ color:#fff; text-shadow:0 1px 10px rgba(0,0,0,.35); }
 .landing-count.on-hero{ color:rgba(255,255,255,.92); text-shadow:0 1px 8px rgba(0,0,0,.35); }
+/* Поиск живёт в шапке, поверх картинки — как у Avito, где строка
+   поиска стоит прямо на цветном фоне раздела. Так первое, что видит
+   человек на странице раздела, — это способ найти нужное, а не список
+   подразделов. */
 .landing-search{ padding:10px 14px 2px; }
+.landing-search.on-hero{ margin-top:auto; padding:0 14px 4px; }
+.landing-search.on-hero .search-field{
+  background:rgba(255,255,255,.94); border-color:transparent;
+  box-shadow:0 6px 20px rgba(16,24,40,.18);
+}
 .landing-hero .search-field{ background:var(--surface); border-color:transparent; box-shadow:0 4px 14px rgba(16,24,40,.14); }
 
 

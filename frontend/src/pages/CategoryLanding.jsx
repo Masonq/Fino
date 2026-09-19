@@ -487,16 +487,25 @@ export default function CategoryLanding() {
                  strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
           </button>
           <h1 className="landing-title on-hero">{name}</h1>
-          {/* Число объявлений приходит отдельным запросом (getCategories),
-              чуть позже самой страницы — раньше блок целиком рендерился
-              только после этого, резко появляясь и сдвигая всё, что
-              ниже (саму страницу «дёргало» при каждом заходе). Теперь
-              блок стоит на месте с первого кадра — просто пустой, пока
-              число не пришло, высота у него уже есть за счёт line-height
-              в CSS, появление текста ничего не сдвигает. */}
-          <div className="landing-count on-hero">
-            {category?.count > 0 ? t('landing.offers', { count: category.count }) : '\u00A0'}
-          </div>
+        </div>
+
+        <div className="landing-search on-hero">
+          <div className="search-field">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+            <input
+              type="search"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') search() }}
+              placeholder={t('search.placeholder_full')}
+              autoComplete="off"
+            />
+            {text && (
+            <button className="search-clear" onClick={() => setText('')} aria-label={t('actions.clear')}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M18 6 6 18M6 6l12 12" /></svg>
+            </button>
+          )}
+        </div>
         </div>
 
       </div>
@@ -540,24 +549,6 @@ export default function CategoryLanding() {
             сузить раздел, но не поискать конкретную вещь словом. Теперь
             можно и то, и другое: слово уходит в q вместе с остальными
             отборами. */}
-        <div className="landing-search">
-          <div className="search-field">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
-            <input
-              type="search"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') search() }}
-              placeholder={t('search.placeholder_full')}
-              autoComplete="off"
-            />
-            {text && (
-            <button className="search-clear" onClick={() => setText('')} aria-label={t('actions.clear')}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M18 6 6 18M6 6l12 12" /></svg>
-            </button>
-          )}
-        </div>
-        </div>
 
       {/* Первый вопрос делит раздел надвое: без ответа на него
           остальное бессмысленно. */}
