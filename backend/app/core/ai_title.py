@@ -184,7 +184,10 @@ def _ask_gemini(prompt: str, limit: int = 200,
     url = ("https://generativelanguage.googleapis.com/v1beta/models/"
            f"{settings.gemini_model}:generateContent"
            f"?key={settings.gemini_api_key}")
-    config = {"temperature": 0, "maxOutputTokens": limit}
+    # temperature у Gemini объявлена устаревшей (июль 2026): её ещё
+    # принимают, но новые модели её игнорируют, а в будущем запрос с
+    # ней может и отлететь. Оставляем только предел длины ответа.
+    config = {"maxOutputTokens": limit}
     if schema:
         # Форму ответа задаём на уровне запроса, а не просьбой в тексте.
         # Тогда модель не может вернуть ни пояснений, ни других полей —
@@ -546,7 +549,7 @@ def ask_photo(prompt: str, photo: bytes) -> str | None:
         # Двадцати не хватало даже на два слова: ответ обрывался на
         # «{ "title":» — модель начинала отвечать по-своему, а мы видели
         # огрызок и считали, что она не поняла.
-        "generationConfig": {"temperature": 0, "maxOutputTokens": 100},
+        "generationConfig": {"maxOutputTokens": 100},
     }, {}, "gemini", wait=PHOTO_TIMEOUT)
 
     if not data:
@@ -573,7 +576,7 @@ def _ask_gemini_photos(text: str, photos: list[bytes]) -> str | None:
     data = _post(url, {
         "contents": [{"parts": parts}],
         "generationConfig": {
-            "temperature": 0, "maxOutputTokens": 300,
+            "maxOutputTokens": 300,
             "responseMimeType": "application/json",
             "responseSchema": TITLE_SCHEMA,
         },
