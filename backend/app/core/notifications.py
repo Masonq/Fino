@@ -292,3 +292,23 @@ def notify_report_resolved(db: Session, user_id, acted: bool,
             f"Мы проверили объявление{thing} по вашей жалобе. "
             f"Правила оно не нарушает, поэтому осталось на сайте.")
     return notify(db, user_id, text)
+
+
+def notify_published(db: Session, user_id, title: str, url: str,
+                     in_chat: bool) -> bool:
+    """
+    Объявление из публикатора размещено.
+
+    Человек выкладывал вещь из переписки и окно закрыл — подтверждение
+    на экране он уже не видит. Сообщением в бот он узнаёт, что всё
+    получилось, и получает ссылку, которой можно поделиться.
+
+    Отправляем даже тому, кто сейчас в приложении (force): он только
+    что нажал «опубликовать» и ждёт именно этого ответа.
+    """
+    where = "уже в чате" if in_chat else "отправлено на проверку"
+    text = (f"<b>Объявление {where}</b>\n\n"
+            f"{title[:100]}\n\n"
+            f"{url}")
+    return notify(db, user_id, text, force=True, link=url,
+                  subject="PLONK — объявление размещено")

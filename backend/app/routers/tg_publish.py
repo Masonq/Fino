@@ -213,26 +213,42 @@ def publish(
     # Перевод — фоном: человек не должен ждать, пока объявление
     # переложат на два языка, чтобы вернуться к переписке.
     background.add_task(_translate_later, listing.id)
-    if trusted:
-        background.add_task(_post_to_chat, listing.id)
+    url = f"https://plonk.rs{listing_path(listing.id, payload.title, payload.city, category.slug)}"
+    background.add_task(_post_to_chat, listing.id, user.id, payload.title, url, trusted)
 
     return {
         "id": str(listing.id),
-        "url": f"https://plonk.rs{listing_path(listing.id, payload.title, payload.city, category.slug)}",
+        "url": url,
         "in_channel": trusted,
         "moderation": not trusted,
     }
 
 
-def _post_to_chat(listing_id) -> None:
-    """Отправка в чат прямо сейчас — только для проверенных."""
+def _post_to_chat(listing_id, user_id, title: str, url: str, trusted: bool) -> None:
+    """
+    Отправка в чат и весточка автору.
+
+    Окно публикатора человек закрывает сразу, и подтверждение на экране
+    он уже не видит. Сообщение в боте — единственное, что скажет ему,
+    чем кончилось.
+    """
     import asyncio
 
+    in_chat = False
+    if trusted:
+        try:
+            from app.bot.autopost import send_one
+            in_chat = bool(asyncio.run(send_one(listing_id)))
+        except Exception as exc:                        # noqa: BLE001
+            log.warning("не отправили в чат %s: %s", listing_id, exc)
+
     try:
-        from app.bot.autopost import send_one
-        asyncio.run(send_one(listing_id))
+        from app.core.notifications import notify_published
+
+        with SessionLocal() as db:
+            notify_published(db, user_id, title, url, in_chat)
     except Exception as exc:                            # noqa: BLE001
-        log.warning("не отправили в чат %s: %s", listing_id, exc)
+        log.warning("не уведомили автора %s: %s", user_id, exc)
 
 
 def _translate_later(listing_id) -> None:
