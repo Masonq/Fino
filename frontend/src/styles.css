@@ -4931,7 +4931,17 @@ a.s-attrs{ display:block; }
    Отдельный экран без шапки и нижнего меню: человек пришёл сюда из
    переписки на одну минуту, и всё, что не относится к публикации,
    только мешает. */
-.tg-page{ padding:16px 0 28px; min-height:100dvh; background:var(--bg); }
+.tg-page{
+  padding:16px 0 28px; min-height:100dvh; background:var(--bg);
+  /* Telegram открывает окно в своей теме, и у человека с тёмной темой
+     браузер рисует курсор в поле белым — на белой бумаге его не
+     видно, только мигание. Говорим браузеру, что страница светлая, и
+     задаём цвет курсора явно. */
+  color-scheme:light;
+}
+.tg-page input, .tg-page textarea, .tg-page select{
+  caret-color:var(--ink); color-scheme:light;
+}
 .tg-head{ padding:0 16px 14px; }
 .tg-title{ font-size:21px; font-weight:800; letter-spacing:-0.02em; }
 .tg-sub{ margin-top:4px; font-size:13px; color:var(--muted); font-weight:600; }
