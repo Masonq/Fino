@@ -43,11 +43,22 @@ export function useKeepPlace(key) {
     // короткая, и браузер молча оставляет её наверху. Поэтому не
     // «через пару кадров», а пока не получится: пробуем каждые сто
     // миллисекунд, пока страница не дорастёт до нужной высоты.
+    // Ждём не просто «страница доросла», а «страница перестала расти».
+    //
+    // Список возвращается в два приёма: сперва скелетоны, потом
+    // настоящие строки, и высота у них разная. Если встать на место по
+    // первой высоте, через мгновение приходит вторая — и страница
+    // прыгает уже после того, как человек начал читать. Поэтому ждём
+    // две одинаковые высоты подряд: значит, список дорисовался.
     let tries = 0
+    let lastHeight = -1
     const timer = setInterval(() => {
       tries += 1
-      const reachable = document.documentElement.scrollHeight - window.innerHeight
-      if (reachable >= saved - 4) {
+      const height = document.documentElement.scrollHeight
+      const settled = height === lastHeight
+      lastHeight = height
+      const reachable = height - window.innerHeight
+      if (settled && reachable >= saved - 4) {
         window.scrollTo(0, saved)
         clearInterval(timer)
         // Отпускаем запись через кадр: событие от нашего же scrollTo

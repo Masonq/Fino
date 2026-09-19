@@ -335,15 +335,20 @@ export default function Moderation() {
     <div className="fav-page mod-page">
       <PageHeader title={t('mod.title')} count={total} />
 
-      <div className="my-tabs">
-        <button className={tab === 'listings' ? 'my-tab active' : 'my-tab'} onClick={() => setTab('listings')}>
-          {t('mod.tab_listings')}
-          {total > 0 && <span className="my-tab-count">{total}</span>}
-        </button>
-        <button className={tab === 'reports' ? 'my-tab active' : 'my-tab'} onClick={() => setTab('reports')}>
-          {t('mod.tab_reports')}
-          {reportsTotal > 0 && <span className="my-tab-count">{reportsTotal}</span>}
-        </button>
+      {/* Вкладки той же полосой, что отборы на остальных экранах
+          админки: на каждом экране одно и то же место и один и тот же
+          вид — не приходится заново искать, где переключать. */}
+      <div className="admin-bar">
+        <div className="admin-chips">
+          <button className={tab === 'listings' ? 'chip chip-active' : 'chip'} onClick={() => setTab('listings')}>
+            {t('mod.tab_listings')}
+            {total > 0 && <b>{total}</b>}
+          </button>
+          <button className={tab === 'reports' ? 'chip chip-active' : 'chip'} onClick={() => setTab('reports')}>
+            {t('mod.tab_reports')}
+            {reportsTotal > 0 && <b>{reportsTotal}</b>}
+          </button>
+        </div>
       </div>
 
       {tab === 'listings' && day && (

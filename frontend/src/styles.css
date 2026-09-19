@@ -5490,3 +5490,10 @@ a.s-attrs{ display:block; }
   background:none; border:none; font-size:12.5px; font-weight:700;
   color:inherit; padding:11px 0; max-width:104px;
 }
+
+/* Число внутри фишки — счётчик, а не часть названия: отдельным
+   начертанием и без отбивки точкой, как было раньше. */
+.admin-chips .chip b{
+  margin-left:5px; font-weight:800; font-variant-numeric:tabular-nums;
+}
+.admin-chips .chip:not(.chip-active) b{ color:var(--primary-deep); }

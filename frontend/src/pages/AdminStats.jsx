@@ -65,16 +65,19 @@ export default function AdminStats() {
     <div className="page admin-stats">
       <PageHeader title={t('stats.title')} />
 
-      <div className="admin-filters">
-        {PERIODS.map((d) => (
-          <button
-            key={d}
-            className={`chip ${days === d ? 'chip-active' : ''}`}
-            onClick={() => setDays(d)}
-          >
-            {t('stats.days', { count: d })}
-          </button>
-        ))}
+      {/* Тот же ряд отборов, что на остальных экранах админки. */}
+      <div className="admin-bar">
+        <div className="admin-chips">
+          {PERIODS.map((d) => (
+            <button
+              key={d}
+              className={`chip ${days === d ? 'chip-active' : ''}`}
+              onClick={() => setDays(d)}
+            >
+              {t('stats.days', { count: d })}
+            </button>
+          ))}
+        </div>
       </div>
 
       {!loaded && <AdminStatsSkeleton />}
