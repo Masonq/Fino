@@ -690,7 +690,8 @@
     "hours_other": "{{count}} sati",
     "from_people": "Objavili ljudi",
     "added_total": "Ukupno dodato",
-    "added_total_hint": "uključujući preneto iz ćaskanja"
+    "added_total_hint": "uključujući preneto iz ćaskanja",
+    "now": "sada"
   },
   "audit": {
     "title": "Dnevnik radnji",

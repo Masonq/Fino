@@ -680,7 +680,8 @@
     "hours_other": "{{count}} hours",
     "from_people": "Posted by people",
     "added_total": "Added in total",
-    "added_total_hint": "including imported from chats"
+    "added_total_hint": "including imported from chats",
+    "now": "right now"
   },
   "audit": {
     "title": "Action log",

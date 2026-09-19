@@ -102,7 +102,14 @@ export default function AdminStats() {
           <div className="stats-hero">
             <div className="stats-hero-item">
               <div className="stats-hero-value">{data.listings.active}</div>
-              <div className="stats-hero-label">{t('stats.in_feed')}</div>
+              <div className="stats-hero-label">
+                {t('stats.in_feed')}
+                {/* «Сейчас» — не украшение: без него подпись слева в одну
+                    строку, справа в две, и числа с подписями стоят на
+                    разных уровнях. А заодно это правда: лента — единственное
+                    число на странице, которое не зависит от выбранного срока. */}
+                <span className="stats-period">{t('stats.now')}</span>
+              </div>
             </div>
             <div className="stats-hero-item">
               <div className="stats-hero-value accent">+{data.listings.fresh_own}</div>
