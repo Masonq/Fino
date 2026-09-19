@@ -44,18 +44,63 @@ SPREAD = Decimal("1.03")
 MAX_AGE_HOURS = 36
 
 
-def _fetch() -> Decimal | None:
-    """Спрашивает курс у открытого справочника."""
+# Откуда берём курс.
+#
+# Сперва Центробанк России: платим мы в рублях, и курс, по которому
+# считает наш же платёжный рынок, честнее чужого справочника. Он
+# публикует сербский динар и не отказывает в ответе — в отличие от
+# открытых справочников, которые режут запросы без подписи клиента
+# (403, что и случилось при первом запуске).
+#
+# Если Центробанк молчит — пробуем справочник, на этот раз представляясь
+# как полагается.
+CBR_URL = "https://www.cbr.ru/scripts/XML_daily.asp"
+BACKUP_URL = "https://api.frankfurter.app/latest?from=RUB&to=RSD"
+AGENT = "PLONK/1.0 (+https://plonk.rs)"
+
+
+def _open(url: str):
+    return urlrequest.urlopen(
+        urlrequest.Request(url, headers={"User-Agent": AGENT}), timeout=12)
+
+
+def _from_cbr() -> Decimal | None:
+    """
+    Курс из Центробанка.
+
+    Он даёт, сколько рублей стоит сто динаров. Нам нужно обратное —
+    сколько динаров в рубле, — поэтому делим номинал на цену.
+    """
+    from xml.etree import ElementTree
+
     try:
-        with urlrequest.urlopen(
-                "https://api.frankfurter.app/latest?from=RUB&to=RSD",
-                timeout=10) as resp:
+        with _open(CBR_URL) as resp:
+            tree = ElementTree.fromstring(resp.read())
+        for valute in tree.findall("Valute"):
+            if (valute.findtext("CharCode") or "").upper() != "RSD":
+                continue
+            nominal = Decimal((valute.findtext("Nominal") or "1").replace(",", "."))
+            value = Decimal((valute.findtext("Value") or "0").replace(",", "."))
+            if value > 0:
+                return (nominal / value).quantize(Decimal("0.0001"))
+    except Exception as exc:                            # noqa: BLE001
+        log.warning("Центробанк не ответил: %s", exc)
+    return None
+
+
+def _from_backup() -> Decimal | None:
+    try:
+        with _open(BACKUP_URL) as resp:
             data = json.loads(resp.read().decode())
         value = Decimal(str(data["rates"]["RSD"]))
         return value if value > 0 else None
     except Exception as exc:                            # noqa: BLE001
-        log.warning("курс не получен: %s", exc)
+        log.warning("запасной справочник не ответил: %s", exc)
         return None
+
+
+def _fetch() -> Decimal | None:
+    return _from_cbr() or _from_backup()
 
 
 def _read_cache() -> tuple[Decimal, str] | None:
@@ -98,6 +143,26 @@ def rsd_per_rub() -> Decimal:
     return refresh() or FALLBACK_RSD_PER_RUB
 
 
+_today: tuple[str, Decimal] | None = None
+
+
+def _rate_cached_for_run() -> Decimal:
+    """
+    Курс на время одного прогона.
+
+    Без этого каждый пересчёт лез в сеть заново: при выводе нескольких
+    сумм подряд получалось столько же запросов и столько же строк об
+    ошибке — что и было видно на первом запуске.
+    """
+    global _today
+    stamp = utcnow().strftime("%Y-%m-%d %H")
+    if _today and _today[0] == stamp:
+        return _today[1]
+    value = rsd_per_rub()
+    _today = (stamp, value)
+    return value
+
+
 def rsd_to_rub(amount_rsd: Decimal | int | float) -> Decimal:
     """
     Сколько рублей списать, чтобы на балансе появилось столько динаров.
@@ -107,7 +172,7 @@ def rsd_to_rub(amount_rsd: Decimal | int | float) -> Decimal:
     каждом платеже.
     """
     rsd = Decimal(str(amount_rsd))
-    rate = rsd_per_rub()
+    rate = _rate_cached_for_run()
     rub = (rsd / rate) * SPREAD
     return rub.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
@@ -115,7 +180,7 @@ def rsd_to_rub(amount_rsd: Decimal | int | float) -> Decimal:
 def rub_to_rsd(amount_rub: Decimal | int | float) -> Decimal:
     """Обратный пересчёт — для отчётов и для показа, сколько зачислили."""
     rub = Decimal(str(amount_rub))
-    return (rub * rsd_per_rub()).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+    return (rub * _rate_cached_for_run()).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
 
 
 if __name__ == "__main__":
