@@ -111,15 +111,23 @@ export default function EditProfile() {
   }
 
   // Привязка Telegram: сайт выдаёт одноразовый ключ, бот по нему
-  // говорит, кто человек в Telegram. Ссылку открываем в новой
-  // вкладке — на телефоне её перехватит само приложение.
+  // говорит, кто человек в Telegram.
+  //
+  // Переходим в том же окне, а не открываем новое. Новое окно
+  // открывалось уже после ответа сервера — то есть не в момент
+  // нажатия, — и браузер на телефоне считал его всплывающим и
+  // молча закрывал. Со стороны это выглядело как «кнопка не
+  // работает», что ты и увидел.
   const linkTelegram = async () => {
+    setEmailError('')
     try {
       const res = await api.linkTelegramStart()
-      if (res.url) window.open(res.url, '_blank', 'noopener')
+      if (res.url) {
+        window.location.href = res.url
+      } else if (res.status === 'already_linked') {
+        updateUser({ telegram_linked: true })
+      }
     } catch {
-      // Молча ничего не делаем только в одном случае — когда уже
-      // привязан; остальное покажем тем же местом, что и ошибки почты.
       setEmailError(t('edit_profile.tg_failed'))
     }
   }
