@@ -149,54 +149,53 @@ export default function AdminUsers() {
     <div className="page admin-users">
       <PageHeader title={t('admin.title')} subtitle={loaded ? t('admin.found', { count: total }) : null} />
 
-      {/* Сводка: каждая цифра — фильтр списка. */}
-      <div className="admin-overview">
-        {FILTERS.filter((f) => f.stat).map((f) => (
-          <button
-            key={f.key}
-            className={`admin-stat${filter === f.key ? ' active' : ''}${f.key === 'today' ? ' accent' : ''}`}
-            onClick={() => setFilter(f.key)}
-          >
-            <b>{overview ? (f.key === 'today' || f.key === 'week' ? `+${overview[f.stat]}` : overview[f.stat]) : '–'}</b>
-            <span>{t(f.label)}</span>
-          </button>
-        ))}
-      </div>
+      {/* Управление одной полосой: сводка, поиск, порядок, отборы.
+          Раньше это было четыре ряда подряд — плитки сводки в два
+          ряда, поле поиска, ряд фишек, — и они занимали пол-экрана
+          прежде, чем показывался первый человек.
 
-      <div className="admin-toolbar">
-        <div className="admin-search-wrap">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.6-3.6" /></svg>
-          <input
-            className="admin-search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t('admin.search')}
-            inputMode="search"
-          />
-          {query && (
-            <button className="admin-search-clear" onClick={() => setQuery('')} aria-label={t('actions.cancel')}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          Сводка стала строкой меток: каждая цифра по-прежнему
+          переключает отбор, но места занимает впятеро меньше. */}
+      <div className="admin-bar">
+        <div className="admin-chips admin-summary">
+          {FILTERS.filter((f) => f.stat).map((f) => (
+            <button
+              key={f.key}
+              className={`chip ${filter === f.key ? 'chip-active' : ''}`}
+              onClick={() => setFilter(f.key)}
+            >
+              {t(f.label)}
+              <b>{overview
+                ? (f.key === 'today' || f.key === 'week'
+                  ? `+${overview[f.stat] ?? 0}`
+                  : (overview[f.stat] ?? 0))
+                : '—'}</b>
             </button>
-          )}
+          ))}
         </div>
-        <label className="admin-sort">
-          <select value={sort} onChange={(e) => setSort(e.target.value)} aria-label={t('admin.sort')}>
-            {SORTS.map((k) => <option key={k} value={k}>{t(`admin.sort_${k}`)}</option>)}
-          </select>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="m6 9 6 6 6-6" /></svg>
-        </label>
-      </div>
 
-      <div className="admin-filters">
-        {FILTERS.filter((f) => f.key === 'all' || f.key === 'moderator' || f.key === 'blocked').map((f) => (
-          <button
-            key={f.key}
-            className={`chip ${filter === f.key ? 'chip-active' : ''}`}
-            onClick={() => setFilter(f.key)}
-          >
-            {t(f.label)}
-          </button>
-        ))}
+        <div className="admin-toolbar">
+          <div className="search-field admin-bar-search">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t('admin.search')}
+              inputMode="search"
+            />
+            {query && (
+              <button className="search-clear" onClick={() => setQuery('')} aria-label={t('actions.clear')}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M18 6 6 18M6 6l12 12" /></svg>
+              </button>
+            )}
+          </div>
+          <label className="admin-sort">
+            <select value={sort} onChange={(e) => setSort(e.target.value)} aria-label={t('admin.sort')}>
+              {SORTS.map((k) => <option key={k} value={k}>{t(`admin.sort_${k}`)}</option>)}
+            </select>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="m6 9 6 6 6-6" /></svg>
+          </label>
+        </div>
       </div>
 
       {!loaded && <div className="admin-list"><AdminRowSkeletons count={6} /></div>}
