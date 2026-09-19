@@ -325,7 +325,13 @@
     "min": "min",
     "hour": "h",
     "day": "d",
-    "pick_one": "Select a conversation on the left"
+    "pick_one": "Select a conversation on the left",
+    "search_ph": "Search messages",
+    "filter_all": "All",
+    "filter_unread": "Unread",
+    "filter_buying": "Buying",
+    "filter_selling": "Selling",
+    "nothing_found": "Nothing found"
   },
   "auth": {
     "title": "Sign in to PLONK",

@@ -325,7 +325,13 @@
     "min": "min",
     "hour": "č",
     "day": "d",
-    "pick_one": "Izaberite razgovor sa leve strane"
+    "pick_one": "Izaberite razgovor sa leve strane",
+    "search_ph": "Pretraga prepiske",
+    "filter_all": "Sve",
+    "filter_unread": "Nepročitano",
+    "filter_buying": "Kupujem",
+    "filter_selling": "Prodajem",
+    "nothing_found": "Ništa nije nađeno"
   },
   "auth": {
     "title": "Prijava na PLONK",

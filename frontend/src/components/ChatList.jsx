@@ -10,7 +10,7 @@ import { timeAgo } from '../utils/time'
 // колонка рядом с открытым чатом, см. ChatScreen.jsx). activeId
 // подсвечивает открытую сейчас переписку — на мобильном он всегда
 // пуст, там список и открытый чат — разные экраны.
-export default function ChatList({ activeId, onLoaded }) {
+export default function ChatList({ activeId, onLoaded, query = '', filter = 'all' }) {
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
 
@@ -20,12 +20,26 @@ export default function ChatList({ activeId, onLoaded }) {
   const userId = user?.id
 
   useEffect(() => {
-    if (!userId) { setLoaded(true); onLoaded?.(true); return }
+    if (!userId) { setLoaded(true); onLoaded?.(0); return }
     api.getChats(i18n.language)
-      .then((res) => setItems(res.items || []))
-      .catch(() => setItems([]))
-      .finally(() => { setLoaded(true); onLoaded?.(true) })
+      .then((res) => { const list = res.items || []; setItems(list); onLoaded?.(list.length) })
+      .catch(() => { setItems([]); onLoaded?.(0) })
+      .finally(() => { setLoaded(true) })
   }, [userId, i18n.language])
+
+  // Отбор и поиск — на устройстве, без запроса к серверу: переписок у
+  // человека десятки, а не тысячи, и ждать ответ ради фильтра «только
+  // непрочитанные» незачем. Ищем по собеседнику, объявлению и тексту
+  // последнего сообщения — по всему, что человек видит в строке.
+  const needle = query.trim().toLowerCase()
+  const visible = items.filter((c) => {
+    if (filter === 'unread' && !c.unread) return false
+    if (filter === 'selling' && !c.is_seller) return false
+    if (filter === 'buying' && c.is_seller) return false
+    if (!needle) return true
+    return [c.other_name, c.listing_title, c.last_text]
+      .filter(Boolean).some((v) => v.toLowerCase().includes(needle))
+  })
 
   if (!loaded) {
     return (
@@ -59,7 +73,10 @@ export default function ChatList({ activeId, onLoaded }) {
 
   return (
     <div className="chat-list">
-      {items.map((c) => (
+      {visible.length === 0 && (
+        <p className="empty-hint">{t('chats.nothing_found')}</p>
+      )}
+      {visible.map((c) => (
         <Link
           key={c.id}
           to={`/chat/${c.id}`}

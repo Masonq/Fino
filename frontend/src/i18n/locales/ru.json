@@ -325,7 +325,13 @@
     "min": "мин",
     "hour": "ч",
     "day": "дн",
-    "pick_one": "Выберите переписку слева"
+    "pick_one": "Выберите переписку слева",
+    "search_ph": "Поиск по переписке",
+    "filter_all": "Все",
+    "filter_unread": "Непрочитанные",
+    "filter_buying": "Покупаю",
+    "filter_selling": "Продаю",
+    "nothing_found": "Ничего не нашлось"
   },
   "auth": {
     "title": "Вход в PLONK",
