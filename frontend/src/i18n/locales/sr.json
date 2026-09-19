@@ -1046,7 +1046,7 @@
     "what": "Naziv",
     "what_ph": "Na primer: Sto IKEA MICKE, beli",
     "price": "Cena",
-    "price_ph": "u dinarima",
+    "price_ph": "Koliko tražite",
     "about": "Par reči",
     "about_ph": "Stanje, dimenzije, zašto prodajete",
     "publish": "Objavi",
@@ -1064,7 +1064,9 @@
     "err_must_rename": "Prvo unesite ime u profilu na sajtu.",
     "section": "Rubrika",
     "change": "Promeni",
-    "not_sure": "Nismo sigurni — izaberite:"
+    "not_sure": "Nismo sigurni — izaberite:",
+    "mode_price": "Cena",
+    "mode_free": "Besplatno"
   },
   "errors": {
     "generic": "Nešto nije u redu. Pokušajte ponovo."

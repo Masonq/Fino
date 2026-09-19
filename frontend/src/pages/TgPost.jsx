@@ -244,24 +244,43 @@ export default function TgPost() {
         </label>
 
         <div className="field-row">
-          <span className="field-label">{t('tg_post.price')}</span>
-          <div className="tg-price">
-            <input
-              className="field-input"
-              type="number"
-              inputMode="numeric"
-              value={free ? '' : price}
-              onChange={(e) => setPrice(e.target.value)}
-              placeholder={free ? t('detail.free') : t('tg_post.price_ph')}
-              disabled={free}
-            />
+          {/* Подписи у строки нет нарочно: переключатель сам говорит,
+              о чём речь, а «Цена» над кнопкой «Цена» — то же слово
+              дважды подряд.
+
+              «Бесплатно» было ссылкой сбоку и читалось как подсказка, а
+              не как выбор: непонятно, нажата она или нет. Теперь это
+              переключатель из двух состояний — «Цена» и «Даром», — и
+              видно, что выбрано. Поле цены при «Даром» не гаснет, а
+              исчезает: гасшее поле выглядит поломкой. */}
+          <div className="tg-mode">
             <button
-              className={free ? 'chip chip-active' : 'chip'}
-              onClick={() => { setFree(!free); setPrice('') }}
+              className={free ? 'tg-mode-btn' : 'tg-mode-btn on'}
+              onClick={() => setFree(false)}
             >
-              {t('detail.free')}
+              {t('tg_post.mode_price')}
+            </button>
+            <button
+              className={free ? 'tg-mode-btn on' : 'tg-mode-btn'}
+              onClick={() => { setFree(true); setPrice('') }}
+            >
+              {t('tg_post.mode_free')}
             </button>
           </div>
+          {!free && (
+            <div className="tg-price">
+              <input
+                className="field-input"
+                type="number"
+                inputMode="numeric"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                placeholder={t('tg_post.price_ph')}
+                autoFocus={false}
+              />
+              <span className="tg-currency">RSD</span>
+            </div>
+          )}
         </div>
 
         <div className="field-row">

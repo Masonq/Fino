@@ -4988,3 +4988,20 @@ a.s-attrs{ display:block; }
 .tg-guess-note{ margin-top:6px; font-size:12px; color:var(--warn-ink); font-weight:600; }
 .tg-guess-options{ margin-top:8px; }
 .tg-guess-options .chip{ font-size:12.5px; padding:7px 11px; }
+
+/* ===== цена или даром ===== */
+.tg-mode{
+  display:inline-flex; gap:2px; padding:2px; border-radius:11px;
+  background:var(--surface-sunken); margin-top:2px;
+}
+.tg-mode-btn{
+  padding:7px 16px; border-radius:9px; font-size:13.5px; font-weight:700;
+  color:var(--muted); background:transparent;
+}
+.tg-mode-btn.on{
+  background:var(--surface); color:var(--ink);
+  box-shadow:0 1px 3px rgba(16,24,40,.12);
+}
+.tg-price{ display:flex; align-items:baseline; gap:8px; margin-top:10px; }
+.tg-price .field-input{ flex:1; min-width:0; }
+.tg-currency{ font-size:14px; font-weight:800; color:var(--muted); flex-shrink:0; }

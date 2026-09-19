@@ -1031,7 +1031,7 @@
     "what": "Title",
     "what_ph": "For example: IKEA MICKE desk, white",
     "price": "Price",
-    "price_ph": "in dinars",
+    "price_ph": "How much",
     "about": "A few words",
     "about_ph": "Condition, size, why you're selling",
     "publish": "Publish",
@@ -1049,7 +1049,9 @@
     "err_must_rename": "Set your name in the profile on the site first.",
     "section": "Section",
     "change": "Change",
-    "not_sure": "Not sure — pick one:"
+    "not_sure": "Not sure — pick one:",
+    "mode_price": "Price",
+    "mode_free": "Free"
   },
   "errors": {
     "generic": "Something went wrong. Try again."
