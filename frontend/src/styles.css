@@ -3954,12 +3954,18 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   /* Две трети ширины экрана — пропорции картинки 3:2. При меньшей
      высоте браузер обрезает её по бокам, то есть ровно там, где стоят
      предметы. */
-  min-height:66vw; display:flex; flex-direction:column; justify-content:flex-end;
+  /* Заголовок и кнопка «назад» стоят сверху, как на всех остальных
+     экранах: раньше содержимое прижималось к низу шапки, и на
+     разделах без подразделов кнопка уезжала на середину экрана.
+     Высота — две трети ширины, пропорции картинки 3:2. */
+  min-height:66vw; display:flex; flex-direction:column; justify-content:flex-start;
   background-size:cover, cover; background-position:center, center; background-repeat:no-repeat, no-repeat;
 }
 .landing-hero::before{
   content:""; position:absolute; inset:0; pointer-events:none;
-  background:linear-gradient(180deg, rgba(0,0,0,.28) 0%, rgba(0,0,0,.12) 45%, rgba(0,0,0,.32) 100%);
+  /* Тень гуще сверху, где стоит заголовок, и почти сходит на нет
+     внизу: там картинка, и затемнять её незачем. */
+  background:linear-gradient(180deg, rgba(0,0,0,.34) 0%, rgba(0,0,0,.14) 40%, rgba(0,0,0,0) 75%);
 }
 .landing-hero > *{ position:relative; z-index:1; }
 .landing-back.on-hero{ background:rgba(255,255,255,.22); color:#fff; }

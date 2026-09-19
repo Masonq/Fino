@@ -499,6 +499,8 @@ export default function CategoryLanding() {
           </div>
         </div>
 
+      </div>
+
         {category?.children?.length > 0 && (() => {
         const subs = category.children
         const showLimit = subs.length > 6
@@ -533,9 +535,6 @@ export default function CategoryLanding() {
           </div>
         )
       })()}
-
-
-      </div>
 
       {/* Раньше здесь были только фильтры (комнаты, цена) — можно было
             сузить раздел, но не поискать конкретную вещь словом. Теперь
