@@ -4642,6 +4642,14 @@ a.s-attrs{ display:block; }
   font-family:inherit; color:var(--ink); font-weight:600;
 }
 .field-input::placeholder{ color:#B6BDB8; font-weight:500; }
+/* Синяя рамка при касании — это системная обводка браузера вокруг
+   поля. Внутри карточки у поля нет своих границ, и она обводила пустое
+   место, будто поле «выпало» из строки. Вместо неё подсвечиваем саму
+   строку: линия снизу становится зелёной — видно, куда вводишь, и
+   ничего не прыгает. */
+.field-input:focus, .field-input:focus-visible{ outline:none; box-shadow:none; }
+.field-row:focus-within{ box-shadow:inset 0 -2px 0 -1px var(--primary); }
+.field-row:focus-within .field-label{ color:var(--primary-deep); }
 .field-input:disabled{ color:var(--muted); }
 /* Без ручки изменения размера: в углу карточки она читалась как
    обрывок обводки и цеплялась за прокрутку на телефоне. */
