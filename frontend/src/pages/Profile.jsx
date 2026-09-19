@@ -298,6 +298,33 @@ export default function Profile() {
         </Link>
       </div>
 
+      {forYou.length > 0 && (
+        <div className="for-you">
+          <div className="for-you-title">{t('profile.for_you')}</div>
+          <div className="for-you-row">
+            {forYou.map((l) => (
+              <Link key={l.id} to={l.path} className="for-you-card">
+                <div className="for-you-photo">
+                  {l.cover_photo ? <img src={l.cover_photo} alt="" loading="lazy" />
+                    : <div className="photo-placeholder" />}
+                </div>
+                {(l.is_free || l.price != null) && (
+                  <div className="for-you-price">
+                    {l.is_free ? t('detail.free') : formatPrice(l.price, l.currency, i18n.language)}
+                  </div>
+                )}
+                {/* Без цены заголовок и есть главное в карточке — иначе
+                    под фотографией висела пустая строка, а название
+                    читалось как подпись к ней. */}
+                <div className={l.price == null && !l.is_free ? 'for-you-name strong' : 'for-you-name'}>
+                  {l.title}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="profile-section-title">{t('profile.sec_settings')}</div>
       <div className="profile-menu">
         <div className="profile-row profile-row-static">
@@ -402,26 +429,6 @@ export default function Profile() {
       >
         {t('auth.logout')}
       </button>
-
-      {forYou.length > 0 && (
-        <div className="for-you">
-          <div className="for-you-title">{t('profile.for_you')}</div>
-          <div className="for-you-row">
-            {forYou.map((l) => (
-              <Link key={l.id} to={l.path} className="for-you-card">
-                <div className="for-you-photo">
-                  {l.cover_photo ? <img src={l.cover_photo} alt="" loading="lazy" />
-                    : <div className="photo-placeholder" />}
-                </div>
-                <div className="for-you-price">
-                  {l.is_free ? t('detail.free') : formatPrice(l.price, l.currency, i18n.language)}
-                </div>
-                <div className="for-you-name">{l.title}</div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Подвал: то, что открывают раз в жизни — правила, условия,
           ссылки на наш чат и бота. Ссылки на Telegram внешние, поэтому
