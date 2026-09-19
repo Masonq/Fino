@@ -824,7 +824,8 @@
     "condition_used": "Polovno",
     "show_count_one": "Prikaži {{count}} oglas",
     "show_count_few": "Prikaži {{count}} oglasa",
-    "show_count_other": "Prikaži {{count}} oglasa"
+    "show_count_other": "Prikaži {{count}} oglasa",
+    "search_in": "Pretraga u «{{name}}»"
   },
   "fields": {
     "real-estate": {

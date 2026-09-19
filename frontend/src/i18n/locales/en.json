@@ -814,7 +814,8 @@
     "condition_like_new": "Like new",
     "condition_used": "Used",
     "show_count_one": "Show {{count}} listing",
-    "show_count_other": "Show {{count}} listings"
+    "show_count_other": "Show {{count}} listings",
+    "search_in": "Search in {{name}}"
   },
   "fields": {
     "real-estate": {
