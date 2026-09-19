@@ -60,25 +60,26 @@ PROMOTION_DURATION_DAYS = 7
 # чисто информационная граница для expires_at, не резкий обрыв.
 BUMP_DECAY_WINDOW_HOURS = 48
 
-# Цены в динарах: сайт сербский, и человек считает в той валюте, в
-# которой живёт. Рубли остались только внутри платёжной системы — она
-# другой не принимает, — и пересчёт делаем мы сами в момент платежа.
+# Цены в плонках — своей валюте сайта. Один плонк это десять динаров,
+# и числа получаются короткие: пятнадцать, тридцать, сорок пять вместо
+# ста пятидесяти, трёхсот и четырёхсот пятидесяти.
 #
-# Суммы подняты: прежние сто рублей за поднятие в динарах выглядели
-# как мелочь, на которую нечего смотреть.
+# Рубли остались только внутри платёжной системы: она другой не
+# принимает, и пересчёт плонков в рубли делаем мы сами в момент
+# платежа.
 PROMOTION_PRICES = {
-    PromotionType.bump: 150,
-    PromotionType.highlight: 300,
-    PromotionType.xl_card: 450,
+    PromotionType.bump: 15,
+    PromotionType.highlight: 30,
+    PromotionType.xl_card: 45,
 }
 
 SELLABLE_TYPES = frozenset(PROMOTION_PRICES)
 
-# Пополнить можно от 200 до 30000 динаров за раз. Нижняя граница —
-# чтобы не заводить платёж на смешные суммы: комиссия съест больше,
-# чем сам платёж. Верхняя — разумный потолок для первой версии.
-MIN_TOPUP = 200
-MAX_TOPUP = 30000
+# Пополнить можно от 20 до 3000 плонков за раз. Нижняя граница — чтобы
+# не заводить платёж на смешные суммы: комиссия съест больше, чем сам
+# платёж. Верхняя — разумный потолок для первой версии.
+MIN_TOPUP = 20
+MAX_TOPUP = 3000
 
 
 class PromoteIn(BaseModel):
@@ -240,7 +241,8 @@ def start_promotion(
     db.commit()
 
     return {"confirmation_url": data["confirmation"]["confirmation_url"],
-            "rsd": payload.amount, "rub": float(rub), "rate": float(rate)}
+            "plonks": payload.amount, "rsd": int(rsd),
+            "rub": float(rub), "rate": float(rate)}
 
 
 @router.get("/listings/{listing_id}/promotions")
@@ -303,9 +305,10 @@ def start_topup(
     # только рубли: считаем, сколько это рублей, и просим их. Курс
     # записываем в заявку — если он сдвинется, пока человек ходил
     # платить, разбираться потом будет не с чем.
-    from app.core.currency import rsd_per_rub, rsd_to_rub
+    from app.core.currency import plonk_to_rsd, plonk_to_rub, rsd_per_rub
 
-    rub = rsd_to_rub(payload.amount)
+    rub = plonk_to_rub(payload.amount)
+    rsd = plonk_to_rsd(payload.amount)
     rate = rsd_per_rub()
 
     idempotence_key = str(uuid.uuid4())
@@ -316,16 +319,16 @@ def start_topup(
             "type": "redirect",
             "return_url": f"{settings.site_base_url}/profile",
         },
-        "description": f"PLONK — пополнение баланса на {payload.amount} RSD",
+        "description": f"PLONK — пополнение баланса на {payload.amount} плонков",
         "metadata": {"kind": "balance_topup", "user_id": str(user.id),
-                     "rsd": str(payload.amount)},
+                     "plonks": str(payload.amount), "rsd": str(rsd)},
     }, idempotence_key=idempotence_key)
 
     topup = BalanceTopup(
         # В заявке храним то, что появится на балансе, — динары.
         # Сколько рублей за них взяли и по какому курсу, держим рядом:
         # без этого спор о сумме разрешить нечем.
-        user_id=user.id, amount=payload.amount, currency="RSD",
+        user_id=user.id, amount=payload.amount, currency="PLONK",
         paid_amount=rub, paid_currency="RUB", rate=rate,
         status=BalanceTopupStatus.pending, payment_id=data["id"],
     )
@@ -333,7 +336,8 @@ def start_topup(
     db.commit()
 
     return {"confirmation_url": data["confirmation"]["confirmation_url"],
-            "rsd": payload.amount, "rub": float(rub), "rate": float(rate)}
+            "plonks": payload.amount, "rsd": int(rsd),
+            "rub": float(rub), "rate": float(rate)}
 
 
 @router.post("/payments/yookassa/webhook")

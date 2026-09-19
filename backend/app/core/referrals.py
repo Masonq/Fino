@@ -20,10 +20,9 @@ log = logging.getLogger(__name__)
 
 # Столько же, сколько стоит «поднятие» — бонус ощутимый (можно сразу
 # попробовать платное продвижение бесплатно), не символический.
-# В динарах, как и всё, что человек видит: баланс, цены продвижения,
-# бонусы. Двести — это поднятие объявления с запасом, а не мелочь,
-# ради которой не стоит и писать другу.
-REFERRAL_BONUS = Decimal("200")
+# В плонках — своей валюте сайта. Двадцать это поднятие объявления с
+# запасом, а не мелочь, ради которой не стоит и писать другу.
+REFERRAL_BONUS = Decimal("20")
 
 
 def reward_referral_if_first_listing(db: Session, listing: Listing) -> bool:
@@ -65,12 +64,12 @@ def reward_referral_if_first_listing(db: Session, listing: Listing) -> bool:
         from app.core.notifications import notify
         notify(
             db, referrer.id,
-            f"Ваш друг опубликовал первое объявление — вам начислено {REFERRAL_BONUS:.0f} RSD на баланс",
+            f"Ваш друг опубликовал первое объявление — вам начислено {REFERRAL_BONUS:.0f} плонков на баланс",
             force=True,
         )
         notify(
             db, owner.id,
-            f"Спасибо за первое объявление — вам начислено {REFERRAL_BONUS:.0f} RSD на баланс",
+            f"Спасибо за первое объявление — вам начислено {REFERRAL_BONUS:.0f} плонков на баланс",
             force=True,
         )
     except Exception as exc:                          # noqa: BLE001

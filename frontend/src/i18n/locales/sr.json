@@ -142,18 +142,18 @@
     "desc_highlight": "Kartica sa obojenom pozadinom teže se preskače pri skrolovanju. 7 dana",
     "type_xl_card": "Velika kartica",
     "desc_xl_card": "Velika fotografija preko cele širine izdvaja se među susedima. 7 dana",
-    "price": "{{price}} RSD",
+    "price": "{{price}} plonka",
     "active_now": "Aktivno",
     "active_until": "Do {{date}}",
     "err_unavailable": "Izdvajanje je privremeno nedostupno, pokušajte kasnije",
     "err_generic": "Nije uspelo pokretanje plaćanja, pokušajte ponovo",
     "subtitle": "Izaberite opciju",
     "all_active": "Sve je već izdvojeno",
-    "cta": "Povećaj preglede — {{price}} RSD",
-    "balance": "Stanje: {{amount}} RSD",
-    "pay_balance": "Plati sa stanja — {{price}} RSD",
+    "cta": "Podigni preglede — {{price}} plonka",
+    "balance": "Stanje: {{amount}} plonka",
+    "pay_balance": "Plati sa stanja — {{price}} plonka",
     "pay_card": "Plati karticom",
-    "not_enough_balance": "Stanje je {{amount}} RSD — nedovoljno, platite karticom",
+    "not_enough_balance": "Na stanju {{amount}} plonka — nije dovoljno, možete platiti karticom",
     "paid_ok": "Plaćeno sa stanja",
     "next": "Dalje",
     "checking": "Proveravamo uplatu…",
@@ -960,7 +960,7 @@
   "balance": {
     "title": "Stanje",
     "topup": "Dopuni",
-    "topup_cta": "Dopuni za {{amount}} RSD"
+    "topup_cta": "Dopuni za {{amount}} plonka"
   },
   "home": {
     "phone_reminder": "Dodajte broj telefona — kupci će moći direktno da vas pozovu",
@@ -972,10 +972,10 @@
   },
   "invite": {
     "card_title": "Pozovite prijatelja",
-    "card_subtitle": "Dobijte 100RSD za svakog",
+    "card_subtitle": "20 plonka vama i prijatelju",
     "title": "Pozovite prijatelja",
     "hero_title": "Pozovite prijatelje",
-    "hero_text": "Prijatelj objavi prvi oglas — obojici po {{amount}} dinara",
+    "hero_text": "Prijatelj objavi prvi oglas — obojici po {{count}} plonka",
     "share_btn": "Podeli link",
     "copied": "Link kopiran",
     "share_title": "Pridruži se PLONK-u — oglasi Srbije",
@@ -984,14 +984,14 @@
     "fineprint": "Bonus se dodeljuje za svakog pozvanog prijatelja čiji prvi oglas bude odobren. Dodeljuje se jednom po osobi.",
     "link_label": "Vaš link",
     "card_you": "Vama",
-    "card_you_text": "{{amount}} dinara — podizanje oglasa i još ostane",
+    "card_you_text": "{{count}} plonka — podizanje oglasa i još ostane",
     "card_friend": "Prijatelju",
     "card_friend_text": "Isto toliko — neće početi od nule",
     "how_title": "Kako to radi",
     "step_1": "Pošaljite prijatelju svoj link",
     "step_2": "On uđe preko njega i objavi oglas",
     "step_3": "Oglas prođe proveru — obojici stiže na račun",
-    "stat_earned": "dinara",
+    "stat_earned": "plonka",
     "q_who": "Koga mogu da pozovem?",
     "a_who": "Bilo koga ko još nema nalog na PLONK-u. Za već registrovanog bonus ne stiže — link ga jednostavno neće prepoznati.",
     "q_what": "Šta prijatelj treba da uradi?",
@@ -999,7 +999,7 @@
     "q_when": "Kada stiže novac?",
     "a_when": "Odmah nakon odobrenja oglasa. Obično za par minuta, noću — do jutra.",
     "q_spend": "Na šta da potrošim?",
-    "a_spend": "Na promociju svojih oglasa: podizanje, isticanje bojom, veća kartica. Isplata nije moguća."
+    "a_spend": "Na promociju svojih oglasa: podizanje, isticanje, veća kartica. Plonkovi se ne isplaćuju — to je interna valuta sajta."
   },
   "footer": {
     "about": "Oglasi u Srbiji — na ruskom, engleskom i srpskom. Kupujte i prodajte u svom komšiluku.",
@@ -1135,5 +1135,11 @@
     "code_ph": "Kod iz imejla",
     "confirm": "Potvrdi",
     "linked": "Gotovo — sada je to jedan nalog."
+  },
+  "money": {
+    "plonk_one": "{{count}} plonk",
+    "plonk_few": "{{count}} plonka",
+    "plonk_other": "{{count}} plonka",
+    "unit": "plonka"
   }
 }

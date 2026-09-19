@@ -20,7 +20,7 @@ import PageHeader from '../components/PageHeader'
 // Столько же, сколько начисляет сервер (REFERRAL_BONUS). Два числа в
 // двух местах разъезжаются при первой же правке, но тянуть его
 // запросом ради одной цифры — дороже, чем польза.
-const BONUS = 200
+const BONUS = 20
 
 export default function InviteFriend() {
   const { t } = useTranslation()
@@ -61,7 +61,7 @@ export default function InviteFriend() {
       <div className="invite-hero">
         <img src="/invite/hero.webp" alt="" />
         <h1>{t('invite.hero_title')}</h1>
-        <p>{t('invite.hero_text', { amount: BONUS })}</p>
+        <p>{t('invite.hero_text', { count: BONUS })}</p>
       </div>
 
       {/* Что получит каждый — двумя карточками: это две разные выгоды,
@@ -72,14 +72,14 @@ export default function InviteFriend() {
           <img src="/invite/you.webp" alt="" />
           <div className="invite-card-text">
             <div className="invite-card-title">{t('invite.card_you')}</div>
-            <div className="invite-card-sub">{t('invite.card_you_text', { amount: BONUS })}</div>
+            <div className="invite-card-sub">{t('invite.card_you_text', { count: BONUS })}</div>
           </div>
         </div>
         <div className="invite-card">
           <img src="/invite/friend.webp" alt="" />
           <div className="invite-card-text">
             <div className="invite-card-title">{t('invite.card_friend')}</div>
-            <div className="invite-card-sub">{t('invite.card_friend_text', { amount: BONUS })}</div>
+            <div className="invite-card-sub">{t('invite.card_friend_text', { count: BONUS })}</div>
           </div>
         </div>
       </div>
@@ -125,7 +125,7 @@ export default function InviteFriend() {
                 <path d="m6 9 6 6 6-6" />
               </svg>
             </button>
-            {openQuestion === key && <p>{t(`invite.a_${key}`, { amount: BONUS })}</p>}
+            {openQuestion === key && <p>{t(`invite.a_${key}`, { count: BONUS })}</p>}
           </div>
         ))}
       </div>
