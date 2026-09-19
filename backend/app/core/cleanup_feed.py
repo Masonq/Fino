@@ -46,6 +46,13 @@ def _clear(title: str | None) -> bool:
     return title_is_clear(title)
 
 
+def _ai_available() -> bool:
+    """Остался ли хоть один провайдер с запасом на сегодня."""
+    from app.core.ai_title import _ready
+
+    return bool(_ready())
+
+
 def _try_fix(listing: Listing, tr: ListingTranslation, use_ai: bool) -> str | None:
     """Новый заголовок или None. Сначала правила, потом нейросеть."""
     description = (tr.description or "").strip()
@@ -70,6 +77,19 @@ def _try_fix(listing: Listing, tr: ListingTranslation, use_ai: bool) -> str | No
 
 
 def run(limit: int | None, apply: bool, use_ai: bool = True) -> dict:
+    # Показ ничего не меняет, поэтому и нейросеть в нём не зовём: она
+    # тратит суточный запас, общий с переводом и переносом из чатов, и
+    # тянет по несколько секунд на объявление. Для счёта хватает правил.
+    if not apply:
+        use_ai = False
+
+    # Запас кончился ещё до начала — предупреждаем и идём по правилам.
+    # Раньше проход в этом случае зависал: на каждое объявление он шёл
+    # к четырём провайдерам подряд, ждал отказа и выдерживал паузу.
+    if use_ai and not _ai_available():
+        log.warning("у нейросети кончился дневной запас — работаем по правилам")
+        use_ai = False
+
     db = SessionLocal()
     counts = {"проверено": 0, "описаний почищено": 0,
               "заголовков переписано": 0, "снято": 0}
@@ -82,6 +102,8 @@ def run(limit: int | None, apply: bool, use_ai: bool = True) -> dict:
 
         for listing in query.all():
             counts["проверено"] += 1
+            if counts["проверено"] % 200 == 0:
+                log.info("разобрано %s", counts["проверено"])
             translations = list(listing.translations)
             if not translations:
                 continue
@@ -100,6 +122,12 @@ def run(limit: int | None, apply: bool, use_ai: bool = True) -> dict:
             # 2. Заголовок
             if _clear(tr.title):
                 continue
+
+            # Запас мог кончиться посреди прохода: дальше идём по
+            # правилам, а не ждём отказа на каждом объявлении.
+            if use_ai and counts["проверено"] % 25 == 0 and not _ai_available():
+                log.warning("запас нейросети кончился, дальше только правила")
+                use_ai = False
 
             fixed = _try_fix(listing, tr, use_ai)
             if fixed:
@@ -149,6 +177,7 @@ if __name__ == "__main__":
 
     result = run(args.limit, apply=args.apply and not args.dry_run,
                  use_ai=not args.no_ai)
+    print()
     for key, value in result.items():
         print(f"{key}: {value}")
     if not args.apply or args.dry_run:
