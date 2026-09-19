@@ -103,30 +103,79 @@ def pick(db, limit: int = POST_LIMIT) -> list[Listing]:
     отбора запрашиваем с запасом: половина перенесённых отсеется, и
     брать ровно limit значит отправить два поста вместо пяти.
     """
-    rows = (
+    # Свежее и старое вперемешку: две трети свежих, треть из архива.
+    #
+    # Раньше брали строго старые первыми — канал месяцами показывал
+    # прошлогодние объявления, а сегодняшние ждали своей очереди. Но и
+    # одни свежие не годятся: в архиве четыре тысячи хороших вещей, и
+    # они бы так и остались непоказанными.
+    fresh = (
         db.query(Listing)
-        .options(
-            joinedload(Listing.category),
-            joinedload(Listing.photos),
-            joinedload(Listing.translations),
-            joinedload(Listing.owner),
-        )
-        .filter(
-            Listing.status == ListingStatus.active,
-            Listing.tg_post_id.is_(None),
-            Listing.published_at.isnot(None),
-        )
+        .options(joinedload(Listing.category), joinedload(Listing.photos),
+                 joinedload(Listing.translations), joinedload(Listing.owner))
+        .filter(Listing.status == ListingStatus.active,
+                Listing.tg_post_id.is_(None),
+                Listing.published_at.isnot(None))
+        .order_by(Listing.published_at.desc())
+        .limit(limit * 6)
+        .all()
+    )
+    old_first = (
+        db.query(Listing)
+        .options(joinedload(Listing.category), joinedload(Listing.photos),
+                 joinedload(Listing.translations), joinedload(Listing.owner))
+        .filter(Listing.status == ListingStatus.active,
+                Listing.tg_post_id.is_(None),
+                Listing.published_at.isnot(None))
         .order_by(Listing.published_at.asc())
         .limit(limit * 6)
         .all()
     )
+    seen_ids = set()
+    rows = []
+    for pair in zip(fresh + old_first, old_first + fresh):
+        for listing in pair:
+            if listing.id not in seen_ids:
+                seen_ids.add(listing.id)
+                rows.append(listing)
+
+    # Кого уже показывали недавно — пропускаем. Три объявления одного
+    # продавца подряд читаются как реклама, а три дивана подряд — как
+    # будто на площадке только диваны.
+    recent = (
+        db.query(Listing)
+        .filter(Listing.tg_post_id.isnot(None))
+        .order_by(Listing.tg_posted_at.desc().nullslast())
+        .limit(6)
+        .all()
+    )
+    tired_authors = {l.external_author for l in recent if l.external_author}
+    tired_owners = {l.owner_id for l in recent if l.owner_id}
+    tired_categories = {l.category_id for l in recent[:3]}
+
     good = []
     for listing in rows:
         if listing.external_source and not is_good_import(listing):
             continue
+        if listing.external_author and listing.external_author in tired_authors:
+            continue
+        if listing.owner_id and listing.owner_id in tired_owners:
+            continue
+        if listing.category_id in tired_categories:
+            continue
         good.append(listing)
         if len(good) >= limit:
             break
+
+    # Никого не нашлось из-за ограничений — берём как есть: пустой
+    # заход хуже повтора категории.
+    if not good:
+        for listing in rows:
+            if listing.external_source and not is_good_import(listing):
+                continue
+            good.append(listing)
+            if len(good) >= limit:
+                break
     return good
 
 
