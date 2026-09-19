@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
@@ -12,6 +13,55 @@ import { formatPrice } from '../utils/money'
 // то, ради чего открывают объявление; время видно по кольцу.
 export default function FreshStories({ items, seen, onOpen }) {
   const { t, i18n } = useTranslation()
+
+  // Полоска помнит, докуда её пролистали.
+  //
+  // Человек доходит до непросмотренных, открывает объявление, жмёт
+  // назад -- и полоска снова в начале: приходится листать те же
+  // двадцать кружков заново. Прокрутка тут своя, внутри полоски,
+  // поэтому общий возврат на место страницы её не касается.
+  const strip = useRef(null)
+  const restored = useRef(false)
+
+  useEffect(() => {
+    const node = strip.current
+    if (!node || items === null || restored.current) return
+    restored.current = true
+
+    let saved = 0
+    try { saved = Number(sessionStorage.getItem('stories-scroll') || 0) } catch { /* не беда */ }
+    if (saved <= 0) return
+
+    // Ждём, пока кружки появятся: сразу после прихода данных полоска
+    // ещё узкая, и браузер молча оставляет прокрутку в нуле. Пробуем
+    // каждые сто миллисекунд, пока полоске не станет куда прокручиваться.
+    let tries = 0
+    const timer = setInterval(() => {
+      tries += 1
+      if (node.scrollWidth - node.clientWidth >= saved - 4) {
+        node.scrollLeft = saved
+        clearInterval(timer)
+      } else if (tries >= 15) {
+        clearInterval(timer)
+      }
+    }, 100)
+    return () => clearInterval(timer)
+  }, [items])
+
+  useEffect(() => {
+    const node = strip.current
+    if (!node) return
+    const remember = () => {
+      // Ноль не пишем: он приходит сразу при открытии страницы, когда
+      // полоска ещё в начале, и затирал сохранённое место — из-за
+      // этого возврат и не работал.
+      if (node.scrollLeft > 0) {
+        try { sessionStorage.setItem('stories-scroll', String(node.scrollLeft)) } catch { /* не беда */ }
+      }
+    }
+    node.addEventListener('scroll', remember, { passive: true })
+    return () => { remember(); node.removeEventListener('scroll', remember) }
+  }, [items])
 
   const cells = items === null
     ? Array.from({ length: 6 }, (_, i) => <div key={`sk${i}`} className="story story-skeleton"><div className="story-ring"><div className="story-photo" /></div><div className="story-label" /></div>)
@@ -55,7 +105,7 @@ export default function FreshStories({ items, seen, onOpen }) {
   if (items !== null && items.length === 0) return null
 
   return (
-    <div className="stories" role="list">
+    <div className="stories" role="list" ref={strip}>
       <Link to="/post" className="story story-post" role="listitem">
         <div className="story-ring">
           <div className="story-photo story-plus">
