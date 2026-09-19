@@ -228,6 +228,70 @@ def caption_for(listing: Listing) -> tuple[str, str]:
     return caption, f"{site}{path}"
 
 
+async def send_one(listing_id) -> bool:
+    """
+    Отправляет в чат одно объявление — прямо сейчас.
+
+    Нужно публикатору: проверенный продавец выложил вещь из переписки и
+    вправе ждать, что её увидят сразу, а не через полтора часа, когда
+    подойдёт очередь.
+    """
+    if not settings.telegram_bot_token:
+        return False
+
+    db = SessionLocal()
+    bot = Bot(settings.telegram_bot_token,
+              default=DefaultBotProperties(parse_mode="HTML"))
+    try:
+        listing = (db.query(Listing)
+                   .options(joinedload(Listing.category), joinedload(Listing.photos),
+                            joinedload(Listing.translations), joinedload(Listing.owner))
+                   .filter(Listing.id == listing_id).first())
+        if not listing or listing.tg_post_id:
+            return False
+
+        caption, url = caption_for(listing)
+        photos = [p for p in listing.photos if not p.is_video][:3]
+        topic = topic_for(
+            TARGET_CHAT,
+            root_slug(listing.category),
+            sub=listing.category.slug if listing.category else None,
+            is_free=bool(listing.is_free),
+            is_wanted=(listing.attributes or {}).get("listing_kind") == "wanted",
+        )
+        try:
+            if len(photos) > 1:
+                media = [
+                    InputMediaPhoto(
+                        media=p.url,
+                        caption=caption if i == 0 else None,
+                        parse_mode="HTML" if i == 0 else None,
+                    )
+                    for i, p in enumerate(photos)
+                ]
+                posted = (await bot.send_media_group(
+                    TARGET_CHAT, media, message_thread_id=topic))[0]
+            elif photos:
+                posted = await bot.send_photo(
+                    TARGET_CHAT, photos[0].url, caption=caption,
+                    message_thread_id=topic)
+            else:
+                posted = await bot.send_message(
+                    TARGET_CHAT, caption, message_thread_id=topic)
+        except Exception as exc:                        # noqa: BLE001
+            log.warning("не ушло объявление %s: %s", listing_id, exc)
+            return False
+
+        listing.tg_post_id = posted.message_id
+        listing.tg_posted_at = utcnow()
+        db.commit()
+        log.info("опубликовано сразу: %s", url)
+        return True
+    finally:
+        await bot.session.close()
+        db.close()
+
+
 async def run() -> int:
     if not settings.telegram_bot_token:
         log.warning("нет токена бота — постить нечем")

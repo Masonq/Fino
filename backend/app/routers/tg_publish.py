@@ -19,6 +19,7 @@ import uuid
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel, Field
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.core.auth import get_current_user, require_named_user
@@ -157,6 +158,27 @@ def publish(
     if not category:
         raise HTTPException(422, "category_unknown")
 
+    # Кому верим сразу.
+    #
+    # Проверенный продавец — это тот, чья личность подтверждена, или
+    # тот, у кого уже есть одобренные объявления и нет отклонённых.
+    # Ему объявление публикуем сразу и тут же отправляем в чат: он
+    # выложил вещь из переписки и вправе ждать, что её увидят сейчас, а
+    # не через полтора часа, когда подойдёт очередь.
+    #
+    # Остальным — как раньше, через проверку. Первое же объявление
+    # новичка, ушедшее подписчикам без модерации, стоит дороже любого
+    # удобства.
+    approved = (db.query(func.count(Listing.id))
+                .filter(Listing.owner_id == user.id,
+                        Listing.status == ListingStatus.active)
+                .scalar() or 0)
+    rejected = (db.query(func.count(Listing.id))
+                .filter(Listing.owner_id == user.id,
+                        Listing.status == ListingStatus.rejected)
+                .scalar() or 0)
+    trusted = bool(user.document_verified) or (approved >= 3 and rejected == 0)
+
     listing = Listing(
         id=uuid.uuid4(),
         owner_id=user.id,
@@ -166,9 +188,8 @@ def publish(
         is_free=payload.is_free,
         currency="RSD",
         source_language=payload.lang,
-        # Через модерацию, как и всё, что размещают люди: публикатор
-        # ускоряет заполнение формы, а не отменяет проверку.
-        status=ListingStatus.pending_moderation,
+        status=ListingStatus.active if trusted else ListingStatus.pending_moderation,
+        published_at=utcnow() if trusted else None,
         created_at=utcnow(),
     )
     db.add(listing)
@@ -192,13 +213,26 @@ def publish(
     # Перевод — фоном: человек не должен ждать, пока объявление
     # переложат на два языка, чтобы вернуться к переписке.
     background.add_task(_translate_later, listing.id)
+    if trusted:
+        background.add_task(_post_to_chat, listing.id)
 
     return {
         "id": str(listing.id),
         "url": f"https://plonk.rs{listing_path(listing.id, payload.title, payload.city, category.slug)}",
-        "in_channel": False,
-        "moderation": True,
+        "in_channel": trusted,
+        "moderation": not trusted,
     }
+
+
+def _post_to_chat(listing_id) -> None:
+    """Отправка в чат прямо сейчас — только для проверенных."""
+    import asyncio
+
+    try:
+        from app.bot.autopost import send_one
+        asyncio.run(send_one(listing_id))
+    except Exception as exc:                            # noqa: BLE001
+        log.warning("не отправили в чат %s: %s", listing_id, exc)
 
 
 def _translate_later(listing_id) -> None:
