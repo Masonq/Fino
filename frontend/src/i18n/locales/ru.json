@@ -891,7 +891,12 @@
     "stat_views_few": "просмотра",
     "stat_views_many": "просмотров",
     "stat_views_other": "просмотров",
-    "stat_favorites": "в избранном"
+    "stat_favorites": "в избранном",
+    "f_rules": "Правила",
+    "f_terms": "Условия",
+    "f_privacy": "Конфиденциальность",
+    "f_chat": "Чат в Telegram",
+    "f_bot": "Бот"
   },
   "verify": {
     "title": "Проверка документа",

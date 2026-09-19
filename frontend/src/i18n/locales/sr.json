@@ -880,7 +880,12 @@
     "stat_views_one": "pregled",
     "stat_views_few": "pregleda",
     "stat_views_other": "pregleda",
-    "stat_favorites": "u omiljenim"
+    "stat_favorites": "u omiljenim",
+    "f_rules": "Pravila",
+    "f_terms": "Uslovi",
+    "f_privacy": "Privatnost",
+    "f_chat": "Telegram ćaskanje",
+    "f_bot": "Bot"
   },
   "verify": {
     "title": "Provera dokumenta",

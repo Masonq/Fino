@@ -869,7 +869,12 @@
     "stat_listings_other": "listings",
     "stat_views_one": "view",
     "stat_views_other": "views",
-    "stat_favorites": "saved"
+    "stat_favorites": "saved",
+    "f_rules": "Rules",
+    "f_terms": "Terms",
+    "f_privacy": "Privacy",
+    "f_chat": "Telegram chat",
+    "f_bot": "Bot"
   },
   "verify": {
     "title": "Identity verification",

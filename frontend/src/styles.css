@@ -4525,3 +4525,14 @@ a.s-attrs{ display:block; }
 .chat-listing-price{ font-size:12.5px; font-weight:800; color:var(--primary-deep); margin-top:3px; display:flex; align-items:center; gap:7px; }
 .chat-listing-gone{ font-size:11px; font-weight:700; color:var(--muted); text-transform:lowercase; }
 .chat-listing-arrow{ width:17px; height:17px; color:var(--muted); flex-shrink:0; }
+
+/* ===== подвал профиля =====
+   Правила, условия и ссылки на Telegram открывают раз в жизни: они
+   должны быть, но не занимать место наравне с тем, чем пользуются
+   каждый день. */
+.profile-footer{ padding:24px 16px 10px; text-align:center; }
+.profile-footer-links{
+  display:flex; flex-wrap:wrap; justify-content:center; gap:6px 18px; margin-bottom:10px;
+}
+.profile-footer-links a{ font-size:12.5px; font-weight:600; color:var(--muted); text-decoration:none; }
+.profile-footer-brand{ font-size:12px; font-weight:800; color:#C3C8C4; letter-spacing:.02em; }

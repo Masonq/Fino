@@ -194,10 +194,17 @@ export default function Profile() {
           каждого пункта своя иконка вместо одинаковой стрелочки.
           «Разместить», «Избранное», «Сообщения» отсюда убраны — они
           уже есть в нижнем меню на каждом экране, дублировать незачем. */}
-      <div className="profile-section-title">{t('profile.sec_listings')}</div>
+      {/* Два раздела вместо шести.
+          Было: «Объявления» с одной строкой, «Общение» с одной строкой,
+          «Настройки», «Мы в Telegram» с двумя ссылками и «Информация» с
+          четырьмя документами. Заголовок над единственной строкой не
+          помогает найти её быстрее, а мешает: экран из заголовков
+          читается как список разделов, хотя это список действий.
+
+          Документы и ссылки на Telegram ушли в подвал мелким текстом —
+          их открывают раз в жизни, и место наравне с тем, чем
+          пользуются каждый день, им ни к чему. */}
       <div className="profile-menu">
-        {/* «Мои объявления» отсюда убраны: туда ведёт карточка с числом
-            объявлений над балансом, вторая ссылка была дублем. */}
         <Link className="profile-row" to="/saved">
           <span className="profile-row-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m20 20-4.35-4.35" /></svg>
@@ -205,15 +212,18 @@ export default function Profile() {
           {t('saved.title')}
           <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
         </Link>
-      </div>
-
-      <div className="profile-section-title">{t('profile.sec_activity')}</div>
-      <div className="profile-menu">
         <Link className="profile-row" to="/history">
           <span className="profile-row-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></svg>
           </span>
           {t('history.title')}
+          <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+        </Link>
+        <Link className="profile-row" to="/support">
+          <span className="profile-row-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><circle cx="12" cy="12" r="9" /><path d="M12 16v.01M12 13c0-1.8 2-1.8 2-3.5A2 2 0 0 0 12 7.5 2 2 0 0 0 10 9.5" /></svg>
+          </span>
+          {t('support.title')}
           <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
         </Link>
       </div>
@@ -239,62 +249,6 @@ export default function Profile() {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><circle cx="12" cy="12" r="9" /><path d="m5.5 5.5 13 13" /></svg>
           </span>
           {t('blocked.title')}
-          <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
-        </Link>
-      </div>
-
-      {/* Telegram: чат и бот.
-          Ссылки внешние, поэтому обычные <a>, а не Link — Link уводил бы
-          внутрь приложения по несуществующему адресу. Открываем в новой
-          вкладке: человек не должен терять то, что смотрел на сайте. */}
-      <div className="profile-section-title">{t('profile.sec_telegram')}</div>
-      <div className="profile-menu">
-        <a className="profile-row" href="https://t.me/Baraholka_Plonk"
-           target="_blank" rel="noopener noreferrer">
-          <span className="profile-row-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3 18.8 19c-.2 1-.9 1.3-1.7.8l-4.7-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.4-4.9 9-8.1c.4-.3-.1-.5-.6-.2L7 10.7 2.4 9.2c-1-.3-1-1 .2-1.5l18-6.9c.8-.3 1.5.2 1.3 1.5Z" /></svg>
-          </span>
-          {t('profile.tg_chat')}
-          <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
-        </a>
-        <a className="profile-row" href="https://t.me/Baraholka_plonk_bot"
-           target="_blank" rel="noopener noreferrer">
-          <span className="profile-row-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v3" /><circle cx="12" cy="2.5" r="1.2" fill="currentColor" stroke="none" /><rect x="4" y="6" width="16" height="12" rx="4" /><circle cx="9" cy="12" r="1.3" fill="currentColor" stroke="none" /><circle cx="15" cy="12" r="1.3" fill="currentColor" stroke="none" /><path d="M2 11v3M22 11v3" /></svg>
-          </span>
-          {t('profile.tg_bot')}
-          <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
-        </a>
-      </div>
-
-      <div className="profile-section-title">{t('profile.sec_info')}</div>
-      <div className="profile-menu">
-        <Link className="profile-row" to="/support">
-          <span className="profile-row-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><circle cx="12" cy="12" r="9" /><path d="M12 16v.01M12 13c0-1.8 2-1.8 2-3.5A2 2 0 0 0 12 7.5 2 2 0 0 0 10 9.5" /></svg>
-          </span>
-          {t('support.title')}
-          <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
-        </Link>
-        <Link className="profile-row" to="/rules">
-          <span className="profile-row-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="m3 6 2 2 3-3M3 13l2 2 3-3M3 20l2 2 3-3" /><path d="M12 7h9M12 14h9M12 21h9" /></svg>
-          </span>
-          {t('nav.rules')}
-          <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
-        </Link>
-        <Link className="profile-row" to="/terms">
-          <span className="profile-row-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z" /><path d="M14 3v5h5" /><path d="M9 13h6M9 17h4" /></svg>
-          </span>
-          {t('nav.terms')}
-          <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
-        </Link>
-        <Link className="profile-row" to="/privacy">
-          <span className="profile-row-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M12 2.5 4.5 5.5v6c0 5 3.2 8 7.5 10 4.3-2 7.5-5 7.5-10v-6L12 2.5Z" /></svg>
-          </span>
-          {t('nav.privacy')}
           <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
         </Link>
       </div>
@@ -378,6 +332,23 @@ export default function Profile() {
       >
         {t('auth.logout')}
       </button>
+
+      {/* Подвал: то, что открывают раз в жизни — правила, условия,
+          ссылки на наш чат и бота. Ссылки на Telegram внешние, поэтому
+          обычные <a>: Link увёл бы внутрь приложения по
+          несуществующему адресу. */}
+      <div className="profile-footer">
+        <div className="profile-footer-links">
+          <a href="https://t.me/Baraholka_Plonk" target="_blank" rel="noopener noreferrer">{t('profile.f_chat')}</a>
+          <a href="https://t.me/Baraholka_plonk_bot" target="_blank" rel="noopener noreferrer">{t('profile.f_bot')}</a>
+        </div>
+        <div className="profile-footer-links">
+          <Link to="/rules">{t('profile.f_rules')}</Link>
+          <Link to="/terms">{t('profile.f_terms')}</Link>
+          <Link to="/privacy">{t('profile.f_privacy')}</Link>
+        </div>
+        <div className="profile-footer-brand">plonk.rs</div>
+      </div>
         </div>
       </div>
     </div>
