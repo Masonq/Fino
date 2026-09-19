@@ -1058,7 +1058,7 @@
     "open_listing": "Pogledaj oglas",
     "back_to_chat": "Nazad u ćaskanje",
     "note": "Rubriku biramo sami po nazivu.",
-    "open_in_telegram": "Ovu stranicu otvorite iz našeg Telegram bota.",
+    "open_in_telegram": "Ova forma radi u našem botu: on već zna ko ste, pa objava traje minut.",
     "err_auth_failed": "Prijava nije uspela. Zatvorite prozor i otvorite ponovo.",
     "err_upload_failed": "Slika nije otpremljena. Pokušajte ponovo.",
     "err_send_failed": "Objavljivanje nije uspelo. Pokušajte ponovo.",
@@ -1071,7 +1071,10 @@
     "pick_sub": "Precizirajte da bi stvar našli:",
     "err_video_one": "Jedan snimak je dovoljan — ostalo fotografijama.",
     "photo_needed": "Dodajte bar jednu fotografiju: ona se prikazuje u listi.",
-    "my_listings": "Moji oglasi"
+    "my_listings": "Moji oglasi",
+    "open_in_telegram_title": "Objavljivanje je u Telegramu",
+    "go_to_bot": "Idi i objavi",
+    "or_on_site": "Ili objavi na sajtu"
   },
   "errors": {
     "generic": "Nešto nije u redu. Pokušajte ponovo."

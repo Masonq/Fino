@@ -1043,7 +1043,7 @@
     "open_listing": "View listing",
     "back_to_chat": "Back to chat",
     "note": "We'll pick the section by the title.",
-    "open_in_telegram": "Open this page from our Telegram bot.",
+    "open_in_telegram": "This form works inside our bot: it already knows who you are, so posting takes a minute.",
     "err_auth_failed": "Sign-in failed. Close the window and open it again.",
     "err_upload_failed": "The photo didn't upload. Try again.",
     "err_send_failed": "Couldn't publish. Try again.",
@@ -1056,7 +1056,10 @@
     "pick_sub": "Narrow it down so buyers find it:",
     "err_video_one": "One video is enough — add photos for the rest.",
     "photo_needed": "Add at least one photo: it's what shows in the feed.",
-    "my_listings": "My listings"
+    "my_listings": "My listings",
+    "open_in_telegram_title": "Posting happens in Telegram",
+    "go_to_bot": "Go and post",
+    "or_on_site": "Or post on the site"
   },
   "errors": {
     "generic": "Something went wrong. Try again."

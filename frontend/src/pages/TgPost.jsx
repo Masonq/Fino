@@ -160,9 +160,23 @@ export default function TgPost() {
   }
 
   if (error === 'not_in_telegram') {
+    // Человек открыл адрес в браузере. Объяснить и отпустить — мало:
+    // он пришёл размещать вещь, и надо довести его туда, где это
+    // возможно, а не оставить наедине с сообщением.
     return (
-      <div className="tg-page">
-        <p className="empty-hint">{t('tg_post.open_in_telegram')}</p>
+      <div className="tg-page tg-empty">
+        <div className="tg-empty-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"
+               strokeLinecap="round" strokeLinejoin="round">
+            <path d="m21 4-9 16-2.5-6.5L3 11z" />
+          </svg>
+        </div>
+        <div className="tg-empty-title">{t('tg_post.open_in_telegram_title')}</div>
+        <p className="tg-empty-text">{t('tg_post.open_in_telegram')}</p>
+        <a className="form-save" href="https://t.me/Baraholka_plonk_bot?start=post">
+          {t('tg_post.go_to_bot')}
+        </a>
+        <Link className="tg-my-link" to="/post">{t('tg_post.or_on_site')}</Link>
       </div>
     )
   }

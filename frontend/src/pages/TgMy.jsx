@@ -113,9 +113,18 @@ export default function TgMy() {
         </div>
       </div>
 
-      {error === 'not_in_telegram'
-        ? <p className="empty-hint">{t('tg_post.open_in_telegram')}</p>
-        : error && <p className="auth-error">{t(`tg_my.err_${error}`, t('errors.generic'))}</p>}
+      {error === 'not_in_telegram' ? (
+        <div className="tg-empty">
+          <div className="tg-empty-title">{t('tg_post.open_in_telegram_title')}</div>
+          <p className="tg-empty-text">{t('tg_post.open_in_telegram')}</p>
+          <a className="form-save" href="https://t.me/Baraholka_plonk_bot?start=post">
+            {t('tg_post.go_to_bot')}
+          </a>
+          <Link className="tg-my-link" to="/my">{t('tg_post.or_on_site')}</Link>
+        </div>
+      ) : error && (
+        <p className="auth-error">{t(`tg_my.err_${error}`, t('errors.generic'))}</p>
+      )}
 
       {items.length === 0 ? (
         <div className="tg-empty">
