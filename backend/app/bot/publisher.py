@@ -19,7 +19,9 @@
 кода не нужно, телеграм и так знает, кто это.
 """
 import asyncio
+import contextlib
 import logging
+import os
 
 from aiogram import Dispatcher, F, Bot
 from aiogram.client.default import DefaultBotProperties
@@ -29,12 +31,23 @@ from aiogram.types import (
     WebAppInfo,
 )
 
+from app.bot.guard import note_repeat, punish, why_bad, is_newcomer
+from app.bot.sweeper import looks_like_listing
+from app.core.chat_rules import rules_for
 from app.core.config import settings
+from app.core.partner_chats import BARAHOLKA_TEST, talk_topic
 
 log = logging.getLogger(__name__)
 dp = Dispatcher()
 
 WEBAPP_PATH = "/tg/post"
+
+# Наш чат: тот же, куда уходят объявления автопубликацией.
+TARGET_CHAT = int(os.getenv("BOT_TARGET_CHAT", BARAHOLKA_TEST))
+
+# Сколько живёт подсказка в чате. Минуты хватает, чтобы человек её
+# прочёл, а дольше она сама становится мусором в ленте.
+HINT_TTL = 60
 
 
 def _site() -> str:
@@ -87,6 +100,85 @@ async def start(message: Message) -> None:
         "Раздел подберём сами, переведём на английский и сербский.",
         reply_markup=_post_button(),
     )
+
+
+async def _fade(bot: Bot, chat_id: int, message_id: int) -> None:
+    """Убирает подсказку через минуту — чтобы не мусорить в ленте."""
+    await asyncio.sleep(HINT_TTL)
+    with contextlib.suppress(Exception):
+        await bot.delete_message(chat_id, message_id)
+
+
+@dp.message(F.chat.id == TARGET_CHAT)
+async def in_our_chat(message: Message, bot: Bot) -> None:
+    """
+    Уборка в чате: объявления мимо публикатора и разговоры в ветке.
+
+    Раньше это жило в старом сценарии публикации и перестало работать
+    вместе с ним: объявления оседали прямо в чате, никто не убирал их и
+    не подсказывал, где размещать.
+
+    Что делаем. Явный мусор — спам, ссылки, повторы — удаляем и
+    ограничиваем автора, как раньше. Похожее на объявление удаляем и
+    показываем кнопку публикатора: человек нажимает её здесь же, и
+    объявление уходит на сайт и в ленту чата как положено.
+    """
+    rules = rules_for(TARGET_CHAT)
+    author = message.from_user
+    if not author or author.is_bot:
+        return
+
+    # Разговоры в ветке «Общение» не трогаем: она для этого и есть.
+    talk = talk_topic(TARGET_CHAT)
+    if talk and message.message_thread_id == talk:
+        return
+
+    complaint = why_bad(message, is_newcomer(author.id))
+    if not complaint and note_repeat(author.id, message.text or message.caption or ""):
+        complaint = "одно и то же подряд"
+
+    if complaint:
+        with contextlib.suppress(Exception):
+            await message.delete()
+        done = await punish(bot, TARGET_CHAT, author.id, complaint)
+        hint = await bot.send_message(
+            TARGET_CHAT,
+            f"{author.full_name}, в этом чате не публикуют {complaint}. "
+            f"{done.capitalize()}.",
+            message_thread_id=message.message_thread_id,
+        )
+        asyncio.create_task(_fade(bot, TARGET_CHAT, hint.message_id))
+        return
+
+    if not rules.sweep_direct_posts:
+        return
+
+    if looks_like_listing(message):
+        with contextlib.suppress(Exception):
+            await message.delete()
+        hint = await bot.send_message(
+            TARGET_CHAT,
+            f"{author.full_name}, объявления размещаются через форму — "
+            "нажмите кнопку, заполните пять полей, и оно появится и здесь, "
+            "и на сайте.",
+            message_thread_id=message.message_thread_id,
+            reply_markup=_post_button(),
+        )
+        asyncio.create_task(_fade(bot, TARGET_CHAT, hint.message_id))
+        return
+
+    # Разговор в ветке объявлений: объявления тут ищут глазами, и «ещё
+    # актуально?» под каждым третьим делает это невозможным.
+    if talk:
+        with contextlib.suppress(Exception):
+            await message.delete()
+        hint = await bot.send_message(
+            TARGET_CHAT,
+            f"{author.full_name}, вопросы и разговоры — в ветке «Общение». "
+            "Здесь только объявления, чтобы их было видно.",
+            message_thread_id=message.message_thread_id,
+        )
+        asyncio.create_task(_fade(bot, TARGET_CHAT, hint.message_id))
 
 
 @dp.message()

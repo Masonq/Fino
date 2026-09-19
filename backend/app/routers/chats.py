@@ -311,8 +311,16 @@ async def send_message(
     try:
         from app.core.notifications import notify_new_message
         sender = db.query(User).get(sender_id)
+        # Название вещи в уведомлении: у кого три переписки, тот иначе
+        # не понимает, по какой из них пишут.
+        chat_row = db.query(Chat).get(chat_id)
+        listing_title = None
+        if chat_row and chat_row.listing and chat_row.listing.translations:
+            tr = pick_translation(chat_row.listing, "ru")
+            listing_title = tr.title if tr else None
         notify_new_message(db, other_id, sender_id, sender.display_name if sender else "",
-                          payload.text or "", chat_id=chat_id, message_id=message.id)
+                          payload.text or "", chat_id=chat_id, message_id=message.id,
+                          listing_title=listing_title)
     except Exception:
         pass
     return _serialize_message(message)
@@ -358,8 +366,13 @@ def _notify_chat_event(db: Session, chat: Chat, actor_id, other_id, text: str, m
     try:
         from app.core.notifications import notify_new_message
         actor = db.query(User).get(actor_id)
+        listing_title = None
+        if chat.listing and chat.listing.translations:
+            tr = pick_translation(chat.listing, "ru")
+            listing_title = tr.title if tr else None
         notify_new_message(db, other_id, actor_id, actor.display_name if actor else "",
-                          text, chat_id=chat.id, message_id=message_id)
+                          text, chat_id=chat.id, message_id=message_id,
+                          listing_title=listing_title)
     except Exception:
         pass
 

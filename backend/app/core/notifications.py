@@ -147,7 +147,8 @@ def _strip_tags(text: str) -> str:
 
 
 def notify_new_message(db: Session, recipient_id, sender_id, sender_name: str,
-                       preview: str, chat_id=None, message_id=None) -> bool:
+                       preview: str, chat_id=None, message_id=None,
+                       listing_title: str | None = None) -> bool:
     # Не чаще одного уведомления за MESSAGE_COOLDOWN на переписку — иначе
     # бурный диалог шлёт уведомление на каждую реплику. Раньше константа
     # была объявлена, но нигде не проверялась. Смотрим сообщения именно
@@ -169,10 +170,14 @@ def notify_new_message(db: Session, recipient_id, sender_id, sender_name: str,
         if recent:
             return False
 
-    text = (
-        f"<b>{sender_name}</b> написал вам в PLONK\n\n"
-        f"{preview[:120]}"
-    )
+    # Раньше писали «написал вам в PLONK»: уведомление и так приходит от
+    # нашего бота, приписка занимала строку и ничего не сообщала. Зато
+    # не хватало главного — о какой вещи речь: у кого три переписки, тот
+    # не понимал, по какой из них пишут, пока не открывал.
+    head = f"<b>{sender_name}</b>"
+    if listing_title:
+        head += f" · {listing_title[:60]}"
+    text = f"{head}\n\n{preview[:120]}"
     link = f"/chat/{chat_id}" if chat_id else None
     return notify(db, recipient_id, text, link=link)
 
