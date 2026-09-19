@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useKeepPlace } from '../utils/keepPlace'
+import { keepValue, readValue, useKeepPlace } from '../utils/keepPlace'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
@@ -20,7 +20,8 @@ export default function AdminSupport() {
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()
 
-  const [tab, setTab] = useState('open')
+  const [tab, setTab] = useState(() => readValue('support-tab', 'open'))
+  useEffect(() => { keepValue('support-tab', tab) }, [tab])
   const [items, setItems] = useState([])
   const [counts, setCounts] = useState({})
   const [openId, setOpenId] = useState(null)

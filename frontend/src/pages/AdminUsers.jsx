@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useKeepPlace } from '../utils/keepPlace'
+import { keepValue, readValue, useKeepPlace } from '../utils/keepPlace'
 import Avatar from '../components/Avatar'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
@@ -43,9 +43,12 @@ export default function AdminUsers() {
 
   const [items, setItems] = useState([])
   const [total, setTotal] = useState(0)
-  const [query, setQuery] = useState('')
-  const [filter, setFilter] = useState('all')
-  const [sort, setSort] = useState('new')
+  const [query, setQuery] = useState(() => readValue('users-query', ''))
+  useEffect(() => { keepValue('users-query', query) }, [query])
+  const [filter, setFilter] = useState(() => readValue('users-filter', 'all'))
+  useEffect(() => { keepValue('users-filter', filter) }, [filter])
+  const [sort, setSort] = useState(() => readValue('users-sort', 'new'))
+  useEffect(() => { keepValue('users-sort', sort) }, [sort])
   const [overview, setOverview] = useState(null)
   const [loadingMore, setLoadingMore] = useState(false)
   const sentinelRef = useRef(null)

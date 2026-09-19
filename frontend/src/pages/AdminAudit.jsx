@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useKeepPlace } from '../utils/keepPlace'
+import { keepValue, readValue, useKeepPlace } from '../utils/keepPlace'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
@@ -42,12 +42,19 @@ export default function AdminAudit() {
 
   const [items, setItems] = useState([])
   const [total, setTotal] = useState(0)
-  const [filter, setFilter] = useState('')
-  const [actor, setActor] = useState('')
+  // Отбор держится между заходами: модератор выбирает «служебные,
+  // по объявлениям», уходит в карточку и, вернувшись, получал заново
+  // «сотрудники, все» — и выставлял то же самое каждый раз.
+  const [filter, setFilter] = useState(() => readValue('audit-filter', ''))
+  const [actor, setActor] = useState(() => readValue('audit-actor', ''))
   const [actors, setActors] = useState([])
   const [loaded, setLoaded] = useState(false)
   const [denied, setDenied] = useState(false)
-  const [kind, setKind] = useState('staff')
+
+  useEffect(() => { keepValue('audit-kind', kind) }, [kind])
+  useEffect(() => { keepValue('audit-filter', filter) }, [filter])
+  useEffect(() => { keepValue('audit-actor', actor) }, [actor])
+  const [kind, setKind] = useState(() => readValue('audit-kind', 'staff'))
 
   const load = useCallback(() => {
     // Проверено: items.map ниже рендерится вообще без условия на

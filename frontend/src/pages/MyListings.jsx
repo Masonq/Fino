@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useKeepPlace } from '../utils/keepPlace'
+import { keepValue, readValue, useKeepPlace } from '../utils/keepPlace'
 import { withoutRemoved } from '../utils/removedListings'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
@@ -80,7 +80,8 @@ export default function MyListings() {
     finally { setRenewing(null) }
   }
   const [counts, setCounts] = useState({})
-  const [tab, setTab] = useState('active')
+  const [tab, setTab] = useState(() => readValue('my-tab', 'active'))
+  useEffect(() => { keepValue('my-tab', tab) }, [tab])
   const [loaded, setLoaded] = useState(false)
   const [busyId, setBusyId] = useState(null)
   // Панель продвижения открыта максимум для одной карточки за раз —

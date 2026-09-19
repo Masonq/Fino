@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useKeepPlace } from '../utils/keepPlace'
+import { keepValue, readValue, useKeepPlace } from '../utils/keepPlace'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, Link } from 'react-router-dom'
 import { api } from '../api/client'
@@ -48,7 +48,8 @@ export default function Moderation() {
   const [reportsLoaded, setReportsLoaded] = useState(() => !!cache)
   const [busyId, setBusyId] = useState(null)
   const [denied, setDenied] = useState(false)
-  const [tab, setTab] = useState('listings')
+  const [tab, setTab] = useState(() => readValue('moderation-tab', 'listings'))
+  useEffect(() => { keepValue('moderation-tab', tab) }, [tab])
   const [reports, setReports] = useState(() => cache?.reports || [])
   const [reportsTotal, setReportsTotal] = useState(() => cache?.reportsTotal || 0)
   // Причина отклонения — списком готовых вариантов, а не window.prompt:
