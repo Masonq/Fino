@@ -1075,7 +1075,8 @@
     "open_in_telegram_title": "Objavljivanje je u Telegramu",
     "go_to_bot": "Idi i objavi",
     "or_on_site": "Ili objavi na sajtu",
-    "full_form": "Stan, auto, posao? Puna forma na sajtu"
+    "full_form": "Stan, auto ili posao",
+    "full_form_sub": "Sa kvadraturom, kilometražom i radnim vremenom"
   },
   "errors": {
     "generic": "Nešto nije u redu. Pokušajte ponovo."

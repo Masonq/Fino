@@ -5152,11 +5152,12 @@ a.s-attrs{ display:block; }
   box-shadow:0 1px 3px rgba(16,24,40,.12);
 }
 
-/* Путь к полной форме: тихая строка внизу — она нужна меньшинству, но
-   без неё это меньшинство уходит совсем. */
-.tg-full-form{
-  display:block; margin:14px 16px 0; padding:12px;
-  border-radius:12px; background:var(--surface-sunken);
-  color:var(--ink-soft); font-size:12.5px; font-weight:700;
-  text-align:center; text-decoration:none; line-height:1.35;
-}
+/* Путь к полной форме — такая же строка, как вход в свои объявления,
+   только внизу: она нужна меньшинству, и место ей после главного. */
+.tg-full-form{ margin-top:16px; align-items:center; }
+/* Значок держим сверху, если подпись всё же перенесётся: иначе он
+   уезжает на середину и строка выглядит косой. */
+.tg-full-form .tg-my-entry-icon{ align-self:center; }
+.tg-full-form-text{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+.tg-full-form-title{ font-size:14px; font-weight:700; color:var(--ink); }
+.tg-full-form-sub{ font-size:12px; font-weight:600; color:var(--muted); line-height:1.3; }

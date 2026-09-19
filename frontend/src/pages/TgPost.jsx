@@ -447,13 +447,31 @@ export default function TgPost() {
       </button>
       <p className="tg-note">{t('tg_post.note')}</p>
 
-      {/* Полная форма на сайте: здесь пять полей, и этого хватает для
-          вещи, но не для квартиры или машины — там нужны комнаты,
-          площадь, пробег, год. Человека, пришедшего с таким
-          объявлением, надо отправить туда, где его примут целиком, а
-          не заставлять ужимать в пять полей. */}
-      <a className="tg-full-form" href="https://plonk.rs/post" target="_blank" rel="noopener noreferrer">
-        {t('tg_post.full_form')}
+      {/* Полная форма на сайте. Здесь пять полей — этого хватает для
+          вещи, но не для квартиры или машины: там нужны комнаты,
+          площадь, пробег, год. Такого человека надо отправить туда,
+          где объявление примут целиком, а не заставлять ужимать.
+
+          Поэтому строка, а не мелкий текст: она объясняет, что это и
+          кому, и выглядит как остальные строки экрана. */}
+      <a
+        className="tg-my-entry tg-full-form"
+        href="https://plonk.rs/post"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <span className="tg-my-entry-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"
+               strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 3 3 9v12h6v-7h6v7h6V9z" />
+          </svg>
+        </span>
+        <span className="tg-full-form-text">
+          <span className="tg-full-form-title">{t('tg_post.full_form')}</span>
+          <span className="tg-full-form-sub">{t('tg_post.full_form_sub')}</span>
+        </span>
+        <svg className="tg-my-entry-arrow" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
       </a>
     </div>
   )
