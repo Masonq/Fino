@@ -731,6 +731,87 @@ LISTING_PROMPT = """Ты переводишь объявление с доски
 """
 
 
+CLEAN_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "verdict": {"type": "string", "enum": ["keep", "fix", "drop"]},
+        "title": {"type": "string"},
+        "reason": {"type": "string"},
+    },
+    "required": ["verdict"],
+}
+
+CLEAN_PROMPT = """Ты модератор доски объявлений. Смотришь на заголовок и
+решаешь, годится ли он, а если нет — переписываешь.
+
+Хороший заголовок называет саму вещь и то, по чему её выбирают: марку,
+модель, размер, состояние. «Кровать IKEA KURA с матрасом», «iPhone 13
+128gb», «Зимние ботинки Clarks, 42».
+
+В заголовке не должно быть:
+— цены и слов о ней («3000 дин», «за всё», «торг»);
+— телефонов, ников, ссылок;
+— зазывалок («срочно», «дёшево», «отличная вещь»);
+— одного лишь названия раздела («Электроника», «Мебель», «Обувь»);
+— обрывка фразы из описания («Болит шея после работы», «Мой рост 156»).
+
+Ответ:
+— verdict "keep" — заголовок уже хорош, менять нечего;
+— verdict "fix" — вещь понятна, но заголовок надо поправить; в поле
+  title дай новый, собранный из того, что есть в объявлении;
+— verdict "drop" — из объявления непонятно, что продают, и придумать
+  нечего.
+
+Правила для нового заголовка:
+— только то, что есть в тексте; ничего не выдумывай;
+— марки, модели и числа сохраняй как есть: «IKEA MELLTORP», «256gb»;
+— три-семь слов, с большой буквы, без точки в конце;
+— без цены, контактов и зазывалок.
+
+Раздел: {category}
+
+Заголовок: {title}
+
+Описание: {description}
+"""
+
+
+def clean_listing_title(title: str, description: str | None,
+                        category: str | None = None) -> dict | None:
+    """
+    Разбор заголовка моделью: годен, поправить или снимать.
+
+    Правилами такое не решается. Живой текст бесконечно разнообразен, и
+    каждое новое правило ломает что-то прежнее: правило про цену
+    съедало «Подъёмный столик», правило про заглавные — «IKEA
+    MELLTORP». Модель видит объявление целиком и отвечает по строгой
+    схеме: решение, новый заголовок, причина. Правила остаются
+    проверкой того, что она вернула.
+    """
+    if not _ready() or not title or not title.strip():
+        return None
+
+    prompt = CLEAN_PROMPT.format(
+        category=category or "не указан",
+        title=title.strip()[:200],
+        description=(description or "").strip()[:700] or "—",
+    )
+
+    _wait_turn()
+    answer = _parse_answer(_ask(prompt, limit=400, schema=CLEAN_SCHEMA))
+    if not answer:
+        return None
+
+    verdict = (answer.get("verdict") or "").strip().lower()
+    if verdict not in ("keep", "fix", "drop"):
+        return None
+    return {
+        "verdict": verdict,
+        "title": (answer.get("title") or "").strip(),
+        "reason": (answer.get("reason") or "").strip()[:120],
+    }
+
+
 def translate_listing_text(title: str, description: str | None,
                            category: str | None = None,
                            city: str | None = None) -> dict | None:

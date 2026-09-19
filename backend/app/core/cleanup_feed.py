@@ -1,25 +1,28 @@
 """
-Уборка уже опубликованного: заголовки и описания.
+Уборка ленты: заголовки и описания уже опубликованного.
 
-Перенос из чатов теперь не пускает в ленту объявления с непонятным
-заголовком, но четыре тысячи уже опубликованных разбирались по старым
-правилам. Там висят «Hutschenreuther», «Чем занимался», «Продам», а в
-описаниях — хвосты вроде «Больше товаров тут» и «Подписывайтесь на наш
-канал».
+Как это устроено. Решение принимает модель, а не правила.
 
-Что делает проход:
+Правилами такое не решается: живой текст бесконечно разнообразен, и
+каждое новое правило ломало прежнее. Правило про цену съело
+«Подъёмный столик» (увидело «по» и отрезало), правило про заглавные
+выбросило «IKEA MELLTORP» и «ASUS TUF», правило про длину — «Ноутбук
+HP 255 G7 / Ryzen 5 / 8 GB». Так и должно было выйти: чинить текст
+регулярными выражениями значит гадать.
 
-1. Чистит описания от чужих приглашений. Это безопасно: текст вещи не
-   трогается, уходят только строки-зазывалки.
-2. Смотрит заголовок. Непонятный пробует переписать — сперва
-   правилами по описанию, потом нейросетью. Получилось — правит.
-3. Не получилось — снимает объявление с публикации. Своему продавцу
-   ставим «на доработку» с причиной: он видит, что поправить, и
-   возвращает объявление сам. Перенесённому хозяина нет, поэтому
-   отправляем в архив — вернуть его может только модератор.
+Поэтому сейчас на каждое объявление модель отвечает по строгой схеме:
+годен заголовок, поправить (и какой) или снимать (и почему). А правила
+остались там, где они и хороши, — проверкой того, что она вернула: не
+выдумала ли число, не вставила ли цену или контакт, не подсунула ли
+название раздела. Это обычный приём: модель решает, схема держит
+форму, проверка ловит выдумки.
 
-Снятых будет много, и это нарочно: лента, где половина заголовков
-ничего не говорит, хуже вдвое меньшей ленты, где понятно всё.
+Ещё проход чистит описания от чужих приглашений («Больше товаров тут»,
+«Подписывайтесь на наш канал») — здесь правила уместны: строка либо
+зовёт в другой канал, либо нет.
+
+Не ответила модель — объявление не трогаем и откладываем до следующего
+захода: молча снимать вслепую нельзя.
 
     python3 -m app.core.cleanup_feed --dry-run       посмотреть счёт
     python3 -m app.core.cleanup_feed --limit 300     разобрать первые 300
@@ -29,7 +32,7 @@ import argparse
 import logging
 import re
 
-from app.core.ai_title import improve as ai_improve
+from app.core.ai_title import clean_listing_title
 from app.core.audit import record
 from app.core.clock import utcnow
 from app.core.database import SessionLocal
@@ -266,47 +269,32 @@ def _ai_available() -> bool:
     return bool(_ready())
 
 
-def _try_fix(listing: Listing, tr: ListingTranslation, use_ai: bool,
-             sections: set[str] | None = None) -> str | None:
+def _acceptable(proposed: str, original: str, sections: set[str]) -> bool:
     """
-    Новый заголовок или None. Сначала правила, потом нейросеть.
+    Проверка того, что предложила модель.
 
-    Что бы ни вышло, оно должно быть лучше прежнего. Правила при
-    нехватке фактов собирают заголовок из раздела и свойств — так
-    «Электрочайник» превращался в «Красота, new», а «Футболки, все» в
-    «Одежда, размер L, used». Это не исправление, а ухудшение, и такие
-    ответы мы отбрасываем.
+    Схема в ответе гарантирует форму, но не содержание: модель может
+    выдумать характеристику, потерять объём памяти или вернуть название
+    раздела. Поэтому короткий разбор — он же страховка на случай, когда
+    модель ошиблась.
     """
-    sections = sections or set()
-    description = (tr.description or "").strip()
-
-    def acceptable(candidate: str) -> bool:
-        if not candidate or not _clear(candidate):
-            return False
-        if _is_section_name(candidate, sections):
-            return False
-        # Заголовок, начинающийся с названия раздела, — тот же случай:
-        # «Красота, new», «Для дома, б/у».
-        head = candidate.split(",")[0].strip().lower()
-        return head not in sections
-
-    if description:
-        built = build_title(
-            listing.category.slug if listing.category else None,
-            None,
-            description,
-            listing.attributes or {},
-        )
-        if built and acceptable(built):
-            return built
-
-    if not use_ai:
-        return None
-
-    source = f"{tr.title}\n{description}".strip()
-    better = ai_improve(source, tr.title) or {}
-    candidate = (better.get("title") or "").strip()
-    return candidate if acceptable(candidate) else None
+    body = (proposed or "").strip()
+    if len(body) < 4 or len(body) > 110:
+        return False
+    if _is_section_name(body, sections):
+        return False
+    if _PHONE_RE.search(body) or _CONTACT_RE.search(body) or "#" in body:
+        return False
+    if _PRICE_IN_TITLE_RE.search(body):
+        return False
+    # Числа из оригинала — объём памяти, размер, год — должны остаться:
+    # «iPhone 13 128gb» не может стать «iPhone, много памяти».
+    if not set(re.findall(r"\d+", original or "")) >= set(re.findall(r"\d+", body)):
+        # В новом заголовке появилось число, которого не было в старом.
+        # Оно могло прийти из описания — это допустимо, но выдуманное
+        # число хуже отсутствующего, поэтому такие правки не берём.
+        return False
+    return _clear(body)
 
 
 def run(limit: int | None, apply: bool, use_ai: bool = True,
@@ -326,7 +314,7 @@ def run(limit: int | None, apply: bool, use_ai: bool = True,
 
     db = SessionLocal()
     counts = {"проверено": 0, "описаний почищено": 0,
-              "заголовков переписано": 0, "снято": 0}
+              "заголовков переписано": 0, "снято": 0, "отложено": 0}
     # Что именно тронули — построчно. Смотреть в базе, кого сняли,
     # неудобно: адрес объявления, старый и новый заголовок рядом дают
     # проверить решение глазами и вернуть лишнее.
@@ -368,54 +356,56 @@ def run(limit: int | None, apply: bool, use_ai: bool = True,
                 if apply:
                     tr.description = cleaned
 
-            # 2. Заголовок
+            # 2. Заголовок — решает модель.
             #
-            # Сперва прибираем: убираем цену, ник и лишние знаки. Часто
-            # после этого заголовок годен, и снимать объявление не надо —
-            # достаточно поправить, как поступает с такими Avito.
-            tidy = _tidy(tr.title)
-            if tidy and tidy != (tr.title or "").strip() and _clear(tidy) \
-                    and not _is_section_name(tidy, sections):
-                counts["заголовков переписано"] += 1
-                report.append({
-                    "действие": "заголовок переписан",
-                    "id": str(listing.id),
-                    "было": tr.title,
-                    "стало": tidy,
-                })
-                if apply:
-                    tr.title = tidy[:255]
+            # Правилами это не решается. Живой текст бесконечно
+            # разнообразен, и каждое новое правило ломало прежнее:
+            # правило про цену съело «Подъёмный столик», правило про
+            # заглавные — «IKEA MELLTORP». Модель смотрит объявление
+            # целиком и отвечает по строгой схеме: годен / поправить /
+            # снимать. Правила остались проверкой того, что она
+            # вернула, — на случай, если она выдумает лишнего.
+            verdict = None
+            if use_ai:
+                verdict = clean_listing_title(
+                    tr.title, tr.description,
+                    listing.category.name.get("ru") if listing.category and listing.category.name else None,
+                )
+
+            if verdict is None:
+                # Модель не ответила (кончился запас, отказ сети).
+                # Трогать объявление вслепую нельзя: пропускаем до
+                # следующего захода, когда запас вернётся.
+                counts["отложено"] += 1
                 continue
 
-            if _clear(tr.title) and not _is_section_name(tr.title, sections):
+            if verdict["verdict"] == "keep":
                 continue
 
-            # Запас мог кончиться посреди прохода: дальше идём по
-            # правилам, а не ждём отказа на каждом объявлении.
-            if use_ai and counts["проверено"] % 25 == 0 and not _ai_available():
-                log.warning("запас нейросети кончился, дальше только правила")
-                use_ai = False
-
-            fixed = _try_fix(listing, tr, use_ai, sections)
-            if fixed:
-                counts["заголовков переписано"] += 1
-                report.append({
-                    "действие": "заголовок переписан",
-                    "id": str(listing.id),
-                    "было": tr.title,
-                    "стало": fixed,
-                })
-                if apply:
-                    old = tr.title
-                    tr.title = fixed[:255]
-                    # Переводы собраны со старого заголовка — удаляем,
-                    # почасовой заход соберёт их заново.
-                    for other in list(listing.translations):
-                        if other is not tr and other.is_auto_translated:
-                            listing.translations.remove(other)
-                    record(db, None, "listing_retitled", target_type="listing",
-                           target_id=listing.id, details={"was": old, "now": tr.title})
-                continue
+            if verdict["verdict"] == "fix":
+                proposed = verdict["title"]
+                # Проверяем предложенное теми же правилами, что и
+                # прежде: числа из оригинала на месте, нет цены и
+                # контактов, не название раздела, вещь названа.
+                if _acceptable(proposed, tr.title, sections):
+                    counts["заголовков переписано"] += 1
+                    report.append({
+                        "действие": "заголовок переписан",
+                        "id": str(listing.id),
+                        "было": tr.title,
+                        "стало": proposed,
+                        "почему": verdict["reason"],
+                    })
+                    if apply:
+                        tr.title = proposed[:255]
+                        for other in list(listing.translations):
+                            if other is not tr and other.is_auto_translated:
+                                listing.translations.remove(other)
+                        record(db, None, "listing_retitled", target_type="listing",
+                               target_id=listing.id,
+                               details={"was": tr.title, "now": proposed})
+                    continue
+                # Предложение не прошло проверку — считаем негодным.
 
             # 3. Снимаем с ленты
             counts["снято"] += 1
@@ -423,7 +413,7 @@ def run(limit: int | None, apply: bool, use_ai: bool = True,
                 "действие": "снято",
                 "id": str(listing.id),
                 "заголовок": tr.title,
-                "почему": _why(tr.title, sections),
+                "почему": verdict["reason"] or "непонятно, что продают",
                 "раздел": listing.category.slug if listing.category else None,
                 "источник": listing.external_source or "сайт",
             })
