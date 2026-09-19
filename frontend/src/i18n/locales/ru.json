@@ -835,7 +835,8 @@
     "show_count_few": "Показать {{count}} объявления",
     "show_count_many": "Показать {{count}} объявлений",
     "show_count_other": "Показать {{count}} объявлений",
-    "search_in": "Поиск в разделе «{{name}}»"
+    "search_in": "Поиск в разделе «{{name}}»",
+    "search_city": "Поиск в городе {{city}}"
   },
   "fields": {
     "real-estate": {

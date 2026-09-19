@@ -825,7 +825,8 @@
     "show_count_one": "Prikaži {{count}} oglas",
     "show_count_few": "Prikaži {{count}} oglasa",
     "show_count_other": "Prikaži {{count}} oglasa",
-    "search_in": "Pretraga u «{{name}}»"
+    "search_in": "Pretraga u «{{name}}»",
+    "search_city": "Pretraga u gradu {{city}}"
   },
   "fields": {
     "real-estate": {

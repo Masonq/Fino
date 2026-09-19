@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { cityLabel } from '../data/cities'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
@@ -436,6 +437,18 @@ export default function CategoryLanding() {
   // получался замкнутый круг. Тот же приём, что и в ListingDetail.jsx:
   // если есть настоящая история — идём по ней, а не мимо. «Все
   // категории» остаётся запасным для прямых ссылок, где истории нет.
+  // Подпись в строке поиска не повторяет название раздела: оно уже
+  // написано крупно на картинке под строкой. Вместо этого говорим, где
+  // ищем — в выбранном городе или по всей стране. Так сделано у Avito,
+  // и это единственное, чего человек по экрану не знает.
+  const searchHint = (() => {
+    let city = ''
+    try { city = localStorage.getItem('plonk_city') || '' } catch { /* не беда */ }
+    return city
+      ? t('landing.search_city', { city: cityLabel(city, i18n.language) })
+      : t('search.placeholder_full')
+  })()
+
   const goBack = () => {
     if (window.history.state?.idx > 0) {
       navigate(-1)
@@ -489,7 +502,7 @@ export default function CategoryLanding() {
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') search() }}
-            placeholder={t('landing.search_in', { name })}
+            placeholder={searchHint}
             autoComplete="off"
           />
           {text && (
