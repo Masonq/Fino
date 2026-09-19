@@ -98,45 +98,50 @@ export default function InviteFriend() {
       </div>
 
       {stats && stats.invited > 0 && (
-        <>
-          {/* Три цифры отвечают на разные вопросы: сколько ссылок
-              разошлось, сколько людей дошли до объявления и сколько
-              вышло денег. Одной цифрой это не сказать. */}
-          <div className="invite-stats">
-            <div>
-              <strong>{stats.invited}</strong>
-              <span>{t('invite.stat_invited')}</span>
-            </div>
-            <div>
-              <strong>{stats.posted}</strong>
-              <span>{t('invite.stat_posted')}</span>
-            </div>
-            <div>
-              <strong>{stats.earned}</strong>
-              <span>{t('invite.stat_earned')}</span>
-            </div>
+        <div className="invite-progress">
+          {/* Не табло из трёх цифр, а фраза и путь каждого. Цифры в
+              колонках говорят «четыре, два, двести» — и человеку всё
+              равно приходится соображать, что из этого хорошо. Фраза
+              говорит сразу: позвали столько, ждём вот этого. */}
+          <div className="invite-summary">
+            {stats.earned > 0
+              ? t('invite.summary_earned', { count: stats.rewarded, amount: stats.earned })
+              : t('invite.summary_waiting', { count: stats.invited })}
           </div>
 
-          {/* Сами приглашённые. Без них цифры висят в воздухе: человек
-              не понимает, кто дошёл, а кто застрял на полпути, и не
-              знает, кому напомнить. */}
-          {stats.people?.length > 0 && (
-            <div className="invite-people">
-              <div className="invite-block-title">{t('invite.people_title')}</div>
-              {stats.people.map((person, i) => (
-                <div className="invite-person" key={i}>
-                  <Avatar url={person.avatar_url} name={person.name} size={38} />
-                  <div className="invite-person-text">
-                    <div className="invite-person-name">{person.name}</div>
-                    <div className={`invite-person-state ${person.state}`}>
-                      {t(`invite.state_${person.state}`, { amount: stats.bonus })}
-                    </div>
-                  </div>
+          {stats.people?.map((person, i) => (
+            <div className="invite-person" key={i}>
+              <Avatar url={person.avatar_url} name={person.name} size={40} />
+              <div className="invite-person-text">
+                <div className="invite-person-name">{person.name}</div>
+                {/* Путь из трёх шагов прямо в строке: видно, где
+                    человек застрял, и понятно, чего ждать дальше. */}
+                <div className="invite-track">
+                  {['joined', 'posted', 'rewarded'].map((step, index) => {
+                    const reached = ['joined', 'posted', 'rewarded']
+                      .indexOf(person.state) >= index
+                    return (
+                      <span
+                        key={step}
+                        className={reached ? 'invite-dot on' : 'invite-dot'}
+                        title={t(`invite.step_${step}`)}
+                      />
+                    )
+                  })}
+                  <span className="invite-person-state">
+                    {t(`invite.state_${person.state}`, { amount: stats.bonus })}
+                  </span>
                 </div>
-              ))}
+              </div>
+            </div>
+          ))}
+
+          {stats.invited > stats.people.length && (
+            <div className="invite-more">
+              {t('invite.and_more', { count: stats.invited - stats.people.length })}
             </div>
           )}
-        </>
+        </div>
       )}
 
       <div className="invite-faq">
