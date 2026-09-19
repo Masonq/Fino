@@ -5282,6 +5282,6 @@ a.s-attrs{ display:block; }
      шрифт, и знак, посчитанный от кегля, выходил крупнее цифр — это
      и было видно на снимке. 0,72 — высота прописной у нашего шрифта
      и у системного на телефоне. */
-  width:.72em; height:.72em; flex-shrink:0;
-  align-self:baseline; transform:translateY(.07em);
+  width:.86em; height:.86em; flex-shrink:0;
+  align-self:baseline; transform:translateY(.055em);
 }
