@@ -1,15 +1,13 @@
 """
-Перевод накопленных балансов в плонки.
+Перевод накопленных балансов в динары.
 
-Баланс заводился в рублях: сто рублей за поднятие объявления. Потом мы
-перешли на динары, а теперь на свою валюту — плонки, по десять динаров
-за штуку. Числа в базе от этого сами не изменились: у человека
-по-прежнему записано «300», и это триста рублей, а не триста плонков.
+Баланс заводился в рублях: сто рублей за поднятие объявления. Теперь
+цены в динарах, а числа в базе сами не изменились — у человека
+записано «300», и это триста рублей, а не триста динаров.
 
-Оставить как есть нельзя: триста плонков — это двадцать поднятий,
-тогда как оплачено было три. Поэтому пересчитываем один раз по
-цепочке, которой деньги и пришли: рубли → динары по курсу → плонки по
-десять.
+Оставить как есть нельзя: триста динаров — это два поднятия, тогда
+как оплачено было три. Пересчитываем один раз по курсу Центробанка,
+тем же, по которому берём деньги в платёжной системе.
 
 Округляем вверх. Разница выходит в копейки, и отдать её человеку
 правильнее, чем забрать: он платил настоящими деньгами, а мы меняем
@@ -22,7 +20,7 @@ import argparse
 import logging
 from decimal import Decimal, ROUND_CEILING
 
-from app.core.currency import RSD_IN_PLONK, rsd_per_rub
+from app.core.currency import rsd_per_rub
 from app.core.database import SessionLocal
 from app.models import User
 
@@ -33,23 +31,22 @@ def run(apply: bool) -> dict:
     rate = rsd_per_rub()          # сколько динаров в рубле
     db = SessionLocal()
     counts = {"с балансом": 0, "пересчитано": 0, "было рублей": Decimal(0),
-              "стало плонков": Decimal(0)}
+              "стало динаров": Decimal(0)}
     try:
         people = db.query(User).filter(User.balance > 0).all()
         for user in people:
             counts["с балансом"] += 1
             rubles = Decimal(str(user.balance))
-            plonks = ((rubles * rate) / RSD_IN_PLONK).quantize(
-                Decimal("1"), rounding=ROUND_CEILING)
+            dinars = (rubles * rate).quantize(Decimal("1"), rounding=ROUND_CEILING)
 
             counts["было рублей"] += rubles
-            counts["стало плонков"] += plonks
+            counts["стало динаров"] += dinars
             counts["пересчитано"] += 1
 
             print(f"  {user.display_name or user.id}: "
-                  f"{rubles:.0f} руб → {plonks} плонков")
+                  f"{rubles:.0f} руб → {dinars} RSD")
             if apply:
-                user.balance = plonks
+                user.balance = dinars
 
         if apply:
             db.commit()

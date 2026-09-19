@@ -142,18 +142,18 @@
     "desc_highlight": "A colored background in the feed makes the card harder to scroll past. 7 days",
     "type_xl_card": "Large card",
     "desc_xl_card": "A large full-width photo that stands out from neighboring cards. 7 days",
-    "price": "{{price}} plonks",
+    "price": "{{price}} RSD",
     "active_now": "Active",
     "active_until": "Until {{date}}",
     "err_unavailable": "Promotion is temporarily unavailable, try again later",
     "err_generic": "Couldn't start the payment, please try again",
     "subtitle": "Choose an option",
     "all_active": "Everything is already promoted",
-    "cta": "Boost views — {{price}} plonks",
-    "balance": "Balance: {{amount}} plonks",
-    "pay_balance": "Pay from balance — {{price}} plonks",
+    "cta": "Boost views — {{price}} RSD",
+    "balance": "Balance: {{amount}} RSD",
+    "pay_balance": "Pay from balance — {{price}} RSD",
     "pay_card": "Pay by card",
-    "not_enough_balance": "You have {{amount}} plonks — not enough, you can pay by card",
+    "not_enough_balance": "You have {{amount}} RSD — not enough, you can pay by card",
     "paid_ok": "Paid from balance",
     "next": "Next",
     "checking": "Checking your payment…",
@@ -945,7 +945,7 @@
   "balance": {
     "title": "Balance",
     "topup": "Top up",
-    "topup_cta": "Top up {{amount}} plonks"
+    "topup_cta": "Top up {{amount}} RSD"
   },
   "home": {
     "phone_reminder": "Add your phone — buyers will be able to call you directly",
@@ -957,10 +957,10 @@
   },
   "invite": {
     "card_title": "Invite a friend",
-    "card_subtitle": "20 plonks for you and your friend",
+    "card_subtitle": "200 RSD for you and your friend",
     "title": "Invite a friend",
     "hero_title": "Invite your friends",
-    "hero_text": "Your friend posts their first listing — you both get {{count}} plonks",
+    "hero_text": "Your friend posts their first listing — you both get {{count}} RSD",
     "share_btn": "Share link",
     "copied": "Link copied",
     "share_title": "Join PLONK — Serbian classifieds",
@@ -969,14 +969,14 @@
     "fineprint": "The bonus is credited for each invited friend whose first listing gets published and approved. Credited once per person.",
     "link_label": "Your link",
     "card_you": "You get",
-    "card_you_text": "{{count}} plonks — a bump with room to spare",
+    "card_you_text": "{{count}} RSD — a bump with room to spare",
     "card_friend": "Your friend gets",
     "card_friend_text": "The same amount — not starting from zero",
     "how_title": "How it works",
     "step_1": "Send your friend the link",
     "step_2": "They follow it and post a listing",
     "step_3": "The listing passes review — both balances are topped up",
-    "stat_earned": "plonks",
+    "stat_earned": "RSD",
     "q_who": "Who can I invite?",
     "a_who": "Anyone without a PLONK account yet. Someone already registered won't count — the link simply won't recognise them.",
     "q_what": "What does my friend have to do?",
@@ -984,7 +984,7 @@
     "q_when": "When does the money arrive?",
     "a_when": "Right after the listing is approved. Usually within minutes; overnight, by morning.",
     "q_spend": "What can I spend it on?",
-    "a_spend": "On promoting your own listings: bump, highlight, bigger card. Plonks can't be withdrawn — it's the site's own currency."
+    "a_spend": "On promoting your own listings: bump, highlight, bigger card. Withdrawal isn't possible."
   },
   "footer": {
     "about": "Classifieds in Serbia — in Russian, English and Serbian. Buy and sell close to home.",
@@ -1118,10 +1118,5 @@
     "code_ph": "Code from the email",
     "confirm": "Confirm",
     "linked": "Done — it's one account now."
-  },
-  "money": {
-    "plonk_one": "{{count}} plonk",
-    "plonk_other": "{{count}} plonks",
-    "unit": "plonks"
   }
 }
