@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useKeepPlace } from '../utils/keepPlace'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
@@ -13,6 +14,8 @@ const TABS = [
 ]
 
 export default function AdminSupport() {
+  // Возвращаемся туда, где человек оставил список.
+  useKeepPlace('admin-support')
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()

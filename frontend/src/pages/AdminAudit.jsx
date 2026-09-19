@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useKeepPlace } from '../utils/keepPlace'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
@@ -33,6 +34,8 @@ function when(iso, locale) {
 }
 
 export default function AdminAudit() {
+  // Возвращаемся туда, где человек оставил список.
+  useKeepPlace('admin-audit')
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()

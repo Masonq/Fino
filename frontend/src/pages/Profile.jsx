@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { keepValue, readValue } from '../utils/keepPlace'
 import { formatPrice } from '../utils/money'
 import Avatar from '../components/Avatar'
 import { useTranslation } from 'react-i18next'
@@ -50,10 +51,15 @@ export default function Profile() {
   // из профиля было видно, что там есть работа, и не приходилось
   // заходить в каждую очередь наугад.
   const isStaff = user?.role === 'moderator' || user?.role === 'admin'
-  const [stats, setStats] = useState(null)
+  // Цифры и бейджи храним между заходами: без этого при каждом
+  // возврате на профиль они на секунду пропадали и появлялись заново,
+  // а строка «что требует внимания» успевала мигнуть.
+  const [stats, setStats] = useState(() => readValue('profile-stats', null))
   useEffect(() => {
     if (!user) return
-    api.myStats().then(setStats).catch(() => setStats({ listings: 0, views: 0, favorites: 0 }))
+    api.myStats()
+      .then((res) => { setStats(res); keepValue('profile-stats', res) })
+      .catch(() => setStats({ listings: 0, views: 0, favorites: 0 }))
   }, [user?.id])
 
   // Подборка «может быть интересно» — внизу профиля. Запрашиваем здесь,
@@ -64,7 +70,7 @@ export default function Profile() {
     api.forYou(i18n.language).then((r) => setForYou(r.items || [])).catch(() => {})
   }, [user?.id, i18n.language])
 
-  const [queues, setQueues] = useState(null)
+  const [queues, setQueues] = useState(() => readValue('profile-queues', null))
   // Подборка «может быть интересно» — внизу профиля: человек сюда
   // заходит между делом, и уходить ни с чем ему незачем.
   const [forYou, setForYou] = useState([])
@@ -72,7 +78,7 @@ export default function Profile() {
     if (!isStaff) { setQueues(null); return }
     let alive = true
     api.modCounters()
-      .then((res) => { if (alive) setQueues(res) })
+      .then((res) => { if (alive) { setQueues(res); keepValue('profile-queues', res) } })
       .catch(() => {})
     return () => { alive = false }
   }, [isStaff])

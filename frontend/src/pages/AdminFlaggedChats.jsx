@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useKeepPlace } from '../utils/keepPlace'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
@@ -15,6 +16,8 @@ import { AdminRowSkeletons } from '../components/Skeletons'
  * обычное дело, а то же самое в первом сообщении незнакомцу — уже нет.
  */
 export default function AdminFlaggedChats() {
+  // Возвращаемся туда, где человек оставил список.
+  useKeepPlace('admin-chats')
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()

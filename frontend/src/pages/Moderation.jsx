@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useKeepPlace } from '../utils/keepPlace'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, Link } from 'react-router-dom'
 import { api } from '../api/client'
@@ -35,6 +36,8 @@ const REASON_KEYS = [
 ]
 
 export default function Moderation() {
+  // Возвращаемся туда, где человек оставил список.
+  useKeepPlace('moderation')
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()

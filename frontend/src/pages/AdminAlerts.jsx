@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useKeepPlace } from '../utils/keepPlace'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
@@ -19,6 +20,8 @@ const LINKS = {
 }
 
 export default function AdminAlerts() {
+  // Возвращаемся туда, где человек оставил список.
+  useKeepPlace('admin-alerts')
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useKeepPlace } from '../utils/keepPlace'
 import { withoutRemoved } from '../utils/removedListings'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
@@ -51,6 +52,8 @@ const PROMO_ICONS = {
 }
 
 export default function MyListings() {
+  // Возвращаемся туда, где человек оставил список.
+  useKeepPlace('my-listings')
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()
