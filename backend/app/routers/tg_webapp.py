@@ -31,7 +31,7 @@ from app.core.database import get_db
 from app.models import User
 
 log = logging.getLogger(__name__)
-router = APIRouter(prefix="/tg", tags=["telegram-webapp"])
+router = APIRouter(prefix="/api/tg", tags=["telegram-webapp"])
 
 # Сколько живёт подпись. Сутки — с запасом на то, что человек открыл
 # окно, отвлёкся и вернулся; дольше держать незачем: Telegram выдаёт

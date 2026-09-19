@@ -133,7 +133,23 @@ export default function TgPost() {
   }
 
   if (!ready) {
-    return <div className="tg-page"><p className="empty-hint">{t('actions.loading')}</p></div>
+    // Ошибка входа показывалась строкой внутри формы, а форма при
+    // неудачном входе не рисуется вовсе — человек видел вечное
+    // «Загружаем…» и не понимал, что случилось.
+    return (
+      <div className="tg-page">
+        {error
+          ? (
+            <div className="tg-done">
+              <p className="tg-done-text">{t(`tg_post.err_${error}`, t('errors.generic'))}</p>
+              <button className="form-secondary" onClick={() => window.location.reload()}>
+                {t('actions.retry')}
+              </button>
+            </div>
+          )
+          : <p className="empty-hint">{t('actions.loading')}</p>}
+      </div>
+    )
   }
 
   return (

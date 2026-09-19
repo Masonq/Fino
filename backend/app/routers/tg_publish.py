@@ -32,7 +32,7 @@ from app.models import (
 )
 
 log = logging.getLogger(__name__)
-router = APIRouter(prefix="/tg", tags=["telegram-webapp"])
+router = APIRouter(prefix="/api/tg", tags=["telegram-webapp"])
 
 
 class PhotoIn(BaseModel):

@@ -182,7 +182,8 @@
     "clear": "Obriši",
     "close": "Zatvori",
     "copy": "Kopiraj",
-    "delete": "Obriši"
+    "delete": "Obriši",
+    "retry": "Pokušaj ponovo"
   },
   "post": {
     "step_params": "Detalji",
