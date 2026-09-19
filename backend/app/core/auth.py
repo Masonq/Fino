@@ -108,6 +108,11 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
     now = utcnow()
     if not user.last_seen_at or (now - user.last_seen_at).total_seconds() > 60:
         user.last_seen_at = now
+        # Человек пришёл — значит сводки по поискам читает. Счётчик
+        # неоткрытых обнуляем: иначе тот, кто заходит сам, через три
+        # дня перестал бы их получать.
+        if user.search_digest_ignored:
+            user.search_digest_ignored = 0
         db.commit()
 
     return user

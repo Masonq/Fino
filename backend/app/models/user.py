@@ -102,6 +102,10 @@ class User(Base):
     # объявлениям. Без этой отметки сводка уходила бы при каждом
     # запуске рассылки, а не раз в неделю.
     seller_digest_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    # Сколько утренних сводок по поискам подряд человек не открыл.
+    # Обнуляется, когда он заходит на сайт: молчание — тоже ответ, и
+    # после трёх неоткрытых мы перестаём слать.
+    search_digest_ignored: Mapped[int] = mapped_column(Integer, default=0)
     block_reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)

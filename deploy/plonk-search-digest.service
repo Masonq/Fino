@@ -1,0 +1,9 @@
+[Unit]
+Description=PLONK — утренняя сводка по сохранённым поискам
+After=network.target postgresql.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/fino/backend
+ExecStart=/opt/fino/backend/venv/bin/python3 -m app.core.search_digest
+User=root
