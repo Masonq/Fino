@@ -3951,9 +3951,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   /* Картинка 2:1, и по краям у неё предметы. Держим шапку такой
      высоты, чтобы они помещались целиком: при меньшей видна одна
      середина, то есть пустой фон. */
-  /* Половина ширины экрана — ровно пропорции картинки 2:1, так предметы
-     по краям видны целиком, а не одной серединой. */
-  min-height:50vw; display:flex; flex-direction:column; justify-content:flex-end;
+  /* Две трети ширины экрана — пропорции картинки 3:2. При меньшей
+     высоте браузер обрезает её по бокам, то есть ровно там, где стоят
+     предметы. */
+  min-height:66vw; display:flex; flex-direction:column; justify-content:flex-end;
   background-size:cover, cover; background-position:center, center; background-repeat:no-repeat, no-repeat;
 }
 .landing-hero::before{
