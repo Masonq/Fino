@@ -334,6 +334,24 @@ def _acceptable(proposed: str, original: str, sections: set[str]) -> bool:
         return False
     # Числа из оригинала — объём памяти, размер, год — должны остаться:
     # «iPhone 13 128gb» не может стать «iPhone, много памяти».
+    # Заглавные посреди фразы: «Два Корпуса ПК и Блок Питания». Так
+    # пишут заголовки по-английски, по-русски это чужеродно. Марки не в
+    # счёт: они пишутся заглавными по делу, но целиком («IKEA», «ПК»),
+    # а не первой буквой.
+    # Города и районы не в счёт: «Стол письменный, Нови Белград» —
+    # имя собственное, оно и пишется с заглавных.
+    from app.data.cities_data import _CITIES
+
+    places = {name.lower() for names in _CITIES.values() for name in names}
+    places |= {part for name in places for part in name.split()}
+
+    cyr_words = [w.strip(".,()") for w in body.split()[1:]]
+    cyr_words = [w for w in cyr_words if w and "а" <= w[0].lower() <= "я"]
+    capped = [w for w in cyr_words
+              if w[0].isupper() and not w.isupper() and w.lower() not in places]
+    if len(capped) >= 3:
+        return False
+
     if not set(re.findall(r"\d+", original or "")) >= set(re.findall(r"\d+", body)):
         # В новом заголовке появилось число, которого не было в старом.
         # Оно могло прийти из описания — это допустимо, но выдуманное
@@ -414,8 +432,8 @@ def run(limit: int | None, apply: bool, use_ai: bool = True,
                     "действие": "описание почищено",
                     "id": str(listing.id),
                     "заголовок": tr.title,
-                    "было": (tr.description or "").strip()[:400],
-                    "стало": cleaned[:400],
+                    "было": (tr.description or "").strip(),
+                    "стало": cleaned,
                 })
                 if apply:
                     tr.description = cleaned
@@ -569,10 +587,16 @@ def _write_report(path: str, counts: dict, rows: list[dict], apply: bool) -> Non
             lines += [f"| {_cell(r['было'])} | {_cell(r['стало'])} | {r['id'][:8]} |"
                       for r in chosen]
         else:
-            lines += ["| заголовок | убрали строк | id |", "| --- | --- | --- |"]
+            lines += ["| заголовок | убрали | id |", "| --- | --- | --- |"]
             for r in chosen:
-                dropped = len(r["было"].splitlines()) - len(r["стало"].splitlines())
-                lines.append(f"| {_cell(r['заголовок'])} | {dropped} | {r['id'][:8]} |")
+                # Считаем убранные знаки, а не строки: телефон вырезают
+                # посреди строки, и счёт по строкам показывал ноль —
+                # отчёт врал, будто ничего не изменилось.
+                dropped_lines = len(r["было"].splitlines()) - len(r["стало"].splitlines())
+                dropped_chars = len(r["было"]) - len(r["стало"])
+                what = (f"{dropped_lines} строк" if dropped_lines
+                        else f"{dropped_chars} знаков")
+                lines.append(f"| {_cell(r['заголовок'])} | {what} | {r['id'][:8]} |")
 
     out.write_text("\n".join(lines) + "\n", encoding="utf-8")
     log.info("отчёт: %s", out)
