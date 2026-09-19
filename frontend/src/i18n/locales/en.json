@@ -637,7 +637,6 @@
     "days": "{{count}} days",
     "in_feed": "Live",
     "added": "Added",
-    "added_own": "Of them own",
     "pending": "In review",
     "sellers": "Sellers",
     "new_people": "New people",
@@ -678,7 +677,10 @@
     "time_to_contact": "Median time to first contact",
     "sold_share": "Reached “sold”",
     "hours_one": "{{count}} hour",
-    "hours_other": "{{count}} hours"
+    "hours_other": "{{count}} hours",
+    "from_people": "Posted by people",
+    "added_total": "Added in total",
+    "added_total_hint": "including imported from chats"
   },
   "audit": {
     "title": "Action log",

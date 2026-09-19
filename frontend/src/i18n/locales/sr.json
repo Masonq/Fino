@@ -646,7 +646,6 @@
     "days": "{{count}} dana",
     "in_feed": "U ponudi",
     "added": "Dodato",
-    "added_own": "Od toga svoje",
     "pending": "Na proveri",
     "sellers": "Prodavaca",
     "new_people": "Novih ljudi",
@@ -688,7 +687,10 @@
     "sold_share": "Stiglo do „prodato“",
     "hours_one": "{{count}} sat",
     "hours_few": "{{count}} sata",
-    "hours_other": "{{count}} sati"
+    "hours_other": "{{count}} sati",
+    "from_people": "Objavili ljudi",
+    "added_total": "Ukupno dodato",
+    "added_total_hint": "uključujući preneto iz ćaskanja"
   },
   "audit": {
     "title": "Dnevnik radnji",

@@ -655,7 +655,6 @@
     "days": "{{count}} дней",
     "in_feed": "В ленте",
     "added": "Добавлено",
-    "added_own": "Из них своих",
     "pending": "На проверке",
     "sellers": "Продавцов",
     "new_people": "Новых людей",
@@ -698,7 +697,10 @@
     "hours_one": "{{count}} час",
     "hours_few": "{{count}} часа",
     "hours_many": "{{count}} часов",
-    "hours_other": "{{count}} часов"
+    "hours_other": "{{count}} часов",
+    "from_people": "Разместили люди",
+    "added_total": "Всего добавлено",
+    "added_total_hint": "вместе с перенесённым из чатов"
   },
   "audit": {
     "title": "Журнал действий",

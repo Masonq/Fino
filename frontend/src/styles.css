@@ -5587,3 +5587,10 @@ a.s-attrs{ display:block; }
 }
 .stats-row + .stats-row{ border-top:1px solid var(--border); }
 .stats-row b{ font-size:15px; font-weight:800; color:var(--ink); font-variant-numeric:tabular-nums; }
+
+/* Пояснение к строке показателя: мельче и тише самой подписи — оно
+   уточняет, а не спорит с ней за внимание. */
+.stats-row-hint{
+  display:block; margin-top:1px;
+  font-size:11px; font-weight:500; color:var(--muted); opacity:.8;
+}

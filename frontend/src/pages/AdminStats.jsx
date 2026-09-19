@@ -93,15 +93,21 @@ export default function AdminStats() {
 
               Подпись срока стоит у того числа, которое от срока
               зависит: «320» без «за 14 дней» ничего не значит. */}
+          {/* Главные два числа — лента и то, сколько принесли живые
+              люди.
+              Прежде наверху стояло «Добавлено», но в него входит и то,
+              что перенесено из чатов: цифра выглядит бодро, а растёт
+              от работы конвейера, а не от людей. Сколько разместили
+              сами — единственное, что говорит, живёт ли площадка. */}
           <div className="stats-hero">
             <div className="stats-hero-item">
               <div className="stats-hero-value">{data.listings.active}</div>
               <div className="stats-hero-label">{t('stats.in_feed')}</div>
             </div>
             <div className="stats-hero-item">
-              <div className="stats-hero-value accent">+{data.listings.fresh}</div>
+              <div className="stats-hero-value accent">+{data.listings.fresh_own}</div>
               <div className="stats-hero-label">
-                {t('stats.added')}
+                {t('stats.from_people')}
                 <span className="stats-period">{t('stats.days', { count: days })}</span>
               </div>
             </div>
@@ -109,8 +115,11 @@ export default function AdminStats() {
 
           <div className="stats-rows">
             <div className="stats-row">
-              <span>{t('stats.added_own')}</span>
-              <b>{data.listings.fresh_own}</b>
+              <span>
+                {t('stats.added_total')}
+                <span className="stats-row-hint">{t('stats.added_total_hint')}</span>
+              </span>
+              <b>+{data.listings.fresh}</b>
             </div>
             <div className="stats-row">
               <span>{t('stats.pending')}</span>
