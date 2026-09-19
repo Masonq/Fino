@@ -1,4 +1,5 @@
 import uuid
+from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func
@@ -6,6 +7,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field, field_validator
 
 from app.core.auth import get_current_user, get_current_user_optional
+from app.core.clock import utcnow
 from app.core.database import get_db
 from app.core.names import clean_display_name, is_unusable_name
 from app.models import User, UserRole, Language, BlockedUser, SellerSubscription, Listing, ListingStatus, Favorite
@@ -292,8 +294,40 @@ def my_stats(
                        ReviewInvite.dismissed.is_(False))
                .scalar() or 0)
 
+    # Поводы вернуться — то, что человек иначе не заметит.
+    #
+    # Объявление на проверке (не понимает, почему его не видно),
+    # отклонённое (не знает, что надо поправить), скоро снимут (ещё
+    # можно продлить) и неотвеченное обращение в поддержку. Каждое из
+    # них уже есть в базе, но нигде не показывается, пока человек сам
+    # не откроет нужный экран.
+    from app.models import Ticket, TicketStatus
+
+    pending = (db.query(func.count(Listing.id))
+               .filter(Listing.owner_id == user.id,
+                       Listing.status == ListingStatus.pending_moderation)
+               .scalar() or 0)
+    rejected = (db.query(func.count(Listing.id))
+                .filter(Listing.owner_id == user.id,
+                        Listing.status == ListingStatus.rejected)
+                .scalar() or 0)
+    expiring = (db.query(func.count(Listing.id))
+                .filter(Listing.owner_id == user.id,
+                        Listing.status == ListingStatus.active,
+                        Listing.expires_at.isnot(None),
+                        Listing.expires_at <= utcnow() + timedelta(days=7))
+                .scalar() or 0)
+    support_answered = (db.query(func.count(Ticket.id))
+                        .filter(Ticket.user_id == user.id,
+                                Ticket.status == TicketStatus.answered)
+                        .scalar() or 0)
+
     return {
         "listings": len(ids),
+        "listings_pending": int(pending),
+        "listings_rejected": int(rejected),
+        "listings_expiring": int(expiring),
+        "support_answered": int(support_answered),
         "views": int(sum((row[1] or 0) for row in active)),
         "favorites": int(favorites or 0),
         "reviews_waiting": int(waiting),

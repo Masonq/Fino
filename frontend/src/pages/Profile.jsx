@@ -100,6 +100,17 @@ export default function Profile() {
     })
     : null
 
+  // Собираем в том порядке, в каком с этим стоит разбираться:
+  // отклонённое чинить прямо сейчас, ответ поддержки прочитать,
+  // истекающее продлить, а про то, что «на проверке», достаточно
+  // знать, что оно не потерялось.
+  const attention = [
+    stats?.listings_rejected > 0 && { key: 'rejected', count: stats.listings_rejected, to: '/my?tab=rejected' },
+    stats?.support_answered > 0 && { key: 'support', count: stats.support_answered, to: '/support' },
+    stats?.listings_expiring > 0 && { key: 'expiring', count: stats.listings_expiring, to: '/my' },
+    stats?.listings_pending > 0 && { key: 'pending', count: stats.listings_pending, to: '/my?tab=pending' },
+  ].filter(Boolean)
+
   const initial = ((user.company_name || user.display_name) || '?').trim().charAt(0).toUpperCase()
   const isCompany = user.role === 'seller_business'
 
@@ -169,6 +180,24 @@ export default function Profile() {
               </Link>
             )}
           </div>
+
+          {/* Что требует внимания.
+              Объявление на проверке, отклонённое, скоро снимут,
+              ответ поддержки — всё это уже есть в базе, но человек
+              узнаёт о нём, только если сам откроет нужный экран.
+              Строка появляется, лишь когда есть о чём сказать: висеть
+              каждый день ей незачем. */}
+          {attention.length > 0 && (
+            <div className="profile-attention">
+              {attention.map((item) => (
+                <Link key={item.key} to={item.to} className="attention-row">
+                  <span className="attention-dot" aria-hidden="true" />
+                  <span>{t(`profile.att_${item.key}`, { count: item.count })}</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+                </Link>
+              ))}
+            </div>
+          )}
 
           {/* Три цифры о своих объявлениях — то, ради чего продавец
               заходит в профиль: живо ли, смотрят ли, сохраняют ли. Пока

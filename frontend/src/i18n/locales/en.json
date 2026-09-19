@@ -898,7 +898,15 @@
     "f_bot": "Bot",
     "person": "Private seller",
     "member_since": "Here since {{date}}",
-    "verify_cta": "Verify identity"
+    "verify_cta": "Verify identity",
+    "att_rejected_one": "{{count}} listing rejected — see what to fix",
+    "att_rejected_other": "{{count}} listings rejected — see what to fix",
+    "att_support_one": "Support replied to your request",
+    "att_support_other": "Support replied to {{count}} requests",
+    "att_expiring_one": "{{count}} listing expires soon — you can extend it",
+    "att_expiring_other": "{{count}} listings expire soon — you can extend them",
+    "att_pending_one": "{{count}} listing is being checked",
+    "att_pending_other": "{{count}} listings are being checked"
   },
   "verify": {
     "title": "Identity verification",

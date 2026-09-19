@@ -909,7 +909,18 @@
     "f_bot": "Bot",
     "person": "Privatno lice",
     "member_since": "Ovde od {{date}}",
-    "verify_cta": "Potvrdi identitet"
+    "verify_cta": "Potvrdi identitet",
+    "att_rejected_one": "{{count}} oglas odbijen — pogledajte šta da ispravite",
+    "att_rejected_few": "{{count}} oglasa odbijeno — pogledajte šta da ispravite",
+    "att_rejected_other": "{{count}} oglasa odbijeno — pogledajte šta da ispravite",
+    "att_support_one": "Podrška je odgovorila na vaš zahtev",
+    "att_support_other": "Podrška je odgovorila na {{count}} zahteva",
+    "att_expiring_one": "{{count}} oglas uskoro skidamo — možete produžiti",
+    "att_expiring_few": "{{count}} oglasa uskoro skidamo — možete produžiti",
+    "att_expiring_other": "{{count}} oglasa uskoro skidamo — možete produžiti",
+    "att_pending_one": "{{count}} oglas je na proveri",
+    "att_pending_few": "{{count}} oglasa su na proveri",
+    "att_pending_other": "{{count}} oglasa je na proveri"
   },
   "verify": {
     "title": "Provera dokumenta",
