@@ -75,6 +75,85 @@ _GENERIC = frozenset("""
 """.split())
 
 
+# Цена в заголовке. У Avito это прямой отказ: цена живёт в своём поле,
+# а в названии занимает место и устаревает первой. «Куртка 3000 динар»,
+# «- 4000 за все», «2000 rsd».
+_PRICE_IN_TITLE_RE = re.compile(
+    r"[\s\-—,:(]*\b\d[\d\s.,\u00a0]*\s*"
+    r"(€|\$|eur|евро|rsd|рсд|дин\w*|din\w*|руб\w*|₽)"
+    r"(\s*за\s+(все|всё|штуку|шт\.?))?[\s)]*", re.I)
+_PRICE_TAIL_RE = re.compile(r"[\s\-—,:(]*\b\d[\d\s.,\u00a0]*\s*за\s+(все|всё)\b[\s)]*", re.I)
+
+# Ник или ссылка в заголовке: «Платье @shopbelgrade», «t.me/...».
+_CONTACT_RE = re.compile(r"(@[a-zA-Z0-9_]{3,}|t\.me/\S+|https?://\S+)")
+
+
+def _tidy(title: str | None) -> str:
+    """
+    Прибирает заголовок, не переписывая его.
+
+    Убирает то, что по правилам досок в названии не место: цену, ник
+    продавца, ссылку, задвоенные пробелы и знаки на концах. Часто
+    после этого заголовок становится годным — и объявление не надо
+    снимать, достаточно поправить. Это и делает Avito: отклоняет с
+    причиной, а не выбрасывает.
+    """
+    body = (title or "").strip()
+    body = _CONTACT_RE.sub(" ", body)
+    body = _PRICE_IN_TITLE_RE.sub(" ", body)
+    body = _PRICE_TAIL_RE.sub(" ", body)
+    # Знаки препинания подряд — «Стол,, новый!!» — и хвосты по краям.
+    body = re.sub(r"\s{2,}", " ", body)
+    body = re.sub(r"([,.!?;:—-])\1+", r"\1", body)
+    return body.strip(" ,.;:-—|/\\").strip()
+
+
+def _why(title: str | None, sections: set[str]) -> str:
+    """
+    Коротко, за что сняли. Нужно для отчёта: список из двух сотен
+    заголовков без причин проверять невозможно — непонятно, правило
+    сработало по делу или промахнулось.
+    """
+    body = (title or "").strip()
+    if _is_section_name(body, sections):
+        return "название раздела"
+    if "#" in body:
+        return "хэштеги"
+    if _PHONE_RE.search(body):
+        return "телефон"
+    if _SHOUT_RE.search(body):
+        return "крик"
+    if len(_EMOJI_RE.findall(body)) > 1:
+        return "значки"
+
+    words = [w.strip(".,!?()«»\"'—-").lower() for w in body.split()]
+    words = [w for w in words if w]
+    meaningful = [w for w in words if w not in _EMPTY_WORDS]
+    if len(meaningful) < 2:
+        return "нет названия вещи"
+    if all(w in _GENERIC for w in meaningful) or (
+            meaningful[0] in _GENERIC and len(meaningful) < 3):
+        return "родовое слово"
+    if len(words) - len(meaningful) >= len(words) / 2:
+        return "одни зазывалки"
+    wordy = [w for w in words if len(w) > 2 and not any(c.isdigit() for c in w)
+             and w not in {"gb", "tb", "ssd", "hdd"}]
+    if len(wordy) > 10 or len(body) > 110:
+        return "слишком длинный"
+    return "обрывок фразы"
+
+
+def _is_section_name(title: str, sections: set[str]) -> bool:
+    """
+    Заголовок — название раздела, а не вещи.
+
+    «Электроника», «Мебель», «Обувь», «Книги»: человек искал телевизор,
+    а получил слово из меню. У Avito это отдельная причина отказа —
+    «слишком общий термин».
+    """
+    return title.strip().lower() in sections
+
+
 def _clear(title: str | None) -> bool:
     from app.routers.listings import title_is_clear
 
@@ -194,6 +273,10 @@ def run(limit: int | None, apply: bool, use_ai: bool = True,
     # проверить решение глазами и вернуть лишнее.
     report: list[dict] = []
     try:
+        from app.core.retitle import _section_names
+
+        sections = _section_names(db)
+
         query = (db.query(Listing)
                  .filter(Listing.status == ListingStatus.active)
                  .order_by(Listing.published_at.desc().nullslast()))
@@ -227,7 +310,25 @@ def run(limit: int | None, apply: bool, use_ai: bool = True,
                     tr.description = cleaned
 
             # 2. Заголовок
-            if _clear(tr.title):
+            #
+            # Сперва прибираем: убираем цену, ник и лишние знаки. Часто
+            # после этого заголовок годен, и снимать объявление не надо —
+            # достаточно поправить, как поступает с такими Avito.
+            tidy = _tidy(tr.title)
+            if tidy and tidy != (tr.title or "").strip() and _clear(tidy) \
+                    and not _is_section_name(tidy, sections):
+                counts["заголовков переписано"] += 1
+                report.append({
+                    "действие": "заголовок переписан",
+                    "id": str(listing.id),
+                    "было": tr.title,
+                    "стало": tidy,
+                })
+                if apply:
+                    tr.title = tidy[:255]
+                continue
+
+            if _clear(tr.title) and not _is_section_name(tr.title, sections):
                 continue
 
             # Запас мог кончиться посреди прохода: дальше идём по
@@ -263,6 +364,7 @@ def run(limit: int | None, apply: bool, use_ai: bool = True,
                 "действие": "снято",
                 "id": str(listing.id),
                 "заголовок": tr.title,
+                "почему": _why(tr.title, sections),
                 "раздел": listing.category.slug if listing.category else None,
                 "источник": listing.external_source or "сайт",
             })
@@ -320,9 +422,10 @@ def _write_report(path: str, counts: dict, rows: list[dict], apply: bool) -> Non
             continue
         lines += ["", f"## {title} ({len(chosen)})", ""]
         if action == "снято":
-            lines += ["| заголовок | раздел | источник | id |", "| --- | --- | --- | --- |"]
-            lines += [f"| {_cell(r['заголовок'])} | {r['раздел'] or ''} | "
-                      f"{r['источник']} | {r['id'][:8]} |" for r in chosen]
+            lines += ["| заголовок | почему сняли | раздел | источник |",
+                      "| --- | --- | --- | --- |"]
+            lines += [f"| {_cell(r['заголовок'])} | {r.get('почему', '')} | "
+                      f"{r['раздел'] or ''} | {r['источник']} |" for r in chosen]
         elif action == "заголовок переписан":
             lines += ["| было | стало | id |", "| --- | --- | --- |"]
             lines += [f"| {_cell(r['было'])} | {_cell(r['стало'])} | {r['id'][:8]} |"
