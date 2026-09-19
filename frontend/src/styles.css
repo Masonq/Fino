@@ -5199,7 +5199,9 @@ a.s-attrs{ display:block; }
 .invite-hero{
   padding:8px 20px 24px; text-align:center;
 }
-.invite-hero img{ width:100%; max-width:280px; height:auto; display:block; margin:0 auto 14px; }
+/* Картинка крупнее: она и есть настроение страницы, ради неё
+   человек дочитывает до условий. */
+.invite-hero img{ width:100%; max-width:320px; height:auto; display:block; margin:0 auto 10px; }
 .invite-hero h1{ font-size:24px; font-weight:800; letter-spacing:-0.02em; margin:0 0 8px; }
 .invite-hero p{ font-size:14.5px; color:var(--muted); font-weight:600; line-height:1.45; margin:0; }
 
@@ -5208,7 +5210,7 @@ a.s-attrs{ display:block; }
   display:flex; align-items:center; gap:14px;
   padding:14px; border-radius:16px; background:var(--surface); box-shadow:var(--shadow);
 }
-.invite-card img{ width:56px; height:56px; flex-shrink:0; object-fit:contain; }
+.invite-card img{ width:64px; height:64px; flex-shrink:0; object-fit:contain; }
 .invite-card-text{ flex:1; min-width:0; }
 .invite-card-title{ font-size:13px; font-weight:700; color:var(--muted); }
 .invite-card-sub{ margin-top:2px; font-size:14.5px; font-weight:700; line-height:1.35; }
