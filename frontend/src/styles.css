@@ -4679,4 +4679,15 @@ a.s-attrs{ display:block; }
 .verify-line.ok{ color:var(--primary-deep); }
 .verify-line.wait{ color:var(--warn-ink); }
 .verify-line.bad{ display:block; color:var(--danger-ink); }
-.field-chips{ display:flex; flex-wrap:wrap; gap:7px; padding-top:2px; }
+/* Чипы внутри карточки. Стили фильтров живут под .admin-filters, и без
+   своих правил эти кнопки рисовались просто синим текстом — как
+   ссылки, а не как выбор. */
+.field-chips{ display:flex; flex-wrap:wrap; gap:8px; padding:4px 0 2px; }
+.field-chips .chip{
+  padding:9px 14px; border-radius:999px; border:1px solid var(--border-strong);
+  background:var(--surface); color:var(--ink-soft);
+  font-size:14px; font-weight:700; line-height:1;
+}
+.field-chips .chip-active{
+  background:var(--primary); border-color:var(--primary); color:#fff;
+}
