@@ -5270,7 +5270,13 @@ a.s-attrs{ display:block; }
 .invite-bottom .form-save{ width:100%; margin:0; }
 
 /* ===== плонки ===== */
-.plonk{ display:inline-flex; align-items:center; gap:.28em; white-space:nowrap; }
-/* Значок ростом с цифры, а не с прописную букву: вровень с текстом он
-   выглядит частью числа, а не приклеенной картинкой. */
-.plonk-icon{ width:.92em; height:.92em; flex-shrink:0; }
+.plonk{ display:inline-flex; align-items:baseline; gap:.3em; white-space:nowrap; }
+/* Выравниваем по базовой линии цифр, а не по середине строки: у цифр
+   нет ни выносных элементов вверх, ни хвостов вниз, и их оптический
+   центр выше середины строки — монета, поставленная по центру,
+   смотрелась осевшей. Подъём в четыре сотых кегля ставит её ровно
+   между верхом и низом цифр. */
+.plonk-icon{
+  width:1.02em; height:1.02em; flex-shrink:0;
+  align-self:baseline; transform:translateY(.25em);
+}
