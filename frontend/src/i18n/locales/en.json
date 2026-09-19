@@ -75,7 +75,15 @@
     "all_in_category": "All",
     "recent": "Recent searches",
     "open_filters": "All results and filters",
-    "sort_relevance": "Relevance"
+    "sort_relevance": "Relevance",
+    "hints": [
+      "Find a fridge",
+      "Find an apartment",
+      "Find a bike",
+      "Find a job",
+      "Find a stroller",
+      "Find free stuff"
+    ]
   },
   "chat": {
     "empty": "No messages yet — say hello",
@@ -881,7 +889,10 @@
     "f_terms": "Terms",
     "f_privacy": "Privacy",
     "f_chat": "Telegram chat",
-    "f_bot": "Bot"
+    "f_bot": "Bot",
+    "person": "Private seller",
+    "member_since": "Here since {{date}}",
+    "verify_cta": "Verify identity"
   },
   "verify": {
     "title": "Identity verification",

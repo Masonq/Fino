@@ -75,7 +75,15 @@
     "all_in_category": "Sve",
     "recent": "Nedavne pretrage",
     "open_filters": "Svi rezultati i filteri",
-    "sort_relevance": "Relevantnost"
+    "sort_relevance": "Relevantnost",
+    "hints": [
+      "Pronađi frižider",
+      "Pronađi stan",
+      "Pronađi bicikl",
+      "Pronađi posao",
+      "Pronađi kolica",
+      "Pronađi besplatno"
+    ]
   },
   "chat": {
     "empty": "Još nema poruka — započnite razgovor",
@@ -892,7 +900,10 @@
     "f_terms": "Uslovi",
     "f_privacy": "Privatnost",
     "f_chat": "Telegram ćaskanje",
-    "f_bot": "Bot"
+    "f_bot": "Bot",
+    "person": "Privatno lice",
+    "member_since": "Ovde od {{date}}",
+    "verify_cta": "Potvrdi identitet"
   },
   "verify": {
     "title": "Provera dokumenta",

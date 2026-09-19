@@ -92,6 +92,14 @@ export default function Profile() {
     )
   }
 
+  // «Здесь с сентября 2026» — короткая строка доверия: сколько человек
+  // на площадке. У новичка она честно короткая, и это тоже сигнал.
+  const memberSince = user?.created_at
+    ? t('profile.member_since', {
+      date: new Date(user.created_at + 'Z').toLocaleDateString(i18n.language, { month: 'long', year: 'numeric' }),
+    })
+    : null
+
   const initial = ((user.company_name || user.display_name) || '?').trim().charAt(0).toUpperCase()
   const isCompany = user.role === 'seller_business'
 
@@ -118,42 +126,48 @@ export default function Profile() {
           className={`profile-sidebar${sidebar.className}`}
           style={sidebar.style}
         >
-          <div className="profile-head-card">
-            {/* Шапка без картинки и без карточки — аватар и имя прямо на
-                фоне страницы, как в шапке главной. Зелёная плашка с
-                пузырями спорила с остальным сайтом и старила его.
-                Карандаш справа — редактирование, вместо отдельной
-                строки-кнопки под шапкой. */}
-            <div className="profile-head">
-              <Avatar
-                src={user.avatar_url}
-                name={initial}
-                className={isCompany ? 'profile-avatar is-company' : 'profile-avatar'}
-              />
-              <div className="profile-info">
-                <div className="profile-name">{user.company_name || user.display_name}</div>
-                {isCompany && <div className="seller-badge">{t('seller.company_badge')}</div>}
-                {user.email && (
-                  <div className="profile-contact">
-                    <ContactEmail value={user.email} />
-                  </div>
-                )}
-                {user.phone && <div className="profile-contact">{user.phone}</div>}
-                {/* Рейтинг — то, по чему покупатель судит о продавце. Прятать
-                    его от самого продавца странно: он должен видеть, как
-                    выглядит со стороны. */}
-                <div className="profile-rating">
-                  {user.rating_count
-                    ? t('edit_profile.rating', {
-                      value: user.rating_avg, count: user.rating_count,
-                    })
-                    : t('edit_profile.no_rating')}
-                </div>
-              </div>
-              <Link className="profile-edit-btn" to="/profile/edit" aria-label={t('edit_profile.edit')}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
-              </Link>
+          {/* Шапка карточкой, как у Avito в «Управлении профилем»:
+              аватар, имя, а под ним то, по чему покупатель судит о
+              продавце — сколько он здесь, частное лицо или компания,
+              рейтинг. Раньше это висело прямо на фоне страницы и
+              читалось как случайный набор строк.
+
+              Тут же кнопка проверки личности: непроверенному она
+              говорит, что делать, проверенному — показывает отметку,
+              которую видят покупатели. */}
+          <div className="profile-card">
+            <Link className="profile-card-edit" to="/profile/edit" aria-label={t('edit_profile.edit')}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+            </Link>
+
+            <Avatar
+              src={user.avatar_url}
+              name={initial}
+              className={isCompany ? 'profile-avatar is-company' : 'profile-avatar'}
+            />
+
+            <div className="profile-card-name">{user.company_name || user.display_name}</div>
+            <div className="profile-card-meta">
+              {memberSince && <span>{memberSince}</span>}
+              <span>{isCompany ? t('seller.company_badge') : t('profile.person')}</span>
             </div>
+            <div className="profile-card-meta">
+              {user.rating_count
+                ? t('edit_profile.rating', { value: user.rating_avg, count: user.rating_count })
+                : t('edit_profile.no_rating')}
+            </div>
+
+            {user.document_verified ? (
+              <div className="profile-verified">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M20 6 9 17l-5-5" /></svg>
+                {t('verify.verified')}
+              </div>
+            ) : (
+              <Link className="profile-verify-btn" to="/profile/edit">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 2.5 4.5 5.5v6c0 5 3.2 8 7.5 10 4.3-2 7.5-5 7.5-10v-6L12 2.5Z" /><path d="m9 12 2 2 4-4" /></svg>
+                {t('profile.verify_cta')}
+              </Link>
+            )}
           </div>
 
           {/* Три цифры о своих объявлениях — то, ради чего продавец
