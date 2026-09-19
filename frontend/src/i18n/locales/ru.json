@@ -734,7 +734,11 @@
     },
     "kind_staff": "Сотрудники",
     "kind_system": "Служебные",
-    "by_system": "Автоматически"
+    "by_system": "Автоматически",
+    "found_one": "{{count}} запись",
+    "found_few": "{{count}} записи",
+    "found_many": "{{count}} записей",
+    "found_other": "{{count}} записей"
   },
   "support": {
     "title": "Написать в поддержку",

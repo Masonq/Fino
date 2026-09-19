@@ -5402,3 +5402,72 @@ a.s-attrs{ display:block; }
   font-size:12px; font-weight:600; color:var(--muted);
 }
 .job-runs{ margin-top:8px; font-size:11.5px; font-weight:600; color:var(--muted); }
+
+/* ===== журнал действий: плотный список вместо карточек =====
+   Было: каждая запись — карточка с воздухом, датой в углу и именем
+   сотрудника под действием. Десять решений подряд давали десять
+   одинаковых «Maksim Kolesnikov» и десять «18.09» — читался не
+   журнал, а повторы, и на экран помещалось шесть строк.
+
+   Стало: дата один раз над днём, время колонкой слева, имя только
+   когда сменилось. На экран помещается вдвое больше, и взгляд идёт
+   сверху вниз по времени, как в любом журнале. */
+.audit-days{ padding:0 0 20px; }
+.audit-day + .audit-day{ margin-top:18px; }
+.audit-day-title{
+  position:sticky; top:52px; z-index:9;
+  padding:8px 16px 6px; margin:0;
+  background:rgba(250,250,249,.94);
+  backdrop-filter:saturate(1.4) blur(10px);
+  -webkit-backdrop-filter:saturate(1.4) blur(10px);
+  font-size:12px; font-weight:800; color:var(--muted);
+  text-transform:uppercase; letter-spacing:.04em;
+}
+.audit-line{
+  display:flex; align-items:flex-start; gap:12px;
+  padding:9px 16px; text-decoration:none; color:var(--ink);
+  border-bottom:1px solid var(--border);
+}
+.audit-line:last-child{ border-bottom:none; }
+/* Время моноширинным: колонка не пляшет от ширины цифр. */
+.audit-at{
+  flex-shrink:0; width:42px; padding-top:1px;
+  font-size:12.5px; font-weight:700; color:var(--muted);
+  font-variant-numeric:tabular-nums;
+}
+.audit-body{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+.audit-what{ font-size:14px; font-weight:600; line-height:1.35; }
+.audit-what b{ font-weight:700; }
+.audit-sub{ display:flex; flex-wrap:wrap; gap:6px; font-size:12px; line-height:1.35; }
+.audit-who{ font-weight:700; color:var(--muted); }
+.audit-why{ color:var(--muted); font-weight:500; }
+.audit-go{ width:16px; height:16px; flex-shrink:0; color:var(--border-strong); margin-top:3px; }
+
+/* Полоса поиска и отборов в админке. Раньше поле, вкладки и фишки шли
+   тремя рядами и занимали треть экрана — до самого журнала надо было
+   прокручивать. */
+.admin-bar{ padding:0 14px 10px; }
+.admin-bar-search{ background:var(--surface); box-shadow:0 1px 3px rgba(16,24,40,.08); }
+.admin-chips{
+  display:flex; gap:7px; margin-top:9px; overflow-x:auto;
+  -webkit-overflow-scrolling:touch; padding-bottom:2px;
+}
+.admin-chips::-webkit-scrollbar{ display:none; }
+/* Вид фишек задаём здесь: общего правила .chip в файле нет, оно
+   живёт внутри .field-chips — и без него кнопки выглядели простым
+   текстом, по которому непонятно, что можно нажать. */
+.admin-chips .chip{
+  flex-shrink:0; display:inline-flex; align-items:center;
+  padding:7px 13px; border-radius:10px;
+  border:1px solid var(--border-strong); background:var(--surface);
+  color:var(--ink); font-size:12.5px; font-weight:700; line-height:1;
+}
+.admin-chips .chip-active{
+  background:var(--primary); border-color:var(--primary); color:#fff;
+}
+/* Разделитель между «кто» и «над чем»: это два разных вопроса, и без
+   черты они читаются как один длинный ряд. */
+.admin-chips-sep{
+  flex-shrink:0; width:1px; align-self:stretch; margin:2px 3px;
+  background:var(--border-strong);
+}

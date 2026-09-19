@@ -714,7 +714,9 @@
     },
     "kind_staff": "Staff",
     "kind_system": "System",
-    "by_system": "Automatic"
+    "by_system": "Automatic",
+    "found_one": "{{count}} entry",
+    "found_other": "{{count}} entries"
   },
   "support": {
     "title": "Contact support",

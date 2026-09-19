@@ -724,7 +724,10 @@
     },
     "kind_staff": "Osoblje",
     "kind_system": "Sistemske",
-    "by_system": "Automatski"
+    "by_system": "Automatski",
+    "found_one": "{{count}} zapis",
+    "found_few": "{{count}} zapisa",
+    "found_other": "{{count}} zapisa"
   },
   "support": {
     "title": "Pišite podršci",

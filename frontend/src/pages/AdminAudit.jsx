@@ -33,6 +33,32 @@ function when(iso, locale) {
     })
 }
 
+// Время без даты: дата написана один раз над днём.
+function timeOnly(iso, lang) {
+  try {
+    return new Date(iso).toLocaleTimeString(lang || 'ru', { hour: '2-digit', minute: '2-digit' })
+  } catch { return '' }
+}
+
+// Записи по дням: «Сегодня», «Вчера», дальше числом. Человек ищет в
+// журнале «что было вчера», а не «что было восемнадцатого».
+function groupByDay(items, lang) {
+  const days = new Map()
+  const today = new Date().toDateString()
+  const yesterday = new Date(Date.now() - 86400000).toDateString()
+
+  for (const row of items) {
+    const date = new Date(row.created_at)
+    const key = date.toDateString()
+    const title = key === today ? 'Сегодня'
+      : key === yesterday ? 'Вчера'
+        : date.toLocaleDateString(lang || 'ru', { day: 'numeric', month: 'long' })
+    if (!days.has(title)) days.set(title, [])
+    days.get(title).push(row)
+  }
+  return [...days.entries()]
+}
+
 export default function AdminAudit() {
   // Возвращаемся туда, где человек оставил список.
   useKeepPlace('admin-audit')
@@ -116,33 +142,47 @@ export default function AdminAudit() {
 
   return (
     <div className="page admin-audit">
-      <PageHeader title={t('audit.title')} subtitle={loaded ? `${total}` : null} />
-
-      <input
-        className="admin-search"
-        value={actor}
-        onChange={(e) => setActor(e.target.value)}
-        placeholder={t('audit.who')}
+      <PageHeader
+        title={t('audit.title')}
+        subtitle={loaded ? t('audit.found', { count: total }) : null}
       />
 
-      <div className="my-tabs">
-        {KINDS.map((k) => (
-          <button key={k} className={kind === k ? 'my-tab active' : 'my-tab'} onClick={() => setKind(k)}>
-            {t(`audit.kind_${k}`)}
-          </button>
-        ))}
-      </div>
+      {/* Поиск и отборы одной полосой. Раньше это были три ряда
+          подряд: голое поле без рамки, ряд вкладок и ряд фишек — они
+          занимали треть экрана, и до самого журнала приходилось
+          прокручивать. */}
+      <div className="admin-bar">
+        <div className="search-field admin-bar-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+          <input
+            value={actor}
+            onChange={(e) => setActor(e.target.value)}
+            placeholder={t('audit.who')}
+          />
+          {actor && (
+            <button className="search-clear" onClick={() => setActor('')} aria-label={t('actions.clear')}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M18 6 6 18M6 6l12 12" /></svg>
+            </button>
+          )}
+        </div>
 
-      <div className="admin-filters">
-        {FILTERS.map((f) => (
-          <button
-            key={f.key || 'all'}
-            className={`chip ${filter === f.key ? 'chip-active' : ''}`}
-            onClick={() => setFilter(f.key)}
-          >
-            {t(f.label)}
-          </button>
-        ))}
+        <div className="admin-chips">
+          {KINDS.map((k) => (
+            <button key={k} className={kind === k ? 'chip chip-active' : 'chip'} onClick={() => setKind(k)}>
+              {t(`audit.kind_${k}`)}
+            </button>
+          ))}
+          <span className="admin-chips-sep" />
+          {FILTERS.map((f) => (
+            <button
+              key={f.key || 'all'}
+              className={`chip ${filter === f.key ? 'chip-active' : ''}`}
+              onClick={() => setFilter(f.key)}
+            >
+              {t(f.label)}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Кто что решил — построчный журнал при нескольких модераторах
@@ -171,34 +211,51 @@ export default function AdminAudit() {
       {!loaded && <div className="audit-list"><AuditRowSkeletons count={6} /></div>}
       {loaded && !items.length && <p className="empty">{t('audit.empty')}</p>}
 
-      <div className="audit-list">
-        {items.map((row) => {
-          // Каждая запись — про что-то конкретное: объявление или
-          // человека. Раньше по ней нельзя было перейти, и проверить
-          // решение значило искать объявление руками.
-          const to = row.target_type === 'listing' ? `/go/${row.target_id}`
-            : row.target_type === 'user' ? `/admin/users/${row.target_id}` : null
-          const Row = to ? Link : 'div'
-          return (
-          <Row key={row.id} className="audit-row" {...(to ? { to } : {})}>
-            <div className="audit-head">
-              <span className="audit-action">{t(`audit.act.${row.action}`, row.action)}</span>
-              <span className="audit-time">{when(row.created_at, i18n.language)}</span>
-            </div>
-            <div className="audit-meta">
-              {row.actor_id ? row.actor : t('audit.by_system')}
-              {row.details?.about ? ` → ${row.details.about}` : ''}
-              {row.details?.was && row.details?.became
-                ? ` · ${row.details.was} → ${row.details.became}`
-                : ''}
-              {row.details?.hidden_listings
-                ? ` · ${t('audit.hidden', { count: row.details.hidden_listings })}`
-                : ''}
-            </div>
-            {row.reason && <div className="audit-reason">{row.reason}</div>}
-          </Row>
-          )
-        })}
+      {/* Записи сгруппированы по дням, а время стоит слева столбцом.
+          Раньше каждая запись была карточкой с датой в углу и именем
+          сотрудника под действием — при десятке записей подряд от
+          одного человека это десять одинаковых строк «Maksim
+          Kolesnikov» и десять раз «18.09». Читать приходилось не
+          журнал, а повторы.
+
+          Теперь дата стоит один раз над днём, имя — только когда оно
+          меняется, а взгляд идёт по колонке времени сверху вниз, как
+          в любом журнале. */}
+      <div className="audit-days">
+        {groupByDay(items, i18n.language).map(([day, rows]) => (
+          <div className="audit-day" key={day}>
+            <div className="audit-day-title">{day}</div>
+            {rows.map((row, index) => {
+              const to = row.target_type === 'listing' ? `/go/${row.target_id}`
+                : row.target_type === 'user' ? `/admin/users/${row.target_id}` : null
+              const Row = to ? Link : 'div'
+              const who = row.actor_id ? row.actor : t('audit.by_system')
+              // Имя показываем, только когда оно сменилось: подряд
+              // идущие решения одного человека и так его.
+              const sameAsPrev = index > 0 && (rows[index - 1].actor || '') === (row.actor || '')
+              return (
+                <Row key={row.id} className="audit-line" {...(to ? { to } : {})}>
+                  <span className="audit-at">{timeOnly(row.created_at, i18n.language)}</span>
+                  <span className="audit-body">
+                    <span className="audit-what">
+                      {t(`audit.act.${row.action}`, row.action)}
+                      {row.details?.about ? <b> {row.details.about}</b> : null}
+                    </span>
+                    {(row.reason || !sameAsPrev) && (
+                      <span className="audit-sub">
+                        {!sameAsPrev && <span className="audit-who">{who}</span>}
+                        {row.reason && <span className="audit-why">{row.reason}</span>}
+                      </span>
+                    )}
+                  </span>
+                  {to && (
+                    <svg className="audit-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+                  )}
+                </Row>
+              )
+            })}
+          </div>
+        ))}
       </div>
     </div>
   )
