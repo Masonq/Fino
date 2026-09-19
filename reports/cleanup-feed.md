@@ -1,4 +1,4 @@
-# Уборка ленты — 19.09.2026 03:41 UTC
+# Уборка ленты — 19.09.2026 03:42 UTC
 
 Показ, ничего не изменено.
 
@@ -6,234 +6,273 @@
 | --- | --- |
 | проверено | 3624 |
 | описаний почищено | 349 |
-| заголовков переписано | 40 |
-| снято | 176 |
+| заголовков переписано | 74 |
+| снято | 181 |
 
-## Сняты с публикации (176)
+## Сняты с публикации (181)
 
-| заголовок | раздел | источник | id |
+| заголовок | почему сняли | раздел | источник |
 | --- | --- | --- | --- |
-| Все книги | books | telegram | d2c83687 |
-| Новая переноска | pets-supplies | telegram | b630cf8d |
-| Рюкзак | bags | telegram | 5f4cb1af |
-| Или обменяю попавшуюся повторку на другую из коллекции миньонов | toys | telegram | 989dde98 |
-| Холодильник | appliances-major | telegram | 080e47c7 |
-| Белый стол IKEA MELLTORP | furniture | telegram | 23f8aee7 |
-| Хотим помочь нашему власнику пересдать квартиру | flats | telegram | 468de3e0 |
-| Стол IKEA UTESPELARE | furniture | telegram | 697f3f3c |
-| Книги | books | telegram | 4f21edfd |
-| Мужское | men | telegram | 28e965db |
-| Помещение | commercial | telegram | e4e8928f |
-| Шкаф | furniture | telegram | 54acf789 |
-| Стол TROTTEN 120x70 CM | furniture | telegram | ff9f18dc |
-| Книга | books | telegram | a6bfb763 |
-| Может ли кто-нибудь помочь оплатить счет из ветеринарной клиники | pets-dogs | telegram | 51c91809 |
-| Распродаю гардероб | women | telegram | 506e9d0c |
-| Велосипед, подарил друг 2 года назад, с тех пор так и стоит в… | bikes | telegram | 61705f6c |
-| Помогаю собирать образы и готовить локацию | photo-video | telegram | 9a51d543 |
-| Работы выполняю близко к мануалам и рекомендациям производителя | repair | telegram | 4874c003 |
-| Автомобиль | cars | telegram | 2f405422 |
-| Этот парнишка ищет дом | pets-dogs | telegram | 40047fb1 |
-| Мой рост 156 | men | telegram | 0d8e08b7 |
-| Сегодня освободилось окно на массаж | beauty-services | telegram | d4e039a6 |
-| Холодильники | repair-plumbing | telegram | 05581b5c |
-| Болит шея после работы | beauty-services | telegram | 1b0799df |
-| Эл.велосипед | bikes | telegram | d5f71c42 |
-| Электроника | electronics | telegram | 0ca8b80c |
-| Пойдет на 37 размер | shoes | telegram | 2c67b6f1 |
-| PS5 | consoles | telegram | ae15a998 |
-| Приглашаю на прогулку с целью освоения сербского языка | tutoring | telegram | d510487e |
-| Новый костюмчик | fashion | telegram | e393927e |
-| ASUS TUF gaming A15 FX506QM | laptops | telegram | c14f9b97 |
-| Массажер | beauty-services | telegram | f3103bc6 |
-| Корпус DeepCool MATREXX 55 V3 ADD-RGB WH 3F | electronics | telegram | 4146f645 |
-| Распродаю часть личного дизайнерского гардероба в Белграде | hats-scarves | telegram | addfcbf6 |
-| Самокат | bikes | telegram | 7f84a820 |
-| Мебель | furniture | telegram | db9b865a |
-| Столик | furniture | telegram | a77aed4e |
-| Все еще продается | parts-engine | telegram | cee02367 |
-| Если это можно починить — Я починю | repair | telegram | f7586f75 |
-| Подскажите, пожалуйста, сможете ли вы помочь | pets-cats | telegram | 63d610a0 |
-| Матрасы WELLPUR GOLD F110 — 90×200 | furniture | telegram | 78383856 |
-| IMac | cpu | telegram | 02e2434a |
-| Перчатки | decor | telegram | e8a8ac04 |
-| Квартира освобождается с 1 октября | flats | telegram | 9c061434 |
-| Красота | beauty | telegram | 78625038 |
-| Робот | toys | telegram | 14bf5ece |
-| Распродаю свой гардероб | women | telegram | 030d8556 |
-| Учебник | school | telegram | 5393f5ea |
-| Нашёл щенка 5 месяцев (девочка) в лесополосе в Земуне | pets-dogs | telegram | 8f7f9132 |
-| Косметика | cosmetics | telegram | 182e5171 |
-| Автокресло Макси-Коси | strollers | telegram | 02910017 |
-| Декор | decor | telegram | 525ed5e0 |
-| IKEA KLINTEN — 4 стула | furniture | telegram | ac3fa28a |
-| Обувь | shoes | telegram | 5507d46e |
-| Camper | fashion | telegram | b97fe1c3 |
-| MSI GeForce GTX 980 Ti 6GB | gpu | telegram | 9bd0ae6b |
-| Где: Центр, ул. Адмирала Гепрата (Admirała Geprata) | beauty-services | telegram | cbda5896 |
-| Переноска | pets-supplies | telegram | f0c0a424 |
-| Книги | books | telegram | 3f14b01c |
-| Книги | books | telegram | 957e2429 |
-| Распродаю вещи | bags | telegram | 7a65ced7 |
-| Набор винтажный | kitchenware | telegram | 5da25509 |
-| Помогаю власнице сдать индивидуальный закрытый гаражный бокс в… | garages | telegram | e1bd927c |
-| Диван IKEA KLIPPAN | furniture | telegram | f015b707 |
-| Книги | books | telegram | 8b9a19e9 |
-| Студия | flats | telegram | c831a18c |
-| Весы | kitchenware | telegram | abd4870f |
-| Сантехник | repair-plumbing | telegram | dbde11f2 |
-| Использовался аккуратно | furniture | telegram | ad91c8b4 |
-| Городской | bikes | telegram | d0eb2b94 |
-| Вязаный топ | fashion | telegram | 5b987bdc |
-| Телефон украли в карабурме | phones | telegram | 1414aa4d |
-| Диагностика | repair | telegram | cd21d101 |
-| Владею русским языком в идеале | legal | telegram | e7cbbcde |
-| Не можете найти своего мастера | tutoring | telegram | 2f5e60b5 |
-| Предоставляем услуги химчистки и профессионального клининга | cleaning | telegram | 82e2429e |
-| Возвращаю ваше тело к "заводским настройкам" | beauty-services | telegram | cf4a6e88 |
-| JYSK SVANEKE | furniture | telegram | 91d15428 |
-| Приглашаю девушек и женщин на шугаринг и восковую депиляцию | services | telegram | 9b3d5f61 |
-| Все | school | telegram | 6148fd3a |
-| Xiaomi Mi TV 43” 4K — L43M6-6ARG | tv-projectors | telegram | 4f2c1650 |
-| Животные | pets | telegram | d10861d1 |
-| Соковыжималка | appliances | telegram | 23275a99 |
-| Отдам, буду рад дешевому песто из макси | lighting | telegram | 0eff58f2 |
-| Обувь | shoes | telegram | 7a6a9179 |
-| Есть у нас одна шикарная дама на пристройство | pets | telegram | 25b39774 |
-| IKEA LOHALS ковер | decor | telegram | 6669cac7 |
-| Квартира | flats | telegram | 85880e44 |
-| Грузоперевозки | transport | telegram | f108ac66 |
-| Гардероб IKEA NORDKISA | furniture | telegram | a95b5c27 |
-| Устраняю неполадки за пару часов | repair-plumbing | telegram | 6fda0cf6 |
-| Недавно переехал в Белград и сейчас активно нарабатываю базу клиентов | repair-electrical | telegram | 335489d0 |
-| Сантехник | repair-plumbing | telegram | d39a83c2 |
-| Полки Ikea FARGSATTARE | furniture | telegram | 7b05aa19 |
-| Палатка использовалась 1 раз | outdoor | telegram | 5032845a |
-| Фотосъёмка | bags | telegram | e9fb0f62 |
-| Аромадиффузор | decor | telegram | 653aa6c9 |
-| Стол IKEA LINNMON / ADILS | furniture | telegram | c272ae13 |
-| Недавно спасли уличного котенка от других кошек | pets-cats | telegram | ba430b31 |
-| Стол IKEA TROTTEN | furniture | telegram | 5b9149bc |
-| Кепочка | women | telegram | 4218ea65 |
-| Это Бранко | pets | telegram | d7afb216 |
-| Пылесос | appliances-small | telegram | 3c619b0e |
-| Сантехник | repair-electrical | telegram | e3ebf4e5 |
-| Одежда | glasses | telegram | 1e0e0ec6 |
-| Видеокарта | gpu | telegram | 2b555422 |
-| Столы IKEA MELLTORP - 3000DIN/ШТУКА | furniture | telegram | dd5023c5 |
-| И я преподаю игру на акустической/электрогитаре и вокал | tutoring | telegram | 6165562b |
-| Сумка TELFAR X UGG | bags | telegram | bed88ec5 |
-| Освобождается квартира с 20 октября | flats | telegram | fd8418bc |
-| Футболки | hats-scarves | telegram | d2580a86 |
-| Все вещи | men | telegram | 2983c64b |
-| С 14 сентября сдаётся двухуровневая квартира — помогаем власникам | flats | telegram | 6e241175 |
-| Особенно люблю работать с детьми | beauty-services | telegram | d7684c78 |
-| Декор | decor | telegram | b7d46329 |
-| Фотографии-коллажи | services | telegram | 4a613124 |
-| Набор Lancome новый | cosmetics | telegram | ad5e43f5 |
-| Квартира | flats | telegram | a772520d |
-| Zara, все новое | men | telegram | 9f3c927d |
-| Новый Белград | furniture | telegram | 9a16a279 |
-| Косметика | cosmetics | telegram | 1cdde6e6 |
-| Шкаф/стенка | furniture | telegram | ecf1a91d |
-| Балетки | shoes | telegram | 4ee49e4d |
-| Электроника | electronics | telegram | f016940b |
-| Кресло IKEA OSCARSHAMN | furniture | telegram | 0d7537a1 |
-| Комп | cpu | telegram | 1cbb56e6 |
-| Все вещи | women | telegram | 8f2623a6 |
-| Игровой ПК Ryzen 7 7700X / RTX 4070 Ti / 32GB DDR5 / SSD 1TB | computers | telegram | 1964f8c1 |
-| Приглашаю на профессиональный маникюр и педикюр в Белграде | beauty-services | telegram | 2fea4d41 |
-| Marshall | electronics | telegram | e55163a1 |
-| Замиакулькас | garden | telegram | 775f8d68 |
-| Даром | shoes | telegram | 5b1bacbe |
-| Вафельница Лидл почти новая | appliances | telegram | feb193fd |
-| Топ страдивариус новый | women-tops | telegram | cbe7f892 |
-| Это видно по синему стержню под кейкапом и коду BLX в артикуле | peripherals | telegram | 6f6a8579 |
-| Одежда | women-tops | telegram | 40d37659 |
-| Новый крем | beauty | telegram | 747102ef |
-| Белград | books | telegram | a2090cb5 |
-| Белград | shoes | telegram | 9da21753 |
-| Катабазис | books | telegram | d694fb6b |
-| Фотосъёмка | lighting | telegram | 822194e6 |
-| Браслеты | watches | telegram | 45503fc1 |
-| Вещи целые | fashion | telegram | 6a9f3dbf |
-| Картина | decor | telegram | 96b23ad1 |
-| Серьги | watches | telegram | ddd3b247 |
-| Люстра | lighting | telegram | 4084387f |
-| Диван IKEA VIMLE | furniture | telegram | edcea033 |
-| Красота | beauty | telegram | 7b02d2e7 |
-| Korgnanopad2 | electronics | telegram | 71d4bdc1 |
-| Hutschenreuther | garden | telegram | ad445593 |
-| Если объявление висит | bikes | telegram | 461fbcc3 |
-| И светлую голову Pax Pamir | electronics | telegram | 7ca58de1 |
-| Добро пожаловать на занятия индийским танцем | tutoring | telegram | 1c911b4f |
-| Монитор НЕ РАБОТАЕТ | monitors | telegram | 8cbd7c37 |
-| ASUS TUF Gaming GT502 | electronics | telegram | c8e5c4d7 |
-| Мебель чищу на дому | cleaning | telegram | c8621bb8 |
-| Рубашки | men | telegram | 1c2e7460 |
-| ТВ-комод VITTSJÖ | furniture | telegram | 37941a6b |
-| Converse Chuck Taylor All Star Ox Low / низкие кеды Converse All Star… | shoes | telegram | bd2c0834 |
-| Чикнула свой фикус — слишком разросся | furniture | telegram | 8d20ab5c |
-| Зеркало IKEA IKORNNES | decor | telegram | 89c6ddff |
-| Книга новая | books | telegram | 58a51524 |
-| ЦАПоусилители | tv-audio | telegram | 0c250732 |
-| Недвижимость | real-estate | telegram | 216800a4 |
-| Недвижимость | real-estate | telegram | 9c538f42 |
-| Шкафы IKEA PAX | furniture | telegram | 0f11ebc2 |
-| Аромадиффузор | lighting | telegram | 53690c20 |
-| Ваза KÄLLARHALS IKEA | decor | telegram | cabd39c1 |
-| IKEA / pepco / JUMBO | kitchenware | telegram | d85fd28e |
-| Полка для клавиатуры FELLOWES OFFICE SUITE DELUXE | storage-home | telegram | 088f1b48 |
-| Dell S2722DC 27” QHD (2560×1440) IPS | charging | telegram | 3dabc2ce |
-| Автомобиль MINI COOPER ONE 1.6 — 2002 | cars | telegram | 3583a64c |
-| МАССАЖ В БЕЛГРАДЕ | beauty-services | telegram | 392633a6 |
-| Asics COURT FF 2 | shoes | telegram | bb3ac49c |
-| Игрушка-торт | toys | telegram | 20fe783f |
+| Все книги | нет названия вещи | books | telegram |
+| Новая переноска | нет названия вещи | pets-supplies | telegram |
+| Рюкзак | нет названия вещи | bags | telegram |
+| Или обменяю попавшуюся повторку на другую из коллекции миньонов | обрывок фразы | toys | telegram |
+| Холодильник | нет названия вещи | appliances-major | telegram |
+| Белый стол IKEA MELLTORP | обрывок фразы | furniture | telegram |
+| Хотим помочь нашему власнику пересдать квартиру | обрывок фразы | flats | telegram |
+| Стол IKEA UTESPELARE | обрывок фразы | furniture | telegram |
+| Книги | название раздела | books | telegram |
+| Мужское | нет названия вещи | men | telegram |
+| Помещение | название раздела | commercial | telegram |
+| Шкаф | нет названия вещи | furniture | telegram |
+| Стол TROTTEN 120x70 CM | обрывок фразы | furniture | telegram |
+| Книга | нет названия вещи | books | telegram |
+| Может ли кто-нибудь помочь оплатить счет из ветеринарной клиники | обрывок фразы | pets-dogs | telegram |
+| Распродаю гардероб | обрывок фразы | women | telegram |
+| Велосипед, подарил друг 2 года назад, с тех пор так и стоит в… | обрывок фразы | bikes | telegram |
+| Помогаю собирать образы и готовить локацию | обрывок фразы | photo-video | telegram |
+| Работы выполняю близко к мануалам и рекомендациям производителя | обрывок фразы | repair | telegram |
+| Автомобиль | название раздела | cars | telegram |
+| Этот парнишка ищет дом | обрывок фразы | pets-dogs | telegram |
+| Мой рост 156 | обрывок фразы | men | telegram |
+| Сегодня освободилось окно на массаж | обрывок фразы | beauty-services | telegram |
+| Холодильники | нет названия вещи | repair-plumbing | telegram |
+| Болит шея после работы | обрывок фразы | beauty-services | telegram |
+| Эл.велосипед | нет названия вещи | bikes | telegram |
+| Электроника | название раздела | electronics | telegram |
+| Пойдет на 37 размер | обрывок фразы | shoes | telegram |
+| PS5 | нет названия вещи | consoles | telegram |
+| Приглашаю на прогулку с целью освоения сербского языка | обрывок фразы | tutoring | telegram |
+| Новый костюмчик | нет названия вещи | fashion | telegram |
+| ASUS TUF gaming A15 FX506QM | обрывок фразы | laptops | telegram |
+| Массажер | нет названия вещи | beauty-services | telegram |
+| Корпус DeepCool MATREXX 55 V3 ADD-RGB WH 3F | обрывок фразы | electronics | telegram |
+| Распродаю часть личного дизайнерского гардероба в Белграде | обрывок фразы | hats-scarves | telegram |
+| Самокат | нет названия вещи | bikes | telegram |
+| Мебель | название раздела | furniture | telegram |
+| Столик | нет названия вещи | furniture | telegram |
+| Все еще продается | нет названия вещи | parts-engine | telegram |
+| Оперативная память | название раздела | ram | telegram |
+| Если это можно починить — Я починю | обрывок фразы | repair | telegram |
+| Подскажите, пожалуйста, сможете ли вы помочь | обрывок фразы | pets-cats | telegram |
+| Матрасы WELLPUR GOLD F110 — 90×200 | обрывок фразы | furniture | telegram |
+| Игровая приставка | название раздела | consoles | telegram |
+| IMac | нет названия вещи | cpu | telegram |
+| Перчатки | нет названия вещи | decor | telegram |
+| Квартира освобождается с 1 октября | обрывок фразы | flats | telegram |
+| Красота | название раздела | beauty | telegram |
+| Робот | нет названия вещи | toys | telegram |
+| Распродаю свой гардероб | обрывок фразы | women | telegram |
+| Учебник | нет названия вещи | school | telegram |
+| Нашёл щенка 5 месяцев (девочка) в лесополосе в Земуне | обрывок фразы | pets-dogs | telegram |
+| Косметика | название раздела | cosmetics | telegram |
+| Автокресло Макси-Коси | обрывок фразы | strollers | telegram |
+| Декор | название раздела | decor | telegram |
+| IKEA KLINTEN — 4 стула | обрывок фразы | furniture | telegram |
+| Обувь | название раздела | shoes | telegram |
+| Camper | нет названия вещи | fashion | telegram |
+| MSI GeForce GTX 980 Ti 6GB | обрывок фразы | gpu | telegram |
+| Где: Центр, ул. Адмирала Гепрата (Admirała Geprata) | обрывок фразы | beauty-services | telegram |
+| Переноска | нет названия вещи | pets-supplies | telegram |
+| Книги | название раздела | books | telegram |
+| Книги | название раздела | books | telegram |
+| Распродаю вещи | обрывок фразы | bags | telegram |
+| Набор винтажный | родовое слово | kitchenware | telegram |
+| Помогаю власнице сдать индивидуальный закрытый гаражный бокс в… | обрывок фразы | garages | telegram |
+| Диван IKEA KLIPPAN | обрывок фразы | furniture | telegram |
+| Книги | название раздела | books | telegram |
+| Студия | нет названия вещи | flats | telegram |
+| Весы | нет названия вещи | kitchenware | telegram |
+| Сантехник | нет названия вещи | repair-plumbing | telegram |
+| Использовался аккуратно | обрывок фразы | furniture | telegram |
+| Городской | нет названия вещи | bikes | telegram |
+| Вязаный топ | нет названия вещи | fashion | telegram |
+| Телефон украли в карабурме | обрывок фразы | phones | telegram |
+| Диагностика | нет названия вещи | repair | telegram |
+| Владею русским языком в идеале | обрывок фразы | legal | telegram |
+| Не можете найти своего мастера | обрывок фразы | tutoring | telegram |
+| Предоставляем услуги химчистки и профессионального клининга | обрывок фразы | cleaning | telegram |
+| Возвращаю ваше тело к "заводским настройкам" | обрывок фразы | beauty-services | telegram |
+| JYSK SVANEKE | обрывок фразы | furniture | telegram |
+| Приглашаю девушек и женщин на шугаринг и восковую депиляцию | обрывок фразы | services | telegram |
+| Все | нет названия вещи | school | telegram |
+| Xiaomi Mi TV 43” 4K — L43M6-6ARG | обрывок фразы | tv-projectors | telegram |
+| Животные | название раздела | pets | telegram |
+| Соковыжималка | нет названия вещи | appliances | telegram |
+| Отдам, буду рад дешевому песто из макси | обрывок фразы | lighting | telegram |
+| Обувь | название раздела | shoes | telegram |
+| Есть у нас одна шикарная дама на пристройство | обрывок фразы | pets | telegram |
+| IKEA LOHALS ковер | обрывок фразы | decor | telegram |
+| Квартира | название раздела | flats | telegram |
+| Грузоперевозки | нет названия вещи | transport | telegram |
+| Гардероб IKEA NORDKISA | обрывок фразы | furniture | telegram |
+| Устраняю неполадки за пару часов | обрывок фразы | repair-plumbing | telegram |
+| Недавно переехал в Белград и сейчас активно нарабатываю базу клиентов | обрывок фразы | repair-electrical | telegram |
+| Сантехник | нет названия вещи | repair-plumbing | telegram |
+| Полки Ikea FARGSATTARE | обрывок фразы | furniture | telegram |
+| Палатка использовалась 1 раз | обрывок фразы | outdoor | telegram |
+| Фотосъёмка | нет названия вещи | bags | telegram |
+| Аромадиффузор | нет названия вещи | decor | telegram |
+| Женская одежда | название раздела | women | telegram |
+| Стол IKEA LINNMON / ADILS | обрывок фразы | furniture | telegram |
+| Недавно спасли уличного котенка от других кошек | обрывок фразы | pets-cats | telegram |
+| Стол IKEA TROTTEN | обрывок фразы | furniture | telegram |
+| Кепочка | нет названия вещи | women | telegram |
+| Это Бранко | обрывок фразы | pets | telegram |
+| Пылесос | нет названия вещи | appliances-small | telegram |
+| Сантехник | нет названия вещи | repair-electrical | telegram |
+| Одежда | название раздела | glasses | telegram |
+| Видеокарта | нет названия вещи | gpu | telegram |
+| Столы IKEA MELLTORP - 3000DIN/ШТУКА | обрывок фразы | furniture | telegram |
+| И я преподаю игру на акустической/электрогитаре и вокал | обрывок фразы | tutoring | telegram |
+| Сумка TELFAR X UGG | обрывок фразы | bags | telegram |
+| Освобождается квартира с 20 октября | обрывок фразы | flats | telegram |
+| Футболки | нет названия вещи | hats-scarves | telegram |
+| Все вещи | нет названия вещи | men | telegram |
+| С 14 сентября сдаётся двухуровневая квартира — помогаем власникам | обрывок фразы | flats | telegram |
+| Особенно люблю работать с детьми | обрывок фразы | beauty-services | telegram |
+| Детская одежда | название раздела | fashion | telegram |
+| Декор | название раздела | decor | telegram |
+| Фотографии-коллажи | нет названия вещи | services | telegram |
+| Набор Lancome новый | родовое слово | cosmetics | telegram |
+| Квартира | название раздела | flats | telegram |
+| Zara, все новое | нет названия вещи | men | telegram |
+| Новый Белград | нет названия вещи | furniture | telegram |
+| Косметика | название раздела | cosmetics | telegram |
+| Шкаф/стенка | нет названия вещи | furniture | telegram |
+| Балетки | нет названия вещи | shoes | telegram |
+| Электроника | название раздела | electronics | telegram |
+| Кресло IKEA OSCARSHAMN | обрывок фразы | furniture | telegram |
+| Комп | нет названия вещи | cpu | telegram |
+| Все вещи | нет названия вещи | women | telegram |
+| Игровой ПК Ryzen 7 7700X / RTX 4070 Ti / 32GB DDR5 / SSD 1TB | обрывок фразы | computers | telegram |
+| Приглашаю на профессиональный маникюр и педикюр в Белграде | обрывок фразы | beauty-services | telegram |
+| Marshall | нет названия вещи | electronics | telegram |
+| Замиакулькас | нет названия вещи | garden | telegram |
+| Даром | нет названия вещи | shoes | telegram |
+| Вафельница Лидл почти новая | одни зазывалки | appliances | telegram |
+| Топ страдивариус новый | нет названия вещи | women-tops | telegram |
+| Это видно по синему стержню под кейкапом и коду BLX в артикуле | обрывок фразы | peripherals | telegram |
+| Одежда | название раздела | women-tops | telegram |
+| Новый крем | нет названия вещи | beauty | telegram |
+| Белград | нет названия вещи | books | telegram |
+| Белград | нет названия вещи | shoes | telegram |
+| Катабазис | нет названия вещи | books | telegram |
+| Фотосъёмка | нет названия вещи | lighting | telegram |
+| Браслеты | нет названия вещи | watches | telegram |
+| Вещи целые | родовое слово | fashion | telegram |
+| Картина | нет названия вещи | decor | telegram |
+| Серьги | нет названия вещи | watches | telegram |
+| Люстра | нет названия вещи | lighting | telegram |
+| Диван IKEA VIMLE | обрывок фразы | furniture | telegram |
+| Красота | название раздела | beauty | telegram |
+| Korgnanopad2 | нет названия вещи | electronics | telegram |
+| Hutschenreuther | нет названия вещи | garden | telegram |
+| Если объявление висит | обрывок фразы | bikes | telegram |
+| И светлую голову Pax Pamir | обрывок фразы | electronics | telegram |
+| Добро пожаловать на занятия индийским танцем | обрывок фразы | tutoring | telegram |
+| Монитор НЕ РАБОТАЕТ | обрывок фразы | monitors | telegram |
+| ASUS TUF Gaming GT502 | обрывок фразы | electronics | telegram |
+| Мебель чищу на дому | обрывок фразы | cleaning | telegram |
+| Рубашки | название раздела | men | telegram |
+| ТВ-комод VITTSJÖ | обрывок фразы | furniture | telegram |
+| Converse Chuck Taylor All Star Ox Low / низкие кеды Converse All Star… | слишком длинный | shoes | telegram |
+| Умный дом | название раздела | smart-home | telegram |
+| Чикнула свой фикус — слишком разросся | обрывок фразы | furniture | telegram |
+| Зеркало IKEA IKORNNES | обрывок фразы | decor | telegram |
+| Книга новая | нет названия вещи | books | telegram |
+| ЦАПоусилители | нет названия вещи | tv-audio | telegram |
+| Недвижимость | название раздела | real-estate | telegram |
+| Недвижимость | название раздела | real-estate | telegram |
+| Шкафы IKEA PAX | обрывок фразы | furniture | telegram |
+| Аромадиффузор | нет названия вещи | lighting | telegram |
+| Ваза KÄLLARHALS IKEA | обрывок фразы | decor | telegram |
+| IKEA / pepco / JUMBO | обрывок фразы | kitchenware | telegram |
+| Полка для клавиатуры FELLOWES OFFICE SUITE DELUXE | обрывок фразы | storage-home | telegram |
+| Dell S2722DC 27” QHD (2560×1440) IPS | обрывок фразы | charging | telegram |
+| Автомобиль MINI COOPER ONE 1.6 — 2002 | обрывок фразы | cars | telegram |
+| МАССАЖ В БЕЛГРАДЕ | обрывок фразы | beauty-services | telegram |
+| Asics COURT FF 2 | обрывок фразы | shoes | telegram |
+| Игрушка-торт | нет названия вещи | toys | telegram |
 
-## Заголовки переписаны (40)
+## Заголовки переписаны (74)
 
 | было | стало | id |
 | --- | --- | --- |
 | Футболки, все | Одежда, размер L, used | ccadbcf8 |
+| Ангелина и Вероника Шэн Цикл «Канашибари» + «Гвихоль»- 4000 за все | Ангелина и Вероника Шэн Цикл «Канашибари» + «Гвихоль» | 3f07e5ad |
+| Два корпуса для пк и блок питания 2000 динар за все | Два корпуса для пк и блок питания | 6065f8ea |
+| Игрушки и грызунки все за 2000 дин или по отдельности | Игрушки и грызунки все за или по отдельности | 114537bd |
+| Две бутылки вина белое и красное купаж по 1000 динар за бутылку | Две бутылки вина белое и красное купаж по за бутылку | 1d68a160 |
 | Электрочайник | Красота, new | a83efb0b |
+| Монитор BenQ Zowie XL2566K — / 290€ (Белград | Монитор BenQ Zowie XL2566K — / (Белград | 147aabcb |
+| Кровать детская IKEA KURA с матрасом - | Кровать детская IKEA KURA с матрасом | c0e26ada |
 | Приглашаю в нейл студию на маникюр и педикюр по отличным ценам | Маникюр и педикюр | bbb982f1 |
+| 1 Йэн Макьюэн - «Машины как я» - 300 RSD (БРОНЬ) | 1 Йэн Макьюэн - «Машины как я» (БРОНЬ) | bf6e857c |
+| Книги Mate 800 Din | Книги Mate | 92974c87 |
 | Новый Белград | Для дома, Нови Белград | 5afe91e9 |
+| Книги, стоимость: 500 динар за штуку | Книги, стоимость | ec25d48e |
 | Конструктор начали | Хобби и спорт | f00d691c |
 | Супер топ H&M | Одежда, размер S | ed53b8b1 |
 | Шлем новый | Хобби и спорт, new | bc4bffbe |
+| Для дома | Для дома | 2fca7642 |
 | Мне такой формат не зашел | Для дома | 137ad6f4 |
 | Белград | Для дома | cb3b4e2c |
+| Спортивная одежда | Одежда, размер S | 6e16eb4f |
 | Бесплатно | Хобби и спорт | 292d8bfc |
 | Может кому нужны 3 большие бутылки от воды | Для дома | d8fd1a72 |
+| Вышивка гладью \ новая \ | Вышивка гладью \ новая | a1e4248f |
 | Тостер | Для дома | ee3d5089 |
+| Набор ножей с камнем - 1500 динар торг уместен | Набор ножей с камнем торг уместен | ee03e6cf |
+| Хобби и спорт | Хобби и спорт | 06fbd8ac |
 | Абсолютно Новый | Одежда, Нови Белград | 5d7c6ffb |
 | Белград | Для дома | deef80ef |
+| Для дома | Для дома | 9fd5ca2f |
 | Поднос | Для дома | ef2c5984 |
+| Хобби и спорт | Хобби и спорт | 29235c05 |
+| Плющи, 400 дин за растение | Плющи за растение | f0bbba53 |
 | Новая салатница/фруктовница | Для дома | 4800b470 |
 | БРОНЬ* CAR COVER L. За фрукты | Для дома, Земун | 18c53217 |
+| Босоножки, р.38 -2000 дин, Земун или Новый Белград | Босоножки, р.38 , Земун или Новый Белград | cc3f0928 |
 | Новый купальник | Одежда, Земун | b6aa85f2 |
 | Продаю, всё | Для дома | 6ddf22ae |
 | NIKE W NIKE VISTA LITE | Одежда, размер 39 | f4eaaa0a |
 | Джинсы WEEKDAY | Одежда, размер 33/34 | a10ac90a |
+| Некоторое количество плечиков (около 50 шт) - 1000 рсд за все | Некоторое количество плечиков (около 50 шт) | b95216e9 |
 | Ветровка-анорак | Одежда, размер M | 06c91c9f |
 | Beograd | Одежда, размер 34, used | 21e37389 |
+| Два стула Икеа за 2000 динар (комплектом) | Два стула Икеа за (комплектом) | ea44e6db |
 | Даром | Для дома, Раковица | 4af38a80 |
+| VW Polo 1.4, 2006 г. Белград 2980€ Механика | VW Polo 1.4, 2006 г. Белград Механика | 3180f28d |
+| Аккумулятор оригинал Fujifilm NP-W126S: 40€ (4500 динар) | Аккумулятор оригинал Fujifilm NP-W126S | bafa6149 |
 | Даром | Детские товары | 02023558 |
 | Там много всего интересного | Для дома | 9d40be8c |
+| Книги 4 и 2 класс по 150 дин. за штуку | Книги 4 и 2 класс по . за штуку | b8e76e03 |
 | Там много всего интересного | Для дома | 00fa730f |
 | Вещи | Для дома | 955330be |
 | Дверцы IKEA VOXTORP | Для дома, new | f0f47dff |
 | Баланс-борд | Хобби и спорт, Врачар | 6c072d5e |
 | Традесканция | Для дома | cf2dd1dd |
+| Для дома | Для дома | 3d21d932 |
+| Jacadi, тёмно-синие школьные — 2.000 RSD, размер 35 | Jacadi, тёмно-синие школьные , размер 35 | f52b064d |
 | Шейкеры | Хобби и спорт, Вождовац | dbba26da |
 | Манеж | Для дома | 8eb4ee62 |
 | Набор фруктов | Для дома, Земун | d370629c |
+| Лампа икея, 500 динар, Белград, Бигфешн | Лампа икея , Белград, Бигфешн | 0743967d |
+| Две деревянные машинки по 200 дин за шт | Две деревянные машинки по | 22f71a79 |
 | Репетитор | Детские товары | fe2bf688 |
+| Коррекция и окрашивание бровей 2500rsd с ламинированием | Коррекция и окрашивание бровей с ламинированием | 2cfae384 |
+| Плойка для волос Remington/ | Плойка для волос Remington | 5ac22eb8 |
 | Вытяжка MEKAPPA CA10-60XG | Для дома | ef9828e9 |
+| Комплектом 11 000 Rsd за оба | Комплектом за оба | 59bfe09d |
 | Zara отличное состояние | Одежда, Дорчол | afa8ae10 |
+| 000 RSD с кашпо | с кашпо | 4f483b13 |
 | Топ Stradivarius | Одежда, размер S | 5329a77d |
+| Топ Zara, размер M, 500 RSD Белград | Топ Zara, размер M Белград | 954c46ac |
 | Спортивный топ | Одежда, размер 44 | 9e326912 |
 | НОВЫЙ купальник | Одежда, размер S | 2ce14a54 |
+| Apple Mac mini M2 16/512 GB - идеальное состояние - 499€ ‼‼ | Apple Mac mini M2 16/512 GB - идеальное состояние ‼‼ | 2eab6164 |
+| Стол VIHALS, IKEA (б/у), 125x74 см. Новый стоит 7.500 дин., продаю | Стол VIHALS, IKEA (б/у), 125x74 см. Новый стоит ., продаю | 17922c0f |
 
 ## Описания почищены (349)
 
