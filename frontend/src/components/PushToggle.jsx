@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { pushSupported, pushPermission, isPushSubscribed, enablePush, disablePush, needsHomeScreenInstall } from '../utils/push'
+import { pushSupported, pushPermission, isPushSubscribed, enablePush, disablePush } from '../utils/push'
 
 export default function PushToggle() {
   const { t } = useTranslation()
   const [supported, setSupported] = useState(true)
-  const [needsInstall, setNeedsInstall] = useState(false)
   const [on, setOn] = useState(false)
   const [busy, setBusy] = useState(false)
   const [blocked, setBlocked] = useState(false)
@@ -14,7 +13,6 @@ export default function PushToggle() {
   useEffect(() => {
     if (!pushSupported()) {
       setSupported(false)
-      setNeedsInstall(needsHomeScreenInstall())
       return
     }
     setBlocked(pushPermission() === 'denied')
@@ -50,7 +48,6 @@ export default function PushToggle() {
     }
   }
 
-  if (needsInstall) return <span className="push-toggle-unsupported">{t('profile.push_needs_install')}</span>
   if (!supported) return <span className="push-toggle-unsupported">{t('profile.push_unsupported')}</span>
   if (blocked) return <span className="push-toggle-unsupported">{t('profile.push_blocked')}</span>
 

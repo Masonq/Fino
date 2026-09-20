@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { scrollPos, scrollTo, onScroll as onScrollEvent, observerRoot } from '../utils/scroller'
 import { useTranslation } from 'react-i18next'
 
 const THRESHOLD = 86   // сколько нужно протянуть, чтобы сработало
@@ -15,7 +14,7 @@ export default function PullToRefresh({ onRefresh, children }) {
   useEffect(() => {
     const onTouchStart = (e) => {
       // тянуть можно только с самого верха страницы и когда не идёт обновление
-      if (scrollPos() > 0 || refreshing) return
+      if (window.scrollY > 0 || refreshing) return
       startY.current = e.touches[0].clientY
       active.current = true
     }

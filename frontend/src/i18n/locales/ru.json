@@ -960,7 +960,6 @@
     "push_notifications": "Push-уведомления",
     "push_unsupported": "Не поддерживается",
     "push_blocked": "Заблокировано в браузере",
-    "push_needs_install": "Добавьте сайт на главный экран",
     "push_error": "Не получилось включить — попробуйте ещё раз",
     "sec_telegram": "МЫ В TELEGRAM",
     "tg_chat": "Чат PLONK",

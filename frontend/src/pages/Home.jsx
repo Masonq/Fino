@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { scrollPos, scrollTo, onScroll as onScrollEvent, observerRoot } from '../utils/scroller'
 import { withoutRemoved } from '../utils/removedListings'
 import TypingHint from '../components/TypingHint'
 import { useTranslation } from 'react-i18next'
@@ -205,7 +204,7 @@ export default function Home() {
   // развернуться и тут же схлопнуться — при возврате это читалось как рывок.
   // Берём положение прокрутки сразу, а переход включаем только после того,
   // как оно установилось.
-  const [collapsed, setCollapsed] = useState(() => (cached?.scroll || scrollPos()) > 48)
+  const [collapsed, setCollapsed] = useState(() => (cached?.scroll || window.scrollY) > 48)
   // сколько прокрутки предстоит восстановить — до этого шапку не трогаем
   const lastScroll = useRef(cached?.scroll || 0)
   const [settled, setSettled] = useState(false)
@@ -248,7 +247,7 @@ export default function Home() {
     let ticking = false
     const update = () => {
       ticking = false
-      const y = scrollPos()
+      const y = window.scrollY
       // Запоминаем на ходу: к моменту ухода со страницы прокрутка успевает
       // обнулиться, и в память попадал ноль — возврат открывал ленту сверху.
       lastScroll.current = y
@@ -262,10 +261,10 @@ export default function Home() {
       ticking = true
       requestAnimationFrame(update)
     }
-    const stopScroll = onScrollEvent(onScroll)
+    window.addEventListener('scroll', onScroll, { passive: true })
     update()
     const settle = setTimeout(() => { update(); setSettled(true) }, 250)
-    return () => { clearTimeout(settle); stopScroll() }
+    return () => { clearTimeout(settle); window.removeEventListener('scroll', onScroll) }
   }, [])
 
   useEffect(() => {
@@ -330,7 +329,7 @@ export default function Home() {
     tabCache[tab] = {
       items: itemsRef.current,
       total: totalRef.current,
-      scroll: scrollPos(),
+      scroll: window.scrollY,
       fetchedAt: fetchedAtRef.current,
     }
 
@@ -389,7 +388,7 @@ export default function Home() {
     if (pendingScroll.current === null) return
     const y = pendingScroll.current
     pendingScroll.current = null
-    scrollTo(y)
+    window.scrollTo(0, y)
   }, [listings, holdHeight])
 
   const PAGE = 12
@@ -508,7 +507,7 @@ export default function Home() {
 
     const io = new IntersectionObserver(
       (entries) => { if (entries[0].isIntersecting) loadMore() },
-      { root: observerRoot(), rootMargin: '1400px' },   // см. ниже
+      { rootMargin: '1400px' },   // см. ниже
       // Подгружаем сильно заранее — примерно за два экрана до конца.
       //
       // 600px это меньше одного экрана телефона: человек долистывал до
@@ -558,7 +557,7 @@ export default function Home() {
         tab: tabRef.current,
         items: itemsRef.current,
         total: totalRef.current,
-        scroll: lastScroll.current || scrollPos(),
+        scroll: lastScroll.current || window.scrollY,
         fetchedAt: fetchedAtRef.current,
       }
     }

@@ -20,13 +20,6 @@ export function pushSupported() {
 // ни один сайт это не обходит. Отличаем этот случай от настоящего
 // «браузер/ОС слишком старая»: тут есть понятное действие (добавить
 // на главный экран), там — нет.
-export function needsHomeScreenInstall() {
-  const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent)
-    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)   // iPadOS выдаёт себя за Mac
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-    || window.navigator.standalone === true
-  return isIOS && !isStandalone && !pushSupported()
-}
 
 export function pushPermission() {
   return pushSupported() ? Notification.permission : 'unsupported'
