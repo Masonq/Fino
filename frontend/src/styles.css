@@ -3899,7 +3899,16 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* Вход через телеграм: ссылка на бота, но выглядит как кнопка рядом с
    остальными способами — человеку разница не важна. */
-.auth-google{ display:flex; justify-content:center; margin:4px 0 8px; min-height:44px; }
+/* Кнопку рисует скрипт Google своей шириной (обычно 300) — она
+   оказывалась уже наших и с собственной левой линией. Растягиваем её
+   на ту же колонку: сам iframe масштабировать нельзя, но контейнеру
+   можно задать ширину, а кнопке внутри — занять её целиком. */
+.auth-google{
+  width:100%; max-width:340px; display:flex; justify-content:center;
+  margin:4px 0 8px; min-height:44px;
+}
+.auth-google > div,
+.auth-google iframe{ width:100% !important; max-width:340px !important; }
 .auth-method.telegram{
   display:flex; align-items:center; justify-content:center; gap:9px;
   text-decoration:none;
@@ -5982,7 +5991,10 @@ a.s-attrs{ display:block; }
    баннер. Пропорции 2:1 заданы аспектом, а не высотой — на узком
    экране ракета не обрезается. */
 .auth-bonus{
-  width:100%; margin:22px 0 0; border-radius:16px; overflow:hidden;
+  /* Та же колонка, что у кнопок входа: 340 точек с потолком по ширине
+     экрана. Без max-width баннер тянулся на всю страницу и стоял
+     шире кнопок над ним — три разные левые линии на одном экране. */
+  width:100%; max-width:340px; margin:22px 0 0; border-radius:16px; overflow:hidden;
   aspect-ratio:2 / 1;
   background:url('/promo/welcome-bonus.jpg') right center / cover no-repeat, var(--bg);
   display:flex; align-items:center;
