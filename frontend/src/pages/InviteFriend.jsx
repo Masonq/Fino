@@ -60,7 +60,12 @@ export default function InviteFriend() {
       {/* Обещание — первым экраном и одной фразой: человек решает,
           читать ли дальше, именно здесь. */}
       <div className="invite-hero">
-        <img src="/invite/hero.webp" alt="" />
+        {/* Размеры заданы в разметке: без них браузер не знает пропорций
+            до загрузки, места не резервирует, и всё под картинкой
+            прыгает вниз, когда она приезжает. fetchPriority — чтобы
+            она грузилась первой, это главная картинка экрана. */}
+        <img src="/invite/hero.webp" alt="" width="1000" height="604"
+             fetchPriority="high" decoding="async" />
         <h1>{t('invite.hero_title')}</h1>
         <p>{t('invite.hero_text', { count: BONUS })}</p>
       </div>
@@ -70,14 +75,14 @@ export default function InviteFriend() {
           разбираться, кому что. */}
       <div className="invite-cards">
         <div className="invite-card">
-          <img src="/invite/you.webp" alt="" />
+          <img src="/invite/you.webp" alt="" width="221" height="320" loading="lazy" decoding="async" />
           <div className="invite-card-text">
             <div className="invite-card-title">{t('invite.card_you')}</div>
             <div className="invite-card-sub">{t('invite.card_you_text', { count: BONUS })}</div>
           </div>
         </div>
         <div className="invite-card">
-          <img src="/invite/friend.webp" alt="" />
+          <img src="/invite/friend.webp" alt="" width="320" height="297" loading="lazy" decoding="async" />
           <div className="invite-card-text">
             <div className="invite-card-title">{t('invite.card_friend')}</div>
             <div className="invite-card-sub">{t('invite.card_friend_text', { count: BONUS })}</div>

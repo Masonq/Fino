@@ -5291,7 +5291,9 @@ a.s-attrs{ display:block; }
 }
 /* Картинка крупнее: она и есть настроение страницы, ради неё
    человек дочитывает до условий. */
-.invite-hero img{ width:100%; max-width:320px; height:auto; display:block; margin:0 auto 10px; }
+/* Пропорции заданы явно — место под картинку держится с первого
+   кадра, до того как она загрузится. */
+.invite-hero img{ width:100%; max-width:320px; height:auto; aspect-ratio:1000 / 604; display:block; margin:0 auto 10px; }
 .invite-hero h1{ font-size:24px; font-weight:800; letter-spacing:-0.02em; margin:0 0 8px; }
 .invite-hero p{ font-size:14.5px; color:var(--muted); font-weight:600; line-height:1.45; margin:0; }
 
