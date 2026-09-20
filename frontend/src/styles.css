@@ -3690,9 +3690,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   .stats-bar-day{ font-size:11px; }
 
   /* Три блока подряд в ряд: разделы, источники и качество читаются
-     вместе, а не через прокрутку. */
+     вместе, а не через прокрутку.
+
+     Ширина считается от общей колонки в 880: иначе они разъезжались
+     шире главных чисел над ними, и страница выглядела собранной из
+     двух разных вёрсток. */
   .admin-stats .stats-block:nth-of-type(n+2){
     display:inline-block; width:calc(50% - 8px); vertical-align:top;
+    margin-left:0; margin-right:0;
   }
   .admin-stats .stats-block:nth-of-type(even){ margin-right:12px; }
 
@@ -5685,3 +5690,57 @@ a.s-attrs{ display:block; }
 .page .stats-block b,
 .page .funnel-row b,
 .page .liq-row b{ font-size:var(--a-text-md); font-variant-numeric:tabular-nums; }
+
+/* ===== админка на широком экране =====
+   Всё, что делалось для телефона, на мониторе растягивается на метр:
+   заголовок строки слева, стрелка у другого края, между ними пустота.
+   Читать такое невозможно — глаз не связывает концы строки.
+
+   Поэтому два правила. Списки и полосы управления держим в разумной
+   ширине по центру. А список людей, который на широком экране идёт в
+   две колонки, снова собираем из карточек: единая карточка с
+   разделителями там превращается в решётку с разорванными линиями. */
+@media (min-width: 900px) {
+  /* Заголовок и сводка — той же ширины, что содержимое: иначе они
+     стоят у края экрана, а список по центру, и страница выглядит
+     собранной из двух разных. */
+  /* Класс стоит на самой странице (div class="page admin-stats"), а не
+     на потомке — через пробел селектор не находил её вовсе. */
+  .page.admin-stats,
+  .page .page-header,
+  .page .audit-actors,
+  .page .admin-bar,
+  .page .audit-days,
+  .page .jobs-list,
+  .page .stats-hero,
+  .page .stats-list,
+  .page .stats-block,
+  .page .admin-empty{
+    max-width: 880px; margin-left: auto; margin-right: auto;
+  }
+
+  /* Список людей в две колонки: общий фон и разделители убираем,
+     каждая строка снова карточка. */
+  .page .admin-list{ background:none; box-shadow:none; border-radius:0; }
+  .page .admin-list .admin-row{
+    border-radius: var(--a-round-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  .page .admin-list .admin-row + .admin-row{ border-top: none; }
+  .page .admin-list .admin-row.blocked::before{ border-radius: var(--a-round-lg) 0 0 var(--a-round-lg); }
+
+  /* Журнал: время, событие и стрелка не должны расползаться по всей
+     ширине — строка читается как одно целое, только если её концы
+     видны вместе. */
+  .page .audit-line{ padding-left: 0; padding-right: 0; }
+  .page .audit-day-title{ padding-left: 0; }
+
+  /* Страница приглашений: картинка и карточки в колонку по центру,
+     а не во всю ширину монитора. */
+  .invite-hero, .invite-cards, .invite-steps,
+  .invite-progress, .invite-faq{
+    max-width: 640px; margin-left: auto; margin-right: auto;
+  }
+  .invite-bottom{ max-width: 640px; }
+}
