@@ -420,6 +420,17 @@ export default function PostAd() {
             <h2>{isRoot ? t('listing.select_category') : t('listing.select_subcategory')}</h2>
             {isRoot && <p className="post-cat-hint">{t('listing.select_category_hint')}</p>}
             <div className={isRoot ? 'post-cat-grid' : 'post-sub-list'}>
+              {/* Третий уровень — уточнение, а не обязанность. Без этой
+                  строки «Телефоны» вели только в «Запчасти и ремонт»
+                  (марки слиты в сам раздел), и разместить телефон было
+                  некуда. У раздела верхнего уровня строки нет: туда
+                  объявления не кладём, нужен подраздел. */}
+              {path.length >= 2 && (
+                <button className="post-sub-item post-sub-self" onClick={() => pickCategory(current)}>
+                  <span>{current.name?.[i18n.language] || current.name?.ru}</span>
+                  <span className="post-sub-note">{t('listing.pick_general')}</span>
+                </button>
+              )}
               {items.map((cat) => (
                 <button
                   key={cat.id}

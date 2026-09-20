@@ -52,6 +52,7 @@
     "safe_deal": "Safe deal",
     "urgent": "Urgent",
     "select_subcategory": "Choose a section",
+    "pick_general": "General section — if nothing below fits",
     "sound_on": "Turn sound on",
     "sound_off": "Turn sound off",
     "select_category_hint": "Pick a section — you'll choose the subsection next"

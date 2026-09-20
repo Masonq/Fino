@@ -52,6 +52,7 @@
     "safe_deal": "Sigurna kupovina",
     "urgent": "Hitno",
     "select_subcategory": "Izaberite odeljak",
+    "pick_general": "Opšta kategorija — ako ispod nema odgovarajuće",
     "sound_on": "Uključi zvuk",
     "sound_off": "Isključi zvuk",
     "select_category_hint": "Izaberite rubriku — podrubriku birate u sledećem koraku"
