@@ -4148,6 +4148,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .landing-hero .landing-count{ padding-left:0; margin-top:2px; }
 .landing-search{ padding:6px 14px 4px; }
 
+/* Полоса «Купить / Снять / Посуточно» на телефоне шла от края до края
+   экрана и вплотную к плиткам: боковые отступы ей давал только
+   десктопный .landing-sidebar. Те же 14px, что у плиток и полей. */
+.landing-deal{ margin:12px 14px 4px; }
+/* С отступами полоса стала уже, и «Снять надолго» переносилось на две
+   строки. Ширина кнопки — по её тексту, перенос запрещён. */
+.landing-deal .cat-mode{ flex:1 1 auto; padding:10px 6px; white-space:nowrap; }
 .landing-field{ padding:10px 14px 4px; }
 .landing-label{ font-size:13px; font-weight:700; color:var(--ink-soft); margin-bottom:8px; }
 

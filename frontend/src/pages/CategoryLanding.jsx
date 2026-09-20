@@ -6,7 +6,7 @@ import { api } from '../api/client'
 import CategoryArt from '../components/CategoryArt'
 import ListingCard from '../components/ListingCard'
 import { CardSkeletons } from '../components/Skeletons'
-import { LANDINGS } from '../data/landings'
+import { LANDINGS, landingFor } from '../data/landings'
 import { MODE_WORDS } from '../data/modeWords'
 import { CAR_MODELS, CAR_MODEL_OTHER } from '../data/carBrands'
 import useStickyColumn from '../hooks/useStickyColumn'
@@ -118,7 +118,14 @@ export default function CategoryLanding() {
   const PAGE = 20
   const resultsRef = useRef(null)
 
-  const landing = LANDINGS[slug]
+  // Раздел верхнего уровня и схема формы размещения — по ним подраздел
+  // получает свои поля (см. landingFor). Схема привязана к слагу, чтобы
+  // на миг после перехода не показать поля прошлого раздела.
+  const [rootSlug, setRootSlug] = useState(null)
+  const [schema, setSchema] = useState(null)
+  // Пока корень не известен — только заливка, без запроса за чужой картинкой.
+  const heroSlug = LANDINGS[slug] ? slug : rootSlug
+  const landing = landingFor(slug, rootSlug, schema?.slug === slug ? schema.fields : null)
 
   // Заголовок вкладки браузера — раньше document.title вообще нигде на
   // сайте программно не менялся, все страницы показывали один и тот
@@ -143,11 +150,11 @@ export default function CategoryLanding() {
     // они не корневые, а вложены в electronics/auto), и плоский find
     // их находить не будет вовсе, category останется null. Ищем по
     // всему дереву, на любую глубину, не только по первому уровню.
-    const findBySlug = (nodes) => {
+    const findBySlug = (nodes, root) => {
       for (const node of nodes) {
-        if (node.slug === slug) return node
+        if (node.slug === slug) { setRootSlug((root || node).slug); return node }
         if (node.children?.length) {
-          const found = findBySlug(node.children)
+          const found = findBySlug(node.children, root || node)
           if (found) return found
         }
       }
@@ -156,6 +163,14 @@ export default function CategoryLanding() {
     api.getCategories()
       .then((all) => setCategory(findBySlug(all)))
       .catch(() => setCategory(null))
+
+    // Схема нужна только подразделу: у раздела поля свои. Не пришла —
+    // останется одна цена, страница от этого не ломается.
+    if (!LANDINGS[slug]) {
+      api.getCategorySchema(slug)
+        .then((res) => setSchema({ slug, fields: res?.attribute_schema || [] }))
+        .catch(() => setSchema({ slug, fields: [] }))
+    }
 
     // Проверили настоящим замером: старая карточка («Свежие
     // объявления» прошлого раздела) оставалась видна ещё 30мс+ после
@@ -533,7 +548,15 @@ export default function CategoryLanding() {
         // положение картинки, заданные в CSS, — шапка показывала кусок
         // середины вместо всей картинки.
         style={{
-          backgroundImage: `url(/hero/${slug}.webp), ${HERO_FALLBACK[slug] || HERO_FALLBACK['real-estate']}`,
+          // Обложки нарисованы для двенадцати разделов; подраздел берёт
+          // обложку своего раздела. Раньше он запрашивал /hero/<свой
+          // слаг>.webp, получал 404 и оставался с сиреневой заливкой
+          // «Недвижимости» — даже если это «Легковые».
+          backgroundImage: heroSlug
+            ? `url(/hero/${heroSlug}.webp), ${HERO_FALLBACK[heroSlug] || HERO_FALLBACK['real-estate']}`
+            // нейтральная тёмно-серая: белый заголовок читается, а
+            // чужой цвет раздела не мелькает
+            : 'linear-gradient(135deg, #8A9099 0%, #B4B9C0 100%)',
         }}
       >
         <div className="landing-head">
@@ -690,7 +713,12 @@ export default function CategoryLanding() {
           {field.type === 'text' && (
             <input
               className="landing-input"
-              placeholder={field.hint ? t(field.hint) : ''}
+              placeholder={field.hint
+                // «Например, iPhone 13» годится «Электронике» и «Телефонам»,
+                // но не «Играм» и не «Ноутбукам»: у подраздела свой пример,
+                // а где его нет — нейтральная подсказка.
+                ? t([`${field.hint}_${slug}`, LANDINGS[slug] ? field.hint : `${field.hint}_any`])
+                : ''}
               value={values[field.key] || ''}
               onChange={(e) => setValues({ ...values, [field.key]: e.target.value })}
             />

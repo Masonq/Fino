@@ -12,6 +12,36 @@
 
 import { CAR_BRANDS } from './carBrands'
 
+/**
+ * Поля для подраздела: берём поля его раздела и оставляем те, что у
+ * объявлений этого подраздела и правда заполняются.
+ *
+ * Свои поля были только у двенадцати разделов верхнего уровня, а
+ * страница открывается и у подразделов — «Легковые», «Квартиры»,
+ * «Телефоны». Там не было ничего, даже цены. Просто унаследовать нельзя:
+ * на «Запчастях» появился бы пробег, на «Гаражах» — комнаты. Поэтому
+ * сверяемся со схемой формы размещения: о чём продавца не спрашивали,
+ * по тому и искать нечего.
+ *
+ * Список марок и подбор модели — только там, где марка в форме тоже
+ * выбирается из списка: у шин и запчастей она пишется текстом, и
+ * автомобильный список там чужой.
+ */
+export function landingFor(slug, rootSlug, schema) {
+  if (LANDINGS[slug]) return LANDINGS[slug]
+  const base = LANDINGS[rootSlug]
+  if (!base || !schema) return null
+  const byKey = Object.fromEntries(schema.map((f) => [f.key, f]))
+  const fields = (base.fields || []).filter((field) => {
+    if (field.key === 'price' || field.key === 'q') return true
+    const own = byKey[field.key === 'model' && field.type === 'car-model' ? 'brand' : field.key]
+    if (!own) return false
+    if (field.type === 'select' || field.type === 'car-model') return own.type === 'select'
+    return true
+  })
+  return { deal: byKey.deal_type ? base.deal : undefined, fields }
+}
+
 // Что показывать вместо цены там, где её принято называть иначе.
 export const LANDINGS = {
   'real-estate': {

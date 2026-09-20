@@ -107,9 +107,14 @@ def guess_category(payload: GuessIn, db: Session = Depends(get_db)):
     # Остановились на верхнем разделе, у которого есть подразделы —
     # считаем, что не уверены: покупателю нужен подраздел, а мы его не
     # определили.
-    has_children = bool(found) and db.query(Category).filter(
+    #
+    # Только верхний: у подраздела третий уровень («Телефоны» → «Apple»)
+    # — уточнение, а не обязанность. Без этой оговорки публикатор после
+    # появления третьего уровня переспрашивал бы марку у каждого
+    # телефона, хотя раздел определил верно.
+    needs_sub = bool(found) and found.parent_id is None and db.query(Category).filter(
         Category.parent_id == found.id).first() is not None
-    sure = bool(found) and score >= SURE_ENOUGH and not has_children
+    sure = bool(found) and score >= SURE_ENOUGH and not needs_sub
 
     def show(category: Category) -> dict:
         names = category.name or {}
@@ -129,10 +134,14 @@ def guess_category(payload: GuessIn, db: Session = Depends(get_db)):
     # рядом, а не на другом конце дерева.
     options = []
     if found:
+        # Подразделы предлагаем только у верхнего раздела. Если не
+        # уверены в «Телефонах», человеку нужны соседи — «Ноутбуки»,
+        # «Планшеты», — а не список марок внутри возможно неверного
+        # раздела.
         children = (db.query(Category)
                     .filter(Category.parent_id == found.id)
                     .order_by(Category.sort_order, Category.id)
-                    .limit(8).all())
+                    .limit(8).all()) if found.parent_id is None else []
         if children:
             options = children
         else:

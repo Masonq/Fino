@@ -81,10 +81,13 @@ def get_category_schema(slug: str, db: Session = Depends(get_db)):
     # Подкатегория своих атрибутов не имеет и берёт схему родителя:
     # «Телефоны» и «Ноутбуки» описываются одними и теми же полями, а
     # отдельная схема под каждую ветку — полторы сотни схем на поддержке.
-    schema = cat.attribute_schema
-    if not schema and cat.parent_id:
-        parent = db.query(Category).get(cat.parent_id)
-        schema = parent.attribute_schema if parent else []
+    #
+    # Поднимаемся, пока не найдём: у третьего уровня («Телефоны» →
+    # «Apple») родитель — подраздел, и если своей схемы нет и у него,
+    # форма размещения оставалась вовсе без полей.
+    schema, node, hops = cat.attribute_schema, cat.parent, 0
+    while not schema and node is not None and hops < 10:
+        schema, node, hops = node.attribute_schema, node.parent, hops + 1
 
     return {
         "slug": cat.slug,
