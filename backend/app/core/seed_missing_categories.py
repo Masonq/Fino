@@ -25,12 +25,12 @@ from app.models import Category
 # Названия сразу на трёх языках: раздел без перевода показывается
 # служебным именем, и мы это уже проходили.
 NEW = {
-    # Третий уровень у крупных разделов.
-    #
-    # «Бытовая техника» вмещает холодильник, стиралку и микроволновку —
-    # по такому разделу не ищут, его листают. Дальше дробим там, где
-    # объявлений много и они разные по смыслу: телефоны по маркам,
-    # мебель по предметам, услуги мастеров по ремеслу.
+    # Ключи здесь уникальны, и это важно: раньше один и тот же
+    # родитель встречался дважды (services, auto, kids и ещё четыре),
+    # а словарь оставляет только последнее значение — новые разделы
+    # молча затирались старыми и до базы не доходили. Отсюда и
+    # «родительского раздела construction нет»: он был в затёртом
+    # блоке.
     "phones": [
         ("phones-iphone", "iPhone", "iPhone", "iPhone", []),
         ("phones-samsung", "Samsung", "Samsung", "Samsung", []),
@@ -110,16 +110,6 @@ NEW = {
         ("vac-drivers", "Водители и логистика", "Drivers and logistics", "Vozači i logistika", []),
         ("vac-home", "Уборка, уход, няни", "Cleaning and care", "Čišćenje i nega", []),
     ],
-    # Разделы, которых не хватало по сравнению с сербскими площадками.
-    #
-    # Собрано по KupujemProdajem и OLX.ba — тому, чем здесь и правда
-    # торгуют. Часть из этого для Сербии обязательна: участки и
-    # посуточная аренда (сплавы, Златибор, Копаоник), сельхозтехника и
-    # домашний скот, стройматериалы, зимний спорт, рыбалка.
-    #
-    # Услуги расширены сильнее всего: у нас было семь видов, а люди
-    # ищут мастеров, нянь, фотографов, помощь с документами и визами —
-    # без этих разделов объявления оседали в «Разном».
     "real-estate": [
         ("land", "Участки и земля", "Land and plots", "Placevi i zemljište", []),
         ("daily-rent", "Посуточно и на отдых", "Daily and holiday rent", "Dnevni najam i vikendice", []),
@@ -130,29 +120,50 @@ NEW = {
         ("agri", "Сельхозтехника", "Farm machinery", "Poljoprivredne mašine", []),
         ("e-transport", "Самокаты и электротранспорт", "Scooters and e-transport", "Trotineti i e-prevoz", []),
         ("car-rental", "Аренда авто", "Car rental", "Rent a car", []),
+        ("boats", "Водный транспорт", "Boats and watercraft", "Plovila", []),
     ],
     "electronics": [
         ("components", "Комплектующие", "PC components", "Komponente", []),
         ("smart-home", "Умный дом", "Smart home", "Pametna kuća", []),
+        ("pc-parts", "Комплектующие для ПК", "PC components", "Komponente za računar", [('gpu', 'Видеокарты', 'Graphics cards', 'Grafičke karte'), ('cpu', 'Процессоры', 'Processors', 'Procesori'), ('ram', 'Оперативная память', 'Memory (RAM)', 'Memorija (RAM)'), ('motherboards', 'Материнские платы', 'Motherboards', 'Matične ploče'), ('storage-drives', 'Накопители SSD и HDD', 'SSD and HDD drives', 'SSD i HDD diskovi'), ('psu-cooling', 'Питание и охлаждение', 'Power and cooling', 'Napajanje i hlađenje'), ('pc-cases', 'Корпуса', 'PC cases', 'Kućišta')]),
+        ("monitors", "Мониторы", "Monitors", "Monitori", []),
+        ("network-gear", "Сетевое оборудование", "Networking", "Mrežna oprema", []),
+        ("tv-projectors", "Телевизоры и проекторы", "TVs and projectors", "Televizori i projektori", []),
     ],
     "home-garden": [
         ("building", "Стройматериалы", "Building materials", "Građevinski materijal", []),
         ("plumbing", "Сантехника и отопление", "Plumbing and heating", "Vodovod i grejanje", []),
         ("textile", "Текстиль для дома", "Home textile", "Tekstil za kuću", []),
         ("food", "Продукты и домашнее", "Food and homemade", "Hrana i domaći proizvodi", []),
+        ("household-goods", "Бытовая химия и уборка", "Household supplies", "Sredstva za domaćinstvo", []),
+        ("lighting", "Освещение", "Lighting", "Rasveta", []),
+        ("building-materials", "Стройматериалы", "Building materials", "Građevinski materijal", []),
+        ("storage-home", "Хранение и организация", "Storage and organisation", "Odlaganje i organizacija", []),
     ],
     "fashion": [
         ("jewelry", "Украшения", "Jewellery", "Nakit", []),
+        ("hats-scarves", "Шапки и шарфы", "Hats and scarves", "Kape i šalovi", []),
+        ("gloves", "Перчатки и варежки", "Gloves", "Rukavice", []),
+        ("belts", "Ремни", "Belts", "Kaiševi", []),
+        ("glasses", "Очки", "Glasses", "Naočare", []),
+        ("umbrellas", "Зонты", "Umbrellas", "Kišobrani", []),
     ],
     "kids": [
         ("car-seats", "Автокресла", "Car seats", "Auto-sedišta", []),
         ("kids-transport", "Детский транспорт", "Kids bikes and scooters", "Bicikli i trotineti za decu", []),
+        ("kids-hygiene", "Детская гигиена и подгузники", "Nappies and baby care", "Pelene i nega bebe", []),
+        ("kids-feeding", "Кормление и гигиена", "Feeding and care", "Ishrana i nega", []),
     ],
     "hobby-sport": [
         ("winter-sport", "Зимний спорт", "Winter sports", "Zimski sportovi", []),
         ("fishing-hunting", "Рыбалка и охота", "Fishing and hunting", "Pecanje i lov", []),
         ("board-games", "Настольные игры", "Board games", "Društvene igre", []),
         ("tickets", "Билеты и сертификаты", "Tickets and vouchers", "Karte i vaučeri", []),
+        ("skate-roller", "Скейтборды и ролики", "Skateboards and rollerblades", "Skejtbordi i rolere", []),
+        ("hunting-fishing", "Охота и рыбалка", "Hunting and fishing", "Lov i ribolov", []),
+        ("crafts", "Рукоделие и творчество", "Crafts and hobbies", "Ručni rad i hobi", []),
+        ("martial-arts", "Единоборства", "Martial arts", "Borilačke veštine", []),
+        ("sport-nutrition", "Спортивное питание", "Sports nutrition", "Sportska ishrana", []),
     ],
     "pets": [
         ("pets-birds", "Птицы", "Birds", "Ptice", []),
@@ -167,18 +178,15 @@ NEW = {
         ("medical", "Здоровье и медицина", "Health and medical", "Zdravlje i medicina", []),
         ("auto-services", "Автосервис и шиномонтаж", "Car service and tyres", "Auto servis i vulkanizer", []),
         ("lost-found", "Находки и пропажи", "Lost and found", "Izgubljeno i nađeno", []),
+        ("nannies", "Няни и уход за детьми", "Nannies and childcare", "Dadilje i čuvanje dece", []),
+        ("translation", "Переводы", "Translation", "Prevodi", []),
+        ("pet-services", "Уход за животными", "Pet services", "Usluge za ljubimce", []),
+        ("car-service", "Автосервис и шиномонтаж", "Car service", "Auto-servis i vulkanizer", []),
     ],
     "business": [
         ("agriculture", "Сельское хозяйство", "Agriculture", "Poljoprivreda", []),
         ("rental-equipment", "Аренда оборудования", "Equipment rental", "Iznajmljivanje opreme", []),
     ],
-    # Одежда: внутри «Женского» и «Мужского» не было ничего, и пятьсот
-    # объявлений висели в родительском разделе — искать в них
-    # невозможно.
-    #
-    # Набор собран по тому, что реально лежит в базе: платья, футболки,
-    # куртки, джинсы, худи, костюмы. Свитеры и куртки держим порознь —
-    # это разные сезоны, и вместе их искать неудобно.
     "women": [
         ("women-dresses", "Платья и сарафаны", "Dresses", "Haljine", []),
         ("women-skirts", "Юбки", "Skirts", "Suknje", []),
@@ -190,9 +198,6 @@ NEW = {
         ("women-suits", "Костюмы и комбинезоны", "Suits and jumpsuits", "Odela i kombinezoni", []),
         ("women-underwear", "Бельё и купальники", "Underwear and swimwear", "Donji veš i kupaći", []),
         ("women-sportswear", "Спортивная одежда", "Sportswear", "Sportska odeća", []),
-        # Обувь внутри пола: женские босоножки и мужские ботинки в одной
-        # куче искать неудобно. Общий раздел «Обувь» при этом остаётся —
-        # туда идёт то, где пол не определить.
         ("women-shoes", "Женская обувь", "Women's shoes", "Ženska obuća", []),
     ],
     "men": [
@@ -206,36 +211,6 @@ NEW = {
         ("men-sportswear", "Спортивная одежда", "Sportswear", "Sportska odeća", []),
         ("men-shoes", "Мужская обувь", "Men's shoes", "Muška obuća", []),
     ],
-
-    # Аксессуары: шапки, шарфы и очки шли отдельным потоком и оседали в
-    # родительском разделе — своих полок для них не было.
-    "fashion": [
-        ("hats-scarves", "Шапки и шарфы", "Hats and scarves", "Kape i šalovi", []),
-        ("gloves", "Перчатки и варежки", "Gloves", "Rukavice", []),
-        ("belts", "Ремни", "Belts", "Kaiševi", []),
-        ("glasses", "Очки", "Glasses", "Naočare", []),
-        ("umbrellas", "Зонты", "Umbrellas", "Kišobrani", []),
-    ],
-
-    # Комплектующие: сейчас видеокарты и память лежат в «Настольных
-    # компьютерах» вперемешку с целыми системными блоками.
-    "electronics": [
-        ("pc-parts", "Комплектующие для ПК", "PC components", "Komponente za računar", [
-            ("gpu", "Видеокарты", "Graphics cards", "Grafičke karte"),
-            ("cpu", "Процессоры", "Processors", "Procesori"),
-            ("ram", "Оперативная память", "Memory (RAM)", "Memorija (RAM)"),
-            ("motherboards", "Материнские платы", "Motherboards", "Matične ploče"),
-            ("storage-drives", "Накопители SSD и HDD", "SSD and HDD drives", "SSD i HDD diskovi"),
-            ("psu-cooling", "Питание и охлаждение", "Power and cooling", "Napajanje i hlađenje"),
-            ("pc-cases", "Корпуса", "PC cases", "Kućišta"),
-        ]),
-        ("monitors", "Мониторы", "Monitors", "Monitori", []),
-        ("network-gear", "Сетевое оборудование", "Networking", "Mrežna oprema", []),
-        ("tv-projectors", "Телевизоры и проекторы", "TVs and projectors", "Televizori i projektori", []),
-        ("smart-home", "Умный дом", "Smart home", "Pametna kuća", []),
-    ],
-    # Раздел стоял пустым: холодильник и стиральную машину класть было
-    # некуда, кроме как в него самого.
     "appliances-major": [
         ("fridges", "Холодильники и морозильники", "Fridges and freezers", "Frižideri i zamrzivači", []),
         ("washing-machines", "Стиральные и сушильные машины", "Washers and dryers", "Veš mašine i sušilice", []),
@@ -246,85 +221,17 @@ NEW = {
     ],
     "appliances-small": [
         ("vacuum-cleaners", "Пылесосы", "Vacuum cleaners", "Usisivači", []),
-        ("kitchen-small", "Кухонная техника", "Kitchen appliances", "Kuhinjski aparati", [
-            ("multicookers", "Мультиварки и пароварки", "Multicookers and steamers", "Multikukeri i parni lonci"),
-            ("blenders-mixers", "Блендеры и миксеры", "Blenders and mixers", "Blenderi i mikseri"),
-            ("coffee-kettles", "Кофеварки и чайники", "Coffee makers and kettles", "Aparati za kafu i bokali"),
-            ("microwaves", "Микроволновки", "Microwaves", "Mikrotalasne"),
-        ]),
+        ("kitchen-small", "Кухонная техника", "Kitchen appliances", "Kuhinjski aparati", [('multicookers', 'Мультиварки и пароварки', 'Multicookers and steamers', 'Multikukeri i parni lonci'), ('blenders-mixers', 'Блендеры и миксеры', 'Blenders and mixers', 'Blenderi i mikseri'), ('coffee-kettles', 'Кофеварки и чайники', 'Coffee makers and kettles', 'Aparati za kafu i bokali'), ('microwaves', 'Микроволновки', 'Microwaves', 'Mikrotalasne')]),
         ("irons-steamers", "Утюги и отпариватели", "Irons and steamers", "Pegle i paročistači", []),
         ("personal-care-devices", "Техника для ухода", "Personal care devices", "Aparati za negu", []),
     ],
-    # Детский транспорт — не игрушки: велосипед, самокат и беговел
-    # покупают как транспорт и ищут отдельно.
-    "kids": [
-        ("kids-hygiene", "Детская гигиена и подгузники", "Nappies and baby care", "Pelene i nega bebe", []),
-        ("kids-transport", "Детский транспорт", "Kids' ride-ons", "Dečji prevoz", [
-            ("kids-bikes", "Детские велосипеды", "Kids' bikes", "Dečji bicikli"),
-            ("balance-bikes", "Беговелы", "Balance bikes", "Bicikli bez pedala"),
-            ("kids-scooters", "Детские самокаты", "Kids' scooters", "Dečji trotineti"),
-            ("ride-on-cars", "Электромобили и каталки", "Ride-on cars", "Auto-igračke na struju"),
-        ]),
-        ("kids-feeding", "Кормление и гигиена", "Feeding and care", "Ishrana i nega", []),
-    ],
-    # Бюро находок: потерянные и найденные вещи. В диаспорных чатах это
-    # постоянный жанр — «нашли ключи у Калемегдана», «потерял рюкзак в
-    # 26-м автобусе», — а деваться таким объявлениям было некуда.
-    "services": [
-        ("lost-found", "Бюро находок", "Lost and found", "Izgubljeno i nađeno", []),
-    ],
-    "hobby-sport": [
-        ("tickets", "Билеты и сертификаты", "Tickets and gift cards", "Karte i vaučeri", []),
-        ("skate-roller", "Скейтборды и ролики", "Skateboards and rollerblades", "Skejtbordi i rolere", []),
-        ("hunting-fishing", "Охота и рыбалка", "Hunting and fishing", "Lov i ribolov", []),
-        ("board-games", "Настольные игры", "Board games", "Društvene igre", []),
-        ("crafts", "Рукоделие и творчество", "Crafts and hobbies", "Ručni rad i hobi", []),
-        ("martial-arts", "Единоборства", "Martial arts", "Borilačke veštine", []),
-        ("sport-nutrition", "Спортивное питание", "Sports nutrition", "Sportska ishrana", []),
-    ],
-    # Услуги — самый бедный раздел: няня, фотограф и переводчик подать
-    # объявление попросту не могли, кроме как «в общее».
-    "services": [
-        ("nannies", "Няни и уход за детьми", "Nannies and childcare", "Dadilje i čuvanje dece", []),
-        ("photo-video", "Фото и видеосъёмка", "Photo and video", "Foto i video", []),
-        ("translation", "Переводы", "Translation", "Prevodi", []),
-        ("pet-services", "Уход за животными", "Pet services", "Usluge za ljubimce", []),
-        ("events", "Праздники и мероприятия", "Events", "Proslave i događaji", []),
-        ("car-service", "Автосервис и шиномонтаж", "Car service", "Auto-servis i vulkanizer", []),
-    ],
-    # Белград стоит на двух реках, и лодки тут продают всерьёз.
-    "auto": [
-        ("boats", "Водный транспорт", "Boats and watercraft", "Plovila", []),
-    ],
-    # У «Товаров для животных» не было ни одного подраздела.
     "pets-supplies": [
-        # «Корм» в этом разделе уже есть — второй такой же завёл по
-        # невнимательности, увидел на записи экрана: «Food» и «Pet food»
-        # стояли рядом.
         ("aquariums", "Аквариумы и террариумы", "Aquariums and terrariums", "Akvarijumi i terarijumi", []),
-        # «Переноски и клетки» в этом разделе уже есть — второй такой же
-        # завёл по невнимательности, увидел на снимке: две плитки рядом,
-        # с одинаковым смыслом и разными словами.
         ("pet-grooming", "Уход и груминг", "Grooming supplies", "Nega i timarenje", []),
     ],
-    # Медицина и гигиена: перчатки, маски, тесты и бинты приезжают
-    # пачками (их продают и отдают после болезни), а деть их было
-    # некуда — уходили в «Расходники и упаковку» к бизнесу, где их
-    # никто не ищет. «Здоровье и уход» рядом — но это витамины и
-    # тонометры, а не расходники.
     "beauty": [
         ("medical-supplies", "Медтовары и расходники", "Medical supplies", "Medicinski materijal", []),
         ("personal-hygiene", "Личная гигиена", "Personal hygiene", "Lična higijena", []),
-    ],
-    # Еду в диаспорных чатах продают всерьёз: домашняя выпечка, мёд,
-    # кофе, сыры из деревни. Раздела под это не было вовсе.
-    "home-garden": [
-        ("food", "Продукты и напитки", "Food and drinks", "Hrana i piće", []),
-        ("household-goods", "Бытовая химия и уборка", "Household supplies", "Sredstva za domaćinstvo", []),
-        ("lighting", "Освещение", "Lighting", "Rasveta", []),
-        ("building-materials", "Стройматериалы", "Building materials", "Građevinski materijal", []),
-        ("plumbing", "Сантехника", "Plumbing", "Vodovodna oprema", []),
-        ("storage-home", "Хранение и организация", "Storage and organisation", "Odlaganje i organizacija", []),
     ],
 }
 
@@ -335,41 +242,63 @@ def _make(db, slug, ru, en, sr, parent, order):
                     attribute_schema=[])
 
 
+def _add_children(db, parent_slug, parent, children, known, apply) -> int:
+    """Заводит детей одного родителя. Возвращает, сколько добавлено."""
+    added = 0
+    base = max([c.sort_order for c in db.query(Category)
+                .filter(Category.parent_id == parent.id).all()] or [0])
+
+    for i, (slug, ru, en, sr, deep) in enumerate(children, start=1):
+        node = known.get(slug)
+        if node is None:
+            print(f"  + {parent_slug} → {ru}")
+            added += 1
+            node = _make(db, slug, ru, en, sr, parent, base + i)
+            if apply:
+                db.add(node)
+                db.flush()
+                known[slug] = node
+            else:
+                # Без записи в базу глубже не спускаемся: родителя для
+                # внуков ещё не существует, и показывать их как
+                # добавленные было бы неправдой.
+                continue
+
+        for j, (dslug, dru, den, dsr) in enumerate(deep, start=1):
+            if dslug in known:
+                continue
+            print(f"      + {dru}")
+            added += 1
+            if apply:
+                child = _make(db, dslug, dru, den, dsr, node, j)
+                db.add(child)
+                db.flush()
+                known[dslug] = child
+
+    return added
+
+
 def run(apply: bool) -> None:
     with SessionLocal() as db:
         known = {c.slug: c for c in db.query(Category).all()}
         added = 0
 
-        for parent_slug, children in NEW.items():
-            parent = known.get(parent_slug)
-            if not parent:
-                print(f"  ! родительского раздела «{parent_slug}» нет — пропускаю")
-                continue
-
-            base = max([c.sort_order for c in db.query(Category)
-                        .filter(Category.parent_id == parent.id).all()] or [0])
-
-            for i, (slug, ru, en, sr, deep) in enumerate(children, start=1):
-                if slug in known:
+        # Два прохода. Раздел, чей родитель заводится в этом же
+        # запуске, на первом проходе его не находит — второй забирает
+        # такие. Так и вышло с мастерами внутри «Строительства и
+        # ремонта»: сам раздел появился, а плиточник с электриком — нет.
+        for _ in range(2):
+            for parent_slug, children in NEW.items():
+                parent = known.get(parent_slug)
+                if parent is None:
                     continue
-                print(f"  + {parent_slug} → {ru}")
-                added += 1
-                node = _make(db, slug, ru, en, sr, parent, base + i)
-                if apply:
-                    db.add(node)
-                    db.flush()
-                    known[slug] = node
+                added += _add_children(db, parent_slug, parent, children, known, apply)
 
-                for j, (dslug, dru, den, dsr) in enumerate(deep, start=1):
-                    if dslug in known:
-                        continue
-                    print(f"      + {dru}")
-                    added += 1
-                    if apply:
-                        child = _make(db, dslug, dru, den, dsr, node, j)
-                        db.add(child)
-                        db.flush()
-                        known[dslug] = child
+        # Кто и после двух проходов без родителя — это уже не очередь, а
+        # ошибка в списке, и о ней нужно сказать.
+        for parent_slug in NEW:
+            if parent_slug not in known:
+                print(f"  ! родительского раздела «{parent_slug}» нет — пропускаю")
 
         if apply:
             db.commit()
