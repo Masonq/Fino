@@ -187,6 +187,10 @@ export default function Login() {
       if (cancelled || !window.google?.accounts?.id || !googleRef.current) return
       window.google.accounts.id.initialize({
         client_id: GOOGLE_ID,
+        // Всплывающее окошко «войти одним касанием» не показываем: мы
+        // его и не вызываем, но библиотека умеет поднимать его сама.
+        auto_select: false,
+        cancel_on_tap_outside: true,
         callback: async ({ credential }) => {
           try {
             const res = await api.googleLogin(credential)
@@ -210,13 +214,30 @@ export default function Login() {
       setGoogleReady(true)
     }
 
-    if (window.google?.accounts?.id) { draw(); return () => { cancelled = true } }
+    // Уходя со страницы, убираем за Google. Его скрипт оставляет на
+    // body свои слои — окно выбора аккаунта и подложку под ним. Они
+    // прозрачные и растянуты на весь экран: пока они висят, нажатия по
+    // сайту уходят в них, и кажется, что кнопки перестали работать.
+    const cleanup = () => {
+      cancelled = true
+      try { window.google?.accounts?.id?.cancel() } catch { /* скрипт мог не доехать */ }
+      document.querySelectorAll(
+        '#credential_picker_container, #credential_picker_iframe, ' +
+        '[id^="gsi_"], iframe[src*="accounts.google.com/gsi"]',
+      ).forEach((el) => {
+        // Кнопку, которую мы сами нарисовали, не трогаем — только то,
+        // что Google положил мимо нашего места под неё.
+        if (!googleRef.current || !googleRef.current.contains(el)) el.remove()
+      })
+    }
+
+    if (window.google?.accounts?.id) { draw(); return cleanup }
     const script = document.createElement('script')
     script.src = 'https://accounts.google.com/gsi/client'
     script.async = true
     script.onload = draw
     document.head.appendChild(script)
-    return () => { cancelled = true }
+    return cleanup
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step])
 

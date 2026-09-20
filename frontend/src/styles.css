@@ -6044,3 +6044,11 @@ a.s-attrs{ display:block; }
 /* Тот же баннер в гостевом профиле: там колонка уже, чем на экране
    входа, и ширину берёт от .fav-empty, а не от 340. */
 .profile-bonus{ max-width:340px; margin:26px auto 0; }
+
+/* Подложка Google под окном выбора аккаунта. Она растянута на весь
+   экран и ловит нажатия; когда окно закрылось, а пустой контейнер
+   остался висеть, весь сайт переставал отзываться — нажималось всё
+   мимо. Пустую подложку убираем, непустая (настоящее окно) работает
+   как обычно. */
+#credential_picker_container:empty,
+#credential_picker_iframe:not([src]){ display:none !important; pointer-events:none !important; }
