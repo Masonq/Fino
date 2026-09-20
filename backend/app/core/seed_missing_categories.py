@@ -31,10 +31,11 @@ NEW = {
     # молча затирались старыми и до базы не доходили. Отсюда и
     # «родительского раздела construction нет»: он был в затёртом
     # блоке.
+    # Марок здесь больше нет: телефон ищут по названию модели в поиске,
+    # а не листая полки «iPhone» и «Samsung» — на полке всё равно
+    # оказывается вперемешку и то и другое. Осталось только то, что
+    # телефоном не является.
     "phones": [
-        ("phones-iphone", "iPhone", "iPhone", "iPhone", []),
-        ("phones-samsung", "Samsung", "Samsung", "Samsung", []),
-        ("phones-xiaomi", "Xiaomi и прочие", "Xiaomi and others", "Xiaomi i ostali", []),
         ("phones-parts", "Запчасти и ремонт", "Parts and repair", "Delovi i popravka", []),
     ],
     "appliances": [

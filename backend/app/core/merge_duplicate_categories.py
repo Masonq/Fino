@@ -40,6 +40,10 @@ PAIRS = [
     ("repair-plumbing", "con-plumber"),
     ("repair-electrical", "con-electric"),
     ("repair", "construction"),
+    # Полки по маркам убраны: объявления уходят в сами «Телефоны».
+    ("phones", "phones-iphone"),
+    ("phones", "phones-samsung"),
+    ("phones", "phones-xiaomi"),
 ]
 
 # Новые названия для уже заведённых разделов. Сеялка названий не
