@@ -7,6 +7,7 @@ import { CITIES, CITY_COORDS, cityLabel } from '../data/cities'
 import PageHeader from '../components/PageHeader'
 import { EditFormSkeleton } from '../components/Skeletons'
 import LocationPicker from '../components/LocationPicker'
+import PriceField from '../components/PriceField'
 
 export default function EditListing() {
   const { t, i18n } = useTranslation()
@@ -18,6 +19,7 @@ export default function EditListing() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState('')
+  const [currency, setCurrency] = useState('RSD')
   const [negotiable, setNegotiable] = useState(false)
   const [city, setCity] = useState('')
   const [locationLat, setLocationLat] = useState(null)
@@ -61,6 +63,7 @@ export default function EditListing() {
         setTitle(tr.title || '')
         setDescription(tr.description || '')
         setPrice(l.price != null ? String(l.price) : '')
+        setCurrency(l.currency === 'EUR' ? 'EUR' : 'RSD')
         setNegotiable(!!l.price_negotiable)
         setCity(l.city || '')
         if (l.location_lat != null) {
@@ -166,6 +169,7 @@ export default function EditListing() {
         title: title.trim() || null,
         description: description.trim() || null,
         price: price ? Number(price) : null,
+        currency,
         price_negotiable: negotiable,
         city: city || null,
         location_lat: locationLat,
@@ -289,19 +293,30 @@ export default function EditListing() {
           <textarea rows={5} value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
 
-        <div className="post-field-row">
-          <div className="post-field">
-            <label>{t('post.price')}</label>
-            <input type="number" inputMode="decimal" pattern="[0-9]*" value={price} onChange={(e) => setPrice(e.target.value)} />
-          </div>
-          <div className="post-field">
-            <label>{t('post.city')}</label>
-            <select value={city} onChange={(e) => setCity(e.target.value)}>
-              {CITIES.map((c) => (
-                <option key={c.slug} value={c.slug}>{cityLabel(c.slug, i18n.language)}</option>
-              ))}
-            </select>
-          </div>
+        {/* Цена во всю ширину, с валютой внутри поля, и «Торг уместен»
+            сразу под ней: это свойство цены. Раньше галочка стояла
+            после города и карты, а цена делила строку с городом — с
+            переключателем валюты в половине экрана семизначная цена
+            (квартира в евро) уже не помещалась. */}
+        <PriceField
+          label={t('post.price')}
+          price={price}
+          currency={currency}
+          onPrice={setPrice}
+          onCurrency={setCurrency}
+        />
+        <label className="filter-check">
+          <input type="checkbox" checked={negotiable} onChange={(e) => setNegotiable(e.target.checked)} />
+          {t('post.negotiable')}
+        </label>
+
+        <div className="post-field">
+          <label>{t('post.city')}</label>
+          <select value={city} onChange={(e) => setCity(e.target.value)}>
+            {CITIES.map((c) => (
+              <option key={c.slug} value={c.slug}>{cityLabel(c.slug, i18n.language)}</option>
+            ))}
+          </select>
         </div>
 
         <div className="post-field">
@@ -343,11 +358,6 @@ export default function EditListing() {
             </>
           )}
         </div>
-
-        <label className="filter-check">
-          <input type="checkbox" checked={negotiable} onChange={(e) => setNegotiable(e.target.checked)} />
-          {t('post.negotiable')}
-        </label>
 
         <p className="edit-note">{t('edit.remoderation')}</p>
 

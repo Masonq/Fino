@@ -8,6 +8,7 @@ import { shrinkImage } from '../data/shrinkImage'
 import { useAuth } from '../context/AuthContext'
 import CategoryArt from '../components/CategoryArt'
 import LocationPicker from '../components/LocationPicker'
+import PriceField from '../components/PriceField'
 
 const STEPS = ['category', 'attributes', 'details', 'contact']
 
@@ -40,7 +41,7 @@ export default function PostAd() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState('')
-  const [currency, setCurrency] = useState('EUR')
+  const [currency, setCurrency] = useState('RSD')
 
   const [negotiable, setNegotiable] = useState(false)
   const [city, setCity] = useState('')
@@ -107,7 +108,7 @@ export default function PostAd() {
     setTitle(d.title || '')
     setDescription(d.description || '')
     setPrice(d.price || '')
-    setCurrency(d.currency || 'EUR')
+    setCurrency(d.currency || 'RSD')
     setNegotiable(!!d.negotiable)
     setCity(d.city || '')
     if (d.locationLat != null) { setLocationLat(d.locationLat); setLocationLng(d.locationLng); setMapOpen(true) }
@@ -557,19 +558,13 @@ export default function PostAd() {
               </div>
               {videoError && <div className="post-map-hint error">{videoError}</div>}
             </div>
-            <div className="post-field-row">
-              <div className="post-field">
-                <label>{t('listing.price')}</label>
-                <input type="number" inputMode="decimal" pattern="[0-9]*" value={price} onChange={(e) => setPrice(e.target.value)} />
-              </div>
-              <div className="post-field" style={{ maxWidth: 90 }}>
-                <label>{t('post.currency')}</label>
-                <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
-                  <option value="EUR">EUR</option>
-                  <option value="RSD">RSD</option>
-                </select>
-              </div>
-            </div>
+            <PriceField
+              label={t('listing.price')}
+              price={price}
+              currency={currency}
+              onPrice={setPrice}
+              onCurrency={setCurrency}
+            />
             <label className="post-checkbox">
               <input type="checkbox" checked={negotiable} onChange={(e) => setNegotiable(e.target.checked)} />
               {t('listing.negotiable')}

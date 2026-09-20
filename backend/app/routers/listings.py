@@ -106,7 +106,9 @@ class ListingCreate(BaseModel):
     @field_validator("currency")
     @classmethod
     def check_currency(cls, v):
-        if v not in ("EUR", "RSD", "USD"):
+        # Долларов в модели нет (Currency — только RSD и EUR): раньше
+        # «USD» проходил проверку и падал уже на записи в базу.
+        if v not in ("EUR", "RSD"):
             raise ValueError("bad_currency")
         return v
 
@@ -2328,6 +2330,15 @@ class ListingUpdate(BaseModel):
     def check_attributes_size(cls, v):
         return _check_attributes_size(v) if v is not None else v
 
+    # Та же проверка, что при создании: без неё правка принимала любую
+    # строку и падала уже на записи в базу.
+    @field_validator("currency")
+    @classmethod
+    def check_currency(cls, v):
+        if v is not None and v not in ("EUR", "RSD"):
+            raise ValueError("bad_currency")
+        return v
+
 
 @router.patch("/{listing_id}")
 def update_listing(
@@ -2348,6 +2359,9 @@ def update_listing(
         raise HTTPException(403, "not_owner")
 
     content_changed = False
+    history_written = False
+    # Цена до правки: цикл ниже перезапишет её раньше, чем дойдёт до валюты.
+    old_price = float(listing.price) if listing.price is not None else None
 
     for field in ("price", "currency", "price_negotiable", "city",
                   "hide_exact_address",
@@ -2363,19 +2377,31 @@ def update_listing(
         current = getattr(listing, field)
         if field == "price":
             current_cmp = float(current) if current is not None else None
+        elif field == "currency":
+            # В базе перечисление, в запросе строка — сравниваем строки.
+            current_cmp = getattr(current, "value", current)
         else:
             current_cmp = current
         # Старую цену — в историю, до того как перезаписали. Только на
         # реальное изменение, не на каждое сохранение формы: иначе одна
         # и та же цена копилась бы записью на каждое нажатие «Сохранить».
-        if field == "price" and value != current_cmp and current_cmp is not None:
+        # Смена валюты — та же смена цены: 9000 динаров и 9000 евро это
+        # разные деньги. В историю уходит старая пара «цена + валюта»,
+        # один раз за сохранение: цена в цикле идёт первой и валюта в
+        # этот момент ещё старая, а если поменяли только валюту —
+        # запись делает её собственный проход.
+        price_changed = field == "price" and value != current_cmp and current_cmp is not None
+        currency_changed = (field == "currency" and value != current_cmp
+                            and old_price is not None and not history_written)
+        if price_changed or currency_changed:
             history = list(listing.price_history or [])
             history.append({
-                "price": current_cmp,
-                "currency": listing.currency,
+                "price": old_price,
+                "currency": getattr(listing.currency, "value", listing.currency),
                 "changed_at": utcnow().isoformat(),
             })
             listing.price_history = history
+            history_written = True
             # (снижение цены проверяется заново по price_history в
             # момент, когда объявление снова станет активным после
             # модерации — см. notify_price_drop в search_alerts.py —
@@ -2383,6 +2409,9 @@ def update_listing(
             # показывается никому)
         setattr(listing, field, value)
         if field in ("price", "city") and value != current_cmp:
+            content_changed = True
+        # Валюта без цены ничего не значит — на проверку только с ценой.
+        if field == "currency" and value != current_cmp and listing.price is not None:
             content_changed = True
 
     # Координаты — отдельно от общего цикла выше: там None означает

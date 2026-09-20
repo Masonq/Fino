@@ -5847,3 +5847,44 @@ a.s-attrs{ display:block; }
    от фото. Было на 5 точек выше соседних цен и мельче их. */
 .for-you-price{ line-height:1.25; }
 .for-you-name.strong{ margin-top:7px; font-size:14.5px; line-height:1.25; }
+
+/* ===== цена с валютой внутри поля =====
+   Рамку держит обёртка, а не сам input: поле и переключатель выглядят
+   одним элементом той же высоты и с тем же радиусом, что соседние поля
+   формы. Обводка при вводе — тоже на обёртке (focus-within), иначе
+   подсвечивалась бы только левая часть. */
+.price-field{
+  display:flex; align-items:center; gap:8px;
+  padding:0 3px 0 0; border-radius:12px;
+  border:1px solid var(--line); background:var(--surface);
+}
+.price-field:focus-within{ border-color:var(--primary); }
+.post-field .price-field input{
+  flex:1; min-width:0; border:none; background:transparent; outline:none;
+  border-radius:12px 0 0 12px;
+  /* Стрелочки у числового поля не нужны: цену набирают, а не щёлкают. */
+  -moz-appearance:textfield; appearance:textfield;
+}
+.price-field input::-webkit-outer-spin-button,
+.price-field input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+/* Зазор до рамки поля одинаковый сверху, снизу и справа — 3 точки, и
+   радиус вложенный: 12 у поля минус зазор. */
+.price-currency{
+  display:inline-flex; gap:2px; padding:2px; border-radius:9px;
+  background:var(--surface-sunken); flex-shrink:0;
+}
+/* Ширина одинаковая у обеих кнопок, чтобы переключатель не менял
+   размер от выбранной валюты. На вид кнопка 32 точки, а зона касания
+   вытянута до 40 — выше поля ей расти некуда. */
+.price-currency-btn{
+  position:relative;
+  min-width:48px; height:32px; padding:0 10px; border-radius:7px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:800; letter-spacing:.01em;
+  color:var(--muted); background:transparent;
+}
+.price-currency-btn::after{ content:''; position:absolute; inset:-4px 0; }
+.price-currency-btn.on{
+  background:var(--surface); color:var(--ink);
+  box-shadow:0 1px 3px rgba(16,24,40,.12);
+}
