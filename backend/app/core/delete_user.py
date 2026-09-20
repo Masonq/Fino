@@ -17,7 +17,8 @@
     приглашённые остаются.
 
     python3 -m app.core.delete_user почта@пример.рф            # показать
-    python3 -m app.core.delete_user почта@пример.рф --apply    # удалить
+    python3 -m app.core.delete_user "Имя Фамилия" --apply      # по имени
+    python3 -m app.core.delete_user 123456789 --apply          # по Telegram
 """
 import sys
 
@@ -81,18 +82,29 @@ def columns(db, table: str) -> set:
     return {r[0] for r in rows}
 
 
-def main(emails: list[str], apply: bool) -> None:
+def main(who: list[str], apply: bool) -> None:
+    """Кого удалять — почта, номер в Telegram или имя целиком.
+
+    Раньше искали только по почте, и людей, вошедших через Telegram,
+    этим инструментом было не достать: у них почты нет вовсе.
+    """
     db = SessionLocal()
     try:
         users = db.execute(text(
-            "select id, email, display_name from users where lower(email) = any(:e)"
-        ), {"e": [e.lower() for e in emails]}).fetchall()
+            """
+            select id, email, display_name from users
+             where lower(coalesce(email, '')) = any(:e)
+                or lower(coalesce(display_name, '')) = any(:e)
+                or lower(coalesce(company_name, '')) = any(:e)
+                or coalesce(telegram_id::text, '') = any(:raw)
+            """
+        ), {"e": [x.lower() for x in who], "raw": who}).fetchall()
         if not users:
             print("не нашёл таких людей")
             return
         ids = [u[0] for u in users]
         for u in users:
-            print(f"• {u[2] or '—'} <{u[1]}>")
+            print(f"• {u[2] or '—'} <{u[1] or 'без почты'}>")
 
         listing_ids = [r[0] for r in db.execute(text(
             "select id from listings where owner_id = any(:u)"), {"u": ids}).fetchall()]
