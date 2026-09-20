@@ -18,7 +18,7 @@ export default function LegalDoc({ doc }) {
   const content = source[i18n.language] || source.ru
 
   return (
-    <div className="page legal-page">
+    <div className="page legal-page page-narrow">
       <PageHeader title={content.title} />
       <p className="legal-updated">{content.updated}</p>
       {content.sections.map((s) => (

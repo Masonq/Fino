@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.core.auth import get_current_user
 from app.core.database import get_db
 from app.models import SavedSearch, User, Category
+from app.data.cities_data import city_label
 
 router = APIRouter(prefix="/api/saved-searches", tags=["saved-searches"])
 
@@ -43,9 +44,27 @@ def describe(filters: dict, db: Session, lang: str, fallback: str = "Поиск"
         lo = filters.get("price_min") or ""
         hi = filters.get("price_max") or ""
         parts.append(f"{lo}–{hi}")
+    # Город — названием, а не слагом: та же болезнь, что была у раздела.
     if filters.get("city"):
-        parts.append(filters["city"])
+        parts.append(city_label(filters["city"], lang))
     return " · ".join(str(p) for p in parts) or fallback
+
+
+def _name_for_display(name: str | None, filters: dict, lang: str) -> str | None:
+    """
+    Поиски, сохранённые до исправления, хранят слаг города прямо в
+    названии («диван · beograd»). Переписывать базу ради этого незачем:
+    подменяем слаг названием на выдаче, и только когда он стоит отдельной
+    частью — своё название человека, где это слово случайно встретилось,
+    не трогаем.
+    """
+    slug = (filters or {}).get("city")
+    if not name or not slug:
+        return name
+    parts = name.split(" · ")
+    if slug not in parts:
+        return name
+    return " · ".join(city_label(slug, lang) if p == slug else p for p in parts)
 
 
 @router.get("")
@@ -64,7 +83,7 @@ def list_saved(
         "items": [
             {
                 "id": str(s.id),
-                "name": s.name,
+                "name": _name_for_display(s.name, s.filters, user.default_language.value),
                 "filters": s.filters,
                 "notify_enabled": s.notify_enabled,
                 "created_at": s.created_at.isoformat() if s.created_at else None,

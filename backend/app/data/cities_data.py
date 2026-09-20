@@ -50,6 +50,32 @@ _CITIES = {
 
 # Районы Белграда: в объявлениях чаще пишут именно их, а не сам город.
 # Ведут в Белград — иначе половина объявлений осталась бы без города.
+# Как город называется для человека — по языкам. Тот же список, что на
+# клиенте (frontend/src/data/cities.js): слаг уходит в базу и в фильтры,
+# а показывать его человеку нельзя — «beograd» в названии сохранённого
+# поиска выглядел как поломка.
+CITY_LABELS = {
+    "beograd":    {"ru": "Белград",    "en": "Belgrade",   "sr": "Beograd"},
+    "novi-sad":   {"ru": "Нови-Сад",   "en": "Novi Sad",   "sr": "Novi Sad"},
+    "nis":        {"ru": "Ниш",        "en": "Niš",        "sr": "Niš"},
+    "kragujevac": {"ru": "Крагуевац",  "en": "Kragujevac", "sr": "Kragujevac"},
+    "subotica":   {"ru": "Суботица",   "en": "Subotica",   "sr": "Subotica"},
+    "zrenjanin":  {"ru": "Зренянин",   "en": "Zrenjanin",  "sr": "Zrenjanin"},
+    "pancevo":    {"ru": "Панчево",    "en": "Pančevo",    "sr": "Pančevo"},
+    "cacak":      {"ru": "Чачак",      "en": "Čačak",      "sr": "Čačak"},
+    "novi-pazar": {"ru": "Нови-Пазар", "en": "Novi Pazar", "sr": "Novi Pazar"},
+    "kraljevo":   {"ru": "Кралево",    "en": "Kraljevo",   "sr": "Kraljevo"},
+}
+
+
+def city_label(slug: str | None, lang: str = "ru") -> str:
+    """Название города на языке человека; незнакомый слаг отдаём как есть."""
+    names = CITY_LABELS.get(slug or "")
+    if not names:
+        return slug or ""
+    return names.get(lang) or names["ru"]
+
+
 _BELGRADE_AREAS = [
     "стари град", "stari grad",
     "врачар", "vracar", "vračar", "земун", "zemun", "нови београд",

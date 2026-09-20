@@ -418,7 +418,7 @@ export default function Moderation() {
       ) : (
         <div className="mod-list">
           {items.map((l, i) => (
-            <div className={`mod-card${i === focus ? ' focused' : ''}${picked.has(l.id) ? ' picked' : ''}`} key={l.id} onClick={() => setFocus(i)}>
+            <div className={`mod-card${i === focus ? ' focused' : ''}${picked.has(l.id) ? ' picked' : ''}${l.photos?.length > 0 ? '' : ' no-photo'}`} key={l.id} onClick={() => setFocus(i)}>
               <button
                 className={`mod-pick${picked.has(l.id) ? ' on' : ''}`}
                 onClick={(e) => { e.stopPropagation(); togglePick(l.id) }}

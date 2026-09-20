@@ -59,7 +59,7 @@ export default function ListingDashboard() {
   })()
 
   return (
-    <div className="page">
+    <div className="page page-narrow">
       <PageHeader title={t('ldash.title')} />
 
       {title && <div className="ldash-listing-title">{title}</div>}

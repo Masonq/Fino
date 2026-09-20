@@ -25,7 +25,7 @@ export default function WaitingReviews() {
   }, [i18n.language])
 
   return (
-    <div className="page">
+    <div className="page page-narrow">
       <PageHeader title={t('reviews.waiting_title')} />
 
       {items === null ? (

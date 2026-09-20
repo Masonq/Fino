@@ -87,7 +87,7 @@ export default function SellerProfile() {
 
   if (failed) {
     return (
-      <div className="page">
+      <div className="page page-wide">
         <PageHeader title={t('seller.title')} />
         <p className="seller-missing">{t('seller.not_found')}</p>
       </div>
@@ -96,7 +96,7 @@ export default function SellerProfile() {
 
   if (!profile) {
     return (
-      <div className="page">
+      <div className="page page-wide">
         <PageHeader title={t('seller.title')} />
         <CardSkeletons count={2} />
       </div>
@@ -126,7 +126,7 @@ export default function SellerProfile() {
   }
 
   return (
-    <div className="page">
+    <div className="page page-wide">
       <PageHeader title={t('seller.title')}>
         <ReportButton
           targetUserId={profile.id} iconOnly renderMode="trigger"

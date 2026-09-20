@@ -66,7 +66,7 @@ export default function BarsChart({
     <div>
       {active && (
         <div className="stats-bars-info">
-          <b>{activeDate}</b> — {activeValue} {t(unitKey)}
+          <b>{activeDate}</b> — {activeValue} {t(unitKey, { count: Number(activeValue) || 0 })}
           {!!secondKey && ` (${activeSecond} ${t(secondLabelKey)})`}
           {activePromo && <span className="stats-bars-promo-tag">{t(`promo.type_${activePromo}`)}</span>}
         </div>
