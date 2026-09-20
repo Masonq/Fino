@@ -110,6 +110,17 @@ export default function Profile() {
           <button className="fav-cta" onClick={() => navigate('/login?returnTo=%2Fprofile')}>
             {t('common.login')}
           </button>
+
+          {/* Тот же подарок, что на экране входа. Гость заходит в
+              профиль, видит кнопку и пустоту под ней — а здесь ровно
+              то место, где стоит сказать, зачем вообще заводить
+              аккаунт. */}
+          <div className="auth-bonus profile-bonus">
+            <div className="auth-bonus-text">
+              <div className="auth-bonus-sum">{t('auth.bonus_sum')}</div>
+              <div className="auth-bonus-note">{t('auth.bonus_note')}</div>
+            </div>
+          </div>
         </div>
       </div>
     )
