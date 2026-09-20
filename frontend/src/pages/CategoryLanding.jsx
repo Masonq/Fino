@@ -525,6 +525,16 @@ export default function CategoryLanding() {
       >
         <div className="landing-head">
           <h1 className="landing-title on-hero">{name}</h1>
+          {/* Счётчик в шапке: раньше полоса несла одно название, которое
+              человек и так видел на экране, откуда пришёл. Сколько тут
+              объявлений — единственное, чего он по экрану не знает.
+              Класс .landing-count в стилях был, а в разметке его не
+              было вовсе. */}
+          {category?.count > 0 && (
+            <div className="landing-count on-hero">
+              {t('landing.offers', { count: category.count })}
+            </div>
+          )}
         </div>
 
       </div>

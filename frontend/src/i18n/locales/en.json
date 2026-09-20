@@ -830,6 +830,8 @@
     "show": "Show listings",
     "fresh": "Fresh listings",
     "offers": "{{count}} listings",
+    "offers_one": "{{count}} listing",
+    "offers_other": "{{count}} listings",
     "brand": "Brand",
     "brand_placeholder": "Any brand",
     "model_placeholder": "Any model",

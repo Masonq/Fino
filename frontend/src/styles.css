@@ -3989,9 +3989,15 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
      экранах: раньше содержимое прижималось к низу шапки, и на
      разделах без подразделов кнопка уезжала на середину экрана.
      Высота — две трети ширины, пропорции картинки 3:2. */
-  min-height:66vw; display:flex; flex-direction:column; justify-content:flex-start;
-  padding-bottom:14px;
-  background-size:cover, cover; background-position:center, center; background-repeat:no-repeat, no-repeat;
+  /* Была высотой в две трети ширины экрана — 257 точек из 844 на
+     телефоне, треть первого экрана ради одного слова. Теперь полоса:
+     на первый экран попадают две лишние плитки подразделов, а до
+     фильтров в авто скроллить на 120 точек меньше. Картинка при
+     меньшей высоте обрезается по бокам, где стоят предметы, поэтому
+     ниже сдвигаем её кадр к левому краю. */
+  min-height:132px; display:flex; flex-direction:column; justify-content:flex-end;
+  padding-bottom:12px;
+  background-size:cover, cover; background-position:center 38%, center; background-repeat:no-repeat, no-repeat;
   /* Скруглены только нижние углы: сверху картинка подходит вплотную к
      строке поиска, а снизу отделяется от списка подразделов — как
      карточка, а не как приклеенная полоса. */
@@ -4003,7 +4009,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   border-radius:inherit;
   /* Тень гуще сверху, где стоит заголовок, и почти сходит на нет
      внизу: там картинка, и затемнять её незачем. */
-  background:linear-gradient(180deg, rgba(0,0,0,.34) 0%, rgba(0,0,0,.14) 40%, rgba(0,0,0,0) 75%);
+  /* Тень теперь гуще снизу: заголовок со счётчиком стоит там, а сверху
+     затемнять нечего — полоса низкая. */
+  background:linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.16) 45%, rgba(0,0,0,.46) 100%);
 }
 .landing-hero > *{ position:relative; z-index:1; }
 .landing-back.on-hero{ background:rgba(255,255,255,.22); color:#fff; }
@@ -4047,7 +4055,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 
 .landing-head{ display:flex; align-items:center; gap:10px; padding:14px 14px 6px; flex-wrap:wrap; }
-.landing-hero .landing-head{ padding-top:10px; }
+.landing-hero .landing-head{ padding:0 14px; }
 /* Простая шапка над результатами — баннер, фильтры и подразделы в этом
    режиме убраны совсем, а не просто прокручены мимо, поэтому заголовок
    здесь свой, без градиента и без white-текста «on-hero». */
@@ -4058,6 +4066,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .landing-title{ font-size:24px; font-weight:800; color:var(--ink); flex:1; min-width:0; }
 .landing-count{ width:100%; font-size:13px; line-height:17px; color:var(--muted); font-weight:600; padding-left:46px; }
+/* В шапке кнопки «назад» нет — она в липкой строке над картинкой,
+   поэтому отступа под неё счётчику не нужно. */
+.landing-hero .landing-count{ padding-left:0; margin-top:2px; }
 .landing-search{ padding:6px 14px 4px; }
 
 .landing-field{ padding:10px 14px 4px; }
