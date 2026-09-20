@@ -210,7 +210,6 @@ NEW = {
         ("vacuum-cleaners", "Пылесосы", "Vacuum cleaners", "Usisivači", []),
         ("kitchen-small", "Кухонная техника", "Kitchen appliances", "Kuhinjski aparati", [('multicookers', 'Мультиварки и пароварки', 'Multicookers and steamers', 'Multikukeri i parni lonci'), ('blenders-mixers', 'Блендеры и миксеры', 'Blenders and mixers', 'Blenderi i mikseri'), ('coffee-kettles', 'Кофеварки и чайники', 'Coffee makers and kettles', 'Aparati za kafu i bokali'), ('microwaves', 'Микроволновки', 'Microwaves', 'Mikrotalasne')]),
         ("irons-steamers", "Утюги и отпариватели", "Irons and steamers", "Pegle i paročistači", []),
-        ("personal-care-devices", "Техника для ухода", "Personal care devices", "Aparati za negu", []),
     ],
     "pets-supplies": [
         ("aquariums", "Аквариумы и террариумы", "Aquariums and terrariums", "Akvarijumi i terarijumi", []),
