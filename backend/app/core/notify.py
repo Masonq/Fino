@@ -127,10 +127,14 @@ def _code_letter(code: str) -> str:
   <tr><td align="center" style="padding:32px 32px 8px;">
     <!-- Логотип рисуем разметкой, а не картинкой: письмо с одним
          изображением и коротким текстом почтовые службы считают
-         подозрительным, да и картинки многие не грузят вовсе. -->
-    <div style="width:52px;height:52px;line-height:52px;border-radius:14px;
-                background:#0E9F6E;color:#ffffff;
-                font-size:26px;font-weight:700;">P</div>
+         подозрительным, да и картинки многие не грузят вовсе.
+         Знак — белая «P» с зелёной точкой на чёрном круге; точка
+         набрана обычным символом, потому что накладывать элементы в
+         письме нельзя: половина почтовых клиентов не понимает
+         position. -->
+    <div style="width:52px;height:52px;line-height:52px;border-radius:50%;
+                background:#0B0B0C;color:#ffffff;
+                font-size:26px;font-weight:700;">P<span style="color:#3DDC6B;">.</span></div>
   </td></tr>
 
   <tr><td align="center" style="padding:12px 32px 0;">
@@ -319,9 +323,9 @@ def _notification_letter(title: str, body_text: str) -> str:
               overflow:hidden;box-shadow:0 1px 3px rgba(16,24,40,.06);">
 
   <tr><td align="center" style="padding:32px 32px 8px;">
-    <div style="width:52px;height:52px;line-height:52px;border-radius:14px;
-                background:#0E9F6E;color:#ffffff;
-                font-size:26px;font-weight:700;">P</div>
+    <div style="width:52px;height:52px;line-height:52px;border-radius:50%;
+                background:#0B0B0C;color:#ffffff;
+                font-size:26px;font-weight:700;">P<span style="color:#3DDC6B;">.</span></div>
   </td></tr>
 
   <tr><td align="center" style="padding:16px 32px 4px;">

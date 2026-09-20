@@ -30,6 +30,10 @@ W, H = 1200, 630
 PHOTO = 630                      # квадрат фотографии слева
 PAD = 56
 FONT_PATH = Path(__file__).resolve().parent.parent / "assets" / "Manrope.ttf"
+# Знак — копия frontend/public/logo-mark.png: бэкенд не должен лазить в
+# папку фронта. Что копия не разошлась с оригиналом, проверяет тест
+# test_og_card_logo_matches_site.
+LOGO_PATH = Path(__file__).resolve().parent.parent / "assets" / "logo-mark.png"
 CACHE_DIR = Path(os.getenv("OG_CACHE_DIR", "/tmp/plonk-og"))
 
 BG = (250, 250, 249)
@@ -105,9 +109,16 @@ def render(*, title: str, price_text: str, meta: str, photo_url: str | None,
     if photo is not None:
         card.paste(_fit_square(photo, PHOTO), (0, 0))
     else:
+        # Объявление без фото: вместо пустоты — бледный знак. Раньше
+        # здесь стояла просто буква «P» шрифтом сайта, к знаку она
+        # отношения не имела.
         draw.rectangle([0, 0, PHOTO, H], fill=PHOTO_BG)
-        mark = _font(120, 800)
-        draw.text((PHOTO / 2, H / 2), "P", font=mark, fill=(200, 205, 200), anchor="mm")
+        try:
+            ghost = Image.open(LOGO_PATH).convert("RGBA").resize((176, 176), Image.LANCZOS)
+            ghost.putalpha(ghost.getchannel("A").point(lambda a: a * 28 // 100))
+            card.paste(ghost, (int(PHOTO / 2 - 88), int(H / 2 - 88)), ghost)
+        except Exception:
+            log.warning("og: знак не открылся", exc_info=True)
 
     if is_fresh:
         badge_font = _font(24, 800)
@@ -140,9 +151,15 @@ def render(*, title: str, price_text: str, meta: str, photo_url: str | None,
     # ——— подвал ———
     foot_y = H - PAD - 56
     draw.line([(x, foot_y - 26), (right, foot_y - 26)], fill=LINE, width=2)
-    draw.ellipse([x, foot_y, x + 56, foot_y + 56], fill=(17, 17, 17))
-    draw.text((x + 28, foot_y + 28), "P", font=_font(30, 800), fill=(255, 255, 255), anchor="mm")
-    draw.rounded_rectangle([x + 37, foot_y + 9, x + 49, foot_y + 21], 3, fill=(124, 227, 138))
+    # Знак вставляем картинкой, а не рисуем заново: нарисованный отстал
+    # от настоящего — у него была зелёная метка сверху справа, а у знака
+    # она снизу и круглая.
+    try:
+        logo = Image.open(LOGO_PATH).convert("RGBA").resize((56, 56), Image.LANCZOS)
+        card.paste(logo, (int(x), int(foot_y)), logo)
+    except Exception:
+        # Без знака подпись всё равно читается — карточку не роняем.
+        log.warning("og: знак не открылся", exc_info=True)
     # Обе подписи от верхней границы, а не от базовой линии: раньше
     # вторая строка считалась иначе и наезжала на первую.
     draw.text((x + 70, foot_y + 6), "plonk.rs", font=_font(27, 800), fill=INK, anchor="la")

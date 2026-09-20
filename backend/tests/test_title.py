@@ -3388,3 +3388,25 @@ def test_brand_case_does_not_lower_what_person_wrote_upper():
     assert capitalize_brands("Все вещи United Colors of Benetton") == \
         "Все вещи United Colors of Benetton"
     assert "12 oz" in capitalize_brands("Green Hill 12 oz перчатки")
+
+
+def test_og_card_logo_matches_site():
+    """Знак в карточке для мессенджеров — тот же, что на сайте.
+
+    Карточку рисует бэкенд, и знак для неё лежит своей копией в
+    app/assets: лазить в папку фронта из бэкенда неправильно. Копия легко
+    отстаёт при смене знака — раньше она была не копией, а рисунком в
+    коде, и так у карточки осталась зелёная метка сверху справа, когда на
+    сайте она давно снизу и круглая.
+    """
+    from pathlib import Path
+
+    from app.core.og_image import LOGO_PATH
+
+    site = Path(__file__).resolve().parents[2] / "frontend" / "public" / "logo-mark.png"
+    assert LOGO_PATH.exists(), LOGO_PATH
+    assert site.exists(), site
+    assert LOGO_PATH.read_bytes() == site.read_bytes(), (
+        "знак в app/assets разошёлся с frontend/public/logo-mark.png — "
+        "скопируйте заново"
+    )
