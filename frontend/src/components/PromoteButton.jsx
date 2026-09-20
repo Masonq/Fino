@@ -56,7 +56,7 @@ const ICONS = {
  * показать.
  */
 export default function PromoteButton({ listingId, renderMode = 'full', open: openProp, onOpenChange }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const [openState, setOpenState] = useState(false)
   const controlled = openProp !== undefined
@@ -202,7 +202,7 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
                       {isActive ? (
                         <span className="promo-active-tag">
                           {activePromo?.expires_at
-                            ? t('promo.active_until', { date: new Date(activePromo.expires_at).toLocaleDateString() })
+                            ? t('promo.active_until', { date: new Date(activePromo.expires_at).toLocaleDateString(i18n.language, { day: "numeric", month: "long", year: "numeric" }) })
                             : t('promo.active_now')}
                         </span>
                       ) : (
