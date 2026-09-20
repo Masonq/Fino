@@ -190,28 +190,33 @@ export default function Profile() {
               className={isCompany ? 'profile-avatar is-company' : 'profile-avatar'}
             />
 
-            <div className="profile-card-name">{user.company_name || user.display_name}</div>
-            <div className="profile-card-meta">
-              {memberSince && <span>{memberSince}</span>}
-              <span>{isCompany ? t('seller.company_badge') : t('profile.person')}</span>
-            </div>
-            <div className="profile-card-meta">
-              {user.rating_count
-                ? t('edit_profile.rating', { value: user.rating_avg, count: user.rating_count })
-                : t('edit_profile.no_rating')}
-            </div>
-
-            {user.document_verified ? (
-              <div className="profile-verified">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M20 6 9 17l-5-5" /></svg>
-                {t('verify.verified')}
+            {/* Имя, строка о продавце и кнопка проверки — колонкой
+                справа от аватара. Раньше всё это стояло столбиком под
+                ним, и карточка занимала пол-экрана ради трёх строк. */}
+            <div className="profile-card-body">
+              <div className="profile-card-name">{user.company_name || user.display_name}</div>
+              <div className="profile-card-meta">
+                {memberSince && <span>{memberSince}</span>}
+                <span>{isCompany ? t('seller.company_badge') : t('profile.person')}</span>
+                <span>
+                  {user.rating_count
+                    ? t('edit_profile.rating', { value: user.rating_avg, count: user.rating_count })
+                    : t('edit_profile.no_rating')}
+                </span>
               </div>
-            ) : (
-              <Link className="profile-verify-btn" to="/profile/edit">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 2.5 4.5 5.5v6c0 5 3.2 8 7.5 10 4.3-2 7.5-5 7.5-10v-6L12 2.5Z" /><path d="m9 12 2 2 4-4" /></svg>
-                {t('profile.verify_cta')}
-              </Link>
-            )}
+
+              {user.document_verified ? (
+                <div className="profile-verified">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M20 6 9 17l-5-5" /></svg>
+                  {t('verify.verified')}
+                </div>
+              ) : (
+                <Link className="profile-verify-btn" to="/profile/edit">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 2.5 4.5 5.5v6c0 5 3.2 8 7.5 10 4.3-2 7.5-5 7.5-10v-6L12 2.5Z" /><path d="m9 12 2 2 4-4" /></svg>
+                  {t('profile.verify_cta')}
+                </Link>
+              )}
+            </div>
           </div>
 
           {/* Что требует внимания.

@@ -4917,33 +4917,42 @@ a.s-attrs{ display:block; }
 
 /* ===== карточка профиля ===== */
 .profile-card{
-  position:relative; margin:0 12px 12px; padding:20px 16px 18px;
-  background:var(--surface); border-radius:20px; box-shadow:var(--shadow);
+  /* Строкой, а не столбиком: аватар слева, всё остальное справа.
+     Столбиком карточка занимала пол-экрана ради трёх строк текста. */
+  position:relative; margin:0 12px 12px; padding:14px 14px 14px;
+  display:flex; align-items:flex-start; gap:13px;
+  background:var(--surface); border-radius:18px; box-shadow:var(--shadow);
 }
-.profile-card .profile-avatar{ width:72px; height:72px; font-size:26px; }
+.profile-card .profile-avatar{ width:56px; height:56px; font-size:21px; flex-shrink:0; }
+.profile-card-body{ flex:1; min-width:0; padding-right:34px; }
 .profile-card-edit{
-  position:absolute; top:14px; right:14px; width:36px; height:36px; border-radius:11px;
+  position:absolute; top:12px; right:12px; width:32px; height:32px; border-radius:10px;
   display:flex; align-items:center; justify-content:center;
   background:var(--surface-sunken); color:var(--ink-soft);
 }
-.profile-card-name{ font-size:20px; font-weight:800; letter-spacing:-0.02em; margin-top:12px; overflow-wrap:anywhere; }
+.profile-card-edit svg{ width:16px; height:16px; }
+.profile-card-name{
+  font-size:17px; font-weight:800; letter-spacing:-0.02em; line-height:1.25;
+  overflow-wrap:anywhere;
+}
+/* Строка о продавце — одной строкой через точки, а не тремя абзацами. */
 .profile-card-meta{
-  display:flex; flex-wrap:wrap; gap:4px 8px; margin-top:4px;
-  font-size:13px; font-weight:600; color:var(--muted);
+  display:flex; flex-wrap:wrap; gap:2px 7px; margin-top:3px;
+  font-size:12.5px; font-weight:600; color:var(--muted);
 }
-.profile-card-meta span + span::before{ content:"·"; margin-right:8px; }
+.profile-card-meta span + span::before{ content:"·"; margin-right:7px; }
 .profile-verify-btn{
-  display:inline-flex; align-items:center; gap:8px; margin-top:14px;
-  padding:11px 16px; border-radius:13px; background:var(--ink); color:#fff;
-  font-size:14px; font-weight:800; text-decoration:none;
+  display:inline-flex; align-items:center; gap:7px; margin-top:10px;
+  padding:8px 12px; border-radius:11px; background:var(--ink); color:#fff;
+  font-size:13px; font-weight:800; text-decoration:none;
 }
-.profile-verify-btn svg{ width:17px; height:17px; }
+.profile-verify-btn svg{ width:15px; height:15px; }
 .profile-verified{
-  display:inline-flex; align-items:center; gap:8px; margin-top:14px;
-  padding:10px 14px; border-radius:13px; background:var(--primary-soft); color:var(--primary-deep);
-  font-size:14px; font-weight:800;
+  display:inline-flex; align-items:center; gap:7px; margin-top:10px;
+  padding:7px 11px; border-radius:11px; background:var(--primary-soft); color:var(--primary-deep);
+  font-size:13px; font-weight:800;
 }
-.profile-verified svg{ width:17px; height:17px; }
+.profile-verified svg{ width:15px; height:15px; }
 
 /* ===== поиск и отбор в сообщениях ===== */
 /* Поиск и отбор едут следом за шапкой: в длинном списке переписок
