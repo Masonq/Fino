@@ -10,6 +10,11 @@ env(safe-area-inset-*), а на мониторе они нулевые — по�
 Здесь эти поля подставляются вручную (59 сверху, 34 снизу): в
 styles.css они читаются через переменные --sat/--sab именно ради этого.
 
+Правила режима приложения (@media display-mode: standalone) здесь
+применяются принудительно: обычный Chromium в этот режим не встаёт, а
+проверять нужно ровно то, что увидит телефон. Прокрутка при этом идёт
+по контейнеру приложения, а не по странице.
+
 Проверяется, не стоит ли что-нибудь в зоне часов и не прячется ли
 конец страницы под нижней панелью. Меряется по самому тексту, а не по
 коробке: у шапки внутри свой отступ под вырез, и её верхний край в
@@ -19,14 +24,6 @@ styles.css они читаются через переменные --sat/--sab �
 Нужна поднятая локальная база (как для tools/check-browser.py).
 """
 import json, os, subprocess, sys, time, urllib.request
-from playwright.sync_api import sync_playwright
-ROOT="/home/claude/plonk"; API=8560; WEB=5606
-ids=json.load(open('/tmp/ids.json')); TOKEN=ids["token"]
-env={**os.environ,"DATABASE_URL":"postgresql://plonk:plonk@127.0.0.1/plonk","SECRET_KEY":"x","MEDIA_DIR":"/tmp/plonk-media"}
-open(f"{ROOT}/frontend/vite.pwa.mjs","w").write("""import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-export default defineConfig({ plugins:[react()], server:{ port:%d, host:'127.0.0.1', proxy:{'/api':'http://127.0.0.1:%d','/media':'http://127.0.0.1:%d'} } })
-"""%import json, os, subprocess, sys, time, urllib.request
 from playwright.sync_api import sync_playwright
 ROOT="/home/claude/plonk"; API=8560; WEB=5606
 ids=json.load(open('/tmp/ids.json')); TOKEN=ids["token"]
@@ -65,8 +62,10 @@ CHECK = """([sat, sab]) => {
     }
   }
   // 2) низ: докручиваем до конца и смотрим, не спрятал ли нав последнее
-  window.scrollTo(0, document.body.scrollHeight);
-  const doc=document.scrollingElement;
+  const box=document.getElementById('app-scroll');
+  if (box && getComputedStyle(box).overflowY==='auto') box.scrollTop=box.scrollHeight;
+  else window.scrollTo(0, document.body.scrollHeight);
+  const doc=(box && getComputedStyle(box).overflowY==='auto') ? box : document.scrollingElement;
   const atBottom = doc.scrollHeight - doc.scrollTop - doc.clientHeight < 4;
   let worst=null;
   for (const e of document.querySelectorAll('button, a, input, p, h2, .listing-card, .profile-row')) {
@@ -93,16 +92,25 @@ try:
         cid=json.load(open('/tmp/chat.json'))['cid']; routes.append(f"/chat/{cid}")
     except Exception: pass
     with sync_playwright() as p:
-        b=p.chromium.launch()
+        b=p.chromium.launch(args=["--app=data:,"])
         c=b.new_context(viewport={"width":390,"height":844},device_scale_factor=2,locale="ru-RU")
         c.add_init_script(f"localStorage.setItem('plonk_token','{TOKEN}');localStorage.setItem('i18nextLng','ru')")
         # подменяем безопасные поля: так ведёт себя приложение с домашнего экрана
+        css=open(f"{ROOT}/frontend/src/styles.css").read()
+        i=css.index('@media (display-mode: standalone) {')
+        block=css[i:]
+        inner=block[block.index('{')+1:block.rindex('}')]
+        c.add_init_script("""(()=>{const s=document.createElement('style');
+          s.textContent=%s; document.addEventListener('DOMContentLoaded',()=>document.head.appendChild(s));})()"""
+          % json.dumps(inner))
         c.add_init_script(f"""document.addEventListener('DOMContentLoaded',()=>{{
             document.documentElement.style.setProperty('--sat','{SAT}px');
             document.documentElement.style.setProperty('--sab','{SAB}px');}})""")
         bad=0
         for rt in routes:
             pg=c.new_page(); pg.goto(f"http://127.0.0.1:{WEB}{rt}"); pg.wait_for_timeout(1800)
+            mode=pg.evaluate("()=>matchMedia('(display-mode: standalone)').matches")
+            if rt==routes[0]: print("режим приложения:", mode)
             found=pg.evaluate(CHECK, [SAT, SAB])
             extra=pg.evaluate("""([sat,sab])=>{const out=[];const H=innerHeight;
               const nav=document.querySelector('.bottomnav');

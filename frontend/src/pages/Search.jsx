@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { observerRoot } from '../utils/scroller'
 import { withoutRemoved } from '../utils/removedListings'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -256,7 +257,7 @@ export default function Search() {
     if (!el) return
     const io = new IntersectionObserver(
       (entries) => { if (entries[0].isIntersecting) loadMore() },
-      { rootMargin: '1400px' },   // см. ниже
+      { root: observerRoot(), rootMargin: '1400px' },   // см. ниже
       // Подгружаем сильно заранее — примерно за два экрана до конца.
       //
       // 600px это меньше одного экрана телефона: человек долистывал до

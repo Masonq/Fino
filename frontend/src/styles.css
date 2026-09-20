@@ -6086,3 +6086,47 @@ a.s-attrs{ display:block; }
    как обычно. */
 #credential_picker_container:empty,
 #credential_picker_iframe:not([src]){ display:none !important; pointer-events:none !important; }
+
+
+/* ===== приложение, добавленное на домашний экран =====
+   Собрано по тому, как это решают в других проектах, и всюду одно и
+   то же: в этом режиме WebKit отдаёт высоту всего экрана вместо
+   видимой части, документ получает лишнюю прокрутку, а закреплённые
+   элементы уезжают вместе с резиновым отскоком. Подбором высоты это
+   не лечится — лечится тем, что оболочка прибита к краям экрана, а
+   прокручивается ровно один контейнер внутри неё.
+
+   В обычном браузере всё остаётся как было: там прокручивается сама
+   страница, и трогать это нельзя. */
+@media (display-mode: standalone) {
+  html, body{ height:100%; overflow:hidden; }
+
+  #root{ height:100%; }
+
+  .app-shell{
+    position:fixed; inset:0;
+    display:flex; flex-direction:column;
+    min-height:0; height:auto;
+    margin:0 auto;
+  }
+
+  /* Единственное место, которое прокручивается. */
+  .app-shell > main{
+    flex:1 1 auto; min-height:0;
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
+    overscroll-behavior-y:contain;
+  }
+
+  /* Панель — обычный элемент в конце колонки: она всегда у нижнего
+     края экрана, потому что сам экран и есть оболочка. */
+  .bottomnav{
+    position:static; flex:0 0 auto; margin-top:auto;
+  }
+
+  /* Место под панель внутри прокрутки больше не нужно: панель стоит
+     под контентом, а не поверх него. */
+  .app-shell > main.has-bottomnav{ padding-bottom:12px; }
+
+  /* Липкие шапки внутри страниц прилипают к верху контейнера — это
+     работает само, потому что контейнер и есть прокрутка. */
+}

@@ -1,4 +1,5 @@
 import { Routes, Route, useLocation, useNavigationType } from 'react-router-dom'
+import { scrollPos, scrollTo, scrollTop, onScroll } from './utils/scroller'
 import { Suspense, lazy, useEffect, useLayoutEffect, useRef } from 'react'
 import Home from './pages/Home'
 import Search from './pages/Search'
@@ -162,7 +163,7 @@ export default function App() {
     const key = location.key
     const onScroll = () => {
       if (navigating.current) return
-      scrollPositions.current[key] = window.scrollY
+      scrollPositions.current[key] = scrollPos()
     }
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
@@ -188,7 +189,7 @@ export default function App() {
     // предыдущее.
     if (navTypeRef.current === 'REPLACE') {
       if (pathname !== lastPath.current) {
-        window.scrollTo(0, 0)
+        scrollTop()
         navigating.current = false
       }
       lastPath.current = pathname
@@ -203,7 +204,7 @@ export default function App() {
     // середину плиток незачем — он теряет вход в раздел из виду.
     // Запоминать место нужно там, где список: в поиске и в ленте.
     if (pathname.startsWith('/c/')) {
-      window.scrollTo(0, 0)
+      scrollTop()
       navigating.current = false
       return
     }
@@ -219,7 +220,7 @@ export default function App() {
     // выше — ровно та жалоба, с которой всё началось.
     navigating.current = true
     if (navTypeRef.current !== 'POP') {
-      window.scrollTo(0, 0)
+      scrollTop()
       // Наверх ушли — дальше пишем прокрутку как обычно.
       setTimeout(() => { navigating.current = false }, 100)
       return
@@ -262,7 +263,7 @@ export default function App() {
     // дёргалась. Теперь ставим один раз, а дальше слушаем изменения
     // высоты: подъехали фото или следующая порция — поправили, и только
     // если человек ещё не там, где нужно.
-    window.scrollTo(0, saved)
+    scrollTo(saved)
 
     // Пробуем, пока не попадём — и сразу перестаём.
     //
@@ -304,7 +305,7 @@ export default function App() {
     let held = 0
     const put = () => {
       if (stop) return
-      if (Math.abs(window.scrollY - saved) <= 2) {
+      if (Math.abs(scrollPos() - saved) <= 2) {
         if (++held >= 3) {                                // держится — всё
           navigating.current = false
           show()
@@ -318,7 +319,7 @@ export default function App() {
         return
       }
       held = 0
-      window.scrollTo(0, saved)
+      scrollTo(saved)
       // Пробуем до двух с половиной секунд: на странице раздела сверху
       // ещё рисуются плитки подразделов и фильтры, и высота набирается
       // не сразу. Раньше сдавались через секунду, и человек оказывался
@@ -404,7 +405,7 @@ export default function App() {
           десктопе через CSS), и на мобильном его действительно не должно
           быть на этих трёх страницах — там условие оставляем как было. */}
       <TopNav />
-      <main className={hideNav ? '' : 'has-bottomnav'}>
+      <main id="app-scroll" className={hideNav ? '' : 'has-bottomnav'}>
         {/* Пока подгружается страница по требованию — ничего не рисуем.
             Пустая заглушка лучше вертушки: подгрузка занимает доли
             секунды, а вертушка, мелькнувшая на миг, выглядит как

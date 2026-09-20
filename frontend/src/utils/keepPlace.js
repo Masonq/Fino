@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { scrollPos, scrollTo, onScroll as onScrollEvent, observerRoot } from './scroller'
 
 /**
  * Возвращает страницу туда, где человек её оставил.
@@ -59,7 +60,7 @@ export function useKeepPlace(key) {
       lastHeight = height
       const reachable = height - window.innerHeight
       if (settled && reachable >= saved - 4) {
-        window.scrollTo(0, saved)
+        scrollTo(saved)
         clearInterval(timer)
         // Отпускаем запись через кадр: событие от нашего же scrollTo
         // придёт следующим, и до него писать нельзя.
@@ -87,15 +88,15 @@ export function useKeepPlace(key) {
       // только открылась и ещё ничего не прокручено, — и затирал бы
       // настоящее место. И не пишем, пока идёт восстановление.
       if (restoring.current) return
-      if (window.scrollY > 0) {
-        try { sessionStorage.setItem(`place:${key}`, String(window.scrollY)) } catch { /* не беда */ }
+      if (scrollPos() > 0) {
+        try { sessionStorage.setItem(`place:${key}`, String(scrollPos())) } catch { /* не беда */ }
       }
     }
-    window.addEventListener('scroll', remember, { passive: true })
+    const stop = onScrollEvent(remember)
     window.addEventListener('pagehide', remember)
     return () => {
       remember()
-      window.removeEventListener('scroll', remember)
+      stop()
       window.removeEventListener('pagehide', remember)
     }
   }, [key])
