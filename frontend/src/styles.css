@@ -3919,24 +3919,27 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    на ту же колонку: сам iframe масштабировать нельзя, но контейнеру
    можно задать ширину, а кнопке внутри — занять её целиком. */
 .auth-google{
-  width:100%; max-width:340px; display:flex; justify-content:center;
-  margin:4px 0 8px; height:44px;
+  /* Место под кнопку занято с самого начала — той же высоты, что у
+     соседних кнопок входа. */
+  position:relative; width:100%; max-width:340px;
+  margin:0 0 10px; min-height:52px;
 }
-.auth-google-slot{ width:100%; display:flex; justify-content:center; }
-/* Всё, что Google положил внутрь, — на всю ширину колонки. Селектор
-   именно на потомков слота: после появления силуэта кнопка лежит
-   глубже, и прежнее правило по прямому потомку .auth-google мимо неё
-   промахивалось. */
+/* Высота — как у соседних кнопок входа, независимо от содержимого. */
+.auth-google-face{ margin:0; min-height:52px; pointer-events:none; }
+/* Настоящая кнопка Google — прозрачным слоем поверх нашей: она и
+   ловит нажатие. Растянута на всю площадь, чтобы попадание совпадало
+   с тем, что человек видит. */
+.auth-google-slot{ position:absolute; inset:0; opacity:0; }
 .auth-google-slot > div,
 .auth-google-slot > div > div,
-.auth-google-slot iframe{ width:100% !important; max-width:none !important; }
-/* Силуэт кнопки, пока едет скрипт Google: та же высота и форма, так
-   что появление настоящей кнопки ничего не сдвигает. */
-.auth-google.loading .auth-google-slot{
-  height:44px; border-radius:22px; background:var(--surface);
-  border:1px solid rgba(20,30,25,.09);
+.auth-google-slot iframe{ width:100% !important; height:100% !important; max-width:none !important; }
+/* Пока скрипт Google едет — серый силуэт той же формы. */
+.auth-google.loading::after{
+  content:''; position:absolute; inset:0; border-radius:14px;
+  background:var(--surface); border:1px solid rgba(20,30,25,.09);
   animation:sk-pulse 1.4s ease-in-out infinite;
 }
+
 .auth-method.telegram{
   display:flex; align-items:center; justify-content:center; gap:9px;
   text-decoration:none;

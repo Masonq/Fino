@@ -381,7 +381,8 @@
     "email_malformed": "Proverite adresu — izgleda da ima grešku",
     "email_domain_unknown": "Takva poštanska usluga ne postoji. Proverite deo posle „@“",
     "bonus_sum": "300 RSD za prvi oglas",
-    "bonus_note": "Nedelja istaknutog oglasa"
+    "bonus_note": "Nedelja istaknutog oglasa",
+    "by_google": "Prijava Google nalogom"
   },
   "my": {
     "title": "Moji oglasi",

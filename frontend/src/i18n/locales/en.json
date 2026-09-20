@@ -380,7 +380,8 @@
     "email_malformed": "Check the address — it looks mistyped",
     "email_domain_unknown": "No such mail service. Check the part after the “@”",
     "bonus_sum": "300 RSD for your first listing",
-    "bonus_note": "A week of a highlighted card"
+    "bonus_note": "A week of a highlighted card",
+    "by_google": "Sign in with Google"
   },
   "my": {
     "title": "My listings",
