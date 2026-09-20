@@ -70,28 +70,11 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   user-select:none; -webkit-touch-callout:none; touch-action:manipulation;
 }
 
-/* Колонка на всю высоту экрана: панель внизу прижимается к её низу
-   (margin-top:auto), поэтому на короткой странице она стоит у края, а
-   не сразу под содержимым. */
-.app-shell{
-  max-width:480px; margin:0 auto; min-height:100vh; min-height:100dvh;
-  display:flex; flex-direction:column;
-  background:var(--bg); position:relative;
-}
-.app-shell > main{ flex:1 0 auto; }
+.app-shell{ max-width:480px; margin:0 auto; min-height:100vh; min-height:100dvh; background:var(--bg); position:relative; }
 .app-shell > main.has-bottomnav{ padding-bottom:calc(86px + var(--sab)); }
 
 .bottomnav{
-  /* Прилипает к низу, но остаётся в потоке страницы.
-     Было position:fixed — и на коротких страницах (пустой профиль,
-     избранное без карточек) в приложении с домашнего экрана панель
-     всплывала над краем экрана: под ней оставалась полоса фона в
-     шесть десятков точек. На iOS в этом режиме привязка fixed идёт к
-     раскладочному окну, которое у непрокручиваемой страницы выше
-     видимого. Sticky считает от видимой области и такой разницы не
-     знает. */
-  position:sticky; bottom:0; margin-top:auto;
-  left:0; right:0; max-width:480px; margin-left:auto; margin-right:auto; background:var(--surface);
+  position:fixed; left:0; right:0; bottom:0; max-width:480px; margin:0 auto; background:var(--surface);
   border-top:1px solid var(--border); display:flex; align-items:stretch;
   padding:10px 2px calc(9px + var(--sab)); z-index:20;
 }
