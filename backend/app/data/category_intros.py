@@ -265,7 +265,7 @@ INTROS.update({
         "sr": "Renoviranje stanova i sitni radovi: vodoinstalater, električar, "
               "montaža nameštaja, krečenje.",
     },
-    "nannies": {
+    "childcare": {
         "ru": "Няни и помощь с детьми в Белграде: на час, на полдня или "
               "постоянно. Русскоязычные и сербские няни, с опытом и отзывами "
               "родителей.",
