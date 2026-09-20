@@ -28,6 +28,12 @@ export default function Login() {
   const returnTo = params.get('returnTo') || '/'
   const googleRef = useRef(null)
   const [googleReady, setGoogleReady] = useState(false)
+  const observerRef = useRef(null)
+  // Высота кнопки Google с прошлого раза: место под неё резервируем
+  // сразу правильное, чтобы ничего не дёрнулось.
+  const knownH = (() => {
+    try { return Number(localStorage.getItem('plonk_google_h')) || 0 } catch { return 0 }
+  })()
 
   // iOS выгружает вкладку из памяти, когда уходишь в другое приложение за кодом.
   // Поэтому шаг и введённый адрес держим в хранилище сессии и восстанавливаем.
@@ -211,6 +217,25 @@ export default function Login() {
       // впритык.
       const box = Math.round(googleRef.current.getBoundingClientRect().width)
       const slot = Math.max(240, Math.min(400, box - 8)) || 320
+      // Подгоняем место под кнопку по факту. Google не держит обещанного
+      // размера: размер «large» — это 40 точек у обычной кнопки, но
+      // персонализированная («Войти как Максим») выше, а запрошенная
+      // ширина не соблюдается — просишь 400, получаешь 420. Поэтому
+      // слушаем фактический размер того, что он вставил, и задаём его
+      // блоку. Последний известный размер храним: со второго захода
+      // место сразу правильное, и дёргаться нечему.
+      const remember = (h) => {
+        if (!h || !googleRef.current) return
+        googleRef.current.parentElement?.style.setProperty('--google-h', `${Math.round(h)}px`)
+        try { localStorage.setItem('plonk_google_h', String(Math.round(h))) } catch { /* приват */ }
+      }
+      const watch = new ResizeObserver((entries) => {
+        const h = entries[0]?.target?.getBoundingClientRect().height
+        if (h > 20) remember(h)
+      })
+      watch.observe(googleRef.current)
+      observerRef.current = watch
+
       window.google.accounts.id.renderButton(googleRef.current, {
         theme: 'outline', size: 'large', width: slot,
         // Прямоугольная со скруглением — ближе к нашим кнопкам, чем
@@ -227,6 +252,7 @@ export default function Login() {
     // сайту уходят в них, и кажется, что кнопки перестали работать.
     const cleanup = () => {
       cancelled = true
+      observerRef.current?.disconnect()
       try { window.google?.accounts?.id?.cancel() } catch { /* скрипт мог не доехать */ }
       document.querySelectorAll(
         '#credential_picker_container, #credential_picker_iframe, ' +
@@ -296,7 +322,10 @@ export default function Login() {
             рабочая кнопка важнее одинакового вида. Ширину она берёт по
             месту, чтобы стоять в одной колонке с соседями. */}
         {GOOGLE_ID && (
-          <div className={googleReady ? 'auth-google' : 'auth-google loading'}>
+          <div
+            className={googleReady ? 'auth-google' : 'auth-google loading'}
+            style={knownH ? { '--google-h': `${knownH}px` } : undefined}
+          >
             <div ref={googleRef} className="auth-google-slot" />
           </div>
         )}
