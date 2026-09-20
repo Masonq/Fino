@@ -33,6 +33,13 @@ PAIRS = [
     # Не дубль, а лишняя полка: «Личная гигиена» убрана по решению
     # владельца, её содержимое уходит в соседнее «Здоровье и уход».
     ("health", "personal-hygiene"),
+    # «Строительство и ремонт» — двойник «Ремонта и строительства».
+    # Сначала листья-двойники, потом сам раздел: оставшиеся ремёсла
+    # (плиточник, маляр, столяр, ремонт под ключ) переедут под repair
+    # вместе с ним.
+    ("repair-plumbing", "con-plumber"),
+    ("repair-electrical", "con-electric"),
+    ("repair", "construction"),
 ]
 
 # Новые названия для уже заведённых разделов. Сеялка названий не
@@ -69,7 +76,15 @@ def run(apply: bool) -> None:
 
             if not apply:
                 continue
-            db.execute(text("update categories set parent_id=:k where parent_id=:d"), {"k": keep.id, "d": drop.id})
+            # Переехавшие подразделы встают в конец списка, а не вперемешку
+            # с хозяйскими: порядок у обоих наборов начинался с нуля.
+            base = db.execute(
+                text("select coalesce(max(sort_order), -1) + 1 from categories where parent_id=:k"), {"k": keep.id}
+            ).scalar()
+            db.execute(
+                text("update categories set parent_id=:k, sort_order=sort_order+:b where parent_id=:d"),
+                {"k": keep.id, "d": drop.id, "b": base},
+            )
             db.execute(text("update listings set category_id=:k where category_id=:d"), {"k": keep.id, "d": drop.id})
             db.execute(
                 text("update saved_searches set filters = jsonb_set(filters::jsonb, '{category_slug}', to_jsonb(cast(:k as text)))"

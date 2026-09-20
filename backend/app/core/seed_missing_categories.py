@@ -79,10 +79,11 @@ NEW = {
         ("bikes-electric", "Электровелосипеды", "E-bikes", "Električni bicikli", []),
         ("bikes-parts", "Запчасти и аксессуары", "Parts and accessories", "Delovi i oprema", []),
     ],
-    "construction": [
+    # Ремёсла жили под отдельным «Строительство и ремонт» — двойником
+    # «Ремонта и строительства». Раздел слит, а «Электрик» и «Сантехник»
+    # убраны: под той же крышей уже есть «Электрика» и «Сантехника».
+    "repair": [
         ("con-tiler", "Плиточник", "Tiling", "Keramičar", []),
-        ("con-electric", "Электрик", "Electrician", "Električar", []),
-        ("con-plumber", "Сантехник", "Plumber", "Vodoinstalater", []),
         ("con-painter", "Маляр и штукатур", "Painter and plasterer", "Moler i fasader", []),
         ("con-carpenter", "Столяр и мебельщик", "Carpenter", "Stolar", []),
         ("con-full", "Ремонт под ключ", "Full renovation", "Renoviranje ključ u ruke", []),
@@ -166,7 +167,6 @@ NEW = {
         ("pets-farm", "Домашний скот и птица", "Farm animals", "Domaće životinje", []),
     ],
     "services": [
-        ("construction", "Строительство и ремонт", "Construction and renovation", "Građevina i renoviranje", []),
         ("childcare", "Няни и уход", "Childcare and care", "Čuvanje dece i nega", []),
         ("photo-video", "Фото и видео", "Photo and video", "Foto i video", []),
         ("events", "Праздники и мероприятия", "Events", "Proslave i događaji", []),

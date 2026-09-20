@@ -122,7 +122,6 @@ SUBCATEGORIES: dict[str, list[dict]] = {
         {"slug": "cleaning", "name": {"ru": "Уборка и помощь по дому", "en": "Cleaning & household", "sr": "Čišćenje i pomoć"}},
         {"slug": "it-design", "name": {"ru": "IT и дизайн", "en": "IT & design", "sr": "IT i dizajn"}},
         {"slug": "legal", "name": {"ru": "Документы и юристы", "en": "Legal & paperwork", "sr": "Dokumenti i pravo"}},
-        {"slug": "construction", "name": {"ru": "Строительство и ремонт", "en": "Construction & renovation", "sr": "Građevina i renoviranje"}},
         {"slug": "childcare", "name": {"ru": "Няни и уход", "en": "Childcare & care", "sr": "Čuvanje dece i nega"}},
         {"slug": "photo-video", "name": {"ru": "Фото и видео", "en": "Photo & video", "sr": "Foto i video"}},
         {"slug": "events", "name": {"ru": "Праздники и мероприятия", "en": "Events", "sr": "Proslave i događaji"}},
