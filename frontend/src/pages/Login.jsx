@@ -205,7 +205,12 @@ export default function Login() {
       // рисует кнопку ровно той ширины, что ей передали, и 320 на
       // экране 394 давало кнопку уже двух соседних — своя линия слева
       // и справа. Потолок 400 — предел, который принимает Google.
-      const slot = Math.min(400, Math.round(googleRef.current.getBoundingClientRect().width)) || 320
+      // Ширину просим чуть меньше колонки: Google добавляет к заданному
+      // числу свою рамку, и кнопка ровно по колонке вылезала за край —
+      // справа было видно срез. Меньше и по центру спокойнее, чем
+      // впритык.
+      const box = Math.round(googleRef.current.getBoundingClientRect().width)
+      const slot = Math.max(240, Math.min(400, box - 8)) || 320
       window.google.accounts.id.renderButton(googleRef.current, {
         theme: 'outline', size: 'large', width: slot,
         // Прямоугольная со скруглением — ближе к нашим кнопкам, чем

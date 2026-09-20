@@ -3936,10 +3936,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   margin:0 0 10px; min-height:48px;
   display:flex; align-items:center; justify-content:center;
 }
-.auth-google-slot{ width:100%; }
-.auth-google-slot > div,
-.auth-google-slot > div > div,
-.auth-google-slot iframe{ width:100% !important; max-width:none !important; }
+/* Кнопку не растягиваем силой — только ставим по центру колонки.
+   Растянутая до края она обрезалась справа: Google прибавляет к
+   заданной ширине свою рамку. */
+.auth-google-slot{ width:100%; display:flex; justify-content:center; }
 /* Пока скрипт Google едет — серый силуэт той же формы. */
 .auth-google.loading::after{
   content:''; position:absolute; inset:0; border-radius:14px;
