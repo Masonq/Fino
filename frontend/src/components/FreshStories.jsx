@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
@@ -23,7 +23,19 @@ export default function FreshStories({ items, seen, onOpen }) {
   const strip = useRef(null)
   const restored = useRef(false)
 
-  useEffect(() => {
+  // Возвращаем полоску на место до первого кадра, а не после.
+  //
+  // Было так: эффект после отрисовки заводил таймер на сто
+  // миллисекунд и только потом двигал полоску. Человек успевал увидеть
+  // её в начале, и она на его глазах прыгала вправо — это и читалось
+  // как рывок при возврате с объявления.
+  //
+  // useLayoutEffect выполняется до того, как браузер покажет кадр.
+  // Если кружки уже на месте, прокрутка ставится там же и рывка нет
+  // вовсе. Если ещё нет — пробуем каждый следующий кадр, а не раз в
+  // сотую долю секунды: попадём в первый же, где полоске есть куда
+  // двигаться.
+  useLayoutEffect(() => {
     const node = strip.current
     if (!node || items === null || restored.current) return
     restored.current = true
@@ -32,20 +44,25 @@ export default function FreshStories({ items, seen, onOpen }) {
     try { saved = Number(sessionStorage.getItem('stories-scroll') || 0) } catch { /* не беда */ }
     if (saved <= 0) return
 
-    // Ждём, пока кружки появятся: сразу после прихода данных полоска
-    // ещё узкая, и браузер молча оставляет прокрутку в нуле. Пробуем
-    // каждые сто миллисекунд, пока полоске не станет куда прокручиваться.
+    let frame = 0
     let tries = 0
-    const timer = setInterval(() => {
-      tries += 1
+    const put = () => {
       if (node.scrollWidth - node.clientWidth >= saved - 4) {
+        // На время подстановки снимаем привязку кружков к сетке:
+        // с ней браузер после присвоения доводит полоску до ближайшей
+        // точки — и она на глазах отъезжает и возвращается. Именно это
+        // и видно как рывок. Возвращаем привязку следующим кадром,
+        // когда полоска уже стоит.
+        const snap = node.style.scrollSnapType
+        node.style.scrollSnapType = 'none'
         node.scrollLeft = saved
-        clearInterval(timer)
-      } else if (tries >= 15) {
-        clearInterval(timer)
+        requestAnimationFrame(() => { node.style.scrollSnapType = snap })
+        return
       }
-    }, 100)
-    return () => clearInterval(timer)
+      if (tries++ < 40) frame = requestAnimationFrame(put)
+    }
+    put()
+    return () => cancelAnimationFrame(frame)
   }, [items])
 
   useEffect(() => {
