@@ -201,9 +201,16 @@ def _better_title(db, listing, translation, sections) -> tuple[str | None, str]:
         return None, "нет описания"
 
     category = db.get(Category, listing.category_id)
-    parent = db.get(Category, category.parent_id) if category and category.parent_id else None
-    root_slug = parent.slug if parent else (category.slug if category else None)
-    sub_slug = category.slug if parent else None
+    # Корень — подъёмом до конца, подраздел — второй уровень ветки:
+    # правила заголовков написаны под пары вроде (transport, cars), а
+    # у объявления на третьем уровне родитель — уже не корень.
+    root_slug = sub_slug = None
+    if category:
+        chain = [category]
+        while chain[-1].parent is not None and len(chain) < 10:
+            chain.append(chain[-1].parent)
+        root_slug = chain[-1].slug
+        sub_slug = chain[-2].slug if len(chain) > 1 else None
 
     old = translation.title or ""
     by_rules = build_title(root_slug, sub_slug, text, listing.attributes or {})

@@ -276,9 +276,28 @@ export default function Search() {
   // Полоса подкатегорий над лентой. Отдельной страницы под категорию не
   // заводим: так подкатегории работают одинаково и с главной, и из списка
   // категорий, и не добавляют лишнего шага тем, кому нужна вся категория.
-  const current = categories.find((c) => c.slug === category)
-    || categories.find((c) => (c.children || []).some((s) => s.slug === category))
-  const subs = current?.children || []
+  //
+  // Ищем на любой глубине: с третьим уровнем («Телефоны» → «Apple»)
+  // поиск «сам или прямой ребёнок» не находил ничего — пропадали и ряд
+  // подразделов, и фильтры раздела, и выбранный пункт в списке.
+  const trail = (() => {
+    const walk = (nodes, path) => {
+      for (const n of nodes || []) {
+        const next = [...path, n]
+        if (n.slug === category) return next
+        const deeper = walk(n.children, next)
+        if (deeper) return deeper
+      }
+      return null
+    }
+    return (category && walk(categories, [])) || []
+  })()
+  // Корень — для фильтров раздела. Ряд плиток — соседи выбранного, как
+  // и было: у «Телефонов» это подразделы «Электроники», у «Apple» —
+  // остальные марки, а «Все» возвращает на уровень выше.
+  const current = trail[0]
+  const rowParent = trail.length >= 2 ? trail[trail.length - 2] : current
+  const subs = rowParent?.children || []
   const label = (c) => c.name?.[i18n.language] || c.name?.ru
 
   const activeCount = [category, priceMin, priceMax, city, withPhoto ? '1' : ''].filter(Boolean).length
@@ -359,11 +378,16 @@ export default function Search() {
                     категория вровень с «Электроникой». */}
                 {categories.map((c) => [
                   <option key={c.id} value={c.slug}>{c.name?.[i18n.language] || c.name?.ru}</option>,
-                  ...(c.children || []).map((sub) => (
+                  ...(c.children || []).flatMap((sub) => [
                     <option key={sub.id} value={sub.slug}>
                       {'\u00A0\u00A0\u00A0'}{sub.name?.[i18n.language] || sub.name?.ru}
-                    </option>
-                  )),
+                    </option>,
+                    ...(sub.children || []).map((deep) => (
+                      <option key={deep.id} value={deep.slug}>
+                        {'\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0'}{deep.name?.[i18n.language] || deep.name?.ru}
+                      </option>
+                    )),
+                  ]),
                 ])}
               </select>
             </div>
@@ -423,8 +447,8 @@ export default function Search() {
           {subs.length > 0 && (
             <div className="sub-row">
               <button
-                className={category === current.slug ? 'sub-chip active' : 'sub-chip'}
-                onClick={() => setCategory(current.slug)}
+                className={category === rowParent.slug ? 'sub-chip active' : 'sub-chip'}
+                onClick={() => setCategory(rowParent.slug)}
               >
                 {t('search.all_in_category')}
               </button>

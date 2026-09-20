@@ -65,10 +65,17 @@ SQL = """
     select l.id, t.title, t.description, l.price, l.currency
     from listings l
     join listing_translations t on t.listing_id = l.id and t.language = 'ru'
-    join categories c on c.id = l.category_id
-    left join categories p on p.id = c.parent_id
     where l.status = 'active'
-      and coalesce(p.slug, c.slug) not in ('services', 'jobs', 'real-estate')
+      -- вся ветка, не «родитель или сам»: у услуг и работы есть третий уровень
+      and l.category_id not in (
+        with recursive branch as (
+          select id from categories
+          where slug in ('services', 'jobs', 'real-estate')
+          union all
+          select k.id from categories k join branch b on k.parent_id = b.id
+        )
+        select id from branch
+      )
 """
 
 

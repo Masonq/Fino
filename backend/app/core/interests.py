@@ -49,7 +49,10 @@ def _decay(age_days: float) -> float:
 def _root_id(category: Category | None):
     if not category:
         return None
-    return category.parent_id or category.id
+    # До самого верха: на третьем уровне parent_id — это подраздел.
+    from app.core.category_tree import root_of
+
+    return root_of(category).id
 
 
 def category_interests(db: Session, user_id, now=None) -> tuple[dict, dict]:

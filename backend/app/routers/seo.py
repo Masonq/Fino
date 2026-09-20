@@ -10,6 +10,7 @@
 каждый час, и суточной давности карта звала бы поисковика на снятые.
 """
 from app.core.plural import count as _cnt
+from app.core.category_tree import branch_ids as _branch_ids
 from datetime import timedelta
 from xml.sax.saxutils import escape
 
@@ -670,8 +671,10 @@ def category_page(slug: str, request: Request, db: Session = Depends(get_db),
         .filter(
             Listing.status == ListingStatus.active,
             ListingTranslation.language == lang,
-            Listing.category_id.in_(
-                [category.id] + [c.id for c in children]),
+            # Вся ветка: с третьим уровнем прямых детей мало — у
+            # «Услуг» объявления лежат в «Мастера» → «Сантехник», и
+            # поисковик видел раздел почти пустым.
+            Listing.category_id.in_(_branch_ids(category)),
         )
         .order_by(Listing.published_at.desc().nullslast())
         .limit(40)
@@ -706,8 +709,11 @@ def category_page(slug: str, request: Request, db: Session = Depends(get_db),
 
     # Родителя передаём, чтобы подраздел без своего текста показал
     # описание раздела, а не пустоту.
-    parent_slug = category.parent.slug if category.parent else None
-    own_text = category_intro(slug, lang, parent_slug)
+    # Поднимаемся, пока не найдём текст: у третьего уровня родитель —
+    # подраздел, и своего текста у него чаще всего тоже нет.
+    own_text, node = category_intro(slug, lang), category.parent
+    while not own_text and node is not None:
+        own_text, node = category_intro(node.slug, lang), node.parent
     if own_text:
         # В описание для выдачи — первое предложение: там всего полторы
         # сотни знаков, длинное всё равно обрежут на полуслове.

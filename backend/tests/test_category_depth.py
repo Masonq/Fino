@@ -11,12 +11,38 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.core.plural import count  # noqa: E402
-from app.routers.listings import _branch_ids  # noqa: E402
+from app.core.category_tree import branch_ids as _branch_ids, root_of  # noqa: E402
 
 
 class Cat:
     def __init__(self, id, children=()):
-        self.id, self.children = id, list(children)
+        self.id, self.children, self.parent = id, list(children), None
+        for child in self.children:
+            child.parent = self
+
+
+def test_root_is_found_from_third_level():
+    """
+    «Родитель или сам» на третьем уровне давал подраздел вместо раздела:
+    сантехник из «Услуги» → «Мастера» попадал во вкладку «Даром», а
+    интересы человека писались на «Мастеров», а не на «Услуги».
+    """
+    leaf = Cat("plumber")
+    root = Cat("services", [Cat("masters", [leaf])])
+    assert root_of(leaf) is root
+    assert root_of(root) is root
+
+
+def test_no_more_parent_or_self_shortcuts():
+    """Привычка считать корнем родителя не должна вернуться в код."""
+    import re
+    app = Path(__file__).resolve().parents[1] / "app"
+    bad = re.compile(r"coalesce\(\s*\w+\.(parent_id|slug)\s*,|\.parent_id or \w+\.id")
+    hits = [f"{f.relative_to(app)}:{n}" for f in app.rglob("*.py")
+            for n, line in enumerate(f.read_text().splitlines(), 1)
+            if bad.search(line) and not line.lstrip().startswith("#")
+            and f.name != "category_tree.py"]
+    assert not hits, hits
 
 
 def test_third_level_is_included():

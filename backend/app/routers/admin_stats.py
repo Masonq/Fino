@@ -327,14 +327,16 @@ def by_category(
     находит и больше туда не возвращается.
     """
     rows = (
-        db.query(Category.slug, Category.parent_id, func.count(Listing.id))
+        db.query(Category.slug, Category.id, func.count(Listing.id))
         .join(Listing, Listing.category_id == Category.id)
         .filter(Listing.status == ListingStatus.active)
-        .group_by(Category.slug, Category.parent_id)
+        .group_by(Category.slug, Category.id)
         .all()
     )
     everything = db.query(Category).all()
-    parents = {c.id: c.slug for c in everything}
+    from app.core.category_tree import root_slugs
+
+    roots = root_slugs(db)
     # Названия берём из самой базы, а не переводим по служебному имени
     # на стороне приложения.
     #
@@ -347,10 +349,11 @@ def by_category(
     names = {c.slug: (c.name or {}) for c in everything}
 
     totals: dict[str, int] = {}
-    for slug, parent_id, count in rows:
-        # Сводим к родительскому разделу: подкатегорий шестьдесят, и
-        # список из них не читается.
-        key = parents.get(parent_id) or slug
+    for slug, cat_id, count in rows:
+        # Сводим к разделу верхнего уровня: подкатегорий сотни, и
+        # список из них не читается. До самого верха — иначе третий
+        # уровень вставал в список отдельной строкой-подразделом.
+        key = roots.get(cat_id) or slug
         totals[key] = totals.get(key, 0) + count
 
     # Разделы без единого объявления показываем тоже — они и есть дыры

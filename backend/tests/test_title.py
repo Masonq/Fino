@@ -2641,7 +2641,9 @@ def test_services_are_left_alone():
     source = (Path(__file__).resolve().parents[1]
               / "app" / "core" / "find_bundles.py").read_text()
 
-    assert "not in ('services', 'jobs', 'real-estate')" in source
+    assert "slug in ('services', 'jobs', 'real-estate')" in source
+    # и по всей ветке: у услуг есть третий уровень (мастера по ремеслу)
+    assert "with recursive branch" in source
 
 
 def test_price_comparison_is_not_a_bundle():

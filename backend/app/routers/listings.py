@@ -273,14 +273,7 @@ def create_listing(
     return {"id": str(listing.id), "status": listing.status}
 
 
-def _branch_ids(cat) -> list:
-    """Раздел и все его подразделы на любую глубину."""
-    ids, stack = [], [cat]
-    while stack:
-        node = stack.pop()
-        ids.append(node.id)
-        stack.extend(node.children or [])
-    return ids
+from app.core.category_tree import branch_ids as _branch_ids  # noqa: E402
 
 
 @router.get("")
@@ -499,12 +492,13 @@ def search_listings(
         # Тот же приём применён при поиске перечней (см.
         # app/core/find_bundles.py): там эти разделы исключены по той же
         # причине.
-        parent = aliased(Category)
-        free_cat = aliased(Category)
-        q = (q.join(free_cat, free_cat.id == Listing.category_id)
-              .outerjoin(parent, parent.id == free_cat.parent_id)
-              .filter(func.coalesce(parent.slug, free_cat.slug).notin_(
-                  ("services", "jobs", "real-estate"))))
+        # По всей ветке, а не «родитель или сам»: с третьим уровнем
+        # («Услуги» → «Мастера» → «Сантехник») родитель — уже не корень,
+        # и мастера возвращались во вкладку.
+        from app.core.category_tree import ids_under_roots
+
+        q = q.filter(Listing.category_id.notin_(
+            ids_under_roots(db, ("services", "jobs", "real-estate"))))
 
     if with_photo:
         q = q.filter(Listing.photos.any())
@@ -841,23 +835,6 @@ def search_listings(
         # применяется: там человек уже сам сказал, что ему нужно, и
         # подмешивать к этому прошлые интересы — значит спорить с прямым
         # запросом.
-        # Раздел верхнего уровня для объявления: «Наушники» относятся к
-        # «Электронике». Нужен и для интересов, и для разбавления ленты
-        # ниже. Подзапросом, а не JOIN'ом: выше по коду Category уже
-        # может быть присоединена фильтром по разделу, и второй JOIN той
-        # же таблицы столкнулся бы с ней.
-        # Раздел верхнего уровня — обычным соединением, а не подзапросом
-        # на каждую строку. Подзапрос здесь стоил дорого: он считался
-        # для каждого объявления выборки, да ещё стоял в разбивке
-        # оконной функции, то есть выполнялся дважды за строку. Страницы
-        # от этого заметно потяжелели.
-        #
-        # Отдельный псевдоним, потому что выше по коду Category уже может
-        # быть присоединена фильтром по разделу: два соединения одной
-        # таблицы под одним именем столкнулись бы.
-        cat_alias = aliased(Category)
-        q = q.outerjoin(cat_alias, cat_alias.id == Listing.category_id)
-        root_category_id = func.coalesce(cat_alias.parent_id, cat_alias.id)
 
         personal_boost = 0.0
         if viewer and not q_text and not category_slug:
@@ -873,9 +850,17 @@ def search_listings(
             root_boosts = interest_boost(roots)
             sub_boosts = interest_boost(subs, cap=SUB_CAP)
             if root_boosts:
+                # Корень ищем подъёмом до конца: «родитель или сам» на
+                # третьем уровне давал подраздел вместо раздела, и его
+                # объявления оставались без буста.
+                from app.core.category_tree import root_ids
+
+                under: dict = {}
+                for cid, rid in root_ids(db).items():
+                    under.setdefault(rid, []).append(cid)
                 personal_boost = case(
                     *[
-                        (root_category_id == cid, weight)
+                        (Listing.category_id.in_(under.get(cid, [cid])), weight)
                         for cid, weight in root_boosts.items()
                     ],
                     else_=0.0,
