@@ -3127,17 +3127,23 @@ def test_clothing_sections_inside_women_and_men():
         assert classify_sub("men", text) == expected, text
 
 
-def test_accessories_have_their_own_shelves():
-    """Шапки, очки, ремни и зонты — свои разделы.
+def test_accessories_do_not_stay_in_the_parent():
+    """Шапки, очки, ремни и зонты доходят до «Сумок и аксессуаров».
 
-    Раньше в аксессуарах были только сумки и украшения, а шапки со
-    шарфами шли отдельным потоком и оседали в родительском разделе.
+    Сначала под каждую мелочь завели свою полку, и на полке оказывалось
+    по три объявления, а плитки занимали весь экран раздела. Полки слиты
+    в «Сумки и аксессуары»; важно другое — что эти вещи вообще
+    разбираются, а не оседают в родительской «Одежде», как было до
+    появления слов.
     """
     from app.core.tg_classify import classify_sub
 
-    assert classify_sub("fashion", "шапка зимняя") == "hats-scarves"
-    assert classify_sub("fashion", "солнцезащитные очки ray-ban") == "glasses"
-    assert classify_sub("fashion", "зонт автомат") == "umbrellas"
+    assert classify_sub("fashion", "шапка зимняя") == "bags"
+    assert classify_sub("fashion", "солнцезащитные очки ray-ban") == "bags"
+    assert classify_sub("fashion", "зонт автомат") == "bags"
+    assert classify_sub("fashion", "перчатки кожаные") == "bags"
+    # Украшения — соседняя полка, и она осталась своей.
+    assert classify_sub("fashion", "серебряное кольцо") == "watches"
 
 
 def test_clothes_sorting_is_cautious():

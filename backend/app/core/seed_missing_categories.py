@@ -111,7 +111,6 @@ NEW = {
     "auto": [
         ("trailers", "Прицепы и дома на колёсах", "Trailers and campers", "Prikolice i kamperi", []),
         ("water", "Лодки и катера", "Boats", "Čamci i plovila", []),
-        ("agri", "Сельхозтехника", "Farm machinery", "Poljoprivredne mašine", []),
         ("e-transport", "Самокаты и электротранспорт", "Scooters and e-transport", "Trotineti i e-prevoz", []),
         ("car-rental", "Аренда авто", "Car rental", "Rent a car", []),
     ],
@@ -125,24 +124,15 @@ NEW = {
     "home-garden": [
         ("building", "Стройматериалы", "Building materials", "Građevinski materijal", []),
         ("plumbing", "Сантехника и отопление", "Plumbing and heating", "Vodovod i grejanje", []),
-        ("textile", "Текстиль для дома", "Home textile", "Tekstil za kuću", []),
         ("food", "Продукты и домашнее", "Food and homemade", "Hrana i domaći proizvodi", []),
         ("household-goods", "Бытовая химия и уборка", "Household supplies", "Sredstva za domaćinstvo", []),
         ("lighting", "Освещение", "Lighting", "Rasveta", []),
         ("storage-home", "Хранение и организация", "Storage and organisation", "Odlaganje i organizacija", []),
     ],
     "fashion": [
-        ("jewelry", "Украшения", "Jewellery", "Nakit", []),
-        ("hats-scarves", "Шапки и шарфы", "Hats and scarves", "Kape i šalovi", []),
-        ("gloves", "Перчатки и варежки", "Gloves", "Rukavice", []),
-        ("belts", "Ремни", "Belts", "Kaiševi", []),
-        ("glasses", "Очки", "Glasses", "Naočare", []),
-        ("umbrellas", "Зонты", "Umbrellas", "Kišobrani", []),
     ],
     "kids": [
-        ("car-seats", "Автокресла", "Car seats", "Auto-sedišta", []),
         ("kids-transport", "Детский транспорт", "Kids bikes and scooters", "Bicikli i trotineti za decu", []),
-        ("kids-hygiene", "Детская гигиена и подгузники", "Nappies and baby care", "Pelene i nega bebe", []),
         ("kids-feeding", "Кормление и гигиена", "Feeding and care", "Ishrana i nega", []),
     ],
     "hobby-sport": [
@@ -163,7 +153,6 @@ NEW = {
         ("childcare", "Няни и уход", "Childcare and care", "Čuvanje dece i nega", []),
         ("photo-video", "Фото и видео", "Photo and video", "Foto i video", []),
         ("events", "Праздники и мероприятия", "Events", "Proslave i događaji", []),
-        ("docs-visa", "Документы и визы", "Documents and visas", "Dokumenti i vize", []),
         ("medical", "Здоровье и медицина", "Health and medical", "Zdravlje i medicina", []),
         ("auto-services", "Автосервис и шиномонтаж", "Car service and tyres", "Auto servis i vulkanizer", []),
         ("lost-found", "Находки и пропажи", "Lost and found", "Izgubljeno i nađeno", []),
