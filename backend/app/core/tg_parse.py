@@ -1858,7 +1858,12 @@ def extract_attributes(category_slug: str, text: str) -> dict:
     if category_slug == "real-estate":
         rooms = extract_rooms(text)
         if rooms:
-            attrs["rooms"] = rooms
+            # Словарь списка, а не число: см. rooms_value.
+            from app.data.schemas import rooms_value
+
+            value = rooms_value(rooms)
+            if value:
+                attrs["rooms"] = value
         area = _AREA_RE.search(text)
         if area:
             # У правила две ветви — число до слова и после

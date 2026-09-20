@@ -279,7 +279,10 @@ export default function PostAd() {
     if (!area) return ''
     const rooms = attrs.rooms
     const head = rooms
-      ? t('post.title_rooms', { n: Number(rooms) })
+      // Значение из списка: «studio», «1.5», «4» (четыре и больше).
+      // Number('studio') давал «NaN-комнатная квартира». Точка в ключе
+      // перевода — разделитель, поэтому «1.5» ищем как «1_5».
+      ? t([`post.title_rooms_${String(rooms).replace('.', '_')}`, 'post.title_rooms'], { n: rooms })
       : t('post.title_no_rooms')
     return t('post.title_area_fmt', { head, area })
   })()

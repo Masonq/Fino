@@ -109,3 +109,28 @@ def test_no_schema_for_merged_away_sections():
     seeded = {c["slug"] for group in (SUBCATEGORIES, SUB_SUBCATEGORIES)
               for children in group.values() for c in children}
     assert not gone & seeded, "seed_categories.py завёл бы слитые разделы заново"
+
+
+def test_rooms_go_into_the_select_vocabulary():
+    """
+    «Комнат» стало списком, а в базе и в разборе из Telegram остались
+    числа: 2 !== '2', и в форме комнаты оказывались не выбраны.
+    """
+    from app.data.schemas import ROOMS, rooms_value
+
+    allowed = {o["value"] for o in ROOMS["options"]}
+    for raw, want in ((2, "2"), (2.0, "2"), ("2", "2"), (1.5, "1.5"), ("1,5", "1.5"),
+                      (4, "4"), (7, "4"), ("studio", "studio"), (0, None), ("", None),
+                      ("много", None)):
+        assert rooms_value(raw) == want, raw
+        assert want is None or want in allowed
+
+
+def test_old_code_schemas_are_recognised():
+    """Отпечаток старой версии из кода — не ручная правка, её можно заменить."""
+    from app.data.schemas import SCHEMAS, SUB_SCHEMAS, SUPERSEDED, fingerprint
+
+    current = {**SCHEMAS, **SUB_SCHEMAS}
+    for slug, versions in SUPERSEDED.items():
+        assert slug in current, slug
+        assert fingerprint(current[slug]) not in versions, slug

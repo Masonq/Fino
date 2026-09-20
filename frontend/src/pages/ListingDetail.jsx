@@ -716,7 +716,9 @@ export default function ListingDetail() {
       return formatPrice(value, listing.currency, lang)
     }
     if (field?.type === 'select') {
-      const opt = field.options?.find((o) => o.value === value)
+      // Через строку: поле могло быть числом до того, как стало списком,
+      // и 2 !== '2' оставляло бы голую цифру без подписи.
+      const opt = field.options?.find((o) => String(o.value) === String(value))
       return opt?.label?.[lang] || opt?.label?.ru || value
     }
     // Атрибуты, заполненные словами («Вид услуги»), переводятся вместе с

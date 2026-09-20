@@ -12,7 +12,7 @@
 Отдельно от seed_categories.py намеренно: тот заодно переписывает
 названия, порядок и родителей, а на живой базе разделы уже двигали и
 сливали вручную. Здесь трогаем одно поле — attribute_schema — и только у
-разделов, перечисленных в SUB_SCHEMAS.
+разделов, перечисленных в SCHEMAS и SUB_SCHEMAS.
 
 Объявления не трогаем: атрибуты, заполненные по старой схеме, остаются
 как есть, лишние просто не показываются в форме.
@@ -20,7 +20,7 @@
 import argparse
 
 from app.core.database import SessionLocal
-from app.data.schemas import SUB_SCHEMAS, SUPERSEDED
+from app.data.schemas import SCHEMAS, SUB_SCHEMAS, SUPERSEDED, fingerprint
 from app.models import Category
 
 
@@ -28,15 +28,15 @@ def run(apply: bool, everything: bool = False) -> int:
     db = SessionLocal()
     changed = 0
     try:
-        for slug, schema in sorted(SUB_SCHEMAS.items()):
+        # Разделы и подразделы вместе: слаги у них не пересекаются.
+        for slug, schema in sorted({**SCHEMAS, **SUB_SCHEMAS}.items()):
             cat = db.query(Category).filter(Category.slug == slug).first()
             if cat is None:
                 print(f"  нет в базе: {slug}")
                 continue
             if (cat.attribute_schema or []) == schema:
                 continue
-            mine = [f.get("key") for f in (cat.attribute_schema or [])]
-            ours_before = SUPERSEDED.get(slug) == mine
+            ours_before = fingerprint(cat.attribute_schema) in SUPERSEDED.get(slug, [])
             if cat.attribute_schema and not everything and not ours_before:
                 # Показываем, чем именно отличается, — иначе строка «не
                 # трогаю» ничего не даёт: непонятно, кто прав, база или код.
@@ -59,7 +59,7 @@ def run(apply: bool, everything: bool = False) -> int:
                 continue
             before = [f.get("key") for f in (cat.attribute_schema or [])]
             after = [f["key"] for f in schema]
-            print(f"  {slug}: {before or 'от раздела'} → {after}")
+            print(f"  {slug}: {before or 'пусто'} → {after}")
             changed += 1
             if apply:
                 cat.attribute_schema = schema

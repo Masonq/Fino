@@ -366,6 +366,30 @@ ROOMS = {
     ),
 }
 
+def rooms_value(raw) -> str | None:
+    """
+    Комнаты в словаре списка ROOMS: «2», «1.5», «4» (четыре и больше).
+
+    Поле было числом, и в базе остались числа, а разбор объявлений из
+    Telegram писал их до последнего. Список сравнивает значения строго:
+    число 2 не равно строке «2», и в форме редактирования комнаты
+    оказывались не выбраны.
+    """
+    if raw is None or raw == "":
+        return None
+    if isinstance(raw, str) and raw.strip().lower() == "studio":
+        return "studio"
+    try:
+        n = float(str(raw).replace(",", "."))
+    except ValueError:
+        return None
+    if n <= 0:
+        return None
+    if n >= 4:
+        return "4"
+    return {1.0: "1", 1.5: "1.5", 2.0: "2", 2.5: "2.5", 3.0: "3", 3.5: "3"}.get(n)
+
+
 # Как платить и как передавать вещь.
 #
 # Самые частые вопросы в первом же сообщении покупателя — «наличными
@@ -816,9 +840,35 @@ SUB_SCHEMAS.update({
 # Пустая схема в базе значит «возьми у раздела», поэтому отдельный список.
 NO_FIELDS = {"food", "household-goods"}
 
-# Прежние наборы полей из кода. Если в базе лежит ровно такой набор,
-# значит, схему на месте не правили — это наша же старая версия, и её
-# можно заменить новой. Всё остальное sync_schemas считает ручной правкой.
-SUPERSEDED = {
-    "tv-audio": ["brand", "model", "condition", "screen_inch", "warranty"],
+# Прежние версии схем из кода, по отпечатку «ключ:тип».
+#
+# Если в базе лежит ровно такая — схему на месте не правили, это наша же
+# старая версия, и sync_schemas заменяет её новой. Всё остальное он
+# считает ручной правкой и не трогает.
+#
+# Список — правка 18 сентября (комнаты списком, оплата и передача): она
+# изменила код, а до базы донести её было нечем, и форма размещения три
+# дня работала по старым схемам.
+_GOODS_OLD = ["brand:text", "condition:select"]
+_FLAT_OLD = ["deal_type:select", "area_m2:number", "rooms:number", "floor:number",
+             "total_floors:number", "bathroom:select", "renovation:select",
+             "furnished:boolean", "balcony:boolean", "no_commission:boolean"]
+SUPERSEDED: dict[str, list[list[str]]] = {
+    "flats": [_FLAT_OLD],
+    "real-estate": [_FLAT_OLD],
+    "beauty": [_GOODS_OLD],
+    "business": [_GOODS_OLD + ["year:number"]],
+    "fashion": [_GOODS_OLD + ["size:text", "gender:select"]],
+    "hobby-sport": [_GOODS_OLD + ["size:text"]],
+    "home-garden": [_GOODS_OLD + ["material:text", "dimensions:text"]],
+    "kids": [_GOODS_OLD + ["age_group:select", "size:text"]],
+    "electronics": [["brand:text", "model:text", "condition:select", "storage_gb:number",
+                     "ram_gb:number", "screen_inch:number", "battery_health:number",
+                     "warranty:boolean"]],
+    "tv-audio": [["brand:text", "model:text", "condition:select", "screen_inch:number",
+                  "warranty:boolean"]],
 }
+
+
+def fingerprint(schema: list[dict]) -> list[str]:
+    return [f"{f.get('key')}:{f.get('type')}" for f in schema or []]

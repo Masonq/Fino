@@ -95,6 +95,18 @@ def get_category_schema(slug: str, db: Session = Depends(get_db)):
     while not schema and node is not None and hops < 10:
         schema, node, hops = node.attribute_schema, node.parent, hops + 1
 
+    # «Оплата» и «Как передать» записаны в схемах разделов, а у
+    # большинства подразделов схема своя — и до «Телефонов», «Мебели»,
+    # «Колясок» эти два вопроса не доходили вовсе. Дописываем их в конец,
+    # если у раздела наверху они есть, а у подраздела нет.
+    if schema and cat.parent is not None and cat.slug not in NO_FIELDS:
+        from app.core.category_tree import root_of
+
+        have = {f.get("key") for f in schema}
+        tail = [f for f in (root_of(cat).attribute_schema or [])
+                if f.get("key") in ("payment_way", "handover") and f.get("key") not in have]
+        schema = list(schema) + tail
+
     return {
         "slug": cat.slug,
         "name": cat.name,
