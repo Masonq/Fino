@@ -206,16 +206,28 @@ def start_promotion(
         fresh.balance = fresh.balance - price
         promo = Promotion(
             listing_id=listing_id, user_id=user.id, type=payload.type,
-            status=PromotionStatus.pending, price_paid=price, currency="RUB",
+            # Списано с баланса, а баланс в динарах: валюта записи —
+            # RSD. Осталась «RUB» с тех пор, когда цены были рублёвыми;
+            # с ней в отчётах одна и та же покупка числилась бы то в
+            # рублях, то в динарах, смотря чем заплатили.
+            status=PromotionStatus.pending, price_paid=price, currency="RSD",
         )
         db.add(promo)
         db.flush()
         _activate_promotion(db, promo)
         return {"paid_from_balance": True, "balance": float(fresh.balance)}
 
+    from app.core.currency import rsd_to_rub
+
+    rub = rsd_to_rub(price)
+
     idempotence_key = str(uuid.uuid4())
     data = _yookassa_request("POST", "/payments", {
-        "amount": {"value": f"{price:.2f}", "currency": "RUB"},
+        # Цена задана в динарах, а платёжная система принимает только
+        # рубли: пересчитываем, как и при пополнении баланса. Без
+        # пересчёта человек платил бы сто пятьдесят рублей вместо ста
+        # пятидесяти динаров — вдвое меньше, чем стоит поднятие.
+        "amount": {"value": f"{rub:.2f}", "currency": "RUB"},
         "capture": True,
         "confirmation": {
             "type": "redirect",
@@ -228,19 +240,26 @@ def start_promotion(
             "return_url": f"{settings.site_base_url}/go/{listing_id}?promoted={payload.type.value}",
         },
         "description": f"PLONK — продвижение объявления ({payload.type.value})",
-        "metadata": {"kind": "promotion", "listing_id": str(listing_id), "promotion_type": payload.type.value},
+        "metadata": {"kind": "promotion", "listing_id": str(listing_id),
+                     "promotion_type": payload.type.value, "rsd": str(price)},
     }, idempotence_key=idempotence_key)
 
     promo = Promotion(
         listing_id=listing_id, user_id=user.id, type=payload.type,
-        status=PromotionStatus.pending, price_paid=price, currency="RUB",
+        # Цена в динарах, как и всё, что видит человек; в платёжную
+        # систему ушли рубли по курсу — он записан рядом.
+        status=PromotionStatus.pending, price_paid=price, currency="RSD",
         payment_id=data["id"],
     )
     db.add(promo)
     db.commit()
 
+    # Раньше здесь возвращались rub и rate, которых в этом месте не
+    # существует: они считаются только при пополнении баланса, а сюда
+    # я их вписал по невнимательности — оплата продвижения картой
+    # падала бы с ошибкой при каждом вызове.
     return {"confirmation_url": data["confirmation"]["confirmation_url"],
-            "rsd": payload.amount, "rub": float(rub), "rate": float(rate)}
+            "rsd": float(price)}
 
 
 @router.get("/listings/{listing_id}/promotions")
