@@ -134,6 +134,14 @@ export default function AdminUser() {
       <PageHeader title={name} />
 
       <div className="admin-user-head">
+        {/* Удаление — маленькой кнопкой в углу карточки, а не в общем
+            ряду действий: в ряду она не помещалась и уезжала за правый
+            край экрана. */}
+        {canEdit && card.role !== 'admin' && (
+          <button className="admin-user-del" disabled={busy} onClick={() => setDeleting(true)}>
+            {t('admin.delete_user')}
+          </button>
+        )}
         <Avatar
           src={card.avatar_url}
           name={name}
@@ -192,14 +200,6 @@ export default function AdminUser() {
           <button disabled={busy || card.must_rename} onClick={resetName}>
             {card.must_rename ? t('admin.name_reset_done') : t('admin.reset_name')}
           </button>
-          {/* Удаление — только владельцу и только для своих тестовых
-              входов: у настоящего человека блокировка сохраняет историю,
-              а это стирает всё насовсем. */}
-          {card.role !== 'admin' && (
-            <button className="danger" disabled={busy} onClick={() => setDeleting(true)}>
-              {t('admin.delete_user')}
-            </button>
-          )}
         </div>
       )}
 
