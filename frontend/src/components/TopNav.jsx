@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import SearchOverlay from './SearchOverlay'
+import Avatar from './Avatar'
 
 /**
  * Верхняя навигация — только для широких экранов.
@@ -63,11 +64,15 @@ export default function TopNav() {
           <span className="avatar-mini skeleton" />
         ) : user ? (
           <Link to="/profile" className="topnav-user">
-            <span className={user.role === 'seller_business' ? 'avatar-mini is-company' : 'avatar-mini'}>
-              {user.avatar_url
-                ? <img src={user.avatar_url} alt="" />
-                : (user.company_name || user.display_name || '?').trim().charAt(0).toUpperCase()}
-            </span>
+            {/* Через общий Avatar, а не голой картинкой: ссылка на фото
+                из Telegram или Google со временем перестаёт отдаваться,
+                и Safari рисовал в кружке синий значок с вопросом. Avatar
+                ловит ошибку загрузки и показывает букву. */}
+            <Avatar
+              src={user.avatar_url}
+              name={user.company_name || user.display_name}
+              className={user.role === 'seller_business' ? 'avatar-mini is-company' : 'avatar-mini'}
+            />
           </Link>
         ) : (
           <Link to="/login" className="topnav-login">{t('common.login')}</Link>

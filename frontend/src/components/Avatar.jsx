@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 /**
  * Кружок с фотографией человека или его буквой.
@@ -11,6 +11,8 @@ import { useState } from 'react'
  */
 export default function Avatar({ src, name, className = '' }) {
   const [broken, setBroken] = useState(false)
+  // Сменили фото — даём новой ссылке шанс, а не помним поломку старой.
+  useEffect(() => { setBroken(false) }, [src])
   const letter = (name || '?').trim().charAt(0).toUpperCase() || '?'
 
   return (

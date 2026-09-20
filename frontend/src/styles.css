@@ -5806,3 +5806,30 @@ a.s-attrs{ display:block; }
 @media (min-width: 1200px) {
   .infinite-grid{ grid-template-columns:repeat(5, minmax(0, 1fr)); }
 }
+
+/* Профиль на широком экране. */
+@media (min-width: 900px) {
+  /* Одна левая линия в каждой колонке. Боковые отступы остались от
+     телефона (там они отделяют блок от края экрана), а тут край задаёт
+     сама колонка: карточка была на 12 точек уже плиток и баланса под
+     ней, а справа меню, подборка и заголовок «Настройки» начинались с
+     трёх разных отметок. */
+  .profile-sidebar .profile-card,
+  .profile-sidebar .profile-attention{ margin-left:0; margin-right:0; }
+  .profile-main .profile-menu{ margin-left:0; margin-right:0; }
+  .profile-main .profile-section-title,
+  .profile-main .for-you-title{ padding-left:0; padding-right:0; }
+  .profile-main .for-you-row{ padding-left:0; padding-right:0; }
+
+  /* Пункты идут в две колонки, и при чётном их числе последний ряд —
+     это два пункта. Черту снизу снимали только у самого последнего,
+     поэтому под левым соседом она оставалась: полряда подчёркнуто,
+     полряда нет. */
+  .profile-menu .profile-row:nth-last-child(2):nth-child(odd){ border-bottom:none; }
+}
+
+/* Карточка подборки без цены: название встаёт на место цены, значит и
+   стоять должно на той же строке — тем же размером и с тем же отступом
+   от фото. Было на 5 точек выше соседних цен и мельче их. */
+.for-you-price{ line-height:1.25; }
+.for-you-name.strong{ margin-top:7px; font-size:14.5px; line-height:1.25; }

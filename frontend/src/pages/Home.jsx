@@ -14,6 +14,7 @@ import { CITIES, cityLabel, nearestCity } from '../data/cities'
 import useFresh from '../hooks/useFresh'
 import FreshStories from '../components/FreshStories'
 import CategoryArt from '../components/CategoryArt'
+import Avatar from '../components/Avatar'
 import { hasLanding } from '../data/landings'
 
 // Лента живёт в памяти между заходами на страницу. Иначе при возврате из
@@ -626,11 +627,11 @@ export default function Home() {
               ? <div className="avatar-mini skeleton" />
               : user
                 ? (
-                  <div className={user.role === 'seller_business' ? 'avatar-mini is-company' : 'avatar-mini'}>
-                    {user.avatar_url
-                      ? <img src={user.avatar_url} alt="" />
-                      : (user.company_name || user.display_name || '?').trim().charAt(0).toUpperCase()}
-                  </div>
+                  <Avatar
+                    src={user.avatar_url}
+                    name={user.company_name || user.display_name}
+                    className={user.role === 'seller_business' ? 'avatar-mini is-company' : 'avatar-mini'}
+                  />
                 )
                 : t('common.login')}
           </Link>
