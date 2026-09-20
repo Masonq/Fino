@@ -27,6 +27,7 @@ export default function Login() {
 
   const returnTo = params.get('returnTo') || '/'
   const googleRef = useRef(null)
+  const [googleReady, setGoogleReady] = useState(false)
 
   // iOS выгружает вкладку из памяти, когда уходишь в другое приложение за кодом.
   // Поэтому шаг и введённый адрес держим в хранилище сессии и восстанавливаем.
@@ -201,6 +202,7 @@ export default function Login() {
         text: 'continue_with', shape: 'pill',
         locale: i18n.language,
       })
+      setGoogleReady(true)
     }
 
     if (window.google?.accounts?.id) { draw(); return () => { cancelled = true } }
@@ -251,7 +253,15 @@ export default function Login() {
             Скрипт Google подгружается один раз и только на этом
             экране — на остальных страницах он не нужен и только
             смотрел бы за человеком зря. */}
-        {GOOGLE_ID && <div ref={googleRef} className="auth-google" />}
+        {/* Место под кнопку занято с самого начала: раньше она
+            появлялась, когда доезжал скрипт Google, и всё под ней —
+            баннер и подпись о правилах — подпрыгивало вниз. Пока
+            кнопки нет, в том же месте стоит её серый силуэт. */}
+        {GOOGLE_ID && (
+          <div className={googleReady ? 'auth-google' : 'auth-google loading'}>
+            <div ref={googleRef} className="auth-google-slot" />
+          </div>
+        )}
 
         {error && <p className="auth-error">{error}</p>}
 
