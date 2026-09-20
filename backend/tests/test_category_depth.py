@@ -61,3 +61,34 @@ def test_plural_forms():
     assert count(11, *words) == "11 объявлений"
     assert count(21, *words) == "21 объявление"
     assert count(112, *words) == "112 объявлений"
+
+
+def test_sub_schemas_do_not_ask_a_boat_for_mileage():
+    """
+    Подраздел без своей схемы брал схему раздела: у «Лодок» форма
+    спрашивала пробег, коробку и VIN, у «Мониторов» — память и
+    аккумулятор, и по этому же предлагал искать фильтр подраздела.
+    """
+    from app.data.schemas import NO_FIELDS, SUB_SCHEMAS
+
+    def keys(slug):
+        return {f["key"] for f in SUB_SCHEMAS[slug]}
+
+    for slug in ("water", "agri", "trailers", "e-transport"):
+        assert not keys(slug) & {"mileage_km", "transmission", "vin", "body_type"}, slug
+    for slug in ("monitors", "tv-projectors", "components", "network-gear"):
+        assert not keys(slug) & {"storage_gb", "ram_gb", "battery_health"}, slug
+    assert "size" not in keys("tickets") and "size" not in keys("jewelry")
+    assert not NO_FIELDS & set(SUB_SCHEMAS)
+
+
+def test_every_schema_field_is_well_formed():
+    from app.data.schemas import SUB_SCHEMAS
+
+    for slug, schema in SUB_SCHEMAS.items():
+        seen = [f["key"] for f in schema]
+        assert len(seen) == len(set(seen)), slug
+        for field in schema:
+            assert set(field["label"]) == {"ru", "en", "sr"}, (slug, field["key"])
+            if field["type"] == "select":
+                assert field.get("options"), (slug, field["key"])

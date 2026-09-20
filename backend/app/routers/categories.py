@@ -85,7 +85,13 @@ def get_category_schema(slug: str, db: Session = Depends(get_db)):
     # Поднимаемся, пока не найдём: у третьего уровня («Телефоны» →
     # «Apple») родитель — подраздел, и если своей схемы нет и у него,
     # форма размещения оставалась вовсе без полей.
+    from app.data.schemas import NO_FIELDS
+
     schema, node, hops = cat.attribute_schema, cat.parent, 0
+    # Подразделы без полей вовсе (домашняя еда, бытовая химия) у раздела
+    # ничего не берут: «материал» и «габариты» им чужие.
+    if cat.slug in NO_FIELDS:
+        node = None
     while not schema and node is not None and hops < 10:
         schema, node, hops = node.attribute_schema, node.parent, hops + 1
 

@@ -692,3 +692,121 @@ SUB_SCHEMAS: dict[str, list[dict]] = {
     ],
     "supplies": [BRAND, CONDITION_SIMPLE],
 }
+
+# ——— подразделы, которым схема раздела не подходит ———
+#
+# Подраздел без своей схемы берёт схему раздела. Для «Лодок» это значило
+# пробег, коробку передач и VIN, для «Мониторов» — память и состояние
+# аккумулятора, для «Билетов» — размер. Продавца спрашивали о том, чего
+# у его вещи нет, а на странице подраздела по этому же предлагали искать.
+
+def _kind(key: str, ru: str, en: str, sr: str, *items) -> dict:
+    return {"key": key, "type": "select", "required": False,
+            "label": _label(ru, en, sr), "options": _options(*items)}
+
+
+_AGE_TEXT = {"key": "age", "type": "text", "required": False,
+             "label": _label("Возраст", "Age", "Uzrast")}
+_SPECIES = {"key": "species", "type": "text", "required": True,
+            "label": _label("Вид", "Species", "Vrsta")}
+
+SUB_SCHEMAS.update({
+    # ——— авто ———
+    "water": [
+        _kind("boat_type", "Тип", "Type", "Tip",
+              ("motorboat", "Моторная лодка", "Motorboat", "Motorni čamac"),
+              ("cruiser", "Катер", "Cruiser", "Gliser"),
+              ("yacht", "Яхта", "Yacht", "Jahta"),
+              ("inflatable", "Надувная лодка", "Inflatable", "Gumenjak"),
+              ("jetski", "Гидроцикл", "Jet ski", "Skuter za vodu"),
+              ("kayak", "Каяк, сап, байдарка", "Kayak, SUP", "Kajak, SUP"),
+              ("engine", "Лодочный мотор", "Outboard engine", "Vanbrodski motor")),
+        BRAND, MODEL, YEAR,
+        {"key": "length_m", "type": "number", "required": False,
+         "label": _label("Длина, м", "Length, m", "Dužina, m")},
+        {"key": "engine_power_hp", "type": "number", "required": False,
+         "label": _label("Мощность мотора, л.с.", "Engine power, hp", "Snaga motora, KS")},
+    ],
+    "agri": [
+        _kind("agri_type", "Тип", "Type", "Tip",
+              ("tractor", "Трактор", "Tractor", "Traktor"),
+              ("combine", "Комбайн", "Combine", "Kombajn"),
+              ("tiller", "Мотоблок, мотокультиватор", "Tiller", "Motokultivator"),
+              ("attachment", "Навесное и прицепное", "Attachments", "Priključne mašine"),
+              ("other", "Другое", "Other", "Drugo")),
+        BRAND, MODEL, YEAR,
+        {"key": "engine_hours", "type": "number", "required": False,
+         "label": _label("Наработка, моточасов", "Engine hours", "Radni sati")},
+        {"key": "engine_power_hp", "type": "number", "required": False,
+         "label": _label("Мощность, л.с.", "Power, hp", "Snaga, KS")},
+    ],
+    "trailers": [
+        _kind("trailer_type", "Тип", "Type", "Tip",
+              ("cargo", "Грузовой прицеп", "Cargo trailer", "Teretna prikolica"),
+              ("boat", "Для лодки", "Boat trailer", "Prikolica za čamac"),
+              ("caravan", "Дом на колёсах, караван", "Caravan", "Kamp prikolica"),
+              ("camper", "Автодом", "Motorhome", "Kamper"),
+              ("other", "Другое", "Other", "Drugo")),
+        BRAND, YEAR,
+        {"key": "payload_kg", "type": "number", "required": False,
+         "label": _label("Грузоподъёмность, кг", "Payload, kg", "Nosivost, kg")},
+    ],
+    "e-transport": [
+        _kind("etransport_type", "Тип", "Type", "Tip",
+              ("scooter", "Электросамокат", "E-scooter", "Električni trotinet"),
+              ("ebike", "Электровелосипед", "E-bike", "Električni bicikl"),
+              ("moped", "Электроскутер", "E-moped", "Električni skuter"),
+              ("unicycle", "Моноколесо, гироскутер", "Unicycle, hoverboard", "Monocikl, hoverbord"),
+              ("other", "Другое", "Other", "Drugo")),
+        _BRAND_REQUIRED, MODEL, CONDITION,
+        {"key": "range_km", "type": "number", "required": False,
+         "label": _label("Запас хода, км", "Range, km", "Domet, km")},
+    ],
+    "car-rental": [_AUTO_BRAND, _AUTO_MODEL, _AUTO_YEAR, _AUTO_TRANSMISSION, _BODY_TYPE],
+
+    # ——— электроника ———
+    "components": [_BRAND_REQUIRED, MODEL, CONDITION, WARRANTY],
+    "smart-home": [_BRAND_REQUIRED, MODEL, CONDITION, WARRANTY],
+    "network-gear": [_BRAND_REQUIRED, MODEL, CONDITION, WARRANTY],
+    "monitors": [_BRAND_REQUIRED, MODEL, CONDITION, _SCREEN_INCH, WARRANTY],
+    "tv-projectors": [_BRAND_REQUIRED, MODEL, CONDITION, _SCREEN_INCH, WARRANTY],
+
+    # ——— одежда ———
+    "jewelry": [BRAND, CONDITION_SIMPLE, MATERIAL, GENDER],
+
+    # ——— хобби и спорт ———
+    "fishing-hunting": [BRAND, CONDITION_SIMPLE],
+    "board-games": [CONDITION_SIMPLE],
+    "crafts": [CONDITION_SIMPLE],
+    "sport-nutrition": [BRAND],
+    "tickets": [
+        _kind("ticket_kind", "Что это", "Kind", "Vrsta",
+              ("concert", "Концерт, фестиваль", "Concert, festival", "Koncert, festival"),
+              ("sport", "Спорт", "Sport", "Sport"),
+              ("theatre", "Театр, кино", "Theatre, cinema", "Pozorište, bioskop"),
+              ("travel", "Поездка, перелёт", "Travel", "Putovanje"),
+              ("voucher", "Сертификат, абонемент", "Voucher, pass", "Vaučer, članarina"),
+              ("other", "Другое", "Other", "Drugo")),
+    ],
+
+    # ——— дом и сад ———
+    "building": [BRAND, CONDITION_SIMPLE],
+    "plumbing": [BRAND, CONDITION_SIMPLE],
+    "lighting": [BRAND, CONDITION_SIMPLE],
+    "textile": [MATERIAL, CONDITION_SIMPLE],
+    "storage-home": [MATERIAL, DIMENSIONS, CONDITION_SIMPLE],
+
+    # ——— детям ———
+    "car-seats": [_BRAND_REQUIRED, CONDITION_SIMPLE, _AGE_GROUP_REQUIRED],
+    "kids-transport": [BRAND, CONDITION_SIMPLE, AGE_GROUP],
+    "kids-feeding": [BRAND, CONDITION_SIMPLE],
+
+    # ——— животные ———
+    "pets-birds": [_SPECIES, _AGE_TEXT],
+    "pets-farm": [_SPECIES, _AGE_TEXT],
+})
+
+# Подразделы, у которых полей нет вовсе, и наследовать чужие незачем:
+# у домашней еды и бытовой химии нет ни «материала», ни «габаритов».
+# Пустая схема в базе значит «возьми у раздела», поэтому отдельный список.
+NO_FIELDS = {"food", "household-goods"}
