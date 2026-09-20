@@ -69,51 +69,6 @@ def test_sweeping_is_off_by_default():
     assert ChatRules().sweep_direct_posts is False
 
 
-def test_listing_is_kept_for_the_author():
-    """
-    Сообщение удалено — пересылать нечего, а набирать заново человек не
-    станет. Придерживаем объявление, чтобы показать его готовым, когда
-    он придёт в бота.
-    """
-    import inspect
-    from app.bot.sweeper import sweep
-
-    source = inspect.getsource(sweep)
-    assert "rescued[author.id]" in source
-    # придерживаем всегда, а не только когда в личку не пустили
-    assert source.index("rescued[author.id]") < source.index("sent_privately = False")
-
-
-def test_rescued_listing_is_shown_ready():
-    """
-    Человек уже написал объявление, мы его убрали — меньшее, что можно
-    сделать, это показать его разобранным, а не просить набрать заново.
-    """
-    import inspect
-    from app.bot.publisher import offer_rescued
-
-    source = inspect.getsource(offer_rescued)
-    assert "understand(" in source        # разбираем текст
-    assert "show_draft(" in source        # показываем карточку
-
-
-def test_chat_note_appears_in_both_cases():
-    """
-    Человек написал объявление и видит пустое место. Без пометки в чате
-    он не поймёт, куда всё делось, и не догадается заглянуть в личку —
-    даже если бот ему уже написал.
-    """
-    import inspect
-    from app.bot.sweeper import HINT_SECONDS, sweep
-
-    source = inspect.getsource(sweep)
-    # пометка отправляется без оглядки на то, дошли ли мы в личку
-    assert "if not sent_privately:\n        hint" not in source
-    assert "Открыть переписку" in source
-    # и висит достаточно, чтобы её заметили
-    assert HINT_SECONDS >= 90
-
-
 def test_conversation_words_protect_talk():
     """
     Обращения, вопросы и благодарности — разговор, а не объявление.

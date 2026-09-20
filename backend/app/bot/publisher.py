@@ -205,12 +205,20 @@ async def in_our_chat(message: Message, bot: Bot) -> None:
     if not author or author.is_bot:
         return
 
-    # Разговоры в ветке «Общение» не трогаем: она для этого и есть.
+    # Реклама ловится везде, включая ветку «Общение»: там можно всё,
+    # кроме неё. Проверка идёт ДО выхода из ветки — при переписывании
+    # бота этот порядок однажды перевернулся, и приглашения в чужие чаты
+    # в «Общении» перестали ловиться вовсе.
+    complaint = why_bad(message, is_newcomer(author.id))
+
     talk = talk_topic(TARGET_CHAT)
-    if talk and message.message_thread_id == talk:
+    in_talk = bool(talk and message.message_thread_id == talk)
+
+    # Разговоры не трогаем дальше: повторы там в порядке вещей, человек
+    # переспрашивает и уточняет.
+    if not complaint and in_talk:
         return
 
-    complaint = why_bad(message, is_newcomer(author.id))
     if not complaint and note_repeat(author.id, message.text or message.caption or ""):
         complaint = "одно и то же подряд"
 

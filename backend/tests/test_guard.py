@@ -87,8 +87,8 @@ def test_spam_is_caught_everywhere():
     source = (Path(__file__).resolve().parents[1]
               / "app" / "bot" / "publisher.py").read_text()
 
-    guard_at = source.index("if rules.guard_spam:")
-    talk_at = source.index("if not rules.sweep_direct_posts or in_talk:")
+    guard_at = source.index("complaint = why_bad(")
+    talk_at = source.index("if not complaint and in_talk:")
     assert guard_at < talk_at
 
 

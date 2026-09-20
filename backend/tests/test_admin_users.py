@@ -77,6 +77,7 @@ def test_stats_routes_declared():
         "/api/admin/stats/categories",
         "/api/admin/stats/sources",
         "/api/admin/stats/quality",
+        "/api/admin/stats/funnel",
     }
 
 

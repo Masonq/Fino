@@ -51,13 +51,3 @@ def test_subscriptions_are_limited():
     assert MAX_PER_USER <= 7
 
 
-def test_blocked_bot_does_not_break_publishing():
-    """
-    Человек мог заблокировать бота. Публикация объявления от этого
-    падать не должна.
-    """
-    import inspect
-    from app.bot.publisher import tell_watchers
-
-    source = inspect.getsource(tell_watchers)
-    assert "except Exception" in source

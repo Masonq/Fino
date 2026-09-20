@@ -351,7 +351,10 @@ def test_city_choice_works_on_category_pages_too():
     landing = (Path(__file__).resolve().parents[2]
                / "frontend" / "src" / "pages" / "CategoryLanding.jsx").read_text()
 
-    assert landing.count("localStorage.getItem('plonk_city')") == 2
+    # Точное число мест не проверяем: их стало три, когда в строке
+    # поиска появилась подпись «Поиск в городе N». Важно, что выбор
+    # читается и доходит до запроса, а не сколько раз он прочитан.
+    assert landing.count("localStorage.getItem('plonk_city')") >= 2
     assert "if (city) params.city = city" in landing
     assert "city: savedCity || undefined" in landing
 
@@ -1177,24 +1180,27 @@ def test_whole_card_opens_the_listing():
 
 
 def test_feed_invites_to_post_a_listing():
-    """В ленте есть призыв подать своё объявление.
+    """На главной есть призыв подать своё объявление.
 
     Числа вскрыли главное: объявлений из чатов 3791, своих — два.
-    Одиннадцать зарегистрированных, ноль переписок. Человек листает
-    чужое и не догадывается, что может выставить своё: кнопка
-    «Разместить» внизу экрана, и её не замечают.
+    Человек листает чужое и не догадывается, что может выставить своё:
+    кнопка «Разместить» внизу экрана, и её не замечают.
 
-    Ставим после шестой карточки: человек уже втянулся, но ещё не ушёл.
-    Раньше — помешает, позже — не увидит.
+    Сперва призыв стоял карточкой после шестой карточки ленты. Потом он
+    переехал первым кружком в полосу свежих объявлений вверху экрана, а
+    карточку убрали: две точки входа в одном экране лишние. Проверяем
+    призыв там, где он теперь живёт, — важно, что он есть, а не где
+    именно.
     """
-    page = (Path(__file__).resolve().parents[2]
-            / "frontend" / "src" / "pages" / "Home.jsx").read_text()
+    stories = (Path(__file__).resolve().parents[2]
+               / "frontend" / "src" / "components" / "FreshStories.jsx").read_text()
     styles = (Path(__file__).resolve().parents[2]
               / "frontend" / "src" / "styles.css").read_text()
 
-    assert "i === 6 &&" in page
-    assert 'to="/post" className="post-cta"' in page
-    assert ".post-cta{" in styles
+    assert 'to="/post"' in stories
+    assert "story-post" in stories
+    # у кружка свой вид: плюс вместо фотографии
+    assert ".story-plus" in styles
 
 
 def test_city_can_be_detected_by_location():

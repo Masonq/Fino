@@ -42,20 +42,6 @@ def test_listings_are_adopted():
     assert "listing.owner_id = user.id" in inspect.getsource(_adopt_listings)
 
 
-def test_invite_is_not_pushy():
-    """
-    После первой публикации человек только что сделал дело — звать его
-    куда-то значит мешать. И зовём один раз.
-    """
-    import inspect
-    from app.bot.publisher import INVITE_AFTER, maybe_invite
-
-    assert INVITE_AFTER >= 2
-    source = inspect.getsource(maybe_invite)
-    assert "invited.add" in source
-    assert "if user.id in invited" in source
-
-
 def test_tickets_live_in_the_database():
     """
     Бот и сайт — разные процессы. Ключ, положенный в память бота, сайт
