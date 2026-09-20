@@ -153,7 +153,6 @@ NEW = {
         ("childcare", "Няни и уход", "Childcare and care", "Čuvanje dece i nega", []),
         ("photo-video", "Фото и видео", "Photo and video", "Foto i video", []),
         ("events", "Праздники и мероприятия", "Events", "Proslave i događaji", []),
-        ("medical", "Здоровье и медицина", "Health and medical", "Zdravlje i medicina", []),
         ("auto-services", "Автосервис и шиномонтаж", "Car service and tyres", "Auto servis i vulkanizer", []),
         ("lost-found", "Находки и пропажи", "Lost and found", "Izgubljeno i nađeno", []),
         ("translation", "Переводы", "Translation", "Prevodi", []),
