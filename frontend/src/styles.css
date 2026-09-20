@@ -896,10 +896,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .desc-title.loc-title{ margin-top:22px; }
 .desc-text{ font-size:13px; line-height:1.65; color:var(--ink-soft); white-space:pre-wrap; }
 
-.seller-row{ margin-top:20px; display:flex; align-items:center; gap:12px; padding:15px; background:var(--surface-sunken); border-radius:17px; color:inherit; text-decoration:none; }
+.seller-row{ margin-top:20px; display:flex; align-items:center; gap:11px; padding:12px 13px; background:var(--surface-sunken); border-radius:17px; color:inherit; text-decoration:none; }
 .seller-row:active{ background:var(--surface-sunken); }
 .seller-chevron{ margin-left:auto; color:var(--muted); flex-shrink:0; }
-.seller-avatar{ width:46px; height:46px; border-radius:50%; background:linear-gradient(135deg,var(--violet),#9B8FFF); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:15px; flex-shrink:0; overflow:hidden; }
+.seller-avatar{ width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,var(--violet),#9B8FFF); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:15px; flex-shrink:0; overflow:hidden; }
 .seller-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
 .seller-avatar.is-company{ border-radius:16px; }
 .seller-name{ font-size:14.5px; font-weight:800; display:flex; align-items:center; gap:5px; }
@@ -5497,13 +5497,21 @@ a.s-attrs{ display:block; }
 /* Факты о продавце в карточке объявления. Мелкими метками в ряд: это
    не оценка, которую мы выставили, а проверяемые сведения, и выводы
    человек делает сам. */
-.seller-facts{ display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
-.seller-fact{
-  padding:3px 8px; border-radius:7px;
-  background:var(--surface-sunken); color:var(--muted);
-  font-size:11.5px; font-weight:700; line-height:1.4;
+/* Факты о продавце — обычной строкой через точки, а не плитками.
+   Плитки были того же цвета, что и подложка блока, поэтому читались не
+   как ярлыки, а как строка со случайным отступом слева, сбитая с
+   линии имени. Осталась плиткой только отметка о проверке личности —
+   она единственная здесь что-то утверждает. */
+.seller-facts{
+  display:flex; flex-wrap:wrap; align-items:center; gap:2px 7px; margin-top:3px;
+  font-size:11.5px; font-weight:600; color:var(--muted); line-height:1.4;
 }
-.seller-fact.ok{ background:var(--primary-soft); color:var(--primary-deep); }
+.seller-fact + .seller-fact::before{ content:"·"; margin-right:7px; }
+.seller-fact.ok{
+  padding:2px 7px; border-radius:6px; font-weight:700;
+  background:var(--primary-soft); color:var(--primary-deep);
+}
+.seller-fact.ok + .seller-fact::before{ content:none; }
 
 /* Предупреждение под чужим сообщением. Жёлтое, не красное: это не
    приговор собеседнику, а повод быть внимательнее. */

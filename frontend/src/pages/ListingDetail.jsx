@@ -31,9 +31,22 @@ const REASON_KEYS = [
 ]
 
 // «Здесь с марта 2025» — дата, которую человек читает, а не разбирает.
+// Месяцы в родительном падеже: строка читается как «Здесь с августа
+// 2026», а не «Здесь с август 2026 г.» — именно это и выдаёт
+// стандартное форматирование даты, у него другой падеж.
+const MONTHS_OF = {
+  ru: ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+    'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'],
+  sr: ['januara', 'februara', 'marta', 'aprila', 'maja', 'juna',
+    'jula', 'avgusta', 'septembra', 'oktobra', 'novembra', 'decembra'],
+}
+
 function monthYear(iso, lang) {
   try {
-    return new Date(iso).toLocaleDateString(lang || 'ru', { month: 'long', year: 'numeric' })
+    const d = new Date(iso)
+    const of = MONTHS_OF[lang]
+    if (of) return `${of[d.getMonth()]} ${d.getFullYear()}`
+    return d.toLocaleDateString(lang || 'en', { month: 'long', year: 'numeric' })
   } catch {
     return ''
   }
