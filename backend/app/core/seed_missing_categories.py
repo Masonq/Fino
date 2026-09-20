@@ -25,6 +25,91 @@ from app.models import Category
 # Названия сразу на трёх языках: раздел без перевода показывается
 # служебным именем, и мы это уже проходили.
 NEW = {
+    # Третий уровень у крупных разделов.
+    #
+    # «Бытовая техника» вмещает холодильник, стиралку и микроволновку —
+    # по такому разделу не ищут, его листают. Дальше дробим там, где
+    # объявлений много и они разные по смыслу: телефоны по маркам,
+    # мебель по предметам, услуги мастеров по ремеслу.
+    "phones": [
+        ("phones-iphone", "iPhone", "iPhone", "iPhone", []),
+        ("phones-samsung", "Samsung", "Samsung", "Samsung", []),
+        ("phones-xiaomi", "Xiaomi и прочие", "Xiaomi and others", "Xiaomi i ostali", []),
+        ("phones-parts", "Запчасти и ремонт", "Parts and repair", "Delovi i popravka", []),
+    ],
+    "appliances": [
+        ("app-fridge", "Холодильники и морозильники", "Fridges", "Frižideri", []),
+        ("app-washer", "Стиральные и сушильные", "Washers and dryers", "Veš mašine i sušare", []),
+        ("app-stove", "Плиты и духовки", "Stoves and ovens", "Šporeti i rerne", []),
+        ("app-dishwasher", "Посудомоечные", "Dishwashers", "Mašine za sudove", []),
+        ("app-small", "Мелкая техника", "Small appliances", "Mali aparati", []),
+        ("app-climate", "Климат: кондиционеры и обогреватели", "Climate", "Klime i grejalice", []),
+    ],
+    "furniture": [
+        ("furn-sofa", "Диваны и кресла", "Sofas and armchairs", "Sofe i fotelje", []),
+        ("furn-bed", "Кровати и матрасы", "Beds and mattresses", "Kreveti i dušeci", []),
+        ("furn-wardrobe", "Шкафы и комоды", "Wardrobes and dressers", "Ormari i komode", []),
+        ("furn-table", "Столы и стулья", "Tables and chairs", "Stolovi i stolice", []),
+        ("furn-kitchen", "Кухни", "Kitchen units", "Kuhinje", []),
+        ("furn-office", "Для офиса", "Office furniture", "Kancelarijski nameštaj", []),
+    ],
+    "tools": [
+        ("tools-power", "Электроинструмент", "Power tools", "Električni alat", []),
+        ("tools-hand", "Ручной инструмент", "Hand tools", "Ručni alat", []),
+        ("tools-measure", "Измерительный", "Measuring tools", "Merni alat", []),
+        ("tools-welding", "Сварка и компрессоры", "Welding and compressors", "Varenje i kompresori", []),
+    ],
+    "garden": [
+        ("garden-plants", "Растения и саженцы", "Plants and seedlings", "Biljke i sadnice", []),
+        ("garden-mower", "Газонокосилки и триммеры", "Mowers and trimmers", "Kosačice i trimeri", []),
+        ("garden-bbq", "Мангалы и барбекю", "BBQ and grills", "Roštilji", []),
+        ("garden-pool", "Бассейны и спа", "Pools and spa", "Bazeni i spa", []),
+        ("garden-furniture", "Садовая мебель", "Garden furniture", "Baštenski nameštaj", []),
+    ],
+    "toys": [
+        ("toys-construct", "Конструкторы", "Building sets", "Kocke i setovi", []),
+        ("toys-dolls", "Куклы и фигурки", "Dolls and figures", "Lutke i figure", []),
+        ("toys-outdoor", "Для улицы и песочницы", "Outdoor toys", "Igračke za napolje", []),
+        ("toys-baby", "Для малышей", "Baby toys", "Igračke za bebe", []),
+    ],
+    "bikes": [
+        ("bikes-mtb", "Горные", "Mountain bikes", "Brdski bicikli", []),
+        ("bikes-city", "Городские и шоссейные", "City and road bikes", "Gradski i drumski", []),
+        ("bikes-kids", "Детские", "Kids bikes", "Dečiji bicikli", []),
+        ("bikes-electric", "Электровелосипеды", "E-bikes", "Električni bicikli", []),
+        ("bikes-parts", "Запчасти и аксессуары", "Parts and accessories", "Delovi i oprema", []),
+    ],
+    "construction": [
+        ("con-tiler", "Плиточник", "Tiling", "Keramičar", []),
+        ("con-electric", "Электрик", "Electrician", "Električar", []),
+        ("con-plumber", "Сантехник", "Plumber", "Vodoinstalater", []),
+        ("con-painter", "Маляр и штукатур", "Painter and plasterer", "Moler i fasader", []),
+        ("con-carpenter", "Столяр и мебельщик", "Carpenter", "Stolar", []),
+        ("con-full", "Ремонт под ключ", "Full renovation", "Renoviranje ključ u ruke", []),
+    ],
+    "flats": [
+        ("flats-sale", "Продажа квартир", "Flats for sale", "Prodaja stanova", []),
+        ("flats-rent", "Аренда квартир", "Flats for rent", "Izdavanje stanova", []),
+        ("flats-studio", "Гарсоньеры и студии", "Studios", "Garsonjere", []),
+    ],
+    "kids-clothing": [
+        ("kids-cl-baby", "Для малышей до 2 лет", "Baby clothes", "Odeća za bebe", []),
+        ("kids-cl-boys", "Для мальчиков", "Boys", "Za dečake", []),
+        ("kids-cl-girls", "Для девочек", "Girls", "Za devojčice", []),
+        ("kids-cl-shoes", "Детская обувь", "Kids shoes", "Dečija obuća", []),
+    ],
+    "cars": [
+        ("cars-sale", "Легковые с пробегом", "Used cars", "Polovni automobili", []),
+        ("cars-new", "Новые", "New cars", "Novi automobili", []),
+        ("cars-damaged", "После аварии и на запчасти", "Damaged cars", "Havarisana vozila", []),
+    ],
+    "vacancies": [
+        ("vac-service", "Кафе, рестораны, магазины", "Service and retail", "Ugostiteljstvo i trgovina", []),
+        ("vac-build", "Стройка и производство", "Construction and industry", "Građevina i proizvodnja", []),
+        ("vac-it", "IT и офис", "IT and office", "IT i kancelarija", []),
+        ("vac-drivers", "Водители и логистика", "Drivers and logistics", "Vozači i logistika", []),
+        ("vac-home", "Уборка, уход, няни", "Cleaning and care", "Čišćenje i nega", []),
+    ],
     # Разделы, которых не хватало по сравнению с сербскими площадками.
     #
     # Собрано по KupujemProdajem и OLX.ba — тому, чем здесь и правда
