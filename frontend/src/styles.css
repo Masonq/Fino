@@ -909,7 +909,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 .sticky-cta{
   position:fixed; left:0; right:0; bottom:0; max-width:480px; margin:0 auto; background:var(--surface);
-  padding:13px 18px calc(13px + var(--sab)); display:flex; gap:10px;
+  /* Боковые поля как у содержимого страницы — 20: кнопки внизу
+     встают на ту же линию, что карточка продавца и характеристики
+     над ними. Было 18, и линия расходилась на две точки. */
+  padding:13px 20px calc(13px + var(--sab)); display:flex; gap:10px;
   box-shadow:0 -4px 24px var(--border); border-radius:22px 22px 0 0; z-index:20;
   transition:transform .25s ease;
 }
