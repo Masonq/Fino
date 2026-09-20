@@ -20,7 +20,7 @@
 import argparse
 
 from app.core.database import SessionLocal
-from app.data.schemas import SUB_SCHEMAS
+from app.data.schemas import SUB_SCHEMAS, SUPERSEDED
 from app.models import Category
 
 
@@ -35,8 +35,27 @@ def run(apply: bool, everything: bool = False) -> int:
                 continue
             if (cat.attribute_schema or []) == schema:
                 continue
-            if cat.attribute_schema and not everything:
-                print(f"  {slug}: в базе своя схема, отличается от кода — не трогаю")
+            mine = [f.get("key") for f in (cat.attribute_schema or [])]
+            ours_before = SUPERSEDED.get(slug) == mine
+            if cat.attribute_schema and not everything and not ours_before:
+                # Показываем, чем именно отличается, — иначе строка «не
+                # трогаю» ничего не даёт: непонятно, кто прав, база или код.
+                code = {f["key"]: f for f in schema}
+                base = {f.get("key"): f for f in cat.attribute_schema}
+                only_db = [k for k in base if k not in code]
+                only_code = [k for k in code if k not in base]
+                differ = [k for k in code if k in base and base[k] != code[k]]
+                print(f"  {slug}: в базе своя схема — не трогаю")
+                if only_db:
+                    print(f"      только в базе: {only_db}")
+                if only_code:
+                    print(f"      только в коде: {only_code}")
+                for k in differ:
+                    diff = [name for name in sorted(set(base[k]) | set(code[k]))
+                            if base[k].get(name) != code[k].get(name)]
+                    print(f"      «{k}» отличается в: {diff}")
+                if not (only_db or only_code or differ):
+                    print("      те же поля, другой порядок")
                 continue
             before = [f.get("key") for f in (cat.attribute_schema or [])]
             after = [f["key"] for f in schema]

@@ -33,7 +33,6 @@ SUBCATEGORIES: dict[str, list[dict]] = {
         {"slug": "tyres", "name": {"ru": "Шины и диски", "en": "Tyres & wheels", "sr": "Gume i felne"}},
         {"slug": "trailers", "name": {"ru": "Прицепы и дома на колёсах", "en": "Trailers & campers", "sr": "Prikolice i kamperi"}},
         {"slug": "water", "name": {"ru": "Лодки и катера", "en": "Boats", "sr": "Čamci i plovila"}},
-        {"slug": "agri", "name": {"ru": "Сельхозтехника", "en": "Farm machinery", "sr": "Poljoprivredne mašine"}},
         {"slug": "e-transport", "name": {"ru": "Самокаты и электротранспорт", "en": "Scooters & e-transport", "sr": "Trotineti i e-prevoz"}},
         {"slug": "car-rental", "name": {"ru": "Аренда авто", "en": "Car rental", "sr": "Rent a car"}},
     ],
@@ -69,7 +68,6 @@ SUBCATEGORIES: dict[str, list[dict]] = {
         {"slug": "tools", "name": {"ru": "Инструменты и ремонт", "en": "Tools & DIY", "sr": "Alati"}},
         {"slug": "building", "name": {"ru": "Стройматериалы", "en": "Building materials", "sr": "Građevinski materijal"}},
         {"slug": "plumbing", "name": {"ru": "Сантехника и отопление", "en": "Plumbing & heating", "sr": "Vodovod i grejanje"}},
-        {"slug": "textile", "name": {"ru": "Текстиль и посуда для дома", "en": "Home textile", "sr": "Tekstil za kuću"}},
         {"slug": "food", "name": {"ru": "Продукты и домашнее", "en": "Food and homemade", "sr": "Hrana i domaći proizvodi"}},
     ],
     "fashion": [
@@ -78,7 +76,6 @@ SUBCATEGORIES: dict[str, list[dict]] = {
         {"slug": "shoes", "name": {"ru": "Обувь", "en": "Shoes", "sr": "Obuća"}},
         {"slug": "bags", "name": {"ru": "Сумки и аксессуары", "en": "Bags & accessories", "sr": "Torbe i dodaci"}},
         {"slug": "watches", "name": {"ru": "Часы и украшения", "en": "Watches & jewellery", "sr": "Satovi i nakit"}},
-        {"slug": "jewelry", "name": {"ru": "Украшения", "en": "Jewellery", "sr": "Nakit"}},
     ],
     "kids": [
         {"slug": "kids-clothing", "name": {"ru": "Детская одежда и обувь", "en": "Kids' clothing", "sr": "Dečja odeća"}},
@@ -86,7 +83,6 @@ SUBCATEGORIES: dict[str, list[dict]] = {
         {"slug": "toys", "name": {"ru": "Игрушки", "en": "Toys", "sr": "Igračke"}},
         {"slug": "kids-furniture", "name": {"ru": "Детская мебель", "en": "Kids' furniture", "sr": "Dečji nameštaj"}},
         {"slug": "school", "name": {"ru": "Школьные товары", "en": "School supplies", "sr": "Školski pribor"}},
-        {"slug": "car-seats", "name": {"ru": "Автокресла", "en": "Car seats", "sr": "Auto-sedišta"}},
         {"slug": "kids-transport", "name": {"ru": "Детский транспорт", "en": "Kids bikes & scooters", "sr": "Bicikli i trotineti za decu"}},
     ],
     "hobby-sport": [
@@ -125,8 +121,6 @@ SUBCATEGORIES: dict[str, list[dict]] = {
         {"slug": "childcare", "name": {"ru": "Няни и уход", "en": "Childcare & care", "sr": "Čuvanje dece i nega"}},
         {"slug": "photo-video", "name": {"ru": "Фото и видео", "en": "Photo & video", "sr": "Foto i video"}},
         {"slug": "events", "name": {"ru": "Праздники и мероприятия", "en": "Events", "sr": "Proslave i događaji"}},
-        {"slug": "docs-visa", "name": {"ru": "Документы и визы", "en": "Documents & visas", "sr": "Dokumenti i vize"}},
-        {"slug": "medical", "name": {"ru": "Здоровье и медицина", "en": "Health & medical", "sr": "Zdravlje i medicina"}},
         {"slug": "auto-services", "name": {"ru": "Автосервис и шиномонтаж", "en": "Car service and tyres", "sr": "Auto servis i vulkanizer"}},
         {"slug": "lost-found", "name": {"ru": "Находки и пропажи", "en": "Lost and found", "sr": "Izgubljeno i nađeno"}},
     ],

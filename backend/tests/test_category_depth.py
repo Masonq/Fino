@@ -74,11 +74,11 @@ def test_sub_schemas_do_not_ask_a_boat_for_mileage():
     def keys(slug):
         return {f["key"] for f in SUB_SCHEMAS[slug]}
 
-    for slug in ("water", "agri", "trailers", "e-transport"):
+    for slug in ("water", "trucks-construction", "trailers", "e-transport"):
         assert not keys(slug) & {"mileage_km", "transmission", "vin", "body_type"}, slug
     for slug in ("monitors", "tv-projectors", "components", "network-gear"):
         assert not keys(slug) & {"storage_gb", "ram_gb", "battery_health"}, slug
-    assert "size" not in keys("tickets") and "size" not in keys("jewelry")
+    assert "size" not in keys("tickets")
     assert not NO_FIELDS & set(SUB_SCHEMAS)
 
 
@@ -92,3 +92,20 @@ def test_every_schema_field_is_well_formed():
             assert set(field["label"]) == {"ru", "en", "sr"}, (slug, field["key"])
             if field["type"] == "select":
                 assert field.get("options"), (slug, field["key"])
+
+
+def test_no_schema_for_merged_away_sections():
+    """
+    Схема для раздела, которого уже нет, — мёртвый код: при выкладке
+    sync_schemas писал «нет в базе» про четыре раздела, слитых с
+    соседями в тот же день.
+    """
+    from app.core.merge_duplicate_categories import PAIRS
+    from app.data.schemas import SUB_SCHEMAS
+    from app.data.subcategories import SUB_SUBCATEGORIES, SUBCATEGORIES
+
+    gone = {removed for _, removed in PAIRS}
+    assert not gone & set(SUB_SCHEMAS)
+    seeded = {c["slug"] for group in (SUBCATEGORIES, SUB_SUBCATEGORIES)
+              for children in group.values() for c in children}
+    assert not gone & seeded, "seed_categories.py завёл бы слитые разделы заново"

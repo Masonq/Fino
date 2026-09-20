@@ -563,7 +563,9 @@ SUB_SCHEMAS: dict[str, list[dict]] = {
     "laptops": [_BRAND_REQUIRED, MODEL, CONDITION, _CPU, _RAM_GB, _STORAGE_GB, _SCREEN_INCH, COLOR, WARRANTY],
     "computers": [_BRAND_REQUIRED, CONDITION, _CPU, _GPU, _RAM_GB, _STORAGE_GB, WARRANTY],
     "tablets": [_BRAND_REQUIRED, MODEL, CONDITION, _STORAGE_GB, _SCREEN_INCH, _BATTERY_HEALTH, COLOR, WARRANTY],
-    "tv-audio": [_BRAND_REQUIRED, MODEL, CONDITION, _SCREEN_INCH, WARRANTY],
+    # Без диагонали: раздел переименован в «Аудиотехника и колонки»,
+    # телевизоры живут в tv-projectors.
+    "tv-audio": [_BRAND_REQUIRED, MODEL, CONDITION, WARRANTY],
     "photo": [_BRAND_REQUIRED, MODEL, CONDITION, _MEGAPIXELS, WARRANTY],
     "gaming": [_BRAND_REQUIRED, MODEL, CONDITION, _STORAGE_GB, WARRANTY],
     "wearables": [_BRAND_REQUIRED, MODEL, CONDITION, _BATTERY_HEALTH, COLOR, WARRANTY],
@@ -727,9 +729,14 @@ SUB_SCHEMAS.update({
         {"key": "engine_power_hp", "type": "number", "required": False,
          "label": _label("Мощность мотора, л.с.", "Engine power, hp", "Snaga motora, KS")},
     ],
-    "agri": [
+    # «Сельхозтехника» слита в «Строительную и сельхозтехнику» (третий
+    # уровень в «Грузовых»): схема нужна там, иначе трактор спрашивают
+    # про кузов и коробку, как грузовик.
+    "trucks-construction": [
         _kind("agri_type", "Тип", "Type", "Tip",
               ("tractor", "Трактор", "Tractor", "Traktor"),
+              ("excavator", "Экскаватор", "Excavator", "Bager"),
+              ("loader", "Погрузчик", "Loader", "Utovarivač"),
               ("combine", "Комбайн", "Combine", "Kombajn"),
               ("tiller", "Мотоблок, мотокультиватор", "Tiller", "Motokultivator"),
               ("attachment", "Навесное и прицепное", "Attachments", "Priključne mašine"),
@@ -772,7 +779,7 @@ SUB_SCHEMAS.update({
     "tv-projectors": [_BRAND_REQUIRED, MODEL, CONDITION, _SCREEN_INCH, WARRANTY],
 
     # ——— одежда ———
-    "jewelry": [BRAND, CONDITION_SIMPLE, MATERIAL, GENDER],
+    # «Украшения» слиты в «Часы и украшения» (watches) — у них эти же поля.
 
     # ——— хобби и спорт ———
     "fishing-hunting": [BRAND, CONDITION_SIMPLE],
@@ -793,11 +800,9 @@ SUB_SCHEMAS.update({
     "building": [BRAND, CONDITION_SIMPLE],
     "plumbing": [BRAND, CONDITION_SIMPLE],
     "lighting": [BRAND, CONDITION_SIMPLE],
-    "textile": [MATERIAL, CONDITION_SIMPLE],
     "storage-home": [MATERIAL, DIMENSIONS, CONDITION_SIMPLE],
 
     # ——— детям ———
-    "car-seats": [_BRAND_REQUIRED, CONDITION_SIMPLE, _AGE_GROUP_REQUIRED],
     "kids-transport": [BRAND, CONDITION_SIMPLE, AGE_GROUP],
     "kids-feeding": [BRAND, CONDITION_SIMPLE],
 
@@ -810,3 +815,10 @@ SUB_SCHEMAS.update({
 # у домашней еды и бытовой химии нет ни «материала», ни «габаритов».
 # Пустая схема в базе значит «возьми у раздела», поэтому отдельный список.
 NO_FIELDS = {"food", "household-goods"}
+
+# Прежние наборы полей из кода. Если в базе лежит ровно такой набор,
+# значит, схему на месте не правили — это наша же старая версия, и её
+# можно заменить новой. Всё остальное sync_schemas считает ручной правкой.
+SUPERSEDED = {
+    "tv-audio": ["brand", "model", "condition", "screen_inch", "warranty"],
+}
