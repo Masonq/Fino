@@ -2178,7 +2178,10 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* подгрузка ленты при прокрутке */
 .feed-sentinel{
   display:flex; align-items:center; justify-content:center;
-  min-height:40px; padding:16px 0;
+  /* Место под подпись и под кнопку одинаковое: «Загружаем…» высотой 17
+     точек сменялось кнопкой в 45, и низ ленты подпрыгивал на каждой
+     смене. Теперь меняется только содержимое, высота стоит. */
+  min-height:69px; padding:12px 0;
 }
 .feed-loading{ font-size:12.5px; color:var(--muted); }
 
@@ -4398,7 +4401,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    Заметная, но не кричащая: это запасной путь, а не основной способ
    листать ленту. */
 .feed-more{
-  display:block; margin:12px auto 24px; padding:12px 28px;
+  /* Своих отступов кнопке больше не нужно: высоту держит .feed-sentinel,
+     а margin:12px 24px делал его непостоянным. */
+  display:block; margin:0 auto; padding:12px 28px;
   border-radius:14px; border:1px solid var(--line); background:var(--surface);
   font-size:15px; font-weight:700; color:var(--primary-deep);
 }

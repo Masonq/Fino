@@ -194,8 +194,10 @@ export default function Search() {
   const asked = useRef(0)
   const empty = useRef(0)
 
-  const loadMore = useCallback(() => {
-    if (loadingMore) return
+  // force — нажатие на «Показать ещё»: setStalled(false) в обработчике
+  // до этой функции не доходит, у неё своё замыкание со stalled = true.
+  const loadMore = useCallback((force = false) => {
+    if (loadingMore || (stalled && !force)) return
     setLoadingMore(true)
     const from = Math.max(asked.current, items.length)
     asked.current = from + PAGE
@@ -237,11 +239,19 @@ export default function Search() {
       }))
       .catch(() => {})
       .finally(() => setLoadingMore(false))
-  }, [query, items.length, loadingMore])
+  }, [query, items.length, loadingMore, stalled])
 
   // подгрузка при прокрутке вместо кнопки
   useEffect(() => {
-    if (!loaded || items.length === 0 || items.length >= total) return
+  // Пока лента остановлена, наблюдатель отключён.
+  //
+  // Иначе выходил вечный качель: приходили три порции без нового,
+  // показывалась кнопка «Показать ещё» — но наблюдатель висел на том
+  // же месте (запас 1400 точек, метка всегда в зоне) и тут же звал
+  // подгрузку снова. Кнопка сменялась на «Загружаем…», порция опять
+  // приходила пустой, кнопка возвращалась — и так по кругу, раз в
+  // полсекунды, с дёрганьем низа ленты.
+    if (!loaded || stalled || items.length === 0 || items.length >= total) return
     const el = sentinelRef.current
     if (!el) return
     const io = new IntersectionObserver(
@@ -257,7 +267,7 @@ export default function Search() {
     )
     io.observe(el)
     return () => io.disconnect()
-  }, [loaded, items.length, total, loadMore])
+  }, [loaded, stalled, items.length, total, loadMore])
 
   const resetFilters = () => {
     setCategory(''); setPriceMin(''); setPriceMax(''); setCity(''); setWithPhoto(false); setSort('new')
@@ -562,7 +572,7 @@ export default function Search() {
         {stalled && !loadingMore && (
           <button
             className="feed-more"
-            onClick={() => { empty.current = 0; setStalled(false); loadMore() }}
+            onClick={() => { empty.current = 0; setStalled(false); loadMore(true) }}
           >
             {t('feed.show_more')}
           </button>

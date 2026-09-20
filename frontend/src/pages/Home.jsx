@@ -423,8 +423,11 @@ export default function Home() {
   // Сколько порций подряд пришло без единой новой карточки.
   const empty = useRef(0)
 
-  const loadMore = useCallback(() => {
-    if (loadingMore) return
+  // force — нажатие на «Показать ещё». setStalled(false) в обработчике
+  // до этой функции не доходит: у неё своё замыкание, в котором stalled
+  // ещё true, и кнопка молча ничего не делала бы.
+  const loadMore = useCallback((force = false) => {
+    if (loadingMore || (stalled && !force)) return
     setLoadingMore(true)
     const from = Math.max(asked.current, listings.length)
     asked.current = from + PAGE
@@ -487,10 +490,18 @@ export default function Home() {
       })
       .catch(() => {})
       .finally(() => setLoadingMore(false))
-  }, [i18n.language, listings.length, loadingMore, city, tab])
+  }, [i18n.language, listings.length, loadingMore, stalled, city, tab])
 
   useEffect(() => {
-    if (!feedLoaded || listings.length >= feedTotal) return
+  // Пока лента остановлена, наблюдатель отключён.
+  //
+  // Иначе выходил вечный качель: приходили три порции без нового,
+  // показывалась кнопка «Показать ещё» — но наблюдатель висел на том
+  // же месте (запас 1400 точек, метка всегда в зоне) и тут же звал
+  // подгрузку снова. Кнопка сменялась на «Загружаем…», порция опять
+  // приходила пустой, кнопка возвращалась — и так по кругу, раз в
+  // полсекунды, с дёрганьем низа ленты.
+    if (!feedLoaded || stalled || listings.length >= feedTotal) return
     const el = sentinelRef.current
     if (!el) return
 
@@ -507,7 +518,7 @@ export default function Home() {
     )
     io.observe(el)
     return () => io.disconnect()
-  }, [feedLoaded, listings.length, feedTotal, loadMore])
+  }, [feedLoaded, stalled, listings.length, feedTotal, loadMore])
 
   useEffect(() => {
     // Ничего не грузим, только если на экране уже есть карточки этой
@@ -777,7 +788,7 @@ export default function Home() {
         {stalled && !loadingMore && (
           <button
             className="feed-more"
-            onClick={() => { empty.current = 0; setStalled(false); loadMore() }}
+            onClick={() => { empty.current = 0; setStalled(false); loadMore(true) }}
           >
             {t('feed.show_more')}
           </button>
