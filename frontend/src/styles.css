@@ -2983,7 +2983,15 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* все категории — на широких экранах в ряд */
 @media (min-width: 900px) {
-  .cats-grid{ grid-template-columns:repeat(5, 206px); justify-content:start; }
+  /* Пять плиток по двести шесть точек — это тысяча тридцать плюс
+     промежутки и поля: на девятистах двадцати точках такой ряд не
+     помещался, и страница уезжала за правый край. Сетка теперь сама
+     считает, сколько плиток встанет, а двести шесть держит потолком —
+     на широком мониторе они не раздуваются. */
+  .cats-grid{
+    grid-template-columns:repeat(auto-fill, minmax(170px, 206px));
+    justify-content:start;
+  }
   /* Заголовок был по центру всей ширины (position:absolute; left:0;
      right:0) — на телефоне это выглядит как обычная мобильная шапка
      (кнопка назад слева, заголовок по центру узкого экрана), но на
