@@ -49,20 +49,8 @@ CATEGORIES = [
         "icon": "briefcase",
         "image_url": "https://picsum.photos/seed/cat-jobs/220/220",
         "color": "#6D5DFC",
-        "attribute_schema": [
-            {"key": "listing_kind", "type": "select", "required": True,
-             "label": {"ru": "Тип объявления", "en": "Listing type", "sr": "Vrsta oglasa"},
-             "options": [{"value": "vacancy", "label": {"ru": "Вакансия", "en": "Vacancy", "sr": "Slobodno radno mesto"}},
-                         {"value": "resume", "label": {"ru": "Резюме", "en": "Resume", "sr": "Radna biografija"}}]},
-            {"key": "employment_type", "type": "select", "required": False,
-             "label": {"ru": "Тип занятости", "en": "Employment type", "sr": "Vrsta zaposlenja"},
-             "options": [{"value": "full_time", "label": {"ru": "Полная занятость", "en": "Full-time", "sr": "Puno radno vreme"}},
-                         {"value": "part_time", "label": {"ru": "Частичная занятость", "en": "Part-time", "sr": "Skraćeno radno vreme"}}]},
-            {"key": "salary_min", "type": "number", "unit": "currency", "required": False,
-             "label": {"ru": "Зарплата от", "en": "Salary from", "sr": "Plata od"}},
-            {"key": "salary_max", "type": "number", "unit": "currency", "required": False,
-             "label": {"ru": "Зарплата до", "en": "Salary to", "sr": "Plata do"}},
-        ],
+        # схема — в app/data/schemas.py (SCHEMAS["jobs"]), один источник
+        "attribute_schema": [],
     },
     # Этап 2 — остальные категории из ТЗ, без модерации/наполнения пока, но уже видны в каталоге
     {

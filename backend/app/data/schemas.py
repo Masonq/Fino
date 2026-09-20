@@ -460,21 +460,36 @@ SCHEMAS: dict[str, list[dict]] = {
     # Вакансии: первое, что смотрят — можно ли удалённо и сколько часов.
     # До сих пор у раздела «Работа» не было полей вовсе, и это стояло в
     # описании вперемешку с обязанностями.
+    # Собрано из двух версий. В базе с самого начала живёт схема из
+    # seed_categories (тип объявления, занятость, зарплата), а 18 сентября
+    # в коде появилась другая — формат, график, опыт, сербский — без
+    # первых. Заменить одну другой нельзя: на listing_kind держатся плитки
+    # «Вакансии»/«Резюме» (listings.py), страница резюме и автопост, а
+    # зарплата — первое, что смотрят в вакансии.
     "jobs": [
+        {"key": "listing_kind", "type": "select", "required": True,
+         "label": _label("Тип объявления", "Listing type", "Vrsta oglasa"),
+         "options": _options(
+             ("vacancy", "Вакансия", "Vacancy", "Slobodno radno mesto"),
+             ("resume", "Резюме", "Resume", "Radna biografija"),
+         )},
+        # Ключ и первые два значения — прежние: так пишет разбор из
+        # Telegram и так лежит в объявлениях. «График» из новой версии
+        # был тем же вопросом под другим ключом; его значения — сюда.
+        {"key": "employment_type", "type": "select", "required": False,
+         "label": _label("Занятость", "Employment type", "Vrsta zaposlenja"),
+         "options": _options(
+             ("full_time", "Полная занятость", "Full-time", "Puno radno vreme"),
+             ("part_time", "Частичная занятость", "Part-time", "Skraćeno radno vreme"),
+             ("shift", "Сменный график", "Shifts", "Smenski rad"),
+             ("one_off", "Разовая работа", "One-off job", "Povremeni posao"),
+         )},
         {"key": "work_format", "type": "select", "required": False,
          "label": _label("Формат работы", "Work format", "Način rada"),
          "options": _options(
              ("office", "В офисе", "On-site", "U kancelariji"),
              ("remote", "Удалённо", "Remote", "Rad od kuće"),
              ("hybrid", "Гибрид", "Hybrid", "Hibridno"),
-         )},
-        {"key": "schedule", "type": "select", "required": False,
-         "label": _label("График", "Schedule", "Radno vreme"),
-         "options": _options(
-             ("full", "Полный день", "Full time", "Puno radno vreme"),
-             ("shift", "Сменный", "Shifts", "Smenski rad"),
-             ("part", "Частичная занятость", "Part time", "Skraćeno radno vreme"),
-             ("task", "Разовое задание", "One-off task", "Povremeni posao"),
          )},
         {"key": "experience", "type": "select", "required": False,
          "label": _label("Опыт", "Experience", "Iskustvo"),
@@ -485,6 +500,10 @@ SCHEMAS: dict[str, list[dict]] = {
          )},
         {"key": "serbian_needed", "type": "boolean", "required": False,
          "label": _label("Нужен сербский", "Serbian required", "Potreban srpski")},
+        {"key": "salary_min", "type": "number", "unit": "currency", "required": False,
+         "label": _label("Зарплата от", "Salary from", "Plata od")},
+        {"key": "salary_max", "type": "number", "unit": "currency", "required": False,
+         "label": _label("Зарплата до", "Salary to", "Plata do")},
     ],
     "business": [BRAND, CONDITION_SIMPLE, YEAR, PAYMENT_WAY, HANDOVER],
 }
@@ -867,6 +886,9 @@ SUPERSEDED: dict[str, list[list[str]]] = {
                      "warranty:boolean"]],
     "tv-audio": [["brand:text", "model:text", "condition:select", "screen_inch:number",
                   "warranty:boolean"]],
+    # схема из seed_categories.py, с которой раздел живёт с самого начала
+    "jobs": [["listing_kind:select", "employment_type:select",
+              "salary_min:number", "salary_max:number"]],
 }
 
 

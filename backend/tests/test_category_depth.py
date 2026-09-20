@@ -134,3 +134,20 @@ def test_old_code_schemas_are_recognised():
     for slug, versions in SUPERSEDED.items():
         assert slug in current, slug
         assert fingerprint(current[slug]) not in versions, slug
+
+
+def test_jobs_schema_keeps_what_the_code_relies_on():
+    """
+    Версия схемы «Работы» от 18 сентября не содержала listing_kind — а на
+    нём держатся плитки «Вакансии»/«Резюме», страница резюме и автопост.
+    Спасло то, что sync_schemas не тронул отличающуюся схему в базе.
+    """
+    from app.data.schemas import SCHEMAS
+
+    fields = {f["key"]: f for f in SCHEMAS["jobs"]}
+    kinds = {o["value"] for o in fields["listing_kind"]["options"]}
+    assert {"vacancy", "resume"} <= kinds
+    # значения, которые уже лежат в объявлениях и которые пишет разбор
+    employment = {o["value"] for o in fields["employment_type"]["options"]}
+    assert {"full_time", "part_time"} <= employment
+    assert {"salary_min", "salary_max"} <= set(fields)

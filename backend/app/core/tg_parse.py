@@ -1998,10 +1998,16 @@ def extract_attributes(category_slug: str, text: str) -> dict:
             attrs["volume_ml"] = int(m.group(1))
 
     elif category_slug == "jobs":
-        if any(w in low for w in ("полная занятость", "полный день", "full time", "puno radno")):
+        if any(w in low for w in ("сменный график", "посменно", "смены 2/2", "smenski", "rad u smenama")):
+            attrs["employment_type"] = "shift"
+        elif any(w in low for w in ("полная занятость", "полный день", "full time", "puno radno")):
             attrs["employment_type"] = "full_time"
         elif any(w in low for w in ("частичная занятость", "подработк", "part time", "skraceno")):
             attrs["employment_type"] = "part_time"
+        if any(w in low for w in ("удалённ", "удаленн", "удалёнк", "удаленк", "remote", "rad od kuće", "rad od kuce")):
+            attrs["work_format"] = "remote"
+        elif any(w in low for w in ("гибрид", "hybrid", "hibridn")):
+            attrs["work_format"] = "hybrid"
 
     return attrs
 
