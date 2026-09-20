@@ -2520,14 +2520,17 @@ def test_new_categories_cover_the_known_gaps():
         dslug for children in NEW.values()
         for *_, deep in children for dslug, *_ in deep}
 
-    for needed in ("gpu", "ram", "kids-bikes", "skate-roller",
+    # Коды — те, что остались после слияния двойников: детские
+    # велосипеды живут в «Детском транспорте», няни — в «Нянях и уходе»,
+    # лодки — в «Лодках и катерах».
+    for needed in ("gpu", "ram", "kids-transport", "skate-roller",
                    "multicookers", "fridges", "washing-machines",
                    # Второй проход по дереву: услуги были самым бедным
                    # разделом — няня, фотограф и переводчик подать
                    # объявление попросту не могли.
-                   "nannies", "photo-video", "translation",
+                   "childcare", "photo-video", "translation",
                    # Белград стоит на двух реках, лодки тут продают.
-                   "boats",
+                   "water",
                    # У «Товаров для животных» подразделов почти не было.
                    #
                    # Корма и переноски отсюда убраны: такие разделы там
@@ -2559,6 +2562,13 @@ def test_new_categories_do_not_repeat_existing_ones():
             for j, b in enumerate(words[i + 1:], start=i + 1):
                 # Полное совпадение слов — это одно и то же название,
                 # переставленное местами.
+                # Названия без русских слов («iPhone», «Samsung») дают
+                # пустые наборы — они равны друг другу, но это не повтор.
+                # Из-за этого тест падал на первом же разделе и не
+                # доходил до настоящих двойников вроде «Охота и рыбалка»
+                # рядом с «Рыбалка и охота».
+                if not a or not b:
+                    continue
                 assert a != b, f"{parent}: {names[i]} и {names[j]}"
 
 
@@ -2988,9 +2998,11 @@ def test_all_late_sections_are_known_to_the_classifier():
         ("kitchen-small", "микроволновка"): "microwaves",
         ("kids-transport", "беговел"): "balance-bikes",
         ("hobby-sport", "боксёрские перчатки"): "martial-arts",
-        ("hobby-sport", "спиннинг для рыбалки"): "hunting-fishing",
+        # Раздел один — «Рыбалка и охота»; двойник «Охота и рыбалка» слит.
+        ("hobby-sport", "спиннинг для рыбалки"): "fishing-hunting",
         ("services", "перевод документов"): "translation",
-        ("services", "няня на полдня"): "nannies",
+        # «Няни и уход за детьми» слиты в «Няни и уход».
+        ("services", "няня на полдня"): "childcare",
         ("services", "груминг собак"): "pet-services",
         ("electronics", "роутер tp-link"): "network-gear",
         ("electronics", "телевизор samsung"): "tv-projectors",
