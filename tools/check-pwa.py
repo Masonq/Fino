@@ -2,23 +2,31 @@
 """
 Проверка приложения, добавленного на домашний экран.
 
-В таком режиме нет адресной строки браузера: сверху сразу часы и
-вырез, снизу — полоска жеста «домой». Отступы под них задаёт система
-через env(safe-area-inset-*), и на обычном мониторе они равны нулю —
-поэтому в браузере всё выглядит ровно, а на телефоне содержимое лезет
-под часы и под полоску.
+В таком режиме нет адресной строки браузера: сверху сразу часы и вырез,
+снизу — полоска жеста «домой». Отступы под них даёт система через
+env(safe-area-inset-*), а на мониторе они нулевые — поэтому в браузере
+всё выглядит ровно, а на телефоне содержимое лезет под часы.
 
-Здесь эти поля подменяются вручную (59 сверху, 34 снизу — iPhone с
-вырезом): в styles.css они читаются через переменные --sat/--sab
-именно для того, чтобы их можно было подставить снаружи.
+Здесь эти поля подставляются вручную (59 сверху, 34 снизу): в
+styles.css они читаются через переменные --sat/--sab именно ради этого.
 
-Проверяется две вещи: не стоит ли что-нибудь в зоне часов и не
-прячется ли конец страницы под нижней панелью.
+Проверяется, не стоит ли что-нибудь в зоне часов и не прячется ли
+конец страницы под нижней панелью. Меряется по самому тексту, а не по
+коробке: у шапки внутри свой отступ под вырез, и её верхний край в
+зоне часов — это нормально.
 
 Запуск:  python3 tools/check-pwa.py
 Нужна поднятая локальная база (как для tools/check-browser.py).
 """
 import json, os, subprocess, sys, time, urllib.request
+from playwright.sync_api import sync_playwright
+ROOT="/home/claude/plonk"; API=8560; WEB=5606
+ids=json.load(open('/tmp/ids.json')); TOKEN=ids["token"]
+env={**os.environ,"DATABASE_URL":"postgresql://plonk:plonk@127.0.0.1/plonk","SECRET_KEY":"x","MEDIA_DIR":"/tmp/plonk-media"}
+open(f"{ROOT}/frontend/vite.pwa.mjs","w").write("""import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+export default defineConfig({ plugins:[react()], server:{ port:%d, host:'127.0.0.1', proxy:{'/api':'http://127.0.0.1:%d','/media':'http://127.0.0.1:%d'} } })
+"""%import json, os, subprocess, sys, time, urllib.request
 from playwright.sync_api import sync_playwright
 ROOT="/home/claude/plonk"; API=8560; WEB=5606
 ids=json.load(open('/tmp/ids.json')); TOKEN=ids["token"]
@@ -44,7 +52,12 @@ CHECK = """([sat, sab]) => {
   for (const e of document.querySelectorAll('button, a, input, h1, h2, .page-header, .card, .listing-card')) {
     const cs=getComputedStyle(e);
     if (cs.display==='none'||cs.visibility==='hidden'||+cs.opacity===0) continue;
-    const r=e.getBoundingClientRect();
+    let r=e.getBoundingClientRect();
+    // меряем по самому тексту, а не по коробке: у шапки внутри свой
+    // отступ под вырез, и её верхний край в зоне часов — это нормально
+    const rg=document.createRange(); rg.selectNodeContents(e);
+    const tr=rg.getBoundingClientRect();
+    if (tr.width>4 && tr.height>4) r=tr;
     if (r.width<10||r.height<10||r.top<-200) continue;
     if (r.top < sat && r.bottom > 4) {
       const name=e.tagName.toLowerCase()+(typeof e.className==='string'&&e.className?'.'+e.className.trim().split(/\\s+/)[0]:'');

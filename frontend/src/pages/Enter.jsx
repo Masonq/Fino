@@ -36,7 +36,7 @@ export default function Enter() {
   }, [params, signIn, navigate])
 
   return (
-    <div className="page enter-page">
+    <div className="page no-header enter-page">
       {blocked ? (
         <>
           <p className="empty">{t('auth.err_blocked')}</p>

@@ -1242,11 +1242,22 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* Общая страница. Класс использовали восемь экранов, а описания у него
    не было вовсе — поля и списки упирались в края телефона. */
 .page{
-  padding:calc(14px + var(--sat)) 16px
-          calc(20px + var(--sab));
+  /* Как и у .fav-page: вырез держит шапка внутри страницы, иначе он
+     считается дважды. Нижнее поле остаётся на странице — там своей
+     шапки нет. */
+  padding:14px 16px calc(20px + var(--sab));
 }
+/* Страница без шапки сама отвечает за вырез. */
+.page.no-header{ padding-top:calc(14px + var(--sat)); }
 
-.fav-page{ padding:calc(14px + var(--sat)) 0 20px; }
+/* Вырез учитывает шапка внутри страницы (.page-header), а не сама
+   страница: иначе он считался дважды — 59 точек статус-бара плюс ещё
+   59 — и в приложении с домашнего экрана заголовки «Избранное»,
+   «Сообщения», «Профиль» висели почти посреди экрана. В браузере
+   этого не видно: там вырез равен нулю. */
+.fav-page{ padding:14px 0 20px; }
+/* На страницах без своей шапки вырез по-прежнему держит сама страница. */
+.fav-page.no-header{ padding-top:calc(14px + var(--sat)); }
 .fav-page h2{
   display:flex; align-items:center; gap:8px;
   font-size:22px; font-weight:800; letter-spacing:-0.01em; padding:0 12px 14px;
@@ -3920,19 +3931,15 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    можно задать ширину, а кнопке внутри — занять её целиком. */
 .auth-google{
   /* Место под кнопку занято с самого начала — той же высоты, что у
-     соседних кнопок входа. */
+     соседних кнопок входа, чтобы появление ничего не сдвигало. */
   position:relative; width:100%; max-width:340px;
-  margin:0 0 10px; min-height:52px;
+  margin:0 0 10px; min-height:48px;
+  display:flex; align-items:center; justify-content:center;
 }
-/* Высота — как у соседних кнопок входа, независимо от содержимого. */
-.auth-google-face{ margin:0; min-height:52px; pointer-events:none; }
-/* Настоящая кнопка Google — прозрачным слоем поверх нашей: она и
-   ловит нажатие. Растянута на всю площадь, чтобы попадание совпадало
-   с тем, что человек видит. */
-.auth-google-slot{ position:absolute; inset:0; opacity:0; }
+.auth-google-slot{ width:100%; }
 .auth-google-slot > div,
 .auth-google-slot > div > div,
-.auth-google-slot iframe{ width:100% !important; height:100% !important; max-width:none !important; }
+.auth-google-slot iframe{ width:100% !important; max-width:none !important; }
 /* Пока скрипт Google едет — серый силуэт той же формы. */
 .auth-google.loading::after{
   content:''; position:absolute; inset:0; border-radius:14px;

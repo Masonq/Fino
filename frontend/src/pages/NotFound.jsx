@@ -11,7 +11,7 @@ export default function NotFound() {
   const navigate = useNavigate()
 
   return (
-    <div className="fav-page">
+    <div className="fav-page no-header">
       <div className="fav-empty">
         <div className="fav-empty-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
