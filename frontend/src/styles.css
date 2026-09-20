@@ -5776,3 +5776,15 @@ a.s-attrs{ display:block; }
     color:var(--ink); font-size:22px; text-shadow:none; padding:0;
   }
 }
+
+/* Левая колонка профиля на широком экране — 300 точек, и три плитки
+   показателей в ней не помещаются: «в избранном» обрезалось на
+   середине слова. Раскладываем их в столбец — места по высоте в
+   колонке достаточно, а читаются они так даже лучше. */
+@media (min-width: 900px) {
+  .profile-sidebar .profile-stats{
+    display:grid; grid-template-columns:1fr; gap:8px;
+  }
+  /* Подпись целиком в строку: ради этого всё и затевалось. */
+  .profile-sidebar .profile-stat span{ white-space:nowrap; }
+}
