@@ -2216,7 +2216,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
      где ей развернуться). */
   .profile-page{ max-width:1040px; margin:0 auto; }
   .profile-layout{
-    display:grid; grid-template-columns:300px 1fr; gap:22px; align-items:start;
+    /* minmax(0, 1fr) вместо 1fr: без нуля правая колонка не сжимается
+       уже своего содержимого — список пунктов идёт в ней в две
+       колонки, и на девятистах двадцати точках они не влезали рядом с
+       левой, страница уезжала за правый край на шестнадцать точек. */
+    display:grid; grid-template-columns:300px minmax(0, 1fr);
+    gap:22px; align-items:start;
     position:relative;
   }
   /* Колонки закреплены за элементами явно. Иначе, когда сайдбар
