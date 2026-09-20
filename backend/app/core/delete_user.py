@@ -82,6 +82,55 @@ def columns(db, table: str) -> set:
     return {r[0] for r in rows}
 
 
+def wipe(db, ids: list) -> dict:
+    """Стереть людей по списку id. Возвращает, что удалилось.
+
+    Отдельной функцией — чтобы тем же кодом пользовалась и кнопка в
+    админке: два разных способа удаления разошлись бы через месяц, и
+    один из них оставлял бы хвосты.
+    """
+    listing_ids = [r[0] for r in db.execute(text(
+        "select id from listings where owner_id = any(:u)"), {"u": ids}).fetchall()]
+    chat_ids = [r[0] for r in db.execute(text(
+        "select id from chats where buyer_id = any(:u) or seller_id = any(:u)"
+        " or listing_id = any(:l)"),
+        {"u": ids, "l": listing_ids or [None]}).fetchall()]
+
+    # 1. Всё, что висит на переписках и объявлениях.
+    if chat_ids:
+        db.execute(text("delete from messages where chat_id = any(:c)"), {"c": chat_ids})
+        db.execute(text("delete from chats where id = any(:c)"), {"c": chat_ids})
+    if listing_ids:
+        for table, col in LISTING_CHILDREN:
+            if table in ("messages", "chats"):
+                continue
+            if col not in columns(db, table):
+                continue
+            db.execute(text(f"delete from {table} where {col} = any(:l)"), {"l": listing_ids})
+        db.execute(text("delete from listings where id = any(:l)"), {"l": listing_ids})
+
+    # 2. Всё, что висит на самом человеке.
+    for table, col in USER_ROWS:
+        if col not in columns(db, table):
+            continue
+        db.execute(text(f"delete from {table} where {col} = any(:u)"), {"u": ids})
+
+    # 3. Обезличиваем то, что стирать нельзя.
+    if "actor_id" in columns(db, "audit_log"):
+        db.execute(text("update audit_log set actor_id = null where actor_id = any(:u)"),
+                   {"u": ids})
+    if "referred_by" in columns(db, "users"):
+        db.execute(text("update users set referred_by = null where referred_by = any(:u)"),
+                   {"u": ids})
+
+    db.execute(text("delete from users where id = any(:u)"), {"u": ids})
+    db.commit()
+
+    db.execute(text("delete from users where id = any(:u)"), {"u": ids})
+    db.commit()
+    return {"users": len(ids), "listings": len(listing_ids), "chats": len(chat_ids)}
+
+
 def main(who: list[str], apply: bool) -> None:
     """Кого удалять — почта, номер в Telegram или имя целиком.
 
@@ -118,35 +167,7 @@ def main(who: list[str], apply: bool) -> None:
             print("\nэто был показ. Чтобы удалить, добавьте --apply")
             return
 
-        # 1. Всё, что висит на переписках и объявлениях.
-        if chat_ids:
-            db.execute(text("delete from messages where chat_id = any(:c)"), {"c": chat_ids})
-            db.execute(text("delete from chats where id = any(:c)"), {"c": chat_ids})
-        if listing_ids:
-            for table, col in LISTING_CHILDREN:
-                if table in ("messages", "chats"):
-                    continue
-                if col not in columns(db, table):
-                    continue
-                db.execute(text(f"delete from {table} where {col} = any(:l)"), {"l": listing_ids})
-            db.execute(text("delete from listings where id = any(:l)"), {"l": listing_ids})
-
-        # 2. Всё, что висит на самом человеке.
-        for table, col in USER_ROWS:
-            if col not in columns(db, table):
-                continue
-            db.execute(text(f"delete from {table} where {col} = any(:u)"), {"u": ids})
-
-        # 3. Обезличиваем то, что стирать нельзя.
-        if "actor_id" in columns(db, "audit_log"):
-            db.execute(text("update audit_log set actor_id = null where actor_id = any(:u)"),
-                       {"u": ids})
-        if "referred_by" in columns(db, "users"):
-            db.execute(text("update users set referred_by = null where referred_by = any(:u)"),
-                       {"u": ids})
-
-        db.execute(text("delete from users where id = any(:u)"), {"u": ids})
-        db.commit()
+        wipe(db, ids)
         print(f"удалено людей: {len(ids)}")
     finally:
         db.close()

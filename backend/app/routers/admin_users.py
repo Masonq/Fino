@@ -532,3 +532,33 @@ def user_logins(
             for e in events
         ],
     }
+
+
+@router.delete("/{user_id}")
+def delete_user_forever(
+    user_id: uuid.UUID,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Стереть человека совсем — вместе с объявлениями и перепиской.
+
+    Только владелец: модератору для его работы хватает блокировки, а
+    это действие необратимо.
+
+    Нужно для своих же тестовых входов и мусорных регистраций: раньше
+    ради каждого приходилось лезть на сервер руками.
+    """
+    user = db.get(User, user_id)
+    if not user:
+        raise HTTPException(404, "not_found")
+    if user.id == admin.id:
+        # Иначе владелец одним нажатием остаётся без доступа к админке.
+        raise HTTPException(400, "cannot_delete_self")
+    if user.role == UserRole.admin:
+        raise HTTPException(400, "cannot_delete_admin")
+
+    name = user.display_name or user.email or str(user.id)
+    record(db, admin, "user.delete", target_type="user", target_id=user.id, reason=name)
+
+    from app.core.delete_user import wipe
+    return wipe(db, [user.id])

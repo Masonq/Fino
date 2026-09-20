@@ -635,7 +635,11 @@
     "reset_name": "Reset name",
     "name_reset_done": "Name reset",
     "tag_renaming": "renaming",
-    "empty_hint": "Nobody matches the filter. Change it or search by name."
+    "empty_hint": "Nobody matches the filter. Change it or search by name.",
+    "delete_user": "Delete forever",
+    "delete_confirm": "Yes, delete",
+    "delete_warn": "This permanently erases {{name}}, all their listings ({{listings}}) and all their chats. This cannot be undone — use a block for real people.",
+    "err_delete": "Could not delete"
   },
   "stats": {
     "title": "Numbers",

@@ -160,6 +160,7 @@ export const api = {
     body: JSON.stringify({ reason }),
   }),
   adminUnblock: (id) => request(`/admin/users/${id}/unblock`, { method: 'POST' }),
+  adminDeleteUser: (id) => request(`/admin/users/${id}`, { method: 'DELETE' }),
   adminResetName: (id) => request(`/admin/users/${id}/reset-name`, { method: 'POST' }),
   adminRequestReverify: (id) => request(`/verification/moderation/${id}/reverify`, { method: 'POST' }),
   // Платное продвижение объявления — три типа, оплата через ЮKassa

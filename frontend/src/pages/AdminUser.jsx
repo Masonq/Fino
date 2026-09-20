@@ -33,6 +33,9 @@ export default function AdminUser() {
   const [busy, setBusy] = useState(false)
   const [denied, setDenied] = useState(false)
   const [blocking, setBlocking] = useState(false)
+  // Удаление стирает человека совсем, поэтому два шага: первое нажатие
+  // показывает, что именно пропадёт, второе — стирает.
+  const [deleting, setDeleting] = useState(false)
   const [reason, setReason] = useState('')
 
   const canEdit = me?.role === 'admin'
@@ -87,6 +90,14 @@ export default function AdminUser() {
       setCard((c) => ({ ...c, display_name: res.display_name, must_rename: true }))
     } catch { alert(t('auth.err_generic')) }
     finally { setBusy(false) }
+  }
+
+  const removeForever = async () => {
+    setBusy(true)
+    try {
+      await api.adminDeleteUser(id)
+      navigate('/admin/users', { replace: true })
+    } catch { alert(t('admin.err_delete')) } finally { setBusy(false) }
   }
 
   const unblock = async () => {
@@ -181,6 +192,14 @@ export default function AdminUser() {
           <button disabled={busy || card.must_rename} onClick={resetName}>
             {card.must_rename ? t('admin.name_reset_done') : t('admin.reset_name')}
           </button>
+          {/* Удаление — только владельцу и только для своих тестовых
+              входов: у настоящего человека блокировка сохраняет историю,
+              а это стирает всё насовсем. */}
+          {card.role !== 'admin' && (
+            <button className="danger" disabled={busy} onClick={() => setDeleting(true)}>
+              {t('admin.delete_user')}
+            </button>
+          )}
         </div>
       )}
 
@@ -196,6 +215,23 @@ export default function AdminUser() {
           <div className="admin-actions">
             <button onClick={() => { setBlocking(false); setReason('') }}>{t('actions.cancel')}</button>
             <button className="danger" disabled={busy || !reason.trim()} onClick={block}>{t('admin.block')}</button>
+          </div>
+        </div>
+      )}
+
+      {deleting && (
+        <div className="admin-confirm">
+          <p className="admin-note">
+            {t('admin.delete_warn', {
+              listings: card.listings_total ?? 0,
+              name: card.display_name || card.email || '—',
+            })}
+          </p>
+          <div className="admin-actions">
+            <button disabled={busy} onClick={() => setDeleting(false)}>{t('actions.cancel')}</button>
+            <button className="danger" disabled={busy} onClick={removeForever}>
+              {t('admin.delete_confirm')}
+            </button>
           </div>
         </div>
       )}

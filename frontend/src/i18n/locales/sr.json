@@ -645,7 +645,11 @@
     "reset_name": "Poništi ime",
     "name_reset_done": "Ime poništeno",
     "tag_renaming": "menja ime",
-    "empty_hint": "Niko ne odgovara filteru. Promenite ga ili pretražite po imenu."
+    "empty_hint": "Niko ne odgovara filteru. Promenite ga ili pretražite po imenu.",
+    "delete_user": "Obriši zauvek",
+    "delete_confirm": "Da, obriši",
+    "delete_warn": "Trajno se brišu: {{name}}, svi njegovi oglasi ({{listings}}) i sve prepiske. Ne može da se poništi — za prave ljude koristite blokadu.",
+    "err_delete": "Nije uspelo brisanje"
   },
   "stats": {
     "title": "Brojevi",
