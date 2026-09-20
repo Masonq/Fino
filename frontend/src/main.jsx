@@ -56,6 +56,24 @@ try {
   if (changed) window.history.replaceState({}, '', u.pathname + u.search + u.hash)
 } catch { /* всё равно ничего не сломает, просто параметры останутся в строке */ }
 
+// Высота видимой области — в переменную, и обновляем при изменениях.
+//
+// На iOS в приложении с домашнего экрана 100vh и 100dvh отдают высоту
+// всего экрана, а не видимой части: разница около шести десятков
+// точек. Оболочка вылезала за низ, страница получала лишнюю прокрутку,
+// и закреплённая нижняя панель уезжала вместе с ней — на коротких
+// экранах висела над краем. innerHeight всегда равен видимой области,
+// и в браузере, и в приложении.
+const setViewportHeight = () => {
+  document.documentElement.style.setProperty('--app-h', `${window.innerHeight}px`)
+}
+setViewportHeight()
+window.addEventListener('resize', setViewportHeight)
+window.addEventListener('orientationchange', setViewportHeight)
+// visualViewport меняется, когда выезжает клавиатура — без этого
+// высота остаётся прежней и экран под клавиатурой не пересчитывается.
+window.visualViewport?.addEventListener('resize', setViewportHeight)
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary>
