@@ -273,6 +273,16 @@ def create_listing(
     return {"id": str(listing.id), "status": listing.status}
 
 
+def _branch_ids(cat) -> list:
+    """Раздел и все его подразделы на любую глубину."""
+    ids, stack = [], [cat]
+    while stack:
+        node = stack.pop()
+        ids.append(node.id)
+        stack.extend(node.children or [])
+    return ids
+
+
 @router.get("")
 def search_listings(
     q_text: str | None = Query(None, alias="q"),
@@ -458,8 +468,10 @@ def search_listings(
             # «Электроника» была бы пустой, ведь объявления лежат в «Телефонах».
             cat = db.query(Category).filter(Category.slug == category_slug).first()
             if cat:
-                ids = [cat.id] + [c.id for c in cat.children]
-                q = q.filter(Listing.category_id.in_(ids))
+                # Все уровни вниз, а не только прямые дети: появился третий
+                # уровень («Оборудование» → «Пищевое»), и объявления из него
+                # выпадали — счётчик обещал три, список показывал одно.
+                q = q.filter(Listing.category_id.in_(_branch_ids(cat)))
             else:
                 q = q.join(Category).filter(Category.slug == category_slug)
     if city:

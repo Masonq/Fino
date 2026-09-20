@@ -10,6 +10,7 @@
 человек с десятком объявлений в день заметен сразу, и владелец должен
 узнать об этом от нас, а не от недовольных читателей.
 """
+from app.core.plural import count as _cnt
 from datetime import timedelta
 
 from sqlalchemy import func
@@ -42,7 +43,7 @@ def build(chat_id: int, days: int = 7) -> str:
         )
         total = base.count()
         if not total:
-            return (f"За {days} дней через бота не опубликовали ничего.\n\n"
+            return (f"За {_cnt(days, 'день', 'дня', 'дней')} через бота не опубликовали ничего.\n\n"
                     "Если объявления в чате есть, значит люди пишут их "
                     "по-старому — и бот не мешает.")
 
@@ -81,7 +82,7 @@ def build(chat_id: int, days: int = 7) -> str:
                                     Listing.is_free.is_(False)).count()
 
     lines = [
-        f"<b>Барахолка за {days} дней</b>",
+        f"<b>Барахолка за {_cnt(days, 'день', 'дня', 'дней')}</b>",
         "",
         f"Опубликовано через бота: <b>{total}</b>",
     ]

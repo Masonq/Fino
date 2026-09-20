@@ -9,6 +9,7 @@
 Собирается на лету, а не лежит готовым файлом: объявления появляются
 каждый час, и суточной давности карта звала бы поисковика на снятые.
 """
+from app.core.plural import count as _cnt
 from datetime import timedelta
 from xml.sax.saxutils import escape
 
@@ -40,7 +41,7 @@ LANGS = ("ru", "en", "sr")
 CATEGORY_TEXTS = {
     "ru": {
         "title": "{name} — объявления в Белграде и Сербии | PLONK",
-        "with_count": "{name} в Сербии на PLONK: {count} свежих объявлений",
+        "with_count": "{name} в Сербии на PLONK — свежих объявлений: {count}",
         "plain": "{name} в Сербии на PLONK",
         "tail": ". Покупайте и продавайте рядом с домом, на русском, "
                 "английском и сербском.",
@@ -49,7 +50,7 @@ CATEGORY_TEXTS = {
     },
     "en": {
         "title": "{name} — classifieds in Belgrade and Serbia | PLONK",
-        "with_count": "{name} in Serbia on PLONK: {count} fresh listings",
+        "with_count": "{name} in Serbia on PLONK — fresh listings: {count}",
         "plain": "{name} in Serbia on PLONK",
         "tail": ". Buy and sell close to home, in Russian, English "
                 "and Serbian.",
@@ -58,7 +59,7 @@ CATEGORY_TEXTS = {
     },
     "sr": {
         "title": "{name} — oglasi u Beogradu i Srbiji | PLONK",
-        "with_count": "{name} u Srbiji na PLONK: {count} novih oglasa",
+        "with_count": "{name} u Srbiji na PLONK — novih oglasa: {count}",
         "plain": "{name} u Srbiji na PLONK",
         "tail": ". Kupujte i prodajte blizu kuće, na ruskom, engleskom "
                 "i srpskom.",
@@ -881,7 +882,7 @@ def _plain_page(site: str, path: str, request: Request) -> str:
 <head>
 <meta charset="utf-8">
 <title>{esc(title)}</title>
-<meta name="description" content="Объявления в Белграде и по всей Сербии: недвижимость, авто, электроника, работа, услуги. Сейчас на сайте {total} объявлений.">
+<meta name="description" content="Объявления в Белграде и по всей Сербии: недвижимость, авто, электроника, работа, услуги. Сейчас на сайте {_cnt(total, 'объявление', 'объявления', 'объявлений')}.">
 <link rel="canonical" href="{site}{path}">
 </head>
 <body>

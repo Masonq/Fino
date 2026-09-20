@@ -19,6 +19,7 @@
     python3 -m app.core.seller_digest            разослать
     python3 -m app.core.seller_digest --dry-run  посмотреть, кому и что
 """
+from app.core.plural import count as _cnt
 import argparse
 import logging
 from datetime import timedelta
@@ -123,7 +124,7 @@ def _text(stats: dict) -> str:
 
     if title and stats["top_views"]:
         lines += ["", f"Чаще всего смотрели «{title[:60]}» — "
-                      f"{stats['top_views']} раз."]
+                      f"{_cnt(stats['top_views'], 'раз', 'раза', 'раз')}."]
 
     advice = _advice(stats)
     if advice:

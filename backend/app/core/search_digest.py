@@ -126,7 +126,7 @@ def run(dry_run: bool = False, limit: int | None = None) -> int:
             from app.core.notifications import notify
 
             notify(db, user_id, text, allow_email=True,
-                   subject=f"PLONK — по вашим поискам {total} новых",
+                   subject=f"PLONK — новое по вашим поискам: {total}",
                    link=link)
 
             # Отмечаем поиски как рассказанные и считаем неоткрытые

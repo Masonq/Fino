@@ -64,6 +64,8 @@ export function since(iso, t, lang) {
   if (!iso) return ''
   const d = new Date(iso + 'Z')
   const days = (Date.now() - d.getTime()) / 86400000
+  // «только что назад» — так не говорят: у «только что» своего «назад» нет.
+  if (days * 86400 < 60) return t('chats.just_now')
   if (days < 7) return t('misc.ago', { when: timeAgo(iso, t, lang) })
   const sameYear = d.getFullYear() === new Date().getFullYear()
   return d.toLocaleDateString(lang || undefined, sameYear

@@ -9,6 +9,7 @@
 Запускается раз в сутки:
     python3 -m app.core.digest
 """
+from app.core.plural import count as _cnt
 import logging
 from datetime import datetime, timedelta
 
@@ -108,7 +109,7 @@ def render(data: dict) -> tuple[str, str] | None:
 
     # тема должна говорить, что внутри — иначе письмо не откроют
     if data["unread"] and data["matches"]:
-        subject = f"PLONK: {data['unread']} сообщений и новые объявления"
+        subject = f"PLONK: {_cnt(data['unread'], 'сообщение', 'сообщения', 'сообщений')} и новые объявления"
     elif data["unread"]:
         subject = f"PLONK: новых сообщений — {data['unread']}"
     elif data["matches"]:

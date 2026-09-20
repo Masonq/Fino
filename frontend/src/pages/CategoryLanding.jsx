@@ -94,6 +94,10 @@ export default function CategoryLanding() {
 
   const [fresh, setFresh] = useState([])
   const [freshLoading, setFreshLoading] = useState(true)
+  // Число объявлений — из того же поиска, что откроется по кнопке (с
+  // городом). Счётчик из дерева разделов города не знает: обещал «3»,
+  // а в Белграде находилось одно.
+  const [liveCount, setLiveCount] = useState(null)
   const [deal, setDeal] = useState(() => cacheFresh ? cached.deal : '')
   const [values, setValues] = useState(() => cacheFresh ? cached.values : {})
   const [text, setText] = useState(() => cacheFresh ? cached.text : '')
@@ -163,13 +167,14 @@ export default function CategoryLanding() {
     // тоже дёргано: блок разом исчезает и через мгновение появляется
     // снова, сдвигая макет) — скелетон той же формы держит место.
     setFresh([])
+    setLiveCount(null)
     setFreshLoading(true)
     const savedCity = (() => {
       try { return localStorage.getItem('plonk_city') || '' } catch { return '' }
     })()
     api.searchListings({ category_slug: slug, limit: 8, lang: i18n.language,
                          city: savedCity || undefined })
-      .then((res) => setFresh(res.items || []))
+      .then((res) => { setFresh(res.items || []); setLiveCount(res.total ?? null) })
       .catch(() => setFresh([]))
       .finally(() => setFreshLoading(false))
 
@@ -457,6 +462,14 @@ export default function CategoryLanding() {
     navigate('/categories', { replace: true })
   }
 
+  // Пока поиск не ответил: без города число из дерева верное — берём
+  // его, чтобы цифра не мигала. С городом оно заведомо чужое, поэтому
+  // лучше полсекунды без цифры, чем «3», сменяющееся на «1».
+  const hasCity = (() => {
+    try { return !!localStorage.getItem('plonk_city') } catch { return false }
+  })()
+  const shownCount = liveCount ?? (hasCity ? 0 : category?.count ?? 0)
+
   return (
     <div className="landing">
       {searched && (
@@ -530,9 +543,9 @@ export default function CategoryLanding() {
               объявлений — единственное, чего он по экрану не знает.
               Класс .landing-count в стилях был, а в разметке его не
               было вовсе. */}
-          {category?.count > 0 && (
+          {shownCount > 0 && (
             <div className="landing-count on-hero">
-              {t('landing.offers', { count: category.count })}
+              {t('landing.offers', { count: shownCount })}
             </div>
           )}
         </div>
@@ -710,8 +723,8 @@ export default function CategoryLanding() {
       })}
 
       <button className="landing-go" onClick={() => search()}>
-        {category?.count > 0
-          ? t('landing.show_count', { count: category.count })
+        {shownCount > 0
+          ? t('landing.show_count', { count: shownCount })
           : t('landing.show')}
       </button>
       </div>

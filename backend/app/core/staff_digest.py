@@ -68,7 +68,7 @@ def build(db: Session) -> str | None:
     if flagged:
         lines.append(f"Подозрительные переписки: <b>{flagged}</b>")
     lines.append("")
-    lines.append(f"За сутки: {new_users} новых людей, {published} объявлений в ленте")
+    lines.append(f"За сутки: новых людей — {new_users}, объявлений в ленте — {published}")
     lines.append("")
     lines.append("https://plonk.rs/moderation")
     return "\n".join(lines)
