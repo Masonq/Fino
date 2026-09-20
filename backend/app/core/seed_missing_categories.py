@@ -38,14 +38,6 @@ NEW = {
     "phones": [
         ("phones-parts", "Запчасти и ремонт", "Parts and repair", "Delovi i popravka", []),
     ],
-    "appliances": [
-        ("app-fridge", "Холодильники и морозильники", "Fridges", "Frižideri", []),
-        ("app-washer", "Стиральные и сушильные", "Washers and dryers", "Veš mašine i sušare", []),
-        ("app-stove", "Плиты и духовки", "Stoves and ovens", "Šporeti i rerne", []),
-        ("app-dishwasher", "Посудомоечные", "Dishwashers", "Mašine za sudove", []),
-        ("app-small", "Мелкая техника", "Small appliances", "Mali aparati", []),
-        ("app-climate", "Климат: кондиционеры и обогреватели", "Climate", "Klime i grejalice", []),
-    ],
     "furniture": [
         ("furn-sofa", "Диваны и кресла", "Sofas and armchairs", "Sofe i fotelje", []),
         ("furn-bed", "Кровати и матрасы", "Beds and mattresses", "Kreveti i dušeci", []),
