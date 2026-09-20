@@ -1,5 +1,5 @@
 """
-Слияние разделов-дублей.
+Слияние разделов-дублей и правка названий.
 
 Сеялка новых разделов сверяла их по коду, а не по названию, и завела
 шесть пар одного и того же: «Стройматериалы» дважды, «Автосервис и
@@ -16,6 +16,7 @@
     python3 -m app.core.merge_duplicate_categories --apply    # слить
 """
 import argparse
+import json
 
 from sqlalchemy import text
 
@@ -29,7 +30,17 @@ PAIRS = [
     ("childcare", "nannies"),
     ("fishing-hunting", "hunting-fishing"),
     ("components", "pc-parts"),
+    # Не дубль, а лишняя полка: «Личная гигиена» убрана по решению
+    # владельца, её содержимое уходит в соседнее «Здоровье и уход».
+    ("health", "personal-hygiene"),
 ]
+
+# Новые названия для уже заведённых разделов. Сеялка названий не
+# обновляет — она только добавляет недостающее по коду.
+RENAMES = {
+    # Было «Посуточно и на отдых» — читалось как обрывок фразы.
+    "daily-rent": {"ru": "Посуточная аренда", "en": "Short-term rentals", "sr": "Izdavanje na dan"},
+}
 
 
 def run(apply: bool) -> None:
@@ -68,9 +79,25 @@ def run(apply: bool) -> None:
             db.execute(text("delete from categories where id=:d"), {"d": drop.id})
             done += 1
 
+        renamed = 0
+        for slug, name in RENAMES.items():
+            row = db.execute(text("select name->>'ru' from categories where slug=:s"), {"s": slug}).first()
+            if not row:
+                print(f"  · {slug}: раздела нет — пропускаю")
+                continue
+            if row[0] == name["ru"]:
+                continue
+            print(f"  {row[0]} → {name['ru']} ({slug})")
+            if apply:
+                db.execute(
+                    text("update categories set name = cast(:n as jsonb) where slug=:s"),
+                    {"n": json.dumps(name, ensure_ascii=False), "s": slug},
+                )
+                renamed += 1
+
         if apply:
             db.commit()
-            print(f"\nслито пар: {done}")
+            print(f"\nслито пар: {done}, переименовано: {renamed}")
         else:
             print("\nэто показ, ничего не менялось. Для слияния — с ключом --apply")
     finally:

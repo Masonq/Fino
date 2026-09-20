@@ -112,7 +112,7 @@ NEW = {
     ],
     "real-estate": [
         ("land", "Участки и земля", "Land and plots", "Placevi i zemljište", []),
-        ("daily-rent", "Посуточно и на отдых", "Daily and holiday rent", "Dnevni najam i vikendice", []),
+        ("daily-rent", "Посуточная аренда", "Short-term rentals", "Izdavanje na dan", []),
     ],
     "auto": [
         ("trailers", "Прицепы и дома на колёсах", "Trailers and campers", "Prikolice i kamperi", []),
@@ -225,7 +225,6 @@ NEW = {
     ],
     "beauty": [
         ("medical-supplies", "Медтовары и расходники", "Medical supplies", "Medicinski materijal", []),
-        ("personal-hygiene", "Личная гигиена", "Personal hygiene", "Lična higijena", []),
     ],
 }
 

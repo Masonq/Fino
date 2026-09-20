@@ -23,7 +23,7 @@ SUBCATEGORIES: dict[str, list[dict]] = {
         {"slug": "commercial", "name": {"ru": "Коммерческая", "en": "Commercial", "sr": "Poslovni prostor"}},
         {"slug": "garages", "name": {"ru": "Гаражи и паркинг", "en": "Garages & parking", "sr": "Garaže i parking"}},
         {"slug": "land", "name": {"ru": "Участки и земля", "en": "Land & plots", "sr": "Placevi i zemljište"}},
-        {"slug": "daily-rent", "name": {"ru": "Посуточно и на отдых", "en": "Daily & holiday rent", "sr": "Dnevni najam i vikendice"}},
+        {"slug": "daily-rent", "name": {"ru": "Посуточная аренда", "en": "Short-term rentals", "sr": "Izdavanje na dan"}},
     ],
     "auto": [
         {"slug": "cars", "name": {"ru": "Легковые", "en": "Cars", "sr": "Automobili"}},
