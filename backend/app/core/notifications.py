@@ -7,7 +7,7 @@
 он и так всё видит, а дублирующее уведомление раздражает.
 """
 import logging
-from datetime import datetime, timedelta
+from datetime import timedelta
 from urllib import parse, request as urlrequest
 
 from sqlalchemy.orm import Session

@@ -93,6 +93,8 @@ export default function ChatScreen() {
     setMessagesLoaded(false)
     setChat(null)
     load()
+  // Намеренно: load пересоздаётся на каждой отрисовке: с ним в зависимостях переписка перезагружалась бы бесконечно.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
   // Живой чат — WebSocket вместо опроса раз в 4 секунды: сообщения,
@@ -181,6 +183,8 @@ export default function ChatScreen() {
       if (reconnectTimer) clearTimeout(reconnectTimer)
       clearInterval(fallbackTimer)
     }
+  // Намеренно: язык здесь не влияет на подписку: пересоздавать соединение при смене языка незачем.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, myId])
 
   const [loadingOlder, setLoadingOlder] = useState(false)

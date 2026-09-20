@@ -60,6 +60,8 @@ export default function Profile() {
     api.myStats()
       .then((res) => { setStats(res); keepValue('profile-stats', res) })
       .catch(() => setStats({ listings: 0, views: 0, favorites: 0 }))
+  // Намеренно: зависим от user?.id, а не от всего объекта: он пересобирается при каждом обновлении профиля, и запрос уходил бы снова и снова.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id])
 
   // Подборка «может быть интересно» — внизу профиля. Запрашиваем здесь,
@@ -68,6 +70,8 @@ export default function Profile() {
   useEffect(() => {
     if (!user) return
     api.forYou(i18n.language).then((r) => setForYou(r.items || [])).catch(() => {})
+  // Намеренно: зависим от user?.id, а не от всего объекта: он пересобирается при каждом обновлении профиля, и запрос уходил бы снова и снова.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, i18n.language])
 
   const [queues, setQueues] = useState(() => readValue('profile-queues', null))

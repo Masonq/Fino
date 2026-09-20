@@ -5,12 +5,12 @@
 завалить другого сообщениями. Считаем по самой базе, а не в памяти:
 данные всё равно там, а при перезапуске счётчики не сбрасываются.
 """
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.models import Listing, Message, Chat, Report
+from app.models import Listing, Message, Chat
 from app.core.clock import utcnow
 
 

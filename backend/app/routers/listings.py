@@ -565,7 +565,6 @@ def search_listings(
     #
     # Включаем только когда обычный поиск пуст: на каждый запрос такое
     # сравнение считать дорого, а пустых запросов немного.
-    fuzzy = False
     if q_text and total == 0 and before_words is not None:
         words = [w for w in q_text.strip().split() if len(w) >= 4]
         if words:
@@ -597,7 +596,8 @@ def search_listings(
                 # остаться — человек их задал осознанно.
                 q = before_words.filter(Listing.id.in_(found))
                 total = q.count()
-                fuzzy = True
+                # Прежде здесь ставился флаг fuzzy — им никто не
+                # пользовался ни дальше в запросе, ни в ответе.
 
     # Формула релевантности — свой аналог того же принципа, что у
     # крупных досок объявлений (Avito Ranker и подобные): не просто

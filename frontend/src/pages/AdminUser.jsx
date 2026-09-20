@@ -54,6 +54,8 @@ export default function AdminUser() {
       setListings(list.items || []); setLogins(log.items || []); setAudit(acts.items || [])
     }).catch((e) => { if (e.status === 403) setDenied(true); else setCard({ error: true }) })
     return () => { alive = false }
+  // Намеренно: зависим от идентификатора, а не от всего объекта: иначе карточка перезапрашивалась бы на каждое обновление.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, authLoading, me?.id, navigate])
 
   const changeRole = async (role) => {

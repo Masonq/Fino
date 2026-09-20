@@ -79,6 +79,8 @@ export default function AdminUsers() {
     tick()
     const timer = setInterval(tick, 60_000)
     return () => clearInterval(timer)
+  // Намеренно: зависим от user?.id, а не от всего объекта: он пересобирается при каждом обновлении профиля, и запрос уходил бы снова и снова.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, user?.id])
 
   // Подгрузка по прокрутке: людей будут тысячи, и первые пятьдесят —

@@ -39,6 +39,8 @@ export default function ListingDashboard() {
         if (e.status === 401) navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`)
         else setDenied(true)
       })
+  // Намеренно: navigate меняется при каждом переходе, а уход со страницы нужен ровно один раз.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, days])
 
   const title = listing?.title || ''

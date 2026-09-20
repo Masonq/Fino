@@ -109,7 +109,6 @@ def _code_letter(code: str) -> str:
     # site_base_url, а не public_base_url: второй — адрес бэкенда с
     # портом, для файлов. Человек по нему попал бы на служебный адрес
     # вместо сайта.
-    site = settings.site_base_url.rstrip("/")
 
     return f"""<!DOCTYPE html>
 <html lang="ru"><head><meta charset="utf-8">

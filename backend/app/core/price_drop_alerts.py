@@ -21,9 +21,7 @@
 """
 from decimal import Decimal
 
-from sqlalchemy import text
 
-from app.core.clock import utcnow
 from app.core.database import SessionLocal
 from app.core.notifications import notify
 

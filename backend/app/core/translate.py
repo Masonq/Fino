@@ -10,7 +10,7 @@
 """
 import json
 import logging
-from urllib import request as urlrequest, error as urlerror
+from urllib import request as urlrequest
 
 from app.core.config import settings
 

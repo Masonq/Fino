@@ -2,7 +2,7 @@ import hashlib
 import hmac
 import secrets
 import uuid
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from jose import jwt
 from fastapi import Depends, HTTPException, Request

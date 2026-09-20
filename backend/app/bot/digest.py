@@ -16,7 +16,6 @@ from sqlalchemy import func
 
 from app.core.clock import utcnow
 from app.core.database import SessionLocal
-from app.core.partner_chats import topic_name
 from app.models import Category, Listing, ListingStatus, User
 
 

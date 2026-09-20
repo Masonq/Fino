@@ -34,6 +34,8 @@ export default function AdminAlerts() {
     api.adminAlerts()
       .then((r) => setItems(r.items || []))
       .catch((e) => { if (e.status === 403) setDenied(true); else setItems([]) })
+  // Намеренно: зависим от user?.id, а не от всего объекта: он пересобирается при каждом обновлении профиля, и запрос уходил бы снова и снова.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, user?.id, navigate])
 
   if (denied) {

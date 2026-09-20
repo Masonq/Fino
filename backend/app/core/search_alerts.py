@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 
-from app.models import SavedSearch, Listing, ListingTranslation, User, SellerSubscription, Favorite
+from app.models import SavedSearch, Listing, User, SellerSubscription, Favorite
 from app.core.clock import utcnow
 
 log = logging.getLogger(__name__)

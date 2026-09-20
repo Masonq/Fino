@@ -58,8 +58,7 @@ def run(apply: bool, limit: int) -> None:
     from app.core.ai_title import ask_photo
     from app.core.config import settings
     from app.core.retitle import FAILED_ACTION
-    from app.models import (AuditEntry, Listing, ListingPhoto, ListingStatus,
-                            ListingTranslation)
+    from app.models import (AuditEntry, Listing, ListingPhoto, ListingStatus)
 
     with SessionLocal() as db:
         hopeless = [

@@ -21,7 +21,6 @@
 from datetime import timedelta
 from statistics import median
 
-from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.core.clock import utcnow

@@ -25,6 +25,8 @@ export default function ChatList({ activeId, onLoaded, query = '', filter = 'all
       .then((res) => { const list = res.items || []; setItems(list); onLoaded?.(list.length) })
       .catch(() => { setItems([]); onLoaded?.(0) })
       .finally(() => { setLoaded(true) })
+  // Намеренно: обработчик задаёт родитель заново на каждой отрисовке; добавить его в зависимости — значит перезапрашивать список без конца.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, i18n.language])
 
   // Отбор и поиск — на устройстве, без запроса к серверу: переписок у

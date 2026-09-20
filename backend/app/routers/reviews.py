@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.core.auth import get_current_user
 from app.core.database import get_db
-from app.models import Review, User, Listing, Chat, ReviewInvite
+from app.models import Review, User, Chat, ReviewInvite
 from app.core.clock import utcnow
 
 router = APIRouter(prefix="/api/reviews", tags=["reviews"])
@@ -127,7 +127,7 @@ def waiting_reviews(
     речь: «оставьте отзыв» без имени и товара ничего человеку не
     говорит.
     """
-    from app.models import Chat, Listing, ListingTranslation, ListingPhoto
+    from app.models import Listing
 
     invites = (db.query(ReviewInvite)
                .filter(ReviewInvite.user_id == user.id,

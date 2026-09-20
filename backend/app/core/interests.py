@@ -27,7 +27,6 @@
 """
 from datetime import timedelta
 
-from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.core.clock import utcnow

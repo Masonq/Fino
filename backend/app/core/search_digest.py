@@ -24,7 +24,6 @@
 """
 import argparse
 import logging
-from collections import defaultdict
 from datetime import timedelta
 
 from app.core.clock import utcnow

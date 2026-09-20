@@ -285,7 +285,7 @@ export default function PostAd() {
 
   useEffect(() => {
     if (isApartment && apartmentTitle) setTitle(apartmentTitle)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [isApartment, apartmentTitle])
 
   const handleSubmit = async () => {

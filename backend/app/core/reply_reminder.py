@@ -16,7 +16,7 @@ from datetime import timedelta
 
 from sqlalchemy.orm import Session
 
-from app.models import Chat, Message, User, Listing, ListingTranslation
+from app.models import Chat, Message, User, Listing
 from app.core.clock import utcnow
 
 log = logging.getLogger(__name__)

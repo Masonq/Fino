@@ -225,7 +225,7 @@ export default function Moderation() {
     }
     const timer = setInterval(tick, 30_000)
     return () => clearInterval(timer)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [userId, denied, total])
 
   useEffect(() => {

@@ -10,9 +10,8 @@
 """
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import timedelta
 
-from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.core.deal_detection import deal_score, is_ready_to_ask, THRESHOLD

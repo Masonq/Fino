@@ -21,7 +21,7 @@ from sqlalchemy.orm import Session
 from app.core.clock import utcnow
 from app.core.database import get_db
 from app.models import (
-    Category, Listing, ListingStatus, ListingTranslation, User, UserRole,
+    Category, Listing, ListingStatus, ListingTranslation, User,
 )
 from app.routers.admin_users import require_staff
 

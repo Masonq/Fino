@@ -841,7 +841,6 @@ def _plain_page(site: str, path: str, request: Request) -> str:
     from sqlalchemy import text
 
     from app.core.database import SessionLocal
-    from app.data.category_intros import intro
 
     titles = {
         "/": "PLONK — объявления в Белграде и по всей Сербии",
@@ -876,7 +875,6 @@ def _plain_page(site: str, path: str, request: Request) -> str:
         for slug, name in rows
     )
 
-    about = intro("real-estate", "ru") or ""
 
     return f"""<!DOCTYPE html>
 <html lang="ru">

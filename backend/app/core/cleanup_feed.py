@@ -37,8 +37,8 @@ from app.core.audit import record
 from app.core.contacts import strip_contacts
 from app.core.clock import utcnow
 from app.core.database import SessionLocal
-from app.core.tg_parse import build_title, strip_promo_lines
-from app.models import Listing, ListingStatus, ListingTranslation
+from app.core.tg_parse import strip_promo_lines
+from app.models import Listing, ListingStatus
 
 log = logging.getLogger(__name__)
 

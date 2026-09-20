@@ -342,7 +342,7 @@ export default function App() {
     }
     // Только pathname: замена адреса не должна перезапускать
     // восстановление — см. выше.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [pathname])
 
   // на не-главных экранах статус-бар под цвет фона страницы;

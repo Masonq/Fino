@@ -40,7 +40,7 @@ from app.core.database import SessionLocal
 
 def run(apply: bool, limit: int) -> None:
     from app.core.tg_classify import classify_sub
-    from app.models import AuditEntry, Category, Listing, ListingStatus
+    from app.models import Listing, ListingStatus
 
     with SessionLocal() as db:
         # Разделы, у которых есть подразделы: объявление в таком разделе

@@ -13,7 +13,7 @@
 """
 import argparse
 import asyncio
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from telethon import TelegramClient
 
