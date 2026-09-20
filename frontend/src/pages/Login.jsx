@@ -255,6 +255,18 @@ export default function Login() {
 
         {error && <p className="auth-error">{error}</p>}
 
+        {/* Подарок новичку. Стоит тут, а не в ленте: человек на этом
+            экране решает, заводить аккаунт или нет, и это единственное
+            место, где обещание что-то меняет. Сумма словами про то,
+            что она даёт: «300 RSD» человеку, не знающему наших цен,
+            не говорит ничего. */}
+        <div className="auth-bonus">
+          <div className="auth-bonus-text">
+            <div className="auth-bonus-sum">{t('auth.bonus_sum')}</div>
+            <div className="auth-bonus-note">{t('auth.bonus_note')}</div>
+          </div>
+        </div>
+
         <p className="auth-terms">
           {t('auth.terms_prefix')}{' '}
           <Link to="/terms" target="_blank" rel="noopener">{t('auth.terms_link')}</Link>

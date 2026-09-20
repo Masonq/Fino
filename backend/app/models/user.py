@@ -70,6 +70,10 @@ class User(Base):
     referred_by: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     referral_reward_given: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Подарок новичку за первое одобренное объявление — начисляется один
+    # раз в жизни, отсюда флаг, а не подсчёт объявлений: объявление можно
+    # снять и подать заново, и без флага бонус капал бы каждый раз.
+    welcome_bonus_given: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # Business seller fields (APR verification — Serbian company registry)
     company_name: Mapped[str | None] = mapped_column(String(255), nullable=True)

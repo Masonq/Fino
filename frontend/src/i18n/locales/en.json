@@ -378,7 +378,9 @@
     "typo_fix": "Yes, fix it",
     "typo_keep": "No, it is correct",
     "email_malformed": "Check the address — it looks mistyped",
-    "email_domain_unknown": "No such mail service. Check the part after the “@”"
+    "email_domain_unknown": "No such mail service. Check the part after the “@”",
+    "bonus_sum": "300 RSD for your first listing",
+    "bonus_note": "A week of a highlighted card"
   },
   "my": {
     "title": "My listings",

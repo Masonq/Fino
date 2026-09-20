@@ -5974,3 +5974,26 @@ a.s-attrs{ display:block; }
   .page.page-narrow{ max-width:912px; margin-left:auto; margin-right:auto; }
   .page.page-wide .page-header{ max-width:none; margin-left:0; margin-right:0; }
 }
+
+
+/* ===== подарок новичку на экране входа =====
+   Картинка — фоном справа, текст поверх слева: так подпись остаётся
+   вёрсткой, и сумму можно поменять в одном месте, не перерисовывая
+   баннер. Пропорции 2:1 заданы аспектом, а не высотой — на узком
+   экране ракета не обрезается. */
+.auth-bonus{
+  width:100%; margin:22px 0 0; border-radius:16px; overflow:hidden;
+  aspect-ratio:2 / 1;
+  background:url('/promo/welcome-bonus.jpg') right center / cover no-repeat, var(--bg);
+  display:flex; align-items:center;
+}
+/* Рисунок на картинке начинается с 55% ширины — замерено по пикселям.
+   Текст держим в 52%: иначе строки наезжают на коробку, и читать
+   приходится поверх рисунка. */
+.auth-bonus-text{ padding:0 0 0 14px; max-width:52%; text-align:left; }
+.auth-bonus-sum{
+  font-size:17px; font-weight:800; line-height:1.2; color:var(--primary-deep);
+}
+.auth-bonus-note{
+  margin-top:5px; font-size:12px; line-height:1.3; font-weight:600; color:var(--ink-soft);
+}

@@ -238,6 +238,23 @@ def publish(
     db.commit()
     db.refresh(listing)
 
+    # Бонусы за первое объявление — только если оно сразу живое.
+    # У непроверенных объявление ждёт модерации, и бонус начислится
+    # там же, где у всех остальных, при одобрении.
+    #
+    # Раньше этой ветки здесь не было вовсе: человек, пришедший по
+    # приглашению и опубликовавший первое объявление через бота с
+    # доверием, не приносил бонуса ни себе, ни пригласившему —
+    # реферальная программа для них просто не срабатывала.
+    if trusted:
+        try:
+            from app.core.referrals import reward_referral_if_first_listing
+            from app.core.welcome_bonus import reward_first_listing
+            reward_referral_if_first_listing(db, listing)
+            reward_first_listing(db, listing)
+        except Exception:                                  # noqa: BLE001
+            log.warning("бонус за первое объявление не начислен", exc_info=True)
+
     # Перевод — фоном: человек не должен ждать, пока объявление
     # переложат на два языка, чтобы вернуться к переписке.
     background.add_task(_translate_later, listing.id)

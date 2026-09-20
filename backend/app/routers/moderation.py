@@ -88,6 +88,16 @@ def _after_approve(listing_id) -> None:
         except Exception:
             pass
 
+        # подарок новичку — за первое одобренное объявление, независимо
+        # от того, пришёл он по приглашению или сам. Пришедший по
+        # приглашению получает оба: приглашать выгодно обоим, и это
+        # ровно то, ради чего программа и заведена.
+        try:
+            from app.core.welcome_bonus import reward_first_listing
+            reward_first_listing(db, listing)
+        except Exception:
+            pass
+
 
 @router.get("/counters")
 def counters(
@@ -417,6 +427,17 @@ def bulk_decide(
         else:
             l.status = ListingStatus.rejected
             l.rejection_reason = payload.reason
+        # Бонусы — так же, как при одиночном одобрении: раньше пачка
+        # их не начисляла вовсе, и человек получал или не получал
+        # подарок в зависимости от того, как модератор нажал кнопку.
+        if payload.approve:
+            try:
+                from app.core.referrals import reward_referral_if_first_listing
+                from app.core.welcome_bonus import reward_first_listing
+                reward_referral_if_first_listing(db, l)
+                reward_first_listing(db, l)
+            except Exception:                              # noqa: BLE001
+                pass
         record(db, moderator,
                "listing.approve" if payload.approve else "listing.reject",
                target_type="listing", target_id=l.id, reason=payload.reason,

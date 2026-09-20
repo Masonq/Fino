@@ -379,7 +379,9 @@
     "typo_fix": "Da, ispravi",
     "typo_keep": "Ne, tačno je",
     "email_malformed": "Proverite adresu — izgleda da ima grešku",
-    "email_domain_unknown": "Takva poštanska usluga ne postoji. Proverite deo posle „@“"
+    "email_domain_unknown": "Takva poštanska usluga ne postoji. Proverite deo posle „@“",
+    "bonus_sum": "300 RSD za prvi oglas",
+    "bonus_note": "Nedelja istaknutog oglasa"
   },
   "my": {
     "title": "Moji oglasi",
