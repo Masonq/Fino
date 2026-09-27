@@ -1281,5 +1281,10 @@
     "empty": "Još niko nije odgovorio",
     "empty_hint": "Ovde će se pojaviti odgovori ljudi na pismo koje tim šalje posle registracije.",
     "reply_ph": "Odgovori u ime tima"
+  },
+  "guest_team": {
+    "name": "Tim PLONK",
+    "text": "Mi smo servis oglasa u Srbiji. Ovde se prodaje i kupuje, izdaju stanovi, traže poslovi i majstori. Prijavite se da biste pisali prodavcima i postavili svoj oglas.",
+    "tg": "Naša Telegram grupa →"
   }
 }

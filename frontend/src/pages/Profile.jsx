@@ -110,15 +110,19 @@ export default function Profile() {
             {t('common.login')}
           </button>
 
-          {/* Тот же подарок, что на экране входа. Гость заходит в
-              профиль, видит кнопку и пустоту под ней — а здесь ровно
-              то место, где стоит сказать, зачем вообще заводить
-              аккаунт. */}
-          <div className="auth-bonus profile-bonus">
-            <div className="auth-bonus-text">
-              <div className="auth-bonus-sum">{t('auth.bonus_sum')}</div>
-              <div className="auth-bonus-note">{t('auth.bonus_note')}</div>
+          {/* Вместо промо с деньгами — слово от команды. Обещание
+              награды за регистрацию рядом с кнопкой входа Safari уже
+              один раз принял за фишинг (24 сентября), да и человеку
+              полезнее знать, куда он попал и где живое общение. */}
+          <div className="guest-team">
+            <div className="guest-team-head">
+              <img className="guest-team-logo" src="/logo-mark.png" alt="" />
+              <span className="guest-team-name">{t('guest_team.name')}</span>
             </div>
+            <p className="guest-team-text">{t('guest_team.text')}</p>
+            <a className="guest-team-link" href="https://t.me/Baraholka_Plonk" target="_blank" rel="noopener noreferrer">
+              {t('guest_team.tg')}
+            </a>
           </div>
         </div>
       </div>
