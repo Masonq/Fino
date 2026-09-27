@@ -1110,6 +1110,12 @@ export default function ListingDetail() {
                     <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><path d="M20 6 9 17l-5-5" /></svg>
                   </div>
                 )}
+                {/* Подпись к галочке — рядом с ней, а не отдельной
+                    строкой ниже: иначе непонятно, к чему относится
+                    сама галочка, а карточка растёт на целую строку. */}
+                {listing.owner.document_verified && (
+                  <span className="seller-verified-note">{t('seller.fact_verified')}</span>
+                )}
               </div>
               <div className="seller-meta">
                 {listing.owner.is_company && (
@@ -1126,9 +1132,6 @@ export default function ListingDetail() {
                   он здесь, подтверждена ли личность, как быстро
                   отвечает. Вывод человек делает сам. */}
               <div className="seller-facts">
-                {listing.owner.document_verified && (
-                  <span className="seller-fact ok">{t('seller.fact_verified')}</span>
-                )}
                 {listing.owner.since && (
                   <span className="seller-fact">
                     {t('seller.fact_since', { date: monthYear(listing.owner.since, i18n.language) })}
