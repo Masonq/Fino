@@ -1,0 +1,22 @@
+{
+  "appId": "rs.plonk.app",
+  "appName": "PLONK",
+  "webDir": "www",
+  "server": {
+    "url": "https://plonk.rs",
+    "cleartext": false,
+    "allowNavigation": ["plonk.rs", "*.plonk.rs"]
+  },
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#F7F6F3"
+  },
+  "ios": {
+    "contentInset": "automatic",
+    "backgroundColor": "#F7F6F3"
+  },
+  "plugins": {
+    "SplashScreen": { "launchAutoHide": true, "backgroundColor": "#F7F6F3", "showSpinner": false },
+    "StatusBar": { "style": "LIGHT", "backgroundColor": "#F7F6F3" }
+  }
+}
