@@ -551,7 +551,7 @@ def flagged_chats(
             .limit(30)
             .all()
         )
-        listing = db.query(Listing).get(chat.listing_id)
+        listing = db.query(Listing).get(chat.listing_id) if chat.listing_id else None
         title = None
         if listing and listing.translations:
             title = next((t.title for t in listing.translations if t.title), None)
@@ -560,7 +560,7 @@ def flagged_chats(
             "id": str(chat.id),
             "flagged_at": chat.flagged_at.isoformat(),
             "reason": chat.flag_reason,
-            "listing": {"id": str(chat.listing_id), "title": title},
+            "listing": {"id": str(chat.listing_id), "title": title} if chat.listing_id else None,
             "buyer_id": str(chat.buyer_id),
             "seller_id": str(chat.seller_id),
             "messages": [

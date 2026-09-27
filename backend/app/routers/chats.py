@@ -67,7 +67,8 @@ def _is_phone_revealed(db: Session, seller_id, buyer_id) -> bool:
 
 
 def _serialize_chat(chat: Chat, db: Session, lang: str = "ru", viewer_id=None):
-    listing = db.query(Listing).options(joinedload(Listing.translations)).get(chat.listing_id)
+    listing = (db.query(Listing).options(joinedload(Listing.translations)).get(chat.listing_id)
+               if chat.listing_id else None)
     buyer = db.query(User).get(chat.buyer_id)
     seller = db.query(User).get(chat.seller_id)
     title = None
@@ -88,7 +89,7 @@ def _serialize_chat(chat: Chat, db: Session, lang: str = "ru", viewer_id=None):
     reserved_active = bool(listing and listing.reserved_until and listing.reserved_until > utcnow())
     return {
         "id": str(chat.id),
-        "listing_id": str(chat.listing_id),
+        "listing_id": str(chat.listing_id) if chat.listing_id else None,
         "listing_title": title,
         "listing_price": float(listing.price) if listing and listing.price is not None else None,
         "listing_currency": listing.currency.value if listing and listing.currency else None,
@@ -136,7 +137,12 @@ def _risk_for(message) -> str | None:
     действовали в день отправки.
     """
     from app.core.chat_risk import risk_of
+    from app.core.team_chat import is_team_message
 
+    # Письмо от команды предупреждает о тех же приёмах, какие ищет
+    # проверка, — и получало предупреждение само на себя.
+    if is_team_message(message):
+        return None
     return risk_of(message.text)
 
 
@@ -658,7 +664,7 @@ def list_chats(
     listings = {
         l.id: l for l in db.query(Listing)
         .options(joinedload(Listing.translations), joinedload(Listing.photos))
-        .filter(Listing.id.in_([c.listing_id for c in chats])).all()
+        .filter(Listing.id.in_([c.listing_id for c in chats if c.listing_id])).all()
     }
     user_ids = {c.buyer_id for c in chats} | {c.seller_id for c in chats}
     users = {u.id: u for u in db.query(User).filter(User.id.in_(user_ids)).all()}
@@ -680,7 +686,7 @@ def list_chats(
 
         items.append({
             "id": str(c.id),
-            "listing_id": str(c.listing_id),
+            "listing_id": str(c.listing_id) if c.listing_id else None,
             "listing_title": translation.title if translation else None,
             "listing_photo": cover.thumbnail_url if cover else None,
             "listing_price": float(listing.price) if listing and listing.price else None,

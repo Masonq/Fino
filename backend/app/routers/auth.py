@@ -55,6 +55,9 @@ class VerifyCodeIn(BaseModel):
     code: str
     display_name: str | None = None
     channel: VerifyChannel = VerifyChannel.email
+    # Язык, на котором человек сейчас смотрит сайт — на нём и напишет
+    # команда в первом сообщении.
+    lang: str | None = None
     # Кто пригласил — id пользователя из ссылки ?ref=<id>. Только на
     # регистрации нового человека имеет значение; для уже
     # существующего аккаунта просто игнорируется.
@@ -229,6 +232,10 @@ def verify_code_endpoint(payload: VerifyCodeIn, request: Request, db: Session = 
     if user.is_blocked:
         raise HTTPException(403, "user_blocked")
 
+    # Письмо от команды — только новичку; greet сам молчит, если уже писал.
+    from app.core.team_chat import greet
+    greet(db, user, payload.lang or "ru")
+
     try:
         from app.core.login_events import record_login
         record_login(request, user.id, db)
@@ -294,6 +301,8 @@ def _link_oauth(db: Session, provider: str, external_id: str,
     db.refresh(user)
     if user.is_blocked:
         raise HTTPException(403, "user_blocked")
+    from app.core.team_chat import greet
+    greet(db, user)
     return user
 
 
