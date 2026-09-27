@@ -8,6 +8,17 @@ import ChatList from '../components/ChatList'
 import { ChatSkeleton } from '../components/Skeletons'
 import { formatPrice } from '../utils/money'
 
+// Ссылки кликаются только в письме от команды — его пишем мы сами.
+// В обычной переписке ссылка остаётся текстом: кликабельная чужая
+// ссылка в чате объявлений — подарок мошеннику.
+function teamText(text) {
+  return String(text || '').split(/(https?:\/\/\S+)/g).map((part, i) => (
+    /^https?:\/\//.test(part)
+      ? <a key={i} href={part} target="_blank" rel="noopener noreferrer">{part}</a>
+      : part
+  ))
+}
+
 export default function ChatScreen() {
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
@@ -607,7 +618,7 @@ export default function ChatScreen() {
               ) : (
                 <div key={m.id} className={m.sender_id === myId ? 'chat-bubble-wrap mine' : 'chat-bubble-wrap'}>
                 <div className={m.sender_id === myId ? 'chat-bubble mine' : 'chat-bubble'}>
-                  {m.text}
+                  {m.kind === 'team' ? teamText(m.text) : m.text}
                   {/* Галочка у своих сообщений: одна — доставлено,
                       две — собеседник открыл чат и прочитал. Без неё
                       переписка ощущается односторонней: написал и не

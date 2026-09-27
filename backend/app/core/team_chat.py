@@ -21,36 +21,44 @@ log = logging.getLogger(__name__)
 TEAM_EMAIL = "team@plonk.rs"
 TEAM_NAME = "Команда PLONK"
 
+# Ссылку даём только на наш чат: в письме от команды она кликается
+# (см. ChatScreen), у обычных сообщений ссылки остаются текстом —
+# кликабельная чужая ссылка в переписке это подарок мошеннику.
+CHAT_URL = "https://t.me/Baraholka_Plonk"
+
 GREETING = {
     "ru": (
-        "Привет! Это команда PLONK — сервиса объявлений для Сербии.\n\n"
+        "Привет! Это команда PLONK — сервиса объявлений в Сербии.\n\n"
         "Здесь продают и покупают вещи, сдают квартиры, ищут работу и мастеров. "
         "Объявление размещается за минуту, кнопкой «+» внизу.\n\n"
         "Пара вещей, которые стоит знать:\n"
         "• Переписывайтесь и договаривайтесь здесь, в чате — так остаётся след, если что-то пойдёт не так.\n"
         "• Не переводите предоплату незнакомым людям. Честный продавец подождёт встречи.\n"
         "• Увидели обман — жалоба прямо в объявлении, разберём.\n\n"
+        f"Ещё у нас есть чат в Telegram — там свежие объявления и живое общение: {CHAT_URL}\n\n"
         "Ответьте сюда, если что-то не работает или непонятно. Читаем и отвечаем."
     ),
     "en": (
-        "Hi! This is the PLONK team — classifieds for Serbia.\n\n"
+        "Hi! This is the PLONK team — classifieds in Serbia.\n\n"
         "People here sell and buy things, rent out flats, look for jobs and handymen. "
-        "Posting takes a minute — the “+” button at the bottom.\n\n"
+        "Posting takes a minute — the \u201c+\u201d button at the bottom.\n\n"
         "A few things worth knowing:\n"
-        "• Keep the conversation here in chat — there's a record if anything goes wrong.\n"
-        "• Don't send prepayment to strangers. An honest seller will wait for the meeting.\n"
-        "• Spotted a scam? Report it right on the listing and we'll look into it.\n\n"
+        "\u2022 Keep the conversation here in chat \u2014 there's a record if anything goes wrong.\n"
+        "\u2022 Don't send prepayment to strangers. An honest seller will wait for the meeting.\n"
+        "\u2022 Spotted a scam? Report it right on the listing and we'll look into it.\n\n"
+        f"We also have a Telegram group \u2014 fresh listings and live chat: {CHAT_URL}\n\n"
         "Reply here if something doesn't work or isn't clear. We read and answer."
     ),
     "sr": (
-        "Zdravo! Ovo je tim PLONK — oglasi za Srbiju.\n\n"
-        "Ovde se prodaje i kupuje, izdaju stanovi, traže poslovi i majstori. "
-        "Oglas se postavlja za minut, dugmetom „+“ dole.\n\n"
+        "Zdravo! Ovo je tim PLONK \u2014 oglasi u Srbiji.\n\n"
+        "Ovde se prodaje i kupuje, izdaju stanovi, tra\u017ee poslovi i majstori. "
+        "Oglas se postavlja za minut, dugmetom \u201e+\u201c dole.\n\n"
         "Nekoliko stvari koje vredi znati:\n"
-        "• Dogovarajte se ovde, u ćaskanju — ostaje trag ako nešto pođe naopako.\n"
-        "• Ne šaljite avans nepoznatima. Pošten prodavac će sačekati susret.\n"
-        "• Primetili prevaru — prijava je na samom oglasu, proverićemo.\n\n"
-        "Odgovorite ovde ako nešto ne radi ili nije jasno. Čitamo i odgovaramo."
+        "\u2022 Dogovarajte se ovde, u \u0107askanju \u2014 ostaje trag ako ne\u0161to po\u0111e naopako.\n"
+        "\u2022 Ne \u0161aljite avans nepoznatima. Po\u0161ten prodavac \u0107e sa\u010dekati susret.\n"
+        "\u2022 Primetili prevaru \u2014 prijava je na samom oglasu, proveri\u0107emo.\n\n"
+        f"Imamo i Telegram grupu \u2014 sve\u017ei oglasi i \u017eivo \u0107askanje: {CHAT_URL}\n\n"
+        "Odgovorite ovde ako ne\u0161to ne radi ili nije jasno. \u010citamo i odgovaramo."
     ),
 }
 
