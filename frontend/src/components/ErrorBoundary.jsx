@@ -26,6 +26,21 @@ export default class ErrorBoundary extends Component {
     // В консоль браузера — на компьютере это видно через инструменты
     // разработчика, на телефоне толку меньше, но пусть будет.
     console.error('ErrorBoundary поймал:', error, info)
+
+    // Не загрузился кусок кода страницы — это не поломка приложения, а
+    // вкладка, открытая до выкладки: она просит файлы по старым
+    // именам. Показывать ей «что-то пошло не так» незачем,
+    // перезагружаемся сами (один раз в минуту, см. main.jsx).
+    const text = String(error?.message || error || '')
+    if (/Importing a module script failed|dynamically imported module/i.test(text)) {
+      const KEY = 'plonk_chunk_reload_at'
+      let last = 0
+      try { last = Number(sessionStorage.getItem(KEY) || 0) } catch { /* приватный режим */ }
+      if (Date.now() - last > 60000) {
+        try { sessionStorage.setItem(KEY, String(Date.now())) } catch { /* не беда */ }
+        window.location.reload()
+      }
+    }
   }
 
   render() {

@@ -70,10 +70,23 @@ if ! npm run lint > /tmp/plonk-lint.log 2>&1; then
   tail -30 /tmp/plonk-lint.log
   exit 1
 fi
+# Старые файлы сборки прячем, а не теряем: вкладка, открытая до
+# выкладки, при переходе на другую страницу просит свой кусок кода по
+# старому имени. Если его нет — «Importing a module script failed».
+if [ -d frontend/dist/assets ]; then
+  mkdir -p /opt/fino/frontend/dist-old
+  cp -a frontend/dist/assets/. /opt/fino/frontend/dist-old/ 2>/dev/null || true
+fi
 if ! npm run build > /tmp/plonk-build.log 2>&1; then
   echo "  ✗ фронтенд не собирается — деплой остановлен:"
   tail -20 /tmp/plonk-build.log
   exit 1
+fi
+# Возвращаем старые куски рядом с новыми — имена с хэшем не совпадают,
+# перезаписать ничего не могут. Храним неделю: дольше вкладка не живёт.
+if [ -d /opt/fino/frontend/dist-old ]; then
+  cp -an /opt/fino/frontend/dist-old/. frontend/dist/assets/ 2>/dev/null || true
+  find /opt/fino/frontend/dist-old -type f -mtime +7 -delete 2>/dev/null || true
 fi
 cd ..
 

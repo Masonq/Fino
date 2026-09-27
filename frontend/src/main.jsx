@@ -16,6 +16,32 @@ import './styles.css'
 // Приставку снимаем здесь и отдаём роутеру как basename: тогда все
 // ссылки внутри приложения получают её сами, и ни одну из них не
 // нужно переписывать.
+// Кусок кода страницы не загрузился — «Importing a module script
+// failed». Так бывает у вкладки, открытой до выкладки: она просит файл
+// по старому имени, а на сервере уже новые. Перезагружаем страницу —
+// придёт свежий index.html с правильными именами. Один раз в минуту,
+// чтобы при настоящей поломке не устроить бесконечный круг.
+function reloadOnceAfterFailedChunk() {
+  const KEY = 'plonk_chunk_reload_at'
+  let last = 0
+  try { last = Number(sessionStorage.getItem(KEY) || 0) } catch { /* приватный режим */ }
+  if (Date.now() - last < 60000) return
+  try { sessionStorage.setItem(KEY, String(Date.now())) } catch { /* не беда */ }
+  window.location.reload()
+}
+
+window.addEventListener('vite:preloadError', (event) => {
+  event.preventDefault()
+  reloadOnceAfterFailedChunk()
+})
+
+window.addEventListener('unhandledrejection', (event) => {
+  const text = String(event.reason?.message || event.reason || '')
+  if (/Importing a module script failed|Failed to fetch dynamically imported module|error loading dynamically imported module/i.test(text)) {
+    reloadOnceAfterFailedChunk()
+  }
+})
+
 const LANG_PREFIXES = ['en', 'sr']
 const first = window.location.pathname.split('/')[1]
 const urlLang = LANG_PREFIXES.includes(first) ? first : null
