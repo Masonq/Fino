@@ -456,6 +456,16 @@ export default function Profile() {
               )}
               <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
             </Link>
+            <Link className="profile-row" to="/admin/team-chats">
+              <span className="profile-row-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-5 4z" /><path d="M8 9h8M8 12.5h5" /></svg>
+              </span>
+              {t('team_inbox.title')}
+              {queues?.team_chats > 0 && (
+                <span className="profile-row-count">{queues.team_chats}</span>
+              )}
+              <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+            </Link>
             <Link className="profile-row" to="/admin/volunteers">
               <span className="profile-row-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0" /><path d="M16 11h6M19 8v6" /></svg>

@@ -111,7 +111,21 @@ def counters(
     показать два числа, а не тянуть ради них по полсотни объявлений и
     обращений со всеми переводами и снимками.
     """
-    from app.models import Chat, Ticket, TicketStatus, VolunteerApplication, VolunteerStatus
+    from app.models import Chat, Message, Ticket, TicketStatus, VolunteerApplication, VolunteerStatus
+
+    def _team_unread(session) -> int:
+        from app.core.team_chat import team_user
+
+        team = team_user(session)
+        session.commit()
+        chat_ids = [c.id for c in session.query(Chat).filter(
+            Chat.listing_id.is_(None), Chat.seller_id == team.id).all()]
+        if not chat_ids:
+            return 0
+        return (session.query(Message)
+                .filter(Message.chat_id.in_(chat_ids),
+                        Message.sender_id != team.id,
+                        Message.is_read.is_(False)).count())
 
     return {
         "moderation": (
@@ -124,6 +138,9 @@ def counters(
             .filter(Ticket.status != TicketStatus.closed)
             .count()
         ),
+        # Ответы людей на письмо команды — их читает тот же, кто
+        # разбирает поддержку.
+        "team_chats": _team_unread(db),
         # Заявки в команду — только владельцу, остальным ноль.
         "volunteers": (
             db.query(VolunteerApplication)

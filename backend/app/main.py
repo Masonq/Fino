@@ -11,7 +11,7 @@ from app.routers import (
     categories, chats,
     favorites, listings,
     media,
-    moderation, notifications, preview, promotions, push, reports, reviews, saved_searches, seo, support, volunteer,
+    moderation, notifications, preview, promotions, push, reports, reviews, saved_searches, seo, support, team_inbox, volunteer,
     users, verification,
 )
 
@@ -56,6 +56,7 @@ app.include_router(admin_stats.router)
 app.include_router(admin_audit.router)
 app.include_router(support.router)
 app.include_router(volunteer.router)
+app.include_router(team_inbox.router)
 app.include_router(auth_telegram.router)
 # Публикатор в боте: вход по подписи Telegram, без кодов и паролей.
 app.include_router(tg_webapp.router)

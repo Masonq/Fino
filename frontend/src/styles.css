@@ -964,6 +964,27 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* Письмо от команды: заголовок, абзацы и список с настоящими
    отступами, а не сплошная стена с «•». Вертикальные зазоры задаёт
    разметка, поэтому у самого пузыря переносы не нужны. */
+/* Поле ответа в карточке админки: .field-input сам по себе без рамки —
+   он рассчитан на строку формы, где рамку рисует .field-row. Здесь
+   строки нет, и поле выглядело просто серой подписью. */
+.admin-card .field-input{
+  border:1px solid var(--border); border-radius:12px;
+  padding:11px 13px; background:var(--surface); font-weight:500;
+}
+/* В админке письмо разбирается той же разметкой, что и в чате. */
+.support-msg .team-letter{ display:flex; flex-direction:column; gap:8px; }
+.support-msg .team-letter .team-head{ font-size:13.5px; font-weight:800; }
+.support-msg .team-letter .team-p{ margin:0; }
+.support-msg .team-letter .team-list{ margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:6px; }
+.support-msg .team-letter .team-list li{ position:relative; padding-left:14px; }
+.support-msg .team-letter .team-list li::before{
+  content:""; position:absolute; left:2px; top:7px;
+  width:4px; height:4px; border-radius:2px; background:var(--primary);
+}
+/* Имя занимает всю ширину строки: делить её с текстом последнего
+   сообщения нельзя — имя ломалось по буквам («Челове к»). */
+.admin-row-main .admin-row-name{ width:100%; }
+.team-row-last{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .chat-bubble .team-letter{ white-space:normal; display:flex; flex-direction:column; gap:10px; }
 .team-letter .team-head{ font-size:15px; font-weight:800; line-height:1.3; letter-spacing:-0.01em; }
 .team-letter .team-p{ margin:0; line-height:1.5; }

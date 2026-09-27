@@ -1238,5 +1238,13 @@
     "note_placeholder": "A few words for the applicant (optional)",
     "accept": "Accept to the team",
     "reject": "Reject"
+  },
+  "team_inbox": {
+    "title": "Replies to the team",
+    "unread": "New",
+    "all": "All",
+    "empty": "No replies yet",
+    "empty_hint": "Here you'll see people's replies to the welcome letter from the team.",
+    "reply_ph": "Reply as the team"
   }
 }

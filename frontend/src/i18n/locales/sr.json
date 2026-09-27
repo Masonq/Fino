@@ -1273,5 +1273,13 @@
     "note_placeholder": "Par reči podnosiocu (nije obavezno)",
     "accept": "Primi u tim",
     "reject": "Odbij"
+  },
+  "team_inbox": {
+    "title": "Odgovori timu",
+    "unread": "Nove",
+    "all": "Sve",
+    "empty": "Još niko nije odgovorio",
+    "empty_hint": "Ovde će se pojaviti odgovori ljudi na pismo koje tim šalje posle registracije.",
+    "reply_ph": "Odgovori u ime tima"
   }
 }
