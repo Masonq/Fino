@@ -268,6 +268,17 @@ def create_listing(
             is_video=photo.is_video,
         ))
 
+    # Публикуем сразу, если и текст, и продавец не вызывают вопросов.
+    # Иначе — в очередь модератору, как было всегда.
+    db.flush()
+    # Полнота — от неё зависит место в ленте. Раньше считалась только
+    # при правке, и свежее объявление всегда числилось неполным.
+    listing.is_complete = _looks_complete(listing)
+
+    from app.core.autopublish import apply as maybe_publish
+
+    maybe_publish(db, listing, user)
+
     db.commit()
     db.refresh(listing)
     return {"id": str(listing.id), "status": listing.status}
