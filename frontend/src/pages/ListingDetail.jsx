@@ -1104,7 +1104,7 @@ export default function ListingDetail() {
             />
             <div>
               <div className="seller-name">
-                {listing.owner.company_name || listing.owner.display_name}
+                <span className="name-text">{listing.owner.company_name || listing.owner.display_name}</span>
                 {(listing.owner.company_verified || listing.owner.document_verified) && (
                   <div className="seal seal-sm">
                     <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><path d="M20 6 9 17l-5-5" /></svg>

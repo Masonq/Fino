@@ -224,7 +224,7 @@ export default function AdminUsers() {
               </span>
               <span className="admin-row-text">
                 <span className="admin-row-name">
-                  {u.company_name || u.display_name || t('admin.no_name')}
+                  <span className="name-text">{u.company_name || u.display_name || t('admin.no_name')}</span>
                   {isNew && <span className="tag tag-new">{t('admin.tag_new')}</span>}
                   {u.is_blocked && <span className="tag tag-danger">{t('admin.tag_blocked')}</span>}
                   {u.document_verified && <span className="tag tag-ok">{t('admin.tag_verified')}</span>}

@@ -461,7 +461,7 @@ export default function Moderation() {
                   наоборот. Видно сразу, без карточки человека. */}
               <div className="mod-seller">
                 <span className="mod-seller-name">
-                  {l.owner_name || '—'}
+                  <span className="name-text">{l.owner_name || '—'}</span>
                   {l.owner_verified && <span className="tag tag-ok">{t('admin.tag_verified')}</span>}
                   {l.owner_days != null && l.owner_days < 3 && <span className="tag tag-new">{t('admin.tag_new')}</span>}
                 </span>

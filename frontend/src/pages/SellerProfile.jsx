@@ -142,7 +142,7 @@ export default function SellerProfile() {
         />
         <div className="seller-head-info">
           <div className="seller-name lg">
-            {profile.company_name || profile.display_name}
+            <span className="name-text">{profile.company_name || profile.display_name}</span>
             {(profile.company_verified || profile.document_verified) && (
               <div className="seal seal-sm">
                 <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><path d="M20 6 9 17l-5-5" /></svg>

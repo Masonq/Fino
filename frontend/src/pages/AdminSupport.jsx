@@ -132,7 +132,7 @@ export default function AdminSupport() {
           <div key={ticket.id} className="admin-row">
             <button className="admin-row-main" onClick={() => openCard(ticket.id)}>
               <div className="admin-row-name">
-                {ticket.subject}
+                <span className="name-text">{ticket.subject}</span>
                 <span className="tag">{t(`support.topic.${ticket.topic}`)}</span>
               </div>
               <div className="admin-row-meta">{ticket.contact}</div>

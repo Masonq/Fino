@@ -80,7 +80,7 @@ export default function AdminVolunteers() {
           <div key={a.id} className="admin-row">
             <button className="admin-row-main" onClick={() => setOpenId(openId === a.id ? null : a.id)}>
               <div className="admin-row-name">
-                {a.user?.name}
+                <span className="name-text">{a.user?.name}</span>
                 <span className="tag">{t(`volunteer.role.${a.role}`)}</span>
               </div>
               <div className="admin-row-meta">

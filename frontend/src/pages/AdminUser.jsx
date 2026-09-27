@@ -149,7 +149,7 @@ export default function AdminUser() {
         />
         <div className="admin-user-facts">
           <div className="admin-row-name">
-            {name}
+            <span className="name-text">{name}</span>
             {card.is_blocked && <span className="tag tag-danger">{t('admin.tag_blocked')}</span>}
             {card.must_rename && <span className="tag tag-warn">{t('admin.tag_renaming')}</span>}
             {card.document_verified && <span className="tag tag-ok">{t('admin.tag_verified')}</span>}
