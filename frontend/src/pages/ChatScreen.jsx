@@ -8,15 +8,48 @@ import ChatList from '../components/ChatList'
 import { ChatSkeleton } from '../components/Skeletons'
 import { formatPrice } from '../utils/money'
 
-// Ссылки кликаются только в письме от команды — его пишем мы сами.
-// В обычной переписке ссылка остаётся текстом: кликабельная чужая
-// ссылка в чате объявлений — подарок мошеннику.
+// Письмо от команды — единственное, что мы пишем сами, поэтому только
+// в нём разбираем разметку: заголовок, жирный, пункты списка, ссылки.
+// В обычной переписке всё остаётся текстом — кликабельная чужая ссылка
+// в чате объявлений это подарок мошеннику.
+function inlineParts(line, keyPrefix) {
+  // Сначала ссылки, внутри остального — **жирный**.
+  return String(line).split(/(https?:\/\/\S+)/g).flatMap((chunk, i) => {
+    if (/^https?:\/\//.test(chunk)) {
+      return [<a key={`${keyPrefix}-l${i}`} href={chunk} target="_blank" rel="noopener noreferrer">{chunk}</a>]
+    }
+    return chunk.split(/\*\*(.+?)\*\*/g).map((part, j) => (
+      j % 2 ? <b key={`${keyPrefix}-b${i}-${j}`}>{part}</b> : part
+    ))
+  })
+}
+
 function teamText(text) {
-  return String(text || '').split(/(https?:\/\/\S+)/g).map((part, i) => (
-    /^https?:\/\//.test(part)
-      ? <a key={i} href={part} target="_blank" rel="noopener noreferrer">{part}</a>
-      : part
-  ))
+  const lines = String(text || '').split('\n')
+  const blocks = []
+  let list = null
+
+  const flushList = () => {
+    if (list) { blocks.push(<ul key={`u${blocks.length}`} className="team-list">{list}</ul>); list = null }
+  }
+
+  lines.forEach((raw, i) => {
+    const line = raw.trimEnd()
+    if (/^[-•*]\s+/.test(line)) {
+      list = list || []
+      list.push(<li key={`i${i}`}>{inlineParts(line.replace(/^[-•*]\s+/, ''), i)}</li>)
+      return
+    }
+    flushList()
+    if (!line) return                      // пустая строка — это зазор между блоками, он от отступов
+    if (/^#{1,3}\s+/.test(line)) {
+      blocks.push(<div key={`h${i}`} className="team-head">{inlineParts(line.replace(/^#{1,3}\s+/, ''), i)}</div>)
+      return
+    }
+    blocks.push(<p key={`p${i}`} className="team-p">{inlineParts(line, i)}</p>)
+  })
+  flushList()
+  return <div className="team-letter">{blocks}</div>
 }
 
 export default function ChatScreen() {

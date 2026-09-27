@@ -69,3 +69,31 @@ def test_team_letter_is_not_flagged_as_a_scam():
 
     assert is_team_message(Fake())
     assert _risk_for(Fake()) is None
+
+
+def test_letter_is_written_in_markup_the_chat_can_render():
+    """
+    Письмо рисуется с заголовками и списком (см. teamText в
+    ChatScreen). Разметка должна остаться в тексте: без неё оно снова
+    станет стеной текста с «•».
+    """
+    for lang, text in GREETING.items():
+        lines = text.split("\n")
+        assert any(line.startswith("# ") for line in lines), lang
+        assert any(line.startswith("- ") for line in lines), lang
+        assert "**" in text, lang
+        assert "•" not in text, f"{lang}: точку списка рисует разметка, а не символ"
+
+
+def test_bulk_greeting_skips_those_who_already_got_it():
+    from app.core.greet_all import run
+
+    db = SessionLocal()
+    try:
+        user = _fresh_user(db)
+        greet(db, user, "ru")
+    finally:
+        db.close()
+    first = run(apply=True)
+    assert run(apply=False) == 0, "повторный запуск не должен писать второй раз"
+    assert first >= 0
