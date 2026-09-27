@@ -402,9 +402,14 @@ export default function ChatScreen() {
               </a>
             )}
           <div className="chat-menu-wrap">
+            {/* У чата с командой в меню нет ни одного пункта — ни
+                звонка, ни брони, ни блокировки. Пустая шторка по
+                нажатию хуже отсутствия кнопки. */}
+            {!chat?.is_team && (
             <button className="chat-menu-btn" onClick={() => setMenuOpen((v) => !v)} aria-label={t('chat.menu')}>
               <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
             </button>
+            )}
             {menuOpen && (
               <>
                 <div className="chat-menu-backdrop" onClick={() => setMenuOpen(false)} />
@@ -490,6 +495,9 @@ export default function ChatScreen() {
                       </button>
                     )
                   )}
+                  {/* Команду блокировать нельзя: это единственный канал,
+                      которым мы пишем человеку и отвечаем ему. */}
+                  {!chat?.is_team && (
                   <button
                     className="chat-menu-item"
                     disabled={blockBusy}
@@ -500,6 +508,7 @@ export default function ChatScreen() {
                     </svg>
                     {t(chat.i_blocked_them ? 'chat.unblock' : 'chat.block')}
                   </button>
+                  )}
                 </div>
               </>
             )}

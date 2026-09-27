@@ -10,6 +10,17 @@ import { timeAgo } from '../utils/time'
 // колонка рядом с открытым чатом, см. ChatScreen.jsx). activeId
 // подсвечивает открытую сейчас переписку — на мобильном он всегда
 // пуст, там список и открытый чат — разные экраны.
+// Письмо от команды написано разметкой (см. utils/teamText). В строке
+// списка её видно как «# Привет!» — для превью разметку снимаем.
+function plainText(text) {
+  return String(text || '')
+    .replace(/^#{1,3}\s+/gm, '')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/^[-•*]\s+/gm, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 export default function ChatList({ activeId, onLoaded, query = '', filter = 'all' }) {
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
@@ -84,10 +95,12 @@ export default function ChatList({ activeId, onLoaded, query = '', filter = 'all
           to={`/chat/${c.id}`}
           className={[c.unread ? 'chat-row unread' : 'chat-row', c.id === activeId ? 'active' : ''].filter(Boolean).join(' ')}
         >
-          <div className="chat-thumb">
-            {c.listing_photo
-              ? <img src={c.listing_photo} alt="" />
-              : <div className="photo-placeholder" />}
+          <div className={c.is_team ? 'chat-thumb is-team' : 'chat-thumb'}>
+            {c.is_team
+              ? <img src="/logo-mark.png" alt="" />
+              : c.listing_photo
+                ? <img src={c.listing_photo} alt="" />
+                : <div className="photo-placeholder" />}
           </div>
           <div className="chat-row-body">
             <div className="chat-row-top">
@@ -98,7 +111,7 @@ export default function ChatList({ activeId, onLoaded, query = '', filter = 'all
             <div className="chat-row-bottom">
               <span className="chat-last">
                 {c.last_from_me && <span className="chat-you">{t('chats.you')}: </span>}
-                {c.last_text || t('chats.no_messages')}
+                {c.last_kind === 'team' ? plainText(c.last_text) : (c.last_text || t('chats.no_messages'))}
               </span>
               {c.unread > 0 && <span className="chat-badge">{c.unread}</span>}
             </div>

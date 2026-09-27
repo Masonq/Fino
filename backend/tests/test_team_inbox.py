@@ -90,3 +90,42 @@ def test_only_staff_can_read_the_teams_mail():
             assert error.status_code == 403
     finally:
         db.close()
+
+
+def test_team_cannot_be_blocked():
+    """
+    Команда — единственный канал, которым мы пишем человеку. Если её
+    заблокировать, он перестанет получать и ответы на свои вопросы.
+    """
+    import asyncio
+
+    from fastapi import HTTPException
+
+    from app.routers.chats import block_participant
+
+    db = SessionLocal()
+    try:
+        person = _person(db)
+        greet(db, person, "ru")
+        chat = db.query(Chat).filter(Chat.buyer_id == person.id).one()
+        try:
+            asyncio.run(block_participant(chat.id, person, db))
+            raise AssertionError("команду не должно быть возможно заблокировать")
+        except HTTPException as error:
+            assert error.status_code == 400 and error.detail == "cannot_block_team"
+    finally:
+        db.close()
+
+
+def test_chat_list_marks_the_team_chat():
+    """По этому признаку в списке рисуется логотип, а меню прячется."""
+    from app.routers.chats import _is_team_chat
+
+    db = SessionLocal()
+    try:
+        person = _person(db)
+        greet(db, person, "ru")
+        chat = db.query(Chat).filter(Chat.buyer_id == person.id).one()
+        assert _is_team_chat(db, chat)
+    finally:
+        db.close()

@@ -66,6 +66,12 @@ def _is_phone_revealed(db: Session, seller_id, buyer_id) -> bool:
     ).first() is not None
 
 
+def _is_team_chat(db: Session, chat: Chat) -> bool:
+    from app.core.team_chat import team_user
+
+    return chat.listing_id is None and chat.seller_id == team_user(db).id
+
+
 def _serialize_chat(chat: Chat, db: Session, lang: str = "ru", viewer_id=None):
     listing = (db.query(Listing).options(joinedload(Listing.translations)).get(chat.listing_id)
                if chat.listing_id else None)
@@ -125,6 +131,8 @@ def _serialize_chat(chat: Chat, db: Session, lang: str = "ru", viewer_id=None):
         "seller_has_phone": bool(seller.phone) if seller else False,
         "call_request_pending": chat.call_request_pending,
         "other_phone": other_phone,
+        # Чат с командой: у него свой значок и его нельзя заблокировать.
+        "is_team": _is_team_chat(db, chat),
     }
 
 
@@ -380,6 +388,12 @@ async def block_participant(
     """Закрывает собеседнику из этого чата доступ писать вам."""
     chat = _require_participant(chat_id, user, db)
     other_id = _other_id(chat, user.id)
+    # Команду блокировать нельзя: это единственный канал, по которому мы
+    # пишем человеку о его объявлениях и отвечаем на вопросы.
+    from app.core.team_chat import team_user
+
+    if other_id == team_user(db).id:
+        raise HTTPException(400, "cannot_block_team")
     if not _is_blocked(db, user.id, other_id):
         db.add(BlockedUser(blocker_id=user.id, blocked_id=other_id))
         db.commit()
@@ -666,6 +680,9 @@ def list_chats(
         .options(joinedload(Listing.translations), joinedload(Listing.photos))
         .filter(Listing.id.in_([c.listing_id for c in chats if c.listing_id])).all()
     }
+    from app.core.team_chat import team_user
+
+    team_id = team_user(db).id
     user_ids = {c.buyer_id for c in chats} | {c.seller_id for c in chats}
     users = {u.id: u for u in db.query(User).filter(User.id.in_(user_ids)).all()}
 
@@ -696,6 +713,10 @@ def list_chats(
             "last_text": (msg.text if msg else None),
             "last_at": msg.created_at.isoformat() if msg else None,
             "last_from_me": (msg.sender_id == user_id) if msg else False,
+            # Разметку письма команды в превью списка надо убрать, иначе
+            # видно «# Привет!» — для этого и нужен вид сообщения.
+            "last_kind": (msg.kind or "user") if msg else None,
+            "is_team": c.listing_id is None and c.seller_id == team_id,
             "unread": unread.get(c.id, 0),
         })
 
