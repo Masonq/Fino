@@ -3695,6 +3695,18 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 
 .support-mine { margin-top: 22px; }
+/* Волонтёрство */
+.volunteer .page-lead{ font-size:15px; line-height:1.5; color:var(--ink-soft); margin:0 0 16px; }
+.volunteer-what{ display:flex; flex-direction:column; gap:12px; margin:0 0 18px; }
+.volunteer-what-row{ display:flex; gap:12px; align-items:flex-start; }
+.volunteer-what-mark{ flex-shrink:0; width:10px; height:10px; border-radius:5px; background:var(--accent); margin-top:6px; }
+.volunteer-what-title{ font-size:14.5px; font-weight:700; }
+.volunteer-what-text{ font-size:13.5px; line-height:1.45; color:var(--ink-soft); margin-top:2px; }
+.volunteer-state{ padding:14px 16px; border-radius:14px; background:var(--tile); border:1px solid var(--border); font-size:14px; font-weight:600; line-height:1.4; margin:0 0 16px; }
+.volunteer-state.is-ok{ background:var(--primary-soft); color:var(--primary-deep); border-color:transparent; }
+.volunteer-note{ margin-top:8px; font-weight:500; color:var(--ink-soft); }
+.volunteer-about{ margin:0 0 12px; font-size:14px; line-height:1.5; white-space:pre-wrap; }
+.volunteer .form-error{ color:var(--danger-ink); font-size:13px; margin:8px 2px; }
 .support-ticket {
   margin-top: 8px;
   padding: 12px 13px;

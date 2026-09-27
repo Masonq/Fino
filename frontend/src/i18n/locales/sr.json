@@ -1229,5 +1229,49 @@
     "runs_one": "{{count}} pokretanje za {{days}} dana",
     "runs_few": "{{count}} pokretanja za {{days}} dana",
     "runs_other": "{{count}} pokretanja za {{days}} dana"
+  },
+  "volunteer": {
+    "title": "Volontiranje",
+    "queue": "Prijave za tim",
+    "lead": "PLONK vode njegovi ljudi. Kao u Telegram zajednicama: na podršku ne odgovaraju zaposleni, već oni kojima je stalo. Ako imate sat-dva nedeljno — pridružite se.",
+    "what_answer": "Odgovarati na podršku",
+    "what_answer_text": "Pomoći ljudima kojima se ne učitava slika, ne stiže kod ili ne znaju kako da produže oglas.",
+    "what_moderate": "Proveravati oglase",
+    "what_moderate_text": "Propuštati poštene, zaustavljati sumnjive — pre nego što neko pošalje novac.",
+    "what_rules": "Šta zauzvrat",
+    "what_rules_text": "Značka tima u profilu i naša zahvalnost. Ne plaćamo — kažemo iskreno.",
+    "in_team": "Već ste u timu. Hvala!",
+    "pending": "Prijava je poslata — odgovaramo za par dana, stići će obaveštenje.",
+    "decided_accepted": "Prijava prihvaćena — u timu ste. U profilu su se pojavili „Zahtevi“ i „Moderacija“.",
+    "decided_rejected": "Ovog puta nije prošlo. Možete se prijaviti ponovo za mesec dana.",
+    "role_label": "Kako želite da pomažete",
+    "role": {
+      "support": "Podrška",
+      "moderation": "Moderacija",
+      "both": "Oboje"
+    },
+    "langs_label": "Na kojim jezicima odgovarate",
+    "lang": {
+      "ru": "Ruski",
+      "sr": "Srpski",
+      "en": "Engleski"
+    },
+    "hours_label": "Koliko vremena nedeljno",
+    "hours_unit": "h",
+    "about_label": "O sebi",
+    "about": "Ko ste, čime se bavite, zašto želite da pomažete. Par rečenica je dovoljno.",
+    "too_short": "Recite nešto više o sebi — bar par rečenica.",
+    "already": "Prijava je već poslata, čekamo odluku.",
+    "send": "Pošalji prijavu",
+    "login_to_send": "Prijavi se i pošalji prijavu",
+    "status": {
+      "new": "Nove",
+      "accepted": "Prihvaćene",
+      "rejected": "Odbijene"
+    },
+    "queue_empty": "Nema prijava",
+    "note_placeholder": "Par reči podnosiocu (nije obavezno)",
+    "accept": "Primi u tim",
+    "reject": "Odbij"
   }
 }

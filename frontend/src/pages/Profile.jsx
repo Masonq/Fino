@@ -323,6 +323,13 @@ export default function Profile() {
           {t('support.title')}
           <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
         </Link>
+        <Link className="profile-row" to="/volunteer">
+          <span className="profile-row-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10Z" /></svg>
+          </span>
+          {t('volunteer.title')}
+          <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+        </Link>
       </div>
 
       {forYou.length > 0 && (
@@ -446,6 +453,16 @@ export default function Profile() {
               {t('support.queue')}
               {queues?.support > 0 && (
                 <span className="profile-row-count">{queues.support}</span>
+              )}
+              <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+            </Link>
+            <Link className="profile-row" to="/admin/volunteers">
+              <span className="profile-row-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0" /><path d="M16 11h6M19 8v6" /></svg>
+              </span>
+              {t('volunteer.queue')}
+              {queues?.volunteers > 0 && (
+                <span className="profile-row-count">{queues.volunteers}</span>
               )}
               <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
             </Link>

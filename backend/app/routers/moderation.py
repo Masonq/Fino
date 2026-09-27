@@ -111,7 +111,7 @@ def counters(
     показать два числа, а не тянуть ради них по полсотни объявлений и
     обращений со всеми переводами и снимками.
     """
-    from app.models import Chat, Ticket, TicketStatus
+    from app.models import Chat, Ticket, TicketStatus, VolunteerApplication, VolunteerStatus
 
     return {
         "moderation": (
@@ -124,6 +124,12 @@ def counters(
             .filter(Ticket.status != TicketStatus.closed)
             .count()
         ),
+        # Заявки в команду — только владельцу, остальным ноль.
+        "volunteers": (
+            db.query(VolunteerApplication)
+            .filter(VolunteerApplication.status == VolunteerStatus.new)
+            .count()
+        ) if moderator.role == UserRole.admin else 0,
         # Разговоры, где прозвучали известные приёмы обмана.
         "flagged_chats": (
             db.query(Chat)

@@ -1194,5 +1194,49 @@
     "nothing": "nothing done",
     "runs_one": "{{count}} run in {{days}} days",
     "runs_other": "{{count}} runs in {{days}} days"
+  },
+  "volunteer": {
+    "title": "Volunteering",
+    "queue": "Team applications",
+    "lead": "PLONK is run by its own people. Like Telegram communities: support is answered not by staff but by those who care. If you have an hour or two a week — join us.",
+    "what_answer": "Answer support requests",
+    "what_answer_text": "Help people whose photo won't upload, whose code doesn't arrive or who can't figure out how to renew a listing.",
+    "what_moderate": "Review listings",
+    "what_moderate_text": "Let the honest ones through, stop suspicious ones — before anyone sends money.",
+    "what_rules": "What you get",
+    "what_rules_text": "A team badge in your profile and our gratitude. No pay — we say it straight.",
+    "in_team": "You're already on the team. Thank you!",
+    "pending": "Application sent — we'll reply within a couple of days, you'll get a notification.",
+    "decided_accepted": "Accepted — you're on the team. \"Support requests\" and \"Moderation\" are now in your profile.",
+    "decided_rejected": "Not this time. You can apply again in a month.",
+    "role_label": "How you'd like to help",
+    "role": {
+      "support": "Support",
+      "moderation": "Moderation",
+      "both": "Both"
+    },
+    "langs_label": "Languages you can reply in",
+    "lang": {
+      "ru": "Russian",
+      "sr": "Serbian",
+      "en": "English"
+    },
+    "hours_label": "Time per week",
+    "hours_unit": "h",
+    "about_label": "About you",
+    "about": "Who you are, what you do, why you want to help. A couple of sentences is enough.",
+    "too_short": "Tell us a bit more — at least a couple of sentences.",
+    "already": "Application already sent, awaiting decision.",
+    "send": "Send application",
+    "login_to_send": "Sign in and send application",
+    "status": {
+      "new": "New",
+      "accepted": "Accepted",
+      "rejected": "Rejected"
+    },
+    "queue_empty": "No applications",
+    "note_placeholder": "A few words for the applicant (optional)",
+    "accept": "Accept to the team",
+    "reject": "Reject"
   }
 }

@@ -58,4 +58,5 @@ __all__ = [
 # здесь, а не в main.py: так её видят все процессы, которые трогают
 # базу (веб-сервер, бот, разовые скрипты вроде перевода и импорта из
 # чатов), а не только сам веб-сервер.
+from app.models.volunteer import VolunteerApplication, VolunteerRole, VolunteerStatus  # noqa: F401,E402
 from app.core import status_watch  # noqa: F401,E402

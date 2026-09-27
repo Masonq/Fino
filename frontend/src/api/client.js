@@ -189,6 +189,10 @@ export const api = {
     method: 'POST', body: JSON.stringify(payload),
   }),
   supportMine: () => request('/support/mine'),
+  volunteerMine: () => request('/volunteer/mine'),
+  volunteerApply: (payload) => request('/volunteer/apply', { method: 'POST', body: JSON.stringify(payload) }),
+  volunteerQueue: (params) => request(`/volunteer/queue?${query(params)}`),
+  volunteerDecide: (id, payload) => request(`/volunteer/${id}/decide`, { method: 'POST', body: JSON.stringify(payload) }),
   supportReply: (id, body) => request(`/support/${id}/reply`, {
     method: 'POST', body: JSON.stringify({ body }),
   }),
