@@ -1,0 +1,9 @@
+[Unit]
+Description=PLONK — метка «Ниже рынка» для карточек ленты
+After=network.target postgresql.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/fino/backend
+ExecStart=/opt/fino/backend/venv/bin/python3 -m app.core.price_marks
+User=root

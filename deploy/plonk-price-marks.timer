@@ -1,0 +1,10 @@
+[Unit]
+Description=Раз в час пересчитывает метку «Ниже рынка»
+
+[Timer]
+# На пятой минуте часа, чтобы не совпадать с заданиями на ровный час.
+OnCalendar=*-*-* *:05:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

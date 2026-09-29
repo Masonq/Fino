@@ -121,6 +121,11 @@ class Listing(Base):
 
     status: Mapped[ListingStatus] = mapped_column(Enum(ListingStatus), default=ListingStatus.draft, index=True)
     rejection_reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # Метка для ленты: 'below' — цена заметно ниже рынка. Считается
+    # заранее фоновым заданием (app.core.price_marks): честная оценка
+    # перебирает сотни похожих объявлений, на каждую карточку ленты это
+    # не потянуть. Пусто — метки нет.
+    price_mark: Mapped[str | None] = mapped_column(String(8), nullable=True)
 
     is_urgent: Mapped[bool] = mapped_column(Boolean, default=False)
     delivery_available: Mapped[bool] = mapped_column(Boolean, default=False)

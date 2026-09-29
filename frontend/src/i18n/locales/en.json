@@ -343,7 +343,8 @@
     "price_up": "Price increased",
     "promoted": "Promoted",
     "reserved": "Reserved",
-    "ago": "{{when}} ago"
+    "ago": "{{when}} ago",
+    "below_market": "Below market"
   },
   "chats": {
     "need_auth": "Introduce yourself to see your conversations.",

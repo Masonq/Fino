@@ -1060,6 +1060,7 @@ def search_listings(
             "title": translation.title if translation else None,
             "price": float(listing.price) if listing.price else None,
             "previous_price": previous_price_of(listing),
+            "price_mark": listing.price_mark,
             "is_free": bool(listing.is_free),
             "currency": listing.currency,
             "city": listing.city,
@@ -1192,6 +1193,7 @@ def listings_by_ids(
             "title": tr.title if tr else None,
             "price": float(l.price) if l.price else None,
             "previous_price": previous_price_of(l),
+            "price_mark": l.price_mark,
             "is_free": bool(l.is_free),
             "currency": l.currency,
             "city": l.city,
@@ -1646,6 +1648,7 @@ def similar_listings(
             "title": tr.title if tr else None,
             "price": float(l.price) if l.price else None,
             "previous_price": previous_price_of(l),
+            "price_mark": l.price_mark,
             "is_free": bool(l.is_free),
             "currency": l.currency,
             "city": l.city,
@@ -1704,6 +1707,7 @@ def seller_listings(
             "title": tr.title if tr else None,
             "price": float(l.price) if l.price else None,
             "previous_price": previous_price_of(l),
+            "price_mark": l.price_mark,
             "is_free": bool(l.is_free),
             "currency": l.currency,
             "city": l.city,
@@ -1844,6 +1848,7 @@ def get_listing(listing_id: str, request: Request, db: Session = Depends(get_db)
         # новой, как у Авито. Только последнюю запись, не всю историю:
         # для одной строки на странице больше не нужно.
         "previous_price": previous_price_of(listing),
+            "price_mark": listing.price_mark,
         "is_free": bool(listing.is_free),
         "currency": listing.currency,
         # Оценка цены приходит вместе с карточкой, а не отдельным

@@ -144,6 +144,9 @@ export default function ListingCard({ listing, large = false, priority = false }
           ? <span className="price-free">{t('detail.free')}</span>
           : formatPrice(listing.price, listing.currency, i18n.language)
             || <span className="price-none">{t('detail.no_price')}</span>}
+        {listing.price_mark === 'below' && (
+          <span className="price-below">{t('misc.below_market')}</span>
+        )}
         {priceDirection && (
           <svg
             className={`s-price-arrow ${priceDirection}`}
