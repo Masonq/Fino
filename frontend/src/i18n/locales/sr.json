@@ -1295,5 +1295,16 @@
     "empty": "Još niko nije odgovorio",
     "empty_hint": "Ovde će se pojaviti odgovori ljudi na pismo koje tim šalje posle registracije.",
     "reply_ph": "Odgovori u ime tima"
+  },
+  "fpanel": {
+    "title": "Pronađi",
+    "reset": "Resetuj",
+    "section": "Kategorija",
+    "all_sections": "Sve",
+    "city": "Grad",
+    "price": "Cena",
+    "up_to": "do",
+    "any_price": "bilo koja",
+    "show": "Prikaži oglase"
   }
 }

@@ -1260,5 +1260,16 @@
     "empty": "No replies yet",
     "empty_hint": "Here you'll see people's replies to the welcome letter from the team.",
     "reply_ph": "Reply as the team"
+  },
+  "fpanel": {
+    "title": "Find",
+    "reset": "Reset",
+    "section": "Section",
+    "all_sections": "All",
+    "city": "City",
+    "price": "Price",
+    "up_to": "up to",
+    "any_price": "any",
+    "show": "Show listings"
   }
 }

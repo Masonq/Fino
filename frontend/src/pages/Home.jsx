@@ -8,6 +8,7 @@ import ListingCard from '../components/ListingCard'
 import { CardSkeletons, CategorySkeletons } from '../components/Skeletons'
 import PullToRefresh from '../components/PullToRefresh'
 import SearchOverlay from '../components/SearchOverlay'
+import FilterPanel from '../components/FilterPanel'
 import OfflineNotice, { LoadError } from '../components/OfflineNotice'
 import { useAuth } from '../context/AuthContext'
 import { CITIES, cityLabel, nearestCity } from '../data/cities'
@@ -209,6 +210,7 @@ export default function Home() {
   const lastScroll = useRef(cached?.scroll || 0)
   const [settled, setSettled] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const stories = useFresh(city, i18n.language)
   const { user, loading: authLoading } = useAuth()
 
@@ -622,9 +624,13 @@ export default function Home() {
             </label>
             <button type="button" className="avito-search-main" onClick={() => setSearchOpen(true)}>
               <TypingHint className="avito-search-hint" />
-              <span className="avito-search-filter" aria-label={t('misc.filters')} data-label={t('misc.find')}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
-              </span>
+            </button>
+            {/* Фильтры — своя кнопка, не значок внутри строки поиска:
+                вложенное «нажимаемое в нажимаемом» недопустимо, а тап по
+                значку должен открывать панель, не поиск. */}
+            <button type="button" className="avito-search-filter" aria-label={t('misc.filters')}
+              data-label={t('misc.find')} onClick={() => setFiltersOpen(true)}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
             </button>
           </div>
           <Link to={user ? '/profile' : '/login'} className="avito-login-pill">
@@ -797,6 +803,7 @@ export default function Home() {
     </div>
 
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <FilterPanel open={filtersOpen} onClose={() => setFiltersOpen(false)} city={city} onCity={chooseCity} />
     </PullToRefresh>
   )
 }

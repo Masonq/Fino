@@ -30,11 +30,17 @@ export default function useScrollFade() {
     window.addEventListener('resize', update)
     const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(update) : null
     if (ro) ro.observe(el)
+    // Ряд может дорасти уже после показа (разделы приходят с сервера):
+    // размер самого элемента при этом не меняется, меняется его
+    // содержимое — за ним следим отдельно.
+    const mo = typeof MutationObserver !== 'undefined' ? new MutationObserver(update) : null
+    if (mo) mo.observe(el, { childList: true, subtree: true })
 
     cleanup.current = () => {
       el.removeEventListener('scroll', update)
       window.removeEventListener('resize', update)
       if (ro) ro.disconnect()
+      if (mo) mo.disconnect()
     }
   }, [])
 }
