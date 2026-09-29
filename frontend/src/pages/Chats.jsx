@@ -4,8 +4,10 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
 import ChatList from '../components/ChatList'
+import useScrollFade from '../hooks/useScrollFade'
 
 export default function Chats() {
+  const chipsRef = useScrollFade()
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState('all')
   // Поиск и отбор нужны, когда есть что отбирать: при пустом списке
@@ -64,7 +66,7 @@ export default function Chats() {
             </button>
           )}
         </div>
-        <div className="field-chips chats-chips">
+        <div className="field-chips chats-chips" ref={chipsRef}>
           {['all', 'unread', 'buying', 'selling'].map((key) => (
             <button
               key={key}

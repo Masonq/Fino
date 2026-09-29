@@ -80,7 +80,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .nav-item{
   flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
-  color:var(--muted); font-size:10.5px; font-weight:600; text-align:center; line-height:1.1;
+  color:var(--muted); font-size:11.5px; font-weight:600; text-align:center; line-height:1.1;
 }
 .nav-item.active{ color:var(--primary-deep); font-weight:700; }
 .nav-item svg{ width:27px; height:27px; }
@@ -235,9 +235,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* Полоска выезжает за края шапки: первый кружок стоит вровень с
    поиском, последний уходит под правый край — видно, что дальше есть. */
 .stories{
-  display:flex; gap:10px; margin:6px -14px 0; padding:2px 14px 0;
+  display:flex; gap:10px; margin:6px -14px 0; padding:2px 12px 0;
   overflow-x:auto; overscroll-behavior-x:contain; -webkit-overflow-scrolling:touch;
-  scroll-snap-type:x proximity; scroll-padding-left:14px;
+  scroll-snap-type:x proximity; scroll-padding-left:12px;
 }
 .stories::-webkit-scrollbar{ display:none; }
 .story{ flex-shrink:0; width:64px; display:flex; flex-direction:column; align-items:center; gap:6px; scroll-snap-align:start; -webkit-touch-callout:none; user-select:none; }
@@ -268,7 +268,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .story-blur{ object-fit:cover; filter:blur(6px) saturate(1.2); transform:scale(1.25); }
 .story-img{ object-fit:contain; }
 .story-label{
-  max-width:64px; font-size:11px; font-weight:700; color:var(--ink); line-height:1; letter-spacing:-0.01em;
+  max-width:64px; font-size:12px; font-weight:700; color:var(--ink); line-height:1; letter-spacing:-0.01em;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-variant-numeric:tabular-nums;
 }
 .story-label.free{ color:var(--primary-dark); }
@@ -321,7 +321,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
      вместо трёх с небольшим, и под ними остаётся место для ленты
      объявлений. Картинка при этом прежняя — она и есть то, ради чего
      плитки рисовались. */
-  position:relative; height:80px; width:118px; flex-shrink:0; border-radius:15px;
+  position:relative; height:86px; width:118px; flex-shrink:0; border-radius:15px;
   padding:9px 8px 6px 11px;
   background:var(--tile);
   border:1px solid var(--border);
@@ -342,13 +342,18 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
 }
 .cat-tile-2row.all .cat-tile-2row-label{ color:var(--primary-deep); }
+/* Размер слота подобран замером, а не на глаз: для каждой из двенадцати
+   плиток считалось пересечение строк подписи с непрозрачной частью
+   картинки. При 72 точках подписи налезали на картинку у восьми плиток
+   (до 14 точек — «Бизнес и оборудование»), при 58 и высоте плитки 86 —
+   ни у одной. Больше картинка — наезд возвращается. */
 /* Один и тот же слот у всех двенадцати картинок в правом нижнем углу.
    Так миска для животных и погрузчик занимают одинаковую долю плитки,
    а не «одна с ноготь, другой во всю плитку». Слот крупный: предмет в
    56 пикселях на плитке шириной 130 читался как значок, а не как вещь —
    ради этих картинок плитки и рисовались. */
 .cat-tile-2row-glyph{
-  position:absolute; right:2px; bottom:0; width:72px; height:72px;
+  position:absolute; right:2px; bottom:0; width:58px; height:58px;
   color:var(--primary); z-index:1; pointer-events:none;
 }
 .cat-tile-2row-glyph svg{ width:60%; height:60%; margin:20%; display:block; opacity:.5; }
@@ -399,9 +404,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    опускались ниже, чем у соседней карточки без них, и ряд выходил
    рваным. Теперь нижняя строка прижата к низу, а лишнее место
    распределяется выше. */
-.s-card{ background:var(--surface); border-radius:14px; overflow:hidden; display:flex; flex-direction:column; border:1px solid rgba(20,30,25,.05); }
+.s-card{ position:relative; background:var(--surface); border-radius:14px; overflow:hidden; display:flex; flex-direction:column; border:1px solid rgba(20,30,25,.05); }
 .badge-fresh{
-  position:absolute; left:10px; bottom:10px; background:var(--accent); color:#fff; font-size:10px; font-weight:800;
+  position:absolute; left:10px; bottom:10px; background:var(--accent); color:#fff; font-size:11px; font-weight:800;
   padding:5px 8px; border-radius:7px; letter-spacing:.02em; text-transform:uppercase; line-height:1;
 }
 .s-card a.s-meta{ margin-top:auto; }
@@ -422,7 +427,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 .badge-top{ position:absolute; top:10px; left:10px; background:var(--surface); font-size:10px; font-weight:800; padding:5px 9px; border-radius:8px; }
 .badge-top.xl{ background:var(--ink); color:#fff; }
-.badge-top.company{ left:auto; right:10px; background:var(--primary-soft); color:var(--primary-deep); }
+/* Компания — внизу справа: правый верхний угол теперь занят сердечком. */
+.badge-top.company{ top:auto; bottom:10px; left:auto; right:10px; background:var(--primary-soft); color:var(--primary-deep); }
 .badge-top.reserved{ background:#8A6A1F; color:#fff; }
 /* Продвинутое объявление ещё и забронировано — редкое, но возможное
    сочетание: без сдвига бейдж брони лёг бы поверх «Продвигается»
@@ -452,7 +458,15 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   overflow:hidden; min-height:calc(1.35em * 2);
 }
 .l-card .s-title{ font-size:16px; font-weight:600; }
-.s-fav{ flex-shrink:0; color:var(--ink); margin-top:1px; }
+.s-fav{
+  position:absolute; top:8px; right:8px; z-index:3; width:36px; height:36px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; color:var(--ink);
+  background:rgba(255,255,255,.9); box-shadow:0 1px 4px rgba(16,24,40,.2);
+}
+/* Кнопка 36 точек, а нажимаемая область — 44: невидимое поле вокруг. */
+.s-fav::after{ content:""; position:absolute; inset:-4px; }
+.l-card .s-fav{ top:10px; right:10px; }
+.price-none{ font-size:13.5px; font-weight:600; color:var(--muted); }
 .s-fav.on{ color:var(--accent); }
 
 /* Отскок при добавлении в избранное — сердечко на карточке в ленте
@@ -474,7 +488,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .l-card .s-price{ font-size:18px; }
 .s-attrs{ font-size:11.5px; color:var(--ink-soft); font-weight:600; padding:3px 10px 0; }
 .s-meta{
-  font-size:11px; color:var(--muted); font-weight:500; padding:3px 10px 11px; min-height:calc(1em + 14px);
+  font-size:12px; color:var(--muted); font-weight:500; padding:3px 10px 11px; min-height:calc(1em + 14px);
   display:flex; justify-content:space-between; gap:6px;
 }
 .s-date{ flex-shrink:0; }
@@ -507,7 +521,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .cats-img svg{ width:52%; height:52%; margin:24%; display:block; opacity:.32; }
 
 /* ===== stub pages ===== */
-.search-page, .post-ad-page{ padding:calc(14px + var(--sat)) 18px 14px; }
+.search-page{ padding:calc(14px + var(--sat)) 18px 14px; }
+/* Размещение — на общем краю 16, как у страниц с формами (.page). */
+.post-ad-page{ padding:calc(14px + var(--sat)) 16px 14px; }
 .search-input{ width:100%; padding:14px 16px; border-radius:14px; border:1px solid var(--line); background:var(--surface); font-size:16px; }
 
 /* ===== post ad form ===== */
@@ -906,7 +922,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* Галочка стоит на первой строке имени, а не по центру двух: с
    align-items:center у длинного имени она сползала к середине. */
 .seller-name .seal{ align-self:flex-start; margin-top:1px; }
-.seller-meta{ font-size:11px; color:var(--muted); font-weight:600; margin-top:2px; }
+.seller-meta{ font-size:12px; color:var(--muted); font-weight:600; margin-top:2px; }
 .seal-sm{ width:18px; height:18px; }
 .seal-sm svg{ width:10px; height:10px; }
 
@@ -1410,7 +1426,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .chat-row-body{ flex:1; min-width:0; }
 .chat-row-top{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
 .chat-name{ font-size:14px; font-weight:700; color:var(--ink); }
-.chat-time{ font-size:11px; color:var(--muted); flex-shrink:0; }
+.chat-time{ font-size:12px; color:var(--muted); flex-shrink:0; }
 .chat-listing{
   font-size:12px; color:var(--ink-soft); margin-top:2px;
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
@@ -3209,6 +3225,23 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   padding:20px 0 24px;
 }
 .empty-state .empty-hint{ padding:0; }
+.search-empty{ gap:10px; padding:32px 12px 24px; }
+.search-empty-icon{
+  width:60px; height:60px; border-radius:50%; background:var(--primary-soft); color:var(--primary);
+  display:flex; align-items:center; justify-content:center; margin-bottom:2px;
+}
+.search-empty-icon svg{ width:28px; height:28px; }
+.search-empty-title{ font-size:17px; font-weight:800; letter-spacing:-0.01em; }
+.search-empty .empty-hint{ max-width:290px; line-height:1.5; }
+.search-empty-cats{ width:100%; margin-top:14px; display:flex; flex-direction:column; align-items:center; gap:10px; }
+.search-empty-label{ font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+.search-empty-chips{ display:flex; flex-wrap:wrap; justify-content:center; gap:8px; }
+.search-empty-chip{
+  display:inline-flex; align-items:center; min-height:38px; padding:0 14px; border-radius:999px;
+  background:var(--surface); border:1px solid var(--border); color:var(--ink);
+  font-size:13.5px; font-weight:600; text-decoration:none; white-space:nowrap;
+}
+.search-empty-chip:active{ background:var(--surface-sunken); }
 .empty-reset{
   padding:11px 20px; border-radius:12px; background:var(--ink); color:#fff;
   font-size:13.5px; font-weight:700;
@@ -4178,8 +4211,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    поиска стоит прямо на цветном фоне раздела. Так первое, что видит
    человек на странице раздела, — это способ найти нужное, а не список
    подразделов. */
-.landing-search{ padding:10px 14px 2px; }
-.landing-search.on-hero{ margin-top:auto; padding:0 14px 4px; }
+.landing-search{ padding:10px 12px 2px; }
+.landing-search.on-hero{ margin-top:auto; padding:0 12px 4px; }
 .landing-search.on-hero .search-field{
   background:rgba(255,255,255,.94); border-color:transparent;
   box-shadow:0 6px 20px rgba(16,24,40,.18);
@@ -4187,12 +4220,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .landing-hero .search-field{ background:var(--surface); border-color:transparent; box-shadow:0 4px 14px rgba(16,24,40,.14); }
 
 
-.landing-head{ display:flex; align-items:center; gap:10px; padding:14px 14px 6px; flex-wrap:wrap; }
-.landing-hero .landing-head{ padding:0 14px; }
+.landing-head{ display:flex; align-items:center; gap:10px; padding:14px 12px 6px; flex-wrap:wrap; }
+.landing-hero .landing-head{ padding:0 12px; }
 /* Простая шапка над результатами — баннер, фильтры и подразделы в этом
    режиме убраны совсем, а не просто прокручены мимо, поэтому заголовок
    здесь свой, без градиента и без white-текста «on-hero». */
-.landing-head.plain-head{ padding:calc(14px + var(--sat)) 14px 10px; }
+.landing-head.plain-head{ padding:calc(14px + var(--sat)) 12px 10px; }
 .landing-back{
   width:36px; height:36px; border-radius:50%; background:var(--surface-sunken);
   display:flex; align-items:center; justify-content:center; color:var(--ink); flex-shrink:0;
@@ -4202,16 +4235,16 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* В шапке кнопки «назад» нет — она в липкой строке над картинкой,
    поэтому отступа под неё счётчику не нужно. */
 .landing-hero .landing-count{ padding-left:0; margin-top:2px; }
-.landing-search{ padding:6px 14px 4px; }
+.landing-search{ padding:6px 12px 4px; }
 
 /* Полоса «Купить / Снять / Посуточно» на телефоне шла от края до края
    экрана и вплотную к плиткам: боковые отступы ей давал только
    десктопный .landing-sidebar. Те же 14px, что у плиток и полей. */
-.landing-deal{ margin:12px 14px 4px; }
+.landing-deal{ margin:12px 12px 4px; }
 /* С отступами полоса стала уже, и «Снять надолго» переносилось на две
    строки. Ширина кнопки — по её тексту, перенос запрещён. */
 .landing-deal .cat-mode{ flex:1 1 auto; padding:10px 6px; white-space:nowrap; }
-.landing-field{ padding:10px 14px 4px; }
+.landing-field{ padding:10px 12px 4px; }
 .landing-label{ font-size:13px; font-weight:700; color:var(--ink-soft); margin-bottom:8px; }
 
 .landing-input{
@@ -4229,7 +4262,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .landing-range .landing-input{ min-width:0; }
 
 .landing-go{
-  display:block; width:calc(100% - 28px); margin:16px 14px 0; padding:15px;
+  display:block; width:calc(100% - 24px); margin:16px 12px 0; padding:15px;
   border-radius:14px; background:var(--ink); color:#fff;
   font-size:15px; font-weight:700; text-align:center;
 }
@@ -4237,7 +4270,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 .landing-subs{
   display:grid; grid-template-columns:repeat(2,1fr); gap:9px;
-  padding:14px 14px 4px;
+  padding:14px 12px 4px;
 }
 /* Тот же приём, что у плиток категорий на главной (.cat-tile-2row):
    картинка на белом фоне — том же белом, что и бумага на самой
@@ -4266,11 +4299,11 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .landing-sub-art img, .landing-sub-art svg{ width:100%; height:100%; object-fit:cover; display:block; }
 
-.landing-fresh{ padding:20px 14px 0; }
+.landing-fresh{ padding:20px 12px 0; }
 .landing-fresh h2{ font-size:16px; font-weight:800; color:var(--ink); margin-bottom:10px; }
 
 /* Результаты поиска прямо на лендинге — вместо перехода на /search. */
-.landing-results{ padding:20px 14px 0; }
+.landing-results{ padding:20px 12px 0; }
 .landing-results-head{ padding-bottom:10px; }
 
 /* Плитка «Все категории» — без картинки, только подпись и стрелка */
@@ -5070,6 +5103,19 @@ a.s-attrs{ display:block; }
 .chats-search-clear svg{ width:16px; height:16px; }
 .chats-chips{ margin-top:10px; overflow-x:auto; flex-wrap:nowrap; -webkit-overflow-scrolling:touch; }
 .chats-chips::-webkit-scrollbar{ display:none; }
+/* Край ряда гаснет там, где можно листать дальше (см. useScrollFade). */
+.chats-chips[data-fade="end"]{
+  -webkit-mask-image:linear-gradient(to right,#000 calc(100% - 36px),transparent);
+  mask-image:linear-gradient(to right,#000 calc(100% - 36px),transparent);
+}
+.chats-chips[data-fade="start"]{
+  -webkit-mask-image:linear-gradient(to left,#000 calc(100% - 36px),transparent);
+  mask-image:linear-gradient(to left,#000 calc(100% - 36px),transparent);
+}
+.chats-chips[data-fade="both"]{
+  -webkit-mask-image:linear-gradient(to right,transparent,#000 36px,#000 calc(100% - 36px),transparent);
+  mask-image:linear-gradient(to right,transparent,#000 36px,#000 calc(100% - 36px),transparent);
+}
 .chats-chips .chip{ white-space:nowrap; flex:0 0 auto; }
 
 /* ===== что требует внимания ===== */
@@ -5608,7 +5654,7 @@ a.s-attrs{ display:block; }
    первой строке — у длинного имени в две строки не должна сползать. */
 .seller-verified-note{
   align-self:flex-start; margin-top:2px;
-  font-size:10.5px; font-weight:700; line-height:1.3;
+  font-size:11.5px; font-weight:700; line-height:1.3;
   color:var(--primary-deep); white-space:nowrap;
 }
 /* Имя важнее подписи: на узком экране подпись целиком уходит на
@@ -6181,3 +6227,20 @@ a.s-attrs{ display:block; }
    как обычно. */
 #credential_picker_container:empty,
 #credential_picker_iframe:not([src]){ display:none !important; pointer-events:none !important; }
+
+/* ===== Область нажатия не меньше 44 точек =====
+   Многие кнопки нарисованы по 20–36 точек: глазу так красивее, а
+   пальцу мелко — попасть в крестик очистки поиска 20×20 или в «Назад»
+   34×34 на ходу трудно. Вид не трогаем: вокруг кнопки лежит невидимое
+   поле, которое ловит нажатие. Значения — сколько не хватает до 44. */
+.search-back, .search-clear, .page-back, .feed-tab, .phone-reminder-close,
+.phone-reminder-link, .lang-btn, .geo-ask-yes, .geo-ask-no, .landing-back,
+.search-filter-btn{ position:relative; }
+.search-back::after, .page-back::after, .landing-back::after, .auth-close::after,
+.search-filter-btn::after{ content:""; position:absolute; inset:-5px; }
+.search-clear::after{ content:""; position:absolute; inset:-12px; }
+.phone-reminder-close::after, .profile-card-edit::after{ content:""; position:absolute; inset:-8px; }
+.lang-btn::after, .geo-ask-yes::after, .geo-ask-no::after, .phone-reminder-link::after{
+  content:""; position:absolute; inset:-8px -4px;
+}
+.feed-tab::after{ content:""; position:absolute; inset:-9px -6px; }

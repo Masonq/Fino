@@ -84,7 +84,10 @@
       "Pronađi posao",
       "Pronađi kolica",
       "Pronađi besplatno"
-    ]
+    ],
+    "empty_title": "Ništa nije nađeno",
+    "empty_hint": "Probajte drugu reč ili resetujte filtere. Dugme „Prati“ javiće vam kad se pojavi.",
+    "empty_browse": "Pogledajte kategorije"
   },
   "chat": {
     "empty": "Još nema poruka — započnite razgovor",

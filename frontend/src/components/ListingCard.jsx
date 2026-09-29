@@ -109,24 +109,29 @@ export default function ListingCard({ listing, large = false, priority = false }
         {listing.is_reserved && <div className="badge-top reserved">{t('misc.reserved')}</div>}
         {/* Свежее — заметно. Лента должна показывать, что площадка
             живая: на карточках моложе суток — метка внизу фото. Внизу,
-            а не сверху: сверху уже стоят «Продвинуто» и «Компания». */}
+            а не сверху: сверху стоят «Продвинуто» и сердечко. */}
         {isFresh(listing.published_at) && <div className="badge-fresh">{t('fresh.badge')}</div>}
       </Link>
+      {/* Сердечко лежит на фото, а не в строке названия: там оно
+          отнимало у названия целых 29 точек ширины, и «Велосипед Trek
+          FX 2» переносился с одинокой «2» на второй строке. Кнопка —
+          соседка ссылки на фото, а не её ребёнок: кнопка внутри ссылки
+          недопустима. */}
+      <button
+        className={fav ? 's-fav on' : 's-fav'}
+        onClick={onFavClick}
+        aria-label={t('misc.in_favorites')}
+      >
+        <svg
+          width={large ? 22 : 21} height={large ? 22 : 21} viewBox="0 0 24 24"
+          fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.7"
+          className={justFaved ? 'fav-pop' : ''}
+        >
+          <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />
+        </svg>
+      </button>
       <div className="s-row">
         <Link to={listing.path} className="s-title">{listing.title}</Link>
-        <button
-          className={fav ? 's-fav on' : 's-fav'}
-          onClick={onFavClick}
-          aria-label={t('misc.in_favorites')}
-        >
-          <svg
-            width={large ? 22 : 21} height={large ? 22 : 21} viewBox="0 0 24 24"
-            fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.7"
-            className={justFaved ? 'fav-pop' : ''}
-          >
-            <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />
-          </svg>
-        </button>
       </div>
       {/* Цена, город и дата тоже ведут в объявление.
           Раньше нажималось только фото и заголовок: палец попадал в
@@ -137,7 +142,8 @@ export default function ListingCard({ listing, large = false, priority = false }
             читатель проходит, а первое как раз и ищут. */}
         {listing.is_free
           ? <span className="price-free">{t('detail.free')}</span>
-          : formatPrice(listing.price, listing.currency, i18n.language) || t('detail.no_price')}
+          : formatPrice(listing.price, listing.currency, i18n.language)
+            || <span className="price-none">{t('detail.no_price')}</span>}
         {priceDirection && (
           <svg
             className={`s-price-arrow ${priceDirection}`}

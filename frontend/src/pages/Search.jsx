@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { withoutRemoved } from '../utils/removedListings'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import CategoryFields, { fieldsKeyFor } from '../components/CategoryFields'
 import ListingCard from '../components/ListingCard'
@@ -575,8 +575,14 @@ export default function Search() {
         error
           ? <LoadError onRetry={() => { setLoaded(false); setRetry((n) => n + 1) }} />
           : (
-            <div className="empty-state">
-              <p className="empty-hint">{t('search.nothing')}</p>
+            <div className="empty-state search-empty">
+              <div className="search-empty-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round">
+                  <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /><path d="M8.5 11h5" />
+                </svg>
+              </div>
+              <p className="search-empty-title">{t('search.empty_title')}</p>
+              <p className="empty-hint">{t('search.empty_hint')}</p>
               {(activeChips.length > 0 || text.trim()) && (
                 <button
                   className="empty-reset"
@@ -584,6 +590,20 @@ export default function Search() {
                 >
                   {t('actions.reset_filters')}
                 </button>
+              )}
+              {/* Тупик хуже всего: человек ничего не нашёл и уходит.
+                  Разделы под рукой — можно продолжить оттуда. */}
+              {categories.length > 0 && (
+                <div className="search-empty-cats">
+                  <span className="search-empty-label">{t('search.empty_browse')}</span>
+                  <div className="search-empty-chips">
+                    {categories.slice(0, 8).map((c) => (
+                      <Link key={c.id} className="search-empty-chip" to={`/c/${c.slug}`}>
+                        {c.name?.[i18n.language] || c.name?.ru}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
           )

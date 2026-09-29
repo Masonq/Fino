@@ -84,7 +84,10 @@
       "Find a job",
       "Find a stroller",
       "Find free stuff"
-    ]
+    ],
+    "empty_title": "Nothing found",
+    "empty_hint": "Try another word or reset the filters. The “Follow” button will let you know when it shows up.",
+    "empty_browse": "Browse categories"
   },
   "chat": {
     "empty": "No messages yet — say hello",
