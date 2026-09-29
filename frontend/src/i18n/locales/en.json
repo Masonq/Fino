@@ -178,11 +178,6 @@
     "confirmed": "Promotion is active!",
     "check_pending": "Payment is processing — it'll take effect within a few minutes."
   },
-  "ptr": {
-    "pull": "Pull down",
-    "release": "Release",
-    "refreshing": "Looking for fresh listings…"
-  },
   "actions": {
     "back": "Back",
     "forward": "Forward",

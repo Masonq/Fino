@@ -178,11 +178,6 @@
     "confirmed": "Promocija je aktivna!",
     "check_pending": "Uplata se obrađuje — efekat će se pojaviti za nekoliko minuta."
   },
-  "ptr": {
-    "pull": "Povucite nadole",
-    "release": "Pustite",
-    "refreshing": "Tražimo nove oglase…"
-  },
   "actions": {
     "back": "Nazad",
     "forward": "Napred",

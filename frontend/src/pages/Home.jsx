@@ -6,7 +6,6 @@ import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import ListingCard from '../components/ListingCard'
 import { CardSkeletons, CategorySkeletons } from '../components/Skeletons'
-import PullToRefresh from '../components/PullToRefresh'
 import SearchOverlay from '../components/SearchOverlay'
 import FilterPanel from '../components/FilterPanel'
 import OfflineNotice, { LoadError } from '../components/OfflineNotice'
@@ -585,15 +584,8 @@ export default function Home() {
   // total) остаётся: без неё список сбросился бы к первой странице, и
   // возвращаться было бы некуда.
 
-  const handleRefresh = useCallback(async () => {
-    await Promise.all([
-      loadFeed(),
-      api.getCategories().then(setCategories).catch(() => {}),
-    ])
-  }, [loadFeed])
-
   return (
-    <PullToRefresh onRefresh={handleRefresh}>
+    <>
       <OfflineNotice onRetry={loadFeed} />
     <div className="home">
       <div
@@ -804,6 +796,6 @@ export default function Home() {
 
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
       <FilterPanel open={filtersOpen} onClose={() => setFiltersOpen(false)} city={city} onCity={chooseCity} />
-    </PullToRefresh>
+    </>
   )
 }
