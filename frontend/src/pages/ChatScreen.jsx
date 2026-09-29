@@ -8,6 +8,7 @@ import ChatList from '../components/ChatList'
 import { ChatSkeleton } from '../components/Skeletons'
 import { formatPrice } from '../utils/money'
 import teamText from '../utils/teamText'
+import useScrollFade from '../hooks/useScrollFade'
 
 export default function ChatScreen() {
   const { t, i18n } = useTranslation()
@@ -19,6 +20,7 @@ export default function ChatScreen() {
   const [chat, setChat] = useState(null)
   const [messages, setMessages] = useState([])
   const [messagesLoaded, setMessagesLoaded] = useState(false)
+  const quickRef = useScrollFade()
   const [text, setText] = useState('')
   const [typing, setTyping] = useState(false)
   const typingTimer = useRef(0)
@@ -50,6 +52,14 @@ export default function ChatScreen() {
   const bottomRef = useRef(null)
 
   const isSeller = chat?.seller?.id === myId
+  // Быстрые ответы: разговор о вещи почти всегда начинается с одних и
+  // тех же вопросов. Показываем, пока в поле пусто и последнее слово не
+  // за нами — иначе кнопки предлагали бы писать самому себе.
+  const lastMsg = messages[messages.length - 1]
+  const quickKeys = !chat || chat.is_team || !chat.listing_path || text
+    || (lastMsg && lastMsg.sender_id === myId)
+    ? []
+    : isSeller ? ['yes', 'evening', 'final'] : ['available', 'bargain', 'when', 'where']
 
   // Новый запрос — снова показываем уведомление, даже если прошлое
   // уже закрывали крестиком: это другое событие, не то же самое.
@@ -237,13 +247,16 @@ export default function ChatScreen() {
     }, 2500)
   }
 
-  const send = async () => {
-    if (!text.trim() || !myId) return
+  // Готовый текст (быстрый ответ) уходит сразу; иначе берём из поля.
+  // Обработчик нажатия передаёт событие — его за текст не считаем.
+  const send = async (ready) => {
+    const body = (typeof ready === 'string' ? ready : text).trim()
+    if (!body || !myId) return
     setSending(true)
     setSendError(null)
     try {
-      await api.sendMessage(id, text.trim())
-      setText('')
+      await api.sendMessage(id, body)
+      if (typeof ready !== 'string') setText('')
       const res = await api.getChatMessages(id)
       setMessages(res)
     } catch {
@@ -752,6 +765,15 @@ export default function ChatScreen() {
                   </button>
                 </div>
               )}
+            </div>
+          )}
+          {quickKeys.length > 0 && (
+            <div className="quick-replies" ref={quickRef} role="group" aria-label={t('chat.quick_label')}>
+              {quickKeys.map((key) => (
+                <button key={key} disabled={sending} onClick={() => send(t(`chat.quick.${key}`))}>
+                  {t(`chat.quick.${key}`)}
+                </button>
+              ))}
             </div>
           )}
           <div className="chat-input-row">

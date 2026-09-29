@@ -134,7 +134,17 @@
     "safety_note": "Nađite se uživo i platite kada preuzmete stvar. Molba da pošaljete kaparu unapred je najčešća prevara.",
     "risk_prepay": "Traže novac unapred. Tako počinje skoro svaka prevara — platite kada preuzmete stvar.",
     "risk_elsewhere": "Zovu vas u drugi mesindžer. Tamo neće ostati istorija prepiske, pa nema na šta da se žalite.",
-    "risk_paylink": "Poslali su link za plaćanje. Pravi prodavci to ne rade — stranica može da prikuplja podatke vaše kartice."
+    "risk_paylink": "Poslali su link za plaćanje. Pravi prodavci to ne rade — stranica može da prikuplja podatke vaše kartice.",
+    "quick_label": "Brzi odgovori",
+    "quick": {
+      "available": "Da li je još dostupno?",
+      "bargain": "Može li pogodba?",
+      "when": "Kada mogu da vidim?",
+      "where": "Gde da preuzmem?",
+      "yes": "Da, dostupno je",
+      "evening": "Može da se vidi uveče",
+      "final": "Cena je fiksna"
+    }
   },
   "promo": {
     "safe_deal": "Sigurna kupovina",

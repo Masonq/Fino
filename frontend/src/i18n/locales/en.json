@@ -134,7 +134,17 @@
     "safety_note": "Meet in person and pay when you get the item. A request to send a deposit up front is the most common scam.",
     "risk_prepay": "They're asking for money up front. Almost every scam starts this way — pay when you get the item.",
     "risk_elsewhere": "They're moving you to another messenger. No chat history will be left there, and nothing to report.",
-    "risk_paylink": "They sent a payment link. Real sellers don't do that — the page may be collecting your card details."
+    "risk_paylink": "They sent a payment link. Real sellers don't do that — the page may be collecting your card details.",
+    "quick_label": "Quick replies",
+    "quick": {
+      "available": "Is it still available?",
+      "bargain": "Is the price negotiable?",
+      "when": "When can I see it?",
+      "where": "Where can I pick it up?",
+      "yes": "Yes, still available",
+      "evening": "You can see it in the evening",
+      "final": "The price is final"
+    }
   },
   "promo": {
     "safe_deal": "Safe deal",
