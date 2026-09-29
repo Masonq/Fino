@@ -1,3 +1,4 @@
+import { plainTeamText } from '../utils/teamText'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -10,17 +11,6 @@ import { timeAgo } from '../utils/time'
 // колонка рядом с открытым чатом, см. ChatScreen.jsx). activeId
 // подсвечивает открытую сейчас переписку — на мобильном он всегда
 // пуст, там список и открытый чат — разные экраны.
-// Письмо от команды написано разметкой (см. utils/teamText). В строке
-// списка её видно как «# Привет!» — для превью разметку снимаем.
-function plainText(text) {
-  return String(text || '')
-    .replace(/^#{1,3}\s+/gm, '')
-    .replace(/\*\*(.+?)\*\*/g, '$1')
-    .replace(/^[-•*]\s+/gm, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-}
-
 export default function ChatList({ activeId, onLoaded, query = '', filter = 'all' }) {
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
@@ -111,7 +101,7 @@ export default function ChatList({ activeId, onLoaded, query = '', filter = 'all
             <div className="chat-row-bottom">
               <span className="chat-last">
                 {c.last_from_me && <span className="chat-you">{t('chats.you')}: </span>}
-                {c.last_kind === 'team' ? plainText(c.last_text) : (c.last_text || t('chats.no_messages'))}
+                {c.last_kind === 'team' ? plainTeamText(c.last_text) : (c.last_text || t('chats.no_messages'))}
               </span>
               {c.unread > 0 && <span className="chat-badge">{c.unread}</span>}
             </div>

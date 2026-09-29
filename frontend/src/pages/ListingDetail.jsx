@@ -24,6 +24,7 @@ import { rememberRemoved } from '../utils/removedListings'
 import { formatPrice } from '../utils/money'
 import { relativeDate } from '../utils/time'
 import { hasLanding } from '../data/landings'
+import { showIsland } from '../utils/island'
 
 const REASON_KEYS = [
   'wrong_category', 'bad_photos', 'unclear_description',
@@ -314,7 +315,6 @@ export default function ListingDetail() {
   // (origin + listing.path), а не берём window.location.href как есть —
   // в строке браузера мог остаться случайный ?promoted=... или другой
   // служебный параметр, которому нечего делать в ссылке для чужого человека.
-  const [shareCopied, setShareCopied] = useState(false)
   const onShare = async () => {
     const url = `${window.location.origin}${listing?.path || window.location.pathname}`
     if (navigator.share) {
@@ -327,8 +327,7 @@ export default function ListingDetail() {
     }
     try {
       await navigator.clipboard.writeText(url)
-      setShareCopied(true)
-      setTimeout(() => setShareCopied(false), 2000)
+      showIsland({ text: t('detail.link_copied'), kind: 'ok' })
     } catch {
       // буфер обмена недоступен — редкий случай, молча ничего не делаем
     }
@@ -996,9 +995,6 @@ export default function ListingDetail() {
           там, где сработало системное меню navigator.share, у
           телефона уже есть своё «отправлено», добавлять здесь ещё
           одно поверх — задваивать. */}
-      {shareCopied && (
-        <div className="share-toast">{t('detail.link_copied')}</div>
-      )}
 
       <div className="detail-sheet">
         {/* Правая колонка — «шапка» объявления: цена, продавец, кнопки,

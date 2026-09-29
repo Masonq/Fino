@@ -1,8 +1,10 @@
 import { Link, useLocation } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
+import { showIsland } from '../utils/island'
+import { plainTeamText } from '../utils/teamText'
 
 const ITEMS = [
   {
@@ -34,6 +36,7 @@ export default function BottomNav() {
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
   const [unread, setUnread] = useState(0)
+  const seen = useRef(null)          // сколько непрочитанных было в прошлый опрос; null — ещё не опрашивали
 
   // Значок непрочитанных на «Сообщениях» — иначе о новом сообщении
   // можно узнать, только зайдя в раздел.
@@ -42,7 +45,30 @@ export default function BottomNav() {
     const tick = () => {
       if (document.hidden) return
       api.getChats(i18n.language)
-        .then((res) => setUnread((res.items || []).reduce((n, c) => n + (c.unread || 0), 0)))
+        .then((res) => {
+          const items = res.items || []
+          const total = items.reduce((n, c) => n + (c.unread || 0), 0)
+          setUnread(total)
+
+          // Остров — только когда непрочитанных стало БОЛЬШЕ, чем при
+          // прошлом опросе, и не в самих чатах: там сообщение и так
+          // перед глазами. Первый опрос — точка отсчёта, а не новость:
+          // иначе каждое открытие сайта начиналось бы с «нового
+          // сообщения», о котором человек давно знает.
+          const inChats = window.location.pathname.startsWith('/chat')
+          if (seen.current !== null && total > seen.current && !inChats) {
+            const c = items.find((x) => x.unread > 0)
+            if (c) {
+              const preview = c.last_kind === 'team' ? plainTeamText(c.last_text) : (c.last_text || '')
+              showIsland({
+                kind: 'msg',
+                text: `${c.other_name}: ${preview}`.slice(0, 60),
+                to: `/chat/${c.id}`,
+              })
+            }
+          }
+          seen.current = total
+        })
         .catch(() => {})
     }
     tick()

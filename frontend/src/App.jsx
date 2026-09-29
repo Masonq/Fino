@@ -56,6 +56,7 @@ const History = lazy(() => import('./pages/History'))
 import { AuthProvider } from './context/AuthContext'
 import { FavoritesProvider } from './context/FavoritesContext'
 import { rememberListPage } from './utils/lastList'
+import Island from './components/Island'
 import BottomNav from './components/BottomNav'
 import Footer from './components/Footer'
 import TopNav from './components/TopNav'
@@ -477,6 +478,7 @@ export default function App() {
         </Suspense>
       </main>
       <Footer />
+      <Island />
       {!hideNav && <BottomNav />}
     </div>
     </FavoritesProvider>

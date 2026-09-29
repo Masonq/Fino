@@ -41,3 +41,14 @@ export default function teamText(text) {
   flushList()
   return <div className="team-letter">{blocks}</div>
 }
+
+// То же письмо без разметки — для превью в списке и на острове, где
+// «# Привет!» и «**+**» смотрятся мусором.
+export function plainTeamText(text) {
+  return String(text || '')
+    .replace(/^#{1,3}\s+/gm, '')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/^[-•*]\s+/gm, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}

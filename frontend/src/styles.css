@@ -809,11 +809,31 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* Тост «Ссылка скопирована» — виден независимо от прокрутки (сверху,
    поверх шапки), исчезает сам через 2 секунды тем же таймером, что
    его и поставил. */
-.share-toast{
-  position:fixed; top:calc(14px + var(--sat)); left:50%; transform:translateX(-50%);
-  z-index:50; background:rgba(20,30,25,.85); backdrop-filter:blur(8px);
-  color:#fff; font-size:13px; font-weight:600; padding:9px 16px; border-radius:11px;
+.island{
+  position:fixed; z-index:90; left:50%; top:calc(10px + var(--sat));
+  display:flex; align-items:center; gap:9px; box-sizing:border-box;
+  max-width:calc(100vw - 24px); height:34px; padding:0 15px 0 13px; border-radius:999px;
+  background:#111; color:#fff; font-size:13px; font-weight:600; white-space:nowrap; cursor:pointer;
+  box-shadow:0 8px 24px rgba(0,0,0,.22);
+  /* Из точки: сжатая и прозрачная, по открытию раздувается пружиной с
+     едва заметным перелётом. */
+  transform:translateX(-50%) scale(.4); opacity:0; pointer-events:none;
+  transition:transform .5s cubic-bezier(.22,1.15,.36,1), opacity .25s ease;
 }
+.island.is-open{ transform:translateX(-50%) scale(1); opacity:1; pointer-events:auto; }
+.island-dot{ flex-shrink:0; width:8px; height:8px; border-radius:50%; background:var(--primary); }
+.island.kind-msg .island-dot{ background:var(--accent); }
+.island.kind-warn .island-dot{ background:#F5B841; }
+.island-text{
+  overflow:hidden; text-overflow:ellipsis; min-width:0;
+  animation:island-swap .38s cubic-bezier(.2,.8,.3,1) both;
+}
+@keyframes island-swap{ from{ opacity:0; filter:blur(6px); } to{ opacity:1; filter:blur(0); } }
+@media (prefers-reduced-motion: reduce){
+  .island{ transition:opacity .2s ease; transform:translateX(-50%) scale(1); }
+  .island-text{ animation:none; }
+}
+/* «Ссылка скопирована» теперь показывает остров (components/Island.jsx). */
 
 /* Подсказки перед первым сообщением продавцу — лёгкая шторка снизу,
    не в полноэкранную модалку ради всего четырёх кнопок. */
