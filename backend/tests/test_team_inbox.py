@@ -59,7 +59,8 @@ def test_answer_shows_up_and_can_be_replied_to():
 
         # Открыли — прочитано.
         opened = thread(chat.id, staff, db)
-        assert len(opened["messages"]) == 2
+        # Два письма от команды плюс ответ человека.
+        assert len(opened["messages"]) == 3
         assert not db.query(Message).filter(
             Message.chat_id == chat.id, Message.sender_id != team.id,
             Message.is_read.is_(False)).count()

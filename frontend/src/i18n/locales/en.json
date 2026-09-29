@@ -1246,10 +1246,5 @@
     "empty": "No replies yet",
     "empty_hint": "Here you'll see people's replies to the welcome letter from the team.",
     "reply_ph": "Reply as the team"
-  },
-  "guest_team": {
-    "name": "The PLONK team",
-    "text": "We're a classifieds service in Serbia. People here sell and buy things, rent out flats, look for jobs and handymen. Sign in to message sellers and post your own ad.",
-    "tg": "Our Telegram group →"
   }
 }

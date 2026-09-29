@@ -6169,25 +6169,10 @@ a.s-attrs{ display:block; }
    вёрсткой, и сумму можно поменять в одном месте, не перерисовывая
    баннер. Пропорции 2:1 заданы аспектом, а не высотой — на узком
    экране ракета не обрезается. */
-/* Промо «300 RSD за первое объявление» до входа больше нет нигде:
-   обещание денег рядом с формой входа — тот самый набор, по которому
-   Safari дважды пометил сайт мошенническим. Подарок остался, но
-   человек узнаёт о нём уже внутри, в своём профиле.
-
-   На его месте — слово от команды. */
-.guest-team{
-  width:100%; max-width:340px; margin:26px auto 0; padding:16px;
-  box-sizing:border-box; text-align:left;
-  background:var(--surface); border:1px solid var(--border); border-radius:16px;
-}
-.guest-team-head{ display:flex; align-items:center; gap:9px; }
-.guest-team-logo{ width:26px; height:26px; object-fit:contain; flex-shrink:0; }
-.guest-team-name{ font-size:14px; font-weight:800; color:var(--ink); }
-.guest-team-text{ margin:9px 0 0; font-size:13.5px; line-height:1.5; color:var(--ink-soft); }
-.guest-team-link{
-  display:inline-block; margin-top:11px; font-size:13.5px; font-weight:700;
-  color:var(--primary-deep); text-decoration:none;
-}
+/* Под кнопкой входа у гостя не рисуется ничего: ни промо «300 RSD за
+   первое объявление», ни рассказ о сервисе. Обещание чего бы то ни
+   было рядом с формой входа Safari дважды принял за фишинг, а
+   рассказать новичку о сервисе и подарке лучше письмом от команды. */
 
 /* Подложка Google под окном выбора аккаунта. Она растянута на весь
    экран и ловит нажатия; когда окно закрылось, а пустой контейнер

@@ -8,6 +8,7 @@
 """
 import logging
 import uuid
+from datetime import timedelta
 
 from sqlalchemy.orm import Session
 
@@ -69,6 +70,36 @@ GREETING = {
 }
 
 
+# Второе сообщение — про подарок. Отдельным письмом, а не абзацем в
+# первом: это не правило и не предупреждение, а повод попробовать, и
+# видно его должно быть отдельно. На экранах до входа о деньгах не
+# говорим вовсе (Safari дважды принял это за фишинг), а здесь человек
+# уже зарегистрирован и читает нас в своём чате.
+BONUS = {
+    "ru": (
+        "# И ещё: 300 RSD в подарок\n\n"
+        "Разместите первое объявление — и мы начислим **300 RSD** на счёт, "
+        "когда оно пройдёт проверку.\n\n"
+        "Этого хватает ровно на неделю выделенной карточки или два поднятия "
+        "в поиске — попробуете платную возможность целиком, а не кусочек."
+    ),
+    "en": (
+        "# One more thing: 300 RSD as a gift\n\n"
+        "Post your first ad and we'll credit **300 RSD** to your account "
+        "once it passes review.\n\n"
+        "That's exactly a week of a highlighted card or two bumps in search — "
+        "enough to try a paid feature in full, not a slice of it."
+    ),
+    "sr": (
+        "# Jo\u0161 ne\u0161to: 300 RSD na poklon\n\n"
+        "Postavite prvi oglas i upisa\u0107emo **300 RSD** na va\u0161 ra\u010dun "
+        "\u010dim pro\u0111e proveru.\n\n"
+        "To je ta\u010dno nedelju dana izdvojene kartice ili dva podizanja u "
+        "pretrazi \u2014 dovoljno da isprobate uslugu u celosti."
+    ),
+}
+
+
 # Пометка на самом сообщении, а не сверка отправителя с аккаунтом
 # команды: так письмо узнаётся в любом процессе и без запроса в базу.
 TEAM_KIND = "team"
@@ -111,9 +142,17 @@ def greet(db: Session, user: User, lang: str = "ru") -> None:
                     seller_id=team.id, last_message_at=now)
         db.add(chat)
         db.flush()
+        # Два письма подряд: знакомство и подарок. Второе на секунду
+        # позже — иначе порядок в чате зависит от того, как база
+        # разложит одинаковое время.
         db.add(Message(id=uuid.uuid4(), chat_id=chat.id, sender_id=team.id,
                        kind=TEAM_KIND,
                        text=GREETING.get(lang, GREETING["ru"]), created_at=now))
+        db.add(Message(id=uuid.uuid4(), chat_id=chat.id, sender_id=team.id,
+                       kind=TEAM_KIND,
+                       text=BONUS.get(lang, BONUS["ru"]),
+                       created_at=now + timedelta(seconds=1)))
+        chat.last_message_at = now + timedelta(seconds=1)
         db.commit()
     except Exception:
         db.rollback()
