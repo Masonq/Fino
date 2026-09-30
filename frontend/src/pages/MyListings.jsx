@@ -1,3 +1,4 @@
+import { intlLocale } from '../utils/time'
 import { useEffect, useState } from 'react'
 import { keepValue, readValue, useKeepPlace } from '../utils/keepPlace'
 import { withoutRemoved } from '../utils/removedListings'
@@ -219,7 +220,7 @@ export default function MyListings() {
                                 <strong>{t(`promo.type_${p.type}`)}</strong>
                                 <span>
                                   {p.expires_at
-                                    ? t('promo.active_until', { date: new Date(p.expires_at).toLocaleDateString(i18n.language, { day: "numeric", month: "long", year: "numeric" }) })
+                                    ? t('promo.active_until', { date: new Date(p.expires_at).toLocaleDateString(intlLocale(i18n.language), { day: "numeric", month: "long", year: "numeric" }) })
                                     : t('promo.active_now')}
                                 </span>
                               </div>

@@ -1,3 +1,39 @@
+// Язык интерфейса → язык форматирования. Голый «sr» браузер понимает как
+// кириллицу, и месяцы в сербском тексте на латинице выходили кириллицей
+// («август 2026» посреди «Na PLONK-u od …»). Сербский на сайте всегда латиница.
+const INTL = { ru: 'ru-RU', en: 'en-GB', sr: 'sr-Latn-RS' }
+export const intlLocale = (lang) => INTL[lang] || lang || undefined
+
+// Месяцы в родительном падеже — для фраз «с августа», «od avgusta». Стандартное
+// форматирование даты отдаёт именительный («август 2026 г.») и читается как ошибка.
+const MONTHS_OF = {
+  ru: ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+    'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'],
+  sr: ['januara', 'februara', 'marta', 'aprila', 'maja', 'juna',
+    'jula', 'avgusta', 'septembra', 'oktobra', 'novembra', 'decembra'],
+}
+
+// Сервер отдаёт UTC без пометки зоны: без «Z» браузер прочёл бы время как местное.
+function parseServerDate(iso) {
+  return new Date(/[zZ]$|[+-]\d\d:?\d\d$/.test(iso) ? iso : `${iso}Z`)
+}
+
+/**
+ * «августа 2026» — месяц и год для фраз «На PLONK с …», «Здесь с …», «Na PLONK-u od …».
+ * По-русски и по-сербски после предлога месяц в родительном падеже.
+ */
+export function sinceMonth(iso, lang) {
+  if (!iso) return ''
+  try {
+    const d = parseServerDate(iso)
+    const of = MONTHS_OF[lang]
+    if (of) return `${of[d.getMonth()]} ${d.getFullYear()}`
+    return d.toLocaleDateString(intlLocale(lang), { month: 'long', year: 'numeric' })
+  } catch {
+    return ''
+  }
+}
+
 /**
  * «Сколько прошло» для дат с сервера.
  *
@@ -12,7 +48,7 @@ export function timeAgo(iso, t, lang) {
   if (diff < 86400) return `${Math.floor(diff / 3600)} ${t('chats.hour')}`
   const days = Math.floor(diff / 86400)
   if (days < 7) return `${days} ${t('chats.day')}`
-  return new Date(iso + 'Z').toLocaleDateString(lang)
+  return new Date(iso + 'Z').toLocaleDateString(intlLocale(lang))
 }
 
 /**
@@ -23,7 +59,7 @@ export function timeAgo(iso, t, lang) {
  */
 export function monthYear(iso, lang) {
   if (!iso) return ''
-  return new Date(iso + 'Z').toLocaleDateString(lang, { year: 'numeric', month: 'long' })
+  return new Date(iso + 'Z').toLocaleDateString(intlLocale(lang), { year: 'numeric', month: 'long' })
 }
 
 /**
@@ -43,7 +79,7 @@ export function relativeDate(iso, t, lang) {
   // рядом с «вчера» полная дата с годом выглядела чужеродно и
   // читалась дольше. Год добавляем, только если он другой.
   const sameYear = d.getFullYear() === new Date().getFullYear()
-  return d.toLocaleDateString(lang || undefined, sameYear
+  return d.toLocaleDateString(intlLocale(lang), sameYear
     ? { day: 'numeric', month: 'short' }
     : { day: 'numeric', month: 'short', year: 'numeric' })
 }
@@ -68,7 +104,7 @@ export function since(iso, t, lang) {
   if (days * 86400 < 60) return t('chats.just_now')
   if (days < 7) return t('misc.ago', { when: timeAgo(iso, t, lang) })
   const sameYear = d.getFullYear() === new Date().getFullYear()
-  return d.toLocaleDateString(lang || undefined, sameYear
+  return d.toLocaleDateString(intlLocale(lang), sameYear
     ? { day: 'numeric', month: 'short' }
     : { day: 'numeric', month: 'short', year: 'numeric' })
 }

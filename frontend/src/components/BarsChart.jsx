@@ -1,3 +1,4 @@
+import { intlLocale } from '../utils/time'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -58,7 +59,7 @@ export default function BarsChart({
   const activeValue = active ? (active[valueKey] || 0) : 0
   const activeSecond = active && secondKey ? (active[secondKey] || 0) : 0
   const activeDate = active
-    ? new Date(`${active.day}T00:00:00`).toLocaleDateString(i18n.language, { day: 'numeric', month: 'long' })
+    ? new Date(`${active.day}T00:00:00`).toLocaleDateString(intlLocale(i18n.language), { day: 'numeric', month: 'long' })
     : ''
   const activePromo = active ? promotedDays.get(active.day) : null
 

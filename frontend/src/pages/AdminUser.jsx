@@ -5,7 +5,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
-import { since } from '../utils/time'
+import { since, intlLocale } from '../utils/time'
 
 // Карточка человека отдельным экраном, а не раскрывашкой в списке.
 //
@@ -264,7 +264,7 @@ export default function AdminUser() {
               <div key={l.id} className="admin-login-row">
                 <div className="admin-login-line1">
                   <span className="admin-login-when">
-                    {l.created_at ? new Date(l.created_at).toLocaleString(i18n.language) : '—'}
+                    {l.created_at ? new Date(l.created_at).toLocaleString(intlLocale(i18n.language)) : '—'}
                   </span>
                   <span className="admin-login-where">{l.city ? `${l.city}, ${l.country}` : (l.country || '—')}</span>
                 </div>
@@ -289,7 +289,7 @@ export default function AdminUser() {
                 </div>
                 <div className="admin-login-line2">
                   <span className="admin-login-ip">
-                    {a.created_at ? new Date(a.created_at).toLocaleString(i18n.language) : '—'}
+                    {a.created_at ? new Date(a.created_at).toLocaleString(intlLocale(i18n.language)) : '—'}
                   </span>
                   {a.reason && <span className="admin-login-device">{a.reason}</span>}
                 </div>

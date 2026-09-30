@@ -665,7 +665,7 @@ export const TERMS = {
         p: [
           'Elementi dizajna, softverski kod, žigovi, logotipi i drugi predmeti intelektualne svojine na Sajtu, osim sadržaja oglasa koje su objavili korisnici, pripadaju Administraciji ili se koriste po zakonskom osnovu i zaštićeni su propisima o intelektualnoj svojini.',
           'Objavljivanjem fotografija, tekstova i drugih materijala u okviru oglasa, korisnik daje Administraciji neisključivu, besplatnu licencu za korišćenje takvih materijala u svrhe povezane sa radom Sajta, uključujući njihovo prikazivanje u listi oglasa, rezultatima pretrage i u svrhe promocije Sajta.',
-          'Korisnik se saglasava da Administracija oglase, uključujući fotografije i cenu, može objavljivati u otvorenom PLONK četu na aplikaciji Telegram i u drugim kanalima promocije Sajta. Na zahtev korisnika upućen podršci, Administracija prestaje sa takvim korišćenjem oglasa i u razumnom roku uklanja poruku koju je objavila.',
+          'Korisnik se saglašava da Administracija oglase, uključujući fotografije i cenu, može objavljivati u otvorenom PLONK četu na aplikaciji Telegram i u drugim kanalima promocije Sajta. Na zahtev korisnika upućen podršci, Administracija prestaje sa takvim korišćenjem oglasa i u razumnom roku uklanja poruku koju je objavila.',
         ],
       },
       {
@@ -965,7 +965,7 @@ export const PRIVACY = {
       {
         h: '9. Korišćenje kolačića i sličnih tehnologija',
         p: [
-          'Sajt ne koristi spoljne reklamne i analitičke usluge. Radi funkcionisanja, Sajt čuva na uređaju korisnika male količine podataka u kolačićima i lokalnom skladištu pretraživača: podatke o prijavi, izabrani jezik i grad, podešavanja liste, identifikator veze za pozivanje, oznake o već prikazanim savetima i poslednju pregledanu listu. Ovi podaci se ne koriste za reklamiranje. Korisnik ima pravo da ih obriše ili ograniči njihovo korišćenje putem podešavanja pretraživača, pri čemu pojedine funkcionalnosti Sajta mogu postati nedostupne. Pojedini elementi se učitavaju sa servera trećih lica: fontovi (Google Fonts), Telegram skripta, prijava preko Googlea i mapa (OpenStreetMap); pri njihovom učitavanju vaš pretraživač se obraća tim serverima i šalje im tehničke podatke, uključujući IP adresu, a oni mogu postavljati sopstvene kolačiće u skladu sa svojim politikama.',
+          'Sajt ne koristi spoljne reklamne i analitičke usluge. Radi funkcionisanja, Sajt čuva na uređaju korisnika male količine podataka u kolačićima i lokalnom skladištu pretraživača: podatke o prijavi, izabrani jezik i grad, podešavanja liste, identifikator veze za pozivanje, oznake o već prikazanim savetima i poslednju pregledanu listu. Ovi podaci se ne koriste za reklamiranje. Korisnik ima pravo da ih obriše ili ograniči njihovo korišćenje putem podešavanja pretraživača, pri čemu pojedine funkcionalnosti Sajta mogu postati nedostupne. Pojedini elementi se učitavaju sa servera trećih lica: fontovi (Google Fonts), Telegram skripta, prijava preko Google naloga i mapa (OpenStreetMap); pri njihovom učitavanju vaš pretraživač se obraća tim serverima i šalje im tehničke podatke, uključujući IP adresu, a oni mogu postavljati sopstvene kolačiće u skladu sa svojim politikama.',
         ],
       },
       {

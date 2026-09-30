@@ -1,0 +1,76 @@
+# Слова, которые словарь не знает, но написаны верно: современная лексика, бренды, города, сокращения.
+# Строка — одно слово в нижнем регистре. Комментарии начинаются с «#».
+# русские
+мессенджер
+мессенджере
+геолокации
+модерации
+модерацию
+модерация
+волонтёрство
+возмездной
+возмездную
+зачислений
+списаниях
+свайп
+селфи
+сервисы
+неисключительную
+непрохождения
+прекурсоры
+реферальной
+реферальную
+чатах
+чатов
+мото
+зарег
+комн
+# бренды и сервисы
+plonk
+didit
+yookassa
+юkassa
+resend
+openrouter
+openstreetmap
+gemini
+groq
+mistral
+# сербский и английский
+cookies
+hosting
+rehoming
+geolocation
+favorited
+unlinking
+unpublish
+odblokiranje
+anonimizuju
+selfie
+sign-ups
+# бренды, устройства, сокращения в сербском и английском интерфейсе
+air
+apple
+canon
+charge
+dell
+email
+emaila
+fonts
+google
+icloud
+ipad
+iphone
+macbook
+min
+moto
+playstation
+prev
+push
+reg
+sotka
+translate
+username
+watch
+неподдерживаемая
+неподдерживаемый

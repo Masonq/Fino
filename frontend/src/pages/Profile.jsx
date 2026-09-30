@@ -1,3 +1,4 @@
+import { sinceMonth } from '../utils/time'
 import { useEffect, useState } from 'react'
 import { keepValue, readValue } from '../utils/keepPlace'
 import { formatPrice } from '../utils/money'
@@ -124,7 +125,7 @@ export default function Profile() {
   // на площадке. У новичка она честно короткая, и это тоже сигнал.
   const memberSince = user?.created_at
     ? t('profile.member_since', {
-      date: new Date(user.created_at + 'Z').toLocaleDateString(i18n.language, { month: 'long', year: 'numeric' }),
+      date: sinceMonth(user.created_at, i18n.language),
     })
     : null
 

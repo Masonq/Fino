@@ -101,9 +101,12 @@ export default function ReportButton({
     if (iconOnly) {
       return (
         <button className="report-icon-btn" onClick={onTriggerClick} aria-label={label} title={label}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 9v4M12 16.5v.01" strokeLinecap="round" />
-            <path d="M10.3 3.9 2.7 17.5a1.8 1.8 0 0 0 1.6 2.7h15.4a1.8 1.8 0 0 0 1.6-2.7L13.7 3.9a1.8 1.8 0 0 0-3.4 0Z" />
+          {/* Флажок — общепринятый знак «пожаловаться». Прежний треугольник с
+              восклицательным знаком читался как «внимание, опасность» и
+              пугал, а не подсказывал, что тут можно сообщить о нарушении. */}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M5.5 21V4" />
+            <path d="M5.5 4.5h11.2l-2.3 4.1 2.3 4.1H5.5" />
           </svg>
         </button>
       )

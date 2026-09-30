@@ -360,7 +360,7 @@
   },
   "auth": {
     "title": "Sign in to PLONK",
-    "subtitle": "To message sellers, post listings and save favourites",
+    "subtitle": "To message sellers, post listings and save favorites",
     "by_email": "Continue with email",
     "by_telegram": "Sign in with Telegram",
     "or": "or",
@@ -625,9 +625,9 @@
     "never_seen": "never signed in",
     "alerts": "Alerts",
     "calm_title": "All quiet",
-    "calm_text": "No signup spikes, no stale queue.",
-    "alert_same_ip_one": "{{count}} signup from one address",
-    "alert_same_ip_other": "{{count}} signups from one address",
+    "calm_text": "No sign-up spikes, no stale queue.",
+    "alert_same_ip_one": "{{count}} sign-up from one address",
+    "alert_same_ip_other": "{{count}} sign-ups from one address",
     "alert_same_ip_hint": "Last 24h, {{value}} — looks like a batch",
     "alert_many_rejected": "{{value}}: {{count}} rejected today",
     "alert_many_rejected_hint": "Open the person's card",
@@ -1036,7 +1036,7 @@
     "step_2": "They follow it and post a listing",
     "step_3": "The listing passes review — both balances are topped up",
     "q_who": "Who can I invite?",
-    "a_who": "Anyone without a PLONK account yet. Someone already registered won't count — the link simply won't recognise them.",
+    "a_who": "Anyone without a PLONK account yet. Someone already registered won't count — the link simply won't recognize them.",
     "q_what": "What does my friend have to do?",
     "a_what": "Post one listing and wait for it to pass review. Nothing else: no buying, no paying.",
     "q_when": "When does the money arrive?",
@@ -1113,7 +1113,8 @@
     "explain_expensive": "Similar items on PLONK usually cost less. You can bargain or keep looking.",
     "how_city_one": "Compared with {{count}} similar listing on PLONK in this city over the last six months: most are between {{low}} and {{high}}.",
     "how_city_other": "Compared with {{count}} similar listings on PLONK in this city over the last six months: most are between {{low}} and {{high}}.",
-    "how_country": "Few similar ones in this city, so compared with {{count}} similar ones on PLONK across Serbia over the last six months: most are between {{low}} and {{high}}."
+    "how_country_one": "Few similar ones in this city, so compared with {{count}} similar listing on PLONK across Serbia over the last six months: most are between {{low}} and {{high}}.",
+    "how_country_other": "Few similar ones in this city, so compared with {{count}} similar listings on PLONK across Serbia over the last six months: most are between {{low}} and {{high}}."
   },
   "reviews": {
     "waiting_title": "Waiting for your review",
@@ -1277,9 +1278,10 @@
   "flame": {
     "title_below": "Cheaper than similar on PLONK",
     "why_below": "The price is at least a quarter below most similar listings on PLONK. It's compared only with our listings, not the whole market.",
-    "compared": "Compared with {{count}} similar listings.",
     "careful": "A low price is a reason to look closer, not to rush: ask about the condition and never prepay strangers.",
     "open": "Open listing",
-    "ok": "Got it"
+    "ok": "Got it",
+    "compared_one": "Compared with {{count}} similar listing.",
+    "compared_other": "Compared with {{count}} similar listings."
   }
 }

@@ -1,3 +1,4 @@
+import { intlLocale } from '../utils/time'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -159,7 +160,7 @@ export default function AdminStats() {
                     <div className="funnel-bar" style={{ width: `${Math.max(share(value, funnel.funnel.impressions), 4)}%` }} />
                     <div className="funnel-text">
                       <span className="funnel-name">{t(`stats.step_${key}`)}</span>
-                      <b>{value.toLocaleString(i18n.language)}</b>
+                      <b>{value.toLocaleString(intlLocale(i18n.language))}</b>
                       {pct !== null && <span className="funnel-pct">{pct}%</span>}
                     </div>
                   </div>

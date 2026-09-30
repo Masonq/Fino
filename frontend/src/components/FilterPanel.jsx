@@ -1,3 +1,4 @@
+import { intlLocale } from '../utils/time'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -122,7 +123,7 @@ export default function FilterPanel({ open, onClose, city, onCity }) {
           <div className="fp-row">
             <span className="fp-label">{t('fpanel.price')}</span>
             <span className="fp-value">
-              {priceMax ? `${t('fpanel.up_to')} ${priceMax.toLocaleString(i18n.language === 'ru' ? 'ru-RU' : undefined)} €` : t('fpanel.any_price')}
+              {priceMax ? `${t('fpanel.up_to')} ${priceMax.toLocaleString(intlLocale(i18n.language))} €` : t('fpanel.any_price')}
             </span>
           </div>
           <input

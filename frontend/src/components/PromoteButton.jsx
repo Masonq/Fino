@@ -1,3 +1,4 @@
+import { intlLocale } from '../utils/time'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
@@ -203,7 +204,7 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
                       {isActive ? (
                         <span className="promo-active-tag">
                           {activePromo?.expires_at
-                            ? t('promo.active_until', { date: new Date(activePromo.expires_at).toLocaleDateString(i18n.language, { day: "numeric", month: "long", year: "numeric" }) })
+                            ? t('promo.active_until', { date: new Date(activePromo.expires_at).toLocaleDateString(intlLocale(i18n.language), { day: "numeric", month: "long", year: "numeric" }) })
                             : t('promo.active_now')}
                         </span>
                       ) : (

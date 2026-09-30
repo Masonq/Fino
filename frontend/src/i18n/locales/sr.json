@@ -302,7 +302,7 @@
     "views_few": "{{count}} pregleda",
     "views_other": "{{count}} pregleda",
     "id": "Br. {{id}}",
-    "call_via_chat": "Pozovite preko chata",
+    "call_via_chat": "Pozovite preko četa",
     "prev_photo": "Prethodna fotografija",
     "next_photo": "Sledeća fotografija",
     "favorited_count": "{{count}} u omiljenima",
@@ -1015,7 +1015,8 @@
     "att_pending_one": "{{count}} oglas je na proveri",
     "att_pending_few": "{{count}} oglasa su na proveri",
     "att_pending_other": "{{count}} oglasa je na proveri",
-    "for_you": "Možda vas zanima"
+    "for_you": "Možda vas zanima",
+    "att_support_few": "Podrška je odgovorila na {{count}} zahteva"
   },
   "verify": {
     "title": "Provera dokumenta",
@@ -1143,7 +1144,9 @@
     "how_city_one": "Upoređeno sa {{count}} sličnim oglasom na PLONK-u u ovom gradu za poslednjih pola godine: većina je između {{low}} i {{high}}.",
     "how_city_few": "Upoređeno sa {{count}} slična oglasa na PLONK-u u ovom gradu za poslednjih pola godine: većina je između {{low}} i {{high}}.",
     "how_city_other": "Upoređeno sa {{count}} sličnih oglasa na PLONK-u u ovom gradu za poslednjih pola godine: većina je između {{low}} i {{high}}.",
-    "how_country": "U ovom gradu ima malo sličnih, pa je upoređeno sa {{count}} sličnih na PLONK-u širom Srbije za poslednjih pola godine: većina je između {{low}} i {{high}}."
+    "how_country_one": "U ovom gradu ima malo sličnih, pa je upoređeno sa {{count}} sličnim oglasom na PLONK-u širom Srbije za poslednjih pola godine: većina je između {{low}} i {{high}}.",
+    "how_country_few": "U ovom gradu ima malo sličnih, pa je upoređeno sa {{count}} slična oglasa na PLONK-u širom Srbije za poslednjih pola godine: većina je između {{low}} i {{high}}.",
+    "how_country_other": "U ovom gradu ima malo sličnih, pa je upoređeno sa {{count}} sličnih oglasa na PLONK-u širom Srbije za poslednjih pola godine: većina je između {{low}} i {{high}}."
   },
   "reviews": {
     "waiting_title": "Čekaju vašu ocenu",
@@ -1238,7 +1241,8 @@
     "nothing": "ništa nije urađeno",
     "runs_one": "{{count}} pokretanje za {{days}} dana",
     "runs_few": "{{count}} pokretanja za {{days}} dana",
-    "runs_other": "{{count}} pokretanja za {{days}} dana"
+    "runs_other": "{{count}} pokretanja za {{days}} dana",
+    "done_few": "urađeno {{count}}"
   },
   "volunteer": {
     "title": "Volontiranje",
@@ -1312,9 +1316,11 @@
   "flame": {
     "title_below": "Jeftinije od sličnih na PLONK-u",
     "why_below": "Cena je bar za četvrtinu niža od većine sličnih oglasa na PLONK-u. Poređenje je samo sa našim oglasima, ne sa celim tržištem.",
-    "compared": "Upoređeno sa {{count}} sličnih oglasa.",
     "careful": "Niska cena je razlog da pogledate bolje, a ne da žurite: pitajte za stanje i ne šaljite avans nepoznatima.",
     "open": "Otvori oglas",
-    "ok": "Razumem"
+    "ok": "Razumem",
+    "compared_one": "Upoređeno sa {{count}} sličnim oglasom.",
+    "compared_few": "Upoređeno sa {{count}} slična oglasa.",
+    "compared_other": "Upoređeno sa {{count}} sličnih oglasa."
   }
 }

@@ -2075,6 +2075,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   background:var(--surface); border:1px solid var(--border); color:var(--muted);
 }
 .report-icon-btn svg{ width:18px; height:18px; }
+.report-icon-btn{ position:relative; }
+.report-icon-btn::after{ content:""; position:absolute; inset:-5px; }   /* нажимаемая область 44 */
 .page-header .report-icon-btn{ margin-left:auto; }
 .report-sheet{
   margin:20px 0 8px; padding:14px; border-radius:14px;

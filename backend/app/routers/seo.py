@@ -854,7 +854,7 @@ def _plain_page(site: str, path: str, request: Request) -> str:
         "/search": "Поиск объявлений — PLONK",
         "/categories": "Все разделы — PLONK",
         "/login": "Вход на PLONK",
-        "/rules": "Правила публикации — PLONK",
+        "/rules": "Правила размещения объявлений — PLONK",
         "/terms": "Условия использования — PLONK",
         "/privacy": "Политика конфиденциальности — PLONK",
         "/support": "Поддержка — PLONK",

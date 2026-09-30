@@ -243,9 +243,9 @@ async def in_our_chat(message: Message, bot: Bot) -> None:
             await message.delete()
         hint = await bot.send_message(
             TARGET_CHAT,
-            f"{author.full_name}, объявления размещаются через форму — "
-            "нажмите кнопку, заполните пять полей, и оно появится и здесь, "
-            "и на сайте.",
+            f"{author.full_name}, объявления размещаются через форму: "
+            "нажмите кнопку и заполните пять полей, после этого объявление "
+            "появится и здесь, и на сайте.",
             message_thread_id=message.message_thread_id,
             reply_markup=_post_button(),
         )

@@ -22,7 +22,7 @@ import HScroll from '../components/HScroll'
 import { lastListPage } from '../utils/lastList'
 import { rememberRemoved } from '../utils/removedListings'
 import { formatPrice } from '../utils/money'
-import { relativeDate } from '../utils/time'
+import { relativeDate, sinceMonth } from '../utils/time'
 import { hasLanding } from '../data/landings'
 import { showIsland } from '../utils/island'
 
@@ -30,28 +30,6 @@ const REASON_KEYS = [
   'wrong_category', 'bad_photos', 'unclear_description',
   'duplicate', 'prohibited', 'suspicious_price',
 ]
-
-// «Здесь с марта 2025» — дата, которую человек читает, а не разбирает.
-// Месяцы в родительном падеже: строка читается как «Здесь с августа
-// 2026», а не «Здесь с август 2026 г.» — именно это и выдаёт
-// стандартное форматирование даты, у него другой падеж.
-const MONTHS_OF = {
-  ru: ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-    'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'],
-  sr: ['januara', 'februara', 'marta', 'aprila', 'maja', 'juna',
-    'jula', 'avgusta', 'septembra', 'oktobra', 'novembra', 'decembra'],
-}
-
-function monthYear(iso, lang) {
-  try {
-    const d = new Date(iso)
-    const of = MONTHS_OF[lang]
-    if (of) return `${of[d.getMonth()]} ${d.getFullYear()}`
-    return d.toLocaleDateString(lang || 'en', { month: 'long', year: 'numeric' })
-  } catch {
-    return ''
-  }
-}
 
 export default function ListingDetail() {
   const { slug } = useParams()
@@ -1130,7 +1108,7 @@ export default function ListingDetail() {
               <div className="seller-facts">
                 {listing.owner.since && (
                   <span className="seller-fact">
-                    {t('seller.fact_since', { date: monthYear(listing.owner.since, i18n.language) })}
+                    {t('seller.fact_since', { date: sinceMonth(listing.owner.since, i18n.language) })}
                   </span>
                 )}
                 {listing.owner.reply_speed && (

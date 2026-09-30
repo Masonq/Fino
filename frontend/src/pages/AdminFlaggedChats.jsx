@@ -1,3 +1,4 @@
+import { intlLocale } from '../utils/time'
 import { useCallback, useEffect, useState } from 'react'
 import { useKeepPlace } from '../utils/keepPlace'
 import { useTranslation } from 'react-i18next'
@@ -54,7 +55,7 @@ export default function AdminFlaggedChats() {
     }
   }
 
-  const when = (iso) => new Date(iso).toLocaleString(i18n.language, {
+  const when = (iso) => new Date(iso).toLocaleString(intlLocale(i18n.language), {
     day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
   })
 

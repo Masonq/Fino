@@ -8,6 +8,7 @@ import PageHeader from '../components/PageHeader'
 import ListingCard from '../components/ListingCard'
 import SellerReviews from '../components/SellerReviews'
 import ReportButton from '../components/ReportButton'
+import { sinceMonth } from '../utils/time'
 import { CardSkeletons } from '../components/Skeletons'
 
 // Сколько карточек показывать, пока не развернули весь список.
@@ -106,7 +107,7 @@ export default function SellerProfile() {
   // «на сайте с ...» — год и месяц: точная дата ничего не добавляет,
   // а вот давно ли человек здесь, покупателю важно
   const since = profile.created_at
-    ? new Date(profile.created_at + 'Z').toLocaleDateString(i18n.language, { year: 'numeric', month: 'long' })
+    ? sinceMonth(profile.created_at, i18n.language)
     : null
 
   const toggleSubscribe = async () => {

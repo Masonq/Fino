@@ -1,3 +1,4 @@
+import { intlLocale } from '../utils/time'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { keepValue, readValue, useKeepPlace } from '../utils/keepPlace'
 import { useTranslation } from 'react-i18next'
@@ -26,8 +27,8 @@ function when(iso, locale) {
   const today = new Date()
   const sameDay = date.toDateString() === today.toDateString()
   return sameDay
-    ? date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
-    : date.toLocaleString(locale, {
+    ? date.toLocaleTimeString(intlLocale(locale), { hour: '2-digit', minute: '2-digit' })
+    : date.toLocaleString(intlLocale(locale), {
       day: '2-digit', month: '2-digit',
       hour: '2-digit', minute: '2-digit',
     })
@@ -36,7 +37,7 @@ function when(iso, locale) {
 // Время без даты: дата написана один раз над днём.
 function timeOnly(iso, lang) {
   try {
-    return new Date(iso).toLocaleTimeString(lang || 'ru', { hour: '2-digit', minute: '2-digit' })
+    return new Date(iso).toLocaleTimeString(intlLocale(lang || 'ru'), { hour: '2-digit', minute: '2-digit' })
   } catch { return '' }
 }
 
@@ -52,7 +53,7 @@ function groupByDay(items, lang) {
     const key = date.toDateString()
     const title = key === today ? 'Сегодня'
       : key === yesterday ? 'Вчера'
-        : date.toLocaleDateString(lang || 'ru', { day: 'numeric', month: 'long' })
+        : date.toLocaleDateString(intlLocale(lang || 'ru'), { day: 'numeric', month: 'long' })
     if (!days.has(title)) days.set(title, [])
     days.get(title).push(row)
   }
