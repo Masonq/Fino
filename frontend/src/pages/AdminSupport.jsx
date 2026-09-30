@@ -110,24 +110,13 @@ export default function AdminSupport() {
               onClick={() => setTab(item.key)}
             >
               {t(item.label)}
-              {counts[item.key] ? <b>{counts[item.key]}</b> : null}
+              <b>{counts[item.key] || ''}</b>
             </button>
           ))}
         </div>
       </div>
-
-      {!loaded && <div className="admin-list"><AdminRowSkeletons count={6} /></div>}
-      {loaded && !items.length && (
-        <div className="admin-empty">
-          <span className="admin-empty-mark">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 1 1-3.3-6.5" /><path d="M8 11h8M8 15h5" /></svg>
-          </span>
-          <span className="admin-empty-title">{t('support.queue_empty')}</span>
-          <span className="admin-empty-text">{t('support.queue_empty_hint')}</span>
-        </div>
-      )}
-
       <div className="admin-list">
+        {!loaded && <AdminRowSkeletons count={6} />}
         {items.map((ticket) => (
           <div key={ticket.id} className="admin-row">
             <button className="admin-row-main" onClick={() => openCard(ticket.id)}>
@@ -187,6 +176,15 @@ export default function AdminSupport() {
           </div>
         ))}
       </div>
+      {loaded && !items.length && (
+        <div className="admin-empty">
+          <span className="admin-empty-mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 1 1-3.3-6.5" /><path d="M8 11h8M8 15h5" /></svg>
+          </span>
+          <span className="admin-empty-title">{t('support.queue_empty')}</span>
+          <span className="admin-empty-text">{t('support.queue_empty_hint')}</span>
+        </div>
+      )}
     </div>
   )
 }

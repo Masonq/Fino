@@ -616,7 +616,9 @@ export default function ListingDetail() {
     // бросалось в глаза на карточке продавца, которой в скелетоне не
     // было вовсе.
     return (
-      <div className="detail-page">
+      // key нужен, чтобы React не превратил узел листа из скелета («detail-sheet», стоит на 371 точке) в галерею
+      // (стоит на 0): пользователь ничего не видит, а браузер и Google засчитывают это как сдвиг 0,65 в Core Web Vitals.
+      <div className="detail-page" key="detail-skeleton">
         <div className="detail-photo sk-block" />
         <div className="detail-sheet">
           {/* цена — 25px */}
@@ -737,7 +739,7 @@ export default function ListingDetail() {
   }
 
   return (
-    <div className="detail-page">
+    <div className="detail-page" key="detail-loaded">
       {/* Хлебные крошки — на десктопе первой строкой во всю ширину, над
           фотографией и правой колонкой (на телефоне скрыты в CSS: там
           для возврата есть кнопка «назад»). Раньше лежали внутри

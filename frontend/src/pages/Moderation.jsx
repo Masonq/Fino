@@ -342,15 +342,22 @@ export default function Moderation() {
         <div className="admin-chips">
           <button className={tab === 'listings' ? 'chip chip-active' : 'chip'} onClick={() => setTab('listings')}>
             {t('mod.tab_listings')}
-            {total > 0 && <b>{total}</b>}
+            <b>{total > 0 ? total : ''}</b>
           </button>
           <button className={tab === 'reports' ? 'chip chip-active' : 'chip'} onClick={() => setTab('reports')}>
             {t('mod.tab_reports')}
-            {reportsTotal > 0 && <b>{reportsTotal}</b>}
+            <b>{reportsTotal > 0 ? reportsTotal : ''}</b>
           </button>
         </div>
       </div>
 
+      {tab === 'listings' && !day && (
+        <div className="mod-day" aria-hidden="true" style={{ visibility: 'hidden' }}>
+          <span><b>0</b> {t('mod.day_mine')}</span>
+          <span><b>0</b> {t('mod.day_team')}</span>
+          <span><b>0</b> {t('mod.day_oldest')}</span>
+        </div>
+      )}
       {tab === 'listings' && day && (
         <div className="mod-day">
           <span><b>{day.mine.approved + day.mine.rejected}</b> {t('mod.day_mine')}</span>

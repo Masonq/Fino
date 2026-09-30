@@ -65,19 +65,13 @@ export default function AdminVolunteers() {
           {TABS.map((key) => (
             <button key={key} className={`chip ${tab === key ? 'chip-active' : ''}`} onClick={() => setTab(key)}>
               {t(`volunteer.status.${key}`)}
-              {counts[key] ? <b>{counts[key]}</b> : null}
+              <b>{counts[key] || ''}</b>
             </button>
           ))}
         </div>
       </div>
-
-      {!loaded && <div className="admin-list"><AdminRowSkeletons count={4} /></div>}
-      {loaded && !items.length && (
-        <div className="admin-empty">
-          <span className="admin-empty-title">{t('volunteer.queue_empty')}</span>
-        </div>
-      )}
       <div className="admin-list">
+        {!loaded && <AdminRowSkeletons count={4} />}
         {items.map((a) => (
           <div key={a.id} className="admin-row">
             <button className="admin-row-main" onClick={() => setOpenId(openId === a.id ? null : a.id)}>
@@ -116,6 +110,11 @@ export default function AdminVolunteers() {
           </div>
         ))}
       </div>
+      {loaded && !items.length && (
+        <div className="admin-empty">
+          <span className="admin-empty-title">{t('volunteer.queue_empty')}</span>
+        </div>
+      )}
     </div>
   )
 }

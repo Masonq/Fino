@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { api } from '../api/client'
+import { api, getToken } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
 
@@ -8,7 +8,10 @@ const TOPICS = ['listing', 'account', 'payment', 'abuse', 'other']
 
 export default function Support() {
   const { t } = useTranslation()
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
+  // Пока проверяется вход, ждём то, что подсказывает токен: есть токен — человек, скорее всего, войдёт, поле не нужно;
+  // нет токена — гость, поле нужно. Иначе поле показывалось всем, а у вошедших пропадало, и «Отправить» прыгала на 62.
+  const expectUser = Boolean(user) || (authLoading && Boolean(getToken()))
 
   const [topic, setTopic] = useState('other')
   const [subject, setSubject] = useState('')
@@ -99,7 +102,7 @@ export default function Support() {
 
         {/* Не вошедшего спрашиваем, куда ответить: без обратного адреса
             обращение бесполезно обеим сторонам. */}
-        {!user && (
+        {!expectUser && (
           <label className="field-row">
             <span className="field-label">{t('support.contact_label')}</span>
             <input

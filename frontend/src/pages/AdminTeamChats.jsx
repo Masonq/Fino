@@ -84,16 +84,8 @@ export default function AdminTeamChats() {
           </button>
         </div>
       </div>
-
-      {!loaded && <div className="admin-list"><AdminRowSkeletons count={4} /></div>}
-      {loaded && !items.length && (
-        <div className="admin-empty">
-          <span className="admin-empty-title">{t('team_inbox.empty')}</span>
-          <span className="admin-empty-text">{t('team_inbox.empty_hint')}</span>
-        </div>
-      )}
-
       <div className="admin-list">
+        {!loaded && <AdminRowSkeletons count={4} />}
         {items.map((c) => (
           <div key={c.id} className="admin-row">
             <button className="admin-row-main" onClick={() => open(c.id)}>
@@ -139,6 +131,12 @@ export default function AdminTeamChats() {
           </div>
         ))}
       </div>
+      {loaded && !items.length && (
+        <div className="admin-empty">
+          <span className="admin-empty-title">{t('team_inbox.empty')}</span>
+          <span className="admin-empty-text">{t('team_inbox.empty_hint')}</span>
+        </div>
+      )}
     </div>
   )
 }

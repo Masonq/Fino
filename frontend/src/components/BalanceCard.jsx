@@ -44,18 +44,9 @@ export default function BalanceCard() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
-  // Была ли у этого человека строка про порядок списания в прошлый раз. Пока баланс грузится, держим под неё место
-  // (невидимую), иначе карточка вырастала бы на строку в момент прихода ответа и всё под ней прыгало.
-  const [hadHint] = useState(() => {
-    try { return localStorage.getItem('plonk_bonus_line') === '1' } catch { return false }
-  })
-
   useEffect(() => {
-    api.getBalance().then((w) => {
-      setWallet(w)
-      try { localStorage.setItem('plonk_bonus_line', w.bonus > 0 ? '1' : '0') } catch { /* память недоступна — не беда */ }
-      // Не удалось узнать — считаем, что оплата картой недоступна: лучше не предложить кнопку, чем предложить и отказать.
-    }).catch(() => setWallet({ balance: 0, money: 0, bonus: 0, payments_enabled: false }))
+    // Не удалось узнать — считаем, что оплата картой недоступна: лучше не предложить кнопку, чем предложить и отказать.
+    api.getBalance().then(setWallet).catch(() => setWallet({ balance: 0, money: 0, bonus: 0, payments_enabled: false }))
   }, [])
 
   const topup = async () => {
@@ -80,28 +71,34 @@ export default function BalanceCard() {
     ? [money > 0 && ['money', money], bonus > 0 && ['bonus', bonus]].filter(Boolean)
     : [['empty', 1]]
 
+  // Строка под плитками одна и всегда занимает ровно одну строку: пока баланс грузится, она невидима, но на месте.
+  // Что в ней написано, зависит от данных — а высота нет, поэтому ничего под ней не прыгает.
+  const hint = wallet?.payments_enabled === true
+    ? (bonus > 0 ? t('balance.spend_order') : t('balance.separate_note'))
+    : t('balance.topup_off')
+
   return (
     <div className="balance-card">
+      {/* Правило блока: загрузка и готовый вид занимают одно и то же место. Скелет лежит ВНУТРИ настоящей строки
+          (той же высоты), кнопка не меняет размера, подпись про оплату — в строке под плитками, а не сбоку от суммы,
+          иначе крупная сумма выталкивала её вниз и вся карточка съезжала. */}
       <div className="balance-head">
         <div className="balance-head-text">
           <div className="balance-label">{t('balance.title')}</div>
-          {known
-            ? <div className="balance-total">{rsd(total)}</div>
-            : <span className="sk-block sk-line balance-sk-total" aria-hidden="true" />}
+          <div className="balance-total">
+            {known ? rsd(total) : <span className="sk-block balance-sk-inline balance-sk-total" aria-hidden="true" />}
+          </div>
         </div>
-        {/* Три состояния, и до ответа сервера не рисуем ничего осмысленного: раньше пока баланс грузился,
-            условие «выключено» ещё не выполнялось, и на долю секунды показывалась кнопка «Пополнить»,
-            которую потом заменяла подпись. Место под кнопку держим невидимым, чтобы строка не прыгала. */}
-        {wallet === null ? (
-          <span className="balance-topup-btn balance-topup-ph" aria-hidden="true">{t('balance.topup')}</span>
-        ) : wallet.payments_enabled === true ? (
-          <button className="balance-topup-btn" onClick={() => setOpen((v) => !v)}>
-            {t('balance.topup')}
-          </button>
-        ) : (
-          // Оплату картой выключил владелец (админка → Настройки): просить деньги не у кого и не за что.
-          <span className="balance-topup-off">{t('balance.topup_off')}</span>
-        )}
+        <div className="balance-action">
+          {wallet === null ? (
+            <span className="balance-topup-btn balance-topup-ph" aria-hidden="true">{t('balance.topup')}</span>
+          ) : wallet.payments_enabled === true ? (
+            <button className="balance-topup-btn" onClick={() => setOpen((v) => !v)}>{t('balance.topup')}</button>
+          ) : (
+            // Оплату картой выключил владелец (админка → Настройки): кнопка на месте, но погашена; почему — в строке ниже.
+            <button className="balance-topup-btn is-off" disabled aria-describedby="balance-foot">{t('balance.topup')}</button>
+          )}
+        </div>
       </div>
 
       <div
@@ -117,19 +114,23 @@ export default function BalanceCard() {
       <div className="balance-parts">
         <div className={money > 0 || !known ? 'balance-part money' : 'balance-part money is-zero'}>
           <div className="balance-part-top"><WalletIcon /><span>{t('balance.money')}</span></div>
-          {known ? <div className="balance-part-amount">{rsd(money)}</div> : <span className="sk-block sk-line balance-sk-part" aria-hidden="true" />}
+          <div className="balance-part-amount">
+            {known ? rsd(money) : <span className="sk-block balance-sk-inline balance-sk-part" aria-hidden="true" />}
+          </div>
           <div className="balance-part-note">{t('balance.money_note')}</div>
         </div>
         <div className={bonus > 0 || !known ? 'balance-part bonus' : 'balance-part bonus is-zero'}>
           <div className="balance-part-top"><GiftIcon /><span>{t('balance.bonus')}</span></div>
-          {known ? <div className="balance-part-amount">{rsd(bonus)}</div> : <span className="sk-block sk-line balance-sk-part" aria-hidden="true" />}
+          <div className="balance-part-amount">
+            {known ? rsd(bonus) : <span className="sk-block balance-sk-inline balance-sk-part" aria-hidden="true" />}
+          </div>
           <div className="balance-part-note">{t('balance.bonus_note')}</div>
         </div>
       </div>
 
-      {/* Порядок списания важен, когда есть и то и другое; для человека без бонусов строка была бы шумом. */}
-      {known && bonus > 0 && <p className="balance-hint">{t('balance.spend_order')}</p>}
-      {!known && hadHint && <p className="balance-hint" style={{ visibility: 'hidden' }} aria-hidden="true">{t('balance.spend_order')}</p>}
+      <p id="balance-foot" className="balance-hint" style={known ? undefined : { visibility: 'hidden' }} aria-hidden={known ? undefined : 'true'}>
+        {known ? hint : t('balance.spend_order')}
+      </p>
 
       {open && (
         <div className="balance-topup-form">

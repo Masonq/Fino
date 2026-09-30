@@ -1049,7 +1049,8 @@
     "spend_order": "Prvo se troše bonusi, pa novac",
     "aria": "Stanje {{total}}: novac {{money}}, bonus {{bonus}}",
     "spend_bonus": "{{amount}} iz bonusa",
-    "spend_money": "{{amount}} novcem"
+    "spend_money": "{{amount}} novcem",
+    "separate_note": "Bonusi se vode odvojeno od novca"
   },
   "home": {
     "phone_reminder": "Dodajte broj telefona — kupci će moći direktno da vas pozovu",

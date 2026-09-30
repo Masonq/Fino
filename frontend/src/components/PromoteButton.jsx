@@ -114,6 +114,22 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
     if (!data) load()
   }
 
+  // На странице самого объявления окно — карточка внутри страницы: пока данные грузились, она была ~140 точек, потом
+  // отрастала до ~570 и весь текст ниже прыгал вниз. Поэтому грузим заранее, пока человек читает объявление;
+  // в списке своих объявлений окон много, там по-прежнему грузим только при открытии.
+  useEffect(() => {
+    if (renderMode === 'full' && !data) load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [renderMode])
+
+  // Данные могли прийти, пока окно было закрыто: тогда прокрутки к нужной карточке ещё не было (карусели не существовало).
+  useEffect(() => {
+    if (!open || !data) return
+    const el = carouselRef.current
+    if (el) el.scrollLeft = el.clientWidth * Math.max(0, TYPES.indexOf(selected))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
+
   // Управляемый режим (панель открывается внешним состоянием, не
   // своим openSheet) — данные подгружаем сами при первом появлении.
   useEffect(() => {
@@ -178,6 +194,12 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
             <div className="promo-title">{t('promo.title')}</div>
             <div className="promo-sub">{t('promo.subtitle')}</div>
           </div>
+          {!data && (
+            <div className="promo-balance" aria-hidden="true" style={{ visibility: 'hidden' }}>
+              <span className="promo-balance-total">{t('promo.balance', { amount: '0 000' })}</span>
+              <span className="promo-balance-split"><span><i className="money" />0 000</span><span><i className="bonus" />0 000</span></span>
+            </div>
+          )}
           {data && (
             <div className="promo-balance" aria-label={t('balance.aria', { total: rsd(balance), money: rsd(data.money || 0), bonus: rsd(data.bonus || 0) })}>
               <span className="promo-balance-total">{t('promo.balance', { amount: nf(balance) })}</span>
@@ -192,7 +214,24 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
         </div>
 
         {!data ? (
-          <p className="verify-hint">{t('actions.loading')}</p>
+          // Скелет из тех же блоков, что и готовое окно (картинка 150 точек, название, описание, цена, точки, кнопка):
+          // текст невидим, но занимает столько же места, поэтому окно не отрастает, когда приходят данные.
+          <div aria-busy="true" aria-label={t('actions.loading')}>
+            <div className="promo-carousel-wrap">
+              <div className="promo-carousel">
+                <div className="promo-card-full">
+                  <div className={`promo-card-image ${TYPES[0] === 'xl_card' ? 'xl' : TYPES[0]} sk-block`} />
+                  <div className="promo-card-name" style={{ visibility: 'hidden' }}>{t(`promo.type_${TYPES[0]}`)}</div>
+                  <div className="promo-card-desc" style={{ visibility: 'hidden' }}>{t(`promo.desc_${TYPES[0]}`)}</div>
+                  <div className="promo-card-bottom"><span className="promo-price" style={{ visibility: 'hidden' }}>{t('promo.price', { price: '000' })}</span></div>
+                </div>
+              </div>
+            </div>
+            <div className="promo-dots" style={{ visibility: 'hidden' }}>
+              {TYPES.map((type, i) => <span key={type} className={i === 0 ? 'promo-dot active' : 'promo-dot'} />)}
+            </div>
+            <button className="promo-cta" disabled style={{ visibility: 'hidden' }}>{t('promo.cta', { price: '000' })}</button>
+          </div>
         ) : (
           <>
             <div className="promo-carousel-wrap">

@@ -173,7 +173,7 @@ export default function MyListings() {
             onClick={() => setTab(tb.key)}
           >
             {t(tb.labelKey)}
-            {counts[tb.key] > 0 && <span className="my-tab-count">{counts[tb.key]}</span>}
+            <span className="my-tab-count">{counts[tb.key] > 0 ? counts[tb.key] : ''}</span>
           </button>
         ))}
       </div>

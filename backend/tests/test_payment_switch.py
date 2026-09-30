@@ -149,7 +149,7 @@ def test_the_wallet_tells_the_site_whether_cards_are_on(db):
 
 def test_the_site_hides_top_up_and_card_payment_when_off():
     balance = (FRONT / "components" / "BalanceCard.jsx").read_text(encoding="utf-8")
-    assert "wallet.payments_enabled === true" in balance and "balance-topup-off" in balance
+    assert "wallet.payments_enabled === true" in balance and "balance-topup-btn is-off" in balance, "выключено — кнопка на месте, но погашена"
     promo = (FRONT / "components" / "PromoteButton.jsx").read_text(encoding="utf-8")
     assert "data?.payments_enabled === true" in promo, "пока не известно — карту не предлагаем"
     assert "{cardsOn && (" in promo and "disabled={blocked || !cardsOn}" in promo
@@ -226,7 +226,8 @@ def test_the_balance_card_never_shows_a_top_up_button_before_it_knows():
     assert "wallet === null ? (" in card and "balance-topup-ph" in card, "пока грузится — невидимая заглушка"
     assert card.index("wallet === null ?") < card.index("wallet.payments_enabled === true"), "сначала «не знаем», потом «включено»"
     assert "payments_enabled: false" in card, "не удалось узнать — считаем, что карта недоступна"
-    assert "plonk_bonus_line" in card, "место под строку про бонус держим, чтобы карточка не вырастала при загрузке"
+    assert "plonk_bonus_line" not in card, "место под строку держит сама разметка, а не догадка по памяти браузера"
+    assert 'id="balance-foot"' in card and "visibility: 'hidden'" in card, "строка под плитками на месте и пока баланс грузится"
 
 
 def test_the_settings_page_asks_the_server_again_when_the_tab_comes_back():

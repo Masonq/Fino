@@ -67,11 +67,17 @@ def test_the_bar_fills_by_proportion_and_animates_only_when_motion_is_allowed():
     assert "scaleX(1)" in CSS and "transition:transform" in CSS.replace(" ", "")
 
 
-def test_narrow_screens_move_the_action_under_the_amount_instead_of_overlapping_it():
-    assert "flex-wrap:wrap" in rule(".balance-head").replace(" ", "")
-    assert "margin-left:auto" in rule(".balance-topup-btn").replace(" ", "")
-    off = rule(".balance-topup-off").replace(" ", "")
-    assert "flex:11150px" in off and "max-width:none" in off and "text-align:right" in off
+def test_the_header_layout_does_not_depend_on_the_data():
+    """
+    Раньше шапка переносила кнопку под сумму, когда сумма не влезала, — а при загрузке сумма была короткой. Кнопка
+    прыгала, и карточка съезжала на 23 точки (замер на 320). Теперь схема одна и та же в загрузке и в готовом виде:
+    на широком экране один ряд, на узком (до 360) всегда два.
+    """
+    assert "flex-wrap" not in rule(".balance-head")
+    assert re.search(r"@media \(max-width:359px\)\s*\{\s*\.balance-head\{\s*flex-direction:column", CSS)
+    assert "min-height:38px" in rule(".balance-action").replace(" ", "")
+    button = rule(".balance-topup-btn").replace(" ", "")
+    assert "min-height:38px" in button and "margin-left:auto" in button
 
 
 def test_the_tile_amount_shrinks_instead_of_overflowing_its_tile():
@@ -79,8 +85,14 @@ def test_the_tile_amount_shrinks_instead_of_overflowing_its_tile():
 
 
 def test_loading_keeps_the_layout_so_nothing_jumps():
+    """Замер: в загрузке скелет суммы был ниже настоящей строки (26 против 34), и подписи плиток съезжали на 5 точек."""
     assert "balance-topup-ph" in CARD and "visibility:hidden" in rule(".balance-topup-ph").replace(" ", "")
-    assert CARD.count("sk-block sk-line") >= 3, "скелет на месте суммы и обеих плиток"
+    assert CARD.count("balance-sk-inline") >= 3, "скелет суммы и обеих плиток"
+    for holder in ('className="balance-total"', 'className="balance-part-amount"'):
+        assert holder in CARD, holder
+    total = CARD[CARD.index('className="balance-total"'):]
+    assert total.index("balance-sk-inline") < total.index("</div>"), "скелет лежит ВНУТРИ настоящей строки той же высоты"
+    assert 'id="balance-foot"' in CARD and "visibility: 'hidden'" in CARD, "строка-подсказка всегда одна и всегда на месте"
     skeleton = (SRC / "components" / "Skeletons.jsx").read_text(encoding="utf-8")
     assert "balance-parts" in skeleton and "balance-bar" in skeleton, "скелет профиля повторяет новую форму блока"
 

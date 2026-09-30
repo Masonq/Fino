@@ -20,13 +20,15 @@ const LAST_ROLE_KEY = 'fino_last_role'
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
+  // Нет токена — проверять нечего, человек гость с первого кадра. Раньше loading стартовал как «true» у всех: гость на
+  // 55 мс видел кружок-заглушку на месте «Войти», и строка поиска ужималась на 23 точки.
+  const [loading, setLoading] = useState(() => Boolean(getToken()))
   const [lastKnownRole, setLastKnownRole] = useState(() => localStorage.getItem(LAST_ROLE_KEY))
 
   // при запуске проверяем сохранённый токен
   useEffect(() => {
     if (!getToken()) { setLoading(false); return }
-    api.me()
+    const attempt = (n) => api.me()
       .then((userData) => {
         setUser(userData)
         if (userData?.role) {
@@ -46,9 +48,15 @@ export function AuthProvider({ children }) {
         if (err?.status === 401) {
           localStorage.removeItem(TOKEN_KEY)
           setUser(null)
+          return                                   // токен плохой — повторять нечего
         }
+        // Временная ошибка (сеть, 5xx, 429), а не «токен плохой»: один повтор вместо «вы не вошли». Иначе служебная
+        // страница (переписки с жалобами и другие) видит user=null и выбрасывает модератора на главную из-за одного
+        // сорвавшегося запроса.
+        // Три попытки с растущей паузой: 429 («слишком много запросов») за общим адресом мобильной сети проходит за секунду-две.
+        if (n < 2) return new Promise((resolve) => setTimeout(resolve, 700 * (n + 1))).then(() => attempt(n + 1))
       })
-      .finally(() => setLoading(false))
+    attempt(0).finally(() => setLoading(false))
   }, [])
 
   const signIn = useCallback((token, userData) => {

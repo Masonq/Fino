@@ -119,7 +119,8 @@ export default function FreshStories({ items, seen, onOpen }) {
       )
     })
 
-  if (items !== null && items.length === 0) return null
+  // Историй нет — полоску НЕ убираем, остаётся кнопка «Продать». Раньше здесь был return null: пока грузилось, полоска
+  // стояла на месте, а с пустым ответом пропадала целиком, и вся главная под ней прыгала вверх на 90 точек.
 
   return (
     <div className="stories" role="list" ref={strip}>

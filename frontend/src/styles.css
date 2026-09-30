@@ -1332,7 +1332,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    фиксированной ширины 126px — скелетон отстал, и ряд «прыгал» при
    подмене на настоящие плитки. */
 .cat-skeleton{
-  position:relative; height:82px; width:126px; border-radius:14px; padding:9px 12px 9px 11px;
+  /* Один в один с .cat-tile-2row: 118×86 и радиус 15. Было 126×82 — на 4 точки ниже плитки, а рядов два, и главная
+     съезжала на 8 точек в момент подмены (замер обхода на 320) */
+  position:relative; height:86px; width:118px; border-radius:15px; padding:9px 12px 9px 11px;
   background:var(--surface); border:1px solid rgba(20,30,25,.05); flex-shrink:0; box-sizing:border-box;
 }
 .sk-cat-line{ width:66%; height:10px; border-radius:5px; }
@@ -1641,7 +1643,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .profile-stat b{ font-size:18px; font-weight:800; letter-spacing:-0.02em; line-height:1.1; font-variant-numeric:tabular-nums; }
 .profile-stat span{ font-size:11px; font-weight:600; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .balance-topup-btn{
-  flex-shrink:0; margin-left:auto; padding:10px 16px; border-radius:11px;
+  flex-shrink:0; margin-left:auto; min-height:38px; display:inline-flex; align-items:center; justify-content:center; padding:0 16px; border-radius:11px;
   background:var(--primary); color:#fff; font-size:13px; font-weight:700;
 }
 .balance-topup-form{ margin-top:14px; padding-top:14px; border-top:1px solid var(--border); }
@@ -1775,6 +1777,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .my-tab.active{ background:var(--primary); color:#fff; }
 .my-tab-count{
+  /* место под число всегда: пришло позже подписи — вкладки не ползут вправо (замер: 12 точек) */
+  display:inline-block; min-width:2ch; text-align:center;
   font-size:11px; font-weight:800; opacity:.75;
 }
 .my-list{ display:flex; flex-direction:column; }
@@ -1874,7 +1878,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .mod-meta{ font-size:11.5px; color:var(--muted); margin-top:8px; }
 /* Сводка за сутки: разбор очереди — работа без видимого результата,
    список всегда непустой. Цифры показывают, что дело движется. */
-.mod-day{ display:flex; gap:16px; padding:0 12px 10px; font-size:11.5px; color:var(--muted); font-weight:600; }
+.mod-day{ display:flex; gap:16px; padding:0 12px 10px; min-height:26px; font-size:11.5px; color:var(--muted); font-weight:600; }
 .mod-day b{ font-size:14px; font-weight:800; color:var(--ink); letter-spacing:-0.01em; margin-right:3px; font-variant-numeric:tabular-nums; }
 .mod-day .warn b{ color:var(--danger-ink); }
 .mod-dup{
@@ -2426,6 +2430,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     background:var(--tile); border-color:transparent; box-shadow:none;
     padding:11px 62px 11px 14px;
   }
+  .cat-skeleton{ width:auto; height:86px; }       /* на широком экране плитки тянутся по сетке — скелет тоже */
   .cat-tile-2row-label{ font-size:13.5px; white-space:normal; }
   .cat-tile-2row-glyph{ width:116px; height:116px; right:-10px; bottom:-18px; }
 
@@ -3359,9 +3364,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .funnel-text b{ font-size:15px; font-weight:800; font-variant-numeric:tabular-nums; }
 .funnel-pct{ font-size:12px; font-weight:800; color:var(--primary-deep); min-width:38px; text-align:right; }
 
-.audit-actors{ display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
+.audit-actors{ display:flex; flex-direction:row; gap:8px; margin-bottom:12px; min-height:58px; overflow-x:auto; scrollbar-width:none; }
+.audit-actors::-webkit-scrollbar{ display:none; }
+.audit-actor-sk{ flex:0 0 140px; height:58px; border-radius:12px; }
 .audit-actor{
-  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  flex:0 0 auto; min-width:140px; max-width:200px; flex-direction:column; align-items:flex-start;
+  display:flex; justify-content:center; gap:3px;
   padding:10px 12px; border-radius:12px; background:var(--surface); border:1px solid var(--border);
   font-size:13.5px; color:var(--ink);
 }
@@ -5494,6 +5502,7 @@ a.s-attrs{ display:block; }
   border-top:1px solid var(--border);
 }
 .invite-link{
+  min-height:18px; line-height:18px;      /* строка на месте, пока ссылка не пришла: блок внизу не подрастает */
   font-size:12px; color:var(--muted); font-weight:600;
   text-align:center; margin-bottom:8px;
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
@@ -5603,6 +5612,7 @@ a.s-attrs{ display:block; }
   border-top:1px solid var(--border);
 }
 .invite-link{
+  min-height:18px; line-height:18px;      /* строка на месте, пока ссылка не пришла: блок внизу не подрастает */
   font-size:12px; color:var(--muted); font-weight:600;
   text-align:center; margin-bottom:8px;
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
@@ -5772,7 +5782,8 @@ a.s-attrs{ display:block; }
    Каждая по-прежнему переключает отбор, но места занимает впятеро
    меньше — и первый человек в списке виден без прокрутки. */
 .admin-summary .chip{ gap:6px; }
-.admin-summary .chip b{ font-weight:800; font-variant-numeric:tabular-nums; }
+/* Сводка «за сутки +4585»: до пяти знаков. Селектор с обоими классами — иначе общее правило чипов (три знака), стоящее ниже, его перебивало */
+.admin-chips.admin-summary .chip b{ display:inline-block; min-width:5ch; text-align:center; font-weight:800; font-variant-numeric:tabular-nums; }
 .admin-summary .chip:not(.chip-active) b{ color:var(--primary-deep); }
 .admin-bar .admin-toolbar{ display:flex; gap:8px; margin-top:9px; padding:0; }
 .admin-bar .admin-toolbar .admin-bar-search{ flex:1; min-width:0; }
@@ -5790,7 +5801,8 @@ a.s-attrs{ display:block; }
 /* Число внутри фишки — счётчик, а не часть названия: отдельным
    начертанием и без отбивки точкой, как было раньше. */
 .admin-chips .chip b{
-  margin-left:5px; font-weight:800; font-variant-numeric:tabular-nums;
+  /* Место под число держим всегда (две цифры): пришло оно позже, чем подпись, — чип не расширялся и не толкал соседей */
+  display:inline-block; min-width:3ch; text-align:center; margin-left:5px; font-weight:800; font-variant-numeric:tabular-nums;
 }
 .admin-chips .chip:not(.chip-active) b{ color:var(--primary-deep); }
 
@@ -6371,16 +6383,23 @@ a.s-attrs{ display:block; }
   margin:0 12px 10px; padding:16px 14px 14px; border-radius:18px; background:var(--surface);
   border:1px solid var(--border); box-shadow:0 1px 0 rgba(20,30,25,.03);
 }
-/* Кнопка или подпись справа не наезжают на крупную сумму: не помещаются в строку — уходят под неё, к правому краю */
-.balance-head{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 12px; min-height:52px; }
-.balance-head-text{ min-width:0; }
+/* Шапка блока не перестраивается от данных: раньше кнопка при загрузке стояла рядом с суммой, а широкая сумма
+   выталкивала её вниз — и карточка съезжала на 23 точки. Теперь на узком экране два ряда всегда, на широком один всегда. */
+.balance-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:52px; }
+.balance-action{ flex:0 0 auto; display:flex; align-items:center; min-height:38px; }
+@media (max-width:359px){
+  .balance-head{ flex-direction:column; align-items:stretch; gap:6px; }
+  .balance-action{ justify-content:flex-end; }
+}
+.balance-head-text{ flex:1 1 auto; min-width:0; }
 .balance-label{ font-size:12px; line-height:16px; font-weight:700; letter-spacing:.02em; color:var(--muted); }
 .balance-total{
-  font-size:28px; line-height:34px; font-weight:800; letter-spacing:-.02em; color:var(--ink);
+  font-size:clamp(22px, 7.2vw, 28px); line-height:34px; font-weight:800; letter-spacing:-.02em; color:var(--ink);
   font-variant-numeric:tabular-nums; white-space:nowrap;
 }
-.balance-sk-total{ display:block; height:26px; width:112px; margin-top:4px; }
-.balance-sk-part{ display:block; height:18px; width:72px; margin:3px 0 4px; }
+.balance-sk-inline{ display:inline-block; vertical-align:middle; border-radius:8px; }
+.balance-sk-total{ height:26px; width:112px; }
+.balance-sk-part{ height:18px; width:72px; }
 
 /* Полоса-пропорция: сегменты растут из левого края; между ними просвет */
 .balance-bar{
@@ -6433,4 +6452,11 @@ a.s-attrs{ display:block; }
 }
 .promo-spend span{ display:inline-flex; align-items:center; gap:5px; }
 .promo-spend i{ width:8px; height:8px; border-radius:50%; display:inline-block; }
+
+/* Погашенная «Пополнить»: та же кнопка того же размера, только серая, — не пропадает и не меняет ничего вокруг */
+.balance-topup-btn.is-off{ background:var(--surface-sunken); color:var(--muted); cursor:default; box-shadow:none; }
+.balance-hint{ min-height:16px; }
+
+/* Место под колокольчик в шапке профиля, пока страница грузится: размер в размер .notif-bell */
+.header-bell-ph{ flex-shrink:0; width:34px; height:34px; margin-left:auto; }
 

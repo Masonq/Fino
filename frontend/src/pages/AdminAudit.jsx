@@ -75,6 +75,7 @@ export default function AdminAudit() {
   const [filter, setFilter] = useState(() => readValue('audit-filter', ''))
   const [actor, setActor] = useState(() => readValue('audit-actor', ''))
   const [actors, setActors] = useState([])
+  const [actorsLoaded, setActorsLoaded] = useState(false)      // пока не пришёл ответ, место под сводку по людям держим
   const [loaded, setLoaded] = useState(false)
   const [denied, setDenied] = useState(false)
   const [kind, setKind] = useState(() => readValue('audit-kind', 'staff'))
@@ -129,7 +130,7 @@ export default function AdminAudit() {
   // один раз, а не вместе с каждой перезагрузкой списка.
   useEffect(() => {
     if (authLoading || !userId) return
-    api.adminAuditActors(7).then((r) => setActors(r.items || [])).catch(() => {})
+    api.adminAuditActors(7).then((r) => setActors(r.items || [])).catch(() => {}).finally(() => setActorsLoaded(true))
   }, [authLoading, userId])
 
   if (denied) {
@@ -189,8 +190,11 @@ export default function AdminAudit() {
       {/* Кто что решил — построчный журнал при нескольких модераторах
           уже не читают. Сначала сводка по людям, нажатие на строку
           показывает журнал только этого человека. */}
-      {actors.length > 0 && (
-        <div className="audit-actors">
+      {/* Сводка по людям — одной полосой постоянной высоты (прокручивается вбок). Раньше это был столбик строк, который
+          приходил вместе с данными и раздвигал страницу на свою высоту: журнал под ним прыгал вниз. */}
+      {(actors.length > 0 || !actorsLoaded) && (
+        <div className="audit-actors" aria-busy={!actorsLoaded}>
+          {!actorsLoaded && <><span className="sk-block audit-actor-sk" aria-hidden="true" /><span className="sk-block audit-actor-sk" aria-hidden="true" /></>}
           {actors.map((row) => (
             <button
               key={row.id}

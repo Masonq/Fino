@@ -1,3 +1,4 @@
+import { AdminRowSkeletons } from '../components/Skeletons'
 import { useEffect, useState } from 'react'
 import { useKeepPlace } from '../utils/keepPlace'
 import { useTranslation } from 'react-i18next'
@@ -51,16 +52,8 @@ export default function AdminAlerts() {
     <div className="page admin-users">
       <PageHeader title={t('admin.alerts')} />
 
-      {items === null && <p className="empty">{t('admin.loading')}</p>}
-
-      {items?.length === 0 && (
-        <div className="admin-calm">
-          <b>{t('admin.calm_title')}</b>
-          <span>{t('admin.calm_text')}</span>
-        </div>
-      )}
-
       <div className="admin-list">
+        {items === null && <AdminRowSkeletons count={3} />}
         {(items || []).map((a, i) => {
           const to = LINKS[a.kind]?.(a)
           const body = (
@@ -79,6 +72,12 @@ export default function AdminAlerts() {
           )
         })}
       </div>
+      {items?.length === 0 && (
+        <div className="admin-calm">
+          <b>{t('admin.calm_title')}</b>
+          <span>{t('admin.calm_text')}</span>
+        </div>
+      )}
     </div>
   )
 }

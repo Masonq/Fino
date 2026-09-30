@@ -90,7 +90,8 @@ export default function Profile() {
   if (loading) {
     return (
       <div className="fav-page profile-page">
-        <PageHeader title={t('nav.profile')} back={false} />
+        {/* Колокольчик уведомлений делает шапку выше на 8 точек; пока страница грузится, держим под него место, иначе заголовок и всё под ним съезжают */}
+        <PageHeader title={t('nav.profile')} back={false}><span className="header-bell-ph" aria-hidden="true" /></PageHeader>
         <ProfileSkeleton showStaff={lastKnownRole === 'moderator' || lastKnownRole === 'admin'} />
       </div>
     )

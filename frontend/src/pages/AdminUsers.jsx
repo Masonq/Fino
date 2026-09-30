@@ -199,19 +199,8 @@ export default function AdminUsers() {
           </label>
         </div>
       </div>
-
-      {!loaded && <div className="admin-list"><AdminRowSkeletons count={6} /></div>}
-      {loaded && !items.length && (
-        <div className="admin-empty">
-          <span className="admin-empty-mark">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" /></svg>
-          </span>
-          <span className="admin-empty-title">{t('admin.empty')}</span>
-          <span className="admin-empty-text">{t('admin.empty_hint')}</span>
-        </div>
-      )}
-
       <div className="admin-list">
+        {!loaded && <AdminRowSkeletons count={6} />}
         {items.map((u) => {
           const isNew = u.created_at && Date.now() - new Date(u.created_at + 'Z').getTime() < 86400000
           const online = u.last_seen_at && Date.now() - new Date(u.last_seen_at + 'Z').getTime() < 15 * 60000
@@ -250,6 +239,15 @@ export default function AdminUsers() {
           )
         })}
       </div>
+      {loaded && !items.length && (
+        <div className="admin-empty">
+          <span className="admin-empty-mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" /></svg>
+          </span>
+          <span className="admin-empty-title">{t('admin.empty')}</span>
+          <span className="admin-empty-text">{t('admin.empty_hint')}</span>
+        </div>
+      )}
 
       {loaded && items.length > 0 && items.length < total && (
         <div ref={sentinelRef} className="feed-sentinel">
