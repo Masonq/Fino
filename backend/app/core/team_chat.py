@@ -75,27 +75,33 @@ GREETING = {
 # видно его должно быть отдельно. На экранах до входа о деньгах не
 # говорим вовсе (Safari дважды принял это за фишинг), а здесь человек
 # уже зарегистрирован и читает нас в своём чате.
+# Строка вида [[Подпись|/путь]] в письме команды рисуется кнопкой (см.
+# frontend/src/utils/teamText.jsx). Только внутренние пути, начинающиеся с «/»:
+# письмо пишем мы сами, но и кнопка не должна уметь вести наружу.
 BONUS = {
     "ru": (
         "# И ещё: 300 RSD в подарок\n\n"
         "Разместите первое объявление — и мы начислим **300 RSD** на счёт, "
         "когда оно пройдёт проверку.\n\n"
         "Этого хватает ровно на неделю выделенной карточки или два поднятия "
-        "в поиске — попробуете платную возможность целиком, а не кусочек."
+        "в поиске — попробуете платную возможность целиком, а не кусочек.\n\n"
+        "[[Разместить|/post]]"
     ),
     "en": (
         "# One more thing: 300 RSD as a gift\n\n"
         "Post your first ad and we'll credit **300 RSD** to your account "
         "once it passes review.\n\n"
         "That's exactly a week of a highlighted card or two bumps in search — "
-        "enough to try a paid feature in full, not a slice of it."
+        "enough to try a paid feature in full, not a slice of it.\n\n"
+        "[[Post a listing|/post]]"
     ),
     "sr": (
         "# Jo\u0161 ne\u0161to: 300 RSD na poklon\n\n"
         "Postavite prvi oglas i upisa\u0107emo **300 RSD** na va\u0161 ra\u010dun "
         "\u010dim pro\u0111e proveru.\n\n"
         "To je ta\u010dno nedelju dana izdvojene kartice ili dva podizanja u "
-        "pretrazi \u2014 dovoljno da isprobate uslugu u celosti."
+        "pretrazi \u2014 dovoljno da isprobate uslugu u celosti.\n\n"
+        "[[Postavi oglas|/post]]"
     ),
 }
 
@@ -157,3 +163,72 @@ def greet(db: Session, user: User, lang: str = "ru") -> None:
     except Exception:
         db.rollback()
         log.warning("не удалось отправить письмо от команды", exc_info=True)
+
+
+# ─── что уже пришло человеку ────────────────────────────────────────────
+def is_bonus_message(message) -> bool:
+    """Письмо о подарке узнаём по «300 RSD» — заголовок во всех языках его содержит."""
+    return is_team_message(message) and "300 RSD" in (message.text or "")
+
+
+def _bonus_lang(text: str, fallback: str) -> str:
+    for lang, body in BONUS.items():
+        if (text or "").startswith(body.split("\n", 1)[0]):
+            return lang
+    return fallback
+
+
+def team_chat_of(db: Session, user: User):
+    team = team_user(db)
+    return db.query(Chat).filter(Chat.listing_id.is_(None), Chat.seller_id == team.id,
+                                 Chat.buyer_id == user.id).first()
+
+
+def letter_state(db: Session, user: User) -> str:
+    """
+    Что у человека из писем команды:
+      'none'      — чата с командой нет, не писали вовсе;
+      'no_bonus'  — есть только знакомство, письма о подарке нет;
+      'no_button' — письмо о подарке есть, но без кнопки «Разместить»;
+      'ok'        — всё на месте.
+    Только читает, ничего не меняет — на этом стоит отчёт перед рассылкой.
+    """
+    chat = team_chat_of(db, user)
+    if chat is None:
+        return "none"
+    bonus = [m for m in db.query(Message).filter(Message.chat_id == chat.id).all() if is_bonus_message(m)]
+    if not bonus:
+        return "no_bonus"
+    return "ok" if any("[[" in (m.text or "") for m in bonus) else "no_button"
+
+
+def sync_letters(db: Session, user: User, lang: str = "ru") -> str:
+    """
+    Доводит письма до полного набора и возвращает, что было сделано.
+    Повторный вызов ничего не меняет. Тем, кто уже получил, не пишем
+    второй раз: недостающее письмо добавляется, а у уже пришедшего
+    дописывается кнопка на месте, не задваивая сообщение.
+    """
+    state = letter_state(db, user)
+    if state == "ok":
+        return "ok"
+    if state == "none":
+        greet(db, user, lang)
+        return "none"
+    chat = team_chat_of(db, user)
+    team = team_user(db)
+    if state == "no_bonus":
+        now = utcnow()
+        db.add(Message(id=uuid.uuid4(), chat_id=chat.id, sender_id=team.id, kind=TEAM_KIND,
+                       text=BONUS.get(lang, BONUS["ru"]), created_at=now))
+        chat.last_message_at = now
+        db.commit()
+        return "no_bonus"
+    # no_button: тот же текст, что уже пришёл, но с кнопкой; сообщение то же,
+    # прочитанное остаётся прочитанным
+    for message in db.query(Message).filter(Message.chat_id == chat.id).all():
+        if is_bonus_message(message) and "[[" not in (message.text or ""):
+            message.text = BONUS.get(_bonus_lang(message.text, lang), BONUS["ru"])
+    db.commit()
+    return "no_button"
+

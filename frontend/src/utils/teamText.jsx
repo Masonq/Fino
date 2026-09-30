@@ -2,6 +2,8 @@
 // в нём разбираем разметку: заголовок, жирный, пункты списка, ссылки.
 // В обычной переписке всё остаётся текстом — кликабельная чужая ссылка
 // в чате объявлений это подарок мошеннику.
+import { Link } from 'react-router-dom'
+
 function inlineParts(line, keyPrefix) {
   // Сначала ссылки, внутри остального — **жирный**.
   return String(line).split(/(https?:\/\/\S+)/g).flatMap((chunk, i) => {
@@ -31,6 +33,13 @@ export default function teamText(text) {
       return
     }
     flushList()
+    // Кнопка: [[Подпись|/путь]]. Только внутренние пути — письмо пишем мы, но
+    // кнопка не должна уметь вести за пределы сайта.
+    const button = line.match(/^\[\[(.+?)\|(\/[A-Za-z0-9_\-/]*)\]\]$/)
+    if (button) {
+      blocks.push(<Link key={`b${i}`} to={button[2]} className="team-btn">{button[1]}</Link>)
+      return
+    }
     if (!line) return                      // пустая строка — это зазор между блоками, он от отступов
     if (/^#{1,3}\s+/.test(line)) {
       blocks.push(<div key={`h${i}`} className="team-head">{inlineParts(line.replace(/^#{1,3}\s+/, ''), i)}</div>)
@@ -49,6 +58,7 @@ export function plainTeamText(text) {
     .replace(/^#{1,3}\s+/gm, '')
     .replace(/\*\*(.+?)\*\*/g, '$1')
     .replace(/^[-•*]\s+/gm, '')
+    .replace(/\[\[.+?\|\/[^\]]*\]\]/g, '')          // кнопка в превью не нужна
     .replace(/\s+/g, ' ')
     .trim()
 }
