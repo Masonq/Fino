@@ -17,7 +17,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from app.core.clock import utcnow  # noqa: E402
 from app.core.database import SessionLocal  # noqa: E402
 from app.core.price_marks import (  # noqa: E402
-    COMPARABLE_ROOTS, MAX_SHARE_OF_MEDIAN, MIN_SAMPLE, mark_from_check, run,
+    COMPARABLE_ROOTS, MAX_SHARE_OF_FEED, MAX_SHARE_OF_MEDIAN, MIN_SAMPLE, choose_best,
+    mark_from_check, run,
 )
 from app.models import (  # noqa: E402
     Category, Currency, Listing, ListingStatus, ListingTranslation, User, UserRole,
@@ -115,7 +116,7 @@ def test_refresh_marks_only_the_cheap_one_and_clears_stale():
         stale.price_mark = "below"
         db.commit()
 
-        run()
+        run(share=1.0)
         db.expire_all()
         assert db.get(Listing, cheap.id).price_mark == "below"
         assert all(db.get(Listing, l.id).price_mark is None for l in normal)
@@ -132,7 +133,7 @@ def test_a_non_comparable_section_never_gets_the_mark():
         cheap = _make(db, cat, _seller(db), 40_000, "Квартира двушка", city=town)
         cheap.price_mark = "below"          # даже если метка каким-то образом есть — снимем
         db.commit()
-        run()
+        run(share=1.0)
         db.expire_all()
         assert db.get(Listing, cheap.id).price_mark is None
         assert others
@@ -274,7 +275,7 @@ def test_an_ordinary_bargain_gets_the_flame():
             _make(db, cat, _seller(db), 100 + i, "Куртка Zara 46", condition="used", city=town)
         deal = _make(db, cat, _seller(db), 70, "Куртка Zara 48", condition="used", city=town)
         db.commit()
-        stats = run()
+        stats = run(share=1.0)
         db.expire_all()
         assert db.get(Listing, deal.id).price_mark == "below", stats
     finally:
@@ -285,9 +286,100 @@ def test_the_run_reports_where_listings_dropped_out():
     """Если огоньков нет вовсе, по воронке видно, на каком шаге они пропали."""
     from app.core.price_marks import why_not
 
-    assert why_not({"verdict": None}, 10) == "мало похожих"
+    assert why_not({"verdict": None, "why": "no_words"}, 10) == "в названии нет предмета"
+    assert why_not({"verdict": None, "why": "few", "found": 0}, 10) == "похожих 0"
+    assert why_not({"verdict": None, "why": "few", "found": 3}, 10) == "похожих 3 из 5"
+    assert why_not({"verdict": None}, 10) == "оценки нет"
     assert why_not({"verdict": "fair"}, 10) == "цена обычная или выше"
     assert why_not({"verdict": "cheap", "based_on": 3, "median_eur": 100.0}, 10) == "выборка меньше порога"
     assert why_not({"verdict": "cheap", "based_on": 12, "median_eur": 100.0}, 90) == "дешевле, но не на пятую часть"
     assert why_not({"verdict": "cheap", "based_on": 12, "median_eur": 100.0}, 70) is None
     assert "отсеяно" in run(dry_run=True)
+
+
+# ─── импорт из чатов: «продавец» — это автор, а не служебный аккаунт ─────
+def _imported(db, cat, service, author, price, title="Куртка Zara 46", town=None):
+    """Объявление, перенесённое из чата: владелец — служебный аккаунт, автор — человек."""
+    l = _make(db, service, service, price, title, condition="used", city=town) if False else None
+    from app.core.clock import utcnow
+    l = Listing(id=uuid.uuid4(), owner_id=service.id, category_id=cat.id, source_language="ru",
+                status=ListingStatus.active, city=town, price=price, currency=Currency.eur,
+                is_free=False, attributes={"condition": "used"}, published_at=utcnow(),
+                created_at=utcnow(), external_source="telegram", external_author=author)
+    db.add(l)
+    db.flush()
+    db.add(ListingTranslation(listing_id=l.id, language="ru", title=title, description="Хорошая."))
+    return l
+
+
+def test_imported_listings_are_not_one_seller():
+    """
+    Все объявления одного чата принадлежат одному служебному аккаунту. Раз
+    «продавцом» считался аккаунт, тысяча объявлений чата была одним
+    торговцем, от которого берётся три, — и оценки цены не стало ни у
+    кого: на боевых данных «похожих мало» у 1300 из 1344.
+    """
+    db, cat = _db_with("fashion")
+    try:
+        town = _town()
+        service = _seller(db)
+        for i in range(12):
+            _imported(db, cat, service, f"author{i}", 100 + i, town=town)
+        mine = _imported(db, cat, service, "me", 60, "Куртка Zara 48", town=town)
+        db.commit()
+        check = compute_price_check(db, mine, "ru")
+        assert check["based_on"] == 12, check
+        assert check["verdict"] == "cheap"
+    finally:
+        db.close()
+
+
+def test_one_real_author_is_still_limited_among_imported():
+    db, cat = _db_with("fashion")
+    try:
+        town = _town()
+        service = _seller(db)
+        for i in range(8):
+            _imported(db, cat, service, f"a{i}", 100 + i, town=town)
+        for _ in range(25):
+            _imported(db, cat, service, "flooder", 10, town=town)
+        mine = _imported(db, cat, service, "me", 90, "Куртка Zara 48", town=town)
+        db.commit()
+        check = compute_price_check(db, mine, "ru")
+        assert check["based_on"] == 8 + 3, check         # восемь разных + три от торговца
+        assert check["median_eur"] > 90
+    finally:
+        db.close()
+
+
+def test_the_authors_own_imports_are_not_counted_against_him():
+    db, cat = _db_with("fashion")
+    try:
+        town = _town()
+        service = _seller(db)
+        for _ in range(6):
+            _imported(db, cat, service, "me", 10, town=town)
+        for i in range(6):
+            _imported(db, cat, service, f"a{i}", 100 + i, town=town)
+        mine = _imported(db, cat, service, "me", 90, "Куртка Zara 48", town=town)
+        db.commit()
+        assert compute_price_check(db, mine, "ru")["based_on"] == 6
+    finally:
+        db.close()
+
+
+# ─── предохранитель: огонёк — про лучшие цены ───────────────────────────
+def test_the_flame_goes_to_the_deepest_discounts_only():
+    candidates = [(0.79, "a"), (0.50, "b"), (0.65, "c"), (0.40, "d"), (0.70, "e")]
+    assert choose_best(candidates, checked=100, share=0.03) == {"d", "b", "c"}     # 3% от 100
+    assert choose_best(candidates, checked=100, share=1.0) == {"a", "b", "c", "d", "e"}
+
+
+def test_a_small_feed_still_gets_at_least_one_flame():
+    """Доля от малого числа не должна округляться в ноль, если есть что отметить."""
+    assert choose_best([(0.6, "x"), (0.7, "y")], checked=10, share=0.06) == {"x"}
+    assert choose_best([], checked=1000, share=0.06) == set()
+
+
+def test_the_feed_share_is_a_small_fraction():
+    assert 0 < MAX_SHARE_OF_FEED <= 0.10

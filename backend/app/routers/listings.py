@@ -1310,6 +1310,21 @@ _EMPTY_WORDS = frozenset("""
 """.split())
 
 
+def _seller_key(listing) -> str:
+    """
+    Кто на самом деле продаёт. Объявления из чатов Telegram принадлежат
+    служебному аккаунту — один на чат, а настоящий человек записан в
+    external_author. Считать «продавцом» аккаунт нельзя: тысяча объявлений
+    одного чата оказалась бы одним торговцем, и «не больше трёх от
+    продавца» оставляло в выборке три штуки — оценки не стало ни у кого.
+    """
+    if listing.external_source and listing.external_author:
+        return f"{listing.external_source}:{listing.external_author}"
+    if listing.external_source:
+        return f"{listing.external_source}-msg:{listing.id}"   # автор не назван — считаем разными
+    return str(listing.owner_id)
+
+
 def _condition_group(value) -> str | None:
     """'new' — новое; 'used' — как новое и б/у; иначе не сравниваем по состоянию."""
     if value == "new":
@@ -1430,7 +1445,7 @@ def compute_price_check(db, listing, lang: str) -> dict:
 
     base_things, _ = _title_words(base, lang)
     if not base_things:
-        return {"verdict": None}
+        return {"verdict": None, "why": "no_words"}
 
     # Что берём за рынок. Всё, что тут написано, — ответ на один вопрос:
     # «а если цены на сайте занижены?». На своих же объявлениях честно
@@ -1453,6 +1468,14 @@ def compute_price_check(db, listing, lang: str) -> dict:
     #    остальное (как новое, б/у) вместе. Четыре группы дробили выборку
     #    настолько, что похожих не набиралось;
     #  - от одного продавца берём до трёх объявлений.
+    # Свои объявления продавца в выборку не входят. Для перенесённых из чата
+    # «свои» — того же external_author, а не того же служебного аккаунта.
+    if base.external_source and base.external_author:
+        not_mine = or_(Listing.external_author.is_(None), Listing.external_author != base.external_author)
+    elif base.external_source:
+        not_mine = Listing.id != base.id
+    else:
+        not_mine = Listing.owner_id != base.owner_id
     base_condition = _condition_group((base.attributes or {}).get("condition"))
     base_models = _model_tokens(base, lang) if _root_slug(db, base.category_id) == "electronics" else set()
     PER_SELLER = 3
@@ -1461,7 +1484,7 @@ def compute_price_check(db, listing, lang: str) -> dict:
         q = (db.query(Listing)
              .options(joinedload(Listing.translations))
              .filter(Listing.id != base.id,
-                     Listing.owner_id != base.owner_id,
+                     not_mine,
                      Listing.status.in_((ListingStatus.active, ListingStatus.sold)),
                      Listing.category_id == base.category_id,
                      Listing.price.isnot(None),
@@ -1482,9 +1505,10 @@ def compute_price_check(db, listing, lang: str) -> dict:
                 continue
             if base_models and not (_model_tokens(other, lang) & base_models):
                 continue
-            if per_owner.get(other.owner_id, 0) >= PER_SELLER:
+            seller = _seller_key(other)
+            if per_owner.get(seller, 0) >= PER_SELLER:
                 continue
-            per_owner[other.owner_id] = per_owner.get(other.owner_id, 0) + 1
+            per_owner[seller] = per_owner.get(seller, 0) + 1
             price = float(other.price)
             if other.currency != Currency.eur:
                 price /= RSD_PER_EUR
@@ -1498,8 +1522,9 @@ def compute_price_check(db, listing, lang: str) -> dict:
         if len(wider) > len(prices):
             prices, scope = wider, "country"
     if len(prices) < 5:
-        _price_cache[key] = {"at": utcnow(), "data": {"verdict": None}}
-        return {"verdict": None}
+        few = {"verdict": None, "why": "few", "found": len(prices)}
+        _price_cache[key] = {"at": utcnow(), "data": few}
+        return few
 
     prices.sort()
     def at(share: float) -> float:

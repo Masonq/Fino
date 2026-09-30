@@ -15,6 +15,8 @@
   - выборка не крошечная: не меньше 8 похожих;
   - цена не просто чуть ниже, а хотя бы на 20% ниже медианы;
   - раздел из тех, где название честно определяет цену (см. ниже).
+  - и это одна из лучших цен: метку получают самые глубокие скидки, не
+    больше 6% проверенных (MAX_SHARE_OF_FEED) — огонёк не должен стать фоном.
 
 Сравнение идёт с объявлениями на PLONK: внешних цен у нас нет, и метка
 честно означает «дешевле похожих у нас», а не «ниже рынка вообще» — так
@@ -45,6 +47,11 @@ log = logging.getLogger(__name__)
 MIN_SAMPLE = 8
 MAX_SHARE_OF_MEDIAN = 0.80
 
+# Огонёк — про лучшие цены, а не про каждую вторую. Даже если данные
+# поменяются так, что под правило попадёт треть ленты, метку получат
+# только самые глубокие скидки — не больше этой доли проверенных.
+MAX_SHARE_OF_FEED = 0.06
+
 # Метку ставим только там, где цену можно честно сравнить по названию.
 # Квартира, машина, услуга и вакансия — нет: цену определяют площадь,
 # район, год, пробег, а не слова в заголовке, и «дёшево» там почти
@@ -66,7 +73,15 @@ def why_not(check: dict, price_eur: float) -> str | None:
     Порядок проверок и есть порядок отсева.
     """
     if not check or check.get("verdict") is None:
-        return "мало похожих"                      # оценки по объявлениям нет вовсе
+        # Оценки по объявлениям нет вовсе — а почему, compute_price_check
+        # говорит сам: иначе «мало похожих» прятало бы разные причины.
+        why = (check or {}).get("why")
+        if why == "no_words":
+            return "в названии нет предмета"
+        if why == "few":
+            found = (check or {}).get("found", 0)
+            return "похожих 0" if not found else f"похожих {min(found, 4)} из 5"
+        return "оценки нет"
     if check.get("verdict") != "cheap":
         return "цена обычная или выше"
     if (check.get("based_on") or 0) < MIN_SAMPLE:
@@ -77,7 +92,20 @@ def why_not(check: dict, price_eur: float) -> str | None:
     return None
 
 
-def run(dry_run: bool = False) -> dict:
+def choose_best(candidates: list, checked: int, share: float) -> set:
+    """
+    Из подходящих под правило берём самые выгодные, но не больше доли
+    проверенных. candidates — [(цена / медиана, id)]; чем меньше, тем
+    глубже скидка. Пусто — никому, а если подходящие есть, то хотя бы
+    одному: доля от малого числа не должна округляться в ноль.
+    """
+    if not candidates:
+        return set()
+    limit = max(1, int(checked * share))
+    return {listing_id for _, listing_id in sorted(candidates, key=lambda c: c[0])[:limit]}
+
+
+def run(dry_run: bool = False, share: float = MAX_SHARE_OF_FEED) -> dict:
     from app.core.category_tree import root_slugs
     from app.routers.listings import RSD_PER_EUR, compute_price_check
 
@@ -94,6 +122,8 @@ def run(dry_run: bool = False) -> dict:
                 .order_by(Listing.published_at.desc())
                 .limit(LIMIT).all())
         roots = root_slugs(db)
+        candidates: list = []
+        judged: list = []
         for listing in rows:
             if roots.get(listing.category_id) not in COMPARABLE_ROOTS:
                 funnel["раздел без меток"] = funnel.get("раздел без меток", 0) + 1
@@ -107,12 +137,20 @@ def run(dry_run: bool = False) -> dict:
             if listing.currency != Currency.eur:
                 price /= RSD_PER_EUR
             reason = why_not(check, price)
-            mark = None if reason else "below"
             stats["проверено"] += 1
-            if mark:
-                stats["с меткой"] += 1
+            judged.append(listing)
+            if reason is None:
+                candidates.append((price / check["median_eur"], listing.id))
             else:
                 funnel[reason] = funnel.get(reason, 0) + 1
+        best = choose_best(candidates, stats["проверено"], share)
+        cut = len(candidates) - len(best)
+        if cut:
+            funnel["подошли, но не в лучших"] = cut
+        for listing in judged:
+            mark = "below" if listing.id in best else None
+            if mark:
+                stats["с меткой"] += 1
             if listing.price_mark != mark:
                 if listing.price_mark and not mark:
                     stats["снято"] += 1
