@@ -264,3 +264,35 @@ def test_the_wallet_split_is_promised_in_terms_and_real_in_code(docs):
     """Условия обещают: сначала бонусы, потом деньги; бонус отдельно от денег."""
     wallet = (BACK / "app" / "core" / "wallet.py").read_text(encoding="utf-8")
     assert "bonus_balance" in wallet and "from_bonus = min(" in wallet
+
+
+# ─── что уходит платёжному оператору: сказано конкретно и совпадает с кодом ──
+def test_the_payment_operator_is_described_concretely_in_every_language(docs):
+    """
+    Общая фраза «данные передаются за границу» пугала и ничего не объясняла. Вместо
+    неё — кто, где и что именно уходит; страна оператора названа прямо.
+    """
+    expect = {
+        "ru": ("Российской Федерации", "реквизиты карты вводятся на странице оператора и нам не передаются",
+               "имя, адрес электронной почты и номер телефона ему не передаются"),
+        "en": ("Russian Federation", "card details are entered on the operator’s page and are not passed to us",
+               "your name, email address and phone number are not passed to it"),
+        "sr": ("Ruskoj Federaciji", "podaci o kartici unose se na stranici operatora i ne prosleđuju se nama",
+               "vaše ime, adresa elektronske pošte i broj telefona ne prosleđuju mu se"),
+    }
+    for lang, phrases in expect.items():
+        body = text_of(docs, "PRIVACY", lang)
+        for phrase in phrases:
+            assert phrase in body, f"{lang}: нет формулировки «{phrase}»"
+
+
+def test_the_payment_request_really_carries_no_personal_contact_data():
+    """
+    Политика говорит: имя, почта и телефон оператору не уходят, карта вводится на его
+    странице. Появился чек с почтой или встроенная форма карты — сначала правится текст.
+    """
+    promo = (BACK / "app" / "routers" / "promotions.py").read_text(encoding="utf-8")
+    assert '"type": "redirect"' in promo, "карта вводится на странице оператора"
+    for key in ('"receipt"', '"customer"', '"email"', '"phone"', '"full_name"'):
+        assert key not in promo, f"в запросе к оператору появилось {key}: обновите раздел 6 Политики"
+
