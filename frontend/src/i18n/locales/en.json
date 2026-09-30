@@ -1268,5 +1268,16 @@
     "up_to": "up to",
     "any_price": "any",
     "show": "Show listings"
+  },
+  "flame": {
+    "title_ref": "Well below new and similar",
+    "title_below": "Cheaper than similar on PLONK",
+    "why_ref": "The price is well below the same item new in Serbian shops, and below similar listings on PLONK.",
+    "why_below": "The price is at least a quarter below most similar listings on PLONK. It's compared only with our listings, not the whole market.",
+    "new_price": "A new one costs about {{price}} ({{source}}).",
+    "compared": "Compared with {{count}} similar listings.",
+    "careful": "A low price is a reason to look closer, not to rush: ask about the condition and never prepay strangers.",
+    "open": "Open listing",
+    "ok": "Got it"
   }
 }

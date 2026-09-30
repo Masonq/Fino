@@ -472,51 +472,6 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .s-fav::after{ content:""; position:absolute; inset:-4px; }
 .l-card .s-fav{ top:10px; right:10px; }
 /* Метка «Ниже рынка» теперь огонёк на фото (components/Flame.jsx). */
-.flame-mark{
-  position:absolute; top:50px; right:10px; z-index:3; width:32px; height:32px; border-radius:50%;
-  display:flex; align-items:center; justify-content:center; pointer-events:none;
-  background:rgba(255,255,255,.92); box-shadow:0 1px 4px rgba(16,24,40,.2);
-}
-/* Центр по одной вертикали с сердечком: оно 36 точек, огонёк 32 — поэтому отступы разные. */
-.l-card .flame-mark{ top:54px; right:12px; }
-/* Кольцо тепла расходится от значка и гаснет. Только transform и opacity:
-   такую анимацию браузер считает на видеокарте, лента не тормозит. */
-.flame-halo{
-  position:absolute; inset:0; border-radius:50%; background:rgba(240,67,42,.32);
-  animation:flame-halo 2.4s ease-out infinite; animation-delay:var(--flame-delay,0s);
-}
-.flame-mark svg{ position:relative; overflow:visible; }
-.flame-mark path{ transform-box:fill-box; transform-origin:50% 92%; }
-.flame-outer{ animation:flame-outer 1.7s ease-in-out infinite; animation-delay:var(--flame-delay,0s); }
-.flame-mid{ animation:flame-mid 1.15s ease-in-out infinite; animation-delay:var(--flame-delay,0s); }
-.flame-core{ animation:flame-core .8s ease-in-out infinite; animation-delay:var(--flame-delay,0s); }
-@keyframes flame-outer{
-  0%,100%{ transform:scale(1,1) rotate(0deg); }
-  28%{ transform:scale(.95,1.07) rotate(-3deg); }
-  55%{ transform:scale(1.04,.97) rotate(2deg); }
-  80%{ transform:scale(.98,1.05) rotate(3deg); }
-}
-@keyframes flame-mid{
-  0%,100%{ transform:scale(1,1) rotate(0deg); }
-  35%{ transform:scale(1.06,.94) rotate(2.5deg); }
-  70%{ transform:scale(.94,1.08) rotate(-3deg); }
-}
-@keyframes flame-core{
-  0%,100%{ transform:scale(1,1); opacity:1; }
-  50%{ transform:scale(.88,1.12); opacity:.82; }
-}
-@keyframes flame-halo{
-  0%{ transform:scale(.85); opacity:.75; }
-  70%,100%{ transform:scale(1.55); opacity:0; }
-}
-@media (prefers-reduced-motion: reduce){
-  .flame-outer,.flame-mid,.flame-core,.flame-halo{ animation:none; }
-  .flame-halo{ opacity:0; }
-}
-.price-ref-line{
-  margin:10px 0 0; padding:10px 12px; border-radius:12px; background:var(--surface-sunken);
-  font-size:13px; line-height:1.45; color:var(--ink-soft);
-}
 .price-none{ font-size:13.5px; font-weight:600; color:var(--muted); }
 .s-fav.on{ color:var(--accent); }
 
@@ -532,11 +487,14 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .fav-pop{ animation:fav-pop .45s cubic-bezier(.34,1.56,.64,1); }
 
-.s-price{ font-size:18px; font-weight:800; padding:6px 10px 0; color:var(--ink); display:flex; align-items:center; gap:4px; }
+.s-price-line{ display:flex; align-items:center; padding-top:6px; font-size:18px; font-weight:800; }
+.s-price{ font-size:18px; font-weight:800; padding:0 0 0 10px; color:var(--ink); display:flex; align-items:center; gap:4px; flex:0 1 auto; min-width:0; }
+.s-price-fill{ flex:1; align-self:stretch; min-width:8px; }
 .s-price-arrow{ flex-shrink:0; }
 .s-price-arrow.down{ color:var(--brand,#0E9F6E); }
 .s-price-arrow.up{ color:var(--coral); }
 .l-card .s-price{ font-size:18px; }
+.l-card .s-price-line{ font-size:18px; }
 .s-attrs{ font-size:11.5px; color:var(--ink-soft); font-weight:600; padding:3px 10px 0; }
 .s-meta{
   font-size:12px; color:var(--muted); font-weight:500; padding:3px 10px 11px; min-height:calc(1em + 14px);
@@ -656,9 +614,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   color:var(--muted); font-size:10.5px; font-weight:700; text-align:center; padding:0 6px;
 }
 .photo-add.disabled{ opacity:.5; pointer-events:none; }
-.post-field{ display:flex; flex-direction:column; gap:6px; flex:1; }
+.post-field{ display:flex; flex-direction:column; gap:6px; flex:1; min-width:0; }
 .post-field label{ font-size:12px; font-weight:700; color:var(--ink-soft); }
+/* Поле не шире своей колонки: у числового input своя ширина по умолчанию,
+   и в паре «цена от / до» правое вылезало за край экрана. */
 .post-field input, .post-field select, .post-field textarea{
+  width:100%; min-width:0; box-sizing:border-box;
   padding:12px 14px; border-radius:12px; border:1px solid var(--line); background:var(--surface); font-size:16px;
   font-family:inherit; color:var(--ink);
 }
@@ -3216,7 +3177,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* Полоса подкатегорий над лентой */
 .sub-row{
-  display:flex; gap:7px; overflow-x:auto; padding:10px 16px 2px;
+  display:flex; gap:7px; overflow-x:auto; padding:10px 12px 2px;   /* общий край страницы — 12, а не 16 */
   scrollbar-width:none; -webkit-overflow-scrolling:touch;
 }
 .sub-row::-webkit-scrollbar{ display:none; }
@@ -3232,7 +3193,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    это навигация по подразделу, здесь — активный отбор, который можно
    убрать (крестик), поэтому берём мягкий акцентный фон, а не серый. */
 .active-filters-row{
-  display:flex; gap:7px; overflow-x:auto; padding:10px 16px 2px; align-items:center;
+  display:flex; gap:7px; overflow-x:auto; padding:10px 12px 2px; align-items:center;
   scrollbar-width:none; -webkit-overflow-scrolling:touch;
 }
 .active-filters-row::-webkit-scrollbar{ display:none; }
@@ -4134,10 +4095,15 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   background:var(--surface-sunken); border-radius:14px; margin-bottom:10px;
 }
 .cat-mode{
-  flex:1; padding:10px 8px; border:0; border-radius:11px;
+  flex:1; min-width:0; padding:10px 4px; border:0; border-radius:11px;
   background:none; color:#667085;
-  font-size:14px; font-weight:600;
+  font-size:14px; font-weight:600; white-space:nowrap;
+  /* Вкладка в одну строку: «Снять надолго» переносилось, и одна вкладка
+     становилась выше остальных. Не влезает — обрезается многоточием. */
+  overflow:hidden; text-overflow:ellipsis;
 }
+/* На самых узких экранах (320) «Снять надолго» не влезало в треть ширины. */
+@media (max-width:350px){ .cat-mode{ flex:1 1 auto; font-size:12.5px; padding:10px 6px; } }
 .cat-mode.on{
   background:var(--surface); color:#101828;
   box-shadow:0 1px 3px rgba(16,24,40,.08);
@@ -6346,4 +6312,22 @@ a.s-attrs{ display:block; }
 @media (prefers-reduced-motion: reduce){
   .fp-panel{ transition:opacity .2s ease; transform:none; }
   .fp-go-text{ animation:none; }
+}
+
+/* ===== Огонёк у цены (components/Flame.jsx) ===== */
+.flame-btn{
+  position:relative; flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center;
+  height:1em; padding:0 8px; margin:0 -2px 0 0; color:inherit; background:none; border:0; font-size:inherit;
+}
+/* Размер — от шрифта цены: не больше и не меньше самой цены. */
+.flame-svg{ display:block; height:1em; width:.727em; overflow:visible; }
+/* Видимое — 13×18, нажимаемое — не меньше 44 по высоте. */
+.flame-btn::after{ content:""; position:absolute; inset:-14px -4px -14px -6px; }
+.flame-btn:active .flame-svg{ transform:scale(.9); }
+.flame-sheet-head{ display:flex; align-items:center; gap:10px; padding:6px 6px 0; }
+.flame-sheet-icon{ display:inline-flex; font-size:26px; }
+.flame-sheet-title{ padding:12px 0 6px; }
+.flame-careful{ color:var(--ink); font-weight:600; }
+.flame-sheet-link{
+  display:block; padding:12px 6px 4px; font-size:14px; font-weight:700; color:var(--primary-deep); text-decoration:none;
 }

@@ -1303,5 +1303,16 @@
     "up_to": "do",
     "any_price": "bilo koja",
     "show": "Prikaži oglase"
+  },
+  "flame": {
+    "title_ref": "Znatno jeftinije od novog i sličnih",
+    "title_below": "Jeftinije od sličnih na PLONK-u",
+    "why_ref": "Cena je znatno niža nego za isti novi proizvod u srpskim radnjama, i niža od sličnih oglasa na PLONK-u.",
+    "why_below": "Cena je bar za četvrtinu niža od većine sličnih oglasa na PLONK-u. Poređenje je samo sa našim oglasima, ne sa celim tržištem.",
+    "new_price": "Novi košta oko {{price}} ({{source}}).",
+    "compared": "Upoređeno sa {{count}} sličnih oglasa.",
+    "careful": "Niska cena je razlog da pogledate bolje, a ne da žurite: pitajte za stanje i ne šaljite avans nepoznatima.",
+    "open": "Otvori oglas",
+    "ok": "Razumem"
   }
 }

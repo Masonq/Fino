@@ -1,4 +1,4 @@
-import Flame from './Flame'
+import PriceFlame from './Flame'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -131,12 +131,6 @@ export default function ListingCard({ listing, large = false, priority = false }
           <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />
         </svg>
       </button>
-      {/* Огонёк «Ниже рынка» — под сердечком, тем же белым кружком: два
-          круглых значка друг под другом справа, а левый и нижний края
-          остаются за «Новым» и бейджем компании. */}
-      {listing.price_mark && (
-        <Flame id={listing.id} label={t(listing.price_mark === 'ref' ? 'misc.below_new' : 'misc.below_market')} />
-      )}
       <div className="s-row">
         <Link to={listing.path} className="s-title">{listing.title}</Link>
       </div>
@@ -144,6 +138,7 @@ export default function ListingCard({ listing, large = false, priority = false }
           Раньше нажималось только фото и заголовок: палец попадал в
           цену — и ничего не происходило. Человек не разбирается, что
           тут ссылка, а что нет, он нажимает на карточку. */}
+      <div className="s-price-line">
       <Link to={listing.path} className="s-price">
         {/* «Бесплатно» и «цена не указана» — разные вещи: мимо второго
             читатель проходит, а первое как раз и ищут. */}
@@ -164,6 +159,13 @@ export default function ListingCard({ listing, large = false, priority = false }
           </svg>
         )}
       </Link>
+      {/* Огонёк «цена заметно ниже» — сразу за ценой и одного с ней размера.
+          Отдельная кнопка, а не значок внутри ссылки на объявление: по
+          нажатию он объясняет, что это, а не уводит на другую страницу. */}
+      {listing.price_mark && <PriceFlame listing={listing} />}
+      {/* Остаток строки тоже ведёт в объявление, как и раньше вся строка. */}
+      <Link to={listing.path} className="s-price-fill" aria-hidden="true" tabIndex={-1} />
+      </div>
       {/* «2-комн., 45 м², 3/9 эт.» — то, что человек заполнил на форме
           публикации, иначе никуда дальше формы не попадало. */}
       {meta && <Link to={listing.path} className="s-attrs">{meta}</Link>}
