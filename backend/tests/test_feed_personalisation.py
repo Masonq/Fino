@@ -898,29 +898,23 @@ def test_category_tree_updates_within_an_hour():
     assert "return refresh().catch(() => saved.tree)" in client
 
 
-def test_pull_indicator_clears_the_notch():
-    """Полоса обновления не прячется под «островом» айфона.
+def test_pull_to_refresh_stays_removed():
+    """Жест «потяни, чтобы обновить» убран сознательно.
 
-    В приложении с домашнего экрана страница занимает весь экран,
-    включая место под островом. Шапка это учитывала, а полоса
-    обновления начиналась от самого верха — и остров её перегораживал.
-
-    В браузере беды не было: там сверху адресная строка, и полоса
-    оказывалась ниже. Оттого и не находилась долго — на компьютере всё
-    выглядело правильно.
+    Он слушал касания на всём документе и срабатывал из любого места —
+    в том числе поверх панели фильтров, вытягивая индикатор с логотипом.
+    Прежний тест проверял, что полоса не прячется под «островом» айфона;
+    полосы больше нет, и вместе с ней — переменной --pull-bg, что красила
+    область под индикатор.
     """
-    styles = (Path(__file__).resolve().parents[2]
-              / "frontend" / "src" / "styles.css").read_text()
+    root = Path(__file__).resolve().parents[2] / "frontend" / "src"
+    styles = (root / "styles.css").read_text()
+    home = (root / "pages" / "Home.jsx").read_text()
 
-    block = styles.split(".ptr-indicator{")[1].split("}")[0]
-    # Отступ под вырез не помог: он только увеличил белый разрыв над
-    # цветной шапкой. Красим область в цвет шапки — тогда стыка нет
-    # вовсе, и остров ложится на тот же цвет, что и всегда.
-    assert "background:var(--pull-bg" in block
-
-    home = (Path(__file__).resolve().parents[2]
-            / "frontend" / "src" / "pages" / "Home.jsx").read_text()
-    assert "setProperty('--pull-bg'" in home
+    assert ".ptr-indicator" not in styles
+    assert "PullToRefresh" not in home
+    assert "--pull-bg" not in home
+    assert not (root / "components" / "PullToRefresh.jsx").exists()
 
 
 def test_cards_appear_one_after_another():

@@ -1,8 +1,12 @@
 """
-Метка «Ниже рынка»: обещание покупателю, поэтому планка высокая.
+Метка «Ниже рынка»: обещание покупателю, поэтому планка высокая, а
+сравнение честное.
 
-Лучше пропустить хорошую цену, чем повесить метку на обычную: после
-первой ошибки ей перестанут верить.
+Главное возражение владельца: цены на сайте могут быть занижены сами —
+особенно б/у, — и тогда «рынок» из наших же объявлений врёт. Поэтому
+сравнение защищено от перекосов (свои объявления не в счёт, не больше
+двух от продавца, то же состояние, та же модель), а метка ставится
+только там, где название честно определяет цену.
 """
 import sys
 import uuid
@@ -12,28 +16,35 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.core.clock import utcnow  # noqa: E402
 from app.core.database import SessionLocal  # noqa: E402
-from app.core.price_marks import MIN_SAMPLE, mark_from_check, run  # noqa: E402
+from app.core.price_marks import (  # noqa: E402
+    COMPARABLE_ROOTS, MAX_SHARE_OF_MEDIAN, MIN_SAMPLE, mark_from_check, run,
+)
 from app.models import (  # noqa: E402
     Category, Currency, Listing, ListingStatus, ListingTranslation, User, UserRole,
 )
+from app.routers.listings import compute_price_check  # noqa: E402
 
 
 def _check(**kw):
-    base = {"verdict": "cheap", "based_on": 12, "median_eur": 100.0}
+    base = {"verdict": "cheap", "based_on": 14, "median_eur": 100.0}
     base.update(kw)
     return base
 
 
+# ─── чистое правило ─────────────────────────────────────────────────────
 def test_clearly_cheap_gets_the_mark():
     assert mark_from_check(_check(), 70.0) == "below"
 
 
-def test_slightly_cheaper_does_not():
-    """Ниже четверти выборки, но всего на 5% ниже медианы — это не «ниже рынка»."""
+def test_the_bar_is_a_quarter_below_the_median():
+    assert MAX_SHARE_OF_MEDIAN == 0.75
+    assert mark_from_check(_check(), 75.0) == "below"
+    assert mark_from_check(_check(), 80.0) is None      # на 20% — уже не метка
     assert mark_from_check(_check(), 95.0) is None
 
 
 def test_small_sample_does_not():
+    assert MIN_SAMPLE == 10
     assert mark_from_check(_check(based_on=MIN_SAMPLE - 1), 50.0) is None
     assert mark_from_check(_check(based_on=MIN_SAMPLE), 50.0) == "below"
 
@@ -45,31 +56,59 @@ def test_fair_and_expensive_and_missing_do_not():
     assert mark_from_check(_check(median_eur=0), 10.0) is None
 
 
-def test_refresh_marks_only_the_cheap_one_and_clears_stale():
+def test_only_comparable_sections_can_carry_the_mark():
+    """Квартира, машина, услуга, вакансия, животные — цену определяет не заголовок."""
+    for root in ("real-estate", "auto", "services", "jobs", "pets", "beauty", "business"):
+        assert root not in COMPARABLE_ROOTS
+    assert "electronics" in COMPARABLE_ROOTS
+
+
+# ─── сравнение на базе ──────────────────────────────────────────────────
+def _db_with(root_slug="electronics"):
     db = SessionLocal()
-    try:
-        cat = db.query(Category).first() or Category(id=uuid.uuid4(), slug="pm", name={"ru": "Т"})
+    cat = db.query(Category).filter(Category.slug == root_slug).first()
+    if cat is None:
+        cat = Category(id=uuid.uuid4(), slug=root_slug, name={"ru": root_slug})
         db.add(cat)
-        owner = User(id=uuid.uuid4(), display_name="Продавец", role=UserRole.buyer,
-                     email=f"pm{uuid.uuid4().hex[:8]}@example.rs")
-        db.add(owner)
         db.commit()
+    return db, cat
 
-        def make(price, title="Велосипед горный"):
-            l = Listing(id=uuid.uuid4(), owner_id=owner.id, category_id=cat.id,
-                        source_language="ru", status=ListingStatus.active, city="pmtest",
-                        price=price, currency=Currency.eur, is_free=False,
-                        published_at=utcnow(), created_at=utcnow())
-            db.add(l)
-            db.flush()
-            db.add(ListingTranslation(listing_id=l.id, language="ru", title=title,
-                                      description="Хороший велосипед, ездил мало."))
-            return l
 
-        normal = [make(100 + i) for i in range(12)]
-        cheap = make(50)
-        stale = make(101)
-        stale.price_mark = "below"          # метка осталась с прошлых времён
+def _seller(db):
+    u = User(id=uuid.uuid4(), display_name="Продавец", role=UserRole.buyer,
+             email=f"pm{uuid.uuid4().hex[:8]}@example.rs")
+    db.add(u)
+    db.commit()
+    return u
+
+
+def _town():
+    """Свой город на каждый тест: база общая, и чужие объявления попадали бы в выборку."""
+    return f"pm{uuid.uuid4().hex[:8]}"
+
+
+def _make(db, cat, owner, price, title="Наушники Sony WH-1000XM4", condition=None,
+          status=ListingStatus.active, city=None):
+    l = Listing(id=uuid.uuid4(), owner_id=owner.id, category_id=cat.id,
+                source_language="ru", status=status, city=city or "pmtest",
+                price=price, currency=Currency.eur, is_free=False,
+                attributes={"condition": condition} if condition else {},
+                published_at=utcnow(), created_at=utcnow())
+    db.add(l)
+    db.flush()
+    db.add(ListingTranslation(listing_id=l.id, language="ru", title=title,
+                              description="Хорошее состояние."))
+    return l
+
+
+def test_refresh_marks_only_the_cheap_one_and_clears_stale():
+    db, cat = _db_with()
+    try:
+        town = _town()
+        normal = [_make(db, cat, _seller(db), 100 + i, "Наушники Sony", city=town) for i in range(14)]
+        cheap = _make(db, cat, _seller(db), 50, "Наушники Sony", city=town)
+        stale = _make(db, cat, _seller(db), 101, "Наушники Sony", city=town)
+        stale.price_mark = "below"
         db.commit()
 
         run()
@@ -77,5 +116,111 @@ def test_refresh_marks_only_the_cheap_one_and_clears_stale():
         assert db.get(Listing, cheap.id).price_mark == "below"
         assert all(db.get(Listing, l.id).price_mark is None for l in normal)
         assert db.get(Listing, stale.id).price_mark is None, "устаревшая метка снимается"
+    finally:
+        db.close()
+
+
+def test_a_non_comparable_section_never_gets_the_mark():
+    db, cat = _db_with("real-estate")
+    try:
+        town = _town()
+        others = [_make(db, cat, _seller(db), 100_000 + i, "Квартира двушка", city=town) for i in range(14)]
+        cheap = _make(db, cat, _seller(db), 40_000, "Квартира двушка", city=town)
+        cheap.price_mark = "below"          # даже если метка каким-то образом есть — снимем
+        db.commit()
+        run()
+        db.expire_all()
+        assert db.get(Listing, cheap.id).price_mark is None
+        assert others
+    finally:
+        db.close()
+
+
+def test_one_seller_cannot_define_the_market():
+    """
+    Торговец с тридцатью объявлениями по заниженной цене не должен
+    тянуть «рынок» вниз: от каждого продавца берём не больше двух.
+    """
+    db, cat = _db_with()
+    try:
+        town = _town()
+        flooder = _seller(db)
+        for _ in range(30):
+            _make(db, cat, flooder, 20, "Наушники Sony", city=town)
+        honest = [_make(db, cat, _seller(db), 100 + i, "Наушники Sony", city=town) for i in range(10)]
+        mine = _make(db, cat, _seller(db), 60, "Наушники Sony", city=town)
+        db.commit()
+
+        check = compute_price_check(db, mine, "ru")
+        # 10 честных + не больше двух от торговца
+        assert check["based_on"] <= 12, check
+        assert check["median_eur"] >= 95, "медиану не должен определять торговец"
+        assert honest
+    finally:
+        db.close()
+
+
+def test_own_listings_do_not_count():
+    db, cat = _db_with()
+    try:
+        town = _town()
+        me = _seller(db)
+        for _ in range(8):
+            _make(db, cat, me, 10, "Наушники Sony", city=town)
+        for i in range(6):
+            _make(db, cat, _seller(db), 100 + i, "Наушники Sony", city=town)
+        target = _make(db, cat, me, 90, "Наушники Sony", city=town)
+        db.commit()
+        check = compute_price_check(db, target, "ru")
+        assert check["based_on"] == 6 and check["median_eur"] >= 100
+    finally:
+        db.close()
+
+
+def test_new_and_used_are_not_mixed():
+    db, cat = _db_with()
+    try:
+        town = _town()
+        for i in range(8):
+            _make(db, cat, _seller(db), 300 + i, "Наушники Sony", condition="new", city=town)
+        for i in range(8):
+            _make(db, cat, _seller(db), 100 + i, "Наушники Sony", condition="used", city=town)
+        used = _make(db, cat, _seller(db), 105, "Наушники Sony", condition="used", city=town)
+        db.commit()
+        check = compute_price_check(db, used, "ru")
+        assert check["verdict"] == "fair", check      # среди б/у — обычная цена, а не «дёшево»
+        assert check["median_eur"] < 150
+    finally:
+        db.close()
+
+
+def test_other_models_are_not_comparables():
+    """iPhone 11 и iPhone 15 делят слово, но не цену."""
+    db, cat = _db_with()
+    try:
+        town = _town()
+        for i in range(8):
+            _make(db, cat, _seller(db), 900 + i, "Смартфон iPhone 15 Pro", city=town)
+        for i in range(8):
+            _make(db, cat, _seller(db), 250 + i, "Смартфон iPhone 11", city=town)
+        eleven = _make(db, cat, _seller(db), 255, "Смартфон iPhone 11", city=town)
+        db.commit()
+        check = compute_price_check(db, eleven, "ru")
+        assert check["verdict"] == "fair", check      # не «дёшево» рядом с пятнадцатыми
+        assert check["median_eur"] < 400
+    finally:
+        db.close()
+
+
+def test_sold_listings_count_as_evidence():
+    db, cat = _db_with()
+    try:
+        town = _town()
+        for i in range(8):
+            _make(db, cat, _seller(db), 100 + i, "Наушники Bose", status=ListingStatus.sold, city=town)
+        target = _make(db, cat, _seller(db), 60, "Наушники Bose", city=town)
+        db.commit()
+        check = compute_price_check(db, target, "ru")
+        assert check["based_on"] == 8, "проданные — тоже в выборке"
     finally:
         db.close()

@@ -343,7 +343,7 @@
     "promoted": "Izdvojeno",
     "reserved": "Rezervisano",
     "ago": "pre {{when}}",
-    "below_market": "Ispod tržišne"
+    "below_market": "Jeftinije od sličnih na PLONK-u"
   },
   "chats": {
     "need_auth": "Predstavite se da biste videli svoje razgovore.",
@@ -1139,9 +1139,9 @@
     "explain_cheap": "Slične stvari obično koštaju više. Vredi se javiti brzo — jeftine prve odu.",
     "explain_fair": "Uobičajena cena za ovakve stvari — ni iznad ni ispod onoga što traže drugi.",
     "explain_expensive": "Za ovakve stvari obično traže manje. Možete se cenkati ili tražiti jeftinije.",
-    "how_city_one": "Upoređeno sa {{count}} sličnim oglasom u ovom gradu za poslednjih pola godine: većina je između {{low}} i {{high}}.",
-    "how_city_few": "Upoređeno sa {{count}} slična oglasa u ovom gradu za poslednjih pola godine: većina je između {{low}} i {{high}}.",
-    "how_city_other": "Upoređeno sa {{count}} sličnih oglasa u ovom gradu za poslednjih pola godine: većina je između {{low}} i {{high}}.",
+    "how_city_one": "Upoređeno sa {{count}} sličnim oglasom na PLONK-u u ovom gradu za poslednjih pola godine: većina je između {{low}} i {{high}}.",
+    "how_city_few": "Upoređeno sa {{count}} slična oglasa na PLONK-u u ovom gradu za poslednjih pola godine: većina je između {{low}} i {{high}}.",
+    "how_city_other": "Upoređeno sa {{count}} sličnih oglasa na PLONK-u u ovom gradu za poslednjih pola godine: većina je između {{low}} i {{high}}.",
     "how_country": "U ovom gradu ima malo sličnih, pa je upoređeno sa {{count}} širom Srbije za poslednjih pola godine: većina je između {{low}} i {{high}}."
   },
   "reviews": {

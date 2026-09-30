@@ -1310,6 +1310,19 @@ _EMPTY_WORDS = frozenset("""
 """.split())
 
 
+def _model_tokens(listing, lang: str) -> set[str]:
+    """
+    Числа и модели из названия: «15», «s23», «fx2», «256gb».
+
+    Слова названия (_title_words) короче трёх букв отбрасывают, а именно
+    «15» отличает iPhone 15 от iPhone 11 — и цену вдвое. Совпасть должен
+    хотя бы один такой знак, если он есть у самого объявления.
+    """
+    translation = pick_translation(listing, lang)
+    title = ((translation.title if translation else "") or "").lower()
+    return {tok for tok in re.findall(r"[a-z]*\d+[a-z]*", title) if len(tok) <= 12}
+
+
 def _title_words(listing, lang: str) -> tuple[set[str], set[str]]:
     """
     Слова названия: сама вещь и её признаки.
@@ -1394,24 +1407,47 @@ def compute_price_check(db, listing, lang: str) -> dict:
     if not base_things:
         return {"verdict": None}
 
+    # Что берём за рынок. Всё, что тут написано, — ответ на один вопрос:
+    # «а если цены на сайте занижены?». На своих же объявлениях честно
+    # сравнивать можно, только защитившись от перекосов:
+    #  - проданные — тоже в выборке. Заявленная цена, по которой вещь
+    #    реально ушла, весит больше, чем цена, что месяцами висит;
+    #  - объявления самого продавца не в счёт, и от каждого другого
+    #    берём не больше двух: один торговец с тридцатью объявлениями
+    #    иначе сам определил бы «рынок»;
+    #  - состояние сравниваем с тем же: новое с б/у смешивать нельзя;
+    #  - модель — с той же: «iPhone 11» и «iPhone 15» делят слово, но не
+    #    цену.
+    base_condition = (base.attributes or {}).get("condition")
+    base_models = _model_tokens(base, lang)
+    PER_SELLER = 2
+
     def prices_for(city: str | None) -> list[float]:
         q = (db.query(Listing)
              .options(joinedload(Listing.translations))
              .filter(Listing.id != base.id,
-                     Listing.status == ListingStatus.active,
+                     Listing.owner_id != base.owner_id,
+                     Listing.status.in_((ListingStatus.active, ListingStatus.sold)),
                      Listing.category_id == base.category_id,
                      Listing.price.isnot(None),
                      Listing.is_free.is_(False),
                      Listing.created_at >= utcnow() - timedelta(days=180)))
         if city:
             q = q.filter(Listing.city == city)
-        out = []
-        for other in q.limit(400).all():
+        if base_condition:
+            q = q.filter(Listing.attributes["condition"].astext == base_condition)
+        out, per_owner = [], {}
+        for other in q.order_by(Listing.created_at.desc()).limit(400).all():
             things, _ = _title_words(other, lang)
             # Совпасть должен сам предмет, а не признак: «стол» и
             # «стол письменный» — одно, «стол» и «стул» — разное.
             if not (things & base_things):
                 continue
+            if base_models and not (_model_tokens(other, lang) & base_models):
+                continue
+            if per_owner.get(other.owner_id, 0) >= PER_SELLER:
+                continue
+            per_owner[other.owner_id] = per_owner.get(other.owner_id, 0) + 1
             price = float(other.price)
             if other.currency != Currency.eur:
                 price /= RSD_PER_EUR
