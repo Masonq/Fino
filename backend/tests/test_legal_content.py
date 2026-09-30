@@ -368,3 +368,14 @@ def test_the_operator_block_is_optional_but_never_shows_a_hole():
     assert got["empty"] == [0, 0, 0]
     assert all("Иван Иванов" in x and "Београд" in x for x in got["filled"])
     assert got["bad"] is False
+
+
+def test_terms_say_card_payment_can_be_unavailable_without_touching_the_refund_right(docs):
+    """Владелец может выключить оплату картой в админке: Условия об этом предупреждают и не отменяют возврат."""
+    expect = {"ru": ("может быть временно недоступна", "права Пользователя на возврат неизрасходованных"),
+              "en": ("may be temporarily unavailable", "right to a refund of unspent funds"),
+              "sr": ("može privremeno biti nedostupno", "pravo korisnika na povraćaj neutrošenih")}
+    for lang, phrases in expect.items():
+        section7 = "\n".join(docs["TERMS"][lang]["sections"][6]["p"])
+        for phrase in phrases:
+            assert phrase in section7, f"{lang}: нет «{phrase}»"

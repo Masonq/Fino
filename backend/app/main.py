@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
 from app.core.global_rate_limit import GlobalRateLimitMiddleware
 from app.routers import (
-    admin_audit, admin_stats, admin_users, auth, auth_telegram, tg_webapp, tg_publish,
+    admin_audit, admin_settings, admin_stats, admin_users, auth, auth_telegram, tg_webapp, tg_publish,
     categories, chats,
     favorites, listings,
     media,
@@ -52,6 +52,7 @@ app.include_router(reports.router)
 app.include_router(saved_searches.router)
 app.include_router(preview.router)
 app.include_router(admin_users.router)
+app.include_router(admin_settings.router)
 app.include_router(admin_stats.router)
 app.include_router(admin_audit.router)
 app.include_router(support.router)

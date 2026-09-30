@@ -59,4 +59,5 @@ __all__ = [
 # базу (веб-сервер, бот, разовые скрипты вроде перевода и импорта из
 # чатов), а не только сам веб-сервер.
 from app.models.volunteer import VolunteerApplication, VolunteerRole, VolunteerStatus  # noqa: F401,E402
+from app.models.site_setting import SiteSetting  # noqa: F401,E402
 from app.core import status_watch  # noqa: F401,E402

@@ -434,6 +434,7 @@ export const TERMS = {
           'Приобретение платных услуг не освобождает Пользователя от обязанности соблюдения настоящих Условий и Правил размещения объявлений в полном объёме.',
           'Право потребителя на отказ от договора. Пользователь, который является потребителем (физическое лицо, действующее вне предпринимательской деятельности), вправе отказаться от договора о платной услуге, заключённого через Сайт, в течение 14 дней со дня его заключения без объяснения причин. Для этого достаточно направить заявление на адрес электронной почты из раздела 13 либо через раздел поддержки. Уплаченные деньги возвращаются не позднее 14 дней со дня получения заявления.',
           'Право на отказ не действует в отношении услуги, которая полностью оказана, если её оказание началось после явной просьбы Пользователя и его подтверждения, что он знает: после полного оказания услуги право на отказ теряется. Такая просьба и подтверждение даются отметкой в окне оплаты продвижения; без неё оплатить деньгами продвижение объявления нельзя. Если цена полностью покрыта бонусами, платежа нет и отметка не требуется.',
+          'Оплата картой через платёжного оператора может быть временно недоступна. Тогда продвижение объявлений оплачивается подаренными бонусами и уже внесённым внутренним балансом; недоступность оплаты картой не отменяет права Пользователя на возврат неизрасходованных денежных средств в случаях, предусмотренных законом.',
         ],
       },
       {
@@ -561,6 +562,7 @@ export const TERMS = {
           'Purchasing paid services does not exempt the User from the obligation to comply fully with these Terms and the Posting Rules.',
           'Consumer right of withdrawal. A User who is a consumer (an individual acting outside a business activity) may withdraw from a contract for a paid service concluded through the Site within 14 days of its conclusion, without giving reasons. It is enough to send a statement to the email address given in Section 13 or through the support section. Money paid is refunded no later than 14 days after the statement is received.',
           'The right of withdrawal does not apply to a service that has been fully performed, if its performance began after the User’s express request and confirmation that the User understands the right of withdrawal is lost once the service is fully performed. That request and confirmation are given by ticking the box in the promotion payment window; without it, a promotion cannot be paid for with money. If the price is fully covered by Bonuses, there is no payment and the box is not required.',
+          'Card payment through the payment operator may be temporarily unavailable. In that case listing promotion is paid for with Bonuses and the Internal Balance already deposited; the unavailability of card payment does not affect the User’s right to a refund of unspent funds in the cases provided by law.',
         ],
       },
       {
@@ -688,6 +690,7 @@ export const TERMS = {
           'Kupovina plaćenih usluga ne oslobađa korisnika obaveze potpunog poštovanja ovih Uslova i Pravila oglašavanja.',
           'Pravo potrošača na odustanak od ugovora. Korisnik koji je potrošač (fizičko lice koje deluje van svoje preduzetničke delatnosti) može da odustane od ugovora o plaćenoj usluzi zaključenog preko Sajta u roku od 14 dana od dana zaključenja, bez navođenja razloga. Dovoljno je poslati izjavu na adresu elektronske pošte iz odeljka 13 ili preko odeljka za podršku. Uplaćeni novac vraća se najkasnije u roku od 14 dana od prijema izjave.',
           'Pravo na odustanak ne postoji za uslugu koja je u potpunosti izvršena, ako je njeno izvršenje počelo nakon izričitog zahteva korisnika i njegove potvrde da zna da nakon potpunog izvršenja usluge gubi pravo na odustanak. Takav zahtev i potvrda daju se oznakom u prozoru za plaćanje izdvajanja; bez nje se izdvajanje oglasa ne može platiti novcem. Ako je cena u potpunosti pokrivena bonusima, nema plaćanja i oznaka nije potrebna.',
+          'Plaćanje karticom preko platnog operatora može privremeno biti nedostupno. Tada se izdvajanje oglasa plaća bonusima i već uplaćenim internim stanjem; nedostupnost plaćanja karticom ne utiče na pravo korisnika na povraćaj neutrošenih sredstava u slučajevima predviđenim zakonom.',
         ],
       },
       {

@@ -179,7 +179,9 @@
     "check_pending": "Uplata se obrađuje — efekat će se pojaviti za nekoliko minuta.",
     "consent": "Želim da usluga počne odmah i znam da nakon njenog potpunog izvršenja gubim pravo da odustanem od ugovora.",
     "consent_link": "Uslovi, odeljak 7",
-    "err_consent": "Označite saglasnost: bez nje se plaćena usluga ne može naručiti."
+    "err_consent": "Označite saglasnost: bez nje se plaćena usluga ne može naručiti.",
+    "cards_off": "Plaćanje karticom još nije dostupno. Izdvajanje se može platiti bonusima i uplaćenim stanjem.",
+    "err_payments_off": "Plaćanje karticom je trenutno isključeno."
   },
   "actions": {
     "back": "Nazad",
@@ -760,7 +762,9 @@
       "chat": "Prepiska",
       "listing": "Oglas",
       "ticket": "Zahtev",
-      "user": "Korisnik"
+      "user": "Korisnik",
+      "settings_card_payments_on": "Plaćanje karticom uključeno",
+      "settings_card_payments_off": "Plaćanje karticom isključeno"
     },
     "kind_staff": "Osoblje",
     "kind_system": "Sistemske",
@@ -1036,7 +1040,8 @@
     "title": "Stanje",
     "topup": "Dopuni",
     "topup_cta": "Dopuni za {{amount}} RSD",
-    "of_which_bonus": "od toga bonus {{amount}} RSD — samo za izdvajanje oglasa"
+    "of_which_bonus": "od toga bonus {{amount}} RSD — samo za izdvajanje oglasa",
+    "topup_off": "Dopuna karticom još nije dostupna"
   },
   "home": {
     "phone_reminder": "Dodajte broj telefona — kupci će moći direktno da vas pozovu",
@@ -1325,5 +1330,17 @@
     "compared_one": "Upoređeno sa {{count}} sličnim oglasom.",
     "compared_few": "Upoređeno sa {{count}} slična oglasa.",
     "compared_other": "Upoređeno sa {{count}} sličnih oglasa."
+  },
+  "settings": {
+    "title": "Podešavanja",
+    "card_title": "Plaćanje karticom",
+    "on": "Uključeno",
+    "off": "Isključeno",
+    "card_text": "Dopuna stanja i plaćanje izdvajanja karticom preko YooKassa. Kada je isključeno, novcem se ne može platiti karticom: izdvajanje ostaje dostupno za bonuse i već uplaćeno stanje, a dugme „Dopuni“ je skriveno.",
+    "warn_on": "Dok preduzetnik ili firma nisu registrovani, bolje je ne uključivati plaćanje: uzimanje novca za usluge kao fizičko lice je rizično (porezi, prava potrošača).",
+    "confirm_on": "Uključiti plaćanje karticom? Ljudi će moći da dopunjuju stanje i plaćaju izdvajanje.",
+    "changed": "Izmenio {{who}}, {{when}}",
+    "never": "Nikad menjano — podrazumevano isključeno",
+    "no_access": "Odeljak je dostupan samo vlasniku"
   }
 }

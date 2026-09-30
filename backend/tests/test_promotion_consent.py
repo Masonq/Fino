@@ -97,8 +97,12 @@ def test_bonus_that_only_partly_covers_the_price_still_needs_the_consent():
 
 
 def test_a_card_payment_is_refused_without_the_consent_before_calling_the_operator(monkeypatch):
+    from app.core import site_settings
+
     db = SessionLocal()
     try:
+        site_settings.set_value(db, site_settings.CARD_PAYMENTS, True, None)      # по умолчанию оплата картой выключена
+        db.commit()
         user, listing = _setup(db)
         monkeypatch.setattr(promotions, "_yookassa_request",
                             lambda *a, **k: (_ for _ in ()).throw(AssertionError("оператору звонить рано")))
@@ -106,6 +110,8 @@ def test_a_card_payment_is_refused_without_the_consent_before_calling_the_operat
             _buy(db, user, listing, pay_method="yookassa")
         assert error.value.detail == "consent_required"
     finally:
+        site_settings.set_value(db, site_settings.CARD_PAYMENTS, False, None)
+        db.commit()
         db.close()
 
 
@@ -121,4 +127,4 @@ def test_the_frontend_sends_the_consent_and_blocks_the_buttons_without_it():
     assert "consent_immediate: consentImmediate" in client
     page = (root / "components" / "PromoteButton.jsx").read_text(encoding="utf-8")
     assert "startPromotion(listingId, selected, payMethod, agreed)" in page
-    assert page.count("disabled={blocked}") == 3, "все три кнопки оплаты закрыты без согласия"
+    assert page.count("disabled={blocked") == 3, "все три кнопки оплаты закрыты без согласия"

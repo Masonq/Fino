@@ -230,6 +230,10 @@ def start_promotion(
         _activate_promotion(db, promo)
         return {"paid_from_balance": True, **wallet.view(fresh)}
 
+    from app.core import site_settings
+
+    if not site_settings.card_payments_enabled(db):
+        raise HTTPException(400, "payments_disabled")           # владелец выключил оплату картой в админке
     if not payload.consent_immediate:
         raise HTTPException(400, "consent_required")
 
@@ -305,7 +309,7 @@ def listing_promotions(
     fresh = db.query(User).get(user.id)
     return {
         "prices": {t.value: PROMOTION_PRICES[t] for t in SELLABLE_TYPES},
-        **_wallet_view(fresh),
+        **_wallet_view(fresh, db),
         "items": [
             {
                 "type": p.type.value,
@@ -317,16 +321,17 @@ def listing_promotions(
     }
 
 
-def _wallet_view(user) -> dict:
-    from app.core import wallet
+def _wallet_view(user, db) -> dict:
+    """Кошелёк и, рядом, включена ли оплата картой: по этому флагу клиент прячет «Пополнить» и оплату картой."""
+    from app.core import site_settings, wallet
 
-    return wallet.view(user)
+    return {**wallet.view(user), "payments_enabled": site_settings.card_payments_enabled(db)}
 
 
 @router.get("/balance")
 def my_balance(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     fresh = db.query(User).get(user.id)
-    return _wallet_view(fresh)
+    return _wallet_view(fresh, db)
 
 
 @router.post("/balance/topup")
@@ -339,6 +344,10 @@ def start_topup(
     как и с продвижением."""
     if payload.amount < MIN_TOPUP or payload.amount > MAX_TOPUP:
         raise HTTPException(400, "amount_out_of_range")
+    from app.core import site_settings
+
+    if not site_settings.card_payments_enabled(db):
+        raise HTTPException(400, "payments_disabled")
 
     # Человек назвал сумму в динарах, а платёжная система принимает
     # только рубли: считаем, сколько это рублей, и просим их. Курс

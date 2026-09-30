@@ -404,6 +404,8 @@ export const api = {
     method: 'POST',
     body: JSON.stringify({ email, code }),
   }),
+  adminSettings: () => request('/admin/settings'),
+  setCardPayments: (enabled) => request('/admin/settings/card-payments', { method: 'POST', body: JSON.stringify({ enabled }) }),
   adminJobs: (days = 7) => request(`/admin/audit/jobs?days=${days}`),
   tgSiteLink: (initData, next) => request('/tg/site-link', {
     method: 'POST',

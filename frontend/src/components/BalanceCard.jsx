@@ -27,8 +27,8 @@ export default function BalanceCard() {
       // Уводим на оплату целиком — сама оплата на стороне ЮKassa.
       window.location.href = confirmation_url
     } catch (e) {
-      setError(e.code === 'promotion_not_configured'
-        ? t('promo.err_unavailable') : t('promo.err_generic'))
+      setError(e.code === 'promotion_not_configured' ? t('promo.err_unavailable')
+        : e.code === 'payments_disabled' ? t('balance.topup_off') : t('promo.err_generic'))
       setBusy(false)
     }
   }
@@ -47,9 +47,14 @@ export default function BalanceCard() {
             <div className="balance-bonus">{t('balance.of_which_bonus', { amount: wallet.bonus })}</div>
           )}
         </div>
-        <button className="balance-topup-btn" onClick={() => setOpen((v) => !v)}>
-          {t('balance.topup')}
-        </button>
+        {wallet?.payments_enabled === false ? (
+          // Оплату картой выключил владелец (админка → Настройки): просить деньги не у кого и не за что.
+          <span className="balance-topup-off">{t('balance.topup_off')}</span>
+        ) : (
+          <button className="balance-topup-btn" onClick={() => setOpen((v) => !v)}>
+            {t('balance.topup')}
+          </button>
+        )}
       </div>
 
       {open && (

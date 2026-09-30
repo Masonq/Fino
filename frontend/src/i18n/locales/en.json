@@ -179,7 +179,9 @@
     "check_pending": "Payment is processing — it'll take effect within a few minutes.",
     "consent": "I want the service to start right away, and I understand that once it is fully performed I lose the right to withdraw from the contract.",
     "consent_link": "Terms, section 7",
-    "err_consent": "Please tick the consent: a paid service can't be ordered without it."
+    "err_consent": "Please tick the consent: a paid service can't be ordered without it.",
+    "cards_off": "Card payment is not available yet. Promotion can be paid for with Bonuses and the deposited balance.",
+    "err_payments_off": "Card payment is switched off right now."
   },
   "actions": {
     "back": "Back",
@@ -743,7 +745,9 @@
       "chat": "Chat",
       "listing": "Listing",
       "ticket": "Request",
-      "user": "User"
+      "user": "User",
+      "settings_card_payments_on": "Card payments turned on",
+      "settings_card_payments_off": "Card payments turned off"
     },
     "kind_staff": "Staff",
     "kind_system": "System",
@@ -1009,7 +1013,8 @@
     "title": "Balance",
     "topup": "Top up",
     "topup_cta": "Top up {{amount}} RSD",
-    "of_which_bonus": "of which bonus {{amount}} RSD — promotion only"
+    "of_which_bonus": "of which bonus {{amount}} RSD — promotion only",
+    "topup_off": "Card top-up is not available yet"
   },
   "home": {
     "phone_reminder": "Add your phone — buyers will be able to call you directly",
@@ -1286,5 +1291,17 @@
     "ok": "Got it",
     "compared_one": "Compared with {{count}} similar listing.",
     "compared_other": "Compared with {{count}} similar listings."
+  },
+  "settings": {
+    "title": "Settings",
+    "card_title": "Card payments",
+    "on": "On",
+    "off": "Off",
+    "card_text": "Balance top-ups and paying for promotion by card through YooKassa. When off, nobody can pay with a card: promotion stays available for Bonuses and the balance already deposited, and the Top up button is hidden.",
+    "warn_on": "Until an entrepreneur or company is registered, it is better not to turn payments on: taking money for services as a private person is risky (taxes, consumer rights).",
+    "confirm_on": "Turn card payments on? People will be able to top up their balance and pay for promotion.",
+    "changed": "Changed by {{who}}, {{when}}",
+    "never": "Never changed — off by default",
+    "no_access": "This section is for the owner only"
   }
 }

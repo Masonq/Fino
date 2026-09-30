@@ -138,7 +138,8 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
       }
     } catch (e) {
       setError(e.code === 'promotion_not_configured' ? t('promo.err_unavailable')
-        : e.code === 'consent_required' ? t('promo.err_consent') : t('promo.err_generic'))
+        : e.code === 'consent_required' ? t('promo.err_consent')
+          : e.code === 'payments_disabled' ? t('promo.err_payments_off') : t('promo.err_generic'))
     } finally {
       setBusy(false)
     }
@@ -160,6 +161,8 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
     const paidWithBonus = price != null && (data?.bonus || 0) >= price
     const needsConsent = price != null && !paidWithBonus
     const blocked = busy || (needsConsent && !agreed)
+    // Оплата картой выключена владельцем: остаются бонусы и уже внесённый баланс.
+    const cardsOn = data?.payments_enabled !== false
 
     return (
       <div className="promo-sheet">
@@ -248,7 +251,7 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
             {/* Закон о защите потребителей: право отказаться от договора об услуге в течение
                 14 дней снимается, только если человек прямо попросил начать сразу и знает, что
                 после полного оказания услуги этого права не будет. Без отметки оплата не пройдёт. */}
-            {selected && needsConsent && (
+            {selected && needsConsent && (cardsOn || canUseBalance) && (
               <label className="post-checkbox promo-consent">
                 <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
                 <span>{t('promo.consent')} <Link to="/terms">{t('promo.consent_link')}</Link></span>
@@ -261,18 +264,20 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
                   <button className="promo-cta" disabled={blocked} onClick={() => buy('balance')}>
                     {busy ? '…' : t('promo.pay_balance', { price })}
                   </button>
-                  <button className="promo-alt-pay" disabled={blocked} onClick={() => buy('yookassa')}>
-                    {t('promo.pay_card')}
-                  </button>
+                  {cardsOn && (
+                    <button className="promo-alt-pay" disabled={blocked} onClick={() => buy('yookassa')}>
+                      {t('promo.pay_card')}
+                    </button>
+                  )}
                 </>
               ) : (
                 <>
-                  <button className="promo-cta" disabled={blocked} onClick={() => buy('yookassa')}>
+                  <button className="promo-cta" disabled={blocked || !cardsOn} onClick={() => buy('yookassa')}>
                     {busy ? '…' : t('promo.cta', { price })}
                   </button>
                   {price != null && (
                     <p className="promo-balance-hint">
-                      {t('promo.not_enough_balance', { amount: balance })}
+                      {cardsOn ? t('promo.not_enough_balance', { amount: balance }) : t('promo.cards_off')}
                     </p>
                   )}
                 </>
