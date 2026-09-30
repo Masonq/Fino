@@ -1,3 +1,4 @@
+import Flame from './Flame'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -130,6 +131,10 @@ export default function ListingCard({ listing, large = false, priority = false }
           <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />
         </svg>
       </button>
+      {/* Огонёк «Ниже рынка» — под сердечком, тем же белым кружком: два
+          круглых значка друг под другом справа, а левый и нижний края
+          остаются за «Новым» и бейджем компании. */}
+      {listing.price_mark === 'below' && <Flame id={listing.id} label={t('misc.below_market')} />}
       <div className="s-row">
         <Link to={listing.path} className="s-title">{listing.title}</Link>
       </div>
@@ -144,9 +149,6 @@ export default function ListingCard({ listing, large = false, priority = false }
           ? <span className="price-free">{t('detail.free')}</span>
           : formatPrice(listing.price, listing.currency, i18n.language)
             || <span className="price-none">{t('detail.no_price')}</span>}
-        {listing.price_mark === 'below' && (
-          <span className="price-below">{t('misc.below_market')}</span>
-        )}
         {priceDirection && (
           <svg
             className={`s-price-arrow ${priceDirection}`}
