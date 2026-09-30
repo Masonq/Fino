@@ -108,31 +108,18 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   padding:calc(9px + var(--sat)) 14px 10px;
   margin:0;
   overflow:hidden;
-  transition:padding-bottom .5s cubic-bezier(.25,.46,.45,.94), box-shadow .3s ease;
+  /* Липкая шапка не меняет высоту при прокрутке: если бы менялась, менялась бы и высота
+     страницы под пальцем — браузер сдвигал бы прокрутку, шапка раскрывалась бы обратно
+     и так по кругу. Свёрнутое состояние — только тень, цвет и прозрачность. */
+  transition:box-shadow .3s ease;
 }
 /* схлопнутое состояние при скролле — как у Avito: промо уезжает, поиск липнет сверху */
 .avito-banner.collapsed{ box-shadow:0 1px 0 var(--border); }
-.avito-banner .promo-collapse{
-  display:grid; grid-template-rows:1fr;
-  transition:grid-template-rows .65s cubic-bezier(.25,.46,.45,.94);
-}
-.avito-banner.collapsed .promo-collapse{ grid-template-rows:0fr; transition:grid-template-rows .8s cubic-bezier(.25,.46,.45,.94); }
-.avito-banner .promo-collapse > *{ overflow:hidden; min-height:0; }
-.avito-banner .avito-promo-row{
-  opacity:1; transform:translateY(0);
-  transition:opacity .6s ease, transform .65s cubic-bezier(.25,.46,.45,.94);
-  will-change:opacity, transform;
-}
-.avito-banner.collapsed .avito-promo-row{ opacity:0; transform:translateY(-2px); }
-/* Фон живёт отдельным слоем от промо-строки, поэтому про схлопывание
-   не знал и оставался висеть в свёрнутой шапке. Гасим вместе с текстом,
-   тем же временем — иначе картинка «отстаёт» от заголовка. */
-.avito-banner .promo-backdrop{
-  opacity:1; transition:opacity .6s ease;
-}
-.avito-banner.collapsed .promo-backdrop{ opacity:0; }
-.avito-banner .avito-toprow{ transition:margin-bottom .65s cubic-bezier(.25,.46,.45,.94); }
-.avito-banner.collapsed .avito-toprow{ margin-bottom:0; }
+/* Полоска историй лежит под липкой шапкой в обычном потоке и уезжает вместе с лентой */
+.promo-collapse{ padding:0 14px 6px; }
+.promo-collapse > *{ min-width:0; }
+.avito-promo-row{ display:block; }
+.avito-banner .avito-toprow{ margin-bottom:0; }
 .avito-banner .avito-search,
 .avito-banner .avito-login-pill{ transition:background .7s ease, box-shadow .7s ease; }
 .avito-banner.collapsed{ box-shadow:0 1px 0 var(--border); }
@@ -286,8 +273,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .story-skeleton .story-label{ width:36px; height:11px; border-radius:6px; background:var(--surface-sunken-2); }
 
 /* содержимое поверх фона */
-.avito-banner .avito-toprow,
-.avito-banner .promo-collapse{ position:relative; z-index:2; }
+.avito-banner .avito-toprow{ position:relative; z-index:2; }
 
 .city-pill{
   position:relative; display:flex; align-items:center; gap:5px; background:rgba(255,255,255,.18); border-radius:9px;
@@ -3044,7 +3030,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
     border-radius:0;
     box-shadow:none;
   }
-  .avito-banner .promo-collapse{ display:none; }
+  .promo-collapse{ display:none; }
 
   .avito-toprow{ max-width:none; gap:12px; align-items:center; }
   .avito-search{
