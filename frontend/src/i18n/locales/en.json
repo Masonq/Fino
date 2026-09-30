@@ -1014,7 +1014,15 @@
     "topup": "Top up",
     "topup_cta": "Top up {{amount}} RSD",
     "of_which_bonus": "of which bonus {{amount}} RSD — promotion only",
-    "topup_off": "Card top-up is not available yet"
+    "topup_off": "Card top-up is not available yet",
+    "money": "Money",
+    "money_note": "deposited by you",
+    "bonus": "Bonus",
+    "bonus_note": "for promotion only",
+    "spend_order": "Bonuses are spent first, then money",
+    "aria": "Balance {{total}}: money {{money}}, bonus {{bonus}}",
+    "spend_bonus": "{{amount}} from bonus",
+    "spend_money": "{{amount}} in money"
   },
   "home": {
     "phone_reminder": "Add your phone — buyers will be able to call you directly",

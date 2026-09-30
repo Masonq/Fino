@@ -1041,7 +1041,15 @@
     "topup": "Dopuni",
     "topup_cta": "Dopuni za {{amount}} RSD",
     "of_which_bonus": "od toga bonus {{amount}} RSD — samo za izdvajanje oglasa",
-    "topup_off": "Dopuna karticom još nije dostupna"
+    "topup_off": "Dopuna karticom još nije dostupna",
+    "money": "Novac",
+    "money_note": "uplatili ste vi",
+    "bonus": "Bonus",
+    "bonus_note": "samo za izdvajanje oglasa",
+    "spend_order": "Prvo se troše bonusi, pa novac",
+    "aria": "Stanje {{total}}: novac {{money}}, bonus {{bonus}}",
+    "spend_bonus": "{{amount}} iz bonusa",
+    "spend_money": "{{amount}} novcem"
   },
   "home": {
     "phone_reminder": "Dodajte broj telefona — kupci će moći direktno da vas pozovu",

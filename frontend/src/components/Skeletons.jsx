@@ -222,12 +222,17 @@ export function ProfileSkeleton({ showStaff = false }) {
           рендерится всегда (значение баланса грузится своим запросом
           внутри него, но сама карточка — сразу). */}
       <div className="balance-card">
-        <div className="balance-row">
+        <div className="balance-head">
           <div>
             <div className="sk-block sk-line" style={{ height: 12, width: 60 }} />
-            <div className="sk-block sk-line" style={{ height: 19, width: 90, marginTop: 5 }} />
+            <div className="sk-block sk-line" style={{ height: 26, width: 112, marginTop: 6 }} />
           </div>
           <div className="sk-block sk-line" style={{ height: 38, width: 110 }} />
+        </div>
+        <div className="balance-bar" />
+        <div className="balance-parts">
+          <div className="sk-block" style={{ height: 78, borderRadius: 14 }} />
+          <div className="sk-block" style={{ height: 78, borderRadius: 14 }} />
         </div>
       </div>
       {/* Настоящее меню — четыре подписанные группы (Объявления x2,

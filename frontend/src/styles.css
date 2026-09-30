@@ -1640,15 +1640,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .profile-stat b{ font-size:18px; font-weight:800; letter-spacing:-0.02em; line-height:1.1; font-variant-numeric:tabular-nums; }
 .profile-stat span{ font-size:11px; font-weight:600; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.balance-card{
-  margin:0 12px 10px; padding:14px; border-radius:16px; background:var(--surface);
-  border:1px solid var(--border);
-}
-.balance-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; }
-.balance-label{ font-size:12px; color:var(--muted); font-weight:600; }
-.balance-amount{ font-size:19px; font-weight:800; color:var(--ink); margin-top:1px; }
 .balance-topup-btn{
-  flex-shrink:0; padding:10px 16px; border-radius:11px;
+  flex-shrink:0; margin-left:auto; padding:10px 16px; border-radius:11px;
   background:var(--primary); color:#fff; font-size:13px; font-weight:700;
 }
 .balance-topup-form{ margin-top:14px; padding-top:14px; border-top:1px solid var(--border); }
@@ -6333,7 +6326,7 @@ a.s-attrs{ display:block; }
 }
 
 /* Подарочная часть баланса: мельче суммы, тем же цветом, что и прочие подсказки. */
-.balance-bonus, .promo-balance-bonus{ font-size:12px; font-weight:600; color:var(--muted); margin-top:2px; }
+.promo-balance-bonus{ font-size:12px; font-weight:600; color:var(--muted); margin-top:2px; }
 
 /* Галочка «сохраню конфиденциальность» в заявке помощника: текст в несколько строк,
    поэтому галочка выравнивается по первой строке, а не по середине блока. */
@@ -6360,7 +6353,7 @@ a.s-attrs{ display:block; }
 .setting-warn{ font-size:13px; line-height:1.45; font-weight:600; color:#8A6A1F; background:#FBF3DC; border-radius:10px; padding:9px 11px; margin:10px 0 0; }
 .setting-meta{ font-size:12px; color:var(--muted); margin:10px 0 0; }
 /* «Пополнить» скрыто вместе с оплатой картой — вместо кнопки короткая подпись */
-.balance-topup-off{ flex:0 1 auto; max-width:46%; text-align:right; font-size:12.5px; line-height:1.35; font-weight:600; color:var(--muted); }
+.balance-topup-off{ flex:1 1 150px; max-width:none; margin-left:auto; text-align:right; font-size:12.5px; line-height:1.35; font-weight:600; color:var(--muted); }
 
 /* Место под «Пополнить», пока баланс грузится: занимает столько же, но невидимо, и строка не прыгает */
 .balance-topup-ph{ visibility:hidden; pointer-events:none; }
@@ -6371,4 +6364,73 @@ a.s-attrs{ display:block; }
 .setting-confirm-actions button{ flex:1; min-height:44px; border-radius:12px; font-size:14.5px; font-weight:700; }
 .setting-confirm-yes{ background:var(--primary); color:#fff; }
 .setting-confirm-no{ background:var(--surface); border:1px solid var(--border); color:var(--ink); }
+
+/* ══ Баланс: деньги и бонусы раздельно ═══════════════════════════════════════════════
+   Зелёный — деньги (вносил сам), оранжевый — бонусы (подарок, только на продвижение). */
+.balance-card{
+  margin:0 12px 10px; padding:16px 14px 14px; border-radius:18px; background:var(--surface);
+  border:1px solid var(--border); box-shadow:0 1px 0 rgba(20,30,25,.03);
+}
+/* Кнопка или подпись справа не наезжают на крупную сумму: не помещаются в строку — уходят под неё, к правому краю */
+.balance-head{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 12px; min-height:52px; }
+.balance-head-text{ min-width:0; }
+.balance-label{ font-size:12px; line-height:16px; font-weight:700; letter-spacing:.02em; color:var(--muted); }
+.balance-total{
+  font-size:28px; line-height:34px; font-weight:800; letter-spacing:-.02em; color:var(--ink);
+  font-variant-numeric:tabular-nums; white-space:nowrap;
+}
+.balance-sk-total{ display:block; height:26px; width:112px; margin-top:4px; }
+.balance-sk-part{ display:block; height:18px; width:72px; margin:3px 0 4px; }
+
+/* Полоса-пропорция: сегменты растут из левого края; между ними просвет */
+.balance-bar{
+  display:flex; gap:3px; height:10px; margin-top:12px; border-radius:6px; overflow:hidden;
+  background:var(--surface-sunken);
+}
+.balance-seg{ min-width:8px; border-radius:6px; transform:scaleX(0); transform-origin:left center; }
+.balance-bar.is-ready .balance-seg{ transform:scaleX(1); transition:transform .7s cubic-bezier(.22,.9,.3,1); }
+.balance-seg.money{ background:var(--primary); }
+.balance-seg.bonus{ background:var(--accent); }
+.balance-seg.empty{ background:transparent; }
+
+/* Две плитки под полосой */
+.balance-parts{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
+.balance-part{ min-width:0; padding:10px 12px 11px; border-radius:14px; }
+.balance-part.money{ background:var(--primary-soft); color:var(--primary-deep); }
+.balance-part.bonus{ background:var(--accent-soft); color:#A2401D; }
+.balance-part-top{ display:flex; align-items:center; gap:6px; font-size:12px; line-height:16px; font-weight:700; }
+.balance-part-top svg{ flex-shrink:0; }
+.balance-part.money .balance-part-top svg{ color:var(--primary); }
+.balance-part.bonus .balance-part-top svg{ color:var(--accent); }
+.balance-part-amount{
+  /* на узком экране сумма с копейками («12 500,50 RSD») не должна вылезать за плитку: кегль сжимается от 18 до 15 */
+  margin-top:4px; font-size:clamp(15px, 4.9vw, 18px); line-height:24px; font-weight:800; letter-spacing:-.01em;
+  font-variant-numeric:tabular-nums; white-space:nowrap; color:var(--ink);
+}
+.balance-part-note{ margin-top:2px; font-size:11.5px; line-height:15px; font-weight:500; opacity:.82; }
+/* Нулевая часть тише: не кричит про то, чего нет */
+.balance-part.is-zero{ background:var(--surface-sunken); color:var(--muted); }
+.balance-part.is-zero .balance-part-top svg{ color:var(--muted); }
+.balance-part.is-zero .balance-part-amount{ color:var(--muted); }
+.balance-hint{ margin:10px 2px 0; font-size:12px; line-height:16px; color:var(--muted); text-align:center; }
+
+@media (prefers-reduced-motion: reduce){
+  .balance-seg{ transform:none; }
+  .balance-bar.is-ready .balance-seg{ transition:none; }
+}
+
+/* Порядок списания и «что спишется» в окне продвижения */
+.promo-balance{ display:flex; flex-direction:column; align-items:flex-start; gap:3px; }
+.promo-balance-total{ font-weight:800; }
+.promo-balance-split{ display:flex; align-items:center; gap:8px; font-size:11.5px; font-weight:700; color:var(--ink-soft); white-space:nowrap; }
+.promo-balance-split span{ display:inline-flex; align-items:center; gap:4px; }
+.promo-balance-split i{ width:7px; height:7px; border-radius:50%; display:inline-block; }
+.promo-balance-split i.money, .promo-spend i.money{ background:var(--primary); }
+.promo-balance-split i.bonus, .promo-spend i.bonus{ background:var(--accent); }
+.promo-spend{
+  display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:4px 10px;
+  margin:10px 0 0; font-size:12.5px; line-height:1.35; font-weight:600; color:var(--ink-soft); text-align:center;
+}
+.promo-spend span{ display:inline-flex; align-items:center; gap:5px; }
+.promo-spend i{ width:8px; height:8px; border-radius:50%; display:inline-block; }
 

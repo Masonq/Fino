@@ -1,3 +1,4 @@
+import { formatAmount } from '../utils/money'
 import { Link } from 'react-router-dom'
 import { intlLocale } from '../utils/time'
 import { useEffect, useRef, useState } from 'react'
@@ -164,6 +165,11 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
     // Оплата картой выключена владельцем: остаются бонусы и уже внесённый баланс.
     // Строго «true»: не ответил сервер или ответ старый — карту не предлагаем, а не предлагаем и потом отказываем.
     const cardsOn = data?.payments_enabled === true
+    const nf = (n) => formatAmount(n, i18n.language)
+    const rsd = (n) => t('promo.price', { price: nf(n) })
+    // Что спишется с баланса: сначала бонусы, потом деньги (app.core.wallet.charge) — показываем это до нажатия.
+    const fromBonus = price != null ? Math.min(data?.bonus || 0, price) : 0
+    const fromMoney = price != null ? Math.max(0, price - fromBonus) : 0
 
     return (
       <div className="promo-sheet">
@@ -173,9 +179,14 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
             <div className="promo-sub">{t('promo.subtitle')}</div>
           </div>
           {data && (
-            <div className="promo-balance">
-              {t('promo.balance', { amount: balance })}
-              {data.bonus > 0 && <div className="promo-balance-bonus">{t('balance.of_which_bonus', { amount: data.bonus })}</div>}
+            <div className="promo-balance" aria-label={t('balance.aria', { total: rsd(balance), money: rsd(data.money || 0), bonus: rsd(data.bonus || 0) })}>
+              <span className="promo-balance-total">{t('promo.balance', { amount: nf(balance) })}</span>
+              {balance > 0 && (
+                <span className="promo-balance-split">
+                  <span><i className="money" />{nf(data.money || 0)}</span>
+                  <span><i className="bonus" />{nf(data.bonus || 0)}</span>
+                </span>
+              )}
             </div>
           )}
         </div>
@@ -257,6 +268,13 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
                 <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
                 <span>{t('promo.consent')} <Link to="/terms">{t('promo.consent_link')}</Link></span>
               </label>
+            )}
+
+            {selected && canUseBalance && (
+              <p className="promo-spend">
+                {fromBonus > 0 && <span><i className="bonus" />{t('balance.spend_bonus', { amount: rsd(fromBonus) })}</span>}
+                {fromMoney > 0 && <span><i className="money" />{t('balance.spend_money', { amount: rsd(fromMoney) })}</span>}
+              </p>
             )}
 
             {selected && (
