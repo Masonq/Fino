@@ -6362,3 +6362,13 @@ a.s-attrs{ display:block; }
 /* «Пополнить» скрыто вместе с оплатой картой — вместо кнопки короткая подпись */
 .balance-topup-off{ flex:0 1 auto; max-width:46%; text-align:right; font-size:12.5px; line-height:1.35; font-weight:600; color:var(--muted); }
 
+/* Место под «Пополнить», пока баланс грузится: занимает столько же, но невидимо, и строка не прыгает */
+.balance-topup-ph{ visibility:hidden; pointer-events:none; }
+/* Вопрос при включении оплаты — в самой странице, а не системным окном */
+.setting-confirm{ background:var(--surface-sunken); border-radius:12px; padding:12px; margin-top:10px; }
+.setting-confirm p{ font-size:14px; font-weight:600; line-height:1.4; margin:0 0 10px; color:var(--ink); }
+.setting-confirm-actions{ display:flex; gap:8px; }
+.setting-confirm-actions button{ flex:1; min-height:44px; border-radius:12px; font-size:14.5px; font-weight:700; }
+.setting-confirm-yes{ background:var(--primary); color:#fff; }
+.setting-confirm-no{ background:var(--surface); border:1px solid var(--border); color:var(--ink); }
+

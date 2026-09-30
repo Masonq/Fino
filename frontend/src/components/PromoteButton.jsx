@@ -162,7 +162,8 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
     const needsConsent = price != null && !paidWithBonus
     const blocked = busy || (needsConsent && !agreed)
     // Оплата картой выключена владельцем: остаются бонусы и уже внесённый баланс.
-    const cardsOn = data?.payments_enabled !== false
+    // Строго «true»: не ответил сервер или ответ старый — карту не предлагаем, а не предлагаем и потом отказываем.
+    const cardsOn = data?.payments_enabled === true
 
     return (
       <div className="promo-sheet">

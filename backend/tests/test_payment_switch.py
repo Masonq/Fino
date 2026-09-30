@@ -7,6 +7,8 @@
 пополнении, и в оплате продвижения картой, а сайт прячет «Пополнить» и кнопку карты. Остаются продвижение за
 бонусы и за уже внесённый баланс: деньги, которые человек внёс раньше, у него не отбирают.
 """
+import os
+import subprocess
 import sys
 import uuid
 from decimal import Decimal
@@ -57,7 +59,6 @@ def test_card_payments_are_off_by_default(db):
     db.commit()
     db.query(site_settings.SiteSetting).filter_by(key=site_settings.CARD_PAYMENTS).delete()   # как на свежей базе: строки нет
     db.commit()
-    site_settings.reset_cache()
     assert site_settings.card_payments_enabled(db) is False
 
 
@@ -148,9 +149,9 @@ def test_the_wallet_tells_the_site_whether_cards_are_on(db):
 
 def test_the_site_hides_top_up_and_card_payment_when_off():
     balance = (FRONT / "components" / "BalanceCard.jsx").read_text(encoding="utf-8")
-    assert "wallet?.payments_enabled === false" in balance and "balance-topup-off" in balance
+    assert "wallet.payments_enabled === true" in balance and "balance-topup-off" in balance
     promo = (FRONT / "components" / "PromoteButton.jsx").read_text(encoding="utf-8")
-    assert "data?.payments_enabled !== false" in promo
+    assert "data?.payments_enabled === true" in promo, "пока не известно — карту не предлагаем"
     assert "{cardsOn && (" in promo and "disabled={blocked || !cardsOn}" in promo
 
 
@@ -161,13 +162,14 @@ def test_the_settings_page_is_wired_for_the_owner_only():
     i = profile.index('to="/admin/settings"')
     assert "user.role === 'admin'" in profile[max(0, i - 120):i], "строка «Настройки» видна только владельцу"
     page = (FRONT / "pages" / "AdminSettings.jsx").read_text(encoding="utf-8")
-    assert "window.confirm(t('settings.confirm_on'))" in page, "включение оплаты — с вопросом"
+    assert "window.confirm" not in page, "системные диалоги в приложении на главном экране iPhone подавляются"
+    assert "setting-confirm" in page and "confirm_on" in page, "включение оплаты — с вопросом, но на самой странице"
 
 
 def test_every_new_string_exists_in_all_three_languages():
     import json
 
-    keys = [("settings", k) for k in ("title", "card_title", "on", "off", "card_text", "warn_on", "confirm_on", "changed", "never", "no_access")]
+    keys = [("settings", k) for k in ("title", "card_title", "on", "off", "card_text", "warn_on", "confirm_on", "yes_on", "changed", "never", "no_access")]
     keys += [("balance", "topup_off"), ("promo", "cards_off"), ("promo", "err_payments_off"),
              ("audit", "act", "settings_card_payments_on"), ("audit", "act", "settings_card_payments_off")]
     for lang in ("ru", "en", "sr"):
@@ -177,3 +179,58 @@ def test_every_new_string_exists_in_all_three_languages():
             for part in path:
                 node = node[part]
             assert isinstance(node, str) and node, (lang, path)
+
+
+# ─── тумблер, который «иногда не срабатывал»: два процесса сервера ────────────────────────────────
+CHILD = """
+import sys
+sys.path.insert(0, %r)
+from app.core.database import SessionLocal
+from app.core import site_settings
+db = SessionLocal()
+print(site_settings.card_payments_enabled(db), flush=True)     # первое чтение: в первой версии здесь значение кэшировалось
+sys.stdin.readline()                                            # ждём, пока владелец «нажмёт переключатель» в другом процессе
+db.close(); db = SessionLocal()                                 # новый запрос, та же память процесса
+print(site_settings.card_payments_enabled(db), flush=True)
+"""
+
+
+def test_a_change_in_one_server_process_is_seen_by_the_other_at_once(db):
+    """
+    Боевой сервер работает в два процесса (uvicorn --workers 2). Первая версия держала значение в памяти
+    на 5 секунд, и второй процесс после нажатия отвечал по-старому: замер — 10 неверных ответов из 14.
+    Тут второй процесс запускается по-настоящему: он прочитал значение, владелец переключил, он читает снова.
+    """
+    backend = str(Path(__file__).resolve().parents[1])
+    child = subprocess.Popen([sys.executable, "-c", CHILD % backend], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                             text=True, env=os.environ, cwd=backend)
+    try:
+        assert child.stdout.readline().strip() == "False"
+        site_settings.set_value(db, site_settings.CARD_PAYMENTS, True, None)
+        db.commit()
+        child.stdin.write("go\n")
+        child.stdin.flush()
+        assert child.stdout.readline().strip() == "True", "второй процесс увидел старое значение — кэш в памяти вернулся?"
+    finally:
+        child.kill()
+
+
+def test_the_setting_module_keeps_no_cache_of_its_own():
+    source = (Path(__file__).resolve().parents[1] / "app" / "core" / "site_settings.py").read_text(encoding="utf-8")
+    assert "_cache" not in source and "TTL" not in source and not hasattr(site_settings, "reset_cache")
+
+
+def test_the_balance_card_never_shows_a_top_up_button_before_it_knows():
+    """Замер до исправления: пока баланс грузился, кнопка «Пополнить» висела 0,3 с и потом заменялась подписью."""
+    card = (FRONT / "components" / "BalanceCard.jsx").read_text(encoding="utf-8")
+    assert "wallet === null ? (" in card and "balance-topup-ph" in card, "пока грузится — невидимая заглушка"
+    assert card.index("wallet === null ?") < card.index("wallet.payments_enabled === true"), "сначала «не знаем», потом «включено»"
+    assert "payments_enabled: false" in card, "не удалось узнать — считаем, что карта недоступна"
+    assert "plonk_bonus_line" in card, "место под строку про бонус держим, чтобы карточка не вырастала при загрузке"
+
+
+def test_the_settings_page_asks_the_server_again_when_the_tab_comes_back():
+    page = (FRONT / "pages" / "AdminSettings.jsx").read_text(encoding="utf-8")
+    assert "visibilitychange" in page and "'focus'" in page, "переключили на другом устройстве — вкладка должна подтянуть правду сама"
+    assert "load()" in page, "после ошибки берём состояние с сервера, а не гадаем"
+

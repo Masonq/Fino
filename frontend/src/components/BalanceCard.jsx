@@ -16,8 +16,18 @@ export default function BalanceCard() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
+  // Была ли у этого человека строка про бонус в прошлый раз. Пока баланс грузится, держим под неё место
+  // (невидимую), иначе карточка вырастала бы на строку в момент прихода ответа и всё под ней прыгало.
+  const [hadBonusLine] = useState(() => {
+    try { return localStorage.getItem('plonk_bonus_line') === '1' } catch { return false }
+  })
+
   useEffect(() => {
-    api.getBalance().then(setWallet).catch(() => setWallet({ balance: 0, money: 0, bonus: 0 }))
+    // Не удалось узнать — считаем, что оплата картой недоступна: лучше не предложить кнопку, чем предложить и отказать.
+    api.getBalance().then((w) => {
+      setWallet(w)
+      try { localStorage.setItem('plonk_bonus_line', w.bonus > 0 ? '1' : '0') } catch { /* память недоступна — не беда */ }
+    }).catch(() => setWallet({ balance: 0, money: 0, bonus: 0, payments_enabled: false }))
   }, [])
 
   const topup = async () => {
@@ -46,14 +56,22 @@ export default function BalanceCard() {
           {wallet?.bonus > 0 && (
             <div className="balance-bonus">{t('balance.of_which_bonus', { amount: wallet.bonus })}</div>
           )}
+          {wallet === null && hadBonusLine && (
+            <div className="balance-bonus" style={{ visibility: 'hidden' }} aria-hidden="true">{t('balance.of_which_bonus', { amount: 0 })}</div>
+          )}
         </div>
-        {wallet?.payments_enabled === false ? (
-          // Оплату картой выключил владелец (админка → Настройки): просить деньги не у кого и не за что.
-          <span className="balance-topup-off">{t('balance.topup_off')}</span>
-        ) : (
+        {/* Три состояния, и до ответа сервера не рисуем ничего осмысленного: раньше пока баланс грузился,
+            условие «выключено» ещё не выполнялось, и на долю секунды показывалась кнопка «Пополнить»,
+            которую потом заменяла подпись. Место под кнопку держим невидимым, чтобы строка не прыгала. */}
+        {wallet === null ? (
+          <span className="balance-topup-btn balance-topup-ph" aria-hidden="true">{t('balance.topup')}</span>
+        ) : wallet.payments_enabled === true ? (
           <button className="balance-topup-btn" onClick={() => setOpen((v) => !v)}>
             {t('balance.topup')}
           </button>
+        ) : (
+          // Оплату картой выключил владелец (админка → Настройки): просить деньги не у кого и не за что.
+          <span className="balance-topup-off">{t('balance.topup_off')}</span>
         )}
       </div>
 

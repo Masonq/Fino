@@ -1302,6 +1302,7 @@
     "confirm_on": "Turn card payments on? People will be able to top up their balance and pay for promotion.",
     "changed": "Changed by {{who}}, {{when}}",
     "never": "Never changed — off by default",
-    "no_access": "This section is for the owner only"
+    "no_access": "This section is for the owner only",
+    "yes_on": "Turn on"
   }
 }

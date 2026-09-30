@@ -1341,6 +1341,7 @@
     "confirm_on": "Uključiti plaćanje karticom? Ljudi će moći da dopunjuju stanje i plaćaju izdvajanje.",
     "changed": "Izmenio {{who}}, {{when}}",
     "never": "Nikad menjano — podrazumevano isključeno",
-    "no_access": "Odeljak je dostupan samo vlasniku"
+    "no_access": "Odeljak je dostupan samo vlasniku",
+    "yes_on": "Uključi"
   }
 }
