@@ -36,15 +36,19 @@ def test_clearly_cheap_gets_the_mark():
     assert mark_from_check(_check(), 70.0) == "below"
 
 
-def test_the_bar_is_a_quarter_below_the_median():
-    assert MAX_SHARE_OF_MEDIAN == 0.75
-    assert mark_from_check(_check(), 75.0) == "below"
-    assert mark_from_check(_check(), 80.0) is None      # на 20% — уже не метка
+def test_the_bar_is_a_fifth_below_the_median():
+    """
+    Прежние 15% давали огонёк каждому одиннадцатому объявлению, 25% вместе
+    со строгим сравнением — ни одного. Середина: пятая часть.
+    """
+    assert MAX_SHARE_OF_MEDIAN == 0.80
+    assert mark_from_check(_check(), 80.0) == "below"
+    assert mark_from_check(_check(), 85.0) is None      # на 15% — ещё не метка
     assert mark_from_check(_check(), 95.0) is None
 
 
 def test_small_sample_does_not():
-    assert MIN_SAMPLE == 10
+    assert MIN_SAMPLE == 8
     assert mark_from_check(_check(based_on=MIN_SAMPLE - 1), 50.0) is None
     assert mark_from_check(_check(based_on=MIN_SAMPLE), 50.0) == "below"
 
@@ -152,8 +156,7 @@ def test_one_seller_cannot_define_the_market():
         db.commit()
 
         check = compute_price_check(db, mine, "ru")
-        # 10 честных + не больше двух от торговца
-        assert check["based_on"] <= 12, check
+        assert check["based_on"] <= 13, check      # 10 честных + не больше трёх от торговца
         assert check["median_eur"] >= 95, "медиану не должен определять торговец"
         assert honest
     finally:
@@ -224,3 +227,67 @@ def test_sold_listings_count_as_evidence():
         assert check["based_on"] == 8, "проданные — тоже в выборке"
     finally:
         db.close()
+
+
+# ─── сравнение не должно вырождаться в пустое ───────────────────────────
+def test_sizes_in_clothes_are_not_model_numbers():
+    """
+    «Куртка 48» и «Куртка 50» — одна вещь в разных размерах. Когда число
+    в названии считалось моделью, одежда, мебель и всё, где есть размер,
+    теряла сравнение целиком — огоньки пропали.
+    """
+    db, cat = _db_with("fashion")
+    try:
+        town = _town()
+        for i in range(6):
+            _make(db, cat, _seller(db), 100 + i, "Куртка Zara 46", city=town)
+        for i in range(6):
+            _make(db, cat, _seller(db), 100 + i, "Куртка Zara 50", city=town)
+        mine = _make(db, cat, _seller(db), 60, "Куртка Zara 48", city=town)
+        db.commit()
+        assert compute_price_check(db, mine, "ru")["based_on"] == 12
+    finally:
+        db.close()
+
+
+def test_like_new_and_used_are_compared_together():
+    db, cat = _db_with()
+    try:
+        town = _town()
+        for i in range(5):
+            _make(db, cat, _seller(db), 100 + i, "Наушники Sony", condition="like_new", city=town)
+        for i in range(5):
+            _make(db, cat, _seller(db), 100 + i, "Наушники Sony", condition="used", city=town)
+        mine = _make(db, cat, _seller(db), 90, "Наушники Sony", condition="used", city=town)
+        db.commit()
+        assert compute_price_check(db, mine, "ru")["based_on"] == 10
+    finally:
+        db.close()
+
+
+def test_an_ordinary_bargain_gets_the_flame():
+    """Обычная выгодная цена в обычном разделе метку получает — иначе функция мертва."""
+    db, cat = _db_with("fashion")
+    try:
+        town = _town()
+        for i in range(10):
+            _make(db, cat, _seller(db), 100 + i, "Куртка Zara 46", condition="used", city=town)
+        deal = _make(db, cat, _seller(db), 70, "Куртка Zara 48", condition="used", city=town)
+        db.commit()
+        stats = run()
+        db.expire_all()
+        assert db.get(Listing, deal.id).price_mark == "below", stats
+    finally:
+        db.close()
+
+
+def test_the_run_reports_where_listings_dropped_out():
+    """Если огоньков нет вовсе, по воронке видно, на каком шаге они пропали."""
+    from app.core.price_marks import why_not
+
+    assert why_not({"verdict": None}, 10) == "мало похожих"
+    assert why_not({"verdict": "fair"}, 10) == "цена обычная или выше"
+    assert why_not({"verdict": "cheap", "based_on": 3, "median_eur": 100.0}, 10) == "выборка меньше порога"
+    assert why_not({"verdict": "cheap", "based_on": 12, "median_eur": 100.0}, 90) == "дешевле, но не на пятую часть"
+    assert why_not({"verdict": "cheap", "based_on": 12, "median_eur": 100.0}, 70) is None
+    assert "отсеяно" in run(dry_run=True)

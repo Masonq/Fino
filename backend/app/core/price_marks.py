@@ -1,5 +1,5 @@
 """
-Метка «Ниже рынка» для карточек ленты.
+Метка «Дешевле похожих» (огонёк у цены) для карточек ленты.
 
     python3 -m app.core.price_marks            пересчитать
     python3 -m app.core.price_marks --dry-run  показать, что получится
@@ -12,17 +12,20 @@
 Метка — обещание покупателю, поэтому планка выше, чем у «дёшево» на
 странице объявления. Нужно всё вместе:
   - оценка сказала «дёшево» (ниже четверти выборки);
-  - выборка не крошечная: не меньше 10 похожих;
-  - цена не просто чуть ниже, а хотя бы на 25% ниже медианы;
+  - выборка не крошечная: не меньше 8 похожих;
+  - цена не просто чуть ниже, а хотя бы на 20% ниже медианы;
   - раздел из тех, где название честно определяет цену (см. ниже).
 
-Сравнение идёт с объявлениями на PLONK и по своей природе внутреннее.
-Оно защищено от перекосов (см. compute_price_check: свои объявления не
-в счёт, не больше двух от продавца, то же состояние, та же модель,
-проданные учитываются), но внешних цен не знает. Пока их нет, метка
-честно означает «дешевле похожих у нас», а не «ниже рынка вообще».
-Лучше пропустить хорошую цену, чем повесить «Ниже рынка» на обычную:
-после первой такой метки ей перестанут верить.
+Сравнение идёт с объявлениями на PLONK: внешних цен у нас нет, и метка
+честно означает «дешевле похожих у нас», а не «ниже рынка вообще» — так
+и подписана. От перекосов оно защищено (compute_price_check): свои
+объявления продавца не в счёт, от каждого другого берём не больше трёх,
+новое отдельно от бывшего в употреблении, в электронике — та же модель,
+проданные учитываются.
+
+Итог пересчёта печатает воронку: сколько объявлений на каком шаге
+отсеялось. Если огоньков вдруг нет вовсе, по ней видно, где именно они
+пропали, а не гадать «порог высокий или выборки пустые».
 """
 import argparse
 import logging
@@ -36,10 +39,11 @@ from app.models import Currency, Listing, ListingStatus
 
 log = logging.getLogger(__name__)
 
-# Планка выше прежней (8 и 85%): огонёк на каждом одиннадцатом
-# объявлении перестаёт быть отличием, и ему перестают верить.
-MIN_SAMPLE = 10
-MAX_SHARE_OF_MEDIAN = 0.75
+# Прежние 8 и 85% давали огонёк каждому одиннадцатому объявлению —
+# многовато; 10 и 75% вместе со строгим сравнением не оставили ни одного.
+# Середина: 8 похожих и на пятую часть ниже медианы.
+MIN_SAMPLE = 8
+MAX_SHARE_OF_MEDIAN = 0.80
 
 # Метку ставим только там, где цену можно честно сравнить по названию.
 # Квартира, машина, услуга и вакансия — нет: цену определяют площадь,
@@ -53,36 +57,24 @@ LIMIT = 1500
 
 def mark_from_check(check: dict, price_eur: float) -> str | None:
     """Чистое правило: метка по готовой оценке и цене в евро."""
-    if not check or check.get("verdict") != "cheap":
-        return None
+    return "below" if why_not(check, price_eur) is None else None
+
+
+def why_not(check: dict, price_eur: float) -> str | None:
+    """
+    Почему метки нет — одним словом для воронки; None — метка положена.
+    Порядок проверок и есть порядок отсева.
+    """
+    if not check or check.get("verdict") is None:
+        return "мало похожих"                      # оценки по объявлениям нет вовсе
+    if check.get("verdict") != "cheap":
+        return "цена обычная или выше"
     if (check.get("based_on") or 0) < MIN_SAMPLE:
-        return None
+        return "выборка меньше порога"
     median = check.get("median_eur") or 0
     if median <= 0 or price_eur > median * MAX_SHARE_OF_MEDIAN:
-        return None
-    return "below"
-
-
-def decide_mark(check: dict, price_eur: float, condition: str | None) -> str | None:
-    """
-    Метка для карточки: 'ref' — заметно дешевле нового (внешняя опора),
-    'below' — дешевле похожих на PLONK, None — без метки.
-
-    Если для модели есть цена нового, решает она, а не объявления сайта:
-    они могут быть занижены сами. Слишком дёшево против нового
-    ('too_good') метки не получает никогда — так выглядят подделки и
-    обман, а не выгода. Состояние неизвестно — судить не можем, метки нет.
-    Если справочника для модели нет — прежнее правило по объявлениям.
-    """
-    from app.core.price_refs import band_against_new
-
-    ref = (check or {}).get("new_price")
-    if ref:
-        band = band_against_new(price_eur, condition, ref["eur"])
-        if band == "bargain" and check.get("verdict") != "expensive":
-            return "ref"
-        return None
-    return mark_from_check(check, price_eur)
+        return "дешевле, но не на пятую часть"
+    return None
 
 
 def run(dry_run: bool = False) -> dict:
@@ -91,6 +83,7 @@ def run(dry_run: bool = False) -> dict:
 
     db = SessionLocal()
     stats = {"проверено": 0, "с меткой": 0, "снято": 0}
+    funnel: dict = {}
     try:
         rows = (db.query(Listing)
                 .options(joinedload(Listing.translations))
@@ -103,8 +96,8 @@ def run(dry_run: bool = False) -> dict:
         roots = root_slugs(db)
         for listing in rows:
             if roots.get(listing.category_id) not in COMPARABLE_ROOTS:
-                # Метка не положена этому разделу — и старую, если была,
-                # ниже снимет общая уборка.
+                funnel["раздел без меток"] = funnel.get("раздел без меток", 0) + 1
+                # Метка не положена этому разделу — и старую, если была, снимаем.
                 if listing.price_mark and not dry_run:
                     listing.price_mark = None
                     stats["снято"] += 1
@@ -113,17 +106,20 @@ def run(dry_run: bool = False) -> dict:
             price = float(listing.price)
             if listing.currency != Currency.eur:
                 price /= RSD_PER_EUR
-            mark = decide_mark(check, price, (listing.attributes or {}).get("condition"))
+            reason = why_not(check, price)
+            mark = None if reason else "below"
             stats["проверено"] += 1
             if mark:
                 stats["с меткой"] += 1
+            else:
+                funnel[reason] = funnel.get(reason, 0) + 1
             if listing.price_mark != mark:
                 if listing.price_mark and not mark:
                     stats["снято"] += 1
                 if not dry_run:
                     listing.price_mark = mark
-        # Живые, но уже не свежие и снятые: метку убираем, оценка по
-        # ним не считается, а висеть она должна только у актуальных.
+        # Не свежие и снятые: метку убираем, оценка по ним не считается,
+        # а висеть она должна только у актуальных.
         if not dry_run:
             stale = (db.query(Listing)
                      .filter(Listing.price_mark.isnot(None),
@@ -133,6 +129,7 @@ def run(dry_run: bool = False) -> dict:
                 listing.price_mark = None
                 stats["снято"] += 1
             db.commit()
+        stats["отсеяно"] = funnel
         return stats
     finally:
         db.close()
@@ -141,5 +138,4 @@ def run(dry_run: bool = False) -> dict:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true")
-    result = run(parser.parse_args().dry_run)
-    print(result)
+    print(run(parser.parse_args().dry_run))

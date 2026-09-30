@@ -1310,6 +1310,31 @@ _EMPTY_WORDS = frozenset("""
 """.split())
 
 
+def _condition_group(value) -> str | None:
+    """'new' — новое; 'used' — как новое и б/у; иначе не сравниваем по состоянию."""
+    if value == "new":
+        return "new"
+    if value in ("like_new", "used"):
+        return "used"
+    return None
+
+
+_root_cache: dict = {"at": None, "map": {}}
+
+
+def _root_slug(db, category_id) -> str | None:
+    """Раздел верхнего уровня; словарь всех разделов держим десять минут."""
+    from app.core.category_tree import root_slugs
+
+    now = utcnow()
+    stale = not _root_cache["at"] or (now - _root_cache["at"]).total_seconds() > 600
+    if stale or category_id not in _root_cache["map"]:
+        # Незнакомый раздел (только что заведённый) — тоже повод пересобрать.
+        _root_cache["map"] = root_slugs(db)
+        _root_cache["at"] = now
+    return _root_cache["map"].get(category_id)
+
+
 def _model_tokens(listing, lang: str) -> set[str]:
     """
     Числа и модели из названия: «15», «s23», «fx2», «256gb».
@@ -1376,24 +1401,6 @@ _PRICE_TTL = 600
 
 def compute_price_check(db, listing, lang: str) -> dict:
     """
-    Оценка цены + внешняя опора: сколько такая вещь стоит новой в
-    магазинах Сербии (app.core.price_refs). Цена нового добавляется
-    даже там, где похожих объявлений мало и оценки по ним нет: как
-    ориентир она полезна и сама по себе.
-    """
-    from app.core.price_refs import find_new_price
-
-    data = dict(_compute_price_check_core(db, listing, lang))
-    if listing and listing.price and not listing.is_free:
-        translation = pick_translation(listing, lang)
-        ref = find_new_price(db, translation.title if translation else "")
-        if ref:
-            data["new_price"] = ref
-    return data
-
-
-def _compute_price_check_core(db, listing, lang: str) -> dict:
-    """
     Оценка цены: дорого, дёшево или в рынке.
 
     Покупатель с доски объявлений всё равно делает это сам — открывает
@@ -1436,9 +1443,19 @@ def _compute_price_check_core(db, listing, lang: str) -> dict:
     #  - состояние сравниваем с тем же: новое с б/у смешивать нельзя;
     #  - модель — с той же: «iPhone 11» и «iPhone 15» делят слово, но не
     #    цену.
-    base_condition = (base.attributes or {}).get("condition")
-    base_models = _model_tokens(base, lang)
-    PER_SELLER = 2
+    #
+    # Строгость подобрана так, чтобы выборки не выродились в пустые:
+    #  - «модель» проверяем только в электронике. Число в названии одежды
+    #    или мебели — размер, год, габарит, а не модель; по нему сравнивать
+    #    нельзя, иначе «Куртка 48» никогда не найдёт «Куртка 50» и оценки
+    #    не будет вовсе;
+    #  - состояние делим на две группы, а не на четыре: новое отдельно,
+    #    остальное (как новое, б/у) вместе. Четыре группы дробили выборку
+    #    настолько, что похожих не набиралось;
+    #  - от одного продавца берём до трёх объявлений.
+    base_condition = _condition_group((base.attributes or {}).get("condition"))
+    base_models = _model_tokens(base, lang) if _root_slug(db, base.category_id) == "electronics" else set()
+    PER_SELLER = 3
 
     def prices_for(city: str | None) -> list[float]:
         q = (db.query(Listing)
@@ -1452,8 +1469,10 @@ def _compute_price_check_core(db, listing, lang: str) -> dict:
                      Listing.created_at >= utcnow() - timedelta(days=180)))
         if city:
             q = q.filter(Listing.city == city)
-        if base_condition:
-            q = q.filter(Listing.attributes["condition"].astext == base_condition)
+        if base_condition == "new":
+            q = q.filter(Listing.attributes["condition"].astext == "new")
+        elif base_condition == "used":
+            q = q.filter(Listing.attributes["condition"].astext.in_(("like_new", "used")))
         out, per_owner = [], {}
         for other in q.order_by(Listing.created_at.desc()).limit(400).all():
             things, _ = _title_words(other, lang)

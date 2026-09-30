@@ -343,8 +343,7 @@
     "promoted": "Izdvojeno",
     "reserved": "Rezervisano",
     "ago": "pre {{when}}",
-    "below_market": "Jeftinije od sličnih na PLONK-u",
-    "below_new": "Znatno jeftinije od novog i sličnih"
+    "below_market": "Jeftinije od sličnih na PLONK-u"
   },
   "chats": {
     "need_auth": "Predstavite se da biste videli svoje razgovore.",
@@ -1143,8 +1142,7 @@
     "how_city_one": "Upoređeno sa {{count}} sličnim oglasom na PLONK-u u ovom gradu za poslednjih pola godine: većina je između {{low}} i {{high}}.",
     "how_city_few": "Upoređeno sa {{count}} slična oglasa na PLONK-u u ovom gradu za poslednjih pola godine: većina je između {{low}} i {{high}}.",
     "how_city_other": "Upoređeno sa {{count}} sličnih oglasa na PLONK-u u ovom gradu za poslednjih pola godine: većina je između {{low}} i {{high}}.",
-    "how_country": "U ovom gradu ima malo sličnih, pa je upoređeno sa {{count}} sličnih na PLONK-u širom Srbije za poslednjih pola godine: većina je između {{low}} i {{high}}.",
-    "new_price": "Novi košta oko {{price}} u srpskim radnjama ({{source}}, podaci od {{date}})."
+    "how_country": "U ovom gradu ima malo sličnih, pa je upoređeno sa {{count}} sličnih na PLONK-u širom Srbije za poslednjih pola godine: većina je između {{low}} i {{high}}."
   },
   "reviews": {
     "waiting_title": "Čekaju vašu ocenu",
@@ -1305,11 +1303,8 @@
     "show": "Prikaži oglase"
   },
   "flame": {
-    "title_ref": "Znatno jeftinije od novog i sličnih",
     "title_below": "Jeftinije od sličnih na PLONK-u",
-    "why_ref": "Cena je znatno niža nego za isti novi proizvod u srpskim radnjama, i niža od sličnih oglasa na PLONK-u.",
     "why_below": "Cena je bar za četvrtinu niža od većine sličnih oglasa na PLONK-u. Poređenje je samo sa našim oglasima, ne sa celim tržištem.",
-    "new_price": "Novi košta oko {{price}} ({{source}}).",
     "compared": "Upoređeno sa {{count}} sličnih oglasa.",
     "careful": "Niska cena je razlog da pogledate bolje, a ne da žurite: pitajte za stanje i ne šaljite avans nepoznatima.",
     "open": "Otvori oglas",

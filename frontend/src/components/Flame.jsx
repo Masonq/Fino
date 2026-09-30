@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
-import { formatPrice } from '../utils/money'
 
 /*
  * Огонёк рядом с ценой: «цена заметно ниже». По нажатию — пояснение, что
@@ -64,9 +63,9 @@ export default function PriceFlame({ listing }) {
   const { t, i18n } = useTranslation()
   const [open, setOpen] = useState(false)
   const [check, setCheck] = useState(null)
-  const kind = listing.price_mark === 'ref' ? 'ref' : 'below'
+  const kind = 'below'      // вид метки один: «дешевле похожих на PLONK»
 
-  // Подробности (цена нового, с чем сравнивали) подгружаем при открытии, а не
+  // Подробности (с чем сравнивали) подгружаем при открытии, а не
   // для каждой карточки ленты: их нужно только тому, кто нажал.
   useEffect(() => {
     if (!open || check) return undefined
@@ -85,7 +84,6 @@ export default function PriceFlame({ listing }) {
   }, [open])
 
   const stop = (e) => { e.preventDefault(); e.stopPropagation() }
-  const newPrice = check?.new_price
 
   return (
     <>
@@ -105,14 +103,6 @@ export default function PriceFlame({ listing }) {
               <div className="reasons-title flame-sheet-title">{t(`flame.title_${kind}`)}</div>
             </div>
             <p className="price-check-explain">{t(`flame.why_${kind}`)}</p>
-            {newPrice && (
-              <p className="price-check-explain">
-                {t('flame.new_price', {
-                  price: formatPrice(newPrice.eur, 'EUR', i18n.language),
-                  source: newPrice.source,
-                })}
-              </p>
-            )}
             {check?.based_on > 0 && (
               <p className="price-check-explain">{t('flame.compared', { count: check.based_on })}</p>
             )}

@@ -44,9 +44,6 @@ echo "→ схемы полей подразделов"
 python3 -m app.core.sync_schemas --apply || echo "  ! схемы не синхронизированы — форма размещения работает по старым"
 # «Комнат» стало списком — значения в объявлениях приводим к его словарю.
 python3 -m app.core.fix_rooms --apply || echo "  ! комнаты не приведены к списку"
-# Справочник цен нового: каталог моделей в базу (заполненные цены и адреса
-# магазинов не трогает), потом пересчёт метки уже с опорой на него.
-python3 -m app.core.price_refs sync || echo "  ! справочник цен нового не синхронизирован"
 # Метка «Ниже рынка» пересчитывается раз в час (plonk-price-marks.timer);
 # первый раз — сразу, чтобы после выкладки она не ждала до следующего часа.
 python3 -m app.core.price_marks || echo "  ! метка «Ниже рынка» не пересчитана"
@@ -100,6 +97,11 @@ echo "→ перезапускаю сервисы"
 # Файл сервиса мог измениться в этом же обновлении
 cp deploy/fino-frontend.service /etc/systemd/system/fino-frontend.service
 cp deploy/fino.service /etc/systemd/system/fino.service
+# Справочника цен нового больше нет (убран: он требовал вручную давать адрес
+# магазина на каждый товар, а метка должна считаться сама). Если он успел
+# встать на сервере — снимаем его недельный таймер и файлы.
+systemctl disable --now plonk-price-refs.timer 2>/dev/null || true
+rm -f /etc/systemd/system/plonk-price-refs.service /etc/systemd/system/plonk-price-refs.timer
 systemctl daemon-reload
 systemctl restart fino
 

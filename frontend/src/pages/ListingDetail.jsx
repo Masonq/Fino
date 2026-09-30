@@ -1070,18 +1070,6 @@ export default function ListingDetail() {
         {/* Оценка цены. Покупатель всё равно делает это сам — открывает
             десяток похожих и смотрит, из чего выбирать. Считаем за него,
             и по нажатию честно показываем, на чём считали. */}
-        {/* Цена нового в магазинах — опора снаружи. Показываем и без
-            оценки по объявлениям: похожих на сайте может быть мало, а
-            ориентир от этого не теряется. */}
-        {!priceCheck?.verdict && priceCheck?.new_price && !isResume && (
-          <p className="price-ref-line">
-            {t('price_check.new_price', {
-              price: formatPrice(priceCheck.new_price.eur, 'EUR', lang),
-              source: priceCheck.new_price.source,
-              date: new Date(priceCheck.new_price.checked_at).toLocaleDateString(lang === 'ru' ? 'ru-RU' : lang === 'sr' ? 'sr-Latn-RS' : 'en-GB'),
-            })}
-          </p>
-        )}
         {priceCheck?.verdict && !isResume && (
           <button className={`price-check ${priceCheck.verdict}`} onClick={() => setPriceOpen(true)}>
             {/* Картинка, а не значок: оценку читают мельком, и цветная
@@ -1689,7 +1677,7 @@ export default function ListingDetail() {
         </div>
       )}
 
-      {priceOpen && priceCheck?.verdict && (
+      {priceOpen && priceCheck && (
         <div className="reasons-sheet" onClick={() => setPriceOpen(false)}>
           <div className="reasons-card" onClick={(e) => e.stopPropagation()}>
             <div className="reasons-title">{t(`price_check.${priceCheck.verdict}`)}</div>
@@ -1703,15 +1691,6 @@ export default function ListingDetail() {
                 high: formatPrice(priceCheck.high_eur, 'EUR', lang),
               })}
             </p>
-            {priceCheck.new_price && (
-              <p className="price-check-explain">
-                {t('price_check.new_price', {
-                  price: formatPrice(priceCheck.new_price.eur, 'EUR', lang),
-                  source: priceCheck.new_price.source,
-                  date: new Date(priceCheck.new_price.checked_at).toLocaleDateString(lang === 'ru' ? 'ru-RU' : lang === 'sr' ? 'sr-Latn-RS' : 'en-GB'),
-                })}
-              </p>
-            )}
             <button className="reasons-cancel" onClick={() => setPriceOpen(false)}>
               {t('actions.close')}
             </button>

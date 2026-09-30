@@ -339,8 +339,7 @@
     "promoted": "Promoted",
     "reserved": "Reserved",
     "ago": "{{when}} ago",
-    "below_market": "Cheaper than similar on PLONK",
-    "below_new": "Well below new and similar"
+    "below_market": "Cheaper than similar on PLONK"
   },
   "chats": {
     "need_auth": "Introduce yourself to see your conversations.",
@@ -1113,8 +1112,7 @@
     "explain_expensive": "Similar items on PLONK usually cost less. You can bargain or keep looking.",
     "how_city_one": "Compared with {{count}} similar listing on PLONK in this city over the last six months: most are between {{low}} and {{high}}.",
     "how_city_other": "Compared with {{count}} similar listings on PLONK in this city over the last six months: most are between {{low}} and {{high}}.",
-    "how_country": "Few similar ones in this city, so compared with {{count}} similar ones on PLONK across Serbia over the last six months: most are between {{low}} and {{high}}.",
-    "new_price": "A new one costs about {{price}} in Serbian shops ({{source}}, as of {{date}})."
+    "how_country": "Few similar ones in this city, so compared with {{count}} similar ones on PLONK across Serbia over the last six months: most are between {{low}} and {{high}}."
   },
   "reviews": {
     "waiting_title": "Waiting for your review",
@@ -1270,11 +1268,8 @@
     "show": "Show listings"
   },
   "flame": {
-    "title_ref": "Well below new and similar",
     "title_below": "Cheaper than similar on PLONK",
-    "why_ref": "The price is well below the same item new in Serbian shops, and below similar listings on PLONK.",
     "why_below": "The price is at least a quarter below most similar listings on PLONK. It's compared only with our listings, not the whole market.",
-    "new_price": "A new one costs about {{price}} ({{source}}).",
     "compared": "Compared with {{count}} similar listings.",
     "careful": "A low price is a reason to look closer, not to rush: ask about the condition and never prepay strangers.",
     "open": "Open listing",
