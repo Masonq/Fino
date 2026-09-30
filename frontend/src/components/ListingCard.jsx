@@ -134,7 +134,9 @@ export default function ListingCard({ listing, large = false, priority = false }
       {/* Огонёк «Ниже рынка» — под сердечком, тем же белым кружком: два
           круглых значка друг под другом справа, а левый и нижний края
           остаются за «Новым» и бейджем компании. */}
-      {listing.price_mark === 'below' && <Flame id={listing.id} label={t('misc.below_market')} />}
+      {listing.price_mark && (
+        <Flame id={listing.id} label={t(listing.price_mark === 'ref' ? 'misc.below_new' : 'misc.below_market')} />
+      )}
       <div className="s-row">
         <Link to={listing.path} className="s-title">{listing.title}</Link>
       </div>

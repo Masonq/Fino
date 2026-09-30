@@ -1376,6 +1376,24 @@ _PRICE_TTL = 600
 
 def compute_price_check(db, listing, lang: str) -> dict:
     """
+    Оценка цены + внешняя опора: сколько такая вещь стоит новой в
+    магазинах Сербии (app.core.price_refs). Цена нового добавляется
+    даже там, где похожих объявлений мало и оценки по ним нет: как
+    ориентир она полезна и сама по себе.
+    """
+    from app.core.price_refs import find_new_price
+
+    data = dict(_compute_price_check_core(db, listing, lang))
+    if listing and listing.price and not listing.is_free:
+        translation = pick_translation(listing, lang)
+        ref = find_new_price(db, translation.title if translation else "")
+        if ref:
+            data["new_price"] = ref
+    return data
+
+
+def _compute_price_check_core(db, listing, lang: str) -> dict:
+    """
     Оценка цены: дорого, дёшево или в рынке.
 
     Покупатель с доски объявлений всё равно делает это сам — открывает

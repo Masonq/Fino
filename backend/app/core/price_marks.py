@@ -63,6 +63,28 @@ def mark_from_check(check: dict, price_eur: float) -> str | None:
     return "below"
 
 
+def decide_mark(check: dict, price_eur: float, condition: str | None) -> str | None:
+    """
+    Метка для карточки: 'ref' — заметно дешевле нового (внешняя опора),
+    'below' — дешевле похожих на PLONK, None — без метки.
+
+    Если для модели есть цена нового, решает она, а не объявления сайта:
+    они могут быть занижены сами. Слишком дёшево против нового
+    ('too_good') метки не получает никогда — так выглядят подделки и
+    обман, а не выгода. Состояние неизвестно — судить не можем, метки нет.
+    Если справочника для модели нет — прежнее правило по объявлениям.
+    """
+    from app.core.price_refs import band_against_new
+
+    ref = (check or {}).get("new_price")
+    if ref:
+        band = band_against_new(price_eur, condition, ref["eur"])
+        if band == "bargain" and check.get("verdict") != "expensive":
+            return "ref"
+        return None
+    return mark_from_check(check, price_eur)
+
+
 def run(dry_run: bool = False) -> dict:
     from app.core.category_tree import root_slugs
     from app.routers.listings import RSD_PER_EUR, compute_price_check
@@ -91,7 +113,7 @@ def run(dry_run: bool = False) -> dict:
             price = float(listing.price)
             if listing.currency != Currency.eur:
                 price /= RSD_PER_EUR
-            mark = mark_from_check(check, price)
+            mark = decide_mark(check, price, (listing.attributes or {}).get("condition"))
             stats["проверено"] += 1
             if mark:
                 stats["с меткой"] += 1

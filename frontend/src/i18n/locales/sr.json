@@ -343,7 +343,8 @@
     "promoted": "Izdvojeno",
     "reserved": "Rezervisano",
     "ago": "pre {{when}}",
-    "below_market": "Jeftinije od sličnih na PLONK-u"
+    "below_market": "Jeftinije od sličnih na PLONK-u",
+    "below_new": "Znatno jeftinije od novog i sličnih"
   },
   "chats": {
     "need_auth": "Predstavite se da biste videli svoje razgovore.",
@@ -1132,17 +1133,18 @@
     "badge": "Novo"
   },
   "price_check": {
-    "cheap": "Ispod tržišne cene",
-    "fair": "Uobičajena cena",
-    "expensive": "Iznad tržišne cene",
+    "cheap": "Jeftinije od sličnih na PLONK-u",
+    "fair": "Uobičajena cena među sličnima",
+    "expensive": "Skuplje od sličnih na PLONK-u",
     "subtitle": "PLONK procena",
-    "explain_cheap": "Slične stvari obično koštaju više. Vredi se javiti brzo — jeftine prve odu.",
+    "explain_cheap": "Slične stvari na PLONK-u obično koštaju više. Vredi se javiti brzo — jeftine prve odu.",
     "explain_fair": "Uobičajena cena za ovakve stvari — ni iznad ni ispod onoga što traže drugi.",
-    "explain_expensive": "Za ovakve stvari obično traže manje. Možete se cenkati ili tražiti jeftinije.",
+    "explain_expensive": "Za slične stvari na PLONK-u obično traže manje. Možete se cenkati ili tražiti jeftinije.",
     "how_city_one": "Upoređeno sa {{count}} sličnim oglasom na PLONK-u u ovom gradu za poslednjih pola godine: većina je između {{low}} i {{high}}.",
     "how_city_few": "Upoređeno sa {{count}} slična oglasa na PLONK-u u ovom gradu za poslednjih pola godine: većina je između {{low}} i {{high}}.",
     "how_city_other": "Upoređeno sa {{count}} sličnih oglasa na PLONK-u u ovom gradu za poslednjih pola godine: većina je između {{low}} i {{high}}.",
-    "how_country": "U ovom gradu ima malo sličnih, pa je upoređeno sa {{count}} širom Srbije za poslednjih pola godine: većina je između {{low}} i {{high}}."
+    "how_country": "U ovom gradu ima malo sličnih, pa je upoređeno sa {{count}} sličnih na PLONK-u širom Srbije za poslednjih pola godine: većina je između {{low}} i {{high}}.",
+    "new_price": "Novi košta oko {{price}} u srpskim radnjama ({{source}}, podaci od {{date}})."
   },
   "reviews": {
     "waiting_title": "Čekaju vašu ocenu",
