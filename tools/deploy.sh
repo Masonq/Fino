@@ -10,18 +10,40 @@ set -e
 
 cd /opt/fino
 
-echo "→ обновляю зависимости"
+# Секундомер. Деплой казался долгим, а на что уходит время — было не видно
+# (грешили на безобидные шаги). Теперь каждый шаг «→ …» записывает свою
+# длительность, а в конце печатается таблица, отсортированная от самого
+# долгого: сразу видно, что тормозит, без догадок.
+TIMING_FILE=$(mktemp)
+LAP_NAME=""
+LAP_AT=$SECONDS
+lap() {
+  if [ -n "$LAP_NAME" ]; then echo "$((SECONDS - LAP_AT)) $LAP_NAME" >> "$TIMING_FILE"; fi
+  LAP_NAME="$1"
+  LAP_AT=$SECONDS
+  echo "→ $1"
+}
+print_timing() {
+  if [ -n "$LAP_NAME" ]; then echo "$((SECONDS - LAP_AT)) $LAP_NAME" >> "$TIMING_FILE"; LAP_NAME=""; fi
+  echo
+  echo "Сколько длился каждый шаг (секунды, дольше — выше):"
+  sort -rn "$TIMING_FILE" | head -8 | awk '{ t=$1; $1=""; printf "  %4d с  %s\n", t, $0 }'
+  echo "  всего: ${SECONDS} с"
+  rm -f "$TIMING_FILE"
+}
+
+lap "обновляю зависимости"
 cd backend
 source venv/bin/activate
 pip install -q -r requirements.txt
 
-echo "→ проверяю, не отстала ли база от моделей"
+lap "проверяю, не отстала ли база от моделей"
 if alembic check 2>&1 | grep -q "New upgrade operations detected"; then
   echo "  ! модели изменились, а миграции нет — создаю"
   alembic revision --autogenerate -m "auto: schema sync"
 fi
 
-echo "→ применяю миграции"
+lap "применяю миграции"
 # Расширение для поиска с опечатками.
 #
 # Раньше включали через psql, но его на сервере может не быть — так и
@@ -40,24 +62,28 @@ alembic upgrade head
 
 # Схемы полей подразделов — из кода в базу. Заполняет только пустые:
 # схему, правленную на месте, не затирает, а сообщает о расхождении.
-echo "→ схемы полей подразделов"
+lap "схемы полей подразделов"
 python3 -m app.core.sync_schemas --apply || echo "  ! схемы не синхронизированы — форма размещения работает по старым"
-# «Комнат» стало списком — значения в объявлениях приводим к его словарю.
-python3 -m app.core.fix_rooms --apply || echo "  ! комнаты не приведены к списку"
-# Метка «Ниже рынка» пересчитывается раз в час (plonk-price-marks.timer);
-# первый раз — сразу, чтобы после выкладки она не ждала до следующего часа.
-python3 -m app.core.price_marks || echo "  ! метка «Ниже рынка» не пересчитана"
+# Перевод значений «Комнат» в список (app.core.fix_rooms) был разовым и давно
+# выполнен — «исправлено 0 из 65» на каждом деплое. Из выкладки убран; если
+# понадобится снова: python3 -m app.core.fix_rooms --apply
+# Метка «Дешевле похожих» (огонёк у цены) пересчитывается раз в час
+# (plonk-price-marks.timer). После выкладки — сразу, но в фоне: деплой не должен
+# стоять и ждать расчёта, который к тому же ничего в нём не проверяет.
+# Итог с воронкой — в /tmp/plonk-price-marks.log.
+nohup python3 -m app.core.price_marks > /tmp/plonk-price-marks.log 2>&1 &
+echo "  метка пересчитывается в фоне: tail /tmp/plonk-price-marks.log"
 cd ..
 
 # Сборка ловит опечатки и ссылки на удалённые переменные до того, как
 # страница упадёт у пользователя белым экраном.
-echo "→ проверяю вёрстку"
+lap "проверяю вёрстку"
 if ! python3 tools/check-ui.py; then
   echo "  ✗ проверка вёрстки не прошла — деплой остановлен"
   exit 1
 fi
 
-echo "→ проверяю сборку фронтенда"
+lap "проверяю сборку фронтенда"
 cd frontend
 if ! npm install --no-audit --no-fund > /tmp/plonk-npm-install.log 2>&1; then
   echo "  ✗ npm install не прошёл — деплой остановлен:"
@@ -93,7 +119,7 @@ if [ -d /opt/fino/frontend/dist-old ]; then
 fi
 cd ..
 
-echo "→ перезапускаю сервисы"
+lap "перезапускаю сервисы"
 # Файл сервиса мог измениться в этом же обновлении
 cp deploy/fino-frontend.service /etc/systemd/system/fino-frontend.service
 cp deploy/fino.service /etc/systemd/system/fino.service
@@ -167,7 +193,7 @@ done
 # ещё жив после обновления.
 systemctl disable --now fino-frontend 2>/dev/null || true
 
-echo "→ обновляю конфиг nginx"
+lap "обновляю конфиг nginx"
 # Раньше этот шаг не делался вовсе — правки в deploy/plonk.rs.conf
 # копились в репозитории, а на сервере годами работал старый файл.
 # nginx -t до перезагрузки — не дать битому конфигу положить сайт
@@ -182,7 +208,7 @@ fi
 systemctl reload nginx
 
 # ждём, пока сервер поднимется
-echo "→ жду запуска"
+lap "жду запуска"
 for i in $(seq 1 15); do
   if curl -sf -o /dev/null http://localhost:8002/api/health; then
     break
@@ -190,5 +216,7 @@ for i in $(seq 1 15); do
   sleep 1
 done
 
-echo "→ проверяю"
+lap "проверяю"
 python3 tools/healthcheck.py
+
+print_timing
