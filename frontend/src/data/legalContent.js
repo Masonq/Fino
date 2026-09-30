@@ -15,7 +15,7 @@ export const CONTACT_EMAIL = 'account@plonk.rs'
 export const RULES = {
   ru: {
     title: 'Правила размещения объявлений',
-    updated: 'Обновлено: 28 августа 2026',
+    updated: 'Обновлено: 30 сентября 2026',
     sections: [
       {
         h: '1. Общие положения',
@@ -44,6 +44,7 @@ export const RULES = {
           '3.3. Описание объявления должно содержать полные и достоверные сведения о потребительских свойствах, техническом состоянии, комплектности и иных существенных характеристиках предмета объявления, известных пользователю на момент размещения.',
           '3.4. Указанная в объявлении цена должна соответствовать действительным намерениям пользователя на момент публикации. Указание заведомо заниженной либо завышенной цены в целях привлечения внимания к объявлению не допускается.',
           '3.5. Категория, к которой отнесено объявление, должна соответствовать существу предложения. Размещение объявления в категории, не соответствующей его содержанию, в целях увеличения охвата аудитории не допускается.',
+          '3.6. Не допускается манипулирование ценой, описанием либо количеством объявлений с целью получения отметок Сайта (в том числе отметки «Дешевле похожих на PLONK») или искажения сравнения цен, в частности указание заведомо заниженной цены с последующим её повышением, размещение множества однотипных объявлений либо использование нескольких учётных записей.',
         ],
       },
       {
@@ -81,12 +82,13 @@ export const RULES = {
           'Администрация Сайта предоставляет пользователям на возмездной основе дополнительные услуги по продвижению объявлений в результатах поиска, включая, но не ограничиваясь: приоритетное размещение в результатах поиска, визуальное выделение карточки объявления, увеличение размера карточки объявления в ленте.',
           'Приобретение платных услуг продвижения не освобождает пользователя от обязанности соблюдения настоящих Правил в отношении содержания объявления. Объявление, не соответствующее настоящим Правилам, подлежит отклонению либо снятию с публикации вне зависимости от факта приобретения платных услуг, при этом уплаченные денежные средства возврату не подлежат, за исключением случаев, установленных законодательством о защите прав потребителей.',
           'Пользователь, зарегистрированный в качестве коммерческого продавца (бизнес-аккаунт) и прошедший процедуру верификации личности, пользуется расширенным лимитом на размещение объявлений и правом на отображение соответствующей отметки, однако обязан соблюдать настоящие Правила наравне с иными пользователями.',
+          'Оплата продвижения может производиться с внутреннего баланса либо напрямую через платёжного оператора. Бонусы (подарок за первое объявление, вознаграждение за приглашение) можно тратить только на такое продвижение; они не подлежат выводу, обмену на деньги, передаче и возврату в денежной форме. Подробнее — в разделе 7 Условий использования.',
         ],
       },
       {
         h: '8. Модерация объявлений',
         p: [
-          'Каждое объявление, вне зависимости от факта приобретения платных услуг, подлежит проверке (модерации) на предмет соответствия настоящим Правилам до момента публикации в общедоступной ленте объявлений Сайта.',
+          'Объявление проверяется на соответствие настоящим Правилам автоматизированными средствами и (или) модераторами. Проверка может проходить до публикации в общедоступной ленте либо после неё: объявления Пользователей, отвечающих критериям Администрации (в частности, прошедших верификацию личности либо имеющих историю опубликованных объявлений), при отсутствии признаков нарушения могут публиковаться сразу, остальные публикуются после проверки. Приобретение платных услуг на порядок проверки не влияет.',
           'По результатам модерации объявление может быть опубликовано, отклонено с указанием причины отклонения либо направлено пользователю на доработку. Внесение пользователем изменений в цену, текстовое описание, фотографические материалы либо указание местонахождения предмета объявления влечёт за собой повторную модерацию объявления.',
           'Администрация Сайта вправе снять с публикации ранее опубликованное объявление без предварительного уведомления пользователя в случае выявления обстоятельств, свидетельствующих о нарушении настоящих Правил, вне зависимости от момента такого выявления.',
         ],
@@ -106,12 +108,20 @@ export const RULES = {
           'Повторное либо грубое нарушение настоящих Правил является основанием для блокировки учётной записи пользователя без права восстановления. Решение администрации Сайта о применении мер ответственности может быть обжаловано пользователем в порядке, предусмотренном разделом «Связь с нами» Условий использования Сайта.',
         ],
       },
+      {
+        h: '11. Бонусы, акции и приглашения',
+        p: [
+          'Бонусы и вознаграждения за приглашения предоставляются на условиях раздела 7 Условий использования. Для получения бонуса недостаточно зарегистрироваться: он зачисляется после публикации первого объявления и не более одного раза на одно лицо.',
+          'Запрещается: создавать несколько учётных записей для получения бонусов; размещать фиктивные, пустые либо повторяющиеся объявления ради бонуса; приглашать самого себя либо подставных лиц; распространять реферальную ссылку способами, нарушающими закон либо права третьих лиц, в том числе рассылкой нежелательных сообщений; продавать, покупать, обменивать либо передавать бонусы, приглашения и учётные записи.',
+          'При нарушении Администрация вправе отказать в зачислении бонуса, аннулировать неиспользованный бонус и применить меры, предусмотренные разделом 10 настоящих Правил.',
+        ],
+      },
     ],
   },
 
   en: {
     title: 'Posting Rules',
-    updated: 'Updated: August 28, 2026',
+    updated: 'Updated: September 30, 2026',
     sections: [
       {
         h: '1. General Provisions',
@@ -140,6 +150,7 @@ export const RULES = {
           '3.3. The listing description must contain complete and accurate information about the consumer properties, technical condition, completeness, and other material characteristics of the item known to the User at the time of posting.',
           '3.4. The price stated in the listing must reflect the User\u2019s genuine intent at the time of publication. Stating a deliberately understated or overstated price for the purpose of attracting attention to the listing is not permitted.',
           '3.5. The category assigned to a listing must correspond to the substance of the offer. Posting a listing in a category that does not match its content for the purpose of increasing audience reach is not permitted.',
+          '3.6. Manipulating the price, description or number of listings in order to obtain marks of the Site (including the “Cheaper than similar on PLONK” mark) or to distort price comparison is not permitted, in particular stating a deliberately understated price and later raising it, posting many similar listings, or using multiple accounts.',
         ],
       },
       {
@@ -177,12 +188,13 @@ export const RULES = {
           'The Site Administration provides Users, for a fee, with additional listing-promotion services, including, without limitation: priority placement in search results, visual highlighting of the listing card, and enlargement of the listing card in the feed.',
           'Purchasing paid promotion services does not exempt the User from the obligation to comply with these Rules regarding listing content. A listing that does not comply with these Rules is subject to rejection or removal regardless of whether paid services were purchased, and amounts paid are non-refundable, except as provided by consumer protection legislation.',
           'A User registered as a commercial seller (business account) who has completed identity verification enjoys an extended listing limit and the right to display the corresponding badge but must comply with these Rules on the same basis as other Users.',
+          'Promotion can be paid for from the internal balance or directly through the payment operator. Bonuses (the gift for a first listing, the reward for an invitation) can be spent only on such promotion; they cannot be withdrawn, exchanged for money, transferred or refunded in monetary form. See Section 7 of the Terms of Use for details.',
         ],
       },
       {
         h: '8. Listing Moderation',
         p: [
-          'Every listing, regardless of whether paid services were purchased, is subject to review (moderation) for compliance with these Rules before publication in the Site\u2019s publicly available feed.',
+          'A listing is checked for compliance with these Rules by automated means and/or by moderators. The check may take place before publication in the publicly available feed or after it: listings from Users who meet the Administration’s criteria (in particular, those who have completed identity verification or have a history of published listings) may be published immediately if no signs of a violation are found; other listings are published after review. Purchasing paid services does not affect the review procedure.',
           'Following moderation, a listing may be published, rejected with a stated reason, or returned to the User for revision. Any change made by the User to the price, text description, photographic materials, or stated location of the item triggers repeat moderation of the listing.',
           'The Site Administration may remove a previously published listing without prior notice to the User upon discovering circumstances indicating a violation of these Rules, regardless of when such circumstances are discovered.',
         ],
@@ -202,12 +214,20 @@ export const RULES = {
           'A repeated or serious violation of these Rules is grounds for permanently suspending the User\u2019s account without the right of restoration. A decision by the Site Administration to apply liability measures may be appealed by the User in the manner set out in the "Contact Us" section of the Site\u2019s Terms of Use.',
         ],
       },
+      {
+        h: '11. Bonuses, Promotions and Invitations',
+        p: [
+          'Bonuses and rewards for invitations are provided on the terms of Section 7 of the Terms of Use. Registering is not enough to receive a Bonus: it is credited after the first listing is published and no more than once per person.',
+          'It is prohibited to: create multiple accounts to obtain Bonuses; post fictitious, empty or duplicate listings for the sake of a Bonus; invite oneself or nominal persons; distribute a referral link in ways that violate the law or the rights of third parties, including by sending unsolicited messages; sell, buy, exchange or transfer Bonuses, invitations and accounts.',
+          'In the event of a violation, the Administration may refuse to credit a Bonus, cancel an unused Bonus and apply the measures provided in Section 10 of these Rules.',
+        ],
+      },
     ],
   },
 
   sr: {
     title: 'Pravila oglašavanja',
-    updated: 'Ažurirano: 28. avgust 2026',
+    updated: 'Ažurirano: 30. septembar 2026',
     sections: [
       {
         h: '1. Opšte odredbe',
@@ -236,6 +256,7 @@ export const RULES = {
           '3.3. Opis oglasa mora da sadrži potpune i tačne podatke o potrošačkim svojstvima, tehničkom stanju, kompletnosti i drugim bitnim karakteristikama predmeta oglasa koje su korisniku poznate u trenutku objave.',
           '3.4. Cena navedena u oglasu mora da odgovara stvarnoj nameri korisnika u trenutku objave. Navođenje namerno snižene ili uvećane cene radi privlačenja pažnje na oglas nije dozvoljeno.',
           '3.5. Kategorija kojoj je oglas dodeljen mora da odgovara suštini ponude. Objavljivanje oglasa u kategoriji koja ne odgovara njegovom sadržaju radi povećanja dosega nije dozvoljeno.',
+          '3.6. Nije dozvoljeno manipulisanje cenom, opisom ili brojem oglasa radi dobijanja oznaka Sajta (uključujući oznaku „Jeftinije od sličnih na PLONK-u“) ili izobličavanja poređenja cena, naročito navođenje namerno snižene cene uz kasnije povećanje, objavljivanje mnogo sličnih oglasa ili korišćenje više naloga.',
         ],
       },
       {
@@ -273,12 +294,13 @@ export const RULES = {
           'Administracija Sajta korisnicima uz naknadu pruža dodatne usluge izdvajanja oglasa, uključujući, bez ograničenja: prioritetno pozicioniranje u rezultatima pretrage, vizuelno isticanje kartice oglasa i uvećanje kartice oglasa u listi.',
           'Kupovina plaćenih usluga izdvajanja ne oslobađa korisnika obaveze poštovanja ovih Pravila u pogledu sadržaja oglasa. Oglas koji nije usklađen sa ovim Pravilima podleže odbijanju ili uklanjanju bez obzira na to da li su plaćene usluge kupljene, a uplaćena sredstva se ne vraćaju, osim u slučajevima predviđenim propisima o zaštiti potrošača.',
           'Korisnik registrovan kao komercijalni prodavac (poslovni nalog), koji je prošao proveru identiteta, koristi uvećan limit oglasa i pravo na prikaz odgovarajuće oznake, ali je dužan da poštuje ova Pravila ravnopravno sa ostalim korisnicima.',
+          'Izdvajanje se može platiti sa internog stanja ili direktno preko platnog operatora. Bonusi (poklon za prvi oglas, nagrada za poziv) mogu se potrošiti samo na takvo izdvajanje; ne mogu se isplatiti, zameniti za novac, preneti niti vratiti u novčanom obliku. Više u odeljku 7 Uslova korišćenja.',
         ],
       },
       {
         h: '8. Moderacija oglasa',
         p: [
-          'Svaki oglas, bez obzira na to da li su kupljene plaćene usluge, podleže proveri (moderaciji) usklađenosti sa ovim Pravilima pre objave u javno dostupnoj listi oglasa Sajta.',
+          'Oglas se proverava radi usklađenosti sa ovim Pravilima automatizovanim sredstvima i/ili od strane moderatora. Provera može biti izvršena pre objave u javno dostupnoj listi ili posle nje: oglasi korisnika koji ispunjavaju kriterijume Administracije (naročito onih koji su prošli proveru identiteta ili imaju istoriju objavljenih oglasa) mogu biti objavljeni odmah ako nema znakova kršenja; ostali oglasi se objavljuju nakon provere. Kupovina plaćenih usluga ne utiče na postupak provere.',
           'Nakon moderacije oglas može biti objavljen, odbijen uz navođenje razloga odbijanja ili vraćen korisniku na doradu. Svaka izmena koju korisnik unese u cenu, tekstualni opis, fotografije ili lokaciju predmeta oglasa povlači ponovnu moderaciju oglasa.',
           'Administracija Sajta ima pravo da ukloni prethodno objavljen oglas bez prethodnog obaveštenja korisnika u slučaju utvrđivanja okolnosti koje ukazuju na kršenje ovih Pravila, bez obzira na trenutak takvog utvrđivanja.',
         ],
@@ -298,6 +320,14 @@ export const RULES = {
           'Ponovljeno ili teško kršenje ovih Pravila predstavlja osnov za trajno blokiranje naloga korisnika bez prava na ponovno uspostavljanje. Odluku administracije Sajta o primeni mera odgovornosti korisnik može osporiti na način predviđen odeljkom „Kontakt\u201c Uslova korišćenja Sajta.',
         ],
       },
+      {
+        h: '11. Bonusi, akcije i pozivnice',
+        p: [
+          'Bonusi i nagrade za pozive daju se pod uslovima iz odeljka 7 Uslova korišćenja. Za dobijanje bonusa nije dovoljno registrovati se: upisuje se nakon objave prvog oglasa i najviše jednom po licu.',
+          'Zabranjeno je: otvarati više naloga radi dobijanja bonusa; objavljivati fiktivne, prazne ili ponovljene oglase radi bonusa; pozivati samog sebe ili fiktivna lica; širiti vezu za pozivanje na načine kojima se krši zakon ili prava trećih lica, uključujući slanje neželjenih poruka; prodavati, kupovati, razmenjivati ili prenositi bonuse, pozive i naloge.',
+          'U slučaju kršenja Administracija može odbiti upis bonusa, poništiti nepotrošen bonus i primeniti mere predviđene odeljkom 10 ovih Pravila.',
+        ],
+      },
     ],
   },
 }
@@ -305,7 +335,7 @@ export const RULES = {
 export const TERMS = {
   ru: {
     title: 'Условия использования',
-    updated: 'Обновлено: 28 августа 2026',
+    updated: 'Обновлено: 30 сентября 2026',
     sections: [
       {
         h: '1. Общие положения и предмет соглашения',
@@ -323,6 +353,8 @@ export const TERMS = {
           '«Объявление» — размещённая Пользователем на Сайте информация о предложении товара, услуги либо ином предложении в соответствии с Правилами размещения объявлений.',
           '«Отметка \u00abПроверенный пользователь\u00bb» — визуальный индикатор, подтверждающий прохождение Пользователем добровольной процедуры верификации личности через стороннего партнёра Администрации.',
           '«Стороны» — Администрация и Пользователь совместно.',
+          '«Внутренний баланс» — учётная единица в динарах (RSD) внутри Сайта, отражающая сумму, доступную Пользователю для оплаты платных услуг Сайта. Внутренний баланс не является банковским счётом, вкладом, электронным кошельком, электронными деньгами либо платёжным средством, а суммы, зачисленные на него, не являются вознаграждением, выплатой либо доходом Пользователя.',
+          '«Бонус» — безвозмездное зачисление на внутренний баланс, которое Администрация по собственному усмотрению предоставляет в рамках акций и программ, объявленных на Сайте, в том числе подарок за первое объявление и вознаграждение за приглашение нового пользователя.',
         ],
       },
       {
@@ -340,8 +372,10 @@ export const TERMS = {
         p: [
           '4.1. Размещая объявление, Пользователь заверяет и гарантирует, что обладает правом на реализацию указанного товара либо на оказание указанной услуги, а все сведения, содержащиеся в объявлении, включая цену, техническое состояние и фотографические материалы, являются достоверными и не вводят третьих лиц в заблуждение.',
           '4.2. Порядок и условия размещения объявлений, включая перечень запрещённых к размещению товаров и услуг, требования к содержанию объявлений и последствия их нарушения, устанавливаются отдельным документом — Правилами размещения объявлений, являющимися неотъемлемой частью настоящих Условий.',
-          '4.3. Каждое объявление подлежит проверке (модерации) Администрацией до момента его публикации в общедоступной ленте Сайта. Администрация вправе отклонить объявление либо снять с публикации ранее размещённое объявление без объяснения причин, если это не предусмотрено обязательными требованиями законодательства, при этом Администрация, как правило, указывает причину такого отклонения, но не обязана делать это в каждом случае.',
+          '4.3. Объявление проверяется на соответствие Правилам размещения объявлений автоматизированными средствами и (или) модераторами. Проверка может проводиться как до публикации, так и после неё: объявления Пользователей, отвечающих критериям Администрации (в частности, прошедших верификацию личности либо имеющих историю опубликованных объявлений), при отсутствии признаков нарушения могут публиковаться сразу; остальные объявления публикуются после проверки. Публикация объявления не означает, что Администрация проверила достоверность содержащихся в нём сведений либо законность предложения. Администрация вправе отклонить объявление либо снять с публикации ранее размещённое объявление без объяснения причин, если это не предусмотрено обязательными требованиями законодательства; как правило, Администрация указывает причину отклонения, но не обязана делать это в каждом случае. Пользователь вправе потребовать, чтобы решение, принятое автоматически, было пересмотрено человеком, обратившись в поддержку.',
           '4.4. Внесение изменений в цену, текстовое описание, фотографические материалы либо указание местонахождения предмета объявления влечёт направление объявления на повторную модерацию.',
+          '4.5. Часть объявлений переносится на Сайт из открытых тематических групп в мессенджере Telegram с согласия администраторов этих групп. На странице такого объявления указывается общедоступное имя пользователя (username) автора в Telegram со ссылкой на него. Автор вправе в любое время потребовать удаления такого объявления и связанных с ним сведений, обратившись через раздел поддержки либо по адресу электронной почты, указанному в разделе 13; обращение исполняется в разумный срок.',
+          '4.6. Тексты объявлений могут автоматически переводиться на другие языки Сайта. Перевод выполняется автоматизированными средствами и может содержать неточности; в случае расхождений определяющим является текст объявления на языке, на котором его написал автор.',
         ],
       },
       {
@@ -349,6 +383,7 @@ export const TERMS = {
         p: [
           'Сайт выполняет исключительно функцию информационной площадки, предоставляющей Пользователям возможность обнаружения друг друга и обмена сведениями о предполагаемой сделке. Администрация не является стороной какой-либо сделки, заключаемой между Пользователями, не участвует в порядке расчётов, доставке товара либо оказании услуги и не несёт ответственности за неисполнение либо ненадлежащее исполнение обязательств одним Пользователем перед другим.',
           'Пользователю надлежит проявлять разумную осмотрительность при совершении сделок с иными Пользователями: проверять товар до осуществления оплаты, выбирать безопасные и людные места для личных встреч, избегать перечисления денежных средств в качестве предварительной оплаты незнакомым лицам без достаточных оснований полагать, что обязательство будет исполнено.',
+          'Отметки и оценки, формируемые Сайтом автоматически, в том числе оценка цены и отметка «Дешевле похожих на PLONK» (значок огня рядом с ценой), носят исключительно справочный характер. Они рассчитываются только по объявлениям, размещённым на самом Сайте, не учитывают цены вне Сайта и рынок в целом и не являются оценкой стоимости, рекомендацией к покупке либо гарантией качества, состояния, происхождения товара или добросовестности продавца. Низкая цена может быть признаком мошенничества: Пользователю надлежит самостоятельно проверить товар и продавца до оплаты. Администрация не гарантирует точность таких отметок и вправе изменять порядок их расчёта без уведомления.',
         ],
       },
       {
@@ -358,13 +393,22 @@ export const TERMS = {
           'Пользователь вправе в одностороннем порядке ограничить возможность конкретного лица направлять ему сообщения. Указанное ограничение не распространяется на сообщения, направляемые Администрацией.',
           'Отзыв о Пользователе может быть оставлен исключительно после состоявшегося взаимодействия по поводу конкретного объявления. Администрация не осуществляет редактирование содержания отзывов, за исключением случаев явного нарушения — содержания оскорблений, персональных данных третьих лиц либо рекламных материалов.',
           'Жалоба на объявление либо на Пользователя рассматривается Администрацией в индивидуальном порядке. Систематическая подача заведомо необоснованных жалоб является самостоятельным нарушением настоящих Условий.',
+          'Сообщения от имени «Команда PLONK» (приветствие, сведения о работе Сайта и безопасности, информация об акциях, ответы поддержки) являются служебными сообщениями Администрации. Отправителя таких сообщений заблокировать нельзя. Ответы Пользователя «Команде PLONK» читает Администрация, включая принятых ею добровольных помощников; не указывайте в таких ответах платёжные реквизиты, пароли и иные сведения, не нужные для решения вопроса.',
+          'В целях безопасности переписка Пользователей автоматически проверяется на признаки мошенничества (например, просьбы о предоплате либо о переходе в другой мессенджер). Проверка выполняется средствами самого Сайта. Переписка, в которой обнаружены такие признаки, а также переписка, на которую поступила жалоба, может быть просмотрена модераторами в объёме, необходимом для проверки. Администрация не читает личную переписку Пользователей без необходимости, связанной с безопасностью Сайта, жалобой либо требованием закона.',
+          'Администрация вправе привлекать добровольных помощников (модераторов-волонтёров). Участие в программе безвозмездно и не образует трудовых, агентских либо иных договорных отношений с Администрацией. Помощник действует только в пределах порученных задач, обязан сохранять конфиденциальность сведений, ставших ему известными при модерации, и может быть отстранён в любой момент без объяснения причин. Решения помощников могут быть обжалованы через раздел поддержки.',
         ],
       },
       {
-        h: '7. Платные услуги',
+        h: '7. Платные услуги, внутренний баланс и бонусы',
         p: [
           'Администрация вправе предоставлять Пользователям на возмездной основе дополнительные услуги, в том числе услуги по продвижению объявлений в результатах поиска, а также услугу пополнения внутреннего баланса Пользователя для последующей оплаты таких услуг.',
           'Оплата платных услуг осуществляется посредством стороннего платёжного оператора. Администрация не осуществляет хранение полных реквизитов платёжных карт Пользователей. Денежные средства, зачисленные на внутренний баланс Пользователя, возврату в денежной форме не подлежат, за исключением случаев, прямо предусмотренных законодательством о защите прав потребителей.',
+          'Цены платных услуг указываются в динарах Республики Сербия (RSD). Платёжный оператор может проводить платёж в другой валюте (в настоящее время — в российских рублях); в этом случае сумма пересчитывается по курсу, зафиксированному в момент создания платежа. Банк Пользователя может применять собственный курс и комиссии.',
+          'Бонус предоставляется безвозмездно, по усмотрению Администрации, и не является оплатой, вознаграждением за труд, выплатой, доходом либо электронными деньгами. Бонус зачисляется при выполнении условий конкретной акции — например, после публикации первого объявления либо после публикации первого объявления приглашённым Пользователем, — а не за саму регистрацию, и не более одного раза на одно лицо в рамках одной акции. Размер бонуса и условия его зачисления определяются описанием акции и могут изменяться Администрацией в отношении будущих зачислений.',
+          'Бонус можно потратить только на платные услуги продвижения объявлений на Сайте. Бонус не подлежит обмену на деньги, выводу, возврату в денежной форме, передаче, дарению либо продаже другому лицу и не может быть использован для оплаты чего-либо вне Сайта. Бонус не компенсируется деньгами при удалении либо блокировке учётной записи, при отклонении либо снятии объявления и при прекращении акции.',
+          'Бонусы зачисляются на тот же внутренний баланс, что и пополнения. Если по требованию законодательства о защите прав потребителей Пользователю подлежат возврату денежные средства, возврату подлежит только та часть, которую Пользователь внёс деньгами и которая ещё не израсходована; бонусная часть внутреннего баланса возврату не подлежит.',
+          'Администрация вправе отказать в зачислении бонуса, аннулировать зачисленный и неиспользованный бонус и ограничить участие в акциях, если выявлены признаки злоупотребления: создание нескольких учётных записей одним лицом, размещение фиктивных либо не соответствующих Правилам объявлений, приглашение самого себя либо подставных лиц, продажа либо обмен бонусов, приглашений или учётных записей.',
+          'Налоговые обязательства, если они возникают у Пользователя в связи с получением бонусов либо с доходами от продаж через Сайт, Пользователь несёт самостоятельно.',
           'Приобретение платных услуг не освобождает Пользователя от обязанности соблюдения настоящих Условий и Правил размещения объявлений в полном объёме.',
         ],
       },
@@ -373,6 +417,7 @@ export const TERMS = {
         p: [
           'Элементы дизайна, программный код, товарные знаки, логотипы и иные объекты интеллектуальной собственности, размещённые на Сайте, за исключением содержания объявлений, размещённых Пользователями, принадлежат Администрации либо используются на законных основаниях и охраняются в соответствии с законодательством об интеллектуальной собственности.',
           'Размещая фотографические, текстовые и иные материалы в рамках объявления, Пользователь предоставляет Администрации неисключительную безвозмездную лицензию на использование таких материалов в целях, связанных с функционированием Сайта, включая их отображение в ленте объявлений, результатах поиска и в целях продвижения Сайта.',
+          'Пользователь соглашается, что объявления, включая фотографии и цену, могут публиковаться Администрацией в открытом чате PLONK в мессенджере Telegram и в иных каналах продвижения Сайта. По обращению Пользователя в поддержку Администрация прекращает такое использование объявления и удаляет опубликованное ею сообщение в разумный срок.',
         ],
       },
       {
@@ -414,7 +459,7 @@ export const TERMS = {
 
   en: {
     title: 'Terms of Use',
-    updated: 'Updated: August 28, 2026',
+    updated: 'Updated: September 30, 2026',
     sections: [
       {
         h: '1. General Provisions and Subject Matter',
@@ -432,6 +477,8 @@ export const TERMS = {
           '"Listing" \u2014 information posted by a User on the Site regarding an offer of goods, a service, or another offer in accordance with the Posting Rules.',
           '"Verified User" badge \u2014 a visual indicator confirming that the User has completed the voluntary identity verification procedure through a third-party partner of the Administration.',
           '"Parties" \u2014 the Administration and the User jointly.',
+          '“Internal Balance” means a unit of account in dinars (RSD) within the Site reflecting the amount available to the User for paying for the Site’s paid services. The Internal Balance is not a bank account, deposit, electronic wallet, electronic money or means of payment, and amounts credited to it are not remuneration, a payout or income of the User.',
+          '“Bonus” means a gratuitous credit to the Internal Balance that the Administration grants at its own discretion under promotions and programs announced on the Site, including the gift for a first listing and the reward for inviting a new user.',
         ],
       },
       {
@@ -449,8 +496,10 @@ export const TERMS = {
         p: [
           '4.1. By posting a listing, the User represents and warrants that they hold the right to sell the stated goods or provide the stated service, and that all information contained in the listing, including price, technical condition, and photographic materials, is accurate and does not mislead third parties.',
           '4.2. The procedure and conditions for posting listings, including the list of goods and services prohibited from posting, content requirements, and the consequences of violations, are set out in a separate document \u2014 the Posting Rules, which form an integral part of these Terms.',
-          '4.3. Every listing is subject to review (moderation) by the Administration before publication in the Site\u2019s publicly available feed. The Administration may reject a listing or remove a previously published listing without explanation, unless required otherwise by mandatory legal requirements; the Administration typically states a reason for such rejection but is not obligated to do so in every case.',
+          '4.3. A listing is checked for compliance with the Posting Rules by automated means and/or by moderators. The check may take place before or after publication: listings from Users who meet the Administration’s criteria (in particular, those who have completed identity verification or have a history of published listings) may be published immediately if no signs of a violation are found; other listings are published after review. Publication of a listing does not mean that the Administration has verified the accuracy of the information in it or the lawfulness of the offer. The Administration may reject a listing or remove a previously published listing without explanation, unless required otherwise by mandatory legal requirements; the Administration typically states a reason for rejection but is not obligated to do so in every case. A User may ask for an automated decision to be reviewed by a person by contacting support.',
           '4.4. Any change to the price, text description, photographic materials, or stated location of the item triggers repeat moderation of the listing.',
+          '4.5. Some listings are transferred to the Site from open thematic groups on Telegram with the consent of those groups’ administrators. The page of such a listing shows the author’s public Telegram username with a link to it. The author may at any time request removal of the listing and related information by contacting support or the email address given in Section 13; the request is fulfilled within a reasonable time.',
+          '4.6. Listing texts may be translated automatically into other languages of the Site. Translation is performed by automated means and may contain inaccuracies; in the event of any discrepancy, the text of the listing in the language in which the author wrote it prevails.',
         ],
       },
       {
@@ -458,6 +507,7 @@ export const TERMS = {
         p: [
           'The Site performs solely the function of an information platform enabling Users to find one another and exchange information about a prospective transaction. The Administration is not a party to any transaction concluded between Users, does not participate in payment arrangements, delivery of goods, or provision of services, and bears no liability for the failure or improper performance of obligations by one User towards another.',
           'The User should exercise reasonable care when dealing with other Users: inspect goods before making payment, choose safe and public locations for in-person meetings, and avoid transferring funds as advance payment to unfamiliar persons without sufficient grounds to believe the obligation will be fulfilled.',
+          'Marks and estimates generated automatically by the Site, including the price estimate and the “Cheaper than similar on PLONK” mark (the flame icon next to the price), are for reference only. They are calculated solely from listings posted on the Site itself, do not take into account prices outside the Site or the market as a whole, and are not a valuation, a purchase recommendation, or a guarantee of the quality, condition or origin of the item or of the seller’s good faith. A low price may be a sign of fraud: the User must verify the item and the seller independently before paying. The Administration does not guarantee the accuracy of such marks and may change how they are calculated without notice.',
         ],
       },
       {
@@ -467,13 +517,22 @@ export const TERMS = {
           'A User may unilaterally restrict a specific person\u2019s ability to send them messages. This restriction does not apply to messages sent by the Administration.',
           'A review of a User may be left only after an actual interaction concerning a specific listing has taken place. The Administration does not edit the content of reviews except in cases of a clear violation \u2014 abusive content, third parties\u2019 personal data, or advertising material.',
           'A complaint about a listing or a User is reviewed by the Administration on a case-by-case basis. Systematically filing knowingly unfounded complaints constitutes an independent violation of these Terms.',
+          'Messages sent on behalf of “PLONK Team” (a welcome message, information about how the Site works and about safety, information about promotions, support replies) are service messages of the Administration. The sender of such messages cannot be blocked. A User’s replies to the PLONK Team are read by the Administration, including volunteer helpers it has accepted; do not include payment details, passwords or other information not needed to resolve the matter.',
+          'For security, Users’ conversations are checked automatically for signs of fraud (for example, requests for prepayment or to move to another messenger). The check is performed by the Site’s own means. A conversation in which such signs are found, as well as one that has been reported, may be viewed by moderators to the extent necessary for review. The Administration does not read Users’ private conversations without a need related to the security of the Site, a complaint, or a legal requirement.',
+          'The Administration may engage volunteer helpers (volunteer moderators). Participation in the program is unpaid and does not create an employment, agency or other contractual relationship with the Administration. A helper acts only within the tasks assigned, must keep confidential the information learned during moderation, and may be removed at any time without explanation. Helpers’ decisions may be appealed through the support section.',
         ],
       },
       {
-        h: '7. Paid Services',
+        h: '7. Paid Services, Internal Balance and Bonuses',
         p: [
           'The Administration may provide Users, for a fee, with additional services, including listing-promotion services in search results, as well as a service allowing Users to top up an internal balance for the subsequent payment of such services.',
           'Payment for paid services is processed through a third-party payment operator. The Administration does not store the full details of Users\u2019 payment cards. Funds credited to a User\u2019s internal balance are non-refundable in monetary form, except as expressly provided by consumer protection legislation.',
+          'Prices of paid services are stated in the dinars of the Republic of Serbia (RSD). The payment operator may process a payment in another currency (currently Russian rubles); in that case the amount is converted at the rate fixed when the payment is created. The User’s bank may apply its own rate and fees.',
+          'A Bonus is granted gratuitously, at the Administration’s discretion, and is not payment, remuneration for work, a payout, income or electronic money. A Bonus is credited when the conditions of a specific promotion are met — for example, after the first listing is published, or after an invited User’s first listing is published — and not for registration alone, and no more than once per person under one promotion. The amount of a Bonus and the conditions for crediting it are set by the description of the promotion and may be changed by the Administration for future credits.',
+          'A Bonus can be spent only on paid listing-promotion services on the Site. A Bonus cannot be exchanged for money, withdrawn, refunded in monetary form, transferred, gifted or sold to another person, and cannot be used to pay for anything outside the Site. A Bonus is not compensated in money upon deletion or blocking of an account, rejection or removal of a listing, or the end of a promotion.',
+          'Bonuses are credited to the same Internal Balance as top-ups. If consumer protection legislation requires funds to be refunded to a User, only the part that the User deposited in money and has not yet spent is refundable; the bonus part of the Internal Balance is not refundable.',
+          'The Administration may refuse to credit a Bonus, cancel a credited and unused Bonus, and restrict participation in promotions if signs of abuse are found: creating multiple accounts by one person, posting fictitious listings or listings that do not comply with the Rules, inviting oneself or nominal persons, selling or exchanging Bonuses, invitations or accounts.',
+          'Any tax obligations that arise for a User in connection with receiving Bonuses or income from sales through the Site are borne by the User.',
           'Purchasing paid services does not exempt the User from the obligation to comply fully with these Terms and the Posting Rules.',
         ],
       },
@@ -482,6 +541,7 @@ export const TERMS = {
         p: [
           'Design elements, source code, trademarks, logos, and other intellectual property located on the Site, other than the content of listings posted by Users, belong to the Administration or are used on a lawful basis and are protected under applicable intellectual property law.',
           'By posting photographic, textual, or other materials as part of a listing, the User grants the Administration a non-exclusive, royalty-free license to use such materials for purposes related to the operation of the Site, including their display in the feed, search results, and for promoting the Site.',
+          'The User agrees that listings, including photos and price, may be published by the Administration in the open PLONK chat on Telegram and in other channels promoting the Site. At the User’s request to support, the Administration stops such use of the listing and removes the message it published within a reasonable time.',
         ],
       },
       {
@@ -523,7 +583,7 @@ export const TERMS = {
 
   sr: {
     title: 'Uslovi korišćenja',
-    updated: 'Ažurirano: 28. avgust 2026',
+    updated: 'Ažurirano: 30. septembar 2026',
     sections: [
       {
         h: '1. Opšte odredbe i predmet ugovora',
@@ -541,6 +601,8 @@ export const TERMS = {
           '„Oglas\u201c \u2014 informacija koju je Korisnik objavio na Sajtu u vezi sa ponudom robe, usluge ili drugom ponudom u skladu sa Pravilima oglašavanja.',
           '„Oznaka \u2018Proveren korisnik\u2019\u201c \u2014 vizuelni indikator koji potvrđuje da je Korisnik prošao dobrovoljni postupak provere identiteta preko spoljnog partnera Administracije.',
           '„Strane\u201c \u2014 Administracija i Korisnik zajedno.',
+          '„Interno stanje“ je obračunska jedinica u dinarima (RSD) na Sajtu koja prikazuje iznos koji je korisniku na raspolaganju za plaćanje plaćenih usluga Sajta. Interno stanje nije bankovni račun, štednja, elektronski novčanik, elektronski novac niti sredstvo plaćanja, a iznosi upisani na njega nisu naknada, isplata niti prihod korisnika.',
+          '„Bonus“ je besplatan upis na interno stanje koji Administracija po sopstvenom nahođenju odobrava u okviru akcija i programa objavljenih na Sajtu, uključujući poklon za prvi oglas i nagradu za pozivanje novog korisnika.',
         ],
       },
       {
@@ -558,8 +620,10 @@ export const TERMS = {
         p: [
           '4.1. Objavljivanjem oglasa Korisnik potvrđuje i garantuje da ima pravo da proda navedenu robu ili pruži navedenu uslugu, kao i da su svi podaci sadržani u oglasu, uključujući cenu, tehničko stanje i fotografije, tačni i da ne dovode treća lica u zabludu.',
           '4.2. Postupak i uslovi objavljivanja oglasa, uključujući spisak robe i usluga čije je oglašavanje zabranjeno, zahteve u pogledu sadržaja oglasa i posledice njihovog kršenja, uređeni su posebnim dokumentom \u2014 Pravilima oglašavanja, koja čine sastavni deo ovih Uslova.',
-          '4.3. Svaki oglas podleže proveri (moderaciji) od strane Administracije pre objave u javno dostupnoj listi Sajta. Administracija ima pravo da odbije oglas ili ukloni prethodno objavljen oglas bez obrazloženja, osim ako je drugačije propisano obaveznim zakonskim zahtevima; Administracija po pravilu navodi razlog takvog odbijanja, ali nije dužna da to čini u svakom slučaju.',
+          '4.3. Oglas se proverava radi usklađenosti sa Pravilima oglašavanja automatizovanim sredstvima i/ili od strane moderatora. Provera može biti izvršena pre ili posle objave: oglasi korisnika koji ispunjavaju kriterijume Administracije (naročito onih koji su prošli proveru identiteta ili imaju istoriju objavljenih oglasa) mogu biti objavljeni odmah ako nema znakova kršenja; ostali oglasi se objavljuju nakon provere. Objava oglasa ne znači da je Administracija proverila tačnost podataka u njemu niti zakonitost ponude. Administracija ima pravo da odbije oglas ili ukloni prethodno objavljen oglas bez obrazloženja, osim ako je drugačije propisano obaveznim zakonskim zahtevima; Administracija po pravilu navodi razlog odbijanja, ali nije dužna da to čini u svakom slučaju. Korisnik može zatražiti da automatsku odluku preispita čovek, obraćanjem podršci.',
           '4.4. Svaka izmena cene, tekstualnog opisa, fotografija ili navedene lokacije predmeta oglasa povlači ponovnu moderaciju oglasa.',
+          '4.5. Deo oglasa se na Sajt prenosi iz otvorenih tematskih grupa na aplikaciji Telegram uz saglasnost administratora tih grupa. Na stranici takvog oglasa navodi se javno korisničko ime (username) autora na Telegramu sa vezom ka njemu. Autor može u svakom trenutku zahtevati uklanjanje takvog oglasa i povezanih podataka obraćanjem preko odeljka podrške ili na adresu elektronske pošte navedenu u odeljku 13; zahtev se ispunjava u razumnom roku.',
+          '4.6. Tekstovi oglasa mogu se automatski prevoditi na druge jezike Sajta. Prevod se vrši automatizovanim sredstvima i može sadržati netačnosti; u slučaju razlika merodavan je tekst oglasa na jeziku na kojem ga je napisao autor.',
         ],
       },
       {
@@ -567,6 +631,7 @@ export const TERMS = {
         p: [
           'Sajt ima isključivo funkciju informativne platforme koja korisnicima omogućava da se pronađu i razmene podatke o planiranoj transakciji. Administracija nije strana ni u jednoj transakciji zaključenoj između korisnika, ne učestvuje u načinu plaćanja, isporuci robe ili pružanju usluge, i ne snosi odgovornost za neizvršenje ili neuredno izvršenje obaveza jednog korisnika prema drugom.',
           'Korisnik treba da postupa sa razumnom pažnjom prilikom transakcija sa drugim korisnicima: da proveri robu pre plaćanja, bira bezbedna i javna mesta za lične sastanke i izbegava prenos novca kao avansno plaćanje nepoznatim licima bez dovoljno osnova da veruje da će obaveza biti izvršena.',
+          'Oznake i procene koje Sajt formira automatski, uključujući procenu cene i oznaku „Jeftinije od sličnih na PLONK-u“ (ikonica plamena pored cene), imaju isključivo informativni karakter. Izračunavaju se samo na osnovu oglasa objavljenih na samom Sajtu, ne uzimaju u obzir cene van Sajta niti tržište u celini i nisu procena vrednosti, preporuka za kupovinu niti garancija kvaliteta, stanja, porekla predmeta ili savesnosti prodavca. Niska cena može biti znak prevare: korisnik je dužan da sam proveri predmet i prodavca pre plaćanja. Administracija ne garantuje tačnost takvih oznaka i može menjati način njihovog izračunavanja bez najave.',
         ],
       },
       {
@@ -576,13 +641,22 @@ export const TERMS = {
           'Korisnik ima pravo da jednostrano onemogući određenom licu da mu šalje poruke. Ovo ograničenje ne odnosi se na poruke koje šalje Administracija.',
           'Ocena korisnika može se ostaviti isključivo nakon stvarne interakcije povodom konkretnog oglasa. Administracija ne uređuje sadržaj ocena, osim u slučaju očiglednog kršenja \u2014 uvredljivog sadržaja, ličnih podataka trećih lica ili reklamnog materijala.',
           'Prijavu na oglas ili korisnika Administracija razmatra pojedinačno. Sistematsko podnošenje namerno neosnovanih prijava predstavlja samostalno kršenje ovih Uslova.',
+          'Poruke u ime „Tima PLONK“ (pozdrav, podaci o radu Sajta i bezbednosti, informacije o akcijama, odgovori podrške) su službene poruke Administracije. Pošiljaoca takvih poruka nije moguće blokirati. Odgovore korisnika „Timu PLONK“ čita Administracija, uključujući dobrovoljne pomoćnike koje je prihvatila; u takvim odgovorima ne navodite podatke o plaćanju, lozinke i druge podatke koji nisu potrebni za rešavanje pitanja.',
+          'Radi bezbednosti, prepiska korisnika se automatski proverava na znakove prevare (na primer, zahteve za avans ili za prelazak na drugu aplikaciju za poruke). Proveru vrše sopstvena sredstva Sajta. Prepisku u kojoj su otkriveni takvi znakovi, kao i prepisku na koju je podneta prijava, moderatori mogu pregledati u obimu neophodnom za proveru. Administracija ne čita privatnu prepisku korisnika bez potrebe koja je povezana sa bezbednošću Sajta, prijavom ili zahtevom zakona.',
+          'Administracija može angažovati dobrovoljne pomoćnike (moderatore-volontere). Učešće u programu je bez naknade i ne zasniva radni odnos, zastupanje niti drugi ugovorni odnos sa Administracijom. Pomoćnik deluje samo u granicama poverenih zadataka, dužan je da čuva poverljivost podataka do kojih je došao tokom moderacije i može biti razrešen u svakom trenutku bez obrazloženja. Odluke pomoćnika mogu se osporiti preko odeljka podrške.',
         ],
       },
       {
-        h: '7. Plaćene usluge',
+        h: '7. Plaćene usluge, interno stanje i bonusi',
         p: [
           'Administracija može korisnicima uz naknadu pružati dodatne usluge, uključujući usluge izdvajanja oglasa u rezultatima pretrage, kao i uslugu dopune internog stanja korisnika radi kasnijeg plaćanja takvih usluga.',
           'Plaćanje usluga vrši se preko spoljnog platnog operatora. Administracija ne čuva potpune podatke o platnim karticama korisnika. Sredstva uplaćena na interno stanje korisnika ne vraćaju se u novčanom obliku, osim u slučajevima izričito predviđenim propisima o zaštiti potrošača.',
+          'Cene plaćenih usluga iskazuju se u dinarima Republike Srbije (RSD). Platni operator može obraditi plaćanje u drugoj valuti (trenutno u ruskim rubljama); u tom slučaju iznos se preračunava po kursu utvrđenom u trenutku kreiranja plaćanja. Banka korisnika može primenjivati sopstveni kurs i naknade.',
+          'Bonus se daje besplatno, po nahođenju Administracije, i nije plaćanje, naknada za rad, isplata, prihod niti elektronski novac. Bonus se upisuje kada su ispunjeni uslovi konkretne akcije — na primer, nakon objave prvog oglasa ili nakon objave prvog oglasa pozvanog korisnika — a ne samo zbog registracije, i to najviše jednom po licu u okviru jedne akcije. Iznos bonusa i uslovi za upis određuju se opisom akcije i Administracija ih može menjati za buduće upise.',
+          'Bonus se može potrošiti isključivo na plaćene usluge izdvajanja oglasa na Sajtu. Bonus se ne može zameniti za novac, isplatiti, vratiti u novčanom obliku, preneti, pokloniti ni prodati drugom licu, niti se može koristiti za plaćanje bilo čega van Sajta. Bonus se ne nadoknađuje novcem prilikom brisanja ili blokiranja naloga, odbijanja ili uklanjanja oglasa i prestanka akcije.',
+          'Bonusi se upisuju na isto interno stanje kao i dopune. Ako propisi o zaštiti potrošača zahtevaju da se korisniku vrate sredstva, vraća se samo deo koji je korisnik uplatio novcem i koji još nije potrošen; bonus deo internog stanja ne vraća se.',
+          'Administracija može odbiti upis bonusa, poništiti upisan a nepotrošen bonus i ograničiti učešće u akcijama ako se utvrde znaci zloupotrebe: otvaranje više naloga od strane jednog lica, objavljivanje fiktivnih oglasa ili oglasa koji nisu u skladu sa Pravilima, pozivanje samog sebe ili fiktivnih lica, prodaja ili razmena bonusa, poziva ili naloga.',
+          'Poreske obaveze, ako nastanu za korisnika u vezi sa dobijanjem bonusa ili prihodima od prodaje preko Sajta, snosi sam korisnik.',
           'Kupovina plaćenih usluga ne oslobađa korisnika obaveze potpunog poštovanja ovih Uslova i Pravila oglašavanja.',
         ],
       },
@@ -591,6 +665,7 @@ export const TERMS = {
         p: [
           'Elementi dizajna, softverski kod, žigovi, logotipi i drugi predmeti intelektualne svojine na Sajtu, osim sadržaja oglasa koje su objavili korisnici, pripadaju Administraciji ili se koriste po zakonskom osnovu i zaštićeni su propisima o intelektualnoj svojini.',
           'Objavljivanjem fotografija, tekstova i drugih materijala u okviru oglasa, korisnik daje Administraciji neisključivu, besplatnu licencu za korišćenje takvih materijala u svrhe povezane sa radom Sajta, uključujući njihovo prikazivanje u listi oglasa, rezultatima pretrage i u svrhe promocije Sajta.',
+          'Korisnik se saglasava da Administracija oglase, uključujući fotografije i cenu, može objavljivati u otvorenom PLONK četu na aplikaciji Telegram i u drugim kanalima promocije Sajta. Na zahtev korisnika upućen podršci, Administracija prestaje sa takvim korišćenjem oglasa i u razumnom roku uklanja poruku koju je objavila.',
         ],
       },
       {
@@ -634,7 +709,7 @@ export const TERMS = {
 export const PRIVACY = {
   ru: {
     title: 'Политика конфиденциальности',
-    updated: 'Обновлено: 28 августа 2026',
+    updated: 'Обновлено: 30 сентября 2026',
     sections: [
       {
         h: '1. Общие положения',
@@ -657,12 +732,15 @@ export const PRIVACY = {
         h: '3. Состав обрабатываемых персональных данных',
         p: [
           'Оператор осуществляет обработку следующих категорий персональных данных Пользователей: адрес электронной почты либо идентификатор учётной записи в мессенджере Telegram; номер телефона (при добровольном указании); отображаемое имя и, при наличии, фотография профиля; сведения, содержащиеся в размещённых объявлениях (включая фотографические материалы, местонахождение предмета объявления, историю переписки с иными пользователями); результат прохождения добровольной процедуры верификации личности (без сохранения полного изображения документа, удостоверяющего личность, на серверах Оператора — верификация осуществляется силами стороннего партнёра); технические данные о используемом устройстве и сведения о геолокации (при предоставлении соответствующего разрешения операционной системой устройства); история платежей за услуги, оказываемые на возмездной основе (без сохранения полных реквизитов платёжных карт).',
+          'Дополнительно обрабатываются: сведения о заявке в добровольные помощники (выбранная роль, языки, доступное время, рассказ о себе) и о принятом решении; обращения в службу поддержки и переписка с «Команда PLONK»; отзывы, избранное, сохранённые поиски и подписки на продавцов; идентификатор пригласившего вас пользователя (при переходе по реферальной ссылке), записи о зачислении бонусов, пополнениях и списаниях внутреннего баланса; адрес подписки вашего браузера на push-уведомления (если вы их включили); время последнего посещения Сайта. Для объявлений, перенесённых из открытых групп Telegram, обрабатывается общедоступное имя пользователя автора (username), отображаемое на странице объявления со ссылкой на его профиль.',
         ],
       },
       {
         h: '4. Цели обработки персональных данных',
         p: [
           'Персональные данные обрабатываются в следующих целях: предоставление доступа к функциональным возможностям Сайта, включая регистрацию и идентификацию учётной записи; обеспечение возможности размещения объявлений и их отображения иным пользователям; организация обмена сообщениями между пользователями по поводу размещённых объявлений; направление уведомлений, связанных с функционированием учётной записи, статусом объявлений и результатами их модерации; обработка платежей за услуги, оказываемые на возмездной основе; обеспечение безопасности Сайта, предотвращение мошеннических действий и злоупотреблений; исполнение требований применимого законодательства.',
+          'Данные также обрабатываются в целях: автоматической проверки объявлений и переписки на признаки мошенничества и запрещённого содержимого; автоматического перевода объявлений на языки Сайта и подбора заголовка по тексту и фотографиям; расчёта справочной оценки цены по объявлениям Сайта; учёта бонусов, реферальной программы и внутреннего баланса; рассмотрения заявок добровольных помощников и организации их работы; направления служебных сообщений от имени «Команда PLONK», а также push-уведомлений (по вашему выбору).',
+          'Часть решений (например, публикация либо отклонение объявления) может приниматься автоматически. Вы вправе потребовать, чтобы такое решение пересмотрел человек, обратившись в поддержку.',
         ],
       },
       {
@@ -675,12 +753,17 @@ export const PRIVACY = {
         h: '6. Условия обработки и передачи персональных данных третьим лицам',
         p: [
           'Оператор не осуществляет возмездную передачу персональных данных Пользователей третьим лицам. Передача персональных данных третьим лицам допускается исключительно в следующих случаях: привлечение сторонних партнёров для оказания услуг, необходимых для функционирования Сайта, включая обработку платежей, верификацию личности, хостинг и техническую поддержку — при условии заключения с такими партнёрами соглашений, предусматривающих обязанность обеспечения конфиденциальности и защиты персональных данных на уровне не ниже установленного настоящей Политикой; предоставление персональных данных по требованию компетентных государственных органов в случаях, прямо предусмотренных применимым законодательством; отображение отображаемого имени, фотографии профиля и содержания объявлений иным пользователям Сайта в рамках обычного функционирования сервиса объявлений.',
+          'Для работы Сайта используются сторонние поставщики, которым передаются данные, необходимые для оказания услуги: хостинг (серверы Оператора расположены в Париже, Франция); платёжный оператор ЮKassa (Российская Федерация) — данные, необходимые для проведения платежа; сервис проверки документов (Didit) — для добровольной верификации личности; сервис отправки электронной почты (Resend) — адрес электронной почты и текст служебного письма; Telegram — при входе через Telegram, работе бота и публикации объявлений в Telegram; Google — при входе через Google и для автоматического перевода (Google Translate); публичные серверы перевода (LibreTranslate) — тексты объявлений для автоматического перевода; сервисы искусственного интеллекта (в частности, Google Gemini, Mistral AI, Groq, OpenRouter) — тексты и фотографии объявлений для автоматической проверки, перевода и подбора заголовков.',
+          'Объявления, включая фотографии и цену, могут публиковаться в открытом чате PLONK в Telegram. Часть поставщиков находится за пределами Республики Сербия, в том числе в Российской Федерации (платёжный оператор), поэтому персональные данные могут передаваться за границу. Передаётся только тот объём данных, который необходим для оказания соответствующей услуги.',
+          'К данным, необходимым для модерации (объявления, жалобы, обращения в поддержку, переписка, помеченная автоматической проверкой или жалобой), помимо сотрудников Администрации могут иметь доступ добровольные помощники, принятые Администрацией. Доступ ограничен их ролью; они обязаны сохранять конфиденциальность.',
+          'Переписка Пользователей проверяется на признаки мошенничества средствами самого Сайта, без передачи третьим лицам. Администрация не читает личную переписку без необходимости, связанной с безопасностью, жалобой либо требованием закона.',
         ],
       },
       {
         h: '7. Сроки обработки и хранения персональных данных',
         p: [
           'Персональные данные обрабатываются в течение всего срока действия учётной записи Пользователя на Сайте. После удаления учётной записи персональные данные подлежат удалению либо обезличиванию в разумный срок, за исключением случаев, когда более длительное хранение отдельных категорий данных требуется применимым законодательством (в частности, в целях ведения бухгалтерского и налогового учёта в отношении осуществлённых платежей).',
+          'Записи о платежах, зачислении бонусов и движении внутреннего баланса хранятся в течение срока, необходимого для бухгалтерского и налогового учёта и защиты от злоупотреблений. Заявки добровольных помощников хранятся, пока вы участвуете в программе либо заявка рассматривается, и удаляются по вашему запросу.',
         ],
       },
       {
@@ -692,7 +775,7 @@ export const PRIVACY = {
       {
         h: '9. Использование файлов cookie и аналогичных технологий',
         p: [
-          'Сайт использует файлы cookie и аналогичные технологии в целях обеспечения корректной работы функциональных возможностей Сайта (в частности, сохранения состояния авторизации), а также в целях анализа использования Сайта для его последующего улучшения. Пользователь вправе ограничить использование файлов cookie посредством настроек используемого браузера, при этом отдельные функциональные возможности Сайта могут быть недоступны либо работать некорректно.',
+          'Сайт не использует сторонние рекламные и аналитические сервисы. Для работы функциональных возможностей Сайт хранит на устройстве Пользователя небольшие данные в файлах cookie и локальном хранилище браузера: данные авторизации, выбранные язык и город, настройки ленты, идентификатор реферальной ссылки, отметки о показанных подсказках и последний просмотренный список. Эти данные не используются для рекламы. Пользователь вправе очистить их либо ограничить использование через настройки браузера, при этом часть функциональных возможностей может стать недоступной. Отдельные элементы загружаются с серверов третьих лиц: шрифты (Google Fonts), скрипт Telegram, вход через Google и карта (OpenStreetMap); при их загрузке ваш браузер обращается к этим серверам и передаёт им технические данные, в том числе IP-адрес, а они могут устанавливать собственные файлы cookie в соответствии со своими политиками.',
         ],
       },
       {
@@ -700,6 +783,7 @@ export const PRIVACY = {
         p: [
           'Субъект персональных данных вправе: получить сведения о составе обрабатываемых персональных данных и целях их обработки; требовать уточнения, блокирования либо удаления персональных данных в случае, если такие данные являются неполными, устаревшими, недостоверными, незаконно полученными либо не являются необходимыми для заявленной цели обработки; отозвать ранее данное согласие на обработку персональных данных; обратиться с жалобой в уполномоченный орган по защите прав субъектов персональных данных.',
           'Просмотр и изменение основных сведений учётной записи осуществляется Пользователем самостоятельно в разделе профиля на Сайте. Обращение по вопросу полного удаления персональных данных направляется в порядке, предусмотренном разделом 12 настоящей Политики.',
+          'Вы также вправе потребовать, чтобы решение, принятое исключительно автоматически (например, отклонение объявления), было пересмотрено человеком, а если вы являетесь автором объявления, перенесённого из открытой группы Telegram, — потребовать его удаления вместе со связанными сведениями.',
         ],
       },
       {
@@ -720,7 +804,7 @@ export const PRIVACY = {
 
   en: {
     title: 'Privacy Policy',
-    updated: 'Updated: August 28, 2026',
+    updated: 'Updated: September 30, 2026',
     sections: [
       {
         h: '1. General Provisions',
@@ -743,12 +827,15 @@ export const PRIVACY = {
         h: '3. Categories of Personal Data Processed',
         p: [
           'The Controller processes the following categories of Users\u2019 personal data: email address or Telegram account identifier; phone number (where voluntarily provided); display name and, where available, profile photo; information contained in posted listings (including photographic materials, the location of the item, and message history with other Users); the outcome of the voluntary identity verification procedure (without storage of a complete image of the identity document on the Controller\u2019s servers \u2014 verification is carried out by a third-party partner); technical data about the device used and geolocation information (where the relevant permission is granted through the device\u2019s operating system); and payment history for services provided for a fee (without storage of complete payment card details).',
+          'The following is also processed: information about an application to become a volunteer helper (the chosen role, languages, available time, a description of yourself) and the decision taken; support requests and correspondence with “PLONK Team”; reviews, favorites, saved searches and subscriptions to sellers; the identifier of the user who invited you (when you follow a referral link), records of Bonus credits, top-ups and deductions from the internal balance; the address of your browser’s push-notification subscription (if you have enabled them); the time of your last visit to the Site. For listings transferred from open Telegram groups, the author’s public username is processed and shown on the listing page with a link to their profile.',
         ],
       },
       {
         h: '4. Purposes of Processing Personal Data',
         p: [
           'Personal data is processed for the following purposes: providing access to the Site\u2019s functionality, including account registration and identification; enabling the posting of listings and their display to other Users; facilitating messaging between Users regarding posted listings; sending notifications related to account status, listing status, and moderation outcomes; processing payments for services provided for a fee; ensuring the security of the Site and preventing fraud and abuse; and complying with the requirements of applicable law.',
+          'Data is also processed for the purposes of: automatically checking listings and conversations for signs of fraud and prohibited content; automatically translating listings into the Site’s languages and suggesting a title from the text and photos; calculating a reference price estimate from listings on the Site; accounting for Bonuses, the referral program and the internal balance; reviewing volunteer applications and organizing volunteers’ work; sending service messages on behalf of “PLONK Team”, and push notifications (at your choice).',
+          'Some decisions (for example, publishing or rejecting a listing) may be made automatically. You may ask for such a decision to be reviewed by a person by contacting support.',
         ],
       },
       {
@@ -761,12 +848,17 @@ export const PRIVACY = {
         h: '6. Conditions for Processing and Disclosure of Personal Data to Third Parties',
         p: [
           'The Controller does not sell Users\u2019 personal data to third parties. Personal data may be disclosed to third parties only in the following cases: engagement of third-party partners to provide services necessary for the Site\u2019s operation, including payment processing, identity verification, hosting, and technical support \u2014 provided that agreements are concluded with such partners requiring them to ensure confidentiality and protection of personal data at a level no lower than that established by this Policy; disclosure of personal data at the request of competent government authorities in cases expressly provided for by applicable law; and the display of a User\u2019s display name, profile photo, and listing content to other Users of the Site as part of the ordinary functioning of the listings service.',
+          'To operate the Site, third-party providers are used, to which the data needed to provide the service is transferred: hosting (the Operator’s servers are located in Paris, France); the payment operator YooKassa (Russian Federation) — the data needed to carry out a payment; a document-verification service (Didit) — for voluntary identity verification; an email delivery service (Resend) — the email address and the text of a service email; Telegram — when signing in with Telegram, operating the bot and publishing listings on Telegram; Google — when signing in with Google and for automatic translation (Google Translate); public translation servers (LibreTranslate) — listing texts for automatic translation; artificial-intelligence services (in particular Google Gemini, Mistral AI, Groq, OpenRouter) — listing texts and photos for automatic checking, translation and title suggestions.',
+          'Listings, including photos and price, may be published in the open PLONK chat on Telegram. Some providers are located outside the Republic of Serbia, including in the Russian Federation (the payment operator), so personal data may be transferred abroad. Only the amount of data necessary to provide the relevant service is transferred.',
+          'In addition to the Administration’s staff, volunteer helpers accepted by the Administration may have access to the data needed for moderation (listings, complaints, support requests, conversations flagged by the automatic check or by a complaint). Their access is limited by their role; they are obliged to keep it confidential.',
+          'Users’ conversations are checked for signs of fraud by the Site’s own means, without disclosure to third parties. The Administration does not read private conversations without a need related to security, a complaint, or a legal requirement.',
         ],
       },
       {
         h: '7. Data Retention Periods',
         p: [
           'Personal data is processed for the entire duration of a User\u2019s account on the Site. After an account is deleted, personal data is deleted or de-identified within a reasonable period, except where longer retention of specific categories of data is required by applicable law (in particular, for accounting and tax record-keeping purposes in connection with payments made).',
+          'Records of payments, Bonus credits and movements of the internal balance are kept for the period necessary for accounting and tax purposes and for protection against abuse. Volunteer applications are kept while you take part in the program or the application is under review, and are deleted on your request.',
         ],
       },
       {
@@ -778,7 +870,7 @@ export const PRIVACY = {
       {
         h: '9. Use of Cookies and Similar Technologies',
         p: [
-          'The Site uses cookies and similar technologies to ensure the proper functioning of the Site\u2019s features (in particular, maintaining login state) and to analyze Site usage for its subsequent improvement. The User may restrict the use of cookies through their browser settings, though certain features of the Site may become unavailable or may not function correctly as a result.',
+          'The Site does not use third-party advertising or analytics services. For its features to work, the Site stores small pieces of data on the User’s device in cookies and the browser’s local storage: sign-in data, the chosen language and city, feed settings, the referral link identifier, marks of hints already shown, and the last viewed list. This data is not used for advertising. The User may clear it or restrict its use through browser settings, though some features of the Site may become unavailable as a result. Certain elements are loaded from third-party servers: fonts (Google Fonts), the Telegram script, sign-in with Google and the map (OpenStreetMap); when they load, your browser contacts those servers and sends them technical data, including your IP address, and they may set their own cookies in accordance with their own policies.',
         ],
       },
       {
@@ -786,6 +878,7 @@ export const PRIVACY = {
         p: [
           'A Data Subject has the right to: obtain information about the categories of personal data being processed and the purposes of such processing; request the correction, blocking, or deletion of personal data if such data is incomplete, outdated, inaccurate, unlawfully obtained, or not necessary for the stated purpose of processing; withdraw previously given consent to the processing of personal data; and lodge a complaint with the competent data protection authority.',
           'A User may independently view and edit their core account information in the profile section of the Site. Requests regarding the complete deletion of personal data should be submitted in the manner set out in Section 12 of this Policy.',
+          'You may also ask for a decision made solely by automated means (for example, the rejection of a listing) to be reviewed by a person and, if you are the author of a listing transferred from an open Telegram group, ask for it to be deleted together with the related information.',
         ],
       },
       {
@@ -806,7 +899,7 @@ export const PRIVACY = {
 
   sr: {
     title: 'Politika privatnosti',
-    updated: 'Ažurirano: 28. avgust 2026',
+    updated: 'Ažurirano: 30. septembar 2026',
     sections: [
       {
         h: '1. Opšte odredbe',
@@ -829,12 +922,15 @@ export const PRIVACY = {
         h: '3. Vrste ličnih podataka koji se obrađuju',
         p: [
           'Rukovalac obrađuje sledeće kategorije ličnih podataka korisnika: adresu elektronske pošte ili identifikator naloga na aplikaciji Telegram; broj telefona (ukoliko je dobrovoljno naveden); prikazano ime i, ukoliko postoji, fotografiju profila; podatke sadržane u objavljenim oglasima (uključujući fotografije, lokaciju predmeta oglasa i istoriju prepiske sa drugim korisnicima); rezultat dobrovoljnog postupka provere identiteta (bez čuvanja potpune slike dokumenta identiteta na serverima Rukovaoca \u2014 proveru vrši spoljni partner); tehničke podatke o korišćenom uređaju i podatke o geolokaciji (ukoliko je odgovarajuća dozvola data putem operativnog sistema uređaja); istoriju plaćanja usluga koje se pružaju uz naknadu (bez čuvanja potpunih podataka platnih kartica).',
+          'Dodatno se obrađuju: podaci o prijavi za dobrovoljnog pomoćnika (izabrana uloga, jezici, raspoloživo vreme, opis o sebi) i o donetoj odluci; obraćanja službi podrške i prepiska sa „Timom PLONK“; ocene, omiljeni oglasi, sačuvane pretrage i praćenje prodavaca; identifikator korisnika koji vas je pozvao (pri prelasku preko veze za pozivanje), zapisi o upisu bonusa, dopunama i skidanjima sa internog stanja; adresa pretplate vašeg pretraživača na push obaveštenja (ako ste ih uključili); vreme poslednje posete Sajtu. Za oglase prenete iz otvorenih Telegram grupa obrađuje se javno korisničko ime autora (username), koje se prikazuje na stranici oglasa sa vezom ka njegovom profilu.',
         ],
       },
       {
         h: '4. Svrhe obrade ličnih podataka',
         p: [
           'Lični podaci obrađuju se u sledeće svrhe: omogućavanje pristupa funkcionalnostima Sajta, uključujući registraciju i identifikaciju naloga; omogućavanje objavljivanja oglasa i njihovog prikazivanja drugim korisnicima; omogućavanje razmene poruka između korisnika povodom objavljenih oglasa; slanje obaveštenja u vezi sa statusom naloga, statusom oglasa i rezultatima moderacije; obradu plaćanja za usluge koje se pružaju uz naknadu; obezbeđivanje bezbednosti Sajta i sprečavanje prevara i zloupotreba; izvršavanje zahteva važećih propisa.',
+          'Podaci se obrađuju i radi: automatske provere oglasa i prepiske na znakove prevare i zabranjenog sadržaja; automatskog prevođenja oglasa na jezike Sajta i predlaganja naslova na osnovu teksta i fotografija; izračunavanja informativne procene cene na osnovu oglasa na Sajtu; evidentiranja bonusa, programa pozivanja i internog stanja; razmatranja prijava dobrovoljnih pomoćnika i organizovanja njihovog rada; slanja službenih poruka u ime „Tima PLONK“, kao i push obaveštenja (po vašem izboru).',
+          'Deo odluka (na primer, objava ili odbijanje oglasa) može se doneti automatski. Možete zatražiti da takvu odluku preispita čovek, obraćanjem podršci.',
         ],
       },
       {
@@ -847,12 +943,17 @@ export const PRIVACY = {
         h: '6. Uslovi obrade i prenosa ličnih podataka trećim licima',
         p: [
           'Rukovalac ne prodaje lične podatke korisnika trećim licima. Prenos ličnih podataka trećim licima dozvoljen je isključivo u sledećim slučajevima: angažovanje spoljnih partnera radi pružanja usluga neophodnih za rad Sajta, uključujući obradu plaćanja, proveru identiteta, hosting i tehničku podršku \u2014 pod uslovom da su sa takvim partnerima zaključeni ugovori kojima se predviđa obaveza obezbeđenja poverljivosti i zaštite ličnih podataka na nivou ne nižem od predviđenog ovom Politikom; dostavljanje ličnih podataka na zahtev nadležnih državnih organa u slučajevima izričito predviđenim važećim propisima; prikazivanje prikazanog imena, fotografije profila i sadržaja oglasa drugim korisnicima Sajta u okviru redovnog funkcionisanja usluge oglašavanja.',
+          'Za rad Sajta koriste se spoljni pružaoci usluga kojima se prenose podaci neophodni za pružanje usluge: hosting (serveri Rukovaoca nalaze se u Parizu, Francuska); platni operator YooKassa (Ruska Federacija) — podaci neophodni za izvršenje plaćanja; usluga provere dokumenata (Didit) — za dobrovoljnu proveru identiteta; usluga slanja elektronske pošte (Resend) — adresa elektronske pošte i tekst službene poruke; Telegram — pri prijavi preko Telegrama, radu bota i objavljivanju oglasa na Telegramu; Google — pri prijavi preko Google naloga i za automatsko prevođenje (Google Translate); javni serveri za prevođenje (LibreTranslate) — tekstovi oglasa za automatsko prevođenje; usluge veštačke inteligencije (naročito Google Gemini, Mistral AI, Groq, OpenRouter) — tekstovi i fotografije oglasa radi automatske provere, prevođenja i predlaganja naslova.',
+          'Oglasi, uključujući fotografije i cenu, mogu se objavljivati u otvorenom PLONK četu na Telegramu. Deo pružalaca usluga nalazi se van Republike Srbije, uključujući Rusku Federaciju (platni operator), pa se lični podaci mogu prenositi u inostranstvo. Prenosi se samo onaj obim podataka koji je neophodan za pružanje odgovarajuće usluge.',
+          'Pored zaposlenih u Administraciji, podacima neophodnim za moderaciju (oglasi, prijave, obraćanja podršci, prepiska označena automatskom proverom ili prijavom) mogu pristupiti dobrovoljni pomoćnici koje je Administracija prihvatila. Njihov pristup je ograničen ulogom; dužni su da ga čuvaju kao poverljiv.',
+          'Prepiska korisnika proverava se na znakove prevare sopstvenim sredstvima Sajta, bez prenosa trećim licima. Administracija ne čita privatnu prepisku bez potrebe povezane sa bezbednošću, prijavom ili zahtevom zakona.',
         ],
       },
       {
         h: '7. Rokovi obrade i čuvanja ličnih podataka',
         p: [
           'Lični podaci obrađuju se tokom celog perioda postojanja naloga korisnika na Sajtu. Nakon brisanja naloga, lični podaci se brišu ili anonimizuju u razumnom roku, osim u slučajevima kada je duže čuvanje pojedinih kategorija podataka propisano važećim propisima (naročito u svrhe vođenja računovodstvene i poreske evidencije u vezi sa izvršenim plaćanjima).',
+          'Zapisi o plaćanjima, upisu bonusa i kretanju internog stanja čuvaju se u roku neophodnom za računovodstvene i poreske svrhe i zaštitu od zloupotreba. Prijave dobrovoljnih pomoćnika čuvaju se dok učestvujete u programu ili dok se prijava razmatra, a brišu se na vaš zahtev.',
         ],
       },
       {
@@ -864,7 +965,7 @@ export const PRIVACY = {
       {
         h: '9. Korišćenje kolačića i sličnih tehnologija',
         p: [
-          'Sajt koristi kolačiće i slične tehnologije radi obezbeđivanja pravilnog funkcionisanja funkcionalnosti Sajta (naročito održavanja stanja prijave), kao i radi analize korišćenja Sajta u cilju njegovog unapređenja. Korisnik ima pravo da ograniči korišćenje kolačića putem podešavanja svog pretraživača, pri čemu pojedine funkcionalnosti Sajta mogu postati nedostupne ili neispravno funkcionisati.',
+          'Sajt ne koristi spoljne reklamne i analitičke usluge. Radi funkcionisanja, Sajt čuva na uređaju korisnika male količine podataka u kolačićima i lokalnom skladištu pretraživača: podatke o prijavi, izabrani jezik i grad, podešavanja liste, identifikator veze za pozivanje, oznake o već prikazanim savetima i poslednju pregledanu listu. Ovi podaci se ne koriste za reklamiranje. Korisnik ima pravo da ih obriše ili ograniči njihovo korišćenje putem podešavanja pretraživača, pri čemu pojedine funkcionalnosti Sajta mogu postati nedostupne. Pojedini elementi se učitavaju sa servera trećih lica: fontovi (Google Fonts), Telegram skripta, prijava preko Googlea i mapa (OpenStreetMap); pri njihovom učitavanju vaš pretraživač se obraća tim serverima i šalje im tehničke podatke, uključujući IP adresu, a oni mogu postavljati sopstvene kolačiće u skladu sa svojim politikama.',
         ],
       },
       {
@@ -872,6 +973,7 @@ export const PRIVACY = {
         p: [
           'Subjekt podataka ima pravo da: dobije informacije o vrstama ličnih podataka koji se obrađuju i svrhama obrade; zahteva ispravku, blokiranje ili brisanje ličnih podataka ukoliko su takvi podaci nepotpuni, zastareli, netačni, nezakonito pribavljeni ili nisu neophodni za navedenu svrhu obrade; povuče prethodno datu saglasnost za obradu ličnih podataka; podnese pritužbu nadležnom organu za zaštitu podataka o ličnosti.',
           'Korisnik samostalno pregleda i menja osnovne podatke naloga u odeljku profila na Sajtu. Zahtev za potpuno brisanje ličnih podataka podnosi se na način predviđen odeljkom 12 ove Politike.',
+          'Takođe možete zatražiti da odluku donetu isključivo automatski (na primer, odbijanje oglasa) preispita čovek, a ako ste autor oglasa prenetog iz otvorene Telegram grupe — zatražiti njegovo brisanje zajedno sa povezanim podacima.',
         ],
       },
       {

@@ -1,0 +1,240 @@
+"""
+Правила, Условия и Политика не должны расходиться с тем, что делает сайт.
+
+Документы уже однажды устарели: они утверждали, что каждое объявление
+проверяется человеком до публикации, когда часть объявлений давно
+публикуется сразу; в Политике не было ни слова про сервисы ИИ, куда уходят
+тексты и фото, про платёжного оператора в другой стране, про то, что
+помеченную переписку читают модераторы, и про бонусы. Здесь это закреплено
+проверками: сверяем документы с кодом, а не только между собой.
+
+Это не юридическая экспертиза. Текст — черновик под реальное поведение
+сервиса; юристу его стоит показать до того, как полагаться всерьёз.
+"""
+import json
+import re
+import shutil
+import subprocess
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[2]
+FRONT = ROOT / "frontend"
+BACK = ROOT / "backend"
+LANGS = ("ru", "en", "sr")
+
+pytestmark = pytest.mark.skipif(shutil.which("node") is None, reason="нужен node, чтобы прочитать тексты")
+
+
+@pytest.fixture(scope="module")
+def docs():
+    script = (
+        "import { RULES, TERMS, PRIVACY } from './src/data/legalContent.js';"
+        "console.log(JSON.stringify({ RULES, TERMS, PRIVACY }));"
+    )
+    out = subprocess.run(["node", "--input-type=module", "-e", script], cwd=FRONT,
+                         capture_output=True, text=True, check=True).stdout
+    return json.loads(out)
+
+
+def text_of(docs, name, lang):
+    doc = docs[name][lang]
+    return "\n".join(doc["title"] for _ in [0]) + "\n" + "\n".join(
+        s["h"] + "\n" + "\n".join(s["p"]) for s in doc["sections"])
+
+
+# ─── структура ──────────────────────────────────────────────────────────
+def test_three_languages_have_the_same_shape(docs):
+    for name in docs:
+        shapes = {lang: [len(s["p"]) for s in docs[name][lang]["sections"]] for lang in LANGS}
+        assert shapes["ru"] == shapes["en"] == shapes["sr"], f"{name}: абзацы разошлись между языками"
+
+
+def test_sections_are_numbered_in_order_and_dates_match(docs):
+    for name in docs:
+        for lang in LANGS:
+            numbers = [int(re.match(r"(\d+)\.", s["h"]).group(1)) for s in docs[name][lang]["sections"]]
+            assert numbers == list(range(1, len(numbers) + 1)), f"{name}/{lang}: нумерация разделов сбита"
+        dates = {re.sub(r"\D+", " ", docs[name][lang]["updated"]).strip() for lang in LANGS}
+        assert len(dates) == 1, f"{name}: дата редакции разная на разных языках"
+
+
+def test_the_contact_address_is_still_wired_in(docs):
+    """Адрес берётся из константы; в тексте должен остаться, на всех языках."""
+    for lang in LANGS:
+        assert "account@plonk.rs" in text_of(docs, "TERMS", lang)
+        assert "account@plonk.rs" in text_of(docs, "PRIVACY", lang)
+
+
+def test_cross_references_point_at_real_sections(docs):
+    """«раздел 13», «раздел 7 Условий», «раздел 10 Правил» — такие разделы должны существовать."""
+    terms = len(docs["TERMS"]["ru"]["sections"])
+    rules = len(docs["RULES"]["ru"]["sections"])
+    assert terms >= 13 and rules >= 11
+    assert docs["TERMS"]["ru"]["sections"][6]["h"].startswith("7. Платные услуги")
+    assert docs["TERMS"]["ru"]["sections"][12]["h"].startswith("13. Связь")
+
+
+# ─── бонусы и баланс: главное, что просил закрепить владелец ────────────
+MUST = {
+    "ru": [
+        ("TERMS", "не подлежит обмену на деньги"),
+        ("TERMS", "не является банковским счётом"),
+        ("TERMS", "только на платные услуги продвижения"),
+        ("TERMS", "бонусная часть внутреннего баланса возврату не подлежит"),
+        ("TERMS", "не за саму регистрацию"),
+        ("TERMS", "аннулировать зачисленный и неиспользованный бонус"),
+        ("RULES", "продавать, покупать, обменивать либо передавать бонусы"),
+    ],
+    "en": [
+        ("TERMS", "cannot be exchanged for money"),
+        ("TERMS", "is not a bank account"),
+        ("TERMS", "only on paid listing-promotion services"),
+        ("TERMS", "the bonus part of the Internal Balance is not refundable"),
+        ("TERMS", "not for registration alone"),
+        ("TERMS", "cancel a credited and unused Bonus"),
+        ("RULES", "sell, buy, exchange or transfer Bonuses"),
+    ],
+    "sr": [
+        ("TERMS", "ne može zameniti za novac"),
+        ("TERMS", "nije bankovni račun"),
+        ("TERMS", "isključivo na plaćene usluge izdvajanja oglasa"),
+        ("TERMS", "bonus deo internog stanja ne vraća se"),
+        ("TERMS", "a ne samo zbog registracije"),
+        ("TERMS", "poništiti upisan a nepotrošen bonus"),
+        ("RULES", "prodavati, kupovati, razmenjivati ili prenositi bonuse"),
+    ],
+}
+
+
+@pytest.mark.parametrize("lang", LANGS)
+def test_bonus_terms_are_stated_in_every_language(docs, lang):
+    for name, phrase in MUST[lang]:
+        assert phrase in text_of(docs, name, lang), f"{name}/{lang}: нет формулировки «{phrase}»"
+
+
+def test_documents_do_not_hard_code_bonus_amounts(docs):
+    """Размер бонуса меняется в коде и в акции; в юридическом тексте он устарел бы."""
+    for name in docs:
+        for lang in LANGS:
+            assert not re.search(r"\b(300|200)\s*RSD\b", text_of(docs, name, lang)), f"{name}/{lang}"
+
+
+# ─── прежние ложные утверждения не вернулись ────────────────────────────
+def test_the_old_moderate_everything_first_claim_is_gone(docs):
+    stale = {
+        "ru": ["подлежит проверке (модерации) Администрацией до момента его публикации",
+               "вне зависимости от факта приобретения платных услуг, подлежит проверке"],
+        "en": ["is subject to review (moderation) by the Administration before publication",
+               "regardless of whether paid services were purchased, is subject to review"],
+        "sr": ["podleže proveri (moderaciji) od strane Administracije pre objave",
+               "bez obzira na to da li su kupljene plaćene usluge, podleže proveri"],
+    }
+    for lang in LANGS:
+        body = text_of(docs, "TERMS", lang) + text_of(docs, "RULES", lang)
+        for phrase in stale[lang]:
+            assert phrase not in body, f"{lang}: осталось устаревшее «{phrase}»"
+
+
+def test_automatic_publication_is_disclosed(docs):
+    assert "могут публиковаться сразу" in text_of(docs, "TERMS", "ru")
+    assert "may be published immediately" in text_of(docs, "TERMS", "en")
+    assert "mogu biti objavljeni odmah" in text_of(docs, "TERMS", "sr")
+
+
+# ─── документы против кода ──────────────────────────────────────────────
+# Внешний сервис, которому уходят данные, обязан быть назван в Политике.
+BACKEND_HOSTS = {
+    "generativelanguage.googleapis.com": ("Google Gemini",),
+    "api.mistral.ai": ("Mistral",),
+    "api.groq.com": ("Groq",),
+    "openrouter.ai": ("OpenRouter",),
+    "translate.googleapis.com": ("Google",),
+    "api.resend.com": ("Resend",),
+    "api.telegram.org": ("Telegram",),
+    "api.yookassa.ru": ("ЮKassa", "YooKassa"),
+    "verification.didit.me": ("Didit",),
+    # Публичные серверы LibreTranslate: тексты объявлений уходят на них как на чужие серверы.
+    "libretranslate.de": ("LibreTranslate",),
+    "translate.terraprint.co": ("LibreTranslate",),
+    "trans.zillyhuhn.com": ("LibreTranslate",),
+    "accounts.google.com": ("Google",),
+}
+# Внешние ресурсы, которые подгружает браузер посетителя, — они в разделе про cookie.
+FRONT_HOSTS = {
+    "fonts.googleapis.com": "Google Fonts",
+    "telegram.org": "Telegram",
+    "accounts.google.com": "Google",
+    "tile.openstreetmap.org": "OpenStreetMap",
+}
+
+
+def _backend_hosts():
+    found = set()
+    for path in (BACK / "app").rglob("*.py"):
+        found |= set(re.findall(r"https://([a-z0-9.-]+\.[a-z]{2,})", path.read_text(encoding="utf-8", errors="ignore")))
+    return found
+
+
+def test_every_outside_service_the_backend_calls_is_named_in_the_privacy_policy(docs):
+    used = _backend_hosts()
+    for host, names in BACKEND_HOSTS.items():
+        if host not in used:
+            continue                                   # сервис убрали из кода — упоминание не обязательно
+        for lang in LANGS:
+            body = text_of(docs, "PRIVACY", lang)
+            assert any(n in body for n in names), f"{lang}: код обращается к {host}, а в Политике его нет"
+
+
+def test_backend_does_not_talk_to_unlisted_services():
+    """Новый внешний хост в коде — повод дополнить Политику, а потом этот список."""
+    known = set(BACKEND_HOSTS) | {
+        "plonk.rs", "schema.org", "www.cbr.ru", "www.googleapis.com", "shop.rs",
+        "api.frankfurter.app",      # курсы валют: персональных данных не получает
+        "t.me",                     # только ссылки на Telegram, не запросы
+    }
+    unknown = {h for h in _backend_hosts() if h not in known and not h.endswith("plonk.rs")}
+    assert not unknown, f"новые внешние хосты в коде: {sorted(unknown)} — проверьте Политику"
+
+
+def test_privacy_names_what_the_browser_loads_from_third_parties(docs):
+    front = "\n".join(p.read_text(encoding="utf-8", errors="ignore")
+                      for p in list((FRONT / "src").rglob("*.js*")) + [FRONT / "index.html", FRONT / "src" / "styles.css"])
+    for host, name in FRONT_HOSTS.items():
+        if host not in front:
+            continue
+        for lang in LANGS:
+            assert name in text_of(docs, "PRIVACY", lang), f"{lang}: страница грузит {host}, а в Политике нет «{name}»"
+
+
+def test_the_no_analytics_claim_stays_true():
+    """
+    Политика говорит: сторонней рекламы и аналитики нет. Пока это так — верно;
+    подключили счётчик — нужно менять документ, и этот тест напомнит.
+    """
+    markers = re.compile(r"gtag\(|googletagmanager|mc\.yandex|ym\(\d|hotjar|clarity\.ms|sentry|posthog|mixpanel|"
+                         r"amplitude|fbq\(|connect\.facebook|adsbygoogle|doubleclick", re.I)
+    for path in list((FRONT / "src").rglob("*.js*")) + [FRONT / "index.html"]:
+        assert not markers.search(path.read_text(encoding="utf-8", errors="ignore")), \
+            f"{path.name}: похоже, подключена сторонняя аналитика — исправьте раздел 9 Политики"
+
+
+def test_documents_match_how_the_team_account_and_chat_scan_really_work():
+    """Условия говорят: команду заблокировать нельзя, а переписку проверяют средствами самого Сайта."""
+    chats = (BACK / "app" / "routers" / "chats.py").read_text(encoding="utf-8")
+    assert "cannot_block_team" in chats
+    risk = (BACK / "app" / "core" / "chat_risk.py").read_text(encoding="utf-8")
+    imports = re.findall(r"^\s*(?:import|from)\s+(\S+)", risk, re.M)
+    assert set(imports) <= {"re", "__future__", "typing", "dataclasses"}, \
+        f"проверка переписки стала обращаться к {imports}: Политика утверждает, что она локальная"
+
+
+def test_bonus_is_spendable_only_on_promotion_and_has_no_cash_out():
+    """Условия: бонус — только на продвижение и не выводится. В коде не должно быть вывода средств."""
+    promo = (BACK / "app" / "routers" / "promotions.py").read_text(encoding="utf-8")
+    assert "balance/topup" in promo
+    for path in (BACK / "app").rglob("*.py"):
+        body = path.read_text(encoding="utf-8", errors="ignore")
+        assert not re.search(r"payout|withdraw|cash_?out|refund_to_card|/balance/withdraw", body, re.I), \
+            f"{path.name}: в коде появился вывод или возврат средств — Условия говорят, что его нет"
