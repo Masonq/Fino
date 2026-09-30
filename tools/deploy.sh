@@ -89,6 +89,13 @@ if ! python3 tools/check-ui.py; then
   exit 1
 fi
 
+# Напоминание, не остановка: закон Сербии об электронной торговле и о защите персональных данных требует
+# показывать, кто оператор сайта. Пока поля пусты, в документах только e-mail.
+if grep -q "name: '',  " frontend/src/data/legalContent.js; then
+  echo "  ! Реквизиты оператора не заполнены (frontend/src/data/legalContent.js, OPERATOR): имя, адрес, номер."
+  echo "    Закон Сербии требует их показывать; строка появится в Условиях и Политике сама."
+fi
+
 lap "проверяю сборку фронтенда"
 cd frontend
 if ! npm install --no-audit --no-fund > /tmp/plonk-npm-install.log 2>&1; then

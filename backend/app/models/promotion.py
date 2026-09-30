@@ -55,6 +55,9 @@ class Promotion(Base):
     # авторизованный запрос к их API, а не доверяем телу вебхука
     # напрямую (так рекомендует сама ЮKassa).
     payment_id: Mapped[str | None] = mapped_column(String(64), index=True, nullable=True)
+    # Когда человек попросил начать услугу сразу и подтвердил, что после её полного оказания теряет
+    # право отказаться от договора (закон о защите потребителей, ст. 37). Без этой отметки оплатить нельзя.
+    consent_immediate_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     starts_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

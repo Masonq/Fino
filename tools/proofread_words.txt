@@ -74,3 +74,13 @@ username
 watch
 неподдерживаемая
 неподдерживаемый
+# сербское название ведомства в английской версии Политики
+porevenik
+poverenik
+informacije
+javnog
+značaja
+zaštitu
+ličnosti
+реферальная
+podataka

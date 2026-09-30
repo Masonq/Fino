@@ -12,6 +12,28 @@
 
 export const CONTACT_EMAIL = 'account@plonk.rs'
 
+// Данные оператора сайта. Закон Сербии об электронной торговле требует, чтобы поставщик услуги делал
+// постоянно доступными своё имя или название, адрес и контакты, а закон о защите персональных данных —
+// чтобы в политике конфиденциальности были указаны личность и контакты оператора данных. Пока поля
+// пусты, в документах остаётся только e-mail; заполните — и строка появится в Условиях (раздел 13) и в
+// Политике (раздел 12) на трёх языках. Деплой напоминает об этом, пока поля не заполнены.
+export const OPERATOR = {
+  name: '',      // имя и фамилия (или наименование), как в документе
+  address: '',   // адрес проживания или регистрации
+  registry: '',  // регистрационный/налоговый номер, если есть (matični broj / PIB / JMBG не нужен)
+}
+
+const OPERATOR_TEXT = {
+  ru: (o) => `Оператор Сайта: ${o.name}${o.address ? `, ${o.address}` : ''}${o.registry ? `, регистрационный номер ${o.registry}` : ''}.`,
+  en: (o) => `Site operator: ${o.name}${o.address ? `, ${o.address}` : ''}${o.registry ? `, registration number ${o.registry}` : ''}.`,
+  sr: (o) => `Operator Sajta: ${o.name}${o.address ? `, ${o.address}` : ''}${o.registry ? `, matični broj ${o.registry}` : ''}.`,
+}
+
+export function operatorParagraph(lang) {
+  if (!OPERATOR.name.trim()) return []
+  return [OPERATOR_TEXT[lang](OPERATOR)]
+}
+
 export const RULES = {
   ru: {
     title: 'Правила размещения объявлений',
@@ -63,8 +85,8 @@ export const RULES = {
           'б) поддельные документы, денежные знаки, ценные бумаги, платёжные средства, а также товары, полученные заведомо преступным путём либо в результате мошеннических действий;',
           'в) товары и услуги, оборот которых требует специального разрешения, лицензии либо сертификации, при отсутствии таковых у пользователя, включая лекарственные средства, подлежащие отпуску по рецепту, финансовые, страховые, кредитные услуги, услуги в сфере азартных игр;',
           'г) материалы сексуального характера, услуги интимного характера в любой форме и под любым наименованием, а равно объявления, содержащие непристойные либо оскорбительные сведения;',
-          'д) финансовые пирамиды, схемы «многоуровневого маркетинга» с признаками мошенничества, а также предложения, содержащие признаки схем «приведи друга за вознаграждение» с элементами финансовой пирамиды;',
-          'е) живые животные — в части, касающейся их возмездной реализации; размещение объявлений о безвозмездной передаче животных в добросовестные руки не подпадает под настоящий запрет;',
+          'д) финансовые пирамиды, схемы «многоуровневого маркетинга» с признаками мошенничества, а также предложения, содержащие признаки схем «приведи друга за вознаграждение» с элементами финансовой пирамиды; реферальная программа самого Сайта (раздел 7 Условий использования и раздел 11 настоящих Правил) под этот запрет не подпадает;',
+          'е) животные, оборот которых запрещён или ограничен законодательством Республики Сербия: дикие животные и охраняемые виды (без необходимых разрешительных документов), животные, добытые, ввезённые или вывезенные незаконно, а также их части и изделия из них (например, слоновая кость). Объявления о продаже, обмене и безвозмездной передаче домашних и сельскохозяйственных животных, оборот которых законом не запрещён, размещать можно. Продавец отвечает за соблюдение законодательства о благополучии животных и ветеринарных требований, наличие необходимых документов и отметок и достоверность сведений о здоровье и происхождении животного;',
           'ж) товары, содержащие признаки контрафактной продукции, то есть незаконно воспроизводящие товарный знак, промышленный образец либо иной объект интеллектуальной собственности третьих лиц, если данное обстоятельство прямо указано либо очевидно следует из содержания объявления.',
           'Настоящий перечень не является исчерпывающим. Администрация Сайта вправе отказать в размещении объявления либо снять с публикации уже размещённое объявление по своему усмотрению, если оно противоречит целям и назначению Сайта, действующему законодательству либо общепринятым нормам морали и нравственности.',
         ],
@@ -169,8 +191,8 @@ export const RULES = {
           'b) forged documents, currency, securities, and means of payment, as well as goods knowingly obtained through criminal means or fraud;',
           'c) goods and services whose circulation requires a special permit, license, or certification that the User does not hold, including prescription medication, financial, insurance, and credit services, and gambling services;',
           'd) materials of a sexual nature, intimate services in any form or under any name, and listings containing indecent or offensive information;',
-          'e) financial pyramid schemes, multi-level marketing schemes bearing the hallmarks of fraud, and offers containing the hallmarks of "refer a friend for a reward" pyramid schemes;',
-          'f) live animals, insofar as their sale for consideration is concerned; listings offering animals for rehoming free of charge to responsible owners are not covered by this prohibition;',
+          'e) financial pyramid schemes, multi-level marketing schemes bearing the hallmarks of fraud, and offers containing the hallmarks of "refer a friend for a reward" pyramid schemes; the Site’s own referral program (Section 7 of the Terms of Use and Section 11 of these Rules) is not covered by this prohibition;',
+          'f) animals whose circulation is prohibited or restricted under the legislation of the Republic of Serbia: wild animals and protected species (without the necessary permits), animals taken, imported or exported unlawfully, and their parts and products (for example, ivory). Listings for the sale, exchange or free transfer of domestic and farm animals whose circulation is not prohibited by law may be posted. The seller is responsible for complying with animal-welfare legislation and veterinary requirements, for having the necessary documents and markings, and for the accuracy of information about the animal’s health and origin;',
           'g) goods bearing the hallmarks of counterfeit products, i.e. unlawfully reproducing a trademark, industrial design, or other intellectual property of a third party, where this circumstance is expressly stated or evidently follows from the content of the listing.',
           'This list is not exhaustive. The Site Administration may, at its discretion, refuse to publish a listing or remove an already-published listing if it conflicts with the purpose and function of the Site, applicable law, or generally accepted standards of morality.',
         ],
@@ -275,8 +297,8 @@ export const RULES = {
           'b) falsifikovana dokumenta, novac, hartije od vrednosti i platna sredstva, kao i robu pribavljenu na krivično ili prevarno stečen način;',
           'v) robu i usluge čiji promet zahteva posebnu dozvolu, licencu ili sertifikaciju kojom korisnik ne raspolaže, uključujući lekove koji se izdaju na recept, finansijske, osiguravajuće i kreditne usluge, usluge igara na sreću;',
           'g) materijale seksualne prirode, intimne usluge u bilo kom obliku ili pod bilo kojim nazivom, kao i oglase koji sadrže nepristojne ili uvredljive podatke;',
-          'd) finansijske piramide, šeme „višestepenog marketinga\u201c sa obeležjima prevare, kao i ponude sa obeležjima šema „preporuči prijatelja za nagradu\u201c koje predstavljaju finansijsku piramidu;',
-          '\u0111) žive životinje \u2014 u delu koji se odnosi na njihovu prodaju uz naknadu; oglasi o besplatnom udomljavanju životinja savesnim vlasnicima nisu obuhvaćeni ovom zabranom;',
+          'd) finansijske piramide, šeme „višestepenog marketinga“ sa obeležjima prevare, kao i ponude sa obeležjima šema „preporuči prijatelja za nagradu“ koje predstavljaju finansijsku piramidu; program preporuke samog Sajta (odeljak 7 Uslova korišćenja i odeljak 11 ovih Pravila) nije obuhvaćen ovom zabranom;',
+          'đ) životinje čiji je promet zabranjen ili ograničen propisima Republike Srbije: divlje životinje i zaštićene vrste (bez potrebnih dozvola), životinje uhvaćene, uvezene ili izvezene protivzakonito, kao i njihovi delovi i proizvodi od njih (na primer, slonovača). Oglase za prodaju, razmenu i besplatno ustupanje domaćih i farmskih životinja čiji promet zakon ne zabranjuje moguće je postavljati. Prodavac odgovara za poštovanje propisa o dobrobiti životinja i veterinarskih zahteva, za posedovanje potrebnih dokumenata i oznaka i za tačnost podataka o zdravlju i poreklu životinje;',
           'e) robu koja nosi obeležja falsifikovanih proizvoda, odnosno koja nezakonito reprodukuje žig, industrijski dizajn ili drugi predmet intelektualne svojine trećih lica, ako je ta okolnost izričito navedena ili očigledno proizlazi iz sadržaja oglasa.',
           'Ovaj spisak nije konačan. Administracija Sajta ima pravo da po sopstvenoj proceni odbije objavu oglasa ili ukloni već objavljen oglas ako je u suprotnosti sa svrhom i namenom Sajta, važećim zakonodavstvom ili opšteprihvaćenim moralnim normama.',
         ],
@@ -361,7 +383,7 @@ export const TERMS = {
         h: '3. Регистрация и учётная запись',
         p: [
           '3.1. Сервис предназначен для использования совершеннолетними лицами. Регистрируя учётную запись, Пользователь заверяет и гарантирует, что достиг возраста восемнадцати лет и обладает полной дееспособностью, необходимой для заключения и исполнения настоящих Условий.',
-          '3.2. Регистрация учётной записи осуществляется посредством указания адреса электронной почты либо посредством авторизации через мессенджер Telegram. Пользователь обязуется предоставлять достоверные сведения о себе при регистрации и своевременно их актуализировать.',
+          '3.2. Регистрация учётной записи осуществляется посредством указания адреса электронной почты, авторизации через мессенджер Telegram либо через учётную запись Google. Пользователь обязуется предоставлять достоверные сведения о себе при регистрации и своевременно их актуализировать.',
           '3.3. Прохождение процедуры проверки документа, удостоверяющего личность, является добровольным и осуществляется посредством стороннего партнёра Администрации. Отметка «Проверенный пользователь» подтверждает, что за учётной записью стоит конкретное, действительно проверенное физическое лицо.',
           '3.4. Учётная запись является персональной и не подлежит отчуждению в пользу третьих лиц каким-либо способом, включая возмездную либо безвозмездную передачу, в том числе при наличии у учётной записи отметки «Проверенный пользователь» либо истории отзывов. Администрация вправе в любой момент затребовать повторное прохождение процедуры верификации личности; в случае непрохождения такой повторной верификации отметка «Проверенный пользователь» подлежит снятию.',
           '3.5. Пользователь несёт самостоятельную ответственность за сохранность средств доступа к своей учётной записи и за все действия, совершённые с использованием такой учётной записи, вне зависимости от того, были ли соответствующие действия совершены самим Пользователем.',
@@ -410,6 +432,8 @@ export const TERMS = {
           'Администрация вправе отказать в зачислении бонуса, аннулировать зачисленный и неиспользованный бонус и ограничить участие в акциях, если выявлены признаки злоупотребления: создание нескольких учётных записей одним лицом, размещение фиктивных либо не соответствующих Правилам объявлений, приглашение самого себя либо подставных лиц, продажа либо обмен бонусов, приглашений или учётных записей.',
           'Налоговые обязательства, если они возникают у Пользователя в связи с получением бонусов либо с доходами от продаж через Сайт, Пользователь несёт самостоятельно.',
           'Приобретение платных услуг не освобождает Пользователя от обязанности соблюдения настоящих Условий и Правил размещения объявлений в полном объёме.',
+          'Право потребителя на отказ от договора. Пользователь, который является потребителем (физическое лицо, действующее вне предпринимательской деятельности), вправе отказаться от договора о платной услуге, заключённого через Сайт, в течение 14 дней со дня его заключения без объяснения причин. Для этого достаточно направить заявление на адрес электронной почты из раздела 13 либо через раздел поддержки. Уплаченные деньги возвращаются не позднее 14 дней со дня получения заявления.',
+          'Право на отказ не действует в отношении услуги, которая полностью оказана, если её оказание началось после явной просьбы Пользователя и его подтверждения, что он знает: после полного оказания услуги право на отказ теряется. Такая просьба и подтверждение даются отметкой в окне оплаты продвижения; без неё оплатить деньгами продвижение объявления нельзя. Если цена полностью покрыта бонусами, платежа нет и отметка не требуется.',
         ],
       },
       {
@@ -452,6 +476,7 @@ export const TERMS = {
         h: '13. Связь с нами',
         p: [
           `По любым вопросам, связанным с настоящими Условиями, Пользователь вправе обратиться через раздел поддержки в приложении либо по адресу электронной почты ${CONTACT_EMAIL}.`,
+          ...operatorParagraph('ru'),
         ],
       },
     ],
@@ -485,7 +510,7 @@ export const TERMS = {
         h: '3. Registration and Account',
         p: [
           '3.1. The service is intended for use by adults. By registering an account, the User represents and warrants that they are at least eighteen years of age and possess full legal capacity necessary to enter into and perform these Terms.',
-          '3.2. Account registration is carried out by providing an email address or through authorization via the Telegram messenger. The User undertakes to provide accurate information upon registration and to keep it up to date.',
+          '3.2. Account registration is carried out by providing an email address, through authorization via the Telegram messenger, or through a Google account. The User undertakes to provide accurate information about themselves at registration and to keep it up to date.',
           '3.3. Identity document verification is voluntary and is carried out through a third-party partner of the Administration. The "Verified User" badge confirms that a specific, genuinely verified individual stands behind the account.',
           '3.4. An account is personal and may not be transferred to third parties by any means, whether for consideration or free of charge, including where the account bears a "Verified User" badge or a review history. The Administration may request re-verification of identity at any time; if such re-verification is not completed, the "Verified User" badge is subject to removal.',
           '3.5. The User is solely responsible for safeguarding the means of accessing their account and for all actions performed using that account, regardless of whether such actions were performed by the User personally.',
@@ -534,6 +559,8 @@ export const TERMS = {
           'The Administration may refuse to credit a Bonus, cancel a credited and unused Bonus, and restrict participation in promotions if signs of abuse are found: creating multiple accounts by one person, posting fictitious listings or listings that do not comply with the Rules, inviting oneself or nominal persons, selling or exchanging Bonuses, invitations or accounts.',
           'Any tax obligations that arise for a User in connection with receiving Bonuses or income from sales through the Site are borne by the User.',
           'Purchasing paid services does not exempt the User from the obligation to comply fully with these Terms and the Posting Rules.',
+          'Consumer right of withdrawal. A User who is a consumer (an individual acting outside a business activity) may withdraw from a contract for a paid service concluded through the Site within 14 days of its conclusion, without giving reasons. It is enough to send a statement to the email address given in Section 13 or through the support section. Money paid is refunded no later than 14 days after the statement is received.',
+          'The right of withdrawal does not apply to a service that has been fully performed, if its performance began after the User’s express request and confirmation that the User understands the right of withdrawal is lost once the service is fully performed. That request and confirmation are given by ticking the box in the promotion payment window; without it, a promotion cannot be paid for with money. If the price is fully covered by Bonuses, there is no payment and the box is not required.',
         ],
       },
       {
@@ -576,6 +603,7 @@ export const TERMS = {
         h: '13. Contact Us',
         p: [
           `For any questions related to these Terms, the User may contact us through the support section of the app or at ${CONTACT_EMAIL}.`,
+          ...operatorParagraph('en'),
         ],
       },
     ],
@@ -609,7 +637,7 @@ export const TERMS = {
         h: '3. Registracija i nalog',
         p: [
           '3.1. Usluga je namenjena punoletnim licima. Registracijom naloga Korisnik potvrđuje i garantuje da ima najmanje osamnaest godina i punu poslovnu sposobnost neophodnu za zaključenje i izvršavanje ovih Uslova.',
-          '3.2. Registracija naloga vrši se navođenjem adrese elektronske pošte ili autorizacijom preko aplikacije Telegram. Korisnik se obavezuje da prilikom registracije navede tačne podatke o sebi i da ih blagovremeno ažurira.',
+          '3.2. Registracija naloga vrši se navođenjem adrese elektronske pošte, autorizacijom preko aplikacije Telegram ili preko Google naloga. Korisnik se obavezuje da prilikom registracije navede tačne podatke o sebi i da ih blagovremeno ažurira.',
           '3.3. Provera dokumenta identiteta je dobrovoljna i vrši se preko spoljnog partnera Administracije. Oznaka „Proveren korisnik\u201c potvrđuje da iza naloga stoji konkretno, stvarno provereno fizičko lice.',
           '3.4. Nalog je ličan i ne može se prenositi na treća lica ni na koji način, uz naknadu ili besplatno, uključujući slučajeve kada nalog nosi oznaku „Proveren korisnik\u201c ili istoriju ocena. Administracija ima pravo da u bilo kom trenutku zatraži ponovnu proveru identiteta; ukoliko takva ponovna provera ne bude izvršena, oznaka „Proveren korisnik\u201c se uklanja.',
           '3.5. Korisnik samostalno odgovara za čuvanje sredstava za pristup svom nalogu i za sve radnje izvršene korišćenjem tog naloga, bez obzira na to da li je te radnje lično izvršio Korisnik.',
@@ -658,6 +686,8 @@ export const TERMS = {
           'Administracija može odbiti upis bonusa, poništiti upisan a nepotrošen bonus i ograničiti učešće u akcijama ako se utvrde znaci zloupotrebe: otvaranje više naloga od strane jednog lica, objavljivanje fiktivnih oglasa ili oglasa koji nisu u skladu sa Pravilima, pozivanje samog sebe ili fiktivnih lica, prodaja ili razmena bonusa, poziva ili naloga.',
           'Poreske obaveze, ako nastanu za korisnika u vezi sa dobijanjem bonusa ili prihodima od prodaje preko Sajta, snosi sam korisnik.',
           'Kupovina plaćenih usluga ne oslobađa korisnika obaveze potpunog poštovanja ovih Uslova i Pravila oglašavanja.',
+          'Pravo potrošača na odustanak od ugovora. Korisnik koji je potrošač (fizičko lice koje deluje van svoje preduzetničke delatnosti) može da odustane od ugovora o plaćenoj usluzi zaključenog preko Sajta u roku od 14 dana od dana zaključenja, bez navođenja razloga. Dovoljno je poslati izjavu na adresu elektronske pošte iz odeljka 13 ili preko odeljka za podršku. Uplaćeni novac vraća se najkasnije u roku od 14 dana od prijema izjave.',
+          'Pravo na odustanak ne postoji za uslugu koja je u potpunosti izvršena, ako je njeno izvršenje počelo nakon izričitog zahteva korisnika i njegove potvrde da zna da nakon potpunog izvršenja usluge gubi pravo na odustanak. Takav zahtev i potvrda daju se oznakom u prozoru za plaćanje izdvajanja; bez nje se izdvajanje oglasa ne može platiti novcem. Ako je cena u potpunosti pokrivena bonusima, nema plaćanja i oznaka nije potrebna.',
         ],
       },
       {
@@ -700,6 +730,7 @@ export const TERMS = {
         h: '13. Kontakt',
         p: [
           `Za sva pitanja u vezi sa ovim Uslovima, korisnik može da se obrati preko odeljka za podršku u aplikaciji ili na adresu ${CONTACT_EMAIL}.`,
+          ...operatorParagraph('sr'),
         ],
       },
     ],
@@ -733,6 +764,7 @@ export const PRIVACY = {
         p: [
           'Оператор осуществляет обработку следующих категорий персональных данных Пользователей: адрес электронной почты либо идентификатор учётной записи в мессенджере Telegram; номер телефона (при добровольном указании); отображаемое имя и, при наличии, фотография профиля; сведения, содержащиеся в размещённых объявлениях (включая фотографические материалы, местонахождение предмета объявления, историю переписки с иными пользователями); результат прохождения добровольной процедуры верификации личности (без сохранения полного изображения документа, удостоверяющего личность, на серверах Оператора — верификация осуществляется силами стороннего партнёра); технические данные о используемом устройстве и сведения о геолокации (при предоставлении соответствующего разрешения операционной системой устройства); история платежей за услуги, оказываемые на возмездной основе (без сохранения полных реквизитов платёжных карт).',
           'Дополнительно обрабатываются: сведения о заявке в добровольные помощники (выбранная роль, языки, доступное время, рассказ о себе) и о принятом решении; обращения в службу поддержки и переписка с «Команда PLONK»; отзывы, избранное, сохранённые поиски и подписки на продавцов; идентификатор пригласившего вас пользователя (при переходе по реферальной ссылке), записи о зачислении бонусов, пополнениях и списаниях внутреннего баланса; адрес подписки вашего браузера на push-уведомления (если вы их включили); время последнего посещения Сайта. Для объявлений, перенесённых из открытых групп Telegram, обрабатывается общедоступное имя пользователя автора (username), отображаемое на странице объявления со ссылкой на его профиль.',
+          'При входе через Google обрабатываются идентификатор учётной записи Google и адрес электронной почты, которые предоставляет Google. Для регистрации необходим адрес электронной почты либо вход через Telegram или Google: без этого учётную запись создать нельзя. Остальные сведения (телефон, фотография, место, описание) вы указываете по желанию.',
         ],
       },
       {
@@ -747,6 +779,7 @@ export const PRIVACY = {
         h: '5. Правовые основания обработки персональных данных',
         p: [
           'Обработка персональных данных осуществляется на основании: согласия Субъекта персональных данных, выражаемого посредством использования функциональных возможностей Сайта; необходимости исполнения Условий использования Сайта, стороной которых является Субъект персональных данных; законных интересов Оператора, состоящих в обеспечении безопасности Сайта и предотвращении злоупотреблений, при условии, что такие интересы не имеют приоритета над правами и свободами Субъекта персональных данных; необходимости исполнения требований применимого законодательства.',
+          'Передача данных платёжному оператору необходима для исполнения договора об оплачиваемой услуге, которую вы заказываете.',
         ],
       },
       {
@@ -784,6 +817,7 @@ export const PRIVACY = {
           'Субъект персональных данных вправе: получить сведения о составе обрабатываемых персональных данных и целях их обработки; требовать уточнения, блокирования либо удаления персональных данных в случае, если такие данные являются неполными, устаревшими, недостоверными, незаконно полученными либо не являются необходимыми для заявленной цели обработки; отозвать ранее данное согласие на обработку персональных данных; обратиться с жалобой в уполномоченный орган по защите прав субъектов персональных данных.',
           'Просмотр и изменение основных сведений учётной записи осуществляется Пользователем самостоятельно в разделе профиля на Сайте. Обращение по вопросу полного удаления персональных данных направляется в порядке, предусмотренном разделом 12 настоящей Политики.',
           'Вы также вправе потребовать, чтобы решение, принятое исключительно автоматически (например, отклонение объявления), было пересмотрено человеком, а если вы являетесь автором объявления, перенесённого из открытой группы Telegram, — потребовать его удаления вместе со связанными сведениями.',
+          'Вы также вправе получить копию обрабатываемых данных, потребовать ограничения обработки, возразить против обработки и потребовать передачи данных в структурированном машиночитаемом формате, если это технически возможно. Если вы считаете, что обработка нарушает закон, вы вправе подать жалобу Уполномоченному по информации общественного значения и защите персональных данных Республики Сербия (Poverenik za informacije od javnog značaja i zaštitu podataka o ličnosti, poverenik.rs) либо обратиться в суд.',
         ],
       },
       {
@@ -796,7 +830,8 @@ export const PRIVACY = {
         h: '12. Изменение Политики и порядок обращений',
         p: [
           'Оператор вправе в одностороннем порядке вносить изменения в настоящую Политику. Дата, указанная в начале настоящего документа, отражает дату последнего внесения изменений.',
-          `По вопросам обработки персональных данных, включая реализацию прав, предусмотренных разделом 10 настоящей Политики, Субъект персональных данных вправе обратиться через раздел поддержки в приложении либо по адресу электронной почты ${CONTACT_EMAIL}. Обращения рассматриваются Оператором в разумный срок.`,
+          `По вопросам обработки персональных данных, включая реализацию прав, предусмотренных разделом 10 настоящей Политики, Субъект персональных данных вправе обратиться через раздел поддержки в приложении либо по адресу электронной почты ${CONTACT_EMAIL}. Обращения рассматриваются Оператором не позднее 30 дней со дня получения.`,
+          ...operatorParagraph('ru'),
         ],
       },
     ],
@@ -828,6 +863,7 @@ export const PRIVACY = {
         p: [
           'The Controller processes the following categories of Users\u2019 personal data: email address or Telegram account identifier; phone number (where voluntarily provided); display name and, where available, profile photo; information contained in posted listings (including photographic materials, the location of the item, and message history with other Users); the outcome of the voluntary identity verification procedure (without storage of a complete image of the identity document on the Controller\u2019s servers \u2014 verification is carried out by a third-party partner); technical data about the device used and geolocation information (where the relevant permission is granted through the device\u2019s operating system); and payment history for services provided for a fee (without storage of complete payment card details).',
           'The following is also processed: information about an application to become a volunteer helper (the chosen role, languages, available time, a description of yourself) and the decision taken; support requests and correspondence with “PLONK Team”; reviews, favorites, saved searches and subscriptions to sellers; the identifier of the user who invited you (when you follow a referral link), records of Bonus credits, top-ups and deductions from the internal balance; the address of your browser’s push-notification subscription (if you have enabled them); the time of your last visit to the Site. For listings transferred from open Telegram groups, the author’s public username is processed and shown on the listing page with a link to their profile.',
+          'When you sign in with Google, the Google account identifier and email address provided by Google are processed. Registration requires an email address or signing in with Telegram or Google: an account cannot be created without one. Other information (phone, photo, location, description) is provided at your discretion.',
         ],
       },
       {
@@ -842,6 +878,7 @@ export const PRIVACY = {
         h: '5. Legal Bases for Processing',
         p: [
           'Personal data is processed on the basis of: the Data Subject\u2019s consent, expressed through use of the Site\u2019s functionality; the necessity of performing the Site\u2019s Terms of Use, to which the Data Subject is a party; the Controller\u2019s legitimate interests in ensuring the Site\u2019s security and preventing abuse, provided that such interests do not override the rights and freedoms of the Data Subject; and the necessity of complying with the requirements of applicable law.',
+          'Passing data to the payment operator is necessary for performing the contract for the paid service you order.',
         ],
       },
       {
@@ -879,6 +916,7 @@ export const PRIVACY = {
           'A Data Subject has the right to: obtain information about the categories of personal data being processed and the purposes of such processing; request the correction, blocking, or deletion of personal data if such data is incomplete, outdated, inaccurate, unlawfully obtained, or not necessary for the stated purpose of processing; withdraw previously given consent to the processing of personal data; and lodge a complaint with the competent data protection authority.',
           'A User may independently view and edit their core account information in the profile section of the Site. Requests regarding the complete deletion of personal data should be submitted in the manner set out in Section 12 of this Policy.',
           'You may also ask for a decision made solely by automated means (for example, the rejection of a listing) to be reviewed by a person and, if you are the author of a listing transferred from an open Telegram group, ask for it to be deleted together with the related information.',
+          'You may also obtain a copy of the data being processed, request restriction of processing, object to processing, and request that your data be transferred in a structured, machine-readable format where technically feasible. If you believe the processing violates the law, you may lodge a complaint with the Commissioner for Information of Public Importance and Personal Data Protection of the Republic of Serbia (Poverenik za informacije od javnog značaja i zaštitu podataka o ličnosti, poverenik.rs) or apply to a court.',
         ],
       },
       {
@@ -891,7 +929,8 @@ export const PRIVACY = {
         h: '12. Changes to This Policy and Contact Procedure',
         p: [
           'The Controller may unilaterally amend this Policy. The date shown at the top of this document reflects the date of the most recent amendment.',
-          `For questions regarding the processing of personal data, including the exercise of the rights set out in Section 10 of this Policy, a Data Subject may contact us through the support section of the app or at ${CONTACT_EMAIL}. Requests are reviewed by the Controller within a reasonable period.`,
+          `For questions regarding the processing of personal data, including the exercise of the rights set out in Section 10 of this Policy, a Data Subject may contact us through the support section of the app or at ${CONTACT_EMAIL}. Requests are reviewed by the Controller no later than 30 days after receipt.`,
+          ...operatorParagraph('en'),
         ],
       },
     ],
@@ -923,6 +962,7 @@ export const PRIVACY = {
         p: [
           'Rukovalac obrađuje sledeće kategorije ličnih podataka korisnika: adresu elektronske pošte ili identifikator naloga na aplikaciji Telegram; broj telefona (ukoliko je dobrovoljno naveden); prikazano ime i, ukoliko postoji, fotografiju profila; podatke sadržane u objavljenim oglasima (uključujući fotografije, lokaciju predmeta oglasa i istoriju prepiske sa drugim korisnicima); rezultat dobrovoljnog postupka provere identiteta (bez čuvanja potpune slike dokumenta identiteta na serverima Rukovaoca \u2014 proveru vrši spoljni partner); tehničke podatke o korišćenom uređaju i podatke o geolokaciji (ukoliko je odgovarajuća dozvola data putem operativnog sistema uređaja); istoriju plaćanja usluga koje se pružaju uz naknadu (bez čuvanja potpunih podataka platnih kartica).',
           'Dodatno se obrađuju: podaci o prijavi za dobrovoljnog pomoćnika (izabrana uloga, jezici, raspoloživo vreme, opis o sebi) i o donetoj odluci; obraćanja službi podrške i prepiska sa „Timom PLONK“; ocene, omiljeni oglasi, sačuvane pretrage i praćenje prodavaca; identifikator korisnika koji vas je pozvao (pri prelasku preko veze za pozivanje), zapisi o upisu bonusa, dopunama i skidanjima sa internog stanja; adresa pretplate vašeg pretraživača na push obaveštenja (ako ste ih uključili); vreme poslednje posete Sajtu. Za oglase prenete iz otvorenih Telegram grupa obrađuje se javno korisničko ime autora (username), koje se prikazuje na stranici oglasa sa vezom ka njegovom profilu.',
+          'Pri prijavi preko Google naloga obrađuju se identifikator Google naloga i adresa elektronske pošte koje pruža Google. Za registraciju je potrebna adresa elektronske pošte ili prijava preko Telegrama ili Google naloga: bez toga nalog se ne može otvoriti. Ostale podatke (telefon, fotografiju, lokaciju, opis) navodite po želji.',
         ],
       },
       {
@@ -937,6 +977,7 @@ export const PRIVACY = {
         h: '5. Pravni osnov obrade',
         p: [
           'Lični podaci obrađuju se na osnovu: saglasnosti subjekta podataka, izražene korišćenjem funkcionalnosti Sajta; neophodnosti izvršavanja Uslova korišćenja Sajta, čija je strana subjekt podataka; legitimnog interesa Rukovaoca da obezbedi bezbednost Sajta i spreči zloupotrebe, pod uslovom da takav interes nema prednost nad pravima i slobodama subjekta podataka; neophodnosti izvršavanja zahteva važećih propisa.',
+          'Prosleđivanje podataka platnom operatoru neophodno je za izvršenje ugovora o plaćenoj usluzi koju naručujete.',
         ],
       },
       {
@@ -974,6 +1015,7 @@ export const PRIVACY = {
           'Subjekt podataka ima pravo da: dobije informacije o vrstama ličnih podataka koji se obrađuju i svrhama obrade; zahteva ispravku, blokiranje ili brisanje ličnih podataka ukoliko su takvi podaci nepotpuni, zastareli, netačni, nezakonito pribavljeni ili nisu neophodni za navedenu svrhu obrade; povuče prethodno datu saglasnost za obradu ličnih podataka; podnese pritužbu nadležnom organu za zaštitu podataka o ličnosti.',
           'Korisnik samostalno pregleda i menja osnovne podatke naloga u odeljku profila na Sajtu. Zahtev za potpuno brisanje ličnih podataka podnosi se na način predviđen odeljkom 12 ove Politike.',
           'Takođe možete zatražiti da odluku donetu isključivo automatski (na primer, odbijanje oglasa) preispita čovek, a ako ste autor oglasa prenetog iz otvorene Telegram grupe — zatražiti njegovo brisanje zajedno sa povezanim podacima.',
+          'Takođe možete dobiti kopiju podataka koji se obrađuju, zatražiti ograničenje obrade, uložiti prigovor na obradu i zatražiti prenos podataka u strukturisanom, mašinski čitljivom formatu ako je to tehnički izvodljivo. Ako smatrate da obrada krši zakon, možete podneti pritužbu Povereniku za informacije od javnog značaja i zaštitu podataka o ličnosti Republike Srbije (poverenik.rs) ili se obratiti sudu.',
         ],
       },
       {
@@ -986,7 +1028,8 @@ export const PRIVACY = {
         h: '12. Izmena Politike i način obraćanja',
         p: [
           'Rukovalac ima pravo da jednostrano menja ovu Politiku. Datum naveden na početku ovog dokumenta odražava datum poslednje izmene.',
-          `Za pitanja u vezi sa obradom ličnih podataka, uključujući ostvarivanje prava predviđenih odeljkom 10 ove Politike, subjekt podataka može da se obrati preko odeljka za podršku u aplikaciji ili na adresu ${CONTACT_EMAIL}. Zahtevi se razmatraju u razumnom roku.`,
+          `Za pitanja u vezi sa obradom ličnih podataka, uključujući ostvarivanje prava predviđenih odeljkom 10 ove Politike, subjekt podataka može da se obrati preko odeljka za podršku u aplikaciji ili na adresu ${CONTACT_EMAIL}. Zahtevi se razmatraju najkasnije u roku od 30 dana od prijema.`,
+          ...operatorParagraph('sr'),
         ],
       },
     ],

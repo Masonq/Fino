@@ -2106,7 +2106,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .promo-sheet-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:15px; }
 .promo-sheet-head .promo-sub{ margin-bottom:0; }
 .promo-balance{
-  flex-shrink:0; padding:6px 11px; border-radius:10px; background:var(--primary-soft);
+  /* Плашка может сужаться и переносить строки: подпись про бонус длинная, и на узком экране
+     плашка с flex-shrink:0 вылезала за край окна. */
+  flex:0 1 auto; min-width:0; max-width:58%; padding:6px 11px; border-radius:10px; background:var(--primary-soft);
   color:var(--primary-deep); font-size:12px; font-weight:800; margin-top:1px;
 }
 
@@ -6340,3 +6342,9 @@ a.s-attrs{ display:block; }
 .volunteer-consent a{ color:var(--primary-deep); font-weight:700; }
 .volunteer-consent-card{ margin-top:12px; }
 .volunteer-note.is-warn{ color:var(--warn-ink,#8A6A1F); font-weight:600; }
+
+/* Согласие на немедленное оказание услуги в окне продвижения: текст в несколько строк, галочка по первой. */
+.promo-consent{ align-items:flex-start; margin:12px 0 8px; font-size:12.5px; line-height:1.45; }
+.promo-consent input{ flex-shrink:0; margin-top:2px; }
+.promo-consent a{ color:var(--primary-deep); font-weight:700; }
+.promo-balance .promo-balance-bonus{ font-weight:600; opacity:.85; line-height:1.3; margin-top:2px; }

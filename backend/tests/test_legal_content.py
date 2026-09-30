@@ -296,3 +296,75 @@ def test_the_payment_request_really_carries_no_personal_contact_data():
     for key in ('"receipt"', '"customer"', '"email"', '"phone"', '"full_name"'):
         assert key not in promo, f"в запросе к оператору появилось {key}: обновите раздел 6 Политики"
 
+
+
+# ─── проверки по законам Республики Сербия (черновик; юристу показать перед тем, как полагаться) ───
+def test_terms_state_the_consumer_right_of_withdrawal_and_its_exception(docs):
+    """Закон о защите потребителей: 14 дней, для услуги — со дня заключения; исключение при явной просьбе и подтверждении."""
+    expect = {
+        "ru": ("в течение 14 дней со дня его заключения", "явной просьбы Пользователя", "право на отказ теряется"),
+        "en": ("within 14 days of its conclusion", "express request", "the right of withdrawal is lost"),
+        "sr": ("u roku od 14 dana od dana zaključenja", "izričitog zahteva korisnika", "gubi pravo na odustanak"),
+    }
+    for lang, phrases in expect.items():
+        section7 = "\n".join(docs["TERMS"][lang]["sections"][6]["p"])
+        for phrase in phrases:
+            assert phrase in section7, f"{lang}: в разделе 7 нет «{phrase}»"
+
+
+def test_the_consent_promised_in_terms_really_exists_in_the_payment_flow():
+    """Условия говорят «отметка в окне оплаты продвижения; без неё деньгами не оплатить» — код это исполняет."""
+    promo = (BACK / "app" / "routers" / "promotions.py").read_text(encoding="utf-8")
+    assert promo.count('raise HTTPException(400, "consent_required")') >= 2
+    assert "consent_immediate_at" in promo
+
+
+def test_animals_are_allowed_when_the_law_allows_and_the_old_ban_is_gone(docs):
+    old = {"ru": "живые животные — в части", "en": "live animals, insofar", "sr": "žive životinje — u delu"}
+    new = {"ru": "домашних и сельскохозяйственных животных, оборот которых законом не запрещён",
+           "en": "domestic and farm animals whose circulation is not prohibited by law",
+           "sr": "domaćih i farmskih životinja čiji promet zakon ne zabranjuje"}
+    for lang in LANGS:
+        body = text_of(docs, "RULES", lang).replace("\\u0111", "đ")
+        assert old[lang] not in body, f"{lang}: осталось прежнее полное запрещение"
+        assert new[lang] in body, f"{lang}: нет разрешения на законные виды"
+
+
+def test_the_own_referral_program_is_carved_out_of_the_pyramid_ban(docs):
+    for lang, phrase in (("ru", "реферальная программа самого Сайта"), ("en", "own referral program"), ("sr", "program preporuke samog Sajta")):
+        assert phrase in text_of(docs, "RULES", lang), lang
+
+
+def test_privacy_names_the_supervisory_authority_and_the_deadline(docs):
+    for lang, phrase in (("ru", "poverenik.rs"), ("en", "poverenik.rs"), ("sr", "poverenik.rs")):
+        assert phrase in text_of(docs, "PRIVACY", lang), lang
+    for lang, phrase in (("ru", "не позднее 30 дней"), ("en", "no later than 30 days"), ("sr", "najkasnije u roku od 30 dana")):
+        assert phrase in text_of(docs, "PRIVACY", lang), lang
+    for lang, phrase in (("ru", "ограничения обработки"), ("en", "restriction of processing"), ("sr", "ograničenje obrade")):
+        assert phrase in text_of(docs, "PRIVACY", lang), lang
+
+
+def test_every_sign_in_method_the_code_offers_is_named_in_terms_and_privacy(docs):
+    auth = (BACK / "app" / "routers" / "auth.py").read_text(encoding="utf-8")
+    assert '"/google"' in auth and '"/request-code"' in auth
+    for lang, word in (("ru", "Google"), ("en", "Google"), ("sr", "Google")):
+        assert word in "\n".join(docs["TERMS"][lang]["sections"][2]["p"]), f"{lang}: вход через Google не назван в Условиях, 3"
+        assert word in "\n".join(docs["PRIVACY"][lang]["sections"][2]["p"]), f"{lang}: вход через Google не назван в Политике, 3"
+
+
+def test_the_operator_block_is_optional_but_never_shows_a_hole():
+    """Пока поля пусты — в документах нет ни «undefined», ни пустых скобок; заполнили — строка появляется."""
+    script = (
+        "import { OPERATOR, operatorParagraph, TERMS, PRIVACY } from './src/data/legalContent.js';"
+        "const empty = ['ru','en','sr'].map(l => operatorParagraph(l).length);"
+        "OPERATOR.name = 'Иван Иванов'; OPERATOR.address = 'Београд';"
+        "const filled = ['ru','en','sr'].map(l => operatorParagraph(l)[0]);"
+        "const all = JSON.stringify({TERMS, PRIVACY});"
+        "console.log(JSON.stringify({ empty, filled, bad: /undefined|\\[object|null/.test(all) }));"
+    )
+    out = subprocess.run(["node", "--input-type=module", "-e", script], cwd=FRONT,
+                         capture_output=True, text=True, check=True).stdout
+    got = json.loads(out)
+    assert got["empty"] == [0, 0, 0]
+    assert all("Иван Иванов" in x and "Београд" in x for x in got["filled"])
+    assert got["bad"] is False

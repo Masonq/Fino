@@ -176,7 +176,10 @@
     "next": "Next",
     "checking": "Checking your payment…",
     "confirmed": "Promotion is active!",
-    "check_pending": "Payment is processing — it'll take effect within a few minutes."
+    "check_pending": "Payment is processing — it'll take effect within a few minutes.",
+    "consent": "I want the service to start right away, and I understand that once it is fully performed I lose the right to withdraw from the contract.",
+    "consent_link": "Terms, section 7",
+    "err_consent": "Please tick the consent: a paid service can't be ordered without it."
   },
   "actions": {
     "back": "Back",

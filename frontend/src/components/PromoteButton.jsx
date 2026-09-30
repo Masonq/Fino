@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { intlLocale } from '../utils/time'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -67,6 +68,7 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
   const [data, setData] = useState(null)
   const [selected, setSelected] = useState(null)
   const [busy, setBusy] = useState(false)
+  const [agreed, setAgreed] = useState(false)      // «начать сразу и знаю про отказ» — без неё платить нельзя
   const [error, setError] = useState('')
   const [done, setDone] = useState(false)
   const carouselRef = useRef(null)
@@ -122,7 +124,7 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
     if (!selected) return
     setBusy(true); setError('')
     try {
-      const res = await api.startPromotion(listingId, selected, payMethod)
+      const res = await api.startPromotion(listingId, selected, payMethod, agreed)
       if (res.paid_from_balance) {
         // Списалось мгновенно — обновляем список активных и баланс,
         // никуда уходить не нужно.
@@ -135,8 +137,8 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
         window.location.href = res.confirmation_url
       }
     } catch (e) {
-      setError(e.code === 'promotion_not_configured'
-        ? t('promo.err_unavailable') : t('promo.err_generic'))
+      setError(e.code === 'promotion_not_configured' ? t('promo.err_unavailable')
+        : e.code === 'consent_required' ? t('promo.err_consent') : t('promo.err_generic'))
     } finally {
       setBusy(false)
     }
@@ -153,6 +155,11 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
     const price = selected ? data?.prices?.[selected] : null
     const balance = data?.balance || 0
     const canUseBalance = price != null && balance >= price
+    // Согласие нужно, когда за услугу платят деньгами. Если цену целиком закрывают
+    // подаренные бонусы, платить нечем — и отказываться не от чего.
+    const paidWithBonus = price != null && (data?.bonus || 0) >= price
+    const needsConsent = price != null && !paidWithBonus
+    const blocked = busy || (needsConsent && !agreed)
 
     return (
       <div className="promo-sheet">
@@ -238,19 +245,29 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
             {error && <p className="auth-error">{error}</p>}
             {done && <p className="promo-done">{t('promo.paid_ok')}</p>}
 
+            {/* Закон о защите потребителей: право отказаться от договора об услуге в течение
+                14 дней снимается, только если человек прямо попросил начать сразу и знает, что
+                после полного оказания услуги этого права не будет. Без отметки оплата не пройдёт. */}
+            {selected && needsConsent && (
+              <label className="post-checkbox promo-consent">
+                <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
+                <span>{t('promo.consent')} <Link to="/terms">{t('promo.consent_link')}</Link></span>
+              </label>
+            )}
+
             {selected && (
               canUseBalance ? (
                 <>
-                  <button className="promo-cta" disabled={busy} onClick={() => buy('balance')}>
+                  <button className="promo-cta" disabled={blocked} onClick={() => buy('balance')}>
                     {busy ? '…' : t('promo.pay_balance', { price })}
                   </button>
-                  <button className="promo-alt-pay" disabled={busy} onClick={() => buy('yookassa')}>
+                  <button className="promo-alt-pay" disabled={blocked} onClick={() => buy('yookassa')}>
                     {t('promo.pay_card')}
                   </button>
                 </>
               ) : (
                 <>
-                  <button className="promo-cta" disabled={busy} onClick={() => buy('yookassa')}>
+                  <button className="promo-cta" disabled={blocked} onClick={() => buy('yookassa')}>
                     {busy ? '…' : t('promo.cta', { price })}
                   </button>
                   {price != null && (

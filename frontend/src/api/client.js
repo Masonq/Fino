@@ -168,9 +168,9 @@ export const api = {
   // Платное продвижение объявления — три типа, оплата через ЮKassa
   // или с баланса.
   listingPromotions: (id) => request(`/listings/${id}/promotions`),
-  startPromotion: (id, type, payMethod) => request(`/listings/${id}/promotions`, {
+  startPromotion: (id, type, payMethod, consentImmediate = false) => request(`/listings/${id}/promotions`, {
     method: 'POST',
-    body: JSON.stringify({ type, pay_method: payMethod }),
+    body: JSON.stringify({ type, pay_method: payMethod, consent_immediate: consentImmediate }),
   }),
   getBalance: () => request('/balance'),
   startTopup: (amount) => request('/balance/topup', {

@@ -87,6 +87,11 @@ class PromoteIn(BaseModel):
     # похода к ЮKassa. "yookassa" (по умолчанию) — как раньше, платёж
     # с редиректом на оплату.
     pay_method: str = "yookassa"
+    # Просьба начать услугу сразу и знание, что после полного оказания право на отказ теряется.
+    # Закон о защите потребителей (ст. 37, п. 1) снимает право на отказ от договора об услуге
+    # только при таком явном согласии; без него человек мог бы отказаться в течение 14 дней (а если
+    # не предупредили — до 12 месяцев). Поэтому без отметки услугу за деньги не оформляем.
+    consent_immediate: bool = False
 
 
 class TopupIn(BaseModel):
@@ -202,6 +207,11 @@ def start_promotion(
         fresh = db.query(User).filter(User.id == user.id).with_for_update().first()
         from app.core import wallet
 
+        # Согласие нужно, когда платят деньгами (в том числе частично). Если цену целиком покрывают
+        # подаренные бонусы, человек ничего не платит, и отказываться ему не от чего.
+        if wallet._d(fresh.bonus_balance) < wallet._d(price) and not payload.consent_immediate:
+            raise HTTPException(400, "consent_required")
+
         try:
             wallet.charge(fresh, price)         # сначала бонусы, потом деньги
         except ValueError:
@@ -213,11 +223,15 @@ def start_promotion(
             # с ней в отчётах одна и та же покупка числилась бы то в
             # рублях, то в динарах, смотря чем заплатили.
             status=PromotionStatus.pending, price_paid=price, currency="RSD",
+            consent_immediate_at=utcnow() if payload.consent_immediate else None,
         )
         db.add(promo)
         db.flush()
         _activate_promotion(db, promo)
         return {"paid_from_balance": True, **wallet.view(fresh)}
+
+    if not payload.consent_immediate:
+        raise HTTPException(400, "consent_required")
 
     from app.core.currency import rsd_to_rub
 
@@ -251,7 +265,7 @@ def start_promotion(
         # Цена в динарах, как и всё, что видит человек; в платёжную
         # систему ушли рубли по курсу — он записан рядом.
         status=PromotionStatus.pending, price_paid=price, currency="RSD",
-        payment_id=data["id"],
+        payment_id=data["id"], consent_immediate_at=utcnow(),
     )
     db.add(promo)
     db.commit()

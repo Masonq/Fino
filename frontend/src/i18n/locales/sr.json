@@ -176,7 +176,10 @@
     "next": "Dalje",
     "checking": "Proveravamo uplatu…",
     "confirmed": "Promocija je aktivna!",
-    "check_pending": "Uplata se obrađuje — efekat će se pojaviti za nekoliko minuta."
+    "check_pending": "Uplata se obrađuje — efekat će se pojaviti za nekoliko minuta.",
+    "consent": "Želim da usluga počne odmah i znam da nakon njenog potpunog izvršenja gubim pravo da odustanem od ugovora.",
+    "consent_link": "Uslovi, odeljak 7",
+    "err_consent": "Označite saglasnost: bez nje se plaćena usluga ne može naručiti."
   },
   "actions": {
     "back": "Nazad",
