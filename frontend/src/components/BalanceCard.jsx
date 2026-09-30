@@ -10,14 +10,14 @@ const PRESETS = [500, 1000, 2000, 5000]
 
 export default function BalanceCard() {
   const { t } = useTranslation()
-  const [balance, setBalance] = useState(null)
+  const [wallet, setWallet] = useState(null)      // { balance, money, bonus } или null, пока грузится
   const [open, setOpen] = useState(false)
   const [amount, setAmount] = useState(PRESETS[1])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    api.getBalance().then((r) => setBalance(r.balance)).catch(() => setBalance(0))
+    api.getBalance().then(setWallet).catch(() => setWallet({ balance: 0, money: 0, bonus: 0 }))
   }, [])
 
   const topup = async () => {
@@ -39,8 +39,13 @@ export default function BalanceCard() {
         <div>
           <div className="balance-label">{t('balance.title')}</div>
           <div className="balance-amount">
-            {balance === null ? '…' : t('promo.price', { price: balance })}
+            {wallet === null ? '…' : t('promo.price', { price: wallet.balance })}
           </div>
+          {/* Подарочная часть — отдельной строкой: её нельзя вывести и вернуть,
+              только потратить на продвижение. Видеть это надо до траты, а не после. */}
+          {wallet?.bonus > 0 && (
+            <div className="balance-bonus">{t('balance.of_which_bonus', { amount: wallet.bonus })}</div>
+          )}
         </div>
         <button className="balance-topup-btn" onClick={() => setOpen((v) => !v)}>
           {t('balance.topup')}

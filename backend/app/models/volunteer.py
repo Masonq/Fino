@@ -43,5 +43,9 @@ class VolunteerApplication(Base):
     decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     decided_by: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     note: Mapped[str | None] = mapped_column(Text, nullable=True)  # ответ заявителю
+    # Когда человек подтвердил, что сохранит конфиденциальность увиденного при
+    # модерации и что участие безвозмездно (Условия, раздел 6). Без этой отметки
+    # заявку принять нельзя. Пусто у заявок, поданных до появления галочки.
+    confidentiality_accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     user = relationship("User", foreign_keys=[user_id])

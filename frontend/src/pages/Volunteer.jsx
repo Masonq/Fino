@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
@@ -25,6 +25,7 @@ export default function Volunteer() {
   const [langs, setLangs] = useState(['ru'])
   const [hours, setHours] = useState('1–3')
   const [about, setAbout] = useState('')
+  const [agreed, setAgreed] = useState(false)      // обязательная галочка про конфиденциальность
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
 
@@ -42,9 +43,12 @@ export default function Volunteer() {
   const send = async () => {
     if (!user) { navigate('/login?returnTo=%2Fvolunteer'); return }
     if (about.trim().length < 20) { setError(t('volunteer.too_short')); return }
+    if (!agreed) { setError(t('volunteer.consent_needed')); return }
     setSending(true); setError('')
     try {
-      const res = await api.volunteerApply({ role, languages: langs, hours_per_week: hours, about: about.trim() })
+      const res = await api.volunteerApply({
+        role, languages: langs, hours_per_week: hours, about: about.trim(), accept_confidentiality: true,
+      })
       setMine(res.application)
     } catch (e) {
       setError(e.status === 409 ? t('volunteer.already') : t('support.failed'))
@@ -80,6 +84,23 @@ export default function Volunteer() {
 
       {!isTeam && pending && (
         <div className="volunteer-state">{t('volunteer.pending')}</div>
+      )}
+
+      {/* Заявка подана до появления галочки: без подтверждения её принять нельзя. */}
+      {!isTeam && pending && !mine.confidentiality_accepted && (
+        <div className="form-card volunteer-consent-card">
+          <label className="post-checkbox volunteer-consent">
+            <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
+            <span>{t('volunteer.consent')} <Link to="/terms">{t('volunteer.consent_link')}</Link></span>
+          </label>
+          <button className="form-save" disabled={!agreed || sending}
+            onClick={async () => {
+              setSending(true); setError('')
+              try { const res = await api.volunteerConsent(); setMine(res.application) } catch { setError(t('support.failed')) } finally { setSending(false) }
+            }}>
+            {t('volunteer.consent_confirm')}
+          </button>
+        </div>
       )}
 
       {!isTeam && decided && (
@@ -133,6 +154,11 @@ export default function Volunteer() {
               />
             </label>
           </div>
+
+          <label className="post-checkbox volunteer-consent">
+            <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
+            <span>{t('volunteer.consent')} <Link to="/terms">{t('volunteer.consent_link')}</Link></span>
+          </label>
 
           {error && <p className="form-error">{error}</p>}
 

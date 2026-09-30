@@ -37,6 +37,9 @@ class ApplyIn(BaseModel):
     languages: list[str] = Field(default_factory=lambda: ["ru"])
     hours_per_week: str = Field("", max_length=16)
     about: str = Field(..., min_length=20, max_length=2000)
+    # Обязательная галочка: помощник видит обращения, жалобы и помеченную
+    # переписку, поэтому конфиденциальность подтверждается при подаче заявки.
+    accept_confidentiality: bool = False
 
 
 class DecideIn(BaseModel):
@@ -49,6 +52,7 @@ def serialize(a: VolunteerApplication, with_user: bool = False) -> dict:
         "id": str(a.id), "role": a.role.value, "languages": a.languages.split(",") if a.languages else [],
         "hours_per_week": a.hours_per_week, "about": a.about, "status": a.status.value,
         "created_at": a.created_at.isoformat(), "note": a.note,
+        "confidentiality_accepted": a.confidentiality_accepted_at is not None,
     }
     if with_user and a.user is not None:
         out["user"] = {"id": str(a.user.id), "name": a.user.display_name,
@@ -73,13 +77,33 @@ def apply(payload: ApplyIn, user: User = Depends(get_current_user), db: Session 
                        VolunteerApplication.status == VolunteerStatus.new).first())
     if pending:
         raise HTTPException(409, "already_applied")
+    if not payload.accept_confidentiality:
+        raise HTTPException(400, "confidentiality_required")
     langs = [l for l in payload.languages if l in ("ru", "sr", "en")] or ["ru"]
     a = VolunteerApplication(
         id=uuid.uuid4(), user_id=user.id, role=payload.role, languages=",".join(langs),
         hours_per_week=payload.hours_per_week.strip(), about=payload.about.strip(),
+        confidentiality_accepted_at=utcnow(),
     )
     db.add(a)
     db.commit()
+    return {"application": serialize(a)}
+
+
+@router.post("/consent")
+def consent(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """
+    Подтвердить конфиденциальность по уже поданной заявке. Нужно тем, кто подал её
+    до появления галочки: без отметки принять заявку нельзя.
+    """
+    a = (db.query(VolunteerApplication)
+         .filter(VolunteerApplication.user_id == user.id, VolunteerApplication.status == VolunteerStatus.new)
+         .first())
+    if a is None:
+        raise HTTPException(404, "no_pending_application")
+    if a.confidentiality_accepted_at is None:
+        a.confidentiality_accepted_at = utcnow()
+        db.commit()
     return {"application": serialize(a)}
 
 
@@ -102,6 +126,10 @@ def decide(app_id: uuid.UUID, payload: DecideIn,
         raise HTTPException(404, "not_found")
     if a.status != VolunteerStatus.new:
         raise HTTPException(409, "already_decided")
+    if payload.accept and a.confidentiality_accepted_at is None:
+        # Принять человека, который не подтвердил конфиденциальность, нельзя:
+        # он получит доступ к обращениям и переписке.
+        raise HTTPException(409, "confidentiality_missing")
     a.status = VolunteerStatus.accepted if payload.accept else VolunteerStatus.rejected
     a.decided_at, a.decided_by, a.note = utcnow(), admin.id, (payload.note or "").strip() or None
     if payload.accept and a.user.role not in (UserRole.moderator, UserRole.admin):

@@ -1005,7 +1005,8 @@
   "balance": {
     "title": "Balance",
     "topup": "Top up",
-    "topup_cta": "Top up {{amount}} RSD"
+    "topup_cta": "Top up {{amount}} RSD",
+    "of_which_bonus": "of which bonus {{amount}} RSD — promotion only"
   },
   "home": {
     "phone_reminder": "Add your phone — buyers will be able to call you directly",
@@ -1246,7 +1247,13 @@
     "queue_empty": "No applications",
     "note_placeholder": "A few words for the applicant (optional)",
     "accept": "Accept to the team",
-    "reject": "Reject"
+    "reject": "Reject",
+    "consent": "I undertake to keep confidential everything I see while moderating (requests, listings, conversations), and I understand that taking part is unpaid and is not a job.",
+    "consent_link": "Terms, section 6",
+    "consent_needed": "Please confirm you will keep things confidential: the application can't be accepted without it.",
+    "consent_confirm": "Confirm",
+    "consent_yes": "✓ Confirmed confidentiality and that participation is unpaid",
+    "no_consent_admin": "No confidentiality confirmation — can't be accepted until the person confirms it on the Volunteering page."
   },
   "team_inbox": {
     "title": "Replies to the team",

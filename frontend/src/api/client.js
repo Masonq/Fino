@@ -195,6 +195,7 @@ export const api = {
   teamChat: (id) => request(`/team/chats/${id}`),
   teamChatReply: (id, text) => request(`/team/chats/${id}/reply`, { method: 'POST', body: JSON.stringify({ text }) }),
   volunteerMine: () => request('/volunteer/mine'),
+  volunteerConsent: () => request('/volunteer/consent', { method: 'POST' }),
   volunteerApply: (payload) => request('/volunteer/apply', { method: 'POST', body: JSON.stringify(payload) }),
   volunteerQueue: (params) => request(`/volunteer/queue?${query(params)}`),
   volunteerDecide: (id, payload) => request(`/volunteer/${id}/decide`, { method: 'POST', body: JSON.stringify(payload) }),

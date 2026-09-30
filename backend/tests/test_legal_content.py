@@ -82,7 +82,8 @@ MUST = {
         ("TERMS", "не подлежит обмену на деньги"),
         ("TERMS", "не является банковским счётом"),
         ("TERMS", "только на платные услуги продвижения"),
-        ("TERMS", "бонусная часть внутреннего баланса возврату не подлежит"),
+        ("TERMS", "Бонусы возврату не подлежат"),
+        ("TERMS", "сначала списываются Бонусы, затем денежные средства"),
         ("TERMS", "не за саму регистрацию"),
         ("TERMS", "аннулировать зачисленный и неиспользованный бонус"),
         ("RULES", "продавать, покупать, обменивать либо передавать бонусы"),
@@ -91,7 +92,8 @@ MUST = {
         ("TERMS", "cannot be exchanged for money"),
         ("TERMS", "is not a bank account"),
         ("TERMS", "only on paid listing-promotion services"),
-        ("TERMS", "the bonus part of the Internal Balance is not refundable"),
+        ("TERMS", "Bonuses are not refundable"),
+        ("TERMS", "Bonuses are spent first, then money"),
         ("TERMS", "not for registration alone"),
         ("TERMS", "cancel a credited and unused Bonus"),
         ("RULES", "sell, buy, exchange or transfer Bonuses"),
@@ -100,7 +102,8 @@ MUST = {
         ("TERMS", "ne može zameniti za novac"),
         ("TERMS", "nije bankovni račun"),
         ("TERMS", "isključivo na plaćene usluge izdvajanja oglasa"),
-        ("TERMS", "bonus deo internog stanja ne vraća se"),
+        ("TERMS", "bonusi se ne vraćaju"),
+        ("TERMS", "prvo se troše bonusi, a zatim novac"),
         ("TERMS", "a ne samo zbog registracije"),
         ("TERMS", "poništiti upisan a nepotrošen bonus"),
         ("RULES", "prodavati, kupovati, razmenjivati ili prenositi bonuse"),
@@ -155,10 +158,7 @@ BACKEND_HOSTS = {
     "api.telegram.org": ("Telegram",),
     "api.yookassa.ru": ("ЮKassa", "YooKassa"),
     "verification.didit.me": ("Didit",),
-    # Публичные серверы LibreTranslate: тексты объявлений уходят на них как на чужие серверы.
-    "libretranslate.de": ("LibreTranslate",),
-    "translate.terraprint.co": ("LibreTranslate",),
-    "trans.zillyhuhn.com": ("LibreTranslate",),
+
     "accounts.google.com": ("Google",),
 }
 # Внешние ресурсы, которые подгружает браузер посетителя, — они в разделе про cookie.
@@ -238,3 +238,29 @@ def test_bonus_is_spendable_only_on_promotion_and_has_no_cash_out():
         body = path.read_text(encoding="utf-8", errors="ignore")
         assert not re.search(r"payout|withdraw|cash_?out|refund_to_card|/balance/withdraw", body, re.I), \
             f"{path.name}: в коде появился вывод или возврат средств — Условия говорят, что его нет"
+
+
+def test_public_translation_servers_stay_removed():
+    """Тексты объявлений (в них бывают телефоны и адреса) не уходят на чужие серверы без договора."""
+    for path in (BACK / "app").rglob("*.py"):
+        body = path.read_text(encoding="utf-8", errors="ignore")
+        assert not re.search(r"libretranslate\.de|terraprint\.co|zillyhuhn\.com", body, re.I), path.name
+
+
+def test_volunteer_confidentiality_is_promised_in_terms_and_enforced_in_code(docs):
+    """Условия говорят, что помощник обязан хранить конфиденциальность; форма и сервер это требуют."""
+    needles = {"ru": "обязан сохранять конфиденциальность", "en": "must keep confidential",
+               "sr": "dužan je da čuva poverljivost"}
+    for lang, phrase in needles.items():
+        section6 = docs["TERMS"][lang]["sections"][5]
+        assert phrase in "\n".join(section6["p"]), f"{lang}: в разделе 6 нет обязанности помощника"
+    router = (BACK / "app" / "routers" / "volunteer.py").read_text(encoding="utf-8")
+    assert "confidentiality_required" in router and "confidentiality_missing" in router
+    page = (FRONT / "src" / "pages" / "Volunteer.jsx").read_text(encoding="utf-8")
+    assert "accept_confidentiality: true" in page and 'to="/terms"' in page
+
+
+def test_the_wallet_split_is_promised_in_terms_and_real_in_code(docs):
+    """Условия обещают: сначала бонусы, потом деньги; бонус отдельно от денег."""
+    wallet = (BACK / "app" / "core" / "wallet.py").read_text(encoding="utf-8")
+    assert "bonus_balance" in wallet and "from_bonus = min(" in wallet

@@ -163,6 +163,7 @@ export default function PromoteButton({ listingId, renderMode = 'full', open: op
           {data && (
             <div className="promo-balance">
               {t('promo.balance', { amount: balance })}
+              {data.bonus > 0 && <div className="promo-balance-bonus">{t('balance.of_which_bonus', { amount: data.bonus })}</div>}
             </div>
           )}
         </div>

@@ -42,8 +42,10 @@ export default function AdminVolunteers() {
     try {
       await api.volunteerDecide(id, { accept, note: note.trim() || undefined })
       setNote(''); setOpenId(null); load()
-    } catch { alert(t('support.failed')) }
-    finally { setBusy(false) }
+    } catch (e) {
+      // Сервер не даёт принять человека без подтверждённой конфиденциальности
+      alert(e.status === 409 && e.code === 'confidentiality_missing' ? t('volunteer.no_consent_admin') : t('support.failed'))
+    } finally { setBusy(false) }
   }
 
   if (denied) {
@@ -90,6 +92,10 @@ export default function AdminVolunteers() {
             {openId === a.id && (
               <div className="admin-card">
                 <p className="volunteer-about">{a.about}</p>
+                {/* Принять без подтверждения нельзя (сервер откажет): видно заранее, а не по ошибке. */}
+                <p className={`volunteer-note ${a.confidentiality_accepted ? '' : 'is-warn'}`}>
+                  {a.confidentiality_accepted ? t('volunteer.consent_yes') : t('volunteer.no_consent_admin')}
+                </p>
                 {a.note && <p className="volunteer-note">{a.note}</p>}
                 {a.status === 'new' && (
                   <>
@@ -100,7 +106,7 @@ export default function AdminVolunteers() {
                       placeholder={t('volunteer.note_placeholder')}
                     />
                     <div className="admin-actions">
-                      <button disabled={busy} onClick={() => decide(a.id, true)}>{t('volunteer.accept')}</button>
+                      <button disabled={busy || !a.confidentiality_accepted} onClick={() => decide(a.id, true)}>{t('volunteer.accept')}</button>
                       <button disabled={busy} onClick={() => decide(a.id, false)}>{t('volunteer.reject')}</button>
                     </div>
                   </>

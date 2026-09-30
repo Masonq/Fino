@@ -52,8 +52,10 @@ def reward_referral_if_first_listing(db: Session, listing: Listing) -> bool:
     if not referrer:
         return False   # пригласивший сам удалил аккаунт — бонусу некому идти
 
-    referrer.balance = referrer.balance + REFERRAL_BONUS
-    owner.balance = owner.balance + REFERRAL_BONUS
+    from app.core import wallet
+
+    wallet.grant_bonus(referrer, REFERRAL_BONUS)      # награда — на бонусный счёт обоим
+    wallet.grant_bonus(owner, REFERRAL_BONUS)
     owner.referral_reward_given = True
     # Коммитим сразу, до уведомлений — не полагаемся на то, что notify()
     # ниже коммитит всю сессию целиком как побочный эффект (сейчас так

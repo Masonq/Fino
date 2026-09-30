@@ -200,10 +200,12 @@ def start_promotion(
         # а оплачено оказывается дважды тем, что должно было хватить
         # только на одно продвижение.
         fresh = db.query(User).filter(User.id == user.id).with_for_update().first()
-        if fresh.balance < price:
-            raise HTTPException(400, "insufficient_balance")
+        from app.core import wallet
 
-        fresh.balance = fresh.balance - price
+        try:
+            wallet.charge(fresh, price)         # сначала бонусы, потом деньги
+        except ValueError:
+            raise HTTPException(400, "insufficient_balance")
         promo = Promotion(
             listing_id=listing_id, user_id=user.id, type=payload.type,
             # Списано с баланса, а баланс в динарах: валюта записи —
@@ -215,7 +217,7 @@ def start_promotion(
         db.add(promo)
         db.flush()
         _activate_promotion(db, promo)
-        return {"paid_from_balance": True, "balance": float(fresh.balance)}
+        return {"paid_from_balance": True, **wallet.view(fresh)}
 
     from app.core.currency import rsd_to_rub
 
@@ -289,7 +291,7 @@ def listing_promotions(
     fresh = db.query(User).get(user.id)
     return {
         "prices": {t.value: PROMOTION_PRICES[t] for t in SELLABLE_TYPES},
-        "balance": float(fresh.balance),
+        **_wallet_view(fresh),
         "items": [
             {
                 "type": p.type.value,
@@ -301,10 +303,16 @@ def listing_promotions(
     }
 
 
+def _wallet_view(user) -> dict:
+    from app.core import wallet
+
+    return wallet.view(user)
+
+
 @router.get("/balance")
 def my_balance(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     fresh = db.query(User).get(user.id)
-    return {"balance": float(fresh.balance)}
+    return _wallet_view(fresh)
 
 
 @router.post("/balance/topup")
@@ -395,7 +403,9 @@ async def yookassa_webhook(request: Request):
                 return {"status": "ok"}
             topup.status = BalanceTopupStatus.paid
             user = db.query(User).filter(User.id == topup.user_id).with_for_update().first()
-            user.balance = user.balance + topup.amount
+            from app.core import wallet
+
+            wallet.deposit(user, topup.amount)      # деньги — на денежный счёт, не на бонусный
             db.commit()
             return {"status": "ok"}
 

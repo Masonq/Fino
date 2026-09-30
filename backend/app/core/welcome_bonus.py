@@ -43,7 +43,9 @@ def reward_first_listing(db: Session, listing: Listing) -> bool:
     if has_earlier:
         return False
 
-    owner.balance = owner.balance + WELCOME_BONUS
+    from app.core import wallet
+
+    wallet.grant_bonus(owner, WELCOME_BONUS)          # подарок — на бонусный счёт
     owner.welcome_bonus_given = True
     db.commit()
 

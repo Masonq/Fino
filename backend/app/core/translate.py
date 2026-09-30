@@ -5,8 +5,9 @@
 языке. Без перевода серб не найдёт объявление, написанное по-русски:
 поиск идёт по тексту, а текста на его языке просто нет.
 
-Переводим через открытый сервис. Если он недоступен, объявление всё
-равно публикуется — просто на одном языке; перевести можно потом.
+Переводим сначала нейросетью, затем переводчиком Google. Если ни один не
+ответил, объявление всё равно публикуется — просто на одном языке;
+перевести можно потом.
 """
 import json
 import logging
@@ -21,7 +22,7 @@ TIMEOUT = 8
 
 # В Сербии объявления пишут латиницей (KupujemProdajem, Polovni Automobili),
 # поэтому просим у Google именно её. Google периодически всё равно отдаёт
-# кириллицу, а LibreTranslate — всегда, так что перекладываем сами:
+# кириллицу, а другие переводчики — всегда, так что перекладываем сами:
 # соответствие однозначное, ошибиться негде.
 GOOGLE_LANG = {"sr": "sr-Latn"}
 
@@ -141,21 +142,6 @@ def _fix_script(text: str | None, target: str) -> str | None:
     return text
 
 
-# Публичные сервисы перевода закрываются и вводят ключи, поэтому берём
-# список: обходим по очереди, пока какой-нибудь не ответит. Свой адрес,
-# указанный в настройках, пробуем первым — на своём сервере нет ограничений.
-FALLBACK_ENDPOINTS = [
-    "https://libretranslate.de/translate",
-    "https://translate.terraprint.co/translate",
-    "https://trans.zillyhuhn.com/translate",
-]
-
-
-def _endpoints() -> list[str]:
-    own = getattr(settings, "translate_url", None)
-    return ([own] if own else []) + FALLBACK_ENDPOINTS
-
-
 def _translate_google(text: str, source: str, target: str) -> str | None:
     """
     Открытый интерфейс переводчика Google — без ключа и бесплатно.
@@ -198,13 +184,6 @@ def translate(text: str, source: str, target: str) -> str | None:
 
     text = _normalize_for_translation(text)
 
-    payload = json.dumps({
-        "q": text[:4000],          # длинные описания режем: смысл в начале
-        "source": source,
-        "target": target,
-        "format": "text",
-    }).encode()
-
     # Сначала нейросеть: она понимает, что перед ней объявление, и не
     # переводит «IKEA MICKE» как слова. Запас у неё складывается из
     # четырёх бесплатных тарифов, тогда как машинные переводчики то
@@ -215,29 +194,10 @@ def translate(text: str, source: str, target: str) -> str | None:
     if result:
         return result
 
-    # Дальше Google: остальные публичные сервисы либо закрылись,
-    # либо требуют ключ.
-    result = _translate_google(text, source, target)
-    if result:
-        return result
-
-    for endpoint in _endpoints():
-        req = urlrequest.Request(
-            endpoint,
-            data=payload,
-            headers={"Content-Type": "application/json"},
-        )
-        try:
-            with urlrequest.urlopen(req, timeout=TIMEOUT) as resp:
-                data = json.loads(resp.read().decode())
-                result = (data.get("translatedText") or "").strip()
-                if result:
-                    return _restore_latin_tokens(text, _fix_script(result, target))
-        except Exception as exc:
-            log.info("Перевод через %s не вышел: %s", endpoint, exc)
-            continue
-
-    return None
+    # Дальше переводчик Google. Публичные серверы LibreTranslate убраны
+    # совсем: это чужие серверы неизвестных владельцев, тексты объявлений
+    # (а в них бывают телефоны и адреса) уходили на них без всякого договора.
+    return _translate_google(text, source, target)
 
 
 def translate_listing(db, listing) -> int:

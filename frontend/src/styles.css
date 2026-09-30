@@ -6341,3 +6341,14 @@ a.s-attrs{ display:block; }
 .flame-sheet-link{
   display:block; padding:12px 6px 4px; font-size:14px; font-weight:700; color:var(--primary-deep); text-decoration:none;
 }
+
+/* Подарочная часть баланса: мельче суммы, тем же цветом, что и прочие подсказки. */
+.balance-bonus, .promo-balance-bonus{ font-size:12px; font-weight:600; color:var(--muted); margin-top:2px; }
+
+/* Галочка «сохраню конфиденциальность» в заявке помощника: текст в несколько строк,
+   поэтому галочка выравнивается по первой строке, а не по середине блока. */
+.volunteer-consent{ align-items:flex-start; margin:14px 0 4px; line-height:1.45; }
+.volunteer-consent input{ flex-shrink:0; margin-top:2px; }
+.volunteer-consent a{ color:var(--primary-deep); font-weight:700; }
+.volunteer-consent-card{ margin-top:12px; }
+.volunteer-note.is-warn{ color:var(--warn-ink,#8A6A1F); font-weight:600; }
