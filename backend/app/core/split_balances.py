@@ -28,21 +28,30 @@ def _d(v) -> Decimal:
     return Decimal(str(v or 0))
 
 
-def reconstruct(db, user: User) -> dict:
+def granted_bonus(db, user: User) -> Decimal:
+    """Сколько бонусов человеку выдано за всё время (по отметкам о выдаче)."""
     granted = Decimal(0)
     if user.welcome_bonus_given:
         granted += WELCOME_BONUS
     if user.referral_reward_given and user.referred_by:
         granted += REFERRAL_BONUS                                 # награда приглашённого
-    invited = (db.query(User).filter(User.referred_by == user.id, User.referral_reward_given.is_(True)).count())
-    granted += REFERRAL_BONUS * invited                            # награда пригласившего
+    invited = db.query(User).filter(User.referred_by == user.id, User.referral_reward_given.is_(True)).count()
+    return granted + REFERRAL_BONUS * invited                     # награда пригласившего
 
+
+def spent_from_balance(db, user: User) -> Decimal:
+    """Сколько потрачено с баланса на продвижение (без платежей картой: у тех есть payment_id)."""
     spent = Decimal(0)
     for promo in db.query(Promotion).filter(Promotion.user_id == user.id):
         if promo.payment_id is None and promo.currency == "RSD" and promo.status in (
                 PromotionStatus.paid, PromotionStatus.pending):
             spent += _d(promo.price_paid)
+    return spent
 
+
+def reconstruct(db, user: User) -> dict:
+    granted = granted_bonus(db, user)
+    spent = spent_from_balance(db, user)
     balance = _d(user.balance)
     bonus = min(balance, max(Decimal(0), granted - spent))
     return {"granted": granted, "spent": spent, "balance": balance, "bonus": bonus, "money": balance - bonus}

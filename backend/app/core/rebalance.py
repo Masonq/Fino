@@ -19,6 +19,7 @@
 import argparse
 import logging
 from decimal import Decimal, ROUND_CEILING
+from pathlib import Path
 
 from app.core.currency import rsd_per_rub
 from app.core.database import SessionLocal
@@ -27,7 +28,20 @@ from app.models import User
 log = logging.getLogger(__name__)
 
 
+MARKER = Path("/opt/fino/.balances-split")
+
+
 def run(apply: bool) -> dict:
+    # Перевод рублей в динары давно сделан, а после разделения баланса на деньги и бонусы повторный запуск
+    # умножил бы на курс уже динарные суммы: у всех прибавилось бы около 20% «настоящих» денег. Не даём.
+    if apply:
+        probe = SessionLocal()
+        try:
+            already = MARKER.exists() or probe.query(User).filter(User.bonus_balance > 0).count() > 0
+        finally:
+            probe.close()
+        if already:
+            raise SystemExit("Отказ: балансы уже в динарах и разделены на деньги и бонусы; пересчёт из рублей испортил бы их.")
     rate = rsd_per_rub()          # сколько динаров в рубле
     db = SessionLocal()
     counts = {"с балансом": 0, "пересчитано": 0, "было рублей": Decimal(0),
