@@ -1323,5 +1323,9 @@
     "delete": "Delete",
     "block": "Block",
     "clear": "Clear"
+  },
+  "map": {
+    "open_external": "Open on the map",
+    "no_webgl": "The map could not open on this device — enter the address in the search above"
   }
 }

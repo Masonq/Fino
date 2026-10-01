@@ -1362,5 +1362,9 @@
     "delete": "Obriši",
     "block": "Blokiraj",
     "clear": "Očisti"
+  },
+  "map": {
+    "open_external": "Otvori na mapi",
+    "no_webgl": "Mapa se nije otvorila na ovom uređaju — unesite adresu u pretragu iznad"
   }
 }

@@ -1,17 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
 
-// Стандартная иконка Leaflet ссылается на файлы через require, которых
-// нет при сборке через Vite — без этого маркер был бы невидимым битым
-// значком. Рисуем свою: простая капля, ничего не тащим лишнего.
-const pinIcon = L.divIcon({
-  className: 'map-pin-icon',
-  html: '<svg viewBox="0 0 24 24" width="34" height="34"><path fill="#1F8F5F" stroke="#fff" stroke-width="1.5" d="M12 2C7.5 2 4 5.5 4 10c0 6 8 12 8 12s8-6 8-12c0-4.5-3.5-8-8-8z"/><circle cx="12" cy="10" r="3" fill="#fff"/></svg>',
-  iconSize: [34, 34],
-  iconAnchor: [17, 34],
-})
+import { createMap, pinElement } from '../utils/maplibre'
 
 /**
  * Карта с одной перетаскиваемой меткой — куда поставили, туда и
@@ -39,45 +29,51 @@ export default function LocationPicker({ value, defaultCenter, onChange, height 
   const [geoError, setGeoError] = useState('')
   const [locating, setLocating] = useState(false)
 
+  const [mapFailed, setMapFailed] = useState(false)
+
+  const showMarker = (lat, lng) => {
+    markerRef.current.setLngLat([lng, lat])
+    markerRef.current.getElement().style.opacity = '1'
+  }
+
   const moveTo = (lat, lng, zoom = 16) => {
-    if (!mapRef.current || !markerRef.current) return
-    markerRef.current.setLatLng([lat, lng])
-    markerRef.current.setOpacity(1)
-    mapRef.current.setView([lat, lng], zoom)
     onChange(lat, lng)
+    if (!mapRef.current || !markerRef.current) return
+    showMarker(lat, lng)
+    mapRef.current.flyTo({ center: [lng, lat], zoom, speed: 1.6 })
   }
 
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return
+    if (!containerRef.current || mapRef.current) return undefined
+    let alive = true
+    let ro = null
     const center = value || defaultCenter || [44.7866, 20.4489]
-    const map = L.map(containerRef.current, {
-      center, zoom: value ? 15 : 12, attributionControl: false, zoomControl: true,
+    createMap(containerRef.current, { center, zoom: value ? 15 : 12 }).then((made) => {
+      if (!alive) { made?.map.remove(); return }
+      if (!made) { setMapFailed(true); return }
+      const { maplibregl, map } = made
+      map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
+      const marker = new maplibregl.Marker({ element: pinElement(), anchor: 'bottom', draggable: true })
+        .setLngLat([center[1], center[0]])
+        .addTo(map)
+      marker.getElement().style.opacity = value ? '1' : '0'
+      marker.on('dragend', () => {
+        const p = marker.getLngLat()
+        onChange(p.lat, p.lng)
+      })
+      // Тап по карте тоже переставляет метку: на телефоне перетаскивать маленькую метку пальцем неудобно
+      map.on('click', (e) => {
+        marker.setLngLat(e.lngLat)
+        marker.getElement().style.opacity = '1'
+        onChange(e.lngLat.lat, e.lngLat.lng)
+      })
+      mapRef.current = map
+      markerRef.current = marker
+      // Карта внутри раскрывающейся панели получает настоящий размер позже — перерисовываем по факту
+      ro = new ResizeObserver(() => map.resize())
+      ro.observe(containerRef.current)
     })
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-    }).addTo(map)
-
-    const marker = L.marker(center, { icon: pinIcon, draggable: true, opacity: value ? 1 : 0 })
-      .addTo(map)
-    marker.on('dragend', () => {
-      const p = marker.getLatLng()
-      onChange(p.lat, p.lng)
-    })
-    map.on('click', (e) => {
-      marker.setLatLng(e.latlng)
-      marker.setOpacity(1)
-      onChange(e.latlng.lat, e.latlng.lng)
-    })
-
-    mapRef.current = map
-    markerRef.current = marker
-
-    // Тайлы иногда домеряются с опозданием — контейнер внутри
-    // раскрывающейся панели получает реальный размер только после
-    // того, как сама панель успела развернуться.
-    setTimeout(() => map.invalidateSize(), 80)
-
-    return () => { map.remove(); mapRef.current = null }
+    return () => { alive = false; ro?.disconnect(); mapRef.current?.remove(); mapRef.current = null; markerRef.current = null }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -86,9 +82,8 @@ export default function LocationPicker({ value, defaultCenter, onChange, height 
   useEffect(() => {
     if (!mapRef.current || !markerRef.current) return
     if (value) {
-      markerRef.current.setLatLng(value)
-      markerRef.current.setOpacity(1)
-      mapRef.current.setView(value, mapRef.current.getZoom())
+      showMarker(value[0], value[1])
+      mapRef.current.jumpTo({ center: [value[1], value[0]] })
     }
   }, [value])
 
@@ -147,7 +142,7 @@ export default function LocationPicker({ value, defaultCenter, onChange, height 
   }
 
   return (
-    <div className="location-picker">
+    <div className="location-picker" data-lat={value?.[0] ?? ''} data-lng={value?.[1] ?? ''}>
       <div className="location-search-row">
         <input
           type="text"
@@ -188,7 +183,9 @@ export default function LocationPicker({ value, defaultCenter, onChange, height 
           ))}
         </div>
       )}
-      <div ref={containerRef} className="location-picker-map" style={{ height }} />
+      {mapFailed
+        ? <div className="location-picker-map map-fallback" style={{ height }}>{t('map.no_webgl')}</div>
+        : <div ref={containerRef} className="location-picker-map" style={{ height }} />}
     </div>
   )
 }
