@@ -6638,8 +6638,8 @@ a.s-attrs{ display:block; }
 .infinite-grid.from-cache > .s-card, .infinite-list.from-cache > .s-card{ animation:none; }
 
 /* ===== Листание фото в карточке ленты (ListingCard → CardPhotos) ===== */
-.s-photos{ display:flex; width:100%; height:100%; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory;
-  overscroll-behavior-x:contain; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+.s-photos{ position:relative; z-index:0; display:flex; width:100%; height:100%; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory;
+  overscroll-behavior-x:contain; scrollbar-width:none; }
 .s-photos::-webkit-scrollbar{ display:none; }
 .s-photos > img{ flex:0 0 100%; width:100%; height:100%; object-fit:cover; scroll-snap-align:start; scroll-snap-stop:always; }
 /* Полоски — у самого низа фото, ниже «Новое» и «Компания» (у них bottom:10px), чтобы не наезжать */
@@ -6656,4 +6656,11 @@ a.s-attrs{ display:block; }
 .pg-line-ph{ display:inline-block; width:62%; height:.95em; border-radius:6px; vertical-align:-2px; }
 .pg:not(.pg-ph){ animation:ui-fade-in .25s ease; }
 @media (prefers-reduced-motion: reduce){ .pg:not(.pg-ph){ animation:none; } }
+
+
+
+/* Бейджи на фото — всегда поверх листаемых фото. Прокручиваемый блок Safari на iPhone рисует отдельным слоем
+   поверх соседей без явного порядка наложения: у сердечка (3) и полосок (2) порядок был, у бейджей — нет, и на
+   карточках с несколькими фото они уходили под снимок. У блока фото свой нижний слой (z-index:0). */
+.s-photo-wrap .badge-top, .s-photo-wrap .badge-fresh{ z-index:2; }
 
