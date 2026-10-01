@@ -47,12 +47,19 @@ def test_swipe_on_photos_does_not_switch_feed_tabs_and_bars_stay_below_badges():
     assert ".s-photos-bars{ position:absolute; left:10px; right:10px; bottom:4px;" in css
 
 
-def test_badges_stay_above_the_swipeable_photos():
+def test_badges_live_in_their_own_layer_next_to_the_photo_like_the_heart():
     """
-    Safari на iPhone рисует прокручиваемый блок слоем поверх соседей без явного порядка наложения: у сердечка (3)
-    и полосок (2) он был, у меток — нет, и на карточках с несколькими фото метки уходили под снимок. Замер в
-    браузере: «Забронировано», «Продвигается», «Компания», «Новое» — на фото, z 2.
+    Safari на iPhone рисует прокручиваемый блок листания поверх всего, что лежит с ним в одном контейнере: метки на
+    карточках с несколькими фото пропадали, и z-index не помог (владелец: «всё равно нет ни одного бейджа»).
+    Сердечко при этом было видно — оно не внутри ссылки с фото, а рядом. Метки и полоски теперь так же: отдельный
+    слой поверх фото, рядом со ссылкой, со своим слоем отрисовки. Координаты меток в браузере — те же до пикселя.
     """
+    card = (SRC / "components" / "ListingCard.jsx").read_text(encoding="utf-8")
+    link_end = card.index("      </Link>\n        <div className=\"s-photo-overlay\">")
+    photo_link = card[card.index('className="s-photo-wrap"'):link_end]
+    assert "badge-top" not in photo_link and "badge-fresh" not in photo_link and "s-photos-bars" not in photo_link
+    overlay = card[link_end:card.index("      {/* Сердечко лежит на фото")]
+    assert all(x in overlay for x in ('badge-top xl', 'badge-top company', 'badge-top reserved', 'badge-fresh', 's-photos-bars'))
     css = (SRC / "styles.css").read_text(encoding="utf-8")
-    assert ".s-photo-wrap .badge-top, .s-photo-wrap .badge-fresh{ z-index:2; }" in css
-    assert ".s-photos{ position:relative; z-index:0;" in css and "-webkit-overflow-scrolling:touch; }" not in css.split(".s-photos{")[1][:400]
+    assert ".s-photo-overlay{ position:absolute; inset:0; z-index:2; pointer-events:none; transform:translateZ(0); }" in css
+    assert ".s-photo-box{ position:relative; }" in css

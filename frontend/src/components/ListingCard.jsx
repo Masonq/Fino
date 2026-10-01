@@ -10,6 +10,7 @@ import { cardMeta } from '../data/cardMeta'
 import { relativeDate, isFresh } from '../utils/time'
 
 export default function ListingCard({ listing, large = false, priority = false }) {
+  const [photoIndex, setPhotoIndex] = useState(0)
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { isFavorite, toggle } = useFavorites()
@@ -57,6 +58,10 @@ export default function ListingCard({ listing, large = false, priority = false }
       {/* Адрес приходит от приложения: он одинаков везде — в ленте,
           в боте, в письме и в карте сайта. Запасной на случай старых
           записей. */}
+      {/* Фото и слой меток поверх него. Метки и полоски — не внутри ссылки с фото, а отдельным слоем рядом с ней,
+          как сердечко: Safari на iPhone рисует прокручиваемый блок листания поверх всего, что лежит с ним в одном
+          контейнере, и метки на карточках с несколькими фото пропадали — даже с z-index. */}
+      <div className="s-photo-box">
       <Link
         to={listing.path}
         className="s-photo-wrap"
@@ -78,7 +83,7 @@ export default function ListingCard({ listing, large = false, priority = false }
             preload="metadata"
           />
         ) : listing.photos?.length > 1 ? (
-          <CardPhotos listingId={listing.id} photos={listing.photos} priority={priority} />
+          <CardPhotos listingId={listing.id} photos={listing.photos} priority={priority} onIndex={setPhotoIndex} />
         ) : listing.cover_photo ? (
           // Картинки грузятся по мере приближения к экрану, а не все
           // двадцать разом: видны шесть, остальные тянут сеть впустую и
@@ -107,14 +112,22 @@ export default function ListingCard({ listing, large = false, priority = false }
         ) : (
           <div className="photo-placeholder" />
         )}
-        {listing.is_xl && <div className="badge-top xl">{t('misc.promoted')}</div>}
-        {listing.is_company && <div className="badge-top company">{t('seller.company_badge')}</div>}
-        {listing.is_reserved && <div className="badge-top reserved">{t('misc.reserved')}</div>}
-        {/* Свежее — заметно. Лента должна показывать, что площадка
-            живая: на карточках моложе суток — метка внизу фото. Внизу,
-            а не сверху: сверху стоят «Продвинуто» и сердечко. */}
-        {isFresh(listing.published_at) && <div className="badge-fresh"><span className="badge-dot" aria-hidden="true" />{t('fresh.badge')}</div>}
       </Link>
+        <div className="s-photo-overlay">
+          {listing.is_xl && <div className="badge-top xl">{t('misc.promoted')}</div>}
+          {listing.is_company && <div className="badge-top company">{t('seller.company_badge')}</div>}
+          {listing.is_reserved && <div className="badge-top reserved">{t('misc.reserved')}</div>}
+          {/* Свежее — заметно. Лента должна показывать, что площадка
+              живая: на карточках моложе суток — метка внизу фото. Внизу,
+              а не сверху: сверху стоят «Продвинуто» и сердечко. */}
+          {isFresh(listing.published_at) && <div className="badge-fresh"><span className="badge-dot" aria-hidden="true" />{t('fresh.badge')}</div>}
+          {listing.photos?.length > 1 && !(listing.cover_is_video && listing.cover_video_url) && (
+            <span className="s-photos-bars" aria-hidden="true">
+              {listing.photos.map((src, i) => <span key={src} className={i === photoIndex ? 'on' : ''} />)}
+            </span>
+          )}
+        </div>
+      </div>
       {/* Сердечко лежит на фото, а не в строке названия: там оно
           отнимало у названия целых 29 точек ширины, и «Велосипед Trek
           FX 2» переносился с одинокой «2» на второй строке. Кнопка —
@@ -191,12 +204,12 @@ export default function ListingCard({ listing, large = false, priority = false }
  * по нему карточка заранее запрашивает объявление). Нажатие по фото открывает объявление, как и раньше;
  * первый снимок носит имя для плавного переноса фото на страницу объявления.
  */
-function CardPhotos({ listingId, photos, priority }) {
+function CardPhotos({ listingId, photos, priority, onIndex }) {
   const [index, setIndex] = useState(0)
   const onScroll = (e) => {
     const el = e.currentTarget
     const next = Math.round(el.scrollLeft / Math.max(1, el.clientWidth))
-    if (next !== index) setIndex(next)
+    if (next !== index) { setIndex(next); onIndex?.(next) }
   }
   return (
     <>
@@ -214,9 +227,6 @@ function CardPhotos({ listingId, photos, priority }) {
           />
         ))}
       </div>
-      <span className="s-photos-bars" aria-hidden="true">
-        {photos.map((src, i) => <span key={src} className={i === index ? 'on' : ''} />)}
-      </span>
     </>
   )
 }
