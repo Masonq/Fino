@@ -81,6 +81,7 @@ export default function BottomNav() {
     <div className="bottomnav">
       {ITEMS.map((item) => (
         <Link
+          viewTransition
           key={item.to}
           to={item.to}
           className={[

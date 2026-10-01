@@ -6567,3 +6567,36 @@ a.s-attrs{ display:block; }
 /* В окнах оценки цены и огонька текст и шкала — на одной вертикали с заголовком (у .reasons-title отступ 6 px) */
 .reasons-card .price-check-explain, .reasons-card .pg{ margin-left:6px; margin-right:6px; }
 
+/* ===== Появление панелей, меню и окон (было: девять из десяти открывались рывком) =====
+   Каждой — движение по её месту: нижние выезжают снизу с лёгкой пружиной, выпадающие раскрываются от своей
+   кнопки, полноэкранные поднимаются и проявляются. Фон под панелями темнеет плавно. Только transform и opacity —
+   вёрстку не двигают. При «уменьшить движение» всё появляется сразу. */
+@keyframes ui-fade-in{ from{ opacity:0 } to{ opacity:1 } }
+@keyframes ui-sheet-up{ from{ transform:translateY(100%) } to{ transform:none } }
+@keyframes ui-drop{ from{ opacity:0; transform:translateY(-6px) scale(.95) } to{ opacity:1; transform:none } }
+@keyframes ui-rise{ from{ opacity:0; transform:translateY(18px) } to{ opacity:1; transform:none } }
+@keyframes ui-side{ from{ opacity:0; transform:translateX(18px) } to{ opacity:1; transform:none } }
+@keyframes ui-zoom{ from{ opacity:0; transform:scale(.97) } to{ opacity:1; transform:none } }
+
+.reasons-sheet, .quick-reply-backdrop, .chat-menu-backdrop, .sort-dd-backdrop{ animation:ui-fade-in .22s ease; }
+.reasons-card, .quick-reply-sheet{ animation:ui-sheet-up .44s cubic-bezier(.2,1.12,.35,1); }
+.chat-menu{ transform-origin:top right; animation:ui-drop .22s cubic-bezier(.2,1.2,.4,1); }
+.sort-dd-menu{ transform-origin:top right; animation:ui-drop .22s cubic-bezier(.2,1.2,.4,1); }
+.search-overlay, .subs-modal{ animation:ui-rise .3s cubic-bezier(.2,.9,.3,1); }
+.promo-sheet-dock{ animation:ui-side .32s cubic-bezier(.2,.9,.3,1); }
+.lightbox{ animation:ui-zoom .22s ease; }
+
+/* Переходы между страницами: новая чуть поднимается и проявляется, старая гаснет. Нижнее меню в переходе стоит
+   на месте — у него своё имя, и браузер не мигает им вместе со страницей. */
+.bottomnav{ view-transition-name:bottom-nav; }
+@keyframes vt-page-in{ from{ opacity:0; transform:translateY(10px) } to{ opacity:1; transform:none } }
+@keyframes vt-page-out{ to{ opacity:0 } }
+::view-transition-new(root){ animation:vt-page-in .28s cubic-bezier(.2,.8,.3,1) both; }
+::view-transition-old(root){ animation:vt-page-out .16s ease both; }
+
+@media (prefers-reduced-motion: reduce){
+  .reasons-sheet, .quick-reply-backdrop, .chat-menu-backdrop, .sort-dd-backdrop, .reasons-card, .quick-reply-sheet,
+  .chat-menu, .sort-dd-menu, .search-overlay, .subs-modal, .promo-sheet-dock, .lightbox{ animation:none; }
+  ::view-transition-new(root), ::view-transition-old(root){ animation:none; }
+}
+
