@@ -99,10 +99,12 @@ export default function FilterPanel({ open, onClose, city, onCity }) {
           <span className="fp-label">{t('fpanel.section')}</span>
           <div className="fp-chips" ref={chipsRef}>
             <button className={`fp-chip ${category === '' ? 'on' : ''}`} onClick={() => setCategory('')}>
+              <span className="fp-chip-check" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5 10 17l9-10" /></svg></span>
               {t('fpanel.all_sections')}
             </button>
             {categories.map((c) => (
               <button key={c.id} className={`fp-chip ${category === c.slug ? 'on' : ''}`} onClick={() => setCategory(c.slug)}>
+                <span className="fp-chip-check" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5 10 17l9-10" /></svg></span>
                 {c.name?.[i18n.language] || c.name?.ru}
               </button>
             ))}

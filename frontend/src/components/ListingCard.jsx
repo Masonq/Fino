@@ -111,7 +111,7 @@ export default function ListingCard({ listing, large = false, priority = false }
         {/* Свежее — заметно. Лента должна показывать, что площадка
             живая: на карточках моложе суток — метка внизу фото. Внизу,
             а не сверху: сверху стоят «Продвинуто» и сердечко. */}
-        {isFresh(listing.published_at) && <div className="badge-fresh">{t('fresh.badge')}</div>}
+        {isFresh(listing.published_at) && <div className="badge-fresh"><span className="badge-dot" aria-hidden="true" />{t('fresh.badge')}</div>}
       </Link>
       {/* Сердечко лежит на фото, а не в строке названия: там оно
           отнимало у названия целых 29 точек ширины, и «Велосипед Trek
@@ -130,6 +130,8 @@ export default function ListingCard({ listing, large = false, priority = false }
         >
           <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />
         </svg>
+        {/* Кольцо расходится один раз, когда сердечко только что нажали (тот же признак, что и «хлопок») */}
+        {justFaved && fav && <span className="s-fav-burst" aria-hidden="true" />}
       </button>
       <div className="s-row">
         <Link to={listing.path} className="s-title">{listing.title}</Link>

@@ -727,6 +727,8 @@ export default function Home() {
             вкладка заезжала под переключатель колонок — увидел на
             наброске. */}
         <div className="feed-tabs">
+          {/* Плашка под активной вкладкой переезжает с лёгкой пружиной — видно, куда переключился */}
+          <span className="feed-tabs-pill" aria-hidden="true" style={{ transform: `translateX(${['all', 'new', 'free'].indexOf(tab) * 100}%)` }} />
           {[['all', t('feed.tab_all')],
             ['new', t('feed.tab_new')],
             ['free', t('feed.tab_free')]].map(([key, label]) => (

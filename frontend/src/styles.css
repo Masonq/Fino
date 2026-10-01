@@ -6486,3 +6486,58 @@ a.s-attrs{ display:block; }
 @keyframes cs-down{ to{ transform:translateY(100%) } }
 @media (prefers-reduced-motion: reduce){ .cs-overlay, .cs-sheet, .cs-root.is-leaving .cs-overlay, .cs-root.is-leaving .cs-sheet{ animation:none; } }
 
+/* ===== Живые карточки, бейджи и фильтры (утверждено по превью) =====
+   Всё ниже только дополняет прежние правила; анимации гаснут при «уменьшить движение». */
+
+/* Сердечко: к «хлопку» добавлено кольцо, расходящееся один раз */
+.s-fav-burst{ position:absolute; inset:3px; border-radius:50%; border:2px solid var(--accent); opacity:0; pointer-events:none; animation:fav-burst .5s ease-out; }
+@keyframes fav-burst{ 0%{ transform:scale(.4); opacity:.9 } 100%{ transform:scale(1.6); opacity:0 } }
+
+/* «Новое» — пилюля с мягко пульсирующей точкой: площадка живая */
+.badge-fresh{ display:inline-flex; align-items:center; gap:5px; padding:5px 9px 5px 7px; border-radius:999px; text-transform:none; letter-spacing:0; }
+.badge-dot{ width:6px; height:6px; border-radius:50%; background:#fff; animation:badge-pulse 1.6s ease-in-out infinite; }
+@keyframes badge-pulse{ 0%,100%{ opacity:1; transform:scale(1) } 50%{ opacity:.35; transform:scale(.6) } }
+
+/* Метки сверху фото — тоже пилюли, одна форма на весь сайт */
+.badge-top{ border-radius:999px; padding:4px 9px; font-size:10.5px; line-height:1.3; }
+
+/* Платное выделение: по золотой рамке бежит блик (идея Shine Border из Magic UI, своим CSS).
+   Кольцо — псевдоэлемент поверх рамки с маской; угол градиента крутится через @property.
+   Где @property нет, блик просто стоит на месте — рамка всё равно видна. */
+@property --shine-a{ syntax:'<angle>'; inherits:false; initial-value:0deg; }
+.s-card.highlighted::after{
+  content:""; position:absolute; inset:0; z-index:4; border-radius:inherit; padding:1.5px; pointer-events:none;
+  background:conic-gradient(from var(--shine-a), transparent 0deg 285deg, #D9A857 318deg, #FFF3D2 338deg, transparent 360deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude;
+  animation:shine-spin 3.6s linear infinite;
+}
+@keyframes shine-spin{ to{ --shine-a:360deg } }
+
+/* Фото проявляется из лёгкого размытия, а не просто из прозрачности */
+@keyframes photo-fade-in{ from{ opacity:0; filter:blur(8px) } to{ opacity:1; filter:none } }
+
+/* Скелеты переливаются (бегущий блик) вместо мигания */
+.sk-block{
+  background:linear-gradient(90deg, var(--surface-sunken-2) 0%, #F7F8F6 45%, var(--surface-sunken-2) 90%);
+  background-size:220% 100%; animation:sk-shimmer 1.3s linear infinite;
+}
+@keyframes sk-shimmer{ from{ background-position:120% 0 } to{ background-position:-100% 0 } }
+
+/* Фильтры: у выбранного раздела выезжает галочка; нажатие чуть «продавливает» чип */
+.fp-chip{ display:inline-flex; align-items:center; }
+.fp-chip:active{ transform:scale(.96); }
+.fp-chip-check{ display:inline-flex; width:0; overflow:hidden; transition:width .22s ease, margin .22s ease; }
+.fp-chip.on .fp-chip-check{ width:15px; margin-right:5px; }
+
+/* Лента: «Все / Новое / Даром» — переключатель с переезжающей белой плашкой вместо подчёркивания */
+.feed-tabs{ position:relative; display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:0; flex:0 1 250px; padding:3px; border-radius:13px; background:var(--surface-sunken); }
+.feed-tabs-pill{ position:absolute; top:3px; bottom:3px; left:3px; width:calc((100% - 6px) / 3); border-radius:10px; background:var(--surface); box-shadow:0 1px 4px rgba(20,30,25,.12); transition:transform .38s cubic-bezier(.3,1.35,.5,1); }
+.feed-tab{ position:relative; z-index:1; height:36px; padding:0 6px; border-bottom:0; font-size:14.5px; color:var(--ink-soft); transition:color .2s; }
+.feed-tab.active{ color:var(--ink); border-bottom-color:transparent; }
+
+@media (prefers-reduced-motion: reduce){
+  .s-fav-burst, .badge-dot, .s-card.highlighted::after, .sk-block{ animation:none; }
+  .feed-tabs-pill, .fp-chip-check{ transition:none; }
+}
+
