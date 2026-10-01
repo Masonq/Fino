@@ -6600,3 +6600,11 @@ a.s-attrs{ display:block; }
   ::view-transition-new(root), ::view-transition-old(root){ animation:none; }
 }
 
+/* ===== Загрузка одной волной =====
+   Блоки страницы, которые ждут друг друга, показываются вместе одним мягким проявлением, а не по очереди. */
+.profile-hold{ position:absolute; left:0; right:0; visibility:hidden; pointer-events:none; }
+.profile-reveal, .reveal-in{ animation:ui-fade-in .3s ease; }
+.story:not(.story-skeleton){ animation:ui-fade-in .3s ease; }
+.infinite-grid > .s-card{ animation:ui-fade-in .3s ease; }
+@media (prefers-reduced-motion: reduce){ .profile-reveal, .reveal-in, .story:not(.story-skeleton), .infinite-grid > .s-card{ animation:none; } }
+

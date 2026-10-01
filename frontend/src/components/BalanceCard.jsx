@@ -45,10 +45,12 @@ const CONFETTI = Array.from({ length: 14 }, (_, i) => {
   return { '--dx': `${Math.round(Math.cos(a) * r)}px`, '--dy': `${Math.round(Math.sin(a) * r - 30)}px`, background: colors[i % colors.length], animationDelay: `${(i % 4) * 25}ms` }
 })
 
-export default function BalanceCard() {
+export default function BalanceCard({ onReady }) {
   const { t, i18n } = useTranslation()
   const [wallet, setWallet] = useState(null)      // { balance, money, bonus, payments_enabled } или null, пока грузится
   const { user } = useAuth()
+  // Сообщаем странице, что баланс готов: профиль показывает шапку, баланс и меню одной волной
+  useEffect(() => { if (wallet && onReady) onReady() }, [wallet, onReady])
   const [shown, setShown] = useState(null)        // промежуточные суммы, пока они «набегают»
   const [plan, setPlan] = useState(null)          // { from, to, party } — что проиграть; null — ничего
   const decided = useRef('')                      // для каких сумм уже решили (React в разработке зовёт эффект дважды)

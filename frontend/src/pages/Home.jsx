@@ -211,6 +211,14 @@ export default function Home() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const stories = useFresh(city, i18n.language)
+
+  // Первый экран открывается одной волной: истории, разделы и лента. Раньше каждый блок появлялся, как только
+  // приходил его ответ, — три волны подряд (замер: 1,6 / 2,4 / 2,7 с), страница «дёргалась». Ждём самого
+  // медленного, но не дольше 1,6 с: медленный блок догрузится сам. Из кэша (возврат на главную) — сразу.
+  const firstScreenReady = stories.items !== null && catsLoaded && feedLoaded
+  const [revealed, setRevealed] = useState(firstScreenReady)
+  useEffect(() => { if (firstScreenReady) setRevealed(true) }, [firstScreenReady])
+  useEffect(() => { const timer = setTimeout(() => setRevealed(true), 1600); return () => clearTimeout(timer) }, [])
   const { user, loading: authLoading } = useAuth()
 
   // Статус-бар на iOS 26 Safari больше НЕ управляется theme-color: браузер берёт цвет
@@ -657,7 +665,7 @@ export default function Home() {
           не должно менять высоту страницы; что меняет высоту — не липнет. */}
       <div className="promo-collapse">
         <div className="avito-promo-row">
-          <FreshStories items={stories.items} seen={stories.seen} onOpen={stories.markSeen} />
+          <FreshStories items={revealed ? stories.items : null} seen={stories.seen} onOpen={stories.markSeen} />
         </div>
       </div>
 
@@ -691,7 +699,7 @@ export default function Home() {
             <div className="cat-tile-2row-glyph"><CategoryArt slug={cat.slug} /></div>
           </Link>
         )
-        if (!catsLoaded) {
+        if (!catsLoaded || !revealed) {
           return (
             <div className="cat-rows">
               <div className="cat-row"><CategorySkeletons count={5} /></div>
@@ -700,7 +708,7 @@ export default function Home() {
           )
         }
         return (
-          <div className="cat-rows">
+          <div className="cat-rows reveal-in">
             <div className="cat-row">{top.map(renderTile)}</div>
             <div className="cat-row">{bottom.map(renderTile)}</div>
           </div>
@@ -770,11 +778,11 @@ export default function Home() {
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
-        {!feedLoaded
+        {!feedLoaded || !revealed
           ? <CardSkeletons count={cols === 2 ? 4 : 2} large={cols === 1} />
           : withoutRemoved(listings).map((l, i) => <ListingCard key={l.id} listing={l} large={cols === 1} priority={i < 4} />)}
       </div>
-      {feedLoaded && listings.length === 0 && (
+      {feedLoaded && revealed && listings.length === 0 && (
         feedError
           ? <LoadError onRetry={() => { setFeedLoaded(false); loadFeed() }} />
           : <p className="empty-hint">{t('common.no_listings')}</p>

@@ -97,15 +97,19 @@ export default function MyListings() {
   // тоже максимум одна открытая сразу, ключ вида "id_объявления:тип".
   const [infoFor, setInfoFor] = useState(null)
 
-  const load = () => {
+  // initial — первый заход или смена пользователя/языка: до ответа скелет. Обновление после действия (снять,
+  // удалить, продлить) скелет не показывает — иначе список мигал бы после каждого нажатия.
+  const load = (initial = false) => {
+    if (authLoading) return
     if (!user) { setLoaded(true); return }
+    if (initial) setLoaded(false)
     api.myListings(i18n.language)
       .then((res) => { setItems(res.items || []); setCounts(res.counts || {}) })
       .catch(() => setItems([]))
       .finally(() => setLoaded(true))
   }
 
-  useEffect(load, [user, i18n.language])
+  useEffect(() => { load(true) }, [user, i18n.language, authLoading]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Закрываем открытую подсказку по тапу куда угодно ещё — иначе она
   // висела бы до следующего тапа по тому же значку.
@@ -143,9 +147,7 @@ export default function MyListings() {
     finally { setBusyId(null) }
   }
 
-  if (authLoading) return <div className="fav-page"><PageHeader title={t('my.title')} /></div>
-
-  if (!user) {
+  if (!user && !authLoading) {
     return (
       <div className="fav-page">
         <PageHeader title={t('my.title')} />

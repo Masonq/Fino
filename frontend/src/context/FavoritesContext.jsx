@@ -6,15 +6,20 @@ const FavoritesContext = createContext({ ids: new Set(), toggle: () => {}, isFav
 
 export function FavoritesProvider({ children }) {
   const [ids, setIds] = useState(() => new Set())
+  // Пришёл ли список с сервера. Без этого «Избранное» до ответа считало все свои карточки снятыми с сердечка и
+  // показывало «пусто» — а через мгновение карточки. Страница фильтрует только после ответа.
+  const [idsLoaded, setIdsLoaded] = useState(false)
 
   const { user } = useAuth()
   const userId = user?.id
 
   useEffect(() => {
     if (!userId) return
+    setIdsLoaded(false)
     api.getFavoriteIds()
       .then((res) => setIds(new Set(res.ids || [])))
       .catch(() => {})
+      .finally(() => setIdsLoaded(true))
   }, [userId])
 
   // вышли из аккаунта — сердечки гаснут
@@ -59,7 +64,7 @@ export function FavoritesProvider({ children }) {
   const isFavorite = useCallback((id) => ids.has(id), [ids])
 
   return (
-    <FavoritesContext.Provider value={{ ids, toggle, isFavorite }}>
+    <FavoritesContext.Provider value={{ ids, idsLoaded, toggle, isFavorite }}>
       {children}
     </FavoritesContext.Provider>
   )

@@ -18,26 +18,30 @@ export default function Favorites() {
   // Удалили или добавили — соседи плавно съезжают (AutoAnimate, ~3 КБ; сам гаснет при «уменьшить движение»)
   const [listRef] = useAutoAnimate()
   const navigate = useNavigate()
-  const { ids } = useFavorites()
-  const { user } = useAuth()
+  const { ids, idsLoaded } = useFavorites()
+  const { user, loading: authLoading } = useAuth()
 
   const [items, setItems] = useState([])
   const [loaded, setLoaded] = useState(false)
 
   const userId = user?.id
 
+  // Пока проверяется вход, пользователя ещё «нет» — раньше это считалось «загружено», и вошедший человек видел
+  // сначала «войдите», потом «пусто», и только потом карточки. Теперь до ответа — скелет.
   useEffect(() => {
+    if (authLoading) return
     if (!userId) { setLoaded(true); return }
+    setLoaded(false)
     api.getFavorites(i18n.language)
       .then((res) => setItems(res.items || []))
       .catch(() => setItems([]))
       .finally(() => setLoaded(true))
-  }, [userId, i18n.language])
+  }, [userId, i18n.language, authLoading])
 
   // убираем из списка то, что сняли с сердечка прямо на этом экране
-  const visible = items.filter((l) => ids.has(l.id))
+  const visible = idsLoaded ? items.filter((l) => ids.has(l.id)) : items
 
-  if (!userId) {
+  if (!userId && !authLoading) {
     return (
       <div className="fav-page">
         <PageHeader title={t('favorites.title')} back={false} />

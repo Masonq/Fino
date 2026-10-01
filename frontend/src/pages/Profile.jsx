@@ -1,5 +1,5 @@
 import { sinceMonth } from '../utils/time'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { keepValue, readValue } from '../utils/keepPlace'
 import { formatPrice } from '../utils/money'
 import Avatar from '../components/Avatar'
@@ -54,6 +54,9 @@ export default function Profile() {
   // Цифры и бейджи храним между заходами: без этого при каждом
   // возврате на профиль они на секунду пропадали и появлялись заново,
   // а строка «что требует внимания» успевала мигнуть.
+  const [balanceReady, setBalanceReady] = useState(false)
+  const markBalanceReady = useCallback(() => setBalanceReady(true), [])
+  useEffect(() => { const timer = setTimeout(() => setBalanceReady(true), 1200); return () => clearTimeout(timer) }, [])
   const [stats, setStats] = useState(() => readValue('profile-stats', null))
   useEffect(() => {
     if (!user) return
@@ -161,6 +164,11 @@ export default function Profile() {
           справа весь остальной контент, шире и с уже готовой сеткой
           пунктов в .profile-menu (была сделана раньше в сессии, но
           терялась в узкой 600px странице). */}
+      {!balanceReady && <ProfileSkeleton showStaff={user.role === 'moderator' || user.role === 'admin'} />}
+      {/* Шапка, баланс и меню показываются вместе: пока баланс грузится, блок собран, но невидим и места не
+          занимает, а на экране скелет той же формы. Раньше шапка появлялась, через треть секунды — баланс,
+          ещё позже — кнопка «Пополнить»: три волны. Не дольше 1,2 с, дальше баланс догрузится сам. */}
+      <div className={balanceReady ? 'profile-reveal' : 'profile-hold'} aria-hidden={balanceReady ? undefined : 'true'}>
       <div className="profile-layout">
         <div
           ref={sidebar.ref}
@@ -253,7 +261,7 @@ export default function Profile() {
             </div>
           </div>
 
-          <BalanceCard />
+          <BalanceCard onReady={markBalanceReady} />
         </div>
 
         <div className="profile-main">
@@ -512,5 +520,6 @@ export default function Profile() {
         </div>
       </div>
     </div>
+      </div>
   )
 }
