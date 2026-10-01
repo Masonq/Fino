@@ -4,6 +4,15 @@ import uuid
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from PIL import Image
 
+# HEIC (основной формат фото iPhone) Pillow сам не читает. Без этого плагина такое фото раньше сохранялось как
+# есть, без превью, — и его видел только Safari; в Chrome, на Android и на компьютерах оно было битым.
+# Теперь HEIC, как и всё остальное, переводится в WebP с превью. Нет пакета — работаем как раньше.
+try:
+    from pillow_heif import register_heif_opener
+    register_heif_opener()
+except ImportError:  # pragma: no cover
+    pass
+
 from app.core.auth import get_current_user
 from app.core.config import settings
 from app.models import User
@@ -93,8 +102,8 @@ async def upload_photo(
     except Exception:
         if not _looks_like_image(contents):
             raise HTTPException(400, "unsupported_format")
-        # Настоящий HEIC-вариант, который Pillow не осилил — сохраняем
-        # как есть, но теперь только после проверки байтов, не вслепую.
+        # Файл с подписью изображения, который не открылся даже с плагином HEIC (редкий вариант формата) —
+        # сохраняем как есть, но только после проверки байтов, не вслепую.
         full_name = f"{name}{ext}"
         with open(os.path.join(settings.media_dir, full_name), "wb") as f:
             f.write(contents)

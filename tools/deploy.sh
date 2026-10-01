@@ -73,6 +73,12 @@ if [ ! -f /opt/fino/.balances-split ]; then
   python3 -m app.core.split_balances --apply && touch /opt/fino/.balances-split \
     || echo "  ! балансы не разделены — бонусы пока лежат вместе с деньгами"
 fi
+# HEIC-фото, загруженные до плагина pillow-heif, лежали как есть, без превью (видел их только Safari).
+# Переводим в WebP один раз (отметка-файл).
+if [ ! -f /opt/fino/.heic-converted ]; then
+  python3 -m app.core.convert_heic --apply && touch /opt/fino/.heic-converted \
+    || echo "  ! HEIC не переведены — старые фото с iPhone видны только в Safari"
+fi
 # Метка «Дешевле похожих» (огонёк у цены) пересчитывается раз в час
 # (plonk-price-marks.timer). После выкладки — сразу, но в фоне: деплой не должен
 # стоять и ждать расчёта, который к тому же ничего в нём не проверяет.
