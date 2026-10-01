@@ -660,7 +660,9 @@
     "delete_user": "Delete forever",
     "delete_confirm": "Yes, delete",
     "delete_warn": "This permanently erases {{name}}, all their listings ({{listings}}) and all their chats. This cannot be undone — use a block for real people.",
-    "err_delete": "Could not delete"
+    "err_delete": "Could not delete",
+    "alert_photo_reuse": "Similar photo from different sellers",
+    "alert_photo_reuse_hint": "“{{value}}” — the photo nearly matches another seller's listing. Make sure it is the seller's own"
   },
   "stats": {
     "title": "Numbers",

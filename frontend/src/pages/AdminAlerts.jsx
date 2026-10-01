@@ -16,6 +16,7 @@ import PageHeader from '../components/PageHeader'
 // стоит очередь.
 
 const LINKS = {
+  photo_reuse: (a) => `/go/${a.listing_id}`,
   many_rejected: (a) => (a.user_id ? `/admin/users/${a.user_id}` : null),
   queue_stale: () => '/moderation',
 }

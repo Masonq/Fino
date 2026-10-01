@@ -675,7 +675,9 @@
     "delete_user": "Obriši zauvek",
     "delete_confirm": "Da, obriši",
     "delete_warn": "Trajno se brišu: {{name}}, svi njegovi oglasi ({{listings}}) i sve prepiske. Ne može da se poništi — za prave ljude koristite blokadu.",
-    "err_delete": "Nije uspelo brisanje"
+    "err_delete": "Nije uspelo brisanje",
+    "alert_photo_reuse": "Slična fotografija kod različitih prodavaca",
+    "alert_photo_reuse_hint": "„{{value}}“ — fotografija se skoro poklapa sa oglasom drugog prodavca. Proverite da nije tuđa"
   },
   "stats": {
     "title": "Brojevi",

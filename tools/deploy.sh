@@ -73,6 +73,8 @@ if [ ! -f /opt/fino/.balances-split ]; then
   python3 -m app.core.split_balances --apply && touch /opt/fino/.balances-split \
     || echo "  ! балансы не разделены — бонусы пока лежат вместе с деньгами"
 fi
+# Хеши фото для тревоги «похожее фото у разных продавцов»: досчитываем недостающие в фоне — деплой не ждёт.
+(python3 -m app.core.photo_hash --apply > /tmp/plonk-photo-hash.log 2>&1 &)
 # HEIC-фото, загруженные до плагина pillow-heif, лежали как есть, без превью (видел их только Safari).
 # Переводим в WebP один раз (отметка-файл).
 if [ ! -f /opt/fino/.heic-converted ]; then

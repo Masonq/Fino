@@ -197,6 +197,9 @@ class ListingPhoto(Base):
 
     url: Mapped[str] = mapped_column(String(500))
     thumbnail_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    # Перцептивный хеш (dHash, 64 бита в hex): одинаковые на вид фото дают близкие хеши даже после пересжатия и
+    # уменьшения. По нему тревога «одно фото у разных продавцов» (app.core.photo_hash).
+    dhash: Mapped[str | None] = mapped_column(String(16), nullable=True, index=True)
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
     is_cover: Mapped[bool] = mapped_column(Boolean, default=False)
     # Видео живёт в этой же коллекции, не отдельным полем на Listing —

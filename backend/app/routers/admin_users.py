@@ -164,6 +164,15 @@ def alerts(
     for _, n in rows:
         out.append({"kind": "same_photo", "level": "warn", "count": int(n), "value": None})
 
+    # То же по виду фото (перцептивный хеш): ловит пересжатые и уменьшенные копии у объявлений с сайта,
+    # а не только побайтные из импорта. Показываем самую похожую пару и ведём на объявление.
+    from app.core.photo_hash import find_reuse
+    from app.models import ListingTranslation
+    for pair in find_reuse(db, days=30, limit=3):
+        title = (db.query(ListingTranslation.title).filter(ListingTranslation.listing_id == pair["listing_id"]).limit(1).scalar())
+        out.append({"kind": "photo_reuse", "level": "warn", "count": pair["distance"], "value": title or "—",
+                    "listing_id": pair["listing_id"], "other_id": pair["other_id"]})
+
     # Очередь: сколько ждёт самое старое.
     oldest = (db.query(func.min(Listing.created_at))
               .filter(Listing.status == ListingStatus.pending_moderation).scalar())

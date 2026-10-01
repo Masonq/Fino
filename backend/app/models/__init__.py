@@ -61,3 +61,4 @@ __all__ = [
 from app.models.volunteer import VolunteerApplication, VolunteerRole, VolunteerStatus  # noqa: F401,E402
 from app.models.site_setting import SiteSetting  # noqa: F401,E402
 from app.core import status_watch  # noqa: F401,E402
+from app.core import photo_hash  # noqa: F401,E402 — хеш фото при сохранении (событие before_insert)
