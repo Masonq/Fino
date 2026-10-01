@@ -1,6 +1,6 @@
-import PriceFlame from './Flame'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import PriceFlame from './Flame'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import { useFavorites } from '../context/FavoritesContext'
@@ -77,6 +77,8 @@ export default function ListingCard({ listing, large = false, priority = false }
             playsInline
             preload="metadata"
           />
+        ) : listing.photos?.length > 1 ? (
+          <CardPhotos listingId={listing.id} photos={listing.photos} priority={priority} />
         ) : listing.cover_photo ? (
           // Картинки грузятся по мере приближения к экрану, а не все
           // двадцать разом: видны шесть, остальные тянут сеть впустую и
@@ -178,5 +180,43 @@ export default function ListingCard({ listing, large = false, priority = false }
         {listing.published_at && <span className="s-date">{relativeDate(listing.published_at, t, i18n.language)}</span>}
       </Link>
     </div>
+  )
+}
+
+/**
+ * Листание фото прямо в карточке ленты: пальцем, с «защёлкиванием» на каждом снимке; внизу тонкие полоски,
+ * какой из скольких. Картинки, кроме первой, браузер грузит, только когда до них долистали.
+ *
+ * Свайп по фото не переключает вкладку ленты: окончание касания дальше не передаётся (начало передаётся —
+ * по нему карточка заранее запрашивает объявление). Нажатие по фото открывает объявление, как и раньше;
+ * первый снимок носит имя для плавного переноса фото на страницу объявления.
+ */
+function CardPhotos({ listingId, photos, priority }) {
+  const [index, setIndex] = useState(0)
+  const onScroll = (e) => {
+    const el = e.currentTarget
+    const next = Math.round(el.scrollLeft / Math.max(1, el.clientWidth))
+    if (next !== index) setIndex(next)
+  }
+  return (
+    <>
+      <div className="s-photos" onScroll={onScroll} onTouchEnd={(e) => e.stopPropagation()}>
+        {photos.map((src, i) => (
+          <img
+            key={src}
+            src={src}
+            alt=""
+            style={i === 0 ? { viewTransitionName: `photo-${listingId}` } : undefined}
+            loading={i === 0 && priority ? 'eager' : 'lazy'}
+            fetchpriority={i === 0 && priority ? 'high' : 'auto'}
+            decoding="async"
+            draggable="false"
+          />
+        ))}
+      </div>
+      <span className="s-photos-bars" aria-hidden="true">
+        {photos.map((src, i) => <span key={src} className={i === index ? 'on' : ''} />)}
+      </span>
+    </>
   )
 }

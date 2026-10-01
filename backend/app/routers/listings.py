@@ -287,6 +287,21 @@ def create_listing(
 from app.core.category_tree import branch_ids as _branch_ids  # noqa: E402
 
 
+
+CARD_PHOTOS = 5
+
+
+def card_photos(photos, cover) -> list[str]:
+    """
+    Превью для листания фото прямо в карточке ленты: обложка первой, дальше по порядку, видео не берём.
+    Не больше пяти: дальше листать в ленте никто не станет, а каждая лишняя ссылка — лишние байты на карточку.
+    Картинки браузер грузит, только когда до них долистали.
+    """
+    if not cover or cover.is_video:
+        return []
+    rest = sorted((p for p in photos if p is not cover and not p.is_video), key=lambda p: p.sort_order or 0)
+    return [x.thumbnail_url or x.url for x in [cover, *rest][:CARD_PHOTOS]]
+
 @router.get("")
 def search_listings(
     q_text: str | None = Query(None, alias="q"),
@@ -1065,6 +1080,7 @@ def search_listings(
             "currency": listing.currency,
             "city": listing.city,
             "cover_photo": cover.thumbnail_url if cover else None,
+            "photos": card_photos(listing.photos, cover),
             "cover_is_video": bool(cover.is_video) if cover else False,
             "is_reserved": bool(listing.reserved_until and listing.reserved_until > utcnow()),
             "cover_video_url": cover.url if (cover and cover.is_video) else None,
@@ -1207,6 +1223,7 @@ def listings_by_ids(
             "path": listing_path(l.id, tr.title if tr else "", l.city,
                                  l.category.slug if l.category else None),
             "cover_photo": cover.thumbnail_url if cover else None,
+            "photos": card_photos(l.photos, cover),
             "cover_is_video": bool(cover.is_video) if cover else False,
             "is_reserved": bool(l.reserved_until and l.reserved_until > utcnow()),
             "cover_video_url": cover.url if (cover and cover.is_video) else None,
@@ -1758,6 +1775,7 @@ def similar_listings(
             "is_xl": l.id in promo[PromotionType.xl_card],
             "is_highlighted": l.id in promo[PromotionType.highlight],
             "cover_photo": cover.thumbnail_url if cover else None,
+            "photos": card_photos(l.photos, cover),
             "cover_is_video": bool(cover.is_video) if cover else False,
             "is_reserved": bool(l.reserved_until and l.reserved_until > utcnow()),
             "cover_video_url": cover.url if (cover and cover.is_video) else None,
@@ -1814,6 +1832,7 @@ def seller_listings(
             "attributes": l.attributes,
             "category_slug": l.category.slug if l.category else None,
             "cover_photo": cover.thumbnail_url if cover else None,
+            "photos": card_photos(l.photos, cover),
             "cover_is_video": bool(cover.is_video) if cover else False,
             "is_reserved": bool(l.reserved_until and l.reserved_until > utcnow()),
             "cover_video_url": cover.url if (cover and cover.is_video) else None,
