@@ -1,3 +1,5 @@
+import SheetCard from '../components/SheetCard'
+import Presence from '../components/Presence'
 import Stars from '../components/Stars'
 import PriceGauge from '../components/PriceGauge'
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
@@ -1392,10 +1394,9 @@ export default function ListingDetail() {
           придумывать, с чего начать, с нуля. Готовый вопрос уходит
           сразу при касании; «Своё сообщение» — прежнее поведение,
           открывает пустой чат как раньше. */}
-      {quickReplyOpen && (
-        <>
+      <Presence show={Boolean(quickReplyOpen)}>{(Boolean(quickReplyOpen)) && (<div className="quick-reply-layer">
           <div className="quick-reply-backdrop" onClick={() => setQuickReplyOpen(false)} />
-          <div className="quick-reply-sheet">
+          <SheetCard base="quick-reply-sheet" onClose={() => setQuickReplyOpen(false)}>
             <div className="quick-reply-title">{t('detail.quick_title')}</div>
             {quickReplies.map((text) => (
               <button
@@ -1417,9 +1418,8 @@ export default function ListingDetail() {
             <button className="quick-reply-cancel" onClick={() => setQuickReplyOpen(false)}>
               {t('rev.cancel')}
             </button>
-          </div>
-        </>
-      )}
+          </SheetCard>
+        </div>)}</Presence>
 
         {/* Другие объявления продавца — до похожих товаров и жалобы,
             а не после: на десктопе именно это место (после кнопки
@@ -1461,9 +1461,9 @@ export default function ListingDetail() {
           должны выглядеть одинаково. Список разделов с подразделами:
           в раздел верхнего уровня класть нельзя, там объявления никто
           не ищет, поэтому такие строки только раскрывают вложенные. */}
-      {movingOpen && (
+      <Presence show={movingOpen}>{(movingOpen) && (
         <div className="reasons-sheet" onClick={() => setMovingOpen(false)}>
-          <div className="reasons-card" onClick={(e) => e.stopPropagation()}>
+          <SheetCard onClose={() => setMovingOpen(false)}>
             <div className="reasons-title">{t('move.title')}</div>
             <div className="move-current">
               {t('move.now')}: <b>{
@@ -1551,13 +1551,13 @@ export default function ListingDetail() {
             <button className="reasons-cancel" onClick={() => setMovingOpen(false)}>
               {t('actions.cancel')}
             </button>
-          </div>
+          </SheetCard>
         </div>
-      )}
+      )}</Presence>
 
-      {showReasons && (
+      <Presence show={showReasons}>{(showReasons) && (
         <div className="reasons-sheet" onClick={() => { setShowReasons(false); setCustomReason(false); setReasonText('') }}>
-          <div className="reasons-card" onClick={(e) => e.stopPropagation()}>
+          <SheetCard onClose={() => { setShowReasons(false); setCustomReason(false); setReasonText('') }}>
             <div className="reasons-title">{t('mod.return_to_edit')}</div>
             {!customReason ? (
               <>
@@ -1621,14 +1621,14 @@ export default function ListingDetail() {
                 </div>
               </>
             )}
-          </div>
+          </SheetCard>
         </div>
-      )}
+      )}</Presence>
 
       {/* Подтверждение удаления — своей панелью, а не окном браузера. */}
-      {confirmDelete && (
+      <Presence show={confirmDelete}>{(confirmDelete) && (
         <div className="reasons-sheet" onClick={() => setConfirmDelete(false)}>
-          <div className="reasons-card" onClick={(e) => e.stopPropagation()}>
+          <SheetCard onClose={() => setConfirmDelete(false)}>
             <div className="reasons-title">
               {confirmDelete === 'force' ? t('my.delete_has_history_force_confirm') : t('my.confirm_delete')}
             </div>
@@ -1644,24 +1644,24 @@ export default function ListingDetail() {
                 {t('my.delete')}
               </button>
             </div>
-          </div>
+          </SheetCard>
         </div>
-      )}
+      )}</Presence>
 
-      {deleteError && (
+      <Presence show={Boolean(deleteError)}>{(Boolean(deleteError)) && (
         <div className="reasons-sheet" onClick={() => setDeleteError('')}>
-          <div className="reasons-card" onClick={(e) => e.stopPropagation()}>
+          <SheetCard onClose={() => setDeleteError('')}>
             <div className="reasons-title">{deleteError}</div>
             <button className="reasons-cancel" onClick={() => setDeleteError('')}>
               {t('actions.close')}
             </button>
-          </div>
+          </SheetCard>
         </div>
-      )}
+      )}</Presence>
 
-      {priceOpen && priceCheck && (
+      <Presence show={Boolean(priceOpen && priceCheck)}>{(Boolean(priceOpen && priceCheck)) && (
         <div className="reasons-sheet" onClick={() => setPriceOpen(false)}>
-          <div className="reasons-card" onClick={(e) => e.stopPropagation()}>
+          <SheetCard onClose={() => setPriceOpen(false)}>
             <div className="reasons-title">{t(`price_check.${priceCheck.verdict}`)}</div>
             <PriceGauge mine={priceCheck.mine_eur} low={priceCheck.low_eur} high={priceCheck.high_eur} label={t(`price_check.${priceCheck.verdict}`)} />
             <p className="price-check-explain">
@@ -1677,9 +1677,9 @@ export default function ListingDetail() {
             <button className="reasons-cancel" onClick={() => setPriceOpen(false)}>
               {t('actions.close')}
             </button>
-          </div>
+          </SheetCard>
         </div>
-      )}
+      )}</Presence>
 
       {fullscreen !== null && (
         <div

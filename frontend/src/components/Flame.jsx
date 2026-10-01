@@ -1,3 +1,5 @@
+import SheetCard from './SheetCard'
+import Presence from './Presence'
 import PriceGauge from './PriceGauge'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -95,31 +97,33 @@ export default function PriceFlame({ listing }) {
         <FlameSvg id={listing.id} />
       </button>
 
-      {open && createPortal(
-        <div className="reasons-sheet" onClick={(e) => { stop(e); setOpen(false) }}>
-          <div className="reasons-card flame-sheet" role="dialog" aria-modal="true"
-            aria-label={t(`flame.title_${kind}`)} onClick={(e) => e.stopPropagation()}>
-            <div className="flame-sheet-head">
-              <span className="flame-sheet-icon"><FlameSvg id={listing.id} /></span>
-              <div className="reasons-title flame-sheet-title">{t(`flame.title_${kind}`)}</div>
-            </div>
-            {/* Пока числа грузятся — место под шкалу держим, чтобы окно не подрастало */}
-            {check
-              ? <PriceGauge mine={check.mine_eur} low={check.low_eur} high={check.high_eur} label={t(`flame.title_${kind}`)} />
-              : <div className="pg pg-ph" aria-hidden="true" />}
-            <p className="price-check-explain">{t(`flame.why_${kind}`)}</p>
-            {check?.based_on > 0 && (
-              <p className="price-check-explain">{t('flame.compared', { count: check.based_on })}</p>
-            )}
-            <p className="price-check-explain flame-careful">{t('flame.careful')}</p>
-            <Link to={listing.path} className="flame-sheet-link" onClick={() => setOpen(false)}>
-              {t('flame.open')}
-            </Link>
-            <button className="reasons-cancel" onClick={() => setOpen(false)}>
-              {t('flame.ok')}
-            </button>
+      {createPortal(
+        <Presence show={open}>{(open) && (
+          <div className="reasons-sheet" onClick={(e) => { stop(e); setOpen(false) }}>
+            <SheetCard className="flame-sheet" onClose={() => setOpen(false)} role="dialog" aria-modal="true"
+              aria-label={t(`flame.title_${kind}`)}>
+              <div className="flame-sheet-head">
+                <span className="flame-sheet-icon"><FlameSvg id={listing.id} /></span>
+                <div className="reasons-title flame-sheet-title">{t(`flame.title_${kind}`)}</div>
+              </div>
+              {/* Пока числа грузятся — место под шкалу держим, чтобы окно не подрастало */}
+              {check
+                ? <PriceGauge mine={check.mine_eur} low={check.low_eur} high={check.high_eur} label={t(`flame.title_${kind}`)} />
+                : <div className="pg pg-ph" aria-hidden="true" />}
+              <p className="price-check-explain">{t(`flame.why_${kind}`)}</p>
+              {check?.based_on > 0 && (
+                <p className="price-check-explain">{t('flame.compared', { count: check.based_on })}</p>
+              )}
+              <p className="price-check-explain flame-careful">{t('flame.careful')}</p>
+              <Link to={listing.path} className="flame-sheet-link" onClick={() => setOpen(false)}>
+                {t('flame.open')}
+              </Link>
+              <button className="reasons-cancel" onClick={() => setOpen(false)}>
+                {t('flame.ok')}
+              </button>
+            </SheetCard>
           </div>
-        </div>,
+        )}</Presence>,
         document.body,
       )}
     </>

@@ -6608,3 +6608,19 @@ a.s-attrs{ display:block; }
 .infinite-grid > .s-card{ animation:ui-fade-in .3s ease; }
 @media (prefers-reduced-motion: reduce){ .profile-reveal, .reveal-in, .story:not(.story-skeleton), .infinite-grid > .s-card{ animation:none; } }
 
+/* ===== Окна закрываются так же красиво, как открываются (components/Presence.jsx, SheetCard.jsx) ===== */
+@keyframes ui-fade-out{ to{ opacity:0 } }
+@keyframes ui-sheet-down{ from{ transform:translateY(var(--sheet-drag, 0px)) } to{ transform:translateY(100%) } }
+.reasons-sheet.is-closing, .quick-reply-layer.is-closing{ pointer-events:none; }
+.reasons-sheet.is-closing{ animation:ui-fade-out .23s ease forwards; }
+.reasons-sheet.is-closing .reasons-card{ animation:ui-sheet-down .23s cubic-bezier(.4,0,1,1) forwards; }
+.quick-reply-layer.is-closing .quick-reply-backdrop{ animation:ui-fade-out .23s ease forwards; }
+.quick-reply-layer.is-closing .quick-reply-sheet{ animation:ui-sheet-down .23s cubic-bezier(.4,0,1,1) forwards; }
+/* Полоска-ручка — как у шторки подтверждения: у всех нижних окон одна и та же */
+.sheet-handle{ display:block; flex-shrink:0; align-self:center; width:40px; height:5px; margin:2px auto 6px; border-radius:3px; background:var(--border-strong); }
+/* Пока палец тянет окно, никаких анимаций — карточка идёт ровно за пальцем */
+.sheet-dragging{ animation:none !important; transition:none !important; }
+@media (prefers-reduced-motion: reduce){
+  .reasons-sheet.is-closing, .reasons-sheet.is-closing .reasons-card, .quick-reply-layer.is-closing .quick-reply-backdrop, .quick-reply-layer.is-closing .quick-reply-sheet{ animation:none; }
+}
+
