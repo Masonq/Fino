@@ -1426,10 +1426,6 @@ export default function ListingDetail() {
             «Написать продавцу») оставалось пустым белым фоном под
             высоту фото слева, если описание короткое. На мобильном
             просто ещё один блок в общей ленте, ничего не меняется. */}
-        <SellerListings sellerId={listing.owner?.id} excludeListingId={listing.id} />
-
-        <SimilarListings listingId={listing.id} />
-
         <ReportButton listingId={listing.id} ownerId={listing.owner?.id} />
 
         {/* Просмотры/дата/номер — в самом низу страницы, тем же
@@ -1452,6 +1448,13 @@ export default function ListingDetail() {
           {listing.published_at && <span>{relativeDate(listing.published_at, t, i18n.language)}</span>}
           {listing.number && <span>{t('detail.id', { id: listing.number })}</span>}
         </div>
+
+        {/* «Другие объявления продавца» и «Похожие» — после жалобы и справочной строки, в самом конце. Оба блока
+            молчат, пока не загрузятся, а стояли выше: приходили через полсекунды и толкали «Пожаловаться» и
+            строку с просмотрами вниз (замер: на 244 точки, у объявления из истории — прямо на экране).
+            Внизу они дописываются и ничего над собой не двигают. */}
+        <SellerListings sellerId={listing.owner?.id} excludeListingId={listing.id} />
+        <SimilarListings listingId={listing.id} />
         </div>
       </div>
 

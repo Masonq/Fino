@@ -55,3 +55,15 @@ def test_every_new_animation_respects_reduced_motion():
     reduced = block[block.index("@media (prefers-reduced-motion: reduce)"):]
     for name in (".s-fav-burst", ".badge-dot", ".s-card.highlighted::after", ".sk-block", ".feed-tabs-pill", ".fp-chip-check"):
         assert name in reduced, name
+
+
+def test_switching_feed_tabs_never_makes_the_page_wider_than_the_screen():
+    """
+    Вправо лента въезжала справа (+22px) и делала страницу шире экрана на 23 точки — Safari «отдалял» её, был
+    рывок; влево — 0. Замер в браузере после правки: 0 в обе стороны. overflow-x:clip, а не hidden: hidden
+    сделал бы главную прокручиваемым блоком и сломал бы липкие элементы.
+    """
+    assert "overflow-x:clip" in last_rule(".home")
+    home = (SRC / "pages" / "Home.jsx").read_text(encoding="utf-8")
+    assert "fromCache ? 'from-cache' : ''" in home and "setFromCache(true)" in home and "setFromCache(false)" in home
+    assert "animation:none" in last_rule(".infinite-grid.from-cache > .s-card, .infinite-list.from-cache > .s-card")

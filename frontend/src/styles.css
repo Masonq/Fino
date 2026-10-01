@@ -6630,3 +6630,10 @@ a.s-attrs{ display:block; }
   background:var(--surface-sunken); color:var(--ink-soft); font-size:14px; font-weight:700; text-decoration:none; }
 .location-view-map .maplibregl-ctrl-attrib, .location-picker-map .maplibregl-ctrl-attrib{ font-size:10px; }
 
+/* Переключение «Все / Новое / Даром» вправо: лента въезжала справа (translateX +22px) и на мгновение делала
+   страницу шире экрана на 23 точки — Safari на iPhone от этого «отдалял» страницу, выходил рывок. Влево
+   ширина не росла, поэтому рывка не было. overflow-x:clip обрезает выезжающее вбок, не делая главную
+   прокручиваемым блоком (в отличие от hidden), — липкие элементы внутри работают как раньше. */
+.home{ overflow-x:clip; }
+.infinite-grid.from-cache > .s-card, .infinite-list.from-cache > .s-card{ animation:none; }
+

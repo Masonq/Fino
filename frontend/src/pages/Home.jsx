@@ -292,6 +292,9 @@ export default function Home() {
   // палец, а новая приезжает с другой стороны. Без этого смена
   // происходит рывком, и непонятно, что случилось.
   const [tabSlide, setTabSlide] = useState(null)
+  // Вкладку вернули из памяти: карточки появляются вместе с лентой, и проявлять их второй раз поверх сдвига
+  // ленты не нужно — выходило двойное мигание (лента почти пропадала и проступала заново).
+  const [fromCache, setFromCache] = useState(false)
   // Куда вернуть прокрутку, когда карточки вкладки уже отрисованы.
   const pendingScroll = useRef(null)
   // Высота ленты на момент смены вкладки.
@@ -361,6 +364,7 @@ export default function Home() {
       // короткая, и человек успевал увидеть её верх, а потом прыжок
       // вниз. Это и читалось как мелькание.
       pendingScroll.current = saved.scroll || 0
+      setFromCache(true)
       return
     }
 
@@ -368,6 +372,7 @@ export default function Home() {
     // новая лента. Раньше старые карточки висели до последнего и потом
     // резко сменялись новыми: выходил рывок.
     asked.current = 0
+    setFromCache(false)
     setListings([])
     setFeedLoaded(false)
     // Метку не снимаем.
@@ -774,6 +779,7 @@ export default function Home() {
         className={[
           cols === 2 ? 'infinite-grid' : 'infinite-list',
           tabSlide ? `slide-${tabSlide}` : '',
+          fromCache ? 'from-cache' : '',
         ].filter(Boolean).join(' ')}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}

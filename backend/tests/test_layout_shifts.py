@@ -140,3 +140,10 @@ def test_chats_keep_room_for_the_search_bar_while_loading_if_there_were_chats():
     tool = (Path(__file__).resolve().parents[2] / "tools" / "check-shifts.py").read_text(encoding="utf-8")
     assert '("Чаты", "/chats", "both", "warm")' in tool
 
+
+
+def test_seller_and_similar_listings_come_after_the_report_link_and_meta():
+    """Оба блока приходят позже страницы; стоя выше, толкали «Пожаловаться» и строку просмотров на 244 точки."""
+    page = read("pages/ListingDetail.jsx")
+    meta = page.index('className="detail-meta"')
+    assert page.index("<ReportButton") < meta < page.index("<SellerListings") < page.index("<SimilarListings")
