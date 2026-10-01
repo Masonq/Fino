@@ -132,3 +132,11 @@ def test_the_category_skeleton_is_exactly_as_big_as_a_category_tile():
     for prop in ("height:86px", "width:118px", "border-radius:15px"):
         assert prop in skeleton and prop in tile, prop
 
+
+def test_chats_keep_room_for_the_search_bar_while_loading_if_there_were_chats():
+    """Панель поиска приходила после загрузки и сдвигала список на 104 точки. Меряется повторным заходом (warm)."""
+    chats = read("pages/Chats.jsx")
+    assert "plonk_had_chats" in chats and "count === null ? hadChats : count > 0" in chats and "{showTools && (" in chats
+    tool = (Path(__file__).resolve().parents[2] / "tools" / "check-shifts.py").read_text(encoding="utf-8")
+    assert '("Чаты", "/chats", "both", "warm")' in tool
+

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useAuth } from '../context/AuthContext'
 import { useTranslation } from 'react-i18next'
 
 import { api } from '../api/client'
@@ -36,9 +37,58 @@ const GiftIcon = () => (
   </Icon>
 )
 
+// 14 частиц конфетти: направления по кругу, три дальности, цвета бренда
+const CONFETTI = Array.from({ length: 14 }, (_, i) => {
+  const a = (i / 14) * Math.PI * 2
+  const r = 70 + (i % 3) * 22
+  const colors = ['#0E9F6E', '#FF6A3D', '#D9A857', '#4B554E', '#7C6CF0']
+  return { '--dx': `${Math.round(Math.cos(a) * r)}px`, '--dy': `${Math.round(Math.sin(a) * r - 30)}px`, background: colors[i % colors.length], animationDelay: `${(i % 4) * 25}ms` }
+})
+
 export default function BalanceCard() {
   const { t, i18n } = useTranslation()
   const [wallet, setWallet] = useState(null)      // { balance, money, bonus, payments_enabled } или null, пока грузится
+  const { user } = useAuth()
+  const [shown, setShown] = useState(null)        // промежуточные суммы, пока они «набегают»
+  const [plan, setPlan] = useState(null)          // { from, to, party } — что проиграть; null — ничего
+  const decided = useRef('')                      // для каких сумм уже решили (React в разработке зовёт эффект дважды)
+
+  // Пришёл подарок (бонус за первое объявление, за друга) или пополнение — суммы набегают от прежних к новым, а при
+  // новом бонусе ещё и короткое конфетти. Прежние суммы помним на устройстве отдельно для каждого человека: иначе
+  // чужой аккаунт на том же телефоне дал бы ложный праздник. Первый заход — без представления, просто запоминаем.
+  // «Решить» и «проиграть» разделены: решение принимается один раз на эти суммы, а проигрыш можно перезапустить.
+  useEffect(() => {
+    if (!wallet || !user?.id) return
+    const to = { money: Number(wallet.money), bonus: Number(wallet.bonus) }
+    const key = `plonk_seen_wallet:${user.id}`
+    const stamp = `${key}:${to.money}:${to.bonus}`
+    if (decided.current === stamp) return
+    decided.current = stamp
+    let prev = null
+    try { prev = JSON.parse(localStorage.getItem(key) || 'null') } catch { prev = null }
+    try { localStorage.setItem(key, JSON.stringify(to)) } catch { /* без памяти — без представления */ }
+    if (!prev || (to.bonus <= prev.bonus && to.money <= prev.money)) return
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
+    setPlan({ from: { money: Math.min(prev.money, to.money), bonus: Math.min(prev.bonus, to.bonus) }, to, party: to.bonus > prev.bonus })
+  }, [wallet, user?.id])
+
+  useEffect(() => {
+    if (!plan) return undefined
+    const { from, to } = plan
+    const start = performance.now()
+    let raf = 0
+    const step = (now) => {
+      const p = Math.min(1, (now - start) / 900)
+      const e = 1 - (1 - p) ** 3
+      setShown({ money: from.money + (to.money - from.money) * e, bonus: from.bonus + (to.bonus - from.bonus) * e })
+      if (p < 1) raf = requestAnimationFrame(step)
+      else setShown(null)
+    }
+    raf = requestAnimationFrame(step)
+    const done = setTimeout(() => setPlan(null), 1500)
+    return () => { cancelAnimationFrame(raf); clearTimeout(done); setShown(null) }
+  }, [plan])
+  const party = Boolean(plan?.party)
   const [open, setOpen] = useState(false)
   const [amount, setAmount] = useState(PRESETS[1])
   const [busy, setBusy] = useState(false)
@@ -63,9 +113,12 @@ export default function BalanceCard() {
   }
 
   const known = wallet !== null
-  const money = Number(wallet?.money ?? 0)
-  const bonus = Number(wallet?.bonus ?? 0)
-  const total = Number(wallet?.balance ?? money + bonus)
+  const realMoney = Number(wallet?.money ?? 0)
+  const realBonus = Number(wallet?.bonus ?? 0)
+  // Пока идёт «представление» (бонус пришёл с прошлого захода), на экране промежуточные числа; потом — настоящие
+  const money = shown ? Math.round(shown.money) : realMoney
+  const bonus = shown ? Math.round(shown.bonus) : realBonus
+  const total = shown ? money + bonus : Number(wallet?.balance ?? realMoney + realBonus)
   const rsd = (n) => t('promo.price', { price: formatAmount(n, i18n.language) })
   const bar = total > 0
     ? [money > 0 && ['money', money], bonus > 0 && ['bonus', bonus]].filter(Boolean)
@@ -79,6 +132,11 @@ export default function BalanceCard() {
 
   return (
     <div className="balance-card">
+      {party && (
+        <span className="balance-confetti" aria-hidden="true">
+          {CONFETTI.map((style, i) => <span key={i} className="balance-bit" style={style} />)}
+        </span>
+      )}
       {/* Правило блока: загрузка и готовый вид занимают одно и то же место. Скелет лежит ВНУТРИ настоящей строки
           (той же высоты), кнопка не меняет размера, подпись про оплату — в строке под плитками, а не сбоку от суммы,
           иначе крупная сумма выталкивала её вниз и вся карточка съезжала. */}

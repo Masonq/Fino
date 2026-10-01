@@ -1,3 +1,4 @@
+import { useAutoAnimate } from '@formkit/auto-animate/react'
 import { showIsland } from '../utils/island'
 import { confirmSheet } from '../utils/confirm'
 import { intlLocale } from '../utils/time'
@@ -58,6 +59,8 @@ export default function MyListings() {
   // Возвращаемся туда, где человек оставил список.
   useKeepPlace('my-listings')
   const { t, i18n } = useTranslation()
+  // Удалили или добавили — соседи плавно съезжают (AutoAnimate, ~3 КБ; сам гаснет при «уменьшить движение»)
+  const [listRef] = useAutoAnimate()
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()
 
@@ -193,7 +196,7 @@ export default function MyListings() {
           <Link className="fav-cta" to="/post">{t('nav.post')}</Link>
         </div>
       ) : (
-        <div className="my-list">
+        <div className="my-list" ref={listRef}>
           {withoutRemoved(visible).map((l) => (
             <div className="my-row" key={l.id}>
               <Link to={l.path} className="my-main">

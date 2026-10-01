@@ -1131,7 +1131,10 @@
     "how_city_one": "Compared with {{count}} similar listing on PLONK in this city over the last six months: most are between {{low}} and {{high}}.",
     "how_city_other": "Compared with {{count}} similar listings on PLONK in this city over the last six months: most are between {{low}} and {{high}}.",
     "how_country_one": "Few similar ones in this city, so compared with {{count}} similar listing on PLONK across Serbia over the last six months: most are between {{low}} and {{high}}.",
-    "how_country_other": "Few similar ones in this city, so compared with {{count}} similar listings on PLONK across Serbia over the last six months: most are between {{low}} and {{high}}."
+    "how_country_other": "Few similar ones in this city, so compared with {{count}} similar listings on PLONK across Serbia over the last six months: most are between {{low}} and {{high}}.",
+    "zone_cheap": "cheaper",
+    "zone_fair": "typical",
+    "zone_high": "pricier"
   },
   "reviews": {
     "waiting_title": "Waiting for your review",

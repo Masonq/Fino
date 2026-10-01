@@ -1163,7 +1163,10 @@
     "how_city_other": "Upoređeno sa {{count}} sličnih oglasa na PLONK-u u ovom gradu za poslednjih pola godine: većina je između {{low}} i {{high}}.",
     "how_country_one": "U ovom gradu ima malo sličnih, pa je upoređeno sa {{count}} sličnim oglasom na PLONK-u širom Srbije za poslednjih pola godine: većina je između {{low}} i {{high}}.",
     "how_country_few": "U ovom gradu ima malo sličnih, pa je upoređeno sa {{count}} slična oglasa na PLONK-u širom Srbije za poslednjih pola godine: većina je između {{low}} i {{high}}.",
-    "how_country_other": "U ovom gradu ima malo sličnih, pa je upoređeno sa {{count}} sličnih oglasa na PLONK-u širom Srbije za poslednjih pola godine: većina je između {{low}} i {{high}}."
+    "how_country_other": "U ovom gradu ima malo sličnih, pa je upoređeno sa {{count}} sličnih oglasa na PLONK-u širom Srbije za poslednjih pola godine: većina je između {{low}} i {{high}}.",
+    "zone_cheap": "jeftinije",
+    "zone_fair": "uobičajeno",
+    "zone_high": "skuplje"
   },
   "reviews": {
     "waiting_title": "Čekaju vašu ocenu",

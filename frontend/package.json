@@ -10,6 +10,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
+    "@formkit/auto-animate": "^0.9.0",
     "globals": "^17.12.0",
     "i18next": "^23.15.1",
     "leaflet": "^1.9.4",

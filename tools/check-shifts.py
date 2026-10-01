@@ -161,7 +161,7 @@ def routes(s):
         ("Моё объявление", s["mine"], "both"), ("Продавец", f"/seller/{s['seller']}" if s["seller"] else "/", None),
         ("Вход", "/login", None), ("Правила", "/rules", None), ("Условия", "/terms", None), ("Политика", "/privacy", None),
         ("Профиль", "/profile", "both"), ("Профиль (админ)", "/profile", "admin"), ("Избранное", "/favorites", "both"),
-        ("Сохранённое", "/saved", "both"), ("История", "/history", "both"), ("Чаты", "/chats", "both"),
+        ("Сохранённое", "/saved", "both"), ("История", "/history", "both"), ("Чаты", "/chats", "both", "warm"),
         ("Уведомления", "/notifications", "both"), ("Мои объявления", "/my", "both"), ("Размещение", "/post", "both"),
         ("Редактор профиля", "/profile/edit", "both"), ("Приглашения", "/profile/invite", "both"),
         ("Заблокированные", "/profile/blocked", "both"), ("Отзывы ждут", "/reviews/waiting", "both"),
@@ -199,19 +199,25 @@ def scenarios(s):
     ]
 
 
-async def check_page(browser, pw, tokens, base, name, path, who, dev_name, dev):
-    result = await _check_page_once(browser, pw, tokens, base, name, path, who, dev_name, dev)
+async def check_page(browser, pw, tokens, base, name, path, who, dev_name, dev, warm=False):
+    result = await _check_page_once(browser, pw, tokens, base, name, path, who, dev_name, dev, warm)
     if result["note"]:
         # Ушли на другой адрес: чаще всего API не успел ответить на /me под параллельной нагрузкой прогона, а не поломка
         # страницы. Даём второй шанс; если и он уходит не туда — это уже настоящая находка.
-        result = await _check_page_once(browser, pw, tokens, base, name, path, who, dev_name, dev)
+        result = await _check_page_once(browser, pw, tokens, base, name, path, who, dev_name, dev, warm)
     return result
 
 
-async def _check_page_once(browser, pw, tokens, base, name, path, who, dev_name, dev):
+async def _check_page_once(browser, pw, tokens, base, name, path, who, dev_name, dev, warm=False):
     ctx, page = await open_page(browser, pw.devices[dev], tokens.get(who))
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)))
+    if warm:
+        # Страница помнит прошлый заход (например, были ли переписки) и по памяти держит место. Меряем как постоянный
+        # пользователь: первый заход — разогрев, считаем второй.
+        await page.goto(base + path, wait_until="networkidle")
+        await page.wait_for_timeout(800)
+        await page.evaluate("window.__shifts.length = 0")
     await page.goto(base + path, wait_until="commit")
     await page.wait_for_timeout(3600)
     total, real = summarize(await page.evaluate("window.__shifts"))
@@ -286,7 +292,7 @@ async def main():
                     return await coro_fn(browser, pw, tokens, args.base, *a)
 
             if args.pages or both:
-                jobs = [guarded(check_page, n, p, w, dn, d) for (n, p, w) in routes(sample) if pick(n) for (dn, d) in DEVICES]
+                jobs = [guarded(check_page, n, p, w, dn, d, bool(rest)) for (n, p, w, *rest) in routes(sample) if pick(n) for (dn, d) in DEVICES]
                 ok &= report("Страницы", await asyncio.gather(*jobs))
             if args.overlays or both:
                 from app.core import site_settings

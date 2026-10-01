@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -13,6 +13,14 @@ export default function Chats() {
   // Поиск и отбор нужны, когда есть что отбирать: при пустом списке
   // они только занимают верх экрана.
   const [count, setCount] = useState(null)
+  // Пока список грузится (count === null), панель поиска показываем, если в прошлый раз переписки были: она приходила
+  // после загрузки и сдвигала список вниз на всю свою высоту (замер обхода: 104 точки). Помним только «были или нет».
+  const [hadChats] = useState(() => { try { return localStorage.getItem('plonk_had_chats') === '1' } catch { return false } })
+  useEffect(() => {
+    if (count === null) return
+    try { localStorage.setItem('plonk_had_chats', count > 0 ? '1' : '0') } catch { /* без памяти — без подсказки */ }
+  }, [count])
+  const showTools = count === null ? hadChats : count > 0
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -50,7 +58,7 @@ export default function Chats() {
           «Непрочитанные» отдельно, потому что это главный вопрос при
           заходе: где мне не ответили. «Покупаю» и «Продаю» — вместо
           «Важных» у Avito: у нас две роли, и они и есть разные дела. */}
-      {count > 0 && (
+      {showTools && (
       <div className="chats-tools">
         <div className="chats-search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m20 20-4.35-4.35" /></svg>

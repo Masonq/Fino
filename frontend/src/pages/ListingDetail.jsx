@@ -1,3 +1,5 @@
+import Stars from '../components/Stars'
+import PriceGauge from '../components/PriceGauge'
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import RichText from '../components/RichText'
 import Avatar from '../components/Avatar'
@@ -1098,7 +1100,7 @@ export default function ListingDetail() {
                   <span className="seller-badge-inline">{t('seller.company_badge')} · </span>
                 )}
                 {listing.owner.rating_count > 0
-                  ? `${listing.owner.rating_avg?.toFixed(1)} · ${t('rev.count', { count: listing.owner.rating_count })}`
+                  ? <><Stars value={listing.owner.rating_avg} />{`${listing.owner.rating_avg?.toFixed(1)} · ${t('rev.count', { count: listing.owner.rating_count })}`}</>
                   : t('rev.none_yet')}
               </div>
 
@@ -1661,6 +1663,7 @@ export default function ListingDetail() {
         <div className="reasons-sheet" onClick={() => setPriceOpen(false)}>
           <div className="reasons-card" onClick={(e) => e.stopPropagation()}>
             <div className="reasons-title">{t(`price_check.${priceCheck.verdict}`)}</div>
+            <PriceGauge mine={priceCheck.mine_eur} low={priceCheck.low_eur} high={priceCheck.high_eur} label={t(`price_check.${priceCheck.verdict}`)} />
             <p className="price-check-explain">
               {t(`price_check.explain_${priceCheck.verdict}`)}
             </p>

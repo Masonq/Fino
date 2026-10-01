@@ -1,3 +1,4 @@
+import PriceGauge from './PriceGauge'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
@@ -102,6 +103,10 @@ export default function PriceFlame({ listing }) {
               <span className="flame-sheet-icon"><FlameSvg id={listing.id} /></span>
               <div className="reasons-title flame-sheet-title">{t(`flame.title_${kind}`)}</div>
             </div>
+            {/* Пока числа грузятся — место под шкалу держим, чтобы окно не подрастало */}
+            {check
+              ? <PriceGauge mine={check.mine_eur} low={check.low_eur} high={check.high_eur} label={t(`flame.title_${kind}`)} />
+              : <div className="pg pg-ph" aria-hidden="true" />}
             <p className="price-check-explain">{t(`flame.why_${kind}`)}</p>
             {check?.based_on > 0 && (
               <p className="price-check-explain">{t('flame.compared', { count: check.based_on })}</p>

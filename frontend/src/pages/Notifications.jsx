@@ -1,3 +1,4 @@
+import { useAutoAnimate } from '@formkit/auto-animate/react'
 import { confirmSheet } from '../utils/confirm'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -10,6 +11,8 @@ import { timeAgo } from '../utils/time'
 
 export default function Notifications() {
   const { t, i18n } = useTranslation()
+  // Удалили или добавили — соседи плавно съезжают (AutoAnimate, ~3 КБ; сам гаснет при «уменьшить движение»)
+  const [listRef] = useAutoAnimate()
   const navigate = useNavigate()
   const { user } = useAuth()
 
@@ -133,7 +136,7 @@ export default function Notifications() {
         </div>
       ) : (
         <>
-          <div className="notif-list">
+          <div className="notif-list" ref={listRef}>
             {items.map((n) => (
               <SwipeableNotification
                 key={n.id}

@@ -1,3 +1,4 @@
+import { useAutoAnimate } from '@formkit/auto-animate/react'
 import { useEffect, useState } from 'react'
 import { useKeepPlace } from '../utils/keepPlace'
 import { withoutRemoved } from '../utils/removedListings'
@@ -14,6 +15,8 @@ export default function Favorites() {
   // Возвращаемся туда, где человек оставил список.
   useKeepPlace('favorites')
   const { t, i18n } = useTranslation()
+  // Удалили или добавили — соседи плавно съезжают (AutoAnimate, ~3 КБ; сам гаснет при «уменьшить движение»)
+  const [listRef] = useAutoAnimate()
   const navigate = useNavigate()
   const { ids } = useFavorites()
   const { user } = useAuth()
@@ -70,7 +73,7 @@ export default function Favorites() {
           <Link className="fav-cta" to="/">{t('actions.to_listings')}</Link>
         </div>
       ) : (
-        <div className="infinite-grid no-pad">
+        <div className="infinite-grid no-pad" ref={listRef}>
           {withoutRemoved(visible).map((l) => <ListingCard key={l.id} listing={l} />)}
         </div>
       )}

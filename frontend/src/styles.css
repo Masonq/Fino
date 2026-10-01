@@ -6541,3 +6541,29 @@ a.s-attrs{ display:block; }
   .feed-tabs-pill, .fp-chip-check{ transition:none; }
 }
 
+/* ===== Блоки: конфетти в балансе, шкала цены, звёзды продавца ===== */
+.balance-card{ position:relative; }
+.balance-confetti{ position:absolute; inset:0; pointer-events:none; overflow:visible; z-index:2; }
+.balance-bit{ position:absolute; left:50%; top:38%; width:7px; height:10px; border-radius:2px; animation:balance-fly 1.15s cubic-bezier(.2,.7,.3,1) forwards; }
+@keyframes balance-fly{ 0%{ transform:translate(0,0) rotate(0); opacity:1 } 100%{ transform:translate(var(--dx), var(--dy)) rotate(280deg); opacity:0 } }
+
+.pg{ position:relative; margin:12px 0 6px; }
+.pg-ph{ height:34px; }
+.pg-track{ display:grid; gap:3px; height:10px; }
+.pg-zone{ border-radius:5px; }
+.pg-zone.is-cheap{ background:#CDEFE0; }
+.pg-zone.is-fair{ background:#E6E8E5; }
+.pg-zone.is-high{ background:#FFDCCF; }
+.pg-marker{ position:absolute; top:-6px; width:4px; height:22px; margin-left:-2px; border-radius:2px; background:var(--ink); box-shadow:0 0 0 2px var(--surface); transition:left .9s cubic-bezier(.25,1.2,.4,1); }
+.pg-labels{ display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); margin-top:8px; font-size:11.5px; line-height:16px; font-weight:700; color:var(--ink-soft); }
+.pg-labels span:nth-child(2){ text-align:center; }
+.pg-labels span:last-child{ text-align:right; }
+
+.stars{ display:inline-flex; gap:1px; margin-right:5px; vertical-align:-2px; }
+.stars svg{ width:13px; height:13px; fill:#E1E4E1; }
+.stars svg.on{ fill:#E0A526; }
+
+@media (prefers-reduced-motion: reduce){ .balance-bit{ animation:none; display:none; } .pg-marker{ transition:none; } }
+/* В окнах оценки цены и огонька текст и шкала — на одной вертикали с заголовком (у .reasons-title отступ 6 px) */
+.reasons-card .price-check-explain, .reasons-card .pg{ margin-left:6px; margin-right:6px; }
+

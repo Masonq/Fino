@@ -1,3 +1,4 @@
+import { useAutoAnimate } from '@formkit/auto-animate/react'
 import { plainTeamText } from '../utils/teamText'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -13,6 +14,8 @@ import { timeAgo } from '../utils/time'
 // пуст, там список и открытый чат — разные экраны.
 export default function ChatList({ activeId, onLoaded, query = '', filter = 'all' }) {
   const { t, i18n } = useTranslation()
+  // Удалили или добавили — соседи плавно съезжают (AutoAnimate, ~3 КБ; сам гаснет при «уменьшить движение»)
+  const [listRef] = useAutoAnimate()
   const { user } = useAuth()
 
   const [items, setItems] = useState([])
@@ -75,7 +78,7 @@ export default function ChatList({ activeId, onLoaded, query = '', filter = 'all
   }
 
   return (
-    <div className="chat-list">
+    <div className="chat-list" ref={listRef}>
       {visible.length === 0 && (
         <p className="empty-hint">{t('chats.nothing_found')}</p>
       )}

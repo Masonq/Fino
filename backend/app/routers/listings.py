@@ -1547,6 +1547,8 @@ def compute_price_check(db, listing, lang: str) -> dict:
         "scope": scope,
         "based_on": len(prices),
         # Отдаём в евро: клиент показывает в валюте объявления сам.
+        # mine_eur — цена самого объявления: по ней клиент ставит метку на шкале «дешевле / обычно / дороже».
+        "mine_eur": round(mine, 2),
         "low_eur": round(low, 2),
         "median_eur": round(mid, 2),
         "high_eur": round(high, 2),
