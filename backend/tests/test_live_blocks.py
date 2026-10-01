@@ -58,3 +58,16 @@ def test_seller_stars_and_smooth_lists():
 def test_new_motion_respects_reduced_motion():
     block = CSS[CSS.index("/* ===== Блоки: конфетти в балансе"):]
     assert re.search(r"@media \(prefers-reduced-motion: reduce\)\{[^}]*\.balance-bit\{[^}]*\}[^}]*\.pg-marker\{", block)
+
+
+def test_flame_sheet_keeps_its_height_while_the_comparison_loads():
+    """
+    Запись экрана владельца: окно огонька открывалось без шкалы и строки «Сравнили с N…» и через ~0,1 с дорастало.
+    Теперь данные просятся уже при касании огонька, а пока их нет — заготовки той же высоты. Замер: высота окна
+    385 на 80 / 400 / 1200 мс и при ответе через 0,7 с, и при мгновенном.
+    """
+    flame = read("components/Flame.jsx")
+    assert "onPointerDown={preload}" in flame and "if (asked.current) return" in flame
+    assert 'className="sk-block pg-ph-bar"' in flame and 'className="sk-block pg-line-ph"' in flame
+    css = read("styles.css")
+    assert ".pg-ph{ display:flex; flex-direction:column; gap:8px; }" in css and ".pg-ph{ height:34px; }" in css

@@ -6647,3 +6647,13 @@ a.s-attrs{ display:block; }
 .s-photos-bars > span{ flex:1; height:2.5px; border-radius:2px; background:rgba(255,255,255,.45); box-shadow:0 0 2px rgba(0,0,0,.22); transition:background .2s ease; }
 .s-photos-bars > span.on{ background:#fff; }
 
+/* Окно огонька, пока данные сравнения в пути: заготовки шкалы и строки «Сравнили с N…» той же высоты (34 и одна
+   строка текста), а не пустота — окно не дорастает, когда данные приходят; настоящие проявляются на их месте. */
+.pg-ph{ display:flex; flex-direction:column; gap:8px; }
+.pg-ph-bar{ display:block; height:10px; border-radius:5px; }
+.pg-ph-labels{ display:flex; justify-content:space-between; height:16px; align-items:center; }
+.pg-ph-labels .sk-block{ display:block; width:52px; height:11px; border-radius:6px; }
+.pg-line-ph{ display:inline-block; width:62%; height:.95em; border-radius:6px; vertical-align:-2px; }
+.pg:not(.pg-ph){ animation:ui-fade-in .25s ease; }
+@media (prefers-reduced-motion: reduce){ .pg:not(.pg-ph){ animation:none; } }
+

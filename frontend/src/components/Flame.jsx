@@ -1,7 +1,7 @@
 import SheetCard from './SheetCard'
 import Presence from './Presence'
 import PriceGauge from './PriceGauge'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -68,16 +68,19 @@ export default function PriceFlame({ listing }) {
   const [check, setCheck] = useState(null)
   const kind = 'below'      // вид метки один: «дешевле похожих на PLONK»
 
-  // Подробности (с чем сравнивали) подгружаем при открытии, а не
-  // для каждой карточки ленты: их нужно только тому, кто нажал.
-  useEffect(() => {
-    if (!open || check) return undefined
-    let alive = true
+  // Подробности (с чем сравнивали) подгружаем не для каждой карточки ленты, а только тому, кто нажал, — но уже в
+  // момент касания огонька, а не после открытия окна: раньше окно открывалось пустым и через ~0,1 с дорастало на
+  // строку «Сравнили с N…» и шкалу (видно на записи экрана). Обычно к открытию данные уже здесь; если нет — окно
+  // держит место заготовками той же высоты.
+  const asked = useRef(false)
+  const preload = useCallback(() => {
+    if (asked.current) return
+    asked.current = true
     api.priceCheck(listing.id, i18n.language)
-      .then((res) => { if (alive) setCheck(res || {}) })
-      .catch(() => { if (alive) setCheck({}) })
-    return () => { alive = false }
-  }, [open, check, listing.id, i18n.language])
+      .then((res) => setCheck(res || {}))
+      .catch(() => setCheck({}))
+  }, [listing.id, i18n.language])
+  useEffect(() => { if (open) preload() }, [open, preload])
 
   useEffect(() => {
     if (!open) return undefined
@@ -92,7 +95,7 @@ export default function PriceFlame({ listing }) {
     <>
       <button
         type="button" className="flame-btn" aria-label={t(`flame.title_${kind}`)}
-        aria-haspopup="dialog" onClick={(e) => { stop(e); setOpen(true) }}
+        aria-haspopup="dialog" onPointerDown={preload} onClick={(e) => { stop(e); setOpen(true) }}
       >
         <FlameSvg id={listing.id} />
       </button>
@@ -109,11 +112,16 @@ export default function PriceFlame({ listing }) {
               {/* Пока числа грузятся — место под шкалу держим, чтобы окно не подрастало */}
               {check
                 ? <PriceGauge mine={check.mine_eur} low={check.low_eur} high={check.high_eur} label={t(`flame.title_${kind}`)} />
-                : <div className="pg pg-ph" aria-hidden="true" />}
+                : (
+                  <div className="pg pg-ph" aria-hidden="true">
+                    <span className="sk-block pg-ph-bar" />
+                    <span className="pg-ph-labels"><span className="sk-block" /><span className="sk-block" /><span className="sk-block" /></span>
+                  </div>
+                )}
               <p className="price-check-explain">{t(`flame.why_${kind}`)}</p>
-              {check?.based_on > 0 && (
-                <p className="price-check-explain">{t('flame.compared', { count: check.based_on })}</p>
-              )}
+              {check
+                ? check.based_on > 0 && <p className="price-check-explain reveal-in">{t('flame.compared', { count: check.based_on })}</p>
+                : <p className="price-check-explain" aria-hidden="true"><span className="sk-block pg-line-ph" /></p>}
               <p className="price-check-explain flame-careful">{t('flame.careful')}</p>
               <Link to={listing.path} className="flame-sheet-link" onClick={() => setOpen(false)}>
                 {t('flame.open')}
