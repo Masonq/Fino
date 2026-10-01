@@ -58,6 +58,7 @@ import { AuthProvider } from './context/AuthContext'
 import { FavoritesProvider } from './context/FavoritesContext'
 import { rememberListPage } from './utils/lastList'
 import Island from './components/Island'
+import ConfirmHost from './components/ConfirmHost'
 import BottomNav from './components/BottomNav'
 import Footer from './components/Footer'
 import TopNav from './components/TopNav'
@@ -481,6 +482,7 @@ export default function App() {
       </main>
       <Footer />
       <Island />
+      <ConfirmHost />
       {!hideNav && <BottomNav />}
     </div>
     </FavoritesProvider>

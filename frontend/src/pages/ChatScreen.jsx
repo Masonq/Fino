@@ -1,3 +1,4 @@
+import { confirmSheet } from '../utils/confirm'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -325,7 +326,7 @@ export default function ChatScreen() {
 
   const toggleBlock = async () => {
     if (!chat) return
-    if (!chat.i_blocked_them && !window.confirm(t('chat.confirm_block'))) return
+    if (!chat.i_blocked_them && !(await confirmSheet({ title: t('chat.confirm_block'), confirm: t('confirm.block'), danger: true }))) return
     setBlockBusy(true)
     try {
       if (chat.i_blocked_them) await api.unblockChatPartner(id)

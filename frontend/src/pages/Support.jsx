@@ -1,3 +1,4 @@
+import { showIsland } from '../utils/island'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api, getToken } from '../api/client'
@@ -39,7 +40,7 @@ export default function Support() {
       })
       setSubject(''); setBody(''); setSent(true)
     } catch (e) {
-      alert(e.status === 429 ? t('support.too_many') : t('support.failed'))
+      showIsland({ text: e.status === 429 ? t('support.too_many') : t('support.failed'), kind: 'warn' })
     } finally { setSending(false) }
   }
 
@@ -51,7 +52,7 @@ export default function Support() {
       setReply((prev) => ({ ...prev, [id]: '' }))
       const res = await api.supportMine()
       setMine(res.items || [])
-    } catch { alert(t('support.failed')) }
+    } catch { showIsland({ text: t('support.failed'), kind: 'warn' }) }
   }
 
   return (

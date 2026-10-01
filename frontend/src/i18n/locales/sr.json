@@ -1352,5 +1352,12 @@
     "never": "Nikad menjano — podrazumevano isključeno",
     "no_access": "Odeljak je dostupan samo vlasniku",
     "yes_on": "Uključi"
+  },
+  "confirm": {
+    "yes": "Da",
+    "cancel": "Otkaži",
+    "delete": "Obriši",
+    "block": "Blokiraj",
+    "clear": "Očisti"
   }
 }

@@ -1,3 +1,4 @@
+import { confirmSheet } from '../utils/confirm'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -70,8 +71,8 @@ export default function Notifications() {
     api.deleteNotification(n.id).catch(() => {})
   }
 
-  const clearAll = () => {
-    if (!window.confirm(t('notif.clear_all_confirm'))) return
+  const clearAll = async () => {
+    if (!(await confirmSheet({ title: t('notif.clear_all_confirm'), confirm: t('confirm.clear'), danger: true }))) return
     setOpenId(null)
     setItems([])
     setTotal(0)

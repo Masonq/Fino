@@ -1,3 +1,4 @@
+import { showIsland } from '../utils/island'
 import { useEffect, useState } from 'react'
 import Avatar from '../components/Avatar'
 import { useTranslation } from 'react-i18next'
@@ -67,7 +68,7 @@ export default function AdminUser() {
       await api.adminSetRole(id, role)
       setCard((c) => ({ ...c, role }))
     } catch (e) {
-      alert(e.status === 400 ? t('admin.err_self') : t('admin.err_role'))
+      showIsland({ text: e.status === 400 ? t('admin.err_self') : t('admin.err_role'), kind: 'warn' })
     } finally { setBusy(false) }
   }
 
@@ -78,8 +79,8 @@ export default function AdminUser() {
       const res = await api.adminBlock(id, reason.trim())
       setCard((c) => ({ ...c, is_blocked: true, block_reason: reason.trim() }))
       setBlocking(false); setReason('')
-      if (res.hidden_listings) alert(t('admin.hidden', { count: res.hidden_listings }))
-    } catch { alert(t('admin.err_block')) }
+      if (res.hidden_listings) showIsland({ text: t('admin.hidden', { count: res.hidden_listings }), kind: 'ok' })
+    } catch { showIsland({ text: t('admin.err_block'), kind: 'warn' }) }
     finally { setBusy(false) }
   }
 
@@ -88,7 +89,7 @@ export default function AdminUser() {
     try {
       const res = await api.adminResetName(id)
       setCard((c) => ({ ...c, display_name: res.display_name, must_rename: true }))
-    } catch { alert(t('auth.err_generic')) }
+    } catch { showIsland({ text: t('auth.err_generic'), kind: 'warn' }) }
     finally { setBusy(false) }
   }
 
@@ -97,7 +98,7 @@ export default function AdminUser() {
     try {
       await api.adminDeleteUser(id)
       navigate('/admin/users', { replace: true })
-    } catch { alert(t('admin.err_delete')) } finally { setBusy(false) }
+    } catch { showIsland({ text: t('admin.err_delete'), kind: 'warn' }) } finally { setBusy(false) }
   }
 
   const unblock = async () => {
@@ -105,7 +106,7 @@ export default function AdminUser() {
     try {
       await api.adminUnblock(id)
       setCard((c) => ({ ...c, is_blocked: false, block_reason: null }))
-    } catch { alert(t('admin.err_unblock')) }
+    } catch { showIsland({ text: t('admin.err_unblock'), kind: 'warn' }) }
     finally { setBusy(false) }
   }
 

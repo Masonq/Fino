@@ -1,3 +1,4 @@
+import { showIsland } from '../utils/island'
 import { useCallback, useEffect, useState } from 'react'
 import { keepValue, readValue, useKeepPlace } from '../utils/keepPlace'
 import { useTranslation } from 'react-i18next'
@@ -72,7 +73,7 @@ export default function AdminSupport() {
       setDraft('')
       setCard(await api.supportTicket(id))
       load()
-    } catch { alert(t('support.failed')) }
+    } catch { showIsland({ text: t('support.failed'), kind: 'warn' }) }
     finally { setBusy(false) }
   }
 
@@ -82,7 +83,7 @@ export default function AdminSupport() {
       await api.supportClose(id)
       setOpenId(null); setCard(null)
       load()
-    } catch { alert(t('support.failed')) }
+    } catch { showIsland({ text: t('support.failed'), kind: 'warn' }) }
     finally { setBusy(false) }
   }
 

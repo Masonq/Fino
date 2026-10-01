@@ -1,3 +1,4 @@
+import { showIsland } from '../utils/island'
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -44,7 +45,7 @@ export default function AdminVolunteers() {
       setNote(''); setOpenId(null); load()
     } catch (e) {
       // Сервер не даёт принять человека без подтверждённой конфиденциальности
-      alert(e.status === 409 && e.code === 'confidentiality_missing' ? t('volunteer.no_consent_admin') : t('support.failed'))
+      showIsland({ text: e.status === 409 && e.code === 'confidentiality_missing' ? t('volunteer.no_consent_admin') : t('support.failed'), kind: 'warn' })
     } finally { setBusy(false) }
   }
 

@@ -1,3 +1,4 @@
+import { showIsland } from '../utils/island'
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -56,7 +57,7 @@ export default function AdminTeamChats() {
       setDraft('')
       setThread(await api.teamChat(id))
       load()
-    } catch { alert(t('support.failed')) }
+    } catch { showIsland({ text: t('support.failed'), kind: 'warn' }) }
     finally { setBusy(false) }
   }
 

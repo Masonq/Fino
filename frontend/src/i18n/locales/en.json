@@ -1313,5 +1313,12 @@
     "never": "Never changed — off by default",
     "no_access": "This section is for the owner only",
     "yes_on": "Turn on"
+  },
+  "confirm": {
+    "yes": "Yes",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "block": "Block",
+    "clear": "Clear"
   }
 }

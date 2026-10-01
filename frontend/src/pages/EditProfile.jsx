@@ -1,3 +1,4 @@
+import { showIsland } from '../utils/island'
 import { useEffect, useState } from 'react'
 import Avatar from '../components/Avatar'
 import { useTranslation } from 'react-i18next'
@@ -86,11 +87,11 @@ export default function EditProfile() {
       setDone(true)
       setTimeout(() => navigate('/profile'), 700)
     } catch (e) {
-      alert(e.code === 'verify_identity_first'
+      showIsland({ text: e.code === 'verify_identity_first'
         ? t('edit_profile.verify_first')
         : e.code === 'phone_already_used'
         ? t('edit_profile.phone_taken')
-        : t('edit_profile.failed'))
+        : t('edit_profile.failed'), kind: 'warn' })
     } finally { setSaving(false) }
   }
 
@@ -173,7 +174,7 @@ export default function EditProfile() {
       const { url } = await api.uploadPhoto(file)
       setAvatar(url)
     } catch {
-      alert(t('edit_profile.photo_failed'))
+      showIsland({ text: t('edit_profile.photo_failed'), kind: 'warn' })
     }
   }
 

@@ -1,3 +1,5 @@
+import { showIsland } from '../utils/island'
+import { confirmSheet } from '../utils/confirm'
 import { intlLocale } from '../utils/time'
 import { useEffect, useState } from 'react'
 import { keepValue, readValue, useKeepPlace } from '../utils/keepPlace'
@@ -126,14 +128,14 @@ export default function MyListings() {
   }
 
   const remove = async (id) => {
-    if (!window.confirm(t('my.confirm_delete'))) return
+    if (!(await confirmSheet({ title: t('my.confirm_delete'), confirm: t('confirm.delete'), danger: true }))) return
     setBusyId(id)
     setPromoteFor((prev) => (prev === id ? null : prev))
     try {
       await api.deleteListing(id)
       load()
     } catch (e) {
-      alert(e.code === 'listing_has_history' ? t('my.delete_has_history') : t('auth.err_generic'))
+      showIsland({ text: e.code === 'listing_has_history' ? t('my.delete_has_history') : t('auth.err_generic'), kind: 'warn' })
     }
     finally { setBusyId(null) }
   }
