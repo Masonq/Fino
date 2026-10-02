@@ -51,7 +51,11 @@ jobs:
       # Только arm64 — это все современные телефоны. Без x86 и x86_64 (эмуляторы) и 32-битного armeabi-v7a APK
       # был 103 МБ и собирался 30 минут.
       - name: Сборка APK (JS внутри, подпись отладочным ключом — для своего телефона)
-        run: set -o pipefail; cd android && ./gradlew assembleRelease --no-daemon --stacktrace -PreactNativeArchitectures=arm64-v8a 2>&1 | tee ../../build-android.log
+        run: |
+          # Если хранилище зависимостей разово не ответило (так было с kotlin-stdlib) — вторая попытка, а не падение
+          set -o pipefail; cd android
+          ./gradlew assembleRelease --no-daemon --stacktrace -PreactNativeArchitectures=arm64-v8a 2>&1 | tee ../../build-android.log \
+            || { sleep 20; ./gradlew assembleRelease --no-daemon --stacktrace -PreactNativeArchitectures=arm64-v8a 2>&1 | tee -a ../../build-android.log; }
       - name: Лог сборки — в выпуск native-build-log (если упало)
         if: failure()
         uses: softprops/action-gh-release@v2
