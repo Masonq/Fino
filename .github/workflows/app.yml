@@ -1,0 +1,96 @@
+# Сборка приложения PLONK для iOS и Android — пока для владельца (ставится через SideStore).
+# Запуск: вручную (Actions → «Приложение iOS и Android» → Run workflow) или сам при правках проекта приложения.
+# Результат: выпуск «app-latest» с файлами plonk.ipa (открыть в SideStore) и plonk.apk (поставить на Android).
+name: Приложение iOS и Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/capacitor.config.json'
+      - 'frontend/android/**'
+      - 'frontend/ios/**'
+      - '.github/workflows/app.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: app-build
+  cancel-in-progress: true
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci
+      - run: npx vite build
+      - run: npx cap sync android
+      - name: Сборка APK
+        run: chmod +x android/gradlew && cd android && ./gradlew assembleDebug --no-daemon
+      - run: cp android/app/build/outputs/apk/debug/app-debug.apk ../plonk.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: plonk.apk
+
+  ios:
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npx vite build
+      - run: npx cap sync ios
+      - name: Сборка без подписи (подписывает SideStore твоим Apple ID)
+        run: >
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release
+          -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build
+          CURRENT_PROJECT_VERSION=${{ github.run_number }}
+          CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+      - name: Упаковка в IPA
+        run: mkdir -p ../ipa/Payload && cp -R build/Build/Products/Release-iphoneos/App.app ../ipa/Payload/ && cd ../ipa && zip -qry ../plonk.ipa Payload
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios
+          path: plonk.ipa
+
+  release:
+    needs: [android, ios]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: app-latest
+          name: PLONK — тестовая сборка приложения
+          prerelease: true
+          make_latest: false
+          body: "Сборка №${{ github.run_number }} (${{ github.sha }}). iPhone: открыть plonk.ipa в SideStore. Android: установить plonk.apk."
+          files: |
+            out/plonk.apk
+            out/plonk.ipa
