@@ -1,5 +1,6 @@
 # Нативное приложение PLONK (React Native, Expo) — пока для владельца.
 # Номер версии растёт с каждой сборкой (1.0.N) — по нему SideStore видит обновление в «источнике» plonk.rs.
+# Пишется прямо в app.json перед prebuild: Expo берёт номер оттуда, параметры Xcode его не меняют.
 # Сам запускается при нативных правках в native/; вручную — Actions → «Нативное приложение» → Run workflow.
 # Результат: выпуск native-latest с plonk-native.ipa (открыть в SideStore) и plonk-native.apk (поставить на Android).
 name: Нативное приложение
@@ -48,6 +49,8 @@ jobs:
           distribution: temurin
           java-version: '17'
       - run: npm ci
+      - name: Номер версии 1.0.N (по нему SideStore видит обновление)
+        run: node -e "const f='app.json',a=require('./'+f),n=process.env.GITHUB_RUN_NUMBER;a.expo.version='1.0.'+n;a.expo.ios=Object.assign({},a.expo.ios,{buildNumber:n});a.expo.android=Object.assign({},a.expo.android,{versionCode:Number(n)});require('fs').writeFileSync(f,JSON.stringify(a,null,2))"
       - name: Нативный проект Android
         run: set -o pipefail; npx expo prebuild --platform android --no-install 2>&1 | tee ../build-android-prebuild.log
       # Только arm64 — это все современные телефоны. Без x86 и x86_64 (эмуляторы) и 32-битного armeabi-v7a APK
@@ -99,6 +102,8 @@ jobs:
           cache: npm
           cache-dependency-path: native/package-lock.json
       - run: npm ci
+      - name: Номер версии 1.0.N (по нему SideStore видит обновление)
+        run: node -e "const f='app.json',a=require('./'+f),n=process.env.GITHUB_RUN_NUMBER;a.expo.version='1.0.'+n;a.expo.ios=Object.assign({},a.expo.ios,{buildNumber:n});a.expo.android=Object.assign({},a.expo.android,{versionCode:Number(n)});require('fs').writeFileSync(f,JSON.stringify(a,null,2))"
       - name: Нативный проект iOS
         run: set -o pipefail; npx expo prebuild --platform ios 2>&1 | tee ../build-ios-prebuild.log
       - name: Сборка без подписи (подписывает SideStore твоим Apple ID)
@@ -106,7 +111,6 @@ jobs:
         run: >
           set -o pipefail; xcodebuild -workspace ios/PLONK.xcworkspace -scheme PLONK -configuration Release
           -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build
-          MARKETING_VERSION=1.0.${{ github.run_number }} CURRENT_PROJECT_VERSION=${{ github.run_number }}
           CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build 2>&1 | tee ../build-ios.log > /dev/null
       - name: Лог сборки — в выпуск native-build-log (если упало)
         if: failure() || cancelled()
