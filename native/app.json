@@ -9,14 +9,14 @@
     "userInterfaceStyle": "light",
     "backgroundColor": "#FAFAF9",
     "ios": {
-      "bundleIdentifier": "rs.plonk.native",
+      "bundleIdentifier": "rs.plonk.mobile",
       "supportsTablet": false,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "package": "rs.plonk.native",
+      "package": "rs.plonk.mobile",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FAFAF9"
