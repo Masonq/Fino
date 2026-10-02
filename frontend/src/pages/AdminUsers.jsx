@@ -1,3 +1,4 @@
+import SlidePill from '../components/SlidePill'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { keepValue, readValue, useKeepPlace } from '../utils/keepPlace'
 import Avatar from '../components/Avatar'
@@ -160,6 +161,8 @@ export default function AdminUsers() {
           переключает отбор, но места занимает впятеро меньше. */}
       <div className="admin-bar">
         <div className="admin-chips admin-summary">
+        <div className="pill-track pill-row">
+          <SlidePill />
           {FILTERS.filter((f) => f.stat).map((f) => (
             <button
               key={f.key}
@@ -175,6 +178,7 @@ export default function AdminUsers() {
             </button>
           ))}
         </div>
+      </div>
 
         <div className="admin-toolbar">
           <div className="search-field admin-bar-search">

@@ -1,3 +1,4 @@
+import SlidePill from '../components/SlidePill'
 import { showIsland } from '../utils/island'
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -63,6 +64,8 @@ export default function AdminVolunteers() {
       <PageHeader title={t('volunteer.queue')} />
       <div className="admin-bar">
         <div className="admin-chips">
+        <div className="pill-track pill-row">
+          <SlidePill />
           {TABS.map((key) => (
             <button key={key} className={`chip ${tab === key ? 'chip-active' : ''}`} onClick={() => setTab(key)}>
               {t(`volunteer.status.${key}`)}
@@ -70,6 +73,7 @@ export default function AdminVolunteers() {
             </button>
           ))}
         </div>
+      </div>
       </div>
       <div className="admin-list">
         {!loaded && <AdminRowSkeletons count={4} />}

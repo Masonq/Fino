@@ -1,3 +1,4 @@
+import SlidePill from '../components/SlidePill'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { cityLabel } from '../data/cities'
 import { useTranslation } from 'react-i18next'
@@ -618,7 +619,8 @@ export default function CategoryLanding() {
       {/* Первый вопрос делит раздел надвое: без ответа на него
           остальное бессмысленно. */}
       {landing?.deal && (
-        <div className="cat-modes landing-deal">
+        <div className="cat-modes landing-deal pill-row">
+          <SlidePill />
           {landing.deal.options.map((opt) => (
             <button
               key={opt.value}

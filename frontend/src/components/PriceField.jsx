@@ -1,3 +1,5 @@
+import SlidePill from '../components/SlidePill'
+
 /**
  * Цена и валюта одним полем.
  *
@@ -25,7 +27,8 @@ export default function PriceField({ label, price, currency, onPrice, onCurrency
           value={price}
           onChange={(e) => onPrice(e.target.value)}
         />
-        <div className="price-currency" role="radiogroup" aria-label={label}>
+        <div className="price-currency pill-row" role="radiogroup" aria-label={label}>
+          <SlidePill />
           {CODES.map((code) => (
             <button
               key={code}

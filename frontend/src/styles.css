@@ -6666,3 +6666,29 @@ a.s-attrs{ display:block; }
 .s-photo-box{ position:relative; }
 .s-photo-overlay{ position:absolute; inset:0; z-index:2; pointer-events:none; transform:translateZ(0); }
 
+/* ===== Переезжающая плашка (components/SlidePill.jsx) — как у «Все / Новое / Даром», во всех рядах выбора =====
+   Плашка лежит под вариантами и ездит к активному с лёгкой пружиной; у самого активного свой фон снимается.
+   Сегментные ряды (тип сделки, валюта, язык, колонки) — подложка у самого ряда. Ряды чипов («Мои объявления»,
+   «Сообщения», статистика, админка) собраны в полосу с общей подложкой (.pill-track): иначе плашка пряталась бы
+   за фоном соседних чипов. */
+.pill-row{ position:relative; }
+.pill-row > .slide-pill{ position:absolute; left:0; top:0; z-index:0; pointer-events:none; opacity:0;
+  transition:transform .38s cubic-bezier(.3,1.25,.5,1), width .38s cubic-bezier(.3,1.25,.5,1), height .3s ease, opacity .15s ease; }
+.pill-row > .slide-pill.no-anim{ transition:none; }
+.pill-row > :not(.slide-pill){ position:relative; z-index:1; transition:color .22s ease; }
+.pill-row > .on, .pill-row > .active, .pill-row > .chip-active{ background:transparent !important; box-shadow:none !important; border-color:transparent !important; }
+
+.cat-modes.pill-row > .slide-pill{ background:var(--surface); border-radius:11px; box-shadow:0 1px 3px rgba(16,24,40,.08); }
+.price-currency.pill-row > .slide-pill, .tg-currency-switch.pill-row > .slide-pill{ background:var(--surface); border-radius:7px; box-shadow:0 1px 3px rgba(16,24,40,.12); }
+.lang-switch.pill-row > .slide-pill{ background:var(--surface); border-radius:8px; }
+.lang-switch.light.pill-row > .slide-pill{ box-shadow:0 1px 3px var(--border-strong); }
+.col-toggle.pill-row > .slide-pill{ background:var(--primary); border-radius:8px; }
+
+.pill-track{ display:inline-flex; flex-wrap:nowrap; align-items:center; gap:2px; padding:3px; border-radius:13px; background:var(--surface-sunken); flex-shrink:0; }
+.pill-track > :not(.slide-pill){ background:transparent !important; border-color:transparent !important; }
+.pill-track > .slide-pill{ background:var(--primary); border-radius:10px; }
+.my-tabs .pill-track > .slide-pill{ border-radius:11px; }
+.chats-chips .pill-track > .slide-pill, .admin-filters .pill-track > .slide-pill{ border-radius:999px; }
+.pill-track > .admin-chips-sep{ background:var(--border-strong) !important; }
+@media (prefers-reduced-motion: reduce){ .pill-row > .slide-pill, .pill-row > :not(.slide-pill){ transition:none; } }
+

@@ -1,3 +1,4 @@
+import SlidePill from '../components/SlidePill'
 import { intlLocale } from '../utils/time'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -69,6 +70,8 @@ export default function AdminStats() {
       {/* Тот же ряд отборов, что на остальных экранах админки. */}
       <div className="admin-bar">
         <div className="admin-chips">
+        <div className="pill-track pill-row">
+          <SlidePill />
           {PERIODS.map((d) => (
             <button
               key={d}
@@ -79,6 +82,7 @@ export default function AdminStats() {
             </button>
           ))}
         </div>
+      </div>
       </div>
 
       {!loaded && <AdminStatsSkeleton />}

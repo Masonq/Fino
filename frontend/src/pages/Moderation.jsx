@@ -1,3 +1,4 @@
+import SlidePill from '../components/SlidePill'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { keepValue, readValue, useKeepPlace } from '../utils/keepPlace'
 import { useTranslation } from 'react-i18next'
@@ -340,6 +341,8 @@ export default function Moderation() {
           вид — не приходится заново искать, где переключать. */}
       <div className="admin-bar">
         <div className="admin-chips">
+        <div className="pill-track pill-row">
+          <SlidePill />
           <button className={tab === 'listings' ? 'chip chip-active' : 'chip'} onClick={() => setTab('listings')}>
             {t('mod.tab_listings')}
             <b>{total > 0 ? total : ''}</b>
@@ -349,6 +352,7 @@ export default function Moderation() {
             <b>{reportsTotal > 0 ? reportsTotal : ''}</b>
           </button>
         </div>
+      </div>
       </div>
 
       {tab === 'listings' && !day && (

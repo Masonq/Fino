@@ -1,3 +1,4 @@
+import SlidePill from '../components/SlidePill'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate } from 'react-router-dom'
@@ -65,6 +66,8 @@ export default function ListingDashboard() {
       {title && <div className="ldash-listing-title">{title}</div>}
 
       <div className="admin-filters">
+        <div className="pill-track pill-row">
+          <SlidePill />
         {PERIODS.map((p) => (
           <button
             key={p}
@@ -74,6 +77,7 @@ export default function ListingDashboard() {
             {t('stats.days', { count: p })}
           </button>
         ))}
+        </div>
       </div>
 
       {denied ? (

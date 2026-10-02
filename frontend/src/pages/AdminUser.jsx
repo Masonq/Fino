@@ -1,3 +1,4 @@
+import SlidePill from '../components/SlidePill'
 import { showIsland } from '../utils/island'
 import { useEffect, useState } from 'react'
 import Avatar from '../components/Avatar'
@@ -238,11 +239,14 @@ export default function AdminUser() {
       )}
 
       <div className="my-tabs">
+        <div className="pill-track pill-row">
+          <SlidePill />
         {TABS.map((k) => (
           <button key={k} className={tab === k ? 'my-tab active' : 'my-tab'} onClick={() => setTab(k)}>
             {t(`admin.tab_${k}`)}
           </button>
         ))}
+        </div>
       </div>
 
       {tab === 'listings' && (

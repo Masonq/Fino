@@ -1,3 +1,4 @@
+import SlidePill from '../components/SlidePill'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
 import { showIsland } from '../utils/island'
 import { confirmSheet } from '../utils/confirm'
@@ -173,6 +174,8 @@ export default function MyListings() {
       <PageHeader title={t('my.title')} />
 
       <div className="my-tabs">
+        <div className="pill-track pill-row">
+          <SlidePill />
         {TABS.map((tb) => (
           <button
             key={tb.key}
@@ -183,6 +186,7 @@ export default function MyListings() {
             <span className="my-tab-count">{counts[tb.key] > 0 ? counts[tb.key] : ''}</span>
           </button>
         ))}
+        </div>
       </div>
 
       {!loaded ? (

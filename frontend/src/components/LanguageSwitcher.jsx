@@ -1,3 +1,4 @@
+import SlidePill from '../components/SlidePill'
 import { useTranslation } from 'react-i18next'
 import { switchLanguage } from '../i18n'
 
@@ -36,7 +37,8 @@ export default function LanguageSwitcher({ variant }) {
   }
 
   return (
-    <div className={variant === 'light' ? 'lang-switch light' : 'lang-switch'}>
+    <div className={variant === 'light' ? 'lang-switch light pill-row' : 'lang-switch pill-row'}>
+      <SlidePill />
       {LANGS.map((l) => (
         <button
           key={l.code}

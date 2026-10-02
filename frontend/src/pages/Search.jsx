@@ -1,3 +1,4 @@
+import SlidePill from '../components/SlidePill'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { withoutRemoved } from '../utils/removedListings'
 import { useTranslation } from 'react-i18next'
@@ -552,7 +553,8 @@ export default function Search() {
               {subscribed ? t('saved.done') : t('saved.subscribe')}
             </button>
           )}
-          <div className="col-toggle">
+          <div className="col-toggle pill-row">
+          <SlidePill />
             <button className={cols === 2 ? 'col-btn active' : 'col-btn'} onClick={() => setCols(2)} aria-label={t('misc.cols_2')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="3" y="4" width="7" height="16" rx="1.5" /><rect x="14" y="4" width="7" height="16" rx="1.5" /></svg>
             </button>

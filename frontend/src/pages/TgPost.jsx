@@ -1,3 +1,4 @@
+import SlidePill from '../components/SlidePill'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -403,7 +404,8 @@ export default function TgPost() {
               {/* Динары или евро: жильё и машины в Сербии считают в
                   евро, и перевод в динары по дороге даёт цену, которой
                   никто не верит. */}
-              <div className="tg-currency-switch">
+              <div className="tg-currency-switch pill-row">
+          <SlidePill />
                 {['RSD', 'EUR'].map((code) => (
                   <button
                     key={code}

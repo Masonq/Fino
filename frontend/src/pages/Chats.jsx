@@ -1,3 +1,4 @@
+import SlidePill from '../components/SlidePill'
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -75,6 +76,8 @@ export default function Chats() {
           )}
         </div>
         <div className="field-chips chats-chips" ref={chipsRef}>
+        <div className="pill-track pill-row">
+          <SlidePill />
           {['all', 'unread', 'buying', 'selling'].map((key) => (
             <button
               key={key}
@@ -85,6 +88,7 @@ export default function Chats() {
             </button>
           ))}
         </div>
+      </div>
       </div>
       )}
 

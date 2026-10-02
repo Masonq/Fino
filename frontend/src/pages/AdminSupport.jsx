@@ -1,3 +1,4 @@
+import SlidePill from '../components/SlidePill'
 import { showIsland } from '../utils/island'
 import { useCallback, useEffect, useState } from 'react'
 import { keepValue, readValue, useKeepPlace } from '../utils/keepPlace'
@@ -104,6 +105,8 @@ export default function AdminSupport() {
           строка чипов, число рядом с названием, а не через точку. */}
       <div className="admin-bar">
         <div className="admin-chips">
+        <div className="pill-track pill-row">
+          <SlidePill />
           {TABS.map((item) => (
             <button
               key={item.key}
@@ -115,6 +118,7 @@ export default function AdminSupport() {
             </button>
           ))}
         </div>
+      </div>
       </div>
       <div className="admin-list">
         {!loaded && <AdminRowSkeletons count={6} />}

@@ -1,3 +1,4 @@
+import SlidePill from './SlidePill'
 import { useTranslation } from 'react-i18next'
 
 /**
@@ -61,7 +62,8 @@ export default function CategoryFields({ slug, value, onChange }) {
       {/* Первый вопрос — самый крупный: он делит раздел надвое, и без
           ответа на него всё остальное не имеет смысла. */}
       {modes && (
-        <div className="cat-modes">
+        <div className="cat-modes pill-row">
+          <SlidePill />
           {modes.map((mode) => (
             <button
               key={mode}
