@@ -42,8 +42,10 @@ jobs:
       - run: npm ci
       - name: Нативный проект Android
         run: set -o pipefail; npx expo prebuild --platform android --no-install 2>&1 | tee ../build-android-prebuild.log
+      # Только arm64 — это все современные телефоны. Без x86 и x86_64 (эмуляторы) и 32-битного armeabi-v7a APK
+      # был 103 МБ и собирался 30 минут.
       - name: Сборка APK (JS внутри, подпись отладочным ключом — для своего телефона)
-        run: set -o pipefail; cd android && ./gradlew assembleRelease --no-daemon --stacktrace 2>&1 | tee ../../build-android.log
+        run: set -o pipefail; cd android && ./gradlew assembleRelease --no-daemon --stacktrace -PreactNativeArchitectures=arm64-v8a 2>&1 | tee ../../build-android.log
       - name: Лог сборки — в выпуск native-build-log (если упало)
         if: failure()
         uses: softprops/action-gh-release@v2
