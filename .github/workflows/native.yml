@@ -41,9 +41,18 @@ jobs:
           java-version: '17'
       - run: npm ci
       - name: Нативный проект Android
-        run: npx expo prebuild --platform android --no-install
+        run: set -o pipefail; npx expo prebuild --platform android --no-install 2>&1 | tee ../build-android-prebuild.log
       - name: Сборка APK (JS внутри, подпись отладочным ключом — для своего телефона)
-        run: cd android && ./gradlew assembleRelease --no-daemon
+        run: set -o pipefail; cd android && ./gradlew assembleRelease --no-daemon --stacktrace 2>&1 | tee ../../build-android.log
+      - name: Лог сборки — в выпуск native-build-log (если упало)
+        if: failure()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: native-build-log
+          name: Лог упавшей сборки нативного приложения
+          prerelease: true
+          make_latest: false
+          files: build-android*.log
       - run: cp android/app/build/outputs/apk/release/app-release.apk ../plonk-native.apk
       - uses: actions/upload-artifact@v4
         with:
@@ -67,13 +76,22 @@ jobs:
           cache-dependency-path: native/package-lock.json
       - run: npm ci
       - name: Нативный проект iOS
-        run: npx expo prebuild --platform ios
+        run: set -o pipefail; npx expo prebuild --platform ios 2>&1 | tee ../build-ios-prebuild.log
       - name: Сборка без подписи (подписывает SideStore твоим Apple ID)
         run: >
-          xcodebuild -workspace ios/PLONK.xcworkspace -scheme PLONK -configuration Release
+          set -o pipefail; xcodebuild -workspace ios/PLONK.xcworkspace -scheme PLONK -configuration Release
           -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build
           CURRENT_PROJECT_VERSION=${{ github.run_number }}
-          CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+          CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build 2>&1 | tee ../build-ios.log > /dev/null
+      - name: Лог сборки — в выпуск native-build-log (если упало)
+        if: failure()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: native-build-log
+          name: Лог упавшей сборки нативного приложения
+          prerelease: true
+          make_latest: false
+          files: build-ios*.log
       - name: Упаковка в IPA
         run: mkdir -p ../ipa/Payload && cp -R build/Build/Products/Release-iphoneos/PLONK.app ../ipa/Payload/ && cd ../ipa && zip -qry ../plonk-native.ipa Payload
       - uses: actions/upload-artifact@v4
