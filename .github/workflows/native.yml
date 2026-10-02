@@ -55,10 +55,12 @@ jobs:
       - name: Сборка APK (JS внутри, подпись отладочным ключом — для своего телефона)
         timeout-minutes: 30
         run: |
-          # Если хранилище зависимостей разово не ответило (так было с kotlin-stdlib) — вторая попытка, а не падение
+          # Если хранилище зависимостей разово не ответило (так было с kotlin-stdlib) — вторая попытка, а не падение.
+          # Без служебной проверки lintVitalAnalyzeRelease и с памятью побольше: на ней Gradle падал с
+          # «OutOfMemoryError: Metaspace» (и, видимо, однажды завис на 6 часов). Для своей сборки проверка не нужна.
           set -o pipefail; cd android
-          ./gradlew assembleRelease --no-daemon --stacktrace -PreactNativeArchitectures=arm64-v8a 2>&1 | tee ../../build-android.log \
-            || { sleep 20; ./gradlew assembleRelease --no-daemon --stacktrace -PreactNativeArchitectures=arm64-v8a 2>&1 | tee -a ../../build-android.log; }
+          ./gradlew assembleRelease --no-daemon --stacktrace -PreactNativeArchitectures=arm64-v8a -x lintVitalAnalyzeRelease -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=1g" 2>&1 | tee ../../build-android.log \
+            || { sleep 20; ./gradlew assembleRelease --no-daemon --stacktrace -PreactNativeArchitectures=arm64-v8a -x lintVitalAnalyzeRelease -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=1g" 2>&1 | tee -a ../../build-android.log; }
       - name: Лог сборки — в выпуск native-build-log (если упало)
         if: failure() || cancelled()
         uses: softprops/action-gh-release@v2
