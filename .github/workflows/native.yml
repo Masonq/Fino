@@ -31,6 +31,8 @@ env:
 jobs:
   android:
     runs-on: ubuntu-latest
+    # Однажды шаг Gradle висел 6 часов до таймаута GitHub — жёсткий предел, чтобы не жечь минуты
+    timeout-minutes: 40
     defaults:
       run:
         working-directory: native
@@ -51,13 +53,14 @@ jobs:
       # Только arm64 — это все современные телефоны. Без x86 и x86_64 (эмуляторы) и 32-битного armeabi-v7a APK
       # был 103 МБ и собирался 30 минут.
       - name: Сборка APK (JS внутри, подпись отладочным ключом — для своего телефона)
+        timeout-minutes: 30
         run: |
           # Если хранилище зависимостей разово не ответило (так было с kotlin-stdlib) — вторая попытка, а не падение
           set -o pipefail; cd android
           ./gradlew assembleRelease --no-daemon --stacktrace -PreactNativeArchitectures=arm64-v8a 2>&1 | tee ../../build-android.log \
             || { sleep 20; ./gradlew assembleRelease --no-daemon --stacktrace -PreactNativeArchitectures=arm64-v8a 2>&1 | tee -a ../../build-android.log; }
       - name: Лог сборки — в выпуск native-build-log (если упало)
-        if: failure()
+        if: failure() || cancelled()
         uses: softprops/action-gh-release@v2
         with:
           tag_name: native-build-log
@@ -66,14 +69,20 @@ jobs:
           make_latest: false
           files: build-android*.log
       - run: cp android/app/build/outputs/apk/release/app-release.apk ../plonk-native.apk
-      - uses: actions/upload-artifact@v4
+      - name: В выпуск native-latest (сам, не дожидаясь другой платформы)
+        uses: softprops/action-gh-release@v2
         with:
-          name: android
-          path: plonk-native.apk
+          tag_name: native-latest
+          name: PLONK — нативное приложение (тестовая сборка)
+          prerelease: true
+          make_latest: false
+          body: "iPhone: plonk-native.ipa — в SideStore (источник https://plonk.rs/api/app-updates/sidestore.json). Android: plonk-native.apk."
+          files: plonk-native.apk
 
   ios:
     # Expo SDK 56+ требует Xcode 26.4 или новее (на macos-15 был 26.3 — модули Expo не компилировались)
     runs-on: macos-26
+    timeout-minutes: 35
     defaults:
       run:
         working-directory: native
@@ -91,13 +100,14 @@ jobs:
       - name: Нативный проект iOS
         run: set -o pipefail; npx expo prebuild --platform ios 2>&1 | tee ../build-ios-prebuild.log
       - name: Сборка без подписи (подписывает SideStore твоим Apple ID)
+        timeout-minutes: 25
         run: >
           set -o pipefail; xcodebuild -workspace ios/PLONK.xcworkspace -scheme PLONK -configuration Release
           -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build
           MARKETING_VERSION=1.0.${{ github.run_number }} CURRENT_PROJECT_VERSION=${{ github.run_number }}
           CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build 2>&1 | tee ../build-ios.log > /dev/null
       - name: Лог сборки — в выпуск native-build-log (если упало)
-        if: failure()
+        if: failure() || cancelled()
         uses: softprops/action-gh-release@v2
         with:
           tag_name: native-build-log
@@ -107,26 +117,13 @@ jobs:
           files: build-ios*.log
       - name: Упаковка в IPA
         run: mkdir -p ../ipa/Payload && cp -R build/Build/Products/Release-iphoneos/PLONK.app ../ipa/Payload/ && cd ../ipa && zip -qry ../plonk-native.ipa Payload
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ios
-          path: plonk-native.ipa
-
-  release:
-    needs: [android, ios]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          path: out
-          merge-multiple: true
-      - uses: softprops/action-gh-release@v2
+      - name: В выпуск native-latest (сам, не дожидаясь другой платформы)
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: native-latest
           name: PLONK — нативное приложение (тестовая сборка)
           prerelease: true
           make_latest: false
-          body: "Сборка №${{ github.run_number }} (${{ github.sha }}). iPhone: открыть plonk-native.ipa в SideStore. Android: установить plonk-native.apk."
-          files: |
-            out/plonk-native.apk
-            out/plonk-native.ipa
+          body: "iPhone: plonk-native.ipa — в SideStore (источник https://plonk.rs/api/app-updates/sidestore.json). Android: plonk-native.apk."
+          files: plonk-native.ipa
+
