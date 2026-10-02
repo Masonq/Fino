@@ -85,3 +85,33 @@ export function textOf(listing: Listing): { title: string; description: string }
   }
   return { title: chosen?.title || listing.title || '', description: chosen?.description || '' }
 }
+
+// ---------- вход по коду из почты ----------
+
+export class ApiError extends Error {
+  constructor(public status: number, message: string) { super(message) }
+}
+
+async function post<T>(path: string, body: unknown, token?: string | null): Promise<T> {
+  const res = await fetch(`${API}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    let detail = ''
+    try { detail = (await res.json())?.detail ?? '' } catch { /* тело без JSON */ }
+    throw new ApiError(res.status, typeof detail === 'string' ? detail : '')
+  }
+  return res.json() as Promise<T>
+}
+
+/** «sent» — письмо ушло; «typo_suspected» — похоже на опечатку в адресе (suggestion — как, вероятно, правильно). */
+export function requestCode(email: string) {
+  return post<{ status: 'sent' | 'typo_suspected'; suggestion?: string }>('/auth/request-code', { destination: email, channel: 'email' })
+}
+
+export function verifyCode(email: string, code: string) {
+  return post<{ token: string; user: import('./auth').User }>('/auth/verify-code', { destination: email, code, channel: 'email', lang: 'ru' })
+}
+

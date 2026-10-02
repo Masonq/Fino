@@ -5,6 +5,8 @@ import { useEffect } from 'react'
 import { AppState } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
+import { AuthProvider } from '../src/auth'
+
 import { colors } from '../src/theme'
 
 /**
@@ -37,11 +39,14 @@ export default function RootLayout() {
   useUpdatesOnResume()
   return (
     <SafeAreaProvider>
+      <AuthProvider>
       <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'slide_from_right' }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="listing/[id]" />
+        <Stack.Screen name="login" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
       </Stack>
+      </AuthProvider>
     </SafeAreaProvider>
   )
 }
