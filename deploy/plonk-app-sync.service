@@ -1,0 +1,9 @@
+[Unit]
+Description=PLONK — забрать свежие сборки нативного приложения с GitHub (обновления JS и .ipa)
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/fino/backend
+ExecStart=/opt/fino/backend/venv/bin/python3 -m app.core.app_updates --sync
+User=root

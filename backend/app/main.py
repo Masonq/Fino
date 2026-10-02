@@ -63,6 +63,9 @@ app.include_router(auth_telegram.router)
 app.include_router(tg_webapp.router)
 app.include_router(tg_publish.router)
 app.include_router(push.router)
+# Обновления нативного приложения: протокол expo-updates и «источник» SideStore
+from app.routers import app_updates as app_updates_router  # noqa: E402
+app.include_router(app_updates_router.router)
 # seo.router — самым последним: у него ловчий маршрут «красивых
 # ссылок» /{city}/{category}/{slug} БЕЗ префикса /api, ловящий любой
 # путь той же формы (3 сегмента). Раньше стоял перед push.router —

@@ -1,0 +1,103 @@
+"""
+Обновления нативного приложения: протокол expo-updates и «источник» SideStore.
+
+На настоящих файлах: экспорт `expo export` нативного приложения и собранный на GitHub plonk-native.ipa (если есть
+в среде — иначе соответствующие тесты пропускаются).
+"""
+import base64
+import hashlib
+import json
+import shutil
+import sys
+from pathlib import Path
+
+import pytest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from fastapi.testclient import TestClient  # noqa: E402
+
+from app.core import app_updates  # noqa: E402
+from app.main import app  # noqa: E402
+
+EXPORT = Path("/tmp/native-export")
+IPA = Path("/tmp/plonk-native.ipa")
+APP_JSON = Path(__file__).resolve().parents[2] / "native" / "app.json"
+needs_export = pytest.mark.skipif(not (EXPORT / "metadata.json").exists(), reason="нет экспорта нативного приложения")
+
+
+@pytest.fixture()
+def store(tmp_path, monkeypatch):
+    monkeypatch.setattr(app_updates, "ROOT", tmp_path / "app-updates")
+    return tmp_path
+
+
+def _export_copy(tmp_path):
+    dst = tmp_path / "export"
+    shutil.copytree(EXPORT, dst)
+    shutil.copy(APP_JSON, dst / "app.json")
+    return dst
+
+
+def _part(body: bytes, name: str) -> dict:
+    text = body.decode()
+    i = text.index(f'name="{name}"')
+    start = text.index("\r\n\r\n", i) + 4
+    return json.loads(text[start:text.index("\r\n--", start)])
+
+
+@needs_export
+def test_manifest_points_to_the_right_bundle_with_correct_hashes(store):
+    uid = app_updates.install_update(_export_copy(store))
+    runtime = str(json.loads(APP_JSON.read_text())["expo"]["runtimeVersion"])
+    m = app_updates.current_manifest("ios", runtime, "https://plonk.rs")
+    meta = json.loads((EXPORT / "metadata.json").read_text())["fileMetadata"]["ios"]
+    bundle = (EXPORT / meta["bundle"]).read_bytes()
+    assert m["id"] == uid and m["runtimeVersion"] == runtime
+    assert m["launchAsset"]["url"] == f"https://plonk.rs/api/app-updates/assets/{uid}/{meta['bundle']}"
+    assert m["launchAsset"]["hash"] == base64.urlsafe_b64encode(hashlib.sha256(bundle).digest()).rstrip(b"=").decode()
+    assert len(m["assets"]) == len(meta["assets"]) and m["extra"]["expoClient"]["name"] == "PLONK"
+    assert app_updates.current_manifest("ios", "999", "https://plonk.rs") is None, "другая версия приложения — не наше обновление"
+
+
+@needs_export
+def test_same_export_twice_is_the_same_update_and_old_ones_are_pruned(store):
+    a = app_updates.install_update(_export_copy(store))
+    shutil.rmtree(store / "export")
+    assert app_updates.install_update(_export_copy(store)) == a
+    assert len(list((app_updates.ROOT / "updates").iterdir())) == 1
+
+
+@needs_export
+def test_http_manifest_multipart_no_update_directive_and_safe_assets(store):
+    uid = app_updates.install_update(_export_copy(store))
+    runtime = str(json.loads(APP_JSON.read_text())["expo"]["runtimeVersion"])
+    client = TestClient(app)
+    r = client.get("/api/app-updates/manifest", headers={"expo-platform": "android", "expo-runtime-version": runtime, "expo-protocol-version": "1"})
+    assert r.status_code == 200 and r.headers["content-type"].startswith("multipart/mixed") and r.headers["expo-protocol-version"] == "1"
+    m = _part(r.content, "manifest")
+    rel = m["launchAsset"]["url"].split(f"/assets/{uid}/", 1)[1]
+    got = client.get(f"/api/app-updates/assets/{uid}/{rel}")
+    assert got.status_code == 200 and hashlib.sha256(got.content).digest() == base64.urlsafe_b64decode(m["launchAsset"]["hash"] + "=")
+    none = client.get("/api/app-updates/manifest", headers={"expo-platform": "ios", "expo-runtime-version": "999", "expo-protocol-version": "1"})
+    assert _part(none.content, "directive") == {"type": "noUpdateAvailable"}
+    assert client.get(f"/api/app-updates/assets/{uid}/../../current.json").status_code == 404
+    assert client.get("/api/app-updates/manifest").status_code == 400
+
+
+@pytest.mark.skipif(not IPA.exists(), reason="нет собранного .ipa")
+def test_sidestore_source_describes_the_installed_ipa(store):
+    info = app_updates.install_ipa(IPA.read_bytes(), "2026-10-02T02:00:00Z")
+    assert info["bundle_id"] == "rs.plonk.mobile" and info["size"] == IPA.stat().st_size
+    src = TestClient(app).get("/api/app-updates/sidestore.json").json()
+    entry = src["apps"][0]
+    assert entry["bundleIdentifier"] == "rs.plonk.mobile" and entry["versions"][0]["downloadURL"].endswith("/api/app-updates/ipa")
+    assert entry["versions"][0]["buildVersion"] == info["build"] and entry["downloadURL"] == entry["versions"][0]["downloadURL"]
+
+
+def test_sync_downloads_only_what_changed_and_never_sends_the_token_elsewhere():
+    source = (Path(__file__).resolve().parents[1] / "app" / "core" / "app_updates.py").read_text(encoding="utf-8")
+    assert 'add_unredirected_header("Authorization"' in source
+    assert "if state.get(key) == stamp" in source
+    deploy = Path(__file__).resolve().parents[2] / "deploy"
+    assert "--sync" in (deploy / "plonk-app-sync.service").read_text() and "OnUnitActiveSec=5min" in (deploy / "plonk-app-sync.timer").read_text()

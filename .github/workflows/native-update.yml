@@ -1,0 +1,49 @@
+# Обновление нативного приложения без переустановки (expo-updates).
+# Любая правка в native/ → JS-сборка для iOS и Android → выпуск native-update-latest (update.zip).
+# Сервер plonk.rs забирает его раз в 5 минут (plonk-app-sync) и раздаёт приложению.
+name: Обновление нативного приложения
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'native/**'
+      - '.github/workflows/native-update.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: native-update
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: native
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: native/package-lock.json
+      - run: npm ci
+      - name: JS-сборка для iOS и Android
+        run: npx expo export --platform ios --platform android --output-dir dist
+        env:
+          CI: '1'
+          EXPO_NO_TELEMETRY: '1'
+      - name: Упаковка (с app.json — по нему сервер знает версию приложения)
+        run: cp app.json dist/app.json && cd dist && zip -qr ../../update.zip .
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: native-update-latest
+          name: PLONK — обновление приложения (JS)
+          prerelease: true
+          make_latest: false
+          body: "Обновление №${{ github.run_number }} (${{ github.sha }}). Сервер plonk.rs забирает его сам."
+          files: update.zip

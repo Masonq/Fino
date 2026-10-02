@@ -37,6 +37,13 @@
     ],
     "experiments": {
       "typedRoutes": false
+    },
+    "runtimeVersion": "1",
+    "updates": {
+      "url": "https://plonk.rs/api/app-updates/manifest",
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
     }
   }
 }

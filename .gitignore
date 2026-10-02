@@ -22,3 +22,7 @@ backend/golden-set.jsonl
 backend/ai-titles.jsonl
 backend/.test.db
 frontend/vite.check.mjs
+
+# Токен GitHub для забора сборок приложения и сами сборки — только на сервере
+/.github-token
+/app-updates/

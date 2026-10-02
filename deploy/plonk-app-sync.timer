@@ -1,0 +1,12 @@
+[Unit]
+Description=Раз в 5 минут проверяет новые сборки нативного приложения
+
+[Timer]
+# Сборка JS-обновления на GitHub — пара минут; раз в 5 минут — и в приложении оно появляется быстро.
+OnActiveSec=1min
+OnBootSec=2min
+OnUnitActiveSec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

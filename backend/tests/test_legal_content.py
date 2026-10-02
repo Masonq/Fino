@@ -192,6 +192,7 @@ def test_backend_does_not_talk_to_unlisted_services():
     known = set(BACKEND_HOSTS) | {
         "plonk.rs", "schema.org", "www.cbr.ru", "www.googleapis.com", "shop.rs",
         "api.frankfurter.app",      # курсы валют: персональных данных не получает
+        "api.github.com",           # сервер скачивает сборки своего приложения; данных пользователей не передаёт
         "t.me",                     # только ссылки на Telegram, не запросы
     }
     unknown = {h for h in _backend_hosts() if h not in known and not h.endswith("plonk.rs")}
