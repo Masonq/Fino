@@ -69,7 +69,6 @@ export default function Profile() {
         <Text style={styles.title}>{tr('Войдите в PLONK')}</Text>
         <Text style={styles.text}>{tr('Чтобы сохранять объявления, писать продавцам и размещать свои.')}</Text>
         <Pressable style={styles.cta} onPress={() => router.push('/login')}><Text style={styles.ctaText}>{tr('Войти')}</Text></Pressable>
-        <View style={[styles.menu, { alignSelf: 'stretch', marginTop: 24 }]}>{langRow}</View>
       </SafeAreaView>
     )
   }

@@ -23,16 +23,27 @@ if (g.ErrorUtils) {
   })
 }
 
+// Тексты — свои, на трёх языках: экран должен работать, даже если сломалась система переводов
+const T = {
+  ru: ['Приложение споткнулось', 'Сделайте скриншот этого экрана и пришлите — по нему видно, что сломалось.', 'Перезапустить'],
+  en: ['Something went wrong', 'Take a screenshot of this screen and send it to us — it shows what broke.', 'Restart'],
+  sr: ['Aplikacija je zapela', 'Napravite snimak ekrana i pošaljite nam — na njemu se vidi šta se pokvarilo.', 'Pokreni ponovo'],
+}
+function crashText() {
+  try { const l = require('../i18n').getLang() as 'ru' | 'en' | 'sr'; return T[l] ?? T.sr } catch { return T.sr }
+}
+
 function CrashScreen({ error }: { error: Err }) {
+  const [title, text, restart] = crashText()
   return (
     <View style={styles.page}>
-      <Text style={styles.title}>Приложение споткнулось</Text>
-      <Text style={styles.text}>Сделайте скриншот этого экрана и пришлите — по нему видно, что сломалось.</Text>
+      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.text}>{text}</Text>
       <ScrollView style={styles.box}>
         <Text selectable style={styles.mono}>{error.message}{'\n\n'}{(error.stack ?? '').split('\n').slice(0, 12).join('\n')}</Text>
       </ScrollView>
       <Pressable style={styles.btn} onPress={() => (Updates.isEnabled ? Updates.reloadAsync().catch(() => {}) : DevSettings.reload())}>
-        <Text style={styles.btnText}>Перезапустить</Text>
+        <Text style={styles.btnText}>{restart}</Text>
       </Pressable>
     </View>
   )

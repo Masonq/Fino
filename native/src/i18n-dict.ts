@@ -404,4 +404,5 @@ export const DICT: Record<string, { en?: string; sr?: string }> = {
   "эт.": { en: "floor", sr: "sprat" },
   "Цена и город": { en: "Price and city", sr: "Cena i grad" },
   "Далее": { en: "Next", sr: "Dalje" },
+  "Все категории": { en: "All categories", sr: "Sve kategorije" },
 }

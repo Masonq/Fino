@@ -118,7 +118,7 @@ export default function Login() {
   }
 
   return (
-    <KeyboardAvoidingView style={[styles.page, { paddingTop: insets.top + 8 }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={[styles.page, { paddingTop: Platform.OS === 'ios' ? 10 : insets.top + 8 }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={styles.top}>
         <Pressable onPress={() => (step === 'code' ? (setStep('email'), setError('')) : step === 'email' || step === 'telegram' ? (setStep('choose'), setError(''), setTgKey('')) : router.back())} hitSlop={10}
           accessibilityLabel={step === 'choose' ? tr('Закрыть') : tr('Назад')} style={styles.iconBtn}>

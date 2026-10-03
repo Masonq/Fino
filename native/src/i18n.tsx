@@ -13,7 +13,8 @@ import { prefs } from './prefs'
 export type Lang = 'ru' | 'en' | 'sr'
 export const LANGS: { key: Lang; label: string }[] = [{ key: 'ru', label: 'RU' }, { key: 'en', label: 'EN' }, { key: 'sr', label: 'SR' }]
 
-let current: Lang = 'ru'
+// Язык по умолчанию — сербский (решение владельца); выбранный вручную в профиле сохраняется и уважается
+let current: Lang = 'sr'
 export const getLang = () => current
 
 export function tr(text: string, params?: Record<string, string | number>): string {
@@ -24,10 +25,10 @@ export function tr(text: string, params?: Record<string, string | number>): stri
 }
 
 type Ctx = { lang: Lang; setLang: (l: Lang) => void; ready: boolean }
-const LangCtx = createContext<Ctx>({ lang: 'ru', setLang: () => {}, ready: false })
+const LangCtx = createContext<Ctx>({ lang: 'sr', setLang: () => {}, ready: false })
 
 export function LangProvider({ children }: { children: (lang: Lang) => ReactNode }) {
-  const [lang, setLangState] = useState<Lang>('ru')
+  const [lang, setLangState] = useState<Lang>('sr')
   const [ready, setReady] = useState(false)
   useEffect(() => {
     prefs.get('plonk_lang').then((v) => {
