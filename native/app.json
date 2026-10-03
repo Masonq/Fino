@@ -40,6 +40,12 @@
           "cameraPermission": "PLONK открывает камеру, чтобы вы сфотографировали вещь для объявления.",
           "microphonePermission": false
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "PLONK определяет ваш город, чтобы показать объявления рядом. Координаты никуда не отправляются."
+        }
       ]
     ],
     "experiments": {

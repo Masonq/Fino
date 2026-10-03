@@ -91,3 +91,12 @@ export function shortTime(iso?: string | null): string {
   return getLang() === 'en' ? `${MONTHS.en[d.getMonth()]} ${d.getDate()}` : `${d.getDate()} ${MONTHS[getLang()][d.getMonth()]}`
 }
 
+/** Координаты городов — как на сайте (data/cities.js): для «Показать объявления рядом». */
+export const CITY_COORDS: Record<string, [number, number]> = {"beograd": [44.7866, 20.4489], "novi-sad": [45.2671, 19.8335], "nis": [43.3209, 21.8958], "kragujevac": [44.0128, 20.9114], "subotica": [46.1008, 19.6667], "zrenjanin": [45.3836, 20.3823], "pancevo": [44.8708, 20.6403], "cacak": [43.8914, 20.3497], "novi-pazar": [43.1367, 20.5122], "kraljevo": [43.7257, 20.6892]}
+
+/** Ближайший город к точке (по прямой). */
+export function nearestCity(lat: number, lng: number): string {
+  let best = 'beograd', dist = Infinity
+  for (const [slug, [a, b]] of Object.entries(CITY_COORDS)) { const d = (a - lat) ** 2 + ((b - lng) * Math.cos((lat * Math.PI) / 180)) ** 2; if (d < dist) { dist = d; best = slug } }
+  return best
+}

@@ -46,7 +46,7 @@ export default function CategoryTiles({ value, onPick }: { value: string | null;
     if (c === 'all') {
       const on = value === null
       return (
-        <Pressable key="all" style={[styles.tile, styles.allTile, on && styles.tileOn]} onPress={() => { select(); onPick(null) }} accessibilityRole="button" accessibilityState={{ selected: on }}>
+        <Pressable key="all" style={[styles.tile, styles.allTile, on && styles.tileOn]} onPress={() => { select(); onPick(null); router.push('/categories') }} accessibilityRole="button" accessibilityState={{ selected: on }}>
           <Text style={[styles.label, styles.labelOn]}>{tr('Все')}</Text>
           <View style={styles.allIcon}><Icon name="grid" size={34} color={colors.primary} /></View>
         </Pressable>

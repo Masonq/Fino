@@ -118,6 +118,9 @@ export default function Login() {
             <Pressable style={[styles.cta, (!valid || busy) && styles.ctaOff]} disabled={!valid || busy} onPress={() => send()}>
               {busy ? <ActivityIndicator color="#fff" /> : <Text style={styles.ctaText}>{tr('Получить код')}</Text>}
             </Pressable>
+            <Text style={styles.consent}>
+              {tr('Продолжая, вы принимаете')} <Text style={styles.consentLink} onPress={() => router.push('/legal/terms')}>{tr('условия')}</Text> {tr('и')} <Text style={styles.consentLink} onPress={() => router.push('/legal/privacy')}>{tr('политику конфиденциальности')}</Text>.
+            </Text>
           </>
         ) : (
           <>
@@ -180,6 +183,8 @@ const styles = StyleSheet.create({
   cellOn: { borderColor: colors.primary },
   cellText: { fontSize: 24, fontFamily: font[800], color: colors.ink },
   hidden: { position: 'absolute', opacity: 0, width: 1, height: 1 },
+  consent: { fontSize: 12.5, lineHeight: 18, fontFamily: font[500], color: colors.muted, textAlign: 'center', marginTop: 4 },
+  consentLink: { color: colors.primaryDeep, fontFamily: font[700] },
   resend: { marginTop: 8, height: 44, justifyContent: 'center' },
   resendText: { fontSize: 15, fontFamily: font[700], color: colors.primaryDeep },
 })

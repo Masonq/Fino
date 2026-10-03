@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native'
+  ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, useWindowDimensions, View, ScrollView } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { fetchFeed, type FeedItem, type FeedTab, type Filters, saveSearch } from '../../src/api'
@@ -19,6 +19,8 @@ import Skeleton from '../../src/components/Skeleton'
 import StoriesRow from '../../src/components/StoriesRow'
 import { cityName } from '../../src/format'
 import { prefs } from '../../src/prefs'
+import * as Location from 'expo-location'
+import { nearestCity } from '../../src/format'
 import { readCache, writeCache } from '../../src/cache'
 import { onRetry } from '../../src/net'
 import { select, tap } from '../../src/haptics'
@@ -32,6 +34,19 @@ const TABS: { key: FeedTab; label: string }[] = [
  * Главная: поиск, «Все / Новое / Даром» с переезжающей плашкой и лента карточек в две колонки.
  * Подгружает дальше при прокрутке, обновляется жестом вниз. Пока грузится — заготовки карточек той же формы.
  */
+const SUGGEST: Record<string, string> = { 'real-estate': 'Недвижимость', auto: 'Авто', electronics: 'Электроника', 'home-garden': 'Дом и сад', fashion: 'Одежда и обувь', services: 'Услуги' }
+const SORT_LABEL: Record<string, string> = { new: 'Сначала новые', cheap: 'Дешевле', expensive: 'Дороже' }
+
+/** Активный фильтр плашкой с крестиком — как .active-filter-chip на странице поиска сайта. */
+function ActiveChip({ label, onPress }: { label: string; onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} style={styles.activeChip} accessibilityRole="button" accessibilityLabel={label}>
+      <Text style={styles.activeChipText} numberOfLines={1}>{label}</Text>
+      <Icon name="close" size={12} color={colors.primaryDeep} />
+    </Pressable>
+  )
+}
+
 export default function Feed() {
   const { width } = useWindowDimensions()
   // Колонки ленты — как переключатель на сайте: 2 или 1; выбор запоминается
@@ -61,7 +76,7 @@ export default function Feed() {
     if (params.city !== undefined) { setCity(params.city || null) }
     setFilters({ currency: 'EUR', priceMin: params.price_min || undefined, priceMax: params.price_max || undefined, withPhoto: params.with_photo === '1' })
   }, [params.applied]) // eslint-disable-line react-hooks/exhaustive-deps
-  const searchActive = !!(q || category || filters.priceMin || filters.priceMax || filters.withPhoto)
+  const searchActive = !!(q || category || filters.priceMin || filters.priceMax || filters.withPhoto || filters.delivery || filters.sort)
   useEffect(() => { setSavedState('idle') }, [q, category, city, filters])
   const onSave = async () => {
     if (!token) { router.push('/login'); return }
@@ -84,6 +99,23 @@ export default function Feed() {
     prefs.get('plonk_city').then((v) => { setCity(v || null); setCityReady(true) })
   }, [])
   const pickCity = (slug: string | null) => { setCity(slug); prefs.set('plonk_city', slug ?? '') }
+
+  // «Показать объявления рядом с вами?» — как на сайте: над лентой, а не окном; пока город не выбран и не отказались
+  const [geoAsk, setGeoAsk] = useState(false)
+  const [geoBusy, setGeoBusy] = useState(false)
+  useEffect(() => { prefs.get('plonk_geo_ask').then((v) => setGeoAsk(v !== 'no')) }, [])
+  const dismissGeo = () => { setGeoAsk(false); prefs.set('plonk_geo_ask', 'no') }
+  const detectCity = async () => {
+    setGeoBusy(true)
+    try {
+      const perm = await Location.requestForegroundPermissionsAsync()
+      if (perm.status === 'granted') {
+        const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
+        pickCity(nearestCity(pos.coords.latitude, pos.coords.longitude))
+      }
+      dismissGeo()
+    } catch { dismissGeo() } finally { setGeoBusy(false) }
+  }
 
   useEffect(() => {
     const t = setTimeout(() => setQ(query.trim()), 350)
@@ -163,6 +195,16 @@ export default function Feed() {
       <View style={styles.center}>
         <Text style={styles.emptyTitle}>{q ? tr('Ничего не нашлось') : tr('Здесь пока пусто')}</Text>
         {!!q && <Text style={styles.emptyText}>{tr('Попробуйте сказать иначе или убрать часть слов.')}</Text>}
+        {searchActive && (
+          <>
+            <Text style={[styles.emptyText, { marginTop: 10 }]}>{tr('Или посмотрите разделы:')}</Text>
+            <View style={styles.suggest}>
+              {['real-estate', 'auto', 'electronics', 'home-garden', 'fashion', 'services'].map((slug) => (
+                <Pressable key={slug} style={styles.chip} onPress={() => router.push(`/c/${slug}`)}><Text style={styles.chipText}>{tr(SUGGEST[slug])}</Text></Pressable>
+              ))}
+            </View>
+          </>
+        )}
       </View>
     )
   }
@@ -222,6 +264,26 @@ export default function Feed() {
           <View style={styles.listHead}>
             {!q && cityReady && <StoriesRow city={city} />}
             {!q && <CategoryTiles value={category} onPick={setCategory} />}
+            {!q && cityReady && !city && geoAsk && (
+              <View style={styles.geo}>
+                <Text style={styles.geoText}>{tr('Показать объявления рядом с вами?')}</Text>
+                <Pressable style={styles.geoYes} disabled={geoBusy} onPress={detectCity}><Text style={styles.geoYesText}>{geoBusy ? '…' : tr('Показать')}</Text></Pressable>
+                <Pressable style={styles.geoNo} onPress={dismissGeo}><Text style={styles.geoNoText}>{tr('Не надо')}</Text></Pressable>
+              </View>
+            )}
+            {searchActive && state !== 'loading' && (
+              <View style={styles.found}>
+                <Text style={styles.foundText}>{tr('Найдено: {n}', { n: total })}</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
+                  {!!q && <ActiveChip label={`«${q}»`} onPress={() => { setQuery(''); setQ('') }} />}
+                  {!!category && <ActiveChip label={tr('Раздел')} onPress={() => setCategory(null)} />}
+                  {!!(filters.priceMin || filters.priceMax) && <ActiveChip label={`${filters.priceMin || '0'}–${filters.priceMax || '∞'} ${filters.currency === 'RSD' ? 'RSD' : '€'}`} onPress={() => setFilters({ ...filters, priceMin: undefined, priceMax: undefined })} />}
+                  {!!filters.withPhoto && <ActiveChip label={tr('с фото')} onPress={() => setFilters({ ...filters, withPhoto: false })} />}
+                  {!!filters.delivery && <ActiveChip label={tr('С доставкой')} onPress={() => setFilters({ ...filters, delivery: false })} />}
+                  {!!filters.sort && <ActiveChip label={tr(SORT_LABEL[filters.sort])} onPress={() => setFilters({ ...filters, sort: '' })} />}
+                </ScrollView>
+              </View>
+            )}
             <View style={styles.tabsRow}>
               <Segmented options={TABS} value={tab} onChange={setTab} />
               {!searchActive && (
@@ -260,6 +322,19 @@ const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.bg },
   head: { paddingHorizontal: space.page, paddingTop: 6, paddingBottom: 10 },
   listHead: { gap: 12, paddingBottom: 2 },
+  found: { gap: 8, paddingHorizontal: space.page },
+  foundText: { fontSize: 14, fontFamily: font[800], color: colors.ink },
+  activeChip: { flexDirection: 'row', alignItems: 'center', gap: 5, height: 30, paddingHorizontal: 10, borderRadius: 10, backgroundColor: colors.primarySoft, maxWidth: 220 },
+  activeChipText: { fontSize: 13, fontFamily: font[700], color: colors.primaryDeep, flexShrink: 1 },
+  suggest: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginTop: 8 },
+  chip: { height: 34, paddingHorizontal: 12, borderRadius: 11, backgroundColor: colors.sunken, justifyContent: 'center' },
+  chipText: { fontSize: 13.5, fontFamily: font[700], color: colors.ink },
+  geo: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: space.page, padding: 10, paddingLeft: 14, borderRadius: 14, backgroundColor: colors.primarySoft },
+  geoText: { flex: 1, fontSize: 14, lineHeight: 18, fontFamily: font[700], color: colors.primaryDeep },
+  geoYes: { height: 34, paddingHorizontal: 12, borderRadius: 10, backgroundColor: colors.primary, justifyContent: 'center' },
+  geoYesText: { color: '#fff', fontSize: 13.5, fontFamily: font[800] },
+  geoNo: { height: 34, paddingHorizontal: 8, justifyContent: 'center' },
+  geoNoText: { color: colors.primaryDeep, fontSize: 13.5, fontFamily: font[700] },
   headRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   bell: { width: 44, height: 46, alignItems: 'center', justifyContent: 'center' },
   bellDot: { position: 'absolute', top: 6, right: 4, minWidth: 17, height: 17, borderRadius: 9, paddingHorizontal: 4, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: colors.bg },

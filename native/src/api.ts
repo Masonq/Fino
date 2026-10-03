@@ -380,3 +380,12 @@ export function loadListing(id: string): Promise<Listing> {
 }
 export function prefetchListing(id: string) { loadListing(id).catch(() => {}) }
 
+// ---------- показатели объявления ----------
+
+export type ListingDashboard = {
+  views_total?: number; views_week?: number; favorites_count?: number; chats_count?: number; status?: string; is_complete?: boolean
+  published_at?: string | null; expires_at?: string | null; daily: { day: string; views: number }[]; tips?: { code: string; level?: string }[]
+}
+export const listingDashboard = (token: string, id: string, days: number) =>
+  authed<ListingDashboard>(`/listings/${encodeURIComponent(id)}/dashboard?days=${days}`, token)
+

@@ -112,6 +112,7 @@ export default function MyListings() {
         )}
 
         <Sheet visible={!!menu} title={menu?.title} onClose={() => setMenu(null)}>
+          {menu && <SheetAction label={tr('Показатели')} icon={<Icon name="history" size={20} color={colors.ink} />} onPress={() => { const m = menu; setMenu(null); router.push(`/stats/${m.id}`) }} />}
           {menu && menu.status !== 'sold' && (
             <SheetAction label={tr('Редактировать')} icon={<Ionicons name="create-outline" size={20} color={colors.ink} />} onPress={() => { const m = menu; setMenu(null); router.push(`/edit/${m.id}`) }} />
           )}

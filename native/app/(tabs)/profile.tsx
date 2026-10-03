@@ -222,6 +222,12 @@ export default function Profile() {
         </View>
 
         <View style={styles.menu}>
+          {row('list', 'Правила', () => router.push('/legal/rules'))}
+          {row('list', 'Условия использования', () => router.push('/legal/terms'))}
+          {row('shield', 'Политика конфиденциальности', () => router.push('/legal/privacy'), undefined, true)}
+        </View>
+
+        <View style={styles.menu}>
           {row('lock', 'Заблокированные', () => router.push('/blocked'))}
           {langRow}
         </View>
