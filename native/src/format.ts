@@ -78,3 +78,16 @@ export function plainText(text?: string | null): string {
   return (text ?? '').replace(/^#{1,6}\s*/gm, '').replace(/\*\*|__|`/g, '').replace(/\s+\n/g, '\n').trim()
 }
 
+/** Короткое время для списка переписок — как на сайте: «14:05» сегодня, «вчера», «3 дн», дальше дата. */
+export function shortTime(iso?: string | null): string {
+  const d = parseTime(iso)
+  if (!d) return ''
+  const now = new Date()
+  const start = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime()
+  const days = Math.round((start(now) - start(d)) / 86400000)
+  if (days <= 0) return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  if (days === 1) return tr('вчера')
+  if (days < 7) return tr('{n} дн', { n: days })
+  return getLang() === 'en' ? `${MONTHS.en[d.getMonth()]} ${d.getDate()}` : `${d.getDate()} ${MONTHS[getLang()][d.getMonth()]}`
+}
+

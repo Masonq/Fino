@@ -1,19 +1,20 @@
-import { tr } from '../../src/i18n'
+import { getLang, tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import { router } from 'expo-router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { ApiError, type Category, createListing, type Uploaded, uploadPhoto } from '../../src/api'
+import { ApiError, type Category, createListing, fetchCategories, type Uploaded, uploadPhoto } from '../../src/api'
 import { useAuth } from '../../src/auth'
-import CategoryPicker from '../../src/components/CategoryPicker'
+import Icon from '../../src/components/Icon'
 import CityPicker from '../../src/components/CityPicker'
 import Segmented from '../../src/components/Segmented'
+import { SITE } from '../../src/config'
 import { cityName } from '../../src/format'
 import { colors, font } from '../../src/theme'
 
@@ -35,12 +36,16 @@ export default function Post() {
   const [currency, setCurrency] = useState<'EUR' | 'RSD'>('EUR')
   const [negotiable, setNegotiable] = useState(false)
   const [city, setCity] = useState<string | null>('beograd')
-  const [catOpen, setCatOpen] = useState(false)
   const [cityOpen, setCityOpen] = useState(false)
   const [tried, setTried] = useState(false)
   const [sending, setSending] = useState(false)
   const [done, setDone] = useState<{ id: string } | null>(null)
   const [error, setError] = useState('')
+  // Мастер, как на сайте: 1 — раздел (сетка с картинками), 2 — подраздел, 3 — фото и описание
+  const [step, setStep] = useState<1 | 2 | 3>(1)
+  const [roots, setRoots] = useState<Category[] | null>(null)
+  const [trail, setTrail] = useState<Category[]>([])
+  useEffect(() => { fetchCategories().then(setRoots).catch(() => setRoots([])) }, [])
 
   if (!ready) return <SafeAreaView style={styles.page} />
   if (!token) {
@@ -67,7 +72,7 @@ export default function Post() {
   }
 
   function reset() {
-    setShots([]); setCat(null); setTitle(''); setDesc(''); setPrice(''); setNegotiable(false); setTried(false); setDone(null); setError('')
+    setStep(1); setTrail([]); setShots([]); setCat(null); setTitle(''); setDesc(''); setPrice(''); setNegotiable(false); setTried(false); setDone(null); setError('')
   }
 
   const upload = async (shot: Shot) => {
@@ -123,12 +128,72 @@ export default function Post() {
   }
 
   const hint = (text: string) => (tried && text ? <Text style={styles.hint}>{text}</Text> : null)
+  const nameOf = (c: Category) => (typeof c.name === 'string' ? c.name : c.name?.[getLang()] || c.name?.ru || c.slug)
+  const choose = (c: Category) => {
+    const path = [...trail, c]
+    if (c.children && c.children.length) { setTrail(path); setStep(2); return }
+    setCat({ c, path: path.map(nameOf).join(' › ') }); setTrail([]); setStep(3)
+  }
+  const dots = (
+    <View style={styles.steps}>
+      {[1, 2, 3].map((n) => <View key={n} style={[styles.stepDot, n <= step && styles.stepDotOn]} />)}
+    </View>
+  )
+
+  if (step === 1) {
+    return (
+      <SafeAreaView style={styles.page} edges={['top']}>
+        <ScrollView contentContainerStyle={styles.form}>
+          {dots}
+          <Text style={styles.stepTitle}>{tr('Что продаёте?')}</Text>
+          <Text style={styles.stepHint}>{tr('Выберите раздел — подраздел уточним на следующем шаге')}</Text>
+          {roots === null ? <ActivityIndicator style={{ marginTop: 30 }} color={colors.primary} /> : (
+            <View style={styles.grid}>
+              {roots.map((c) => (
+                <Pressable key={c.id} style={styles.catItem} onPress={() => choose(c)} accessibilityRole="button">
+                  <Image source={{ uri: `${SITE}/cat/${c.slug}.png` }} style={styles.catImg} contentFit="contain" />
+                  <Text style={styles.catLabel} numberOfLines={2}>{nameOf(c)}</Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    )
+  }
+
+  if (step === 2) {
+    const level = trail[trail.length - 1]?.children ?? []
+    return (
+      <SafeAreaView style={styles.page} edges={['top']}>
+        <ScrollView contentContainerStyle={styles.form}>
+          {dots}
+          <View style={styles.stepHead}>
+            <Pressable onPress={() => { const t = trail.slice(0, -1); setTrail(t); if (!t.length) setStep(1) }} hitSlop={10} style={styles.stepBack} accessibilityLabel={tr('Назад')}>
+              <Icon name="back" size={22} color={colors.ink} />
+            </Pressable>
+            <Text style={styles.stepTitle} numberOfLines={1}>{nameOf(trail[trail.length - 1])}</Text>
+          </View>
+          <Text style={styles.stepHint}>{tr('Уточните подраздел')}</Text>
+          <View style={styles.subList}>
+            {level.map((c, i) => (
+              <Pressable key={c.id} style={[styles.subRow, i === level.length - 1 && { borderBottomWidth: 0 }]} onPress={() => choose(c)} accessibilityRole="button">
+                <Text style={styles.subText}>{nameOf(c)}</Text>
+                <Icon name="forward" size={16} color={colors.muted} />
+              </Pressable>
+            ))}
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    )
+  }
 
   return (
     <SafeAreaView style={styles.page} edges={['top']}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
-          <Text style={styles.h1}>{tr('Новое объявление')}</Text>
+          {dots}
+          <Text style={styles.stepTitle}>{tr('Фото и описание')}</Text>
 
           <Text style={styles.label}>{tr('Фото')} <Text style={styles.count}>{shots.length}/{MAX}</Text></Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.shots}>
@@ -159,7 +224,7 @@ export default function Post() {
           {hint(problems.photos)}
 
           <Text style={styles.label}>{tr('Раздел')}</Text>
-          <Pressable style={styles.select} onPress={() => setCatOpen(true)}>
+          <Pressable style={styles.select} onPress={() => { setTrail([]); setStep(1) }}>
             <Text style={[styles.selectText, !cat && { color: colors.muted }]} numberOfLines={2}>{cat ? cat.path : tr('Выберите раздел')}</Text>
             <Ionicons name="chevron-forward" size={18} color={colors.muted} />
           </Pressable>
@@ -196,7 +261,6 @@ export default function Post() {
           <Text style={styles.small}>{tr('Объявление проверят модераторы — обычно это несколько минут.')}</Text>
         </ScrollView>
       </KeyboardAvoidingView>
-      <CategoryPicker visible={catOpen} onPick={(c, path) => setCat({ c, path })} onClose={() => setCatOpen(false)} />
       <CityPicker visible={cityOpen} value={city} onPick={setCity} onClose={() => setCityOpen(false)} />
     </SafeAreaView>
   )
@@ -211,7 +275,22 @@ const styles = StyleSheet.create({
   cta: { marginTop: 10, height: 52, paddingHorizontal: 36, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
   ctaText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
   link: { fontSize: 15.5, fontFamily: font[700], color: colors.primaryDeep },
-  form: { paddingHorizontal: 16, paddingBottom: 40 },
+  form: { paddingHorizontal: 16, paddingBottom: 40, paddingTop: 10 },
+  // Как на сайте: .post-steps (полоски 4 px), .post-cat-grid (3 колонки, 8 px), .post-cat-item (118, скругление 16)
+  steps: { flexDirection: 'row', gap: 6, marginBottom: 14 },
+  stepDot: { flex: 1, height: 4, borderRadius: 3, backgroundColor: colors.border },
+  stepDotOn: { backgroundColor: colors.primary },
+  stepHead: { flexDirection: 'row', alignItems: 'center', gap: 4, marginLeft: -8 },
+  stepBack: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+  stepTitle: { flexShrink: 1, fontSize: 20, fontFamily: font[800], letterSpacing: -0.3, color: colors.ink },
+  stepHint: { fontSize: 13, lineHeight: 18, fontFamily: font[500], color: colors.muted, marginTop: 4, marginBottom: 14 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  catItem: { width: '31.9%', height: 118, borderRadius: 16, paddingTop: 10, paddingHorizontal: 6, paddingBottom: 9, alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  catImg: { width: 68, height: 68 },
+  catLabel: { height: 28, fontSize: 11.5, lineHeight: 14, fontFamily: font[700], color: colors.ink, textAlign: 'center', textAlignVertical: 'center' },
+  subList: { borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
+  subRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 52, paddingHorizontal: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+  subText: { flex: 1, fontSize: 15.5, fontFamily: font[600], color: colors.ink, paddingRight: 8 },
   h1: { fontSize: 26, fontFamily: font[800], color: colors.ink, paddingTop: 8, paddingBottom: 6 },
   label: { fontSize: 16, fontFamily: font[800], color: colors.ink, marginTop: 18, marginBottom: 8 },
   labelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 18, marginBottom: 8 },

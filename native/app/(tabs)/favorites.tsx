@@ -71,7 +71,10 @@ export default function Favorites() {
 
   return (
     <SafeAreaView style={styles.page} edges={['top']}>
-      <Text style={styles.h1}>{tr('Избранное')}</Text>
+      <View style={styles.headRow}>
+        <Text style={styles.h1}>{tr('Избранное')}</Text>
+        {!!visible && visible.length > 0 && <Text style={styles.count}>{visible.length}</Text>}
+      </View>
       {visible === null ? (
         failed ? (
           <View style={styles.center}>
@@ -115,7 +118,10 @@ export default function Favorites() {
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.bg },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 10 },
-  h1: { fontSize: 26, fontFamily: font[800], color: colors.ink, paddingHorizontal: space.page + 2, paddingTop: 8, paddingBottom: 12 },
+  headRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: space.page + 4, paddingTop: 10, paddingBottom: 12 },
+  // Как заголовок страницы и .fav-count сайта
+  h1: { fontSize: 22, fontFamily: font[800], letterSpacing: -0.3, color: colors.ink },
+  count: { fontSize: 12, fontFamily: font[800], color: colors.primaryDeep, backgroundColor: colors.primarySoft, borderRadius: 8, overflow: 'hidden', paddingHorizontal: 8, paddingVertical: 3 },
   circle: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   title: { fontSize: 20, fontFamily: font[800], color: colors.ink, textAlign: 'center' },
   text: { fontFamily: font[400], fontSize: 15, lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },

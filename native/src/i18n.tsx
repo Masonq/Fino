@@ -47,3 +47,15 @@ export function LangProvider({ children }: { children: (lang: Lang) => ReactNode
 }
 
 export const useLang = () => useContext(LangCtx)
+
+/** Склонение по числу: ru — 1 объявление / 2 объявления / 5 объявлений; sr — 1 oglas / 2 oglasa / 5 oglasa; en — 1 / many. */
+export function plural(n: number, forms: Record<Lang, string[]>): string {
+  const f = forms[current]
+  if (current === 'en') return n === 1 ? f[0] : f[1]
+  const a = Math.abs(n) % 100, b = a % 10
+  if (a > 10 && a < 20) return f[2]
+  if (b === 1) return f[0]
+  if (b >= 2 && b <= 4) return f[1]
+  return f[2]
+}
+

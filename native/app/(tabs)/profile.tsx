@@ -1,179 +1,202 @@
-import { LANGS, tr, useLang } from '../../src/i18n'
-import { Ionicons } from '@expo/vector-icons'
-import { Image } from 'expo-image'
+import * as Linking from 'expo-linking'
 import { router, useFocusEffect } from 'expo-router'
-import { useCallback, useState } from 'react'
-import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { useCallback, useEffect, useState } from 'react'
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { balance as fetchBalance, deleteListing, type MyListing, myListings, setListingStatus } from '../../src/api'
+import { balance as fetchBalance, type MyListing, myListings, type Seller, sellerProfile } from '../../src/api'
 import { useAuth } from '../../src/auth'
+import { useChats } from '../../src/chats'
+import Icon from '../../src/components/Icon'
 import Segmented from '../../src/components/Segmented'
-import Sheet, { SheetAction } from '../../src/components/Sheet'
-import { mediaUrl } from '../../src/config'
-import { formatPrice } from '../../src/format'
+import { SITE } from '../../src/config'
+import { LANGS, plural, tr, useLang } from '../../src/i18n'
+import { prefs } from '../../src/prefs'
 import { colors, font } from '../../src/theme'
 
-type Tab = 'active' | 'pending' | 'other'
-const STATUS: Record<string, { label: string; tone: string; bg: string }> = {
-  active: { label: 'Активно', tone: colors.primaryDeep, bg: colors.primarySoft },
-  pending_moderation: { label: 'На проверке', tone: '#8A6A1F', bg: '#FBF3E3' },
-  draft: { label: 'Черновик', tone: colors.inkSoft, bg: colors.sunken },
-  sold: { label: 'Продано', tone: colors.inkSoft, bg: colors.sunken },
-  archived: { label: 'В архиве', tone: colors.inkSoft, bg: colors.sunken },
-  rejected: { label: 'Отклонено', tone: '#B42318', bg: '#FDECEA' },
-}
-const tabOf = (s: string): Tab => (s === 'active' ? 'active' : s === 'pending_moderation' ? 'pending' : 'other')
 const rsd = (n: number) => `${String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00A0')}\u00A0RSD`
 
-/** Профиль: кто ты, баланс, мои объявления по вкладкам (активные / на проверке / другие), «Выйти». */
+/**
+ * Профиль — как на сайте: заголовок с колокольчиком; «Укажите телефон…»; карточка профиля (имя, «Частное лицо ·
+ * отзывы», правка, «Подтвердить личность»); «N на проверке ›»; три плитки (объявлений ›, просмотров, в избранном);
+ * баланс (полоса «деньги / бонусы» и две плитки); меню со значками в зелёных квадратах. Размеры — из стилей сайта.
+ */
 export default function Profile() {
   const { user, ready, token, signOut } = useAuth()
   const { lang, setLang } = useLang()
+  const { notices } = useChats()
   const [items, setItems] = useState<MyListing[] | null>(null)
-  const [bal, setBal] = useState<{ balance?: number; money?: number; bonus?: number } | null>(null)
-  const [tab, setTab] = useState<Tab>('active')
+  const [bal, setBal] = useState<{ balance?: number; money?: number; bonus?: number; payments_enabled?: boolean } | null>(null)
+  const [pub, setPub] = useState<Seller | null>(null)
+  const [phoneHidden, setPhoneHidden] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  const [menu, setMenu] = useState<MyListing | null>(null)
+
+  useEffect(() => { prefs.get('plonk_phone_hint').then((v) => setPhoneHidden(v === 'hidden')) }, [])
 
   const load = useCallback(async () => {
-    if (!token) return
-    const [l, b] = await Promise.allSettled([myListings(token), fetchBalance(token)])
+    if (!token || !user) return
+    const [l, b, s] = await Promise.allSettled([myListings(token), fetchBalance(token), sellerProfile(user.id)])
     if (l.status === 'fulfilled') setItems(l.value.items)
-    if (b.status === 'fulfilled') setBal(b.value as { balance?: number; money?: number; bonus?: number })
-  }, [token])
-
+    if (b.status === 'fulfilled') setBal(b.value as typeof bal)
+    if (s.status === 'fulfilled') setPub(s.value)
+  }, [token, user])
   useFocusEffect(useCallback(() => { load() }, [load]))
+
+  const langRow = (
+    <View style={[styles.row, styles.rowLast]}>
+      <View style={styles.rowIcon}><Icon name="globe" size={17} color={colors.primary} /></View>
+      <Text style={styles.rowText}>{tr('Язык')}</Text>
+      <Segmented options={LANGS} value={lang} onChange={setLang} />
+    </View>
+  )
 
   if (!ready) return <SafeAreaView style={[styles.page, styles.center]}><ActivityIndicator color={colors.primary} /></SafeAreaView>
   if (!user) {
     return (
       <SafeAreaView style={[styles.page, styles.center]} edges={['top']}>
-        <View style={styles.circle}><Ionicons name="person-outline" size={30} color={colors.primaryDeep} /></View>
+        <View style={styles.circle}><Icon name="user" size={30} color={colors.primaryDeep} /></View>
         <Text style={styles.title}>{tr('Войдите в PLONK')}</Text>
         <Text style={styles.text}>{tr('Чтобы сохранять объявления, писать продавцам и размещать свои.')}</Text>
         <Pressable style={styles.cta} onPress={() => router.push('/login')}><Text style={styles.ctaText}>{tr('Войти')}</Text></Pressable>
-        <View style={[styles.langRow, { marginTop: 24, alignSelf: 'stretch' }]}>
-          <Ionicons name="language-outline" size={20} color={colors.inkSoft} />
-          <Text style={styles.langText}>{tr('Язык')}</Text>
-          <Segmented options={LANGS} value={lang} onChange={setLang} />
-        </View>
+        <View style={[styles.menu, { alignSelf: 'stretch', marginTop: 24 }]}>{langRow}</View>
       </SafeAreaView>
     )
   }
 
   const name = user.display_name || user.email?.split('@')[0] || tr('Профиль')
+  const all = items ?? []
+  const pending = all.filter((i) => i.status === 'pending_moderation').length
+  // Как на сайте: в плитках — только активные объявления
+  const active = all.filter((i) => i.status === 'active')
+  const views = active.reduce((n, i) => n + (i.views_count ?? 0), 0)
+  const favs = active.reduce((n, i) => n + (i.favorites_count ?? 0), 0)
+  const money = bal?.money ?? 0
+  const bonus = bal?.bonus ?? 0
+  const total = Math.max(money + bonus, 1)
+  const hasPhone = !!(user as unknown as { phone?: string | null }).phone
+  const rating = (pub?.rating_count ?? 0) > 0
+    ? tr('★ {avg} · отзывов: {n}', { avg: (pub?.rating_avg ?? 0).toFixed(1).replace('.', ','), n: pub?.rating_count ?? 0 })
+    : tr('Пока без отзывов')
 
-  const act = async (fn: () => Promise<unknown>) => {
-    setMenu(null)
-    try { await fn() } catch { Alert.alert(tr('Не получилось'), tr('Проверьте интернет и попробуйте ещё раз.')) }
-    load()
+  const part = (kind: 'money' | 'bonus', amount: number) => {
+    const zero = amount <= 0
+    const tone = zero ? styles.partZero : kind === 'money' ? styles.partMoney : styles.partBonus
+    const ink = zero ? colors.muted : kind === 'money' ? colors.primaryDeep : '#A2401D'
+    return (
+      <View style={[styles.part, tone]}>
+        <View style={styles.partTop}>
+          <Icon name={kind === 'money' ? 'wallet' : 'gift'} size={15} color={zero ? colors.muted : kind === 'money' ? colors.primary : colors.accent} />
+          <Text style={[styles.partLabel, { color: ink }]}>{tr(kind === 'money' ? 'Деньги' : 'Бонусы')}</Text>
+        </View>
+        <Text style={[styles.partAmount, { color: zero ? colors.muted : ink }]}>{rsd(amount)}</Text>
+        <Text style={[styles.partNote, { color: ink }]}>{tr(kind === 'money' ? 'внесено вами' : 'только на продвижение')}</Text>
+      </View>
+    )
   }
-  const askDelete = (l: MyListing) => {
-    setMenu(null)
-    Alert.alert(tr('Удалить объявление?'), tr('«{title}» исчезнет насовсем.', { title: l.title }), [
-      { text: tr('Отмена'), style: 'cancel' },
-      { text: tr('Удалить'), style: 'destructive', onPress: () => act(() => deleteListing(token as string, l.id)) },
-    ])
-  }
-  const count = (t: Tab) => (items ?? []).filter((i) => tabOf(i.status) === t).length
-  const shown = (items ?? []).filter((i) => tabOf(i.status) === tab)
-  const tabs: { key: Tab; label: string }[] = [
-    { key: 'active', label: tr('Активные {n}', { n: count('active') }) },
-    { key: 'pending', label: tr('На проверке {n}', { n: count('pending') }) },
-    { key: 'other', label: tr('Другие {n}', { n: count('other') }) },
-  ]
+
+  const row = (icon: string, label: string, onPress: () => void, badge?: number, last?: boolean) => (
+    <Pressable style={[styles.row, last && styles.rowLast]} onPress={onPress} accessibilityRole="button">
+      <View style={styles.rowIcon}><Icon name={icon} size={17} color={colors.primary} /></View>
+      <Text style={styles.rowText}>{tr(label)}</Text>
+      {!!badge && <View style={styles.badge}><Text style={styles.badgeText}>{badge > 9 ? '9+' : badge}</Text></View>}
+      <Icon name="forward" size={16} color={colors.muted} />
+    </Pressable>
+  )
 
   return (
     <SafeAreaView style={styles.page} edges={['top']}>
-      <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false) }} tintColor={colors.primary} colors={[colors.primary]} />}
-        contentContainerStyle={{ paddingBottom: 32 }}>
-        <View style={styles.head}>
-          <View style={styles.avatar}><Text style={styles.avatarLetter}>{name.slice(0, 1).toUpperCase()}</Text></View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.name} numberOfLines={1}>{name}</Text>
-            {!!user.email && <Text style={styles.email} numberOfLines={1}>{user.email}</Text>}
-          </View>
+      <ScrollView contentContainerStyle={{ paddingBottom: 32 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false) }} tintColor={colors.primary} colors={[colors.primary]} />}>
+        <View style={styles.header}>
+          <Text style={styles.h1}>{tr('Профиль')}</Text>
+          <Pressable onPress={() => router.push('/notifications')} hitSlop={8} style={styles.bell} accessibilityLabel={tr('Уведомления')}>
+            <Icon name="bell" size={23} color={colors.ink} />
+            {notices > 0 && <View style={styles.bellDot} />}
+          </Pressable>
         </View>
 
-        <View style={styles.balance}>
-          <Text style={styles.balanceLabel}>{tr('Баланс')}</Text>
-          <Text style={styles.balanceValue}>{bal ? rsd(bal.balance ?? 0) : '—'}</Text>
-          {!!bal && (bal.bonus ?? 0) > 0 && <Text style={styles.balanceSub}>{tr('из них бонусы — {sum}', { sum: rsd(bal.bonus ?? 0) })}</Text>}
-        </View>
-
-        <View style={styles.sectionHead}>
-          <Text style={styles.h2}>{tr('Мои объявления')}</Text>
-          <Pressable onPress={() => router.navigate('/post')} hitSlop={8}><Text style={styles.link}>{tr('+ Разместить')}</Text></Pressable>
-        </View>
-        <View style={{ paddingHorizontal: 16 }}><Segmented options={tabs} value={tab} onChange={setTab} /></View>
-
-        {items === null ? <ActivityIndicator style={{ marginTop: 24 }} color={colors.primary} /> : shown.length === 0 ? (
-          <Text style={styles.empty}>{tab === 'active' ? tr('Активных объявлений пока нет.') : tab === 'pending' ? tr('На проверке ничего нет.') : tr('Здесь будут проданные, архивные и отклонённые.')}</Text>
-        ) : (
-          <View style={styles.list}>
-            {shown.map((i) => {
-              const st = STATUS[i.status] ?? STATUS.draft
-              const photo = mediaUrl(i.cover_photo)
-              return (
-                <Pressable key={i.id} style={styles.row} onPress={() => router.push(`/listing/${i.id}`)}>
-                  <View style={styles.thumb}>{photo ? <Image source={{ uri: photo }} style={styles.thumbImg} contentFit="cover" /> : null}</View>
-                  <View style={{ flex: 1, gap: 3 }}>
-                    <Text style={styles.rowTitle} numberOfLines={2}>{i.title}</Text>
-                    <Text style={styles.rowPrice}>{formatPrice(i.price, i.currency, i.is_free)}</Text>
-                    <View style={styles.rowMeta}>
-                      <Text style={[styles.status, { color: st.tone, backgroundColor: st.bg }]}>{tr(st.label)}</Text>
-                      {i.views_count != null && <Text style={styles.views}><Ionicons name="eye-outline" size={13} /> {i.views_count}</Text>}
-                    </View>
-                  </View>
-                  <Pressable onPress={() => setMenu(i)} hitSlop={10} style={styles.more} accessibilityLabel={tr('Действия с объявлением')}>
-                    <Ionicons name="ellipsis-horizontal" size={20} color={colors.inkSoft} />
-                  </Pressable>
-                </Pressable>
-              )
-            })}
+        {!hasPhone && !phoneHidden && (
+          <View style={styles.hint}>
+            <Text style={styles.hintText}>{tr('Укажите телефон — покупатели смогут звонить вам напрямую')}</Text>
+            <Pressable style={styles.hintBtn} onPress={() => Linking.openURL(`${SITE}/profile/edit`)}><Text style={styles.hintBtnText}>{tr('Указать')}</Text></Pressable>
+            <Pressable onPress={() => { setPhoneHidden(true); prefs.set('plonk_phone_hint', 'hidden') }} hitSlop={8} accessibilityLabel={tr('Закрыть')}>
+              <Icon name="close" size={15} color="#8A6A1F" />
+            </Pressable>
           </View>
         )}
 
-        <Sheet visible={!!menu} title={menu?.title} onClose={() => setMenu(null)}>
-          {menu && menu.status !== 'sold' && (
-            <SheetAction label={tr('Редактировать')} icon={<Ionicons name="create-outline" size={20} color={colors.ink} />} onPress={() => { const m = menu; setMenu(null); router.push(`/edit/${m.id}`) }} />
-          )}
-          {menu?.status === 'active' && (
-            <>
-              <SheetAction label={tr('Отметить «Продано»')} icon={<Ionicons name="checkmark-done-outline" size={20} color={colors.ink} />} onPress={() => act(() => setListingStatus(token as string, menu.id, 'sold'))} />
-              <SheetAction label={tr('Снять с публикации')} icon={<Ionicons name="archive-outline" size={20} color={colors.ink} />} onPress={() => act(() => setListingStatus(token as string, menu.id, 'archived'))} />
-            </>
-          )}
-          {(menu?.status === 'sold' || menu?.status === 'archived') && (
-            <SheetAction label={tr('Вернуть в продажу')} icon={<Ionicons name="refresh-outline" size={20} color={colors.ink} />} onPress={() => act(() => setListingStatus(token as string, menu.id, 'active'))} />
-          )}
-          {menu && <SheetAction label={tr('Удалить')} danger icon={<Ionicons name="trash-outline" size={20} color="#B42318" />} onPress={() => askDelete(menu)} />}
-        </Sheet>
-
-        <View style={styles.links}>
-          <Pressable style={styles.linkRow} onPress={() => router.push('/notifications')}>
-            <Ionicons name="notifications-outline" size={20} color={colors.inkSoft} />
-            <Text style={styles.linkText}>{tr('Уведомления')}</Text>
-            <Ionicons name="chevron-forward" size={18} color={colors.muted} />
-          </Pressable>
-          <Pressable style={[styles.linkRow, { borderBottomWidth: 0 }]} onPress={() => router.push('/saved')}>
-            <Ionicons name="bookmark-outline" size={20} color={colors.inkSoft} />
-            <Text style={styles.linkText}>{tr('Сохранённые поиски')}</Text>
-            <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+        <View style={styles.card}>
+          <View style={styles.avatar}><Text style={styles.avatarLetter}>{name.slice(0, 1).toUpperCase()}</Text></View>
+          <View style={styles.cardBody}>
+            <Text style={styles.cardName}>{name}</Text>
+            <Text style={styles.cardMeta}>{tr(pub?.is_company ? 'Компания' : 'Частное лицо')}  ·  {rating}</Text>
+            {pub && !pub.document_verified && (
+              <Pressable style={styles.verify} onPress={() => Linking.openURL(`${SITE}/profile`)}>
+                <Icon name="shield" size={15} color="#fff" />
+                <Text style={styles.verifyText}>{tr('Подтвердить личность')}</Text>
+              </Pressable>
+            )}
+          </View>
+          <Pressable style={styles.edit} onPress={() => Linking.openURL(`${SITE}/profile/edit`)} accessibilityLabel={tr('Редактировать')}>
+            <Icon name="edit" size={16} color={colors.inkSoft} />
           </Pressable>
         </View>
 
-        <View style={styles.langRow}>
-          <Ionicons name="language-outline" size={20} color={colors.inkSoft} />
-          <Text style={styles.langText}>{tr('Язык')}</Text>
-          <Segmented options={LANGS} value={lang} onChange={setLang} />
+        {pending > 0 && (
+          <Pressable style={styles.pending} onPress={() => router.push({ pathname: '/my', params: { tab: 'pending' } })}>
+            <View style={styles.pendingDot} />
+            <Text style={styles.pendingText}>{tr('{n} {word} на проверке', { n: pending, word: plural(pending, { ru: ['объявление', 'объявления', 'объявлений'], en: ['listing', 'listings'], sr: ['oglas', 'oglasa', 'oglasa'] }) })}</Text>
+            <Icon name="forward" size={15} color="#8A6A1F" />
+          </Pressable>
+        )}
+
+        <View style={styles.stats}>
+          <Pressable style={styles.stat} onPress={() => router.push('/my')}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.statValue}>{items ? active.length : '—'}</Text>
+              <Text style={styles.statLabel}>{tr('объявлений')}</Text>
+            </View>
+            <Icon name="forward" size={15} color={colors.muted} />
+          </Pressable>
+          <View style={styles.stat}><View><Text style={styles.statValue}>{items ? views : '—'}</Text><Text style={styles.statLabel}>{tr('просмотров')}</Text></View></View>
+          <View style={styles.stat}><View><Text style={styles.statValue}>{items ? favs : '—'}</Text><Text style={styles.statLabel}>{tr('в избранном')}</Text></View></View>
         </View>
 
-        <Pressable style={styles.logout} onPress={signOut}>
-          <Ionicons name="log-out-outline" size={20} color="#B42318" />
-          <Text style={styles.logoutText}>{tr('Выйти')}</Text>
-        </Pressable>
+        <View style={styles.balance}>
+          <View style={styles.balanceTop}>
+            <View>
+              <Text style={styles.balanceLabel}>{tr('Баланс')}</Text>
+              <Text style={styles.balanceValue}>{bal ? rsd(bal.balance ?? 0) : '—'}</Text>
+            </View>
+            <Pressable style={[styles.topup, !bal?.payments_enabled && styles.topupOff]} disabled={!bal?.payments_enabled} onPress={() => Linking.openURL(`${SITE}/profile`)}>
+              <Text style={[styles.topupText, !bal?.payments_enabled && { color: colors.muted }]}>{tr('Пополнить')}</Text>
+            </Pressable>
+          </View>
+          <View style={styles.bar}>
+            {money > 0 && <View style={{ flex: money / total, backgroundColor: colors.primary }} />}
+            {bonus > 0 && <View style={{ flex: bonus / total, backgroundColor: colors.accent }} />}
+          </View>
+          <View style={styles.parts}>{part('money', money)}{part('bonus', bonus)}</View>
+          {!bal?.payments_enabled && <Text style={styles.balanceNote}>{tr('Пополнение картой пока недоступно')}</Text>}
+        </View>
+
+        {/* Меню — как на сайте, в том же порядке: сохранённые поиски — в приложении, остальное — страницы сайта */}
+        <View style={styles.menu}>
+          {row('invite', 'Пригласите друга', () => Linking.openURL(`${SITE}/profile/invite`))}
+          {row('searchrow', 'Сохранённые поиски', () => router.push('/saved'))}
+          {row('history', 'Вы смотрели', () => Linking.openURL(`${SITE}/history`))}
+          {row('help', 'Написать в поддержку', () => Linking.openURL(`${SITE}/support`))}
+          {row('volunteer', 'Волонтёрство', () => Linking.openURL(`${SITE}/volunteer`), undefined, true)}
+        </View>
+
+        <View style={styles.menu}>{langRow}</View>
+
+        <View style={styles.menu}>
+          <Pressable style={[styles.row, styles.rowLast]} onPress={signOut} accessibilityRole="button">
+            <View style={[styles.rowIcon, { backgroundColor: '#FDECEA' }]}><Icon name="logout" size={17} color="#B42318" /></View>
+            <Text style={[styles.rowText, { color: '#B42318' }]}>{tr('Выйти')}</Text>
+          </Pressable>
+        </View>
       </ScrollView>
     </SafeAreaView>
   )
@@ -181,40 +204,61 @@ export default function Profile() {
 
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.bg },
-  center: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 10 },
+  center: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, gap: 10 },
   circle: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   title: { fontSize: 20, fontFamily: font[800], color: colors.ink, textAlign: 'center' },
-  text: { fontFamily: font[400], fontSize: 15, lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },
+  text: { fontSize: 15, fontFamily: font[400], lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },
   cta: { marginTop: 10, height: 50, paddingHorizontal: 40, borderRadius: 14, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
   ctaText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
-  head: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16 },
-  avatar: { width: 60, height: 60, borderRadius: 30, backgroundColor: '#7C6CF0', alignItems: 'center', justifyContent: 'center' },
-  avatarLetter: { color: '#fff', fontSize: 24, fontFamily: font[800] },
-  name: { fontSize: 21, fontFamily: font[800], color: colors.ink },
-  email: { fontFamily: font[400], fontSize: 14.5, color: colors.inkSoft, marginTop: 2 },
-  balance: { marginHorizontal: 16, padding: 16, borderRadius: 18, backgroundColor: colors.primaryDeep, gap: 2 },
-  balanceLabel: { color: 'rgba(255,255,255,0.75)', fontSize: 13.5, fontFamily: font[700] },
-  balanceValue: { color: '#fff', fontSize: 28, fontFamily: font[800] },
-  balanceSub: { color: 'rgba(255,255,255,0.75)', fontFamily: font[400], fontSize: 13 },
-  sectionHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, marginTop: 24, marginBottom: 10 },
-  h2: { fontSize: 20, fontFamily: font[800], color: colors.ink },
-  link: { fontSize: 15, fontFamily: font[800], color: colors.primaryDeep },
-  empty: { fontFamily: font[400], fontSize: 14.5, color: colors.muted, textAlign: 'center', marginTop: 24, paddingHorizontal: 32 },
-  list: { marginHorizontal: 16, marginTop: 12, gap: 10 },
-  row: { flexDirection: 'row', gap: 12, padding: 10, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
-  thumb: { width: 76, height: 76, borderRadius: 12, backgroundColor: colors.photo, overflow: 'hidden' },
-  thumbImg: { width: 76, height: 76 },
-  rowTitle: { fontSize: 15, color: colors.ink, fontFamily: font[600] },
-  rowPrice: { fontSize: 16, fontFamily: font[800], color: colors.ink },
-  rowMeta: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  status: { fontSize: 12, fontFamily: font[800], paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, overflow: 'hidden' },
-  views: { fontFamily: font[400], fontSize: 12.5, color: colors.muted },
-  more: { width: 32, alignItems: 'center', paddingTop: 2 },
-  links: { marginHorizontal: 16, marginTop: 26, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
-  linkRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, height: 54, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
-  linkText: { flex: 1, fontSize: 16, color: colors.ink, fontFamily: font[600] },
-  langRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginHorizontal: 16, marginTop: 14, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
-  langText: { flex: 1, fontSize: 16, color: colors.ink, fontFamily: font[600] },
-  logout: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 14, height: 50, marginHorizontal: 16, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
-  logoutText: { fontSize: 16, fontFamily: font[700], color: '#B42318' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 12 },
+  h1: { fontSize: 22, fontFamily: font[800], letterSpacing: -0.3, color: colors.ink },
+  bell: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  bellDot: { position: 'absolute', top: 8, right: 9, width: 9, height: 9, borderRadius: 5, backgroundColor: colors.accent, borderWidth: 1.5, borderColor: colors.bg },
+  hint: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 12, marginBottom: 12, padding: 12, borderRadius: 14, backgroundColor: '#FBF3E3' },
+  hintText: { flex: 1, fontSize: 13, lineHeight: 18, fontFamily: font[700], color: '#8A6A1F' },
+  hintBtn: { height: 32, paddingHorizontal: 12, borderRadius: 9, backgroundColor: '#F2E2BF', justifyContent: 'center' },
+  hintBtnText: { fontSize: 13, fontFamily: font[800], color: '#6B5016' },
+  // .profile-card: отступы 0 12 12, внутри 14, скругление 18, аватар 56, имя 17/800, строка 12,5/600
+  card: { flexDirection: 'row', alignItems: 'flex-start', gap: 13, marginHorizontal: 12, marginBottom: 12, padding: 14, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  avatar: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#7C6CF0', alignItems: 'center', justifyContent: 'center' },
+  avatarLetter: { color: '#fff', fontSize: 21, fontFamily: font[800] },
+  cardBody: { flex: 1, paddingRight: 34 },
+  cardName: { fontSize: 17, lineHeight: 21, letterSpacing: -0.3, fontFamily: font[800], color: colors.ink },
+  cardMeta: { marginTop: 3, fontSize: 12.5, fontFamily: font[600], color: colors.muted },
+  verify: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10, height: 34, paddingHorizontal: 12, borderRadius: 10, backgroundColor: '#1C2620' },
+  verifyText: { color: '#fff', fontSize: 13, fontFamily: font[800] },
+  edit: { position: 'absolute', top: 12, right: 12, width: 32, height: 32, borderRadius: 10, backgroundColor: colors.sunken, alignItems: 'center', justifyContent: 'center' },
+  pending: { flexDirection: 'row', alignItems: 'center', gap: 9, marginHorizontal: 12, marginBottom: 12, paddingHorizontal: 14, height: 46, borderRadius: 14, backgroundColor: '#FBF3E3' },
+  pendingDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#C08A1E' },
+  pendingText: { flex: 1, fontSize: 14, fontFamily: font[800], color: '#8A6A1F' },
+  stats: { flexDirection: 'row', gap: 8, marginHorizontal: 12, marginBottom: 12 },
+  stat: { flex: 1, flexDirection: 'row', alignItems: 'center', minHeight: 62, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  statValue: { fontSize: 18, fontFamily: font[800], color: colors.ink },
+  statLabel: { fontSize: 11.5, fontFamily: font[600], color: colors.muted, marginTop: 1 },
+  // .balance-card: отступы 0 12 10, внутри 16/14/14, скругление 18; .balance-bar 10, .balance-part 10/12/11, скругление 14
+  balance: { marginHorizontal: 12, marginBottom: 10, paddingTop: 16, paddingHorizontal: 14, paddingBottom: 14, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  balanceTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  balanceLabel: { fontSize: 13, fontFamily: font[700], color: colors.muted },
+  balanceValue: { fontSize: 26, fontFamily: font[800], letterSpacing: -0.3, color: colors.ink, marginTop: 2 },
+  topup: { height: 38, paddingHorizontal: 14, borderRadius: 11, backgroundColor: colors.primary, justifyContent: 'center' },
+  topupOff: { backgroundColor: colors.sunken },
+  topupText: { color: '#fff', fontSize: 14, fontFamily: font[800] },
+  bar: { flexDirection: 'row', gap: 3, height: 10, marginTop: 12, borderRadius: 6, overflow: 'hidden', backgroundColor: colors.sunken },
+  parts: { flexDirection: 'row', gap: 8, marginTop: 10 },
+  part: { flex: 1, paddingTop: 10, paddingHorizontal: 12, paddingBottom: 11, borderRadius: 14 },
+  partMoney: { backgroundColor: colors.primarySoft },
+  partBonus: { backgroundColor: colors.accentSoft },
+  partZero: { backgroundColor: colors.sunken },
+  partTop: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  partLabel: { fontSize: 12, lineHeight: 16, fontFamily: font[700] },
+  partAmount: { marginTop: 4, fontSize: 18, lineHeight: 24, fontFamily: font[800], letterSpacing: -0.2 },
+  partNote: { marginTop: 2, fontSize: 11.5, lineHeight: 15, fontFamily: font[500], opacity: 0.82 },
+  balanceNote: { marginTop: 10, fontSize: 12, fontFamily: font[500], color: colors.muted, textAlign: 'center' },
+  menu: { marginHorizontal: 12, marginBottom: 10, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, minHeight: 56, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+  rowLast: { borderBottomWidth: 0 },
+  rowIcon: { width: 32, height: 32, borderRadius: 10, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  rowText: { flex: 1, fontSize: 15.5, fontFamily: font[700], color: colors.ink },
+  badge: { minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: 6, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
+  badgeText: { color: '#fff', fontSize: 11, fontFamily: font[800] },
 })

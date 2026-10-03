@@ -38,9 +38,10 @@ export default function TabsLayout() {
       tabBarIconStyle: { height: ICON + 2, flexGrow: 0, flexShrink: 0 },
       tabBarAllowFontScaling: false,
       // На самых узких экранах подпись чуть уменьшится, но не обрежется
+      // Подпись — как .nav-item сайта: 11,5 / 600, активная 700; длинную («Разместить») слегка ужимаем, а не режем
       tabBarLabel: ({ color, focused, children }) => (
         <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.82} allowFontScaling={false}
-          style={{ color, fontSize: LABEL, lineHeight: 14, fontFamily: focused || children === tr('Разместить') ? font[700] : font[600], marginTop: 3, flexShrink: 0 }}>{children}</Text>
+          style={{ color, fontSize: LABEL, lineHeight: 14, fontFamily: focused ? font[700] : font[600], marginTop: 3, maxWidth: '100%' }}>{children}</Text>
       ),
       sceneStyle: { backgroundColor: colors.bg },
     }}>
