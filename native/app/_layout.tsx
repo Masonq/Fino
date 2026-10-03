@@ -6,6 +6,7 @@ import { AppState } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 import { AuthProvider } from '../src/auth'
+import CrashGuard from '../src/components/Crash'
 import { ChatsProvider } from '../src/chats'
 import { FavoritesProvider } from '../src/favorites'
 import { LangProvider } from '../src/i18n'
@@ -41,6 +42,7 @@ function useUpdatesOnResume() {
 export default function RootLayout() {
   useUpdatesOnResume()
   return (
+    <CrashGuard>
     <SafeAreaProvider>
       <AuthProvider>
       <FavoritesProvider>
@@ -62,5 +64,6 @@ export default function RootLayout() {
       </FavoritesProvider>
       </AuthProvider>
     </SafeAreaProvider>
+    </CrashGuard>
   )
 }
