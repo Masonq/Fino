@@ -114,7 +114,7 @@ export default function Profile() {
           <Ionicons name="log-out-outline" size={20} color="#B42318" />
           <Text style={styles.logoutText}>Выйти</Text>
         </Pressable>
-        <Text style={{ textAlign: 'center', color: '#8D958E', fontSize: 13, marginTop: 18 }}>Тест обновления A</Text>
+        <Text style={{ textAlign: 'center', color: '#8D958E', fontSize: 13, marginTop: 18 }}>Тест обновления B</Text>
       </ScrollView>
     </SafeAreaView>
   )

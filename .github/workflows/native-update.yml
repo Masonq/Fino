@@ -37,6 +37,11 @@ jobs:
         env:
           CI: '1'
           EXPO_NO_TELEMETRY: '1'
+      - name: Полная конфигурация Expo для описания обновления (sdkVersion, platforms, extra)
+        run: npx expo config --type public --json > dist/expoConfig.json && node -e "const c=require('./dist/expoConfig.json'); if(!c.sdkVersion) { console.error('нет sdkVersion'); process.exit(1) }"
+        env:
+          CI: '1'
+          EXPO_NO_TELEMETRY: '1'
       - name: Упаковка (с app.json — по нему сервер знает версию приложения)
         run: cp app.json dist/app.json && cd dist && zip -qr ../../update.zip .
       - uses: softprops/action-gh-release@v2
