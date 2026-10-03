@@ -82,6 +82,10 @@ export default function RootLayout() {
         <Stack.Screen name="my" />
         <Stack.Screen name="history" />
         <Stack.Screen name="profile-edit" />
+        <Stack.Screen name="invite" />
+        <Stack.Screen name="reviews" />
+        <Stack.Screen name="support/index" />
+        <Stack.Screen name="support/[id]" />
         <Stack.Screen name="edit/[id]" />
         <Stack.Screen name="login" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
       </Stack>

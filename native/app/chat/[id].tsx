@@ -8,7 +8,9 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { type Chat, chatInfo, chatMessages, markChatRead, type Message, sendMessage } from '../../src/api'
+import { blockChat, type Chat, chatInfo, chatMessages, markChatRead, type Message, respondOffer, sendMessage, sendOffer, isOffer } from '../../src/api'
+import Icon from '../../src/components/Icon'
+import Sheet, { SheetAction } from '../../src/components/Sheet'
 import { useAuth } from '../../src/auth'
 import { useChats } from '../../src/chats'
 import { mediaUrl } from '../../src/config'
@@ -32,6 +34,10 @@ export default function ChatScreen() {
   const [msgs, setMsgs] = useState<(Message & { pending?: boolean; failed?: boolean })[] | null>(null)
   const [text, setText] = useState('')
   const lastCount = useRef(0)
+  const [menu, setMenu] = useState(false)
+  const [offerOpen, setOfferOpen] = useState(false)
+  const [offer, setOffer] = useState('')
+  const [blocked, setBlocked] = useState(false)
 
   const load = useCallback(async () => {
     if (!token) return
@@ -75,7 +81,7 @@ export default function ChatScreen() {
 
   const mine = (m: Message) => !!user && m.sender_id === user.id
   // Служебные записи без текста (карточка объявления и т.п.) — не рисуем пустым пузырём
-  const data = [...(msgs ?? [])].filter((m) => m.kind === 'offer' || plainText(m.text)).reverse()
+  const data = [...(msgs ?? [])].filter((m) => isOffer(m.kind) || plainText(m.text)).reverse()
   const photo = mediaUrl(info?.listing_photo)
   const title = info?.is_team ? tr('Команда PLONK') : (info?.other_name || tr('Переписка'))
 
@@ -84,13 +90,19 @@ export default function ChatScreen() {
       return <View style={styles.system}><Text style={styles.systemText}>{plainText(item.text)}</Text></View>
     }
     const me = mine(item)
-    const body = item.kind === 'offer'
+    const body = isOffer(item.kind)
       ? tr('Предлагаю {price}', { price: formatPrice(item.offer_price ?? null, info?.currency) }) + (item.offer_status === 'accepted' ? tr(' — принято') : item.offer_status === 'declined' ? tr(' — отклонено') : '')
       : plainText(item.text)
     return (
       <Pressable disabled={!item.failed} onPress={() => send(item.text || '', item.id)} style={[styles.bubbleRow, me && styles.bubbleRowMe]}>
         <View style={[styles.bubble, me ? styles.bubbleMe : styles.bubbleThem, item.failed && styles.bubbleFailed]}>
           <Text style={[styles.bubbleText, me && styles.bubbleTextMe]}>{body}</Text>
+          {isOffer(item.kind) && !me && (!item.offer_status || item.offer_status === 'pending') && (
+            <View style={styles.offerBtns}>
+              <Pressable style={[styles.offerBtn, styles.offerYes]} onPress={async () => { if (token) { await respondOffer(token, chatId, item.id, 'accepted').catch(() => {}); load() } }}><Text style={styles.offerYesText}>{tr('Принять')}</Text></Pressable>
+              <Pressable style={styles.offerBtn} onPress={async () => { if (token) { await respondOffer(token, chatId, item.id, 'declined').catch(() => {}); load() } }}><Text style={styles.offerNoText}>{tr('Отклонить')}</Text></Pressable>
+            </View>
+          )}
           <Text style={[styles.meta, me && styles.metaMe]}>
             {item.failed ? tr('Не отправлено — нажмите, чтобы повторить') : item.pending ? tr('Отправляется…') : hhmm(item.created_at)}
           </Text>
@@ -116,7 +128,29 @@ export default function ChatScreen() {
             )}
           </View>
         </Pressable>
+        {!info?.is_team && (
+          <Pressable onPress={() => setMenu(true)} hitSlop={8} style={styles.back} accessibilityLabel={tr('Ещё')}>
+            <Text style={styles.dots}>⋯</Text>
+          </Pressable>
+        )}
       </View>
+
+      <Sheet visible={menu} onClose={() => setMenu(false)}>
+        {!info?.is_seller && <SheetAction label={tr('Предложить цену')} icon={<Icon name="wallet" size={20} color={colors.ink} />} onPress={() => { setMenu(false); setOffer(''); setOfferOpen(true) }} />}
+        <SheetAction label={tr(blocked ? 'Разблокировать' : 'Заблокировать')} danger={!blocked} icon={<Icon name="lock" size={20} color={blocked ? colors.ink : '#B42318'} />}
+          onPress={async () => { setMenu(false); if (!token) return; const next = !blocked; setBlocked(next); try { await blockChat(token, chatId, next) } catch { setBlocked(!next) } }} />
+      </Sheet>
+      <Sheet visible={offerOpen} title={tr('Ваша цена')} onClose={() => setOfferOpen(false)}>
+        <View style={{ paddingHorizontal: 20, gap: 12 }}>
+          {info?.listing_price != null && <Text style={styles.offerHint}>{tr('Цена в объявлении: {p}', { p: formatPrice(info.listing_price, info.currency) })}</Text>}
+          <TextInput value={offer} onChangeText={(v) => setOffer(v.replace(/\D/g, '').slice(0, 9))} keyboardType="number-pad" placeholder="0" placeholderTextColor={colors.muted} style={styles.offerInput} autoFocus />
+          <Pressable style={[styles.offerSend, !offer && { opacity: 0.45 }]} disabled={!offer} onPress={async () => {
+            if (!token || !offer) return
+            setOfferOpen(false)
+            try { await sendOffer(token, chatId, Number(offer)); await load() } catch { /* сеть */ }
+          }}><Text style={styles.offerSendText}>{tr('Предложить')}</Text></Pressable>
+        </View>
+      </Sheet>
 
       {msgs === null
         ? <View style={styles.loading}><ActivityIndicator color={colors.primary} /></View>
@@ -179,4 +213,14 @@ const styles = StyleSheet.create({
   input: { flex: 1, minHeight: 42, maxHeight: 120, borderRadius: 21, backgroundColor: colors.sunken, paddingHorizontal: 16, paddingTop: 11, paddingBottom: 11, fontFamily: font[400], fontSize: 16, color: colors.ink },
   sendBtn: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
   sendOff: { opacity: 0.4 },
+  dots: { fontSize: 24, lineHeight: 26, color: colors.ink, fontFamily: font[800] },
+  offerBtns: { flexDirection: 'row', gap: 8, marginTop: 8 },
+  offerBtn: { height: 34, paddingHorizontal: 14, borderRadius: 10, backgroundColor: colors.sunken, justifyContent: 'center' },
+  offerYes: { backgroundColor: colors.primary },
+  offerYesText: { color: '#fff', fontSize: 13.5, fontFamily: font[800] },
+  offerNoText: { color: colors.ink, fontSize: 13.5, fontFamily: font[700] },
+  offerHint: { fontSize: 14, fontFamily: font[600], color: colors.muted },
+  offerInput: { height: 56, borderRadius: 14, backgroundColor: colors.sunken, paddingHorizontal: 16, fontSize: 24, fontFamily: font[800], color: colors.ink },
+  offerSend: { height: 52, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
+  offerSendText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
 })

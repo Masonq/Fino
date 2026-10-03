@@ -176,6 +176,9 @@ export type Message = {
   offer_price?: number | null; offer_status?: string | null; created_at: string
 }
 
+/** Предложение цены: сервер помечает его как price_offer (раньше — offer) */
+export const isOffer = (kind?: string | null) => kind === 'price_offer' || kind === 'offer'
+
 export const chatList = (token: string) => authed<{ total: number; items: Chat[] }>(`/chats?lang=${getLang()}`, token)
 export const chatInfo = (token: string, id: string) => authed<Chat>(`/chats/${encodeURIComponent(id)}?lang=${getLang()}`, token)
 export const chatMessages = (token: string, id: string) => authed<Message[]>(`/chats/${encodeURIComponent(id)}/messages`, token)
@@ -239,7 +242,7 @@ export const freshListings = (city?: string | null) =>
 export type Seller = {
   id: string; display_name?: string | null; company_name?: string | null; is_company?: boolean; avatar_url?: string | null
   rating_avg?: number | null; rating_count?: number; document_verified?: boolean; created_at?: string | null
-  active_listings?: number; reply_speed?: string | null; company_description?: string | null
+  active_listings?: number; reply_speed?: string | null; company_description?: string | null; is_subscribed?: boolean
 }
 export const sellerProfile = (userId: string) => get<Seller>(`/users/${encodeURIComponent(userId)}/public?lang=${getLang()}`)
 
@@ -303,4 +306,38 @@ export const updateMe = (token: string, patch: { display_name?: string; phone?: 
   authed<import('./auth').User>('/auth/me', token, 'PATCH', patch)
 export const listingsByIds = (ids: string[]) =>
   get<FeedItem[] | { items: FeedItem[] }>(`/listings/by-ids?ids=${ids.map(encodeURIComponent).join(',')}&lang=${getLang()}`)
+
+// ---------- отзывы, подписка, поддержка, приглашения, чат ----------
+
+export type Review = { id: string; author_name?: string | null; rating: number; comment?: string | null; created_at: string }
+export const userReviews = (userId: string) =>
+  get<{ total: number; rating_avg: number; rating_count: number; breakdown: Record<string, number>; items: Review[] }>(`/reviews/user/${encodeURIComponent(userId)}?lang=${getLang()}`)
+export type Waiting = { chat_id: string; target_id: string; target_name?: string | null; listing_id?: string | null; listing_title?: string | null; listing_photo?: string | null }
+export const waitingReviews = (token: string) => authed<{ items: Waiting[] }>(`/reviews/waiting?lang=${getLang()}`, token)
+export const createReview = (token: string, r: { target_id: string; listing_id?: string | null; rating: number; comment?: string }) =>
+  authed<unknown>('/reviews', token, 'POST', { ...r, comment: r.comment || null })
+export const subscribeSeller = (token: string, userId: string, on: boolean) =>
+  authed<unknown>(`/users/${encodeURIComponent(userId)}/subscribe`, token, on ? 'POST' : 'DELETE')
+
+export type TicketMsg = { id: string; body: string; from_staff?: boolean; author_role?: string | null; is_staff?: boolean; created_at: string }
+export type Ticket = { id: string; subject: string; topic: string; status: string; created_at: string; updated_at: string; messages?: TicketMsg[] }
+export const supportMine = (token: string) => authed<{ items: Ticket[] }>('/support/mine', token)
+// Одно обращение по номеру открывает только команда (/support/{id} — not_staff); пользователь видит свои
+// обращения вместе с перепиской в /support/mine — оттуда и берём, как сайт
+export async function supportTicket(token: string, id: string): Promise<Ticket | null> {
+  const mine = await authed<{ items: Ticket[] }>('/support/mine', token)
+  return mine.items.find((t) => t.id === id) ?? null
+}
+export const supportCreate = (token: string, t: { topic: string; subject: string; body: string }) => authed<{ id: string }>('/support', token, 'POST', t)
+export const supportReply = (token: string, id: string, body: string) => authed<unknown>(`/support/${encodeURIComponent(id)}/reply`, token, 'POST', { body })
+
+export const myReferrals = (token: string) =>
+  authed<{ invited: number; posted: number; rewarded: number; earned: number; bonus: number }>('/users/me/referrals', token)
+
+export const sendOffer = (token: string, chatId: string, price: number) =>
+  authed<Message>(`/chats/${encodeURIComponent(chatId)}/messages`, token, 'POST', { text: null, offer_price: price })
+export const respondOffer = (token: string, chatId: string, messageId: string, status: 'accepted' | 'declined') =>
+  authed<unknown>(`/chats/${encodeURIComponent(chatId)}/offers/${encodeURIComponent(messageId)}/respond`, token, 'POST', { status })
+export const blockChat = (token: string, chatId: string, on: boolean) =>
+  authed<unknown>(`/chats/${encodeURIComponent(chatId)}/${on ? 'block' : 'unblock'}`, token, 'POST')
 

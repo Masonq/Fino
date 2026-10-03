@@ -6,7 +6,7 @@ import { useCallback, useState } from 'react'
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import type { Chat } from '../../src/api'
+import { type Chat, isOffer } from '../../src/api'
 import { useAuth } from '../../src/auth'
 import { useChats } from '../../src/chats'
 import Icon from '../../src/components/Icon'
@@ -40,7 +40,7 @@ export default function Chats() {
   const row = ({ item }: { item: Chat }) => {
     const photo = mediaUrl(item.listing_photo)
     const name = item.is_team ? tr('Команда PLONK') : (item.other_name || tr('Собеседник'))
-    const preview = item.last_kind === 'offer' ? tr('Предложение цены') : plainText(item.last_text).replace(/\n+/g, ' ')
+    const preview = isOffer(item.last_kind) ? tr('Предложение цены') : plainText(item.last_text).replace(/\n+/g, ' ')
     const unread = item.unread || 0
     return (
       <Pressable style={[styles.row, unread > 0 && styles.rowUnread]} onPress={() => router.push(`/chat/${item.id}`)} accessibilityRole="button">

@@ -8,6 +8,7 @@
     "@expo/metro-runtime": "~57.0.16",
     "@expo/vector-icons": "^15.1.1",
     "expo": "~57.0.26",
+    "expo-clipboard": "~57.0.2",
     "expo-constants": "~57.0.20",
     "expo-image": "~57.0.5",
     "expo-image-picker": "~57.0.20",

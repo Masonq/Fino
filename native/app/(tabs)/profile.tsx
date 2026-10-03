@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { balance as fetchBalance, type MyListing, myListings, type Seller, sellerProfile } from '../../src/api'
+import { balance as fetchBalance, type MyListing, myListings, type Seller, sellerProfile, waitingReviews } from '../../src/api'
 import { useAuth } from '../../src/auth'
 import { useChats } from '../../src/chats'
 import Icon from '../../src/components/Icon'
@@ -30,6 +30,7 @@ export default function Profile() {
   const [pub, setPub] = useState<Seller | null>(null)
   const [phoneHidden, setPhoneHidden] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [waiting, setWaiting] = useState(0)
 
   useEffect(() => { prefs.get('plonk_phone_hint').then((v) => setPhoneHidden(v === 'hidden')) }, [])
 
@@ -39,6 +40,7 @@ export default function Profile() {
     if (l.status === 'fulfilled') setItems(l.value.items)
     if (b.status === 'fulfilled') setBal(b.value as typeof bal)
     if (s.status === 'fulfilled') setPub(s.value)
+    waitingReviews(token).then((r) => setWaiting(r.items.length)).catch(() => {})
   }, [token, user])
   useFocusEffect(useCallback(() => { load() }, [load]))
 
@@ -182,10 +184,11 @@ export default function Profile() {
 
         {/* Меню — как на сайте, в том же порядке: сохранённые поиски — в приложении, остальное — страницы сайта */}
         <View style={styles.menu}>
-          {row('invite', 'Пригласите друга', () => Linking.openURL(`${SITE}/profile/invite`))}
+          {row('invite', 'Пригласите друга', () => router.push('/invite'))}
+          {waiting > 0 && row('star', 'Ждут отзыва', () => router.push('/reviews'), waiting)}
           {row('searchrow', 'Сохранённые поиски', () => router.push('/saved'))}
           {row('history', 'Вы смотрели', () => router.push('/history'))}
-          {row('help', 'Написать в поддержку', () => Linking.openURL(`${SITE}/support`))}
+          {row('help', 'Написать в поддержку', () => router.push('/support'))}
           {row('volunteer', 'Волонтёрство', () => Linking.openURL(`${SITE}/volunteer`), undefined, true)}
         </View>
 

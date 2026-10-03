@@ -6,7 +6,9 @@ import { useEffect, useState } from 'react'
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { type FeedItem, type Seller, sellerListings, sellerProfile } from '../../src/api'
+import { type FeedItem, type Review, type Seller, sellerListings, sellerProfile, subscribeSeller, userReviews } from '../../src/api'
+import { useAuth } from '../../src/auth'
+import { Star } from '../../src/components/Icon'
 import ListingCard from '../../src/components/ListingCard'
 import { mediaUrl } from '../../src/config'
 import { monthYear, parseTime } from '../../src/format'
@@ -21,9 +23,13 @@ export default function SellerScreen() {
   const [seller, setSeller] = useState<Seller | null>(null)
   const [items, setItems] = useState<FeedItem[] | null>(null)
   const [failed, setFailed] = useState(false)
+  const { token, user } = useAuth()
+  const [reviews, setReviews] = useState<{ avg: number; count: number; items: Review[] } | null>(null)
+  const [subscribed, setSubscribed] = useState(false)
 
   useEffect(() => {
-    sellerProfile(String(id)).then(setSeller).catch(() => setFailed(true))
+    sellerProfile(String(id)).then((x) => { setSeller(x); setSubscribed(!!x.is_subscribed) }).catch(() => setFailed(true))
+    userReviews(String(id)).then((r) => setReviews({ avg: r.rating_avg, count: r.rating_count, items: r.items })).catch(() => {})
     sellerListings(String(id)).then((r) => setItems(r.items)).catch(() => setItems([]))
   }, [id])
 
@@ -60,6 +66,29 @@ export default function SellerScreen() {
         {since && <Text style={styles.factText}>{tr('На PLONK с {date}', { date: monthYear(since) })}</Text>}
       </View>
       {!!seller.company_description && <Text style={styles.about}>{seller.company_description}</Text>}
+      {user?.id !== seller.id && (
+        <Pressable style={[styles.sub, subscribed && styles.subOn]} onPress={async () => {
+          if (!token) { router.push('/login'); return }
+          const next = !subscribed; setSubscribed(next)
+          try { await subscribeSeller(token, seller.id, next) } catch { setSubscribed(!next) }
+        }}>
+          <Text style={[styles.subText, subscribed && styles.subTextOn]}>{tr(subscribed ? 'Вы подписаны' : 'Подписаться')}</Text>
+        </Pressable>
+      )}
+      {!!reviews && reviews.count > 0 && (
+        <View style={styles.reviews}>
+          <Text style={styles.h2}>{tr('Отзывы')} · {reviews.count}</Text>
+          {reviews.items.slice(0, 5).map((r) => (
+            <View key={r.id} style={styles.review}>
+              <View style={styles.reviewTop}>
+                <Text style={styles.reviewName}>{r.author_name || tr('Покупатель')}</Text>
+                <View style={{ flexDirection: 'row', gap: 1 }}>{[1, 2, 3, 4, 5].map((k) => <Star key={k} size={12} color={k <= r.rating ? '#E0A526' : '#D9DDD9'} />)}</View>
+              </View>
+              {!!r.comment && <Text style={styles.reviewText}>{r.comment}</Text>}
+            </View>
+          ))}
+        </View>
+      )}
       <Text style={styles.h2}>{tr('Объявления')}{items ? ` · ${items.length}` : ''}</Text>
     </View>
   )
@@ -101,5 +130,15 @@ const styles = StyleSheet.create({
   about: { fontFamily: font[400], fontSize: 14.5, lineHeight: 20, color: colors.ink, textAlign: 'center', marginTop: 6 },
   h2: { alignSelf: 'flex-start', fontSize: 19, fontFamily: font[800], color: colors.ink, marginTop: 18, marginBottom: 4 },
   row: { gap: space.gap, paddingHorizontal: space.page },
+  // Как .seller-sub-btn сайта: зелёная 13/700, скругление 11; подписан — светлая с рамкой
+  sub: { marginTop: 10, paddingVertical: 9, paddingHorizontal: 18, borderRadius: 11, backgroundColor: colors.primary },
+  subOn: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  subText: { color: '#fff', fontSize: 13, fontFamily: font[700] },
+  subTextOn: { color: colors.ink },
+  reviews: { alignSelf: 'stretch', marginTop: 18, gap: 8 },
+  review: { padding: 12, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, gap: 4 },
+  reviewTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  reviewName: { fontSize: 14, fontFamily: font[800], color: colors.ink },
+  reviewText: { fontSize: 14, lineHeight: 19, fontFamily: font[400], color: colors.inkSoft },
   empty: { fontFamily: font[400], fontSize: 14.5, color: colors.muted, textAlign: 'center', marginTop: 16 },
 })
