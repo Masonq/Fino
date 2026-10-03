@@ -1,15 +1,13 @@
-import { LANGS, tr, useLang } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
-import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { balance as fetchBalance, deleteListing, type MyListing, myListings, setListingStatus } from '../../src/api'
+import { balance as fetchBalance, type MyListing, myListings } from '../../src/api'
 import { useAuth } from '../../src/auth'
 import Segmented from '../../src/components/Segmented'
-import Sheet, { SheetAction } from '../../src/components/Sheet'
 import { mediaUrl } from '../../src/config'
 import { formatPrice } from '../../src/format'
 import { colors } from '../../src/theme'
@@ -29,12 +27,10 @@ const rsd = (n: number) => `${String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d)
 /** Профиль: кто ты, баланс, мои объявления по вкладкам (активные / на проверке / другие), «Выйти». */
 export default function Profile() {
   const { user, ready, token, signOut } = useAuth()
-  const { lang, setLang } = useLang()
   const [items, setItems] = useState<MyListing[] | null>(null)
   const [bal, setBal] = useState<{ balance?: number; money?: number; bonus?: number } | null>(null)
   const [tab, setTab] = useState<Tab>('active')
   const [refreshing, setRefreshing] = useState(false)
-  const [menu, setMenu] = useState<MyListing | null>(null)
 
   const load = useCallback(async () => {
     if (!token) return
@@ -50,38 +46,20 @@ export default function Profile() {
     return (
       <SafeAreaView style={[styles.page, styles.center]} edges={['top']}>
         <View style={styles.circle}><Ionicons name="person-outline" size={30} color={colors.primaryDeep} /></View>
-        <Text style={styles.title}>{tr('Войдите в PLONK')}</Text>
-        <Text style={styles.text}>{tr('Чтобы сохранять объявления, писать продавцам и размещать свои.')}</Text>
-        <Pressable style={styles.cta} onPress={() => router.push('/login')}><Text style={styles.ctaText}>{tr('Войти')}</Text></Pressable>
-        <View style={[styles.langRow, { marginTop: 24, alignSelf: 'stretch' }]}>
-          <Ionicons name="language-outline" size={20} color={colors.inkSoft} />
-          <Text style={styles.langText}>{tr('Язык')}</Text>
-          <Segmented options={LANGS} value={lang} onChange={setLang} />
-        </View>
+        <Text style={styles.title}>Войдите в PLONK</Text>
+        <Text style={styles.text}>Чтобы сохранять объявления, писать продавцам и размещать свои.</Text>
+        <Pressable style={styles.cta} onPress={() => router.push('/login')}><Text style={styles.ctaText}>Войти</Text></Pressable>
       </SafeAreaView>
     )
   }
 
-  const name = user.display_name || user.email?.split('@')[0] || tr('Профиль')
-
-  const act = async (fn: () => Promise<unknown>) => {
-    setMenu(null)
-    try { await fn() } catch { Alert.alert(tr('Не получилось'), tr('Проверьте интернет и попробуйте ещё раз.')) }
-    load()
-  }
-  const askDelete = (l: MyListing) => {
-    setMenu(null)
-    Alert.alert(tr('Удалить объявление?'), tr('«{title}» исчезнет насовсем.', { title: l.title }), [
-      { text: tr('Отмена'), style: 'cancel' },
-      { text: tr('Удалить'), style: 'destructive', onPress: () => act(() => deleteListing(token as string, l.id)) },
-    ])
-  }
+  const name = user.display_name || user.email?.split('@')[0] || 'Профиль'
   const count = (t: Tab) => (items ?? []).filter((i) => tabOf(i.status) === t).length
   const shown = (items ?? []).filter((i) => tabOf(i.status) === tab)
   const tabs: { key: Tab; label: string }[] = [
-    { key: 'active', label: tr('Активные {n}', { n: count('active') }) },
-    { key: 'pending', label: tr('На проверке {n}', { n: count('pending') }) },
-    { key: 'other', label: tr('Другие {n}', { n: count('other') }) },
+    { key: 'active', label: `Активные ${count('active')}` },
+    { key: 'pending', label: `На проверке ${count('pending')}` },
+    { key: 'other', label: `Другие ${count('other')}` },
   ]
 
   return (
@@ -97,19 +75,19 @@ export default function Profile() {
         </View>
 
         <View style={styles.balance}>
-          <Text style={styles.balanceLabel}>{tr('Баланс')}</Text>
+          <Text style={styles.balanceLabel}>Баланс</Text>
           <Text style={styles.balanceValue}>{bal ? rsd(bal.balance ?? 0) : '—'}</Text>
-          {!!bal && (bal.bonus ?? 0) > 0 && <Text style={styles.balanceSub}>{tr('из них бонусы — {sum}', { sum: rsd(bal.bonus ?? 0) })}</Text>}
+          {!!bal && (bal.bonus ?? 0) > 0 && <Text style={styles.balanceSub}>из них бонусы — {rsd(bal.bonus ?? 0)}</Text>}
         </View>
 
         <View style={styles.sectionHead}>
-          <Text style={styles.h2}>{tr('Мои объявления')}</Text>
-          <Pressable onPress={() => router.navigate('/post')} hitSlop={8}><Text style={styles.link}>{tr('+ Разместить')}</Text></Pressable>
+          <Text style={styles.h2}>Мои объявления</Text>
+          <Pressable onPress={() => router.navigate('/post')} hitSlop={8}><Text style={styles.link}>+ Разместить</Text></Pressable>
         </View>
         <View style={{ paddingHorizontal: 16 }}><Segmented options={tabs} value={tab} onChange={setTab} /></View>
 
         {items === null ? <ActivityIndicator style={{ marginTop: 24 }} color={colors.primary} /> : shown.length === 0 ? (
-          <Text style={styles.empty}>{tab === 'active' ? tr('Активных объявлений пока нет.') : tab === 'pending' ? tr('На проверке ничего нет.') : tr('Здесь будут проданные, архивные и отклонённые.')}</Text>
+          <Text style={styles.empty}>{tab === 'active' ? 'Активных объявлений пока нет.' : tab === 'pending' ? 'На проверке ничего нет.' : 'Здесь будут проданные, архивные и отклонённые.'}</Text>
         ) : (
           <View style={styles.list}>
             {shown.map((i) => {
@@ -122,58 +100,21 @@ export default function Profile() {
                     <Text style={styles.rowTitle} numberOfLines={2}>{i.title}</Text>
                     <Text style={styles.rowPrice}>{formatPrice(i.price, i.currency, i.is_free)}</Text>
                     <View style={styles.rowMeta}>
-                      <Text style={[styles.status, { color: st.tone, backgroundColor: st.bg }]}>{tr(st.label)}</Text>
+                      <Text style={[styles.status, { color: st.tone, backgroundColor: st.bg }]}>{st.label}</Text>
                       {i.views_count != null && <Text style={styles.views}><Ionicons name="eye-outline" size={13} /> {i.views_count}</Text>}
                     </View>
                   </View>
-                  <Pressable onPress={() => setMenu(i)} hitSlop={10} style={styles.more} accessibilityLabel={tr('Действия с объявлением')}>
-                    <Ionicons name="ellipsis-horizontal" size={20} color={colors.inkSoft} />
-                  </Pressable>
                 </Pressable>
               )
             })}
           </View>
         )}
 
-        <Sheet visible={!!menu} title={menu?.title} onClose={() => setMenu(null)}>
-          {menu && menu.status !== 'sold' && (
-            <SheetAction label={tr('Редактировать')} icon={<Ionicons name="create-outline" size={20} color={colors.ink} />} onPress={() => { const m = menu; setMenu(null); router.push(`/edit/${m.id}`) }} />
-          )}
-          {menu?.status === 'active' && (
-            <>
-              <SheetAction label={tr('Отметить «Продано»')} icon={<Ionicons name="checkmark-done-outline" size={20} color={colors.ink} />} onPress={() => act(() => setListingStatus(token as string, menu.id, 'sold'))} />
-              <SheetAction label={tr('Снять с публикации')} icon={<Ionicons name="archive-outline" size={20} color={colors.ink} />} onPress={() => act(() => setListingStatus(token as string, menu.id, 'archived'))} />
-            </>
-          )}
-          {(menu?.status === 'sold' || menu?.status === 'archived') && (
-            <SheetAction label={tr('Вернуть в продажу')} icon={<Ionicons name="refresh-outline" size={20} color={colors.ink} />} onPress={() => act(() => setListingStatus(token as string, menu.id, 'active'))} />
-          )}
-          {menu && <SheetAction label={tr('Удалить')} danger icon={<Ionicons name="trash-outline" size={20} color="#B42318" />} onPress={() => askDelete(menu)} />}
-        </Sheet>
-
-        <View style={styles.links}>
-          <Pressable style={styles.linkRow} onPress={() => router.push('/notifications')}>
-            <Ionicons name="notifications-outline" size={20} color={colors.inkSoft} />
-            <Text style={styles.linkText}>{tr('Уведомления')}</Text>
-            <Ionicons name="chevron-forward" size={18} color={colors.muted} />
-          </Pressable>
-          <Pressable style={[styles.linkRow, { borderBottomWidth: 0 }]} onPress={() => router.push('/saved')}>
-            <Ionicons name="bookmark-outline" size={20} color={colors.inkSoft} />
-            <Text style={styles.linkText}>{tr('Сохранённые поиски')}</Text>
-            <Ionicons name="chevron-forward" size={18} color={colors.muted} />
-          </Pressable>
-        </View>
-
-        <View style={styles.langRow}>
-          <Ionicons name="language-outline" size={20} color={colors.inkSoft} />
-          <Text style={styles.langText}>{tr('Язык')}</Text>
-          <Segmented options={LANGS} value={lang} onChange={setLang} />
-        </View>
-
         <Pressable style={styles.logout} onPress={signOut}>
           <Ionicons name="log-out-outline" size={20} color="#B42318" />
-          <Text style={styles.logoutText}>{tr('Выйти')}</Text>
+          <Text style={styles.logoutText}>Выйти</Text>
         </Pressable>
+        <Text style={{ textAlign: 'center', color: '#8D958E', fontSize: 13, marginTop: 18 }}>Тест обновления A</Text>
       </ScrollView>
     </SafeAreaView>
   )
@@ -209,12 +150,6 @@ const styles = StyleSheet.create({
   rowMeta: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   status: { fontSize: 12, fontWeight: '800', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, overflow: 'hidden' },
   views: { fontSize: 12.5, color: colors.muted },
-  more: { width: 32, alignItems: 'center', paddingTop: 2 },
-  links: { marginHorizontal: 16, marginTop: 26, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
-  linkRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, height: 54, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
-  linkText: { flex: 1, fontSize: 16, color: colors.ink, fontWeight: '600' },
-  langRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginHorizontal: 16, marginTop: 14, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
-  langText: { flex: 1, fontSize: 16, color: colors.ink, fontWeight: '600' },
-  logout: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 14, height: 50, marginHorizontal: 16, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  logout: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 28, height: 50, marginHorizontal: 16, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
   logoutText: { fontSize: 16, fontWeight: '700', color: '#B42318' },
 })

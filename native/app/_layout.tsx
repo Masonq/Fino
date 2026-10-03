@@ -6,10 +6,8 @@ import { AppState } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 import { AuthProvider } from '../src/auth'
-import CrashGuard from '../src/components/Crash'
 import { ChatsProvider } from '../src/chats'
 import { FavoritesProvider } from '../src/favorites'
-import { LangProvider } from '../src/i18n'
 
 import { colors } from '../src/theme'
 
@@ -42,28 +40,20 @@ function useUpdatesOnResume() {
 export default function RootLayout() {
   useUpdatesOnResume()
   return (
-    <CrashGuard>
     <SafeAreaProvider>
       <AuthProvider>
       <FavoritesProvider>
       <ChatsProvider>
       <StatusBar style="dark" />
-      <LangProvider>{(lang) => (
-      <Stack key={lang} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'slide_from_right' }}>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'slide_from_right' }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="listing/[id]" />
         <Stack.Screen name="chat/[id]" />
-        <Stack.Screen name="seller/[id]" />
-        <Stack.Screen name="notifications" />
-        <Stack.Screen name="saved" />
-        <Stack.Screen name="edit/[id]" />
         <Stack.Screen name="login" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
       </Stack>
-      )}</LangProvider>
       </ChatsProvider>
       </FavoritesProvider>
       </AuthProvider>
     </SafeAreaProvider>
-    </CrashGuard>
   )
 }

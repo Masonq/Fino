@@ -1,5 +1,3 @@
-import { getLang } from './i18n'
-import { tr } from './i18n'
 import { API } from './config'
 
 export type FeedItem = {
@@ -48,8 +46,6 @@ export type Listing = Omit<FeedItem, 'photos'> & {
   number?: number | string | null
   price_negotiable?: boolean
   category_name?: string | null
-  category_slug?: string | null
-  attributes?: Record<string, unknown>
 }
 
 export type FeedTab = 'all' | 'new' | 'free'
@@ -66,7 +62,7 @@ export const PAGE = 20
 export type Filters = { priceMin?: string; priceMax?: string; currency?: 'EUR' | 'RSD'; withPhoto?: boolean; delivery?: boolean; sort?: '' | 'new' | 'cheap' | 'expensive' }
 
 export function fetchFeed(opts: { tab: FeedTab; offset: number; q?: string; city?: string | null; category?: string | null; filters?: Filters }) {
-  const p = new URLSearchParams({ lang: getLang(), limit: String(PAGE), offset: String(opts.offset) })
+  const p = new URLSearchParams({ lang: 'ru', limit: String(PAGE), offset: String(opts.offset) })
   if (opts.tab === 'new') p.set('sort', 'new')
   if (opts.tab === 'free') p.set('only_free', 'true')
   if (opts.q) { p.set('q', opts.q); p.set('sort', 'relevance') }
@@ -85,7 +81,7 @@ export function fetchFeed(opts: { tab: FeedTab; offset: number; q?: string; city
 }
 
 export function fetchListing(id: string) {
-  return get<Listing>(`/listings/${encodeURIComponent(id)}?lang=${getLang()}`)
+  return get<Listing>(`/listings/${encodeURIComponent(id)}?lang=ru`)
 }
 
 /** Заголовок и описание лежат в переводах объявления: берём русский, иначе язык оригинала, иначе любой. */
@@ -95,10 +91,10 @@ export function textOf(listing: Listing): { title: string; description: string }
   let chosen: { title?: string; description?: string } | null = null
   if (Array.isArray(tr)) {
     const by = (lang?: string) => tr.find((t) => (t as { language?: string; lang?: string }).language === lang || (t as { lang?: string }).lang === lang)
-    chosen = pick(by(getLang())) ?? pick(by(listing.source_language)) ?? pick(tr[0])
+    chosen = pick(by('ru')) ?? pick(by(listing.source_language)) ?? pick(tr[0])
   } else if (tr && typeof tr === 'object') {
     const map = tr as Record<string, unknown>
-    chosen = pick(map[getLang()]) ?? pick(map[listing.source_language ?? '']) ?? pick(Object.values(map)[0])
+    chosen = pick(map.ru) ?? pick(map[listing.source_language ?? '']) ?? pick(Object.values(map)[0])
   }
   return { title: chosen?.title || listing.title || '', description: chosen?.description || '' }
 }
@@ -129,27 +125,23 @@ export function requestCode(email: string) {
 }
 
 export function verifyCode(email: string, code: string) {
-  return post<{ token: string; user: import('./auth').User }>('/auth/verify-code', { destination: email, code, channel: 'email', lang: getLang() })
+  return post<{ token: string; user: import('./auth').User }>('/auth/verify-code', { destination: email, code, channel: 'email', lang: 'ru' })
 }
 
 // ---------- избранное (нужен вход) ----------
 
-async function authed<T>(path: string, token: string, method: 'GET' | 'POST' | 'DELETE' | 'PATCH' = 'GET', body?: unknown): Promise<T> {
+async function authed<T>(path: string, token: string, method: 'GET' | 'POST' | 'DELETE' = 'GET', body?: unknown): Promise<T> {
   const res = await fetch(`${API}${path}`, {
     method,
     headers: { Accept: 'application/json', Authorization: `Bearer ${token}`, ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
     body: body !== undefined ? JSON.stringify(body) : undefined,
   })
-  if (!res.ok) {
-    let detail = ''
-    try { const j = await res.json(); detail = typeof j?.detail === 'string' ? j.detail : '' } catch { /* тело без JSON */ }
-    throw new ApiError(res.status, detail)
-  }
+  if (!res.ok) throw new ApiError(res.status, '')
   return res.json() as Promise<T>
 }
 
 export const favoriteIds = (token: string) => authed<{ ids: string[] }>('/favorites/ids', token)
-export const favoriteList = (token: string) => authed<{ total: number; items: FeedItem[] }>(`/favorites?lang=${getLang()}`, token)
+export const favoriteList = (token: string) => authed<{ total: number; items: FeedItem[] }>('/favorites?lang=ru', token)
 export const addFavorite = (token: string, id: string) => authed<{ status: string }>(`/favorites/${encodeURIComponent(id)}`, token, 'POST')
 export const removeFavorite = (token: string, id: string) => authed<{ status: string }>(`/favorites/${encodeURIComponent(id)}`, token, 'DELETE')
 
@@ -158,7 +150,7 @@ export const removeFavorite = (token: string, id: string) => authed<{ status: st
 export type Category = { id: string; slug: string; name: Record<string, string> | string; count?: number; ready?: boolean; children?: Category[] }
 
 export async function fetchCategories(): Promise<Category[]> {
-  return get<Category[]>(`/categories?lang=${getLang()}`)
+  return get<Category[]>('/categories?lang=ru')
 }
 
 // ---------- сообщения ----------
@@ -174,13 +166,13 @@ export type Message = {
   offer_price?: number | null; offer_status?: string | null; created_at: string
 }
 
-export const chatList = (token: string) => authed<{ total: number; items: Chat[] }>(`/chats?lang=${getLang()}`, token)
-export const chatInfo = (token: string, id: string) => authed<Chat>(`/chats/${encodeURIComponent(id)}?lang=${getLang()}`, token)
+export const chatList = (token: string) => authed<{ total: number; items: Chat[] }>('/chats?lang=ru', token)
+export const chatInfo = (token: string, id: string) => authed<Chat>(`/chats/${encodeURIComponent(id)}?lang=ru`, token)
 export const chatMessages = (token: string, id: string) => authed<Message[]>(`/chats/${encodeURIComponent(id)}/messages`, token)
 export const sendMessage = (token: string, id: string, text: string) =>
   authed<Message>(`/chats/${encodeURIComponent(id)}/messages`, token, 'POST', { text, offer_price: null })
 export const markChatRead = (token: string, id: string) => authed<unknown>(`/chats/${encodeURIComponent(id)}/read`, token, 'POST')
-export const startChat = (token: string, listingId: string) => authed<Chat>(`/chats/start?lang=${getLang()}`, token, 'POST', { listing_id: listingId })
+export const startChat = (token: string, listingId: string) => authed<Chat>('/chats/start?lang=ru', token, 'POST', { listing_id: listingId })
 
 // ---------- размещение, мои объявления, баланс ----------
 
@@ -210,8 +202,8 @@ export async function createListing(token: string, l: NewListing) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify({
-      category_id: l.category_id, source_language: getLang(), price: l.price, currency: l.currency, price_negotiable: l.price_negotiable,
-      city: l.city, attributes: {}, translations: [{ language: getLang(), title: l.title, description: l.description }],
+      category_id: l.category_id, source_language: 'ru', price: l.price, currency: l.currency, price_negotiable: l.price_negotiable,
+      city: l.city, attributes: {}, translations: [{ language: 'ru', title: l.title, description: l.description }],
       photos: l.photos.map((p) => ({ url: p.url, thumbnail_url: p.thumbnail_url ?? null, is_video: false })),
     }),
   })
@@ -224,74 +216,6 @@ export async function createListing(token: string, l: NewListing) {
 }
 
 export type MyListing = FeedItem & { status: string; views_count?: number; favorites_count?: number }
-export const myListings = (token: string) => authed<{ total: number; counts: Record<string, number>; items: MyListing[] }>(`/listings/my/list?lang=${getLang()}`, token)
+export const myListings = (token: string) => authed<{ total: number; counts: Record<string, number>; items: MyListing[] }>('/listings/my/list?lang=ru', token)
 export const balance = (token: string) => authed<Record<string, unknown>>('/balance', token)
-
-// ---------- объявление целиком, продавец, истории, свои объявления ----------
-
-export const similarListings = (id: string) => get<{ items: FeedItem[] }>(`/listings/${encodeURIComponent(id)}/similar?lang=${getLang()}`)
-export const sellerListings = (userId: string) => get<{ total: number; items: FeedItem[] }>(`/listings/by-seller/${encodeURIComponent(userId)}?lang=${getLang()}`)
-export const freshListings = (city?: string | null) =>
-  get<{ items: (FeedItem & { fresh?: boolean })[] }>(`/listings/fresh?lang=${getLang()}${city ? `&city=${encodeURIComponent(city)}` : ''}`)
-
-export type Seller = {
-  id: string; display_name?: string | null; company_name?: string | null; is_company?: boolean; avatar_url?: string | null
-  rating_avg?: number | null; rating_count?: number; document_verified?: boolean; created_at?: string | null
-  active_listings?: number; reply_speed?: string | null; company_description?: string | null
-}
-export const sellerProfile = (userId: string) => get<Seller>(`/users/${encodeURIComponent(userId)}/public?lang=${getLang()}`)
-
-type Label = Record<string, string> | string
-export type AttrField = { key: string; type?: string; label?: Label; unit?: string; options?: { value: string | number; label: Label }[] }
-export const categorySchema = (slug: string) => get<{ attribute_schema?: AttrField[] }>(`/categories/${encodeURIComponent(slug)}/schema`)
-export const ru = (l?: Label | null) => (!l ? '' : typeof l === 'string' ? l : l[getLang()] || l.ru || l.en || Object.values(l)[0] || '')
-
-/** Характеристики объявления с подписями из схемы раздела: «Комнат — 2», «Площадь, м² — 62». */
-export function attrRows(attrs: Record<string, unknown> | undefined, schema: AttrField[]): { label: string; value: string }[] {
-  if (!attrs) return []
-  const out: { label: string; value: string }[] = []
-  for (const f of schema) {
-    const raw = attrs[f.key]
-    if (raw === undefined || raw === null || raw === '' || (Array.isArray(raw) && raw.length === 0)) continue
-    const one = (v: unknown) => {
-      const opt = f.options?.find((o) => String(o.value) === String(v))
-      if (opt) return ru(opt.label)
-      if (typeof v === 'boolean') return v ? tr('да') : tr('нет')
-      return String(v)
-    }
-    const value = Array.isArray(raw) ? raw.map(one).join(', ') : one(raw)
-    if (value) out.push({ label: ru(f.label) || f.key, value })
-  }
-  return out
-}
-
-export const setListingStatus = (token: string, id: string, status: 'active' | 'sold' | 'archived') =>
-  authed<unknown>(`/listings/${encodeURIComponent(id)}/status`, token, 'PATCH', { status })
-export const deleteListing = (token: string, id: string) => authed<unknown>(`/listings/${encodeURIComponent(id)}`, token, 'DELETE')
-
-export type ReportReason = 'fraud' | 'prohibited_item' | 'spam' | 'duplicate' | 'wrong_category' | 'other'
-export const sendReport = (token: string, listingId: string, reason: ReportReason, comment?: string) =>
-  authed<unknown>('/reports', token, 'POST', { listing_id: listingId, reason, comment: comment || null })
-
-// ---------- уведомления, сохранённые поиски, редактирование ----------
-
-export type Notice = { id: string; text: string; link?: string | null; is_read: boolean; created_at: string }
-export const notifications = (token: string) => authed<{ total: number; unread: number; items: Notice[] }>('/notifications', token)
-export const markNoticeRead = (token: string, id: string) => authed<unknown>(`/notifications/${encodeURIComponent(id)}/read`, token, 'POST')
-export const markAllNoticesRead = (token: string) => authed<unknown>('/notifications/read-all', token, 'POST')
-
-export type SearchFilters = { q?: string; category_slug?: string; city?: string; price_min?: string; price_max?: string; with_photo?: boolean }
-export type SavedSearch = { id: string; name?: string | null; filters: SearchFilters; notify_enabled: boolean; new_count?: number }
-export const savedSearches = (token: string) => authed<{ total: number; items: SavedSearch[] }>('/saved-searches', token)
-export const saveSearch = (token: string, filters: SearchFilters, name?: string) => authed<SavedSearch>('/saved-searches', token, 'POST', { filters, name: name || null })
-export const deleteSavedSearch = (token: string, id: string) => authed<unknown>(`/saved-searches/${encodeURIComponent(id)}`, token, 'DELETE')
-export const toggleSavedSearch = (token: string, id: string, enabled: boolean) =>
-  authed<unknown>(`/saved-searches/${encodeURIComponent(id)}`, token, 'PATCH', { notify_enabled: enabled })
-
-export type ListingPatch = { title?: string; description?: string; price?: number | null; currency?: 'EUR' | 'RSD'; price_negotiable?: boolean; city?: string | null }
-export const updateListing = (token: string, id: string, patch: ListingPatch) => authed<unknown>(`/listings/${encodeURIComponent(id)}`, token, 'PATCH', patch)
-export const addListingPhoto = (token: string, id: string, p: Uploaded) =>
-  authed<unknown>(`/listings/${encodeURIComponent(id)}/photos`, token, 'POST', { url: p.url, thumbnail_url: p.thumbnail_url ?? null, is_video: false })
-export const deleteListingPhoto = (token: string, id: string, photoId: string) =>
-  authed<unknown>(`/listings/${encodeURIComponent(id)}/photos/${encodeURIComponent(photoId)}`, token, 'DELETE')
 

@@ -1,4 +1,3 @@
-import { tr } from '../i18n'
 import { useEffect, useState } from 'react'
 import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -26,48 +25,48 @@ export default function FiltersSheet({ visible, value, onApply, onClose }: {
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={tr('Закрыть')} />
+      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="Закрыть" />
       <View style={[styles.sheet, { paddingBottom: insets.bottom + 12 }]}>
         <View style={styles.handle} />
         <View style={styles.titleRow}>
-          <Text style={styles.title}>{tr('Фильтры')}</Text>
-          <Pressable onPress={() => setF({ currency: 'EUR' })} hitSlop={10}><Text style={styles.reset}>{tr('Сбросить')}</Text></Pressable>
+          <Text style={styles.title}>Фильтры</Text>
+          <Pressable onPress={() => setF({ currency: 'EUR' })} hitSlop={10}><Text style={styles.reset}>Сбросить</Text></Pressable>
         </View>
         <ScrollView contentContainerStyle={{ gap: 18, paddingHorizontal: 20 }} keyboardShouldPersistTaps="handled">
           <View style={{ gap: 10 }}>
             <View style={styles.labelRow}>
-              <Text style={styles.label}>{tr('Цена')}</Text>
+              <Text style={styles.label}>Цена</Text>
               <Segmented options={[{ key: 'EUR', label: '€' }, { key: 'RSD', label: 'RSD' }]} value={f.currency ?? 'EUR'} onChange={(c) => set({ currency: c as 'EUR' | 'RSD' })} />
             </View>
             <View style={styles.priceRow}>
-              <TextInput value={f.priceMin ?? ''} onChangeText={(v) => set({ priceMin: digits(v) })} placeholder={tr('от')} placeholderTextColor={colors.muted} keyboardType="number-pad" style={styles.input} />
+              <TextInput value={f.priceMin ?? ''} onChangeText={(v) => set({ priceMin: digits(v) })} placeholder="от" placeholderTextColor={colors.muted} keyboardType="number-pad" style={styles.input} />
               <Text style={styles.dash}>—</Text>
-              <TextInput value={f.priceMax ?? ''} onChangeText={(v) => set({ priceMax: digits(v) })} placeholder={tr('до')} placeholderTextColor={colors.muted} keyboardType="number-pad" style={styles.input} />
+              <TextInput value={f.priceMax ?? ''} onChangeText={(v) => set({ priceMax: digits(v) })} placeholder="до" placeholderTextColor={colors.muted} keyboardType="number-pad" style={styles.input} />
             </View>
           </View>
           <View style={styles.switchRow}>
-            <Text style={styles.switchText}>{tr('Только с фото')}</Text>
+            <Text style={styles.switchText}>Только с фото</Text>
             <Switch value={!!f.withPhoto} onValueChange={(v) => set({ withPhoto: v })} trackColor={{ true: colors.primary, false: '#D8DCD8' }} />
           </View>
           <View style={styles.switchRow}>
-            <Text style={styles.switchText}>{tr('С доставкой')}</Text>
+            <Text style={styles.switchText}>С доставкой</Text>
             <Switch value={!!f.delivery} onValueChange={(v) => set({ delivery: v })} trackColor={{ true: colors.primary, false: '#D8DCD8' }} />
           </View>
           <View style={{ gap: 4 }}>
-            <Text style={styles.label}>{tr('Сортировка')}</Text>
+            <Text style={styles.label}>Сортировка</Text>
             {SORTS.map((s) => {
               const on = (f.sort ?? '') === s.key
               return (
                 <Pressable key={s.key || 'default'} style={styles.sortRow} onPress={() => set({ sort: s.key })} accessibilityRole="radio" accessibilityState={{ selected: on }}>
                   <View style={[styles.radio, on && styles.radioOn]}>{on && <View style={styles.radioDot} />}</View>
-                  <Text style={[styles.sortText, on && styles.sortOn]}>{tr(s.label)}</Text>
+                  <Text style={[styles.sortText, on && styles.sortOn]}>{s.label}</Text>
                 </Pressable>
               )
             })}
           </View>
         </ScrollView>
         <Pressable style={styles.apply} onPress={() => { onApply(f); onClose() }}>
-          <Text style={styles.applyText}>{tr('Показать')}</Text>
+          <Text style={styles.applyText}>Показать</Text>
         </Pressable>
       </View>
     </Modal>

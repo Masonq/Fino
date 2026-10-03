@@ -1,22 +1,17 @@
-import { tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
-import { router, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, useWindowDimensions, View,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { fetchFeed, type FeedItem, type FeedTab, type Filters, saveSearch } from '../../src/api'
-import { useAuth } from '../../src/auth'
-import { useChats } from '../../src/chats'
+import { fetchFeed, type FeedItem, type FeedTab, type Filters } from '../../src/api'
 import CategoryTiles from '../../src/components/CategoryTiles'
 import CityPicker from '../../src/components/CityPicker'
 import FiltersSheet, { activeCount } from '../../src/components/FiltersSheet'
 import ListingCard from '../../src/components/ListingCard'
 import Segmented from '../../src/components/Segmented'
 import Skeleton from '../../src/components/Skeleton'
-import StoriesRow from '../../src/components/StoriesRow'
 import { cityName } from '../../src/format'
 import { prefs } from '../../src/prefs'
 import { colors, radius, space } from '../../src/theme'
@@ -33,37 +28,14 @@ export default function Feed() {
   const { width } = useWindowDimensions()
   const cardW = Math.floor((width - space.page * 2 - space.gap) / 2)
   const [tab, setTab] = useState<FeedTab>('all')
-  const [query, setQuery] = useState('')
-  const [q, setQ] = useState('')
   const [city, setCity] = useState<string | null>(null)
   const [cityReady, setCityReady] = useState(false)
   const [category, setCategory] = useState<string | null>(null)
   const [cityOpen, setCityOpen] = useState(false)
   const [filters, setFilters] = useState<Filters>({ currency: 'EUR' })
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const { token } = useAuth()
-  const { notices } = useChats()
-  const [savedState, setSavedState] = useState<'idle' | 'saving' | 'saved'>('idle')
-  const params = useLocalSearchParams<{ q?: string; city?: string; category?: string; price_min?: string; price_max?: string; with_photo?: string; applied?: string }>()
-
-  // Открыли сохранённый поиск — применяем его к ленте
-  useEffect(() => {
-    if (!params.applied) return
-    setQuery(params.q ?? ''); setQ(params.q ?? '')
-    setCategory(params.category || null)
-    if (params.city !== undefined) { setCity(params.city || null) }
-    setFilters({ currency: 'EUR', priceMin: params.price_min || undefined, priceMax: params.price_max || undefined, withPhoto: params.with_photo === '1' })
-  }, [params.applied]) // eslint-disable-line react-hooks/exhaustive-deps
-  const searchActive = !!(q || category || filters.priceMin || filters.priceMax || filters.withPhoto)
-  useEffect(() => { setSavedState('idle') }, [q, category, city, filters])
-  const onSave = async () => {
-    if (!token) { router.push('/login'); return }
-    setSavedState('saving')
-    try {
-      await saveSearch(token, { q: q || undefined, category_slug: category || undefined, city: city || undefined, price_min: filters.priceMin || undefined, price_max: filters.priceMax || undefined, with_photo: filters.withPhoto || undefined })
-      setSavedState('saved')
-    } catch { setSavedState('idle') }
-  }
+  const [query, setQuery] = useState('')
+  const [q, setQ] = useState('')
   const [items, setItems] = useState<FeedItem[]>([])
   const [total, setTotal] = useState(0)
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading')
@@ -136,33 +108,33 @@ export default function Feed() {
     if (state === 'error') {
       return (
         <View style={styles.center}>
-          <Text style={styles.emptyTitle}>{tr('Не удалось загрузить ленту')}</Text>
-          <Text style={styles.emptyText}>{tr('Проверьте интернет и попробуйте ещё раз.')}</Text>
-          <Pressable style={styles.retry} onPress={() => load('first')}><Text style={styles.retryText}>{tr('Повторить')}</Text></Pressable>
+          <Text style={styles.emptyTitle}>Не удалось загрузить ленту</Text>
+          <Text style={styles.emptyText}>Проверьте интернет и попробуйте ещё раз.</Text>
+          <Pressable style={styles.retry} onPress={() => load('first')}><Text style={styles.retryText}>Повторить</Text></Pressable>
         </View>
       )
     }
     return (
       <View style={styles.center}>
-        <Text style={styles.emptyTitle}>{q ? tr('Ничего не нашлось') : tr('Здесь пока пусто')}</Text>
-        {!!q && <Text style={styles.emptyText}>{tr('Попробуйте сказать иначе или убрать часть слов.')}</Text>}
+        <Text style={styles.emptyTitle}>{q ? 'Ничего не нашлось' : 'Здесь пока пусто'}</Text>
+        {!!q && <Text style={styles.emptyText}>Попробуйте сказать иначе или убрать часть слов.</Text>}
       </View>
     )
   }
 
   return (
     <SafeAreaView style={styles.page} edges={['top']}>
-      <View style={[styles.head, styles.headRow]}>
-        <View style={[styles.search, { flex: 1 }]}>
-          <Pressable style={styles.city} onPress={() => setCityOpen(true)} accessibilityRole="button" accessibilityLabel={tr('Выбрать город')}>
+      <View style={styles.head}>
+        <View style={styles.search}>
+          <Pressable style={styles.city} onPress={() => setCityOpen(true)} accessibilityRole="button" accessibilityLabel="Выбрать город">
             <Ionicons name="location-outline" size={16} color={colors.ink} />
-            <Text style={styles.cityText} numberOfLines={1}>{city ? cityName(city) : tr('Все города')}</Text>
+            <Text style={styles.cityText} numberOfLines={1}>{city ? cityName(city) : 'Все города'}</Text>
             <Ionicons name="chevron-down" size={14} color={colors.inkSoft} />
           </Pressable>
           <TextInput
             value={query}
             onChangeText={setQuery}
-            placeholder={tr('Найти на PLONK')}
+            placeholder="Найти на PLONK"
             placeholderTextColor={colors.muted}
             style={styles.searchInput}
             returnKeyType="search"
@@ -170,19 +142,15 @@ export default function Feed() {
             autoCorrect={false}
           />
           {!!query && (
-            <Pressable onPress={() => setQuery('')} hitSlop={10} accessibilityLabel={tr('Очистить поиск')}>
+            <Pressable onPress={() => setQuery('')} hitSlop={10} accessibilityLabel="Очистить поиск">
               <Ionicons name="close-circle" size={18} color={colors.muted} />
             </Pressable>
           )}
-          <Pressable onPress={() => setFiltersOpen(true)} hitSlop={8} style={styles.filterBtn} accessibilityRole="button" accessibilityLabel={tr('Фильтры')}>
+          <Pressable onPress={() => setFiltersOpen(true)} hitSlop={8} style={styles.filterBtn} accessibilityRole="button" accessibilityLabel="Фильтры">
             <Ionicons name="options-outline" size={21} color={colors.ink} />
             {activeCount(filters) > 0 && <View style={styles.filterDot}><Text style={styles.filterDotText}>{activeCount(filters)}</Text></View>}
           </Pressable>
         </View>
-        <Pressable style={styles.bell} onPress={() => (token ? router.push('/notifications') : router.push('/login'))} accessibilityRole="button" accessibilityLabel={tr('Уведомления')}>
-          <Ionicons name="notifications-outline" size={23} color={colors.ink} />
-          {notices > 0 && <View style={styles.bellDot}><Text style={styles.bellDotText}>{notices > 9 ? '9+' : notices}</Text></View>}
-        </Pressable>
       </View>
       <CityPicker visible={cityOpen} value={city} onPick={pickCity} onClose={() => setCityOpen(false)} />
       <FiltersSheet visible={filtersOpen} value={filters} onApply={setFilters} onClose={() => setFiltersOpen(false)} />
@@ -197,17 +165,8 @@ export default function Feed() {
         contentContainerStyle={styles.list}
         ListHeaderComponent={
           <View style={styles.listHead}>
-            {!q && cityReady && <StoriesRow city={city} />}
             {!q && <CategoryTiles value={category} onPick={setCategory} />}
-            <View style={styles.tabsRow}>
-              <Segmented options={TABS} value={tab} onChange={setTab} />
-              {searchActive && (
-                <Pressable style={[styles.saveBtn, savedState === 'saved' && styles.saveBtnOn]} disabled={savedState !== 'idle'} onPress={onSave} accessibilityRole="button">
-                  <Ionicons name={savedState === 'saved' ? 'bookmark' : 'bookmark-outline'} size={16} color={savedState === 'saved' ? '#fff' : colors.primaryDeep} />
-                  <Text style={[styles.saveText, savedState === 'saved' && { color: '#fff' }]}>{savedState === 'saved' ? tr('Сохранено') : tr('Сохранить поиск')}</Text>
-                </Pressable>
-              )}
-            </View>
+            <View style={{ paddingHorizontal: space.page }}><Segmented options={TABS} value={tab} onChange={setTab} /></View>
           </View>
         }
         ListEmptyComponent={empty}
@@ -228,25 +187,16 @@ const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.bg },
   head: { paddingHorizontal: space.page, paddingTop: 6, paddingBottom: 10 },
   listHead: { gap: 12, paddingBottom: 2 },
-  headRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  bell: { width: 44, height: 46, alignItems: 'center', justifyContent: 'center' },
-  bellDot: { position: 'absolute', top: 6, right: 4, minWidth: 17, height: 17, borderRadius: 9, paddingHorizontal: 4, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: colors.bg },
-  bellDotText: { color: '#fff', fontSize: 10, fontWeight: '800' },
-  tabsRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, paddingHorizontal: space.page },
-  saveBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, height: 36, paddingHorizontal: 12, borderRadius: 18, backgroundColor: colors.primarySoft },
-  saveBtnOn: { backgroundColor: colors.primary },
-  saveText: { fontSize: 13.5, fontWeight: '800', color: colors.primaryDeep },
   filterBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
   filterDot: { position: 'absolute', top: 2, right: 0, minWidth: 16, height: 16, borderRadius: 8, paddingHorizontal: 4, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
   filterDotText: { color: '#fff', fontSize: 10, fontWeight: '800' },
-  city: { flexDirection: 'row', alignItems: 'center', gap: 4, height: 36, paddingHorizontal: 10, borderRadius: 11, backgroundColor: colors.surface, maxWidth: 150, flexShrink: 0 },
+  city: { flexDirection: 'row', alignItems: 'center', gap: 4, height: 36, paddingHorizontal: 10, borderRadius: 11, backgroundColor: colors.surface, maxWidth: 150 },
   cityText: { fontSize: 13.5, fontWeight: '800', color: colors.ink, flexShrink: 1 },
   search: {
     flexDirection: 'row', alignItems: 'center', gap: 8, height: 46, paddingHorizontal: 14,
     borderRadius: radius.field, backgroundColor: colors.sunken, paddingLeft: 5,
   },
-  // flexBasis 0 и minWidth 0 — поле сжимается, и кнопка фильтров остаётся внутри строки поиска
-  searchInput: { flex: 1, flexBasis: 0, minWidth: 0, fontSize: 15.5, color: colors.ink, paddingVertical: 0 },
+  searchInput: { flex: 1, fontSize: 15.5, color: colors.ink, paddingVertical: 0 },
   list: { paddingHorizontal: 0, paddingBottom: 24, gap: space.gap },
   row: { gap: space.gap, paddingHorizontal: space.page },
   skelGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.gap, paddingHorizontal: space.page },

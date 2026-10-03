@@ -1,4 +1,3 @@
-import { tr } from '../i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import { router } from 'expo-router'
@@ -54,17 +53,17 @@ function ListingCard({ item, width }: { item: FeedItem; width: number }) {
         <View style={StyleSheet.absoluteFill} pointerEvents="none">
           {(item.is_xl || item.is_reserved) && (
             <View style={styles.topBadges}>
-              {item.is_xl && <Text style={[styles.badge, styles.badgeDark]}>{tr('Продвигается')}</Text>}
-              {item.is_reserved && <Text style={[styles.badge, styles.badgeGold]}>{tr('Забронировано')}</Text>}
+              {item.is_xl && <Text style={[styles.badge, styles.badgeDark]}>Продвигается</Text>}
+              {item.is_reserved && <Text style={[styles.badge, styles.badgeGold]}>Забронировано</Text>}
             </View>
           )}
           {isFresh(item.published_at) && (
             <View style={[styles.badgeRow, styles.fresh]}>
               <View style={styles.freshDot} />
-              <Text style={styles.freshText}>{tr('Новое')}</Text>
+              <Text style={styles.freshText}>Новое</Text>
             </View>
           )}
-          {item.is_company && <Text style={[styles.badge, styles.company]}>{tr('Компания')}</Text>}
+          {item.is_company && <Text style={[styles.badge, styles.company]}>Компания</Text>}
           {list.length > 1 && (
             <View style={styles.bars}>
               {list.map((u, i) => <View key={`${i}-${u}`} style={[styles.bar, i === index && styles.barOn]} />)}
@@ -78,7 +77,7 @@ function ListingCard({ item, width }: { item: FeedItem; width: number }) {
         <Text style={styles.title} numberOfLines={2}>{item.title}</Text>
         <View style={styles.priceRow}>
           <Text style={styles.price} numberOfLines={1}>{formatPrice(item.price, item.currency, item.is_free)}</Text>
-          {!!item.price_mark && <Ionicons name="flame" size={16} color={colors.accent} accessibilityLabel={tr('Дешевле похожих')} />}
+          {!!item.price_mark && <Ionicons name="flame" size={16} color={colors.accent} accessibilityLabel="Дешевле похожих" />}
         </View>
         <View style={styles.meta}>
           <Text style={styles.metaText} numberOfLines={1}>{cityName(item.city)}</Text>

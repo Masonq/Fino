@@ -1,4 +1,3 @@
-import { tr } from '../i18n'
 import { Ionicons } from '@expo/vector-icons'
 import * as Linking from 'expo-linking'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
@@ -18,7 +17,7 @@ export default function OnSite({ icon, title, text, path }: { icon: IconName; ti
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.text}>{text}</Text>
         <Pressable style={styles.btn} onPress={() => Linking.openURL(`${SITE}${path}`)} accessibilityRole="link">
-          <Text style={styles.btnText}>{tr('Открыть на сайте')}</Text>
+          <Text style={styles.btnText}>Открыть на сайте</Text>
         </Pressable>
       </View>
     </SafeAreaView>

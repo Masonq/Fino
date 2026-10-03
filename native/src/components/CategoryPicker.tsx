@@ -1,4 +1,3 @@
-import { getLang, tr } from '../i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { useEffect, useState } from 'react'
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
@@ -7,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { type Category, fetchCategories } from '../api'
 import { colors } from '../theme'
 
-const nameOf = (c: Category) => (typeof c.name === 'string' ? c.name : c.name?.[getLang()] || c.name?.ru || c.slug)
+const nameOf = (c: Category) => (typeof c.name === 'string' ? c.name : c.name?.ru || c.slug)
 
 /** Выбор раздела по дереву: раздел → подраздел → … до конечного. Наверху — путь и «назад» на уровень выше. */
 export default function CategoryPicker({ visible, onPick, onClose }: {
@@ -28,16 +27,16 @@ export default function CategoryPicker({ visible, onPick, onClose }: {
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={tr('Закрыть')} />
+      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="Закрыть" />
       <View style={[styles.sheet, { paddingBottom: insets.bottom + 8 }]}>
         <View style={styles.handle} />
         <View style={styles.head}>
           {stack.length > 0 ? (
-            <Pressable onPress={() => setStack((s) => s.slice(0, -1))} hitSlop={10} style={styles.back} accessibilityLabel={tr('Назад')}>
+            <Pressable onPress={() => setStack((s) => s.slice(0, -1))} hitSlop={10} style={styles.back} accessibilityLabel="Назад">
               <Ionicons name="chevron-back" size={22} color={colors.ink} />
             </Pressable>
           ) : null}
-          <Text style={styles.title} numberOfLines={1}>{stack.length ? nameOf(stack[stack.length - 1]) : tr('Раздел')}</Text>
+          <Text style={styles.title} numberOfLines={1}>{stack.length ? nameOf(stack[stack.length - 1]) : 'Раздел'}</Text>
         </View>
         {roots === null ? <ActivityIndicator style={{ margin: 30 }} color={colors.primary} /> : (
           <ScrollView style={{ maxHeight: 480 }}>

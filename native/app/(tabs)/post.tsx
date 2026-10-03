@@ -1,4 +1,3 @@
-import { tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
@@ -47,9 +46,9 @@ export default function Post() {
     return (
       <SafeAreaView style={[styles.page, styles.center]} edges={['top']}>
         <View style={styles.circle}><Ionicons name="add" size={32} color={colors.primaryDeep} /></View>
-        <Text style={styles.title}>{tr('Разместите объявление')}</Text>
-        <Text style={styles.text}>{tr('Это бесплатно. Войдите, чтобы покупатели могли вам написать.')}</Text>
-        <Pressable style={styles.cta} onPress={() => router.push('/login')}><Text style={styles.ctaText}>{tr('Войти')}</Text></Pressable>
+        <Text style={styles.title}>Разместите объявление</Text>
+        <Text style={styles.text}>Это бесплатно. Войдите, чтобы покупатели могли вам написать.</Text>
+        <Pressable style={styles.cta} onPress={() => router.push('/login')}><Text style={styles.ctaText}>Войти</Text></Pressable>
       </SafeAreaView>
     )
   }
@@ -58,10 +57,10 @@ export default function Post() {
     return (
       <SafeAreaView style={[styles.page, styles.center]} edges={['top']}>
         <View style={[styles.circle, { backgroundColor: colors.primary }]}><Ionicons name="checkmark" size={34} color="#fff" /></View>
-        <Text style={styles.title}>{tr('Отправлено на проверку')}</Text>
-        <Text style={styles.text}>{tr('Обычно это занимает несколько минут. Когда объявление опубликуют, оно появится в ленте.')}</Text>
-        <Pressable style={styles.cta} onPress={() => { reset(); router.navigate('/profile') }}><Text style={styles.ctaText}>{tr('Мои объявления')}</Text></Pressable>
-        <Pressable onPress={reset} style={{ marginTop: 6, padding: 10 }}><Text style={styles.link}>{tr('Разместить ещё')}</Text></Pressable>
+        <Text style={styles.title}>Отправлено на проверку</Text>
+        <Text style={styles.text}>Обычно это занимает несколько минут. Когда объявление опубликуют, оно появится в ленте.</Text>
+        <Pressable style={styles.cta} onPress={() => { reset(); router.navigate('/profile') }}><Text style={styles.ctaText}>Мои объявления</Text></Pressable>
+        <Pressable onPress={reset} style={{ marginTop: 6, padding: 10 }}><Text style={styles.link}>Разместить ещё</Text></Pressable>
       </SafeAreaView>
     )
   }
@@ -85,7 +84,7 @@ export default function Post() {
     if (left <= 0) return
     const perm = from === 'camera' ? await ImagePicker.requestCameraPermissionsAsync() : await ImagePicker.requestMediaLibraryPermissionsAsync()
     if (!perm.granted) {
-      Alert.alert(tr('Нет доступа'), from === 'camera' ? tr('Разрешите доступ к камере в настройках телефона.') : tr('Разрешите доступ к фото в настройках телефона.'))
+      Alert.alert('Нет доступа', from === 'camera' ? 'Разрешите доступ к камере в настройках телефона.' : 'Разрешите доступ к фото в настройках телефона.')
       return
     }
     const opts: ImagePicker.ImagePickerOptions = { mediaTypes: ['images'], quality: 0.85, allowsMultipleSelection: from === 'library', selectionLimit: left }
@@ -97,10 +96,10 @@ export default function Post() {
   }
 
   const problems = {
-    photos: shots.filter((s) => s.state === 'done').length === 0 ? tr('Добавьте хотя бы одно фото') : shots.some((s) => s.state === 'loading') ? tr('Дождитесь загрузки фото') : '',
-    cat: cat ? '' : tr('Выберите раздел'),
-    title: title.trim().length < 3 ? tr('Название — хотя бы 3 буквы') : '',
-    desc: desc.trim().length < 10 ? tr('Опишите вещь хотя бы парой предложений') : '',
+    photos: shots.filter((s) => s.state === 'done').length === 0 ? 'Добавьте хотя бы одно фото' : shots.some((s) => s.state === 'loading') ? 'Дождитесь загрузки фото' : '',
+    cat: cat ? '' : 'Выберите раздел',
+    title: title.trim().length < 3 ? 'Название — хотя бы 3 буквы' : '',
+    desc: desc.trim().length < 10 ? 'Опишите вещь хотя бы парой предложений' : '',
   }
   const ok = !Object.values(problems).some(Boolean)
 
@@ -116,7 +115,7 @@ export default function Post() {
       })
       setDone({ id: res.id })
     } catch (e) {
-      setError(e instanceof ApiError && e.message ? e.message : tr('Не удалось отправить. Проверьте интернет и попробуйте ещё раз.'))
+      setError(e instanceof ApiError && e.message ? e.message : 'Не удалось отправить. Проверьте интернет и попробуйте ещё раз.')
     } finally {
       setSending(false)
     }
@@ -128,19 +127,19 @@ export default function Post() {
     <SafeAreaView style={styles.page} edges={['top']}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
-          <Text style={styles.h1}>{tr('Новое объявление')}</Text>
+          <Text style={styles.h1}>Новое объявление</Text>
 
-          <Text style={styles.label}>{tr('Фото')} <Text style={styles.count}>{shots.length}/{MAX}</Text></Text>
+          <Text style={styles.label}>Фото <Text style={styles.count}>{shots.length}/{MAX}</Text></Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.shots}>
             {shots.length < MAX && (
               <>
-                <Pressable style={styles.addShot} onPress={() => add('camera')} accessibilityLabel={tr('Сфотографировать')}>
+                <Pressable style={styles.addShot} onPress={() => add('camera')} accessibilityLabel="Сфотографировать">
                   <Ionicons name="camera-outline" size={26} color={colors.primaryDeep} />
-                  <Text style={styles.addText}>{tr('Камера')}</Text>
+                  <Text style={styles.addText}>Камера</Text>
                 </Pressable>
-                <Pressable style={styles.addShot} onPress={() => add('library')} accessibilityLabel={tr('Выбрать из галереи')}>
+                <Pressable style={styles.addShot} onPress={() => add('library')} accessibilityLabel="Выбрать из галереи">
                   <Ionicons name="images-outline" size={26} color={colors.primaryDeep} />
-                  <Text style={styles.addText}>{tr('Галерея')}</Text>
+                  <Text style={styles.addText}>Галерея</Text>
                 </Pressable>
               </>
             )}
@@ -149,8 +148,8 @@ export default function Post() {
                 <Image source={{ uri: s.uri }} style={styles.shotImg} contentFit="cover" />
                 {s.state === 'loading' && <View style={styles.shotOverlay}><ActivityIndicator color="#fff" /></View>}
                 {s.state === 'failed' && <View style={[styles.shotOverlay, { backgroundColor: 'rgba(180,35,24,0.72)' }]}><Ionicons name="refresh" size={22} color="#fff" /></View>}
-                {i === 0 && <Text style={styles.cover}>{tr('Обложка')}</Text>}
-                <Pressable style={styles.remove} onPress={() => setShots((all) => all.filter((x) => x.key !== s.key))} hitSlop={6} accessibilityLabel={tr('Убрать фото')}>
+                {i === 0 && <Text style={styles.cover}>Обложка</Text>}
+                <Pressable style={styles.remove} onPress={() => setShots((all) => all.filter((x) => x.key !== s.key))} hitSlop={6} accessibilityLabel="Убрать фото">
                   <Ionicons name="close" size={14} color="#fff" />
                 </Pressable>
               </Pressable>
@@ -158,42 +157,42 @@ export default function Post() {
           </ScrollView>
           {hint(problems.photos)}
 
-          <Text style={styles.label}>{tr('Раздел')}</Text>
+          <Text style={styles.label}>Раздел</Text>
           <Pressable style={styles.select} onPress={() => setCatOpen(true)}>
-            <Text style={[styles.selectText, !cat && { color: colors.muted }]} numberOfLines={2}>{cat ? cat.path : tr('Выберите раздел')}</Text>
+            <Text style={[styles.selectText, !cat && { color: colors.muted }]} numberOfLines={2}>{cat ? cat.path : 'Выберите раздел'}</Text>
             <Ionicons name="chevron-forward" size={18} color={colors.muted} />
           </Pressable>
           {hint(problems.cat)}
 
-          <Text style={styles.label}>{tr('Название')}</Text>
-          <TextInput value={title} onChangeText={setTitle} placeholder={tr('Например, велосипед Trek FX 2')} placeholderTextColor={colors.muted} style={styles.input} maxLength={120} />
+          <Text style={styles.label}>Название</Text>
+          <TextInput value={title} onChangeText={setTitle} placeholder="Например, велосипед Trek FX 2" placeholderTextColor={colors.muted} style={styles.input} maxLength={120} />
           {hint(problems.title)}
 
-          <Text style={styles.label}>{tr('Описание')}</Text>
-          <TextInput value={desc} onChangeText={setDesc} placeholder={tr('Состояние, размеры, причина продажи')} placeholderTextColor={colors.muted} style={[styles.input, styles.area]} multiline maxLength={5000} textAlignVertical="top" />
+          <Text style={styles.label}>Описание</Text>
+          <TextInput value={desc} onChangeText={setDesc} placeholder="Состояние, размеры, причина продажи" placeholderTextColor={colors.muted} style={[styles.input, styles.area]} multiline maxLength={5000} textAlignVertical="top" />
           {hint(problems.desc)}
 
           <View style={styles.labelRow}>
-            <Text style={styles.label}>{tr('Цена')}</Text>
+            <Text style={styles.label}>Цена</Text>
             <Segmented options={[{ key: 'EUR', label: '€' }, { key: 'RSD', label: 'RSD' }]} value={currency} onChange={(c) => setCurrency(c as 'EUR' | 'RSD')} />
           </View>
-          <TextInput value={price} onChangeText={(v) => setPrice(v.replace(/\D/g, '').slice(0, 9))} placeholder={tr('Пусто — «цена не указана»')} placeholderTextColor={colors.muted} keyboardType="number-pad" style={styles.input} />
+          <TextInput value={price} onChangeText={(v) => setPrice(v.replace(/\D/g, '').slice(0, 9))} placeholder="Пусто — «цена не указана»" placeholderTextColor={colors.muted} keyboardType="number-pad" style={styles.input} />
           <View style={styles.switchRow}>
-            <Text style={styles.switchText}>{tr('Торг уместен')}</Text>
+            <Text style={styles.switchText}>Торг уместен</Text>
             <Switch value={negotiable} onValueChange={setNegotiable} trackColor={{ true: colors.primary, false: '#D8DCD8' }} />
           </View>
 
-          <Text style={styles.label}>{tr('Город')}</Text>
+          <Text style={styles.label}>Город</Text>
           <Pressable style={styles.select} onPress={() => setCityOpen(true)}>
-            <Text style={styles.selectText}>{city ? cityName(city) : tr('Не указан')}</Text>
+            <Text style={styles.selectText}>{city ? cityName(city) : 'Не указан'}</Text>
             <Ionicons name="chevron-forward" size={18} color={colors.muted} />
           </Pressable>
 
           {!!error && <Text style={[styles.hint, { marginTop: 14 }]}>{error}</Text>}
-          <Pressable style={[styles.cta, styles.submit, (sending || (tried && !ok)) && { opacity: 0.55 }]} disabled={sending} onPress={submit} accessibilityRole="button" accessibilityLabel={tr('Отправить объявление')}>
-            {sending ? <ActivityIndicator color="#fff" /> : <Text style={styles.ctaText}>{tr('Разместить')}</Text>}
+          <Pressable style={[styles.cta, styles.submit, (sending || (tried && !ok)) && { opacity: 0.55 }]} disabled={sending} onPress={submit} accessibilityRole="button" accessibilityLabel="Отправить объявление">
+            {sending ? <ActivityIndicator color="#fff" /> : <Text style={styles.ctaText}>Разместить</Text>}
           </Pressable>
-          <Text style={styles.small}>{tr('Объявление проверят модераторы — обычно это несколько минут.')}</Text>
+          <Text style={styles.small}>Объявление проверят модераторы — обычно это несколько минут.</Text>
         </ScrollView>
       </KeyboardAvoidingView>
       <CategoryPicker visible={catOpen} onPick={(c, path) => setCat({ c, path })} onClose={() => setCatOpen(false)} />
