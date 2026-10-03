@@ -84,20 +84,70 @@ def install_update(export_dir: Path, created_at: str | None = None) -> str:
     return uid
 
 
-def install_ipa(data: bytes, updated_at: str | None = None) -> dict:
-    """Кладёт .ipa и сохраняет сведения о нём (версия, сборка, идентификатор) для «источника» SideStore."""
-    (ROOT / "ipa").mkdir(parents=True, exist_ok=True)
-    tmp = ROOT / "ipa" / "plonk-native.ipa.tmp"
-    tmp.write_bytes(data)
-    info = {"size": len(data), "date": updated_at or datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")}
+KEEP_IPA = 3
+
+
+def _ipa_info(data: bytes) -> dict:
     with zipfile.ZipFile(io.BytesIO(data)) as z:
         plist_name = next(n for n in z.namelist() if n.startswith("Payload/") and n.endswith(".app/Info.plist") and n.count("/") == 2)
         plist = plistlib.loads(z.read(plist_name))
-    info.update(version=str(plist.get("CFBundleShortVersionString", "1.0.0")), build=str(plist.get("CFBundleVersion", "1")),
-                bundle_id=plist.get("CFBundleIdentifier", "rs.plonk.mobile"), min_os=str(plist.get("MinimumOSVersion", "16.4")))
-    tmp.replace(ROOT / "ipa" / "plonk-native.ipa")
-    _write_json(ROOT / "ipa" / "info.json", info)
+    return {"version": str(plist.get("CFBundleShortVersionString", "1.0.0")), "build": str(plist.get("CFBundleVersion", "1")),
+            "bundle_id": plist.get("CFBundleIdentifier", "rs.plonk.mobile"), "min_os": str(plist.get("MinimumOSVersion", "16.4"))}
+
+
+def _migrate_legacy_ipa() -> None:
+    """Раньше был один файл ipa/plonk-native.ipa на все версии — переносим в папку своей сборки."""
+    old = ROOT / "ipa" / "plonk-native.ipa"
+    if not old.exists():
+        return
+    meta = _read_json(ROOT / "ipa" / "info.json", {}) or {}
+    data = old.read_bytes()
+    info = {**_ipa_info(data), "size": len(data), "date": meta.get("date") or datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")}
+    target = ROOT / "ipa" / info["build"]
+    target.mkdir(parents=True, exist_ok=True)
+    old.replace(target / "plonk.ipa")
+    _write_json(target / "info.json", info)
+    (ROOT / "ipa" / "info.json").unlink(missing_ok=True)
+
+
+def ipa_builds() -> list[dict]:
+    """Сборки .ipa, свежие первыми (по номеру сборки)."""
+    _migrate_legacy_ipa()
+    base = ROOT / "ipa"
+    if not base.exists():
+        return []
+    out = []
+    for d in base.iterdir():
+        info = _read_json(d / "info.json") if d.is_dir() else None
+        if info and (d / "plonk.ipa").exists():
+            out.append(info)
+    return sorted(out, key=lambda i: int(i["build"]) if str(i["build"]).isdigit() else 0, reverse=True)
+
+
+def install_ipa(data: bytes, updated_at: str | None = None) -> dict:
+    """
+    Кладёт .ipa в папку своей сборки: ipa/<номер>/plonk.ipa. У каждой сборки своя ссылка — иначе SideStore, держащий
+    у себя старое описание источника, скачивал по общей ссылке уже новый файл и отказывался ставить («Expected
+    version: 1, Found version: 11»). Хранятся последние KEEP_IPA сборок.
+    """
+    _migrate_legacy_ipa()
+    info = {**_ipa_info(data), "size": len(data), "date": updated_at or datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")}
+    target = ROOT / "ipa" / info["build"]
+    target.mkdir(parents=True, exist_ok=True)
+    tmp = target / "plonk.ipa.tmp"
+    tmp.write_bytes(data)
+    tmp.replace(target / "plonk.ipa")
+    _write_json(target / "info.json", info)
+    for old in ipa_builds()[KEEP_IPA:]:
+        shutil.rmtree(ROOT / "ipa" / old["build"], ignore_errors=True)
     return info
+
+
+def ipa_path(build: str) -> Path | None:
+    if not build.isdigit():
+        return None
+    path = ROOT / "ipa" / build / "plonk.ipa"
+    return path if path.exists() else None
 
 
 # ---------- описание обновления для expo-updates ----------
@@ -156,18 +206,23 @@ def asset_path(uid: str, rel: str) -> Path | None:
 # ---------- «источник» для SideStore ----------
 
 def sidestore_source(base: str) -> dict:
-    info = _read_json(ROOT / "ipa" / "info.json")
+    builds = ipa_builds()
     apps = []
-    if info:
-        version = {"version": info["version"], "buildVersion": info["build"], "date": info["date"],
-                   "downloadURL": f"{base}/api/app-updates/ipa", "size": info["size"], "minOSVersion": info.get("min_os", "16.4")}
+    if builds:
+        versions = [{
+            "version": b["version"], "buildVersion": b["build"], "date": b["date"],
+            "downloadURL": f"{base}/api/app-updates/ipa/{b['build']}/plonk.ipa", "size": b["size"], "minOSVersion": b.get("min_os", "16.4"),
+            "localizedDescription": f"Сборка {b['build']}. Экраны и исправления дальше приходят в приложение сами, без переустановки.",
+        } for b in builds]
+        latest = versions[0]
         apps.append({
-            "name": "PLONK", "bundleIdentifier": info.get("bundle_id", "rs.plonk.mobile"), "developerName": "PLONK",
+            "name": "PLONK", "bundleIdentifier": builds[0].get("bundle_id", "rs.plonk.mobile"), "developerName": "PLONK",
             "subtitle": "Объявления в Сербии", "localizedDescription": "Нативное приложение PLONK — тестовая сборка.",
             "iconURL": f"{base}/icon-512.png", "tintColor": "#0E9F6E",
-            "versions": [version],
-            # старые версии SideStore читают поля прямо у приложения
-            "version": version["version"], "versionDate": version["date"], "downloadURL": version["downloadURL"], "size": version["size"],
+            "versions": versions,
+            # старые версии SideStore читают поля прямо у приложения — там всегда последняя сборка
+            "version": latest["version"], "versionDate": latest["date"], "versionDescription": latest["localizedDescription"],
+            "downloadURL": latest["downloadURL"], "size": latest["size"],
             "appPermissions": {"entitlements": [], "privacy": {}},
         })
     return {"name": "PLONK", "identifier": "rs.plonk.source", "sourceURL": f"{base}/api/app-updates/sidestore.json",

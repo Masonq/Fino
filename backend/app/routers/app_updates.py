@@ -55,9 +55,21 @@ def sidestore(request: Request):
     return JSONResponse(app_updates.sidestore_source(settings.site_base_url.rstrip("/")), headers={"cache-control": "no-cache"})
 
 
+@router.get("/ipa/{build}/plonk.ipa")
+def ipa_build(build: str):
+    """Своя ссылка у каждой сборки: SideStore всегда получает ровно ту, что указана в источнике."""
+    path = app_updates.ipa_path(build)
+    if not path:
+        raise HTTPException(404, "такой сборки нет")
+    return FileResponse(path, media_type="application/octet-stream", filename=f"plonk-{build}.ipa",
+                        headers={"cache-control": "public, max-age=31536000, immutable"})
+
+
 @router.get("/ipa")
-def ipa():
-    path = app_updates.ROOT / "ipa" / "plonk-native.ipa"
-    if not path.exists():
+def ipa_latest():
+    """Последняя сборка — для старых записей источника и для ручной установки."""
+    builds = app_updates.ipa_builds()
+    path = app_updates.ipa_path(builds[0]["build"]) if builds else None
+    if not path:
         raise HTTPException(404, "сборки пока нет")
-    return FileResponse(path, media_type="application/octet-stream", filename="plonk-native.ipa")
+    return FileResponse(path, media_type="application/octet-stream", filename="plonk.ipa", headers={"cache-control": "no-cache"})

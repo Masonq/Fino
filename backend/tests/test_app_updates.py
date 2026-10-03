@@ -85,14 +85,60 @@ def test_http_manifest_multipart_no_update_directive_and_safe_assets(store):
     assert client.get("/api/app-updates/manifest").status_code == 400
 
 
+def _ipa_with_build(build: str) -> bytes:
+    """Копия настоящего .ipa с другим номером сборки в Info.plist."""
+    import io
+    import plistlib
+    import zipfile
+    src = zipfile.ZipFile(IPA)
+    out = io.BytesIO()
+    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
+        for item in src.infolist():
+            data = src.read(item.filename)
+            if item.filename.endswith(".app/Info.plist") and item.filename.count("/") == 2:
+                plist = plistlib.loads(data)
+                plist["CFBundleVersion"] = build
+                plist["CFBundleShortVersionString"] = f"1.0.{build}"
+                data = plistlib.dumps(plist, fmt=plistlib.FMT_BINARY)
+            z.writestr(item, data)
+    return out.getvalue()
+
+
+def _build_inside(data: bytes) -> str:
+    import io
+    import plistlib
+    import zipfile
+    z = zipfile.ZipFile(io.BytesIO(data))
+    name = next(n for n in z.namelist() if n.endswith(".app/Info.plist") and n.count("/") == 2)
+    return plistlib.loads(z.read(name))["CFBundleVersion"]
+
+
 @pytest.mark.skipif(not IPA.exists(), reason="нет собранного .ipa")
-def test_sidestore_source_describes_the_installed_ipa(store):
-    info = app_updates.install_ipa(IPA.read_bytes(), "2026-10-02T02:00:00Z")
-    assert info["bundle_id"] == "rs.plonk.mobile" and info["size"] == IPA.stat().st_size
-    src = TestClient(app).get("/api/app-updates/sidestore.json").json()
+def test_every_build_has_its_own_link_and_the_link_always_serves_that_build(store):
+    """
+    SideStore держал старое описание источника (сборка 1), а по общей ссылке уже лежала сборка 11 — и отказывался
+    ставить: «Expected version: 1, Found version: 11». Теперь у каждой сборки своя ссылка, хранятся три последние.
+    """
+    # старая схема: один файл на все версии — переносится сам
+    (app_updates.ROOT / "ipa").mkdir(parents=True)
+    (app_updates.ROOT / "ipa" / "plonk-native.ipa").write_bytes(_ipa_with_build("1"))
+    (app_updates.ROOT / "ipa" / "info.json").write_text('{"date": "2026-10-02T02:17:00Z"}')
+    for b in ("11", "12", "13"):
+        app_updates.install_ipa(_ipa_with_build(b), f"2026-10-02T1{b[-1]}:00:00Z")
+    client = TestClient(app)
+    src = client.get("/api/app-updates/sidestore.json").json()
+    versions = src["apps"][0]["versions"]
+    assert [v["buildVersion"] for v in versions] == ["13", "12", "11"], "свежие первыми, только три"
+    for v in versions:
+        assert v["downloadURL"].endswith(f"/api/app-updates/ipa/{v['buildVersion']}/plonk.ipa")
+        assert v["localizedDescription"] and v["localizedDescription"] != "nil"
+        got = client.get(v["downloadURL"].replace("https://plonk.rs", ""))
+        assert got.status_code == 200 and _build_inside(got.content) == v["buildVersion"], "по ссылке — ровно эта сборка"
     entry = src["apps"][0]
-    assert entry["bundleIdentifier"] == "rs.plonk.mobile" and entry["versions"][0]["downloadURL"].endswith("/api/app-updates/ipa")
-    assert entry["versions"][0]["buildVersion"] == info["build"] and entry["downloadURL"] == entry["versions"][0]["downloadURL"]
+    assert entry["bundleIdentifier"] == "rs.plonk.mobile" and entry["downloadURL"] == versions[0]["downloadURL"]
+    assert client.get("/api/app-updates/ipa/1/plonk.ipa").status_code == 404, "четвёртая с конца удалена"
+    assert _build_inside(client.get("/api/app-updates/ipa").content) == "13"
+    assert client.get("/api/app-updates/ipa/..%2F..%2Fstate.json/plonk.ipa").status_code == 404
 
 
 def test_sync_downloads_only_what_changed_and_never_sends_the_token_elsewhere():
