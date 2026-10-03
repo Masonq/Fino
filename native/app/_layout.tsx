@@ -15,6 +15,8 @@ import CrashGuard from '../src/components/Crash'
 import { ChatsProvider } from '../src/chats'
 import { FavoritesProvider } from '../src/favorites'
 import { LangProvider } from '../src/i18n'
+import { NetProvider } from '../src/net'
+import OfflineBanner from '../src/components/OfflineBanner'
 
 import { colors } from '../src/theme'
 
@@ -66,6 +68,7 @@ export default function RootLayout() {
   if (!fontsReady && !fontsError) return null
   return (
     <CrashGuard>
+    <NetProvider>
     <SafeAreaProvider>
       <AuthProvider>
       <FavoritesProvider>
@@ -92,10 +95,12 @@ export default function RootLayout() {
         <Stack.Screen name="login" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
       </Stack>
       )}</LangProvider>
+      <OfflineBanner />
       </ChatsProvider>
       </FavoritesProvider>
       </AuthProvider>
     </SafeAreaProvider>
+    </NetProvider>
     </CrashGuard>
   )
 }

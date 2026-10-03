@@ -3,6 +3,8 @@ import { AppState } from 'react-native'
 
 import { type Chat, chatList, notifications } from './api'
 import { useAuth } from './auth'
+import { readCache, writeCache } from './cache'
+import { onRetry } from './net'
 
 /**
  * Переписки и счётчик непрочитанных — один на всё приложение: значок на вкладке «Сообщения» и сам список.
@@ -25,8 +27,11 @@ export function ChatsProvider({ children }: { children: ReactNode }) {
       const res = await chatList(token)
       setChats(res.items)
       setFailed(false)
+      writeCache('chats', res.items)
     } catch {
-      setFailed(true)
+      const cached = await readCache<Chat[]>('chats')
+      if (cached) setChats((v) => v ?? cached)
+      else setFailed(true)
     }
   }, [token])
 
@@ -37,6 +42,10 @@ export function ChatsProvider({ children }: { children: ReactNode }) {
     const sub = AppState.addEventListener('change', (s) => { if (s === 'active') refresh() })
     return () => { clearInterval(timer); sub.remove() }
   }, [token, refresh])
+
+  useEffect(() => onRetry(() => { refresh() }), [refresh])
+  // Сохранённый список — сразу при входе, пока идёт первая загрузка
+  useEffect(() => { if (token) readCache<Chat[]>('chats').then((c) => { if (c) setChats((v) => v ?? c) }) }, [token])
 
   const unread = useMemo(() => (chats ?? []).reduce((n, c) => n + (c.unread || 0), 0), [chats])
   const value = useMemo(() => ({ chats, unread, notices, refresh, failed }), [chats, unread, notices, refresh, failed])

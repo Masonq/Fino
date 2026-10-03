@@ -351,4 +351,5 @@ export const DICT: Record<string, { en?: string; sr?: string }> = {
   "Мы свяжемся с вами, чтобы подтвердить личность.": { en: "We'll contact you to verify your identity.", sr: "Javićemo vam se da potvrdimo identitet." },
   "Проверка личности временно недоступна. Попробуйте позже.": { en: "Identity check is temporarily unavailable. Try again later.", sr: "Provera identiteta trenutno nije dostupna. Pokušajte kasnije." },
   "Пройти ещё раз": { en: "Try again", sr: "Pokušaj ponovo" },
+  "Нет интернета — показываем сохранённое": { en: "No internet \u2014 showing saved data", sr: "Nema interneta — prikazujemo sačuvano" },
 }

@@ -5,7 +5,8 @@ import { router } from 'expo-router'
 import { memo, useState } from 'react'
 import { FlatList, NativeScrollEvent, NativeSyntheticEvent, Pressable, StyleSheet, Text, View } from 'react-native'
 
-import type { FeedItem } from '../api'
+import { type FeedItem, prefetchListing } from '../api'
+import { seedListing } from '../seed'
 import { mediaUrl } from '../config'
 import { cityName, formatPrice, isFresh, relTime } from '../format'
 import { colors, radius, font } from '../theme'
@@ -23,14 +24,16 @@ function ListingCard({ item, width, large = false }: { item: FeedItem; width: nu
   const list = (item.photos && item.photos.length ? item.photos : item.cover_photo ? [item.cover_photo] : [])
     .map((u) => mediaUrl(u))
     .filter(Boolean) as string[]
-  const open = () => router.push(`/listing/${item.id}`)
+  // Объявление открывается мгновенно: данные карточки — сразу, полная версия начинает грузиться ещё при касании
+  const open = () => { seedListing(item); router.push(`/listing/${item.id}`) }
+  const warm = () => { prefetchListing(item.id) }
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const next = Math.round(e.nativeEvent.contentOffset.x / width)
     if (next !== index) setIndex(next)
   }
 
   return (
-    <Pressable onPress={open} style={[styles.card, { width }, large && { borderRadius: 18 }, item.is_highlighted && styles.highlighted]}
+    <Pressable onPress={open} onPressIn={warm} style={[styles.card, { width }, large && { borderRadius: 18 }, item.is_highlighted && styles.highlighted]}
       accessibilityRole="button" accessibilityLabel={`${item.title}, ${formatPrice(item.price, item.currency, item.is_free)}`}>
       <View style={[styles.photoBox, { height: photoH }]}>
         {list.length > 1 ? (

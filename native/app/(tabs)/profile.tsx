@@ -12,6 +12,8 @@ import Segmented from '../../src/components/Segmented'
 import { SITE } from '../../src/config'
 import { LANGS, plural, tr, useLang } from '../../src/i18n'
 import { prefs } from '../../src/prefs'
+import { readCache, writeCache } from '../../src/cache'
+import { onRetry } from '../../src/net'
 import { colors, font } from '../../src/theme'
 
 const rsd = (n: number) => `${String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00A0')}\u00A0RSD`
@@ -38,14 +40,18 @@ export default function Profile() {
 
   const load = useCallback(async () => {
     if (!token || !user) return
+    const cached = await readCache<{ items: MyListing[]; bal: typeof bal; pub: Seller }>('profile')
+    if (cached) { setItems((v) => v ?? cached.items); setBal((v) => v ?? cached.bal); setPub((v) => v ?? cached.pub) }
     const [l, b, s] = await Promise.allSettled([myListings(token), fetchBalance(token), sellerProfile(user.id)])
     if (l.status === 'fulfilled') setItems(l.value.items)
     if (b.status === 'fulfilled') setBal(b.value as typeof bal)
     if (s.status === 'fulfilled') setPub(s.value)
+    if (l.status === 'fulfilled' && b.status === 'fulfilled' && s.status === 'fulfilled') writeCache('profile', { items: l.value.items, bal: b.value, pub: s.value })
     waitingReviews(token).then((r) => setWaiting(r.items.length)).catch(() => {})
     verificationStatus(token).then(setVerify).catch(() => {})
   }, [token, user])
   useFocusEffect(useCallback(() => { load() }, [load]))
+  useEffect(() => onRetry(() => { load() }), [load])
 
   const langRow = (
     <View style={[styles.row, styles.rowLast]}>

@@ -1,3 +1,4 @@
+import { select } from '../haptics'
 import { tr } from '../i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
@@ -25,7 +26,7 @@ export default function CityPicker({ visible, value, onPick, onClose }: {
           {rows.map((r) => {
             const on = r.slug === value
             return (
-              <Pressable key={r.slug ?? 'all'} style={styles.row} onPress={() => { onPick(r.slug); onClose() }}
+              <Pressable key={r.slug ?? 'all'} style={styles.row} onPress={() => { select(); onPick(r.slug); onClose() }}
                 accessibilityRole="button" accessibilityState={{ selected: on }}>
                 <Text style={[styles.rowText, on && styles.rowOn]}>{r.label}</Text>
                 {on && <Ionicons name="checkmark" size={22} color={colors.primary} />}

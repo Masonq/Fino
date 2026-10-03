@@ -1,3 +1,4 @@
+import { success, tap } from '../../src/haptics'
 import { tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
@@ -65,6 +66,7 @@ export default function ChatScreen() {
   const send = async (body: string, retryId?: string) => {
     const value = body.trim()
     if (!value || !token) return
+    tap()
     const localId = retryId ?? `local-${Date.now()}`
     const optimistic = { id: localId, kind: 'text', text: value, sender_id: user?.id, created_at: new Date().toISOString(), pending: true }
     setMsgs((prev) => [...(prev ?? []).filter((m) => m.id !== localId), optimistic])
@@ -147,7 +149,7 @@ export default function ChatScreen() {
           <Pressable style={[styles.offerSend, !offer && { opacity: 0.45 }]} disabled={!offer} onPress={async () => {
             if (!token || !offer) return
             setOfferOpen(false)
-            try { await sendOffer(token, chatId, Number(offer)); await load() } catch { /* сеть */ }
+            try { await sendOffer(token, chatId, Number(offer)); success(); await load() } catch { /* сеть */ }
           }}><Text style={styles.offerSendText}>{tr('Предложить')}</Text></Pressable>
         </View>
       </Sheet>

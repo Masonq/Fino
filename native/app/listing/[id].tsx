@@ -1,5 +1,5 @@
 import Icon, { Star } from '../../src/components/Icon'
-import { tr } from '../../src/i18n'
+import { getLang, tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import * as Linking from 'expo-linking'
@@ -10,9 +10,12 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { attrRows, type AttrField, ru, categorySchema, type FeedItem, fetchListing, type Listing, sellerListings, similarListings, startChat, textOf } from '../../src/api'
+import { attrRows, type AttrField, ru, categorySchema, type FeedItem, loadListing, type Listing, sellerListings, similarListings, startChat, textOf } from '../../src/api'
 import { useAuth } from '../../src/auth'
+import { readCache } from '../../src/cache'
 import { rememberViewed } from '../../src/history'
+import { onRetry } from '../../src/net'
+import { getSeed } from '../../src/seed'
 import CardsRow from '../../src/components/CardsRow'
 import HeartButton from '../../src/components/HeartButton'
 import ReportSheet from '../../src/components/ReportSheet'
@@ -44,18 +47,26 @@ export default function ListingScreen() {
 
   useEffect(() => {
     let alive = true
+    let fresh = false
     setFailed(false)
-    fetchListing(String(id)).then((d) => {
+    // Мгновенно: данные карточки, затем сохранённая полная версия, затем — свежая с сервера
+    const seed = getSeed(String(id))
+    if (seed && !data) setData(fromCard(seed))
+    readCache<Listing>(`listing:${id}`).then((c) => { if (alive && c && !fresh) setData(c) })
+    loadListing(String(id)).then((d) => {
       if (!alive) return
+      fresh = true
       setData(d)
       rememberViewed(d.id).catch(() => {})
       // Подписи характеристик, похожие и другие объявления продавца — следом, не задерживая сам экран
       if (d.category_slug) categorySchema(String(d.category_slug)).then((r) => alive && setSchema(r.attribute_schema ?? [])).catch(() => {})
       similarListings(d.id).then((r) => alive && setSimilar(r.items)).catch(() => {})
       if (d.owner?.id) sellerListings(d.owner.id).then((r) => alive && setMore(r.items)).catch(() => {})
-    }).catch(() => { if (alive) setFailed(true) })
+    }).catch(() => { if (alive && !fresh) readCache<Listing>(`listing:${id}`).then((c) => { if (alive && !c && !getSeed(String(id))) setFailed(true) }) })
     return () => { alive = false }
-  }, [id, attempt])
+  }, [id, attempt]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => onRetry(() => setAttempt((a) => a + 1)), [])
 
   // Видимая часть фото — как на сайте (≈ 0,66 ширины), плюс зона под строкой состояния и под наезжающим листом
   const photoH = Math.round(Math.min(width * 0.92, 520))
@@ -315,6 +326,16 @@ export default function ListingScreen() {
 }
 
 const SHEET_OVERLAP = 22
+
+/** Объявление из данных карточки — пока грузится полное: фото, цена, название, город, время. */
+function fromCard(item: FeedItem): Listing {
+  const urls = (item.photos && item.photos.length ? item.photos : [item.cover_photo]).filter(Boolean) as string[]
+  return {
+    id: item.id, price: item.price, currency: item.currency, is_free: item.is_free, city: item.city, published_at: item.published_at,
+    photos: urls.map((u) => ({ id: u, url: u, thumbnail_url: u, is_video: false })),
+    translations: [{ language: getLang(), title: item.title, description: '' }],
+  } as unknown as Listing
+}
 
 type IconName = keyof typeof Ionicons.glyphMap
 /** Главные характеристики плашками — как AttrChips на сайте: для недвижимости и авто, в том же порядке. */

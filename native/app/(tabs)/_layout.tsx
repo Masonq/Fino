@@ -1,3 +1,4 @@
+import { select } from '../../src/haptics'
 import Icon, { Star } from '../../src/components/Icon'
 import { tr } from '../../src/i18n'
 import { Tabs } from 'expo-router'
@@ -25,7 +26,8 @@ export default function TabsLayout() {
   const insets = useSafeAreaInsets()
   const { unread } = useChats()
   return (
-    <Tabs screenOptions={{
+    <Tabs screenListeners={{ tabPress: () => select() }}
+      screenOptions={{
       headerShown: false,
       tabBarActiveTintColor: colors.primaryDeep,
       tabBarInactiveTintColor: colors.muted,

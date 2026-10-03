@@ -1,3 +1,4 @@
+import { success } from '../src/haptics'
 import { Image } from 'expo-image'
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
@@ -28,7 +29,7 @@ export default function Reviews() {
   const send = async () => {
     if (!token || !target || !rating) return
     setBusy(true)
-    try { await createReview(token, { target_id: target.target_id, listing_id: target.listing_id, rating, comment: comment.trim() }); setTarget(null); await load() } finally { setBusy(false) }
+    try { await createReview(token, { target_id: target.target_id, listing_id: target.listing_id, rating, comment: comment.trim() }); success(); setTarget(null); await load() } finally { setBusy(false) }
   }
 
   return (

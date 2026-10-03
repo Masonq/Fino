@@ -1,3 +1,4 @@
+import { select } from '../haptics'
 import { useEffect, useRef, useState } from 'react'
 import { Animated, LayoutChangeEvent, Pressable, StyleSheet, Text, View } from 'react-native'
 
@@ -46,7 +47,7 @@ export default function Segmented<K extends string>({ options, value, onChange }
       {options.map((o) => {
         const on = o.key === value
         return (
-          <Pressable key={o.key} onLayout={onItemLayout(o.key)} onPress={() => onChange(o.key)} style={styles.item}
+          <Pressable key={o.key} onLayout={onItemLayout(o.key)} onPress={() => { if (o.key !== value) select(); onChange(o.key) }} style={styles.item}
             accessibilityRole="tab" accessibilityState={{ selected: on }} hitSlop={6}>
             <Text style={[styles.label, on && styles.labelOn]}>{tr(o.label)}</Text>
           </Pressable>

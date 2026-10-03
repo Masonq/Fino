@@ -12,6 +12,8 @@ import { useAuth } from '../../src/auth'
 import ListingCard from '../../src/components/ListingCard'
 import Skeleton from '../../src/components/Skeleton'
 import { useFavorites } from '../../src/favorites'
+import { readCache, writeCache } from '../../src/cache'
+import { onRetry } from '../../src/net'
 import { colors, radius, space, font } from '../../src/theme'
 
 if (Platform.OS === 'android') UIManager.setLayoutAnimationEnabledExperimental?.(true)
@@ -33,17 +35,20 @@ export default function Favorites() {
   const load = useCallback(async () => {
     if (!token) return
     const id = ++req.current
+    const cached = await readCache<FeedItem[]>('favorites')
+    if (cached && id === req.current) setItems((v) => v ?? cached)
     try {
       const res = await favoriteList(token)
-      if (id === req.current) { setItems(res.items); setFailed(false) }
+      if (id === req.current) { setItems(res.items); setFailed(false); writeCache('favorites', res.items) }
     } catch {
-      if (id === req.current) setFailed(true)
+      if (id === req.current && !cached) setFailed(true)
     } finally {
       if (id === req.current) setRefreshing(false)
     }
   }, [token])
 
   useFocusEffect(useCallback(() => { load() }, [load]))
+  useEffect(() => onRetry(() => { load() }), [load])
   useEffect(() => { if (!token) setItems(null) }, [token])
 
   // Сняли сердечко где угодно (здесь или в ленте) — карточка уходит плавно

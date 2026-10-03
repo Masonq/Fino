@@ -1,3 +1,4 @@
+import { select } from '../haptics'
 import Icon, { Star } from './Icon'
 import { getLang, tr } from '../i18n'
 import { Image } from 'expo-image'
@@ -44,7 +45,7 @@ export default function CategoryTiles({ value, onPick }: { value: string | null;
     if (c === 'all') {
       const on = value === null
       return (
-        <Pressable key="all" style={[styles.tile, styles.allTile, on && styles.tileOn]} onPress={() => onPick(null)} accessibilityRole="button" accessibilityState={{ selected: on }}>
+        <Pressable key="all" style={[styles.tile, styles.allTile, on && styles.tileOn]} onPress={() => { select(); onPick(null) }} accessibilityRole="button" accessibilityState={{ selected: on }}>
           <Text style={[styles.label, styles.labelOn]}>{tr('Все')}</Text>
           <View style={styles.allIcon}><Icon name="grid" size={34} color={colors.primary} /></View>
         </Pressable>
@@ -52,9 +53,10 @@ export default function CategoryTiles({ value, onPick }: { value: string | null;
     }
     const on = value === c.slug
     return (
-      <Pressable key={c.slug} style={[styles.tile, on && styles.tileOn, c.ready === false && styles.soon]} onPress={() => onPick(on ? null : c.slug)}
+      <Pressable key={c.slug} style={[styles.tile, on && styles.tileOn, c.ready === false && styles.soon]} onPress={() => { select(); onPick(on ? null : c.slug) }}
         accessibilityRole="button" accessibilityState={{ selected: on }}>
-        <Text style={[styles.label, on && styles.labelOn]} numberOfLines={2}>{nameOf(c)}</Text>
+        {/* Одно длинное слово («Недвижимость») не переносим посреди слова — слегка ужимаем */}
+        <Text style={[styles.label, on && styles.labelOn]} numberOfLines={nameOf(c).includes(' ') ? 2 : 1} adjustsFontSizeToFit={!nameOf(c).includes(' ')} minimumFontScale={0.8}>{nameOf(c)}</Text>
         <Image source={{ uri: `${SITE}/cat/${c.slug}.png` }} style={styles.art} contentFit="contain" transition={200} />
       </Pressable>
     )

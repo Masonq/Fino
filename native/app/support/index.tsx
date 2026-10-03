@@ -1,3 +1,4 @@
+import { success } from '../../src/haptics'
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
@@ -38,6 +39,7 @@ export default function Support() {
     setBusy(true)
     try {
       const t = await supportCreate(token, { topic, subject: subject.trim(), body: body.trim() })
+      success()
       setWriting(false); setSubject(''); setBody('')
       router.push(`/support/${t.id}`)
     } catch { setError(tr('Не удалось отправить. Проверьте интернет и попробуйте ещё раз.')) } finally { setBusy(false) }

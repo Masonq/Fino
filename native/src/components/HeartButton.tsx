@@ -1,3 +1,4 @@
+import { select, tap } from '../haptics'
 import Icon from './Icon'
 import { tr } from '../i18n'
 import { useRef } from 'react'
@@ -16,6 +17,7 @@ export default function HeartButton({ id, size = 36, style, dark }: { id: string
   const scale = useRef(new Animated.Value(1)).current
 
   const press = () => {
+    if (on) select(); else tap()
     if (!on) {
       scale.setValue(0.6)
       Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 14, bounciness: 14 }).start()

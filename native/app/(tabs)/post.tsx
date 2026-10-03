@@ -1,3 +1,4 @@
+import { success } from '../../src/haptics'
 import { getLang, tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
@@ -119,6 +120,7 @@ export default function Post() {
         price: price ? Number(price) : null, currency, price_negotiable: negotiable, city,
         photos: shots.filter((s) => s.state === 'done' && s.uploaded).map((s) => s.uploaded as Uploaded),
       })
+      success()
       setDone({ id: res.id })
     } catch (e) {
       setError(e instanceof ApiError && e.message ? e.message : tr('Не удалось отправить. Проверьте интернет и попробуйте ещё раз.'))

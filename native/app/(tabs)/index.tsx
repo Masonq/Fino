@@ -4,8 +4,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, useWindowDimensions, View,
-} from 'react-native'
+  ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { fetchFeed, type FeedItem, type FeedTab, type Filters, saveSearch } from '../../src/api'
@@ -20,6 +19,9 @@ import Skeleton from '../../src/components/Skeleton'
 import StoriesRow from '../../src/components/StoriesRow'
 import { cityName } from '../../src/format'
 import { prefs } from '../../src/prefs'
+import { readCache, writeCache } from '../../src/cache'
+import { onRetry } from '../../src/net'
+import { select, tap } from '../../src/haptics'
 import { colors, radius, space, font } from '../../src/theme'
 
 const TABS: { key: FeedTab; label: string }[] = [
@@ -90,19 +92,29 @@ export default function Feed() {
 
   const load = useCallback(async (mode: 'first' | 'refresh') => {
     const id = ++req.current
-    if (mode === 'first') setState('loading')
+    // Первая страница каждой выборки сохраняется: сначала показываем её мгновенно, свежую подгружаем следом
+    const key = `feed:${JSON.stringify({ tab, q, city, category, filters })}`
+    let shown = false
+    if (mode === 'first') {
+      const cached = await readCache<{ items: FeedItem[]; total: number }>(key)
+      if (id !== req.current) return
+      if (cached) { setItems(cached.items); setTotal(cached.total); setState('ready'); shown = true } else setState('loading')
+    }
     try {
       const res = await fetchFeed({ tab, offset: 0, q, city, category, filters })
       if (id !== req.current) return
       setItems(res.items)
       setTotal(res.total)
       setState('ready')
+      writeCache(key, { items: res.items, total: res.total })
     } catch {
-      if (id === req.current) setState('error')
+      if (id === req.current && !shown) setState('error')
     } finally {
       if (mode === 'refresh') setRefreshing(false)
     }
   }, [tab, q, city, category, filters])
+
+  useEffect(() => onRetry(() => load('first')), [load])
 
   useEffect(() => {
     if (!cityReady) return
@@ -197,6 +209,9 @@ export default function Feed() {
         data={state === 'ready' ? items : []}
         keyExtractor={(it) => it.id}
         key={`cols-${cols}`}
+        // Подгрузка порциями по 6 с паузой — меньше перерисовок при быстрой прокрутке
+        maxToRenderPerBatch={6}
+        updateCellsBatchingPeriod={40}
         numColumns={cols}
         renderItem={({ item }) => (cols === 1
           ? <View style={{ paddingHorizontal: space.page }}><ListingCard item={item} width={cardW} large /></View>
@@ -231,7 +246,7 @@ export default function Feed() {
         onEndReached={loadMore}
         onEndReachedThreshold={0.6}
         ListFooterComponent={more ? <ActivityIndicator style={{ marginVertical: 16 }} color={colors.primary} /> : null}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load('refresh') }} tintColor={colors.primary} colors={[colors.primary]} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { tap(); setRefreshing(true); load('refresh') }} tintColor={colors.primary} colors={[colors.primary]} />}
         keyboardDismissMode="on-drag"
         removeClippedSubviews
         initialNumToRender={6}

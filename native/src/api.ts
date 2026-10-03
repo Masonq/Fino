@@ -1,6 +1,14 @@
 import { getLang } from './i18n'
+import { reportNetwork } from './net'
+import { writeCache } from './cache'
 import { tr } from './i18n'
 import { API } from './config'
+
+/** fetch с отметкой связи: сетевой сбой — «нет интернета», любой ответ сервера — связь есть. */
+const fetch = async (input: string, init?: RequestInit): Promise<Response> => {
+  try { const r = await globalThis.fetch(input, init); reportNetwork(true); return r }
+  catch (e) { reportNetwork(false); throw e }
+}
 
 export type FeedItem = {
   id: string
@@ -357,4 +365,17 @@ export const volunteerApply = (token: string, a: { role: string; languages: stri
 export const startVerification = (token: string) => authed<{ url?: string; status?: string }>('/verification/start', token, 'POST')
 export const verificationStatus = (token: string) =>
   authed<{ status: 'verified' | 'pending' | 'rejected' | 'none' | string; reason?: string | null }>('/verification/me', token)
+
+// ---------- предзагрузка и кэш объявления ----------
+
+const inflight = new Map<string, Promise<Listing>>()
+/** Полная версия объявления — одна загрузка на касание и открытие, результат — в сохранённое. */
+export function loadListing(id: string): Promise<Listing> {
+  const running = inflight.get(id)
+  if (running) return running
+  const p = fetchListing(id).then((l) => { writeCache(`listing:${id}`, l); return l }).finally(() => { setTimeout(() => inflight.delete(id), 4000) })
+  inflight.set(id, p)
+  return p
+}
+export function prefetchListing(id: string) { loadListing(id).catch(() => {}) }
 
