@@ -1,24 +1,26 @@
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { AppState } from 'react-native'
 
-import { type Chat, chatList } from './api'
+import { type Chat, chatList, notifications } from './api'
 import { useAuth } from './auth'
 
 /**
  * Переписки и счётчик непрочитанных — один на всё приложение: значок на вкладке «Сообщения» и сам список.
  * Обновляется раз в 30 секунд, пока приложение открыто, и сразу при возвращении в него.
  */
-type Chats = { chats: Chat[] | null; unread: number; refresh: () => Promise<void>; failed: boolean }
+type Chats = { chats: Chat[] | null; unread: number; notices: number; refresh: () => Promise<void>; failed: boolean }
 
-const Ctx = createContext<Chats>({ chats: null, unread: 0, refresh: async () => {}, failed: false })
+const Ctx = createContext<Chats>({ chats: null, unread: 0, notices: 0, refresh: async () => {}, failed: false })
 
 export function ChatsProvider({ children }: { children: ReactNode }) {
   const { token } = useAuth()
   const [chats, setChats] = useState<Chat[] | null>(null)
   const [failed, setFailed] = useState(false)
+  const [notices, setNotices] = useState(0)
 
   const refresh = useCallback(async () => {
-    if (!token) { setChats(null); return }
+    if (!token) { setChats(null); setNotices(0); return }
+    notifications(token).then((r) => setNotices(r.unread || 0)).catch(() => {})
     try {
       const res = await chatList(token)
       setChats(res.items)
@@ -37,7 +39,7 @@ export function ChatsProvider({ children }: { children: ReactNode }) {
   }, [token, refresh])
 
   const unread = useMemo(() => (chats ?? []).reduce((n, c) => n + (c.unread || 0), 0), [chats])
-  const value = useMemo(() => ({ chats, unread, refresh, failed }), [chats, unread, refresh, failed])
+  const value = useMemo(() => ({ chats, unread, notices, refresh, failed }), [chats, unread, notices, refresh, failed])
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }
 

@@ -50,6 +50,9 @@ export default function RootLayout() {
         <Stack.Screen name="listing/[id]" />
         <Stack.Screen name="chat/[id]" />
         <Stack.Screen name="seller/[id]" />
+        <Stack.Screen name="notifications" />
+        <Stack.Screen name="saved" />
+        <Stack.Screen name="edit/[id]" />
         <Stack.Screen name="login" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
       </Stack>
       </ChatsProvider>

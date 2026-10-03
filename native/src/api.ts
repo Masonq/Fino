@@ -271,3 +271,25 @@ export type ReportReason = 'fraud' | 'prohibited_item' | 'spam' | 'duplicate' | 
 export const sendReport = (token: string, listingId: string, reason: ReportReason, comment?: string) =>
   authed<unknown>('/reports', token, 'POST', { listing_id: listingId, reason, comment: comment || null })
 
+// ---------- уведомления, сохранённые поиски, редактирование ----------
+
+export type Notice = { id: string; text: string; link?: string | null; is_read: boolean; created_at: string }
+export const notifications = (token: string) => authed<{ total: number; unread: number; items: Notice[] }>('/notifications', token)
+export const markNoticeRead = (token: string, id: string) => authed<unknown>(`/notifications/${encodeURIComponent(id)}/read`, token, 'POST')
+export const markAllNoticesRead = (token: string) => authed<unknown>('/notifications/read-all', token, 'POST')
+
+export type SearchFilters = { q?: string; category_slug?: string; city?: string; price_min?: string; price_max?: string; with_photo?: boolean }
+export type SavedSearch = { id: string; name?: string | null; filters: SearchFilters; notify_enabled: boolean; new_count?: number }
+export const savedSearches = (token: string) => authed<{ total: number; items: SavedSearch[] }>('/saved-searches', token)
+export const saveSearch = (token: string, filters: SearchFilters, name?: string) => authed<SavedSearch>('/saved-searches', token, 'POST', { filters, name: name || null })
+export const deleteSavedSearch = (token: string, id: string) => authed<unknown>(`/saved-searches/${encodeURIComponent(id)}`, token, 'DELETE')
+export const toggleSavedSearch = (token: string, id: string, enabled: boolean) =>
+  authed<unknown>(`/saved-searches/${encodeURIComponent(id)}`, token, 'PATCH', { notify_enabled: enabled })
+
+export type ListingPatch = { title?: string; description?: string; price?: number | null; currency?: 'EUR' | 'RSD'; price_negotiable?: boolean; city?: string | null }
+export const updateListing = (token: string, id: string, patch: ListingPatch) => authed<unknown>(`/listings/${encodeURIComponent(id)}`, token, 'PATCH', patch)
+export const addListingPhoto = (token: string, id: string, p: Uploaded) =>
+  authed<unknown>(`/listings/${encodeURIComponent(id)}/photos`, token, 'POST', { url: p.url, thumbnail_url: p.thumbnail_url ?? null, is_video: false })
+export const deleteListingPhoto = (token: string, id: string, photoId: string) =>
+  authed<unknown>(`/listings/${encodeURIComponent(id)}/photos/${encodeURIComponent(photoId)}`, token, 'DELETE')
+

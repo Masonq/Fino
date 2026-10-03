@@ -129,6 +129,9 @@ export default function Profile() {
         )}
 
         <Sheet visible={!!menu} title={menu?.title} onClose={() => setMenu(null)}>
+          {menu && menu.status !== 'sold' && (
+            <SheetAction label="Редактировать" icon={<Ionicons name="create-outline" size={20} color={colors.ink} />} onPress={() => { const m = menu; setMenu(null); router.push(`/edit/${m.id}`) }} />
+          )}
           {menu?.status === 'active' && (
             <>
               <SheetAction label="Отметить «Продано»" icon={<Ionicons name="checkmark-done-outline" size={20} color={colors.ink} />} onPress={() => act(() => setListingStatus(token as string, menu.id, 'sold'))} />
@@ -140,6 +143,19 @@ export default function Profile() {
           )}
           {menu && <SheetAction label="Удалить" danger icon={<Ionicons name="trash-outline" size={20} color="#B42318" />} onPress={() => askDelete(menu)} />}
         </Sheet>
+
+        <View style={styles.links}>
+          <Pressable style={styles.linkRow} onPress={() => router.push('/notifications')}>
+            <Ionicons name="notifications-outline" size={20} color={colors.inkSoft} />
+            <Text style={styles.linkText}>Уведомления</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+          </Pressable>
+          <Pressable style={[styles.linkRow, { borderBottomWidth: 0 }]} onPress={() => router.push('/saved')}>
+            <Ionicons name="bookmark-outline" size={20} color={colors.inkSoft} />
+            <Text style={styles.linkText}>Сохранённые поиски</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+          </Pressable>
+        </View>
 
         <Pressable style={styles.logout} onPress={signOut}>
           <Ionicons name="log-out-outline" size={20} color="#B42318" />
@@ -181,6 +197,9 @@ const styles = StyleSheet.create({
   status: { fontSize: 12, fontWeight: '800', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, overflow: 'hidden' },
   views: { fontSize: 12.5, color: colors.muted },
   more: { width: 32, alignItems: 'center', paddingTop: 2 },
-  logout: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 28, height: 50, marginHorizontal: 16, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  links: { marginHorizontal: 16, marginTop: 26, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
+  linkRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, height: 54, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+  linkText: { flex: 1, fontSize: 16, color: colors.ink, fontWeight: '600' },
+  logout: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 14, height: 50, marginHorizontal: 16, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
   logoutText: { fontSize: 16, fontWeight: '700', color: '#B42318' },
 })
