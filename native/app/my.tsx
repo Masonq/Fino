@@ -15,7 +15,8 @@ import { mediaUrl } from '../src/config'
 import { formatPrice } from '../src/format'
 import { colors, font } from '../src/theme'
 
-type Tab = 'active' | 'pending' | 'other'
+// Вкладки — как на сайте: активные, на проверке, отклонено, продано, в архиве (истёкшие и снятые — в архиве)
+type Tab = 'active' | 'pending' | 'rejected' | 'sold' | 'archived'
 const STATUS: Record<string, { label: string; tone: string; bg: string }> = {
   active: { label: 'Активно', tone: colors.primaryDeep, bg: colors.primarySoft },
   pending_moderation: { label: 'На проверке', tone: '#8A6A1F', bg: '#FBF3E3' },
@@ -24,7 +25,7 @@ const STATUS: Record<string, { label: string; tone: string; bg: string }> = {
   archived: { label: 'В архиве', tone: colors.inkSoft, bg: colors.sunken },
   rejected: { label: 'Отклонено', tone: '#B42318', bg: '#FDECEA' },
 }
-const tabOf = (s: string): Tab => (s === 'active' ? 'active' : s === 'pending_moderation' ? 'pending' : 'other')
+const tabOf = (s: string): Tab => (s === 'active' ? 'active' : s === 'pending_moderation' ? 'pending' : s === 'rejected' ? 'rejected' : s === 'sold' ? 'sold' : 'archived')
 const rsd = (n: number) => `${String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00A0')}\u00A0RSD`
 
 /** Профиль: кто ты, баланс, мои объявления по вкладкам (активные / на проверке / другие), «Выйти». */
@@ -34,7 +35,7 @@ export default function MyListings() {
   const [bal, setBal] = useState<{ balance?: number; money?: number; bonus?: number } | null>(null)
   const params = useLocalSearchParams<{ tab?: string }>()
   const insets = useSafeAreaInsets()
-  const [tab, setTab] = useState<Tab>(params.tab === 'pending' ? 'pending' : params.tab === 'other' ? 'other' : 'active')
+  const [tab, setTab] = useState<Tab>((['pending', 'rejected', 'sold', 'archived'] as string[]).includes(String(params.tab)) ? (params.tab as Tab) : 'active')
   const [refreshing, setRefreshing] = useState(false)
   const [menu, setMenu] = useState<MyListing | null>(null)
 
@@ -66,9 +67,8 @@ export default function MyListings() {
   const count = (t: Tab) => (items ?? []).filter((i) => tabOf(i.status) === t).length
   const shown = (items ?? []).filter((i) => tabOf(i.status) === tab)
   const tabs: { key: Tab; label: string }[] = [
-    { key: 'active', label: tr('Активные {n}', { n: count('active') }) },
-    { key: 'pending', label: tr('На проверке {n}', { n: count('pending') }) },
-    { key: 'other', label: tr('Другие {n}', { n: count('other') }) },
+    { key: 'active', label: 'Активные' }, { key: 'pending', label: 'На проверке' }, { key: 'rejected', label: 'Отклонено' },
+    { key: 'sold', label: 'Продано' }, { key: 'archived', label: 'В архиве' },
   ]
 
   return (
@@ -78,14 +78,28 @@ export default function MyListings() {
           <Icon name="back" size={22} color={colors.ink} />
         </Pressable>
         <Text style={styles.topTitle}>{tr('Мои объявления')}</Text>
-        <Pressable onPress={() => router.navigate('/post')} hitSlop={8} style={{ marginLeft: 'auto', paddingRight: 8 }}><Text style={styles.link}>{tr('+ Разместить')}</Text></Pressable>
       </View>
       <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false) }} tintColor={colors.primary} colors={[colors.primary]} />}
         contentContainerStyle={{ paddingBottom: 32 }}>
-        <View style={{ paddingHorizontal: 16, paddingTop: 4 }}><Segmented options={tabs} value={tab} onChange={setTab} /></View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsWrap}><View style={styles.tabs}>
+          {tabs.map((t) => {
+            const on = t.key === tab
+            const n = count(t.key)
+            return (
+              <Pressable key={t.key} onPress={() => setTab(t.key)} style={[styles.tab, on && styles.tabOn]} accessibilityRole="tab" accessibilityState={{ selected: on }}>
+                <Text style={[styles.tabText, on && styles.tabTextOn]}>{tr(t.label)}</Text>
+                {n > 0 && <Text style={[styles.tabCount, on && styles.tabTextOn]}>{n}</Text>}
+              </Pressable>
+            )
+          })}
+        </View></ScrollView>
 
         {items === null ? <ActivityIndicator style={{ marginTop: 24 }} color={colors.primary} /> : shown.length === 0 ? (
-          <Text style={styles.empty}>{tab === 'active' ? tr('Активных объявлений пока нет.') : tab === 'pending' ? tr('На проверке ничего нет.') : tr('Здесь будут проданные, архивные и отклонённые.')}</Text>
+          <View style={styles.emptyBox}>
+            <View style={styles.emptyIcon}><Icon name="doc" size={22} color={colors.primary} /></View>
+            <Text style={styles.emptyText}>{tr('Здесь пока пусто')}</Text>
+            <Pressable style={styles.emptyBtn} onPress={() => router.navigate('/post')}><Text style={styles.emptyBtnText}>{tr('Разместить')}</Text></Pressable>
+          </View>
         ) : (
           <View style={styles.list}>
             {shown.map((i) => {
@@ -136,6 +150,19 @@ export default function MyListings() {
 }
 
 const styles = StyleSheet.create({
+  // как .my-tabs .pill-track сайта: серая дорожка 3 / 13, выбранная — зелёная плашка 11
+  tabsWrap: { paddingHorizontal: 12, paddingBottom: 14, paddingTop: 2 },
+  tabs: { flexDirection: 'row', gap: 2, padding: 3, borderRadius: 13, backgroundColor: colors.sunken },
+  tab: { flexDirection: 'row', alignItems: 'center', gap: 5, height: 34, paddingHorizontal: 13, borderRadius: 11 },
+  tabOn: { backgroundColor: colors.primary },
+  tabText: { fontSize: 13.5, fontFamily: font[700], color: colors.inkSoft },
+  tabTextOn: { color: '#fff' },
+  tabCount: { fontSize: 12, fontFamily: font[800], color: colors.muted },
+  emptyBox: { alignItems: 'center', gap: 10, paddingTop: 40 },
+  emptyIcon: { width: 52, height: 52, borderRadius: 26, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  emptyText: { fontSize: 14.5, fontFamily: font[600], color: colors.muted },
+  emptyBtn: { marginTop: 4, height: 42, paddingHorizontal: 20, borderRadius: 13, backgroundColor: colors.primary, justifyContent: 'center' },
+  emptyBtnText: { color: '#fff', fontSize: 14.5, fontFamily: font[800] },
   topBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, height: 52 },
   backBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   topTitle: { fontSize: 20, fontFamily: font[800], color: colors.ink, marginLeft: 4 },

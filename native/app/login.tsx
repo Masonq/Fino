@@ -1,5 +1,4 @@
 import { tr } from '../src/i18n'
-import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
 import {
@@ -9,9 +8,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { ApiError, requestCode, verifyCode } from '../src/api'
 import { useAuth } from '../src/auth'
+import Icon from '../src/components/Icon'
+import { API } from '../src/config'
+import * as Crypto from 'expo-crypto'
+import * as Linking from 'expo-linking'
+import { Image } from 'expo-image'
 import { colors, font } from '../src/theme'
 
 const LEN = 6
+const base64url = (b: Uint8Array) => btoa(String.fromCharCode(...Array.from(b))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 const RESEND = 60
 
 /**
@@ -22,7 +27,10 @@ const RESEND = 60
 export default function Login() {
   const insets = useSafeAreaInsets()
   const { signIn } = useAuth()
-  const [step, setStep] = useState<'email' | 'code'>('email')
+  // Как на сайте: сначала выбор способа входа, затем почта → код или Telegram
+  const [step, setStep] = useState<'choose' | 'email' | 'code' | 'telegram'>('choose')
+  const [tgKey, setTgKey] = useState('')
+  const [tgFailed, setTgFailed] = useState(false)
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [busy, setBusy] = useState(false)
@@ -36,6 +44,39 @@ export default function Login() {
     const t = setTimeout(() => setLeft((n) => n - 1), 1000)
     return () => clearTimeout(t)
   }, [left])
+
+  // Вход через Telegram: свой одноразовый ключ → бот подтверждает → забираем вход (/auth/telegram/enter)
+  const startTelegram = async () => {
+    setTgFailed(false)
+    const key = tgKey || base64url(Crypto.getRandomBytes(24))
+    setTgKey(key)
+    setStep('telegram')
+    let bot = 'Baraholka_plonk_bot'
+    try { const r = await fetch(`${API}/auth/telegram/link`); const j = await r.json(); bot = String(j.url).split('t.me/')[1]?.split('?')[0] || bot } catch { /* имя по умолчанию */ }
+    Linking.openURL(`https://t.me/${bot}?start=applogin_${key}`).catch(() => {})
+  }
+  useEffect(() => {
+    if (step !== 'telegram' || !tgKey) return undefined
+    let stop = false
+    const started = Date.now()
+    const tick = async () => {
+      if (stop) return
+      if (Date.now() - started > 5 * 60 * 1000) { setTgFailed(true); return }
+      try {
+        const r = await fetch(`${API}/auth/telegram/enter`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: tgKey }) })
+        if (r.ok) {
+          const j = await r.json()
+          const me = await (await fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${j.access_token}` } })).json()
+          await signIn(j.access_token, me)
+          router.back()
+          return
+        }
+      } catch { /* нет сети — попробуем снова */ }
+      setTimeout(tick, 2000)
+    }
+    tick()
+    return () => { stop = true }
+  }, [step, tgKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const valid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())
 
@@ -79,14 +120,39 @@ export default function Login() {
   return (
     <KeyboardAvoidingView style={[styles.page, { paddingTop: insets.top + 8 }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={styles.top}>
-        <Pressable onPress={() => (step === 'code' ? (setStep('email'), setError('')) : router.back())} hitSlop={10}
-          accessibilityLabel={step === 'code' ? tr('Изменить почту') : tr('Закрыть')} style={styles.iconBtn}>
-          <Ionicons name={step === 'code' ? 'chevron-back' : 'close'} size={24} color={colors.ink} />
+        <Pressable onPress={() => (step === 'code' ? (setStep('email'), setError('')) : step === 'email' || step === 'telegram' ? (setStep('choose'), setError(''), setTgKey('')) : router.back())} hitSlop={10}
+          accessibilityLabel={step === 'choose' ? tr('Закрыть') : tr('Назад')} style={styles.iconBtn}>
+          <Icon name={step === 'choose' ? 'close' : 'back'} size={22} color={colors.ink} />
         </Pressable>
       </View>
 
       <View style={styles.body}>
-        {step === 'email' ? (
+        {step === 'choose' ? (
+          <View style={styles.choose}>
+            <Image source={require('../assets/logo-mark.png')} style={styles.logo} contentFit="contain" />
+            <Text style={styles.chooseTitle}>{tr('Вход в PLONK')}</Text>
+            <Text style={styles.chooseSub}>{tr('Чтобы писать продавцам, публиковать объявления и сохранять избранное')}</Text>
+            <Pressable style={[styles.cta, styles.method, styles.methodPrimary]} onPress={() => setStep('email')} accessibilityRole="button">
+              <Icon name="mail" size={18} color="#fff" />
+              <Text style={[styles.ctaText, { fontSize: 15.5, fontFamily: font[700] }]}>{tr('Войти по почте')}</Text>
+            </Pressable>
+            <Pressable style={[styles.method, styles.methodTg]} onPress={startTelegram} accessibilityRole="button">
+              <Icon name="telegram" size={20} color="#229ED9" filled />
+              <Text style={styles.methodTgText}>{tr('Войти через Telegram')}</Text>
+            </Pressable>
+            <Text style={styles.consent}>
+              {tr('Продолжая, вы принимаете')} <Text style={styles.consentLink} onPress={() => router.push('/legal/terms')}>{tr('условия')}</Text> {tr('и')} <Text style={styles.consentLink} onPress={() => router.push('/legal/privacy')}>{tr('политику конфиденциальности')}</Text>.
+            </Text>
+          </View>
+        ) : step === 'telegram' ? (
+          <View style={styles.choose}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={[styles.title, { textAlign: 'center' }]}>{tr('Подтвердите вход в Telegram')}</Text>
+            <Text style={[styles.text, { textAlign: 'center' }]}>{tr('Откройте бота PLONK, нажмите «Запустить» и вернитесь сюда — вход выполнится сам.')}</Text>
+            {tgFailed && <Text style={styles.error}>{tr('Время вышло. Попробуйте ещё раз.')}</Text>}
+            <Pressable style={[styles.method, styles.methodTg]} onPress={startTelegram}><Text style={styles.methodTgText}>{tr('Открыть Telegram ещё раз')}</Text></Pressable>
+          </View>
+        ) : step === 'email' ? (
           <>
             <Text style={styles.title}>{tr('Вход в PLONK')}</Text>
             <Text style={styles.text}>{tr('Пришлём код на почту — пароль не нужен. Если аккаунта ещё нет, он создастся сам.')}</Text>
@@ -118,9 +184,6 @@ export default function Login() {
             <Pressable style={[styles.cta, (!valid || busy) && styles.ctaOff]} disabled={!valid || busy} onPress={() => send()}>
               {busy ? <ActivityIndicator color="#fff" /> : <Text style={styles.ctaText}>{tr('Получить код')}</Text>}
             </Pressable>
-            <Text style={styles.consent}>
-              {tr('Продолжая, вы принимаете')} <Text style={styles.consentLink} onPress={() => router.push('/legal/terms')}>{tr('условия')}</Text> {tr('и')} <Text style={styles.consentLink} onPress={() => router.push('/legal/privacy')}>{tr('политику конфиденциальности')}</Text>.
-            </Text>
           </>
         ) : (
           <>
@@ -183,6 +246,15 @@ const styles = StyleSheet.create({
   cellOn: { borderColor: colors.primary },
   cellText: { fontSize: 24, fontFamily: font[800], color: colors.ink },
   hidden: { position: 'absolute', opacity: 0, width: 1, height: 1 },
+  choose: { alignItems: 'center', gap: 10, paddingTop: 24 },
+  // как .auth-logo / .auth-sub / .auth-method сайта
+  logo: { width: 52, height: 52, borderRadius: 26, alignSelf: 'center', marginBottom: 6 },
+  method: { flexDirection: 'row', gap: 10, alignSelf: 'stretch', maxWidth: 340, width: '100%', marginHorizontal: 'auto', height: 52, borderRadius: 14 },
+  methodPrimary: { shadowColor: '#0E9F6E', shadowOpacity: 0.26, shadowRadius: 18, shadowOffset: { width: 0, height: 6 }, elevation: 4 },
+  chooseTitle: { fontSize: 21, fontFamily: font[800], color: colors.ink, textAlign: 'center' },
+  chooseSub: { fontSize: 13.5, lineHeight: 19.5, fontFamily: font[500], color: colors.muted, textAlign: 'center', maxWidth: 300, marginTop: -2, marginBottom: 16 },
+  methodTg: { height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  methodTgText: { fontSize: 15.5, fontFamily: font[700], color: colors.ink },
   consent: { fontSize: 12.5, lineHeight: 18, fontFamily: font[500], color: colors.muted, textAlign: 'center', marginTop: 4 },
   consentLink: { color: colors.primaryDeep, fontFamily: font[700] },
   resend: { marginTop: 8, height: 44, justifyContent: 'center' },

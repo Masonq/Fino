@@ -15,8 +15,15 @@ const REASONS: { key: ReportReason; label: string }[] = [
   { key: 'other', label: 'Другое' },
 ]
 
-/** Жалоба на объявление: причина, по желанию — комментарий; после отправки — «Спасибо, проверим». */
-export default function ReportSheet({ visible, listingId, token, onClose }: { visible: boolean; listingId: string; token: string | null; onClose: () => void }) {
+const USER_REASONS: { key: ReportReason; label: string }[] = [
+  { key: 'fraud', label: 'Похоже на мошенничество' },
+  { key: 'offensive_user', label: 'Оскорбления' },
+  { key: 'spam', label: 'Спам или реклама' },
+  { key: 'other', label: 'Другое' },
+]
+
+/** Жалоба на объявление или продавца: причина, по желанию — комментарий; после отправки — «Спасибо, проверим». */
+export default function ReportSheet({ visible, listingId, userId, token, onClose }: { visible: boolean; listingId?: string | null; userId?: string | null; token: string | null; onClose: () => void }) {
   const [reason, setReason] = useState<ReportReason | null>(null)
   const [comment, setComment] = useState('')
   const [state, setState] = useState<'idle' | 'sending' | 'done' | 'error'>('idle')
@@ -28,7 +35,7 @@ export default function ReportSheet({ visible, listingId, token, onClose }: { vi
     if (!reason || !token) return
     setState('sending')
     try {
-      await sendReport(token, listingId, reason, comment.trim())
+      await sendReport(token, listingId ?? null, reason, comment.trim(), userId ?? null)
       setState('done')
     } catch (e) {
       const code = e instanceof ApiError ? e.message : ''
@@ -51,7 +58,7 @@ export default function ReportSheet({ visible, listingId, token, onClose }: { vi
         </View>
       ) : (
         <View style={{ paddingHorizontal: 20, gap: 4 }}>
-          {REASONS.map((r) => {
+          {(userId ? USER_REASONS : REASONS).map((r) => {
             const on = reason === r.key
             return (
               <Pressable key={r.key} style={styles.row} onPress={() => setReason(r.key)} accessibilityRole="radio" accessibilityState={{ selected: on }}>

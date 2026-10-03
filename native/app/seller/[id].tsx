@@ -1,5 +1,3 @@
-import { tr } from '../../src/i18n'
-import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
@@ -8,85 +6,119 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { type FeedItem, type Review, type Seller, sellerListings, sellerProfile, subscribeSeller, userReviews } from '../../src/api'
 import { useAuth } from '../../src/auth'
-import { Star } from '../../src/components/Icon'
+import Icon, { Star } from '../../src/components/Icon'
 import ListingCard from '../../src/components/ListingCard'
+import ReportSheet from '../../src/components/ReportSheet'
 import { mediaUrl } from '../../src/config'
 import { monthYear, parseTime } from '../../src/format'
-import { colors, space, font } from '../../src/theme'
+import { getLang, plural, tr } from '../../src/i18n'
+import { colors, font, space } from '../../src/theme'
 
-/** Страница продавца: аватар, имя (компания), проверка, рейтинг, «на PLONK с …», все его объявления сеткой. */
+const MONTH_NOM: Record<'ru' | 'en' | 'sr', string[]> = {
+  ru: ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'],
+  en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+  sr: ['januar', 'februar', 'mart', 'april', 'maj', 'jun', 'jul', 'avgust', 'septembar', 'oktobar', 'novembar', 'decembar'],
+}
+/** «сентябрь 2026 г.» — как дата отзыва на сайте. */
+const reviewDate = (iso: string) => {
+  const d = parseTime(iso); if (!d) return ''
+  const l = getLang(); const m = MONTH_NOM[l][d.getMonth()]
+  return l === 'ru' ? `${m} ${d.getFullYear()} г.` : l === 'sr' ? `${m} ${d.getFullYear()}.` : `${m} ${d.getFullYear()}`
+}
+const reviewsWord = (n: number) => plural(n, { ru: ['отзыв', 'отзыва', 'отзывов'], en: ['review', 'reviews'], sr: ['recenzija', 'recenzije', 'recenzija'] })
+
+/**
+ * Продавец — как /seller/:id сайта: шапка «Продавец» с жалобой; строка — аватар, имя с галочкой, рейтинг
+ * и число отзывов, «На PLONK с …», «Подписаться»; отзывы одной карточкой (имя, звёзды, дата, текст),
+ * первые 4 и «Показать все отзывы · N»; объявления продавца сеткой.
+ */
 export default function SellerScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const insets = useSafeAreaInsets()
   const { width } = useWindowDimensions()
   const cardW = Math.floor((width - space.page * 2 - space.gap) / 2)
+  const { token, user } = useAuth()
   const [seller, setSeller] = useState<Seller | null>(null)
   const [items, setItems] = useState<FeedItem[] | null>(null)
-  const [failed, setFailed] = useState(false)
-  const { token, user } = useAuth()
   const [reviews, setReviews] = useState<{ avg: number; count: number; items: Review[] } | null>(null)
   const [subscribed, setSubscribed] = useState(false)
+  const [allReviews, setAllReviews] = useState(false)
+  const [reportOpen, setReportOpen] = useState(false)
+  const [failed, setFailed] = useState(false)
 
   useEffect(() => {
     sellerProfile(String(id)).then((x) => { setSeller(x); setSubscribed(!!x.is_subscribed) }).catch(() => setFailed(true))
-    userReviews(String(id)).then((r) => setReviews({ avg: r.rating_avg, count: r.rating_count, items: r.items })).catch(() => {})
     sellerListings(String(id)).then((r) => setItems(r.items)).catch(() => setItems([]))
+    userReviews(String(id)).then((r) => setReviews({ avg: r.rating_avg, count: r.rating_count, items: r.items })).catch(() => {})
   }, [id])
 
-  const back = (
-    <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} style={[styles.back, { top: insets.top + 8 }]} hitSlop={8} accessibilityLabel={tr('Назад')}>
-      <Ionicons name="chevron-back" size={24} color={colors.ink} />
-    </Pressable>
+  const top = (
+    <View style={[styles.top, { paddingTop: insets.top + 6 }]}>
+      <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} hitSlop={10} style={styles.back} accessibilityLabel={tr('Назад')}><Icon name="back" size={22} color={colors.ink} /></Pressable>
+      <Text style={styles.topTitle}>{tr('Продавец')}</Text>
+      {!!seller && user?.id !== seller.id && (
+        <Pressable onPress={() => (token ? setReportOpen(true) : router.push('/login'))} hitSlop={8} style={styles.flag} accessibilityLabel={tr('Пожаловаться')}>
+          <Icon name="flag" size={17} color={colors.inkSoft} />
+        </Pressable>
+      )}
+    </View>
   )
-
-  if (failed) return <View style={[styles.page, styles.center]}>{back}<Text style={styles.name}>{tr('Профиль недоступен')}</Text></View>
-  if (!seller) return <View style={[styles.page, styles.center]}>{back}<ActivityIndicator color={colors.primary} /></View>
+  if (failed) return <View style={styles.page}>{top}<Text style={styles.empty}>{tr('Профиль недоступен')}</Text></View>
+  if (!seller) return <View style={styles.page}>{top}<ActivityIndicator style={{ marginTop: 30 }} color={colors.primary} /></View>
 
   const name = seller.company_name || seller.display_name || tr('Продавец')
   const since = parseTime(seller.created_at)
   const avatar = mediaUrl(seller.avatar_url)
+  const shown = reviews ? (allReviews ? reviews.items : reviews.items.slice(0, 4)) : []
 
   const header = (
-    <View style={[styles.head, { paddingTop: insets.top + 60 }]}>
-      <View style={styles.avatar}>
-        {avatar ? <Image source={{ uri: avatar }} style={styles.avatarImg} contentFit="cover" /> : <Text style={styles.avatarLetter}>{name.slice(0, 1).toUpperCase()}</Text>}
-      </View>
-      <View style={styles.nameRow}>
-        <Text style={styles.name} numberOfLines={2}>{name}</Text>
-        {seller.document_verified && <Ionicons name="checkmark-circle" size={20} color={colors.primary} accessibilityLabel={tr('Личность подтверждена')} />}
-      </View>
-      {seller.is_company && <Text style={styles.company}>{tr('Компания')}</Text>}
-      <View style={styles.facts}>
-        {(seller.rating_count ?? 0) > 0 ? (
-          <View style={styles.fact}>
-            <Ionicons name="star" size={15} color="#E0A526" />
-            <Text style={styles.factText}>{(seller.rating_avg ?? 0).toFixed(1).replace('.', ',')} · {tr('отзывов: {n}', { n: seller.rating_count ?? 0 })}</Text>
+    <View>
+      <View style={styles.head}>
+        <View style={styles.avatar}>
+          {avatar ? <Image source={{ uri: avatar }} style={styles.avatarImg} contentFit="cover" /> : <Text style={styles.avatarLetter}>{name.slice(0, 1).toUpperCase()}</Text>}
+        </View>
+        <View style={{ flex: 1, gap: 2 }}>
+          <View style={styles.nameRow}>
+            <Text style={styles.name} numberOfLines={1}>{name}</Text>
+            {seller.document_verified && <View style={styles.seal}><Icon name="check" size={10} color="#fff" /></View>}
           </View>
-        ) : <Text style={styles.factText}>{tr('Пока нет отзывов')}</Text>}
-        {since && <Text style={styles.factText}>{tr('На PLONK с {date}', { date: monthYear(since) })}</Text>}
+          {(seller.rating_count ?? 0) > 0
+            ? <Text style={styles.rating}><Text style={styles.ratingNum}>{(seller.rating_avg ?? 0).toFixed(1)}</Text>  {seller.rating_count} {reviewsWord(seller.rating_count ?? 0)}</Text>
+            : <Text style={styles.meta}>{tr('Пока нет отзывов')}</Text>}
+          {since && <Text style={styles.meta}>{tr('На PLONK с {date}', { date: monthYear(since) })}</Text>}
+        </View>
+        {user?.id !== seller.id && (
+          <Pressable style={[styles.sub, subscribed && styles.subOn]} onPress={async () => {
+            if (!token) { router.push('/login'); return }
+            const next = !subscribed; setSubscribed(next)
+            try { await subscribeSeller(token, seller.id, next) } catch { setSubscribed(!next) }
+          }}>
+            <Text style={[styles.subText, subscribed && styles.subTextOn]}>{tr(subscribed ? 'Вы подписаны' : 'Подписаться')}</Text>
+          </Pressable>
+        )}
       </View>
-      {!!seller.company_description && <Text style={styles.about}>{seller.company_description}</Text>}
-      {user?.id !== seller.id && (
-        <Pressable style={[styles.sub, subscribed && styles.subOn]} onPress={async () => {
-          if (!token) { router.push('/login'); return }
-          const next = !subscribed; setSubscribed(next)
-          try { await subscribeSeller(token, seller.id, next) } catch { setSubscribed(!next) }
-        }}>
-          <Text style={[styles.subText, subscribed && styles.subTextOn]}>{tr(subscribed ? 'Вы подписаны' : 'Подписаться')}</Text>
-        </Pressable>
-      )}
+
       {!!reviews && reviews.count > 0 && (
         <View style={styles.reviews}>
-          <Text style={styles.h2}>{tr('Отзывы')} · {reviews.count}</Text>
-          {reviews.items.slice(0, 5).map((r) => (
-            <View key={r.id} style={styles.review}>
+          <Text style={styles.reviewsTitle}>{tr('Отзывы')}</Text>
+          <View style={styles.summary}>
+            <View style={{ flexDirection: 'row', gap: 1 }}>{[1, 2, 3, 4, 5].map((k) => <Star key={k} size={14} color={k <= Math.round(reviews.avg) ? '#E0A526' : '#D9DDD9'} />)}</View>
+            <Text style={styles.ratingNum}>{reviews.avg.toFixed(1)}</Text>
+            <Text style={styles.meta}>{reviews.count} {reviewsWord(reviews.count)}</Text>
+          </View>
+          {shown.map((r, i) => (
+            <View key={r.id} style={[styles.review, i === 0 && { borderTopWidth: 0 }]}>
               <View style={styles.reviewTop}>
-                <Text style={styles.reviewName}>{r.author_name || tr('Покупатель')}</Text>
-                <View style={{ flexDirection: 'row', gap: 1 }}>{[1, 2, 3, 4, 5].map((k) => <Star key={k} size={12} color={k <= r.rating ? '#E0A526' : '#D9DDD9'} />)}</View>
+                <Text style={styles.reviewName} numberOfLines={1}>{r.author_name || tr('Покупатель')}</Text>
+                <View style={{ flexDirection: 'row', gap: 1 }}>{[1, 2, 3, 4, 5].map((k) => <Star key={k} size={11} color={k <= r.rating ? '#E0A526' : '#D9DDD9'} />)}</View>
+                <Text style={styles.reviewDate}>{reviewDate(r.created_at)}</Text>
               </View>
               {!!r.comment && <Text style={styles.reviewText}>{r.comment}</Text>}
             </View>
           ))}
+          {!allReviews && reviews.items.length > 4 && (
+            <Pressable style={styles.more} onPress={() => setAllReviews(true)}><Text style={styles.moreText}>{tr('Показать все отзывы · {n}', { n: reviews.count })}</Text></Pressable>
+          )}
         </View>
       )}
       <Text style={styles.h2}>{tr('Объявления')}{items ? ` · ${items.length}` : ''}</Text>
@@ -95,6 +127,7 @@ export default function SellerScreen() {
 
   return (
     <View style={styles.page}>
+      {top}
       <FlatList
         data={items ?? []}
         keyExtractor={(i) => i.id}
@@ -105,40 +138,43 @@ export default function SellerScreen() {
         ListHeaderComponent={header}
         ListEmptyComponent={items === null ? <ActivityIndicator color={colors.primary} /> : <Text style={styles.empty}>{tr('Сейчас активных объявлений нет.')}</Text>}
       />
-      {back}
+      <ReportSheet visible={reportOpen} userId={seller.id} token={token} onClose={() => setReportOpen(false)} />
     </View>
   )
 }
 
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.bg },
-  center: { alignItems: 'center', justifyContent: 'center' },
-  back: {
-    position: 'absolute', left: 12, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.94)', alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 6, shadowOffset: { width: 0, height: 1 }, elevation: 3,
-  },
-  head: { alignItems: 'center', paddingHorizontal: 20, gap: 6, paddingBottom: 6 },
-  avatar: { width: 84, height: 84, borderRadius: 42, backgroundColor: '#7C6CF0', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', marginBottom: 6 },
-  avatarImg: { width: 84, height: 84 },
-  avatarLetter: { color: '#fff', fontSize: 34, fontFamily: font[800] },
-  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' },
-  name: { fontSize: 22, fontFamily: font[800], color: colors.ink, textAlign: 'center', flexShrink: 1 },
-  company: { fontSize: 12.5, fontFamily: font[800], color: colors.primaryDeep, backgroundColor: colors.primarySoft, paddingHorizontal: 9, paddingVertical: 3, borderRadius: 999, overflow: 'hidden' },
-  facts: { alignItems: 'center', gap: 4, marginTop: 2 },
-  fact: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  factText: { fontFamily: font[400], fontSize: 14, color: colors.inkSoft },
-  about: { fontFamily: font[400], fontSize: 14.5, lineHeight: 20, color: colors.ink, textAlign: 'center', marginTop: 6 },
-  h2: { alignSelf: 'flex-start', fontSize: 19, fontFamily: font[800], color: colors.ink, marginTop: 18, marginBottom: 4 },
-  row: { gap: space.gap, paddingHorizontal: space.page },
-  // Как .seller-sub-btn сайта: зелёная 13/700, скругление 11; подписан — светлая с рамкой
-  sub: { marginTop: 10, paddingVertical: 9, paddingHorizontal: 18, borderRadius: 11, backgroundColor: colors.primary },
+  top: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingBottom: 8 },
+  back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  topTitle: { flex: 1, fontSize: 20, fontFamily: font[800], letterSpacing: -0.3, color: colors.ink },
+  flag: { width: 36, height: 36, borderRadius: 18, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', marginRight: 6 },
+  head: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 30 },
+  avatar: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#7C6CF0', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  avatarImg: { width: 56, height: 56 },
+  avatarLetter: { color: '#fff', fontSize: 21, fontFamily: font[800] },
+  // как на сайте: галочка у правого края колонки с именем
+  nameRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 6 },
+  name: { fontSize: 17, fontFamily: font[800], color: colors.ink, flexShrink: 1 },
+  seal: { width: 17, height: 17, borderRadius: 9, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+  rating: { fontSize: 12.5, fontFamily: font[600], color: colors.muted },
+  ratingNum: { fontSize: 13.5, fontFamily: font[800], color: colors.ink },
+  meta: { fontSize: 12.5, fontFamily: font[600], color: colors.muted },
+  sub: { paddingVertical: 9, paddingHorizontal: 14, borderRadius: 11, backgroundColor: colors.primary },
   subOn: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
   subText: { color: '#fff', fontSize: 13, fontFamily: font[700] },
   subTextOn: { color: colors.ink },
-  reviews: { alignSelf: 'stretch', marginTop: 18, gap: 8 },
-  review: { padding: 12, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, gap: 4 },
-  reviewTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  reviewName: { fontSize: 14, fontFamily: font[800], color: colors.ink },
-  reviewText: { fontSize: 14, lineHeight: 19, fontFamily: font[400], color: colors.inkSoft },
-  empty: { fontFamily: font[400], fontSize: 14.5, color: colors.muted, textAlign: 'center', marginTop: 16 },
+  reviews: { marginHorizontal: 12, marginBottom: 14, padding: 14, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  reviewsTitle: { fontSize: 16, fontFamily: font[800], color: colors.ink },
+  summary: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6, marginBottom: 4 },
+  review: { paddingVertical: 11, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border, gap: 4 },
+  reviewTop: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  reviewName: { fontSize: 14, fontFamily: font[800], color: colors.ink, flexShrink: 1 },
+  reviewDate: { marginLeft: 'auto', fontSize: 12, fontFamily: font[500], color: colors.muted },
+  reviewText: { fontSize: 14, lineHeight: 19, fontFamily: font[400], color: colors.ink },
+  more: { marginTop: 8, height: 44, borderRadius: 12, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
+  moreText: { fontSize: 14, fontFamily: font[800], color: colors.primaryDeep },
+  h2: { fontSize: 18, fontFamily: font[800], color: colors.ink, paddingHorizontal: 16, marginBottom: 2 },
+  row: { gap: space.gap, paddingHorizontal: space.page },
+  empty: { fontSize: 14.5, color: colors.muted, textAlign: 'center', marginTop: 16, fontFamily: font[500] },
 })

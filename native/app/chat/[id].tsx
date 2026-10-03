@@ -1,6 +1,5 @@
 import { success, tap } from '../../src/haptics'
 import { tr } from '../../src/i18n'
-import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -83,11 +82,37 @@ export default function ChatScreen() {
 
   const mine = (m: Message) => !!user && m.sender_id === user.id
   // Служебные записи без текста (карточка объявления и т.п.) — не рисуем пустым пузырём
-  const data = [...(msgs ?? [])].filter((m) => isOffer(m.kind) || plainText(m.text)).reverse()
+  const data = [...(msgs ?? [])].filter((m) => isOffer(m.kind) || m.kind === 'safety_note' || plainText(m.text)).reverse()
   const photo = mediaUrl(info?.listing_photo)
   const title = info?.is_team ? tr('Команда PLONK') : (info?.other_name || tr('Переписка'))
 
   const bubble = ({ item }: { item: Message & { pending?: boolean; failed?: boolean } }) => {
+    if (item.kind === 'safety_note') {
+      return (
+        <View style={styles.safety}>
+          <Icon name="shield" size={17} color={colors.primary} />
+          <Text style={styles.safetyText}>{tr('Встречайтесь лично и передавайте деньги при получении вещи. Просьба перевести задаток вперёд — самый частый способ обмана.')}</Text>
+        </View>
+      )
+    }
+    if (isOffer(item.kind)) {
+      const me = mine(item)
+      const status = item.offer_status === 'accepted' ? tr('Принято') : item.offer_status === 'declined' ? tr('Отклонено') : me ? tr('Ждёт ответа продавца') : ''
+      return (
+        <View style={[styles.bubbleRow, me && styles.bubbleRowMe]}>
+          <View style={styles.offer}>
+            <Text style={styles.offerTitle}>{tr('Предложение:')} {formatPrice(item.offer_price ?? null, info?.currency)}</Text>
+            {!!status && <Text style={[styles.offerStatus, item.offer_status === 'accepted' && { color: colors.primaryDeep }]}>{status}</Text>}
+            {!me && (!item.offer_status || item.offer_status === 'pending') && (
+              <View style={styles.offerBtns}>
+                <Pressable style={[styles.offerBtn, styles.offerYes]} onPress={async () => { if (token) { await respondOffer(token, chatId, item.id, 'accepted').catch(() => {}); load() } }}><Text style={styles.offerYesText}>{tr('Принять')}</Text></Pressable>
+                <Pressable style={styles.offerBtn} onPress={async () => { if (token) { await respondOffer(token, chatId, item.id, 'declined').catch(() => {}); load() } }}><Text style={styles.offerNoText}>{tr('Отклонить')}</Text></Pressable>
+              </View>
+            )}
+          </View>
+        </View>
+      )
+    }
     if (item.kind === 'team' || item.kind === 'system') {
       return <View style={styles.system}><Text style={styles.systemText}>{plainText(item.text)}</Text></View>
     }
@@ -116,26 +141,27 @@ export default function ChatScreen() {
   return (
     <KeyboardAvoidingView style={styles.page} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={[styles.head, { paddingTop: insets.top + 6 }]}>
-        <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/chats'))} hitSlop={10} style={styles.back} accessibilityLabel={tr('Назад')}>
-          <Ionicons name="chevron-back" size={26} color={colors.ink} />
+        <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/chats'))} hitSlop={10} style={styles.backCircle} accessibilityLabel={tr('Назад')}>
+          <Icon name="back" size={20} color={colors.ink} />
         </Pressable>
-        <Pressable style={styles.headBody} disabled={!info?.listing_id} onPress={() => info?.listing_id && router.push(`/listing/${info.listing_id}`)}>
-          <View style={styles.headThumb}>{photo ? <Image source={{ uri: photo }} style={styles.headThumbImg} contentFit="cover" /> : null}</View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.headName} numberOfLines={1}>{title}</Text>
-            {!!info?.listing_title && (
-              <Text style={styles.headListing} numberOfLines={1}>
-                {info.listing_title}{info.listing_price != null ? ` · ${formatPrice(info.listing_price, info.currency)}` : ''}
-              </Text>
-            )}
-          </View>
-        </Pressable>
+        <Text style={[styles.headName, { flex: 1 }]} numberOfLines={1}>{title}</Text>
         {!info?.is_team && (
           <Pressable onPress={() => setMenu(true)} hitSlop={8} style={styles.back} accessibilityLabel={tr('Ещё')}>
-            <Text style={styles.dots}>⋯</Text>
+            <Icon name="dots" size={20} color={colors.ink} />
           </Pressable>
         )}
       </View>
+      {/* Объявление — отдельной строкой под шапкой, как на сайте: фото, название, цена зелёным, стрелка */}
+      {!!info?.listing_title && (
+        <Pressable style={styles.strip} onPress={() => info?.listing_id && router.push(`/listing/${info.listing_id}`)} accessibilityRole="button">
+          <View style={styles.headThumb}>{photo ? <Image source={{ uri: photo }} style={styles.headThumbImg} contentFit="cover" /> : null}</View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.stripTitle} numberOfLines={1}>{info.listing_title}</Text>
+            {info.listing_price != null && <Text style={styles.stripPrice}>{formatPrice(info.listing_price, info.currency)}</Text>}
+          </View>
+          <Icon name="forward" size={16} color={colors.muted} />
+        </Pressable>
+      )}
 
       <Sheet visible={menu} onClose={() => setMenu(false)}>
         {!info?.is_seller && <SheetAction label={tr('Предложить цену')} icon={<Icon name="wallet" size={20} color={colors.ink} />} onPress={() => { setMenu(false); setOffer(''); setOfferOpen(true) }} />}
@@ -172,14 +198,15 @@ export default function ChatScreen() {
         <TextInput
           value={text}
           onChangeText={setText}
-          placeholder={tr('Сообщение')}
+          placeholder={tr('Написать сообщение…')}
           placeholderTextColor={colors.muted}
           multiline
           style={styles.input}
           maxLength={2000}
         />
+        {/* Как .chat-send-btn сайта: самолётик; пусто — серая кнопка с серым значком */}
         <Pressable style={[styles.sendBtn, !text.trim() && styles.sendOff]} disabled={!text.trim()} onPress={() => send(text)} accessibilityLabel={tr('Отправить')}>
-          <Ionicons name="arrow-up" size={22} color="#fff" />
+          <Icon name="send" size={19} color={text.trim() ? '#fff' : colors.muted} />
         </Pressable>
       </View>
     </KeyboardAvoidingView>
@@ -189,14 +216,24 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.bg },
   head: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingBottom: 10, backgroundColor: colors.surface, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+  backCircle: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', marginRight: 6 },
   back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   headBody: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
-  headThumb: { width: 40, height: 40, borderRadius: 10, backgroundColor: colors.photo, overflow: 'hidden' },
+  strip: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: colors.surface, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+  stripTitle: { fontSize: 14, fontFamily: font[700], color: colors.ink },
+  stripPrice: { fontSize: 13.5, fontFamily: font[800], color: colors.primaryDeep, marginTop: 1 },
+  safety: { flexDirection: 'row', gap: 10, alignItems: 'flex-start', marginHorizontal: 4, marginVertical: 6, padding: 12, borderRadius: 14, backgroundColor: colors.sunken },
+  safetyText: { flex: 1, fontSize: 13, lineHeight: 18, fontFamily: font[600], color: colors.inkSoft },
+  offer: { maxWidth: '80%', paddingHorizontal: 13, paddingVertical: 10, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.primary, gap: 2 },
+  offerTitle: { fontSize: 15, fontFamily: font[800], color: colors.ink },
+  offerStatus: { fontSize: 12.5, fontFamily: font[600], color: colors.muted },
+  headThumb: { width: 40, height: 40, borderRadius: 9, backgroundColor: colors.photo, overflow: 'hidden' },
   headThumbImg: { width: 40, height: 40 },
   headName: { fontSize: 16, fontFamily: font[800], color: colors.ink },
   headListing: { fontFamily: font[400], fontSize: 13, color: colors.inkSoft, marginTop: 1 },
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  list: { paddingHorizontal: 12, paddingVertical: 12, gap: 6 },
+  // Список перевёрнут (новые снизу); короткая переписка — у верха экрана, как на сайте, а не прижата к низу
+  list: { paddingHorizontal: 12, paddingVertical: 12, gap: 6, flexGrow: 1, justifyContent: 'flex-end' },
   bubbleRow: { flexDirection: 'row', justifyContent: 'flex-start' },
   bubbleRowMe: { justifyContent: 'flex-end' },
   bubble: { maxWidth: '80%', paddingHorizontal: 12, paddingTop: 8, paddingBottom: 6, borderRadius: 18 },
@@ -211,10 +248,11 @@ const styles = StyleSheet.create({
   systemText: { fontFamily: font[400], fontSize: 13.5, lineHeight: 19, color: colors.inkSoft, textAlign: 'center' },
   emptyWrap: { transform: [{ scaleY: -1 }], paddingHorizontal: 40, paddingVertical: 24 },
   emptyText: { fontFamily: font[400], fontSize: 14.5, lineHeight: 20, color: colors.muted, textAlign: 'center' },
-  inputBar: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, paddingHorizontal: 10, paddingTop: 8, backgroundColor: colors.surface, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
-  input: { flex: 1, minHeight: 42, maxHeight: 120, borderRadius: 21, backgroundColor: colors.sunken, paddingHorizontal: 16, paddingTop: 11, paddingBottom: 11, fontFamily: font[400], fontSize: 16, color: colors.ink },
+  // как .chat-input-row сайта: белая полоса с тенью вверх, поле 12/16, скругление 20, рамка
+  inputBar: { flexDirection: 'row', alignItems: 'flex-end', gap: 10, paddingHorizontal: 16, paddingTop: 12, backgroundColor: colors.surface, shadowColor: '#14201A', shadowOpacity: 0.08, shadowRadius: 20, shadowOffset: { width: 0, height: -4 }, elevation: 6 },
+  input: { flex: 1, minHeight: 44, maxHeight: 120, borderRadius: 20, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, paddingHorizontal: 16, paddingTop: 11, paddingBottom: 11, fontSize: 16, fontFamily: font[400], color: colors.ink },
   sendBtn: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  sendOff: { opacity: 0.4 },
+  sendOff: { backgroundColor: colors.border },
   dots: { fontSize: 24, lineHeight: 26, color: colors.ink, fontFamily: font[800] },
   offerBtns: { flexDirection: 'row', gap: 8, marginTop: 8 },
   offerBtn: { height: 34, paddingHorizontal: 14, borderRadius: 10, backgroundColor: colors.sunken, justifyContent: 'center' },

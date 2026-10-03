@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { markAllNoticesRead, markNoticeRead, type Notice, notifications } from '../src/api'
 import { useAuth } from '../src/auth'
+import Icon from '../src/components/Icon'
 import { SITE } from '../src/config'
 import { plainText, relTime } from '../src/format'
 import { colors, font } from '../src/theme'
@@ -75,10 +76,10 @@ export default function Notifications() {
             </Pressable>
           )}
           ListEmptyComponent={
+            // Как на сайте: значок и текст вверху экрана, без отдельного заголовка
             <View style={styles.empty}>
-              <View style={styles.circle}><Ionicons name="notifications-outline" size={28} color={colors.primaryDeep} /></View>
-              <Text style={styles.emptyTitle}>{tr('Пока тихо')}</Text>
-              <Text style={styles.emptyText}>{tr('Здесь появятся ответы продавцов, отзывы и новые объявления по сохранённым поискам.')}</Text>
+              <View style={styles.circle}><Icon name="bell" size={24} color={colors.primary} /></View>
+              <Text style={styles.emptyText}>{tr('Уведомлений пока нет — здесь появятся решения по объявлениям, ответы в чатах и новое по вашим подпискам.')}</Text>
             </View>
           }
         />
@@ -99,8 +100,8 @@ const styles = StyleSheet.create({
   textOn: { color: colors.ink, fontFamily: font[700] },
   time: { fontFamily: font[400], fontSize: 12.5, color: colors.muted },
   sep: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginLeft: 37 },
-  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 10 },
-  circle: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  empty: { alignItems: 'center', gap: 12, paddingTop: 40, paddingHorizontal: 36 },
+  circle: { width: 52, height: 52, borderRadius: 26, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
   emptyTitle: { fontSize: 20, fontFamily: font[800], color: colors.ink },
-  emptyText: { fontFamily: font[400], fontSize: 15, lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },
+  emptyText: { fontSize: 14, lineHeight: 20, fontFamily: font[500], color: colors.muted, textAlign: 'center' },
 })

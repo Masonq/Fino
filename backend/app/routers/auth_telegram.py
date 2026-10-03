@@ -34,13 +34,24 @@ TTL = timedelta(minutes=5)
 # Ключи храним в базе, а не в памяти. Бот и сайт — разные процессы: то,
 # что бот положил себе в память, сайт не увидит, и ссылка окажется
 # «устаревшей» через две минуты после выдачи.
+APP_KEY_RE = __import__("re").compile(r"^[A-Za-z0-9_-]{24,48}$")
+
+
 def issue(telegram_id: int, display_name: str | None = None,
-          username: str | None = None) -> str:
-    """Выдаёт одноразовый ключ для входа. Зовётся из бота."""
+          username: str | None = None, key: str | None = None) -> str:
+    """
+    Выдаёт одноразовый ключ для входа. Зовётся из бота.
+
+    key — для входа из приложения: приложение само придумывает секретный ключ, открывает бота с ним
+    (start=applogin_<ключ>) и, пока человек подтверждает в Telegram, спрашивает /enter с этим ключом.
+    Ссылка на сайт тут не нужна: она открыла бы браузер, а не приложение. Ключ — только из безопасных
+    символов и достаточной длины, иначе выдаём свой.
+    """
     from app.core.database import SessionLocal
     from app.models import LoginTicket
 
-    key = secrets.token_urlsafe(24)
+    if not (key and APP_KEY_RE.match(key)):
+        key = secrets.token_urlsafe(24)
     with SessionLocal() as db:
         _forget_stale(db)
         db.add(LoginTicket(

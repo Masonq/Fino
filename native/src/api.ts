@@ -283,9 +283,9 @@ export const setListingStatus = (token: string, id: string, status: 'active' | '
   authed<unknown>(`/listings/${encodeURIComponent(id)}/status`, token, 'PATCH', { status })
 export const deleteListing = (token: string, id: string) => authed<unknown>(`/listings/${encodeURIComponent(id)}`, token, 'DELETE')
 
-export type ReportReason = 'fraud' | 'prohibited_item' | 'spam' | 'duplicate' | 'wrong_category' | 'other'
-export const sendReport = (token: string, listingId: string, reason: ReportReason, comment?: string) =>
-  authed<unknown>('/reports', token, 'POST', { listing_id: listingId, reason, comment: comment || null })
+export type ReportReason = 'fraud' | 'prohibited_item' | 'spam' | 'duplicate' | 'wrong_category' | 'offensive_user' | 'other'
+export const sendReport = (token: string, listingId: string | null, reason: ReportReason, comment?: string, userId?: string | null) =>
+  authed<unknown>('/reports', token, 'POST', { listing_id: listingId, target_user_id: userId ?? null, reason, comment: comment || null })
 
 // ---------- уведомления, сохранённые поиски, редактирование ----------
 

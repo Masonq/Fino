@@ -1,7 +1,9 @@
 import { Image } from 'expo-image'
+import { LinearGradient } from 'expo-linear-gradient'
+import Segmented from '../../src/components/Segmented'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native'
+import { ActivityIndicator, FlatList, ImageBackground, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { type Category, fetchCategories, fetchFeed, type FeedItem, type Filters } from '../../src/api'
@@ -30,8 +32,8 @@ function FieldView({ f, values, setVal, onPick }: { f: LandingField; values: Rec
           {(f.options ?? []).map((o) => {
             const on = values[f.key] === o.value
             return (
-              <Pressable key={o.value} onPress={() => { select(); setVal(f.key, on ? '' : o.value) }} style={[styles.sortChip, on && styles.sortOn]}>
-                <Text style={[styles.sortText, on && styles.sortTextOn]}>{t3(o.label)}</Text>
+              <Pressable key={o.value} onPress={() => { select(); setVal(f.key, on ? '' : o.value) }} style={[styles.roundChip, on && styles.roundChipOn]}>
+                <Text style={[styles.roundChipText, on && styles.roundChipTextOn]}>{t3(o.label)}</Text>
               </Pressable>
             )
           })}
@@ -52,10 +54,9 @@ function FieldView({ f, values, setVal, onPick }: { f: LandingField; values: Rec
     )
   }
   if (f.type === 'range') {
-    const unit = f.key === 'price' ? ', €' : ''
     return (
       <View style={{ gap: 6 }}>
-        <Text style={styles.fieldLabel}>{t3(f.label)}{unit}</Text>
+        <Text style={styles.fieldLabel}>{t3(f.label)}</Text>
         <View style={styles.priceRow}>
           <TextInput value={values[`${f.key}_min`] ?? ''} onChangeText={(v) => setVal(`${f.key}_min`, v.replace(/\D/g, '').slice(0, 9))} placeholder={t3(LUI.from)} placeholderTextColor={colors.muted} keyboardType="number-pad" style={styles.priceInput} />
           <TextInput value={values[`${f.key}_max`] ?? ''} onChangeText={(v) => setVal(`${f.key}_max`, v.replace(/\D/g, '').slice(0, 9))} placeholder={t3(LUI.to)} placeholderTextColor={colors.muted} keyboardType="number-pad" style={styles.priceInput} />
@@ -127,57 +128,59 @@ export default function CategoryScreen() {
     } finally { setMore(false) }
   }
 
+  // Сколько найдётся с выбранными условиями — для кнопки «Показать N объявлений», как на сайте
+  const [preview, setPreview] = useState<number | null>(null)
+  useEffect(() => {
+    const t = setTimeout(() => {
+      fetchFeed({ tab: 'all', offset: 0, q, category: String(slug), filters: { sort }, extra: landingParams(deal, values) })
+        .then((r) => setPreview(r.total)).catch(() => {})
+    }, 350)
+    return () => clearTimeout(t)
+  }, [q, deal, values, sort, slug])
   const dirty = q !== applied.q || sort !== applied.sort || deal !== applied.deal || JSON.stringify(values) !== JSON.stringify(applied.values)
   const apply = () => setApplied({ q, sort, deal, values })
   const subs = node?.children ?? []
+  const countWord = (n: number) => plural(n, { ru: ['объявление', 'объявления', 'объявлений'], en: ['listing', 'listings'], sr: ['oglas', 'oglasa', 'oglasa'] })
+  const heroSlug = root?.slug ?? String(slug)
   const head = (
     <View>
-      <View style={[styles.top, { paddingTop: insets.top + 6 }]}>
-        <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} hitSlop={10} style={styles.back} accessibilityLabel={tr('Назад')}><Icon name="back" size={22} color={colors.ink} /></Pressable>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.title} numberOfLines={1}>{nameOf(node) || ' '}</Text>
-          <Text style={styles.count}>{items ? `${total} ${plural(total, { ru: ['предложение', 'предложения', 'предложений'], en: ['offer', 'offers'], sr: ['ponuda', 'ponude', 'ponuda'] })}` : ' '}</Text>
-        </View>
+      {/* Баннер раздела — как .landing-hero сайта: картинка /hero/<раздел>.webp, затемнение снизу, сверху «назад» и поиск */}
+      <View style={[styles.heroBar, { paddingTop: insets.top + 10 }]}>
+          <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} hitSlop={8} style={styles.heroBack} accessibilityLabel={tr('Назад')}><Icon name="back" size={20} color={colors.ink} /></Pressable>
+          <View style={styles.heroSearch}>
+            <Icon name="search" size={17} color={colors.muted} />
+            <TextInput value={q} onChangeText={setQ} placeholder={landing?.fields.find((f) => f.type === 'text')?.hint ? t3(landing.fields.find((f) => f.type === 'text')?.hint) : tr('Что ищете?')} placeholderTextColor={colors.muted} style={styles.searchInput} returnKeyType="search" onSubmitEditing={apply} />
+          </View>
       </View>
+      <ImageBackground source={{ uri: `${SITE}/hero/${heroSlug}.webp` }} style={styles.hero} resizeMode="cover">
+        <LinearGradient colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.16)', 'rgba(0,0,0,0.46)']} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} />
+        <Text style={styles.heroTitle} numberOfLines={1}>{nameOf(node) || ' '}</Text>
+        <Text style={styles.heroCount}>{items ? `${total} ${countWord(total)}` : ' '}</Text>
+      </ImageBackground>
 
       {subs.length > 0 && (
         <View style={styles.subs}>
           {subs.map((c) => (
             <Pressable key={c.id} style={styles.sub} onPress={() => { select(); router.push(`/c/${c.slug}`) }} accessibilityRole="button">
+              <Text style={styles.subName} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.85}>{nameOf(c)}</Text>
               <SubArt slug={c.slug} fallback={node?.slug ?? root?.slug} />
-              <Text style={styles.subName} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.8}>{nameOf(c)}</Text>
-              <View style={{ flexShrink: 0 }}><Icon name="forward" size={14} color={colors.muted} /></View>
             </Pressable>
           ))}
         </View>
       )}
 
       <View style={styles.form}>
-        <View style={styles.search}>
-          <Icon name="search" size={17} color={colors.muted} />
-          <TextInput value={q} onChangeText={setQ} placeholder={landing?.fields.find((f) => f.type === 'text')?.hint ? t3(landing.fields.find((f) => f.type === 'text')?.hint) : tr('Поиск в разделе')} placeholderTextColor={colors.muted} style={styles.searchInput} returnKeyType="search" onSubmitEditing={apply} />
-        </View>
         {!!landing?.deal && (
-          <View style={styles.chipsRow}>
-            {landing.deal.options.map((o) => (
-              <Pressable key={o.value} onPress={() => { select(); setDeal(deal === o.value ? '' : o.value) }} style={[styles.sortChip, deal === o.value && styles.sortOn]}>
-                <Text style={[styles.sortText, deal === o.value && styles.sortTextOn]}>{t3(o.label)}</Text>
-              </Pressable>
-            ))}
+          <View style={styles.deal}>
+            <Segmented options={landing.deal.options.map((o) => ({ key: o.value, label: t3(o.label) }))} value={deal} onChange={(v) => setDeal(v === deal ? '' : v)} stretch />
           </View>
         )}
         {landing?.fields.filter((f) => f.type !== 'text').map((f) => <FieldView key={f.key} f={f} values={values} setVal={setVal} onPick={(k) => { setPickQ(''); setPicker(k) }} />)}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sorts}>
-          {SORTS.map(([k, l]) => (
-            <Pressable key={k || 'def'} onPress={() => { select(); setSort(k) }} style={[styles.sortChip, sort === k && styles.sortOn]}>
-              <Text style={[styles.sortText, sort === k && styles.sortTextOn]}>{tr(l)}</Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-        {dirty && (
-          <Pressable style={styles.show} onPress={apply}><Text style={styles.showText}>{tr('Показать')}</Text></Pressable>
-        )}
+        <Pressable style={styles.go} onPress={apply} accessibilityRole="button">
+          <Text style={styles.goText}>{preview != null ? tr('Показать {n} {word}', { n: preview, word: countWord(preview) }) : tr('Показать')}</Text>
+        </Pressable>
       </View>
+      <Text style={styles.fresh}>{tr('Свежие объявления')}</Text>
       {items === null && <ActivityIndicator style={{ marginTop: 20 }} color={colors.primary} />}
     </View>
   )
@@ -227,19 +230,36 @@ const styles = StyleSheet.create({
   back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   title: { fontSize: 21, fontFamily: font[800], letterSpacing: -0.3, color: colors.ink },
   count: { fontSize: 13, fontFamily: font[600], color: colors.muted, marginTop: 1 },
-  subs: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingHorizontal: space.page, marginBottom: 12 },
-  sub: { width: '48.8%', flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 56, paddingLeft: 6, paddingRight: 10, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
-  subArt: { width: 42, height: 42 },
+  hero: { height: 118, paddingHorizontal: 12, paddingBottom: 12, justifyContent: 'flex-end', overflow: 'hidden', borderBottomLeftRadius: 18, borderBottomRightRadius: 18, backgroundColor: '#D8DED9' },
+  heroBar: { flexDirection: 'row', alignItems: 'center', gap: 9, paddingHorizontal: 12, paddingBottom: 10, backgroundColor: colors.bg },
+  heroBack: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface, shadowColor: '#101828', shadowOpacity: 0.12, shadowRadius: 4, shadowOffset: { width: 0, height: 1 }, elevation: 2, alignItems: 'center', justifyContent: 'center' },
+  heroSearch: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, height: 42, borderRadius: 13, backgroundColor: colors.surface, paddingHorizontal: 12, shadowColor: '#101828', shadowOpacity: 0.12, shadowRadius: 10, shadowOffset: { width: 0, height: 2 }, elevation: 3 },
+  heroTitle: { fontSize: 24, fontFamily: font[800], color: '#fff', textShadowColor: 'rgba(0,0,0,0.35)', textShadowRadius: 10 },
+  heroCount: { fontSize: 13, lineHeight: 17, fontFamily: font[600], color: 'rgba(255,255,255,0.92)', marginTop: 2, textShadowColor: 'rgba(0,0,0,0.35)', textShadowRadius: 8 },
+  deal: { marginTop: 2 },
+  roundChip: { minWidth: 44, height: 38, paddingHorizontal: 14, borderRadius: 19, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
+  roundChipOn: { borderColor: colors.primary, borderWidth: 1.5, backgroundColor: colors.primarySoft },
+  roundChipText: { fontSize: 14, fontFamily: font[600], color: colors.ink },
+  roundChipTextOn: { color: colors.primaryDeep, fontFamily: font[800] },
+  go: { marginTop: 10, height: 50, borderRadius: 14, backgroundColor: colors.ink, alignItems: 'center', justifyContent: 'center' },
+  goText: { color: '#fff', fontSize: 15, fontFamily: font[700] },
+  fresh: { fontSize: 16, fontFamily: font[800], color: colors.ink, paddingHorizontal: 12, paddingTop: 14, paddingBottom: 10 },
+  subs: { flexDirection: 'row', flexWrap: 'wrap', gap: 9, paddingHorizontal: 12, paddingTop: 14, paddingBottom: 4 },
+  // как .landing-sub сайта: 68 высотой, название слева (не шире 60 %), картинка 74 справа, чуть за краем
+  sub: { width: '48.6%', height: 68, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: 'hidden', justifyContent: 'center' },
+  subArt: { position: 'absolute', right: -10, top: -3, width: 74, height: 74 },
   // minWidth 0 — длинное слово («электротранспорт») не выталкивает стрелку за край плитки
-  subName: { flex: 1, minWidth: 0, flexShrink: 1, fontSize: 13, lineHeight: 16, fontFamily: font[700], color: colors.ink },
-  form: { paddingHorizontal: space.page, gap: 8, marginBottom: 12 },
+  subName: { maxWidth: '60%', fontSize: 12.5, lineHeight: 15.5, fontFamily: font[700], color: colors.ink, zIndex: 2 },
+  form: { paddingHorizontal: 12, gap: 8, paddingTop: 12 },
   search: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 46, borderRadius: 14, backgroundColor: colors.sunken, paddingHorizontal: 13 },
   searchInput: { flex: 1, flexBasis: 0, minWidth: 0, fontSize: 15, fontFamily: font[500], color: colors.ink, paddingVertical: 0 },
   priceRow: { flexDirection: 'row', gap: 8 },
-  priceInput: { flex: 1, flexBasis: 0, minWidth: 0, height: 46, borderRadius: 14, backgroundColor: colors.sunken, paddingHorizontal: 13, fontSize: 15, fontFamily: font[500], color: colors.ink },
+  // как .landing-input сайта: 13 / 14 внутри, скругление 13, рамка, 16 / 600
+  priceInput: { flex: 1, flexBasis: 0, minWidth: 0, height: 48, borderRadius: 13, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.sunken, paddingHorizontal: 14, fontSize: 16, fontFamily: font[600], color: colors.ink },
   sorts: { gap: 6 },
   chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  fieldLabel: { fontSize: 13.5, fontFamily: font[800], color: colors.ink, marginTop: 2 },
+  // как .landing-label сайта: 13 / 700, ink-soft
+  fieldLabel: { fontSize: 13, fontFamily: font[700], color: colors.inkSoft, marginTop: 6 },
   selectField: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 46, borderRadius: 14, backgroundColor: colors.sunken, paddingHorizontal: 13 },
   selectLabel: { fontSize: 13.5, fontFamily: font[700], color: colors.inkSoft },
   selectValue: { flex: 1, textAlign: 'right', fontSize: 15, fontFamily: font[700], color: colors.ink },

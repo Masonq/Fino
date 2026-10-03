@@ -64,6 +64,31 @@ def _post_button() -> InlineKeyboardMarkup:
     ]])
 
 
+@dp.message(CommandStart(deep_link=True), F.text.contains("applogin_"))
+async def start_app_login(message: Message) -> None:
+    """
+    Вход в приложение PLONK. Приложение открыло бота со своим секретным ключом и ждёт: подтверждаем ключ —
+    приложение само заберёт вход. Ссылку на сайт не даём — она открыла бы браузер, а не приложение.
+    Обработчик стоит выше общего «login», иначе тот перехватил бы и этот вход.
+    """
+    nonce = (message.text or "").split("applogin_", 1)[-1].strip()
+    try:
+        from app.routers.auth_telegram import APP_KEY_RE, issue
+
+        if not APP_KEY_RE.match(nonce):
+            raise ValueError("bad key")
+        issue(message.from_user.id, message.from_user.full_name, message.from_user.username, key=nonce)
+    except Exception:                                   # noqa: BLE001
+        log.exception("не удалось подтвердить вход в приложение")
+        await message.answer("Не получилось войти. Вернитесь в приложение и нажмите «Войти через Telegram» ещё раз.")
+        return
+    await message.answer(
+        "<b>Вход в приложение PLONK</b>\n\n"
+        "Готово — вернитесь в приложение, вход уже выполнен.\n\n"
+        "<i>Ключ одноразовый и действует пять минут.</i>",
+    )
+
+
 @dp.message(CommandStart(deep_link=True), F.text.contains("login"))
 async def start_login(message: Message) -> None:
     """

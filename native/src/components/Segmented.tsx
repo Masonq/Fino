@@ -11,10 +11,12 @@ type Option<K extends string> = { key: K; label: string }
  * Переключатель с переезжающей белой плашкой — как «Все / Новое / Даром» на сайте.
  * Плашка едет к выбранному варианту с лёгкой пружиной; при первом показе встаёт на место без движения.
  */
-export default function Segmented<K extends string>({ options, value, onChange }: {
+export default function Segmented<K extends string>({ options, value, onChange, stretch = false }: {
   options: Option<K>[]
   value: K
   onChange: (key: K) => void
+  /** На всю ширину равными частями — как переключатель «Купить / Снять / Посуточно» на сайте */
+  stretch?: boolean
 }) {
   const [frames, setFrames] = useState<Record<string, { x: number; w: number }>>({})
   const x = useRef(new Animated.Value(0)).current
@@ -42,14 +44,14 @@ export default function Segmented<K extends string>({ options, value, onChange }
   }
 
   return (
-    <View style={styles.track} accessibilityRole="tablist">
+    <View style={[styles.track, stretch && styles.trackStretch]} accessibilityRole="tablist">
       <Animated.View style={[styles.pill, { left: x, width: w, opacity: frames[value] ? 1 : 0 }]} />
       {options.map((o) => {
         const on = o.key === value
         return (
-          <Pressable key={o.key} onLayout={onItemLayout(o.key)} onPress={() => { if (o.key !== value) select(); onChange(o.key) }} style={styles.item}
+          <Pressable key={o.key} onLayout={onItemLayout(o.key)} onPress={() => { if (o.key !== value) select(); onChange(o.key) }} style={[styles.item, stretch && styles.itemStretch]}
             accessibilityRole="tab" accessibilityState={{ selected: on }} hitSlop={6}>
-            <Text style={[styles.label, on && styles.labelOn]}>{tr(o.label)}</Text>
+            <Text style={[styles.label, on && styles.labelOn, stretch && styles.labelStretch]} numberOfLines={1} adjustsFontSizeToFit={stretch} minimumFontScale={0.85}>{tr(o.label)}</Text>
           </Pressable>
         )
       })}
@@ -64,6 +66,9 @@ const styles = StyleSheet.create({
     shadowColor: '#14201A', shadowOpacity: 0.12, shadowRadius: 4, shadowOffset: { width: 0, height: 1 }, elevation: 2,
   },
   item: { height: 36, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center' },
+  trackStretch: { alignSelf: 'stretch' },
+  itemStretch: { flex: 1, height: 40, paddingHorizontal: 6 },
+  labelStretch: { fontSize: 14 },
   label: { fontSize: 14.5, fontFamily: font[800], color: colors.inkSoft },
   labelOn: { color: colors.ink },
 })
