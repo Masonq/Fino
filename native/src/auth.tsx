@@ -20,7 +20,7 @@ const store = Platform.OS === 'web'
     }
   : SecureStore
 
-export type User = { id: string; display_name?: string | null; email?: string | null; avatar_url?: string | null; role?: string }
+export type User = { id: string; display_name?: string | null; email?: string | null; avatar_url?: string | null; role?: string; phone?: string | null }
 
 type Auth = {
   user: User | null
@@ -28,9 +28,10 @@ type Auth = {
   ready: boolean
   signIn: (token: string, user: User) => Promise<void>
   signOut: () => Promise<void>
+  setUser: (u: User) => void
 }
 
-const Ctx = createContext<Auth>({ user: null, token: null, ready: false, signIn: async () => {}, signOut: async () => {} })
+const Ctx = createContext<Auth>({ user: null, token: null, ready: false, signIn: async () => {}, signOut: async () => {}, setUser: () => {} })
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null)
@@ -74,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (t) fetch(`${API}/auth/logout`, { method: 'POST', headers: { Authorization: `Bearer ${t}` } }).catch(() => {})
   }, [token])
 
-  const value = useMemo(() => ({ user, token, ready, signIn, signOut }), [user, token, ready, signIn, signOut])
+  const value = useMemo(() => ({ user, token, ready, signIn, signOut, setUser }), [user, token, ready, signIn, signOut])
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }
 

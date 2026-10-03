@@ -16,9 +16,10 @@ import HeartButton from './HeartButton'
  * («Продвигается», «Забронировано» сверху, «Новое» и «Компания» снизу), огонёк у цены, если она ниже похожих,
  * золотая рамка у платного выделения. Нажатие открывает объявление.
  */
-function ListingCard({ item, width }: { item: FeedItem; width: number }) {
+function ListingCard({ item, width, large = false }: { item: FeedItem; width: number; large?: boolean }) {
   const [index, setIndex] = useState(0)
-  const photoH = Math.round(width * 0.95)
+  // Крупная карточка (одна колонка) — как .l-card сайта: фото 16 : 10,5
+  const photoH = Math.round(large ? (width * 10.5) / 16 : width * 0.95)
   const list = (item.photos && item.photos.length ? item.photos : item.cover_photo ? [item.cover_photo] : [])
     .map((u) => mediaUrl(u))
     .filter(Boolean) as string[]
@@ -29,7 +30,7 @@ function ListingCard({ item, width }: { item: FeedItem; width: number }) {
   }
 
   return (
-    <Pressable onPress={open} style={[styles.card, { width }, item.is_highlighted && styles.highlighted]}
+    <Pressable onPress={open} style={[styles.card, { width }, large && { borderRadius: 18 }, item.is_highlighted && styles.highlighted]}
       accessibilityRole="button" accessibilityLabel={`${item.title}, ${formatPrice(item.price, item.currency, item.is_free)}`}>
       <View style={[styles.photoBox, { height: photoH }]}>
         {list.length > 1 ? (
@@ -71,11 +72,11 @@ function ListingCard({ item, width }: { item: FeedItem; width: number }) {
             </View>
           )}
         </View>
-        <HeartButton id={item.id} style={styles.heart} />
+        <HeartButton id={item.id} style={large ? styles.heartLg : styles.heart} />
       </View>
 
       <View style={styles.body}>
-        <Text style={styles.title} numberOfLines={2}>{item.title}</Text>
+        <Text style={[styles.title, large && styles.titleLg]} numberOfLines={2}>{item.title}</Text>
         <View style={styles.priceRow}>
           <Text style={styles.price} numberOfLines={1}>{formatPrice(item.price, item.currency, item.is_free)}</Text>
           {!!item.price_mark && <Ionicons name="flame" size={16} color={colors.accent} accessibilityLabel={tr('Дешевле похожих')} />}
@@ -105,11 +106,13 @@ const styles = StyleSheet.create({
   freshText: { color: '#fff', fontSize: 11, fontFamily: font[800] },
   company: { position: 'absolute', right: 10, bottom: 10, backgroundColor: colors.primarySoft, color: colors.primaryDeep },
   heart: { position: 'absolute', top: 8, right: 8 },
+  heartLg: { position: 'absolute', top: 10, right: 10 },
   bars: { position: 'absolute', left: 10, right: 10, bottom: 4, flexDirection: 'row', gap: 3 },
   bar: { flex: 1, height: 2.5, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.45)' },
   barOn: { backgroundColor: '#fff' },
   body: { paddingHorizontal: 10, paddingTop: 8, paddingBottom: 10 },
   title: { fontFamily: font[400], fontSize: 14.5, lineHeight: 19, color: colors.ink, minHeight: 38 },
+  titleLg: { fontSize: 16, lineHeight: 21, fontFamily: font[600], minHeight: 0 },
   priceRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
   price: { fontSize: 18, fontFamily: font[800], color: colors.ink, flexShrink: 1 },
   meta: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4, gap: 6 },

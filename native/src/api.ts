@@ -36,6 +36,7 @@ export type Owner = {
   company_name?: string | null
   since?: string | null
   listings_count?: number
+  has_phone?: boolean
 }
 
 export type Listing = Omit<FeedItem, 'photos'> & {
@@ -295,4 +296,11 @@ export const addListingPhoto = (token: string, id: string, p: Uploaded) =>
   authed<unknown>(`/listings/${encodeURIComponent(id)}/photos`, token, 'POST', { url: p.url, thumbnail_url: p.thumbnail_url ?? null, is_video: false })
 export const deleteListingPhoto = (token: string, id: string, photoId: string) =>
   authed<unknown>(`/listings/${encodeURIComponent(id)}/photos/${encodeURIComponent(photoId)}`, token, 'DELETE')
+
+// ---------- профиль, история просмотров ----------
+
+export const updateMe = (token: string, patch: { display_name?: string; phone?: string | null }) =>
+  authed<import('./auth').User>('/auth/me', token, 'PATCH', patch)
+export const listingsByIds = (ids: string[]) =>
+  get<FeedItem[] | { items: FeedItem[] }>(`/listings/by-ids?ids=${ids.map(encodeURIComponent).join(',')}&lang=${getLang()}`)
 

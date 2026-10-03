@@ -32,7 +32,11 @@ const TABS: { key: FeedTab; label: string }[] = [
  */
 export default function Feed() {
   const { width } = useWindowDimensions()
-  const cardW = Math.floor((width - space.page * 2 - space.gap) / 2)
+  // Колонки ленты — как переключатель на сайте: 2 или 1; выбор запоминается
+  const [cols, setCols] = useState<1 | 2>(2)
+  useEffect(() => { prefs.get('plonk_cols').then((v) => { if (v === '1') setCols(1) }) }, [])
+  const pickCols = (n: 1 | 2) => { setCols(n); prefs.set('plonk_cols', String(n)) }
+  const cardW = cols === 1 ? Math.floor(width - space.page * 2) : Math.floor((width - space.page * 2 - space.gap) / 2)
   const [tab, setTab] = useState<FeedTab>('all')
   const [query, setQuery] = useState('')
   const [q, setQ] = useState('')
@@ -192,9 +196,12 @@ export default function Feed() {
         ref={listRef}
         data={state === 'ready' ? items : []}
         keyExtractor={(it) => it.id}
-        numColumns={2}
-        renderItem={({ item }) => <ListingCard item={item} width={cardW} />}
-        columnWrapperStyle={styles.row}
+        key={`cols-${cols}`}
+        numColumns={cols}
+        renderItem={({ item }) => (cols === 1
+          ? <View style={{ paddingHorizontal: space.page }}><ListingCard item={item} width={cardW} large /></View>
+          : <ListingCard item={item} width={cardW} />)}
+        columnWrapperStyle={cols === 2 ? styles.row : undefined}
         contentContainerStyle={styles.list}
         ListHeaderComponent={
           <View style={styles.listHead}>
@@ -202,6 +209,15 @@ export default function Feed() {
             {!q && <CategoryTiles value={category} onPick={setCategory} />}
             <View style={styles.tabsRow}>
               <Segmented options={TABS} value={tab} onChange={setTab} />
+              {!searchActive && (
+                <View style={styles.colsToggle}>
+                  {([2, 1] as const).map((n) => (
+                    <Pressable key={n} onPress={() => pickCols(n)} style={[styles.colBtn, cols === n && styles.colBtnOn]} accessibilityLabel={tr(n === 2 ? '2 колонки' : '1 колонка')} accessibilityState={{ selected: cols === n }}>
+                      <Icon name={n === 2 ? 'cols2' : 'cols1'} size={16} color={cols === n ? '#fff' : colors.inkSoft} />
+                    </Pressable>
+                  ))}
+                </View>
+              )}
               {searchActive && (
                 <Pressable style={[styles.saveBtn, savedState === 'saved' && styles.saveBtnOn]} disabled={savedState !== 'idle'} onPress={onSave} accessibilityRole="button">
                   <Ionicons name={savedState === 'saved' ? 'bookmark' : 'bookmark-outline'} size={16} color={savedState === 'saved' ? '#fff' : colors.primaryDeep} />
@@ -234,6 +250,9 @@ const styles = StyleSheet.create({
   bellDot: { position: 'absolute', top: 6, right: 4, minWidth: 17, height: 17, borderRadius: 9, paddingHorizontal: 4, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: colors.bg },
   bellDotText: { color: '#fff', fontSize: 10, fontFamily: font[800] },
   tabsRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, paddingHorizontal: space.page },
+  colsToggle: { flexDirection: 'row', gap: 2, padding: 3, borderRadius: 12, backgroundColor: colors.sunken },
+  colBtn: { width: 34, height: 30, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
+  colBtnOn: { backgroundColor: colors.primary },
   saveBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, height: 36, paddingHorizontal: 12, borderRadius: 18, backgroundColor: colors.primarySoft },
   saveBtnOn: { backgroundColor: colors.primary },
   saveText: { fontSize: 13.5, fontFamily: font[800], color: colors.primaryDeep },

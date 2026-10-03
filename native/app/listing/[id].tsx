@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { attrRows, type AttrField, ru, categorySchema, type FeedItem, fetchListing, type Listing, sellerListings, similarListings, startChat, textOf } from '../../src/api'
 import { useAuth } from '../../src/auth'
+import { rememberViewed } from '../../src/history'
 import CardsRow from '../../src/components/CardsRow'
 import HeartButton from '../../src/components/HeartButton'
 import ReportSheet from '../../src/components/ReportSheet'
@@ -45,6 +46,7 @@ export default function ListingScreen() {
     fetchListing(String(id)).then((d) => {
       if (!alive) return
       setData(d)
+      rememberViewed(d.id).catch(() => {})
       // Подписи характеристик, похожие и другие объявления продавца — следом, не задерживая сам экран
       if (d.category_slug) categorySchema(String(d.category_slug)).then((r) => alive && setSchema(r.attribute_schema ?? [])).catch(() => {})
       similarListings(d.id).then((r) => alive && setSimilar(r.items)).catch(() => {})
@@ -103,6 +105,12 @@ export default function ListingScreen() {
   const keyFacts = factChips(rootSlug(data), data.attributes as Record<string, unknown> | undefined, schema)
   const verdict = VERDICTS[(data as unknown as { price_check?: { verdict?: string } }).price_check?.verdict ?? '']
   const mine = !!(user && owner && user.id === owner.id)
+  // Звонок — как на сайте: трубка ведёт в переписку, где запрашивается звонок
+  const openChat = async () => {
+    if (!token) { router.push('/login'); return }
+    setOpening(true)
+    try { const chat = await startChat(token, data.id); router.push(`/chat/${chat.id}`) } catch { /* сеть */ } finally { setOpening(false) }
+  }
   const stripH = photoH + insets.top + SHEET_OVERLAP
 
   return (
@@ -251,7 +259,13 @@ export default function ListingScreen() {
         {mine ? (
           <View style={[styles.cta, styles.ctaMine]}><Text style={styles.ctaMineText}>{tr('Это ваше объявление')}</Text></View>
         ) : (
-          <Pressable style={[styles.cta, opening && { opacity: 0.7 }]} disabled={opening} accessibilityRole="button" onPress={async () => {
+          <View style={styles.ctaRow}>
+          {owner?.has_phone && (
+            <Pressable style={styles.callBtn} disabled={opening} accessibilityLabel={tr('Позвонить через чат')} onPress={() => openChat()}>
+              <Icon name="phone" size={20} color={colors.ink} />
+            </Pressable>
+          )}
+          <Pressable style={[styles.cta, { flex: 1 }, opening && { opacity: 0.7 }]} disabled={opening} accessibilityRole="button" onPress={async () => {
             if (!token) { router.push('/login'); return }
             setOpening(true)
             try {
@@ -265,6 +279,7 @@ export default function ListingScreen() {
           }}>
             <Text style={styles.ctaText}>{tr('Написать продавцу')}</Text>
           </Pressable>
+          </View>
         )}
       </View>
     </View>
@@ -389,6 +404,8 @@ const styles = StyleSheet.create({
   bar: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 16, paddingTop: 10, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border },
   cta: { height: 52, borderRadius: 16, backgroundColor: colors.primary, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   ctaText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
+  ctaRow: { flexDirection: 'row', gap: 10 },
+  callBtn: { width: 52, height: 52, borderRadius: 16, backgroundColor: colors.sunken, alignItems: 'center', justifyContent: 'center' },
   ctaMine: { backgroundColor: colors.sunken },
   ctaMineText: { color: colors.inkSoft, fontSize: 15.5, fontFamily: font[700] },
   retry: { marginTop: 8, height: 44, paddingHorizontal: 20, borderRadius: 12, backgroundColor: colors.primary, justifyContent: 'center' },

@@ -118,7 +118,7 @@ export default function Profile() {
         {!hasPhone && !phoneHidden && (
           <View style={styles.hint}>
             <Text style={styles.hintText}>{tr('Укажите телефон — покупатели смогут звонить вам напрямую')}</Text>
-            <Pressable style={styles.hintBtn} onPress={() => Linking.openURL(`${SITE}/profile/edit`)}><Text style={styles.hintBtnText}>{tr('Указать')}</Text></Pressable>
+            <Pressable style={styles.hintBtn} onPress={() => router.push('/profile-edit')}><Text style={styles.hintBtnText}>{tr('Указать')}</Text></Pressable>
             <Pressable onPress={() => { setPhoneHidden(true); prefs.set('plonk_phone_hint', 'hidden') }} hitSlop={8} accessibilityLabel={tr('Закрыть')}>
               <Icon name="close" size={15} color="#8A6A1F" />
             </Pressable>
@@ -137,7 +137,7 @@ export default function Profile() {
               </Pressable>
             )}
           </View>
-          <Pressable style={styles.edit} onPress={() => Linking.openURL(`${SITE}/profile/edit`)} accessibilityLabel={tr('Редактировать')}>
+          <Pressable style={styles.edit} onPress={() => router.push('/profile-edit')} accessibilityLabel={tr('Редактировать')}>
             <Icon name="edit" size={16} color={colors.inkSoft} />
           </Pressable>
         </View>
@@ -184,7 +184,7 @@ export default function Profile() {
         <View style={styles.menu}>
           {row('invite', 'Пригласите друга', () => Linking.openURL(`${SITE}/profile/invite`))}
           {row('searchrow', 'Сохранённые поиски', () => router.push('/saved'))}
-          {row('history', 'Вы смотрели', () => Linking.openURL(`${SITE}/history`))}
+          {row('history', 'Вы смотрели', () => router.push('/history'))}
           {row('help', 'Написать в поддержку', () => Linking.openURL(`${SITE}/support`))}
           {row('volunteer', 'Волонтёрство', () => Linking.openURL(`${SITE}/volunteer`), undefined, true)}
         </View>
