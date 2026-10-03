@@ -43,7 +43,7 @@ export default function Post() {
   const [done, setDone] = useState<{ id: string } | null>(null)
   const [error, setError] = useState('')
   // Мастер, как на сайте: 1 — раздел (сетка с картинками), 2 — подраздел, 3 — фото и описание
-  const [step, setStep] = useState<1 | 2 | 3>(1)
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1)
   const [roots, setRoots] = useState<Category[] | null>(null)
   const [trail, setTrail] = useState<Category[]>([])
   useEffect(() => { fetchCategories().then(setRoots).catch(() => setRoots([])) }, [])
@@ -138,7 +138,7 @@ export default function Post() {
   }
   const dots = (
     <View style={styles.steps}>
-      {[1, 2, 3].map((n) => <View key={n} style={[styles.stepDot, n <= step && styles.stepDotOn]} />)}
+      {[1, 2, 3, 4].map((n) => <View key={n} style={[styles.stepDot, n <= step && styles.stepDotOn]} />)}
     </View>
   )
 
@@ -195,7 +195,8 @@ export default function Post() {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
           {dots}
-          <Text style={styles.stepTitle}>{tr('Фото и описание')}</Text>
+          <Text style={styles.stepTitle}>{tr(step === 4 ? 'Цена и город' : 'Фото и описание')}</Text>
+          {step === 3 && (<>
 
           <Text style={styles.label}>{tr('Фото')} <Text style={styles.count}>{shots.length}/{MAX}</Text></Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.shots}>
@@ -239,7 +240,17 @@ export default function Post() {
           <Text style={styles.label}>{tr('Описание')}</Text>
           <TextInput value={desc} onChangeText={setDesc} placeholder={tr('Состояние, размеры, причина продажи')} placeholderTextColor={colors.muted} style={[styles.input, styles.area]} multiline maxLength={5000} textAlignVertical="top" />
           {hint(problems.desc)}
+          </>)}
 
+          {step === 3 && (
+            <Pressable style={[styles.cta, styles.submit]} onPress={() => {
+              if (problems.photos || problems.cat || problems.title || problems.desc) { setTried(true); return }
+              setStep(4)
+            }} accessibilityRole="button"><Text style={styles.ctaText}>{tr('Далее')}</Text></Pressable>
+          )}
+
+          {step === 4 && (<>
+          <Pressable onPress={() => setStep(3)} hitSlop={8} style={styles.backLink}><Icon name="back" size={16} color={colors.primaryDeep} /><Text style={styles.backLinkText}>{tr('Фото и описание')}</Text></Pressable>
           <View style={styles.labelRow}>
             <Text style={styles.label}>{tr('Цена')}</Text>
             <Segmented options={[{ key: 'EUR', label: '€' }, { key: 'RSD', label: 'RSD' }]} value={currency} onChange={(c) => setCurrency(c as 'EUR' | 'RSD')} />
@@ -253,7 +264,7 @@ export default function Post() {
           <Text style={styles.label}>{tr('Город')}</Text>
           <Pressable style={styles.select} onPress={() => setCityOpen(true)}>
             <Text style={styles.selectText}>{city ? cityName(city) : tr('Не указан')}</Text>
-            <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+            <Icon name="forward" size={16} color={colors.muted} />
           </Pressable>
 
           {!!error && <Text style={[styles.hint, { marginTop: 14 }]}>{error}</Text>}
@@ -261,6 +272,7 @@ export default function Post() {
             {sending ? <ActivityIndicator color="#fff" /> : <Text style={styles.ctaText}>{tr('Разместить')}</Text>}
           </Pressable>
           <Text style={styles.small}>{tr('Объявление проверят модераторы — обычно это несколько минут.')}</Text>
+          </>)}
         </ScrollView>
       </KeyboardAvoidingView>
       <CityPicker visible={cityOpen} value={city} onPick={setCity} onClose={() => setCityOpen(false)} />
@@ -279,6 +291,8 @@ const styles = StyleSheet.create({
   link: { fontSize: 15.5, fontFamily: font[700], color: colors.primaryDeep },
   form: { paddingHorizontal: 16, paddingBottom: 40, paddingTop: 10 },
   // Как на сайте: .post-steps (полоски 4 px), .post-cat-grid (3 колонки, 8 px), .post-cat-item (118, скругление 16)
+  backLink: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6, alignSelf: 'flex-start' },
+  backLinkText: { fontSize: 14, fontFamily: font[700], color: colors.primaryDeep },
   steps: { flexDirection: 'row', gap: 6, marginBottom: 14 },
   stepDot: { flex: 1, height: 4, borderRadius: 3, backgroundColor: colors.border },
   stepDotOn: { backgroundColor: colors.primary },

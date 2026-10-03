@@ -157,9 +157,13 @@ export default function Profile() {
                     else Alert.alert(tr('Заявка принята'), tr('Мы свяжемся с вами, чтобы подтвердить личность.'))
                     setVerify({ status: 'pending' })
                   } catch (e) {
+                    // Свой текст на каждый ответ сервера; «проверьте интернет» — только когда сети и правда нет
                     const code = e instanceof ApiError ? e.message : ''
                     if (code === 'already_pending') setVerify({ status: 'pending' })
-                    else Alert.alert(tr('Не получилось'), tr(code === 'verification_not_configured' ? 'Проверка личности временно недоступна. Попробуйте позже.' : 'Проверьте интернет и попробуйте ещё раз.'))
+                    else if (code === 'already_verified') setVerify({ status: 'verified' })
+                    else if (code === 'verification_not_configured' || code === 'verification_unavailable') Alert.alert(tr('Не получилось'), tr('Сервис проверки личности сейчас не отвечает. Попробуйте позже — мы уже знаем о проблеме.'))
+                    else if (e instanceof ApiError) Alert.alert(tr('Не получилось'), tr('Ошибка сервера ({code}). Попробуйте позже.', { code: code || String(e.status) }))
+                    else Alert.alert(tr('Не получилось'), tr('Проверьте интернет и попробуйте ещё раз.'))
                   } finally { setVerifying(false) }
                 }}>
                   <Icon name="shield" size={15} color="#fff" />

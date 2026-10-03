@@ -8,11 +8,11 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 
 import { type FeedItem, freshListings } from '../api'
 import { mediaUrl } from '../config'
-import { formatPrice } from '../format'
+import { formatPrice, isFresh } from '../format'
 import { colors, font } from '../theme'
 import Skeleton from './Skeleton'
 
-const D = 64
+const D = 54
 
 /** Истории, как на сайте: «Продать» и свежие объявления кружками с оранжевым кольцом и ценой под ними. */
 export default function StoriesRow({ city }: { city: string | null }) {
@@ -22,7 +22,7 @@ export default function StoriesRow({ city }: { city: string | null }) {
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
       <Pressable style={styles.item} onPress={() => router.navigate('/post')} accessibilityRole="button" accessibilityLabel={tr('Продать')}>
-        <View style={styles.sell}><Icon name="plus" size={30} color="#fff" /></View>
+        <View style={[styles.ring, styles.ringSeen]}><View style={styles.sell}><Icon name="plus" size={26} color="#fff" /></View></View>
         <Text style={styles.label}>{tr('Продать')}</Text>
       </Pressable>
       {items === null
@@ -33,7 +33,7 @@ export default function StoriesRow({ city }: { city: string | null }) {
           const photo = mediaUrl(i.cover_photo)
           return (
             <Pressable key={i.id} style={styles.item} onPress={() => router.push(`/listing/${i.id}`)} accessibilityRole="button" accessibilityLabel={i.title}>
-              <View style={styles.ring}>
+              <View style={[styles.ring, !isFresh(i.published_at) && styles.ringSeen]}>
                 <View style={styles.inner}>{photo ? <Image source={{ uri: photo }} style={styles.img} contentFit="cover" transition={150} /> : null}</View>
               </View>
               <Text style={styles.label} numberOfLines={1}>{formatPrice(i.price, i.currency, i.is_free)}</Text>
@@ -47,10 +47,12 @@ export default function StoriesRow({ city }: { city: string | null }) {
 const styles = StyleSheet.create({
   row: { paddingHorizontal: 12, gap: 12 },
   item: { width: D + 10, alignItems: 'center' },
-  ring: { width: D + 8, height: D + 8, borderRadius: (D + 8) / 2, borderWidth: 2.5, borderColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
+  // как .story-ring сайта: 64, кольцо 2,5 и белый зазор вокруг фото 54; свежие — оранжевое, остальные — серое
+  ring: { width: D + 10, height: D + 10, borderRadius: (D + 10) / 2, borderWidth: 2.5, borderColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
+  ringSeen: { borderColor: 'rgba(20,30,25,0.14)' },
   inner: { width: D, height: D, borderRadius: D / 2, overflow: 'hidden', backgroundColor: colors.photo },
   img: { width: D, height: D },
   // «Продать» — того же размера, что кольца историй (72), чтобы ряд был ровным
-  sell: { width: D + 8, height: D + 8, borderRadius: (D + 8) / 2, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
+  sell: { width: D, height: D, borderRadius: D / 2, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
   label: { fontSize: 12.5, fontFamily: font[800], color: colors.ink, marginTop: 5, maxWidth: D + 10 },
 })

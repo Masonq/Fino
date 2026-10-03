@@ -43,14 +43,17 @@ function FieldView({ f, values, setVal, onPick }: { f: LandingField; values: Rec
   }
   if (f.type === 'select' || f.type === 'car-model') {
     const isModel = f.type === 'car-model'
-    const disabled = isModel && (!values.brand || values.brand === CAR_OTHER || !CAR_MODELS[values.brand])
+    // Модель — только когда выбрана марка с известными моделями, как на сайте
+    if (isModel && (!values.brand || values.brand === CAR_OTHER || !CAR_MODELS[values.brand])) return null
     const value = values[isModel ? 'model' : 'brand']
     return (
-      <Pressable disabled={disabled} onPress={() => onPick(isModel ? 'model' : 'brand')} style={[styles.selectField, disabled && { opacity: 0.5 }]}>
-        <Text style={styles.selectLabel}>{t3(f.label)}</Text>
-        <Text style={[styles.selectValue, !value && { color: colors.muted }]} numberOfLines={1}>{value ? (value === CAR_OTHER ? t3(LUI.other) : value) : tr('Любая')}</Text>
-        <Icon name="down" size={13} color={colors.inkSoft} />
-      </Pressable>
+      <View style={{ gap: 6 }}>
+        <Text style={styles.fieldLabel}>{t3(f.label)}</Text>
+        <Pressable onPress={() => onPick(isModel ? 'model' : 'brand')} style={styles.selectField}>
+          <Text style={[styles.selectValue, !value && { color: colors.ink }]} numberOfLines={1}>{value ? (value === CAR_OTHER ? t3(LUI.other) : value) : (isModel ? t3(LUI.modelPh) : t3(LUI.brandPh))}</Text>
+          <Icon name="down" size={14} color={colors.inkSoft} />
+        </Pressable>
+      </View>
     )
   }
   if (f.type === 'range') {
@@ -96,6 +99,7 @@ export default function CategoryScreen() {
   const [values, setValues] = useState<Record<string, string>>({})
   const [picker, setPicker] = useState<'brand' | 'model' | null>(null)
   const [pickQ, setPickQ] = useState('')
+  const [allSubs, setAllSubs] = useState(false)
   const [items, setItems] = useState<FeedItem[] | null>(null)
   const [total, setTotal] = useState(0)
   const [q, setQ] = useState('')
@@ -160,12 +164,18 @@ export default function CategoryScreen() {
 
       {subs.length > 0 && (
         <View style={styles.subs}>
-          {subs.map((c) => (
+          {(subs.length > 6 ? subs.slice(0, 5) : subs).map((c) => (
             <Pressable key={c.id} style={styles.sub} onPress={() => { select(); router.push(`/c/${c.slug}`) }} accessibilityRole="button">
               <Text style={styles.subName} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.85}>{nameOf(c)}</Text>
               <SubArt slug={c.slug} fallback={node?.slug ?? root?.slug} />
             </Pressable>
           ))}
+          {subs.length > 6 && (
+            <Pressable style={[styles.sub, styles.subAll]} onPress={() => setAllSubs(true)} accessibilityRole="button">
+              <Text style={[styles.subName, { maxWidth: '85%' }]}>{tr('Все категории')}</Text>
+              <Icon name="forward" size={16} color={colors.muted} />
+            </Pressable>
+          )}
         </View>
       )}
 
@@ -189,6 +199,21 @@ export default function CategoryScreen() {
   const pickShown = pickList.filter((x) => x.toLowerCase().includes(pickQ.trim().toLowerCase()))
   return (
     <View style={styles.page}>
+      <SheetFrame visible={allSubs} onClose={() => setAllSubs(false)}>
+        <View style={styles.pickSheet}>
+          <View style={styles.pickHandle} />
+          <Text style={styles.pickTitle}>{nameOf(node)}</Text>
+          <ScrollView style={{ maxHeight: 520 }}>
+            {subs.map((c) => (
+              <Pressable key={c.id} style={[styles.pickRow, { flexDirection: 'row', alignItems: 'center', gap: 12 }]} onPress={() => { setAllSubs(false); router.push(`/c/${c.slug}`) }}>
+                <Image source={{ uri: `${SITE}/cat/${c.slug}.png` }} style={{ width: 40, height: 40 }} contentFit="contain" />
+                <Text style={[styles.pickText, { flex: 1 }]}>{nameOf(c)}</Text>
+                <Icon name="forward" size={15} color={colors.muted} />
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+      </SheetFrame>
       <SheetFrame visible={!!picker} onClose={() => setPicker(null)}>
         <View style={styles.pickSheet}>
           <View style={styles.pickHandle} />
@@ -230,7 +255,7 @@ const styles = StyleSheet.create({
   back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   title: { fontSize: 21, fontFamily: font[800], letterSpacing: -0.3, color: colors.ink },
   count: { fontSize: 13, fontFamily: font[600], color: colors.muted, marginTop: 1 },
-  hero: { height: 118, paddingHorizontal: 12, paddingBottom: 12, justifyContent: 'flex-end', overflow: 'hidden', borderBottomLeftRadius: 18, borderBottomRightRadius: 18, backgroundColor: '#D8DED9' },
+  hero: { height: 132, paddingHorizontal: 12, paddingBottom: 12, justifyContent: 'flex-end', overflow: 'hidden', borderBottomLeftRadius: 18, borderBottomRightRadius: 18, backgroundColor: '#D8DED9' },
   heroBar: { flexDirection: 'row', alignItems: 'center', gap: 9, paddingHorizontal: 12, paddingBottom: 10, backgroundColor: colors.bg },
   heroBack: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface, shadowColor: '#101828', shadowOpacity: 0.12, shadowRadius: 4, shadowOffset: { width: 0, height: 1 }, elevation: 2, alignItems: 'center', justifyContent: 'center' },
   heroSearch: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, height: 42, borderRadius: 13, backgroundColor: colors.surface, paddingHorizontal: 12, shadowColor: '#101828', shadowOpacity: 0.12, shadowRadius: 10, shadowOffset: { width: 0, height: 2 }, elevation: 3 },
@@ -244,7 +269,7 @@ const styles = StyleSheet.create({
   go: { marginTop: 10, height: 50, borderRadius: 14, backgroundColor: colors.ink, alignItems: 'center', justifyContent: 'center' },
   goText: { color: '#fff', fontSize: 15, fontFamily: font[700] },
   fresh: { fontSize: 16, fontFamily: font[800], color: colors.ink, paddingHorizontal: 12, paddingTop: 14, paddingBottom: 10 },
-  subs: { flexDirection: 'row', flexWrap: 'wrap', gap: 9, paddingHorizontal: 12, paddingTop: 14, paddingBottom: 4 },
+  subs: { flexDirection: 'row', flexWrap: 'wrap', gap: 9, paddingHorizontal: 12, paddingTop: 20, paddingBottom: 4 },
   // как .landing-sub сайта: 68 высотой, название слева (не шире 60 %), картинка 74 справа, чуть за краем
   sub: { width: '48.6%', height: 68, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: 'hidden', justifyContent: 'center' },
   subArt: { position: 'absolute', right: -10, top: -3, width: 74, height: 74 },
@@ -260,9 +285,11 @@ const styles = StyleSheet.create({
   chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   // как .landing-label сайта: 13 / 700, ink-soft
   fieldLabel: { fontSize: 13, fontFamily: font[700], color: colors.inkSoft, marginTop: 6 },
-  selectField: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 46, borderRadius: 14, backgroundColor: colors.sunken, paddingHorizontal: 13 },
+  // как .landing-select сайта: 48, рамка, скругление 13, значение 16 / 600 слева
+  selectField: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 48, borderRadius: 13, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.sunken, paddingHorizontal: 14 },
+  subAll: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   selectLabel: { fontSize: 13.5, fontFamily: font[700], color: colors.inkSoft },
-  selectValue: { flex: 1, textAlign: 'right', fontSize: 15, fontFamily: font[700], color: colors.ink },
+  selectValue: { flex: 1, fontSize: 16, fontFamily: font[600], color: colors.ink },
   pickSheet: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 8, paddingBottom: 24 },
   pickHandle: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: '#D8DCD8', marginBottom: 8 },
   pickTitle: { fontSize: 18, fontFamily: font[800], color: colors.ink, paddingHorizontal: 20, paddingBottom: 8 },

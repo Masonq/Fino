@@ -398,4 +398,10 @@ export const DICT: Record<string, { en?: string; sr?: string }> = {
   "Активные": { en: "Active", sr: "Aktivni" },
   "Уведомлений пока нет — здесь появятся решения по объявлениям, ответы в чатах и новое по вашим подпискам.": { en: "No notifications yet — listing decisions, chat replies, and matches for your saved searches will show up here.", sr: "Još nema obaveštenja — ovde će se pojaviti odluke o oglasima, odgovori u ćaskanjima i novo po vašim pretragama." },
   "Написать сообщение…": { en: "Write a message...", sr: "Napišite poruku..." },
+  "Сервис проверки личности сейчас не отвечает. Попробуйте позже — мы уже знаем о проблеме.": { en: "The identity check service is not responding right now. Please try later — we already know about it.", sr: "Servis za proveru identiteta trenutno ne odgovara. Pokušajte kasnije — već znamo za problem." },
+  "Ошибка сервера ({code}). Попробуйте позже.": { en: "Server error ({code}). Please try later.", sr: "Greška servera ({code}). Pokušajte kasnije." },
+  "Открыть фото": { en: "Open photo", sr: "Otvori fotografiju" },
+  "эт.": { en: "floor", sr: "sprat" },
+  "Цена и город": { en: "Price and city", sr: "Cena i grad" },
+  "Далее": { en: "Next", sr: "Dalje" },
 }

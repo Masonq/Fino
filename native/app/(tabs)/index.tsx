@@ -1,5 +1,5 @@
 import Icon, { Star } from '../../src/components/Icon'
-import { tr } from '../../src/i18n'
+import { tr, getLang } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -20,6 +20,7 @@ import StoriesRow from '../../src/components/StoriesRow'
 import { cityName } from '../../src/format'
 import { prefs } from '../../src/prefs'
 import * as Location from 'expo-location'
+import { LinearGradient } from 'expo-linear-gradient'
 import { nearestCity } from '../../src/format'
 import { readCache, writeCache } from '../../src/cache'
 import { onRetry } from '../../src/net'
@@ -47,6 +48,12 @@ function ActiveChip({ label, onPress }: { label: string; onPress: () => void }) 
   )
 }
 
+const HINTS: Record<'ru' | 'en' | 'sr', string[]> = {
+  ru: ['Найти холодильник', 'Найти квартиру', 'Найти велосипед', 'Найти работу', 'Найти коляску', 'Найти что-нибудь даром'],
+  en: ['Find a fridge', 'Find an apartment', 'Find a bike', 'Find a job', 'Find a stroller', 'Find free stuff'],
+  sr: ['Pronađi frižider', 'Pronađi stan', 'Pronađi bicikl', 'Pronađi posao', 'Pronađi kolica', 'Pronađi besplatno'],
+}
+
 export default function Feed() {
   const { width } = useWindowDimensions()
   // Колонки ленты — как переключатель на сайте: 2 или 1; выбор запоминается
@@ -63,7 +70,21 @@ export default function Feed() {
   const [cityOpen, setCityOpen] = useState(false)
   const [filters, setFilters] = useState<Filters>({ currency: 'EUR' })
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const { token } = useAuth()
+  // Подсказка поиска — как на сайте: «Найти холодильник / квартиру / велосипед…» с эффектом набора
+  const [hint, setHint] = useState('')
+  useEffect(() => {
+    const words = HINTS[getLang()] ?? HINTS.ru
+    let w = 0, c = 0, timer: ReturnType<typeof setTimeout>
+    const step = () => {
+      const word = words[w % words.length]
+      c += 1
+      setHint(word.slice(0, c))
+      if (c >= word.length) { timer = setTimeout(() => { c = 0; w += 1; step() }, 1800) } else timer = setTimeout(step, 75)
+    }
+    step()
+    return () => clearTimeout(timer)
+  }, [])
+  const { token, user } = useAuth()
   const { notices } = useChats()
   const [savedState, setSavedState] = useState<'idle' | 'saving' | 'saved'>('idle')
   const params = useLocalSearchParams<{ q?: string; city?: string; category?: string; price_min?: string; price_max?: string; with_photo?: string; applied?: string }>()
@@ -221,7 +242,7 @@ export default function Feed() {
           <TextInput
             value={query}
             onChangeText={setQuery}
-            placeholder={tr('Найти на PLONK')}
+            placeholder={hint}
             placeholderTextColor={colors.muted}
             style={styles.searchInput}
             returnKeyType="search"
@@ -238,10 +259,17 @@ export default function Feed() {
             {activeCount(filters) > 0 && <View style={styles.filterDot}><Text style={styles.filterDotText}>{activeCount(filters)}</Text></View>}
           </Pressable>
         </View>
-        <Pressable style={styles.bell} onPress={() => (token ? router.push('/notifications') : router.push('/login'))} accessibilityRole="button" accessibilityLabel={tr('Уведомления')}>
-          <Icon name="bell" size={23} color={colors.ink} />
-          {notices > 0 && <View style={styles.bellDot}><Text style={styles.bellDotText}>{notices > 9 ? '9+' : notices}</Text></View>}
-        </Pressable>
+        {/* Как на сайте: вошёл — аватар (в профиль), гость — «Войти»; непрочитанное — точкой на аватаре */}
+        {user ? (
+          <Pressable style={styles.avatarPill} onPress={() => router.navigate('/profile')} accessibilityRole="button" accessibilityLabel={tr('Профиль')}>
+            <LinearGradient colors={['#7C6CF0', '#9B8FFF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.avatarMini}>
+              <Text style={styles.avatarMiniText}>{(user.display_name || user.email || '?').slice(0, 1).toUpperCase()}</Text>
+            </LinearGradient>
+            {notices > 0 && <View style={styles.avatarDot} />}
+          </Pressable>
+        ) : (
+          <Pressable style={styles.loginPill} onPress={() => router.push('/login')} accessibilityRole="button"><Text style={styles.loginPillText}>{tr('Войти')}</Text></Pressable>
+        )}
       </View>
       <CityPicker visible={cityOpen} value={city} onPick={pickCity} onClose={() => setCityOpen(false)} />
       <FiltersSheet visible={filtersOpen} value={filters} onApply={setFilters} onClose={() => setFiltersOpen(false)} />
@@ -336,6 +364,13 @@ const styles = StyleSheet.create({
   geoNo: { height: 34, paddingHorizontal: 8, justifyContent: 'center' },
   geoNoText: { color: colors.primaryDeep, fontSize: 13.5, fontFamily: font[700] },
   headRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  // как .avito-login-pill / .avatar-mini сайта: серая подложка 48, аватар 38 с фиолетовым градиентом
+  avatarPill: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.sunken, alignItems: 'center', justifyContent: 'center' },
+  avatarMini: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
+  avatarMiniText: { color: '#fff', fontSize: 15, fontFamily: font[800] },
+  avatarDot: { position: 'absolute', top: 4, right: 4, width: 11, height: 11, borderRadius: 6, backgroundColor: colors.accent, borderWidth: 2, borderColor: colors.bg },
+  loginPill: { height: 48, paddingHorizontal: 15, borderRadius: 15, backgroundColor: colors.sunken, justifyContent: 'center' },
+  loginPillText: { fontSize: 13.5, fontFamily: font[600], color: colors.ink },
   bell: { width: 44, height: 46, alignItems: 'center', justifyContent: 'center' },
   bellDot: { position: 'absolute', top: 6, right: 4, minWidth: 17, height: 17, borderRadius: 9, paddingHorizontal: 4, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: colors.bg },
   bellDotText: { color: '#fff', fontSize: 10, fontFamily: font[800] },

@@ -1,10 +1,10 @@
 import Icon, { Star } from '../../src/components/Icon'
-import { getLang, tr } from '../../src/i18n'
+import { getLang, plural, tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import * as Linking from 'expo-linking'
 import { router, useLocalSearchParams } from 'expo-router'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import {
   FlatList, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, Share, StyleSheet, Text, useWindowDimensions, View,
 } from 'react-native'
@@ -20,6 +20,7 @@ import CardsRow from '../../src/components/CardsRow'
 import HeartButton from '../../src/components/HeartButton'
 import ReportSheet from '../../src/components/ReportSheet'
 import Sheet from '../../src/components/Sheet'
+import ImageView from '../../src/components/PhotoViewer'
 import Skeleton from '../../src/components/Skeleton'
 import { SITE, mediaUrl } from '../../src/config'
 import { cityName, formatPrice, isFresh, monthYear, parseTime, relTime } from '../../src/format'
@@ -44,6 +45,9 @@ export default function ListingScreen() {
   const [more, setMore] = useState<FeedItem[] | null>(null)
   const [reportOpen, setReportOpen] = useState(false)
   const [gaugeOpen, setGaugeOpen] = useState(false)
+  // Фото на весь экран: увеличение щипком и двойным касанием, листание, закрытие смахиванием
+  const [viewer, setViewer] = useState<number | null>(null)
+  const stripRef = useRef<FlatList<string>>(null)
 
   useEffect(() => {
     let alive = true
@@ -133,17 +137,20 @@ export default function ListingScreen() {
         <View style={{ width, height: stripH, backgroundColor: '#1E2621' }}>
           {photos.length > 0 && (
             <FlatList
+              ref={stripRef}
               data={photos}
               keyExtractor={(u, k) => `${k}-${u}`}
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
               onMomentumScrollEnd={onScroll}
-              renderItem={({ item }) => (
-                <View style={{ width, height: stripH }}>
-                  <Image source={{ uri: item }} style={[StyleSheet.absoluteFill, styles.blur]} contentFit="cover" blurRadius={22} />
+              renderItem={({ item, index }) => (
+                // overflow hidden: увеличенная размытая подложка не вылезает на соседние фото (были жёсткие полосы по краям)
+                <Pressable style={{ width, height: stripH, overflow: 'hidden' }} onPress={() => setViewer(index)} accessibilityRole="imagebutton" accessibilityLabel={tr('Открыть фото')}>
+                  <Image source={{ uri: item }} style={[StyleSheet.absoluteFill, styles.blur]} contentFit="cover" blurRadius={30} />
+                  <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(20,26,22,0.18)' }]} />
                   <Image source={{ uri: item }} style={{ position: 'absolute', left: 0, right: 0, top: insets.top, height: photoH }} contentFit="contain" transition={200} />
-                </View>
+                </Pressable>
               )}
             />
           )}
@@ -178,7 +185,7 @@ export default function ListingScreen() {
 
           {!!verdict && (
             <Pressable style={styles.priceCheck} onPress={() => setGaugeOpen(true)} accessibilityRole="button">
-              <View style={[styles.pcIcon, { backgroundColor: verdict.bg }]}><Ionicons name={verdict.icon} size={22} color={verdict.color} /></View>
+              <Image source={{ uri: `${SITE}/price/price-${(data as unknown as { price_check?: { verdict?: string } }).price_check?.verdict}.png` }} style={styles.pcImg} contentFit="contain" />
               <View style={{ flex: 1 }}>
                 <Text style={styles.pcTitle}>{tr(verdict.title)}</Text>
                 <Text style={styles.pcSub}>{tr('Оценка PLONK')}</Text>
@@ -207,11 +214,11 @@ export default function ListingScreen() {
                 {(owner.rating_count ?? 0) > 0 ? (
                   <View style={styles.starsRow}>
                     {[1, 2, 3, 4, 5].map((k) => <Star key={k} size={13} color={k <= Math.round(owner.rating_avg ?? 0) ? '#E0A526' : '#D9DDD9'} />)}
-                    <Text style={[styles.sellerSub, { marginLeft: 4 }]}>{(owner.rating_avg ?? 0).toFixed(1).replace('.', ',')} · {tr('отзывов: {n}', { n: owner.rating_count ?? 0 })}</Text>
+                    <Text style={[styles.sellerSub, { marginLeft: 4 }]}>{(owner.rating_avg ?? 0).toFixed(1)} · {owner.rating_count ?? 0} {plural(owner.rating_count ?? 0, { ru: ['отзыв', 'отзыва', 'отзывов'], en: ['review', 'reviews'], sr: ['recenzija', 'recenzije', 'recenzija'] })}</Text>
                   </View>
                 ) : <Text style={styles.sellerSub}>{tr('Пока нет отзывов')}</Text>}
                 <Text style={styles.sellerSub}>
-                  {[since ? tr('Здесь с {date}', { date: monthYear(since) }) : '', (owner.listings_count ?? 0) > 1 ? tr('объявлений: {n}', { n: owner.listings_count ?? 0 }) : ''].filter(Boolean).join('  ·  ')}
+                  {[since ? tr('Здесь с {date}', { date: monthYear(since) }) : '', (owner.listings_count ?? 0) > 1 ? `${owner.listings_count} ${plural(owner.listings_count ?? 0, { ru: ['объявление', 'объявления', 'объявлений'], en: ['listing', 'listings'], sr: ['oglas', 'oglasa', 'oglasa'] })}` : ''].filter(Boolean).join('  ·  ')}
                 </Text>
               </View>
               <Icon name="forward" size={16} color={colors.muted} />
@@ -268,6 +275,20 @@ export default function ListingScreen() {
         <Icon name="share" size={19} color="#fff" />
       </Pressable>
       <HeartButton id={data.id} size={40} dark style={[styles.heartTop, { top: insets.top + 8 }]} />
+      <ImageView
+        images={photos.map((uri) => ({ uri }))}
+        imageIndex={viewer ?? 0}
+        visible={viewer !== null}
+        onRequestClose={() => { setViewer(null); stripRef.current?.scrollToOffset({ offset: photo * width, animated: false }) }}
+        onImageIndexChange={(i) => setPhoto(i)}
+        presentationStyle="overFullScreen"
+        backgroundColor="#0B0F0D"
+        FooterComponent={({ imageIndex }) => (
+          <View style={[styles.viewerFoot, { paddingBottom: insets.bottom + 18 }]}>
+            <Text style={styles.viewerCount}>{imageIndex + 1} / {photos.length}</Text>
+          </View>
+        )}
+      />
       <Sheet visible={gaugeOpen} title={tr('Оценка цены')} onClose={() => setGaugeOpen(false)}>
         {(() => {
           const pc = (data as unknown as { price_check?: { low_eur?: number; median_eur?: number; high_eur?: number; mine_eur?: number; based_on?: number } }).price_check
@@ -368,7 +389,7 @@ function factChips(root: string, attrs: Record<string, unknown> | undefined, sch
     const value = opt ? ru(opt.label) : String(raw)
     if (key === 'floor') {
       const total = attrs.total_floors
-      out.push({ key, icon: FACT_ICON[key], text: `${value}${total ? `/${total}` : ''} ${tr('этаж')}` })
+      out.push({ key, icon: FACT_ICON[key], text: `${value}${total ? `/${total}` : ''} ${tr('эт.')}` })
     } else {
       out.push({ key, icon: FACT_ICON[key], text: `${value} ${FACT_UNIT[key] && !opt ? tr(FACT_UNIT[key]) : ''}`.trim() })
     }
@@ -402,7 +423,9 @@ const styles = StyleSheet.create({
     position: 'absolute', right: 60, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(20,26,22,0.38)', alignItems: 'center', justifyContent: 'center',
     shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 6, shadowOffset: { width: 0, height: 1 }, elevation: 3,
   },
-  blur: { opacity: 0.6, transform: [{ scale: 1.18 }] },
+  blur: { opacity: 0.75, transform: [{ scale: 1.25 }] },
+  viewerFoot: { alignItems: 'center' },
+  viewerCount: { color: '#fff', fontSize: 14, fontFamily: font[700], backgroundColor: 'rgba(255,255,255,0.14)', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 12, overflow: 'hidden' },
   counter: { position: 'absolute', alignSelf: 'center', backgroundColor: 'rgba(28,38,32,0.62)', borderRadius: radius.chip, paddingHorizontal: 12, paddingVertical: 5 },
   counterText: { color: '#fff', fontSize: 13, fontFamily: font[700] },
   sheet: {
@@ -420,6 +443,7 @@ const styles = StyleSheet.create({
   fact: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 11, height: 36, borderRadius: 12, backgroundColor: colors.sunken },
   factText: { fontSize: 14, fontFamily: font[700], color: colors.ink },
   priceCheck: { marginTop: 16, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 13, borderRadius: 17, backgroundColor: colors.sunken },
+  pcImg: { width: 44, height: 44 },
   pcIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   gaugeLead: { fontSize: 15.5, fontFamily: font[800], color: colors.ink },
   gauge: { flexDirection: 'row', height: 12, borderRadius: 6, overflow: 'visible', gap: 3 },
