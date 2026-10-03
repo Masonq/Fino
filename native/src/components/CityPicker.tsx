@@ -1,7 +1,8 @@
+import SheetFrame from './SheetFrame'
 import { select } from '../haptics'
 import { tr } from '../i18n'
 import { Ionicons } from '@expo/vector-icons'
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { cityList } from '../format'
@@ -17,8 +18,7 @@ export default function CityPicker({ visible, value, onPick, onClose }: {
   const insets = useSafeAreaInsets()
   const rows: { slug: string | null; label: string }[] = [{ slug: null, label: tr('Все города') }, ...cityList()]
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={tr('Закрыть')} />
+    <SheetFrame visible={visible} onClose={onClose}>
       <View style={[styles.sheet, { paddingBottom: insets.bottom + 8 }]}>
         <View style={styles.handle} />
         <Text style={styles.title}>{tr('Город')}</Text>
@@ -35,7 +35,7 @@ export default function CityPicker({ visible, value, onPick, onClose }: {
           })}
         </ScrollView>
       </View>
-    </Modal>
+    </SheetFrame>
   )
 }
 

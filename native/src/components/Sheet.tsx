@@ -1,6 +1,7 @@
+import SheetFrame from './SheetFrame'
 import { tr } from '../i18n'
 import type { ReactNode } from 'react'
-import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { colors, font } from '../theme'
@@ -9,17 +10,13 @@ import { colors, font } from '../theme'
 export default function Sheet({ visible, title, onClose, children }: { visible: boolean; title?: string; onClose: () => void; children: ReactNode }) {
   const insets = useSafeAreaInsets()
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      {/* Шторка поднимается над клавиатурой целиком — поле ввода остаётся видно */}
-      <KeyboardAvoidingView style={{ flex: 1, justifyContent: 'flex-end' }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={tr('Закрыть')} />
+    <SheetFrame visible={visible} onClose={onClose}>
       <View style={[styles.sheet, { paddingBottom: insets.bottom + 10 }]}>
         <View style={styles.handle} />
         {!!title && <Text style={styles.title}>{title}</Text>}
         {children}
       </View>
-      </KeyboardAvoidingView>
-    </Modal>
+    </SheetFrame>
   )
 }
 
@@ -34,7 +31,7 @@ export function SheetAction({ label, onPress, danger, icon }: { label: string; o
 
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(17,22,19,0.42)' },
-  sheet: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 8, maxHeight: '88%' },
+  sheet: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 8 },
   handle: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: '#D8DCD8', marginBottom: 8 },
   title: { fontSize: 18, fontFamily: font[800], color: colors.ink, paddingHorizontal: 20, paddingBottom: 8 },
   action: { height: 54, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', gap: 12 },

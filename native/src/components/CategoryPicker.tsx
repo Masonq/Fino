@@ -1,7 +1,8 @@
+import SheetFrame from './SheetFrame'
 import { getLang, tr } from '../i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { useEffect, useState } from 'react'
-import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { type Category, fetchCategories } from '../api'
@@ -27,8 +28,7 @@ export default function CategoryPicker({ visible, onPick, onClose }: {
   }
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={tr('Закрыть')} />
+    <SheetFrame visible={visible} onClose={onClose}>
       <View style={[styles.sheet, { paddingBottom: insets.bottom + 8 }]}>
         <View style={styles.handle} />
         <View style={styles.head}>
@@ -50,7 +50,7 @@ export default function CategoryPicker({ visible, onPick, onClose }: {
           </ScrollView>
         )}
       </View>
-    </Modal>
+    </SheetFrame>
   )
 }
 

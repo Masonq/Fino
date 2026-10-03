@@ -1,6 +1,7 @@
+import SheetFrame from './SheetFrame'
 import { tr } from '../i18n'
 import { useEffect, useState } from 'react'
-import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native'
+import { Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import type { Filters } from '../api'
@@ -25,10 +26,7 @@ export default function FiltersSheet({ visible, value, onApply, onClose }: {
   const digits = (v: string) => v.replace(/\D/g, '').slice(0, 9)
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      {/* Шторка поднимается над клавиатурой целиком — поле ввода остаётся видно */}
-      <KeyboardAvoidingView style={{ flex: 1, justifyContent: 'flex-end' }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={tr('Закрыть')} />
+    <SheetFrame visible={visible} onClose={onClose}>
       <View style={[styles.sheet, { paddingBottom: insets.bottom + 12 }]}>
         <View style={styles.handle} />
         <View style={styles.titleRow}>
@@ -72,14 +70,13 @@ export default function FiltersSheet({ visible, value, onApply, onClose }: {
           <Text style={styles.applyText}>{tr('Показать')}</Text>
         </Pressable>
       </View>
-      </KeyboardAvoidingView>
-    </Modal>
+    </SheetFrame>
   )
 }
 
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(17,22,19,0.42)' },
-  sheet: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 8, maxHeight: '88%' },
+  sheet: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 8 },
   handle: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: '#D8DCD8', marginBottom: 6 },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12 },
   title: { fontSize: 20, fontFamily: font[800], color: colors.ink },
