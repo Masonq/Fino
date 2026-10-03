@@ -9,6 +9,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { fetchListing, type Listing, textOf } from '../../src/api'
+import HeartButton from '../../src/components/HeartButton'
 import Skeleton from '../../src/components/Skeleton'
 import { SITE, mediaUrl } from '../../src/config'
 import { cityName, formatPrice, isFresh, parseTime, relTime } from '../../src/format'
@@ -157,6 +158,7 @@ export default function ListingScreen() {
       </ScrollView>
 
       {back}
+      <HeartButton id={data.id} size={40} style={[styles.heartTop, { top: insets.top + 8 }]} />
       <View style={[styles.bar, { paddingBottom: 10 + insets.bottom }]}>
         <Pressable style={styles.cta} onPress={() => Linking.openURL(`${SITE}${data.path ?? ''}`)} accessibilityRole="button">
           <Ionicons name="chatbubble-ellipses" size={18} color="#fff" />
@@ -181,6 +183,7 @@ const styles = StyleSheet.create({
     position: 'absolute', left: 12, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.94)',
     alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 6, shadowOffset: { width: 0, height: 1 }, elevation: 3,
   },
+  heartTop: { position: 'absolute', right: 12 },
   counter: { position: 'absolute', right: 12, bottom: 12, backgroundColor: 'rgba(28,38,32,0.6)', borderRadius: radius.chip, paddingHorizontal: 10, paddingVertical: 4 },
   counterText: { color: '#fff', fontSize: 12.5, fontWeight: '700' },
   body: { paddingHorizontal: 16, paddingTop: 16, gap: 8 },

@@ -8,6 +8,7 @@ import type { FeedItem } from '../api'
 import { mediaUrl } from '../config'
 import { cityName, formatPrice, isFresh, relTime } from '../format'
 import { colors, radius } from '../theme'
+import HeartButton from './HeartButton'
 
 /**
  * Карточка ленты — как на сайте: фото листаются пальцем (до пяти, с полосками внизу), метки поверх фото
@@ -69,6 +70,7 @@ function ListingCard({ item, width }: { item: FeedItem; width: number }) {
             </View>
           )}
         </View>
+        <HeartButton id={item.id} style={styles.heart} />
       </View>
 
       <View style={styles.body}>
@@ -101,6 +103,7 @@ const styles = StyleSheet.create({
   freshDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#fff' },
   freshText: { color: '#fff', fontSize: 11, fontWeight: '800' },
   company: { position: 'absolute', right: 10, bottom: 10, backgroundColor: colors.primarySoft, color: colors.primaryDeep },
+  heart: { position: 'absolute', top: 8, right: 8 },
   bars: { position: 'absolute', left: 10, right: 10, bottom: 4, flexDirection: 'row', gap: 3 },
   bar: { flex: 1, height: 2.5, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.45)' },
   barOn: { backgroundColor: '#fff' },

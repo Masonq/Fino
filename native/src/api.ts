@@ -115,3 +115,16 @@ export function verifyCode(email: string, code: string) {
   return post<{ token: string; user: import('./auth').User }>('/auth/verify-code', { destination: email, code, channel: 'email', lang: 'ru' })
 }
 
+// ---------- избранное (нужен вход) ----------
+
+async function authed<T>(path: string, token: string, method: 'GET' | 'POST' | 'DELETE' = 'GET'): Promise<T> {
+  const res = await fetch(`${API}${path}`, { method, headers: { Accept: 'application/json', Authorization: `Bearer ${token}` } })
+  if (!res.ok) throw new ApiError(res.status, '')
+  return res.json() as Promise<T>
+}
+
+export const favoriteIds = (token: string) => authed<{ ids: string[] }>('/favorites/ids', token)
+export const favoriteList = (token: string) => authed<{ total: number; items: FeedItem[] }>('/favorites?lang=ru', token)
+export const addFavorite = (token: string, id: string) => authed<{ status: string }>(`/favorites/${encodeURIComponent(id)}`, token, 'POST')
+export const removeFavorite = (token: string, id: string) => authed<{ status: string }>(`/favorites/${encodeURIComponent(id)}`, token, 'DELETE')
+
