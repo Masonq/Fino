@@ -6,9 +6,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { fetchFeed, type FeedItem, type FeedTab } from '../../src/api'
+import CategoryTiles from '../../src/components/CategoryTiles'
+import CityPicker from '../../src/components/CityPicker'
 import ListingCard from '../../src/components/ListingCard'
 import Segmented from '../../src/components/Segmented'
 import Skeleton from '../../src/components/Skeleton'
+import { cityName } from '../../src/format'
+import { prefs } from '../../src/prefs'
 import { colors, radius, space } from '../../src/theme'
 
 const TABS: { key: FeedTab; label: string }[] = [
@@ -23,6 +27,10 @@ export default function Feed() {
   const { width } = useWindowDimensions()
   const cardW = Math.floor((width - space.page * 2 - space.gap) / 2)
   const [tab, setTab] = useState<FeedTab>('all')
+  const [city, setCity] = useState<string | null>(null)
+  const [cityReady, setCityReady] = useState(false)
+  const [category, setCategory] = useState<string | null>(null)
+  const [cityOpen, setCityOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [q, setQ] = useState('')
   const [items, setItems] = useState<FeedItem[]>([])
@@ -33,6 +41,12 @@ export default function Feed() {
   const req = useRef(0)
   const listRef = useRef<FlatList<FeedItem>>(null)
 
+  // Город помним на телефоне: открыл приложение — лента сразу своего города
+  useEffect(() => {
+    prefs.get('plonk_city').then((v) => { setCity(v || null); setCityReady(true) })
+  }, [])
+  const pickCity = (slug: string | null) => { setCity(slug); prefs.set('plonk_city', slug ?? '') }
+
   useEffect(() => {
     const t = setTimeout(() => setQ(query.trim()), 350)
     return () => clearTimeout(t)
@@ -42,7 +56,7 @@ export default function Feed() {
     const id = ++req.current
     if (mode === 'first') setState('loading')
     try {
-      const res = await fetchFeed({ tab, offset: 0, q })
+      const res = await fetchFeed({ tab, offset: 0, q, city, category })
       if (id !== req.current) return
       setItems(res.items)
       setTotal(res.total)
@@ -52,19 +66,20 @@ export default function Feed() {
     } finally {
       if (mode === 'refresh') setRefreshing(false)
     }
-  }, [tab, q])
+  }, [tab, q, city, category])
 
   useEffect(() => {
+    if (!cityReady) return
     listRef.current?.scrollToOffset({ offset: 0, animated: false })
     load('first')
-  }, [load])
+  }, [load, cityReady])
 
   const loadMore = async () => {
     if (more || state !== 'ready' || items.length >= total) return
     setMore(true)
     const id = req.current
     try {
-      const res = await fetchFeed({ tab, offset: items.length, q })
+      const res = await fetchFeed({ tab, offset: items.length, q, city, category })
       if (id === req.current) setItems((prev) => [...prev, ...res.items.filter((n) => !prev.some((p) => p.id === n.id))])
     } catch {
       // подгрузка не удалась — следующая прокрутка попробует снова
@@ -108,7 +123,11 @@ export default function Feed() {
     <SafeAreaView style={styles.page} edges={['top']}>
       <View style={styles.head}>
         <View style={styles.search}>
-          <Ionicons name="search" size={18} color={colors.muted} />
+          <Pressable style={styles.city} onPress={() => setCityOpen(true)} accessibilityRole="button" accessibilityLabel="Выбрать город">
+            <Ionicons name="location-outline" size={16} color={colors.ink} />
+            <Text style={styles.cityText} numberOfLines={1}>{city ? cityName(city) : 'Все города'}</Text>
+            <Ionicons name="chevron-down" size={14} color={colors.inkSoft} />
+          </Pressable>
           <TextInput
             value={query}
             onChangeText={setQuery}
@@ -125,8 +144,8 @@ export default function Feed() {
             </Pressable>
           )}
         </View>
-        <Segmented options={TABS} value={tab} onChange={setTab} />
       </View>
+      <CityPicker visible={cityOpen} value={city} onPick={pickCity} onClose={() => setCityOpen(false)} />
 
       <FlatList
         ref={listRef}
@@ -136,6 +155,12 @@ export default function Feed() {
         renderItem={({ item }) => <ListingCard item={item} width={cardW} />}
         columnWrapperStyle={styles.row}
         contentContainerStyle={styles.list}
+        ListHeaderComponent={
+          <View style={styles.listHead}>
+            {!q && <CategoryTiles value={category} onPick={setCategory} />}
+            <View style={{ paddingHorizontal: space.page }}><Segmented options={TABS} value={tab} onChange={setTab} /></View>
+          </View>
+        }
         ListEmptyComponent={empty}
         onEndReached={loadMore}
         onEndReachedThreshold={0.6}
@@ -152,10 +177,13 @@ export default function Feed() {
 
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.bg },
-  head: { paddingHorizontal: space.page, paddingTop: 6, paddingBottom: 10, gap: 10 },
+  head: { paddingHorizontal: space.page, paddingTop: 6, paddingBottom: 10 },
+  listHead: { gap: 12, paddingBottom: 2 },
+  city: { flexDirection: 'row', alignItems: 'center', gap: 4, height: 36, paddingHorizontal: 10, borderRadius: 11, backgroundColor: colors.surface, maxWidth: 150 },
+  cityText: { fontSize: 13.5, fontWeight: '800', color: colors.ink, flexShrink: 1 },
   search: {
     flexDirection: 'row', alignItems: 'center', gap: 8, height: 46, paddingHorizontal: 14,
-    borderRadius: radius.field, backgroundColor: colors.sunken,
+    borderRadius: radius.field, backgroundColor: colors.sunken, paddingLeft: 5,
   },
   searchInput: { flex: 1, fontSize: 15.5, color: colors.ink, paddingVertical: 0 },
   list: { paddingHorizontal: 0, paddingBottom: 24, gap: space.gap },

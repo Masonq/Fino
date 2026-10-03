@@ -4,6 +4,9 @@ const CITIES: Record<string, string> = {
   zrenjanin: 'Зренянин', pancevo: 'Панчево', cacak: 'Чачак', 'novi-pazar': 'Нови-Пазар', kraljevo: 'Кралево',
 }
 
+/** Города для выбора — в том же порядке, что на сайте. */
+export const CITY_LIST = Object.entries(CITIES).map(([slug, label]) => ({ slug, label }))
+
 export function cityName(slug?: string | null): string {
   if (!slug) return ''
   return CITIES[slug] ?? slug

@@ -59,11 +59,13 @@ async function get<T>(path: string): Promise<T> {
 export const PAGE = 20
 
 /** Лента — те же параметры, что у главной сайта: «Новое» — сортировка по дате, «Даром» — только бесплатное. */
-export function fetchFeed(opts: { tab: FeedTab; offset: number; q?: string }) {
+export function fetchFeed(opts: { tab: FeedTab; offset: number; q?: string; city?: string | null; category?: string | null }) {
   const p = new URLSearchParams({ lang: 'ru', limit: String(PAGE), offset: String(opts.offset) })
   if (opts.tab === 'new') p.set('sort', 'new')
   if (opts.tab === 'free') p.set('only_free', 'true')
   if (opts.q) { p.set('q', opts.q); p.set('sort', 'relevance') }
+  if (opts.city) p.set('city', opts.city)
+  if (opts.category) p.set('category_slug', opts.category)
   return get<{ total: number; items: FeedItem[] }>(`/listings?${p.toString()}`)
 }
 
@@ -127,4 +129,12 @@ export const favoriteIds = (token: string) => authed<{ ids: string[] }>('/favori
 export const favoriteList = (token: string) => authed<{ total: number; items: FeedItem[] }>('/favorites?lang=ru', token)
 export const addFavorite = (token: string, id: string) => authed<{ status: string }>(`/favorites/${encodeURIComponent(id)}`, token, 'POST')
 export const removeFavorite = (token: string, id: string) => authed<{ status: string }>(`/favorites/${encodeURIComponent(id)}`, token, 'DELETE')
+
+// ---------- разделы ----------
+
+export type Category = { id: string; slug: string; name: Record<string, string> | string; count?: number; ready?: boolean }
+
+export async function fetchCategories(): Promise<Category[]> {
+  return get<Category[]>('/categories?lang=ru')
+}
 
