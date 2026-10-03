@@ -12,6 +12,7 @@ import FiltersSheet, { activeCount } from '../../src/components/FiltersSheet'
 import ListingCard from '../../src/components/ListingCard'
 import Segmented from '../../src/components/Segmented'
 import Skeleton from '../../src/components/Skeleton'
+import StoriesRow from '../../src/components/StoriesRow'
 import { cityName } from '../../src/format'
 import { prefs } from '../../src/prefs'
 import { colors, radius, space } from '../../src/theme'
@@ -165,6 +166,7 @@ export default function Feed() {
         contentContainerStyle={styles.list}
         ListHeaderComponent={
           <View style={styles.listHead}>
+            {!q && cityReady && <StoriesRow city={city} />}
             {!q && <CategoryTiles value={category} onPick={setCategory} />}
             <View style={{ paddingHorizontal: space.page }}><Segmented options={TABS} value={tab} onChange={setTab} /></View>
           </View>

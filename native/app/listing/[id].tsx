@@ -4,13 +4,15 @@ import * as Linking from 'expo-linking'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
 import {
-  FlatList, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View,
+  FlatList, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, Share, StyleSheet, Text, useWindowDimensions, View,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { fetchListing, type Listing, startChat, textOf } from '../../src/api'
+import { attrRows, type AttrField, categorySchema, type FeedItem, fetchListing, type Listing, sellerListings, similarListings, startChat, textOf } from '../../src/api'
 import { useAuth } from '../../src/auth'
+import CardsRow from '../../src/components/CardsRow'
 import HeartButton from '../../src/components/HeartButton'
+import ReportSheet from '../../src/components/ReportSheet'
 import Skeleton from '../../src/components/Skeleton'
 import { SITE, mediaUrl } from '../../src/config'
 import { cityName, formatPrice, isFresh, parseTime, relTime } from '../../src/format'
@@ -32,11 +34,22 @@ export default function ListingScreen() {
   const [attempt, setAttempt] = useState(0)
   const { token, user } = useAuth()
   const [opening, setOpening] = useState(false)
+  const [schema, setSchema] = useState<AttrField[]>([])
+  const [similar, setSimilar] = useState<FeedItem[] | null>(null)
+  const [more, setMore] = useState<FeedItem[] | null>(null)
+  const [reportOpen, setReportOpen] = useState(false)
 
   useEffect(() => {
     let alive = true
     setFailed(false)
-    fetchListing(String(id)).then((d) => { if (alive) setData(d) }).catch(() => { if (alive) setFailed(true) })
+    fetchListing(String(id)).then((d) => {
+      if (!alive) return
+      setData(d)
+      // Подписи характеристик, похожие и другие объявления продавца — следом, не задерживая сам экран
+      if (d.category_slug) categorySchema(String(d.category_slug)).then((r) => alive && setSchema(r.attribute_schema ?? [])).catch(() => {})
+      similarListings(d.id).then((r) => alive && setSimilar(r.items)).catch(() => {})
+      if (d.owner?.id) sellerListings(d.owner.id).then((r) => alive && setMore(r.items)).catch(() => {})
+    }).catch(() => { if (alive) setFailed(true) })
     return () => { alive = false }
   }, [id, attempt])
 
@@ -122,6 +135,18 @@ export default function ListingScreen() {
             </View>
           )}
 
+          {attrRows(data.attributes as Record<string, unknown> | undefined, schema).length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.h3}>Характеристики</Text>
+              {attrRows(data.attributes as Record<string, unknown> | undefined, schema).map((r) => (
+                <View key={r.label} style={styles.attr}>
+                  <Text style={styles.attrLabel}>{r.label}</Text>
+                  <Text style={styles.attrValue}>{r.value}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
           {!!description && (
             <View style={styles.section}>
               <Text style={styles.h3}>Описание</Text>
@@ -130,7 +155,7 @@ export default function ListingScreen() {
           )}
 
           {owner && (
-            <View style={styles.seller}>
+            <Pressable style={styles.seller} onPress={() => router.push(`/seller/${owner.id}`)} accessibilityRole="button" accessibilityLabel="Профиль продавца">
               <View style={styles.avatar}>
                 {owner.avatar_url
                   ? <Image source={{ uri: mediaUrl(owner.avatar_url) ?? undefined }} style={styles.avatarImg} contentFit="cover" />
@@ -151,17 +176,29 @@ export default function ListingScreen() {
                 ) : <Text style={styles.small}>Пока нет отзывов</Text>}
                 {since && <Text style={styles.small}>На PLONK с {MONTHS_GEN[since.getMonth()]} {since.getFullYear()}</Text>}
               </View>
-            </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+            </Pressable>
           )}
 
           <Text style={styles.footnote}>
             {[data.number ? `Объявление №${data.number}` : '', data.views_count != null ? `просмотров: ${data.views_count}` : ''].filter(Boolean).join(' · ')}
           </Text>
+          {!(user && owner && user.id === owner.id) && <Pressable onPress={() => (token ? setReportOpen(true) : router.push('/login'))} style={styles.report} hitSlop={6}>
+            <Ionicons name="flag-outline" size={15} color={colors.muted} />
+            <Text style={styles.reportText}>Пожаловаться</Text>
+          </Pressable>}
         </View>
+        <CardsRow title="Ещё у продавца" items={more} exclude={data.id} />
+        <CardsRow title="Похожие" items={similar} exclude={data.id} />
       </ScrollView>
 
       {back}
+      <Pressable style={[styles.shareTop, { top: insets.top + 8 }]} hitSlop={6} accessibilityLabel="Поделиться"
+        onPress={() => Share.share({ message: `${title} — ${formatPrice(data.price, data.currency, data.is_free)}\n${SITE}${data.path ?? ''}` }).catch(() => {})}>
+        <Ionicons name="share-outline" size={21} color={colors.ink} />
+      </Pressable>
       <HeartButton id={data.id} size={40} style={[styles.heartTop, { top: insets.top + 8 }]} />
+      <ReportSheet visible={reportOpen} listingId={data.id} token={token} onClose={() => setReportOpen(false)} />
       <View style={[styles.bar, { paddingBottom: 10 + insets.bottom }]}>
         {user && owner && user.id === owner.id ? (
           <View style={[styles.cta, styles.ctaMine]}>
@@ -204,6 +241,15 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 6, shadowOffset: { width: 0, height: 1 }, elevation: 3,
   },
   heartTop: { position: 'absolute', right: 12 },
+  shareTop: {
+    position: 'absolute', right: 60, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.94)', alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 6, shadowOffset: { width: 0, height: 1 }, elevation: 3,
+  },
+  attr: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, paddingVertical: 9, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+  attrLabel: { fontSize: 15, color: colors.inkSoft, flex: 1 },
+  attrValue: { fontSize: 15, color: colors.ink, fontWeight: '600', flex: 1, textAlign: 'right' },
+  report: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', marginTop: 14, paddingVertical: 6 },
+  reportText: { fontSize: 14, color: colors.muted, fontWeight: '600' },
   counter: { position: 'absolute', right: 12, bottom: 12, backgroundColor: 'rgba(28,38,32,0.6)', borderRadius: radius.chip, paddingHorizontal: 10, paddingVertical: 4 },
   counterText: { color: '#fff', fontSize: 12.5, fontWeight: '700' },
   body: { paddingHorizontal: 16, paddingTop: 16, gap: 8 },

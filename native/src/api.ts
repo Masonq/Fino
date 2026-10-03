@@ -46,6 +46,8 @@ export type Listing = Omit<FeedItem, 'photos'> & {
   number?: number | string | null
   price_negotiable?: boolean
   category_name?: string | null
+  category_slug?: string | null
+  attributes?: Record<string, unknown>
 }
 
 export type FeedTab = 'all' | 'new' | 'free'
@@ -130,13 +132,17 @@ export function verifyCode(email: string, code: string) {
 
 // ---------- избранное (нужен вход) ----------
 
-async function authed<T>(path: string, token: string, method: 'GET' | 'POST' | 'DELETE' = 'GET', body?: unknown): Promise<T> {
+async function authed<T>(path: string, token: string, method: 'GET' | 'POST' | 'DELETE' | 'PATCH' = 'GET', body?: unknown): Promise<T> {
   const res = await fetch(`${API}${path}`, {
     method,
     headers: { Accept: 'application/json', Authorization: `Bearer ${token}`, ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
     body: body !== undefined ? JSON.stringify(body) : undefined,
   })
-  if (!res.ok) throw new ApiError(res.status, '')
+  if (!res.ok) {
+    let detail = ''
+    try { const j = await res.json(); detail = typeof j?.detail === 'string' ? j.detail : '' } catch { /* тело без JSON */ }
+    throw new ApiError(res.status, detail)
+  }
   return res.json() as Promise<T>
 }
 
@@ -218,4 +224,50 @@ export async function createListing(token: string, l: NewListing) {
 export type MyListing = FeedItem & { status: string; views_count?: number; favorites_count?: number }
 export const myListings = (token: string) => authed<{ total: number; counts: Record<string, number>; items: MyListing[] }>('/listings/my/list?lang=ru', token)
 export const balance = (token: string) => authed<Record<string, unknown>>('/balance', token)
+
+// ---------- объявление целиком, продавец, истории, свои объявления ----------
+
+export const similarListings = (id: string) => get<{ items: FeedItem[] }>(`/listings/${encodeURIComponent(id)}/similar?lang=ru`)
+export const sellerListings = (userId: string) => get<{ total: number; items: FeedItem[] }>(`/listings/by-seller/${encodeURIComponent(userId)}?lang=ru`)
+export const freshListings = (city?: string | null) =>
+  get<{ items: (FeedItem & { fresh?: boolean })[] }>(`/listings/fresh?lang=ru${city ? `&city=${encodeURIComponent(city)}` : ''}`)
+
+export type Seller = {
+  id: string; display_name?: string | null; company_name?: string | null; is_company?: boolean; avatar_url?: string | null
+  rating_avg?: number | null; rating_count?: number; document_verified?: boolean; created_at?: string | null
+  active_listings?: number; reply_speed?: string | null; company_description?: string | null
+}
+export const sellerProfile = (userId: string) => get<Seller>(`/users/${encodeURIComponent(userId)}/public?lang=ru`)
+
+type Label = Record<string, string> | string
+export type AttrField = { key: string; type?: string; label?: Label; unit?: string; options?: { value: string | number; label: Label }[] }
+export const categorySchema = (slug: string) => get<{ attribute_schema?: AttrField[] }>(`/categories/${encodeURIComponent(slug)}/schema`)
+export const ru = (l?: Label | null) => (!l ? '' : typeof l === 'string' ? l : l.ru || l.en || Object.values(l)[0] || '')
+
+/** Характеристики объявления с подписями из схемы раздела: «Комнат — 2», «Площадь, м² — 62». */
+export function attrRows(attrs: Record<string, unknown> | undefined, schema: AttrField[]): { label: string; value: string }[] {
+  if (!attrs) return []
+  const out: { label: string; value: string }[] = []
+  for (const f of schema) {
+    const raw = attrs[f.key]
+    if (raw === undefined || raw === null || raw === '' || (Array.isArray(raw) && raw.length === 0)) continue
+    const one = (v: unknown) => {
+      const opt = f.options?.find((o) => String(o.value) === String(v))
+      if (opt) return ru(opt.label)
+      if (typeof v === 'boolean') return v ? 'да' : 'нет'
+      return String(v)
+    }
+    const value = Array.isArray(raw) ? raw.map(one).join(', ') : one(raw)
+    if (value) out.push({ label: ru(f.label) || f.key, value })
+  }
+  return out
+}
+
+export const setListingStatus = (token: string, id: string, status: 'active' | 'sold' | 'archived') =>
+  authed<unknown>(`/listings/${encodeURIComponent(id)}/status`, token, 'PATCH', { status })
+export const deleteListing = (token: string, id: string) => authed<unknown>(`/listings/${encodeURIComponent(id)}`, token, 'DELETE')
+
+export type ReportReason = 'fraud' | 'prohibited_item' | 'spam' | 'duplicate' | 'wrong_category' | 'other'
+export const sendReport = (token: string, listingId: string, reason: ReportReason, comment?: string) =>
+  authed<unknown>('/reports', token, 'POST', { listing_id: listingId, reason, comment: comment || null })
 
