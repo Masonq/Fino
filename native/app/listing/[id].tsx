@@ -8,7 +8,8 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { fetchListing, type Listing, textOf } from '../../src/api'
+import { fetchListing, type Listing, startChat, textOf } from '../../src/api'
+import { useAuth } from '../../src/auth'
 import HeartButton from '../../src/components/HeartButton'
 import Skeleton from '../../src/components/Skeleton'
 import { SITE, mediaUrl } from '../../src/config'
@@ -29,6 +30,8 @@ export default function ListingScreen() {
   const [failed, setFailed] = useState(false)
   const [photo, setPhoto] = useState(0)
   const [attempt, setAttempt] = useState(0)
+  const { token, user } = useAuth()
+  const [opening, setOpening] = useState(false)
 
   useEffect(() => {
     let alive = true
@@ -160,10 +163,27 @@ export default function ListingScreen() {
       {back}
       <HeartButton id={data.id} size={40} style={[styles.heartTop, { top: insets.top + 8 }]} />
       <View style={[styles.bar, { paddingBottom: 10 + insets.bottom }]}>
-        <Pressable style={styles.cta} onPress={() => Linking.openURL(`${SITE}${data.path ?? ''}`)} accessibilityRole="button">
-          <Ionicons name="chatbubble-ellipses" size={18} color="#fff" />
-          <Text style={styles.ctaText}>Написать продавцу</Text>
-        </Pressable>
+        {user && owner && user.id === owner.id ? (
+          <View style={[styles.cta, styles.ctaMine]}>
+            <Text style={styles.ctaMineText}>Это ваше объявление</Text>
+          </View>
+        ) : (
+          <Pressable style={[styles.cta, opening && { opacity: 0.7 }]} disabled={opening} accessibilityRole="button" onPress={async () => {
+            if (!token) { router.push('/login'); return }
+            setOpening(true)
+            try {
+              const chat = await startChat(token, data.id)
+              router.push(`/chat/${chat.id}`)
+            } catch {
+              Linking.openURL(`${SITE}${data.path ?? ''}`)
+            } finally {
+              setOpening(false)
+            }
+          }}>
+            <Ionicons name="chatbubble-ellipses" size={18} color="#fff" />
+            <Text style={styles.ctaText}>Написать продавцу</Text>
+          </Pressable>
+        )}
       </View>
     </View>
   )
@@ -213,6 +233,8 @@ const styles = StyleSheet.create({
   },
   cta: { height: 52, borderRadius: 16, backgroundColor: colors.primary, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   ctaText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  ctaMine: { backgroundColor: colors.sunken },
+  ctaMineText: { color: colors.inkSoft, fontSize: 15.5, fontWeight: '700' },
   retry: { marginTop: 8, height: 44, paddingHorizontal: 20, borderRadius: 12, backgroundColor: colors.primary, justifyContent: 'center' },
   retryText: { color: '#fff', fontWeight: '800', fontSize: 15 },
 })

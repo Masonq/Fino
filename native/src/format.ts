@@ -47,3 +47,9 @@ export function formatPrice(price: number | null | undefined, currency?: string 
   const grouped = String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00A0')
   return currency === 'EUR' ? `${grouped}\u00A0€` : `${grouped}\u00A0${currency || 'RSD'}`
 }
+
+/** Текст без разметки (служебные письма команды пишутся с «#», «**», «_») — для превью и пузырей. */
+export function plainText(text?: string | null): string {
+  return (text ?? '').replace(/^#{1,6}\s*/gm, '').replace(/\*\*|__|`/g, '').replace(/\s+\n/g, '\n').trim()
+}
+

@@ -59,13 +59,24 @@ async function get<T>(path: string): Promise<T> {
 export const PAGE = 20
 
 /** Лента — те же параметры, что у главной сайта: «Новое» — сортировка по дате, «Даром» — только бесплатное. */
-export function fetchFeed(opts: { tab: FeedTab; offset: number; q?: string; city?: string | null; category?: string | null }) {
+export type Filters = { priceMin?: string; priceMax?: string; currency?: 'EUR' | 'RSD'; withPhoto?: boolean; delivery?: boolean; sort?: '' | 'new' | 'cheap' | 'expensive' }
+
+export function fetchFeed(opts: { tab: FeedTab; offset: number; q?: string; city?: string | null; category?: string | null; filters?: Filters }) {
   const p = new URLSearchParams({ lang: 'ru', limit: String(PAGE), offset: String(opts.offset) })
   if (opts.tab === 'new') p.set('sort', 'new')
   if (opts.tab === 'free') p.set('only_free', 'true')
   if (opts.q) { p.set('q', opts.q); p.set('sort', 'relevance') }
   if (opts.city) p.set('city', opts.city)
   if (opts.category) p.set('category_slug', opts.category)
+  const f = opts.filters
+  if (f) {
+    if (f.priceMin) p.set('price_min', f.priceMin)
+    if (f.priceMax) p.set('price_max', f.priceMax)
+    if ((f.priceMin || f.priceMax) && f.currency) p.set('currency', f.currency)
+    if (f.withPhoto) p.set('with_photo', 'true')
+    if (f.delivery) p.set('delivery', 'true')
+    if (f.sort) p.set('sort', f.sort)
+  }
   return get<{ total: number; items: FeedItem[] }>(`/listings?${p.toString()}`)
 }
 
@@ -119,8 +130,12 @@ export function verifyCode(email: string, code: string) {
 
 // ---------- избранное (нужен вход) ----------
 
-async function authed<T>(path: string, token: string, method: 'GET' | 'POST' | 'DELETE' = 'GET'): Promise<T> {
-  const res = await fetch(`${API}${path}`, { method, headers: { Accept: 'application/json', Authorization: `Bearer ${token}` } })
+async function authed<T>(path: string, token: string, method: 'GET' | 'POST' | 'DELETE' = 'GET', body?: unknown): Promise<T> {
+  const res = await fetch(`${API}${path}`, {
+    method,
+    headers: { Accept: 'application/json', Authorization: `Bearer ${token}`, ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  })
   if (!res.ok) throw new ApiError(res.status, '')
   return res.json() as Promise<T>
 }
@@ -137,4 +152,25 @@ export type Category = { id: string; slug: string; name: Record<string, string> 
 export async function fetchCategories(): Promise<Category[]> {
   return get<Category[]>('/categories?lang=ru')
 }
+
+// ---------- сообщения ----------
+
+export type Chat = {
+  id: string; listing_id?: string | null; listing_title?: string | null; listing_photo?: string | null; listing_price?: number | null
+  currency?: string | null; other_name?: string | null; last_text?: string | null; last_kind?: string | null; last_from_me?: boolean
+  last_at?: string | null; unread?: number; is_seller?: boolean; is_team?: boolean
+}
+
+export type Message = {
+  id: string; sender_id?: string | null; text?: string | null; kind: string; is_read?: boolean
+  offer_price?: number | null; offer_status?: string | null; created_at: string
+}
+
+export const chatList = (token: string) => authed<{ total: number; items: Chat[] }>('/chats?lang=ru', token)
+export const chatInfo = (token: string, id: string) => authed<Chat>(`/chats/${encodeURIComponent(id)}?lang=ru`, token)
+export const chatMessages = (token: string, id: string) => authed<Message[]>(`/chats/${encodeURIComponent(id)}/messages`, token)
+export const sendMessage = (token: string, id: string, text: string) =>
+  authed<Message>(`/chats/${encodeURIComponent(id)}/messages`, token, 'POST', { text, offer_price: null })
+export const markChatRead = (token: string, id: string) => authed<unknown>(`/chats/${encodeURIComponent(id)}/read`, token, 'POST')
+export const startChat = (token: string, listingId: string) => authed<Chat>('/chats/start?lang=ru', token, 'POST', { listing_id: listingId })
 

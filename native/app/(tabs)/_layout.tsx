@@ -3,6 +3,7 @@ import { Tabs } from 'expo-router'
 import { type ColorValue, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { useChats } from '../../src/chats'
 import { colors } from '../../src/theme'
 
 type IconName = keyof typeof Ionicons.glyphMap
@@ -21,6 +22,7 @@ const icon = (on: IconName, off: IconName) => function TabIcon({ color, focused 
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets()
+  const { unread } = useChats()
   return (
     <Tabs screenOptions={{
       headerShown: false,
@@ -51,7 +53,11 @@ export default function TabsLayout() {
           <View style={styles.post}><Ionicons name="add" size={20} color="#fff" /></View>
         ),
       }} />
-      <Tabs.Screen name="chats" options={{ title: 'Сообщения', tabBarIcon: icon('chatbubble', 'chatbubble-outline') }} />
+      <Tabs.Screen name="chats" options={{
+        title: 'Сообщения', tabBarIcon: icon('chatbubble', 'chatbubble-outline'),
+        tabBarBadge: unread > 0 ? (unread > 99 ? '99+' : unread) : undefined,
+        tabBarBadgeStyle: { backgroundColor: colors.accent, color: '#fff', fontSize: 11, fontWeight: '800' },
+      }} />
       <Tabs.Screen name="profile" options={{ title: 'Профиль', tabBarIcon: icon('person', 'person-outline') }} />
     </Tabs>
   )

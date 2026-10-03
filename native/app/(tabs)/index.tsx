@@ -5,9 +5,10 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { fetchFeed, type FeedItem, type FeedTab } from '../../src/api'
+import { fetchFeed, type FeedItem, type FeedTab, type Filters } from '../../src/api'
 import CategoryTiles from '../../src/components/CategoryTiles'
 import CityPicker from '../../src/components/CityPicker'
+import FiltersSheet, { activeCount } from '../../src/components/FiltersSheet'
 import ListingCard from '../../src/components/ListingCard'
 import Segmented from '../../src/components/Segmented'
 import Skeleton from '../../src/components/Skeleton'
@@ -31,6 +32,8 @@ export default function Feed() {
   const [cityReady, setCityReady] = useState(false)
   const [category, setCategory] = useState<string | null>(null)
   const [cityOpen, setCityOpen] = useState(false)
+  const [filters, setFilters] = useState<Filters>({ currency: 'EUR' })
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [q, setQ] = useState('')
   const [items, setItems] = useState<FeedItem[]>([])
@@ -56,7 +59,7 @@ export default function Feed() {
     const id = ++req.current
     if (mode === 'first') setState('loading')
     try {
-      const res = await fetchFeed({ tab, offset: 0, q, city, category })
+      const res = await fetchFeed({ tab, offset: 0, q, city, category, filters })
       if (id !== req.current) return
       setItems(res.items)
       setTotal(res.total)
@@ -66,7 +69,7 @@ export default function Feed() {
     } finally {
       if (mode === 'refresh') setRefreshing(false)
     }
-  }, [tab, q, city, category])
+  }, [tab, q, city, category, filters])
 
   useEffect(() => {
     if (!cityReady) return
@@ -79,7 +82,7 @@ export default function Feed() {
     setMore(true)
     const id = req.current
     try {
-      const res = await fetchFeed({ tab, offset: items.length, q, city, category })
+      const res = await fetchFeed({ tab, offset: items.length, q, city, category, filters })
       if (id === req.current) setItems((prev) => [...prev, ...res.items.filter((n) => !prev.some((p) => p.id === n.id))])
     } catch {
       // подгрузка не удалась — следующая прокрутка попробует снова
@@ -143,9 +146,14 @@ export default function Feed() {
               <Ionicons name="close-circle" size={18} color={colors.muted} />
             </Pressable>
           )}
+          <Pressable onPress={() => setFiltersOpen(true)} hitSlop={8} style={styles.filterBtn} accessibilityRole="button" accessibilityLabel="Фильтры">
+            <Ionicons name="options-outline" size={21} color={colors.ink} />
+            {activeCount(filters) > 0 && <View style={styles.filterDot}><Text style={styles.filterDotText}>{activeCount(filters)}</Text></View>}
+          </Pressable>
         </View>
       </View>
       <CityPicker visible={cityOpen} value={city} onPick={pickCity} onClose={() => setCityOpen(false)} />
+      <FiltersSheet visible={filtersOpen} value={filters} onApply={setFilters} onClose={() => setFiltersOpen(false)} />
 
       <FlatList
         ref={listRef}
@@ -179,6 +187,9 @@ const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.bg },
   head: { paddingHorizontal: space.page, paddingTop: 6, paddingBottom: 10 },
   listHead: { gap: 12, paddingBottom: 2 },
+  filterBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+  filterDot: { position: 'absolute', top: 2, right: 0, minWidth: 16, height: 16, borderRadius: 8, paddingHorizontal: 4, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
+  filterDotText: { color: '#fff', fontSize: 10, fontWeight: '800' },
   city: { flexDirection: 'row', alignItems: 'center', gap: 4, height: 36, paddingHorizontal: 10, borderRadius: 11, backgroundColor: colors.surface, maxWidth: 150 },
   cityText: { fontSize: 13.5, fontWeight: '800', color: colors.ink, flexShrink: 1 },
   search: {

@@ -6,6 +6,7 @@ import { AppState } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 import { AuthProvider } from '../src/auth'
+import { ChatsProvider } from '../src/chats'
 import { FavoritesProvider } from '../src/favorites'
 
 import { colors } from '../src/theme'
@@ -42,12 +43,15 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <AuthProvider>
       <FavoritesProvider>
+      <ChatsProvider>
       <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'slide_from_right' }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="listing/[id]" />
+        <Stack.Screen name="chat/[id]" />
         <Stack.Screen name="login" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
       </Stack>
+      </ChatsProvider>
       </FavoritesProvider>
       </AuthProvider>
     </SafeAreaProvider>
