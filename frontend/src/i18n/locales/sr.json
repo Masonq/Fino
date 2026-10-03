@@ -404,7 +404,9 @@
     "email_domain_unknown": "Takva poštanska usluga ne postoji. Proverite deo posle „@“",
     "bonus_sum": "300 RSD za prvi oglas",
     "bonus_note": "Nedelja istaknutog oglasa",
-    "by_google": "Prijava Google nalogom"
+    "by_google": "Prijava Google nalogom",
+    "app_google_sub": "Prijavite se preko Google-a — i odmah se vraćate u PLONK aplikaciju.",
+    "app_done": "Gotovo — vraćamo se u aplikaciju…"
   },
   "my": {
     "title": "Moji oglasi",

@@ -26,6 +26,11 @@ export default function Login() {
   const { signIn } = useAuth()
 
   const returnTo = params.get('returnTo') || '/'
+  // Вход для мобильного приложения (/login?app=google): приложение открывает эту страницу в защищённом окне
+  // браузера; здесь — только Google, а готовый вход уходит обратно в приложение по его ссылке plonk://auth.
+  // Ключи Google у нас — только для сайта, поэтому приложение входит через Google именно так.
+  const appMode = params.get('app') === 'google'
+  const [appDone, setAppDone] = useState(false)
   const googleRef = useRef(null)
   const [googleReady, setGoogleReady] = useState(false)
   const observerRef = useRef(null)
@@ -200,6 +205,11 @@ export default function Login() {
         callback: async ({ credential }) => {
           try {
             const res = await api.googleLogin(credential)
+            if (appMode) {
+              setAppDone(true)
+              window.location.replace(`plonk://auth?token=${encodeURIComponent(res.token)}`)
+              return
+            }
             signIn(res.token, res.user)
             navigate(returnTo, { replace: true })
           } catch (e) {
@@ -280,14 +290,15 @@ export default function Login() {
         {/* replace, а не push: иначе экран входа оставался в истории, и
             «назад» с объявления возвращал на него — получался круг, из
             которого нельзя было выйти. Успешный вход это уже делал верно. */}
-        <button className="auth-close" onClick={() => navigate(returnTo, { replace: true })} aria-label={t('actions.back')}>
+        <button className="auth-close" onClick={() => (appMode ? window.location.replace('plonk://auth?cancel=1') : navigate(returnTo, { replace: true }))} aria-label={t('actions.back')}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
         </button>
 
         <img className="auth-logo" src="/logo-mark.png" alt="PLONK" />
         <h1>{t('auth.title')}</h1>
-        <p className="auth-sub">{t('auth.subtitle')}</p>
+        <p className="auth-sub">{appMode ? t(appDone ? 'auth.app_done' : 'auth.app_google_sub') : t('auth.subtitle')}</p>
 
+        {!appMode && (<>
         <button className="auth-method primary" onClick={() => { setChannel('email'); setStep('enter') }}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><rect x="2.5" y="4.5" width="19" height="15" rx="3" /><path d="m3 7 9 6 9-6" /></svg>
           {t('auth.by_email')}
@@ -305,6 +316,7 @@ export default function Login() {
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3 18.7 19c-.2 1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9.1-8.2c.4-.4-.1-.6-.6-.2L6.3 12.9l-4.8-1.5c-1-.3-1-1 .2-1.5l18.8-7.2c.9-.3 1.6.2 1.4 1.6Z" /></svg>
           {t('auth.by_telegram')}
         </a>
+        </>)}
 
         {/* Вход через Google — кнопка появляется, только если
             идентификатор приложения задан в сборке: без него Google

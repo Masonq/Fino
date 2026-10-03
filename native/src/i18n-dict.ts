@@ -405,4 +405,6 @@ export const DICT: Record<string, { en?: string; sr?: string }> = {
   "Цена и город": { en: "Price and city", sr: "Cena i grad" },
   "Далее": { en: "Next", sr: "Dalje" },
   "Все категории": { en: "All categories", sr: "Sve kategorije" },
+  "Войти через Google": { en: "Sign in with Google", sr: "Prijava preko Google-a" },
+  "Не удалось войти через Google. Попробуйте ещё раз.": { en: "Could not sign in with Google. Please try again.", sr: "Prijava preko Google-a nije uspela. Poku\u0161ajte ponovo." },
 }

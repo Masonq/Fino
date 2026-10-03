@@ -400,7 +400,9 @@
     "email_domain_unknown": "No such mail service. Check the part after the “@”",
     "bonus_sum": "300 RSD for your first listing",
     "bonus_note": "A week of a highlighted card",
-    "by_google": "Sign in with Google"
+    "by_google": "Sign in with Google",
+    "app_google_sub": "Sign in with Google — and you'll be taken right back to the PLONK app.",
+    "app_done": "Done — returning to the app…"
   },
   "my": {
     "title": "My listings",
