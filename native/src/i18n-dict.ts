@@ -345,4 +345,10 @@ export const DICT: Record<string, { en?: string; sr?: string }> = {
   "Оценка цены": { en: "Price estimate", sr: "Procena cene" },
   "рынок": { en: "market", sr: "tržište" },
   "На основе {n} похожих объявлений": { en: "Based on {n} similar listings", sr: "Na osnovu {n} sličnih oglasa" },
+  "Проверка личности идёт": { en: "Identity check in progress", sr: "Provera identiteta je u toku" },
+  "Проверку не прошли: {r}": { en: "Check not passed: {r}", sr: "Provera nije prošla: {r}" },
+  "Заявка принята": { en: "Request received", sr: "Zahtev primljen" },
+  "Мы свяжемся с вами, чтобы подтвердить личность.": { en: "We'll contact you to verify your identity.", sr: "Javićemo vam se da potvrdimo identitet." },
+  "Проверка личности временно недоступна. Попробуйте позже.": { en: "Identity check is temporarily unavailable. Try again later.", sr: "Provera identiteta trenutno nije dostupna. Pokušajte kasnije." },
+  "Пройти ещё раз": { en: "Try again", sr: "Pokušaj ponovo" },
 }

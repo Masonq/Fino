@@ -352,3 +352,9 @@ export const volunteerMine = (token: string) => authed<{ application: VolunteerA
 export const volunteerApply = (token: string, a: { role: string; languages: string[]; hours_per_week: string; about: string; accept_confidentiality: boolean }) =>
   authed<{ application: VolunteerApp }>('/volunteer/apply', token, 'POST', a)
 
+// ---------- подтверждение личности (сторонний сервис) ----------
+
+export const startVerification = (token: string) => authed<{ url?: string; status?: string }>('/verification/start', token, 'POST')
+export const verificationStatus = (token: string) =>
+  authed<{ status: 'verified' | 'pending' | 'rejected' | 'none' | string; reason?: string | null }>('/verification/me', token)
+

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { balance as fetchBalance, deleteMe, type MyListing, myListings, type Seller, sellerProfile, waitingReviews } from '../../src/api'
+import { ApiError, balance as fetchBalance, deleteMe, type MyListing, startVerification, verificationStatus, myListings, type Seller, sellerProfile, waitingReviews } from '../../src/api'
 import { useAuth } from '../../src/auth'
 import { useChats } from '../../src/chats'
 import Icon from '../../src/components/Icon'
@@ -31,6 +31,8 @@ export default function Profile() {
   const [phoneHidden, setPhoneHidden] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [waiting, setWaiting] = useState(0)
+  const [verify, setVerify] = useState<{ status: string; reason?: string | null } | null>(null)
+  const [verifying, setVerifying] = useState(false)
 
   useEffect(() => { prefs.get('plonk_phone_hint').then((v) => setPhoneHidden(v === 'hidden')) }, [])
 
@@ -41,6 +43,7 @@ export default function Profile() {
     if (b.status === 'fulfilled') setBal(b.value as typeof bal)
     if (s.status === 'fulfilled') setPub(s.value)
     waitingReviews(token).then((r) => setWaiting(r.items.length)).catch(() => {})
+    verificationStatus(token).then(setVerify).catch(() => {})
   }, [token, user])
   useFocusEffect(useCallback(() => { load() }, [load]))
 
@@ -132,11 +135,31 @@ export default function Profile() {
           <View style={styles.cardBody}>
             <Text style={styles.cardName}>{name}</Text>
             <Text style={styles.cardMeta}>{tr(pub?.is_company ? 'Компания' : 'Частное лицо')}  ·  {rating}</Text>
-            {pub && !pub.document_verified && (
-              <Pressable style={styles.verify} onPress={() => Linking.openURL(`${SITE}/profile`)}>
-                <Icon name="shield" size={15} color="#fff" />
-                <Text style={styles.verifyText}>{tr('Подтвердить личность')}</Text>
-              </Pressable>
+            {/* Подтверждение личности — сразу открываем страницу сервиса проверки; статус обновится при возвращении */}
+            {pub && !pub.document_verified && verify?.status === 'pending' && (
+              <View style={styles.verifyPending}><Text style={styles.verifyPendingText}>{tr('Проверка личности идёт')}</Text></View>
+            )}
+            {pub && !pub.document_verified && verify?.status !== 'pending' && verify?.status !== 'verified' && (
+              <>
+                {verify?.status === 'rejected' && !!verify.reason && <Text style={styles.verifyReason}>{tr('Проверку не прошли: {r}', { r: verify.reason })}</Text>}
+                <Pressable style={[styles.verify, verifying && { opacity: 0.6 }]} disabled={verifying} onPress={async () => {
+                  if (!token) return
+                  setVerifying(true)
+                  try {
+                    const r = await startVerification(token)
+                    if (r.url) await Linking.openURL(r.url)
+                    else Alert.alert(tr('Заявка принята'), tr('Мы свяжемся с вами, чтобы подтвердить личность.'))
+                    setVerify({ status: 'pending' })
+                  } catch (e) {
+                    const code = e instanceof ApiError ? e.message : ''
+                    if (code === 'already_pending') setVerify({ status: 'pending' })
+                    else Alert.alert(tr('Не получилось'), tr(code === 'verification_not_configured' ? 'Проверка личности временно недоступна. Попробуйте позже.' : 'Проверьте интернет и попробуйте ещё раз.'))
+                  } finally { setVerifying(false) }
+                }}>
+                  <Icon name="shield" size={15} color="#fff" />
+                  <Text style={styles.verifyText}>{tr(verify?.status === 'rejected' ? 'Пройти ещё раз' : 'Подтвердить личность')}</Text>
+                </Pressable>
+              </>
             )}
           </View>
           <Pressable style={styles.edit} onPress={() => router.push('/profile-edit')} accessibilityLabel={tr('Редактировать')}>
@@ -249,6 +272,9 @@ const styles = StyleSheet.create({
   cardName: { fontSize: 17, lineHeight: 21, letterSpacing: -0.3, fontFamily: font[800], color: colors.ink },
   cardMeta: { marginTop: 3, fontSize: 12.5, fontFamily: font[600], color: colors.muted },
   verify: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10, height: 34, paddingHorizontal: 12, borderRadius: 10, backgroundColor: '#1C2620' },
+  verifyPending: { alignSelf: 'flex-start', marginTop: 10, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 9, backgroundColor: '#FBF3E3' },
+  verifyPendingText: { fontSize: 12.5, fontFamily: font[800], color: '#8A6A1F' },
+  verifyReason: { marginTop: 8, fontSize: 12.5, lineHeight: 17, fontFamily: font[600], color: '#B42318' },
   verifyText: { color: '#fff', fontSize: 13, fontFamily: font[800] },
   edit: { position: 'absolute', top: 12, right: 12, width: 32, height: 32, borderRadius: 10, backgroundColor: colors.sunken, alignItems: 'center', justifyContent: 'center' },
   pending: { flexDirection: 'row', alignItems: 'center', gap: 9, marginHorizontal: 12, marginBottom: 12, paddingHorizontal: 14, height: 46, borderRadius: 14, backgroundColor: '#FBF3E3' },
