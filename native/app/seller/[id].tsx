@@ -10,7 +10,7 @@ import { type FeedItem, type Seller, sellerListings, sellerProfile } from '../..
 import ListingCard from '../../src/components/ListingCard'
 import { mediaUrl } from '../../src/config'
 import { monthYear, parseTime } from '../../src/format'
-import { colors, space } from '../../src/theme'
+import { colors, space, font } from '../../src/theme'
 
 /** Страница продавца: аватар, имя (компания), проверка, рейтинг, «на PLONK с …», все его объявления сеткой. */
 export default function SellerScreen() {
@@ -91,15 +91,15 @@ const styles = StyleSheet.create({
   head: { alignItems: 'center', paddingHorizontal: 20, gap: 6, paddingBottom: 6 },
   avatar: { width: 84, height: 84, borderRadius: 42, backgroundColor: '#7C6CF0', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', marginBottom: 6 },
   avatarImg: { width: 84, height: 84 },
-  avatarLetter: { color: '#fff', fontSize: 34, fontWeight: '800' },
+  avatarLetter: { color: '#fff', fontSize: 34, fontFamily: font[800] },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' },
-  name: { fontSize: 22, fontWeight: '800', color: colors.ink, textAlign: 'center', flexShrink: 1 },
-  company: { fontSize: 12.5, fontWeight: '800', color: colors.primaryDeep, backgroundColor: colors.primarySoft, paddingHorizontal: 9, paddingVertical: 3, borderRadius: 999, overflow: 'hidden' },
+  name: { fontSize: 22, fontFamily: font[800], color: colors.ink, textAlign: 'center', flexShrink: 1 },
+  company: { fontSize: 12.5, fontFamily: font[800], color: colors.primaryDeep, backgroundColor: colors.primarySoft, paddingHorizontal: 9, paddingVertical: 3, borderRadius: 999, overflow: 'hidden' },
   facts: { alignItems: 'center', gap: 4, marginTop: 2 },
   fact: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  factText: { fontSize: 14, color: colors.inkSoft },
-  about: { fontSize: 14.5, lineHeight: 20, color: colors.ink, textAlign: 'center', marginTop: 6 },
-  h2: { alignSelf: 'flex-start', fontSize: 19, fontWeight: '800', color: colors.ink, marginTop: 18, marginBottom: 4 },
+  factText: { fontFamily: font[400], fontSize: 14, color: colors.inkSoft },
+  about: { fontFamily: font[400], fontSize: 14.5, lineHeight: 20, color: colors.ink, textAlign: 'center', marginTop: 6 },
+  h2: { alignSelf: 'flex-start', fontSize: 19, fontFamily: font[800], color: colors.ink, marginTop: 18, marginBottom: 4 },
   row: { gap: space.gap, paddingHorizontal: space.page },
-  empty: { fontSize: 14.5, color: colors.muted, textAlign: 'center', marginTop: 16 },
+  empty: { fontFamily: font[400], fontSize: 14.5, color: colors.muted, textAlign: 'center', marginTop: 16 },
 })

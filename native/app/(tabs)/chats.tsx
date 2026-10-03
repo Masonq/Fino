@@ -12,7 +12,7 @@ import { useChats } from '../../src/chats'
 import Skeleton from '../../src/components/Skeleton'
 import { mediaUrl } from '../../src/config'
 import { plainText, relTime } from '../../src/format'
-import { colors } from '../../src/theme'
+import { colors, font } from '../../src/theme'
 
 /** Сообщения: список переписок — фото объявления, собеседник, последнее сообщение, время, непрочитанные. */
 export default function Chats() {
@@ -110,24 +110,24 @@ export default function Chats() {
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.bg },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 10 },
-  h1: { fontSize: 26, fontWeight: '800', color: colors.ink, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 10 },
+  h1: { fontSize: 26, fontFamily: font[800], color: colors.ink, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 10 },
   circle: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
-  title: { fontSize: 20, fontWeight: '800', color: colors.ink, textAlign: 'center' },
-  text: { fontSize: 15, lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },
+  title: { fontSize: 20, fontFamily: font[800], color: colors.ink, textAlign: 'center' },
+  text: { fontFamily: font[400], fontSize: 15, lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },
   cta: { marginTop: 10, height: 50, paddingHorizontal: 36, borderRadius: 14, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  ctaText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  ctaText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
   row: { flexDirection: 'row', gap: 12, paddingHorizontal: 16, paddingVertical: 12, alignItems: 'center' },
   thumb: { width: 56, height: 56, borderRadius: 14, backgroundColor: colors.photo, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   thumbImg: { width: 56, height: 56 },
   rowBody: { flex: 1, gap: 2 },
   rowTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
-  name: { flex: 1, fontSize: 16, fontWeight: '800', color: colors.ink },
-  time: { fontSize: 12.5, color: colors.muted },
-  timeOn: { color: colors.accent, fontWeight: '700' },
-  listing: { fontSize: 13.5, color: colors.inkSoft },
-  preview: { flex: 1, fontSize: 14.5, color: colors.muted },
-  previewOn: { color: colors.ink, fontWeight: '600' },
+  name: { flex: 1, fontSize: 16, fontFamily: font[800], color: colors.ink },
+  time: { fontFamily: font[400], fontSize: 12.5, color: colors.muted },
+  timeOn: { color: colors.accent, fontFamily: font[700] },
+  listing: { fontFamily: font[400], fontSize: 13.5, color: colors.inkSoft },
+  preview: { flex: 1, fontFamily: font[400], fontSize: 14.5, color: colors.muted },
+  previewOn: { color: colors.ink, fontFamily: font[600] },
   badge: { minWidth: 22, height: 22, borderRadius: 11, paddingHorizontal: 6, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
-  badgeText: { color: '#fff', fontSize: 12, fontWeight: '800' },
+  badgeText: { color: '#fff', fontSize: 12, fontFamily: font[800] },
   sep: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginLeft: 84 },
 })

@@ -13,7 +13,7 @@ import { useAuth } from '../../src/auth'
 import { useChats } from '../../src/chats'
 import { mediaUrl } from '../../src/config'
 import { formatPrice, parseTime, plainText } from '../../src/format'
-import { colors } from '../../src/theme'
+import { colors, font } from '../../src/theme'
 
 const hhmm = (iso: string) => { const d = parseTime(iso); return d ? `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : '' }
 
@@ -157,8 +157,8 @@ const styles = StyleSheet.create({
   headBody: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
   headThumb: { width: 40, height: 40, borderRadius: 10, backgroundColor: colors.photo, overflow: 'hidden' },
   headThumbImg: { width: 40, height: 40 },
-  headName: { fontSize: 16, fontWeight: '800', color: colors.ink },
-  headListing: { fontSize: 13, color: colors.inkSoft, marginTop: 1 },
+  headName: { fontSize: 16, fontFamily: font[800], color: colors.ink },
+  headListing: { fontFamily: font[400], fontSize: 13, color: colors.inkSoft, marginTop: 1 },
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   list: { paddingHorizontal: 12, paddingVertical: 12, gap: 6 },
   bubbleRow: { flexDirection: 'row', justifyContent: 'flex-start' },
@@ -167,16 +167,16 @@ const styles = StyleSheet.create({
   bubbleThem: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderBottomLeftRadius: 6 },
   bubbleMe: { backgroundColor: colors.primary, borderBottomRightRadius: 6 },
   bubbleFailed: { backgroundColor: '#B42318' },
-  bubbleText: { fontSize: 16, lineHeight: 21, color: colors.ink },
+  bubbleText: { fontFamily: font[400], fontSize: 16, lineHeight: 21, color: colors.ink },
   bubbleTextMe: { color: '#fff' },
-  meta: { fontSize: 11, color: colors.muted, marginTop: 3, alignSelf: 'flex-end' },
+  meta: { fontFamily: font[400], fontSize: 11, color: colors.muted, marginTop: 3, alignSelf: 'flex-end' },
   metaMe: { color: 'rgba(255,255,255,0.8)' },
   system: { alignSelf: 'center', maxWidth: '88%', backgroundColor: colors.sunken, borderRadius: 14, paddingHorizontal: 12, paddingVertical: 8, marginVertical: 4 },
-  systemText: { fontSize: 13.5, lineHeight: 19, color: colors.inkSoft, textAlign: 'center' },
+  systemText: { fontFamily: font[400], fontSize: 13.5, lineHeight: 19, color: colors.inkSoft, textAlign: 'center' },
   emptyWrap: { transform: [{ scaleY: -1 }], paddingHorizontal: 40, paddingVertical: 24 },
-  emptyText: { fontSize: 14.5, lineHeight: 20, color: colors.muted, textAlign: 'center' },
+  emptyText: { fontFamily: font[400], fontSize: 14.5, lineHeight: 20, color: colors.muted, textAlign: 'center' },
   inputBar: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, paddingHorizontal: 10, paddingTop: 8, backgroundColor: colors.surface, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
-  input: { flex: 1, minHeight: 42, maxHeight: 120, borderRadius: 21, backgroundColor: colors.sunken, paddingHorizontal: 16, paddingTop: 11, paddingBottom: 11, fontSize: 16, color: colors.ink },
+  input: { flex: 1, minHeight: 42, maxHeight: 120, borderRadius: 21, backgroundColor: colors.sunken, paddingHorizontal: 16, paddingTop: 11, paddingBottom: 11, fontFamily: font[400], fontSize: 16, color: colors.ink },
   sendBtn: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
   sendOff: { opacity: 0.4 },
 })

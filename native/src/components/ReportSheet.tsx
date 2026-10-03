@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 
 import { ApiError, type ReportReason, sendReport } from '../api'
-import { colors } from '../theme'
+import { colors, font } from '../theme'
 import Sheet from './Sheet'
 
 const REASONS: { key: ReportReason; label: string }[] = [
@@ -77,12 +77,12 @@ const styles = StyleSheet.create({
   radio: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: '#C9CEC9', alignItems: 'center', justifyContent: 'center' },
   radioOn: { borderColor: colors.primary },
   dot: { width: 11, height: 11, borderRadius: 6, backgroundColor: colors.primary },
-  rowText: { fontSize: 16, color: colors.ink, flex: 1 },
-  input: { minHeight: 80, borderRadius: 13, backgroundColor: colors.sunken, padding: 12, fontSize: 15.5, color: colors.ink, marginTop: 8 },
-  error: { color: '#B42318', fontSize: 14, marginTop: 6 },
+  rowText: { fontFamily: font[400], fontSize: 16, color: colors.ink, flex: 1 },
+  input: { minHeight: 80, borderRadius: 13, backgroundColor: colors.sunken, padding: 12, fontFamily: font[400], fontSize: 15.5, color: colors.ink, marginTop: 8 },
+  error: { color: '#B42318', fontFamily: font[400], fontSize: 14, marginTop: 6 },
   btn: { height: 52, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', marginTop: 12 },
-  btnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  btnText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
   done: { paddingHorizontal: 24, paddingVertical: 10, gap: 8, alignItems: 'center' },
-  doneTitle: { fontSize: 20, fontWeight: '800', color: colors.ink },
-  doneText: { fontSize: 15, lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },
+  doneTitle: { fontSize: 20, fontFamily: font[800], color: colors.ink },
+  doneText: { fontFamily: font[400], fontSize: 15, lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },
 })

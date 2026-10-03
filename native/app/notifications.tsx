@@ -10,7 +10,7 @@ import { markAllNoticesRead, markNoticeRead, type Notice, notifications } from '
 import { useAuth } from '../src/auth'
 import { SITE } from '../src/config'
 import { plainText, relTime } from '../src/format'
-import { colors } from '../src/theme'
+import { colors, font } from '../src/theme'
 
 /** Куда ведёт уведомление: переписка и объявление — внутри приложения, остальное — на сайте. */
 export function openNoticeLink(link?: string | null) {
@@ -91,16 +91,16 @@ const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.bg },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 8, paddingRight: 16, height: 52 },
   back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  h1: { flex: 1, fontSize: 20, fontWeight: '800', color: colors.ink, marginLeft: 4 },
-  all: { fontSize: 14.5, fontWeight: '700', color: colors.primaryDeep },
+  h1: { flex: 1, fontSize: 20, fontFamily: font[800], color: colors.ink, marginLeft: 4 },
+  all: { fontSize: 14.5, fontFamily: font[700], color: colors.primaryDeep },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 14 },
   dot: { width: 9, height: 9, borderRadius: 5, backgroundColor: colors.accent },
-  text: { fontSize: 15.5, lineHeight: 21, color: colors.inkSoft },
-  textOn: { color: colors.ink, fontWeight: '700' },
-  time: { fontSize: 12.5, color: colors.muted },
+  text: { fontFamily: font[400], fontSize: 15.5, lineHeight: 21, color: colors.inkSoft },
+  textOn: { color: colors.ink, fontFamily: font[700] },
+  time: { fontFamily: font[400], fontSize: 12.5, color: colors.muted },
   sep: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginLeft: 37 },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 10 },
   circle: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
-  emptyTitle: { fontSize: 20, fontWeight: '800', color: colors.ink },
-  emptyText: { fontSize: 15, lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },
+  emptyTitle: { fontSize: 20, fontFamily: font[800], color: colors.ink },
+  emptyText: { fontFamily: font[400], fontSize: 15, lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },
 })

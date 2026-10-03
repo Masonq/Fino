@@ -50,6 +50,7 @@ export type Listing = Omit<FeedItem, 'photos'> & {
   category_name?: string | null
   category_slug?: string | null
   attributes?: Record<string, unknown>
+  external_source?: string | null
 }
 
 export type FeedTab = 'all' | 'new' | 'free'

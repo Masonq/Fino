@@ -12,7 +12,7 @@ import { useAuth } from '../../src/auth'
 import ListingCard from '../../src/components/ListingCard'
 import Skeleton from '../../src/components/Skeleton'
 import { useFavorites } from '../../src/favorites'
-import { colors, radius, space } from '../../src/theme'
+import { colors, radius, space, font } from '../../src/theme'
 
 if (Platform.OS === 'android') UIManager.setLayoutAnimationEnabledExperimental?.(true)
 
@@ -115,12 +115,12 @@ export default function Favorites() {
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.bg },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 10 },
-  h1: { fontSize: 26, fontWeight: '800', color: colors.ink, paddingHorizontal: space.page + 2, paddingTop: 8, paddingBottom: 12 },
+  h1: { fontSize: 26, fontFamily: font[800], color: colors.ink, paddingHorizontal: space.page + 2, paddingTop: 8, paddingBottom: 12 },
   circle: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
-  title: { fontSize: 20, fontWeight: '800', color: colors.ink, textAlign: 'center' },
-  text: { fontSize: 15, lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },
+  title: { fontSize: 20, fontFamily: font[800], color: colors.ink, textAlign: 'center' },
+  text: { fontFamily: font[400], fontSize: 15, lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },
   cta: { marginTop: 10, height: 50, paddingHorizontal: 32, borderRadius: 14, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  ctaText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  ctaText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
   list: { paddingBottom: 24, gap: space.gap },
   row: { gap: space.gap, paddingHorizontal: space.page },
   skelGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.gap, paddingHorizontal: space.page },

@@ -8,7 +8,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { type FeedItem, freshListings } from '../api'
 import { mediaUrl } from '../config'
 import { formatPrice } from '../format'
-import { colors } from '../theme'
+import { colors, font } from '../theme'
 import Skeleton from './Skeleton'
 
 const D = 64
@@ -51,5 +51,5 @@ const styles = StyleSheet.create({
   img: { width: D, height: D },
   // «Продать» — того же размера, что кольца историй (72), чтобы ряд был ровным
   sell: { width: D + 8, height: D + 8, borderRadius: (D + 8) / 2, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
-  label: { fontSize: 12.5, fontWeight: '800', color: colors.ink, marginTop: 5, maxWidth: D + 10 },
+  label: { fontSize: 12.5, fontFamily: font[800], color: colors.ink, marginTop: 5, maxWidth: D + 10 },
 })

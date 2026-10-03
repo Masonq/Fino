@@ -8,7 +8,7 @@ import { FlatList, NativeScrollEvent, NativeSyntheticEvent, Pressable, StyleShee
 import type { FeedItem } from '../api'
 import { mediaUrl } from '../config'
 import { cityName, formatPrice, isFresh, relTime } from '../format'
-import { colors, radius } from '../theme'
+import { colors, radius, font } from '../theme'
 import HeartButton from './HeartButton'
 
 /**
@@ -96,22 +96,22 @@ const styles = StyleSheet.create({
   highlighted: { backgroundColor: colors.warmBg, borderColor: colors.gold, borderWidth: 1.5 },
   photoBox: { backgroundColor: colors.photo, overflow: 'hidden' },
   topBadges: { position: 'absolute', top: 10, left: 10, gap: 6, alignItems: 'flex-start' },
-  badge: { overflow: 'hidden', borderRadius: radius.chip, paddingHorizontal: 9, paddingVertical: 4, fontSize: 10.5, fontWeight: '800' },
+  badge: { overflow: 'hidden', borderRadius: radius.chip, paddingHorizontal: 9, paddingVertical: 4, fontSize: 10.5, fontFamily: font[800] },
   badgeDark: { backgroundColor: colors.ink, color: '#fff' },
   badgeGold: { backgroundColor: colors.goldDark, color: '#fff' },
   badgeRow: { flexDirection: 'row', alignItems: 'center' },
   fresh: { position: 'absolute', left: 10, bottom: 10, backgroundColor: colors.accent, borderRadius: radius.chip, paddingLeft: 7, paddingRight: 9, paddingVertical: 4, gap: 5 },
   freshDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#fff' },
-  freshText: { color: '#fff', fontSize: 11, fontWeight: '800' },
+  freshText: { color: '#fff', fontSize: 11, fontFamily: font[800] },
   company: { position: 'absolute', right: 10, bottom: 10, backgroundColor: colors.primarySoft, color: colors.primaryDeep },
   heart: { position: 'absolute', top: 8, right: 8 },
   bars: { position: 'absolute', left: 10, right: 10, bottom: 4, flexDirection: 'row', gap: 3 },
   bar: { flex: 1, height: 2.5, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.45)' },
   barOn: { backgroundColor: '#fff' },
   body: { paddingHorizontal: 10, paddingTop: 8, paddingBottom: 10 },
-  title: { fontSize: 14.5, lineHeight: 19, color: colors.ink, minHeight: 38 },
+  title: { fontFamily: font[400], fontSize: 14.5, lineHeight: 19, color: colors.ink, minHeight: 38 },
   priceRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
-  price: { fontSize: 18, fontWeight: '800', color: colors.ink, flexShrink: 1 },
+  price: { fontSize: 18, fontFamily: font[800], color: colors.ink, flexShrink: 1 },
   meta: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4, gap: 6 },
-  metaText: { fontSize: 12, color: colors.muted, flexShrink: 1 },
+  metaText: { fontFamily: font[400], fontSize: 12, color: colors.muted, flexShrink: 1 },
 })

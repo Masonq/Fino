@@ -6,7 +6,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 
 import { type Category, fetchCategories } from '../api'
 import { SITE } from '../config'
-import { colors } from '../theme'
+import { colors, font } from '../theme'
 import Skeleton from './Skeleton'
 
 const W = 118
@@ -36,8 +36,8 @@ export default function CategoryTiles({ value, onPick }: { value: string | null;
   if (cats.length === 0) return null
 
   const tiles: (Category | 'all')[] = ['all', ...cats]
-  const half = Math.ceil(tiles.length / 2)
-  const rows = [tiles.slice(0, half), tiles.slice(half)]
+  // Как на сайте — по столбцам сверху вниз: «Все / Недвижимость», «Авто / Услуги», «Работа / Электроника»…
+  const rows = [tiles.filter((_, i) => i % 2 === 0), tiles.filter((_, i) => i % 2 === 1)]
 
   const tile = (c: Category | 'all') => {
     if (c === 'all') {
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   allTile: { backgroundColor: colors.primarySoft, borderColor: 'rgba(14,159,110,0.3)' },
   tileOn: { borderColor: colors.primary, borderWidth: 1.5, backgroundColor: colors.primarySoft },
   soon: { opacity: 0.55 },
-  label: { fontSize: 12, lineHeight: 14, fontWeight: '700', letterSpacing: -0.12, color: colors.ink, zIndex: 2 },
+  label: { fontSize: 12, lineHeight: 14, fontFamily: font[700], letterSpacing: -0.12, color: colors.ink, zIndex: 2 },
   labelOn: { color: colors.primaryDeep },
   art: { position: 'absolute', right: 2, bottom: 0, width: 58, height: 58 },
   allIcon: { position: 'absolute', right: 14, bottom: 12 },

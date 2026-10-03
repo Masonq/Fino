@@ -5,7 +5,7 @@ import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, View
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { type Category, fetchCategories } from '../api'
-import { colors } from '../theme'
+import { colors, font } from '../theme'
 
 const nameOf = (c: Category) => (typeof c.name === 'string' ? c.name : c.name?.[getLang()] || c.name?.ru || c.slug)
 
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   handle: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: '#D8DCD8', marginBottom: 6 },
   head: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingBottom: 8, minHeight: 40 },
   back: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  title: { flex: 1, fontSize: 18, fontWeight: '800', color: colors.ink, paddingHorizontal: 8 },
+  title: { flex: 1, fontSize: 18, fontFamily: font[800], color: colors.ink, paddingHorizontal: 8 },
   row: { minHeight: 52, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
-  rowText: { fontSize: 16.5, color: colors.ink, flex: 1, paddingRight: 8 },
+  rowText: { fontFamily: font[400], fontSize: 16.5, color: colors.ink, flex: 1, paddingRight: 8 },
 })

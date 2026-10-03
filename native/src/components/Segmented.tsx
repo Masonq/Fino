@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Animated, LayoutChangeEvent, Pressable, StyleSheet, Text, View } from 'react-native'
 
 import { tr } from '../i18n'
-import { colors } from '../theme'
+import { colors, font } from '../theme'
 
 type Option<K extends string> = { key: K; label: string }
 
@@ -63,6 +63,6 @@ const styles = StyleSheet.create({
     shadowColor: '#14201A', shadowOpacity: 0.12, shadowRadius: 4, shadowOffset: { width: 0, height: 1 }, elevation: 2,
   },
   item: { height: 36, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center' },
-  label: { fontSize: 14.5, fontWeight: '800', color: colors.inkSoft },
+  label: { fontSize: 14.5, fontFamily: font[800], color: colors.inkSoft },
   labelOn: { color: colors.ink },
 })

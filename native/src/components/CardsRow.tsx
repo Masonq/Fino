@@ -1,7 +1,7 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native'
 
 import type { FeedItem } from '../api'
-import { colors } from '../theme'
+import { colors, font } from '../theme'
 import ListingCard from './ListingCard'
 
 /** Заголовок и горизонтальная лента карточек — для «Похожие» и «Ещё у продавца». */
@@ -20,6 +20,6 @@ export default function CardsRow({ title, items, exclude }: { title: string; ite
 
 const styles = StyleSheet.create({
   wrap: { marginTop: 26, gap: 12 },
-  title: { fontSize: 19, fontWeight: '800', color: colors.ink, paddingHorizontal: 16 },
+  title: { fontSize: 19, fontFamily: font[800], color: colors.ink, paddingHorizontal: 16 },
   row: { gap: 10, paddingHorizontal: 16 },
 })

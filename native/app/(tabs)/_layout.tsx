@@ -5,7 +5,7 @@ import { type ColorValue, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { useChats } from '../../src/chats'
-import { colors } from '../../src/theme'
+import { colors, font } from '../../src/theme'
 
 type IconName = keyof typeof Ionicons.glyphMap
 
@@ -40,7 +40,7 @@ export default function TabsLayout() {
       // На самых узких экранах подпись чуть уменьшится, но не обрежется
       tabBarLabel: ({ color, focused, children }) => (
         <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.82} allowFontScaling={false}
-          style={{ color, fontSize: LABEL, lineHeight: 14, fontWeight: focused || children === tr('Разместить') ? '700' : '600', marginTop: 3, flexShrink: 0 }}>{children}</Text>
+          style={{ color, fontSize: LABEL, lineHeight: 14, fontFamily: focused || children === tr('Разместить') ? font[700] : font[600], marginTop: 3, flexShrink: 0 }}>{children}</Text>
       ),
       sceneStyle: { backgroundColor: colors.bg },
     }}>
@@ -57,7 +57,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="chats" options={{
         title: tr('Сообщения'), tabBarIcon: icon('chatbubble', 'chatbubble-outline'),
         tabBarBadge: unread > 0 ? (unread > 99 ? '99+' : unread) : undefined,
-        tabBarBadgeStyle: { backgroundColor: colors.accent, color: '#fff', fontSize: 11, fontWeight: '800' },
+        tabBarBadgeStyle: { backgroundColor: colors.accent, color: '#fff', fontSize: 11, fontFamily: font[800] },
       }} />
       <Tabs.Screen name="profile" options={{ title: tr('Профиль'), tabBarIcon: icon('person', 'person-outline') }} />
     </Tabs>

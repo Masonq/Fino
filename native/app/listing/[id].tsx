@@ -9,7 +9,7 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { attrRows, type AttrField, categorySchema, type FeedItem, fetchListing, type Listing, sellerListings, similarListings, startChat, textOf } from '../../src/api'
+import { attrRows, type AttrField, ru, categorySchema, type FeedItem, fetchListing, type Listing, sellerListings, similarListings, startChat, textOf } from '../../src/api'
 import { useAuth } from '../../src/auth'
 import CardsRow from '../../src/components/CardsRow'
 import HeartButton from '../../src/components/HeartButton'
@@ -17,7 +17,7 @@ import ReportSheet from '../../src/components/ReportSheet'
 import Skeleton from '../../src/components/Skeleton'
 import { SITE, mediaUrl } from '../../src/config'
 import { cityName, formatPrice, isFresh, monthYear, parseTime, relTime } from '../../src/format'
-import { colors, radius } from '../../src/theme'
+import { colors, font, mono, radius } from '../../src/theme'
 
 /**
  * Объявление: галерея на всю ширину (листается, «1 / 5»), цена, название, город и время, метки, описание,
@@ -52,13 +52,14 @@ export default function ListingScreen() {
     return () => { alive = false }
   }, [id, attempt])
 
-  const photoH = Math.round(Math.min(width * 0.95, 560))
+  // Видимая часть фото — как на сайте (≈ 0,66 ширины), плюс зона под строкой состояния и под наезжающим листом
+  const photoH = Math.round(Math.min(width * 0.92, 520))
   const photos = (data?.photos ?? []).filter((p) => !p.is_video).map((p) => mediaUrl(p.url)).filter(Boolean) as string[]
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => setPhoto(Math.round(e.nativeEvent.contentOffset.x / width))
   const back = (
     <Pressable style={[styles.back, { top: insets.top + 8 }]} onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
       accessibilityLabel={tr('Назад')} hitSlop={8}>
-      <Ionicons name="chevron-back" size={24} color={colors.ink} />
+      <Ionicons name="chevron-back" size={24} color="#fff" />
     </Pressable>
   )
 
@@ -92,64 +93,74 @@ export default function ListingScreen() {
   const owner = data.owner
   const since = parseTime(owner?.since)
   const chips: { label: string; tone: 'accent' | 'primary' | 'gold' | 'plain' }[] = []
-  if (isFresh(data.published_at)) chips.push({ label: tr('Новое'), tone: 'accent' })
-  if (data.is_reserved) chips.push({ label: tr('Забронировано'), tone: 'gold' })
-  if (owner?.is_company) chips.push({ label: tr('Компания'), tone: 'primary' })
-  if (data.delivery_available) chips.push({ label: tr('Доставка'), tone: 'plain' })
-  if (data.price_negotiable) chips.push({ label: tr('Торг уместен'), tone: 'plain' })
+  if (isFresh(data.published_at)) chips.push({ label: 'Новое', tone: 'accent' })
+  if (data.is_reserved) chips.push({ label: 'Забронировано', tone: 'gold' })
+  if (owner?.is_company) chips.push({ label: 'Компания', tone: 'primary' })
+  if (data.delivery_available) chips.push({ label: 'Доставка', tone: 'plain' })
+  if (data.price_negotiable) chips.push({ label: 'Торг уместен', tone: 'plain' })
+  const attrs = attrRows(data.attributes as Record<string, unknown> | undefined, schema)
+  const keyFacts = factChips(rootSlug(data), data.attributes as Record<string, unknown> | undefined, schema)
+  const verdict = VERDICTS[(data as unknown as { price_check?: { verdict?: string } }).price_check?.verdict ?? '']
+  const mine = !!(user && owner && user.id === owner.id)
+  const stripH = photoH + insets.top + SHEET_OVERLAP
 
   return (
     <View style={styles.page}>
       <ScrollView contentContainerStyle={{ paddingBottom: 96 + insets.bottom }} showsVerticalScrollIndicator={false}>
-        <View style={{ width, height: photoH, backgroundColor: colors.photo }}>
+        {/* Фото — как на сайте: снимок целиком (contain) на размытой подложке из того же снимка */}
+        <View style={{ width, height: stripH, backgroundColor: '#1E2621' }}>
           {photos.length > 0 && (
             <FlatList
               data={photos}
-              keyExtractor={(u, i) => `${i}-${u}`}
+              keyExtractor={(u, k) => `${k}-${u}`}
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
               onMomentumScrollEnd={onScroll}
-              renderItem={({ item }) => <Image source={{ uri: item }} style={{ width, height: photoH }} contentFit="cover" transition={200} />}
+              renderItem={({ item }) => (
+                <View style={{ width, height: stripH }}>
+                  <Image source={{ uri: item }} style={[StyleSheet.absoluteFill, styles.blur]} contentFit="cover" blurRadius={22} />
+                  <Image source={{ uri: item }} style={{ position: 'absolute', left: 0, right: 0, top: insets.top, height: photoH }} contentFit="contain" transition={200} />
+                </View>
+              )}
             />
           )}
           {photos.length > 1 && (
-            <View style={styles.counter}><Text style={styles.counterText}>{photo + 1} / {photos.length}</Text></View>
+            <View style={[styles.counter, { bottom: SHEET_OVERLAP + 12 }]}><Text style={styles.counterText}>{photo + 1} / {photos.length}</Text></View>
           )}
         </View>
 
-        <View style={styles.body}>
+        {/* Белый лист со скруглением наезжает на фото — как .detail-sheet на сайте */}
+        <View style={styles.sheet}>
           <View style={styles.priceRow}>
             <Text style={styles.price}>{formatPrice(data.price, data.currency, data.is_free)}</Text>
-            {!!data.previous_price && !data.is_free && (
-              <Text style={styles.oldPrice}>{formatPrice(data.previous_price, data.currency)}</Text>
-            )}
+            {!!data.previous_price && !data.is_free && <Text style={styles.oldPrice}>{formatPrice(data.previous_price, data.currency)}</Text>}
           </View>
           <Text style={styles.title}>{title}</Text>
-          <Text style={styles.soft}>{[cityName(data.city), relTime(data.published_at)].filter(Boolean).join(' · ')}</Text>
-
-          {chips.length > 0 && (
-            <View style={styles.chips}>
-              {chips.map((c) => <Text key={c.label} style={[styles.chip, toneStyle[c.tone]]}>{c.label}</Text>)}
-            </View>
-          )}
-
-          {attrRows(data.attributes as Record<string, unknown> | undefined, schema).length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.h3}>{tr('Характеристики')}</Text>
-              {attrRows(data.attributes as Record<string, unknown> | undefined, schema).map((r) => (
-                <View key={r.label} style={styles.attr}>
-                  <Text style={styles.attrLabel}>{r.label}</Text>
-                  <Text style={styles.attrValue}>{r.value}</Text>
+          {data.external_source === 'telegram' && <Text style={styles.fromTg}>{tr('Объявление из Telegram')}</Text>}
+          {keyFacts.length > 0 && (
+            <View style={styles.facts}>
+              {keyFacts.map((f) => (
+                <View key={f.key} style={styles.fact}>
+                  <Ionicons name={f.icon} size={16} color={colors.inkSoft} />
+                  <Text style={styles.factText}>{f.text}</Text>
                 </View>
               ))}
             </View>
           )}
+          {chips.length > 0 && (
+            <View style={styles.chips}>
+              {chips.map((c) => <Text key={c.label} style={[styles.chip, toneStyle[c.tone]]}>{tr(c.label)}</Text>)}
+            </View>
+          )}
 
-          {!!description && (
-            <View style={styles.section}>
-              <Text style={styles.h3}>{tr('Описание')}</Text>
-              <Text style={styles.text}>{description}</Text>
+          {!!verdict && (
+            <View style={styles.priceCheck}>
+              <View style={[styles.pcIcon, { backgroundColor: verdict.bg }]}><Ionicons name={verdict.icon} size={22} color={verdict.color} /></View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.pcTitle}>{tr(verdict.title)}</Text>
+                <Text style={styles.pcSub}>{tr('Оценка PLONK')}</Text>
+              </View>
             </View>
           )}
 
@@ -160,32 +171,69 @@ export default function ListingScreen() {
                   ? <Image source={{ uri: mediaUrl(owner.avatar_url) ?? undefined }} style={styles.avatarImg} contentFit="cover" />
                   : <Text style={styles.avatarLetter}>{(owner.company_name || owner.display_name || '?').slice(0, 1).toUpperCase()}</Text>}
               </View>
-              <View style={{ flex: 1, gap: 3 }}>
+              <View style={{ flex: 1, gap: 2 }}>
                 <View style={styles.nameRow}>
                   <Text style={styles.name} numberOfLines={1}>{owner.company_name || owner.display_name || tr('Продавец')}</Text>
-                  {owner.document_verified && <Ionicons name="checkmark-circle" size={17} color={colors.primary} accessibilityLabel={tr('Личность подтверждена')} />}
+                  {owner.document_verified && (
+                    <View style={styles.verified}>
+                      <Ionicons name="checkmark-circle" size={16} color={colors.primary} />
+                      <Text style={styles.verifiedText}>{tr('Личность подтверждена')}</Text>
+                    </View>
+                  )}
                 </View>
                 {(owner.rating_count ?? 0) > 0 ? (
                   <View style={styles.starsRow}>
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <Ionicons key={i} name="star" size={13} color={i <= Math.round(owner.rating_avg ?? 0) ? '#E0A526' : '#E1E4E1'} />
-                    ))}
-                    <Text style={styles.small}>{(owner.rating_avg ?? 0).toFixed(1).replace('.', ',')} · {tr('отзывов: {n}', { n: owner.rating_count ?? 0 })}</Text>
+                    {[1, 2, 3, 4, 5].map((k) => <Ionicons key={k} name="star" size={13} color={k <= Math.round(owner.rating_avg ?? 0) ? '#E0A526' : '#D9DDD9'} />)}
+                    <Text style={[styles.sellerSub, { marginLeft: 4 }]}>{(owner.rating_avg ?? 0).toFixed(1).replace('.', ',')} · {tr('отзывов: {n}', { n: owner.rating_count ?? 0 })}</Text>
                   </View>
-                ) : <Text style={styles.small}>{tr('Пока нет отзывов')}</Text>}
-                {since && <Text style={styles.small}>{tr('На PLONK с {date}', { date: monthYear(since) })}</Text>}
+                ) : <Text style={styles.sellerSub}>{tr('Пока нет отзывов')}</Text>}
+                <Text style={styles.sellerSub}>
+                  {[since ? tr('Здесь с {date}', { date: monthYear(since) }) : '', (owner.listings_count ?? 0) > 1 ? tr('объявлений: {n}', { n: owner.listings_count ?? 0 }) : ''].filter(Boolean).join('  ·  ')}
+                </Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.muted} />
             </Pressable>
           )}
 
+          {!!data.city && (
+            <View style={styles.section}>
+              <Text style={styles.h3}>{tr('Местоположение')}</Text>
+              <View style={styles.locRow}>
+                <Ionicons name="location-outline" size={17} color={colors.inkSoft} />
+                <Text style={styles.loc}>{cityName(data.city)}</Text>
+              </View>
+            </View>
+          )}
+
+          {attrs.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.h3}>{tr('Характеристики')}</Text>
+              <View style={styles.attrs}>
+                {attrs.map((r, k) => (
+                  <View key={r.label} style={[styles.attr, k === attrs.length - 1 && { borderBottomWidth: 0 }]}>
+                    <Text style={styles.attrLabel}>{r.label}</Text>
+                    <Text style={styles.attrValue}>{r.value}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {!!description && (
+            <View style={styles.section}>
+              <Text style={styles.h3}>{tr('Описание')}</Text>
+              <Text style={styles.text}>{description}</Text>
+            </View>
+          )}
+
+          {!mine && (
+            <Pressable onPress={() => (token ? setReportOpen(true) : router.push('/login'))} style={styles.report} hitSlop={6}>
+              <Text style={styles.reportText}>{tr('Пожаловаться')}</Text>
+            </Pressable>
+          )}
           <Text style={styles.footnote}>
-            {[data.number ? tr('Объявление №{n}', { n: String(data.number) }) : '', data.views_count != null ? tr('просмотров: {n}', { n: data.views_count }) : ''].filter(Boolean).join(' · ')}
+            {[data.views_count != null ? tr('просмотров: {n}', { n: data.views_count }) : '', data.number ? tr('Объявление №{n}', { n: String(data.number) }) : '', relTime(data.published_at)].filter(Boolean).join('  ·  ')}
           </Text>
-          {!(user && owner && user.id === owner.id) && <Pressable onPress={() => (token ? setReportOpen(true) : router.push('/login'))} style={styles.report} hitSlop={6}>
-            <Ionicons name="flag-outline" size={15} color={colors.muted} />
-            <Text style={styles.reportText}>{tr('Пожаловаться')}</Text>
-          </Pressable>}
         </View>
         <CardsRow title={tr('Ещё у продавца')} items={more} exclude={data.id} />
         <CardsRow title={tr('Похожие')} items={similar} exclude={data.id} />
@@ -194,15 +242,13 @@ export default function ListingScreen() {
       {back}
       <Pressable style={[styles.shareTop, { top: insets.top + 8 }]} hitSlop={6} accessibilityLabel={tr('Поделиться')}
         onPress={() => Share.share({ message: `${title} — ${formatPrice(data.price, data.currency, data.is_free)}\n${SITE}${data.path ?? ''}` }).catch(() => {})}>
-        <Ionicons name="share-outline" size={21} color={colors.ink} />
+        <Ionicons name="share-outline" size={21} color="#fff" />
       </Pressable>
-      <HeartButton id={data.id} size={40} style={[styles.heartTop, { top: insets.top + 8 }]} />
+      <HeartButton id={data.id} size={40} dark style={[styles.heartTop, { top: insets.top + 8 }]} />
       <ReportSheet visible={reportOpen} listingId={data.id} token={token} onClose={() => setReportOpen(false)} />
       <View style={[styles.bar, { paddingBottom: 10 + insets.bottom }]}>
-        {user && owner && user.id === owner.id ? (
-          <View style={[styles.cta, styles.ctaMine]}>
-            <Text style={styles.ctaMineText}>{tr('Это ваше объявление')}</Text>
-          </View>
+        {mine ? (
+          <View style={[styles.cta, styles.ctaMine]}><Text style={styles.ctaMineText}>{tr('Это ваше объявление')}</Text></View>
         ) : (
           <Pressable style={[styles.cta, opening && { opacity: 0.7 }]} disabled={opening} accessibilityRole="button" onPress={async () => {
             if (!token) { router.push('/login'); return }
@@ -225,6 +271,54 @@ export default function ListingScreen() {
   )
 }
 
+const SHEET_OVERLAP = 22
+
+type IconName = keyof typeof Ionicons.glyphMap
+/** Главные характеристики плашками — как AttrChips на сайте: для недвижимости и авто, в том же порядке. */
+const FACT_ORDER: Record<string, string[]> = {
+  'real-estate': ['rooms', 'area_m2', 'floor', 'renovation', 'furnished', 'balcony'],
+  auto: ['year', 'mileage_km', 'transmission', 'fuel_type', 'engine_volume', 'body_type'],
+}
+const FACT_ICON: Record<string, IconName> = {
+  rooms: 'grid-outline', area_m2: 'resize-outline', floor: 'business-outline', renovation: 'construct-outline', furnished: 'bed-outline',
+  balcony: 'sunny-outline', year: 'calendar-outline', mileage_km: 'speedometer-outline', transmission: 'git-branch-outline',
+  fuel_type: 'water-outline', engine_volume: 'cog-outline', body_type: 'car-outline',
+}
+const FACT_UNIT: Record<string, string> = { rooms: 'комн.', area_m2: 'м²', year: 'г.', mileage_km: 'км', engine_volume: 'л' }
+
+function rootSlug(l: { category_path?: unknown; category_slug?: string | null }): string {
+  const path = l.category_path as { slug?: string }[] | undefined
+  return (Array.isArray(path) && path[0]?.slug) || l.category_slug || ''
+}
+
+function factChips(root: string, attrs: Record<string, unknown> | undefined, schema: AttrField[]): { key: string; icon: IconName; text: string }[] {
+  const keys = FACT_ORDER[root]
+  if (!keys || !attrs) return []
+  const out: { key: string; icon: IconName; text: string }[] = []
+  for (const key of keys) {
+    const raw = attrs[key]
+    const field = schema.find((f) => f.key === key)
+    if (raw === undefined || raw === null || raw === '' || !field) continue
+    if (field.type === 'boolean') { if (raw) out.push({ key, icon: FACT_ICON[key], text: ru(field.label) }); continue }
+    const opt = field.options?.find((o) => String(o.value) === String(raw))
+    const value = opt ? ru(opt.label) : String(raw)
+    if (key === 'floor') {
+      const total = attrs.total_floors
+      out.push({ key, icon: FACT_ICON[key], text: `${value}${total ? `/${total}` : ''} ${tr('этаж')}` })
+    } else {
+      out.push({ key, icon: FACT_ICON[key], text: `${value} ${FACT_UNIT[key] && !opt ? tr(FACT_UNIT[key]) : ''}`.trim() })
+    }
+  }
+  return out
+}
+
+/** Оценка цены — та же, что на сайте («Дешевле похожих на PLONK»). */
+const VERDICTS: Record<string, { title: string; icon: IconName; color: string; bg: string }> = {
+  cheap: { title: 'Дешевле похожих на PLONK', icon: 'trending-down', color: '#0B5C42', bg: '#DDF3E8' },
+  fair: { title: 'Цена как у похожих', icon: 'remove', color: '#4B554E', bg: '#ECECE6' },
+  expensive: { title: 'Дороже похожих на PLONK', icon: 'trending-up', color: '#B4501E', bg: '#FCE6DA' },
+}
+
 const toneStyle = StyleSheet.create({
   accent: { backgroundColor: colors.accent, color: '#fff' },
   primary: { backgroundColor: colors.primarySoft, color: colors.primaryDeep },
@@ -233,53 +327,67 @@ const toneStyle = StyleSheet.create({
 })
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: colors.bg },
+  page: { flex: 1, backgroundColor: colors.surface },
   center: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 8 },
   back: {
-    position: 'absolute', left: 12, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.94)',
+    position: 'absolute', left: 12, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(20,26,22,0.38)',
     alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 6, shadowOffset: { width: 0, height: 1 }, elevation: 3,
   },
   heartTop: { position: 'absolute', right: 12 },
   shareTop: {
-    position: 'absolute', right: 60, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.94)', alignItems: 'center', justifyContent: 'center',
+    position: 'absolute', right: 60, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(20,26,22,0.38)', alignItems: 'center', justifyContent: 'center',
     shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 6, shadowOffset: { width: 0, height: 1 }, elevation: 3,
   },
-  attr: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, paddingVertical: 9, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
-  attrLabel: { fontSize: 15, color: colors.inkSoft, flex: 1 },
-  attrValue: { fontSize: 15, color: colors.ink, fontWeight: '600', flex: 1, textAlign: 'right' },
-  report: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', marginTop: 14, paddingVertical: 6 },
-  reportText: { fontSize: 14, color: colors.muted, fontWeight: '600' },
-  counter: { position: 'absolute', right: 12, bottom: 12, backgroundColor: 'rgba(28,38,32,0.6)', borderRadius: radius.chip, paddingHorizontal: 10, paddingVertical: 4 },
-  counterText: { color: '#fff', fontSize: 12.5, fontWeight: '700' },
-  body: { paddingHorizontal: 16, paddingTop: 16, gap: 8 },
+  blur: { opacity: 0.6, transform: [{ scale: 1.18 }] },
+  counter: { position: 'absolute', alignSelf: 'center', backgroundColor: 'rgba(28,38,32,0.62)', borderRadius: radius.chip, paddingHorizontal: 12, paddingVertical: 5 },
+  counterText: { color: '#fff', fontSize: 13, fontFamily: font[700] },
+  sheet: {
+    marginTop: -SHEET_OVERLAP, backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 20, paddingTop: 22,
+    shadowColor: '#14201A', shadowOpacity: 0.05, shadowRadius: 12, shadowOffset: { width: 0, height: -6 },
+  },
   priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 10 },
-  price: { fontSize: 26, fontWeight: '800', color: colors.primaryDeep },
-  oldPrice: { fontSize: 16, color: colors.muted, textDecorationLine: 'line-through' },
-  title: { fontSize: 20, lineHeight: 26, fontWeight: '700', color: colors.ink },
-  soft: { fontSize: 14, color: colors.inkSoft, textAlign: 'left' },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 },
-  chip: { overflow: 'hidden', borderRadius: radius.chip, paddingHorizontal: 10, paddingVertical: 5, fontSize: 12, fontWeight: '800' },
-  section: { marginTop: 14, gap: 6 },
-  h2: { fontSize: 19, fontWeight: '800', color: colors.ink, textAlign: 'center' },
-  h3: { fontSize: 17, fontWeight: '800', color: colors.ink },
-  text: { fontSize: 15.5, lineHeight: 22, color: colors.ink },
-  seller: { marginTop: 18, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  price: { fontFamily: mono, fontSize: 25, color: colors.primaryDeep },
+  oldPrice: { fontFamily: mono, fontSize: 15, color: colors.muted, textDecorationLine: 'line-through' },
+  title: { fontFamily: font[800], fontSize: 19, lineHeight: 25, color: colors.ink, marginTop: 8 },
+  fromTg: { alignSelf: 'flex-start', marginTop: 8, paddingHorizontal: 9, paddingVertical: 4, borderRadius: 8, overflow: 'hidden', backgroundColor: '#EAF3FF', color: '#2D7DD2', fontFamily: font[700], fontSize: 12.5 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 },
+  facts: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12 },
+  fact: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 11, height: 36, borderRadius: 12, backgroundColor: colors.sunken },
+  factText: { fontSize: 14, fontFamily: font[700], color: colors.ink },
+  priceCheck: { marginTop: 16, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 13, borderRadius: 17, backgroundColor: colors.sunken },
+  pcIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  pcTitle: { fontSize: 15.5, fontFamily: font[800], color: colors.ink },
+  pcSub: { fontSize: 12.5, fontFamily: font[600], color: colors.muted, marginTop: 1 },
+  chip: { overflow: 'hidden', borderRadius: radius.chip, paddingHorizontal: 10, paddingVertical: 5, fontSize: 12, fontFamily: font[800] },
+  seller: { marginTop: 20, flexDirection: 'row', alignItems: 'center', gap: 11, paddingVertical: 12, paddingHorizontal: 13, borderRadius: 17, backgroundColor: colors.sunken },
   avatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: '#7C6CF0', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   avatarImg: { width: 52, height: 52 },
-  avatarLetter: { color: '#fff', fontSize: 20, fontWeight: '800' },
-  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  name: { fontSize: 16, fontWeight: '800', color: colors.ink, flexShrink: 1 },
+  avatarLetter: { color: '#fff', fontSize: 20, fontFamily: font[800] },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
+  verified: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  verifiedText: { fontSize: 12.5, fontFamily: font[700], color: colors.primaryDeep },
+  name: { fontSize: 16, fontFamily: font[800], color: colors.ink, flexShrink: 1 },
   starsRow: { flexDirection: 'row', alignItems: 'center', gap: 1 },
-  small: { fontSize: 12.5, color: colors.inkSoft, marginLeft: 4 },
-  footnote: { marginTop: 18, fontSize: 12.5, color: colors.muted },
-  bar: {
-    position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 16, paddingTop: 10, backgroundColor: 'rgba(250,250,249,0.96)',
-    borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border,
-  },
+  sellerSub: { fontSize: 13, fontFamily: font[600], color: colors.muted },
+  section: { marginTop: 26, gap: 8 },
+  h3: { fontSize: 18, fontFamily: font[800], color: colors.ink },
+  locRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  loc: { fontSize: 15, fontFamily: font[600], color: colors.inkSoft },
+  attrs: { backgroundColor: colors.sunken, borderRadius: 16, paddingHorizontal: 16 },
+  attr: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#ECECE6' },
+  attrLabel: { fontSize: 14.5, fontFamily: font[500], color: colors.muted, flex: 1 },
+  attrValue: { fontSize: 14.5, fontFamily: font[700], color: colors.ink, flex: 1, textAlign: 'right' },
+  text: { fontSize: 16, lineHeight: 23, fontFamily: font[400], color: colors.ink },
+  h2: { fontSize: 19, fontFamily: font[800], color: colors.ink, textAlign: 'center' },
+  soft: { fontSize: 14, fontFamily: font[400], color: colors.inkSoft, textAlign: 'center' },
+  report: { alignSelf: 'center', marginTop: 28, paddingVertical: 8, paddingHorizontal: 12 },
+  reportText: { fontSize: 15, fontFamily: font[700], color: colors.muted },
+  footnote: { marginTop: 10, marginBottom: 6, fontSize: 13, fontFamily: font[500], color: colors.muted },
+  bar: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 16, paddingTop: 10, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border },
   cta: { height: 52, borderRadius: 16, backgroundColor: colors.primary, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  ctaText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  ctaText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
   ctaMine: { backgroundColor: colors.sunken },
-  ctaMineText: { color: colors.inkSoft, fontSize: 15.5, fontWeight: '700' },
+  ctaMineText: { color: colors.inkSoft, fontSize: 15.5, fontFamily: font[700] },
   retry: { marginTop: 8, height: 44, paddingHorizontal: 20, borderRadius: 12, backgroundColor: colors.primary, justifyContent: 'center' },
-  retryText: { color: '#fff', fontWeight: '800', fontSize: 15 },
+  retryText: { color: '#fff', fontFamily: font[800], fontSize: 15 },
 })

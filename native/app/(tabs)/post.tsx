@@ -15,7 +15,7 @@ import CategoryPicker from '../../src/components/CategoryPicker'
 import CityPicker from '../../src/components/CityPicker'
 import Segmented from '../../src/components/Segmented'
 import { cityName } from '../../src/format'
-import { colors } from '../../src/theme'
+import { colors, font } from '../../src/theme'
 
 const MAX = 10
 type Shot = { key: string; uri: string; mime: string; state: 'loading' | 'done' | 'failed'; uploaded?: Uploaded }
@@ -206,31 +206,31 @@ const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.bg },
   center: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 10 },
   circle: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
-  title: { fontSize: 20, fontWeight: '800', color: colors.ink, textAlign: 'center' },
-  text: { fontSize: 15, lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },
+  title: { fontSize: 20, fontFamily: font[800], color: colors.ink, textAlign: 'center' },
+  text: { fontFamily: font[400], fontSize: 15, lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },
   cta: { marginTop: 10, height: 52, paddingHorizontal: 36, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  ctaText: { color: '#fff', fontSize: 16, fontWeight: '800' },
-  link: { fontSize: 15.5, fontWeight: '700', color: colors.primaryDeep },
+  ctaText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
+  link: { fontSize: 15.5, fontFamily: font[700], color: colors.primaryDeep },
   form: { paddingHorizontal: 16, paddingBottom: 40 },
-  h1: { fontSize: 26, fontWeight: '800', color: colors.ink, paddingTop: 8, paddingBottom: 6 },
-  label: { fontSize: 16, fontWeight: '800', color: colors.ink, marginTop: 18, marginBottom: 8 },
+  h1: { fontSize: 26, fontFamily: font[800], color: colors.ink, paddingTop: 8, paddingBottom: 6 },
+  label: { fontSize: 16, fontFamily: font[800], color: colors.ink, marginTop: 18, marginBottom: 8 },
   labelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 18, marginBottom: 8 },
-  count: { color: colors.muted, fontWeight: '600', fontSize: 14 },
+  count: { color: colors.muted, fontFamily: font[600], fontSize: 14 },
   shots: { gap: 8, paddingRight: 8 },
   addShot: { width: 92, height: 92, borderRadius: 14, backgroundColor: colors.primarySoft, borderWidth: 1.5, borderColor: 'rgba(14,159,110,0.3)', borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 4 },
-  addText: { fontSize: 12.5, fontWeight: '700', color: colors.primaryDeep },
+  addText: { fontSize: 12.5, fontFamily: font[700], color: colors.primaryDeep },
   shot: { width: 92, height: 92, borderRadius: 14, overflow: 'hidden', backgroundColor: colors.photo },
   shotImg: { width: 92, height: 92 },
   shotOverlay: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center' },
-  cover: { position: 'absolute', left: 6, bottom: 6, backgroundColor: 'rgba(28,38,32,0.7)', color: '#fff', fontSize: 10.5, fontWeight: '800', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, overflow: 'hidden' },
+  cover: { position: 'absolute', left: 6, bottom: 6, backgroundColor: 'rgba(28,38,32,0.7)', color: '#fff', fontSize: 10.5, fontFamily: font[800], paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, overflow: 'hidden' },
   remove: { position: 'absolute', top: 5, right: 5, width: 22, height: 22, borderRadius: 11, backgroundColor: 'rgba(28,38,32,0.72)', alignItems: 'center', justifyContent: 'center' },
   select: { minHeight: 50, borderRadius: 13, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 8 },
-  selectText: { flex: 1, fontSize: 16, color: colors.ink, paddingVertical: 12 },
-  input: { minHeight: 50, borderRadius: 13, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 14, fontSize: 16, color: colors.ink },
+  selectText: { flex: 1, fontFamily: font[400], fontSize: 16, color: colors.ink, paddingVertical: 12 },
+  input: { minHeight: 50, borderRadius: 13, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 14, fontFamily: font[400], fontSize: 16, color: colors.ink },
   area: { minHeight: 120, paddingTop: 13, paddingBottom: 13 },
   switchRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 12 },
-  switchText: { fontSize: 16, color: colors.ink },
-  hint: { fontSize: 13.5, color: '#B42318', marginTop: 6 },
+  switchText: { fontFamily: font[400], fontSize: 16, color: colors.ink },
+  hint: { fontFamily: font[400], fontSize: 13.5, color: '#B42318', marginTop: 6 },
   submit: { marginTop: 26, paddingHorizontal: 0 },
-  small: { fontSize: 13, color: colors.muted, textAlign: 'center', marginTop: 10 },
+  small: { fontFamily: font[400], fontSize: 13, color: colors.muted, textAlign: 'center', marginTop: 10 },
 })

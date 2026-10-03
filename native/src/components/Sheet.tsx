@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { colors } from '../theme'
+import { colors, font } from '../theme'
 
 /** Шторка снизу: затемнение, ручка, заголовок. Закрывается нажатием мимо. */
 export default function Sheet({ visible, title, onClose, children }: { visible: boolean; title?: string; onClose: () => void; children: ReactNode }) {
@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(17,22,19,0.42)' },
   sheet: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 8, maxHeight: '88%' },
   handle: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: '#D8DCD8', marginBottom: 8 },
-  title: { fontSize: 18, fontWeight: '800', color: colors.ink, paddingHorizontal: 20, paddingBottom: 8 },
+  title: { fontSize: 18, fontFamily: font[800], color: colors.ink, paddingHorizontal: 20, paddingBottom: 8 },
   action: { height: 54, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  actionText: { fontSize: 16.5, color: colors.ink, fontWeight: '600' },
+  actionText: { fontSize: 16.5, color: colors.ink, fontFamily: font[600] },
 })

@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { SITE } from '../config'
-import { colors } from '../theme'
+import { colors, font } from '../theme'
 
 type IconName = keyof typeof Ionicons.glyphMap
 
@@ -29,8 +29,8 @@ const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.bg },
   box: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 10 },
   circle: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
-  title: { fontSize: 20, fontWeight: '800', color: colors.ink, textAlign: 'center' },
-  text: { fontSize: 15, lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },
+  title: { fontSize: 20, fontFamily: font[800], color: colors.ink, textAlign: 'center' },
+  text: { fontFamily: font[400], fontSize: 15, lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },
   btn: { marginTop: 10, height: 48, paddingHorizontal: 22, borderRadius: 14, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  btnText: { color: '#fff', fontSize: 15.5, fontWeight: '800' },
+  btnText: { color: '#fff', fontSize: 15.5, fontFamily: font[800] },
 })

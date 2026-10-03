@@ -4,7 +4,7 @@ import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import type { Filters } from '../api'
-import { colors } from '../theme'
+import { colors, font } from '../theme'
 import Segmented from './Segmented'
 
 const SORTS: { key: NonNullable<Filters['sort']>; label: string }[] = [
@@ -79,22 +79,22 @@ const styles = StyleSheet.create({
   sheet: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 8, maxHeight: '88%' },
   handle: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: '#D8DCD8', marginBottom: 6 },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12 },
-  title: { fontSize: 20, fontWeight: '800', color: colors.ink },
-  reset: { fontSize: 15, fontWeight: '700', color: colors.primaryDeep },
+  title: { fontSize: 20, fontFamily: font[800], color: colors.ink },
+  reset: { fontSize: 15, fontFamily: font[700], color: colors.primaryDeep },
   labelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  label: { fontSize: 16, fontWeight: '800', color: colors.ink },
+  label: { fontSize: 16, fontFamily: font[800], color: colors.ink },
   priceRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   // flexBasis 0 и minWidth 0 — два поля делят ширину поровну и не вылезают за край
-  input: { flex: 1, flexBasis: 0, minWidth: 0, height: 48, borderRadius: 13, backgroundColor: colors.sunken, paddingHorizontal: 14, fontSize: 16, color: colors.ink },
-  dash: { color: colors.muted, fontSize: 16 },
+  input: { flex: 1, flexBasis: 0, minWidth: 0, height: 48, borderRadius: 13, backgroundColor: colors.sunken, paddingHorizontal: 14, fontFamily: font[400], fontSize: 16, color: colors.ink },
+  dash: { color: colors.muted, fontFamily: font[400], fontSize: 16 },
   switchRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 40 },
-  switchText: { fontSize: 16, color: colors.ink },
+  switchText: { fontFamily: font[400], fontSize: 16, color: colors.ink },
   sortRow: { flexDirection: 'row', alignItems: 'center', gap: 12, height: 44 },
   radio: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: '#C9CEC9', alignItems: 'center', justifyContent: 'center' },
   radioOn: { borderColor: colors.primary },
   radioDot: { width: 11, height: 11, borderRadius: 6, backgroundColor: colors.primary },
-  sortText: { fontSize: 16, color: colors.ink },
-  sortOn: { fontWeight: '700' },
+  sortText: { fontFamily: font[400], fontSize: 16, color: colors.ink },
+  sortOn: { fontFamily: font[700] },
   apply: { marginHorizontal: 20, marginTop: 14, height: 52, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  applyText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  applyText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
 })

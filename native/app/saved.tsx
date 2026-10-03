@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { deleteSavedSearch, type SavedSearch, savedSearches, type SearchFilters, toggleSavedSearch } from '../src/api'
 import { useAuth } from '../src/auth'
 import { cityName } from '../src/format'
-import { colors } from '../src/theme'
+import { colors, font } from '../src/theme'
 
 /** Подпись поиска по фильтрам: «велосипед · Белград · до 300». */
 export function describeSearch(f: SearchFilters, name?: string | null): string {
@@ -86,13 +86,13 @@ const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.bg },
   head: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, height: 52 },
   back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  h1: { fontSize: 20, fontWeight: '800', color: colors.ink, marginLeft: 4 },
+  h1: { fontSize: 20, fontFamily: font[800], color: colors.ink, marginLeft: 4 },
   card: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
-  title: { fontSize: 16, fontWeight: '700', color: colors.ink },
-  sub: { fontSize: 13, color: colors.muted },
+  title: { fontSize: 16, fontFamily: font[700], color: colors.ink },
+  sub: { fontFamily: font[400], fontSize: 13, color: colors.muted },
   trash: { width: 32, alignItems: 'center' },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 10 },
   circle: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
-  emptyTitle: { fontSize: 20, fontWeight: '800', color: colors.ink, textAlign: 'center' },
-  emptyText: { fontSize: 15, lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },
+  emptyTitle: { fontSize: 20, fontFamily: font[800], color: colors.ink, textAlign: 'center' },
+  emptyText: { fontFamily: font[400], fontSize: 15, lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },
 })

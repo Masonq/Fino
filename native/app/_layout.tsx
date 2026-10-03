@@ -1,4 +1,9 @@
+import { IBMPlexMono_700Bold } from '@expo-google-fonts/ibm-plex-mono'
+import {
+  PlusJakartaSans_400Regular, PlusJakartaSans_500Medium, PlusJakartaSans_600SemiBold, PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold, useFonts,
+} from '@expo-google-fonts/plus-jakarta-sans'
 import { Stack } from 'expo-router'
+import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
 import * as Updates from 'expo-updates'
 import { useEffect } from 'react'
@@ -39,8 +44,18 @@ function useUpdatesOnResume() {
   }, [])
 }
 
+// Заставка держится, пока не загрузятся шрифты сайта — без «прыжка» текста с системного шрифта на фирменный
+SplashScreen.preventAutoHideAsync().catch(() => {})
+
 export default function RootLayout() {
   useUpdatesOnResume()
+  const [fontsReady, fontsError] = useFonts({
+    PlusJakartaSans_400Regular, PlusJakartaSans_500Medium, PlusJakartaSans_600SemiBold, PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold,
+    IBMPlexMono_700Bold,
+  })
+  useEffect(() => { if (fontsReady || fontsError) SplashScreen.hideAsync().catch(() => {}) }, [fontsReady, fontsError])
+  // Шрифты не загрузились — показываем системными, а не висим на заставке
+  if (!fontsReady && !fontsError) return null
   return (
     <CrashGuard>
     <SafeAreaProvider>

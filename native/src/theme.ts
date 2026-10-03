@@ -20,3 +20,14 @@ export const colors = {
 
 export const radius = { card: 14, chip: 999, sheet: 22, field: 14 } as const
 export const space = { page: 12, gap: 10 } as const
+
+/**
+ * Шрифты — как у сайта: Plus Jakarta Sans для текста (начертание по жирности), IBM Plex Mono — для цены
+ * в объявлении. Кириллицы в Plus Jakarta Sans нет — телефон сам подставит системный, как Safari на сайте.
+ */
+export const font = {
+  400: 'PlusJakartaSans_400Regular', 500: 'PlusJakartaSans_500Medium', 600: 'PlusJakartaSans_600SemiBold',
+  700: 'PlusJakartaSans_700Bold', 800: 'PlusJakartaSans_800ExtraBold',
+} as const
+export const mono = 'IBMPlexMono_700Bold'
+

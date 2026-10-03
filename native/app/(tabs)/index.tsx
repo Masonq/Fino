@@ -19,7 +19,7 @@ import Skeleton from '../../src/components/Skeleton'
 import StoriesRow from '../../src/components/StoriesRow'
 import { cityName } from '../../src/format'
 import { prefs } from '../../src/prefs'
-import { colors, radius, space } from '../../src/theme'
+import { colors, radius, space, font } from '../../src/theme'
 
 const TABS: { key: FeedTab; label: string }[] = [
   { key: 'all', label: 'Все' }, { key: 'new', label: 'Новое' }, { key: 'free', label: 'Даром' },
@@ -231,28 +231,28 @@ const styles = StyleSheet.create({
   headRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   bell: { width: 44, height: 46, alignItems: 'center', justifyContent: 'center' },
   bellDot: { position: 'absolute', top: 6, right: 4, minWidth: 17, height: 17, borderRadius: 9, paddingHorizontal: 4, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: colors.bg },
-  bellDotText: { color: '#fff', fontSize: 10, fontWeight: '800' },
+  bellDotText: { color: '#fff', fontSize: 10, fontFamily: font[800] },
   tabsRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, paddingHorizontal: space.page },
   saveBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, height: 36, paddingHorizontal: 12, borderRadius: 18, backgroundColor: colors.primarySoft },
   saveBtnOn: { backgroundColor: colors.primary },
-  saveText: { fontSize: 13.5, fontWeight: '800', color: colors.primaryDeep },
+  saveText: { fontSize: 13.5, fontFamily: font[800], color: colors.primaryDeep },
   filterBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
   filterDot: { position: 'absolute', top: 2, right: 0, minWidth: 16, height: 16, borderRadius: 8, paddingHorizontal: 4, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
-  filterDotText: { color: '#fff', fontSize: 10, fontWeight: '800' },
+  filterDotText: { color: '#fff', fontSize: 10, fontFamily: font[800] },
   city: { flexDirection: 'row', alignItems: 'center', gap: 4, height: 36, paddingHorizontal: 10, borderRadius: 11, backgroundColor: colors.surface, maxWidth: 150, flexShrink: 0 },
-  cityText: { fontSize: 13.5, fontWeight: '800', color: colors.ink, flexShrink: 1 },
+  cityText: { fontSize: 13.5, fontFamily: font[800], color: colors.ink, flexShrink: 1 },
   search: {
     flexDirection: 'row', alignItems: 'center', gap: 8, height: 46, paddingHorizontal: 14,
     borderRadius: radius.field, backgroundColor: colors.sunken, paddingLeft: 5,
   },
   // flexBasis 0 и minWidth 0 — поле сжимается, и кнопка фильтров остаётся внутри строки поиска
-  searchInput: { flex: 1, flexBasis: 0, minWidth: 0, fontSize: 15.5, color: colors.ink, paddingVertical: 0 },
+  searchInput: { flex: 1, flexBasis: 0, minWidth: 0, fontFamily: font[400], fontSize: 15.5, color: colors.ink, paddingVertical: 0 },
   list: { paddingHorizontal: 0, paddingBottom: 24, gap: space.gap },
   row: { gap: space.gap, paddingHorizontal: space.page },
   skelGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.gap, paddingHorizontal: space.page },
   center: { alignItems: 'center', paddingTop: 80, paddingHorizontal: 32, gap: 8 },
-  emptyTitle: { fontSize: 18, fontWeight: '800', color: colors.ink, textAlign: 'center' },
-  emptyText: { fontSize: 14.5, color: colors.inkSoft, textAlign: 'center', lineHeight: 20 },
+  emptyTitle: { fontSize: 18, fontFamily: font[800], color: colors.ink, textAlign: 'center' },
+  emptyText: { fontFamily: font[400], fontSize: 14.5, color: colors.inkSoft, textAlign: 'center', lineHeight: 20 },
   retry: { marginTop: 8, height: 44, paddingHorizontal: 20, borderRadius: 12, backgroundColor: colors.primary, justifyContent: 'center' },
-  retryText: { color: '#fff', fontWeight: '800', fontSize: 15 },
+  retryText: { color: '#fff', fontFamily: font[800], fontSize: 15 },
 })
