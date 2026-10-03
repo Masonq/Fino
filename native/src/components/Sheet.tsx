@@ -1,6 +1,6 @@
 import { tr } from '../i18n'
 import type { ReactNode } from 'react'
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
+import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { colors, font } from '../theme'
@@ -10,12 +10,15 @@ export default function Sheet({ visible, title, onClose, children }: { visible: 
   const insets = useSafeAreaInsets()
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      {/* Шторка поднимается над клавиатурой целиком — поле ввода остаётся видно */}
+      <KeyboardAvoidingView style={{ flex: 1, justifyContent: 'flex-end' }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={tr('Закрыть')} />
       <View style={[styles.sheet, { paddingBottom: insets.bottom + 10 }]}>
         <View style={styles.handle} />
         {!!title && <Text style={styles.title}>{title}</Text>}
         {children}
       </View>
+      </KeyboardAvoidingView>
     </Modal>
   )
 }

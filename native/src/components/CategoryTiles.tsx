@@ -3,6 +3,7 @@ import Icon, { Star } from './Icon'
 import { getLang, tr } from '../i18n'
 import { Image } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
+import { router } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 
@@ -53,7 +54,7 @@ export default function CategoryTiles({ value, onPick }: { value: string | null;
     }
     const on = value === c.slug
     return (
-      <Pressable key={c.slug} style={[styles.tile, on && styles.tileOn, c.ready === false && styles.soon]} onPress={() => { select(); onPick(on ? null : c.slug) }}
+      <Pressable key={c.slug} style={[styles.tile, on && styles.tileOn, c.ready === false && styles.soon]} onPress={() => { select(); router.push(`/c/${c.slug}`) }}
         accessibilityRole="button" accessibilityState={{ selected: on }}>
         {/* Одно длинное слово («Недвижимость») не переносим посреди слова — слегка ужимаем */}
         <Text style={[styles.label, on && styles.labelOn]} numberOfLines={nameOf(c).includes(' ') ? 2 : 1} adjustsFontSizeToFit={!nameOf(c).includes(' ')} minimumFontScale={0.8}>{nameOf(c)}</Text>

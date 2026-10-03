@@ -1,6 +1,6 @@
 import { tr } from '../i18n'
 import { useEffect, useState } from 'react'
-import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native'
+import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import type { Filters } from '../api'
@@ -26,6 +26,8 @@ export default function FiltersSheet({ visible, value, onApply, onClose }: {
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      {/* Шторка поднимается над клавиатурой целиком — поле ввода остаётся видно */}
+      <KeyboardAvoidingView style={{ flex: 1, justifyContent: 'flex-end' }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={tr('Закрыть')} />
       <View style={[styles.sheet, { paddingBottom: insets.bottom + 12 }]}>
         <View style={styles.handle} />
@@ -70,6 +72,7 @@ export default function FiltersSheet({ visible, value, onApply, onClose }: {
           <Text style={styles.applyText}>{tr('Показать')}</Text>
         </Pressable>
       </View>
+      </KeyboardAvoidingView>
     </Modal>
   )
 }

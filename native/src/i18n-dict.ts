@@ -352,4 +352,8 @@ export const DICT: Record<string, { en?: string; sr?: string }> = {
   "Проверка личности временно недоступна. Попробуйте позже.": { en: "Identity check is temporarily unavailable. Try again later.", sr: "Provera identiteta trenutno nije dostupna. Pokušajte kasnije." },
   "Пройти ещё раз": { en: "Try again", sr: "Pokušaj ponovo" },
   "Нет интернета — показываем сохранённое": { en: "No internet \u2014 showing saved data", sr: "Nema interneta — prikazujemo sačuvano" },
+  "Поиск в разделе": { en: "Search in category", sr: "Pretraga u kategoriji" },
+  "Цена от, €": { en: "Price from, \u20ac", sr: "Cena od, €" },
+  "до, €": { en: "to, \u20ac", sr: "do, €" },
+  "В этом разделе пока ничего нет. Попробуйте изменить условия.": { en: "Nothing in this category yet. Try changing the filters.", sr: "U ovoj kategoriji još nema ničega. Probajte da promenite uslove." },
 }

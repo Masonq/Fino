@@ -78,14 +78,11 @@ export default function MyListings() {
           <Icon name="back" size={22} color={colors.ink} />
         </Pressable>
         <Text style={styles.topTitle}>{tr('Мои объявления')}</Text>
+        <Pressable onPress={() => router.navigate('/post')} hitSlop={8} style={{ marginLeft: 'auto', paddingRight: 8 }}><Text style={styles.link}>{tr('+ Разместить')}</Text></Pressable>
       </View>
       <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false) }} tintColor={colors.primary} colors={[colors.primary]} />}
         contentContainerStyle={{ paddingBottom: 32 }}>
-        <View style={styles.sectionHead}>
-          <View />
-          <Pressable onPress={() => router.navigate('/post')} hitSlop={8}><Text style={styles.link}>{tr('+ Разместить')}</Text></Pressable>
-        </View>
-        <View style={{ paddingHorizontal: 16 }}><Segmented options={tabs} value={tab} onChange={setTab} /></View>
+        <View style={{ paddingHorizontal: 16, paddingTop: 4 }}><Segmented options={tabs} value={tab} onChange={setTab} /></View>
 
         {items === null ? <ActivityIndicator style={{ marginTop: 24 }} color={colors.primary} /> : shown.length === 0 ? (
           <Text style={styles.empty}>{tab === 'active' ? tr('Активных объявлений пока нет.') : tab === 'pending' ? tr('На проверке ничего нет.') : tr('Здесь будут проданные, архивные и отклонённые.')}</Text>
