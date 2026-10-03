@@ -1,10 +1,10 @@
 import * as Linking from 'expo-linking'
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useEffect, useState } from 'react'
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { balance as fetchBalance, type MyListing, myListings, type Seller, sellerProfile, waitingReviews } from '../../src/api'
+import { balance as fetchBalance, deleteMe, type MyListing, myListings, type Seller, sellerProfile, waitingReviews } from '../../src/api'
 import { useAuth } from '../../src/auth'
 import { useChats } from '../../src/chats'
 import Icon from '../../src/components/Icon'
@@ -189,10 +189,13 @@ export default function Profile() {
           {row('searchrow', 'Сохранённые поиски', () => router.push('/saved'))}
           {row('history', 'Вы смотрели', () => router.push('/history'))}
           {row('help', 'Написать в поддержку', () => router.push('/support'))}
-          {row('volunteer', 'Волонтёрство', () => Linking.openURL(`${SITE}/volunteer`), undefined, true)}
+          {row('volunteer', 'Волонтёрство', () => router.push('/volunteer'), undefined, true)}
         </View>
 
-        <View style={styles.menu}>{langRow}</View>
+        <View style={styles.menu}>
+          {row('lock', 'Заблокированные', () => router.push('/blocked'))}
+          {langRow}
+        </View>
 
         <View style={styles.menu}>
           <Pressable style={[styles.row, styles.rowLast]} onPress={signOut} accessibilityRole="button">
@@ -200,6 +203,23 @@ export default function Profile() {
             <Text style={[styles.rowText, { color: '#B42318' }]}>{tr('Выйти')}</Text>
           </Pressable>
         </View>
+
+        {/* Удаление аккаунта — требование App Store; два подтверждения, объясняем, что именно удалится */}
+        <Pressable style={styles.delete} hitSlop={6} onPress={() => Alert.alert(
+          tr('Удалить аккаунт?'),
+          tr('Объявления снимутся с публикации, избранное, сохранённые поиски и личные данные удалятся. Вернуть будет нельзя.'),
+          [
+            { text: tr('Отмена'), style: 'cancel' },
+            { text: tr('Удалить'), style: 'destructive', onPress: () => Alert.alert(tr('Точно удалить?'), tr('Это последнее подтверждение.'), [
+              { text: tr('Отмена'), style: 'cancel' },
+              { text: tr('Удалить навсегда'), style: 'destructive', onPress: async () => {
+                try { await deleteMe(token as string); await signOut(); router.replace('/') } catch { Alert.alert(tr('Не получилось'), tr('Проверьте интернет и попробуйте ещё раз.')) }
+              } },
+            ]) },
+          ],
+        )}>
+          <Text style={styles.deleteText}>{tr('Удалить аккаунт')}</Text>
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   )
@@ -262,6 +282,8 @@ const styles = StyleSheet.create({
   rowLast: { borderBottomWidth: 0 },
   rowIcon: { width: 32, height: 32, borderRadius: 10, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
   rowText: { flex: 1, fontSize: 15.5, fontFamily: font[700], color: colors.ink },
+  delete: { alignSelf: 'center', marginTop: 6, paddingVertical: 10, paddingHorizontal: 14 },
+  deleteText: { fontSize: 13.5, fontFamily: font[700], color: colors.muted },
   badge: { minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: 6, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
   badgeText: { color: '#fff', fontSize: 11, fontFamily: font[800] },
 })

@@ -83,6 +83,8 @@ export default function RootLayout() {
         <Stack.Screen name="history" />
         <Stack.Screen name="profile-edit" />
         <Stack.Screen name="invite" />
+        <Stack.Screen name="blocked" />
+        <Stack.Screen name="volunteer" />
         <Stack.Screen name="reviews" />
         <Stack.Screen name="support/index" />
         <Stack.Screen name="support/[id]" />

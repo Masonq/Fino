@@ -496,3 +496,43 @@ def logout(user: User = Depends(get_current_user), db: Session = Depends(get_db)
     user.token_version += 1
     db.commit()
     return {"ok": True}
+
+
+@router.delete("/me")
+def delete_me(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """
+    Удаление аккаунта по просьбе самого человека (требование App Store к приложениям с регистрацией и обычная
+    обязанность сервиса с личными данными).
+
+    Что делаем: снимаем все его объявления с публикации; удаляем его избранное, сохранённые поиски,
+    уведомления, подписки на пуши и на продавцов (и подписки других на него); стираем личные данные —
+    почту, телефон, пароль, привязки Telegram / Viber / Google / Apple, аватар, данные компании; имя —
+    «Удалённый пользователь». Переписки у собеседников остаются (это и их история), но без его данных.
+    Все входы отзываются (token_version), аккаунт закрыт (is_blocked). Почта и телефон освобождаются —
+    при желании можно зарегистрироваться заново.
+    """
+    from app.models import Listing, ListingStatus
+    from app.models.favorites import Favorite, SavedSearch
+    from app.models.notification import Notification
+    from app.models.push_subscription import PushSubscription
+    from app.models.seller_subscription import SellerSubscription
+
+    db.query(Listing).filter(Listing.owner_id == user.id, Listing.status != ListingStatus.archived) \
+        .update({Listing.status: ListingStatus.archived}, synchronize_session=False)
+    for model in (Favorite, SavedSearch, Notification, PushSubscription):
+        db.query(model).filter(model.user_id == user.id).delete(synchronize_session=False)
+    db.query(SellerSubscription).filter(
+        (SellerSubscription.subscriber_id == user.id) | (SellerSubscription.seller_id == user.id)
+    ).delete(synchronize_session=False)
+
+    for field in ("email", "phone", "hashed_password", "telegram_id", "viber_id", "google_id", "apple_id",
+                  "avatar_url", "company_name", "company_pib", "company_mb", "company_description"):
+        setattr(user, field, None)
+    user.display_name = "Удалённый пользователь"
+    user.email_verified = False
+    user.is_blocked = True
+    user.block_reason = "deleted_by_user"
+    user.token_version = (user.token_version or 0) + 1
+    db.commit()
+    return {"ok": True}
+

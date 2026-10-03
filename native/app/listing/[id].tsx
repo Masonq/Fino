@@ -16,6 +16,7 @@ import { rememberViewed } from '../../src/history'
 import CardsRow from '../../src/components/CardsRow'
 import HeartButton from '../../src/components/HeartButton'
 import ReportSheet from '../../src/components/ReportSheet'
+import Sheet from '../../src/components/Sheet'
 import Skeleton from '../../src/components/Skeleton'
 import { SITE, mediaUrl } from '../../src/config'
 import { cityName, formatPrice, isFresh, monthYear, parseTime, relTime } from '../../src/format'
@@ -39,6 +40,7 @@ export default function ListingScreen() {
   const [similar, setSimilar] = useState<FeedItem[] | null>(null)
   const [more, setMore] = useState<FeedItem[] | null>(null)
   const [reportOpen, setReportOpen] = useState(false)
+  const [gaugeOpen, setGaugeOpen] = useState(false)
 
   useEffect(() => {
     let alive = true
@@ -164,13 +166,14 @@ export default function ListingScreen() {
           )}
 
           {!!verdict && (
-            <View style={styles.priceCheck}>
+            <Pressable style={styles.priceCheck} onPress={() => setGaugeOpen(true)} accessibilityRole="button">
               <View style={[styles.pcIcon, { backgroundColor: verdict.bg }]}><Ionicons name={verdict.icon} size={22} color={verdict.color} /></View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.pcTitle}>{tr(verdict.title)}</Text>
                 <Text style={styles.pcSub}>{tr('Оценка PLONK')}</Text>
               </View>
-            </View>
+              <Icon name="forward" size={16} color={colors.muted} />
+            </Pressable>
           )}
 
           {owner && (
@@ -254,6 +257,31 @@ export default function ListingScreen() {
         <Icon name="share" size={19} color="#fff" />
       </Pressable>
       <HeartButton id={data.id} size={40} dark style={[styles.heartTop, { top: insets.top + 8 }]} />
+      <Sheet visible={gaugeOpen} title={tr('Оценка цены')} onClose={() => setGaugeOpen(false)}>
+        {(() => {
+          const pc = (data as unknown as { price_check?: { low_eur?: number; median_eur?: number; high_eur?: number; mine_eur?: number; based_on?: number } }).price_check
+          if (!pc?.low_eur || !pc.high_eur || pc.mine_eur == null) return null
+          const lo = pc.low_eur, hi = pc.high_eur, span = Math.max(hi - lo, 1)
+          const pos = Math.min(1, Math.max(0, (pc.mine_eur - lo) / span))
+          return (
+            <View style={{ paddingHorizontal: 20, paddingBottom: 10, gap: 12 }}>
+              <Text style={styles.gaugeLead}>{tr(verdict?.title ?? '')}</Text>
+              <View style={styles.gauge}>
+                <View style={[styles.gaugePart, { backgroundColor: '#BFE7D3' }]} />
+                <View style={[styles.gaugePart, { backgroundColor: '#ECECE6' }]} />
+                <View style={[styles.gaugePart, { backgroundColor: '#F6CDB8' }]} />
+                <View style={[styles.gaugeMark, { left: `${pos * 100}%` }]} />
+              </View>
+              <View style={styles.gaugeLabels}>
+                <Text style={styles.gaugeLabel}>{formatPrice(lo, 'EUR')}</Text>
+                {!!pc.median_eur && <Text style={styles.gaugeLabel}>{tr('рынок')} {formatPrice(pc.median_eur, 'EUR')}</Text>}
+                <Text style={styles.gaugeLabel}>{formatPrice(hi, 'EUR')}</Text>
+              </View>
+              {!!pc.based_on && <Text style={styles.gaugeNote}>{tr('На основе {n} похожих объявлений', { n: pc.based_on })}</Text>}
+            </View>
+          )
+        })()}
+      </Sheet>
       <ReportSheet visible={reportOpen} listingId={data.id} token={token} onClose={() => setReportOpen(false)} />
       <View style={[styles.bar, { paddingBottom: 10 + insets.bottom }]}>
         {mine ? (
@@ -372,6 +400,13 @@ const styles = StyleSheet.create({
   factText: { fontSize: 14, fontFamily: font[700], color: colors.ink },
   priceCheck: { marginTop: 16, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 13, borderRadius: 17, backgroundColor: colors.sunken },
   pcIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  gaugeLead: { fontSize: 15.5, fontFamily: font[800], color: colors.ink },
+  gauge: { flexDirection: 'row', height: 12, borderRadius: 6, overflow: 'visible', gap: 3 },
+  gaugePart: { flex: 1, borderRadius: 6 },
+  gaugeMark: { position: 'absolute', top: -5, width: 4, height: 22, marginLeft: -2, borderRadius: 2, backgroundColor: colors.ink },
+  gaugeLabels: { flexDirection: 'row', justifyContent: 'space-between' },
+  gaugeLabel: { fontSize: 12.5, fontFamily: font[700], color: colors.inkSoft },
+  gaugeNote: { fontSize: 12.5, fontFamily: font[500], color: colors.muted },
   pcTitle: { fontSize: 14.5, fontFamily: font[800], letterSpacing: -0.15, color: colors.ink },
   pcSub: { fontSize: 12.5, fontFamily: font[600], color: colors.muted, marginTop: 1 },
   chip: { overflow: 'hidden', borderRadius: radius.chip, paddingHorizontal: 10, paddingVertical: 5, fontSize: 12, fontFamily: font[800] },

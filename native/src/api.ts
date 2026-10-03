@@ -341,3 +341,14 @@ export const respondOffer = (token: string, chatId: string, messageId: string, s
 export const blockChat = (token: string, chatId: string, on: boolean) =>
   authed<unknown>(`/chats/${encodeURIComponent(chatId)}/${on ? 'block' : 'unblock'}`, token, 'POST')
 
+// ---------- аккаунт, заблокированные, волонтёрство ----------
+
+export const deleteMe = (token: string) => authed<{ ok: boolean }>('/auth/me', token, 'DELETE')
+export type BlockedUser = { id: string; display_name?: string | null; avatar_url?: string | null; blocked_at?: string | null }
+export const blockedUsers = (token: string) => authed<{ items: BlockedUser[] }>('/users/blocked', token)
+export const unblockUser = (token: string, userId: string) => authed<unknown>(`/users/blocked/${encodeURIComponent(userId)}/unblock`, token, 'POST')
+export type VolunteerApp = { id: string; role: string; status: 'new' | 'accepted' | 'rejected'; created_at: string; note?: string | null }
+export const volunteerMine = (token: string) => authed<{ application: VolunteerApp | null }>('/volunteer/mine', token)
+export const volunteerApply = (token: string, a: { role: string; languages: string[]; hours_per_week: string; about: string; accept_confidentiality: boolean }) =>
+  authed<{ application: VolunteerApp }>('/volunteer/apply', token, 'POST', a)
+
