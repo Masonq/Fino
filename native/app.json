@@ -32,12 +32,20 @@
           "backgroundColor": "#FAFAF9"
         }
       ],
-      "expo-image"
+      "expo-image",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "PLONK берёт фото из галереи только для вашего объявления.",
+          "cameraPermission": "PLONK открывает камеру, чтобы вы сфотографировали вещь для объявления.",
+          "microphonePermission": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": false
     },
-    "runtimeVersion": "2",
+    "runtimeVersion": "3",
     "updates": {
       "url": "https://plonk.rs/api/app-updates/manifest",
       "enabled": true,

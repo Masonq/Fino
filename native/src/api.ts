@@ -147,7 +147,7 @@ export const removeFavorite = (token: string, id: string) => authed<{ status: st
 
 // ---------- разделы ----------
 
-export type Category = { id: string; slug: string; name: Record<string, string> | string; count?: number; ready?: boolean }
+export type Category = { id: string; slug: string; name: Record<string, string> | string; count?: number; ready?: boolean; children?: Category[] }
 
 export async function fetchCategories(): Promise<Category[]> {
   return get<Category[]>('/categories?lang=ru')
@@ -173,4 +173,49 @@ export const sendMessage = (token: string, id: string, text: string) =>
   authed<Message>(`/chats/${encodeURIComponent(id)}/messages`, token, 'POST', { text, offer_price: null })
 export const markChatRead = (token: string, id: string) => authed<unknown>(`/chats/${encodeURIComponent(id)}/read`, token, 'POST')
 export const startChat = (token: string, listingId: string) => authed<Chat>('/chats/start?lang=ru', token, 'POST', { listing_id: listingId })
+
+// ---------- размещение, мои объявления, баланс ----------
+
+export type Uploaded = { url: string; thumbnail_url?: string | null }
+
+/** Загрузка одного фото (сервер сжимает до 1600 px и делает превью). */
+export async function uploadPhoto(token: string, uri: string, mime = 'image/jpeg'): Promise<Uploaded> {
+  const form = new FormData()
+  const name = `photo.${mime.includes('png') ? 'png' : mime.includes('heic') ? 'heic' : 'jpg'}`
+  if (typeof document !== 'undefined' && uri.startsWith('blob:')) {
+    form.append('file', await (await fetch(uri)).blob(), name) // веб-превью
+  } else {
+    form.append('file', { uri, name, type: mime } as unknown as Blob)
+  }
+  const res = await fetch(`${API}/media/upload`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: form })
+  if (!res.ok) throw new ApiError(res.status, '')
+  return res.json() as Promise<Uploaded>
+}
+
+export type NewListing = {
+  category_id: string; title: string; description: string; price: number | null; currency: 'EUR' | 'RSD'
+  price_negotiable: boolean; city: string | null; photos: Uploaded[]
+}
+
+export async function createListing(token: string, l: NewListing) {
+  const res = await fetch(`${API}/listings`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({
+      category_id: l.category_id, source_language: 'ru', price: l.price, currency: l.currency, price_negotiable: l.price_negotiable,
+      city: l.city, attributes: {}, translations: [{ language: 'ru', title: l.title, description: l.description }],
+      photos: l.photos.map((p) => ({ url: p.url, thumbnail_url: p.thumbnail_url ?? null, is_video: false })),
+    }),
+  })
+  if (!res.ok) {
+    let detail = ''
+    try { const j = await res.json(); detail = typeof j.detail === 'string' ? j.detail : '' } catch { /* не JSON */ }
+    throw new ApiError(res.status, detail)
+  }
+  return res.json() as Promise<{ id: string; status: string }>
+}
+
+export type MyListing = FeedItem & { status: string; views_count?: number; favorites_count?: number }
+export const myListings = (token: string) => authed<{ total: number; counts: Record<string, number>; items: MyListing[] }>('/listings/my/list?lang=ru', token)
+export const balance = (token: string) => authed<Record<string, unknown>>('/balance', token)
 
