@@ -1,3 +1,4 @@
+import Icon, { Star } from '../../src/components/Icon'
 import { tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { router, useLocalSearchParams } from 'expo-router'
@@ -155,9 +156,9 @@ export default function Feed() {
       <View style={[styles.head, styles.headRow]}>
         <View style={[styles.search, { flex: 1 }]}>
           <Pressable style={styles.city} onPress={() => setCityOpen(true)} accessibilityRole="button" accessibilityLabel={tr('Выбрать город')}>
-            <Ionicons name="location-outline" size={16} color={colors.ink} />
+            <Icon name="pin" size={15} color={colors.ink} />
             <Text style={styles.cityText} numberOfLines={1}>{city ? cityName(city) : tr('Все города')}</Text>
-            <Ionicons name="chevron-down" size={14} color={colors.inkSoft} />
+            <Icon name="down" size={13} color={colors.inkSoft} />
           </Pressable>
           <TextInput
             value={query}
@@ -171,16 +172,16 @@ export default function Feed() {
           />
           {!!query && (
             <Pressable onPress={() => setQuery('')} hitSlop={10} accessibilityLabel={tr('Очистить поиск')}>
-              <Ionicons name="close-circle" size={18} color={colors.muted} />
+              <Icon name="close" size={16} color={colors.muted} />
             </Pressable>
           )}
           <Pressable onPress={() => setFiltersOpen(true)} hitSlop={8} style={styles.filterBtn} accessibilityRole="button" accessibilityLabel={tr('Фильтры')}>
-            <Ionicons name="options-outline" size={21} color={colors.ink} />
+            <Icon name="filter" size={21} color={colors.ink} />
             {activeCount(filters) > 0 && <View style={styles.filterDot}><Text style={styles.filterDotText}>{activeCount(filters)}</Text></View>}
           </Pressable>
         </View>
         <Pressable style={styles.bell} onPress={() => (token ? router.push('/notifications') : router.push('/login'))} accessibilityRole="button" accessibilityLabel={tr('Уведомления')}>
-          <Ionicons name="notifications-outline" size={23} color={colors.ink} />
+          <Icon name="bell" size={23} color={colors.ink} />
           {notices > 0 && <View style={styles.bellDot}><Text style={styles.bellDotText}>{notices > 9 ? '9+' : notices}</Text></View>}
         </Pressable>
       </View>

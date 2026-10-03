@@ -1,5 +1,5 @@
+import Icon, { Star } from '../../src/components/Icon'
 import { tr } from '../../src/i18n'
-import { Ionicons } from '@expo/vector-icons'
 import { Tabs } from 'expo-router'
 import { type ColorValue, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -7,7 +7,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useChats } from '../../src/chats'
 import { colors, font } from '../../src/theme'
 
-type IconName = keyof typeof Ionicons.glyphMap
 
 // Размеры — как у нижнего меню сайта (.nav-item): иконки 27, подписи 11,5 полужирные (активная — жирная),
 // «Разместить» — оранжевый круг 34 с плюсом 20 и мягкой тенью.
@@ -17,8 +16,9 @@ const LABEL = 11.5
 // под крупными иконками обрезались.
 const BAR = 64
 
-const icon = (on: IconName, off: IconName) => function TabIcon({ color, focused }: { color: ColorValue; focused: boolean }) {
-  return <Ionicons name={focused ? on : off} size={ICON} color={color as string} />
+// Значки — как BottomNav сайта: контурные, у активного меняется только цвет линии
+const icon = (name: string) => function TabIcon({ color }: { color: ColorValue; focused: boolean }) {
+  return <Icon name={name} size={ICON} color={color as string} />
 }
 
 export default function TabsLayout() {
@@ -44,22 +44,22 @@ export default function TabsLayout() {
       ),
       sceneStyle: { backgroundColor: colors.bg },
     }}>
-      <Tabs.Screen name="index" options={{ title: tr('Главная'), tabBarIcon: icon('home', 'home-outline') }} />
-      <Tabs.Screen name="favorites" options={{ title: tr('Избранное'), tabBarIcon: icon('heart', 'heart-outline') }} />
+      <Tabs.Screen name="index" options={{ title: tr('Главная'), tabBarIcon: icon('home') }} />
+      <Tabs.Screen name="favorites" options={{ title: tr('Избранное'), tabBarIcon: icon('heart') }} />
       <Tabs.Screen name="post" options={{
         title: tr('Разместить'),
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.inkSoft,
         tabBarIcon: () => (
-          <View style={styles.post}><Ionicons name="add" size={20} color="#fff" /></View>
+          <View style={styles.post}><Icon name="plus" size={20} color="#fff" /></View>
         ),
       }} />
       <Tabs.Screen name="chats" options={{
-        title: tr('Сообщения'), tabBarIcon: icon('chatbubble', 'chatbubble-outline'),
+        title: tr('Сообщения'), tabBarIcon: icon('chat'),
         tabBarBadge: unread > 0 ? (unread > 99 ? '99+' : unread) : undefined,
         tabBarBadgeStyle: { backgroundColor: colors.accent, color: '#fff', fontSize: 11, fontFamily: font[800] },
       }} />
-      <Tabs.Screen name="profile" options={{ title: tr('Профиль'), tabBarIcon: icon('person', 'person-outline') }} />
+      <Tabs.Screen name="profile" options={{ title: tr('Профиль'), tabBarIcon: icon('user') }} />
     </Tabs>
   )
 }

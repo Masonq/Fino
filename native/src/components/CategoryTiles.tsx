@@ -1,3 +1,4 @@
+import Icon, { Star } from './Icon'
 import { getLang, tr } from '../i18n'
 import { Image } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
@@ -45,7 +46,7 @@ export default function CategoryTiles({ value, onPick }: { value: string | null;
       return (
         <Pressable key="all" style={[styles.tile, styles.allTile, on && styles.tileOn]} onPress={() => onPick(null)} accessibilityRole="button" accessibilityState={{ selected: on }}>
           <Text style={[styles.label, styles.labelOn]}>{tr('Все')}</Text>
-          <Ionicons name="grid-outline" size={34} color={colors.primary} style={styles.allIcon} />
+          <View style={styles.allIcon}><Icon name="grid" size={34} color={colors.primary} /></View>
         </Pressable>
       )
     }

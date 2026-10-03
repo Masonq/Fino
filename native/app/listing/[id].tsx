@@ -1,3 +1,4 @@
+import Icon, { Star } from '../../src/components/Icon'
 import { tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
@@ -59,7 +60,7 @@ export default function ListingScreen() {
   const back = (
     <Pressable style={[styles.back, { top: insets.top + 8 }]} onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
       accessibilityLabel={tr('Назад')} hitSlop={8}>
-      <Ionicons name="chevron-back" size={24} color="#fff" />
+      <Icon name="back" size={22} color="#fff" />
     </Pressable>
   )
 
@@ -142,7 +143,7 @@ export default function ListingScreen() {
             <View style={styles.facts}>
               {keyFacts.map((f) => (
                 <View key={f.key} style={styles.fact}>
-                  <Ionicons name={f.icon} size={16} color={colors.inkSoft} />
+                  <Icon name={`attr_${f.key}`} size={16} color={colors.inkSoft} />
                   <Text style={styles.factText}>{f.text}</Text>
                 </View>
               ))}
@@ -176,14 +177,14 @@ export default function ListingScreen() {
                   <Text style={styles.name} numberOfLines={1}>{owner.company_name || owner.display_name || tr('Продавец')}</Text>
                   {owner.document_verified && (
                     <View style={styles.verified}>
-                      <Ionicons name="checkmark-circle" size={16} color={colors.primary} />
+                      <View style={styles.seal}><Icon name="check" size={10} color="#fff" /></View>
                       <Text style={styles.verifiedText}>{tr('Личность подтверждена')}</Text>
                     </View>
                   )}
                 </View>
                 {(owner.rating_count ?? 0) > 0 ? (
                   <View style={styles.starsRow}>
-                    {[1, 2, 3, 4, 5].map((k) => <Ionicons key={k} name="star" size={13} color={k <= Math.round(owner.rating_avg ?? 0) ? '#E0A526' : '#D9DDD9'} />)}
+                    {[1, 2, 3, 4, 5].map((k) => <Star key={k} size={13} color={k <= Math.round(owner.rating_avg ?? 0) ? '#E0A526' : '#D9DDD9'} />)}
                     <Text style={[styles.sellerSub, { marginLeft: 4 }]}>{(owner.rating_avg ?? 0).toFixed(1).replace('.', ',')} · {tr('отзывов: {n}', { n: owner.rating_count ?? 0 })}</Text>
                   </View>
                 ) : <Text style={styles.sellerSub}>{tr('Пока нет отзывов')}</Text>}
@@ -191,7 +192,7 @@ export default function ListingScreen() {
                   {[since ? tr('Здесь с {date}', { date: monthYear(since) }) : '', (owner.listings_count ?? 0) > 1 ? tr('объявлений: {n}', { n: owner.listings_count ?? 0 }) : ''].filter(Boolean).join('  ·  ')}
                 </Text>
               </View>
-              <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+              <Icon name="forward" size={16} color={colors.muted} />
             </Pressable>
           )}
 
@@ -199,7 +200,7 @@ export default function ListingScreen() {
             <View style={styles.section}>
               <Text style={styles.h3}>{tr('Местоположение')}</Text>
               <View style={styles.locRow}>
-                <Ionicons name="location-outline" size={17} color={colors.inkSoft} />
+                <Icon name="pin" size={16} color={colors.inkSoft} />
                 <Text style={styles.loc}>{cityName(data.city)}</Text>
               </View>
             </View>
@@ -242,7 +243,7 @@ export default function ListingScreen() {
       {back}
       <Pressable style={[styles.shareTop, { top: insets.top + 8 }]} hitSlop={6} accessibilityLabel={tr('Поделиться')}
         onPress={() => Share.share({ message: `${title} — ${formatPrice(data.price, data.currency, data.is_free)}\n${SITE}${data.path ?? ''}` }).catch(() => {})}>
-        <Ionicons name="share-outline" size={21} color="#fff" />
+        <Icon name="share" size={19} color="#fff" />
       </Pressable>
       <HeartButton id={data.id} size={40} dark style={[styles.heartTop, { top: insets.top + 8 }]} />
       <ReportSheet visible={reportOpen} listingId={data.id} token={token} onClose={() => setReportOpen(false)} />
@@ -262,7 +263,6 @@ export default function ListingScreen() {
               setOpening(false)
             }
           }}>
-            <Ionicons name="chatbubble-ellipses" size={18} color="#fff" />
             <Text style={styles.ctaText}>{tr('Написать продавцу')}</Text>
           </Pressable>
         )}
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
   priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 10 },
   price: { fontFamily: mono, fontSize: 25, color: colors.primaryDeep },
   oldPrice: { fontFamily: mono, fontSize: 15, color: colors.muted, textDecorationLine: 'line-through' },
-  title: { fontFamily: font[800], fontSize: 19, lineHeight: 25, color: colors.ink, marginTop: 8 },
+  title: { fontFamily: font[700], fontSize: 18.5, lineHeight: 24, color: colors.ink, marginTop: 8 },
   fromTg: { alignSelf: 'flex-start', marginTop: 8, paddingHorizontal: 9, paddingVertical: 4, borderRadius: 8, overflow: 'hidden', backgroundColor: '#EAF3FF', color: '#2D7DD2', fontFamily: font[700], fontSize: 12.5 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 },
   facts: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12 },
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
   factText: { fontSize: 14, fontFamily: font[700], color: colors.ink },
   priceCheck: { marginTop: 16, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 13, borderRadius: 17, backgroundColor: colors.sunken },
   pcIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  pcTitle: { fontSize: 15.5, fontFamily: font[800], color: colors.ink },
+  pcTitle: { fontSize: 15, fontFamily: font[700], color: colors.ink },
   pcSub: { fontSize: 12.5, fontFamily: font[600], color: colors.muted, marginTop: 1 },
   chip: { overflow: 'hidden', borderRadius: radius.chip, paddingHorizontal: 10, paddingVertical: 5, fontSize: 12, fontFamily: font[800] },
   seller: { marginTop: 20, flexDirection: 'row', alignItems: 'center', gap: 11, paddingVertical: 12, paddingHorizontal: 13, borderRadius: 17, backgroundColor: colors.sunken },
@@ -364,9 +364,10 @@ const styles = StyleSheet.create({
   avatarImg: { width: 52, height: 52 },
   avatarLetter: { color: '#fff', fontSize: 20, fontFamily: font[800] },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
-  verified: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  verified: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  seal: { width: 16, height: 16, borderRadius: 8, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
   verifiedText: { fontSize: 12.5, fontFamily: font[700], color: colors.primaryDeep },
-  name: { fontSize: 16, fontFamily: font[800], color: colors.ink, flexShrink: 1 },
+  name: { fontSize: 16, fontFamily: font[700], color: colors.ink, flexShrink: 1 },
   starsRow: { flexDirection: 'row', alignItems: 'center', gap: 1 },
   sellerSub: { fontSize: 13, fontFamily: font[600], color: colors.muted },
   section: { marginTop: 26, gap: 8 },

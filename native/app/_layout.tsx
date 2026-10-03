@@ -7,7 +7,7 @@ import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
 import * as Updates from 'expo-updates'
 import { useEffect } from 'react'
-import { AppState } from 'react-native'
+import { AppState, Platform } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 import { AuthProvider } from '../src/auth'
@@ -46,6 +46,14 @@ function useUpdatesOnResume() {
 
 // Заставка держится, пока не загрузятся шрифты сайта — без «прыжка» текста с системного шрифта на фирменный
 SplashScreen.preventAutoHideAsync().catch(() => {})
+
+// Только веб-превью: в Plus Jakarta Sans нет кириллицы — браузер подставлял шрифт с засечками. Показываем её
+// системным без засечек, как iPhone и Safari на сайте, чтобы превью честно совпадало с телефоном.
+if (Platform.OS === 'web' && typeof document !== 'undefined') {
+  const fams = ['PlusJakartaSans_400Regular', 'PlusJakartaSans_500Medium', 'PlusJakartaSans_600SemiBold', 'PlusJakartaSans_700Bold', 'PlusJakartaSans_800ExtraBold']
+  const css = fams.map((f, i) => `@font-face { font-family: '${f}'; src: local('-apple-system'), local('Helvetica Neue'), url('/preview-fonts/${i >= 3 ? 'DejaVuSans-Bold' : 'DejaVuSans'}.ttf'); unicode-range: U+0400-04FF, U+2116; }`).join('\n')
+  const el = document.createElement('style'); el.textContent = css; document.head.appendChild(el)
+}
 
 export default function RootLayout() {
   useUpdatesOnResume()
