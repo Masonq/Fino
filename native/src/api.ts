@@ -75,13 +75,14 @@ export const PAGE = 20
 /** Лента — те же параметры, что у главной сайта: «Новое» — сортировка по дате, «Даром» — только бесплатное. */
 export type Filters = { priceMin?: string; priceMax?: string; currency?: 'EUR' | 'RSD'; withPhoto?: boolean; delivery?: boolean; sort?: '' | 'new' | 'cheap' | 'expensive' }
 
-export function fetchFeed(opts: { tab: FeedTab; offset: number; q?: string; city?: string | null; category?: string | null; filters?: Filters }) {
+export function fetchFeed(opts: { tab: FeedTab; offset: number; q?: string; city?: string | null; category?: string | null; filters?: Filters; extra?: Record<string, string> }) {
   const p = new URLSearchParams({ lang: getLang(), limit: String(PAGE), offset: String(opts.offset) })
   if (opts.tab === 'new') p.set('sort', 'new')
   if (opts.tab === 'free') p.set('only_free', 'true')
   if (opts.q) { p.set('q', opts.q); p.set('sort', 'relevance') }
   if (opts.city) p.set('city', opts.city)
   if (opts.category) p.set('category_slug', opts.category)
+  for (const [k, v] of Object.entries(opts.extra ?? {})) if (v) p.set(k, v)
   const f = opts.filters
   if (f) {
     if (f.priceMin) p.set('price_min', f.priceMin)

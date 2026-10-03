@@ -356,4 +356,6 @@ export const DICT: Record<string, { en?: string; sr?: string }> = {
   "Цена от, €": { en: "Price from, \u20ac", sr: "Cena od, €" },
   "до, €": { en: "to, \u20ac", sr: "do, €" },
   "В этом разделе пока ничего нет. Попробуйте изменить условия.": { en: "Nothing in this category yet. Try changing the filters.", sr: "U ovoj kategoriji još nema ničega. Probajte da promenite uslove." },
+  "Любая": { en: "Any", sr: "Bilo koja" },
+  "Найти": { en: "Search", sr: "Traži" },
 }
