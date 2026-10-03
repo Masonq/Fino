@@ -162,3 +162,38 @@ def test_manifest_carries_the_full_expo_config_when_the_update_has_it(store):
     m = app_updates.current_manifest("ios", runtime, "https://plonk.rs")
     assert m["extra"]["expoClient"]["sdkVersion"] == "57.0.0" and "router" in m["extra"]["expoClient"]["extra"]
 
+
+
+def _fake_build(build: str):
+    d = app_updates.ROOT / "ipa" / build
+    d.mkdir(parents=True, exist_ok=True)
+    (d / "plonk.ipa").write_bytes(b"ipa")
+    (d / "info.json").write_text(json.dumps({"version": f"1.0.{build}", "build": build, "size": 3, "date": "2026-10-03T22:00:00Z"}))
+
+
+def test_whats_new_is_shown_per_version_in_sidestore(store):
+    """
+    «Что нового» в SideStore — подробный текст к каждой сборке (native/whats-new), а не общая строка (раньше ещё и
+    неправда: «исправления приходят сами, без переустановки» — обновления по воздуху выключены).
+    """
+    for b in ("28", "29"):
+        _fake_build(b)
+    app_updates.save_notes("29", "Фото на весь экран\n• щипок для увеличения")
+    versions = TestClient(app).get("/api/app-updates/sidestore.json").json()["apps"][0]["versions"]
+    by = {v["buildVersion"]: v["localizedDescription"] for v in versions}
+    assert by["29"].startswith("Фото на весь экран") and "щипок" in by["29"]
+    assert by["28"] == "Сборка 28.", "без текста — нейтрально, без обещаний про обновления по воздуху"
+
+
+def test_sync_fetches_whats_new_by_build_number(store, monkeypatch):
+    app_updates.ROOT.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(app_updates, "TOKEN_FILE", app_updates.ROOT / "token")
+    (app_updates.ROOT / "token").write_text("t")
+    _fake_build("30")
+    assets = {"whats-new-30.txt": {"id": 7, "updated_at": "x"}}
+    monkeypatch.setattr(app_updates, "_release_asset", lambda tag, name, token: (assets.get(name), None))
+    monkeypatch.setattr(app_updates, "_gh", lambda path, token, accept=None: "Сербский по умолчанию".encode())
+    out = app_updates.sync()
+    assert out.get("notes_30")
+    v = TestClient(app).get("/api/app-updates/sidestore.json").json()["apps"][0]["versions"][0]
+    assert v["localizedDescription"] == "Сербский по умолчанию"

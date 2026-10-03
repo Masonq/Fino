@@ -120,6 +120,8 @@ def ipa_builds() -> list[dict]:
     for d in base.iterdir():
         info = _read_json(d / "info.json") if d.is_dir() else None
         if info and (d / "plonk.ipa").exists():
+            notes = d / "whats-new.txt"
+            info = {**info, "notes": notes.read_text(encoding="utf-8").strip() if notes.exists() else ""}
             out.append(info)
     return sorted(out, key=lambda i: int(i["build"]) if str(i["build"]).isdigit() else 0, reverse=True)
 
@@ -141,6 +143,13 @@ def install_ipa(data: bytes, updated_at: str | None = None) -> dict:
     for old in ipa_builds()[KEEP_IPA:]:
         shutil.rmtree(ROOT / "ipa" / old["build"], ignore_errors=True)
     return info
+
+
+def save_notes(build: str, text: str) -> None:
+    """Текст «Что нового» к сборке — показывается в SideStore у этой версии."""
+    target = ROOT / "ipa" / str(build)
+    if target.is_dir() and text.strip():
+        (target / "whats-new.txt").write_text(text.strip() + "\n", encoding="utf-8")
 
 
 def ipa_path(build: str) -> Path | None:
@@ -216,7 +225,8 @@ def sidestore_source(base: str) -> dict:
         versions = [{
             "version": b["version"], "buildVersion": b["build"], "date": b["date"],
             "downloadURL": f"{base}/api/app-updates/ipa/{b['build']}/plonk.ipa", "size": b["size"], "minOSVersion": b.get("min_os", "16.4"),
-            "localizedDescription": f"Сборка {b['build']}. Экраны и исправления дальше приходят в приложение сами, без переустановки.",
+            # «Что нового» — подробный текст к этой сборке (native/whats-new в репозитории, выкладывается сборкой)
+            "localizedDescription": b.get("notes") or f"Сборка {b['build']}.",
         } for b in builds]
         latest = versions[0]
         apps.append({
@@ -277,6 +287,16 @@ def sync() -> dict:
             done[key] = f"новый .ipa {info['version']} ({info['build']})"
         state[key] = stamp
     _write_json(ROOT / "state.json", state)
+    # «Что нового» к каждой хранимой сборке, у которой текста ещё нет: whats-new-<номер>.txt в выпуске
+    # native-latest (его кладёт сборка из native/whats-new). Отдельно от .ipa — текст подтянется и к уже
+    # лежащим сборкам, и если .ipa пришла раньше текста.
+    for b in ipa_builds():
+        if b.get("notes"):
+            continue
+        asset, _ = _release_asset("native-latest", f"whats-new-{b['build']}.txt", token)
+        if asset:
+            save_notes(b["build"], _gh(f"releases/assets/{asset['id']}", token, accept="application/octet-stream").decode("utf-8", "replace"))
+            done[f"notes_{b['build']}"] = "«Что нового» добавлено"
     return done
 
 
