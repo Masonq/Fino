@@ -45,11 +45,11 @@
     "experiments": {
       "typedRoutes": false
     },
-    "runtimeVersion": "3",
+    "runtimeVersion": "4",
     "updates": {
       "url": "https://plonk.rs/api/app-updates/manifest",
-      "enabled": true,
-      "checkAutomatically": "ON_LOAD",
+      "enabled": false,
+      "checkAutomatically": "NEVER",
       "fallbackToCacheTimeout": 0
     }
   }

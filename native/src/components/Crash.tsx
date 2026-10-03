@@ -1,6 +1,6 @@
 import * as Updates from 'expo-updates'
 import { Component, type ReactNode, useEffect, useState } from 'react'
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { DevSettings, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 
 /**
  * Вместо молчаливого закрытия приложения — экран с текстом ошибки и «Перезапустить»: по скриншоту видно
@@ -30,7 +30,7 @@ function CrashScreen({ error }: { error: Err }) {
       <ScrollView style={styles.box}>
         <Text selectable style={styles.mono}>{error.message}{'\n\n'}{(error.stack ?? '').split('\n').slice(0, 12).join('\n')}</Text>
       </ScrollView>
-      <Pressable style={styles.btn} onPress={() => Updates.reloadAsync().catch(() => {})}>
+      <Pressable style={styles.btn} onPress={() => (Updates.isEnabled ? Updates.reloadAsync().catch(() => {}) : DevSettings.reload())}>
         <Text style={styles.btnText}>Перезапустить</Text>
       </Pressable>
     </View>

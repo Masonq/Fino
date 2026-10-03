@@ -3,13 +3,11 @@
 # Сервер plonk.rs забирает его раз в 5 минут (plonk-app-sync) и раздаёт приложению.
 name: Обновление нативного приложения
 
+# Сейчас — только вручную: на iPhone приложение падало на любом обновлении «по воздуху» (даже на побайтно
+# том же коде), причина ещё не найдена; в приложении обновления «по воздуху» выключены (app.json: updates.enabled
+# false), новые версии идут через SideStore. Автозапуск по правкам в native/ вернуть, когда причина найдена.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'native/**'
-      - '.github/workflows/native-update.yml'
 
 permissions:
   contents: write
