@@ -178,7 +178,11 @@ def current_manifest(platform: str, runtime_version: str, base: str) -> dict | N
     files = (meta or {}).get("fileMetadata", {}).get(platform)
     if not files:
         return None
-    app = (_read_json(update_dir / "app.json", {}) or {}).get("expo", {})
+    # Настройки приложения для обновления — полная разобранная конфигурация Expo (`expo config --type public`),
+    # как в эталонном сервере обновлений Expo. В сыром app.json нет sdkVersion, platforms и extra — с таким
+    # описанием приложение падало мгновенно, ещё до своего кода (проверено: код обновления совпадал с вшитым
+    # побайтно, а вылет был). Старые обновления без этого файла — по app.json.
+    app = _read_json(update_dir / "expoConfig.json") or (_read_json(update_dir / "app.json", {}) or {}).get("expo", {})
     return {
         "id": uid,
         "createdAt": cur.get("created_at"),

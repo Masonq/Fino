@@ -147,3 +147,18 @@ def test_sync_downloads_only_what_changed_and_never_sends_the_token_elsewhere():
     assert "if state.get(key) == stamp" in source
     deploy = Path(__file__).resolve().parents[2] / "deploy"
     assert "--sync" in (deploy / "plonk-app-sync.service").read_text() and "OnUnitActiveSec=5min" in (deploy / "plonk-app-sync.timer").read_text()
+
+
+@needs_export
+def test_manifest_carries_the_full_expo_config_when_the_update_has_it(store):
+    """
+    Приложение падало мгновенно на обновлении, код которого совпадал с вшитым побайтно: в описании было сырое
+    app.json без sdkVersion / platforms / extra. Теперь сборка кладёт полную конфигурацию — её и отдаём.
+    """
+    exp = _export_copy(store)
+    (exp / "expoConfig.json").write_text(json.dumps({"name": "PLONK", "sdkVersion": "57.0.0", "platforms": ["ios", "android"], "extra": {"router": {}}}))
+    app_updates.install_update(exp)
+    runtime = str(json.loads(APP_JSON.read_text())["expo"]["runtimeVersion"])
+    m = app_updates.current_manifest("ios", runtime, "https://plonk.rs")
+    assert m["extra"]["expoClient"]["sdkVersion"] == "57.0.0" and "router" in m["extra"]["expoClient"]["extra"]
+
