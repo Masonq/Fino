@@ -1,3 +1,4 @@
+import { tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import { router, useLocalSearchParams } from 'expo-router'
@@ -8,10 +9,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { type FeedItem, type Seller, sellerListings, sellerProfile } from '../../src/api'
 import ListingCard from '../../src/components/ListingCard'
 import { mediaUrl } from '../../src/config'
-import { parseTime } from '../../src/format'
+import { monthYear, parseTime } from '../../src/format'
 import { colors, space } from '../../src/theme'
-
-const MONTHS_GEN = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
 
 /** Страница продавца: аватар, имя (компания), проверка, рейтинг, «на PLONK с …», все его объявления сеткой. */
 export default function SellerScreen() {
@@ -29,15 +28,15 @@ export default function SellerScreen() {
   }, [id])
 
   const back = (
-    <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} style={[styles.back, { top: insets.top + 8 }]} hitSlop={8} accessibilityLabel="Назад">
+    <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} style={[styles.back, { top: insets.top + 8 }]} hitSlop={8} accessibilityLabel={tr('Назад')}>
       <Ionicons name="chevron-back" size={24} color={colors.ink} />
     </Pressable>
   )
 
-  if (failed) return <View style={[styles.page, styles.center]}>{back}<Text style={styles.name}>Профиль недоступен</Text></View>
+  if (failed) return <View style={[styles.page, styles.center]}>{back}<Text style={styles.name}>{tr('Профиль недоступен')}</Text></View>
   if (!seller) return <View style={[styles.page, styles.center]}>{back}<ActivityIndicator color={colors.primary} /></View>
 
-  const name = seller.company_name || seller.display_name || 'Продавец'
+  const name = seller.company_name || seller.display_name || tr('Продавец')
   const since = parseTime(seller.created_at)
   const avatar = mediaUrl(seller.avatar_url)
 
@@ -48,20 +47,20 @@ export default function SellerScreen() {
       </View>
       <View style={styles.nameRow}>
         <Text style={styles.name} numberOfLines={2}>{name}</Text>
-        {seller.document_verified && <Ionicons name="checkmark-circle" size={20} color={colors.primary} accessibilityLabel="Личность подтверждена" />}
+        {seller.document_verified && <Ionicons name="checkmark-circle" size={20} color={colors.primary} accessibilityLabel={tr('Личность подтверждена')} />}
       </View>
-      {seller.is_company && <Text style={styles.company}>Компания</Text>}
+      {seller.is_company && <Text style={styles.company}>{tr('Компания')}</Text>}
       <View style={styles.facts}>
         {(seller.rating_count ?? 0) > 0 ? (
           <View style={styles.fact}>
             <Ionicons name="star" size={15} color="#E0A526" />
-            <Text style={styles.factText}>{(seller.rating_avg ?? 0).toFixed(1).replace('.', ',')} · отзывов: {seller.rating_count}</Text>
+            <Text style={styles.factText}>{(seller.rating_avg ?? 0).toFixed(1).replace('.', ',')} · {tr('отзывов: {n}', { n: seller.rating_count ?? 0 })}</Text>
           </View>
-        ) : <Text style={styles.factText}>Пока нет отзывов</Text>}
-        {since && <Text style={styles.factText}>На PLONK с {MONTHS_GEN[since.getMonth()]} {since.getFullYear()}</Text>}
+        ) : <Text style={styles.factText}>{tr('Пока нет отзывов')}</Text>}
+        {since && <Text style={styles.factText}>{tr('На PLONK с {date}', { date: monthYear(since) })}</Text>}
       </View>
       {!!seller.company_description && <Text style={styles.about}>{seller.company_description}</Text>}
-      <Text style={styles.h2}>Объявления{items ? ` · ${items.length}` : ''}</Text>
+      <Text style={styles.h2}>{tr('Объявления')}{items ? ` · ${items.length}` : ''}</Text>
     </View>
   )
 
@@ -75,7 +74,7 @@ export default function SellerScreen() {
         columnWrapperStyle={styles.row}
         contentContainerStyle={{ gap: space.gap, paddingBottom: 32 }}
         ListHeaderComponent={header}
-        ListEmptyComponent={items === null ? <ActivityIndicator color={colors.primary} /> : <Text style={styles.empty}>Сейчас активных объявлений нет.</Text>}
+        ListEmptyComponent={items === null ? <ActivityIndicator color={colors.primary} /> : <Text style={styles.empty}>{tr('Сейчас активных объявлений нет.')}</Text>}
       />
       {back}
     </View>

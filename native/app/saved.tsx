@@ -1,3 +1,4 @@
+import { tr } from '../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
@@ -12,8 +13,8 @@ import { colors } from '../src/theme'
 /** Подпись поиска по фильтрам: «велосипед · Белград · до 300». */
 export function describeSearch(f: SearchFilters, name?: string | null): string {
   if (name) return name
-  const parts = [f.q, f.city ? cityName(f.city) : '', f.price_min ? `от ${f.price_min}` : '', f.price_max ? `до ${f.price_max}` : '', f.with_photo ? 'с фото' : '']
-  return parts.filter(Boolean).join(' · ') || 'Все объявления'
+  const parts = [f.q, f.city ? cityName(f.city) : '', f.price_min ? tr('от {n}', { n: f.price_min }) : '', f.price_max ? tr('до {n}', { n: f.price_max }) : '', f.with_photo ? tr('с фото') : '']
+  return parts.filter(Boolean).join(' · ') || tr('Все объявления')
 }
 
 /** Сохранённые поиски: открыть (поиск применяется к ленте), оповещения о новых — вкл/выкл, удалить. */
@@ -38,18 +39,18 @@ export default function Saved() {
     setItems((all) => (all ?? []).map((x) => (x.id === s.id ? { ...x, notify_enabled: on } : x)))
     try { await toggleSavedSearch(token as string, s.id, on) } catch { load() }
   }
-  const remove = (s: SavedSearch) => Alert.alert('Удалить поиск?', describeSearch(s.filters, s.name), [
-    { text: 'Отмена', style: 'cancel' },
-    { text: 'Удалить', style: 'destructive', onPress: async () => { await deleteSavedSearch(token as string, s.id).catch(() => {}); load() } },
+  const remove = (s: SavedSearch) => Alert.alert(tr('Удалить поиск?'), describeSearch(s.filters, s.name), [
+    { text: tr('Отмена'), style: 'cancel' },
+    { text: tr('Удалить'), style: 'destructive', onPress: async () => { await deleteSavedSearch(token as string, s.id).catch(() => {}); load() } },
   ])
 
   return (
     <View style={[styles.page, { paddingTop: insets.top }]}>
       <View style={styles.head}>
-        <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/profile'))} hitSlop={10} style={styles.back} accessibilityLabel="Назад">
+        <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/profile'))} hitSlop={10} style={styles.back} accessibilityLabel={tr('Назад')}>
           <Ionicons name="chevron-back" size={26} color={colors.ink} />
         </Pressable>
-        <Text style={styles.h1}>Сохранённые поиски</Text>
+        <Text style={styles.h1}>{tr('Сохранённые поиски')}</Text>
       </View>
       {items === null ? <ActivityIndicator style={{ marginTop: 30 }} color={colors.primary} /> : (
         <FlatList
@@ -60,10 +61,10 @@ export default function Saved() {
             <View style={styles.card}>
               <Pressable style={{ flex: 1, gap: 3 }} onPress={() => open(item)}>
                 <Text style={styles.title} numberOfLines={2}>{describeSearch(item.filters, item.name)}</Text>
-                <Text style={styles.sub}>{item.notify_enabled ? 'Пришлём уведомление о новых' : 'Оповещения выключены'}</Text>
+                <Text style={styles.sub}>{item.notify_enabled ? tr('Пришлём уведомление о новых') : tr('Оповещения выключены')}</Text>
               </Pressable>
               <Switch value={item.notify_enabled} onValueChange={(v) => toggle(item, v)} trackColor={{ true: colors.primary, false: '#D8DCD8' }} />
-              <Pressable onPress={() => remove(item)} hitSlop={8} style={styles.trash} accessibilityLabel="Удалить поиск">
+              <Pressable onPress={() => remove(item)} hitSlop={8} style={styles.trash} accessibilityLabel={tr('Удалить поиск')}>
                 <Ionicons name="trash-outline" size={20} color={colors.muted} />
               </Pressable>
             </View>
@@ -71,8 +72,8 @@ export default function Saved() {
           ListEmptyComponent={
             <View style={styles.empty}>
               <View style={styles.circle}><Ionicons name="bookmark-outline" size={28} color={colors.primaryDeep} /></View>
-              <Text style={styles.emptyTitle}>Нет сохранённых поисков</Text>
-              <Text style={styles.emptyText}>Найдите что-нибудь на главной и нажмите «Сохранить поиск» — пришлём уведомление, когда появится новое.</Text>
+              <Text style={styles.emptyTitle}>{tr('Нет сохранённых поисков')}</Text>
+              <Text style={styles.emptyText}>{tr('Найдите что-нибудь на главной и нажмите «Сохранить поиск» — пришлём уведомление, когда появится новое.')}</Text>
             </View>
           }
         />

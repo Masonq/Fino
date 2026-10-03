@@ -1,3 +1,4 @@
+import { tr } from '../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import * as Linking from 'expo-linking'
 import { router, useFocusEffect } from 'expo-router'
@@ -46,13 +47,13 @@ export default function Notifications() {
   return (
     <View style={[styles.page, { paddingTop: insets.top }]}>
       <View style={styles.head}>
-        <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} hitSlop={10} style={styles.back} accessibilityLabel="Назад">
+        <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} hitSlop={10} style={styles.back} accessibilityLabel={tr('Назад')}>
           <Ionicons name="chevron-back" size={26} color={colors.ink} />
         </Pressable>
-        <Text style={styles.h1}>Уведомления</Text>
+        <Text style={styles.h1}>{tr('Уведомления')}</Text>
         {unread > 0 && token ? (
           <Pressable hitSlop={8} onPress={async () => { await markAllNoticesRead(token).catch(() => {}); load() }}>
-            <Text style={styles.all}>Прочитать все</Text>
+            <Text style={styles.all}>{tr('Прочитать все')}</Text>
           </Pressable>
         ) : <View style={{ width: 40 }} />}
       </View>
@@ -76,8 +77,8 @@ export default function Notifications() {
           ListEmptyComponent={
             <View style={styles.empty}>
               <View style={styles.circle}><Ionicons name="notifications-outline" size={28} color={colors.primaryDeep} /></View>
-              <Text style={styles.emptyTitle}>Пока тихо</Text>
-              <Text style={styles.emptyText}>Здесь появятся ответы продавцов, отзывы и новые объявления по сохранённым поискам.</Text>
+              <Text style={styles.emptyTitle}>{tr('Пока тихо')}</Text>
+              <Text style={styles.emptyText}>{tr('Здесь появятся ответы продавцов, отзывы и новые объявления по сохранённым поискам.')}</Text>
             </View>
           }
         />

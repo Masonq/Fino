@@ -1,3 +1,4 @@
+import { tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
@@ -76,7 +77,7 @@ export default function ChatScreen() {
   // Служебные записи без текста (карточка объявления и т.п.) — не рисуем пустым пузырём
   const data = [...(msgs ?? [])].filter((m) => m.kind === 'offer' || plainText(m.text)).reverse()
   const photo = mediaUrl(info?.listing_photo)
-  const title = info?.is_team ? 'Команда PLONK' : (info?.other_name || 'Переписка')
+  const title = info?.is_team ? tr('Команда PLONK') : (info?.other_name || tr('Переписка'))
 
   const bubble = ({ item }: { item: Message & { pending?: boolean; failed?: boolean } }) => {
     if (item.kind === 'team' || item.kind === 'system') {
@@ -84,14 +85,14 @@ export default function ChatScreen() {
     }
     const me = mine(item)
     const body = item.kind === 'offer'
-      ? `Предлагаю ${formatPrice(item.offer_price ?? null, info?.currency)}${item.offer_status === 'accepted' ? ' — принято' : item.offer_status === 'declined' ? ' — отклонено' : ''}`
+      ? tr('Предлагаю {price}', { price: formatPrice(item.offer_price ?? null, info?.currency) }) + (item.offer_status === 'accepted' ? tr(' — принято') : item.offer_status === 'declined' ? tr(' — отклонено') : '')
       : plainText(item.text)
     return (
       <Pressable disabled={!item.failed} onPress={() => send(item.text || '', item.id)} style={[styles.bubbleRow, me && styles.bubbleRowMe]}>
         <View style={[styles.bubble, me ? styles.bubbleMe : styles.bubbleThem, item.failed && styles.bubbleFailed]}>
           <Text style={[styles.bubbleText, me && styles.bubbleTextMe]}>{body}</Text>
           <Text style={[styles.meta, me && styles.metaMe]}>
-            {item.failed ? 'Не отправлено — нажмите, чтобы повторить' : item.pending ? 'Отправляется…' : hhmm(item.created_at)}
+            {item.failed ? tr('Не отправлено — нажмите, чтобы повторить') : item.pending ? tr('Отправляется…') : hhmm(item.created_at)}
           </Text>
         </View>
       </Pressable>
@@ -101,7 +102,7 @@ export default function ChatScreen() {
   return (
     <KeyboardAvoidingView style={styles.page} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={[styles.head, { paddingTop: insets.top + 6 }]}>
-        <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/chats'))} hitSlop={10} style={styles.back} accessibilityLabel="Назад">
+        <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/chats'))} hitSlop={10} style={styles.back} accessibilityLabel={tr('Назад')}>
           <Ionicons name="chevron-back" size={26} color={colors.ink} />
         </Pressable>
         <Pressable style={styles.headBody} disabled={!info?.listing_id} onPress={() => info?.listing_id && router.push(`/listing/${info.listing_id}`)}>
@@ -127,7 +128,7 @@ export default function ChatScreen() {
             renderItem={bubble}
             contentContainerStyle={styles.list}
             keyboardDismissMode="interactive"
-            ListEmptyComponent={<View style={styles.emptyWrap}><Text style={styles.emptyText}>Напишите первое сообщение — например, уточните, актуально ли объявление.</Text></View>}
+            ListEmptyComponent={<View style={styles.emptyWrap}><Text style={styles.emptyText}>{tr('Напишите первое сообщение — например, уточните, актуально ли объявление.')}</Text></View>}
           />
         )}
 
@@ -135,13 +136,13 @@ export default function ChatScreen() {
         <TextInput
           value={text}
           onChangeText={setText}
-          placeholder="Сообщение"
+          placeholder={tr('Сообщение')}
           placeholderTextColor={colors.muted}
           multiline
           style={styles.input}
           maxLength={2000}
         />
-        <Pressable style={[styles.sendBtn, !text.trim() && styles.sendOff]} disabled={!text.trim()} onPress={() => send(text)} accessibilityLabel="Отправить">
+        <Pressable style={[styles.sendBtn, !text.trim() && styles.sendOff]} disabled={!text.trim()} onPress={() => send(text)} accessibilityLabel={tr('Отправить')}>
           <Ionicons name="arrow-up" size={22} color="#fff" />
         </Pressable>
       </View>

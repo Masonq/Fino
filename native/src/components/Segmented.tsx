@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Animated, LayoutChangeEvent, Pressable, StyleSheet, Text, View } from 'react-native'
 
+import { tr } from '../i18n'
 import { colors } from '../theme'
 
 type Option<K extends string> = { key: K; label: string }
@@ -47,7 +48,7 @@ export default function Segmented<K extends string>({ options, value, onChange }
         return (
           <Pressable key={o.key} onLayout={onItemLayout(o.key)} onPress={() => onChange(o.key)} style={styles.item}
             accessibilityRole="tab" accessibilityState={{ selected: on }} hitSlop={6}>
-            <Text style={[styles.label, on && styles.labelOn]}>{o.label}</Text>
+            <Text style={[styles.label, on && styles.labelOn]}>{tr(o.label)}</Text>
           </Pressable>
         )
       })}

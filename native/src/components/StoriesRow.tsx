@@ -1,3 +1,4 @@
+import { tr } from '../i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import { router } from 'expo-router'
@@ -19,9 +20,9 @@ export default function StoriesRow({ city }: { city: string | null }) {
 
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
-      <Pressable style={styles.item} onPress={() => router.navigate('/post')} accessibilityRole="button" accessibilityLabel="Продать">
+      <Pressable style={styles.item} onPress={() => router.navigate('/post')} accessibilityRole="button" accessibilityLabel={tr('Продать')}>
         <View style={styles.sell}><Ionicons name="add" size={30} color="#fff" /></View>
-        <Text style={styles.label}>Продать</Text>
+        <Text style={styles.label}>{tr('Продать')}</Text>
       </Pressable>
       {items === null
         ? Array.from({ length: 5 }).map((_, i) => (

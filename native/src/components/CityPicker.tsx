@@ -1,8 +1,9 @@
+import { tr } from '../i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { CITY_LIST } from '../format'
+import { cityList } from '../format'
 import { colors } from '../theme'
 
 /** Выбор города — список снизу, как шторка на сайте: «Все города» и города Сербии, у выбранного галочка. */
@@ -13,13 +14,13 @@ export default function CityPicker({ visible, value, onPick, onClose }: {
   onClose: () => void
 }) {
   const insets = useSafeAreaInsets()
-  const rows: { slug: string | null; label: string }[] = [{ slug: null, label: 'Все города' }, ...CITY_LIST]
+  const rows: { slug: string | null; label: string }[] = [{ slug: null, label: tr('Все города') }, ...cityList()]
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="Закрыть" />
+      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={tr('Закрыть')} />
       <View style={[styles.sheet, { paddingBottom: insets.bottom + 8 }]}>
         <View style={styles.handle} />
-        <Text style={styles.title}>Город</Text>
+        <Text style={styles.title}>{tr('Город')}</Text>
         <ScrollView style={{ maxHeight: 460 }}>
           {rows.map((r) => {
             const on = r.slug === value

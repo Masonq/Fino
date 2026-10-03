@@ -1,3 +1,4 @@
+import { tr } from '../i18n'
 import type { ReactNode } from 'react'
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -9,7 +10,7 @@ export default function Sheet({ visible, title, onClose, children }: { visible: 
   const insets = useSafeAreaInsets()
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="Закрыть" />
+      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={tr('Закрыть')} />
       <View style={[styles.sheet, { paddingBottom: insets.bottom + 10 }]}>
         <View style={styles.handle} />
         {!!title && <Text style={styles.title}>{title}</Text>}

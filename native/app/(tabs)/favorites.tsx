@@ -1,3 +1,4 @@
+import { tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -61,21 +62,21 @@ export default function Favorites() {
     return (
       <SafeAreaView style={[styles.page, styles.center]} edges={['top']}>
         <View style={styles.circle}><Ionicons name="heart-outline" size={30} color={colors.primaryDeep} /></View>
-        <Text style={styles.title}>Сохраняйте понравившееся</Text>
-        <Text style={styles.text}>Нажмите сердечко на объявлении — оно появится здесь. Для этого нужно войти.</Text>
-        <Pressable style={styles.cta} onPress={() => router.push('/login')}><Text style={styles.ctaText}>Войти</Text></Pressable>
+        <Text style={styles.title}>{tr('Сохраняйте понравившееся')}</Text>
+        <Text style={styles.text}>{tr('Нажмите сердечко на объявлении — оно появится здесь. Для этого нужно войти.')}</Text>
+        <Pressable style={styles.cta} onPress={() => router.push('/login')}><Text style={styles.ctaText}>{tr('Войти')}</Text></Pressable>
       </SafeAreaView>
     )
   }
 
   return (
     <SafeAreaView style={styles.page} edges={['top']}>
-      <Text style={styles.h1}>Избранное</Text>
+      <Text style={styles.h1}>{tr('Избранное')}</Text>
       {visible === null ? (
         failed ? (
           <View style={styles.center}>
-            <Text style={styles.title}>Не удалось загрузить</Text>
-            <Pressable style={styles.cta} onPress={load}><Text style={styles.ctaText}>Повторить</Text></Pressable>
+            <Text style={styles.title}>{tr('Не удалось загрузить')}</Text>
+            <Pressable style={styles.cta} onPress={load}><Text style={styles.ctaText}>{tr('Повторить')}</Text></Pressable>
           </View>
         ) : (
           <View style={styles.skelGrid}>
@@ -100,9 +101,9 @@ export default function Favorites() {
           ListEmptyComponent={
             <View style={styles.center}>
               <View style={styles.circle}><Ionicons name="heart-outline" size={30} color={colors.primaryDeep} /></View>
-              <Text style={styles.title}>Пока пусто</Text>
-              <Text style={styles.text}>Нажмите сердечко на объявлении — оно сохранится здесь.</Text>
-              <Pressable style={styles.cta} onPress={() => router.navigate('/')}><Text style={styles.ctaText}>Смотреть ленту</Text></Pressable>
+              <Text style={styles.title}>{tr('Пока пусто')}</Text>
+              <Text style={styles.text}>{tr('Нажмите сердечко на объявлении — оно сохранится здесь.')}</Text>
+              <Pressable style={styles.cta} onPress={() => router.navigate('/')}><Text style={styles.ctaText}>{tr('Смотреть ленту')}</Text></Pressable>
             </View>
           }
         />

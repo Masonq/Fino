@@ -1,3 +1,4 @@
+import { tr } from '../i18n'
 import { useEffect, useState } from 'react'
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 
@@ -33,20 +34,20 @@ export default function ReportSheet({ visible, listingId, token, onClose }: { vi
       const code = e instanceof ApiError ? e.message : ''
       // Сервер отвечает кодами: уже жаловались — это не ошибка; на своё нельзя; слишком часто
       if (code === 'already_reported') { setAlready(true); setState('done'); return }
-      setErrorText(code === 'self_report' ? 'Это ваше объявление — на него нельзя пожаловаться.'
-        : code === 'too_many_reports' || (e instanceof ApiError && e.status === 429) ? 'Слишком много жалоб подряд. Попробуйте позже.'
-          : 'Не удалось отправить. Попробуйте ещё раз.')
+      setErrorText(code === 'self_report' ? tr('Это ваше объявление — на него нельзя пожаловаться.')
+        : code === 'too_many_reports' || (e instanceof ApiError && e.status === 429) ? tr('Слишком много жалоб подряд. Попробуйте позже.')
+          : tr('Не удалось отправить. Попробуйте ещё раз.'))
       setState('error')
     }
   }
 
   return (
-    <Sheet visible={visible} title={state === 'done' ? undefined : 'Пожаловаться'} onClose={onClose}>
+    <Sheet visible={visible} title={state === 'done' ? undefined : tr('Пожаловаться')} onClose={onClose}>
       {state === 'done' ? (
         <View style={styles.done}>
-          <Text style={styles.doneTitle}>{already ? 'Вы уже пожаловались' : 'Спасибо, проверим'}</Text>
-          <Text style={styles.doneText}>{already ? 'Мы уже проверяем это объявление — второй раз отправлять не нужно.' : 'Модераторы посмотрят объявление. Если оно нарушает правила, его снимут.'}</Text>
-          <Pressable style={styles.btn} onPress={onClose}><Text style={styles.btnText}>Понятно</Text></Pressable>
+          <Text style={styles.doneTitle}>{already ? tr('Вы уже пожаловались') : tr('Спасибо, проверим')}</Text>
+          <Text style={styles.doneText}>{already ? tr('Мы уже проверяем это объявление — второй раз отправлять не нужно.') : tr('Модераторы посмотрят объявление. Если оно нарушает правила, его снимут.')}</Text>
+          <Pressable style={styles.btn} onPress={onClose}><Text style={styles.btnText}>{tr('Понятно')}</Text></Pressable>
         </View>
       ) : (
         <View style={{ paddingHorizontal: 20, gap: 4 }}>
@@ -55,15 +56,15 @@ export default function ReportSheet({ visible, listingId, token, onClose }: { vi
             return (
               <Pressable key={r.key} style={styles.row} onPress={() => setReason(r.key)} accessibilityRole="radio" accessibilityState={{ selected: on }}>
                 <View style={[styles.radio, on && styles.radioOn]}>{on && <View style={styles.dot} />}</View>
-                <Text style={styles.rowText}>{r.label}</Text>
+                <Text style={styles.rowText}>{tr(r.label)}</Text>
               </Pressable>
             )
           })}
-          <TextInput value={comment} onChangeText={setComment} placeholder="Комментарий (необязательно)" placeholderTextColor={colors.muted}
+          <TextInput value={comment} onChangeText={setComment} placeholder={tr('Комментарий (необязательно)')} placeholderTextColor={colors.muted}
             style={styles.input} multiline maxLength={1000} textAlignVertical="top" />
           {state === 'error' && <Text style={styles.error}>{errorText}</Text>}
           <Pressable style={[styles.btn, !reason && { opacity: 0.45 }]} disabled={!reason || state === 'sending'} onPress={send}>
-            {state === 'sending' ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>Отправить</Text>}
+            {state === 'sending' ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>{tr('Отправить')}</Text>}
           </Pressable>
         </View>
       )}

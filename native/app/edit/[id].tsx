@@ -1,3 +1,4 @@
+import { tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
@@ -52,7 +53,7 @@ export default function EditListing() {
       setCurrency(cur); setNegotiable(!!l.price_negotiable); setCity(l.city ?? null)
       setShots(l.photos.filter((p) => !p.is_video).map((p) => ({ key: p.id, existingId: p.id, uri: mediaUrl(p.thumbnail_url || p.url) as string, state: 'done' })))
       setLoaded(true)
-    }).catch(() => setError('Не удалось открыть объявление'))
+    }).catch(() => setError(tr('Не удалось открыть объявление')))
   }, [id])
 
   const upload = async (shot: Shot) => {
@@ -69,7 +70,7 @@ export default function EditListing() {
     const left = MAX - shots.length
     if (left <= 0) return
     const perm = from === 'camera' ? await ImagePicker.requestCameraPermissionsAsync() : await ImagePicker.requestMediaLibraryPermissionsAsync()
-    if (!perm.granted) { Alert.alert('Нет доступа', 'Разрешите доступ в настройках телефона.'); return }
+    if (!perm.granted) { Alert.alert(tr('Нет доступа'), tr('Разрешите доступ в настройках телефона.')); return }
     const opts: ImagePicker.ImagePickerOptions = { mediaTypes: ['images'], quality: 0.85, allowsMultipleSelection: from === 'library', selectionLimit: left }
     const res = from === 'camera' ? await ImagePicker.launchCameraAsync(opts) : await ImagePicker.launchImageLibraryAsync(opts)
     if (res.canceled) return
@@ -86,9 +87,9 @@ export default function EditListing() {
   const save = async () => {
     if (!orig || !token) return
     setError('')
-    if (shots.filter((s) => s.state === 'done').length === 0) { setError('Оставьте хотя бы одно фото'); return }
-    if (shots.some((s) => s.state === 'loading')) { setError('Дождитесь загрузки фото'); return }
-    if (title.trim().length < 3) { setError('Название — хотя бы 3 буквы'); return }
+    if (shots.filter((s) => s.state === 'done').length === 0) { setError(tr('Оставьте хотя бы одно фото')); return }
+    if (shots.some((s) => s.state === 'loading')) { setError(tr('Дождитесь загрузки фото')); return }
+    if (title.trim().length < 3) { setError(tr('Название — хотя бы 3 буквы')); return }
     setSaving(true)
     try {
       const patch: ListingPatch = {}
@@ -104,7 +105,7 @@ export default function EditListing() {
       for (const s of shots) if (!s.existingId && s.uploaded) await addListingPhoto(token, String(id), s.uploaded)
       router.back()
     } catch (e) {
-      setError(e instanceof ApiError && e.message ? e.message : 'Не удалось сохранить. Проверьте интернет и попробуйте ещё раз.')
+      setError(e instanceof ApiError && e.message ? e.message : tr('Не удалось сохранить. Проверьте интернет и попробуйте ещё раз.'))
     } finally {
       setSaving(false)
     }
@@ -113,20 +114,20 @@ export default function EditListing() {
   return (
     <View style={[styles.page, { paddingTop: insets.top }]}>
       <View style={styles.head}>
-        <Pressable onPress={() => router.back()} hitSlop={10} style={styles.back} accessibilityLabel="Назад">
+        <Pressable onPress={() => router.back()} hitSlop={10} style={styles.back} accessibilityLabel={tr('Назад')}>
           <Ionicons name="chevron-back" size={26} color={colors.ink} />
         </Pressable>
-        <Text style={styles.h1}>Редактирование</Text>
+        <Text style={styles.h1}>{tr('Редактирование')}</Text>
       </View>
       {!loaded ? (error ? <Text style={styles.hint}>{error}</Text> : <ActivityIndicator style={{ marginTop: 30 }} color={colors.primary} />) : (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
-            <Text style={styles.label}>Фото <Text style={styles.count}>{shots.length}/{MAX}</Text></Text>
+            <Text style={styles.label}>{tr('Фото')} <Text style={styles.count}>{shots.length}/{MAX}</Text></Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
               {shots.length < MAX && (
                 <>
-                  <Pressable style={styles.addShot} onPress={() => add('camera')} accessibilityLabel="Сфотографировать"><Ionicons name="camera-outline" size={26} color={colors.primaryDeep} /><Text style={styles.addText}>Камера</Text></Pressable>
-                  <Pressable style={styles.addShot} onPress={() => add('library')} accessibilityLabel="Выбрать из галереи"><Ionicons name="images-outline" size={26} color={colors.primaryDeep} /><Text style={styles.addText}>Галерея</Text></Pressable>
+                  <Pressable style={styles.addShot} onPress={() => add('camera')} accessibilityLabel={tr('Сфотографировать')}><Ionicons name="camera-outline" size={26} color={colors.primaryDeep} /><Text style={styles.addText}>{tr('Камера')}</Text></Pressable>
+                  <Pressable style={styles.addShot} onPress={() => add('library')} accessibilityLabel={tr('Выбрать из галереи')}><Ionicons name="images-outline" size={26} color={colors.primaryDeep} /><Text style={styles.addText}>{tr('Галерея')}</Text></Pressable>
                 </>
               )}
               {shots.map((s, i) => (
@@ -134,35 +135,35 @@ export default function EditListing() {
                   <Image source={{ uri: s.uri }} style={styles.shotImg} contentFit="cover" />
                   {s.state === 'loading' && <View style={styles.overlay}><ActivityIndicator color="#fff" /></View>}
                   {s.state === 'failed' && <View style={[styles.overlay, { backgroundColor: 'rgba(180,35,24,0.72)' }]}><Ionicons name="refresh" size={22} color="#fff" /></View>}
-                  {i === 0 && <Text style={styles.cover}>Обложка</Text>}
-                  <Pressable style={styles.remove} onPress={() => remove(s)} hitSlop={6} accessibilityLabel="Убрать фото"><Ionicons name="close" size={14} color="#fff" /></Pressable>
+                  {i === 0 && <Text style={styles.cover}>{tr('Обложка')}</Text>}
+                  <Pressable style={styles.remove} onPress={() => remove(s)} hitSlop={6} accessibilityLabel={tr('Убрать фото')}><Ionicons name="close" size={14} color="#fff" /></Pressable>
                 </Pressable>
               ))}
             </ScrollView>
 
-            <Text style={styles.label}>Название</Text>
+            <Text style={styles.label}>{tr('Название')}</Text>
             <TextInput value={title} onChangeText={setTitle} style={styles.input} maxLength={120} />
-            <Text style={styles.label}>Описание</Text>
+            <Text style={styles.label}>{tr('Описание')}</Text>
             <TextInput value={desc} onChangeText={setDesc} style={[styles.input, styles.area]} multiline maxLength={5000} textAlignVertical="top" />
             <View style={styles.labelRow}>
-              <Text style={styles.label}>Цена</Text>
+              <Text style={styles.label}>{tr('Цена')}</Text>
               <Segmented options={[{ key: 'EUR', label: '€' }, { key: 'RSD', label: 'RSD' }]} value={currency} onChange={(c) => setCurrency(c as 'EUR' | 'RSD')} />
             </View>
-            <TextInput value={price} onChangeText={(v) => setPrice(v.replace(/\D/g, '').slice(0, 9))} placeholder="Пусто — «цена не указана»" placeholderTextColor={colors.muted} keyboardType="number-pad" style={styles.input} />
+            <TextInput value={price} onChangeText={(v) => setPrice(v.replace(/\D/g, '').slice(0, 9))} placeholder={tr('Пусто — «цена не указана»')} placeholderTextColor={colors.muted} keyboardType="number-pad" style={styles.input} />
             <View style={styles.switchRow}>
-              <Text style={styles.switchText}>Торг уместен</Text>
+              <Text style={styles.switchText}>{tr('Торг уместен')}</Text>
               <Switch value={negotiable} onValueChange={setNegotiable} trackColor={{ true: colors.primary, false: '#D8DCD8' }} />
             </View>
-            <Text style={styles.label}>Город</Text>
+            <Text style={styles.label}>{tr('Город')}</Text>
             <Pressable style={styles.select} onPress={() => setCityOpen(true)}>
-              <Text style={styles.selectText}>{city ? cityName(city) : 'Не указан'}</Text>
+              <Text style={styles.selectText}>{city ? cityName(city) : tr('Не указан')}</Text>
               <Ionicons name="chevron-forward" size={18} color={colors.muted} />
             </Pressable>
             {!!error && <Text style={[styles.hint, { marginTop: 14 }]}>{error}</Text>}
-            <Pressable style={[styles.cta, saving && { opacity: 0.6 }]} disabled={saving} onPress={save} accessibilityRole="button" accessibilityLabel="Сохранить изменения">
-              {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.ctaText}>Сохранить</Text>}
+            <Pressable style={[styles.cta, saving && { opacity: 0.6 }]} disabled={saving} onPress={save} accessibilityRole="button" accessibilityLabel={tr('Сохранить изменения')}>
+              {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.ctaText}>{tr('Сохранить')}</Text>}
             </Pressable>
-            <Text style={styles.small}>После правок объявление может уйти на повторную проверку.</Text>
+            <Text style={styles.small}>{tr('После правок объявление может уйти на повторную проверку.')}</Text>
           </ScrollView>
         </KeyboardAvoidingView>
       )}

@@ -1,3 +1,4 @@
+import { tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -135,16 +136,16 @@ export default function Feed() {
     if (state === 'error') {
       return (
         <View style={styles.center}>
-          <Text style={styles.emptyTitle}>Не удалось загрузить ленту</Text>
-          <Text style={styles.emptyText}>Проверьте интернет и попробуйте ещё раз.</Text>
-          <Pressable style={styles.retry} onPress={() => load('first')}><Text style={styles.retryText}>Повторить</Text></Pressable>
+          <Text style={styles.emptyTitle}>{tr('Не удалось загрузить ленту')}</Text>
+          <Text style={styles.emptyText}>{tr('Проверьте интернет и попробуйте ещё раз.')}</Text>
+          <Pressable style={styles.retry} onPress={() => load('first')}><Text style={styles.retryText}>{tr('Повторить')}</Text></Pressable>
         </View>
       )
     }
     return (
       <View style={styles.center}>
-        <Text style={styles.emptyTitle}>{q ? 'Ничего не нашлось' : 'Здесь пока пусто'}</Text>
-        {!!q && <Text style={styles.emptyText}>Попробуйте сказать иначе или убрать часть слов.</Text>}
+        <Text style={styles.emptyTitle}>{q ? tr('Ничего не нашлось') : tr('Здесь пока пусто')}</Text>
+        {!!q && <Text style={styles.emptyText}>{tr('Попробуйте сказать иначе или убрать часть слов.')}</Text>}
       </View>
     )
   }
@@ -153,15 +154,15 @@ export default function Feed() {
     <SafeAreaView style={styles.page} edges={['top']}>
       <View style={[styles.head, styles.headRow]}>
         <View style={[styles.search, { flex: 1 }]}>
-          <Pressable style={styles.city} onPress={() => setCityOpen(true)} accessibilityRole="button" accessibilityLabel="Выбрать город">
+          <Pressable style={styles.city} onPress={() => setCityOpen(true)} accessibilityRole="button" accessibilityLabel={tr('Выбрать город')}>
             <Ionicons name="location-outline" size={16} color={colors.ink} />
-            <Text style={styles.cityText} numberOfLines={1}>{city ? cityName(city) : 'Все города'}</Text>
+            <Text style={styles.cityText} numberOfLines={1}>{city ? cityName(city) : tr('Все города')}</Text>
             <Ionicons name="chevron-down" size={14} color={colors.inkSoft} />
           </Pressable>
           <TextInput
             value={query}
             onChangeText={setQuery}
-            placeholder="Найти на PLONK"
+            placeholder={tr('Найти на PLONK')}
             placeholderTextColor={colors.muted}
             style={styles.searchInput}
             returnKeyType="search"
@@ -169,16 +170,16 @@ export default function Feed() {
             autoCorrect={false}
           />
           {!!query && (
-            <Pressable onPress={() => setQuery('')} hitSlop={10} accessibilityLabel="Очистить поиск">
+            <Pressable onPress={() => setQuery('')} hitSlop={10} accessibilityLabel={tr('Очистить поиск')}>
               <Ionicons name="close-circle" size={18} color={colors.muted} />
             </Pressable>
           )}
-          <Pressable onPress={() => setFiltersOpen(true)} hitSlop={8} style={styles.filterBtn} accessibilityRole="button" accessibilityLabel="Фильтры">
+          <Pressable onPress={() => setFiltersOpen(true)} hitSlop={8} style={styles.filterBtn} accessibilityRole="button" accessibilityLabel={tr('Фильтры')}>
             <Ionicons name="options-outline" size={21} color={colors.ink} />
             {activeCount(filters) > 0 && <View style={styles.filterDot}><Text style={styles.filterDotText}>{activeCount(filters)}</Text></View>}
           </Pressable>
         </View>
-        <Pressable style={styles.bell} onPress={() => (token ? router.push('/notifications') : router.push('/login'))} accessibilityRole="button" accessibilityLabel="Уведомления">
+        <Pressable style={styles.bell} onPress={() => (token ? router.push('/notifications') : router.push('/login'))} accessibilityRole="button" accessibilityLabel={tr('Уведомления')}>
           <Ionicons name="notifications-outline" size={23} color={colors.ink} />
           {notices > 0 && <View style={styles.bellDot}><Text style={styles.bellDotText}>{notices > 9 ? '9+' : notices}</Text></View>}
         </Pressable>
@@ -203,7 +204,7 @@ export default function Feed() {
               {searchActive && (
                 <Pressable style={[styles.saveBtn, savedState === 'saved' && styles.saveBtnOn]} disabled={savedState !== 'idle'} onPress={onSave} accessibilityRole="button">
                   <Ionicons name={savedState === 'saved' ? 'bookmark' : 'bookmark-outline'} size={16} color={savedState === 'saved' ? '#fff' : colors.primaryDeep} />
-                  <Text style={[styles.saveText, savedState === 'saved' && { color: '#fff' }]}>{savedState === 'saved' ? 'Сохранено' : 'Сохранить поиск'}</Text>
+                  <Text style={[styles.saveText, savedState === 'saved' && { color: '#fff' }]}>{savedState === 'saved' ? tr('Сохранено') : tr('Сохранить поиск')}</Text>
                 </Pressable>
               )}
             </View>

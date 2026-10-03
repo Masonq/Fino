@@ -1,3 +1,4 @@
+import { getLang, tr } from '../i18n'
 import { Image } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
 import { useEffect, useState } from 'react'
@@ -11,7 +12,7 @@ import Skeleton from './Skeleton'
 const W = 118
 const H = 86
 
-const nameOf = (c: Category) => (typeof c.name === 'string' ? c.name : c.name?.ru || c.slug)
+const nameOf = (c: Category) => (typeof c.name === 'string' ? c.name : c.name?.[getLang()] || c.name?.ru || c.slug)
 
 /**
  * Плитки разделов в две строки с прокруткой вбок — как на главной сайта: название сверху, объёмная картинка
@@ -43,7 +44,7 @@ export default function CategoryTiles({ value, onPick }: { value: string | null;
       const on = value === null
       return (
         <Pressable key="all" style={[styles.tile, styles.allTile, on && styles.tileOn]} onPress={() => onPick(null)} accessibilityRole="button" accessibilityState={{ selected: on }}>
-          <Text style={[styles.label, styles.labelOn]}>Все</Text>
+          <Text style={[styles.label, styles.labelOn]}>{tr('Все')}</Text>
           <Ionicons name="grid-outline" size={34} color={colors.primary} style={styles.allIcon} />
         </Pressable>
       )

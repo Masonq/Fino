@@ -1,3 +1,5 @@
+import { getLang } from './i18n'
+import { tr } from './i18n'
 import { API } from './config'
 
 export type FeedItem = {
@@ -64,7 +66,7 @@ export const PAGE = 20
 export type Filters = { priceMin?: string; priceMax?: string; currency?: 'EUR' | 'RSD'; withPhoto?: boolean; delivery?: boolean; sort?: '' | 'new' | 'cheap' | 'expensive' }
 
 export function fetchFeed(opts: { tab: FeedTab; offset: number; q?: string; city?: string | null; category?: string | null; filters?: Filters }) {
-  const p = new URLSearchParams({ lang: 'ru', limit: String(PAGE), offset: String(opts.offset) })
+  const p = new URLSearchParams({ lang: getLang(), limit: String(PAGE), offset: String(opts.offset) })
   if (opts.tab === 'new') p.set('sort', 'new')
   if (opts.tab === 'free') p.set('only_free', 'true')
   if (opts.q) { p.set('q', opts.q); p.set('sort', 'relevance') }
@@ -83,7 +85,7 @@ export function fetchFeed(opts: { tab: FeedTab; offset: number; q?: string; city
 }
 
 export function fetchListing(id: string) {
-  return get<Listing>(`/listings/${encodeURIComponent(id)}?lang=ru`)
+  return get<Listing>(`/listings/${encodeURIComponent(id)}?lang=${getLang()}`)
 }
 
 /** Заголовок и описание лежат в переводах объявления: берём русский, иначе язык оригинала, иначе любой. */
@@ -93,10 +95,10 @@ export function textOf(listing: Listing): { title: string; description: string }
   let chosen: { title?: string; description?: string } | null = null
   if (Array.isArray(tr)) {
     const by = (lang?: string) => tr.find((t) => (t as { language?: string; lang?: string }).language === lang || (t as { lang?: string }).lang === lang)
-    chosen = pick(by('ru')) ?? pick(by(listing.source_language)) ?? pick(tr[0])
+    chosen = pick(by(getLang())) ?? pick(by(listing.source_language)) ?? pick(tr[0])
   } else if (tr && typeof tr === 'object') {
     const map = tr as Record<string, unknown>
-    chosen = pick(map.ru) ?? pick(map[listing.source_language ?? '']) ?? pick(Object.values(map)[0])
+    chosen = pick(map[getLang()]) ?? pick(map[listing.source_language ?? '']) ?? pick(Object.values(map)[0])
   }
   return { title: chosen?.title || listing.title || '', description: chosen?.description || '' }
 }
@@ -127,7 +129,7 @@ export function requestCode(email: string) {
 }
 
 export function verifyCode(email: string, code: string) {
-  return post<{ token: string; user: import('./auth').User }>('/auth/verify-code', { destination: email, code, channel: 'email', lang: 'ru' })
+  return post<{ token: string; user: import('./auth').User }>('/auth/verify-code', { destination: email, code, channel: 'email', lang: getLang() })
 }
 
 // ---------- избранное (нужен вход) ----------
@@ -147,7 +149,7 @@ async function authed<T>(path: string, token: string, method: 'GET' | 'POST' | '
 }
 
 export const favoriteIds = (token: string) => authed<{ ids: string[] }>('/favorites/ids', token)
-export const favoriteList = (token: string) => authed<{ total: number; items: FeedItem[] }>('/favorites?lang=ru', token)
+export const favoriteList = (token: string) => authed<{ total: number; items: FeedItem[] }>(`/favorites?lang=${getLang()}`, token)
 export const addFavorite = (token: string, id: string) => authed<{ status: string }>(`/favorites/${encodeURIComponent(id)}`, token, 'POST')
 export const removeFavorite = (token: string, id: string) => authed<{ status: string }>(`/favorites/${encodeURIComponent(id)}`, token, 'DELETE')
 
@@ -156,7 +158,7 @@ export const removeFavorite = (token: string, id: string) => authed<{ status: st
 export type Category = { id: string; slug: string; name: Record<string, string> | string; count?: number; ready?: boolean; children?: Category[] }
 
 export async function fetchCategories(): Promise<Category[]> {
-  return get<Category[]>('/categories?lang=ru')
+  return get<Category[]>(`/categories?lang=${getLang()}`)
 }
 
 // ---------- сообщения ----------
@@ -172,13 +174,13 @@ export type Message = {
   offer_price?: number | null; offer_status?: string | null; created_at: string
 }
 
-export const chatList = (token: string) => authed<{ total: number; items: Chat[] }>('/chats?lang=ru', token)
-export const chatInfo = (token: string, id: string) => authed<Chat>(`/chats/${encodeURIComponent(id)}?lang=ru`, token)
+export const chatList = (token: string) => authed<{ total: number; items: Chat[] }>(`/chats?lang=${getLang()}`, token)
+export const chatInfo = (token: string, id: string) => authed<Chat>(`/chats/${encodeURIComponent(id)}?lang=${getLang()}`, token)
 export const chatMessages = (token: string, id: string) => authed<Message[]>(`/chats/${encodeURIComponent(id)}/messages`, token)
 export const sendMessage = (token: string, id: string, text: string) =>
   authed<Message>(`/chats/${encodeURIComponent(id)}/messages`, token, 'POST', { text, offer_price: null })
 export const markChatRead = (token: string, id: string) => authed<unknown>(`/chats/${encodeURIComponent(id)}/read`, token, 'POST')
-export const startChat = (token: string, listingId: string) => authed<Chat>('/chats/start?lang=ru', token, 'POST', { listing_id: listingId })
+export const startChat = (token: string, listingId: string) => authed<Chat>(`/chats/start?lang=${getLang()}`, token, 'POST', { listing_id: listingId })
 
 // ---------- размещение, мои объявления, баланс ----------
 
@@ -208,8 +210,8 @@ export async function createListing(token: string, l: NewListing) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify({
-      category_id: l.category_id, source_language: 'ru', price: l.price, currency: l.currency, price_negotiable: l.price_negotiable,
-      city: l.city, attributes: {}, translations: [{ language: 'ru', title: l.title, description: l.description }],
+      category_id: l.category_id, source_language: getLang(), price: l.price, currency: l.currency, price_negotiable: l.price_negotiable,
+      city: l.city, attributes: {}, translations: [{ language: getLang(), title: l.title, description: l.description }],
       photos: l.photos.map((p) => ({ url: p.url, thumbnail_url: p.thumbnail_url ?? null, is_video: false })),
     }),
   })
@@ -222,27 +224,27 @@ export async function createListing(token: string, l: NewListing) {
 }
 
 export type MyListing = FeedItem & { status: string; views_count?: number; favorites_count?: number }
-export const myListings = (token: string) => authed<{ total: number; counts: Record<string, number>; items: MyListing[] }>('/listings/my/list?lang=ru', token)
+export const myListings = (token: string) => authed<{ total: number; counts: Record<string, number>; items: MyListing[] }>(`/listings/my/list?lang=${getLang()}`, token)
 export const balance = (token: string) => authed<Record<string, unknown>>('/balance', token)
 
 // ---------- объявление целиком, продавец, истории, свои объявления ----------
 
-export const similarListings = (id: string) => get<{ items: FeedItem[] }>(`/listings/${encodeURIComponent(id)}/similar?lang=ru`)
-export const sellerListings = (userId: string) => get<{ total: number; items: FeedItem[] }>(`/listings/by-seller/${encodeURIComponent(userId)}?lang=ru`)
+export const similarListings = (id: string) => get<{ items: FeedItem[] }>(`/listings/${encodeURIComponent(id)}/similar?lang=${getLang()}`)
+export const sellerListings = (userId: string) => get<{ total: number; items: FeedItem[] }>(`/listings/by-seller/${encodeURIComponent(userId)}?lang=${getLang()}`)
 export const freshListings = (city?: string | null) =>
-  get<{ items: (FeedItem & { fresh?: boolean })[] }>(`/listings/fresh?lang=ru${city ? `&city=${encodeURIComponent(city)}` : ''}`)
+  get<{ items: (FeedItem & { fresh?: boolean })[] }>(`/listings/fresh?lang=${getLang()}${city ? `&city=${encodeURIComponent(city)}` : ''}`)
 
 export type Seller = {
   id: string; display_name?: string | null; company_name?: string | null; is_company?: boolean; avatar_url?: string | null
   rating_avg?: number | null; rating_count?: number; document_verified?: boolean; created_at?: string | null
   active_listings?: number; reply_speed?: string | null; company_description?: string | null
 }
-export const sellerProfile = (userId: string) => get<Seller>(`/users/${encodeURIComponent(userId)}/public?lang=ru`)
+export const sellerProfile = (userId: string) => get<Seller>(`/users/${encodeURIComponent(userId)}/public?lang=${getLang()}`)
 
 type Label = Record<string, string> | string
 export type AttrField = { key: string; type?: string; label?: Label; unit?: string; options?: { value: string | number; label: Label }[] }
 export const categorySchema = (slug: string) => get<{ attribute_schema?: AttrField[] }>(`/categories/${encodeURIComponent(slug)}/schema`)
-export const ru = (l?: Label | null) => (!l ? '' : typeof l === 'string' ? l : l.ru || l.en || Object.values(l)[0] || '')
+export const ru = (l?: Label | null) => (!l ? '' : typeof l === 'string' ? l : l[getLang()] || l.ru || l.en || Object.values(l)[0] || '')
 
 /** Характеристики объявления с подписями из схемы раздела: «Комнат — 2», «Площадь, м² — 62». */
 export function attrRows(attrs: Record<string, unknown> | undefined, schema: AttrField[]): { label: string; value: string }[] {
@@ -254,7 +256,7 @@ export function attrRows(attrs: Record<string, unknown> | undefined, schema: Att
     const one = (v: unknown) => {
       const opt = f.options?.find((o) => String(o.value) === String(v))
       if (opt) return ru(opt.label)
-      if (typeof v === 'boolean') return v ? 'да' : 'нет'
+      if (typeof v === 'boolean') return v ? tr('да') : tr('нет')
       return String(v)
     }
     const value = Array.isArray(raw) ? raw.map(one).join(', ') : one(raw)

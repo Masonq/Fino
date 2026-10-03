@@ -8,6 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { AuthProvider } from '../src/auth'
 import { ChatsProvider } from '../src/chats'
 import { FavoritesProvider } from '../src/favorites'
+import { LangProvider } from '../src/i18n'
 
 import { colors } from '../src/theme'
 
@@ -45,7 +46,8 @@ export default function RootLayout() {
       <FavoritesProvider>
       <ChatsProvider>
       <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'slide_from_right' }}>
+      <LangProvider>{(lang) => (
+      <Stack key={lang} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'slide_from_right' }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="listing/[id]" />
         <Stack.Screen name="chat/[id]" />
@@ -55,6 +57,7 @@ export default function RootLayout() {
         <Stack.Screen name="edit/[id]" />
         <Stack.Screen name="login" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
       </Stack>
+      )}</LangProvider>
       </ChatsProvider>
       </FavoritesProvider>
       </AuthProvider>

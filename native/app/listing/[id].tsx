@@ -1,3 +1,4 @@
+import { tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import * as Linking from 'expo-linking'
@@ -15,10 +16,8 @@ import HeartButton from '../../src/components/HeartButton'
 import ReportSheet from '../../src/components/ReportSheet'
 import Skeleton from '../../src/components/Skeleton'
 import { SITE, mediaUrl } from '../../src/config'
-import { cityName, formatPrice, isFresh, parseTime, relTime } from '../../src/format'
+import { cityName, formatPrice, isFresh, monthYear, parseTime, relTime } from '../../src/format'
 import { colors, radius } from '../../src/theme'
-
-const MONTHS_GEN = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
 
 /**
  * Объявление: галерея на всю ширину (листается, «1 / 5»), цена, название, город и время, метки, описание,
@@ -58,7 +57,7 @@ export default function ListingScreen() {
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => setPhoto(Math.round(e.nativeEvent.contentOffset.x / width))
   const back = (
     <Pressable style={[styles.back, { top: insets.top + 8 }]} onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
-      accessibilityLabel="Назад" hitSlop={8}>
+      accessibilityLabel={tr('Назад')} hitSlop={8}>
       <Ionicons name="chevron-back" size={24} color={colors.ink} />
     </Pressable>
   )
@@ -67,9 +66,9 @@ export default function ListingScreen() {
     return (
       <View style={[styles.page, styles.center, { paddingTop: insets.top }]}>
         {back}
-        <Text style={styles.h2}>Объявление не открылось</Text>
-        <Text style={styles.soft}>Возможно, его сняли с публикации или пропал интернет.</Text>
-        <Pressable style={styles.retry} onPress={() => setAttempt((n) => n + 1)}><Text style={styles.retryText}>Повторить</Text></Pressable>
+        <Text style={styles.h2}>{tr('Объявление не открылось')}</Text>
+        <Text style={styles.soft}>{tr('Возможно, его сняли с публикации или пропал интернет.')}</Text>
+        <Pressable style={styles.retry} onPress={() => setAttempt((n) => n + 1)}><Text style={styles.retryText}>{tr('Повторить')}</Text></Pressable>
       </View>
     )
   }
@@ -93,11 +92,11 @@ export default function ListingScreen() {
   const owner = data.owner
   const since = parseTime(owner?.since)
   const chips: { label: string; tone: 'accent' | 'primary' | 'gold' | 'plain' }[] = []
-  if (isFresh(data.published_at)) chips.push({ label: 'Новое', tone: 'accent' })
-  if (data.is_reserved) chips.push({ label: 'Забронировано', tone: 'gold' })
-  if (owner?.is_company) chips.push({ label: 'Компания', tone: 'primary' })
-  if (data.delivery_available) chips.push({ label: 'Доставка', tone: 'plain' })
-  if (data.price_negotiable) chips.push({ label: 'Торг уместен', tone: 'plain' })
+  if (isFresh(data.published_at)) chips.push({ label: tr('Новое'), tone: 'accent' })
+  if (data.is_reserved) chips.push({ label: tr('Забронировано'), tone: 'gold' })
+  if (owner?.is_company) chips.push({ label: tr('Компания'), tone: 'primary' })
+  if (data.delivery_available) chips.push({ label: tr('Доставка'), tone: 'plain' })
+  if (data.price_negotiable) chips.push({ label: tr('Торг уместен'), tone: 'plain' })
 
   return (
     <View style={styles.page}>
@@ -137,7 +136,7 @@ export default function ListingScreen() {
 
           {attrRows(data.attributes as Record<string, unknown> | undefined, schema).length > 0 && (
             <View style={styles.section}>
-              <Text style={styles.h3}>Характеристики</Text>
+              <Text style={styles.h3}>{tr('Характеристики')}</Text>
               {attrRows(data.attributes as Record<string, unknown> | undefined, schema).map((r) => (
                 <View key={r.label} style={styles.attr}>
                   <Text style={styles.attrLabel}>{r.label}</Text>
@@ -149,13 +148,13 @@ export default function ListingScreen() {
 
           {!!description && (
             <View style={styles.section}>
-              <Text style={styles.h3}>Описание</Text>
+              <Text style={styles.h3}>{tr('Описание')}</Text>
               <Text style={styles.text}>{description}</Text>
             </View>
           )}
 
           {owner && (
-            <Pressable style={styles.seller} onPress={() => router.push(`/seller/${owner.id}`)} accessibilityRole="button" accessibilityLabel="Профиль продавца">
+            <Pressable style={styles.seller} onPress={() => router.push(`/seller/${owner.id}`)} accessibilityRole="button" accessibilityLabel={tr('Профиль продавца')}>
               <View style={styles.avatar}>
                 {owner.avatar_url
                   ? <Image source={{ uri: mediaUrl(owner.avatar_url) ?? undefined }} style={styles.avatarImg} contentFit="cover" />
@@ -163,37 +162,37 @@ export default function ListingScreen() {
               </View>
               <View style={{ flex: 1, gap: 3 }}>
                 <View style={styles.nameRow}>
-                  <Text style={styles.name} numberOfLines={1}>{owner.company_name || owner.display_name || 'Продавец'}</Text>
-                  {owner.document_verified && <Ionicons name="checkmark-circle" size={17} color={colors.primary} accessibilityLabel="Личность подтверждена" />}
+                  <Text style={styles.name} numberOfLines={1}>{owner.company_name || owner.display_name || tr('Продавец')}</Text>
+                  {owner.document_verified && <Ionicons name="checkmark-circle" size={17} color={colors.primary} accessibilityLabel={tr('Личность подтверждена')} />}
                 </View>
                 {(owner.rating_count ?? 0) > 0 ? (
                   <View style={styles.starsRow}>
                     {[1, 2, 3, 4, 5].map((i) => (
                       <Ionicons key={i} name="star" size={13} color={i <= Math.round(owner.rating_avg ?? 0) ? '#E0A526' : '#E1E4E1'} />
                     ))}
-                    <Text style={styles.small}>{(owner.rating_avg ?? 0).toFixed(1).replace('.', ',')} · отзывов: {owner.rating_count}</Text>
+                    <Text style={styles.small}>{(owner.rating_avg ?? 0).toFixed(1).replace('.', ',')} · {tr('отзывов: {n}', { n: owner.rating_count ?? 0 })}</Text>
                   </View>
-                ) : <Text style={styles.small}>Пока нет отзывов</Text>}
-                {since && <Text style={styles.small}>На PLONK с {MONTHS_GEN[since.getMonth()]} {since.getFullYear()}</Text>}
+                ) : <Text style={styles.small}>{tr('Пока нет отзывов')}</Text>}
+                {since && <Text style={styles.small}>{tr('На PLONK с {date}', { date: monthYear(since) })}</Text>}
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.muted} />
             </Pressable>
           )}
 
           <Text style={styles.footnote}>
-            {[data.number ? `Объявление №${data.number}` : '', data.views_count != null ? `просмотров: ${data.views_count}` : ''].filter(Boolean).join(' · ')}
+            {[data.number ? tr('Объявление №{n}', { n: String(data.number) }) : '', data.views_count != null ? tr('просмотров: {n}', { n: data.views_count }) : ''].filter(Boolean).join(' · ')}
           </Text>
           {!(user && owner && user.id === owner.id) && <Pressable onPress={() => (token ? setReportOpen(true) : router.push('/login'))} style={styles.report} hitSlop={6}>
             <Ionicons name="flag-outline" size={15} color={colors.muted} />
-            <Text style={styles.reportText}>Пожаловаться</Text>
+            <Text style={styles.reportText}>{tr('Пожаловаться')}</Text>
           </Pressable>}
         </View>
-        <CardsRow title="Ещё у продавца" items={more} exclude={data.id} />
-        <CardsRow title="Похожие" items={similar} exclude={data.id} />
+        <CardsRow title={tr('Ещё у продавца')} items={more} exclude={data.id} />
+        <CardsRow title={tr('Похожие')} items={similar} exclude={data.id} />
       </ScrollView>
 
       {back}
-      <Pressable style={[styles.shareTop, { top: insets.top + 8 }]} hitSlop={6} accessibilityLabel="Поделиться"
+      <Pressable style={[styles.shareTop, { top: insets.top + 8 }]} hitSlop={6} accessibilityLabel={tr('Поделиться')}
         onPress={() => Share.share({ message: `${title} — ${formatPrice(data.price, data.currency, data.is_free)}\n${SITE}${data.path ?? ''}` }).catch(() => {})}>
         <Ionicons name="share-outline" size={21} color={colors.ink} />
       </Pressable>
@@ -202,7 +201,7 @@ export default function ListingScreen() {
       <View style={[styles.bar, { paddingBottom: 10 + insets.bottom }]}>
         {user && owner && user.id === owner.id ? (
           <View style={[styles.cta, styles.ctaMine]}>
-            <Text style={styles.ctaMineText}>Это ваше объявление</Text>
+            <Text style={styles.ctaMineText}>{tr('Это ваше объявление')}</Text>
           </View>
         ) : (
           <Pressable style={[styles.cta, opening && { opacity: 0.7 }]} disabled={opening} accessibilityRole="button" onPress={async () => {
@@ -218,7 +217,7 @@ export default function ListingScreen() {
             }
           }}>
             <Ionicons name="chatbubble-ellipses" size={18} color="#fff" />
-            <Text style={styles.ctaText}>Написать продавцу</Text>
+            <Text style={styles.ctaText}>{tr('Написать продавцу')}</Text>
           </Pressable>
         )}
       </View>

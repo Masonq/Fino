@@ -1,3 +1,4 @@
+import { tr } from '../i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { useRef } from 'react'
 import { Animated, Pressable, StyleSheet } from 'react-native'
@@ -24,7 +25,7 @@ export default function HeartButton({ id, size = 36, style }: { id: string; size
 
   return (
     <Pressable onPress={press} hitSlop={6} style={[styles.btn, { width: size, height: size, borderRadius: size / 2 }, style]}
-      accessibilityRole="button" accessibilityLabel={on ? 'Убрать из избранного' : 'В избранное'} accessibilityState={{ selected: on }}>
+      accessibilityRole="button" accessibilityLabel={on ? tr('Убрать из избранного') : tr('В избранное')} accessibilityState={{ selected: on }}>
       <Animated.View style={{ transform: [{ scale }] }}>
         <Ionicons name={on ? 'heart' : 'heart-outline'} size={Math.round(size * 0.56)} color={on ? colors.accent : colors.ink} />
       </Animated.View>

@@ -1,3 +1,4 @@
+import { tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import { router, useFocusEffect } from 'expo-router'
@@ -26,17 +27,17 @@ export default function Chats() {
     return (
       <SafeAreaView style={[styles.page, styles.center]} edges={['top']}>
         <View style={styles.circle}><Ionicons name="chatbubble-outline" size={28} color={colors.primaryDeep} /></View>
-        <Text style={styles.title}>Переписка с продавцами</Text>
-        <Text style={styles.text}>Войдите, чтобы писать продавцам и отвечать покупателям.</Text>
-        <Pressable style={styles.cta} onPress={() => router.push('/login')}><Text style={styles.ctaText}>Войти</Text></Pressable>
+        <Text style={styles.title}>{tr('Переписка с продавцами')}</Text>
+        <Text style={styles.text}>{tr('Войдите, чтобы писать продавцам и отвечать покупателям.')}</Text>
+        <Pressable style={styles.cta} onPress={() => router.push('/login')}><Text style={styles.ctaText}>{tr('Войти')}</Text></Pressable>
       </SafeAreaView>
     )
   }
 
   const row = ({ item }: { item: Chat }) => {
     const photo = mediaUrl(item.listing_photo)
-    const name = item.is_team ? 'Команда PLONK' : (item.other_name || 'Собеседник')
-    const preview = item.last_kind === 'offer' ? 'Предложение цены' : plainText(item.last_text).replace(/\n+/g, ' ')
+    const name = item.is_team ? tr('Команда PLONK') : (item.other_name || tr('Собеседник'))
+    const preview = item.last_kind === 'offer' ? tr('Предложение цены') : plainText(item.last_text).replace(/\n+/g, ' ')
     const unread = item.unread || 0
     return (
       <Pressable style={styles.row} onPress={() => router.push(`/chat/${item.id}`)} accessibilityRole="button">
@@ -54,7 +55,7 @@ export default function Chats() {
           {!!item.listing_title && <Text style={styles.listing} numberOfLines={1}>{item.listing_title}</Text>}
           <View style={styles.rowTop}>
             <Text style={[styles.preview, unread > 0 && styles.previewOn]} numberOfLines={1}>
-              {item.last_from_me ? 'Вы: ' : ''}{preview}
+              {item.last_from_me ? tr('Вы: ') : ''}{preview}
             </Text>
             {unread > 0 && <View style={styles.badge}><Text style={styles.badgeText}>{unread > 99 ? '99+' : unread}</Text></View>}
           </View>
@@ -65,12 +66,12 @@ export default function Chats() {
 
   return (
     <SafeAreaView style={styles.page} edges={['top']}>
-      <Text style={styles.h1}>Сообщения</Text>
+      <Text style={styles.h1}>{tr('Сообщения')}</Text>
       {chats === null ? (
         failed ? (
           <View style={styles.center}>
-            <Text style={styles.title}>Не удалось загрузить</Text>
-            <Pressable style={styles.cta} onPress={refresh}><Text style={styles.ctaText}>Повторить</Text></Pressable>
+            <Text style={styles.title}>{tr('Не удалось загрузить')}</Text>
+            <Pressable style={styles.cta} onPress={refresh}><Text style={styles.ctaText}>{tr('Повторить')}</Text></Pressable>
           </View>
         ) : (
           <View style={{ paddingHorizontal: 16, gap: 18, paddingTop: 6 }}>
@@ -96,8 +97,8 @@ export default function Chats() {
           ListEmptyComponent={
             <View style={styles.center}>
               <View style={styles.circle}><Ionicons name="chatbubble-outline" size={28} color={colors.primaryDeep} /></View>
-              <Text style={styles.title}>Пока нет переписок</Text>
-              <Text style={styles.text}>Откройте объявление и нажмите «Написать продавцу».</Text>
+              <Text style={styles.title}>{tr('Пока нет переписок')}</Text>
+              <Text style={styles.text}>{tr('Откройте объявление и нажмите «Написать продавцу».')}</Text>
             </View>
           }
         />

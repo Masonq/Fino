@@ -1,3 +1,4 @@
+import { tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Tabs } from 'expo-router'
 import { type ColorValue, StyleSheet, Text, View } from 'react-native'
@@ -39,14 +40,14 @@ export default function TabsLayout() {
       // На самых узких экранах подпись чуть уменьшится, но не обрежется
       tabBarLabel: ({ color, focused, children }) => (
         <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.82} allowFontScaling={false}
-          style={{ color, fontSize: LABEL, lineHeight: 14, fontWeight: focused || children === 'Разместить' ? '700' : '600', marginTop: 3, flexShrink: 0 }}>{children}</Text>
+          style={{ color, fontSize: LABEL, lineHeight: 14, fontWeight: focused || children === tr('Разместить') ? '700' : '600', marginTop: 3, flexShrink: 0 }}>{children}</Text>
       ),
       sceneStyle: { backgroundColor: colors.bg },
     }}>
-      <Tabs.Screen name="index" options={{ title: 'Главная', tabBarIcon: icon('home', 'home-outline') }} />
-      <Tabs.Screen name="favorites" options={{ title: 'Избранное', tabBarIcon: icon('heart', 'heart-outline') }} />
+      <Tabs.Screen name="index" options={{ title: tr('Главная'), tabBarIcon: icon('home', 'home-outline') }} />
+      <Tabs.Screen name="favorites" options={{ title: tr('Избранное'), tabBarIcon: icon('heart', 'heart-outline') }} />
       <Tabs.Screen name="post" options={{
-        title: 'Разместить',
+        title: tr('Разместить'),
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.inkSoft,
         tabBarIcon: () => (
@@ -54,11 +55,11 @@ export default function TabsLayout() {
         ),
       }} />
       <Tabs.Screen name="chats" options={{
-        title: 'Сообщения', tabBarIcon: icon('chatbubble', 'chatbubble-outline'),
+        title: tr('Сообщения'), tabBarIcon: icon('chatbubble', 'chatbubble-outline'),
         tabBarBadge: unread > 0 ? (unread > 99 ? '99+' : unread) : undefined,
         tabBarBadgeStyle: { backgroundColor: colors.accent, color: '#fff', fontSize: 11, fontWeight: '800' },
       }} />
-      <Tabs.Screen name="profile" options={{ title: 'Профиль', tabBarIcon: icon('person', 'person-outline') }} />
+      <Tabs.Screen name="profile" options={{ title: tr('Профиль'), tabBarIcon: icon('person', 'person-outline') }} />
     </Tabs>
   )
 }

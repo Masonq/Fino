@@ -1,3 +1,4 @@
+import { tr } from '../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
@@ -49,7 +50,7 @@ export default function Login() {
       setEmail(address); setStep('code'); setCode(''); setLeft(RESEND)
       setTimeout(() => codeRef.current?.focus(), 250)
     } catch (e) {
-      setError(e instanceof ApiError && e.status === 429 ? 'Слишком много попыток. Подождите немного и попробуйте снова.' : 'Не удалось отправить код. Проверьте адрес и интернет.')
+      setError(e instanceof ApiError && e.status === 429 ? tr('Слишком много попыток. Подождите немного и попробуйте снова.') : tr('Не удалось отправить код. Проверьте адрес и интернет.'))
     } finally {
       setBusy(false)
     }
@@ -63,7 +64,7 @@ export default function Login() {
       router.back()
     } catch (e) {
       setCode('')
-      setError(e instanceof ApiError && e.status === 429 ? 'Слишком много попыток. Подождите немного.' : 'Код не подошёл. Проверьте письмо или запросите новый.')
+      setError(e instanceof ApiError && e.status === 429 ? tr('Слишком много попыток. Подождите немного.') : tr('Код не подошёл. Проверьте письмо или запросите новый.'))
     } finally {
       setBusy(false)
     }
@@ -79,7 +80,7 @@ export default function Login() {
     <KeyboardAvoidingView style={[styles.page, { paddingTop: insets.top + 8 }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={styles.top}>
         <Pressable onPress={() => (step === 'code' ? (setStep('email'), setError('')) : router.back())} hitSlop={10}
-          accessibilityLabel={step === 'code' ? 'Изменить почту' : 'Закрыть'} style={styles.iconBtn}>
+          accessibilityLabel={step === 'code' ? tr('Изменить почту') : tr('Закрыть')} style={styles.iconBtn}>
           <Ionicons name={step === 'code' ? 'chevron-back' : 'close'} size={24} color={colors.ink} />
         </Pressable>
       </View>
@@ -87,8 +88,8 @@ export default function Login() {
       <View style={styles.body}>
         {step === 'email' ? (
           <>
-            <Text style={styles.title}>Вход в PLONK</Text>
-            <Text style={styles.text}>Пришлём код на почту — пароль не нужен. Если аккаунта ещё нет, он создастся сам.</Text>
+            <Text style={styles.title}>{tr('Вход в PLONK')}</Text>
+            <Text style={styles.text}>{tr('Пришлём код на почту — пароль не нужен. Если аккаунта ещё нет, он создастся сам.')}</Text>
             <TextInput
               value={email}
               onChangeText={(v) => { setEmail(v); setSuggestion(''); setError('') }}
@@ -106,23 +107,23 @@ export default function Login() {
             />
             {!!suggestion && (
               <View style={styles.hint}>
-                <Text style={styles.hintText}>Может быть, <Text style={styles.bold}>{suggestion}</Text>?</Text>
+                <Text style={styles.hintText}>{tr('Может быть,')} <Text style={styles.bold}>{suggestion}</Text>?</Text>
                 <View style={styles.hintRow}>
-                  <Pressable style={styles.hintBtn} onPress={() => send(suggestion)}><Text style={styles.hintBtnText}>Да, исправить</Text></Pressable>
-                  <Pressable style={[styles.hintBtn, styles.hintGhost]} onPress={() => send(email.trim(), true)}><Text style={styles.hintGhostText}>Нет, всё верно</Text></Pressable>
+                  <Pressable style={styles.hintBtn} onPress={() => send(suggestion)}><Text style={styles.hintBtnText}>{tr('Да, исправить')}</Text></Pressable>
+                  <Pressable style={[styles.hintBtn, styles.hintGhost]} onPress={() => send(email.trim(), true)}><Text style={styles.hintGhostText}>{tr('Нет, всё верно')}</Text></Pressable>
                 </View>
               </View>
             )}
             {!!error && <Text style={styles.error}>{error}</Text>}
             <Pressable style={[styles.cta, (!valid || busy) && styles.ctaOff]} disabled={!valid || busy} onPress={() => send()}>
-              {busy ? <ActivityIndicator color="#fff" /> : <Text style={styles.ctaText}>Получить код</Text>}
+              {busy ? <ActivityIndicator color="#fff" /> : <Text style={styles.ctaText}>{tr('Получить код')}</Text>}
             </Pressable>
           </>
         ) : (
           <>
-            <Text style={styles.title}>Код из письма</Text>
-            <Text style={styles.text}>Отправили на <Text style={styles.bold}>{email.trim()}</Text>. Письмо может прийти в «Спам».</Text>
-            <Pressable onPress={() => codeRef.current?.focus()} style={styles.cells} accessibilityLabel="Поле для кода">
+            <Text style={styles.title}>{tr('Код из письма')}</Text>
+            <Text style={styles.text}>{tr('Отправили на')} <Text style={styles.bold}>{email.trim()}</Text>{tr('. Письмо может прийти в «Спам».')}</Text>
+            <Pressable onPress={() => codeRef.current?.focus()} style={styles.cells} accessibilityLabel={tr('Поле для кода')}>
               {Array.from({ length: LEN }).map((_, i) => (
                 <View key={i} style={[styles.cell, i === code.length && !busy && styles.cellOn]}>
                   <Text style={styles.cellText}>{code[i] ?? ''}</Text>
@@ -144,7 +145,7 @@ export default function Login() {
             {!!error && <Text style={styles.error}>{error}</Text>}
             <Pressable disabled={left > 0 || busy} onPress={() => send(email.trim(), true)} style={styles.resend}>
               <Text style={[styles.resendText, left > 0 && { color: colors.muted }]}>
-                {left > 0 ? `Отправить снова через ${left} с` : 'Отправить код снова'}
+                {left > 0 ? tr('Отправить снова через {n} с', { n: left }) : tr('Отправить код снова')}
               </Text>
             </Pressable>
           </>
