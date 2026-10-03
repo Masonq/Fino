@@ -1,92 +1,107 @@
-import { success } from '../../src/haptics'
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { supportCreate, supportMine, type Ticket } from '../../src/api'
+import { ApiError, supportCreate, supportMine, supportReply, type Ticket } from '../../src/api'
 import { useAuth } from '../../src/auth'
 import Icon from '../../src/components/Icon'
-import { shortTime } from '../../src/format'
+import { success } from '../../src/haptics'
 import { tr } from '../../src/i18n'
 import { colors, font } from '../../src/theme'
 
-const TOPICS: [string, string][] = [['listing', 'Объявление'], ['account', 'Аккаунт'], ['payment', 'Оплата'], ['abuse', 'Жалоба на пользователя'], ['other', 'Другое']]
-const STATUS: Record<string, string> = { open: 'Открыто', answered: 'Есть ответ', closed: 'Закрыто', pending: 'Ждём вас' }
+const TOPICS: [string, string][] = [['listing', 'Объявление'], ['account', 'Вход и профиль'], ['payment', 'Оплата'], ['abuse', 'Обман'], ['other', 'Другое']]
+const STATUS: Record<string, string> = { open: 'Ждёт ответа', answered: 'Отвечено', closed: 'Закрыто' }
 
-/** Поддержка: мои обращения (статус, когда обновлено) и новое обращение — тема, суть, подробности. */
+/**
+ * «Написать в поддержку» — как /support сайта, одной страницей: сверху форма (тема чипами, «Коротко о сути»
+ * и «Что случилось» в одной карточке, «Отправить»), ниже «Мои обращения» — тема, статус, переписка
+ * и «Ваш ответ» прямо в карточке.
+ */
 export default function Support() {
   const insets = useSafeAreaInsets()
   const { token } = useAuth()
   const [items, setItems] = useState<Ticket[] | null>(null)
-  const [writing, setWriting] = useState(false)
   const [topic, setTopic] = useState('other')
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
   const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
+  const [note, setNote] = useState('')
+  const [replies, setReplies] = useState<Record<string, string>>({})
 
-  const load = useCallback(async () => {
-    if (!token) return
-    try { setItems((await supportMine(token)).items) } catch { setItems((v) => v ?? []) }
-  }, [token])
+  const load = useCallback(async () => { if (token) { try { setItems((await supportMine(token)).items) } catch { setItems((v) => v ?? []) } } }, [token])
   useFocusEffect(useCallback(() => { load() }, [load]))
 
   const send = async () => {
     if (!token) return
-    setError('')
-    if (subject.trim().length < 3 || body.trim().length < 10) { setError(tr('Опишите вопрос: тема — от 3 букв, подробности — от 10.')); return }
+    setNote('')
+    if (subject.trim().length < 3 || body.trim().length < 10) { setNote(tr('Опишите вопрос: тема — от 3 букв, подробности — от 10.')); return }
     setBusy(true)
     try {
-      const t = await supportCreate(token, { topic, subject: subject.trim(), body: body.trim() })
-      success()
-      setWriting(false); setSubject(''); setBody('')
-      router.push(`/support/${t.id}`)
-    } catch { setError(tr('Не удалось отправить. Проверьте интернет и попробуйте ещё раз.')) } finally { setBusy(false) }
+      await supportCreate(token, { topic, subject: subject.trim(), body: body.trim() })
+      success(); setSubject(''); setBody(''); setNote(tr('Отправлено. Ответим здесь и в уведомлениях.')); await load()
+    } catch (e) {
+      setNote(tr(e instanceof ApiError && e.status === 429 ? 'Слишком много обращений подряд. Подождите немного.' : 'Не получилось отправить. Попробуйте ещё раз.'))
+    } finally { setBusy(false) }
+  }
+  const reply = async (id: string) => {
+    const text = (replies[id] ?? '').trim()
+    if (!token || !text) return
+    try { await supportReply(token, id, text); setReplies((r) => ({ ...r, [id]: '' })); await load() } catch { /* сеть */ }
   }
 
   return (
     <View style={[styles.page, { paddingTop: insets.top }]}>
       <View style={styles.top}>
-        <Pressable onPress={() => (writing ? setWriting(false) : router.canGoBack() ? router.back() : router.replace('/profile'))} hitSlop={10} style={styles.back} accessibilityLabel={tr('Назад')}><Icon name="back" size={22} color={colors.ink} /></Pressable>
-        <Text style={styles.title}>{tr(writing ? 'Новое обращение' : 'Поддержка')}</Text>
+        <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/profile'))} hitSlop={10} style={styles.back} accessibilityLabel={tr('Назад')}><Icon name="back" size={22} color={colors.ink} /></Pressable>
+        <Text style={styles.title}>{tr('Написать в поддержку')}</Text>
       </View>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-          {writing ? (
-            <>
-              <Text style={styles.label}>{tr('Тема')}</Text>
+        <ScrollView contentContainerStyle={[styles.body, { paddingBottom: insets.bottom + 24 }]} keyboardShouldPersistTaps="handled">
+          <View style={styles.card}>
+            <View style={styles.section}>
+              <Text style={styles.label}>{tr('О чём вопрос')}</Text>
               <View style={styles.chips}>
-                {TOPICS.map(([k, label]) => (
-                  <Pressable key={k} onPress={() => setTopic(k)} style={[styles.chip, topic === k && styles.chipOn]}><Text style={[styles.chipText, topic === k && styles.chipTextOn]}>{tr(label)}</Text></Pressable>
+                {TOPICS.map(([k, l]) => (
+                  <Pressable key={k} onPress={() => setTopic(k)} style={[styles.chip, topic === k && styles.chipOn]}><Text style={[styles.chipText, topic === k && styles.chipTextOn]}>{tr(l)}</Text></Pressable>
                 ))}
               </View>
-              <Text style={styles.label}>{tr('Коротко о вопросе')}</Text>
-              <TextInput value={subject} onChangeText={setSubject} style={styles.input} maxLength={200} placeholder={tr('Например, не публикуется объявление')} placeholderTextColor={colors.muted} />
-              <Text style={styles.label}>{tr('Подробности')}</Text>
-              <TextInput value={body} onChangeText={setBody} style={[styles.input, styles.area]} multiline textAlignVertical="top" maxLength={4000} placeholder={tr('Что случилось и что вы уже пробовали')} placeholderTextColor={colors.muted} />
-              {!!error && <Text style={styles.error}>{error}</Text>}
-              <Pressable style={[styles.cta, busy && { opacity: 0.6 }]} disabled={busy} onPress={send}>{busy ? <ActivityIndicator color="#fff" /> : <Text style={styles.ctaText}>{tr('Отправить')}</Text>}</Pressable>
-              <Text style={styles.note}>{tr('Ответ придёт сюда и в уведомления — обычно в течение дня.')}</Text>
-            </>
-          ) : (
+            </View>
+            <View style={[styles.section, styles.sep]}>
+              <Text style={styles.label}>{tr('Коротко о сути')}</Text>
+              <TextInput value={subject} onChangeText={setSubject} placeholder={tr('Коротко о чём')} placeholderTextColor={colors.muted} style={styles.input} maxLength={200} />
+            </View>
+            <View style={[styles.section, styles.sep]}>
+              <Text style={styles.label}>{tr('Что случилось')}</Text>
+              <TextInput value={body} onChangeText={setBody} placeholder={tr('Что случилось? Опишите подробно.')} placeholderTextColor={colors.muted} style={[styles.input, styles.area]} multiline textAlignVertical="top" maxLength={4000} />
+            </View>
+          </View>
+          {!!note && <Text style={styles.note}>{note}</Text>}
+          <Pressable style={[styles.cta, busy && { opacity: 0.6 }]} disabled={busy} onPress={send}>{busy ? <ActivityIndicator color="#fff" /> : <Text style={styles.ctaText}>{tr('Отправить')}</Text>}</Pressable>
+
+          {items === null ? <ActivityIndicator style={{ marginTop: 20 }} color={colors.primary} /> : items.length > 0 && (
             <>
-              <Pressable style={styles.cta} onPress={() => setWriting(true)}><Text style={styles.ctaText}>{tr('Новое обращение')}</Text></Pressable>
-              {items === null ? <ActivityIndicator style={{ marginTop: 24 }} color={colors.primary} /> : items.length === 0 ? (
-                <Text style={styles.empty}>{tr('Обращений пока нет. Напишите — команда PLONK ответит.')}</Text>
-              ) : (
-                <View style={styles.list}>
-                  {items.map((t, i) => (
-                    <Pressable key={t.id} style={[styles.row, i === items.length - 1 && { borderBottomWidth: 0 }]} onPress={() => router.push(`/support/${t.id}`)}>
-                      <View style={{ flex: 1, gap: 3 }}>
-                        <Text style={styles.rowTitle} numberOfLines={1}>{t.subject}</Text>
-                        <Text style={[styles.rowStatus, t.status === 'answered' && { color: colors.primaryDeep }]}>{tr(STATUS[t.status] ?? t.status)}  ·  {shortTime(t.updated_at)}</Text>
-                      </View>
-                      <Icon name="forward" size={16} color={colors.muted} />
-                    </Pressable>
+              <Text style={styles.h2}>{tr('Мои обращения')}</Text>
+              {items.map((t) => (
+                <View key={t.id} style={styles.ticket}>
+                  <View style={styles.ticketHead}>
+                    <Text style={styles.ticketTitle} numberOfLines={2}>{t.subject}</Text>
+                    <Text style={[styles.badge, t.status === 'answered' && styles.badgeOn]}>{tr(STATUS[t.status] ?? t.status)}</Text>
+                  </View>
+                  {(t.messages ?? []).map((m) => (
+                    <View key={m.id} style={[styles.msg, m.from_staff && styles.msgStaff]}>
+                      {m.from_staff && <Text style={styles.staff}>{tr('Команда PLONK')}</Text>}
+                      <Text style={styles.msgText}>{m.body}</Text>
+                    </View>
                   ))}
+                  {t.status !== 'closed' && (
+                    <View style={styles.replyRow}>
+                      <TextInput value={replies[t.id] ?? ''} onChangeText={(v) => setReplies((r) => ({ ...r, [t.id]: v }))} placeholder={tr('Ваш ответ')} placeholderTextColor={colors.muted} style={styles.replyInput} />
+                      <Pressable style={styles.replyBtn} onPress={() => reply(t.id)}><Text style={styles.replyBtnText}>{tr('Отправить')}</Text></Pressable>
+                    </View>
+                  )}
                 </View>
-              )}
+              ))}
             </>
           )}
         </ScrollView>
@@ -100,22 +115,33 @@ const styles = StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, height: 52 },
   back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   title: { fontSize: 20, fontFamily: font[800], color: colors.ink, marginLeft: 4 },
-  body: { paddingHorizontal: 16, paddingBottom: 40, paddingTop: 6 },
-  label: { fontSize: 15, fontFamily: font[800], color: colors.ink, marginTop: 16, marginBottom: 8 },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { height: 36, paddingHorizontal: 13, borderRadius: 11, backgroundColor: colors.sunken, justifyContent: 'center' },
-  chipOn: { backgroundColor: colors.primary },
-  chipText: { fontSize: 13.5, fontFamily: font[700], color: colors.inkSoft },
+  body: { paddingHorizontal: 12 },
+  card: { borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
+  section: { padding: 12, gap: 8 },
+  sep: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
+  label: { fontSize: 12.5, fontFamily: font[700], color: colors.inkSoft },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  chip: { height: 34, paddingHorizontal: 13, borderRadius: 17, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, justifyContent: 'center' },
+  chipOn: { backgroundColor: colors.primary, borderColor: colors.primary },
+  chipText: { fontSize: 13, fontFamily: font[700], color: colors.ink },
   chipTextOn: { color: '#fff' },
-  input: { minHeight: 50, borderRadius: 13, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 14, fontSize: 16, fontFamily: font[500], color: colors.ink },
-  area: { minHeight: 130, paddingTop: 13, paddingBottom: 13 },
-  error: { fontSize: 13.5, fontFamily: font[600], color: '#B42318', marginTop: 12 },
-  cta: { marginTop: 18, height: 52, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  ctaText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
-  note: { fontSize: 13, fontFamily: font[500], color: colors.muted, textAlign: 'center', marginTop: 10 },
-  empty: { fontSize: 14.5, lineHeight: 20, fontFamily: font[500], color: colors.muted, textAlign: 'center', marginTop: 24 },
-  list: { marginTop: 18, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 13, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
-  rowTitle: { fontSize: 15.5, fontFamily: font[700], color: colors.ink },
-  rowStatus: { fontSize: 12.5, fontFamily: font[600], color: colors.muted },
+  input: { fontSize: 15, fontFamily: font[500], color: colors.ink, paddingVertical: 2 },
+  area: { minHeight: 110 },
+  note: { fontSize: 13.5, fontFamily: font[600], color: colors.inkSoft, marginTop: 10 },
+  cta: { marginTop: 12, height: 50, borderRadius: 14, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+  ctaText: { color: '#fff', fontSize: 15.5, fontFamily: font[800] },
+  h2: { fontSize: 16, fontFamily: font[800], color: colors.ink, marginTop: 22, marginBottom: 10 },
+  ticket: { padding: 12, marginBottom: 10, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, gap: 8 },
+  ticketHead: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+  ticketTitle: { flex: 1, fontSize: 14.5, fontFamily: font[800], color: colors.ink },
+  badge: { fontSize: 11.5, fontFamily: font[700], color: colors.muted, backgroundColor: colors.sunken, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 7, overflow: 'hidden' },
+  badgeOn: { color: colors.primaryDeep, backgroundColor: colors.primarySoft },
+  msg: { alignSelf: 'flex-start', maxWidth: '88%', paddingHorizontal: 11, paddingVertical: 8, borderRadius: 12, backgroundColor: colors.sunken },
+  msgStaff: { backgroundColor: colors.primarySoft },
+  staff: { fontSize: 11.5, fontFamily: font[800], color: colors.primaryDeep, marginBottom: 2 },
+  msgText: { fontSize: 14, lineHeight: 19, fontFamily: font[400], color: colors.ink },
+  replyRow: { flexDirection: 'row', gap: 8, marginTop: 2 },
+  replyInput: { flex: 1, height: 42, borderRadius: 11, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 12, fontSize: 14.5, fontFamily: font[500], color: colors.ink },
+  replyBtn: { height: 42, paddingHorizontal: 14, borderRadius: 11, borderWidth: 1, borderColor: colors.border, justifyContent: 'center' },
+  replyBtnText: { fontSize: 14, fontFamily: font[700], color: colors.ink },
 })

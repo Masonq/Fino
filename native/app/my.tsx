@@ -96,7 +96,7 @@ export default function MyListings() {
 
         {items === null ? <ActivityIndicator style={{ marginTop: 24 }} color={colors.primary} /> : shown.length === 0 ? (
           <View style={styles.emptyBox}>
-            <View style={styles.emptyIcon}><Icon name="doc" size={22} color={colors.primary} /></View>
+            <View style={styles.emptyIcon}><Icon name="doc" size={28} color={colors.primary} /></View>
             <Text style={styles.emptyText}>{tr('Здесь пока пусто')}</Text>
             <Pressable style={styles.emptyBtn} onPress={() => router.navigate('/post')}><Text style={styles.emptyBtnText}>{tr('Разместить')}</Text></Pressable>
           </View>
@@ -158,8 +158,8 @@ const styles = StyleSheet.create({
   tabText: { fontSize: 13.5, fontFamily: font[700], color: colors.inkSoft },
   tabTextOn: { color: '#fff' },
   tabCount: { fontSize: 12, fontFamily: font[800], color: colors.muted },
-  emptyBox: { alignItems: 'center', gap: 10, paddingTop: 40 },
-  emptyIcon: { width: 52, height: 52, borderRadius: 26, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  emptyBox: { alignItems: 'center', gap: 14, paddingTop: 44, paddingHorizontal: 32 },
+  emptyIcon: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
   emptyText: { fontSize: 14.5, fontFamily: font[600], color: colors.muted },
   emptyBtn: { marginTop: 4, height: 42, paddingHorizontal: 20, borderRadius: 13, backgroundColor: colors.primary, justifyContent: 'center' },
   emptyBtnText: { color: '#fff', fontSize: 14.5, fontFamily: font[800] },

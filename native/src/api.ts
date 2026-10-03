@@ -389,3 +389,5 @@ export type ListingDashboard = {
 export const listingDashboard = (token: string, id: string, days: number) =>
   authed<ListingDashboard>(`/listings/${encodeURIComponent(id)}/dashboard?days=${days}`, token)
 
+export const reorderListingPhotos = (token: string, id: string, photoIds: string[]) =>
+  authed<unknown>(`/listings/${encodeURIComponent(id)}/photos/order`, token, 'PATCH', { photo_ids: photoIds })

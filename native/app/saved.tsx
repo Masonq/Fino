@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { deleteSavedSearch, type SavedSearch, savedSearches, type SearchFilters, toggleSavedSearch } from '../src/api'
 import { useAuth } from '../src/auth'
+import Icon from '../src/components/Icon'
 import { cityName } from '../src/format'
 import { colors, font } from '../src/theme'
 
@@ -48,25 +49,29 @@ export default function Saved() {
     <View style={[styles.page, { paddingTop: insets.top }]}>
       <View style={styles.head}>
         <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/profile'))} hitSlop={10} style={styles.back} accessibilityLabel={tr('Назад')}>
-          <Ionicons name="chevron-back" size={26} color={colors.ink} />
+          <Icon name="back" size={22} color={colors.ink} />
         </Pressable>
         <Text style={styles.h1}>{tr('Сохранённые поиски')}</Text>
+        {!!items?.length && <Text style={styles.count}>{items.length}</Text>}
       </View>
       {items === null ? <ActivityIndicator style={{ marginTop: 30 }} color={colors.primary} /> : (
         <FlatList
           data={items}
           keyExtractor={(s) => s.id}
-          contentContainerStyle={items.length === 0 ? { flexGrow: 1 } : { padding: 16, gap: 10 }}
+          contentContainerStyle={items.length === 0 ? { flexGrow: 1 } : { paddingHorizontal: 16, paddingBottom: 24 }}
           renderItem={({ item }) => (
-            <View style={styles.card}>
-              <Pressable style={{ flex: 1, gap: 3 }} onPress={() => open(item)}>
-                <Text style={styles.title} numberOfLines={2}>{describeSearch(item.filters, item.name)}</Text>
-                <Text style={styles.sub}>{item.notify_enabled ? tr('Пришлём уведомление о новых') : tr('Оповещения выключены')}</Text>
+            <View style={styles.row}>
+              <Pressable onPress={() => open(item)} style={{ gap: 2 }}>
+                <Text style={styles.title} numberOfLines={2}>{item.name || describeSearch(item.filters, item.name)}</Text>
+                <Text style={styles.sub} numberOfLines={2}>{describeSearch(item.filters, item.name)}</Text>
               </Pressable>
-              <Switch value={item.notify_enabled} onValueChange={(v) => toggle(item, v)} trackColor={{ true: colors.primary, false: '#D8DCD8' }} />
-              <Pressable onPress={() => remove(item)} hitSlop={8} style={styles.trash} accessibilityLabel={tr('Удалить поиск')}>
-                <Ionicons name="trash-outline" size={20} color={colors.muted} />
-              </Pressable>
+              <View style={styles.rowFoot}>
+                <Pressable style={styles.check} onPress={() => toggle(item, !item.notify_enabled)} accessibilityRole="checkbox" accessibilityState={{ checked: item.notify_enabled }} hitSlop={6}>
+                  <View style={[styles.box, item.notify_enabled && styles.boxOn]}>{item.notify_enabled && <Icon name="check" size={12} color="#fff" />}</View>
+                  <Text style={styles.checkText}>{tr('Уведомлять')}</Text>
+                </Pressable>
+                <Pressable onPress={() => remove(item)} hitSlop={8}><Text style={styles.del}>{tr('Удалить')}</Text></Pressable>
+              </View>
             </View>
           )}
           ListEmptyComponent={
@@ -83,13 +88,22 @@ export default function Saved() {
 }
 
 const styles = StyleSheet.create({
+  // как .saved-row сайта: строки с разделителем, «Уведомлять» галочкой, «Удалить» красным текстом
+  count: { fontSize: 12, fontFamily: font[800], color: colors.primaryDeep, backgroundColor: colors.primarySoft, borderRadius: 8, overflow: 'hidden', paddingHorizontal: 8, paddingVertical: 3, marginLeft: 8 },
+  row: { paddingVertical: 12, gap: 8, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+  rowFoot: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  check: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  box: { width: 20, height: 20, borderRadius: 5, borderWidth: 1.5, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface },
+  boxOn: { backgroundColor: colors.primary, borderColor: colors.primary },
+  checkText: { fontSize: 13.5, fontFamily: font[700], color: colors.ink },
+  del: { fontSize: 13.5, fontFamily: font[700], color: '#E5533D' },
   page: { flex: 1, backgroundColor: colors.bg },
   head: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, height: 52 },
   back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   h1: { fontSize: 20, fontFamily: font[800], color: colors.ink, marginLeft: 4 },
   card: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
-  title: { fontSize: 16, fontFamily: font[700], color: colors.ink },
-  sub: { fontFamily: font[400], fontSize: 13, color: colors.muted },
+  title: { fontSize: 15, fontFamily: font[800], color: colors.ink },
+  sub: { fontSize: 13, fontFamily: font[500], color: colors.muted },
   trash: { width: 32, alignItems: 'center' },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 10 },
   circle: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },

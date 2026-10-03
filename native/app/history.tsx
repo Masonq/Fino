@@ -38,14 +38,19 @@ export default function History() {
       </View>
       {items === null ? <ActivityIndicator style={{ marginTop: 30 }} color={colors.primary} /> : (
         <FlatList data={items} keyExtractor={(i) => i.id} numColumns={2} renderItem={({ item }) => <ListingCard item={item} width={cardW} />}
-          columnWrapperStyle={{ gap: space.gap, paddingHorizontal: space.page }} contentContainerStyle={items.length ? { gap: space.gap, paddingBottom: 24 } : { flexGrow: 1 }}
-          ListEmptyComponent={<View style={styles.empty}><Text style={styles.emptyTitle}>{tr('Пока пусто')}</Text><Text style={styles.emptyText}>{tr('Здесь появятся объявления, которые вы открывали.')}</Text></View>} />
+          columnWrapperStyle={{ gap: space.gap, paddingHorizontal: space.page }} contentContainerStyle={items.length ? { gap: space.gap, paddingBottom: 24 } : undefined}
+          ListEmptyComponent={<View style={styles.emptyBox}><View style={styles.emptyIcon}><Icon name="history" size={28} color={colors.primary} /></View><Text style={styles.emptyMsg}>{tr('Здесь появятся объявления, которые вы открывали')}</Text><Pressable style={styles.emptyBtn} onPress={() => router.navigate('/')}><Text style={styles.emptyBtnText}>{tr('К объявлениям')}</Text></Pressable></View>} />
       )}
     </View>
   )
 }
 
 const styles = StyleSheet.create({
+  emptyBox: { alignItems: 'center', gap: 14, paddingTop: 44, paddingHorizontal: 32 },
+  emptyIcon: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  emptyMsg: { fontSize: 13.5, lineHeight: 19, fontFamily: font[500], color: colors.muted, textAlign: 'center' },
+  emptyBtn: { height: 42, paddingHorizontal: 20, borderRadius: 13, backgroundColor: colors.primary, justifyContent: 'center' },
+  emptyBtnText: { color: '#fff', fontSize: 14.5, fontFamily: font[800] },
   page: { flex: 1, backgroundColor: colors.bg },
   top: { flexDirection: 'row', alignItems: 'center', paddingLeft: 8, paddingRight: 16, height: 52 },
   back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },

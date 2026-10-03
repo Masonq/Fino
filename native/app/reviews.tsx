@@ -36,11 +36,11 @@ export default function Reviews() {
     <View style={[styles.page, { paddingTop: insets.top }]}>
       <View style={styles.top}>
         <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/profile'))} hitSlop={10} style={styles.back} accessibilityLabel={tr('Назад')}><Icon name="back" size={22} color={colors.ink} /></Pressable>
-        <Text style={styles.title}>{tr('Ждут отзыва')}</Text>
+        <Text style={styles.title}>{tr('Ждут вашего отзыва')}</Text>
       </View>
       {items === null ? <ActivityIndicator style={{ marginTop: 30 }} color={colors.primary} /> : (
         <ScrollView contentContainerStyle={{ padding: 16, gap: 10 }}>
-          {items.length === 0 && <Text style={styles.empty}>{tr('Пока некого оценивать. После сделки здесь появится собеседник.')}</Text>}
+          {items.length === 0 && <View style={styles.emptyBox}><View style={styles.emptyIcon}><Icon name="star" size={28} color={colors.primary} /></View><Text style={styles.emptyMsg}>{tr('Никто не ждёт отзыва. Отзывы появляются после переписки, похожей на сделку.')}</Text></View>}
           {items.map((w) => (
             <Pressable key={w.chat_id} style={styles.card} onPress={() => { setTarget(w); setRating(0); setComment('') }}>
               <View style={styles.thumb}>{w.listing_photo ? <Image source={{ uri: mediaUrl(w.listing_photo) ?? undefined }} style={{ width: 52, height: 52 }} contentFit="cover" /> : null}</View>
@@ -72,6 +72,11 @@ export default function Reviews() {
 }
 
 const styles = StyleSheet.create({
+  emptyBox: { alignItems: 'center', gap: 14, paddingTop: 44, paddingHorizontal: 32 },
+  emptyIcon: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  emptyMsg: { fontSize: 13.5, lineHeight: 19, fontFamily: font[500], color: colors.muted, textAlign: 'center' },
+  emptyBtn: { height: 42, paddingHorizontal: 20, borderRadius: 13, backgroundColor: colors.primary, justifyContent: 'center' },
+  emptyBtnText: { color: '#fff', fontSize: 14.5, fontFamily: font[800] },
   page: { flex: 1, backgroundColor: colors.bg },
   top: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, height: 52 },
   back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },

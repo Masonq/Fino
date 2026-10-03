@@ -78,7 +78,7 @@ export default function Notifications() {
           ListEmptyComponent={
             // Как на сайте: значок и текст вверху экрана, без отдельного заголовка
             <View style={styles.empty}>
-              <View style={styles.circle}><Icon name="bell" size={24} color={colors.primary} /></View>
+              <View style={styles.circle}><Icon name="bell" size={28} color={colors.primary} /></View>
               <Text style={styles.emptyText}>{tr('Уведомлений пока нет — здесь появятся решения по объявлениям, ответы в чатах и новое по вашим подпискам.')}</Text>
             </View>
           }
@@ -100,8 +100,8 @@ const styles = StyleSheet.create({
   textOn: { color: colors.ink, fontFamily: font[700] },
   time: { fontFamily: font[400], fontSize: 12.5, color: colors.muted },
   sep: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginLeft: 37 },
-  empty: { alignItems: 'center', gap: 12, paddingTop: 40, paddingHorizontal: 36 },
-  circle: { width: 52, height: 52, borderRadius: 26, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  empty: { alignItems: 'center', gap: 14, paddingTop: 44, paddingHorizontal: 32 },
+  circle: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
   emptyTitle: { fontSize: 20, fontFamily: font[800], color: colors.ink },
   emptyText: { fontSize: 14, lineHeight: 20, fontFamily: font[500], color: colors.muted, textAlign: 'center' },
 })

@@ -25,7 +25,7 @@ export default function Blocked() {
       </View>
       {items === null ? <ActivityIndicator style={{ marginTop: 30 }} color={colors.primary} /> : (
         <ScrollView contentContainerStyle={{ padding: 16, gap: 10 }}>
-          {items.length === 0 && <Text style={styles.empty}>{tr('Никого. Заблокировать собеседника можно в переписке через «⋯».')}</Text>}
+          {items.length === 0 && <View style={styles.emptyBox}><View style={styles.emptyIcon}><Icon name="ban" size={28} color={colors.primary} /></View><Text style={styles.emptyMsg}>{tr('Никого не заблокировали')}</Text></View>}
           {items.map((u) => (
             <View key={u.id} style={styles.row}>
               <View style={styles.avatar}><Text style={styles.letter}>{(u.display_name || '?').slice(0, 1).toUpperCase()}</Text></View>
@@ -42,6 +42,11 @@ export default function Blocked() {
 }
 
 const styles = StyleSheet.create({
+  emptyBox: { alignItems: 'center', gap: 14, paddingTop: 44, paddingHorizontal: 32 },
+  emptyIcon: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  emptyMsg: { fontSize: 13.5, lineHeight: 19, fontFamily: font[500], color: colors.muted, textAlign: 'center' },
+  emptyBtn: { height: 42, paddingHorizontal: 20, borderRadius: 13, backgroundColor: colors.primary, justifyContent: 'center' },
+  emptyBtnText: { color: '#fff', fontSize: 14.5, fontFamily: font[800] },
   page: { flex: 1, backgroundColor: colors.bg },
   top: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, height: 52 },
   back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },

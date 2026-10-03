@@ -10,11 +10,12 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import {
-  addListingPhoto, ApiError, deleteListingPhoto, fetchListing, type ListingPatch, textOf, updateListing, type Uploaded, uploadPhoto,
-} from '../../src/api'
+  addListingPhoto, ApiError, deleteListingPhoto, fetchListing, type ListingPatch, textOf, updateListing, type Uploaded, uploadPhoto, reorderListingPhotos } from '../../src/api'
 import { useAuth } from '../../src/auth'
 import CityPicker from '../../src/components/CityPicker'
 import Segmented from '../../src/components/Segmented'
+import Icon from '../../src/components/Icon'
+import Sheet, { SheetAction } from '../../src/components/Sheet'
 import { mediaUrl } from '../../src/config'
 import { cityName } from '../../src/format'
 import { colors, font } from '../../src/theme'
@@ -33,6 +34,19 @@ export default function EditListing() {
   const [loaded, setLoaded] = useState(false)
   const [orig, setOrig] = useState<Required<Pick<ListingPatch, 'title' | 'description' | 'currency' | 'price_negotiable'>> & { price: number | null; city: string | null } | null>(null)
   const [shots, setShots] = useState<Shot[]>([])
+  const [addOpen, setAddOpen] = useState(false)
+  const [coverBusy, setCoverBusy] = useState(false)
+  const [coverErr, setCoverErr] = useState('')
+  // «Сделать обложкой» — как на сайте: сразу показываем, сохраняем порядок фото на сервере, при ошибке откатываем
+  const makeCover = async (shot: Shot) => {
+    if (!token || !shot.existingId) return
+    const before = shots
+    const next = [shot, ...shots.filter((x) => x.key !== shot.key)]
+    setShots(next); setCoverBusy(true); setCoverErr('')
+    try { await reorderListingPhotos(token, String(id), next.filter((x) => x.existingId).map((x) => x.existingId as string)) }
+    catch { setShots(before); setCoverErr(tr('Не удалось изменить фото, попробуйте ещё раз')) }
+    finally { setCoverBusy(false) }
+  }
   const [removed, setRemoved] = useState<string[]>([])
   const [title, setTitle] = useState('')
   const [desc, setDesc] = useState('')
@@ -123,37 +137,40 @@ export default function EditListing() {
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
             <Text style={styles.label}>{tr('Фото')} <Text style={styles.count}>{shots.length}/{MAX}</Text></Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
-              {shots.length < MAX && (
-                <>
-                  <Pressable style={styles.addShot} onPress={() => add('camera')} accessibilityLabel={tr('Сфотографировать')}><Ionicons name="camera-outline" size={26} color={colors.primaryDeep} /><Text style={styles.addText}>{tr('Камера')}</Text></Pressable>
-                  <Pressable style={styles.addShot} onPress={() => add('library')} accessibilityLabel={tr('Выбрать из галереи')}><Ionicons name="images-outline" size={26} color={colors.primaryDeep} /><Text style={styles.addText}>{tr('Галерея')}</Text></Pressable>
-                </>
-              )}
+            <View style={styles.grid}>
               {shots.map((s, i) => (
                 <Pressable key={s.key} style={styles.shot} disabled={s.state !== 'failed'} onPress={() => upload(s)}>
                   <Image source={{ uri: s.uri }} style={styles.shotImg} contentFit="cover" />
                   {s.state === 'loading' && <View style={styles.overlay}><ActivityIndicator color="#fff" /></View>}
                   {s.state === 'failed' && <View style={[styles.overlay, { backgroundColor: 'rgba(180,35,24,0.72)' }]}><Ionicons name="refresh" size={22} color="#fff" /></View>}
-                  {i === 0 && <Text style={styles.cover}>{tr('Обложка')}</Text>}
+                  {i === 0
+                    ? <Text style={styles.cover}>{tr('Обложка')}</Text>
+                    : !!s.existingId && <Pressable style={styles.makeCover} onPress={() => makeCover(s)} disabled={coverBusy}><Text style={styles.makeCoverText}>{tr('Сделать обложкой')}</Text></Pressable>}
                   <Pressable style={styles.remove} onPress={() => remove(s)} hitSlop={6} accessibilityLabel={tr('Убрать фото')}><Ionicons name="close" size={14} color="#fff" /></Pressable>
                 </Pressable>
               ))}
-            </ScrollView>
+              {shots.length < MAX && (
+                <Pressable style={styles.addTile} onPress={() => setAddOpen(true)} accessibilityLabel={tr('Добавить фото')}>
+                  <Icon name="plus" size={20} color={colors.ink} strokeWidth={2} />
+                  <Text style={styles.addTileText}>{tr('Фото')}</Text>
+                </Pressable>
+              )}
+            </View>
+            {!!coverErr && <Text style={styles.coverErr}>{coverErr}</Text>}
 
-            <Text style={styles.label}>{tr('Название')}</Text>
+            <Text style={styles.label}>{tr('Заголовок')}</Text>
             <TextInput value={title} onChangeText={setTitle} style={styles.input} maxLength={120} />
             <Text style={styles.label}>{tr('Описание')}</Text>
             <TextInput value={desc} onChangeText={setDesc} style={[styles.input, styles.area]} multiline maxLength={5000} textAlignVertical="top" />
-            <View style={styles.labelRow}>
-              <Text style={styles.label}>{tr('Цена')}</Text>
-              <Segmented options={[{ key: 'EUR', label: '€' }, { key: 'RSD', label: 'RSD' }]} value={currency} onChange={(c) => setCurrency(c as 'EUR' | 'RSD')} />
+            <Text style={styles.label}>{tr('Цена')}</Text>
+            <View style={styles.priceBox}>
+              <TextInput value={price} onChangeText={(v) => setPrice(v.replace(/\D/g, '').slice(0, 9))} placeholder={tr('Пусто — «цена не указана»')} placeholderTextColor={colors.muted} keyboardType="number-pad" style={styles.priceInput} />
+              <Segmented options={[{ key: 'RSD', label: 'RSD' }, { key: 'EUR', label: 'EUR' }]} value={currency} onChange={(c) => setCurrency(c as 'EUR' | 'RSD')} />
             </View>
-            <TextInput value={price} onChangeText={(v) => setPrice(v.replace(/\D/g, '').slice(0, 9))} placeholder={tr('Пусто — «цена не указана»')} placeholderTextColor={colors.muted} keyboardType="number-pad" style={styles.input} />
-            <View style={styles.switchRow}>
-              <Text style={styles.switchText}>{tr('Торг уместен')}</Text>
-              <Switch value={negotiable} onValueChange={setNegotiable} trackColor={{ true: colors.primary, false: '#D8DCD8' }} />
-            </View>
+            <Pressable style={styles.check} onPress={() => setNegotiable(!negotiable)} accessibilityRole="checkbox" accessibilityState={{ checked: negotiable }}>
+              <View style={[styles.box, negotiable && styles.boxOn]}>{negotiable && <Icon name="check" size={12} color="#fff" />}</View>
+              <Text style={styles.checkText}>{tr('Торг уместен')}</Text>
+            </Pressable>
             <Text style={styles.label}>{tr('Город')}</Text>
             <Pressable style={styles.select} onPress={() => setCityOpen(true)}>
               <Text style={styles.selectText}>{city ? cityName(city) : tr('Не указан')}</Text>
@@ -163,11 +180,15 @@ export default function EditListing() {
             <Pressable style={[styles.cta, saving && { opacity: 0.6 }]} disabled={saving} onPress={save} accessibilityRole="button" accessibilityLabel={tr('Сохранить изменения')}>
               {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.ctaText}>{tr('Сохранить')}</Text>}
             </Pressable>
-            <Text style={styles.small}>{tr('После правок объявление может уйти на повторную проверку.')}</Text>
+            <Text style={styles.small}>{tr('После изменения фото, названия, описания или цены объявление снова пройдёт проверку')}</Text>
           </ScrollView>
         </KeyboardAvoidingView>
       )}
       <CityPicker visible={cityOpen} value={city} onPick={setCity} onClose={() => setCityOpen(false)} />
+      <Sheet visible={addOpen} onClose={() => setAddOpen(false)}>
+        <SheetAction label={tr('Сфотографировать')} icon={<Icon name="camera" size={20} color={colors.ink} />} onPress={() => { setAddOpen(false); add('camera') }} />
+        <SheetAction label={tr('Выбрать из галереи')} icon={<Icon name="image" size={20} color={colors.ink} />} onPress={() => { setAddOpen(false); add('library') }} />
+      </Sheet>
     </View>
   )
 }
@@ -178,9 +199,22 @@ const styles = StyleSheet.create({
   back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   h1: { fontSize: 20, fontFamily: font[800], color: colors.ink, marginLeft: 4 },
   form: { paddingHorizontal: 16, paddingBottom: 40 },
-  label: { fontSize: 16, fontFamily: font[800], color: colors.ink, marginTop: 18, marginBottom: 8 },
+  // как подписи полей формы сайта: 12,5 / 700, серо-зелёные
+  label: { fontSize: 12.5, fontFamily: font[700], color: colors.inkSoft, marginTop: 16, marginBottom: 6 },
   labelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 18, marginBottom: 8 },
   count: { color: colors.muted, fontFamily: font[600], fontSize: 14 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  addTile: { width: 92, height: 92, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', gap: 4 },
+  addTileText: { fontSize: 12.5, fontFamily: font[700], color: colors.ink },
+  makeCover: { position: 'absolute', left: 4, right: 4, bottom: 4, borderRadius: 7, backgroundColor: 'rgba(14,69,49,0.86)', paddingVertical: 3, alignItems: 'center' },
+  makeCoverText: { color: '#fff', fontSize: 9.5, fontFamily: font[800], textAlign: 'center' },
+  coverErr: { fontSize: 13, fontFamily: font[600], color: '#B42318', marginTop: 6 },
+  priceBox: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 50, borderRadius: 13, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, paddingLeft: 14, paddingRight: 4 },
+  priceInput: { flex: 1, fontSize: 16, fontFamily: font[500], color: colors.ink, paddingVertical: 10 },
+  check: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12 },
+  box: { width: 20, height: 20, borderRadius: 5, borderWidth: 1.5, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface },
+  boxOn: { backgroundColor: colors.primary, borderColor: colors.primary },
+  checkText: { fontSize: 14.5, fontFamily: font[700], color: colors.ink },
   addShot: { width: 92, height: 92, borderRadius: 14, backgroundColor: colors.primarySoft, borderWidth: 1.5, borderColor: 'rgba(14,159,110,0.3)', borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 4 },
   addText: { fontSize: 12.5, fontFamily: font[700], color: colors.primaryDeep },
   shot: { width: 92, height: 92, borderRadius: 14, overflow: 'hidden', backgroundColor: colors.photo },
