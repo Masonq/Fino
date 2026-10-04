@@ -23,7 +23,7 @@ export default function StoriesRow({ city }: { city: string | null }) {
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
       <Pressable style={styles.item} onPress={() => router.navigate('/post')} accessibilityRole="button" accessibilityLabel={tr('Продать')}>
         <View style={[styles.ring, styles.ringSeen]}><View style={styles.sell}><Icon name="plus" size={26} color="#fff" /></View></View>
-        <Text style={styles.label}>{tr('Продать')}</Text>
+        <Text style={styles.label}  numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>{tr('Продать')}</Text>
       </Pressable>
       {items === null
         ? Array.from({ length: 5 }).map((_, i) => (
@@ -46,7 +46,8 @@ export default function StoriesRow({ city }: { city: string | null }) {
 
 const styles = StyleSheet.create({
   row: { paddingHorizontal: 12, gap: 12 },
-  item: { width: D + 10, alignItems: 'center' },
+  // как на сайте: подпись может быть шире кружка («Продать», «1 500 RSD») — элемент подстраивается, кружок по центру
+  item: { minWidth: D + 10, alignItems: 'center' },
   // как .story-ring сайта: 64, кольцо 2,5 и белый зазор вокруг фото 54; свежие — оранжевое, остальные — серое
   ring: { width: D + 10, height: D + 10, borderRadius: (D + 10) / 2, borderWidth: 2.5, borderColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
   ringSeen: { borderColor: 'rgba(20,30,25,0.14)' },
@@ -54,5 +55,5 @@ const styles = StyleSheet.create({
   img: { width: D, height: D },
   // «Продать» — того же размера, что кольца историй (72), чтобы ряд был ровным
   sell: { width: D, height: D, borderRadius: D / 2, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
-  label: { fontSize: 12.5, fontFamily: font[800], color: colors.ink, marginTop: 5, maxWidth: D + 10 },
+  label: { fontSize: 12.5, fontFamily: font[800], color: colors.ink, marginTop: 5 },
 })

@@ -599,4 +599,12 @@ export const DICT: Record<string, { en?: string; sr?: string }> = {
   "Показать все": { en: "Show all", sr: "Prika\u017ei sve" },
   "{n} в избранном": { en: "{n} favorited", sr: "{n} u omiljenima" },
   "Ещё у этого продавца": { en: "More from this seller", sr: "Jo\u0161 od ovog prodavca" },
+  "Ваша почта": { en: "Your email", sr: "Vaš mejl" },
+  "Отправим код подтверждения на этот адрес": { en: "We'll send a confirmation code to this address", sr: "Poslaćemo kod za potvrdu na ovu adresu" },
+  "Введите код": { en: "Enter the code", sr: "Unesite kod" },
+  "Код отправлен на": { en: "Code sent to", sr: "Kod je poslat na" },
+  "Отправить код заново": { en: "Send code again", sr: "Pošalji kod ponovo" },
+  "Отправить заново через": { en: "Resend in", sr: "Ponovo za" },
+  "Письмо может прийти в «Спам».": { en: "The email may land in Spam.", sr: "Mejl mo\u017ee sti\u0107i u ne\u017eeljenu po\u0161tu." },
+  "с": { en: "s", sr: "s" },
 }

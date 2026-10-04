@@ -192,9 +192,12 @@ export default function Login() {
             <Pressable style={[styles.method, styles.methodTg]} onPress={startTelegram}><Text style={styles.methodTgText}>{tr('Открыть Telegram ещё раз')}</Text></Pressable>
           </View>
         ) : step === 'email' ? (
-          <>
-            <Text style={styles.title}>{tr('Вход в PLONK')}</Text>
-            <Text style={styles.text}>{tr('Пришлём код на почту — пароль не нужен. Если аккаунта ещё нет, он создастся сам.')}</Text>
+          <View style={styles.center}>
+            <View style={styles.authIcon}><Icon name="mail" size={28} color={colors.primaryDeep} /></View>
+            <Text style={styles.authTitle}>{tr('Ваша почта')}</Text>
+            <Text style={styles.authSub}>{tr('Отправим код подтверждения на этот адрес')}</Text>
+            <View style={styles.inputWrap}>
+            <Icon name="mail" size={20} color={colors.muted} />
             <TextInput
               value={email}
               onChangeText={(v) => { setEmail(v); setSuggestion(''); setError('') }}
@@ -207,9 +210,10 @@ export default function Login() {
               textContentType="emailAddress"
               returnKeyType="send"
               onSubmitEditing={() => valid && !busy && send()}
-              style={styles.input}
+              style={styles.inputBare}
               autoFocus
             />
+            </View>
             {!!suggestion && (
               <View style={styles.hint}>
                 <Text style={styles.hintText}>{tr('Может быть,')} <Text style={styles.bold}>{suggestion}</Text>?</Text>
@@ -223,11 +227,12 @@ export default function Login() {
             <Pressable style={[styles.cta, (!valid || busy) && styles.ctaOff]} disabled={!valid || busy} onPress={() => send()}>
               {busy ? <ActivityIndicator color="#fff" /> : <Text style={styles.ctaText}>{tr('Получить код')}</Text>}
             </Pressable>
-          </>
+          </View>
         ) : (
-          <>
-            <Text style={styles.title}>{tr('Код из письма')}</Text>
-            <Text style={styles.text}>{tr('Отправили на')} <Text style={styles.bold}>{email.trim()}</Text>{tr('. Письмо может прийти в «Спам».')}</Text>
+          <View style={styles.center}>
+            <View style={styles.authIcon}><Icon name="lock" size={28} color={colors.primaryDeep} /></View>
+            <Text style={styles.authTitle}>{tr('Введите код')}</Text>
+            <Text style={styles.authSub}>{tr('Код отправлен на')} <Text style={styles.bold}>{email.trim()}</Text>{'\n'}{tr('Письмо может прийти в «Спам».')}</Text>
             <Pressable onPress={() => codeRef.current?.focus()} style={styles.cells} accessibilityLabel={tr('Поле для кода')}>
               {Array.from({ length: LEN }).map((_, i) => (
                 <View key={i} style={[styles.cell, i === code.length && !busy && styles.cellOn]}>
@@ -250,10 +255,10 @@ export default function Login() {
             {!!error && <Text style={styles.error}>{error}</Text>}
             <Pressable disabled={left > 0 || busy} onPress={() => send(email.trim(), true)} style={styles.resend}>
               <Text style={[styles.resendText, left > 0 && { color: colors.muted }]}>
-                {left > 0 ? tr('Отправить снова через {n} с', { n: left }) : tr('Отправить код снова')}
+                {left > 0 ? `${tr('Отправить заново через')} ${left} ${tr('с')}` : tr('Отправить код заново')}
               </Text>
             </Pressable>
-          </>
+          </View>
         )}
       </View>
     </KeyboardAvoidingView>
@@ -277,7 +282,7 @@ const styles = StyleSheet.create({
   hintGhost: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: colors.ink },
   hintGhostText: { color: colors.ink, fontFamily: font[800], fontSize: 14 },
   error: { fontFamily: font[400], fontSize: 14.5, color: '#B42318', lineHeight: 20 },
-  cta: { height: 52, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', marginTop: 6 },
+  cta: { height: 52, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', marginTop: 6, alignSelf: 'center', width: '100%', maxWidth: 340 },
   ctaOff: { opacity: 0.45 },
   ctaText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
   cells: { flexDirection: 'row', gap: 8, marginTop: 10 },
@@ -285,6 +290,14 @@ const styles = StyleSheet.create({
   cellOn: { borderColor: colors.primary },
   cellText: { fontSize: 24, fontFamily: font[800], color: colors.ink },
   hidden: { position: 'absolute', opacity: 0, width: 1, height: 1 },
+  // как .auth-icon / .auth-input-wrap сайта
+  center: { alignItems: 'center', paddingTop: 24, gap: 6 },
+  authIcon: { width: 64, height: 64, borderRadius: 18, marginBottom: 12, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  authTitle: { fontSize: 21, fontFamily: font[800], color: colors.ink, textAlign: 'center' },
+  authSub: { fontSize: 13.5, lineHeight: 19.5, fontFamily: font[500], color: colors.muted, textAlign: 'center', maxWidth: 300, marginBottom: 14 },
+  // как .auth-input-wrap сайта: не шире 340, по центру
+  inputWrap: { flexDirection: 'row', alignItems: 'center', gap: 11, alignSelf: 'center', width: '100%', maxWidth: 340, paddingHorizontal: 16, height: 54, borderRadius: 14, borderWidth: 1.5, borderColor: 'rgba(20,30,25,0.09)', backgroundColor: colors.surface, marginBottom: 6 },
+  inputBare: { flex: 1, minWidth: 0, fontSize: 16, fontFamily: font[500], color: colors.ink, paddingVertical: 0 },
   choose: { alignItems: 'center', gap: 10, paddingTop: 24 },
   // как .auth-logo / .auth-sub / .auth-method сайта
   logo: { width: 52, height: 52, borderRadius: 26, alignSelf: 'center', marginBottom: 6 },
