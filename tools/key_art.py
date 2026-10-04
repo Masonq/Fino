@@ -88,6 +88,14 @@ def key_out(path_in, path_out, size=512, glass=False):
         lum = out[inner].mean(axis=1, keepdims=True)
         out[inner] = np.clip(lum * 0.35 + np.array([38, 41, 47]), 0, 255)
         a[inner] = 1
+    # одиночные бледные пятнышки (обрывки тени между колёсами и т.п.): мелкие и полупрозрачные — убираем
+    lab2, n2 = ndimage.label(a > 0.02)
+    if n2:
+        idx = np.arange(1, n2 + 1)
+        area = ndimage.sum(np.ones_like(a), lab2, idx)
+        amax = ndimage.maximum(a, lab2, idx)
+        drop = idx[(area < 2500) & (amax < 0.6)]
+        a[np.isin(lab2, drop)] = 0
     A = np.dstack([np.clip(out, 0, 255), a * 255]).astype(np.uint8)
     im = Image.fromarray(A, 'RGBA')
     bb = im.getchannel('A').point(lambda v: 255 if v > 12 else 0).getbbox()
