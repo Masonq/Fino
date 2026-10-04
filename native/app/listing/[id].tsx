@@ -9,6 +9,7 @@ import {
   FlatList, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, Share, StyleSheet, Text, useWindowDimensions, View, Modal } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { JobRespond, StorefrontLink } from '../../src/components/ListingExtras'
 import { attrRows, type AttrField, ru, categorySchema, type FeedItem, loadListing, type Listing, sellerListings, similarListings, startChat, textOf, sendMessage } from '../../src/api'
 import { useAuth } from '../../src/auth'
 import { readCache } from '../../src/cache'
@@ -301,6 +302,11 @@ export default function ListingScreen() {
             </View>
           )}
 
+          {/* вакансия — «Откликнуться» (работодателю — его отклики); остальное — вход в витрину продавца */}
+          {(data.attributes as Record<string, unknown> | undefined)?.listing_kind === 'vacancy' && !gone && data.external_source !== 'telegram' && (
+            <View style={{ marginTop: 14 }}><JobRespond listingId={data.id} ownerId={owner?.id} /></View>
+          )}
+          {!!owner?.id && !isResume && (data.attributes as Record<string, unknown> | undefined)?.listing_kind !== 'vacancy' && <StorefrontLink ownerId={owner.id} />}
           {!mine && (
             <Pressable onPress={() => (token ? setReportOpen(true) : router.push('/login'))} style={styles.report} hitSlop={6}>
               <Text style={styles.reportText}>{tr('Пожаловаться')}</Text>

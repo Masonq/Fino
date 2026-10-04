@@ -222,6 +222,10 @@ export default function Profile() {
 
         {/* Меню — как на сайте, в том же порядке: сохранённые поиски — в приложении, остальное — страницы сайта */}
         <View style={styles.menu}>
+          {row('grid', 'Моя витрина', () => router.push('/vitrina' as never))}
+          {row('video', 'Шопсы', () => router.push('/shops/mine' as never))}
+          {row('doc', 'Мои отклики', () => router.push('/jobs/my' as never))}
+          {row('chat', 'Отклики на вакансии', () => router.push('/jobs' as never))}
           {row('invite', 'Пригласите друга', () => router.push('/invite'))}
           {waiting > 0 && row('star', 'Ждут отзыва', () => router.push('/reviews'), waiting)}
           {row('searchrow', 'Сохранённые поиски', () => router.push('/saved'))}

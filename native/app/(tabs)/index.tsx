@@ -17,7 +17,7 @@ import FiltersSheet, { activeCount } from '../../src/components/FiltersSheet'
 import ListingCard from '../../src/components/ListingCard'
 import Segmented from '../../src/components/Segmented'
 import Skeleton from '../../src/components/Skeleton'
-import StoriesRow from '../../src/components/StoriesRow'
+import ShopsRow from '../../src/components/ShopsRow'
 import { cityName } from '../../src/format'
 import { prefs } from '../../src/prefs'
 import * as Location from 'expo-location'
@@ -356,7 +356,8 @@ export default function Feed() {
         contentContainerStyle={styles.list}
         ListHeaderComponent={
           <View style={styles.listHead}>
-            {!q && cityReady && <StoriesRow city={city} />}
+            {/* вместо историй — шопсы: короткие видео с объявлениями */}
+            {!q && <ShopsRow />}
             {!q && <CategoryTiles value={category} onPick={setCategory} />}
             {!q && cityReady && !city && geoAsk && (
               <View style={styles.geo}>
