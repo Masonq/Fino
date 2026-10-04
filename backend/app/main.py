@@ -90,4 +90,6 @@ def health():
 # их в индекс. FastAPI выбирает первый подходящий обработчик по порядку
 # объявления, поэтому всё, что объявлено ниже, он перехватит — так и
 # случилось с проверкой здоровья, и сервер стал выглядеть упавшим.
+from app.routers import search_suggest  # noqa: E402
+app.include_router(search_suggest.router)
 app.include_router(seo.router)

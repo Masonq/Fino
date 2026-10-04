@@ -1,10 +1,11 @@
 import Icon, { Star } from '../../src/components/Icon'
 import SheetFrame from '../../src/components/SheetFrame'
+import { API } from '../../src/config'
 import { tr, getLang } from '../../src/i18n'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, useWindowDimensions, View, ScrollView } from 'react-native'
+  ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, useWindowDimensions, View, ScrollView, Keyboard } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { fetchFeed, type FeedItem, type FeedTab, type Filters, saveSearch } from '../../src/api'
@@ -64,6 +65,22 @@ export default function Feed() {
   const [tab, setTab] = useState<FeedTab>('all')
   const [query, setQuery] = useState('')
   const [q, setQ] = useState('')
+  // Подсказки поиска — как у Авито: разделы и продолжения запроса по мере ввода
+  const [focused, setFocused] = useState(false)
+  const [headBottom, setHeadBottom] = useState(0)
+  const [sug, setSug] = useState<{ categories: { slug: string; name: string; path: string }[]; completions: string[] }>({ categories: [], completions: [] })
+  useEffect(() => {
+    const v = query.trim()
+    if (!focused || v.length < 2) { setSug({ categories: [], completions: [] }); return undefined }
+    let alive = true
+    const t = setTimeout(() => {
+      fetch(`${API}/search/suggest?q=${encodeURIComponent(v)}&lang=${getLang()}`).then((r) => r.json())
+        .then((d) => { if (alive) setSug({ categories: d.categories ?? [], completions: d.completions ?? [] }) }).catch(() => {})
+    }, 200)
+    return () => { alive = false; clearTimeout(t) }
+  }, [query, focused])
+  const showSug = focused && query.trim().length >= 2 && (sug.categories.length > 0 || sug.completions.length > 0)
+  const applyQuery = (v: string) => { setQuery(v); setQ(v.trim()); setFocused(false); Keyboard.dismiss() }
   const [city, setCity] = useState<string | null>(null)
   const [cityReady, setCityReady] = useState(false)
   const [category, setCategory] = useState<string | null>(null)
@@ -234,7 +251,7 @@ export default function Feed() {
 
   return (
     <SafeAreaView style={styles.page} edges={['top']}>
-      <View style={[styles.head, styles.headRow]}>
+      <View style={[styles.head, styles.headRow]} onLayout={(e) => setHeadBottom(e.nativeEvent.layout.y + e.nativeEvent.layout.height)}>
         <View style={[styles.search, { flex: 1 }]}>
           <Pressable style={styles.city} onPress={() => setCityOpen(true)} accessibilityRole="button" accessibilityLabel={tr('Выбрать город')}>
             <Icon name="pin" size={15} color={colors.ink} />
@@ -250,6 +267,9 @@ export default function Feed() {
             returnKeyType="search"
             clearButtonMode="never"
             autoCorrect={false}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setTimeout(() => setFocused(false), 180)}
+            onSubmitEditing={() => applyQuery(query)}
           />
           {!!query && (
             <Pressable onPress={() => setQuery('')} hitSlop={10} accessibilityLabel={tr('Очистить поиск')}>
@@ -273,6 +293,39 @@ export default function Feed() {
           <Pressable style={styles.loginPill} onPress={() => router.push('/login')} accessibilityRole="button"><Text style={styles.loginPillText}>{tr('Войти')}</Text></Pressable>
         )}
       </View>
+      {showSug && (
+        <View style={[styles.sugBox, { top: headBottom }]}>
+          <ScrollView keyboardShouldPersistTaps="handled">
+            {sug.categories.map((c) => (
+              <Pressable key={c.slug} style={styles.sugRow} onPress={() => { setFocused(false); Keyboard.dismiss(); router.push(`/c/${c.slug}`) }} accessibilityRole="button">
+                <Icon name="list" size={18} color={colors.ink} />
+                <View style={styles.sugBody}>
+                  <Text style={styles.sugText} numberOfLines={1}>{query.trim().toLowerCase()}</Text>
+                  <Text style={styles.sugSub} numberOfLines={1}>{c.path}</Text>
+                </View>
+                <Icon name="forward" size={15} color={colors.muted} />
+              </Pressable>
+            ))}
+            {/* как у Авито: сам набранный запрос — искать ровно его */}
+            <Pressable style={styles.sugRow} onPress={() => applyQuery(query)} accessibilityRole="button">
+              <Icon name="search" size={18} color={colors.ink} />
+              <Text style={[styles.sugText, styles.sugBody]} numberOfLines={1}>{query.trim().toLowerCase()}</Text>
+              <Icon name="forward" size={15} color={colors.muted} />
+            </Pressable>
+            {sug.completions.filter((c) => c !== query.trim().toLowerCase()).map((c) => {
+              const typed = query.trim().toLowerCase()
+              const rest = c.startsWith(typed) ? c.slice(typed.length) : ''
+              return (
+                <Pressable key={c} style={styles.sugRow} onPress={() => applyQuery(c)} accessibilityRole="button">
+                  <Icon name="search" size={18} color={colors.ink} />
+                  <Text style={[styles.sugText, styles.sugBody]} numberOfLines={1}>{rest ? typed : c}<Text style={styles.sugBold}>{rest}</Text></Text>
+                  <Icon name="forward" size={15} color={colors.muted} />
+                </Pressable>
+              )
+            })}
+          </ScrollView>
+        </View>
+      )}
       <CityPicker visible={cityOpen} value={city} onPick={pickCity} onClose={() => setCityOpen(false)} />
       <SheetFrame visible={sortOpen} onClose={() => setSortOpen(false)}>
         <View style={styles.sortSheet}>
@@ -369,6 +422,13 @@ export default function Feed() {
 }
 
 const styles = StyleSheet.create({
+  // подсказки — поверх ленты, сразу под шапкой
+  sugBox: { position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 20, backgroundColor: colors.bg },
+  sugRow: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 54, paddingHorizontal: 18, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+  sugBody: { flex: 1, minWidth: 0 },
+  sugText: { fontSize: 16, fontFamily: font[500], color: colors.ink },
+  sugBold: { fontFamily: font[800] },
+  sugSub: { fontSize: 13, fontFamily: font[500], color: colors.muted, marginTop: 1 },
   page: { flex: 1, backgroundColor: colors.bg },
   head: { paddingHorizontal: space.page, paddingTop: 6, paddingBottom: 10 },
   listHead: { gap: 12, paddingBottom: 2 },
