@@ -62,7 +62,8 @@ export default function Profile() {
     <View style={[styles.row, styles.rowLast]}>
       <View style={styles.rowIcon}><Icon name="globe" size={17} color={colors.primary} /></View>
       <Text style={styles.rowText}>{tr('Язык')}</Text>
-      <Segmented options={LANGS} value={lang} onChange={setLang} />
+      {/* обёртка: у переключателя alignSelf flex-start (для колонок) — в строке он прижимался к верху */}
+      <View style={{ alignSelf: 'center' }}><Segmented options={LANGS} value={lang} onChange={setLang} /></View>
     </View>
   )
 

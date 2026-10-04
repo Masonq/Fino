@@ -239,6 +239,22 @@ export default function Post() {
           </View>
           <Text style={styles.stepHint}>{tr('Уточните подраздел')}</Text>
           <View style={styles.subList}>
+            {trail.length >= 2 && (() => {
+              // как на сайте: «Телефоны» вели только в «Запчасти и ремонт» — сам раздел тоже можно выбрать
+              const cur = trail[trail.length - 1]
+              return (
+                <Pressable style={styles.subRow} onPress={() => {
+                  setCat({ c: cur, path: trail.map(nameOf).join(' › ') }); setTrail([]); setAttrs({}); setSchema(null); setStep(3)
+                  categorySchema(cur.slug).then((r) => setSchema(r.attribute_schema ?? [])).catch(() => setSchema([]))
+                }} accessibilityRole="button">
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.subText}>{nameOf(cur)}</Text>
+                    <Text style={styles.subNote}>{tr('Общий раздел — если ниже нет подходящего')}</Text>
+                  </View>
+                  <Icon name="forward" size={16} color={colors.muted} />
+                </Pressable>
+              )
+            })()}
             {level.map((c, i) => (
               <Pressable key={c.id} style={[styles.subRow, i === level.length - 1 && { borderBottomWidth: 0 }]} onPress={() => choose(c)} accessibilityRole="button">
                 <Text style={styles.subText}>{nameOf(c)}</Text>
@@ -446,6 +462,7 @@ const styles = StyleSheet.create({
   optRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 50, paddingHorizontal: 20, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
   optText: { fontSize: 16, fontFamily: font[600], color: colors.ink },
   playBadge: { position: 'absolute', left: 6, top: 6, width: 22, height: 22, borderRadius: 11, backgroundColor: 'rgba(28,38,32,0.7)', alignItems: 'center', justifyContent: 'center' },
+  subNote: { fontSize: 12.5, fontFamily: font[500], color: colors.muted, marginTop: 2 },
   steps: { flexDirection: 'row', gap: 6, marginBottom: 14 },
   stepDot: { flex: 1, height: 4, borderRadius: 3, backgroundColor: colors.border },
   stepDotOn: { backgroundColor: colors.primary },

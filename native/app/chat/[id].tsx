@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { allowCall, blockChat, cancelReservation, type Chat, chatInfo, chatMessages, chatWsUrl, declineCall, markChatRead, type Message, requestCall, reserveListing, respondOffer, revokeCall, sendMessage, sendOffer, isOffer } from '../../src/api'
 import Icon from '../../src/components/Icon'
+import TeamLetter from '../../src/components/TeamLetter'
 import Sheet, { SheetAction } from '../../src/components/Sheet'
 import { useAuth } from '../../src/auth'
 import { useChats } from '../../src/chats'
@@ -161,7 +162,8 @@ export default function ChatScreen() {
       )
     }
     if (item.kind === 'team' || item.kind === 'system') {
-      return <View style={styles.system}><Text style={styles.systemText}>{plainText(item.text)}</Text></View>
+      // письмо команды — разметка как на сайте (заголовки, пункты, кнопки, ссылки), по левому краю
+      return <View style={styles.teamBubble}><TeamLetter text={item.text || ''} /></View>
     }
     const me = mine(item)
     const body = isOffer(item.kind)
@@ -340,6 +342,7 @@ const styles = StyleSheet.create({
   quickText: { fontSize: 13.5, fontFamily: font[600], color: colors.ink },
   blockedNote: { fontSize: 13.5, lineHeight: 19, fontFamily: font[600], color: colors.muted, textAlign: 'center', paddingHorizontal: 24, paddingTop: 12, backgroundColor: colors.surface },
   stripState: { color: colors.muted, fontFamily: font[700] },
+  teamBubble: { marginHorizontal: 4, marginVertical: 6, padding: 14, borderRadius: 18, backgroundColor: colors.sunken },
   strip: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: colors.surface, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
   stripTitle: { fontSize: 14, fontFamily: font[700], color: colors.ink },
   stripPrice: { fontSize: 13.5, fontFamily: font[800], color: colors.primaryDeep, marginTop: 1 },

@@ -607,4 +607,5 @@ export const DICT: Record<string, { en?: string; sr?: string }> = {
   "Отправить заново через": { en: "Resend in", sr: "Ponovo za" },
   "Письмо может прийти в «Спам».": { en: "The email may land in Spam.", sr: "Mejl mo\u017ee sti\u0107i u ne\u017eeljenu po\u0161tu." },
   "с": { en: "s", sr: "s" },
+  "Общий раздел — если ниже нет подходящего": { en: "General section — if nothing below fits", sr: "Opšta kategorija — ako ispod nema odgovarajuće" },
 }

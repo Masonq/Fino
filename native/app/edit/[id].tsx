@@ -203,7 +203,7 @@ export default function EditListing() {
             <Text style={styles.label}>{tr('Цена')}</Text>
             <View style={styles.priceBox}>
               <TextInput value={price} onChangeText={(v) => setPrice(v.replace(/\D/g, '').slice(0, 9))} placeholder={tr('Пусто — «цена не указана»')} placeholderTextColor={colors.muted} keyboardType="number-pad" style={styles.priceInput} />
-              <Segmented options={[{ key: 'RSD', label: 'RSD' }, { key: 'EUR', label: 'EUR' }]} value={currency} onChange={(c) => setCurrency(c as 'EUR' | 'RSD')} />
+              <View style={{ alignSelf: 'center' }}><Segmented options={[{ key: 'RSD', label: 'RSD' }, { key: 'EUR', label: 'EUR' }]} value={currency} onChange={(c) => setCurrency(c as 'EUR' | 'RSD')} /></View>
             </View>
             <Pressable style={styles.check} onPress={() => setNegotiable(!negotiable)} accessibilityRole="checkbox" accessibilityState={{ checked: negotiable }}>
               <View style={[styles.box, negotiable && styles.boxOn]}>{negotiable && <Icon name="check" size={12} color="#fff" />}</View>
