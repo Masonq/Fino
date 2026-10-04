@@ -68,6 +68,9 @@ export function tileFor(name) {
  * композиция (самокат с велосипедом) в той же рамке выглядит мельче плотной (стопка кирпичей). Крупные
  * уменьшаются до общего размера ART_TARGET, мелкие берут всё доступное место — так плитки ровнее друг с другом.
  */
+/** Адрес картинки раздела с меткой содержимого: картинку заменили — адрес другой, старая из кэша не покажется. */
+export const catSrc = (slug) => `/cat/${slug}.png${CAT_ART[slug] ? `?v=${CAT_ART[slug][2]}` : ''}`
+
 export const ART_TARGET = 48
 export const artSize = (w, h, fill) => Math.sqrt(w * h) * Math.pow(fill, 0.4)
 export function artBox(name, fit, aspect, fill, noTarget = false) {

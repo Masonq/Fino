@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { type Category, fetchCategories } from '../src/api'
 import Icon from '../src/components/Icon'
 import { SITE } from '../src/config'
+import { catPath } from '../src/artFit'
 import { getLang, tr } from '../src/i18n'
 import { colors, font } from '../src/theme'
 
@@ -26,7 +27,7 @@ export default function Categories() {
         <ScrollView contentContainerStyle={styles.grid}>
           {cats.map((c) => (
             <Pressable key={c.id} style={[styles.item, c.ready === false && { opacity: 0.55 }]} onPress={() => router.push(`/c/${c.slug}`)} accessibilityRole="button">
-              <Image source={{ uri: `${SITE}/cat/${c.slug}.png` }} style={styles.img} contentFit="contain" />
+              <Image source={{ uri: `${SITE}${catPath(c.slug)}` }} style={styles.img} contentFit="contain" />
               <Text style={styles.label} numberOfLines={2}>{nameOf(c)}</Text>
               {c.ready === false && <Text style={styles.soon}>{tr('Скоро')}</Text>}
             </Pressable>

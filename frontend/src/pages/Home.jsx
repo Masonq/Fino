@@ -17,17 +17,17 @@ import FreshStories from '../components/FreshStories'
 import CategoryArt from '../components/CategoryArt'
 import Avatar from '../components/Avatar'
 import { hasLanding } from '../data/landings'
-import { artLayout, tileFor } from '../utils/artFit'
+import { artLayout, catSrc, tileFor } from '../utils/artFit'
 import { useAspect } from '../components/TileArt'
 
 // Ширина плитки раздела — как у плиток внутри разделов: длинное слово — широкая, очень длинное — ещё шире
 // картинка плитки на телефоне — по её форме (artBox); на компьютере — прежняя сетка (размеры из CSS)
 function HomeTileArt({ slug, name }) {
-  const { box } = artLayout(name, tileFor(name), slug, useAspect(`/cat/${slug}.png`))
+  const { box } = artLayout(name, tileFor(name), slug, useAspect(catSrc(slug)))
   // только сама картинка, без запасного контурного значка: нет файла — в плитке ничего (картинки делаются заново)
   return (
     <div className="cat-tile-2row-glyph" style={{ '--art-w': `${box.width}px`, '--art-h': `${box.height}px` }}>
-      <img className="cat-art" src={`/cat/${slug}.png`} alt="" loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none' }} />
+      <img className="cat-art" src={catSrc(slug)} alt="" loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none' }} />
     </div>
   )
 }

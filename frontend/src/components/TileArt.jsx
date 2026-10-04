@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { artLayout } from '../utils/artFit'
 
 // код раздела из адреса картинки (/cat/<код>.png) — по нему форма и заполненность из catArt.json
-export const slugOf = (src) => (String(src).match(/\/cat\/([^/]+)\.png$/) || [])[1] || ''
+export const slugOf = (src) => (String(src).match(/\/cat\/([^/?]+)\.png/) || [])[1] || ''
 
 // форма картинки (ширина / высота) — один раз на адрес, дальше из памяти
 const aspects = new Map()

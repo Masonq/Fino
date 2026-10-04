@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
 Форма и заполненность картинок разделов (frontend/public/cat/*.png) — для размера на плитке (artFit.artBox):
-{"раздел": [ширина/высота, доля непрозрачного]}. Пишется в frontend/src/data/catArt.json и native/src/catArt.json.
+{"раздел": [ширина/высота, доля непрозрачного, метка содержимого]}. Пишется в frontend/src/data/catArt.json и native/src/catArt.json.
 Запускается сам из key_art.py после каждой картинки; вручную: python3 tools/art_manifest.py
 """
-import json, os
+import hashlib, json, os
 import numpy as np
 from PIL import Image
 
@@ -19,7 +19,11 @@ def build():
             continue
         im = Image.open(os.path.join(CAT, f))
         a = np.asarray(im.convert('RGBA').getchannel('A'), dtype=np.float32) / 255
-        out[f[:-4]] = [round(im.width / im.height, 3), round(float(a.mean()), 3)]
+        # третье — метка содержимого для адреса (?v=…): поменялась картинка — поменялся адрес, кэш браузера
+        # и приложения её не держит
+        with open(os.path.join(CAT, f), 'rb') as fh:
+            v = hashlib.sha1(fh.read()).hexdigest()[:8]
+        out[f[:-4]] = [round(im.width / im.height, 3), round(float(a.mean()), 3), v]
     return out
 
 

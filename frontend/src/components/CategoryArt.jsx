@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { catSrc } from '../utils/artFit'
 import { CATEGORY_ICONS, FALLBACK_ICON } from './CategoryIcons'
 
 /**
@@ -32,7 +33,7 @@ export default function CategoryArt({ slug, parentSlug }) {
   return (
     <img
       className="cat-art"
-      src={`/cat/${source}.png`}
+      src={catSrc(source)}
       alt=""
       // Без ленивой загрузки: плитки разделов почти всегда в первом
       // экране, и откладывать их незачем — браузер начинал грузить

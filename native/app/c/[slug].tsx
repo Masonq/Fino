@@ -11,7 +11,7 @@ import Icon from '../../src/components/Icon'
 import SheetFrame from '../../src/components/SheetFrame'
 import { CAR_BRANDS, CAR_MODELS, CAR_OTHER, LANDINGS, type LandingField, landingParams, LUI, t3 } from '../../src/landings'
 import JobsLanding from '../../src/components/JobsLanding'
-import { TILE, artLayout, circleArt, longestWordWidth, oneLineWidth, tileFor, type TileFit } from '../../src/artFit'
+import { TILE, artLayout, catPath, circleArt, longestWordWidth, oneLineWidth, tileFor, type TileFit } from '../../src/artFit'
 import TileArt from '../../src/components/TileArt'
 import ListingCard from '../../src/components/ListingCard'
 import { SITE } from '../../src/config'
@@ -23,7 +23,7 @@ import { colors, font, space } from '../../src/theme'
 /** Картинка подраздела; своей нет — картинка родительского раздела, как CategoryArt на сайте. */
 function SubArt({ slug, fallback }: { slug: string; fallback?: string }) {
   const [src, setSrc] = useState(slug)
-  return <Image source={{ uri: `${SITE}/cat/${src}.png` }} style={styles.subArt} contentFit="contain" onError={() => { if (fallback && src !== fallback) setSrc(fallback) }} />
+  return <Image source={{ uri: `${SITE}${catPath(src)}` }} style={styles.subArt} contentFit="contain" onError={() => { if (fallback && src !== fallback) setSrc(fallback) }} />
 }
 
 /** Одно особое поле раздела: чипы, выбор марки/модели или диапазон «от — до». */
@@ -222,7 +222,7 @@ function CategoryScreen() {
     return (
       <Pressable key={key} style={[styles.lTile, { width: w }]} onPress={() => { select(); router.push(`/c/${c.slug}`) }} accessibilityRole="button">
         <Text style={[styles.lTileText, { maxWidth: fit.text }]}>{nameOf(c)}</Text>
-        <TileArt uri={`${SITE}/cat/${c.slug}.png`} name={nameOf(c)} fit={fit} />
+        <TileArt uri={`${SITE}${catPath(c.slug)}`} name={nameOf(c)} fit={fit} />
       </Pressable>
     )
   }
@@ -333,7 +333,7 @@ function CategoryScreen() {
       <View style={styles.circleGrid}>
         {subs.map((c) => (
           <Pressable key={c.id} style={[styles.circleItem, { width: circleW }]} onPress={() => { select(); router.push(`/c/${c.slug}`) }} accessibilityRole="button">
-            <View style={styles.circle}><Image source={{ uri: `${SITE}/cat/${c.slug}.png` }} style={circleArt(c.slug)} contentFit="contain" /></View>
+            <View style={styles.circle}><Image source={{ uri: `${SITE}${catPath(c.slug)}` }} style={circleArt(c.slug)} contentFit="contain" /></View>
             <Text style={styles.circleText}>{nameOf(c)}</Text>
           </Pressable>
         ))}

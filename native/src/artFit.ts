@@ -1,7 +1,7 @@
 import CAT_ART_JSON from './catArt.json'
 
 // форма и заполненность картинок разделов (tools/art_manifest.py): [ширина/высота, доля непрозрачного]
-const CAT_ART = CAT_ART_JSON as unknown as Record<string, [number, number]>
+const CAT_ART = CAT_ART_JSON as unknown as Record<string, [number, number, string]>
 
 /**
  * Крупная картинка (84, чуть за правым и нижним краем) или прежняя (66) — для каждой плитки отдельно.
@@ -87,6 +87,9 @@ export function tileFor(name: string): TileFit {
  * композиция (самокат с велосипедом) в той же рамке выглядит мельче плотной (стопка кирпичей). Крупные
  * уменьшаются до общего размера ART_TARGET, мелкие берут всё доступное место — так плитки ровнее друг с другом.
  */
+/** Адрес картинки раздела с меткой содержимого (как на сайте): картинку заменили — адрес другой, кэш не мешает. */
+export const catPath = (slug: string) => `/cat/${slug}.png${CAT_ART[slug] ? `?v=${CAT_ART[slug][2]}` : ''}`
+
 export const ART_TARGET = 48
 export const artSize = (w: number, h: number, fill: number) => Math.sqrt(w * h) * Math.pow(fill, 0.4)
 export function artBox(name: string, fit: TileFit, aspect: number, fill?: number, noTarget = false) {
@@ -125,7 +128,7 @@ export function artBox(name: string, fit: TileFit, aspect: number, fill?: number
  */
 export function artLayout(name: string, fit: TileFit, slug: string, aspect = 1.3): { fit: TileFit; box: ReturnType<typeof artBox> } {
   const known = CAT_ART[slug]
-  const [asp, fill] = known || [aspect, 0]
+  const [asp, fill] = known ? [known[0], known[1]] : [aspect, 0]
   if (!known) return { fit, box: artBox(name, fit, asp) }
   const size = (f: TileFit) => { const b = artBox(name, f, asp, fill, true); return artSize(b.width, b.height, fill) }
   let best = fit, bestSize = size(fit)
@@ -141,7 +144,7 @@ export function artLayout(name: string, fit: TileFit, slug: string, aspect = 1.3
 }
 /** Картинка в квадрате-кружке (разделы «Бизнеса»): видимый размер у всех один, не больше 76 из 84. */
 export function circleArt(slug: string) {
-  const [asp, fill] = CAT_ART[slug] || [1, 0]
+  const [asp, fill] = CAT_ART[slug] || [1, 0, '']
   let [w, h] = asp > 1 ? [66, 66 / asp] : [66 * asp, 66]
   if (fill > 0) { const k = Math.min(52 / artSize(w, h, fill), 76 / Math.max(w, h)); w *= k; h *= k }
   return { width: Math.round(w), height: Math.round(h) }

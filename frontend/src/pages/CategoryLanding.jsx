@@ -7,7 +7,7 @@ import { api } from '../api/client'
 import CategoryArt from '../components/CategoryArt'
 import ListingCard from '../components/ListingCard'
 import JobsLanding from '../components/JobsLanding'
-import { artLayout, circleArt, longestWordWidth, oneLineWidth, tileFor } from '../utils/artFit'
+import { artLayout, catSrc, circleArt, longestWordWidth, oneLineWidth, tileFor } from '../utils/artFit'
 import TileArt from '../components/TileArt'
 import { CardSkeletons } from '../components/Skeletons'
 import { LANDINGS, landingFor } from '../data/landings'
@@ -663,7 +663,7 @@ function CategoryLandingPage() {
           <div className="lp-circles">
             {category.children.map((sub) => (
               <button key={sub.id} type="button" className="lp-circle-item" onClick={() => navigate(sub.children?.length > 0 ? `/c/${sub.slug}` : `/search?category=${sub.slug}`)}>
-                <span className="lp-circle"><img src={`/cat/${sub.slug}.png`} style={circleArt(sub.slug)} alt="" loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none' }} /></span>
+                <span className="lp-circle"><img src={catSrc(sub.slug)} style={circleArt(sub.slug)} alt="" loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none' }} /></span>
                 <span className="lp-circle-text">{sub.name?.[i18n.language] || sub.name?.ru}</span>
               </button>
             ))}
@@ -710,7 +710,7 @@ function CategoryLandingPage() {
                     <button key={sub.id} type="button" className="jl-tile" style={{ width: w }}
                       onClick={() => (sub.children?.length > 0 ? navigate(`/c/${sub.slug}`) : navigate(`/search?category=${sub.slug}`))}>
                       <span className="jl-tile-text" style={{ maxWidth: fit.text }}>{label}</span>
-                      <TileArt src={`/cat/${sub.slug}.png`} name={label} fit={fit} />
+                      <TileArt src={catSrc(sub.slug)} name={label} fit={fit} />
                     </button>
                   )
                 })}

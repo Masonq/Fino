@@ -18,6 +18,7 @@ import LocationPicker from '../../src/components/LocationPicker'
 import CityPicker from '../../src/components/CityPicker'
 import Segmented from '../../src/components/Segmented'
 import { mediaUrl, SITE } from '../../src/config'
+import { catPath } from '../../src/artFit'
 import { cityName, CITY_COORDS } from '../../src/format'
 import { colors, font } from '../../src/theme'
 
@@ -233,7 +234,7 @@ export default function Post() {
             <View style={styles.grid}>
               {roots.map((c) => (
                 <Pressable key={c.id} style={styles.catItem} onPress={() => choose(c)} accessibilityRole="button">
-                  <Image source={{ uri: `${SITE}/cat/${c.slug}.png` }} style={styles.catImg} contentFit="contain" />
+                  <Image source={{ uri: `${SITE}${catPath(c.slug)}` }} style={styles.catImg} contentFit="contain" />
                   <Text style={styles.catLabel} numberOfLines={2}>{nameOf(c)}</Text>
                 </Pressable>
               ))}
