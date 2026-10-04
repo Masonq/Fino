@@ -85,6 +85,11 @@ KEYWORDS: dict[str, list[str]] = {
         "ps5", "ps4", "nintendo", "airpods", "earpods", "гарнитур",
         "ipad", "айпад", "imac", "имак", "роутер", "принтер", "проектор", "ipad",
         "telefon", "laptop", "racunar", "televizor", "slusalice",
+        # марки и вещи, которые разбор не узнавал — из-за этого телефон или мышка из темы «Вакансии»
+        # уходили в «Работу» (Honor 200 pro, Logitech, колонки Mission, Apple Watch)
+        "honor", "huawei", "oneplus", "pixel", "nokia", "motorola", "realme", "redmi", "poco",
+        "apple watch", "смарт-час", "умные часы", "garmin", "kindle", "logitech", "мышк", "клавиатур",
+        "колонк", "акустик", "саундбар", "jbl", "marshall", "bose", "sennheiser", "mouse", "speaker",
     ],
     "fashion": [
         "одежд", "вещи", "куртк", "пальто", "плать", "джинс", "футболк", "рубашк", "свитер", "обув",
@@ -485,6 +490,14 @@ def explain(text: str) -> dict[str, list[str]]:
     return out
 
 
+_JOB_EVIDENCE_RE = re.compile(
+    r"(требу|ваканс|ищу\s+(работ|подработ|сотрудник|помощни|мастер|няню|водител)|ищем|нужен|нужна|нужны|"
+    r"зарплат|оплат|график|смен|опыт|резюме|приглаша|подработ|занятост|работ[ауеы]\b|работу\b|"
+    r"posao|poslodav|plata|radnik|cv\b|job|hiring|salary)",
+    re.IGNORECASE,
+)
+
+
 def decide_for(expected: str | None, text: str) -> tuple[str | None, bool]:
     """
     То же решение, но категория из темы уже известна по номеру.
@@ -494,6 +507,11 @@ def decide_for(expected: str | None, text: str) -> tuple[str | None, bool]:
     в тот раздел, и разобрать это должен человек, а не догадка.
     """
     guessed, score = classify(text)
+
+    # Тема «Вакансии / Резюме», а в тексте ни одного признака работы — это вещь, выставленная не в ту тему
+    # (так в «Работу» попадали телефон, мышка, колонки). Вслепую в «Работу» не кладём.
+    if expected == "jobs" and not guessed and not _JOB_EVIDENCE_RE.search(text):
+        return None, False
 
     if expected and guessed:
         return (expected, True) if expected == guessed else (guessed, False)
