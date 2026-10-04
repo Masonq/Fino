@@ -198,7 +198,24 @@ export const startChat = (token: string, listingId: string) => authed<Chat>(`/ch
 
 // ---------- размещение, мои объявления, баланс ----------
 
-export type Uploaded = { url: string; thumbnail_url?: string | null }
+export type Uploaded = { url: string; thumbnail_url?: string | null; is_video?: boolean }
+
+/**
+ * Загрузка видео — как на сайте (/media/upload-video): сервер проверяет формат, размер и длину (до полутора
+ * минут) и делает превью. Ошибки — кодом (unsupported_format, file_too_large, video_too_long, processing_failed).
+ */
+export async function uploadVideo(token: string, uri: string, mime: string): Promise<Uploaded> {
+  const form = new FormData()
+  form.append('file', { uri, name: `video.${mime.includes('quicktime') ? 'mov' : 'mp4'}`, type: mime } as unknown as Blob)
+  const res = await fetch(`${API}/media/upload-video`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: form })
+  if (!res.ok) {
+    let detail = ''
+    try { const j = await res.json(); detail = typeof j?.detail === 'string' ? j.detail : '' } catch { /* тело без JSON */ }
+    throw new ApiError(res.status, detail)
+  }
+  const j = await res.json()
+  return { url: j.video_url, thumbnail_url: j.video_thumbnail_url ?? null, is_video: true }
+}
 
 /** Загрузка одного фото (сервер сжимает до 1600 px и делает превью). */
 export async function uploadPhoto(token: string, uri: string, mime = 'image/jpeg'): Promise<Uploaded> {
@@ -216,7 +233,7 @@ export async function uploadPhoto(token: string, uri: string, mime = 'image/jpeg
 
 export type NewListing = {
   category_id: string; title: string; description: string; price: number | null; currency: 'EUR' | 'RSD'
-  price_negotiable: boolean; city: string | null; photos: Uploaded[]
+  price_negotiable: boolean; city: string | null; photos: Uploaded[]; attributes?: Record<string, unknown>
 }
 
 export async function createListing(token: string, l: NewListing) {
@@ -225,8 +242,9 @@ export async function createListing(token: string, l: NewListing) {
     headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify({
       category_id: l.category_id, source_language: getLang(), price: l.price, currency: l.currency, price_negotiable: l.price_negotiable,
-      city: l.city, attributes: {}, translations: [{ language: getLang(), title: l.title, description: l.description }],
-      photos: l.photos.map((p) => ({ url: p.url, thumbnail_url: p.thumbnail_url ?? null, is_video: false })),
+      // характеристики раздела — как на сайте (раньше уходил пустой объект, и объявления из приложения не находились по фильтрам)
+      city: l.city, attributes: l.attributes ?? {}, translations: [{ language: getLang(), title: l.title, description: l.description }],
+      photos: l.photos.map((p) => ({ url: p.url, thumbnail_url: p.thumbnail_url ?? null, is_video: !!p.is_video })),
     }),
   })
   if (!res.ok) {
@@ -256,7 +274,7 @@ export type Seller = {
 export const sellerProfile = (userId: string) => get<Seller>(`/users/${encodeURIComponent(userId)}/public?lang=${getLang()}`)
 
 type Label = Record<string, string> | string
-export type AttrField = { key: string; type?: string; label?: Label; unit?: string; options?: { value: string | number; label: Label }[] }
+export type AttrField = { key: string; type?: string; label?: Label; unit?: string; required?: boolean; options?: { value: string | number; label: Label }[] }
 export const categorySchema = (slug: string) => get<{ attribute_schema?: AttrField[] }>(`/categories/${encodeURIComponent(slug)}/schema`)
 export const ru = (l?: Label | null) => (!l ? '' : typeof l === 'string' ? l : l[getLang()] || l.ru || l.en || Object.values(l)[0] || '')
 
@@ -305,7 +323,7 @@ export const toggleSavedSearch = (token: string, id: string, enabled: boolean) =
 export type ListingPatch = { title?: string; description?: string; price?: number | null; currency?: 'EUR' | 'RSD'; price_negotiable?: boolean; city?: string | null }
 export const updateListing = (token: string, id: string, patch: ListingPatch) => authed<unknown>(`/listings/${encodeURIComponent(id)}`, token, 'PATCH', patch)
 export const addListingPhoto = (token: string, id: string, p: Uploaded) =>
-  authed<unknown>(`/listings/${encodeURIComponent(id)}/photos`, token, 'POST', { url: p.url, thumbnail_url: p.thumbnail_url ?? null, is_video: false })
+  authed<unknown>(`/listings/${encodeURIComponent(id)}/photos`, token, 'POST', { url: p.url, thumbnail_url: p.thumbnail_url ?? null, is_video: !!p.is_video })
 export const deleteListingPhoto = (token: string, id: string, photoId: string) =>
   authed<unknown>(`/listings/${encodeURIComponent(id)}/photos/${encodeURIComponent(photoId)}`, token, 'DELETE')
 

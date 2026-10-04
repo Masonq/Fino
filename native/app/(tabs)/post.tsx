@@ -10,12 +10,13 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { ApiError, type Category, createListing, fetchCategories, type Uploaded, uploadPhoto } from '../../src/api'
+import { ApiError, type Category, createListing, fetchCategories, type Uploaded, uploadPhoto, type AttrField, categorySchema, uploadVideo } from '../../src/api'
 import { useAuth } from '../../src/auth'
 import Icon from '../../src/components/Icon'
+import SheetFrame from '../../src/components/SheetFrame'
 import CityPicker from '../../src/components/CityPicker'
 import Segmented from '../../src/components/Segmented'
-import { SITE } from '../../src/config'
+import { mediaUrl, SITE } from '../../src/config'
 import { cityName } from '../../src/format'
 import { colors, font } from '../../src/theme'
 
@@ -27,6 +28,27 @@ type Shot = { key: string; uri: string; mime: string; state: 'loading' | 'done' 
  * Раздел — по дереву, название, описание, цена (€ / RSD), «Торг уместен», город. Проверка — подсказками
  * у полей. После отправки — «Отправлено на проверку» и переход в мои объявления.
  */
+const labelOf = (l: unknown): string => (typeof l === 'string' ? l : (l as Record<string, string> | undefined)?.[getLang()] || (l as Record<string, string> | undefined)?.ru || '')
+
+/** Характеристики для сервера: пустые не отправляем, числа — числами. */
+function cleanAttrs(a: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {}
+  for (const [k, v] of Object.entries(a)) {
+    if (v === undefined || v === null || v === '' || v === false) continue
+    out[k] = typeof v === 'string' && /^\d+(\.\d+)?$/.test(v) ? Number(v) : v
+  }
+  return out
+}
+
+/** Название квартиры собирается само — как на сайте: «2-комнатная квартира, 54 м²», «Квартира-студия, 30 м²». */
+function apartmentTitle(attrs: Record<string, unknown>): string {
+  const area = attrs.area_m2
+  if (!area) return ''
+  const rooms = attrs.rooms === undefined || attrs.rooms === '' ? '' : String(attrs.rooms)
+  const head = !rooms ? tr('Квартира') : rooms === 'studio' ? tr('Квартира-студия') : rooms === '1.5' ? tr('1,5-комнатная квартира') : rooms === '1' ? tr('1-комнатная квартира') : tr('{n}-комнатная квартира', { n: rooms })
+  return tr('{head}, {area} м²', { head, area: String(area) })
+}
+
 export default function Post() {
   const { token, ready } = useAuth()
   const [shots, setShots] = useState<Shot[]>([])
@@ -43,7 +65,13 @@ export default function Post() {
   const [done, setDone] = useState<{ id: string } | null>(null)
   const [error, setError] = useState('')
   // Мастер, как на сайте: 1 — раздел (сетка с картинками), 2 — подраздел, 3 — фото и описание
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1)
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1)
+  const [schema, setSchema] = useState<AttrField[] | null>(null)
+  // все состояния — до любых ранних выходов: иначе при смене шага меняется число хуков (ошибка React #310)
+  const [videoError, setVideoError] = useState('')
+  const isApartment = !!schema?.some((f) => f.key === 'rooms') && !!schema?.some((f) => f.key === 'area_m2')
+  const [attrs, setAttrs] = useState<Record<string, unknown>>({})
+  const [selectField, setSelectField] = useState<AttrField | null>(null)
   const [roots, setRoots] = useState<Category[] | null>(null)
   const [trail, setTrail] = useState<Category[]>([])
   useEffect(() => { fetchCategories().then(setRoots).catch(() => setRoots([])) }, [])
@@ -79,11 +107,38 @@ export default function Post() {
   const upload = async (shot: Shot) => {
     setShots((s) => s.map((x) => (x.key === shot.key ? { ...x, state: 'loading' } : x)))
     try {
-      const up = await uploadPhoto(token, shot.uri, shot.mime)
+      const up = shot.mime.startsWith('video') ? await uploadVideo(token, shot.uri, shot.mime) : await uploadPhoto(token, shot.uri, shot.mime)
       setShots((s) => s.map((x) => (x.key === shot.key ? { ...x, state: 'done', uploaded: up } : x)))
-    } catch {
+    } catch (e) {
+      if (shot.mime.startsWith('video')) {
+        // видео с ошибкой формата, размера или длины убираем и объясняем — как на сайте
+        const code = e instanceof ApiError ? e.message : ''
+        const msg: Record<string, string> = {
+          unsupported_format: 'Формат не поддерживается — снимите видео обычной камерой телефона',
+          file_too_large: 'Файл слишком большой',
+          video_too_long: 'Видео слишком длинное — до полутора минут',
+          processing_failed: 'Не удалось обработать видео — попробуйте другое',
+        }
+        setShots((s) => s.filter((x) => x.key !== shot.key))
+        setVideoError(tr(msg[code] ?? 'Не получилось загрузить видео'))
+        return
+      }
       setShots((s) => s.map((x) => (x.key === shot.key ? { ...x, state: 'failed' } : x)))
     }
+  }
+
+  // Видео — одно, до полутора минут, как на сайте
+  const hasVideo = shots.some((x) => x.mime.startsWith('video'))
+  const addVideo = async () => {
+    setVideoError('')
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync()
+    if (!perm.granted) { Alert.alert(tr('Нет доступа'), tr('Разрешите доступ к фото в настройках телефона.')); return }
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['videos'], videoMaxDuration: 90, quality: 1 })
+    if (res.canceled || !res.assets[0]) return
+    const a = res.assets[0]
+    const shot: Shot = { key: `video-${Date.now()}`, uri: a.uri, mime: a.mimeType || 'video/mp4', state: 'loading' }
+    setShots((s) => [...s, shot])
+    upload(shot)
   }
 
   const add = async (from: 'camera' | 'library') => {
@@ -103,9 +158,9 @@ export default function Post() {
   }
 
   const problems = {
-    photos: shots.filter((s) => s.state === 'done').length === 0 ? tr('Добавьте хотя бы одно фото') : shots.some((s) => s.state === 'loading') ? tr('Дождитесь загрузки фото') : '',
+    photos: shots.filter((s) => s.state === 'done' && !s.mime.startsWith('video')).length === 0 ? tr('Добавьте хотя бы одно фото') : shots.some((s) => s.state === 'loading') ? tr('Дождитесь загрузки фото') : '',
     cat: cat ? '' : tr('Выберите раздел'),
-    title: title.trim().length < 3 ? tr('Название — хотя бы 3 буквы') : '',
+    title: ((isApartment && apartmentTitle(attrs)) || title).trim().length < 3 ? tr('Название — хотя бы 3 буквы') : '',
     desc: desc.trim().length < 10 ? tr('Опишите вещь хотя бы парой предложений') : '',
   }
   const ok = !Object.values(problems).some(Boolean)
@@ -116,9 +171,10 @@ export default function Post() {
     setSending(true)
     try {
       const res = await createListing(token, {
-        category_id: cat.c.id, title: title.trim(), description: desc.trim(),
+        category_id: cat.c.id, title: (isApartment && apartmentTitle(attrs)) || title.trim(), description: desc.trim(),
         price: price ? Number(price) : null, currency, price_negotiable: negotiable, city,
         photos: shots.filter((s) => s.state === 'done' && s.uploaded).map((s) => s.uploaded as Uploaded),
+        attributes: cleanAttrs(attrs),
       })
       success()
       setDone({ id: res.id })
@@ -134,11 +190,12 @@ export default function Post() {
   const choose = (c: Category) => {
     const path = [...trail, c]
     if (c.children && c.children.length) { setTrail(path); setStep(2); return }
-    setCat({ c, path: path.map(nameOf).join(' › ') }); setTrail([]); setStep(3)
+    setCat({ c, path: path.map(nameOf).join(' › ') }); setTrail([]); setAttrs({}); setSchema(null); setStep(3)
+    categorySchema(c.slug).then((r) => setSchema(r.attribute_schema ?? [])).catch(() => setSchema([]))
   }
   const dots = (
     <View style={styles.steps}>
-      {[1, 2, 3, 4].map((n) => <View key={n} style={[styles.stepDot, n <= step && styles.stepDotOn]} />)}
+      {[1, 2, 3, 4].map((n) => <View key={n} style={[styles.stepDot, n <= (step <= 2 ? 1 : step - 1) && styles.stepDotOn]} />)}
     </View>
   )
 
@@ -190,13 +247,83 @@ export default function Post() {
     )
   }
 
+  // Шаг 2 «Параметры» — как на сайте: поля из схемы раздела; обязательные — «*», без них дальше нельзя
+  if (step === 3) {
+    const fields = schema ?? []
+    const filled = fields.filter((f) => f.required).every((f) => { const v = attrs[f.key]; return v !== undefined && v !== null && v !== '' })
+    return (
+      <SafeAreaView style={styles.page} edges={['top']}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
+            {dots}
+            <View style={styles.stepHead}>
+              <Pressable onPress={() => setStep(1)} hitSlop={10} style={styles.stepBack} accessibilityLabel={tr('Назад')}><Icon name="back" size={22} color={colors.ink} /></Pressable>
+              <Text style={styles.stepTitle}>{tr('Параметры')}</Text>
+            </View>
+            <Text style={styles.stepHint}>{cat?.path}</Text>
+            {schema === null ? <ActivityIndicator style={{ marginTop: 20 }} color={colors.primary} />
+              : fields.length === 0 ? <Text style={styles.stepHint}>{tr('У этой категории пока нет доп. параметров — переходите дальше.')}</Text>
+              : fields.map((f) => {
+                const label = `${labelOf(f.label) || f.key}${f.required ? ' *' : ''}`
+                const v = attrs[f.key]
+                if (f.type === 'boolean') {
+                  return (
+                    <Pressable key={f.key} style={styles.paramCheck} onPress={() => setAttrs((a) => ({ ...a, [f.key]: !a[f.key] }))} accessibilityRole="checkbox" accessibilityState={{ checked: !!v }}>
+                      <View style={[styles.box, !!v && styles.boxOn]}>{!!v && <Icon name="check" size={12} color="#fff" />}</View>
+                      <Text style={styles.paramCheckText}>{labelOf(f.label)}</Text>
+                    </Pressable>
+                  )
+                }
+                return (
+                  <View key={f.key}>
+                    <Text style={styles.label}>{label}</Text>
+                    {f.type === 'select' ? (
+                      <Pressable style={styles.select} onPress={() => setSelectField(f)}>
+                        <Text style={[styles.selectText, v === undefined || v === '' ? { color: colors.muted } : null]}>
+                          {v === undefined || v === '' ? '—' : labelOf(f.options?.find((o) => String(o.value) === String(v))?.label) || String(v)}
+                        </Text>
+                        <Icon name="down" size={14} color={colors.muted} />
+                      </Pressable>
+                    ) : (
+                      <TextInput value={v === undefined ? '' : String(v)} onChangeText={(t) => setAttrs((a) => ({ ...a, [f.key]: f.type === 'number' ? t.replace(/[^\d.,]/g, '').replace(',', '.') : t }))}
+                        keyboardType={f.type === 'number' ? 'decimal-pad' : 'default'} style={styles.input} placeholderTextColor={colors.muted} maxLength={120} />
+                    )}
+                  </View>
+                )
+              })}
+            <Pressable style={[styles.cta, styles.submit, !filled && { opacity: 0.45 }]} disabled={!filled || schema === null} onPress={() => setStep(4)} accessibilityRole="button">
+              <Text style={styles.ctaText}>{tr('Далее')}</Text>
+            </Pressable>
+          </ScrollView>
+        </KeyboardAvoidingView>
+        <SheetFrame visible={!!selectField} onClose={() => setSelectField(null)}>
+          <View style={styles.optSheet}>
+            <View style={styles.optHandle} />
+            <Text style={styles.optTitle}>{labelOf(selectField?.label)}</Text>
+            <ScrollView style={{ maxHeight: 460 }}>
+              {(selectField?.options ?? []).map((o) => {
+                const on = String(attrs[selectField!.key]) === String(o.value)
+                return (
+                  <Pressable key={String(o.value)} style={styles.optRow} onPress={() => { setAttrs((a) => ({ ...a, [selectField!.key]: o.value })); setSelectField(null) }}>
+                    <Text style={[styles.optText, on && { color: colors.primaryDeep, fontFamily: font[800] }]}>{labelOf(o.label)}</Text>
+                    {on && <Icon name="check" size={16} color={colors.primary} />}
+                  </Pressable>
+                )
+              })}
+            </ScrollView>
+          </View>
+        </SheetFrame>
+      </SafeAreaView>
+    )
+  }
+
   return (
     <SafeAreaView style={styles.page} edges={['top']}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
           {dots}
-          <Text style={styles.stepTitle}>{tr(step === 4 ? 'Цена и город' : 'Фото и описание')}</Text>
-          {step === 3 && (<>
+          <Text style={styles.stepTitle}>{tr(step === 5 ? 'Цена и город' : 'Описание и фото')}</Text>
+          {step === 4 && (<>
 
           <Text style={styles.label}>{tr('Фото')} <Text style={styles.count}>{shots.length}/{MAX}</Text></Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.shots}>
@@ -212,9 +339,18 @@ export default function Post() {
                 </Pressable>
               </>
             )}
+            {!hasVideo && (
+              <Pressable style={styles.addShot} onPress={addVideo} accessibilityLabel={tr('Добавить видео')}>
+                <Icon name="video" size={24} color={colors.primaryDeep} />
+                <Text style={[styles.addText, { textAlign: 'center' }]}>{tr('Добавить видео')}</Text>
+              </Pressable>
+            )}
             {shots.map((s, i) => (
               <Pressable key={s.key} style={styles.shot} disabled={s.state !== 'failed'} onPress={() => upload(s)}>
-                <Image source={{ uri: s.uri }} style={styles.shotImg} contentFit="cover" />
+                {s.mime.startsWith('video')
+                  ? (s.uploaded?.thumbnail_url ? <Image source={{ uri: mediaUrl(s.uploaded.thumbnail_url) ?? undefined }} style={styles.shotImg} contentFit="cover" /> : <View style={[styles.shotImg, { backgroundColor: '#1C2620' }]} />)
+                  : <Image source={{ uri: s.uri }} style={styles.shotImg} contentFit="cover" />}
+                {s.mime.startsWith('video') && s.state === 'done' && <View style={styles.playBadge}><Icon name="play" size={12} color="#fff" filled /></View>}
                 {s.state === 'loading' && <View style={styles.shotOverlay}><ActivityIndicator color="#fff" /></View>}
                 {s.state === 'failed' && <View style={[styles.shotOverlay, { backgroundColor: 'rgba(180,35,24,0.72)' }]}><Ionicons name="refresh" size={22} color="#fff" /></View>}
                 {i === 0 && <Text style={styles.cover}>{tr('Обложка')}</Text>}
@@ -225,6 +361,8 @@ export default function Post() {
             ))}
           </ScrollView>
           {hint(problems.photos)}
+          {!!videoError && <Text style={styles.hint}>{videoError}</Text>}
+          {shots.some((x) => x.mime.startsWith('video') && x.state === 'loading') && <Text style={styles.small}>{tr('Обрабатывается — обычно недолго')}</Text>}
 
           <Text style={styles.label}>{tr('Раздел')}</Text>
           <Pressable style={styles.select} onPress={() => { setTrail([]); setStep(1) }}>
@@ -234,7 +372,7 @@ export default function Post() {
           {hint(problems.cat)}
 
           <Text style={styles.label}>{tr('Название')}</Text>
-          <TextInput value={title} onChangeText={setTitle} placeholder={tr('Например, велосипед Trek FX 2')} placeholderTextColor={colors.muted} style={styles.input} maxLength={120} />
+          <TextInput value={isApartment && apartmentTitle(attrs) ? apartmentTitle(attrs) : title} editable={!(isApartment && apartmentTitle(attrs))} onChangeText={setTitle} placeholder={tr('Например, велосипед Trek FX 2')} placeholderTextColor={colors.muted} style={styles.input} maxLength={120} />
           {hint(problems.title)}
 
           <Text style={styles.label}>{tr('Описание')}</Text>
@@ -242,15 +380,15 @@ export default function Post() {
           {hint(problems.desc)}
           </>)}
 
-          {step === 3 && (
+          {step === 4 && (
             <Pressable style={[styles.cta, styles.submit]} onPress={() => {
               if (problems.photos || problems.cat || problems.title || problems.desc) { setTried(true); return }
-              setStep(4)
+              setStep(5)
             }} accessibilityRole="button"><Text style={styles.ctaText}>{tr('Далее')}</Text></Pressable>
           )}
 
-          {step === 4 && (<>
-          <Pressable onPress={() => setStep(3)} hitSlop={8} style={styles.backLink}><Icon name="back" size={16} color={colors.primaryDeep} /><Text style={styles.backLinkText}>{tr('Фото и описание')}</Text></Pressable>
+          {step === 5 && (<>
+          <Pressable onPress={() => setStep(4)} hitSlop={8} style={styles.backLink}><Icon name="back" size={16} color={colors.primaryDeep} /><Text style={styles.backLinkText}>{tr('Описание и фото')}</Text></Pressable>
           <View style={styles.labelRow}>
             <Text style={styles.label}>{tr('Цена')}</Text>
             <Segmented options={[{ key: 'EUR', label: '€' }, { key: 'RSD', label: 'RSD' }]} value={currency} onChange={(c) => setCurrency(c as 'EUR' | 'RSD')} />
@@ -293,6 +431,16 @@ const styles = StyleSheet.create({
   // Как на сайте: .post-steps (полоски 4 px), .post-cat-grid (3 колонки, 8 px), .post-cat-item (118, скругление 16)
   backLink: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6, alignSelf: 'flex-start' },
   backLinkText: { fontSize: 14, fontFamily: font[700], color: colors.primaryDeep },
+  paramCheck: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 16 },
+  paramCheckText: { flex: 1, fontSize: 15, fontFamily: font[600], color: colors.ink },
+  box: { width: 22, height: 22, borderRadius: 6, borderWidth: 1.5, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface },
+  boxOn: { backgroundColor: colors.primary, borderColor: colors.primary },
+  optSheet: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 8, paddingBottom: 26 },
+  optHandle: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: '#D8DCD8', marginBottom: 8 },
+  optTitle: { fontSize: 18, fontFamily: font[800], color: colors.ink, paddingHorizontal: 20, paddingBottom: 8 },
+  optRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 50, paddingHorizontal: 20, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+  optText: { fontSize: 16, fontFamily: font[600], color: colors.ink },
+  playBadge: { position: 'absolute', left: 6, top: 6, width: 22, height: 22, borderRadius: 11, backgroundColor: 'rgba(28,38,32,0.7)', alignItems: 'center', justifyContent: 'center' },
   steps: { flexDirection: 'row', gap: 6, marginBottom: 14 },
   stepDot: { flex: 1, height: 4, borderRadius: 3, backgroundColor: colors.border },
   stepDotOn: { backgroundColor: colors.primary },
@@ -308,7 +456,8 @@ const styles = StyleSheet.create({
   subRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 52, paddingHorizontal: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
   subText: { flex: 1, fontSize: 15.5, fontFamily: font[600], color: colors.ink, paddingRight: 8 },
   h1: { fontSize: 26, fontFamily: font[800], color: colors.ink, paddingTop: 8, paddingBottom: 6 },
-  label: { fontSize: 16, fontFamily: font[800], color: colors.ink, marginTop: 18, marginBottom: 8 },
+  // как подписи полей формы сайта: 12,5 / 700, серо-зелёные
+  label: { fontSize: 12.5, fontFamily: font[700], color: colors.inkSoft, marginTop: 16, marginBottom: 6 },
   labelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 18, marginBottom: 8 },
   count: { color: colors.muted, fontFamily: font[600], fontSize: 14 },
   shots: { gap: 8, paddingRight: 8 },

@@ -10,7 +10,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import {
-  addListingPhoto, ApiError, deleteListingPhoto, fetchListing, type ListingPatch, textOf, updateListing, type Uploaded, uploadPhoto, reorderListingPhotos } from '../../src/api'
+  addListingPhoto, ApiError, deleteListingPhoto, fetchListing, type ListingPatch, textOf, updateListing, type Uploaded, uploadPhoto, reorderListingPhotos, uploadVideo } from '../../src/api'
 import { useAuth } from '../../src/auth'
 import CityPicker from '../../src/components/CityPicker'
 import Segmented from '../../src/components/Segmented'
@@ -65,7 +65,8 @@ export default function EditListing() {
       setOrig({ title: t.title, description: t.description, price: l.price ?? null, currency: cur, price_negotiable: !!l.price_negotiable, city: l.city ?? null })
       setTitle(t.title); setDesc(t.description); setPrice(l.price != null ? String(Math.round(l.price)) : '')
       setCurrency(cur); setNegotiable(!!l.price_negotiable); setCity(l.city ?? null)
-      setShots(l.photos.filter((p) => !p.is_video).map((p) => ({ key: p.id, existingId: p.id, uri: mediaUrl(p.thumbnail_url || p.url) as string, state: 'done' })))
+      // видео тоже показываем (раньше отфильтровывалось — его нельзя было ни увидеть, ни удалить)
+      setShots(l.photos.map((p) => ({ key: p.id, existingId: p.id, uri: mediaUrl(p.thumbnail_url || p.url) as string, state: 'done' as const, mime: p.is_video ? 'video/mp4' : 'image/jpeg' })))
       setLoaded(true)
     }).catch(() => setError(tr('Не удалось открыть объявление')))
   }, [id])
@@ -73,11 +74,34 @@ export default function EditListing() {
   const upload = async (shot: Shot) => {
     setShots((s) => s.map((x) => (x.key === shot.key ? { ...x, state: 'loading' } : x)))
     try {
-      const up = await uploadPhoto(token as string, shot.uri, shot.mime)
-      setShots((s) => s.map((x) => (x.key === shot.key ? { ...x, state: 'done', uploaded: up } : x)))
-    } catch {
+      const up = shot.mime?.startsWith('video') ? await uploadVideo(token as string, shot.uri, shot.mime) : await uploadPhoto(token as string, shot.uri, shot.mime)
+      setShots((s) => s.map((x) => (x.key === shot.key ? { ...x, state: 'done', uploaded: up, uri: up.is_video && up.thumbnail_url ? (mediaUrl(up.thumbnail_url) as string) : x.uri } : x)))
+    } catch (e) {
+      if (shot.mime?.startsWith('video')) {
+        const code = e instanceof ApiError ? e.message : ''
+        const msg: Record<string, string> = {
+          unsupported_format: 'Формат не поддерживается — снимите видео обычной камерой телефона', file_too_large: 'Файл слишком большой',
+          video_too_long: 'Видео слишком длинное — до полутора минут', processing_failed: 'Не удалось обработать видео — попробуйте другое',
+        }
+        setShots((s) => s.filter((x) => x.key !== shot.key))
+        setCoverErr(tr(msg[code] ?? 'Не получилось загрузить видео'))
+        return
+      }
       setShots((s) => s.map((x) => (x.key === shot.key ? { ...x, state: 'failed' } : x)))
     }
+  }
+
+  // «Добавить видео» — одно, до полутора минут, как на сайте
+  const hasVideo = shots.some((x) => x.mime?.startsWith('video'))
+  const addVideo = async () => {
+    setCoverErr('')
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync()
+    if (!perm.granted) { Alert.alert(tr('Нет доступа'), tr('Разрешите доступ к фото в настройках телефона.')); return }
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['videos'], videoMaxDuration: 90, quality: 1 })
+    if (res.canceled || !res.assets[0]) return
+    const shot: Shot = { key: `video-${Date.now()}`, uri: '', mime: res.assets[0].mimeType || 'video/mp4', state: 'loading' }
+    setShots((s) => [...s, { ...shot, uri: res.assets[0].uri }])
+    upload({ ...shot, uri: res.assets[0].uri })
   }
 
   const add = async (from: 'camera' | 'library') => {
@@ -140,12 +164,13 @@ export default function EditListing() {
             <View style={styles.grid}>
               {shots.map((s, i) => (
                 <Pressable key={s.key} style={styles.shot} disabled={s.state !== 'failed'} onPress={() => upload(s)}>
-                  <Image source={{ uri: s.uri }} style={styles.shotImg} contentFit="cover" />
+                  {s.mime?.startsWith('video') && !s.uploaded && !s.existingId ? <View style={[styles.shotImg, { backgroundColor: '#1C2620' }]} /> : <Image source={{ uri: s.uri }} style={styles.shotImg} contentFit="cover" />}
+                  {s.mime?.startsWith('video') && s.state === 'done' && <View style={styles.playBadge}><Icon name="play" size={12} color="#fff" filled /></View>}
                   {s.state === 'loading' && <View style={styles.overlay}><ActivityIndicator color="#fff" /></View>}
                   {s.state === 'failed' && <View style={[styles.overlay, { backgroundColor: 'rgba(180,35,24,0.72)' }]}><Ionicons name="refresh" size={22} color="#fff" /></View>}
                   {i === 0
                     ? <Text style={styles.cover}>{tr('Обложка')}</Text>
-                    : !!s.existingId && <Pressable style={styles.makeCover} onPress={() => makeCover(s)} disabled={coverBusy}><Text style={styles.makeCoverText}>{tr('Сделать обложкой')}</Text></Pressable>}
+                    : !!s.existingId && !s.mime?.startsWith('video') && <Pressable style={styles.makeCover} onPress={() => makeCover(s)} disabled={coverBusy}><Text style={styles.makeCoverText}>{tr('Сделать обложкой')}</Text></Pressable>}
                   <Pressable style={styles.remove} onPress={() => remove(s)} hitSlop={6} accessibilityLabel={tr('Убрать фото')}><Ionicons name="close" size={14} color="#fff" /></Pressable>
                 </Pressable>
               ))}
@@ -153,6 +178,12 @@ export default function EditListing() {
                 <Pressable style={styles.addTile} onPress={() => setAddOpen(true)} accessibilityLabel={tr('Добавить фото')}>
                   <Icon name="plus" size={20} color={colors.ink} strokeWidth={2} />
                   <Text style={styles.addTileText}>{tr('Фото')}</Text>
+                </Pressable>
+              )}
+              {!hasVideo && (
+                <Pressable style={styles.addTile} onPress={addVideo} accessibilityLabel={tr('Добавить видео')}>
+                  <Icon name="video" size={20} color={colors.ink} />
+                  <Text style={[styles.addTileText, { textAlign: 'center' }]}>{tr('Добавить видео')}</Text>
                 </Pressable>
               )}
             </View>
@@ -203,6 +234,7 @@ const styles = StyleSheet.create({
   label: { fontSize: 12.5, fontFamily: font[700], color: colors.inkSoft, marginTop: 16, marginBottom: 6 },
   labelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 18, marginBottom: 8 },
   count: { color: colors.muted, fontFamily: font[600], fontSize: 14 },
+  playBadge: { position: 'absolute', left: 6, top: 6, width: 22, height: 22, borderRadius: 11, backgroundColor: 'rgba(28,38,32,0.7)', alignItems: 'center', justifyContent: 'center' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   addTile: { width: 92, height: 92, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', gap: 4 },
   addTileText: { fontSize: 12.5, fontFamily: font[700], color: colors.ink },
