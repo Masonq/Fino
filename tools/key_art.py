@@ -18,7 +18,7 @@ sys.path.insert(0, __file__.rsplit('/', 1)[0])
 from clean_art import fix_edges
 
 
-def key_out(path_in, path_out, size=512, glass=False):
+def key_out(path_in, path_out, size=512, glass=False, keep_inner=False):
     rgb = np.asarray(Image.open(path_in).convert('RGB')).astype(np.float32)
     border = np.concatenate([rgb[:8].reshape(-1, 3), rgb[-8:].reshape(-1, 3), rgb[:, :8].reshape(-1, 3), rgb[:, -8:].reshape(-1, 3)])
     key = np.median(border, axis=0)
@@ -85,6 +85,12 @@ def key_out(path_in, path_out, size=512, glass=False):
         R, G, B = out[..., 0], out[..., 1], out[..., 2]
         warm = rim & (R > B) & (B > G)
         B[warm] = G[warm] + (B[warm] - G[warm]) * 0.15
+    # --keep-inner: внутри предмета цвет, похожий на фон, но не сам фон (фиолетовая дуга радуги на пурпурном),
+    # остаётся как есть — непрозрачным и без снятия оттенка
+    if keep_inner:
+        own = obj & (dom < hi * 0.8) & ~ndimage.binary_dilation(outside, iterations=4)
+        a[own] = 1
+        out[own] = rgb[own]
     if glass and inner.any():
         lum = out[inner].mean(axis=1, keepdims=True)
         out[inner] = np.clip(lum * 0.35 + np.array([38, 41, 47]), 0, 255)
@@ -111,5 +117,6 @@ def key_out(path_in, path_out, size=512, glass=False):
 
 if __name__ == '__main__':
     # --glass: фон сквозь стекло закрасить тёмным стеклом (машины); иначе внутренние просветы прозрачные
-    args = [x for x in sys.argv[1:] if x != '--glass']
-    print(key_out(args[0], args[1], int(args[2]) if len(args) > 2 else 512, glass='--glass' in sys.argv))
+    args = [x for x in sys.argv[1:] if not x.startswith('--')]
+    print(key_out(args[0], args[1], int(args[2]) if len(args) > 2 else 512, glass='--glass' in sys.argv,
+                  keep_inner='--keep-inner' in sys.argv))
