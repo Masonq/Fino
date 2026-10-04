@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
   tileWide: { width: 196 },
   tileOn: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
   tileText: { fontSize: 14.5, lineHeight: 18, fontFamily: font[700], color: colors.ink, maxWidth: 110 },
-  tileImg: { position: 'absolute', right: -4, bottom: -6, width: 80, height: 80 },
+  tileImg: { position: 'absolute', right: -2, bottom: -4, width: 66, height: 66 },
   tileCheck: { position: 'absolute', right: 8, top: 8, width: 20, height: 20, borderRadius: 10, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
   h2Row: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 6 },
   h2: { fontSize: 21, fontFamily: font[800], color: colors.ink, letterSpacing: -0.3, marginTop: 6, marginBottom: 12 },

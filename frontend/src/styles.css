@@ -6692,3 +6692,57 @@ a.s-attrs{ display:block; }
 .pill-track > .admin-chips-sep{ background:var(--border-strong) !important; }
 @media (prefers-reduced-motion: reduce){ .pill-row > .slide-pill, .pill-row > :not(.slide-pill){ transition:none; } }
 
+
+
+/* ——— Раздел «Работа» по образцу Авито (как в приложении: native/src/components/JobsLanding.tsx) ——— */
+.jobs-landing { padding-bottom: 32px; }
+.jl-top { display: flex; align-items: center; gap: 4px; padding: 8px 8px 0; position: sticky; top: 0; z-index: 5; background: var(--bg); }
+.jl-tabs { flex: 1; display: flex; gap: 22px; padding-left: 6px; border-bottom: 1.5px solid var(--border); margin-right: 12px; }
+.jl-tab { padding: 8px 0 8px; font-size: 18px; font-weight: 800; color: var(--muted); letter-spacing: -0.01em; border-bottom: 3px solid transparent; margin-bottom: -1.5px; background: none; }
+.jl-tab.on { color: var(--ink); border-bottom-color: var(--ink); }
+.jl-head { padding: 18px 16px 4px; }
+.jl-h1 { font-size: 26px; line-height: 1.2; font-weight: 800; letter-spacing: -0.02em; margin: 0; }
+.jl-search { display: flex; align-items: center; gap: 10px; height: 50px; border-radius: 16px; background: var(--surface-sunken); padding: 0 15px; margin-top: 14px; color: var(--muted); }
+.jl-search input { flex: 1; min-width: 0; border: none; background: none; font-size: 16px; color: var(--ink); }
+.jl-search input:focus { outline: none; }
+.jl-clear { font-size: 20px; color: var(--muted); background: none; }
+.jl-tiles { display: flex; flex-direction: column; gap: 8px; padding: 18px 0; overflow-x: auto; scrollbar-width: none; margin-right: -16px; padding-right: 16px; }
+.jl-tiles::-webkit-scrollbar { display: none; }
+.jl-tile-row { display: flex; gap: 8px; }
+.jl-tile { position: relative; flex: 0 0 auto; width: 142px; height: 100px; border-radius: 18px; background: var(--surface-sunken); padding: 13px; text-align: left; display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; overflow: hidden; border: 2px solid transparent; }
+.jl-tile.wide { width: 196px; }
+.jl-tile.wide .jl-tile-text { max-width: 120px; }
+.jl-tile.on { border-color: var(--primary); background: var(--primary-soft); }
+.jl-tile-text { position: relative; z-index: 1; display: block; max-width: 92px; font-size: 14.5px; line-height: 1.25; font-weight: 700; color: var(--ink); }
+.jl-tile-img { position: absolute; right: -2px; bottom: -4px; width: 66px; height: 66px; object-fit: contain; }
+.jl-tile-check { position: absolute; right: 8px; top: 8px; width: 20px; height: 20px; border-radius: 10px; background: var(--primary); color: #fff; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+.jl-h2-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; background: none; padding: 0; }
+.jl-h2 { font-size: 21px; font-weight: 800; letter-spacing: -0.015em; margin: 6px 0 12px; color: var(--ink); }
+.jl-h2-gap { margin-top: 22px; }
+.jl-h2-arrow { width: 24px; height: 24px; border-radius: 12px; background: var(--ink); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; margin-bottom: 6px; }
+.jl-cabinet { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding-bottom: 18px; margin-right: -16px; padding-right: 16px; }
+.jl-cabinet::-webkit-scrollbar { display: none; }
+.jl-cab { flex: 0 0 auto; width: 270px; display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 18px; background: var(--surface-sunken); text-align: left; }
+.jl-cab b { display: block; font-size: 15.5px; font-weight: 800; color: var(--ink); }
+.jl-cab small { display: block; font-size: 13.5px; color: var(--ink-soft); margin-top: 2px; }
+.jl-cab-icon { width: 52px; height: 52px; border-radius: 14px; background: var(--surface); display: flex; align-items: center; justify-content: center; color: var(--ink); flex-shrink: 0; }
+.jl-hero { display: flex; align-items: center; gap: 6px; padding: 18px; border-radius: 24px; background: var(--surface-sunken); overflow: hidden; }
+.jl-hero-body { flex: 1; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.jl-hero-title { font-size: 21px; font-weight: 800; letter-spacing: -0.015em; }
+.jl-hero-text { font-size: 14px; line-height: 1.35; color: var(--ink-soft); }
+.jl-hero-btn { margin-top: 6px; height: 44px; padding: 0 18px; border-radius: 14px; background: var(--ink); color: #fff; font-size: 14.5px; font-weight: 700; }
+.jl-hero-img { width: 116px; height: 176px; object-fit: contain; margin: 0 -18px -26px 0; align-self: flex-end; }
+.jl-grid { display: flex; gap: 8px; margin-top: 8px; }
+.jl-col { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.jl-card { min-height: 96px; padding: 15px; border-radius: 20px; background: var(--surface-sunken); text-align: left; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.jl-card.tall { min-height: 150px; }
+.jl-card.how { background: #ECE9FB; }
+.jl-card b { font-size: 15.5px; line-height: 1.3; font-weight: 800; color: var(--ink); }
+.jl-card small { font-size: 13.5px; line-height: 1.35; color: var(--ink-soft); }
+.jl-results-title { padding: 0 16px; }
+.jl-empty { text-align: center; color: var(--muted); font-size: 14px; padding: 16px 30px; }
+.jl-tips-layer { position: fixed; inset: 0; z-index: 50; background: rgba(17, 22, 19, 0.42); display: flex; align-items: flex-end; justify-content: center; }
+.jl-tips { width: 100%; max-width: 560px; background: var(--surface); border-radius: 24px 24px 0 0; padding: 20px 20px calc(20px + var(--sab, 0px)); }
+.jl-tips-title { font-size: 19px; font-weight: 800; margin-bottom: 12px; }
+.jl-tips ul { margin: 0 0 16px; padding-left: 18px; display: flex; flex-direction: column; gap: 10px; font-size: 15px; line-height: 1.4; }
+.jl-tips li::marker { color: var(--primary); }

@@ -6,6 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import CategoryArt from '../components/CategoryArt'
 import ListingCard from '../components/ListingCard'
+import JobsLanding from '../components/JobsLanding'
 import { CardSkeletons } from '../components/Skeletons'
 import { LANDINGS, landingFor } from '../data/landings'
 import { MODE_WORDS } from '../data/modeWords'
@@ -52,7 +53,13 @@ const HERO_FALLBACK = {
 const LANDING_CACHE_TTL = 60_000
 const landingCache = {}
 
+/** «Работа» — свой экран по образцу Авито (как в приложении), остальные разделы — как раньше. */
 export default function CategoryLanding() {
+  const { slug } = useParams()
+  return slug === 'jobs' ? <JobsLanding /> : <CategoryLandingPage />
+}
+
+function CategoryLandingPage() {
   const { slug } = useParams()
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()

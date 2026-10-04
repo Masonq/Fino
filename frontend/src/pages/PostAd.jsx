@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import ContactHint from '../components/ContactHint'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { CITIES, CITY_COORDS, cityLabel } from '../data/cities'
 import { shrinkImage } from '../data/shrinkImage'
@@ -150,6 +150,24 @@ export default function PostAd() {
   useEffect(() => {
     api.getCategories().then(setCategories).catch(() => setCategories([]))
   }, [])
+  // /post?category=<раздел> — сразу к параметрам раздела (кнопки «Разместить вакансию», «Создайте резюме»)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const presetCategory = searchParams.get('category')
+  useEffect(() => {
+    if (!presetCategory || !categories.length) return
+    const find = (list) => {
+      for (const c of list) {
+        if (c.slug === presetCategory) return c
+        const r = find(c.children || [])
+        if (r) return r
+      }
+      return null
+    }
+    const node = find(categories)
+    if (node) pickCategory(node)
+    setSearchParams({}, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [presetCategory, categories])
 
   // Предзаполняем телефон, если человек уже указывал его раньше —
   // иначе вводить одно и то же при каждой публикации.
