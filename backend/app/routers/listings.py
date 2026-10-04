@@ -559,6 +559,12 @@ def search_listings(
             for key, value in filters.items():
                 if value in (None, ""):
                     continue
+                # Список — «любое из»: «1 комната» на входе в раздел — это и 1, и 1,5 комнаты
+                if isinstance(value, list):
+                    vals = [str(v).lower() for v in value if v not in (None, "")]
+                    if vals:
+                        q = q.filter(func.lower(Listing.attributes[key].astext).in_(vals))
+                    continue
                 q = q.filter(func.lower(Listing.attributes[key].astext) == str(value).lower())
 
     # Диапазон числового атрибута — {"mileage_km": [0, 50000], "year":

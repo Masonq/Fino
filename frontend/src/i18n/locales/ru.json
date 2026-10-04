@@ -948,7 +948,8 @@
     "biz_account": "Бизнес-аккаунт",
     "biz_account_go": "Оформить",
     "biz_post": "Разместить как компания",
-    "biz_post_go": "Подать объявление"
+    "biz_post_go": "Подать объявление",
+    "rooms_studio": "Студия"
   },
   "fields": {
     "real-estate": {

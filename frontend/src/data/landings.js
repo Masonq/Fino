@@ -57,7 +57,7 @@ export const LANDINGS = {
     },
     fields: [
       { key: 'rooms', label: 'landing.rooms', type: 'chips',
-        options: ['1', '2', '3', '4+'] },
+        options: [{ value: 'studio', label: 'landing.rooms_studio' }, '1', '2', '3', '4+'] },
       { key: 'price', label: 'landing.price', type: 'range' },
     ],
   },
@@ -176,4 +176,17 @@ export const LANDINGS = {
 /** Есть ли у раздела свои поля. */
 export function hasLanding(slug) {
   return Boolean(LANDINGS[slug])
+}
+
+/**
+ * Комнаты на входе в раздел → значения поля «Комнат» у объявлений (schemas.py, ROOMS): «1» — это и полуторка,
+ * «2» — и двушка с половиной, «4+» — четыре и больше (старые объявления могли хранить 5, 6…). Отбор по полю,
+ * а не по словам в тексте: словами «4+» находил и однушки.
+ */
+export const ROOMS_IN = {
+  studio: ['studio'],
+  1: ['1', '1.5'],
+  2: ['2', '2.5'],
+  3: ['3', '3.5'],
+  '4+': ['4', '4.5', '5', '6', '7', '8', '9', '10'],
 }

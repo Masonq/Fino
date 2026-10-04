@@ -1,8 +1,15 @@
-import { Routes, Route, useLocation, useNavigationType } from 'react-router-dom'
+import { Routes, Route, useLocation, useNavigationType, useParams } from 'react-router-dom'
 import { Suspense, lazy, useEffect, useLayoutEffect, useRef } from 'react'
 import Home from './pages/Home'
 import Search from './pages/Search'
 import CategoryLanding from './pages/CategoryLanding'
+
+// Страница раздела — заново при каждом разделе: без ключа React переиспользовал её, и найденное, выбранный
+// подраздел и кэш прошлого раздела переезжали в новый («Запчасти» сначала показывали 78 чужих объявлений).
+function CategoryLandingPage() {
+  const { slug } = useParams()
+  return <CategoryLanding key={slug} />
+}
 import ListingDetail from './pages/ListingDetail'
 import NotFound from './pages/NotFound'
 
@@ -423,7 +430,7 @@ export default function App() {
           <Route path="/categories" element={<Categories />} />
           {/* Вход в раздел со своими полями: человек ищет не
               «что-нибудь», а двушку до тысячи евро. */}
-          <Route path="/c/:slug" element={<CategoryLanding />} />
+          <Route path="/c/:slug" element={<CategoryLandingPage />} />
           {/* Короткий путь по ключу — для админки и служебных ссылок,
               где понятного адреса взять неоткуда. Приложение по хвосту
               найдёт объявление и покажет его. */}

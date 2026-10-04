@@ -934,7 +934,8 @@
     "biz_account": "Poslovni nalog",
     "biz_account_go": "Podesite",
     "biz_post": "Objavite kao firma",
-    "biz_post_go": "Postavite oglas"
+    "biz_post_go": "Postavite oglas",
+    "rooms_studio": "Garsonjera"
   },
   "fields": {
     "real-estate": {

@@ -10,8 +10,7 @@ import JobsLanding from '../components/JobsLanding'
 import { artLayoutMeasured, catSrc, circleArt, longestWordWidth, oneLineWidth, tileFor } from '../utils/artFit'
 import TileArt, { useTileMeasure } from '../components/TileArt'
 import { CardSkeletons } from '../components/Skeletons'
-import { LANDINGS, landingFor } from '../data/landings'
-import { MODE_WORDS } from '../data/modeWords'
+import { LANDINGS, ROOMS_IN, landingFor } from '../data/landings'
 import { CAR_BRANDS, CAR_MODELS, CAR_MODEL_OTHER } from '../data/carBrands'
 import useStickyColumn from '../hooks/useStickyColumn'
 
@@ -306,9 +305,6 @@ function CategoryLandingPage() {
     // те, что реально сдают.
     if (deal) params.deal_type = deal
 
-    // «2 комнаты» и т.п. структурного поля пока не имеют — уходит как
-    // extra_terms с синонимами, так же, как на обычном /search.
-    const ROOMS_TO_CHIP = { '1': 'rooms1', '2': 'rooms2', '3': 'rooms3', '4+': 'rooms3' }
     const groups = []
     // Остальные поля раздела (год, пробег, коробка передач и т.п.) —
     // общий механизм attr_eq/attr_range (см. listings.py): раньше
@@ -319,9 +315,9 @@ function CategoryLandingPage() {
     const attrRange = {}
     Object.entries(values).forEach(([key, value]) => {
       if (!value) return
+      // Комнаты — по полю объявления (ROOMS_IN), не по словам в тексте
       if (key === 'rooms') {
-        const chip = ROOMS_TO_CHIP[value]
-        if (chip && MODE_WORDS[chip]) groups.push(MODE_WORDS[chip].join('|'))
+        if (ROOMS_IN[value]) attrEq.rooms = ROOMS_IN[value]
         return
       }
       // «Другая» — это «не нашлось в списке», не реальное значение
@@ -356,6 +352,12 @@ function CategoryLandingPage() {
   // старым слагом.
   const search = (categorySlug = slug, qOverride = null) => {
     setActiveCategorySlug(categorySlug)
+    // Прошлая выдача не висит, пока идёт новая: раньше её карточки и «Найдено: 78» оставались до ответа,
+    // и «Запчасти» сначала показывали чужие объявления, а потом свои 2
+    setResults([])
+    setResultsTotal(0)
+    asked.current = 0
+    empty.current = 0
     setSearching(true)
     setSearched(true)
     setShowAllSubs(false)
@@ -615,7 +617,7 @@ function CategoryLandingPage() {
           <div className="re-row">
             {roomsField && (
               <button type="button" className={`re-field${values.rooms ? '' : ' ph'}`} onClick={() => setReSheet('rooms')}>
-                <span>{values.rooms ? `${t('landing.rooms')}: ${values.rooms}` : t('landing.rooms')}</span>
+                <span>{values.rooms ? `${t('landing.rooms')}: ${values.rooms === 'studio' ? t('landing.rooms_studio') : values.rooms}` : t('landing.rooms')}</span>
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
               </button>
             )}

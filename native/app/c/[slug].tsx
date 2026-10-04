@@ -260,7 +260,7 @@ function CategoryScreen() {
       <View style={styles.reRow}>
         {!!roomsField && (
           <Pressable style={[styles.reField, { flex: 1 }]} onPress={() => setSheet('rooms')} accessibilityRole="button">
-            <Text style={[styles.reFieldText, !values.rooms && styles.reFieldPh]} numberOfLines={1}>{values.rooms ? `${tr('Комнаты')}: ${values.rooms}` : tr('Комнаты')}</Text>
+            <Text style={[styles.reFieldText, !values.rooms && styles.reFieldPh]} numberOfLines={1}>{values.rooms ? `${tr('Комнаты')}: ${values.rooms === 'studio' ? tr('Студия') : values.rooms}` : tr('Комнаты')}</Text>
             <Icon name="down" size={16} color={colors.ink} />
           </Pressable>
         )}

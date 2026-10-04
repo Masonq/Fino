@@ -915,7 +915,8 @@
     "biz_account": "Business account",
     "biz_account_go": "Set up",
     "biz_post": "Post as a company",
-    "biz_post_go": "Post a listing"
+    "biz_post_go": "Post a listing",
+    "rooms_studio": "Studio"
   },
   "fields": {
     "real-estate": {

@@ -8,6 +8,7 @@ import CategoryFields, { fieldsKeyFor } from '../components/CategoryFields'
 import ListingCard from '../components/ListingCard'
 import { CardSkeletons } from '../components/Skeletons'
 import { CITIES, cityLabel } from '../data/cities'
+import { ROOMS_IN } from '../data/landings'
 import { MODE_WORDS } from '../data/modeWords'
 import { LoadError } from '../components/OfflineNotice'
 import { useAuth } from '../context/AuthContext'
@@ -100,8 +101,11 @@ export default function Search() {
     if (fields.mode) p.deal_type = fields.mode
     // У «2 комнаты» и подобных структурного поля пока нет — идёт как
     // extra_terms с синонимами, а не приклеенное к тексту поиска.
+    // Комнаты — по полю объявления «Комнат», а не по словам в тексте (словами «3+» находились и однушки)
+    const ROOM_CHIPS = { rooms1: ROOMS_IN[1], rooms2: ROOMS_IN[2], rooms3: [...ROOMS_IN[3], ...ROOMS_IN['4+']], studio: ROOMS_IN.studio }
     const groups = []
-    if (fields.chip && MODE_WORDS[fields.chip]) groups.push(MODE_WORDS[fields.chip].join('|'))
+    if (fields.chip && ROOM_CHIPS[fields.chip]) p.attr_eq = JSON.stringify({ rooms: ROOM_CHIPS[fields.chip] })
+    else if (fields.chip && MODE_WORDS[fields.chip]) groups.push(MODE_WORDS[fields.chip].join('|'))
     if (groups.length) p.extra_terms = groups.join(';;')
     if (priceMin) p.price_min = priceMin
     if (priceMax) p.price_max = priceMax

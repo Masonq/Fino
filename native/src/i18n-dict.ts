@@ -634,6 +634,7 @@ export const DICT: Record<string, { en?: string; sr?: string }> = {
   "Найти для бизнеса": { en: "Find for business", sr: "Prona\u0111ite za posao" },
   "Применить": { en: "Apply", sr: "Primeni" },
   "Комнаты": { en: "Rooms", sr: "Sobe" },
+  "Студия": { en: "Studio", sr: "Garsonjera" },
   "Поиск запчастей для авто": { en: "Car parts search", sr: "Pretraga delova za auto" },
   "Запчасти и аксессуары для авто и мото": { en: "Parts and accessories for cars and motorbikes", sr: "Delovi i oprema za automobile i motocikle" },
   "Марка": { en: "Make", sr: "Marka" },
