@@ -11,12 +11,14 @@ type Option<K extends string> = { key: K; label: string }
  * Переключатель с переезжающей белой плашкой — как «Все / Новое / Даром» на сайте.
  * Плашка едет к выбранному варианту с лёгкой пружиной; при первом показе встаёт на место без движения.
  */
-export default function Segmented<K extends string>({ options, value, onChange, stretch = false }: {
+export default function Segmented<K extends string>({ options, value, onChange, stretch = false, onSunken = false }: {
   options: Option<K>[]
   value: K
   onChange: (key: K) => void
   /** На всю ширину равными частями — как переключатель «Купить / Снять / Посуточно» на сайте */
   stretch?: boolean
+  /** на серой карточке: дорожка темнее, иначе она сливается с фоном карточки */
+  onSunken?: boolean
 }) {
   const [frames, setFrames] = useState<Record<string, { x: number; w: number }>>({})
   const x = useRef(new Animated.Value(0)).current
@@ -44,7 +46,7 @@ export default function Segmented<K extends string>({ options, value, onChange, 
   }
 
   return (
-    <View style={[styles.track, stretch && styles.trackStretch]} accessibilityRole="tablist">
+    <View style={[styles.track, stretch && styles.trackStretch, onSunken && styles.trackOnSunken]} accessibilityRole="tablist">
       <Animated.View style={[styles.pill, { left: x, width: w, opacity: frames[value] ? 1 : 0 }]} />
       {options.map((o) => {
         const on = o.key === value
@@ -67,6 +69,7 @@ const styles = StyleSheet.create({
   },
   item: { height: 36, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center' },
   trackStretch: { alignSelf: 'stretch' },
+  trackOnSunken: { backgroundColor: '#E3E5E0' },
   itemStretch: { flex: 1, height: 40, paddingHorizontal: 6 },
   labelStretch: { fontSize: 14 },
   label: { fontSize: 14.5, fontFamily: font[800], color: colors.inkSoft },

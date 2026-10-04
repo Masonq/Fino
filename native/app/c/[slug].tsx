@@ -89,6 +89,9 @@ function findNode(list: Category[], slug: string): Category | null {
  * Страница раздела — как CategoryLanding сайта: название и число предложений, подразделы с картинками
  * (вглубь — своя страница), поиск внутри раздела, цена от/до, сортировка, объявления сеткой с подгрузкой.
  */
+// Вопрос-заголовок раздела — как «Какую работу вы ищете?»
+const LANDING_TITLES: Record<string, string> = {"real-estate": "Какую недвижимость ищете?", "auto": "Какой транспорт ищете?", "electronics": "Какую технику ищете?", "home-garden": "Что ищете для дома?", "fashion": "Какую одежду ищете?", "kids": "Что ищете для детей?", "hobby-sport": "Что ищете для хобби и спорта?", "pets": "Что ищете для питомца?", "beauty": "Что ищете для красоты?", "services": "Какие услуги ищете?", "business": "Что ищете для бизнеса?"}
+
 /** «Работа» — свой экран по образцу Авито (две вкладки), остальные разделы — как раньше. */
 export default function CategoryRoute() {
   const { slug } = useLocalSearchParams<{ slug: string }>()
@@ -171,34 +174,39 @@ function CategoryScreen() {
   const heroSlug = root?.slug ?? String(slug)
   const head = (
     <View>
-      {/* Баннер раздела — как .landing-hero сайта: картинка /hero/<раздел>.webp, затемнение снизу, сверху «назад» и поиск */}
-      <ImageBackground source={{ uri: `${SITE}/hero/${heroSlug}.webp` }} style={styles.hero} resizeMode="cover">
-        <LinearGradient colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.16)', 'rgba(0,0,0,0.46)']} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} />
-        <Text style={styles.heroTitle} numberOfLines={1}>{nameOf(node) || ' '}</Text>
-        <Text style={styles.heroCount}>{items ? `${total} ${countWord(total)}` : ' '}</Text>
-      </ImageBackground>
-
+      {/* Как раздел «Работа» (по образцу Авито): вопрос-заголовок, число объявлений, все подразделы — два ряда
+          плиток с картинками и прокруткой вбок; фильтры ниже — в карточке «Подобрать точнее» */}
+      <View style={styles.lHead}>
+        <Text style={styles.lTitle}>{tr(node && root && node.slug !== root.slug ? nameOf(node) : (LANDING_TITLES[String(slug)] ?? nameOf(node)))}</Text>
+        <Text style={styles.lCount}>{items ? `${total} ${countWord(total)}` : ' '}</Text>
+      </View>
       {subs.length > 0 && (
-        <View style={styles.subs}>
-          {(subs.length > 6 ? subs.slice(0, 5) : subs).map((c) => (
-            <Pressable key={c.id} style={styles.sub} onPress={() => { select(); router.push(`/c/${c.slug}`) }} accessibilityRole="button">
-              <Text style={styles.subName} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.85}>{nameOf(c)}</Text>
-              <SubArt slug={c.slug} fallback={node?.slug ?? root?.slug} />
-            </Pressable>
-          ))}
-          {subs.length > 6 && (
-            <Pressable style={[styles.sub, styles.subAll]} onPress={() => setAllSubs(true)} accessibilityRole="button">
-              <Text style={[styles.subName, { maxWidth: '85%' }]}>{tr('Все категории')}</Text>
-              <Icon name="forward" size={16} color={colors.muted} />
-            </Pressable>
-          )}
-        </View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.lTiles}>
+          <View style={{ gap: 8 }}>
+            {[subs.filter((_, k) => k % 2 === 0), subs.filter((_, k) => k % 2 === 1)].filter((r) => r.length).map((row, r) => (
+              <View key={r} style={styles.lRow}>
+                {row.map((c) => {
+                  const longest = Math.max(...nameOf(c).split(/\s+/).map((w) => w.length))
+                  const wide = nameOf(c).length > 13 || longest > 8
+                  const xwide = longest > 13 // «электротранспорт», «Коллекционирование» — не рвать посреди слова
+                  return (
+                    <Pressable key={c.id} style={[styles.lTile, wide && styles.lTileWide, xwide && { width: 240 }]} onPress={() => { select(); router.push(`/c/${c.slug}`) }} accessibilityRole="button">
+                      <Text style={[styles.lTileText, wide && { maxWidth: 150 }, xwide && { maxWidth: 196 }]}>{nameOf(c)}</Text>
+                      <Image source={{ uri: `${SITE}/cat/${c.slug}.png` }} style={styles.lTileImg} contentFit="contain" />
+                    </Pressable>
+                  )
+                })}
+              </View>
+            ))}
+          </View>
+        </ScrollView>
       )}
 
       <View style={styles.form}>
+        <Text style={styles.formTitle}>{tr('Подобрать точнее')}</Text>
         {!!landing?.deal && (
           <View style={styles.deal}>
-            <Segmented options={landing.deal.options.map((o) => ({ key: o.value, label: t3(o.label) }))} value={deal} onChange={(v) => setDeal(v === deal ? '' : v)} stretch />
+            <Segmented options={landing.deal.options.map((o) => ({ key: o.value, label: t3(o.label) }))} value={deal} onChange={(v) => setDeal(v === deal ? '' : v)} onSunken />
           </View>
         )}
         {landing?.fields.filter((f) => f.type !== 'text').map((f) => <FieldView key={f.key} f={f} values={values} setVal={setVal} onPick={(k) => { setPickQ(''); setPicker(k) }} />)}
@@ -300,7 +308,18 @@ const styles = StyleSheet.create({
   subArt: { position: 'absolute', right: -10, top: -3, width: 74, height: 74 },
   // minWidth 0 — длинное слово («электротранспорт») не выталкивает стрелку за край плитки
   subName: { maxWidth: '60%', fontSize: 12.5, lineHeight: 15.5, fontFamily: font[700], color: colors.ink, zIndex: 2 },
-  form: { paddingHorizontal: 12, gap: 8, paddingTop: 12 },
+  // фильтры — серой карточкой, как карточки «Работы»
+  form: { marginHorizontal: space.page, marginTop: 4, padding: 16, borderRadius: 22, backgroundColor: colors.sunken, gap: 10 },
+  formTitle: { fontSize: 19, fontFamily: font[800], color: colors.ink, letterSpacing: -0.3, marginBottom: 2 },
+  lHead: { paddingHorizontal: space.page, paddingTop: 14 },
+  lTitle: { fontSize: 26, lineHeight: 31, fontFamily: font[800], color: colors.ink, letterSpacing: -0.5 },
+  lCount: { fontSize: 14, fontFamily: font[600], color: colors.muted, marginTop: 4 },
+  lTiles: { paddingHorizontal: space.page, paddingVertical: 16 },
+  lRow: { flexDirection: 'row', gap: 8 },
+  lTile: { width: 142, height: 100, borderRadius: 18, backgroundColor: colors.sunken, padding: 13, overflow: 'hidden' },
+  lTileWide: { width: 196 },
+  lTileText: { fontSize: 14.5, lineHeight: 18, fontFamily: font[700], color: colors.ink, maxWidth: 92 },
+  lTileImg: { position: 'absolute', right: -2, bottom: -4, width: 66, height: 66 },
   search: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 46, borderRadius: 14, backgroundColor: colors.sunken, paddingHorizontal: 13 },
   searchInput: { flex: 1, flexBasis: 0, minWidth: 0, fontSize: 15, fontFamily: font[500], color: colors.ink, paddingVertical: 0 },
   priceRow: { flexDirection: 'row', gap: 8 },
