@@ -18,6 +18,7 @@ const LocationMap = lazy(() => import('../components/LocationMap'))
 import { addToHistory } from '../data/history'
 import { useAuth } from '../context/AuthContext'
 import JobRespond from '../components/JobRespond'
+import StorefrontLink from '../components/StorefrontLink'
 import { useFavorites } from '../context/FavoritesContext'
 import ReportButton from '../components/ReportButton'
 import PromoteButton from '../components/PromoteButton'
@@ -1135,6 +1136,9 @@ export default function ListingDetail() {
           </Link>
         )}
 
+        {listing?.owner?.id && listing?.attributes?.listing_kind !== 'vacancy' && listing?.attributes?.listing_kind !== 'resume' && (
+          <StorefrontLink ownerId={listing.owner.id} listingId={listing.id} />
+        )}
         {listing?.attributes?.listing_kind === 'vacancy' && listing?.status === 'active' && listing.external_source !== 'telegram' && (
           <div className="jr-slot"><JobRespond listing={listing} /></div>
         )}

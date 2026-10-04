@@ -26,6 +26,9 @@ from app.models.notification import Notification
 from app.models.shops_jobs import (
     JobResponse, Shop, ShopItem, ShopStatDaily, ShopViewLog, CreatorApplication, ShopOrder,
 )
+from app.models.storefront import (
+    Storefront, StorefrontItem, StorefrontCollection, StorefrontCollectionItem, StorefrontOldSlug, StorefrontViewLog,
+)
 from app.models.support import (
     Ticket, TicketMessage, TicketStatus, TicketTopic,
 )

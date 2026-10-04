@@ -1,0 +1,195 @@
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { api } from '../api/client'
+import { useAuth } from '../context/AuthContext'
+import ListingCard from '../components/ListingCard'
+import PageHeader from '../components/PageHeader'
+
+const REASONS = ['spam', 'fraud', 'prohibited_item', 'offensive_user', 'other']
+
+/**
+ * Витрина продавца /s/:slug (и подборка /s/:slug/c/:cid): обложка, кто продаёт, подписка и «Поделиться»,
+ * подборки чипами, товары — обычными карточками PLONK, видео-шопсы продавца отдельной вкладкой.
+ */
+export default function Storefront() {
+  const { slug, cid } = useParams()
+  const { t, i18n } = useTranslation()
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const [sf, setSf] = useState(null)
+  const [error, setError] = useState(false)
+  const [tab, setTab] = useState('items')
+  const [busy, setBusy] = useState(false)
+  const [toast, setToast] = useState('')
+  const [report, setReport] = useState(false)
+
+  useEffect(() => {
+    setSf(null); setError(false)
+    api.sfPublic(slug, i18n.language).then((d) => {
+      setSf(d)
+      if (d.moved) navigate(`/s/${d.slug}${cid ? `/c/${cid}` : ''}`, { replace: true })
+    }).catch(() => setError(true))
+  }, [slug, i18n.language]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!sf) return
+    const coll = sf.collections.find((c) => c.id === cid)
+    document.title = `${coll ? `${coll.title} — ` : ''}${sf.name} — ${t('sf.title_suffix')}`
+  }, [sf, cid, t])
+
+  const coll = sf?.collections.find((c) => c.id === cid)
+  const items = useMemo(() => {
+    if (!sf) return []
+    if (!coll) return sf.items
+    const byId = Object.fromEntries(sf.items.map((l) => [l.id, l]))
+    return coll.listing_ids.map((id) => byId[id]).filter(Boolean)
+  }, [sf, coll])
+
+  const flash = (m) => { setToast(m); setTimeout(() => setToast(''), 2200) }
+  const follow = () => {
+    if (!user?.id) { navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`); return }
+    setBusy(true)
+    api.sfFollow(sf.slug, !sf.following).then((r) => setSf({ ...sf, following: r.following }))
+      .finally(() => setBusy(false))
+  }
+  const share = async () => {
+    const url = `${window.location.origin}/s/${sf.slug}${coll ? `/c/${coll.id}` : ''}`
+    const title = coll ? `${coll.title} — ${sf.name}` : sf.name
+    try {
+      if (navigator.share) { await navigator.share({ title, url }); return }
+    } catch { return }
+    try { await navigator.clipboard.writeText(url); flash(t('sf.link_copied')) } catch { window.prompt(t('sf.copy_link'), url) }
+  }
+  const sendReport = (reason) => {
+    if (!user?.id) { navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`); return }
+    api.sfReport(sf.slug, { reason }).then(() => { setReport(false); flash(t('sf.report_sent')) })
+  }
+
+  if (error) {
+    return (
+      <div className="page">
+        <PageHeader title={t('sf.not_found_title')} />
+        <div className="empty-state"><p className="empty-hint">{t('sf.not_found')}</p><Link className="jr-btn primary" to="/vitriny">{t('sf.discover')}</Link></div>
+      </div>
+    )
+  }
+  if (!sf) return <div className="page"><div className="sf-cover-skel" /><div className="jr-skel" /></div>
+
+  const pausedUntil = sf.status === 'paused' && sf.pause_until ? new Date(sf.pause_until).toLocaleDateString(undefined, { day: 'numeric', month: 'long' }) : null
+  return (
+    <div className="page sf-page">
+      <div className="sf-cover">
+        {sf.cover_url ? <img src={sf.cover_url} alt="" /> : <span className="sf-cover-empty" />}
+        <button type="button" className="sf-back" onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))} aria-label={t('shops.close')}>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round"><path d="m15 18-6-6 6-6" /></svg>
+        </button>
+      </div>
+      <div className="sf-head">
+        <div className="sf-ava">{sf.owner.avatar ? <img src={sf.owner.avatar} alt="" /> : (sf.name || '?')[0]}</div>
+        <h1 className="sf-name">{sf.name}</h1>
+        <div className="sf-sub">
+          {sf.owner.name !== sf.name && <><Link to={`/seller/${sf.owner.id}`}>{sf.owner.name}</Link><span>·</span></>}
+          <span>{t('sf.items_n', { count: sf.items.length })}</span>
+          {sf.followers != null && <><span>·</span><span>{t('sf.followers_n', { count: sf.followers })}</span></>}
+        </div>
+        {sf.description && <p className="sf-desc">{sf.description}</p>}
+        {sf.status === 'paused' && (
+          <div className="sf-paused">🌴 {pausedUntil ? t('sf.paused_until', { date: pausedUntil }) : t('sf.paused')}{sf.pause_note ? ` · ${sf.pause_note}` : ''}</div>
+        )}
+        <div className="sf-actions">
+          {sf.mine ? (
+            <Link className="jr-btn primary" to="/vitrina">{t('sf.manage')}</Link>
+          ) : (
+            <button type="button" className={`jr-btn ${sf.following ? 'ghost' : 'primary'}`} disabled={busy} onClick={follow}>
+              {sf.following ? t('sf.following') : t('sf.follow')}
+            </button>
+          )}
+          <button type="button" className="jr-btn ghost" onClick={share}>{t('sf.share')}</button>
+          {!sf.mine && <button type="button" className="jr-btn ghost sf-more" aria-label={t('sf.report')} onClick={() => setReport(true)}>···</button>}
+        </div>
+      </div>
+
+      {(sf.shops.length > 0) && (
+        <div className="jr-tabs sf-tabs" role="tablist">
+          <button type="button" role="tab" aria-selected={tab === 'items'} className={`jr-tab${tab === 'items' ? ' on' : ''}`} onClick={() => setTab('items')}>{t('sf.tab_items')}</button>
+          <button type="button" role="tab" aria-selected={tab === 'video'} className={`jr-tab${tab === 'video' ? ' on' : ''}`} onClick={() => setTab('video')}>{t('sf.tab_video')}<span className="jr-tab-n">{sf.shops.length}</span></button>
+        </div>
+      )}
+
+      {tab === 'video' ? (
+        <div className="sf-videos">
+          {sf.shops.map((s) => (
+            <Link key={s.id} className="shs-tile sf-video" to={`/shops?start=${s.id}`}>
+              {s.poster_url && <img src={s.poster_url} alt="" loading="lazy" />}
+              <span className="shs-shade" /><span className="shs-author">{s.caption}</span>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <>
+          {sf.collections.length > 0 && (
+            <div className="sf-colls">
+              <Link className={`jr-tab${!coll ? ' on' : ''}`} to={`/s/${sf.slug}`} replace>{t('sf.all')}</Link>
+              {sf.collections.map((c) => (
+                <Link key={c.id} className={`jr-tab${coll?.id === c.id ? ' on' : ''}`} to={`/s/${sf.slug}/c/${c.id}`} replace>
+                  {c.title}<span className="jr-tab-n">{c.listing_ids.length}</span>
+                </Link>
+              ))}
+            </div>
+          )}
+          {coll?.description && <p className="sf-desc sf-coll-desc">{coll.description}</p>}
+          {items.length === 0 ? (
+            <div className="empty-state"><p className="empty-hint">{t('sf.empty')}</p></div>
+          ) : (
+            <div className="feed-grid sf-grid">{items.map((l, i) => <ListingCard key={l.id} listing={l} priority={i < 4} />)}</div>
+          )}
+        </>
+      )}
+
+      {report && (
+        <div className="jr-overlay" onClick={() => setReport(false)}>
+          <div className="jr-sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="jr-grab" />
+            <div className="jr-title">{t('sf.report')}</div>
+            {REASONS.map((r) => <button key={r} type="button" className="sf-reason" onClick={() => sendReport(r)}>{t(`sf.reason_${r}`)}</button>)}
+          </div>
+        </div>
+      )}
+      {toast && <div className="sf-toast" role="status">{toast}</div>}
+    </div>
+  )
+}
+
+/** Каталог витрин /vitriny: популярные и новые, поиск по названию и продавцу. */
+export function StorefrontDiscover() {
+  const { t } = useTranslation()
+  const [sort, setSort] = useState('popular')
+  const [q, setQ] = useState('')
+  const [items, setItems] = useState(null)
+  useEffect(() => {
+    const tm = setTimeout(() => {
+      const city = (() => { try { return localStorage.getItem('plonk_city') || '' } catch { return '' } })()
+      api.sfDiscover({ sort, q: q.trim() || undefined, city: city || undefined }).then((r) => setItems(r.items)).catch(() => setItems([]))
+    }, q ? 300 : 0)
+    return () => clearTimeout(tm)
+  }, [sort, q])
+  return (
+    <div className="page sf-discover">
+      <PageHeader title={t('sf.discover')}><Link className="jr-btn primary sm sh-head-btn" to="/vitrina">{t('sf.my')}</Link></PageHeader>
+      <input className="sh-search" value={q} placeholder={t('sf.search_ph')} onChange={(e) => setQ(e.target.value)} />
+      <div className="jr-tabs">
+        {['popular', 'new'].map((k) => <button key={k} type="button" className={`jr-tab${sort === k ? ' on' : ''}`} onClick={() => setSort(k)}>{t(`sf.sort_${k}`)}</button>)}
+      </div>
+      {items === null ? <div className="jr-skel" /> : items.length === 0 ? (
+        <div className="empty-state"><p className="empty-hint">{t('sf.none')}</p></div>
+      ) : items.map((s) => (
+        <Link key={s.slug} className="sf-card" to={`/s/${s.slug}`}>
+          <div className="sf-card-previews">{s.previews.map((p, i) => <img key={i} src={p} alt="" loading="lazy" />)}</div>
+          <div className="sf-card-name">{s.name}</div>
+          <div className="jr-muted">{t('sf.items_n', { count: s.count })}{s.city ? ` · ${s.city}` : ''}{s.followers != null ? ` · ${t('sf.followers_n', { count: s.followers })}` : ''}</div>
+        </Link>
+      ))}
+    </div>
+  )
+}

@@ -27,6 +27,9 @@ import NotFound from './pages/NotFound'
 const PostAd = lazy(() => import('./pages/PostAd'))
 const Categories = lazy(() => import('./pages/Categories'))
 const ChatScreen = lazy(() => import('./pages/ChatScreen'))
+const Storefront = lazy(() => import('./pages/Storefront'))
+const StorefrontDiscover = lazy(() => import('./pages/Storefront').then((m) => ({ default: m.StorefrontDiscover })))
+const StorefrontManage = lazy(() => import('./pages/StorefrontManage'))
 const ShopsFeed = lazy(() => import('./pages/ShopsFeed'))
 const ShopEditor = lazy(() => import('./pages/ShopEditor'))
 const ShopsCabinet = lazy(() => import('./pages/ShopsCabinet'))
@@ -443,6 +446,10 @@ export default function App() {
           <Route path="/go/:slug" element={<ListingDetail />} />
 
           <Route path="/chat/:id" element={<ChatScreen />} />
+          <Route path="/s/:slug" element={<Storefront />} />
+          <Route path="/s/:slug/c/:cid" element={<Storefront />} />
+          <Route path="/vitrina" element={<StorefrontManage />} />
+          <Route path="/vitriny" element={<StorefrontDiscover />} />
           <Route path="/shops" element={<ShopsFeed />} />
           <Route path="/shops/new" element={<ShopEditor />} />
           <Route path="/shops/mine" element={<ShopsCabinet />} />

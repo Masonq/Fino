@@ -97,6 +97,20 @@ function query(params) {
 }
 
 export const api = {
+  // Витрина продавца (backend/app/routers/storefronts.py)
+  sfMe: (lang) => request(`/storefronts/me?lang=${lang || 'ru'}`),
+  sfAutobuild: (body, lang) => request(`/storefronts/me/autobuild?lang=${lang || 'ru'}`, { method: 'POST', body }),
+  sfEdit: (body, lang) => request(`/storefronts/me?lang=${lang || 'ru'}`, { method: 'PATCH', body }),
+  sfItems: (ids, lang) => request(`/storefronts/me/items?lang=${lang || 'ru'}`, { method: 'PUT', body: { listing_ids: ids } }),
+  sfAddCollection: (body, lang) => request(`/storefronts/me/collections?lang=${lang || 'ru'}`, { method: 'POST', body }),
+  sfEditCollection: (id, body, lang) => request(`/storefronts/me/collections/${id}?lang=${lang || 'ru'}`, { method: 'PUT', body }),
+  sfDeleteCollection: (id, lang) => request(`/storefronts/me/collections/${id}?lang=${lang || 'ru'}`, { method: 'DELETE' }),
+  sfState: (body, lang) => request(`/storefronts/me/state?lang=${lang || 'ru'}`, { method: 'POST', body }),
+  sfPublic: (slug, lang) => request(`/storefronts/${encodeURIComponent(slug)}?lang=${lang || 'ru'}`),
+  sfByOwner: (ownerId) => request(`/storefronts/by-owner/${ownerId}`),
+  sfDiscover: (params = {}) => request(`/storefronts/discover?${query(params)}`),
+  sfFollow: (slug, on) => request(`/storefronts/${encodeURIComponent(slug)}/follow`, { method: on ? 'POST' : 'DELETE' }),
+  sfReport: (slug, body) => request(`/storefronts/${encodeURIComponent(slug)}/report`, { method: 'POST', body }),
   // Отклики на вакансии (backend/app/routers/job_responses.py)
   jobRespond: (listingId, body) => request(`/jobs/${listingId}/respond`, { method: 'POST', body }),
   jobMyResponse: (listingId) => request(`/jobs/${listingId}/my-response`),

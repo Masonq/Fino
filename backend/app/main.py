@@ -92,7 +92,8 @@ def health():
 # случилось с проверкой здоровья, и сервер стал выглядеть упавшим.
 from app.routers import search_suggest  # noqa: E402
 app.include_router(search_suggest.router)
-from app.routers import job_responses, shops  # noqa: E402
+from app.routers import job_responses, shops, storefronts  # noqa: E402
+app.include_router(storefronts.router)
 app.include_router(job_responses.router)
 app.include_router(shops.router)
 app.include_router(seo.router)
