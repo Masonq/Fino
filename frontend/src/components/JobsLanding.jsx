@@ -4,14 +4,14 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import ListingCard from './ListingCard'
-import { tileFor } from '../utils/artFit'
-import TileArt from './TileArt'
+import { artLayoutMeasured, jobArt, tileFor } from '../utils/artFit'
+import TileArt, { useTileMeasure } from './TileArt'
 import { CardSkeletons } from './Skeletons'
 
 /**
  * Раздел «Работа» — по образцу Авито, так же, как в приложении (native/src/components/JobsLanding.tsx):
  * вкладки «Ищу работу» / «Ищу сотрудников». Плитки-подборки — настоящие фильтры по полям вакансии (attr_eq).
- * Картинки — /jobs/<ключ>.webp.
+ * Картинки — /cat/jobs-КЛЮЧ.png в стиле остальных разделов (пока новой нет — прежняя /jobs/КЛЮЧ.webp).
  */
 const ROW1 = [
   { key: 'part_time', eq: { employment_type: 'part_time' }, wide: true },
@@ -30,6 +30,7 @@ export default function JobsLanding() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const [tab, setTab] = useState('seek')
+  const measure = useTileMeasure()
   const [tile, setTile] = useState(null)
   const [query, setQuery] = useState('')
   const [q, setQ] = useState('')
@@ -62,11 +63,15 @@ export default function JobsLanding() {
 
   const tileButton = (x) => {
     const on = tile?.key === x.key
+    const label = t(`jobs.tile_${x.key}`)
+    const base = tileFor(label)
+    // как плитки разделов: колонка надписи по точному замеру, картинка в углу чуть за краем
+    const { fit } = artLayoutMeasured(label, base, `jobs-${x.key}`, measure, base.tile - 26)
     return (
-      <button key={x.key} type="button" className={`jl-tile${tileFor(t(`jobs.tile_${x.key}`)).kind ? ' ' + tileFor(t(`jobs.tile_${x.key}`)).kind : ''}${on ? ' on' : ''}${tileFor(t(`jobs.tile_${x.key}`)).art === 'big' ? '' : ' small-art'}`} aria-pressed={on}
+      <button key={x.key} type="button" className={`jl-tile${base.kind ? ' ' + base.kind : ''}${on ? ' on' : ''}`} aria-pressed={on}
         onClick={() => { setTile(on ? null : x); if (!on) toResults() }}>
-        <span className="jl-tile-text" style={{ maxWidth: tileFor(t(`jobs.tile_${x.key}`)).text }}>{t(`jobs.tile_${x.key}`)}</span>
-        <TileArt src={`/jobs/${x.key}.webp`} name={t(`jobs.tile_${x.key}`)} fit={tileFor(t(`jobs.tile_${x.key}`))} />
+        <span className="jl-tile-text" style={{ maxWidth: fit.text }}>{label}</span>
+        <TileArt src={jobArt(x.key)} name={label} fit={fit} />
         {on && <span className="jl-tile-check" aria-hidden>✓</span>}
       </button>
     )
@@ -126,7 +131,7 @@ export default function JobsLanding() {
               <div className="jl-hero-text">{t('jobs.hire_text')}</div>
               <button type="button" className="jl-hero-btn" onClick={() => needLogin('/post?category=vacancies')}>{t('jobs.hire_title')}</button>
             </div>
-            <img className="jl-hero-img" src="/jobs/hire.webp" alt="" />
+            <img className="jl-hero-img" src={jobArt('hire')} alt="" />
           </div>
           <div className="jl-grid">
             <div className="jl-col">

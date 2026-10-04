@@ -92,6 +92,9 @@ export function tileFor(name: string, T: typeof TILE = TILE): TileFit {
 /** Адрес картинки раздела с меткой содержимого (как на сайте): картинку заменили — адрес другой, кэш не мешает. */
 export const catPath = (slug: string) => `/cat/${slug}.png${CAT_ART[slug] ? `?v=${CAT_ART[slug][2]}` : ''}`
 
+/** Картинка «Работы»: новая (/cat/jobs-<ключ>.png, в стиле разделов), пока её нет — прежняя /jobs/<ключ>.webp. */
+export const jobPath = (key: string) => (CAT_ART[`jobs-${key}`] ? catPath(`jobs-${key}`) : `/jobs/${key}.webp`)
+
 export const ART_TARGET = 52
 export const artSize = (w: number, h: number, fill: number) => Math.sqrt(w * h) * Math.pow(fill, 0.4)
 export type TextLine = { right: number; bottom: number }

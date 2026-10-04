@@ -11,8 +11,8 @@ import { plural, tr } from '../i18n'
 import { colors, font, space } from '../theme'
 import Icon from './Icon'
 import ListingCard from './ListingCard'
-import { TILE, tileFor } from '../artFit'
-import TileArt from './TileArt'
+import { TILE, jobPath, tileFor } from '../artFit'
+import { TileLabelArt } from './TileArt'
 import Sheet from './Sheet'
 
 /**
@@ -20,7 +20,7 @@ import Sheet from './Sheet'
  * Соискатель: «Какую работу вы ищете?», поиск, плитки-подборки (каждая — настоящий фильтр по полям вакансии:
  * занятость, формат, опыт, «нужен сербский»), «Кабинет соискателя», свежие вакансии.
  * Работодатель: «Разместить вакансию», мои вакансии, переписки, резюме, «Как нанимать», поиск по резюме.
- * Картинки плиток — /jobs/<ключ>.webp сайта; пока их нет, плитка остаётся аккуратной и без картинки.
+ * Картинки плиток — /cat/jobs-<ключ>.png сайта в стиле разделов (пока новой нет — прежняя /jobs/<ключ>.webp).
  */
 type Tile = { key: string; label: string; eq: Record<string, string | boolean>; wide?: boolean }
 const ROW1: Tile[] = [
@@ -84,8 +84,7 @@ export default function JobsLanding() {
     const on = tile?.key === t.key
     return (
       <Pressable key={t.key} style={[styles.tile, { width: tileFor(tr(t.label)).tile }, on && styles.tileOn]} onPress={() => { setTile(on ? null : t); if (!on) toResults() }} accessibilityRole="button" accessibilityState={{ selected: on }}>
-        <Text style={[styles.tileText, { maxWidth: tileFor(tr(t.label)).text }]}>{tr(t.label)}</Text>
-        <TileArt uri={`${SITE}/jobs/${t.key}.webp`} name={tr(t.label)} fit={tileFor(tr(t.label))} />
+        <TileLabelArt uri={`${SITE}${jobPath(t.key)}`} name={tr(t.label)} fit={tileFor(tr(t.label))} style={styles.tileText} />
         {on && <View style={styles.tileCheck}><Icon name="check" size={12} color="#fff" /></View>}
       </Pressable>
     )
@@ -133,7 +132,7 @@ export default function JobsLanding() {
             <Text style={styles.heroBtnText}>{tr('Разместить вакансию')}</Text>
           </Pressable>
         </View>
-        <Image source={{ uri: `${SITE}/jobs/hire.webp` }} style={styles.heroImg} contentFit="contain" />
+        <Image source={{ uri: `${SITE}${jobPath('hire')}` }} style={styles.heroImg} contentFit="contain" />
       </View>
       <View style={styles.grid}>
         <View style={styles.gridCol}>

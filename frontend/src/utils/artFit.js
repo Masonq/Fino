@@ -73,6 +73,9 @@ export function tileFor(name, T = TILE) {
 /** Адрес картинки раздела с меткой содержимого: картинку заменили — адрес другой, старая из кэша не покажется. */
 export const catSrc = (slug) => `/cat/${slug}.png${CAT_ART[slug] ? `?v=${CAT_ART[slug][2]}` : ''}`
 
+/** Картинка «Работы»: новая (/cat/jobs-<ключ>.png, в стиле разделов), пока её нет — прежняя /jobs/<ключ>.webp. */
+export const jobArt = (key) => (CAT_ART[`jobs-${key}`] ? catSrc(`jobs-${key}`) : `/jobs/${key}.webp`)
+
 export const ART_TARGET = 52
 export const artSize = (w, h, fill) => Math.sqrt(w * h) * Math.pow(fill, 0.4)
 export function artBox(name, fit, aspect, fill, noTarget = false, lines = null) {
