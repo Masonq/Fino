@@ -15,12 +15,12 @@ const ROW1 = [
   { key: 'part_time', eq: { employment_type: 'part_time' }, wide: true },
   { key: 'full_time', eq: { employment_type: 'full_time' } },
   { key: 'remote', eq: { work_format: 'remote' } },
-  { key: 'shift', eq: { employment_type: 'shift' } },
+  { key: 'shift', eq: { employment_type: 'shift' }, wide: true },
 ]
 const ROW2 = [
   { key: 'no_exp', eq: { experience: 'none' } },
   { key: 'no_serbian', eq: { serbian_needed: false }, wide: true },
-  { key: 'one_off', eq: { employment_type: 'one_off' } },
+  { key: 'one_off', eq: { employment_type: 'one_off' }, wide: true },
 ]
 
 export default function JobsLanding() {
