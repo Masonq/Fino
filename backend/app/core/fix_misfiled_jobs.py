@@ -5,15 +5,26 @@
 По умолчанию — только показывает, что сделал бы. Переносит — с --apply.
     cd /opt/fino/backend && venv/bin/python3 -m app.core.fix_misfiled_jobs
     cd /opt/fino/backend && venv/bin/python3 -m app.core.fix_misfiled_jobs --apply
+    --why — по каждому объявлению «Работы»: что решил разбор и какой признак работы нашёл.
 """
+import re
 import sys
 
 from app.core.database import SessionLocal
-from app.core.tg_classify import _JOB_EVIDENCE_RE, classify, classify_sub
+from app.core.tg_classify import classify, classify_sub
 from app.models import Category, Listing, ListingStatus, ListingTranslation
 
 
-def run(apply: bool) -> list[tuple]:
+# Для переноса уже лежащих объявлений — только сильные признаки работы. Широкие («оплата», «нужен», «смена»)
+# встречаются и в продаже вещей («оплата при встрече») — из-за них скрипт пропускал Honor, мышку и Apple Watch.
+STRONG_JOB_RE = re.compile(
+    r"(требу|ваканс|ищу\s+(работ|подработ|сотрудник|помощни)|ищем\s+(сотрудник|помощни|мастер)|зарплат|резюме|"
+    r"приглаша\w*\s+на\s+работ|опыт\s+работы|график\s+работы|posao|hiring|salary)",
+    re.IGNORECASE,
+)
+
+
+def run(apply: bool, why: bool = False) -> list[tuple]:
     moved = []
     with SessionLocal() as db:
         jobs = db.query(Category).filter(Category.slug == "jobs").first()
@@ -27,7 +38,11 @@ def run(apply: bool) -> list[tuple]:
                 continue
             text = f"{tr.title}\n{tr.description or ''}"
             guessed, _ = classify(text)
-            if not guessed or guessed == "jobs" or _JOB_EVIDENCE_RE.search(text):
+            job = STRONG_JOB_RE.search(text)
+            if why:
+                print(f"  № {l.number}: {tr.title[:50]} — разбор: {guessed or 'не узнал'}"
+                      + (f", признак работы: «{job.group(0)}»" if job else ""))
+            if not guessed or guessed == "jobs" or job:
                 continue
             slug = classify_sub(guessed, text) or guessed
             target = db.query(Category).filter(Category.slug == slug).first()
@@ -46,7 +61,7 @@ def run(apply: bool) -> list[tuple]:
 
 if __name__ == "__main__":
     apply = "--apply" in sys.argv
-    found = run(apply)
+    found = run(apply, why="--why" in sys.argv)
     for number, title, slug in found:
         print(f"№ {number}: {title} → {slug}")
     print(("Перенесено" if apply else "Перенёс бы (запустите с --apply)") + f": {len(found)}")

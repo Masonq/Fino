@@ -918,7 +918,8 @@
     "show_count_few": "Prikaži {{count}} oglasa",
     "show_count_other": "Prikaži {{count}} oglasa",
     "search_in": "Pretraga u «{{name}}»",
-    "search_city": "Pretraga u gradu {{city}}"
+    "search_city": "Pretraga u gradu {{city}}",
+    "refine": "Preciznija pretraga"
   },
   "fields": {
     "real-estate": {
@@ -1412,5 +1413,18 @@
   "map": {
     "open_external": "Otvori na mapi",
     "no_webgl": "Mapa se nije otvorila na ovom uređaju — unesite adresu u pretragu iznad"
+  },
+  "landing_q": {
+    "real-estate": "Kakvu nekretninu tražite?",
+    "auto": "Kakvo vozilo tražite?",
+    "electronics": "Kakvu tehniku tražite?",
+    "home-garden": "Šta tražite za dom?",
+    "fashion": "Kakvu odeću tražite?",
+    "kids": "Šta tražite za decu?",
+    "hobby-sport": "Šta tražite za hobi i sport?",
+    "pets": "Šta tražite za ljubimca?",
+    "beauty": "Šta tražite za lepotu?",
+    "services": "Koje usluge tražite?",
+    "business": "Šta tražite za posao?"
   }
 }

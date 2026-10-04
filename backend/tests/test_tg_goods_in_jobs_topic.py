@@ -44,7 +44,7 @@ def test_fix_script_moves_goods_out_of_jobs_and_keeps_vacancies():
         jobs_id = jobs.id
         owner = db.query(Listing).first().owner_id
         ids = {}
-        for key, title, desc in (("phone", "Honor 200 pro " + uuid.uuid4().hex[:4], "Продаю, отличное состояние, 250 евро"),
+        for key, title, desc in (("phone", "Honor 200 pro " + uuid.uuid4().hex[:4], "Продаю, отличное состояние, 250 евро. Оплата при встрече, нужен только паспорт"),
                                  ("job", "Atelje AXIOS " + uuid.uuid4().hex[:4], "Приглашает на работу швею, график 5/2")):
             l = Listing(owner_id=owner, category_id=jobs_id, status=ListingStatus.active, attributes={"listing_kind": "vacancy"}, source_language="ru")
             db.add(l); db.flush()

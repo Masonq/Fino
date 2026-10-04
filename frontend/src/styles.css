@@ -6746,3 +6746,16 @@ a.s-attrs{ display:block; }
 .jl-tips-title { font-size: 19px; font-weight: 800; margin-bottom: 12px; }
 .jl-tips ul { margin: 0 0 16px; padding-left: 18px; display: flex; flex-direction: column; gap: 10px; font-size: 15px; line-height: 1.4; }
 .jl-tips li::marker { color: var(--primary); }
+
+/* ——— Страницы разделов в стиле «Работы» ——— */
+.lp-head { padding-bottom: 0; }
+.lp-count { margin-top: 4px; font-size: 14px; font-weight: 600; color: var(--muted); }
+.lp-tiles { padding: 16px 16px 18px; margin-right: 0; }
+.jl-tile.xwide { width: 240px; }
+.jl-tile.xwide .jl-tile-text { max-width: 196px; }
+.jl-tile.wide .jl-tile-text { max-width: 150px; }
+.lp-filters { margin: 4px 16px 18px; padding: 16px; border-radius: 22px; background: var(--surface-sunken); display: flex; flex-direction: column; gap: 10px; }
+.lp-filters-title { font-size: 19px; font-weight: 800; letter-spacing: -0.015em; color: var(--ink); }
+.lp-filters .pill-row { background: #E3E5E0; }
+.lp-filters .landing-field, .lp-filters .landing-deal, .lp-filters .landing-go { margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; }
+.lp-filters .landing-go { width: 100%; }

@@ -899,7 +899,8 @@
     "show_count_one": "Show {{count}} listing",
     "show_count_other": "Show {{count}} listings",
     "search_in": "Search in {{name}}",
-    "search_city": "Search in {{city}}"
+    "search_city": "Search in {{city}}",
+    "refine": "Refine the search"
   },
   "fields": {
     "real-estate": {
@@ -1373,5 +1374,18 @@
   "map": {
     "open_external": "Open on the map",
     "no_webgl": "The map could not open on this device — enter the address in the search above"
+  },
+  "landing_q": {
+    "real-estate": "What property are you looking for?",
+    "auto": "What vehicle are you looking for?",
+    "electronics": "What electronics are you looking for?",
+    "home-garden": "What do you need for your home?",
+    "fashion": "What clothes are you looking for?",
+    "kids": "What do you need for kids?",
+    "hobby-sport": "What do you need for hobbies and sport?",
+    "pets": "What do you need for your pet?",
+    "beauty": "What beauty items are you looking for?",
+    "services": "What services are you looking for?",
+    "business": "What do you need for business?"
   }
 }

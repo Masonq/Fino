@@ -549,71 +549,33 @@ function CategoryLandingPage() {
         </div>
       </div>
 
-      <div
-        className="landing-hero"
-        // Обе заливки одним свойством: если писать сокращённое
-        // `background` для запасного градиента, оно сбрасывает размер и
-        // положение картинки, заданные в CSS, — шапка показывала кусок
-        // середины вместо всей картинки.
-        style={{
-          // Обложки нарисованы для двенадцати разделов; подраздел берёт
-          // обложку своего раздела. Раньше он запрашивал /hero/<свой
-          // слаг>.webp, получал 404 и оставался с сиреневой заливкой
-          // «Недвижимости» — даже если это «Легковые».
-          backgroundImage: heroSlug
-            ? `url(/hero/${heroSlug}.webp), ${HERO_FALLBACK[heroSlug] || HERO_FALLBACK['real-estate']}`
-            // нейтральная тёмно-серая: белый заголовок читается, а
-            // чужой цвет раздела не мелькает
-            : 'linear-gradient(135deg, #8A9099 0%, #B4B9C0 100%)',
-        }}
-      >
-        <div className="landing-head">
-          <h1 className="landing-title on-hero">{name}</h1>
-          {/* Счётчик в шапке: раньше полоса несла одно название, которое
-              человек и так видел на экране, откуда пришёл. Сколько тут
-              объявлений — единственное, чего он по экрану не знает.
-              Класс .landing-count в стилях был, а в разметке его не
-              было вовсе. */}
-          {shownCount > 0 && (
-            <div className="landing-count on-hero">
-              {t('landing.offers', { count: shownCount })}
-            </div>
-          )}
-        </div>
-
+      {/* Как раздел «Работа» (по образцу Авито): вопрос-заголовок, число объявлений, все подразделы — два ряда
+          плиток с картинками; фильтры ниже — карточкой «Подобрать точнее» */}
+      <div className="jl-head lp-head">
+        <h1 className="jl-h1">{category?.parent_id ? name : t(`landing_q.${slug}`, { defaultValue: name })}</h1>
+        {shownCount > 0 && <div className="lp-count">{t('landing.offers', { count: shownCount })}</div>}
       </div>
-
-        {category?.children?.length > 0 && (() => {
+      {category?.children?.length > 0 && (() => {
         const subs = category.children
-        const showLimit = subs.length > 6
-        const visible = showLimit ? subs.slice(0, 5) : subs
+        const rows = [subs.filter((_, k) => k % 2 === 0), subs.filter((_, k) => k % 2 === 1)].filter((x) => x.length)
         return (
-          <div className="landing-subs">
-            {visible.map((sub) => (
-              <button
-                key={sub.id}
-                className="landing-sub"
-                onClick={() => (
-                  sub.children?.length > 0
-                    ? navigate(`/c/${sub.slug}`)
-                    : navigate(`/search?category=${sub.slug}`)
-                )}
-              >
-                <span className="landing-sub-name">
-                  {sub.name?.[i18n.language] || sub.name?.ru}
-                </span>
-                <span className="landing-sub-art"><CategoryArt slug={sub.slug} parentSlug={slug} /></span>
-              </button>
+          <div className="jl-tiles lp-tiles">
+            {rows.map((row, k) => (
+              <div key={k} className="jl-tile-row">
+                {row.map((sub) => {
+                  const label = sub.name?.[i18n.language] || sub.name?.ru
+                  const longest = Math.max(...label.split(/\s+/).map((w) => w.length))
+                  const size = longest > 13 ? ' xwide' : (label.length > 13 || longest > 8 ? ' wide' : '')
+                  return (
+                    <button key={sub.id} type="button" className={`jl-tile${size}`}
+                      onClick={() => (sub.children?.length > 0 ? navigate(`/c/${sub.slug}`) : navigate(`/search?category=${sub.slug}`))}>
+                      <span className="jl-tile-text">{label}</span>
+                      <img className="jl-tile-img" src={`/cat/${sub.slug}.png`} alt="" loading="lazy" onError={(ev) => { ev.currentTarget.style.display = 'none' }} />
+                    </button>
+                  )
+                })}
+              </div>
             ))}
-            {showLimit && (
-              <button
-                className="landing-sub landing-sub-all"
-                onClick={() => setShowAllSubs(true)}
-              >
-                <span className="landing-sub-name">{t('common.all_categories')}</span>
-                <svg className="landing-sub-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 6 6 6-6 6" /></svg>
-              </button>
-            )}
           </div>
         )
       })()}
@@ -625,6 +587,8 @@ function CategoryLandingPage() {
 
       {/* Первый вопрос делит раздел надвое: без ответа на него
           остальное бессмысленно. */}
+      <div className="lp-filters">
+        <div className="lp-filters-title">{t('landing.refine')}</div>
       {landing?.deal && (
         <div className="cat-modes landing-deal pill-row">
           <SlidePill />
@@ -764,6 +728,7 @@ function CategoryLandingPage() {
           ? t('landing.show_count', { count: shownCount })
           : t('landing.show')}
       </button>
+      </div>
       </div>
 
       <div className="landing-main">
