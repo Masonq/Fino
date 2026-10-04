@@ -1,3 +1,5 @@
+import re
+import uuid
 """
 Карта сайта: что поисковику стоит обойти.
 
@@ -16,6 +18,7 @@ from xml.sax.saxutils import escape
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, Response
+from sqlalchemy import String, cast
 from sqlalchemy.orm import Session
 
 from app.core.clock import utcnow
@@ -223,6 +226,14 @@ def _is_crawler(agent: str) -> bool:
     ))
 
 
+def _as_uuid(value: str):
+    """Ключ объявления из строки или None — чтобы не отдавать в базу то, что она не примет."""
+    try:
+        return uuid.UUID(str(value))
+    except (ValueError, TypeError, AttributeError):
+        return None
+
+
 @router.get("/go/{listing_id}", include_in_schema=False)
 def short_listing_page(listing_id: str, request: Request,
                        db: Session = Depends(get_db)):
@@ -234,7 +245,16 @@ def short_listing_page(listing_id: str, request: Request,
     """
     from fastapi.responses import RedirectResponse
 
-    listing = db.query(Listing).filter(Listing.id == listing_id).first()
+    # Пришёл не ключ, а «слаг» или мусор — в базу его не отдаём: Postgres падал на приведении к UUID и
+    # писал каждый такой запрос в журнал целиком (поисковые роботы — раз в пару минут). Короткий хвост
+    # из 8 символов — ищем по нему, как и страница объявления.
+    lid = _as_uuid(listing_id)
+    if lid is not None:
+        listing = db.query(Listing).filter(Listing.id == lid).first()
+    else:
+        tail = listing_id.rsplit("-", 1)[-1].lower()
+        listing = (db.query(Listing).filter(cast(Listing.id, String).like(f"{tail}-%")).first()
+                   if re.fullmatch(r"[0-9a-f]{8}", tail) else None)
     if listing:
         return RedirectResponse(_nice_path(db, listing), status_code=301)
     return listing_page(listing_id, request, db)
@@ -296,7 +316,9 @@ def listing_page(listing_id: str, request: Request,
     # есть и падал с ошибкой — поисковик получал «сервер сломался»
     # вместо «страницы нет».
     try:
-        listing = db.query(Listing).filter(Listing.id == listing_id).first()
+        # не ключ — сразу «нет»: без запроса, который база отвергла бы с ошибкой в журнале
+        lid = _as_uuid(listing_id)
+        listing = db.query(Listing).filter(Listing.id == lid).first() if lid is not None else None
     except Exception:                                      # noqa: BLE001
         db.rollback()
         listing = None
