@@ -6695,18 +6695,18 @@ a.s-attrs{ display:block; }
 
 
 /* ——— Раздел «Работа» по образцу Авито (как в приложении: native/src/components/JobsLanding.tsx) ——— */
-.jobs-landing { padding-bottom: 32px; }
+.jobs-landing { padding-bottom: 32px; max-width: 920px; margin: 0 auto; }
 .jl-top { display: flex; align-items: center; gap: 4px; padding: 8px 8px 0; position: sticky; top: 0; z-index: 5; background: var(--bg); }
 .jl-tabs { flex: 1; display: flex; gap: 22px; padding-left: 6px; border-bottom: 1.5px solid var(--border); margin-right: 12px; }
 .jl-tab { padding: 8px 0 8px; font-size: 18px; font-weight: 800; color: var(--muted); letter-spacing: -0.01em; border-bottom: 3px solid transparent; margin-bottom: -1.5px; background: none; }
 .jl-tab.on { color: var(--ink); border-bottom-color: var(--ink); }
-.jl-head { padding: 18px 16px 4px; }
+.jl-head { padding: 18px 12px 4px; }
 .jl-h1 { font-size: 26px; line-height: 1.2; font-weight: 800; letter-spacing: -0.02em; margin: 0; }
 .jl-search { display: flex; align-items: center; gap: 10px; height: 50px; border-radius: 16px; background: var(--surface-sunken); padding: 0 15px; margin-top: 14px; color: var(--muted); }
 .jl-search input { flex: 1; min-width: 0; border: none; background: none; font-size: 16px; color: var(--ink); }
 .jl-search input:focus { outline: none; }
 .jl-clear { font-size: 20px; color: var(--muted); background: none; }
-.jl-tiles { display: flex; flex-direction: column; gap: 8px; padding: 18px 0; overflow-x: auto; scrollbar-width: none; margin-right: -16px; padding-right: 16px; }
+.jl-tiles { display: flex; flex-direction: column; gap: 8px; padding: 18px 0; overflow-x: auto; scrollbar-width: none; margin-right: -12px; padding-right: 12px; }
 .jl-tiles::-webkit-scrollbar { display: none; }
 .jl-tile-row { display: flex; gap: 8px; }
 .jl-tile { position: relative; flex: 0 0 auto; width: 142px; height: 100px; border-radius: 18px; background: var(--surface-sunken); padding: 13px; text-align: left; display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; overflow: hidden; border: 2px solid transparent; }
@@ -6720,7 +6720,7 @@ a.s-attrs{ display:block; }
 .jl-h2 { font-size: 21px; font-weight: 800; letter-spacing: -0.015em; margin: 6px 0 12px; color: var(--ink); }
 .jl-h2-gap { margin-top: 22px; }
 .jl-h2-arrow { width: 24px; height: 24px; border-radius: 12px; background: var(--ink); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; margin-bottom: 6px; }
-.jl-cabinet { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding-bottom: 18px; margin-right: -16px; padding-right: 16px; }
+.jl-cabinet { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding-bottom: 18px; margin-right: -12px; padding-right: 12px; }
 .jl-cabinet::-webkit-scrollbar { display: none; }
 .jl-cab { flex: 0 0 auto; width: 270px; display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 18px; background: var(--surface-sunken); text-align: left; }
 .jl-cab b { display: block; font-size: 15.5px; font-weight: 800; color: var(--ink); }
@@ -6739,7 +6739,7 @@ a.s-attrs{ display:block; }
 .jl-card.how { background: #ECE9FB; }
 .jl-card b { font-size: 15.5px; line-height: 1.3; font-weight: 800; color: var(--ink); }
 .jl-card small { font-size: 13.5px; line-height: 1.35; color: var(--ink-soft); }
-.jl-results-title { padding: 0 16px; }
+.jl-results-title { padding: 0 12px; }
 .jl-empty { text-align: center; color: var(--muted); font-size: 14px; padding: 16px 30px; }
 .jl-tips-layer { position: fixed; inset: 0; z-index: 50; background: rgba(17, 22, 19, 0.42); display: flex; align-items: flex-end; justify-content: center; }
 .jl-tips { width: 100%; max-width: 560px; background: var(--surface); border-radius: 24px 24px 0 0; padding: 20px 20px calc(20px + var(--sab, 0px)); }
@@ -6750,12 +6750,13 @@ a.s-attrs{ display:block; }
 /* ——— Страницы разделов в стиле «Работы» ——— */
 .lp-head { padding-bottom: 0; }
 .lp-count { margin-top: 4px; font-size: 14px; font-weight: 600; color: var(--muted); }
-.lp-tiles { padding: 16px 16px 18px; margin-right: 0; }
+.lp-tiles { padding: 16px 12px 18px; margin-right: 0; }
 .jl-tile.xwide { width: 240px; }
 .jl-tile.xwide .jl-tile-text { max-width: 196px; }
 .jl-tile.wide .jl-tile-text { max-width: 150px; }
-.lp-filters { margin: 4px 16px 18px; padding: 16px; border-radius: 22px; background: var(--surface-sunken); display: flex; flex-direction: column; gap: 10px; }
+.lp-filters { margin: 4px 12px 18px; padding: 16px; border-radius: 22px; background: var(--surface-sunken); display: flex; flex-direction: column; gap: 10px; }
 .lp-filters-title { font-size: 19px; font-weight: 800; letter-spacing: -0.015em; color: var(--ink); }
 .lp-filters .pill-row { background: #E3E5E0; }
 .lp-filters .landing-field, .lp-filters .landing-deal, .lp-filters .landing-go { margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; }
 .lp-filters .landing-go { width: 100%; }
+.jobs-landing .infinite-grid { padding-left: 12px; padding-right: 12px; }
