@@ -11,7 +11,7 @@ import Icon from '../../src/components/Icon'
 import SheetFrame from '../../src/components/SheetFrame'
 import { CAR_BRANDS, CAR_MODELS, CAR_OTHER, LANDINGS, type LandingField, landingParams, LUI, t3 } from '../../src/landings'
 import JobsLanding from '../../src/components/JobsLanding'
-import { tileSize } from '../../src/tileSize'
+import { ART_BIG, ART_SMALL, bigArtFits, needsWiderTile } from '../../src/artFit'
 import ListingCard from '../../src/components/ListingCard'
 import { SITE } from '../../src/config'
 import { select } from '../../src/haptics'
@@ -187,11 +187,14 @@ function CategoryScreen() {
             {[subs.filter((_, k) => k % 2 === 0), subs.filter((_, k) => k % 2 === 1)].filter((r) => r.length).map((row, r) => (
               <View key={r} style={styles.lRow}>
                 {row.map((c) => {
-                  const size = tileSize(nameOf(c))
+                  const longest = Math.max(...nameOf(c).split(/\s+/).map((w) => w.length))
+                  const wide = nameOf(c).length > 13 || longest > 8
+                  const long = nameOf(c).length > 24 && longest <= 12 // «Планшеты и электронные книги» — уже, в три строки, левее картинки
+                  const xwide = longest > 13 || long || (wide && needsWiderTile(nameOf(c), 150, 196)) // «электротранспорт», «Коллекционирование» — не рвать посреди слова
                   return (
-                    <Pressable key={c.id} style={[styles.lTile, { width: size.tile }]} onPress={() => { select(); router.push(`/c/${c.slug}`) }} accessibilityRole="button">
-                      <Text style={[styles.lTileText, { maxWidth: size.text }]}>{nameOf(c)}</Text>
-                      <Image source={{ uri: `${SITE}/cat/${c.slug}.png` }} style={styles.lTileImg} contentFit="contain" />
+                    <Pressable key={c.id} style={[styles.lTile, wide && styles.lTileWide, xwide && { width: 240 }]} onPress={() => { select(); router.push(`/c/${c.slug}`) }} accessibilityRole="button">
+                      <Text style={[styles.lTileText, wide && { maxWidth: 150 }, xwide && { maxWidth: long ? 140 : 196 }]}>{nameOf(c)}</Text>
+                      <Image source={{ uri: `${SITE}/cat/${c.slug}.png` }} style={bigArtFits(nameOf(c), xwide ? (long ? 140 : 196) : wide ? 150 : 92, xwide ? 240 : wide ? 196 : 142) ? ART_BIG : ART_SMALL} contentFit="contain" />
                     </Pressable>
                   )
                 })}
@@ -315,9 +318,10 @@ const styles = StyleSheet.create({
   lCount: { fontSize: 14, fontFamily: font[600], color: colors.muted, marginTop: 4 },
   lTiles: { paddingHorizontal: space.page, paddingVertical: 16 },
   lRow: { flexDirection: 'row', gap: 8 },
-  lTile: { width: 142, height: 112, borderRadius: 18, backgroundColor: colors.sunken, padding: 13, overflow: 'hidden' },
+  lTile: { width: 142, height: 100, borderRadius: 18, backgroundColor: colors.sunken, padding: 13, overflow: 'hidden' },
+  lTileWide: { width: 196 },
   lTileText: { fontSize: 14.5, lineHeight: 18, fontFamily: font[700], color: colors.ink, maxWidth: 92 },
-  lTileImg: { position: 'absolute', right: -6, bottom: -8, width: 80, height: 80 },
+  lTileImg: { position: 'absolute', right: -10, bottom: -16, width: 84, height: 84 },
   search: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 46, borderRadius: 14, backgroundColor: colors.sunken, paddingHorizontal: 13 },
   searchInput: { flex: 1, flexBasis: 0, minWidth: 0, fontSize: 15, fontFamily: font[500], color: colors.ink, paddingVertical: 0 },
   priceRow: { flexDirection: 'row', gap: 8 },

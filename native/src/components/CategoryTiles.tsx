@@ -11,12 +11,18 @@ import { type Category, fetchCategories } from '../api'
 import { SITE } from '../config'
 import { colors, font } from '../theme'
 import Skeleton from './Skeleton'
-import { tileSize } from '../tileSize'
+import { ART_BIG, ART_SMALL, bigArtFits, needsWiderTile } from '../artFit'
 
-// как плитки внутри разделов (JobsLanding, c/[slug]): высота 112, ширина — по названию (tileSize)
+// как плитки внутри разделов (JobsLanding, c/[slug]): 142×100, широкие — 196 и 240
 const W = 142
-const H = 112
-const widthFor = (name: string) => tileSize(name)
+const H = 100
+const widthFor = (name: string) => {
+  const longest = Math.max(...name.split(/\s+/).map((w) => w.length))
+  if (name.length > 24 && longest <= 12) return { tile: 240, text: 140 }
+  if (longest > 13) return { tile: 240, text: 196 }
+  if (name.length > 13 || longest > 8) return needsWiderTile(name, 150, 196) ? { tile: 240, text: 196 } : { tile: 196, text: 150 }
+  return { tile: W, text: 92 }
+}
 
 const nameOf = (c: Category) => (typeof c.name === 'string' ? c.name : c.name?.[getLang()] || c.name?.ru || c.slug)
 
@@ -61,7 +67,7 @@ export default function CategoryTiles({ value, onPick }: { value: string | null;
         accessibilityRole="button" accessibilityState={{ selected: on }}>
         {/* Одно длинное слово («Недвижимость») не переносим посреди слова — слегка ужимаем */}
         <Text style={[styles.label, { maxWidth: widthFor(nameOf(c)).text }, on && styles.labelOn]}>{nameOf(c)}</Text>
-        <Image source={{ uri: `${SITE}/cat/${c.slug}.png` }} style={styles.art} contentFit="contain" transition={200} />
+        <Image source={{ uri: `${SITE}/cat/${c.slug}.png` }} style={bigArtFits(nameOf(c), widthFor(nameOf(c)).text, widthFor(nameOf(c)).tile) ? ART_BIG : ART_SMALL} contentFit="contain" transition={200} />
       </Pressable>
     )
   }
@@ -87,6 +93,6 @@ const styles = StyleSheet.create({
   soon: { opacity: 0.55 },
   label: { fontSize: 14.5, lineHeight: 18, fontFamily: font[700], color: colors.ink, zIndex: 2 },
   labelOn: { color: colors.primaryDeep },
-  art: { position: 'absolute', right: -6, bottom: -8, width: 80, height: 80 },
+  art: { position: 'absolute', right: -10, bottom: -16, width: 84, height: 84 },
   allIcon: { position: 'absolute', right: 12, bottom: 10 },
 })

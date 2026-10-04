@@ -6709,11 +6709,12 @@ a.s-attrs{ display:block; }
 .jl-tiles { display: flex; flex-direction: column; gap: 8px; padding: 18px 0; overflow-x: auto; scrollbar-width: none; margin-right: -12px; padding-right: 12px; }
 .jl-tiles::-webkit-scrollbar { display: none; }
 .jl-tile-row { display: flex; gap: 8px; }
-.jl-tile { position: relative; flex: 0 0 auto; width: 142px; height: 112px; border-radius: 18px; background: var(--surface-sunken); padding: 13px; text-align: left; display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; overflow: hidden; border: 2px solid transparent; }
+.jl-tile { position: relative; flex: 0 0 auto; width: 142px; height: 100px; border-radius: 18px; background: var(--surface-sunken); padding: 13px; text-align: left; display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; overflow: hidden; border: 2px solid transparent; }
 .jl-tile.wide { width: 196px; }
+.jl-tile.wide .jl-tile-text { max-width: 120px; }
 .jl-tile.on { border-color: var(--primary); background: var(--primary-soft); }
 .jl-tile-text { position: relative; z-index: 1; display: block; max-width: 92px; font-size: 14.5px; line-height: 1.25; font-weight: 700; color: var(--ink); }
-.jl-tile-img { position: absolute; right: -6px; bottom: -8px; width: 80px; height: 80px; object-fit: contain; }
+.jl-tile-img { position: absolute; right: -10px; bottom: -16px; width: 84px; height: 84px; object-fit: contain; }
 .jl-tile-check { position: absolute; right: 8px; top: 8px; width: 20px; height: 20px; border-radius: 10px; background: var(--primary); color: #fff; font-size: 12px; display: flex; align-items: center; justify-content: center; }
 .jl-h2-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; background: none; padding: 0; }
 .jl-h2 { font-size: 21px; font-weight: 800; letter-spacing: -0.015em; margin: 6px 0 12px; color: var(--ink); }
@@ -6751,8 +6752,8 @@ a.s-attrs{ display:block; }
 .lp-count { margin-top: 4px; font-size: 14px; font-weight: 600; color: var(--muted); }
 .lp-tiles { padding: 16px 12px 18px; margin-right: 0; }
 .jl-tile.xwide { width: 240px; }
-.jl-tile.xwide .jl-tile-text { max-width: 150px; }
-.jl-tile.wide .jl-tile-text { max-width: 106px; }
+.jl-tile.xwide .jl-tile-text { max-width: 196px; }
+.jl-tile.wide .jl-tile-text { max-width: 150px; }
 .lp-filters { margin: 4px 12px 18px; padding: 16px; border-radius: 22px; background: var(--surface-sunken); display: flex; flex-direction: column; gap: 10px; }
 .lp-filters-title { font-size: 19px; font-weight: 800; letter-spacing: -0.015em; color: var(--ink); }
 .lp-filters .pill-row { background: #E3E5E0; }
@@ -6764,13 +6765,19 @@ a.s-attrs{ display:block; }
 @media (max-width: 619px) {
   .cat-rows { gap: 8px; padding: 10px 12px 2px; }
   .cat-row { gap: 8px; }
-  .cat-tile-2row { width: var(--tile-w, 142px); height: 112px; border-radius: 18px; background: var(--surface-sunken); border: 2px solid transparent; box-shadow: none; padding: 13px; }
+  .cat-tile-2row { width: 142px; height: 100px; border-radius: 18px; background: var(--surface-sunken); border: 2px solid transparent; box-shadow: none; padding: 13px; }
   .cat-tile-2row.wide { width: 196px; }
   .cat-tile-2row.xwide { width: 240px; }
-  .cat-tile-2row-label { font-size: 14.5px; line-height: 1.25; max-width: var(--tile-text, 92px); letter-spacing: 0; white-space: normal; }
-  .cat-tile-2row.wide .cat-tile-2row-label { max-width: 106px; }
-  .cat-tile-2row.xwide .cat-tile-2row-label { max-width: 150px; }
-  .cat-tile-2row-glyph { width: 80px; height: 80px; right: -6px; bottom: -8px; }
+  .cat-tile-2row-label { font-size: 14.5px; line-height: 1.25; max-width: 92px; letter-spacing: 0; white-space: normal; }
+  .cat-tile-2row.wide .cat-tile-2row-label { max-width: 150px; }
+  .cat-tile-2row.xwide .cat-tile-2row-label { max-width: 196px; }
+  .cat-tile-2row-glyph { width: 84px; height: 84px; right: -10px; bottom: -16px; }
   .cat-tile-2row.all { background: var(--primary-soft); border-color: transparent; }
   .cat-tile-2row-glyph.all-glyph { width: 52px; height: 52px; right: 8px; bottom: 6px; }
 }
+/* самое длинное название («Планшеты и электронные книги») — уже, в три строки, левее картинки */
+.jl-tile.long .jl-tile-text { max-width: 140px; }
+@media (max-width: 619px) { .cat-tile-2row.long .cat-tile-2row-label { max-width: 140px; } }
+/* у плитки, где вторая строка названия доходит до места картинки, — прежний размер (utils/artFit.js) */
+.jl-tile.small-art .jl-tile-img { width: 66px; height: 66px; right: -2px; bottom: -4px; }
+@media (max-width: 619px) { .cat-tile-2row.small-art .cat-tile-2row-glyph { width: 66px; height: 66px; right: -2px; bottom: -4px; } }

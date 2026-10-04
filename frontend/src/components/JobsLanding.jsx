@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import ListingCard from './ListingCard'
+import { bigArtFits } from '../utils/artFit'
 import { CardSkeletons } from './Skeletons'
 
 /**
@@ -15,12 +16,12 @@ const ROW1 = [
   { key: 'part_time', eq: { employment_type: 'part_time' }, wide: true },
   { key: 'full_time', eq: { employment_type: 'full_time' } },
   { key: 'remote', eq: { work_format: 'remote' } },
-  { key: 'shift', eq: { employment_type: 'shift' }, wide: true },
+  { key: 'shift', eq: { employment_type: 'shift' } },
 ]
 const ROW2 = [
   { key: 'no_exp', eq: { experience: 'none' } },
   { key: 'no_serbian', eq: { serbian_needed: false }, wide: true },
-  { key: 'one_off', eq: { employment_type: 'one_off' }, wide: true },
+  { key: 'one_off', eq: { employment_type: 'one_off' } },
 ]
 
 export default function JobsLanding() {
@@ -61,7 +62,7 @@ export default function JobsLanding() {
   const tileButton = (x) => {
     const on = tile?.key === x.key
     return (
-      <button key={x.key} type="button" className={`jl-tile${x.wide ? ' wide' : ''}${on ? ' on' : ''}`} aria-pressed={on}
+      <button key={x.key} type="button" className={`jl-tile${x.wide ? ' wide' : ''}${on ? ' on' : ''}${bigArtFits(t(`jobs.tile_${x.key}`), x.wide ? 150 : 92, x.wide ? 196 : 142) ? '' : ' small-art'}`} aria-pressed={on}
         onClick={() => { setTile(on ? null : x); if (!on) toResults() }}>
         <span className="jl-tile-text">{t(`jobs.tile_${x.key}`)}</span>
         <img className="jl-tile-img" src={`/jobs/${x.key}.webp`} alt="" loading="lazy" />
