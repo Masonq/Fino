@@ -1,4 +1,5 @@
-import { tr } from '../src/i18n'
+import { getLang, tr } from '../src/i18n'
+import { success } from '../src/haptics'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
@@ -6,13 +7,13 @@ import { useCallback, useState } from 'react'
 import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { balance as fetchBalance, deleteListing, type MyListing, myListings, setListingStatus } from '../src/api'
+import { balance as fetchBalance, deleteListing, type MyListing, myListings, setListingStatus, renewListing } from '../src/api'
 import { useAuth } from '../src/auth'
 import Icon from '../src/components/Icon'
 import Segmented from '../src/components/Segmented'
 import Sheet, { SheetAction } from '../src/components/Sheet'
 import { mediaUrl } from '../src/config'
-import { formatPrice } from '../src/format'
+import { formatPrice, parseTime } from '../src/format'
 import { colors, font } from '../src/theme'
 
 // Вкладки — как на сайте: активные, на проверке, отклонено, продано, в архиве (истёкшие и снятые — в архиве)
@@ -37,6 +38,8 @@ export default function MyListings() {
   const insets = useSafeAreaInsets()
   const [tab, setTab] = useState<Tab>((['pending', 'rejected', 'sold', 'archived'] as string[]).includes(String(params.tab)) ? (params.tab as Tab) : 'active')
   const [refreshing, setRefreshing] = useState(false)
+  // все хуки — до раннего выхода ниже (иначе React #310)
+  const [renewing, setRenewing] = useState<string | null>(null)
   const [menu, setMenu] = useState<MyListing | null>(null)
 
   const load = useCallback(async () => {
@@ -66,6 +69,11 @@ export default function MyListings() {
   }
   const count = (t: Tab) => (items ?? []).filter((i) => tabOf(i.status) === t).length
   const shown = (items ?? []).filter((i) => tabOf(i.status) === tab)
+  const renew = async (id: string) => {
+    if (!token) return
+    setRenewing(id)
+    try { await renewListing(token, id); success(); await load() } catch { /* обновится при следующем открытии */ } finally { setRenewing(null) }
+  }
   const tabs: { key: Tab; label: string }[] = [
     { key: 'active', label: 'Активные' }, { key: 'pending', label: 'На проверке' }, { key: 'rejected', label: 'Отклонено' },
     { key: 'sold', label: 'Продано' }, { key: 'archived', label: 'В архиве' },
@@ -115,6 +123,16 @@ export default function MyListings() {
                       <Text style={[styles.status, { color: st.tone, backgroundColor: st.bg }]}>{tr(st.label)}</Text>
                       {i.views_count != null && <Text style={styles.views}><Ionicons name="eye-outline" size={13} /> {i.views_count}</Text>}
                     </View>
+                    {(() => {
+                      const left = daysLeft(i.expires_at)
+                      if (i.status !== 'active' || left === null || left > 7) return null
+                      return (
+                        <View style={styles.expiry}>
+                          <Text style={styles.expiryText}>{expiresIn(left)}</Text>
+                          <Pressable style={[styles.renew, renewing === i.id && { opacity: 0.6 }]} disabled={renewing === i.id} onPress={() => renew(i.id)}><Text style={styles.renewText}>{tr('Продлить')}</Text></Pressable>
+                        </View>
+                      )
+                    })()}
                   </View>
                   <Pressable onPress={() => setMenu(i)} hitSlop={10} style={styles.more} accessibilityLabel={tr('Действия с объявлением')}>
                     <Ionicons name="ellipsis-horizontal" size={20} color={colors.inkSoft} />
@@ -149,7 +167,20 @@ export default function MyListings() {
   )
 }
 
+/** «Снимем через N дней» — три формы, как в словаре сайта (my.expires_in_*), на трёх языках. */
+function expiresIn(n: number): string {
+  if (getLang() === 'en') return `Expires in ${n} ${n === 1 ? 'day' : 'days'}`
+  const i = n % 10 === 1 && n % 100 !== 11 ? 0 : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 1 : 2
+  return tr(['Снимем через {n} день', 'Снимем через {n} дня', 'Снимем через {n} дней'][i], { n })
+}
+
+const daysLeft = (iso?: string | null) => { const d = parseTime(iso); return d ? Math.max(0, Math.ceil((d.getTime() - Date.now()) / 86400000)) : null }
+
 const styles = StyleSheet.create({
+  expiry: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 6, paddingLeft: 10, paddingRight: 4, paddingVertical: 4, borderRadius: 10, backgroundColor: '#FBF3E3' },
+  expiryText: { flex: 1, fontSize: 12.5, fontFamily: font[700], color: '#8A6A1F' },
+  renew: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: colors.surface },
+  renewText: { fontSize: 12.5, fontFamily: font[800], color: colors.ink },
   // как .my-tabs .pill-track сайта: серая дорожка 3 / 13, выбранная — зелёная плашка 11
   tabsWrap: { paddingHorizontal: 12, paddingBottom: 14, paddingTop: 2 },
   tabs: { flexDirection: 'row', gap: 2, padding: 3, borderRadius: 13, backgroundColor: colors.sunken },

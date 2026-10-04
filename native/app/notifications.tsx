@@ -3,10 +3,10 @@ import { Ionicons } from '@expo/vector-icons'
 import * as Linking from 'expo-linking'
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { markAllNoticesRead, markNoticeRead, type Notice, notifications } from '../src/api'
+import { markAllNoticesRead, markNoticeRead, type Notice, notifications, clearAllNotifications } from '../src/api'
 import { useAuth } from '../src/auth'
 import Icon from '../src/components/Icon'
 import { SITE } from '../src/config'
@@ -49,14 +49,25 @@ export default function Notifications() {
     <View style={[styles.page, { paddingTop: insets.top }]}>
       <View style={styles.head}>
         <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} hitSlop={10} style={styles.back} accessibilityLabel={tr('Назад')}>
-          <Ionicons name="chevron-back" size={26} color={colors.ink} />
+          <Icon name="back" size={22} color={colors.ink} />
         </Pressable>
         <Text style={styles.h1}>{tr('Уведомления')}</Text>
-        {unread > 0 && token ? (
-          <Pressable hitSlop={8} onPress={async () => { await markAllNoticesRead(token).catch(() => {}); load() }}>
-            <Text style={styles.all}>{tr('Прочитать все')}</Text>
-          </Pressable>
-        ) : <View style={{ width: 40 }} />}
+        {/* как на сайте: «Прочитать всё» — если есть непрочитанные, «Очистить» — если уведомления есть */}
+        <View style={styles.headActions}>
+          {unread > 0 && !!token && (
+            <Pressable hitSlop={8} onPress={async () => { await markAllNoticesRead(token).catch(() => {}); load() }}>
+              <Text style={styles.all}>{tr('Прочитать всё')}</Text>
+            </Pressable>
+          )}
+          {!!items?.length && !!token && (
+            <Pressable hitSlop={8} onPress={() => Alert.alert(tr('Удалить все уведомления?'), undefined, [
+              { text: tr('Отмена'), style: 'cancel' },
+              { text: tr('Очистить'), style: 'destructive', onPress: async () => { await clearAllNotifications(token).catch(() => {}); load() } },
+            ])}>
+              <Text style={[styles.all, { color: colors.muted }]}>{tr('Очистить')}</Text>
+            </Pressable>
+          )}
+        </View>
       </View>
       {items === null ? <ActivityIndicator style={{ marginTop: 30 }} color={colors.primary} /> : (
         <FlatList
@@ -89,6 +100,7 @@ export default function Notifications() {
 }
 
 const styles = StyleSheet.create({
+  headActions: { flexDirection: 'row', alignItems: 'center', gap: 14, marginLeft: 'auto', paddingRight: 8 },
   page: { flex: 1, backgroundColor: colors.bg },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 8, paddingRight: 16, height: 52 },
   back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },

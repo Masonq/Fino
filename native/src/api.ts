@@ -176,6 +176,11 @@ export async function fetchCategories(): Promise<Category[]> {
 // ---------- сообщения ----------
 
 export type Chat = {
+  // как на сайте: звонок по разрешению, бронь, блокировка, состояние объявления
+  buyer?: { id: string; display_name?: string | null } | null; seller?: { id: string; display_name?: string | null } | null
+  call_request_pending?: boolean; phone_revealed?: boolean; other_phone?: string | null; seller_has_phone?: boolean
+  listing_is_reserved?: boolean; listing_reserved_for_me?: boolean; blocked_by_them?: boolean; i_blocked_them?: boolean
+  listing_sold?: boolean; listing_archived?: boolean; listing_status?: string | null; listing_price_negotiable?: boolean
   id: string; listing_id?: string | null; listing_title?: string | null; listing_photo?: string | null; listing_price?: number | null
   currency?: string | null; other_name?: string | null; last_text?: string | null; last_kind?: string | null; last_from_me?: boolean
   last_at?: string | null; unread?: number; is_seller?: boolean; is_team?: boolean
@@ -258,7 +263,7 @@ export async function createListing(token: string, l: NewListing) {
   return res.json() as Promise<{ id: string; status: string }>
 }
 
-export type MyListing = FeedItem & { status: string; views_count?: number; favorites_count?: number }
+export type MyListing = FeedItem & { status: string; views_count?: number; favorites_count?: number; expires_at?: string | null }
 export const myListings = (token: string) => authed<{ total: number; counts: Record<string, number>; items: MyListing[] }>(`/listings/my/list?lang=${getLang()}`, token)
 export const balance = (token: string) => authed<Record<string, unknown>>('/balance', token)
 
@@ -412,3 +417,19 @@ export const listingDashboard = (token: string, id: string, days: number) =>
 
 export const reorderListingPhotos = (token: string, id: string, photoIds: string[]) =>
   authed<unknown>(`/listings/${encodeURIComponent(id)}/photos/order`, token, 'PATCH', { photo_ids: photoIds })
+
+// ---------- звонок по разрешению и бронь — как на сайте ----------
+const chatPost = (token: string, id: string, what: string) => authed<unknown>(`/chats/${encodeURIComponent(id)}/${what}`, token, 'POST')
+export const requestCall = (token: string, id: string) => chatPost(token, id, 'call-request')
+export const allowCall = (token: string, id: string) => chatPost(token, id, 'call-allow')
+export const declineCall = (token: string, id: string) => chatPost(token, id, 'call-decline')
+export const revokeCall = (token: string, id: string) => chatPost(token, id, 'call-revoke')
+export const reserveListing = (token: string, listingId: string, buyerId: string, hours = 48) =>
+  authed<unknown>(`/listings/${encodeURIComponent(listingId)}/reserve`, token, 'POST', { buyer_id: buyerId, hours })
+export const cancelReservation = (token: string, listingId: string) => authed<unknown>(`/listings/${encodeURIComponent(listingId)}/reserve/cancel`, token, 'POST')
+/** Постоянное соединение переписки: новые сообщения сразу и «печатает…» — как на сайте. */
+export const chatWsUrl = (token: string, id: string) => `${API.replace(/^http/, 'ws')}/chats/${encodeURIComponent(id)}/ws?token=${encodeURIComponent(token)}`
+
+export const renewListing = (token: string, id: string) => authed<unknown>(`/listings/${encodeURIComponent(id)}/renew`, token, 'POST')
+export const readAllNotifications = (token: string) => authed<unknown>('/notifications/read-all', token, 'POST')
+export const clearAllNotifications = (token: string) => authed<unknown>('/notifications', token, 'DELETE')

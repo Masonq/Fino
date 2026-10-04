@@ -4,11 +4,10 @@ import { Image } from 'expo-image'
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  ActivityIndicator, AppState, FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View,
-} from 'react-native'
+  ActivityIndicator, AppState, FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View, Linking, ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { blockChat, type Chat, chatInfo, chatMessages, markChatRead, type Message, respondOffer, sendMessage, sendOffer, isOffer } from '../../src/api'
+import { allowCall, blockChat, cancelReservation, type Chat, chatInfo, chatMessages, chatWsUrl, declineCall, markChatRead, type Message, requestCall, reserveListing, respondOffer, revokeCall, sendMessage, sendOffer, isOffer } from '../../src/api'
 import Icon from '../../src/components/Icon'
 import Sheet, { SheetAction } from '../../src/components/Sheet'
 import { useAuth } from '../../src/auth'
@@ -24,6 +23,9 @@ const hhmm = (iso: string) => { const d = parseTime(iso); return d ? `${String(d
  * зелёные), служебные — по центру. Новые подтягиваются раз в 5 секунд, пока чат открыт; отправленное появляется
  * сразу, не дожидаясь сервера, а при ошибке — помечается «Не отправлено, нажмите, чтобы повторить».
  */
+const QUICK_BUYER = ['Ещё продаётся?', 'Торг возможен?', 'Когда можно посмотреть?', 'Где забрать?']
+const QUICK_SELLER = ['Да, продаётся', 'Можно посмотреть вечером', 'Цена окончательная']
+
 export default function ChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const chatId = String(id)
@@ -38,6 +40,13 @@ export default function ChatScreen() {
   const [offerOpen, setOfferOpen] = useState(false)
   const [offer, setOffer] = useState('')
   const [blocked, setBlocked] = useState(false)
+  const [typing, setTyping] = useState(false)
+  const [callDismissed, setCallDismissed] = useState(false)
+  const [offerPillDismissed, setOfferPillDismissed] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const wsRef = useRef<WebSocket | null>(null)
+  const typingTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const lastTypingSent = useRef(0)
 
   const load = useCallback(async () => {
     if (!token) return
@@ -53,14 +62,52 @@ export default function ChatScreen() {
 
   // Имя собеседника и объявление: из отдельного запроса, а чего в нём нет — из списка переписок
   const fromList = chats?.find((c) => c.id === chatId) ?? null
-  useEffect(() => { if (token) chatInfo(token, chatId).then(setChat).catch(() => {}) }, [token, chatId])
+  const refreshInfo = useCallback(() => { if (token) chatInfo(token, chatId).then(setChat).catch(() => {}) }, [token, chatId])
+  useEffect(() => { refreshInfo() }, [refreshInfo])
+  // новый запрос звонка — плашку показываем снова, даже если прошлую закрывали
+  useEffect(() => { if (chat?.call_request_pending) setCallDismissed(false) }, [chat?.call_request_pending])
+
+  // Постоянное соединение — как на сайте: новые сообщения сразу и «… печатает…»; обрыв — переподключаемся сами
+  useEffect(() => {
+    if (!token) return undefined
+    let ws: WebSocket | null = null
+    let closed = false
+    let retry: ReturnType<typeof setTimeout> | undefined
+    const connect = () => {
+      ws = new WebSocket(chatWsUrl(token, chatId))
+      wsRef.current = ws
+      ws.onmessage = (e) => {
+        let d: { type?: string; message?: Message; user_id?: string }
+        try { d = JSON.parse(String(e.data)) } catch { return }
+        if (d.type === 'message' && d.message) {
+          const m = d.message
+          setMsgs((prev) => (prev?.some((x) => x.id === m.id) ? prev : [...(prev ?? []).filter((x) => !(x.pending && x.text === m.text && m.sender_id === user?.id)), m]))
+          if (m.sender_id !== user?.id) { setTyping(false); markChatRead(token, chatId).then(() => refreshList()).catch(() => {}) }
+          refreshInfo()
+        } else if (d.type === 'typing' && d.user_id !== user?.id) {
+          setTyping(true)
+          clearTimeout(typingTimer.current)
+          typingTimer.current = setTimeout(() => setTyping(false), 3000)
+        } else if (d.type === 'typing_stop' && d.user_id !== user?.id) setTyping(false)
+      }
+      ws.onclose = () => { if (!closed) retry = setTimeout(connect, 3000) }
+    }
+    connect()
+    return () => { closed = true; clearTimeout(retry); clearTimeout(typingTimer.current); ws?.close(); wsRef.current = null }
+  }, [token, chatId, user?.id, refreshInfo, refreshList])
+  const sendTyping = (v: string) => {
+    const ws = wsRef.current
+    if (!ws || ws.readyState !== 1) return
+    if (!v) { ws.send('typing_stop'); return }
+    if (Date.now() - lastTypingSent.current > 2000) { lastTypingSent.current = Date.now(); ws.send('typing') }
+  }
   const info: Chat | null = chat || fromList ? { ...(fromList ?? {}), ...Object.fromEntries(Object.entries(chat ?? {}).filter(([, v]) => v != null)) } as Chat : null
 
   useFocusEffect(useCallback(() => {
     load()
-    const timer = setInterval(() => { if (AppState.currentState === 'active') load() }, 5000)
+    const timer = setInterval(() => { if (AppState.currentState === 'active') { load(); refreshInfo() } }, wsRef.current?.readyState === 1 ? 15000 : 5000)
     return () => clearInterval(timer)
-  }, [load]))
+  }, [load, refreshInfo]))
 
   const send = async (body: string, retryId?: string) => {
     const value = body.trim()
@@ -138,6 +185,12 @@ export default function ChatScreen() {
     )
   }
 
+  const isSeller = info?.is_seller ?? (!!user && info?.seller?.id === user.id)
+  const act = async (fn: () => Promise<unknown>) => { setBusy(true); try { await fn() } catch { /* состояние обновится с сервера */ } finally { setBusy(false); refreshInfo() } }
+  const lastMine = !!msgs?.length && msgs[msgs.length - 1].sender_id === user?.id
+  const quick = !info || info.is_team || !info.listing_id || text || lastMine ? [] : isSeller ? QUICK_SELLER : QUICK_BUYER
+  const offerPill = !isSeller && !info?.is_team && !!info?.listing_price_negotiable && !offerPillDismissed && !info?.blocked_by_them
+
   return (
     <KeyboardAvoidingView style={styles.page} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={[styles.head, { paddingTop: insets.top + 6 }]}>
@@ -145,6 +198,11 @@ export default function ChatScreen() {
           <Icon name="back" size={20} color={colors.ink} />
         </Pressable>
         <Text style={[styles.headName, { flex: 1 }]} numberOfLines={1}>{title}</Text>
+        {!isSeller && info?.phone_revealed && !!info?.other_phone && (
+          <Pressable onPress={() => Linking.openURL(`tel:${info.other_phone}`)} hitSlop={8} style={styles.callBtn} accessibilityLabel={tr('Позвонить: {phone}', { phone: info.other_phone })}>
+            <Icon name="phone" size={18} color={colors.primaryDeep} />
+          </Pressable>
+        )}
         {!info?.is_team && (
           <Pressable onPress={() => setMenu(true)} hitSlop={8} style={styles.back} accessibilityLabel={tr('Ещё')}>
             <Icon name="dots" size={20} color={colors.ink} />
@@ -157,14 +215,40 @@ export default function ChatScreen() {
           <View style={styles.headThumb}>{photo ? <Image source={{ uri: photo }} style={styles.headThumbImg} contentFit="cover" /> : null}</View>
           <View style={{ flex: 1 }}>
             <Text style={styles.stripTitle} numberOfLines={1}>{info.listing_title}</Text>
-            {info.listing_price != null && <Text style={styles.stripPrice}>{formatPrice(info.listing_price, info.currency)}</Text>}
+            <Text style={styles.stripPrice}>{info.listing_price != null ? formatPrice(info.listing_price, info.currency) : ''}{info.listing_sold ? <Text style={styles.stripState}>{'  · '}{tr('продано')}</Text> : info.listing_archived ? <Text style={styles.stripState}>{'  · '}{tr('снято')}</Text> : null}</Text>
           </View>
           <Icon name="forward" size={16} color={colors.muted} />
         </Pressable>
       )}
 
+      {!!info?.call_request_pending && !callDismissed && (
+        <View style={styles.callToast}>
+          <Icon name="phone" size={17} color={colors.primaryDeep} />
+          <Text style={styles.callToastText}>{tr(isSeller ? 'Просят разрешить звонок' : 'Звонок запрошен — ждём ответа')}</Text>
+          {isSeller ? (
+            <View style={styles.callToastBtns}>
+              <Pressable style={[styles.callYes, busy && { opacity: 0.6 }]} disabled={busy} onPress={() => token && act(() => allowCall(token, chatId))}><Text style={styles.callYesText}>{tr('Да')}</Text></Pressable>
+              <Pressable style={styles.callNo} disabled={busy} onPress={() => token && act(() => declineCall(token, chatId))}><Text style={styles.callNoText}>{tr('Нет')}</Text></Pressable>
+            </View>
+          ) : (
+            <Pressable onPress={() => setCallDismissed(true)} hitSlop={8} accessibilityLabel={tr('Закрыть')}><Icon name="close" size={14} color={colors.muted} /></Pressable>
+          )}
+        </View>
+      )}
+      {!!info?.listing_is_reserved && (
+        <View style={styles.reserved}><Text style={styles.reservedText}>{tr(isSeller ? 'Забронировано вами на 48 часов' : info.listing_reserved_for_me ? 'Продавец забронировал это для вас' : 'Объявление забронировано другим покупателем')}</Text></View>
+      )}
+
       <Sheet visible={menu} onClose={() => setMenu(false)}>
-        {!info?.is_seller && <SheetAction label={tr('Предложить цену')} icon={<Icon name="wallet" size={20} color={colors.ink} />} onPress={() => { setMenu(false); setOffer(''); setOfferOpen(true) }} />}
+        {!isSeller && info?.seller_has_phone && !info?.phone_revealed && (info?.call_request_pending
+          ? <SheetAction label={tr('Звонок запрошен — ждём ответа')} icon={<Icon name="phone" size={20} color={colors.muted} />} onPress={() => setMenu(false)} />
+          : <SheetAction label={tr('Запросить звонок')} icon={<Icon name="phone" size={20} color={colors.ink} />} onPress={() => { setMenu(false); if (token) act(() => requestCall(token, chatId)) }} />)}
+        {isSeller && info?.seller_has_phone && !info?.phone_revealed && <SheetAction label={tr('Разрешить звонок')} icon={<Icon name="phone" size={20} color={colors.ink} />} onPress={() => { setMenu(false); if (token) act(() => allowCall(token, chatId)) }} />}
+        {isSeller && info?.phone_revealed && <SheetAction label={tr('Запретить звонок')} icon={<Icon name="phone" size={20} color={colors.ink} />} onPress={() => { setMenu(false); if (token) act(() => revokeCall(token, chatId)) }} />}
+        {isSeller && !!info?.listing_id && !info?.listing_sold && !info?.listing_archived && !!info?.buyer?.id && (info?.listing_is_reserved
+          ? <SheetAction label={tr('Снять бронь')} icon={<Icon name="lock" size={20} color={colors.ink} />} onPress={() => { setMenu(false); if (token && info?.listing_id) act(() => cancelReservation(token, info.listing_id as string)) }} />
+          : <SheetAction label={tr('Забронировать для покупателя')} icon={<Icon name="lock" size={20} color={colors.ink} />} onPress={() => { setMenu(false); if (token && info?.listing_id && info?.buyer?.id) act(() => reserveListing(token, info.listing_id as string, info.buyer!.id, 48)) }} />)}
+        {!isSeller && <SheetAction label={tr('Предложить цену')} icon={<Icon name="wallet" size={20} color={colors.ink} />} onPress={() => { setMenu(false); setOffer(''); setOfferOpen(true) }} />}
         <SheetAction label={tr(blocked ? 'Разблокировать' : 'Заблокировать')} danger={!blocked} icon={<Icon name="lock" size={20} color={blocked ? colors.ink : '#B42318'} />}
           onPress={async () => { setMenu(false); if (!token) return; const next = !blocked; setBlocked(next); try { await blockChat(token, chatId, next) } catch { setBlocked(!next) } }} />
       </Sheet>
@@ -194,10 +278,25 @@ export default function ChatScreen() {
           />
         )}
 
+      {typing && <Text style={styles.typing}>{tr('{name} печатает…', { name: info?.other_name || tr('Собеседник') })}</Text>}
+      {offerPill && (
+        <View style={styles.offerPill}>
+          <Pressable style={styles.offerPillBtn} onPress={() => { setOffer(''); setOfferOpen(true) }}><Icon name="wallet" size={15} color={colors.primaryDeep} /><Text style={styles.offerPillText}>{tr('Предложить свою цену')}</Text></Pressable>
+          <Pressable onPress={() => setOfferPillDismissed(true)} hitSlop={8} accessibilityLabel={tr('Закрыть')}><Icon name="close" size={12} color={colors.muted} /></Pressable>
+        </View>
+      )}
+      {quick.length > 0 && !info?.blocked_by_them && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.quickRow} contentContainerStyle={styles.quick} keyboardShouldPersistTaps="handled" accessibilityLabel={tr('Быстрые ответы')}>
+          {quick.map((q) => <Pressable key={q} style={styles.quickBtn} onPress={() => send(tr(q))}><Text style={styles.quickText}>{tr(q)}</Text></Pressable>)}
+        </ScrollView>
+      )}
+      {info?.blocked_by_them ? (
+        <Text style={[styles.blockedNote, { paddingBottom: Math.max(insets.bottom, 10) + 6 }]}>{tr('Этот пользователь заблокировал вас — писать ему нельзя.')}</Text>
+      ) : (
       <View style={[styles.inputBar, { paddingBottom: Math.max(insets.bottom, 10) }]}>
         <TextInput
           value={text}
-          onChangeText={setText}
+          onChangeText={(v) => { setText(v); sendTyping(v) }}
           placeholder={tr('Написать сообщение…')}
           placeholderTextColor={colors.muted}
           multiline
@@ -209,6 +308,7 @@ export default function ChatScreen() {
           <Icon name="send" size={19} color={text.trim() ? '#fff' : colors.muted} />
         </Pressable>
       </View>
+      )}
     </KeyboardAvoidingView>
   )
 }
@@ -219,6 +319,27 @@ const styles = StyleSheet.create({
   backCircle: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', marginRight: 6 },
   back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   headBody: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  callBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center', marginRight: 4 },
+  callToast: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 12, marginTop: 8, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 14, backgroundColor: colors.primarySoft },
+  callToastText: { flex: 1, fontSize: 13.5, lineHeight: 18, fontFamily: font[700], color: colors.primaryDeep },
+  callToastBtns: { flexDirection: 'row', gap: 6 },
+  callYes: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 10, backgroundColor: colors.primary },
+  callYesText: { color: '#fff', fontSize: 13.5, fontFamily: font[800] },
+  callNo: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 10, backgroundColor: colors.surface },
+  callNoText: { color: colors.ink, fontSize: 13.5, fontFamily: font[700] },
+  reserved: { marginHorizontal: 12, marginTop: 8, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 12, backgroundColor: '#FBF3E3' },
+  reservedText: { fontSize: 13, lineHeight: 18, fontFamily: font[700], color: '#8A6A1F' },
+  typing: { fontSize: 12.5, fontFamily: font[600], color: colors.muted, paddingHorizontal: 16, paddingBottom: 4 },
+  offerPill: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 10, marginLeft: 12, marginBottom: 6, paddingLeft: 12, paddingRight: 10, paddingVertical: 7, borderRadius: 12, backgroundColor: colors.primarySoft },
+  offerPillBtn: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  offerPillText: { fontSize: 13.5, fontFamily: font[700], color: colors.primaryDeep },
+  // лента быстрых ответов — по своей высоте: не растягивается на свободное место и не сжимается
+  quickRow: { flexGrow: 0, flexShrink: 0 },
+  quick: { gap: 6, paddingHorizontal: 12, paddingBottom: 8, alignItems: 'center' },
+  quickBtn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 14, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface },
+  quickText: { fontSize: 13.5, fontFamily: font[600], color: colors.ink },
+  blockedNote: { fontSize: 13.5, lineHeight: 19, fontFamily: font[600], color: colors.muted, textAlign: 'center', paddingHorizontal: 24, paddingTop: 12, backgroundColor: colors.surface },
+  stripState: { color: colors.muted, fontFamily: font[700] },
   strip: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: colors.surface, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
   stripTitle: { fontSize: 14, fontFamily: font[700], color: colors.ink },
   stripPrice: { fontSize: 13.5, fontFamily: font[800], color: colors.primaryDeep, marginTop: 1 },
