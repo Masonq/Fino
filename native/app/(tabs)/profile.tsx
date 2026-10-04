@@ -1,16 +1,19 @@
+import { Image } from 'expo-image'
 import * as Linking from 'expo-linking'
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { ApiError, balance as fetchBalance, deleteMe, type MyListing, startVerification, verificationStatus, myListings, type Seller, sellerProfile, waitingReviews } from '../../src/api'
+import { ApiError, balance as fetchBalance, deleteMe, type MyListing, startVerification, verificationStatus, myListings, type Seller, sellerProfile, waitingReviews, type FeedItem, forYouList } from '../../src/api'
 import { useAuth } from '../../src/auth'
 import { useChats } from '../../src/chats'
 import Icon from '../../src/components/Icon'
 import Segmented from '../../src/components/Segmented'
 import { SITE } from '../../src/config'
 import { LANGS, plural, tr, useLang } from '../../src/i18n'
+import { mediaUrl } from '../../src/config'
+import { formatPrice } from '../../src/format'
 import { prefs } from '../../src/prefs'
 import { readCache, writeCache } from '../../src/cache'
 import { onRetry } from '../../src/net'
@@ -30,6 +33,7 @@ export default function Profile() {
   const [items, setItems] = useState<MyListing[] | null>(null)
   const [bal, setBal] = useState<{ balance?: number; money?: number; bonus?: number; payments_enabled?: boolean } | null>(null)
   const [pub, setPub] = useState<Seller | null>(null)
+  const [forYou, setForYou] = useState<FeedItem[]>([])
   const [phoneHidden, setPhoneHidden] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [waiting, setWaiting] = useState(0)
@@ -46,6 +50,7 @@ export default function Profile() {
     if (l.status === 'fulfilled') setItems(l.value.items)
     if (b.status === 'fulfilled') setBal(b.value as typeof bal)
     if (s.status === 'fulfilled') setPub(s.value)
+    forYouList(token).then((r) => setForYou((r.items ?? r as unknown as FeedItem[]).slice(0, 12))).catch(() => {})
     if (l.status === 'fulfilled' && b.status === 'fulfilled' && s.status === 'fulfilled') writeCache('profile', { items: l.value.items, bal: b.value, pub: s.value })
     waitingReviews(token).then((r) => setWaiting(r.items.length)).catch(() => {})
     verificationStatus(token).then(setVerify).catch(() => {})
@@ -224,15 +229,30 @@ export default function Profile() {
           {row('volunteer', 'Волонтёрство', () => router.push('/volunteer'), undefined, true)}
         </View>
 
-        <View style={styles.menu}>
-          {row('list', 'Правила', () => router.push('/legal/rules'))}
-          {row('list', 'Условия использования', () => router.push('/legal/terms'))}
-          {row('shield', 'Политика конфиденциальности', () => router.push('/legal/privacy'), undefined, true)}
-        </View>
+        {/* «Может быть интересно» — как на сайте: лента карточек (фото 132, цена, название) */}
+        {forYou.length > 0 && (
+          <View style={styles.forYou}>
+            <Text style={styles.forYouTitle}>{tr('Может быть интересно')}</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingRight: 12 }}>
+              {forYou.map((l) => {
+                const ph = mediaUrl(l.cover_photo)
+                return (
+                  <Pressable key={l.id} style={styles.forYouCard} onPress={() => router.push(`/listing/${l.id}`)}>
+                    <View style={styles.forYouPhoto}>{ph ? <Image source={{ uri: ph }} style={styles.forYouImg} contentFit="cover" /> : null}</View>
+                    {(l.is_free || l.price != null)
+                      ? <><Text style={styles.forYouPrice} numberOfLines={1}>{formatPrice(l.price, l.currency, l.is_free)}</Text><Text style={styles.forYouName} numberOfLines={2}>{l.title}</Text></>
+                      : <Text style={[styles.forYouPrice, { fontSize: 13.5 }]} numberOfLines={2}>{l.title}</Text>}
+                  </Pressable>
+                )
+              })}
+            </ScrollView>
+          </View>
+        )}
 
+        <Text style={styles.sectionTitle}>{tr('Настройки')}</Text>
         <View style={styles.menu}>
-          {row('lock', 'Заблокированные', () => router.push('/blocked'))}
           {langRow}
+          {row('lock', 'Заблокированные', () => router.push('/blocked'), undefined, true)}
         </View>
 
         <View style={styles.menu}>
@@ -258,12 +278,40 @@ export default function Profile() {
         )}>
           <Text style={styles.deleteText}>{tr('Удалить аккаунт')}</Text>
         </Pressable>
+
+        {/* Подвал — как на сайте: то, что открывают раз в жизни */}
+        <View style={styles.footer}>
+          <View style={styles.footerLinks}>
+            <Pressable onPress={() => Linking.openURL('https://t.me/Baraholka_Plonk')}><Text style={styles.footerLink}>{tr('Чат в Telegram')}</Text></Pressable>
+            <Pressable onPress={() => Linking.openURL('https://t.me/Baraholka_plonk_bot')}><Text style={styles.footerLink}>{tr('Бот')}</Text></Pressable>
+          </View>
+          <View style={styles.footerLinks}>
+            <Pressable onPress={() => router.push('/legal/rules')}><Text style={styles.footerLink}>{tr('Правила')}</Text></Pressable>
+            <Pressable onPress={() => router.push('/legal/terms')}><Text style={styles.footerLink}>{tr('Условия')}</Text></Pressable>
+            <Pressable onPress={() => router.push('/legal/privacy')}><Text style={styles.footerLink}>{tr('Конфиденциальность')}</Text></Pressable>
+          </View>
+          <Text style={styles.footerBrand}>plonk.rs</Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
+  // как .for-you-* / .profile-section-title / .profile-footer сайта
+  // отступы — как у соседних блоков профиля
+  forYou: { gap: 10, marginLeft: 12, marginTop: 6 },
+  forYouTitle: { fontSize: 16, fontFamily: font[800], letterSpacing: -0.2, color: colors.ink },
+  forYouCard: { width: 132 },
+  forYouPhoto: { width: 132, height: 132, borderRadius: 14, overflow: 'hidden', backgroundColor: colors.sunken },
+  forYouImg: { width: 132, height: 132 },
+  forYouPrice: { marginTop: 7, fontSize: 14.5, lineHeight: 18, fontFamily: font[800], color: colors.ink },
+  forYouName: { marginTop: 2, fontSize: 12.5, lineHeight: 16, fontFamily: font[600], color: colors.muted },
+  sectionTitle: { fontSize: 12, fontFamily: font[700], letterSpacing: 0.5, textTransform: 'uppercase', color: colors.muted, paddingHorizontal: 16, marginTop: 14, marginBottom: 2 },
+  footer: { alignItems: 'center', paddingTop: 12, paddingBottom: 6, gap: 10 },
+  footerLinks: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', columnGap: 18, rowGap: 6 },
+  footerLink: { fontSize: 12.5, fontFamily: font[600], color: colors.muted },
+  footerBrand: { fontSize: 12, fontFamily: font[800], letterSpacing: 0.3, color: '#C3C8C4' },
   page: { flex: 1, backgroundColor: colors.bg },
   center: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, gap: 10 },
   circle: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },

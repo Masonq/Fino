@@ -276,9 +276,10 @@ export const freshListings = (city?: string | null) =>
   get<{ items: (FeedItem & { fresh?: boolean })[] }>(`/listings/fresh?lang=${getLang()}${city ? `&city=${encodeURIComponent(city)}` : ''}`)
 
 export type Seller = {
+  active_seller?: boolean; reply_speed?: { label: string } | null
   id: string; display_name?: string | null; company_name?: string | null; is_company?: boolean; avatar_url?: string | null
   rating_avg?: number | null; rating_count?: number; document_verified?: boolean; created_at?: string | null
-  active_listings?: number; reply_speed?: string | null; company_description?: string | null; is_subscribed?: boolean
+  active_listings?: number; company_description?: string | null; is_subscribed?: boolean
 }
 export const sellerProfile = (userId: string) => get<Seller>(`/users/${encodeURIComponent(userId)}/public?lang=${getLang()}`)
 
@@ -434,3 +435,18 @@ export const chatWsUrl = (token: string, id: string) => `${API.replace(/^http/, 
 export const renewListing = (token: string, id: string) => authed<unknown>(`/listings/${encodeURIComponent(id)}/renew`, token, 'POST')
 export const readAllNotifications = (token: string) => authed<unknown>('/notifications/read-all', token, 'POST')
 export const clearAllNotifications = (token: string) => authed<unknown>('/notifications', token, 'DELETE')
+
+// ---------- «Мои данные» — как EditProfile сайта ----------
+export type MyProfile = {
+  id: string; display_name?: string | null; email?: string | null; email_verified?: boolean; phone?: string | null; avatar_url?: string | null
+  company_name?: string | null; company_description?: string | null; telegram_linked?: boolean; must_rename?: boolean; role?: string; default_language?: string | null
+}
+export const myProfile = (token: string) => authed<MyProfile>('/users/me', token)
+export const editProfile = (token: string, patch: Partial<MyProfile>) => authed<MyProfile>('/users/me', token, 'PATCH', patch)
+export const requestEmailChange = (token: string, email: string) => authed<unknown>('/auth/change-email/request', token, 'POST', { new_email: email })
+export const verifyEmailChange = (token: string, email: string, code: string) => authed<MyProfile>('/auth/change-email/verify', token, 'POST', { new_email: email, code })
+export const linkTelegramStart = (token: string) => authed<{ url?: string; status?: string }>('/users/me/link-telegram', token, 'POST')
+export const unlinkTelegram = (token: string) => authed<unknown>('/users/me/link-telegram', token, 'DELETE')
+
+/** «Может быть интересно» — подборка для человека, как на сайте (/listings/for-you). */
+export const forYouList = (token: string) => authed<{ items: FeedItem[] }>(`/listings/for-you?lang=${getLang()}`, token)

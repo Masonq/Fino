@@ -14,6 +14,9 @@ import { monthYear, parseTime } from '../../src/format'
 import { getLang, plural, tr } from '../../src/i18n'
 import { colors, font, space } from '../../src/theme'
 
+// «Обычно отвечает…» — тексты сайта (seller.reply_*)
+const REPLY: Record<string, string> = {"minutes": "Обычно отвечает за несколько минут", "hour": "Обычно отвечает в течение часа", "hours": "Обычно отвечает в течение дня", "day": "Обычно отвечает за сутки", "days": "Отвечает не сразу"}
+
 const MONTH_NOM: Record<'ru' | 'en' | 'sr', string[]> = {
   ru: ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'],
   en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
@@ -43,6 +46,7 @@ export default function SellerScreen() {
   const [reviews, setReviews] = useState<{ avg: number; count: number; items: Review[] } | null>(null)
   const [subscribed, setSubscribed] = useState(false)
   const [allReviews, setAllReviews] = useState(false)
+  const [allListings, setAllListings] = useState(false)
   const [reportOpen, setReportOpen] = useState(false)
   const [failed, setFailed] = useState(false)
 
@@ -86,6 +90,8 @@ export default function SellerScreen() {
             ? <Text style={styles.rating}><Text style={styles.ratingNum}>{(seller.rating_avg ?? 0).toFixed(1)}</Text>  {seller.rating_count} {reviewsWord(seller.rating_count ?? 0)}</Text>
             : <Text style={styles.meta}>{tr('Пока нет отзывов')}</Text>}
           {since && <Text style={styles.meta}>{tr('На PLONK с {date}', { date: monthYear(since) })}</Text>}
+          {seller.active_seller && <View style={styles.active}><Icon name="check" size={12} color={colors.primaryDeep} /><Text style={styles.activeText}>{tr('Активный продавец')}</Text></View>}
+          {!!seller.reply_speed?.label && REPLY[seller.reply_speed.label] && <View style={styles.reply}><Icon name="history" size={13} color={colors.muted} /><Text style={styles.meta}>{tr(REPLY[seller.reply_speed.label])}</Text></View>}
         </View>
         {user?.id !== seller.id && (
           <Pressable style={[styles.sub, subscribed && styles.subOn]} onPress={async () => {
@@ -129,13 +135,14 @@ export default function SellerScreen() {
     <View style={styles.page}>
       {top}
       <FlatList
-        data={items ?? []}
+        data={(items ?? []).slice(0, allListings ? undefined : 6)}
         keyExtractor={(i) => i.id}
         numColumns={2}
         renderItem={({ item }) => <ListingCard item={item} width={cardW} />}
         columnWrapperStyle={styles.row}
         contentContainerStyle={{ gap: space.gap, paddingBottom: 32 }}
         ListHeaderComponent={header}
+        ListFooterComponent={!allListings && (items?.length ?? 0) > 6 ? <Pressable style={styles.showAll} onPress={() => setAllListings(true)}><Text style={styles.showAllText}>{tr('Показать все объявления · {n}', { n: items?.length ?? 0 })}</Text></Pressable> : null}
         ListEmptyComponent={items === null ? <ActivityIndicator color={colors.primary} /> : <Text style={styles.empty}>{tr('Сейчас активных объявлений нет.')}</Text>}
       />
       <ReportSheet visible={reportOpen} userId={seller.id} token={token} onClose={() => setReportOpen(false)} />
@@ -160,6 +167,11 @@ const styles = StyleSheet.create({
   rating: { fontSize: 12.5, fontFamily: font[600], color: colors.muted },
   ratingNum: { fontSize: 13.5, fontFamily: font[800], color: colors.ink },
   meta: { fontSize: 12.5, fontFamily: font[600], color: colors.muted },
+  active: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 5, marginTop: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: colors.primarySoft },
+  activeText: { fontSize: 12.5, fontFamily: font[700], color: colors.primaryDeep },
+  reply: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
+  showAll: { marginHorizontal: space.page, marginTop: 4, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(20,30,25,0.09)', backgroundColor: colors.surface, alignItems: 'center' },
+  showAllText: { fontSize: 13.5, fontFamily: font[700], color: colors.ink },
   sub: { paddingVertical: 9, paddingHorizontal: 14, borderRadius: 11, backgroundColor: colors.primary },
   subOn: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
   subText: { color: '#fff', fontSize: 13, fontFamily: font[700] },
