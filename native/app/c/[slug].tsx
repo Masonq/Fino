@@ -17,6 +17,7 @@ import ListingCard from '../../src/components/ListingCard'
 import { SITE } from '../../src/config'
 import { select } from '../../src/haptics'
 import { getLang, plural, tr } from '../../src/i18n'
+import { cityList, cityName } from '../../src/format'
 import { colors, font, space } from '../../src/theme'
 
 /** Картинка подраздела; своей нет — картинка родительского раздела, как CategoryArt на сайте. */
@@ -132,6 +133,8 @@ function CategoryScreen() {
   const [picker, setPicker] = useState<'brand' | 'model' | null>(null)
   const [pickQ, setPickQ] = useState('')
   const [allSubs, setAllSubs] = useState(false)
+  const [svcCity, setSvcCity] = useState<string | null>(null) // «Услуги»: город в «Поиске исполнителя»
+  const [citySheet, setCitySheet] = useState(false)
   const [sheet, setSheet] = useState<null | 'rooms' | 'price'>(null) // Недвижимость: шторки «Комнаты» и «Цена»
   const [moreFilters, setMoreFilters] = useState(false) // Недвижимость: кнопка «фильтры» раскрывает остальные поля
   const [items, setItems] = useState<FeedItem[] | null>(null)
@@ -145,6 +148,9 @@ function CategoryScreen() {
   useEffect(() => { fetchCategories().then((list) => { setNode(findNode(list, String(slug))); setRoot(rootOf(list, String(slug))) }).catch(() => {}) }, [slug])
   // Особые фильтры — по верхнему разделу, как на сайте (в «Легковых» — те же, что в «Авто»)
   const landing = root ? LANDINGS[root.slug] : undefined
+  const isParts = node?.slug === 'car-parts' // «Запчасти»: плашки и «Поиск запчастей для авто», как у Авито
+  const isServices = node?.slug === 'services' && root?.slug === 'services' // «Услуги»: «Поиск исполнителя»
+  const isBusiness = node?.slug === 'business' && root?.slug === 'business' // «Бизнес»: круглые значки и «Сервисы»
   const isRE = root?.slug === 'real-estate' && node?.slug === root.slug // верх по образцу Авито — только на самой «Недвижимости»
   const setVal = (k: string, v: string) => setValues((prev) => ({ ...prev, [k]: v }))
 
@@ -153,7 +159,7 @@ function CategoryScreen() {
     // старые результаты не убираем, пока не пришли новые: иначе страница становилась короче экрана
     // и «Показать» было некуда прокрутить
     try {
-      const res = await fetchFeed({ tab: 'all', offset: 0, q: applied.q, category: String(slug), filters: { sort: applied.sort }, extra: landingParams(applied.deal, applied.values) })
+      const res = await fetchFeed({ tab: 'all', offset: 0, q: applied.q, city: (applied as { city?: string | null }).city ?? null, category: String(slug), filters: { sort: applied.sort }, extra: landingParams(applied.deal, applied.values) })
       if (id === req.current) { setItems(res.items); setTotal(res.total) }
     } catch { if (id === req.current) setItems([]) }
   }, [slug, applied])
@@ -163,7 +169,7 @@ function CategoryScreen() {
     if (!items || more || items.length >= total) return
     setMore(true)
     try {
-      const res = await fetchFeed({ tab: 'all', offset: items.length, q: applied.q, category: String(slug), filters: { sort: applied.sort }, extra: landingParams(applied.deal, applied.values) })
+      const res = await fetchFeed({ tab: 'all', offset: items.length, q: applied.q, city: (applied as { city?: string | null }).city ?? null, category: String(slug), filters: { sort: applied.sort }, extra: landingParams(applied.deal, applied.values) })
       setItems((prev) => [...(prev ?? []), ...res.items.filter((n) => !(prev ?? []).some((p) => p.id === n.id))])
     } finally { setMore(false) }
   }
@@ -270,16 +276,92 @@ function CategoryScreen() {
       </View>
     </View>
   )
+  const runSearch = (patch: { q?: string; values?: Record<string, string>; city?: string | null }) => {
+    setApplied({ q: patch.q ?? q, sort, deal: patch.values ? '' : deal, values: patch.values ?? values, city: patch.city ?? null } as typeof applied)
+    setSearched(true); pendingScroll.current = true
+  }
+  // «Запчасти»: плашки-ярлыки подразделов и поиск по марке и модели (по названию — в разделе «Запчасти»)
+  const partsText = [values.brand, values.model].filter((v) => v && v !== CAR_OTHER).join(' ')
+  const partsBlock = (
+    <View>
+      {subs.length > 0 && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickBar}>
+          {subs.map((c) => (
+            <Pressable key={c.id} style={styles.quickChip} onPress={() => { select(); router.push(`/c/${c.slug}`) }} accessibilityRole="button">
+              <Text style={styles.quickChipText}>{nameOf(c)}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      )}
+      <View style={styles.form}>
+        <Text style={styles.formTitle}>{tr('Поиск запчастей для авто')}</Text>
+        <Pressable style={styles.selectField} onPress={() => { setPickQ(''); setPicker('brand') }} accessibilityRole="button">
+          <Text style={[styles.selectValue, !values.brand && { color: colors.muted }]} numberOfLines={1}>{values.brand ? (values.brand === CAR_OTHER ? t3(LUI.other) : values.brand) : tr('Марка')}</Text>
+          <Icon name="down" size={14} color={colors.inkSoft} />
+        </Pressable>
+        {!!values.brand && values.brand !== CAR_OTHER && !!CAR_MODELS[values.brand] && (
+          <Pressable style={styles.selectField} onPress={() => { setPickQ(''); setPicker('model') }} accessibilityRole="button">
+            <Text style={[styles.selectValue, !values.model && { color: colors.muted }]} numberOfLines={1}>{values.model ? (values.model === CAR_OTHER ? t3(LUI.other) : values.model) : tr('Модель')}</Text>
+            <Icon name="down" size={14} color={colors.inkSoft} />
+          </Pressable>
+        )}
+        <Pressable style={styles.go} onPress={() => runSearch({ q: partsText, values: {} })} accessibilityRole="button"><Text style={styles.goText}>{tr('Показать объявления')}</Text></Pressable>
+      </View>
+    </View>
+  )
+  // «Услуги»: «Поиск исполнителя» — услуга (шторка подразделов) и город
+  const servicesCard = (
+    <View style={styles.form}>
+      <Text style={styles.formTitle}>{tr('Поиск исполнителя')}</Text>
+      <Pressable style={styles.selectField} onPress={() => setAllSubs(true)} accessibilityRole="button">
+        <Text style={[styles.selectValue, { color: colors.muted }]} numberOfLines={1}>{tr('Услуга или специалист')}</Text>
+        <Icon name="down" size={14} color={colors.inkSoft} />
+      </Pressable>
+      <Pressable style={styles.selectField} onPress={() => setCitySheet(true)} accessibilityRole="button">
+        <Text style={styles.selectValue} numberOfLines={1}>{svcCity ? cityName(svcCity) : tr('Вся Сербия')}</Text>
+        <Icon name="down" size={14} color={colors.inkSoft} />
+      </Pressable>
+      <Pressable style={styles.go} onPress={() => runSearch({ city: svcCity })} accessibilityRole="button"><Text style={styles.goText}>{tr('Показать объявления')}</Text></Pressable>
+    </View>
+  )
+  // «Бизнес»: подразделы круглыми значками по 4 в ряд и «Сервисы»
+  // по три в ряд: у Авито по четыре, но наши названия длиннее («Оборудование», «Аренда оборудования») — не помещались
+  const circleW = Math.floor((gridW - 16) / 3)
+  const businessBlock = (
+    <View>
+      <View style={styles.circleGrid}>
+        {subs.map((c) => (
+          <Pressable key={c.id} style={[styles.circleItem, { width: circleW }]} onPress={() => { select(); router.push(`/c/${c.slug}`) }} accessibilityRole="button">
+            <View style={styles.circle}><Image source={{ uri: `${SITE}/cat/${c.slug}.png` }} style={styles.circleImg} contentFit="contain" /></View>
+            <Text style={styles.circleText}>{nameOf(c)}</Text>
+          </Pressable>
+        ))}
+      </View>
+      <Text style={styles.servicesTitle}>{tr('Сервисы')}</Text>
+      <View style={styles.servicesRow}>
+        <Pressable style={styles.serviceCard} onPress={() => router.push('/profile-edit')} accessibilityRole="button">
+          <View style={styles.serviceIcon}><Icon name="shield" size={22} color={colors.primary} /></View>
+          <Text style={styles.serviceTitle}>{tr('Бизнес-аккаунт')}</Text>
+          <Text style={styles.serviceLink}>{tr('Оформить')} ›</Text>
+        </Pressable>
+        <Pressable style={styles.serviceCard} onPress={() => router.push('/post?cat=business')} accessibilityRole="button">
+          <View style={styles.serviceIcon}><Icon name="plus" size={22} color={colors.primary} /></View>
+          <Text style={styles.serviceTitle}>{tr('Разместить как компания')}</Text>
+          <Text style={styles.serviceLink}>{tr('Подать объявление')} ›</Text>
+        </Pressable>
+      </View>
+    </View>
+  )
   const head = (
     <View>
       {isRE ? reHead : (
         <View style={styles.lHead}>
-          <Text style={styles.lTitle}>{tr(node && root && node.slug !== root.slug ? nameOf(node) : (LANDING_TITLES[String(slug)] ?? nameOf(node)))}</Text>
+          <Text style={styles.lTitle}>{isParts ? tr('Запчасти и аксессуары для авто и мото') : tr(node && root && node.slug !== root.slug ? nameOf(node) : (LANDING_TITLES[String(slug)] ?? nameOf(node)))}</Text>
           <Text style={styles.lCount}>{items ? `${total} ${countWord(total)}` : ' '}</Text>
         </View>
       )}
-      {!isRE && tilesGrid}
-      {(!isRE || moreFilters) && fullForm}
+      {isParts ? partsBlock : isBusiness ? businessBlock : !isRE && tilesGrid}
+      {isServices ? servicesCard : !isParts && (!isRE || moreFilters) && fullForm}
       <Text style={styles.fresh}>{searched ? tr('Найдено: {n}', { n: items ? total : '…' }) : tr('Свежие объявления')}</Text>
       {items === null && <ActivityIndicator style={{ marginTop: 20 }} color={colors.primary} />}
     </View>
@@ -332,6 +414,20 @@ function CategoryScreen() {
             <TextInput value={values.price_max ?? ''} onChangeText={(v) => setVal('price_max', v.replace(/\D/g, '').slice(0, 9))} placeholder={t3(LUI.to)} placeholderTextColor={colors.muted} keyboardType="number-pad" style={[styles.priceInput, { backgroundColor: colors.sunken, borderWidth: 0 }]} />
           </View>
           <View style={styles.reRow}><Pressable style={[styles.go, styles.goWide]} onPress={() => { setSheet(null); apply() }}><Text style={styles.goText}>{tr('Применить')}</Text></Pressable></View>
+        </View>
+      </SheetFrame>
+      <SheetFrame visible={citySheet} onClose={() => setCitySheet(false)}>
+        <View style={styles.pickSheet}>
+          <View style={styles.pickHandle} />
+          <Text style={styles.pickTitle}>{tr('Город')}</Text>
+          <ScrollView style={{ maxHeight: 520 }}>
+            {[{ slug: '', label: tr('Вся Сербия') }, ...cityList()].map((c) => (
+              <Pressable key={c.slug || 'all'} style={[styles.pickRow, { flexDirection: 'row', alignItems: 'center', gap: 12 }]} onPress={() => { setSvcCity(c.slug || null); setCitySheet(false) }}>
+                <Text style={[styles.pickText, { flex: 1 }]}>{c.label}</Text>
+                {(svcCity ?? '') === c.slug && <Icon name="check" size={18} color={colors.primary} />}
+              </Pressable>
+            ))}
+          </ScrollView>
         </View>
       </SheetFrame>
       <SheetFrame visible={allSubs} onClose={() => setAllSubs(false)}>
@@ -421,6 +517,20 @@ const styles = StyleSheet.create({
   lTitle: { fontSize: 26, lineHeight: 31, fontFamily: font[800], color: colors.ink, letterSpacing: -0.5 },
   lCount: { fontSize: 14, fontFamily: font[600], color: colors.muted, marginTop: 4 },
   grid: { paddingHorizontal: space.page, paddingTop: 16, paddingBottom: 8, gap: 8 },
+  quickBar: { paddingHorizontal: space.page, paddingTop: 14, paddingBottom: 6, gap: 8 },
+  quickChip: { height: 40, paddingHorizontal: 16, borderRadius: 14, backgroundColor: colors.sunken, alignItems: 'center', justifyContent: 'center' },
+  quickChipText: { fontSize: 15, fontFamily: font[600], color: colors.ink },
+  circleGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: space.page, paddingTop: 16, rowGap: 14, columnGap: 8 },
+  circleItem: { alignItems: 'center', gap: 6 },
+  circle: { width: 84, height: 84, borderRadius: 24, backgroundColor: colors.sunken, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  circleImg: { width: 66, height: 66 },
+  circleText: { fontSize: 13, lineHeight: 16, fontFamily: font[600], color: colors.ink, textAlign: 'center' },
+  servicesTitle: { fontSize: 22, fontFamily: font[800], color: colors.ink, letterSpacing: -0.4, paddingHorizontal: space.page, marginTop: 22, marginBottom: 10 },
+  servicesRow: { flexDirection: 'row', gap: 8, paddingHorizontal: space.page },
+  serviceCard: { flex: 1, minHeight: 150, borderRadius: 22, backgroundColor: colors.sunken, padding: 16, gap: 6 },
+  serviceIcon: { width: 44, height: 44, borderRadius: 14, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
+  serviceTitle: { fontSize: 16, lineHeight: 20, fontFamily: font[800], color: colors.ink },
+  serviceLink: { fontSize: 14, fontFamily: font[500], color: colors.muted, marginTop: 'auto' },
   gridRow: { flexDirection: 'row', gap: 8 },
   // верх Недвижимости по образцу Авито
   reHead: { paddingHorizontal: space.page, paddingTop: 10, gap: 10 },

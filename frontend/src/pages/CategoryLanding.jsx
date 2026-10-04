@@ -1,6 +1,6 @@
 import SlidePill from '../components/SlidePill'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { cityLabel } from '../data/cities'
+import { CITIES, cityLabel } from '../data/cities'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
@@ -12,7 +12,7 @@ import TileArt from '../components/TileArt'
 import { CardSkeletons } from '../components/Skeletons'
 import { LANDINGS, landingFor } from '../data/landings'
 import { MODE_WORDS } from '../data/modeWords'
-import { CAR_MODELS, CAR_MODEL_OTHER } from '../data/carBrands'
+import { CAR_BRANDS, CAR_MODELS, CAR_MODEL_OTHER } from '../data/carBrands'
 import useStickyColumn from '../hooks/useStickyColumn'
 
 /**
@@ -284,9 +284,10 @@ function CategoryLandingPage() {
   // клика.
   const [activeCategorySlug, setActiveCategorySlug] = useState(() => cacheFresh ? cached.activeCategorySlug : slug)
 
-  const buildQuery = (categorySlug = activeCategorySlug) => {
+  const buildQuery = (categorySlug = activeCategorySlug, qOverride = null) => {
     const params = { category_slug: categorySlug, lang: i18n.language, limit: PAGE, offset: 0 }
-    if (text.trim()) params.q = text.trim()
+    const qText = (qOverride ?? text).trim()
+    if (qText) params.q = qText
 
     // Город — тот же, что выбран на главной.
     //
@@ -352,7 +353,7 @@ function CategoryLandingPage() {
   // сюда напрямую с sub.slug, а не сначала кладёт его в state — иначе
   // из-за асинхронности setState поиск на этом же клике ушёл бы со
   // старым слагом.
-  const search = (categorySlug = slug) => {
+  const search = (categorySlug = slug, qOverride = null) => {
     setActiveCategorySlug(categorySlug)
     setSearching(true)
     setSearched(true)
@@ -360,7 +361,7 @@ function CategoryLandingPage() {
     requestAnimationFrame(() => {
       resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     })
-    api.searchListings(buildQuery(categorySlug))
+    api.searchListings(buildQuery(categorySlug, qOverride))
       .then((res) => { setResults(res.items || []); setResultsTotal(res.total || 0) })
       .catch(() => { setResults([]); setResultsTotal(0) })
       .finally(() => setSearching(false))
@@ -524,6 +525,13 @@ function CategoryLandingPage() {
   const shownCount = liveCount ?? (hasCity ? 0 : category?.count ?? 0)
   // «Недвижимость» — верх по образцу Авито
   const isRE = slug === 'real-estate'
+  // особые блоки по образцу Авито (как в приложении)
+  const isParts = slug === 'car-parts'
+  const isServices = slug === 'services'
+  const isBusiness = slug === 'business'
+  const [partsBrand, setPartsBrand] = useState('')
+  const [partsModel, setPartsModel] = useState('')
+  const [svcCity, setSvcCity] = useState(() => { try { return localStorage.getItem('plonk_city') || '' } catch { return '' } })
   const roomsField = landing?.fields?.find((f) => f.key === 'rooms')
   const priceText = values.price_min && values.price_max ? `${values.price_min} – ${values.price_max} €`
     : values.price_min ? `${t('landing.from')} ${values.price_min} €` : values.price_max ? `${t('landing.to')} ${values.price_max} €` : ''
@@ -621,11 +629,61 @@ function CategoryLandingPage() {
         </div>
       ) : (
         <div className="jl-head lp-head">
-          <h1 className="jl-h1">{category?.parent_id ? name : t(`landing_q.${slug}`, { defaultValue: name })}</h1>
+          <h1 className="jl-h1">{isParts ? t('landing.parts_title') : category?.parent_id ? name : t(`landing_q.${slug}`, { defaultValue: name })}</h1>
           {shownCount > 0 && <div className="lp-count">{t('landing.offers', { count: shownCount })}</div>}
         </div>
       )}
-      {!isRE && category?.children?.length > 0 && (() => {
+      {isParts && (
+        <>
+          {category?.children?.length > 0 && (
+            <div className="lp-quick">
+              {category.children.map((sub) => (
+                <button key={sub.id} type="button" className="lp-quick-chip" onClick={() => navigate(sub.children?.length > 0 ? `/c/${sub.slug}` : `/search?category=${sub.slug}`)}>{sub.name?.[i18n.language] || sub.name?.ru}</button>
+              ))}
+            </div>
+          )}
+          <div className="lp-filters">
+            <div className="lp-filters-title">{t('landing.parts_search')}</div>
+            <select className="landing-select" value={partsBrand} onChange={(e) => { setPartsBrand(e.target.value); setPartsModel('') }}>
+              <option value="">{t('landing.brand')}</option>
+              {CAR_BRANDS.map((b) => <option key={b} value={b}>{b}</option>)}
+            </select>
+            {partsBrand && CAR_MODELS[partsBrand] && (
+              <select className="landing-select" value={partsModel} onChange={(e) => setPartsModel(e.target.value)}>
+                <option value="">{t('landing.model')}</option>
+                {CAR_MODELS[partsBrand].map((m) => <option key={m} value={m}>{m}</option>)}
+              </select>
+            )}
+            <button type="button" className="landing-go" onClick={() => search(slug, [partsBrand, partsModel].filter(Boolean).join(' '))}>{t('landing.show')}</button>
+          </div>
+        </>
+      )}
+      {isBusiness && category?.children?.length > 0 && (
+        <>
+          <div className="lp-circles">
+            {category.children.map((sub) => (
+              <button key={sub.id} type="button" className="lp-circle-item" onClick={() => navigate(sub.children?.length > 0 ? `/c/${sub.slug}` : `/search?category=${sub.slug}`)}>
+                <span className="lp-circle"><img src={`/cat/${sub.slug}.png`} alt="" loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none' }} /></span>
+                <span className="lp-circle-text">{sub.name?.[i18n.language] || sub.name?.ru}</span>
+              </button>
+            ))}
+          </div>
+          <h2 className="lp-services-title">{t('landing.services')}</h2>
+          <div className="lp-services">
+            <button type="button" className="lp-service" onClick={() => navigate('/profile/edit')}>
+              <span className="lp-service-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3 5 6v6c0 4.5 3 7.5 7 9 4-1.5 7-4.5 7-9V6l-7-3Z" /><path d="m9 12 2 2 4-4" /></svg></span>
+              <span className="lp-service-title">{t('landing.biz_account')}</span>
+              <span className="lp-service-link">{t('landing.biz_account_go')} ›</span>
+            </button>
+            <button type="button" className="lp-service" onClick={() => navigate('/post?category=business')}>
+              <span className="lp-service-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg></span>
+              <span className="lp-service-title">{t('landing.biz_post')}</span>
+              <span className="lp-service-link">{t('landing.biz_post_go')} ›</span>
+            </button>
+          </div>
+        </>
+      )}
+      {!isRE && !isParts && !isBusiness && category?.children?.length > 0 && (() => {
         const subs = category.children
         const labelOf = (x) => x.name?.[i18n.language] || x.name?.ru
         const smallW = Math.floor((gridW - 16) / 3), wideW = Math.floor((gridW - 8) / 2)
@@ -668,7 +726,18 @@ function CategoryLandingPage() {
 
       {/* Первый вопрос делит раздел надвое: без ответа на него
           остальное бессмысленно. */}
-      {(!isRE || moreFilters) && (
+      {isServices && (
+        <div className="lp-filters">
+          <div className="lp-filters-title">{t('landing.svc_search')}</div>
+          <button type="button" className="landing-select lp-select-btn" onClick={() => setShowAllSubs(true)}>{t('landing.svc_what')}</button>
+          <select className="landing-select" value={svcCity} onChange={(e) => { const v = e.target.value; setSvcCity(v); try { if (v) localStorage.setItem('plonk_city', v); else localStorage.removeItem('plonk_city') } catch { /* приватный режим */ } }}>
+            <option value="">{t('landing.all_serbia')}</option>
+            {CITIES.map((c) => <option key={c.slug} value={c.slug}>{cityLabel(c.slug, i18n.language)}</option>)}
+          </select>
+          <button type="button" className="landing-go" onClick={() => search()}>{t('landing.show')}</button>
+        </div>
+      )}
+      {!isServices && !isParts && (!isRE || moreFilters) && (
       <div className="lp-filters">
         <div className="lp-filters-title">{t(`landing_card.${rootSlug || slug}`, { defaultValue: t('landing.refine') })}</div>
       {landing?.deal && !isRE && (

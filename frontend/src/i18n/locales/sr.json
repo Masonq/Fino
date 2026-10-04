@@ -924,7 +924,17 @@
     "all_filters": "Svi filteri",
     "all_categories": "Sve kategorije",
     "clear": "Obriši",
-    "apply": "Primeni"
+    "apply": "Primeni",
+    "parts_title": "Delovi i oprema za automobile i motocikle",
+    "parts_search": "Pretraga delova za auto",
+    "svc_search": "Pronađite izvođača",
+    "svc_what": "Usluga ili stručnjak",
+    "all_serbia": "Cela Srbija",
+    "services": "Servisi",
+    "biz_account": "Poslovni nalog",
+    "biz_account_go": "Podesite",
+    "biz_post": "Objavite kao firma",
+    "biz_post_go": "Postavite oglas"
   },
   "fields": {
     "real-estate": {

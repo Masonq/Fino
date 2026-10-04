@@ -879,7 +879,7 @@
     "offers": "{{count}} listings",
     "offers_one": "{{count}} listing",
     "offers_other": "{{count}} listings",
-    "brand": "Brand",
+    "brand": "Make",
     "brand_placeholder": "Any brand",
     "model_placeholder": "Any model",
     "model_other": "Other model",
@@ -905,7 +905,17 @@
     "all_filters": "All filters",
     "all_categories": "All categories",
     "clear": "Clear",
-    "apply": "Apply"
+    "apply": "Apply",
+    "parts_title": "Parts and accessories for cars and motorbikes",
+    "parts_search": "Car parts search",
+    "svc_search": "Find a specialist",
+    "svc_what": "Service or specialist",
+    "all_serbia": "All of Serbia",
+    "services": "Services",
+    "biz_account": "Business account",
+    "biz_account_go": "Set up",
+    "biz_post": "Post as a company",
+    "biz_post_go": "Post a listing"
   },
   "fields": {
     "real-estate": {
