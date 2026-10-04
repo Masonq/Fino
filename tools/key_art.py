@@ -55,7 +55,11 @@ def key_out(path_in, path_out, size=512, glass=False, keep_inner=False):
         out[..., 0] = np.where(low, out[..., 1] + (out[..., 0] - out[..., 1]) * 0.35, out[..., 0])
     # тень и отсвет на фоне: прозрачность — по тому, насколько потемнел фон, цвет — чёрный.
     # Иначе светлый отсвет фона (под сиденьем кресла) оставался белёсым пятном.
-    tinted = (dom > lo) & ~inner
+    # тёмная тень на фоне (тёмно-пурпурная) имеет малый перевес по абсолюту, но тот же оттенок:
+    # доля перевеса от яркости высокая. Её тоже считаем тенью, иначе выходит чёрная плашка с резким краем
+    hue_bg = dom / (rgb.max(axis=2) + 1) > 0.55
+    tinted = ((dom > lo) & ~inner) | hue_bg
+    a = np.where(hue_bg, np.minimum(a, 0.5), a)
     if kind == 'green':
         dark = 1 - np.clip(g / max(key[1], 1), 0, 1)
     else:
@@ -67,6 +71,9 @@ def key_out(path_in, path_out, size=512, glass=False, keep_inner=False):
     near = np.clip(1 - (dist - 4) / 60, 0, 1)
     a[sh] = (np.clip((dark[sh] - 0.1) / 0.9, 0, 1) * 0.5 * near[sh])
     a[sh & (a < 0.05)] = 0
+    # край тени мягкий: размываем прозрачность только в тени
+    soft = ndimage.gaussian_filter(np.where(sh, a, 0), 4)
+    a[sh] = np.minimum(a[sh], soft[sh] * 1.15)
     out[sh] = 0
     # кромка (7 точек у прозрачного, в исходнике 2048) берёт цвет предмета глубже 9 точек: так уходит розовая/зелёная
     # обводка по шерсти и мягким краям, которую despill до конца не снимает
