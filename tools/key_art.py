@@ -59,6 +59,22 @@ def key_out(path_in, path_out, size=512, glass=False):
     a[sh] = (np.clip((dark[sh] - 0.1) / 0.9, 0, 1) * 0.8 * near[sh])
     a[sh & (a < 0.05)] = 0
     out[sh] = 0
+    # кромка (7 точек у прозрачного, в исходнике 2048) берёт цвет предмета глубже 9 точек: так уходит розовая/зелёная
+    # обводка по шерсти и мягким краям, которую despill до конца не снимает
+    obj_px = a > 0.5
+    edge_d = ndimage.distance_transform_edt(obj_px)
+    deep = edge_d > 9
+    if deep.any():
+        _, (iy, ix) = ndimage.distance_transform_edt(~deep, return_indices=True)
+        band = obj_px & (edge_d <= 7) & ~sh
+        out[band] = out[iy[band], ix[band]]
+    # отсвет пурпурного фона на тёплых краях (шерсть, дерево): синий выше зелёного при красном выше синего —
+    # убираем лишний синий в 30 точках от края; синие и голубые предметы (R < B) не трогаем
+    if kind == 'magenta':
+        rim = obj_px & (edge_d <= 30)
+        R, G, B = out[..., 0], out[..., 1], out[..., 2]
+        warm = rim & (R > B) & (B > G)
+        B[warm] = G[warm] + (B[warm] - G[warm]) * 0.15
     if glass and inner.any():
         lum = out[inner].mean(axis=1, keepdims=True)
         out[inner] = np.clip(lum * 0.35 + np.array([38, 41, 47]), 0, 255)
