@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
-import CategoryArt from '../components/CategoryArt'
+import TileArt, { useTileMeasure } from '../components/TileArt'
+import { artLayoutMeasured, catSrc } from '../utils/artFit'
 import { hasLanding } from '../data/landings'
 
 export default function Categories() {
@@ -10,6 +11,23 @@ export default function Categories() {
   const navigate = useNavigate()
   const [categories, setCategories] = useState([])
   const [loaded, setLoaded] = useState(false)
+  const measure = useTileMeasure()
+  // Плитки как у Авито и как внутри разделов: надпись сверху слева, картинка в правом нижнем углу, чуть за краем.
+  // Ширина колонки — по настоящей ширине сетки (два столбца на телефоне), высота 96.
+  const gridRef = useRef(null)
+  const [colW, setColW] = useState(() => Math.floor((Math.min(window.innerWidth, 620) - 24 - 8) / 2))
+  useLayoutEffect(() => {
+    const el = gridRef.current
+    if (!el) return undefined
+    const calc = () => {
+      const first = el.querySelector('.cats-tile')
+      if (first?.offsetWidth) setColW(first.offsetWidth)
+    }
+    calc()
+    const ro = new ResizeObserver(calc)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [loaded])
 
   useEffect(() => {
     api.getCategories()
@@ -27,7 +45,7 @@ export default function Categories() {
         <div className="cats-title">{t('common.all_categories')}</div>
       </div>
 
-      <div className="cats-grid">
+      <div className="cats-grid" ref={gridRef}>
         {!loaded && Array.from({ length: 8 }).map((_, i) => (
           <div className="cats-item skeleton" key={`sk${i}`} />
         ))}
@@ -35,19 +53,21 @@ export default function Categories() {
             чем ни одного — они обещают выбор и не дают его. Заходить
             туда не запрещаем: вдруг человек ищет именно это, да и
             опубликовать первым он всё равно может. */}
-        {loaded && categories.map((cat) => (
-          <Link
-            key={cat.id}
-            to={hasLanding(cat.slug) ? `/c/${cat.slug}` : `/search?category=${cat.slug}`}
-            className={`cats-item${cat.ready === false ? ' soon' : ''}`}
-          >
-            <span className="cats-label">{cat.name?.[i18n.language] || cat.name?.ru}</span>
-            {cat.ready === false && (
-              <span className="cats-soon">{t('categories.soon')}</span>
-            )}
-            <span className="cats-img"><CategoryArt slug={cat.slug} /></span>
-          </Link>
-        ))}
+        {loaded && categories.map((cat) => {
+          const label = cat.name?.[i18n.language] || cat.name?.ru || ''
+          const { fit } = artLayoutMeasured(label, { kind: '', tile: colW, text: colW - 26, art: 'big', h: 96 }, cat.slug, measure, colW - 26)
+          return (
+            <Link
+              key={cat.id}
+              to={hasLanding(cat.slug) ? `/c/${cat.slug}` : `/search?category=${cat.slug}`}
+              className={`jl-tile cats-tile${cat.ready === false ? ' soon' : ''}`}
+            >
+              <span className="jl-tile-text" style={{ maxWidth: fit.text }}>{label}</span>
+              {cat.ready === false && <span className="cats-soon">{t('categories.soon')}</span>}
+              <TileArt src={catSrc(cat.slug)} name={label} fit={fit} />
+            </Link>
+          )
+        })}
       </div>
     </div>
   )

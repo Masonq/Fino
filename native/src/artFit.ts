@@ -18,6 +18,8 @@ export const TILE = {
   // картинка целиком внутри плитки, прижата к правому нижнему углу (не уходит за край)
   art: 70, artH: 52, artRight: 7, artBottom: 6, small: 56, smallH: 44, smallRight: 6, smallBottom: 6, lineH: 17, textTop: 13,
 }
+/** Плитки разделов на главной — меньше, чем внутри разделов (картинка при этом заходит за край, как у Авито). */
+export const HOME_TILE: typeof TILE = { ...TILE, w: 112, h: 80, wide: 156, xwide: 200, text: { narrow: 80, wide: 114, xwide: 164, long: 110 } }
 
 const CHAR = 9.9
 const SPACE = 4
@@ -60,21 +62,21 @@ export const ART_POSITION = { right: 0, bottom: 0 }
 const WIDE_CHAR = 9.9 // самый широкий из наших шрифтов для кириллицы при 13,5 жирным (приложение)
 const wordWidth = (w: string) => (w.length + 0.4 * (w.match(/[мжшщюфыМЖШЩЮФЫmwMW]/g) || []).length) * WIDE_CHAR
 export type TileKind = '' | 'wide' | 'xwide'
-export type TileFit = { kind: TileKind; tile: number; text: number; art: 'big' | 'small' }
-export function tileFor(name: string): TileFit {
+export type TileFit = { kind: TileKind; tile: number; text: number; art: 'big' | 'small'; h?: number }
+export function tileFor(name: string, T: typeof TILE = TILE): TileFit {
   const words = String(name || '').split(/\s+/).filter(Boolean)
   const longest = Math.max(...words.map(wordWidth)) + 2
   const oneLine = words.reduce((s, w, i) => s + wordWidth(w) + (i ? 4 : 0), 0) + 2
-  const kinds: [TileKind, number, number][] = [['', TILE.w, TILE.text.narrow], ['wide', TILE.wide, TILE.text.wide], ['xwide', TILE.xwide, TILE.text.xwide]]
+  const kinds: [TileKind, number, number][] = [['', T.w, T.text.narrow], ['wide', T.wide, T.text.wide], ['xwide', T.xwide, T.text.xwide]]
   for (const [kind, tile, text] of kinds) {
-    if (oneLine <= text) return { kind, tile, text, art: 'big' }
+    if (oneLine <= text) return { kind, tile, text, art: 'big', h: T.h }
     if (!kind) continue // узкая плитка — только для названий в одну строку
-    const colBig = tile - TILE.artRight - TILE.art - 4 - TILE.textTop
-    if (longest <= colBig) return { kind, tile, text: colBig, art: 'big' }
-    const colSmall = tile - TILE.smallRight - TILE.small - 4 - TILE.textTop
-    if (longest <= colSmall) return { kind, tile, text: colSmall, art: 'small' }
+    const colBig = tile - T.artRight - T.art - 4 - T.textTop
+    if (longest <= colBig) return { kind, tile, text: colBig, art: 'big', h: T.h }
+    const colSmall = tile - T.smallRight - T.small - 4 - T.textTop
+    if (longest <= colSmall) return { kind, tile, text: colSmall, art: 'small', h: T.h }
   }
-  return { kind: 'xwide', tile: TILE.xwide, text: TILE.text.xwide, art: 'small' }
+  return { kind: 'xwide', tile: T.xwide, text: T.text.xwide, art: 'small', h: T.h }
 }
 
 /**
@@ -90,11 +92,11 @@ export function tileFor(name: string): TileFit {
 /** Адрес картинки раздела с меткой содержимого (как на сайте): картинку заменили — адрес другой, кэш не мешает. */
 export const catPath = (slug: string) => `/cat/${slug}.png${CAT_ART[slug] ? `?v=${CAT_ART[slug][2]}` : ''}`
 
-export const ART_TARGET = 48
+export const ART_TARGET = 52
 export const artSize = (w: number, h: number, fill: number) => Math.sqrt(w * h) * Math.pow(fill, 0.4)
 export type TextLine = { right: number; bottom: number }
 export function artBox(name: string, fit: TileFit, aspect: number, fill?: number, noTarget = false, lines: TextLine[] | null = null) {
-  return artBoxFromLines(fit.tile, aspect, fill, lines || estimateLines(name, fit), noTarget)
+  return artBoxFromLines(fit.tile, aspect, fill, lines || estimateLines(name, fit), noTarget, fit.h || TILE.h)
 }
 
 /**
@@ -120,24 +122,30 @@ export function estimateLines(name: string, fit: TileFit): TextLine[] {
  * картинка в правом нижнем углу поднимается до низа k-й строки, если строки ниже кончаются левее неё.
  * Перебираем все k и берём рамку, где картинка этой формы выходит крупнее.
  */
-export function artBoxFromLines(tileW: number, aspect: number, fill: number | undefined, lines: TextLine[], noTarget = false) {
-  const Wi = tileW - 4, Hi = TILE.h - 4
-  const R = 5, B = 5, TOP = 6, GAP = 6
+export const ART_BLEED = 0.08
+export function artBoxFromLines(tileW: number, aspect: number, fill: number | undefined, lines: TextLine[], noTarget = false, tileH = TILE.h) {
+  // Как у Авито: картинка прижата к правому нижнему углу вплотную и чуть уходит за край (ART_BLEED её ширины и
+  // высоты срезает скругление плитки) — так она крупнее и «живее», чем целиком в рамке с полями.
+  const Wi = tileW - 4, Hi = tileH - 4
+  const TOP = 6, GAP = 6
   const contain = (w: number, h: number): number[] => (w <= 0 || h <= 0 ? [0, 0] : w / h > aspect ? [h * aspect, h] : [w, w / aspect])
   let best: number[] = [0, 0]
   for (let k = 0; k <= lines.length; k += 1) {
     const top = k ? lines[k - 1].bottom + 3 : TOP // 3 точки воздуха под строкой
     const below = lines.slice(k)
     const left = below.length ? Math.max(...below.map((l) => l.right)) + GAP : 8
-    const o = contain(Wi - R - left, Hi - B - top)
+    const o = contain(Wi - left, Hi - top) // видимая часть картинки
     if (o[0] * o[1] > best[0] * best[1]) best = o
   }
   let [w, h] = best
-  let k = Math.min(1, (Wi * 0.85) / Math.max(w, 1), 72 / Math.max(h, 1)) // не крупнее 85% ширины плитки и 72 по высоте
-  if (fill && fill > 0 && !noTarget) k = Math.min(k, ART_TARGET / Math.max(artSize(w, h, fill), 1))
+  let k = Math.min(1, (Wi * 0.9) / Math.max(w, 1), (Hi - 6) / Math.max(h, 1))
+  // общий видимый размер — пропорционально высоте плитки (на главной плитки ниже)
+  if (fill && fill > 0 && !noTarget) k = Math.min(k, (ART_TARGET * tileH / TILE.h) / Math.max(artSize(w, h, fill), 1))
   w *= k; h *= k
-  return { position: 'absolute' as const, right: R, bottom: B, width: Math.round(w), height: Math.round(h) }
+  const W = w / (1 - ART_BLEED), H = h / (1 - ART_BLEED)
+  return { position: 'absolute' as const, right: -Math.round(W - w), bottom: -Math.round(H - h), width: Math.round(W), height: Math.round(H) }
 }
+
 
 /**
  * Плитка раздела целиком: ширина надписи и рамка картинки — вместе. Если надпись в колонку поуже (лишняя строка,

@@ -350,7 +350,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .cat-tile-2row-glyph svg{ width:60%; height:60%; margin:20%; display:block; opacity:.5; }
 .cat-tile-2row-glyph img{ width:100%; height:100%; object-fit:contain; display:block; }
 .cat-tile-2row-glyph.all-glyph svg{ width:58%; height:58%; margin:21%; opacity:1; color:var(--primary); }
-.cat-art{ width:100%; height:100%; object-fit:cover; display:block; }
+.cat-art{ width:100%; height:100%; object-fit:contain; object-position:center bottom; display:block; }
 
 
 
@@ -6880,3 +6880,19 @@ a.s-attrs{ display:block; }
   background-repeat: no-repeat; background-position: right 14px center;
 }
 .lp-filters .lp-select-btn { color: var(--muted); }
+
+/* Плитки разделов на главной — как у Авито (HOME_TILE): 112×80 / 156 / 200, картинка вплотную к правому нижнему
+   углу и чуть заходит за край (artBoxFromLines: right/bottom отрицательные). Ширина плитки — из разметки (--tile-w). */
+@media (max-width: 619px) {
+  .cat-tile-2row, .cat-tile-2row.wide, .cat-tile-2row.xwide { width: var(--tile-w, 112px); height: 80px; }
+  .cat-tile-2row.all { width: 112px; }
+  .cat-tile-2row-glyph, .cat-tile-2row.small-art .cat-tile-2row-glyph { right: var(--art-r, 5px); bottom: var(--art-b, 5px); }
+  .cat-skeleton { width: 112px; height: 80px; border-radius: 16px; }
+}
+
+/* «Все категории» — плитками как у Авито (Categories.jsx): ширина — колонка сетки, высота 96, картинка в углу за краем */
+.cats-grid { gap: 8px; }
+.cats-tile.jl-tile { width: auto; height: 96px; min-width: 0; }
+.cats-tile.soon { opacity: .55; }
+.cats-tile .cats-soon { position: absolute; left: 11px; bottom: 9px; z-index: 2; }
+.cats-item.skeleton { height: 96px; }

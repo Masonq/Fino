@@ -17,7 +17,10 @@ import FreshStories from '../components/FreshStories'
 import CategoryArt from '../components/CategoryArt'
 import Avatar from '../components/Avatar'
 import { hasLanding } from '../data/landings'
-import { artBoxFor, artLayoutMeasured, catSrc, tileFor } from '../utils/artFit'
+import { HOME_TILE, artBoxFor, artLayoutMeasured, catSrc, tileFor as tileForBase } from '../utils/artFit'
+
+// плитки главной — свои размеры (HOME_TILE): ниже и уже, чем внутри разделов
+const tileFor = (name) => tileForBase(name, HOME_TILE)
 import { useAspect, useTextLines, useTileMeasure } from '../components/TileArt'
 
 // Ширина плитки раздела — как у плиток внутри разделов: длинное слово — широкая, очень длинное — ещё шире
@@ -34,7 +37,7 @@ function HomeTileArt({ slug, name }) {
   const box = artBoxFor(name, fit, slug, measure, lines, aspect)
   // только сама картинка, без запасного контурного значка: нет файла — в плитке ничего (картинки делаются заново)
   return (
-    <div ref={ref} className="cat-tile-2row-glyph" style={{ '--art-w': `${box.width}px`, '--art-h': `${box.height}px` }}>
+    <div ref={ref} className="cat-tile-2row-glyph" style={{ '--art-w': `${box.width}px`, '--art-h': `${box.height}px`, '--art-r': `${box.right}px`, '--art-b': `${box.bottom}px` }}>
       <img className="cat-art" src={catSrc(slug)} alt="" loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none' }} />
     </div>
   )
@@ -727,7 +730,7 @@ export default function Home() {
             key={cat.id}
             to={hasLanding(cat.slug) ? `/c/${cat.slug}` : `/search?category=${cat.slug}`}
             className={`cat-tile-2row${tileSize(cat.name?.[i18n.language] || cat.name?.ru || '')}${artClass(cat.name?.[i18n.language] || cat.name?.ru || '')}${cat.ready === false ? ' soon' : ''}`}
-                style={{ '--tile-text': `${homeTileFit(cat.name?.[i18n.language] || cat.name?.ru || '', cat.slug, tileMeasureNow).text}px` }}
+                style={{ '--tile-text': `${homeTileFit(cat.name?.[i18n.language] || cat.name?.ru || '', cat.slug, tileMeasureNow).text}px`, '--tile-w': `${tileFor(cat.name?.[i18n.language] || cat.name?.ru || '').tile}px` }}
           >
             <div className="cat-tile-2row-label">{cat.name?.[i18n.language] || cat.name?.ru}</div>
             <HomeTileArt slug={cat.slug} name={cat.name?.[i18n.language] || cat.name?.ru || ''} />

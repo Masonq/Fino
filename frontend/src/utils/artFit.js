@@ -13,6 +13,8 @@ const wordW = (w) => (w.length + 0.4 * (w.match(/[мжшщюфыМЖШЩЮФЫmw
 
 /** Размеры плиток — те же, что в приложении (native/src/artFit.ts, TILE). */
 export const TILE = { w: 124, h: 88, wide: 172, xwide: 220, pad: 11, text: { narrow: 92, wide: 130, xwide: 184, long: 122 }, art: 70, artH: 52, artRight: 7, artBottom: 6, small: 56, smallH: 44, smallRight: 6, smallBottom: 6, lineH: 17, textTop: 13 }
+/** Плитки разделов на главной — меньше, чем внутри разделов (картинка при этом заходит за край, как у Авито). */
+export const HOME_TILE = { ...TILE, w: 112, h: 80, wide: 156, xwide: 200, text: { narrow: 80, wide: 114, xwide: 164, long: 110 } }
 
 export function bigArtFits(name, textMax, tileW, art = TILE.art, right = TILE.artRight) {
   const lines = []
@@ -42,20 +44,20 @@ export const needsWiderTile = (name, textMax, tileW) => !bigArtFits(name, textMa
  */
 const WIDE_CHAR = 9.9 // самый широкий из наших шрифтов для кириллицы при 13,5 жирным (приложение)
 const wordWidth = (w) => (w.length + 0.4 * (w.match(/[мжшщюфыМЖШЩЮФЫmwMW]/g) || []).length) * WIDE_CHAR
-export function tileFor(name) {
+export function tileFor(name, T = TILE) {
   const words = String(name || '').split(/\s+/).filter(Boolean)
   const longest = Math.max(...words.map(wordWidth)) + 2
   const oneLine = words.reduce((s, w, i) => s + wordWidth(w) + (i ? 4 : 0), 0) + 2
-  const kinds = [['', TILE.w, TILE.text.narrow], ['wide', TILE.wide, TILE.text.wide], ['xwide', TILE.xwide, TILE.text.xwide]]
+  const kinds = [['', T.w, T.text.narrow], ['wide', T.wide, T.text.wide], ['xwide', T.xwide, T.text.xwide]]
   for (const [kind, tile, text] of kinds) {
-    if (oneLine <= text) return { kind, tile, text, art: 'big' }
+    if (oneLine <= text) return { kind, tile, text, art: 'big', h: T.h }
     if (!kind) continue // узкая плитка — только для названий в одну строку
-    const colBig = tile - TILE.artRight - TILE.art - 4 - TILE.textTop
-    if (longest <= colBig) return { kind, tile, text: colBig, art: 'big' }
-    const colSmall = tile - TILE.smallRight - TILE.small - 4 - TILE.textTop
-    if (longest <= colSmall) return { kind, tile, text: colSmall, art: 'small' }
+    const colBig = tile - T.artRight - T.art - 4 - T.textTop
+    if (longest <= colBig) return { kind, tile, text: colBig, art: 'big', h: T.h }
+    const colSmall = tile - T.smallRight - T.small - 4 - T.textTop
+    if (longest <= colSmall) return { kind, tile, text: colSmall, art: 'small', h: T.h }
   }
-  return { kind: 'xwide', tile: TILE.xwide, text: TILE.text.xwide, art: 'small' }
+  return { kind: 'xwide', tile: T.xwide, text: T.text.xwide, art: 'small', h: T.h }
 }
 
 /**
@@ -71,10 +73,10 @@ export function tileFor(name) {
 /** Адрес картинки раздела с меткой содержимого: картинку заменили — адрес другой, старая из кэша не покажется. */
 export const catSrc = (slug) => `/cat/${slug}.png${CAT_ART[slug] ? `?v=${CAT_ART[slug][2]}` : ''}`
 
-export const ART_TARGET = 48
+export const ART_TARGET = 52
 export const artSize = (w, h, fill) => Math.sqrt(w * h) * Math.pow(fill, 0.4)
 export function artBox(name, fit, aspect, fill, noTarget = false, lines = null) {
-  return artBoxFromLines(fit.tile, aspect, fill, lines || estimateLines(name, fit), noTarget)
+  return artBoxFromLines(fit.tile, aspect, fill, lines || estimateLines(name, fit), noTarget, fit.h || TILE.h)
 }
 
 /**
@@ -100,24 +102,30 @@ export function estimateLines(name, fit) {
  * картинка в правом нижнем углу поднимается до низа k-й строки, если строки ниже кончаются левее неё.
  * Перебираем все k и берём рамку, где картинка этой формы выходит крупнее.
  */
-export function artBoxFromLines(tileW, aspect, fill, lines, noTarget = false) {
-  const Wi = tileW - 4, Hi = TILE.h - 4
-  const R = 5, B = 5, TOP = 6, GAP = 6
+export const ART_BLEED = 0.08
+export function artBoxFromLines(tileW, aspect, fill, lines, noTarget = false, tileH = TILE.h) {
+  // Как у Авито: картинка прижата к правому нижнему углу вплотную и чуть уходит за край (ART_BLEED её ширины и
+  // высоты срезает скругление плитки) — так она крупнее и «живее», чем целиком в рамке с полями.
+  const Wi = tileW - 4, Hi = tileH - 4
+  const TOP = 6, GAP = 6
   const contain = (w, h) => (w <= 0 || h <= 0 ? [0, 0] : w / h > aspect ? [h * aspect, h] : [w, w / aspect])
   let best = [0, 0]
   for (let k = 0; k <= lines.length; k += 1) {
     const top = k ? lines[k - 1].bottom + 3 : TOP // 3 точки воздуха под строкой
     const below = lines.slice(k)
     const left = below.length ? Math.max(...below.map((l) => l.right)) + GAP : 8
-    const o = contain(Wi - R - left, Hi - B - top)
+    const o = contain(Wi - left, Hi - top) // видимая часть картинки
     if (o[0] * o[1] > best[0] * best[1]) best = o
   }
   let [w, h] = best
-  let k = Math.min(1, (Wi * 0.85) / Math.max(w, 1), 72 / Math.max(h, 1)) // не крупнее 85% ширины плитки и 72 по высоте
-  if (fill > 0 && !noTarget) k = Math.min(k, ART_TARGET / Math.max(artSize(w, h, fill), 1))
+  let k = Math.min(1, (Wi * 0.9) / Math.max(w, 1), (Hi - 6) / Math.max(h, 1))
+  // общий видимый размер — пропорционально высоте плитки (на главной плитки ниже)
+  if (fill && fill > 0 && !noTarget) k = Math.min(k, (ART_TARGET * tileH / TILE.h) / Math.max(artSize(w, h, fill), 1))
   w *= k; h *= k
-  return { position: 'absolute', right: R, bottom: B, width: Math.round(w), height: Math.round(h) }
+  const W = w / (1 - ART_BLEED), H = h / (1 - ART_BLEED)
+  return { position: 'absolute', right: -Math.round(W - w), bottom: -Math.round(H - h), width: Math.round(W), height: Math.round(H) }
 }
+
 
 /**
  * Плитка раздела целиком: ширина надписи и рамка картинки — вместе. Если надпись в колонку поуже (лишняя строка,
@@ -175,7 +183,7 @@ export function artLayoutMeasured(name, fit, slug, measure, maxText = fit.text, 
   const [asp, fill] = known
   const words = String(name || '').split(/\s+/).filter(Boolean)
   const minText = Math.ceil(Math.max(...words.map((w) => measure(w)), 0)) + 4
-  const size = (ls, tile) => { const b = artBoxFromLines(tile, asp, fill, ls, true); return artSize(b.width, b.height, fill) }
+  const size = (ls, tile) => { const b = artBoxFromLines(tile, asp, fill, ls, true, fit.h || TILE.h); return artSize(b.width, b.height, fill) }
   let best = null
   for (let t = Math.max(maxText, fit.text); t >= minText; t -= 4) {
     const ls = measuredLines(name, t, measure)
@@ -186,14 +194,14 @@ export function artLayoutMeasured(name, fit, slug, measure, maxText = fit.text, 
     if (!best || sz > best.size * 1.03) best = { t, size: sz }
   }
   const f = best ? { ...fit, text: best.t } : fit
-  return { fit: f, box: artBoxFromLines(fit.tile, asp, fill, lines || measuredLines(name, f.text, measure), false) }
+  return { fit: f, box: artBoxFromLines(fit.tile, asp, fill, lines || measuredLines(name, f.text, measure), false, fit.h || TILE.h) }
 }
 
 /** Рамка картинки при уже выбранной колонке надписи: по настоящим строкам, а пока их нет — по точному замеру. */
 export function artBoxFor(name, fit, slug, measure, lines = null, aspect = 1.3) {
   const known = CAT_ART[slug]
   if (!known || !measure) return artLayout(name, fit, slug, known ? known[0] : aspect, lines).box
-  return artBoxFromLines(fit.tile, known[0], known[1], lines || measuredLines(name, fit.text, measure), false)
+  return artBoxFromLines(fit.tile, known[0], known[1], lines || measuredLines(name, fit.text, measure), false, fit.h || TILE.h)
 }
 
 /** Ширина строки надписи плиток тем же шрифтом, что на экране (13,5 жирным): холст браузера, с памятью. */

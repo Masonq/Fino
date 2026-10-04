@@ -11,14 +11,14 @@ import { type Category, fetchCategories } from '../api'
 import { SITE } from '../config'
 import { colors, font } from '../theme'
 import Skeleton from './Skeleton'
-import { TILE, artLayout, catPath, tileFor } from '../artFit'
+import { HOME_TILE, TILE, artLayout, catPath, tileFor } from '../artFit'
 import { TileLabelArt } from './TileArt'
 
-// как плитки внутри разделов (JobsLanding, c/[slug]): 142×100, широкие — 196 и 240
-const W = TILE.w
-const H = TILE.h
+// плитки главной — как на сайте (HOME_TILE): 112×80, широкие — 156 и 200; картинка в углу, чуть за краем
+const W = HOME_TILE.w
+const H = HOME_TILE.h
 // плитка и колонка надписи — вместе с картинкой (как на сайте): надпись может уйти в колонку поуже ради картинки
-const widthFor = (name: string, slug = '') => artLayout(name, tileFor(name), slug).fit
+const widthFor = (name: string, slug = '') => artLayout(name, tileFor(name, HOME_TILE), slug).fit
 
 const nameOf = (c: Category) => (typeof c.name === 'string' ? c.name : c.name?.[getLang()] || c.name?.ru || c.slug)
 
