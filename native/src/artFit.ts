@@ -127,11 +127,11 @@ export function artBoxFromLines(tileW: number, aspect: number, fill: number | un
   // Как у Авито: картинка прижата к правому нижнему углу вплотную и чуть уходит за край (ART_BLEED её ширины и
   // высоты срезает скругление плитки) — так она крупнее и «живее», чем целиком в рамке с полями.
   const Wi = tileW - 4, Hi = tileH - 4
-  const TOP = 6, GAP = 6
+  const TOP = 6, GAP = 4
   const contain = (w: number, h: number): number[] => (w <= 0 || h <= 0 ? [0, 0] : w / h > aspect ? [h * aspect, h] : [w, w / aspect])
   let best: number[] = [0, 0]
   for (let k = 0; k <= lines.length; k += 1) {
-    const top = k ? lines[k - 1].bottom + 3 : TOP // 3 точки воздуха под строкой
+    const top = k ? lines[k - 1].bottom - 3 : TOP // как у Авито: верх картинки может чуть зайти под низ строки (надпись поверх)
     const below = lines.slice(k)
     const left = below.length ? Math.max(...below.map((l) => l.right)) + GAP : 8
     const o = contain(Wi - left, Hi - top) // видимая часть картинки
@@ -139,8 +139,10 @@ export function artBoxFromLines(tileW: number, aspect: number, fill: number | un
   }
   let [w, h] = best
   let k = Math.min(1, (Wi * 0.9) / Math.max(w, 1), (Hi - 6) / Math.max(h, 1))
-  // общий видимый размер — пропорционально высоте плитки (на главной плитки ниже)
-  if (fill && fill > 0 && !noTarget) k = Math.min(k, (ART_TARGET * tileH / TILE.h) / Math.max(artSize(w, h, fill), 1))
+  // общий видимый размер — пропорционально высоте плитки (на главной плитки ниже); в широкой плитке (две в ряд,
+  // одна на всю строку) картинка чуть крупнее — иначе она теряется в пустом поле, как «Часы и украшения»
+  const wideBoost = Math.min(1.25, Math.max(1, Math.sqrt(tileW / 150)))
+  if (fill && fill > 0 && !noTarget) k = Math.min(k, (ART_TARGET * wideBoost * tileH / TILE.h) / Math.max(artSize(w, h, fill), 1))
   w *= k; h *= k
   const W = w / (1 - ART_BLEED), H = h / (1 - ART_BLEED)
   return { position: 'absolute' as const, right: -Math.round(W - w), bottom: -Math.round(H - h), width: Math.round(W), height: Math.round(H) }
