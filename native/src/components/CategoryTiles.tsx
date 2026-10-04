@@ -11,18 +11,12 @@ import { type Category, fetchCategories } from '../api'
 import { SITE } from '../config'
 import { colors, font } from '../theme'
 import Skeleton from './Skeleton'
-import { ART_BIG, ART_SMALL, bigArtFits, needsWiderTile } from '../artFit'
+import { ART_BIG, ART_SMALL, TILE, tileFor } from '../artFit'
 
 // как плитки внутри разделов (JobsLanding, c/[slug]): 142×100, широкие — 196 и 240
-const W = 142
-const H = 100
-const widthFor = (name: string) => {
-  const longest = Math.max(...name.split(/\s+/).map((w) => w.length))
-  if (name.length > 24 && longest <= 12) return { tile: 240, text: 140 }
-  if (longest > 13) return { tile: 240, text: 196 }
-  if (name.length > 13 || longest > 8) return needsWiderTile(name, 150, 196) ? { tile: 240, text: 196 } : { tile: 196, text: 150 }
-  return { tile: W, text: 92 }
-}
+const W = TILE.w
+const H = TILE.h
+const widthFor = (name: string) => tileFor(name)
 
 const nameOf = (c: Category) => (typeof c.name === 'string' ? c.name : c.name?.[getLang()] || c.name?.ru || c.slug)
 
@@ -39,7 +33,7 @@ export default function CategoryTiles({ value, onPick }: { value: string | null;
       <View style={styles.wrap}>
         {[0, 1].map((r) => (
           <View key={r} style={styles.row}>
-            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} style={{ width: W, height: H, borderRadius: 18 }} />)}
+            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} style={{ width: W, height: H, borderRadius: 16 }} />)}
           </View>
         ))}
       </View>
@@ -57,7 +51,7 @@ export default function CategoryTiles({ value, onPick }: { value: string | null;
       return (
         <Pressable key="all" style={[styles.tile, styles.allTile]} onPress={() => { select(); onPick(null); router.push('/categories') }} accessibilityRole="button" accessibilityState={{ selected: on }}>
           <Text style={[styles.label, styles.labelOn]}>{tr('Все')}</Text>
-          <View style={styles.allIcon}><Icon name="grid" size={34} color={colors.primary} /></View>
+          <View style={styles.allIcon}><Icon name="grid" size={30} color={colors.primary} /></View>
         </Pressable>
       )
     }
@@ -67,7 +61,7 @@ export default function CategoryTiles({ value, onPick }: { value: string | null;
         accessibilityRole="button" accessibilityState={{ selected: on }}>
         {/* Одно длинное слово («Недвижимость») не переносим посреди слова — слегка ужимаем */}
         <Text style={[styles.label, { maxWidth: widthFor(nameOf(c)).text }, on && styles.labelOn]}>{nameOf(c)}</Text>
-        <Image source={{ uri: `${SITE}/cat/${c.slug}.png` }} style={bigArtFits(nameOf(c), widthFor(nameOf(c)).text, widthFor(nameOf(c)).tile) ? ART_BIG : ART_SMALL} contentFit="contain" transition={200} />
+        <Image source={{ uri: `${SITE}/cat/${c.slug}.png` }} style={widthFor(nameOf(c)).art === 'big' ? ART_BIG : ART_SMALL} contentFit="contain" transition={200} />
       </Pressable>
     )
   }
@@ -87,12 +81,11 @@ const styles = StyleSheet.create({
   wrapInner: { gap: 8 },
   row: { flexDirection: 'row', gap: 8 },
   // Размеры — как .cat-tile-2row на сайте: 118×86, отступы 9/8/6/11, подпись 12 полужирная, картинка 58×58 в углу
-  tile: { width: W, height: H, borderRadius: 18, backgroundColor: colors.sunken, borderWidth: 2, borderColor: 'transparent', padding: 13, overflow: 'hidden' },
+  tile: { width: W, height: H, borderRadius: 16, backgroundColor: colors.sunken, borderWidth: 2, borderColor: 'transparent', padding: TILE.pad, overflow: 'hidden' },
   allTile: { backgroundColor: colors.primarySoft },
   tileOn: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
   soon: { opacity: 0.55 },
-  label: { fontSize: 14.5, lineHeight: 18, fontFamily: font[700], color: colors.ink, zIndex: 2 },
+  label: { fontSize: 13.5, lineHeight: 17, fontFamily: font[700], color: colors.ink, zIndex: 2 },
   labelOn: { color: colors.primaryDeep },
-  art: { position: 'absolute', right: -10, bottom: -16, width: 84, height: 84 },
-  allIcon: { position: 'absolute', right: 12, bottom: 10 },
+  allIcon: { position: 'absolute', right: 10, bottom: 8 },
 })

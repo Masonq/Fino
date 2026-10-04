@@ -11,7 +11,7 @@ import { plural, tr } from '../i18n'
 import { colors, font, space } from '../theme'
 import Icon from './Icon'
 import ListingCard from './ListingCard'
-import { ART_BIG, ART_SMALL, bigArtFits } from '../artFit'
+import { ART_BIG, ART_SMALL, TILE, tileFor } from '../artFit'
 import Sheet from './Sheet'
 
 /**
@@ -82,9 +82,9 @@ export default function JobsLanding() {
   const tileView = (t: Tile) => {
     const on = tile?.key === t.key
     return (
-      <Pressable key={t.key} style={[styles.tile, t.wide && styles.tileWide, on && styles.tileOn]} onPress={() => { setTile(on ? null : t); if (!on) toResults() }} accessibilityRole="button" accessibilityState={{ selected: on }}>
-        <Text style={styles.tileText}>{tr(t.label)}</Text>
-        <Image source={{ uri: `${SITE}/jobs/${t.key}.webp` }} style={bigArtFits(tr(t.label), 110, t.wide ? 196 : 142) ? ART_BIG : ART_SMALL} contentFit="contain" />
+      <Pressable key={t.key} style={[styles.tile, { width: tileFor(tr(t.label)).tile }, on && styles.tileOn]} onPress={() => { setTile(on ? null : t); if (!on) toResults() }} accessibilityRole="button" accessibilityState={{ selected: on }}>
+        <Text style={[styles.tileText, { maxWidth: tileFor(tr(t.label)).text }]}>{tr(t.label)}</Text>
+        <Image source={{ uri: `${SITE}/jobs/${t.key}.webp` }} style={tileFor(tr(t.label)).art === 'big' ? ART_BIG : ART_SMALL} contentFit="contain" />
         {on && <View style={styles.tileCheck}><Icon name="check" size={12} color="#fff" /></View>}
       </Pressable>
     )
@@ -216,10 +216,10 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontSize: 16, fontFamily: font[500], color: colors.ink, paddingVertical: 0 },
   tiles: { paddingVertical: 18, paddingRight: space.page },
   tileRow: { flexDirection: 'row', gap: 8 },
-  tile: { width: 142, height: 100, borderRadius: 18, backgroundColor: colors.sunken, padding: 13, overflow: 'hidden', borderWidth: 2, borderColor: 'transparent' },
-  tileWide: { width: 196 },
+  tile: { width: TILE.w, height: TILE.h, borderRadius: 16, backgroundColor: colors.sunken, padding: TILE.pad, overflow: 'hidden', borderWidth: 2, borderColor: 'transparent' },
+  tileWide: { width: TILE.wide },
   tileOn: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
-  tileText: { fontSize: 14.5, lineHeight: 18, fontFamily: font[700], color: colors.ink, maxWidth: 110 },
+  tileText: { fontSize: 13.5, lineHeight: 17, fontFamily: font[700], color: colors.ink, maxWidth: TILE.text.narrow },
   // крупнее (84) и чуть за правый и нижний край, как у Авито; плитка прежняя
   tileImg: { position: 'absolute', right: -10, bottom: -16, width: 84, height: 84 },
   tileCheck: { position: 'absolute', right: 8, top: 8, width: 20, height: 20, borderRadius: 10, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },

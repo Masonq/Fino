@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import ListingCard from './ListingCard'
-import { bigArtFits } from '../utils/artFit'
+import { tileFor } from '../utils/artFit'
 import { CardSkeletons } from './Skeletons'
 
 /**
@@ -62,9 +62,9 @@ export default function JobsLanding() {
   const tileButton = (x) => {
     const on = tile?.key === x.key
     return (
-      <button key={x.key} type="button" className={`jl-tile${x.wide ? ' wide' : ''}${on ? ' on' : ''}${bigArtFits(t(`jobs.tile_${x.key}`), x.wide ? 150 : 92, x.wide ? 196 : 142) ? '' : ' small-art'}`} aria-pressed={on}
+      <button key={x.key} type="button" className={`jl-tile${tileFor(t(`jobs.tile_${x.key}`)).kind ? ' ' + tileFor(t(`jobs.tile_${x.key}`)).kind : ''}${on ? ' on' : ''}${tileFor(t(`jobs.tile_${x.key}`)).art === 'big' ? '' : ' small-art'}`} aria-pressed={on}
         onClick={() => { setTile(on ? null : x); if (!on) toResults() }}>
-        <span className="jl-tile-text">{t(`jobs.tile_${x.key}`)}</span>
+        <span className="jl-tile-text" style={{ maxWidth: tileFor(t(`jobs.tile_${x.key}`)).text }}>{t(`jobs.tile_${x.key}`)}</span>
         <img className="jl-tile-img" src={`/jobs/${x.key}.webp`} alt="" loading="lazy" />
         {on && <span className="jl-tile-check" aria-hidden>✓</span>}
       </button>

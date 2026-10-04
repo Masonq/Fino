@@ -17,23 +17,12 @@ import FreshStories from '../components/FreshStories'
 import CategoryArt from '../components/CategoryArt'
 import Avatar from '../components/Avatar'
 import { hasLanding } from '../data/landings'
-import { bigArtFits, needsWiderTile } from '../utils/artFit'
+import { tileFor } from '../utils/artFit'
 
 // Ширина плитки раздела — как у плиток внутри разделов: длинное слово — широкая, очень длинное — ещё шире
-const tileSize = (name) => {
-  const longest = Math.max(...name.split(/\s+/).map((w) => w.length))
-  if (name.length > 24 && longest <= 12) return ' xwide long'
-  if (longest > 13) return ' xwide'
-  if (name.length > 13 || longest > 8) return needsWiderTile(name, 150, 196) ? ' xwide' : ' wide'
-  return ''
-}
-// крупная картинка (84) или прежняя (66) — если вторая строка названия доходит до места картинки
-const artClass = (name) => {
-  const size = tileSize(name)
-  const text = size.includes('long') ? 140 : size.includes('xwide') ? 196 : size.includes('wide') ? 150 : 92
-  const tile = size.includes('xwide') ? 240 : size.includes('wide') ? 196 : 142
-  return bigArtFits(name, text, tile) ? '' : ' small-art'
-}
+const tileSize = (name) => { const k = tileFor(name).kind; return k ? ` ${k}` : '' }
+// крупная картинка или прежняя — если вторая строка названия доходит до места картинки
+const artClass = (name) => (tileFor(name).art === 'big' ? '' : ' small-art')
 
 // Лента живёт в памяти между заходами на страницу. Иначе при возврате из
 // объявления она загружается заново: страница успевает отрисоваться пустой,
@@ -717,6 +706,7 @@ export default function Home() {
             key={cat.id}
             to={hasLanding(cat.slug) ? `/c/${cat.slug}` : `/search?category=${cat.slug}`}
             className={`cat-tile-2row${tileSize(cat.name?.[i18n.language] || cat.name?.ru || '')}${artClass(cat.name?.[i18n.language] || cat.name?.ru || '')}${cat.ready === false ? ' soon' : ''}`}
+                style={{ '--tile-text': `${tileFor(cat.name?.[i18n.language] || cat.name?.ru || '').text}px` }}
           >
             <div className="cat-tile-2row-label">{cat.name?.[i18n.language] || cat.name?.ru}</div>
             <div className="cat-tile-2row-glyph"><CategoryArt slug={cat.slug} /></div>

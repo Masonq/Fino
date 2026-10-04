@@ -6781,3 +6781,27 @@ a.s-attrs{ display:block; }
 /* у плитки, где вторая строка названия доходит до места картинки, — прежний размер (utils/artFit.js) */
 .jl-tile.small-art .jl-tile-img { width: 66px; height: 66px; right: -2px; bottom: -4px; }
 @media (max-width: 619px) { .cat-tile-2row.small-art .cat-tile-2row-glyph { width: 66px; height: 66px; right: -2px; bottom: -4px; } }
+
+/* ——— Плитки 124×88 (было 142×100) — как в приложении (native/src/artFit.ts, TILE) ——— */
+.jl-tile { width: 124px; height: 88px; padding: 11px; border-radius: 16px; }
+.jl-tile.wide { width: 172px; }
+.jl-tile.xwide { width: 220px; }
+.jl-tile-text { font-size: 13.5px; line-height: 17px; max-width: 92px; }
+.jl-tile.wide .jl-tile-text { max-width: 130px; }
+.jl-tile.xwide .jl-tile-text { max-width: 184px; }
+.jl-tile.long .jl-tile-text { max-width: 122px; }
+.jl-tile-img { width: 74px; height: 74px; right: -9px; bottom: -17px; }
+.jl-tile.small-art .jl-tile-img { width: 58px; height: 58px; right: -2px; bottom: -3px; }
+@media (max-width: 619px) {
+  .cat-tile-2row { width: 124px; height: 88px; padding: 11px; border-radius: 16px; }
+  .cat-tile-2row.wide { width: 172px; }
+  .cat-tile-2row.xwide { width: 220px; }
+  .cat-tile-2row-label { font-size: 13.5px; line-height: 17px; max-width: 92px; }
+  .cat-tile-2row.wide .cat-tile-2row-label { max-width: 130px; }
+  .cat-tile-2row.xwide .cat-tile-2row-label { max-width: 184px; }
+  .cat-tile-2row.long .cat-tile-2row-label { max-width: 122px; }
+  .cat-tile-2row-glyph { width: 74px; height: 74px; right: -9px; bottom: -17px; }
+  .cat-tile-2row.small-art .cat-tile-2row-glyph { width: 58px; height: 58px; right: -2px; bottom: -3px; }
+  .cat-tile-2row-glyph.all-glyph { width: 46px; height: 46px; right: 8px; bottom: 6px; }
+}
+@media (max-width: 619px) { .cat-tile-2row-label, .cat-tile-2row.wide .cat-tile-2row-label, .cat-tile-2row.xwide .cat-tile-2row-label { max-width: var(--tile-text, 92px); } }

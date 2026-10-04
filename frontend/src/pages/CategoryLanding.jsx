@@ -7,7 +7,7 @@ import { api } from '../api/client'
 import CategoryArt from '../components/CategoryArt'
 import ListingCard from '../components/ListingCard'
 import JobsLanding from '../components/JobsLanding'
-import { bigArtFits, needsWiderTile } from '../utils/artFit'
+import { tileFor } from '../utils/artFit'
 import { CardSkeletons } from '../components/Skeletons'
 import { LANDINGS, landingFor } from '../data/landings'
 import { MODE_WORDS } from '../data/modeWords'
@@ -565,12 +565,12 @@ function CategoryLandingPage() {
               <div key={k} className="jl-tile-row">
                 {row.map((sub) => {
                   const label = sub.name?.[i18n.language] || sub.name?.ru
-                  const longest = Math.max(...label.split(/\s+/).map((w) => w.length))
-                  const size = label.length > 24 && longest <= 12 ? ' xwide long' : longest > 13 || ((label.length > 13 || longest > 8) && needsWiderTile(label, 150, 196)) ? ' xwide' : (label.length > 13 || longest > 8 ? ' wide' : '')
+                  const fit = tileFor(label)
+                  const size = fit.kind ? ` ${fit.kind}` : ''
                   return (
-                    <button key={sub.id} type="button" className={`jl-tile${size}${bigArtFits(label, size.includes('long') ? 140 : size.includes('xwide') ? 196 : size.includes('wide') ? 150 : 92, size.includes('xwide') ? 240 : size.includes('wide') ? 196 : 142) ? '' : ' small-art'}`}
+                    <button key={sub.id} type="button" className={`jl-tile${size}${fit.art === 'big' ? '' : ' small-art'}`}
                       onClick={() => (sub.children?.length > 0 ? navigate(`/c/${sub.slug}`) : navigate(`/search?category=${sub.slug}`))}>
-                      <span className="jl-tile-text">{label}</span>
+                      <span className="jl-tile-text" style={{ maxWidth: fit.text }}>{label}</span>
                       <img className="jl-tile-img" src={`/cat/${sub.slug}.png`} alt="" loading="lazy" onError={(ev) => { ev.currentTarget.style.display = 'none' }} />
                     </button>
                   )
