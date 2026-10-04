@@ -10,6 +10,7 @@ import { type Category, fetchCategories, fetchFeed, type FeedItem, type Filters 
 import Icon from '../../src/components/Icon'
 import SheetFrame from '../../src/components/SheetFrame'
 import { CAR_BRANDS, CAR_MODELS, CAR_OTHER, LANDINGS, type LandingField, landingParams, LUI, t3 } from '../../src/landings'
+import JobsLanding from '../../src/components/JobsLanding'
 import ListingCard from '../../src/components/ListingCard'
 import { SITE } from '../../src/config'
 import { select } from '../../src/haptics'
@@ -88,7 +89,13 @@ function findNode(list: Category[], slug: string): Category | null {
  * Страница раздела — как CategoryLanding сайта: название и число предложений, подразделы с картинками
  * (вглубь — своя страница), поиск внутри раздела, цена от/до, сортировка, объявления сеткой с подгрузкой.
  */
-export default function CategoryScreen() {
+/** «Работа» — свой экран по образцу Авито (две вкладки), остальные разделы — как раньше. */
+export default function CategoryRoute() {
+  const { slug } = useLocalSearchParams<{ slug: string }>()
+  return slug === 'jobs' ? <JobsLanding /> : <CategoryScreen />
+}
+
+function CategoryScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>()
   const insets = useSafeAreaInsets()
   const { width } = useWindowDimensions()

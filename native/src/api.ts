@@ -264,7 +264,7 @@ export async function createListing(token: string, l: NewListing) {
   return res.json() as Promise<{ id: string; status: string }>
 }
 
-export type MyListing = FeedItem & { status: string; views_count?: number; favorites_count?: number; expires_at?: string | null }
+export type MyListing = FeedItem & { status: string; views_count?: number; favorites_count?: number; expires_at?: string | null; category_slug?: string | null }
 export const myListings = (token: string) => authed<{ total: number; counts: Record<string, number>; items: MyListing[] }>(`/listings/my/list?lang=${getLang()}`, token)
 export const balance = (token: string) => authed<Record<string, unknown>>('/balance', token)
 

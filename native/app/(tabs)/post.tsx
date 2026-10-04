@@ -3,7 +3,7 @@ import { getLang, tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
-import { router } from 'expo-router'
+import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
 import {
   ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View,
@@ -78,6 +78,25 @@ export default function Post() {
   const [roots, setRoots] = useState<Category[] | null>(null)
   const [trail, setTrail] = useState<Category[]>([])
   useEffect(() => { fetchCategories().then(setRoots).catch(() => setRoots([])) }, [])
+  // /post?cat=<раздел> — сразу к параметрам этого раздела (кнопки «Разместить вакансию», «Создайте резюме»)
+  const { cat: catParam } = useLocalSearchParams<{ cat?: string }>()
+  useEffect(() => {
+    if (!roots || !catParam) return
+    const find = (list: Category[], path: Category[]): Category[] | null => {
+      for (const c of list) {
+        if (c.slug === catParam) return [...path, c]
+        const r = find(c.children ?? [], [...path, c])
+        if (r) return r
+      }
+      return null
+    }
+    const path = find(roots, [])
+    if (!path) return
+    const c = path[path.length - 1]
+    setCat({ c, path: path.map(nameOf).join(' › ') }); setTrail([]); setAttrs({}); setSchema(null); setStep(3)
+    categorySchema(c.slug).then((r) => setSchema(r.attribute_schema ?? [])).catch(() => setSchema([]))
+    router.setParams({ cat: undefined })
+  }, [roots, catParam])
 
   if (!ready) return <SafeAreaView style={styles.page} />
   if (!token) {
