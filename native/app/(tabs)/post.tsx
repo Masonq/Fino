@@ -14,10 +14,11 @@ import { ApiError, type Category, createListing, fetchCategories, type Uploaded,
 import { useAuth } from '../../src/auth'
 import Icon from '../../src/components/Icon'
 import SheetFrame from '../../src/components/SheetFrame'
+import LocationPicker from '../../src/components/LocationPicker'
 import CityPicker from '../../src/components/CityPicker'
 import Segmented from '../../src/components/Segmented'
 import { mediaUrl, SITE } from '../../src/config'
-import { cityName } from '../../src/format'
+import { cityName, CITY_COORDS } from '../../src/format'
 import { colors, font } from '../../src/theme'
 
 const MAX = 10
@@ -69,6 +70,8 @@ export default function Post() {
   const [schema, setSchema] = useState<AttrField[] | null>(null)
   // все состояния — до любых ранних выходов: иначе при смене шага меняется число хуков (ошибка React #310)
   const [videoError, setVideoError] = useState('')
+  const [point, setPoint] = useState<{ lat: number | null; lng: number | null }>({ lat: null, lng: null })
+  const [hideAddr, setHideAddr] = useState(false)
   const isApartment = !!schema?.some((f) => f.key === 'rooms') && !!schema?.some((f) => f.key === 'area_m2')
   const [attrs, setAttrs] = useState<Record<string, unknown>>({})
   const [selectField, setSelectField] = useState<AttrField | null>(null)
@@ -101,7 +104,7 @@ export default function Post() {
   }
 
   function reset() {
-    setStep(1); setTrail([]); setShots([]); setCat(null); setTitle(''); setDesc(''); setPrice(''); setNegotiable(false); setTried(false); setDone(null); setError('')
+    setStep(1); setTrail([]); setShots([]); setPoint({ lat: null, lng: null }); setHideAddr(false); setAttrs({}); setSchema(null); setCat(null); setTitle(''); setDesc(''); setPrice(''); setNegotiable(false); setTried(false); setDone(null); setError('')
   }
 
   const upload = async (shot: Shot) => {
@@ -175,6 +178,7 @@ export default function Post() {
         price: price ? Number(price) : null, currency, price_negotiable: negotiable, city,
         photos: shots.filter((s) => s.state === 'done' && s.uploaded).map((s) => s.uploaded as Uploaded),
         attributes: cleanAttrs(attrs),
+        location_lat: point.lat, location_lng: point.lng, hide_exact_address: hideAddr,
       })
       success()
       setDone({ id: res.id })
@@ -404,6 +408,7 @@ export default function Post() {
             <Text style={styles.selectText}>{city ? cityName(city) : tr('Не указан')}</Text>
             <Icon name="forward" size={16} color={colors.muted} />
           </Pressable>
+          <LocationPicker lat={point.lat} lng={point.lng} hide={hideAddr} center={city ? CITY_COORDS[city] : undefined} onChange={(a, b) => setPoint({ lat: a, lng: b })} onHide={setHideAddr} />
 
           {!!error && <Text style={[styles.hint, { marginTop: 14 }]}>{error}</Text>}
           <Pressable style={[styles.cta, styles.submit, (sending || (tried && !ok)) && { opacity: 0.55 }]} disabled={sending} onPress={submit} accessibilityRole="button" accessibilityLabel={tr('Отправить объявление')}>

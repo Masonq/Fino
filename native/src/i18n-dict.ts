@@ -483,4 +483,13 @@ export const DICT: Record<string, { en?: string; sr?: string }> = {
   "Не удалось обработать видео — попробуйте другое": { en: "Could not process the video — try another one", sr: "Nije uspela obrada videa — probajte drugi" },
   "Не получилось загрузить видео": { en: "Could not upload the video", sr: "Nije uspelo otpremanje videa" },
   "1-комнатная квартира": { en: "1-room apartment", sr: "Jednosoban stan" },
+  "Указать точку на карте": { en: "Set location on map", sr: "Označi lokaciju na mapi" },
+  "Точка на карте указана": { en: "Location is set", sr: "Lokacija je označena" },
+  "Убрать точку": { en: "Remove location", sr: "Ukloni lokaciju" },
+  "Нажмите на карту или перетащите метку, чтобы указать точное место": { en: "Tap the map or drag the pin to set the exact spot", sr: "Dodirnite mapu ili prevucite oznaku da biste postavili tačno mesto" },
+  "Поиск по адресу": { en: "Search by address", sr: "Pretraga po adresi" },
+  "Ищу…": { en: "Searching…", sr: "Tražim…" },
+  "Моё местоположение": { en: "My location", sr: "Moja lokacija" },
+  "Не показывать точный адрес — только район": { en: "Don't show exact address — only the area", sr: "Ne prikazuj tačnu adresu — samo oblast" },
+  "Узнать подробности": { en: "View on map", sr: "Pogledaj na mapi" },
 }

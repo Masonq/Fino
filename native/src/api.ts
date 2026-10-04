@@ -48,6 +48,7 @@ export type Owner = {
 }
 
 export type Listing = Omit<FeedItem, 'photos'> & {
+  location_lat?: number | null; location_lng?: number | null; location_approximate?: boolean; hide_exact_address?: boolean
   photos: Photo[]
   owner?: Owner
   translations?: unknown
@@ -234,6 +235,7 @@ export async function uploadPhoto(token: string, uri: string, mime = 'image/jpeg
 export type NewListing = {
   category_id: string; title: string; description: string; price: number | null; currency: 'EUR' | 'RSD'
   price_negotiable: boolean; city: string | null; photos: Uploaded[]; attributes?: Record<string, unknown>
+  location_lat?: number | null; location_lng?: number | null; hide_exact_address?: boolean
 }
 
 export async function createListing(token: string, l: NewListing) {
@@ -243,6 +245,7 @@ export async function createListing(token: string, l: NewListing) {
     body: JSON.stringify({
       category_id: l.category_id, source_language: getLang(), price: l.price, currency: l.currency, price_negotiable: l.price_negotiable,
       // характеристики раздела — как на сайте (раньше уходил пустой объект, и объявления из приложения не находились по фильтрам)
+      location_lat: l.location_lat ?? null, location_lng: l.location_lng ?? null, hide_exact_address: !!l.hide_exact_address,
       city: l.city, attributes: l.attributes ?? {}, translations: [{ language: getLang(), title: l.title, description: l.description }],
       photos: l.photos.map((p) => ({ url: p.url, thumbnail_url: p.thumbnail_url ?? null, is_video: !!p.is_video })),
     }),
@@ -320,7 +323,7 @@ export const deleteSavedSearch = (token: string, id: string) => authed<unknown>(
 export const toggleSavedSearch = (token: string, id: string, enabled: boolean) =>
   authed<unknown>(`/saved-searches/${encodeURIComponent(id)}`, token, 'PATCH', { notify_enabled: enabled })
 
-export type ListingPatch = { title?: string; description?: string; price?: number | null; currency?: 'EUR' | 'RSD'; price_negotiable?: boolean; city?: string | null }
+export type ListingPatch = { title?: string; description?: string; price?: number | null; currency?: 'EUR' | 'RSD'; price_negotiable?: boolean; city?: string | null; location_lat?: number | null; location_lng?: number | null; hide_exact_address?: boolean }
 export const updateListing = (token: string, id: string, patch: ListingPatch) => authed<unknown>(`/listings/${encodeURIComponent(id)}`, token, 'PATCH', patch)
 export const addListingPhoto = (token: string, id: string, p: Uploaded) =>
   authed<unknown>(`/listings/${encodeURIComponent(id)}/photos`, token, 'POST', { url: p.url, thumbnail_url: p.thumbnail_url ?? null, is_video: !!p.is_video })

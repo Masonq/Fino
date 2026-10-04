@@ -6,8 +6,7 @@ import * as Linking from 'expo-linking'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useState, useRef } from 'react'
 import {
-  FlatList, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, Share, StyleSheet, Text, useWindowDimensions, View,
-} from 'react-native'
+  FlatList, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, Share, StyleSheet, Text, useWindowDimensions, View, Modal } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { attrRows, type AttrField, ru, categorySchema, type FeedItem, loadListing, type Listing, sellerListings, similarListings, startChat, textOf } from '../../src/api'
@@ -20,6 +19,8 @@ import CardsRow from '../../src/components/CardsRow'
 import HeartButton from '../../src/components/HeartButton'
 import ReportSheet from '../../src/components/ReportSheet'
 import Sheet from '../../src/components/Sheet'
+import MapWeb from '../../src/components/MapWeb'
+import * as Clipboard from 'expo-clipboard'
 import ImageView from '../../src/components/PhotoViewer'
 import Skeleton from '../../src/components/Skeleton'
 import { SITE, mediaUrl } from '../../src/config'
@@ -47,7 +48,16 @@ export default function ListingScreen() {
   const [gaugeOpen, setGaugeOpen] = useState(false)
   // Фото на весь экран: увеличение щипком и двойным касанием, листание, закрытие смахиванием
   const [viewer, setViewer] = useState<number | null>(null)
+  // Карта места — на весь экран, как на сайте: «назад» и название, внизу адрес (по точке) и «скопировать»
+  const [mapOpen, setMapOpen] = useState(false)
+  const [mapAddr, setMapAddr] = useState('')
+  const [addrCopied, setAddrCopied] = useState(false)
   const stripRef = useRef<FlatList<string>>(null)
+  useEffect(() => {
+    if (!mapOpen || data?.location_lat == null || data.location_approximate) return
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${data.location_lat}&lon=${data.location_lng}&zoom=17&addressdetails=1`, { headers: { 'Accept-Language': getLang() } })
+      .then((r) => r.json()).then((j) => setMapAddr(String(j?.display_name || '').split(',').map((x: string) => x.trim()).slice(0, 3).join(', '))).catch(() => {})
+  }, [mapOpen, data?.location_lat]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     let alive = true
@@ -230,7 +240,10 @@ export default function ListingScreen() {
               <Text style={styles.h3}>{tr('Местоположение')}</Text>
               <View style={styles.locRow}>
                 <Icon name="pin" size={16} color={colors.inkSoft} />
-                <Text style={styles.loc}>{cityName(data.city)}</Text>
+                <Text style={[styles.loc, { flex: 1 }]}>{cityName(data.city)}</Text>
+                {data.location_lat != null && (
+                  <Pressable onPress={() => setMapOpen(true)} hitSlop={8}><Text style={styles.mapLink}>{tr('Узнать подробности')}</Text></Pressable>
+                )}
               </View>
             </View>
           )}
@@ -289,6 +302,26 @@ export default function ListingScreen() {
           </View>
         )}
       />
+      <Modal visible={mapOpen} animationType="slide" onRequestClose={() => setMapOpen(false)}>
+        <View style={[styles.mapPage, { paddingTop: insets.top }]}>
+          <View style={styles.mapHead}>
+            <Pressable onPress={() => setMapOpen(false)} hitSlop={10} style={styles.mapBack} accessibilityLabel={tr('Назад')}><Icon name="back" size={20} color={colors.ink} /></Pressable>
+            <Text style={styles.mapTitle} numberOfLines={1}>{data?.title}</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            {mapOpen && data?.location_lat != null && <MapWeb mode="show" lat={data.location_lat} lng={data.location_lng} approximate={!!data.location_approximate} height="100%" />}
+          </View>
+          <View style={[styles.mapAddr, { paddingBottom: insets.bottom + 14 }]}>
+            <Text style={styles.mapAddrLabel}>{tr('Местоположение')}</Text>
+            <View style={styles.mapAddrRow}>
+              <Text style={styles.mapAddrText}>{mapAddr || cityName(data?.city)}</Text>
+              <Pressable onPress={async () => { await Clipboard.setStringAsync(mapAddr || cityName(data?.city)).catch(() => {}); setAddrCopied(true); setTimeout(() => setAddrCopied(false), 1500) }} hitSlop={8} style={styles.mapCopy} accessibilityLabel={tr('Копировать')}>
+                <Icon name={addrCopied ? 'check' : 'copy'} size={17} color={colors.ink} />
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
       <Sheet visible={gaugeOpen} title={tr('Оценка цены')} onClose={() => setGaugeOpen(false)}>
         {(() => {
           const pc = (data as unknown as { price_check?: { low_eur?: number; median_eur?: number; high_eur?: number; mine_eur?: number; based_on?: number } }).price_check
@@ -423,6 +456,16 @@ const styles = StyleSheet.create({
     position: 'absolute', right: 60, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(20,26,22,0.38)', alignItems: 'center', justifyContent: 'center',
     shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 6, shadowOffset: { width: 0, height: 1 }, elevation: 3,
   },
+  mapLink: { fontSize: 13.5, fontFamily: font[700], color: colors.primaryDeep },
+  mapPage: { flex: 1, backgroundColor: colors.bg },
+  mapHead: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 8 },
+  mapBack: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
+  mapTitle: { flex: 1, fontSize: 16, fontFamily: font[800], color: colors.ink },
+  mapAddr: { paddingHorizontal: 16, paddingTop: 14, backgroundColor: colors.surface, borderTopLeftRadius: 20, borderTopRightRadius: 20, marginTop: -16, gap: 4 },
+  mapAddrLabel: { fontSize: 12.5, fontFamily: font[700], color: colors.muted },
+  mapAddrRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  mapAddrText: { flex: 1, fontSize: 15, lineHeight: 20, fontFamily: font[700], color: colors.ink },
+  mapCopy: { width: 36, height: 36, borderRadius: 10, backgroundColor: colors.sunken, alignItems: 'center', justifyContent: 'center' },
   blur: { opacity: 0.75, transform: [{ scale: 1.25 }] },
   viewerFoot: { alignItems: 'center' },
   viewerCount: { color: '#fff', fontSize: 14, fontFamily: font[700], backgroundColor: 'rgba(255,255,255,0.14)', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 12, overflow: 'hidden' },

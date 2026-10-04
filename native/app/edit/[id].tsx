@@ -16,8 +16,9 @@ import CityPicker from '../../src/components/CityPicker'
 import Segmented from '../../src/components/Segmented'
 import Icon from '../../src/components/Icon'
 import Sheet, { SheetAction } from '../../src/components/Sheet'
+import LocationPicker from '../../src/components/LocationPicker'
 import { mediaUrl } from '../../src/config'
-import { cityName } from '../../src/format'
+import { cityName, CITY_COORDS } from '../../src/format'
 import { colors, font } from '../../src/theme'
 
 const MAX = 10
@@ -32,9 +33,11 @@ export default function EditListing() {
   const insets = useSafeAreaInsets()
   const { token } = useAuth()
   const [loaded, setLoaded] = useState(false)
-  const [orig, setOrig] = useState<Required<Pick<ListingPatch, 'title' | 'description' | 'currency' | 'price_negotiable'>> & { price: number | null; city: string | null } | null>(null)
+  const [orig, setOrig] = useState<Required<Pick<ListingPatch, 'title' | 'description' | 'currency' | 'price_negotiable'>> & { price: number | null; city: string | null ; location_lat: number | null; location_lng: number | null; hide_exact_address: boolean } | null>(null)
   const [shots, setShots] = useState<Shot[]>([])
   const [addOpen, setAddOpen] = useState(false)
+  const [point, setPoint] = useState<{ lat: number | null; lng: number | null }>({ lat: null, lng: null })
+  const [hideAddr, setHideAddr] = useState(false)
   const [coverBusy, setCoverBusy] = useState(false)
   const [coverErr, setCoverErr] = useState('')
   // «Сделать обложкой» — как на сайте: сразу показываем, сохраняем порядок фото на сервере, при ошибке откатываем
@@ -62,10 +65,11 @@ export default function EditListing() {
     fetchListing(String(id)).then((l) => {
       const t = textOf(l)
       const cur = (l.currency === 'RSD' ? 'RSD' : 'EUR') as 'EUR' | 'RSD'
-      setOrig({ title: t.title, description: t.description, price: l.price ?? null, currency: cur, price_negotiable: !!l.price_negotiable, city: l.city ?? null })
+      setOrig({ title: t.title, description: t.description, price: l.price ?? null, currency: cur, price_negotiable: !!l.price_negotiable, city: l.city ?? null, location_lat: l.location_lat ?? null, location_lng: l.location_lng ?? null, hide_exact_address: !!l.hide_exact_address })
       setTitle(t.title); setDesc(t.description); setPrice(l.price != null ? String(Math.round(l.price)) : '')
       setCurrency(cur); setNegotiable(!!l.price_negotiable); setCity(l.city ?? null)
       // видео тоже показываем (раньше отфильтровывалось — его нельзя было ни увидеть, ни удалить)
+      setPoint({ lat: l.location_lat ?? null, lng: l.location_lng ?? null }); setHideAddr(!!l.hide_exact_address)
       setShots(l.photos.map((p) => ({ key: p.id, existingId: p.id, uri: mediaUrl(p.thumbnail_url || p.url) as string, state: 'done' as const, mime: p.is_video ? 'video/mp4' : 'image/jpeg' })))
       setLoaded(true)
     }).catch(() => setError(tr('Не удалось открыть объявление')))
@@ -138,6 +142,9 @@ export default function EditListing() {
       if (currency !== orig.currency) patch.currency = currency
       if (negotiable !== orig.price_negotiable) patch.price_negotiable = negotiable
       if (city !== orig.city) patch.city = city
+      // точка на карте — только если изменилась
+      if (point.lat !== (orig.location_lat ?? null) || point.lng !== (orig.location_lng ?? null)) { patch.location_lat = point.lat; patch.location_lng = point.lng }
+      if (hideAddr !== !!orig.hide_exact_address) patch.hide_exact_address = hideAddr
       if (Object.keys(patch).length) await updateListing(token, String(id), patch)
       for (const photoId of removed) await deleteListingPhoto(token, String(id), photoId)
       for (const s of shots) if (!s.existingId && s.uploaded) await addListingPhoto(token, String(id), s.uploaded)
@@ -207,6 +214,7 @@ export default function EditListing() {
               <Text style={styles.selectText}>{city ? cityName(city) : tr('Не указан')}</Text>
               <Ionicons name="chevron-forward" size={18} color={colors.muted} />
             </Pressable>
+            <LocationPicker lat={point.lat} lng={point.lng} hide={hideAddr} center={city ? CITY_COORDS[city] : undefined} onChange={(a, b) => setPoint({ lat: a, lng: b })} onHide={setHideAddr} />
             {!!error && <Text style={[styles.hint, { marginTop: 14 }]}>{error}</Text>}
             <Pressable style={[styles.cta, saving && { opacity: 0.6 }]} disabled={saving} onPress={save} accessibilityRole="button" accessibilityLabel={tr('Сохранить изменения')}>
               {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.ctaText}>{tr('Сохранить')}</Text>}
