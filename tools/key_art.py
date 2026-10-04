@@ -74,8 +74,9 @@ def key_out(path_in, path_out, size=512, glass=False):
     edge_d = ndimage.distance_transform_edt(obj_px)
     deep = edge_d > 9
     if deep.any():
-        _, (iy, ix) = ndimage.distance_transform_edt(~deep, return_indices=True)
-        band = obj_px & (edge_d <= 7) & ~sh
+        dd, (iy, ix) = ndimage.distance_transform_edt(~deep, return_indices=True)
+        # тонкое (цепочка, провод) своих глубоких точек не имеет: чужой цвет издалека не берём
+        band = obj_px & (edge_d <= 7) & ~sh & (dd <= 12)
         out[band] = out[iy[band], ix[band]]
     # отсвет пурпурного фона на тёплых краях (шерсть, дерево): синий выше зелёного при красном выше синего —
     # убираем лишний синий в 30 точках от края; синие и голубые предметы (R < B) не трогаем
