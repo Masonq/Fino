@@ -115,7 +115,8 @@ export default function CategoryScreen() {
 
   const load = useCallback(async () => {
     const id = ++req.current
-    setItems(null)
+    // старые результаты не убираем, пока не пришли новые: иначе страница становилась короче экрана
+    // и «Показать» было некуда прокрутить
     try {
       const res = await fetchFeed({ tab: 'all', offset: 0, q: applied.q, category: String(slug), filters: { sort: applied.sort }, extra: landingParams(applied.deal, applied.values) })
       if (id === req.current) { setItems(res.items); setTotal(res.total) }
@@ -142,20 +143,28 @@ export default function CategoryScreen() {
     return () => clearTimeout(t)
   }, [q, deal, values, sort, slug])
   const dirty = q !== applied.q || sort !== applied.sort || deal !== applied.deal || JSON.stringify(values) !== JSON.stringify(applied.values)
-  const apply = () => setApplied({ q, sort, deal, values })
+  const [searched, setSearched] = useState(false)
+  const listRef = useRef<FlatList<FeedItem>>(null)
+  // Как на сайте: «Показать» — плавно к результатам, заголовок «Найдено: N» вместо «Свежие объявления»
+  const pendingScroll = useRef(false)
+  const apply = () => { setApplied({ q, sort, deal, values }); setSearched(true); pendingScroll.current = true }
+  // прокрутка к результатам — когда они пришли
+  useEffect(() => {
+    if (!pendingScroll.current || items === null) return
+    pendingScroll.current = false
+    // к первому объявлению результатов с местом под заголовок «Найдено: N» — без запомненной позиции заголовка
+    // (она устаревала, пока догружались подразделы и фильтры); нет результатов — в конец страницы
+    setTimeout(() => {
+      if (items.length) listRef.current?.scrollToIndex({ index: 0, viewOffset: 46, animated: true })
+      else listRef.current?.scrollToEnd({ animated: true })
+    }, 60)
+  }, [items])
   const subs = node?.children ?? []
   const countWord = (n: number) => plural(n, { ru: ['объявление', 'объявления', 'объявлений'], en: ['listing', 'listings'], sr: ['oglas', 'oglasa', 'oglasa'] })
   const heroSlug = root?.slug ?? String(slug)
   const head = (
     <View>
       {/* Баннер раздела — как .landing-hero сайта: картинка /hero/<раздел>.webp, затемнение снизу, сверху «назад» и поиск */}
-      <View style={[styles.heroBar, { paddingTop: insets.top + 10 }]}>
-          <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} hitSlop={8} style={styles.heroBack} accessibilityLabel={tr('Назад')}><Icon name="back" size={20} color={colors.ink} /></Pressable>
-          <View style={styles.heroSearch}>
-            <Icon name="search" size={17} color={colors.muted} />
-            <TextInput value={q} onChangeText={setQ} placeholder={landing?.fields.find((f) => f.type === 'text')?.hint ? t3(landing.fields.find((f) => f.type === 'text')?.hint) : tr('Что ищете?')} placeholderTextColor={colors.muted} style={styles.searchInput} returnKeyType="search" onSubmitEditing={apply} />
-          </View>
-      </View>
       <ImageBackground source={{ uri: `${SITE}/hero/${heroSlug}.webp` }} style={styles.hero} resizeMode="cover">
         <LinearGradient colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.16)', 'rgba(0,0,0,0.46)']} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} />
         <Text style={styles.heroTitle} numberOfLines={1}>{nameOf(node) || ' '}</Text>
@@ -190,7 +199,7 @@ export default function CategoryScreen() {
           <Text style={styles.goText}>{preview != null ? tr('Показать {n} {word}', { n: preview, word: countWord(preview) }) : tr('Показать')}</Text>
         </Pressable>
       </View>
-      <Text style={styles.fresh}>{tr('Свежие объявления')}</Text>
+      <Text style={styles.fresh}>{searched ? tr('Найдено: {n}', { n: items ? total : '…' }) : tr('Свежие объявления')}</Text>
       {items === null && <ActivityIndicator style={{ marginTop: 20 }} color={colors.primary} />}
     </View>
   )
@@ -199,14 +208,21 @@ export default function CategoryScreen() {
   const pickShown = pickList.filter((x) => x.toLowerCase().includes(pickQ.trim().toLowerCase()))
   return (
     <View style={styles.page}>
+      {/* как .landing-topbar сайта: «назад» и поиск закреплены вверху, лента прокручивается под ними */}
+      <View style={[styles.heroBar, { paddingTop: insets.top + 10 }]}>
+          <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} hitSlop={8} style={styles.heroBack} accessibilityLabel={tr('Назад')}><Icon name="back" size={20} color={colors.ink} /></Pressable>
+          <View style={styles.heroSearch}>
+            <Icon name="search" size={17} color={colors.muted} />
+            <TextInput value={q} onChangeText={setQ} placeholder={landing?.fields.find((f) => f.type === 'text')?.hint ? t3(landing.fields.find((f) => f.type === 'text')?.hint) : tr('Что ищете?')} placeholderTextColor={colors.muted} style={styles.searchInput} returnKeyType="search" onSubmitEditing={apply} />
+          </View>
+      </View>
       <SheetFrame visible={allSubs} onClose={() => setAllSubs(false)}>
         <View style={styles.pickSheet}>
           <View style={styles.pickHandle} />
-          <Text style={styles.pickTitle}>{nameOf(node)}</Text>
+          <Text style={styles.pickTitle}>{tr('Все категории')}</Text>
           <ScrollView style={{ maxHeight: 520 }}>
             {subs.map((c) => (
               <Pressable key={c.id} style={[styles.pickRow, { flexDirection: 'row', alignItems: 'center', gap: 12 }]} onPress={() => { setAllSubs(false); router.push(`/c/${c.slug}`) }}>
-                <Image source={{ uri: `${SITE}/cat/${c.slug}.png` }} style={{ width: 40, height: 40 }} contentFit="contain" />
                 <Text style={[styles.pickText, { flex: 1 }]}>{nameOf(c)}</Text>
                 <Icon name="forward" size={15} color={colors.muted} />
               </Pressable>
@@ -232,6 +248,8 @@ export default function CategoryScreen() {
         </View>
       </SheetFrame>
       <FlatList
+        ref={listRef}
+        onScrollToIndexFailed={() => listRef.current?.scrollToEnd({ animated: true })}
         data={items ?? []}
         keyExtractor={(i) => i.id}
         numColumns={2}

@@ -66,6 +66,31 @@ def _create_session(workflow_id: str, user_id, callback: str) -> dict:
         raise HTTPException(502, "verification_unavailable")
 
 
+def _record_session(db: Session, user_id, session_id: str, kind, requested_by=None) -> None:
+    """
+    Запись заявки на проверку по сессии Didit. Didit может вернуть уже существующую сессию — ту же
+    незавершённую проверку (у нас она старше STALE_PENDING_HOURS и считается устаревшей, у Didit — ещё жива).
+    Раньше это была вторая вставка с тем же session_id → нарушение уникальности → 500, и в приложении
+    «Подтвердить личность» молча не работало. Теперь сессия того же человека переиспользуется: снова
+    «на проверке», свежее время; чужая сессия (не должно случаться) — отказ без падения.
+    """
+    req = db.query(DocVerificationRequest).filter(DocVerificationRequest.session_id == session_id).first()
+    if req:
+        if req.user_id != user_id:
+            log.warning("Didit вернул чужую сессию %s для %s", session_id, user_id)
+            raise HTTPException(502, "verification_unavailable")
+        req.status = DocVerificationStatus.pending
+        req.kind = kind
+        req.created_at = utcnow()
+        req.reject_reason = None
+        req.reviewed_at = None
+        if requested_by is not None:
+            req.requested_by = requested_by
+    else:
+        db.add(DocVerificationRequest(user_id=user_id, session_id=session_id, kind=kind, requested_by=requested_by))
+    db.commit()
+
+
 @router.get("/me")
 def my_status(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Статус для самого человека — показать в профиле."""
@@ -125,10 +150,7 @@ def start(user: User = Depends(get_current_user), db: Session = Depends(get_db))
     # после того, как он закончит на стороне Didit.
     data = _create_session(settings.didit_workflow_id, user.id, f"{settings.site_base_url}/profile")
 
-    req = DocVerificationRequest(user_id=user.id, session_id=data["session_id"],
-                                 kind=DocVerificationKind.initial)
-    db.add(req)
-    db.commit()
+    _record_session(db, user.id, data["session_id"], DocVerificationKind.initial)
     return {"url": data["url"]}
 
 
@@ -172,11 +194,7 @@ def request_reverify(
     data = _create_session(settings.didit_reverify_workflow_id, user_id,
                            f"{settings.site_base_url}/profile")
 
-    req = DocVerificationRequest(user_id=user_id, session_id=data["session_id"],
-                                 kind=DocVerificationKind.reverify,
-                                 requested_by=moderator.id)
-    db.add(req)
-    db.commit()
+    _record_session(db, user_id, data["session_id"], DocVerificationKind.reverify, requested_by=moderator.id)
 
     try:
         from app.core.notifications import notify_reverify_requested
