@@ -24,7 +24,12 @@ import { useAspect } from '../components/TileArt'
 // картинка плитки на телефоне — по её форме (artBox); на компьютере — прежняя сетка (размеры из CSS)
 function HomeTileArt({ slug, name }) {
   const box = artBox(name, tileFor(name), useAspect(`/cat/${slug}.png`))
-  return <div className="cat-tile-2row-glyph" style={{ '--art-w': `${box.width}px`, '--art-h': `${box.height}px` }}><CategoryArt slug={slug} /></div>
+  // только сама картинка, без запасного контурного значка: нет файла — в плитке ничего (картинки делаются заново)
+  return (
+    <div className="cat-tile-2row-glyph" style={{ '--art-w': `${box.width}px`, '--art-h': `${box.height}px` }}>
+      <img className="cat-art" src={`/cat/${slug}.png`} alt="" loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none' }} />
+    </div>
+  )
 }
 
 const tileSize = (name) => { const k = tileFor(name).kind; return k ? ` ${k}` : '' }

@@ -107,7 +107,7 @@ def clean(path_in: str, path_out: str, size: int = 512) -> dict:
     im = Image.fromarray(a)
     bb = im.getchannel('A').point(lambda v: 255 if v > 12 else 0).getbbox()
     im = im.crop(bb)
-    w, h = im.size; p = int(max(w, h) * 0.04)
+    w, h = im.size; p = int(max(w, h) * 0.005)  # почти без полей: поля съедали размер предмета на плитке
     c = Image.new('RGBA', (w + 2 * p, h + 2 * p), (0, 0, 0, 0)); c.paste(im, (p, p))
     c.thumbnail((size, size), Image.LANCZOS)
     c = fix_edges(c)

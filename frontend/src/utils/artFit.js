@@ -79,7 +79,7 @@ export function artBox(name, fit, aspect) {
     options.push(contain(Wi - R - 8, Hi - B - (TEXT_X + lines * 17 - 1)))
   }
   let [w, h] = options.reduce((best, o) => (o[0] * o[1] > best[0] * best[1] ? o : best), [0, 0])
-  const k = Math.min(1, (Wi * 0.66) / Math.max(w, 1), 72 / Math.max(h, 1)) // не крупнее 2/3 плитки и 72 по высоте
+  const k = Math.min(1, (Wi * 0.85) / Math.max(w, 1), 72 / Math.max(h, 1)) // не крупнее 85% ширины плитки и 72 по высоте (было 2/3 — широкие предметы выходили мелкими)
   w *= k; h *= k
   return { position: 'absolute', right: R, bottom: B, width: Math.round(w), height: Math.round(h) }
 }
