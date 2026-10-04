@@ -9,7 +9,7 @@ import {
   FlatList, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, Share, StyleSheet, Text, useWindowDimensions, View, Modal } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { attrRows, type AttrField, ru, categorySchema, type FeedItem, loadListing, type Listing, sellerListings, similarListings, startChat, textOf } from '../../src/api'
+import { attrRows, type AttrField, ru, categorySchema, type FeedItem, loadListing, type Listing, sellerListings, similarListings, startChat, textOf, sendMessage } from '../../src/api'
 import { useAuth } from '../../src/auth'
 import { readCache } from '../../src/cache'
 import { rememberViewed } from '../../src/history'
@@ -18,8 +18,9 @@ import { getSeed } from '../../src/seed'
 import CardsRow from '../../src/components/CardsRow'
 import HeartButton from '../../src/components/HeartButton'
 import ReportSheet from '../../src/components/ReportSheet'
-import Sheet from '../../src/components/Sheet'
+import Sheet, { SheetAction } from '../../src/components/Sheet'
 import MapWeb from '../../src/components/MapWeb'
+import VideoSlide from '../../src/components/VideoSlide'
 import * as Clipboard from 'expo-clipboard'
 import ImageView from '../../src/components/PhotoViewer'
 import Skeleton from '../../src/components/Skeleton'
@@ -50,9 +51,11 @@ export default function ListingScreen() {
   const [viewer, setViewer] = useState<number | null>(null)
   // Карта места — на весь экран, как на сайте: «назад» и название, внизу адрес (по точке) и «скопировать»
   const [mapOpen, setMapOpen] = useState(false)
+  const [descOpen, setDescOpen] = useState(false)
+  const [askOpen, setAskOpen] = useState(false)
   const [mapAddr, setMapAddr] = useState('')
   const [addrCopied, setAddrCopied] = useState(false)
-  const stripRef = useRef<FlatList<string>>(null)
+  const stripRef = useRef<FlatList<{ uri: string; poster: string; video: boolean }>>(null)
   useEffect(() => {
     if (!mapOpen || data?.location_lat == null || data.location_approximate) return
     fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${data.location_lat}&lon=${data.location_lng}&zoom=17&addressdetails=1`, { headers: { 'Accept-Language': getLang() } })
@@ -84,7 +87,9 @@ export default function ListingScreen() {
 
   // Видимая часть фото — как на сайте (≈ 0,66 ширины), плюс зона под строкой состояния и под наезжающим листом
   const photoH = Math.round(Math.min(width * 0.92, 520))
-  const photos = (data?.photos ?? []).filter((p) => !p.is_video).map((p) => mediaUrl(p.url)).filter(Boolean) as string[]
+  // лента — фото и видео, как на сайте; на весь экран открываются только фото
+  const media = (data?.photos ?? []).map((p) => ({ uri: mediaUrl(p.url) as string, poster: mediaUrl(p.thumbnail_url || p.url) as string, video: !!p.is_video })).filter((m) => !!m.uri)
+  const photos = media.filter((m) => !m.video).map((m) => m.uri)
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => setPhoto(Math.round(e.nativeEvent.contentOffset.x / width))
   const back = (
     <Pressable style={[styles.back, { top: insets.top + 8 }]} onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
@@ -124,7 +129,6 @@ export default function ListingScreen() {
   const since = parseTime(owner?.since)
   const chips: { label: string; tone: 'accent' | 'primary' | 'gold' | 'plain' }[] = []
   if (isFresh(data.published_at)) chips.push({ label: 'Новое', tone: 'accent' })
-  if (data.is_reserved) chips.push({ label: 'Забронировано', tone: 'gold' })
   if (owner?.is_company) chips.push({ label: 'Компания', tone: 'primary' })
   if (data.delivery_available) chips.push({ label: 'Доставка', tone: 'plain' })
   if (data.price_negotiable) chips.push({ label: 'Торг уместен', tone: 'plain' })
@@ -133,6 +137,20 @@ export default function ListingScreen() {
   const verdict = VERDICTS[(data as unknown as { price_check?: { verdict?: string } }).price_check?.verdict ?? '']
   const mine = !!(user && owner && user.id === owner.id)
   // Звонок — как на сайте: трубка ведёт в переписку, где запрашивается звонок
+  const gone = data.status === 'sold' || data.status === 'archived'
+  const isResume = (data.attributes as Record<string, unknown> | undefined)?.listing_kind === 'resume'
+  const fromTg = data.external_source === 'telegram' && !!data.external_author
+  const askOptions = ['Ещё актуально?', 'Где и когда можно посмотреть?', ...(data.price_negotiable ? ['Торг уместен?'] : []), ...(data.delivery_available ? ['Доставка возможна?'] : [])]
+  // как на сайте: выбранный вопрос сразу уходит продавцу, затем — переписка
+  const startChatWith = async (text?: string) => {
+    if (!token) { router.push('/login'); return }
+    setOpening(true)
+    try {
+      const chat = await startChat(token, data.id)
+      if (text) await sendMessage(token, chat.id, text).catch(() => {})
+      router.push(`/chat/${chat.id}`)
+    } catch { Linking.openURL(`${SITE}${data.path ?? ''}`) } finally { setOpening(false) }
+  }
   const openChat = async () => {
     if (!token) { router.push('/login'); return }
     setOpening(true)
@@ -145,32 +163,43 @@ export default function ListingScreen() {
       <ScrollView contentContainerStyle={{ paddingBottom: 96 + insets.bottom }} showsVerticalScrollIndicator={false}>
         {/* Фото — как на сайте: снимок целиком (contain) на размытой подложке из того же снимка */}
         <View style={{ width, height: stripH, backgroundColor: '#1E2621' }}>
-          {photos.length > 0 && (
+          {media.length > 0 && (
             <FlatList
               ref={stripRef}
-              data={photos}
-              keyExtractor={(u, k) => `${k}-${u}`}
+              data={media}
+              keyExtractor={(m, k) => `${k}-${m.uri}`}
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
               onMomentumScrollEnd={onScroll}
               renderItem={({ item, index }) => (
                 // overflow hidden: увеличенная размытая подложка не вылезает на соседние фото (были жёсткие полосы по краям)
-                <Pressable style={{ width, height: stripH, overflow: 'hidden' }} onPress={() => setViewer(index)} accessibilityRole="imagebutton" accessibilityLabel={tr('Открыть фото')}>
-                  <Image source={{ uri: item }} style={[StyleSheet.absoluteFill, styles.blur]} contentFit="cover" blurRadius={30} />
+                <Pressable style={{ width, height: stripH, overflow: 'hidden' }} disabled={item.video} onPress={() => setViewer(photos.indexOf(item.uri))} accessibilityRole="imagebutton" accessibilityLabel={tr('Открыть фото')}>
+                  <Image source={{ uri: item.poster }} style={[StyleSheet.absoluteFill, styles.blur]} contentFit="cover" blurRadius={30} />
                   <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(20,26,22,0.18)' }]} />
-                  <Image source={{ uri: item }} style={{ position: 'absolute', left: 0, right: 0, top: insets.top, height: photoH }} contentFit="contain" transition={200} />
+                  {item.video
+                    ? <VideoSlide uri={item.uri} active={index === photo} width={width} height={photoH} top={insets.top} />
+                    : <Image source={{ uri: item.uri }} style={{ position: 'absolute', left: 0, right: 0, top: insets.top, height: photoH }} contentFit="contain" transition={200} />}
                 </Pressable>
               )}
             />
           )}
-          {photos.length > 1 && (
-            <View style={[styles.counter, { bottom: SHEET_OVERLAP + 12 }]}><Text style={styles.counterText}>{photo + 1} / {photos.length}</Text></View>
+          {media.length > 1 && (
+            <View style={[styles.counter, { bottom: SHEET_OVERLAP + 12 }]}><Text style={styles.counterText}>{photo + 1} / {media.length}</Text></View>
           )}
         </View>
 
         {/* Белый лист со скруглением наезжает на фото — как .detail-sheet на сайте */}
         <View style={styles.sheet}>
+          {gone && (
+            <View style={styles.gone}>
+              <Text style={styles.goneTitle}>{tr(data.status === 'sold' ? 'Продано' : 'Объявление снято')}</Text>
+              <Text style={styles.goneNote}>{tr('Продавец больше не продаёт эту вещь')}</Text>
+            </View>
+          )}
+          {!gone && !!data.is_reserved && (
+            <View style={styles.reservedBanner}><Text style={styles.reservedText}>{tr(data.reserved_for_me ? 'Продавец забронировал это для вас' : 'Забронировано другим покупателем')}</Text></View>
+          )}
           <View style={styles.priceRow}>
             <Text style={styles.price}>{formatPrice(data.price, data.currency, data.is_free)}</Text>
             {!!data.previous_price && !data.is_free && <Text style={styles.oldPrice}>{formatPrice(data.previous_price, data.currency)}</Text>}
@@ -265,7 +294,8 @@ export default function ListingScreen() {
           {!!description && (
             <View style={styles.section}>
               <Text style={styles.h3}>{tr('Описание')}</Text>
-              <Text style={styles.text}>{description}</Text>
+              <Text style={styles.text} numberOfLines={descOpen || description.length <= 320 ? undefined : 7}>{description}</Text>
+              {description.length > 320 && !descOpen && <Pressable onPress={() => setDescOpen(true)} hitSlop={6}><Text style={styles.readMore}>{tr('Читать полностью')}</Text></Pressable>}
             </View>
           )}
 
@@ -290,10 +320,10 @@ export default function ListingScreen() {
       <HeartButton id={data.id} size={40} dark style={[styles.heartTop, { top: insets.top + 8 }]} />
       <ImageView
         images={photos.map((uri) => ({ uri }))}
-        imageIndex={viewer ?? 0}
+        imageIndex={Math.max(0, viewer ?? 0)}
         visible={viewer !== null}
-        onRequestClose={() => { setViewer(null); stripRef.current?.scrollToOffset({ offset: photo * width, animated: false }) }}
-        onImageIndexChange={(i) => setPhoto(i)}
+        onRequestClose={() => { setViewer(null); stripRef.current?.scrollToOffset({ offset: Math.max(0, media.findIndex((m) => m.uri === photos[photo])) * width, animated: false }) }}
+        onImageIndexChange={(i) => setPhoto(Math.max(0, media.findIndex((m) => m.uri === photos[i])))}
         presentationStyle="overFullScreen"
         backgroundColor="#0B0F0D"
         FooterComponent={({ imageIndex }) => (
@@ -347,10 +377,21 @@ export default function ListingScreen() {
           )
         })()}
       </Sheet>
+      <Sheet visible={askOpen} title={tr('Спросить у продавца')} onClose={() => setAskOpen(false)}>
+        {askOptions.map((q) => <SheetAction key={q} label={tr(q)} onPress={() => { setAskOpen(false); startChatWith(tr(q)) }} />)}
+        <SheetAction label={tr('Написать своё сообщение')} icon={<Icon name="edit" size={20} color={colors.ink} />} onPress={() => { setAskOpen(false); startChatWith() }} />
+      </Sheet>
       <ReportSheet visible={reportOpen} listingId={data.id} token={token} onClose={() => setReportOpen(false)} />
       <View style={[styles.bar, { paddingBottom: 10 + insets.bottom }]}>
         {mine ? (
-          <View style={[styles.cta, styles.ctaMine]}><Text style={styles.ctaMineText}>{tr('Это ваше объявление')}</Text></View>
+          <Pressable style={[styles.cta, styles.ctaMine]} onPress={() => router.push(`/edit/${data.id}`)} accessibilityRole="button"><Text style={styles.ctaMineText}>{tr('Редактировать')}</Text></Pressable>
+        ) : gone ? (
+          <Pressable style={styles.cta} onPress={() => router.push(data.category_slug ? `/c/${data.category_slug}` : '/categories')} accessibilityRole="button"><Text style={styles.ctaText}>{tr('Смотреть похожие в разделе')}</Text></Pressable>
+        ) : fromTg ? (
+          <Pressable style={[styles.cta, styles.ctaTg]} onPress={() => (token ? Linking.openURL(`https://t.me/${data.external_author}`) : router.push('/login'))} accessibilityRole="button">
+            <Icon name="telegram" size={18} color="#fff" filled />
+            <Text style={styles.ctaText}>{tr('Написать в Telegram')}</Text>
+          </Pressable>
         ) : (
           <View style={styles.ctaRow}>
           {owner?.has_phone && (
@@ -359,16 +400,9 @@ export default function ListingScreen() {
             </Pressable>
           )}
           <Pressable style={[styles.cta, { flex: 1 }, opening && { opacity: 0.7 }]} disabled={opening} accessibilityRole="button" onPress={async () => {
+            // как на сайте: сначала «Спросить у продавца» с готовыми вопросами; резюме — сразу в переписку
             if (!token) { router.push('/login'); return }
-            setOpening(true)
-            try {
-              const chat = await startChat(token, data.id)
-              router.push(`/chat/${chat.id}`)
-            } catch {
-              Linking.openURL(`${SITE}${data.path ?? ''}`)
-            } finally {
-              setOpening(false)
-            }
+            if (isResume) startChatWith(); else setAskOpen(true)
           }}>
             <Text style={styles.ctaText}>{tr('Написать продавцу')}</Text>
           </Pressable>
@@ -456,6 +490,13 @@ const styles = StyleSheet.create({
     position: 'absolute', right: 60, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(20,26,22,0.38)', alignItems: 'center', justifyContent: 'center',
     shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 6, shadowOffset: { width: 0, height: 1 }, elevation: 3,
   },
+  gone: { marginBottom: 12, padding: 12, borderRadius: 14, backgroundColor: colors.sunken, gap: 2 },
+  goneTitle: { fontSize: 15, fontFamily: font[800], color: colors.ink },
+  goneNote: { fontSize: 13.5, fontFamily: font[500], color: colors.inkSoft },
+  reservedBanner: { marginBottom: 12, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 12, backgroundColor: '#FBF3E3' },
+  reservedText: { fontSize: 13.5, fontFamily: font[700], color: '#8A6A1F' },
+  ctaTg: { flexDirection: 'row', gap: 8, backgroundColor: '#229ED9' },
+  readMore: { fontSize: 14, fontFamily: font[700], color: colors.primaryDeep, marginTop: 6 },
   mapLink: { fontSize: 13.5, fontFamily: font[700], color: colors.primaryDeep },
   mapPage: { flex: 1, backgroundColor: colors.bg },
   mapHead: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 8 },

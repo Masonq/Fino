@@ -48,6 +48,7 @@ export type Owner = {
 }
 
 export type Listing = Omit<FeedItem, 'photos'> & {
+  external_author?: string | null; reserved_for_me?: boolean; status?: string
   location_lat?: number | null; location_lng?: number | null; location_approximate?: boolean; hide_exact_address?: boolean
   photos: Photo[]
   owner?: Owner
