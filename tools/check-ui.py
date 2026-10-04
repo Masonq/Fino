@@ -150,11 +150,13 @@ if os.path.exists(seed) and os.path.isdir(cat_dir):
     slugs = set(re.findall(r'"slug":\s*"([a-z-]+)"', open(seed, encoding="utf-8").read()))
     files = {f[:-4] for f in os.listdir(cat_dir) if f.endswith(".png")}
     missing = slugs - files
-    check(
-        "у каждой категории есть картинка",
-        not missing,
-        f"нет картинок: {sorted(missing)}" if missing else "",
-    )
+    # Картинки разделов делаются заново и приходят партиями (с окт. 2026): пустая плитка — задумано
+    # (главная и разделы показывают только название). Поэтому это предупреждение, а не остановка деплоя.
+    if missing:
+        print(f"  {YELLOW}!{RESET} пока без картинок ({len(missing)} из {len(slugs)}) — плитки показывают только название")
+        print(f"      {YELLOW}{', '.join(sorted(missing))}{RESET}")
+    else:
+        check("у каждой категории есть картинка", True)
 
 print("\nПереводы")
 
