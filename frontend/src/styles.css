@@ -6805,3 +6805,51 @@ a.s-attrs{ display:block; }
   .cat-tile-2row-glyph.all-glyph { width: 46px; height: 46px; right: 8px; bottom: 6px; }
 }
 @media (max-width: 619px) { .cat-tile-2row-label, .cat-tile-2row.wide .cat-tile-2row-label, .cat-tile-2row.xwide .cat-tile-2row-label { max-width: var(--tile-text, 92px); } }
+@media (max-width: 619px) { .cat-tile-2row-label { display: block; -webkit-line-clamp: unset; overflow: visible; text-overflow: clip; white-space: normal; } }
+/* картинка целиком внутри плитки, прижата к правому нижнему углу (не уходит за край) — как в приложении (ART_BIG / ART_SMALL) */
+.jl-tile-img { width: 70px; height: 52px; right: 7px; bottom: 6px; object-fit: contain; object-position: right bottom; }
+.jl-tile.small-art .jl-tile-img { width: 56px; height: 44px; right: 6px; bottom: 6px; }
+@media (max-width: 619px) {
+  .cat-tile-2row-glyph { width: 70px; height: 52px; right: 7px; bottom: 6px; }
+  .cat-tile-2row-glyph img { object-fit: contain; object-position: right bottom; }
+  .cat-tile-2row.small-art .cat-tile-2row-glyph { width: 56px; height: 44px; right: 6px; bottom: 6px; }
+}
+/* размер картинки плитки — по её форме (artBox): ширина и высота из разметки, прижата к правому нижнему углу */
+.jl-tile-img, .jl-tile.small-art .jl-tile-img { right: 5px; bottom: 5px; object-fit: contain; object-position: right bottom; }
+@media (max-width: 619px) {
+  .cat-tile-2row-glyph, .cat-tile-2row.small-art .cat-tile-2row-glyph { width: var(--art-w, 70px); height: var(--art-h, 52px); right: 5px; bottom: 5px; }
+}
+
+/* ——— Страницы разделов по образцу Авито (как в приложении) ——— */
+.lp-grid { padding: 16px 12px 8px; display: flex; flex-direction: column; gap: 8px; }
+.lp-grid-row { display: flex; gap: 8px; }
+.lp-grid .jl-tile { flex: 0 0 auto; }
+.lp-all { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.lp-filters { background: #E3F2EA; }
+.lp-filters .landing-select, .lp-filters input, .lp-filters .landing-range input { background: #fff; }
+.lp-filters .landing-go { width: auto; align-self: flex-start; padding-left: 22px; padding-right: 22px; }
+.re-head { padding: 10px 12px 4px; display: flex; flex-direction: column; gap: 10px; }
+.re-title { margin: 0; text-align: center; font-size: 30px; line-height: 36px; font-weight: 800; letter-spacing: -0.02em; color: var(--ink); }
+.re-count { text-align: center; margin-top: -6px; margin-bottom: 4px; font-size: 14px; font-weight: 600; color: var(--muted); }
+.re-deal { margin: 0 !important; }
+.re-field { display: flex; align-items: center; gap: 8px; height: 50px; flex: none; border-radius: 14px; background: var(--surface-sunken); padding: 0 16px; font-size: 16px; font-weight: 500; color: var(--ink); text-align: left; min-width: 0; }
+.re-row .re-field { flex: 1; }
+.re-field span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.re-field.ph { color: var(--muted); }
+.re-row { display: flex; gap: 8px; }
+.re-go { flex: 1; margin: 0 !important; width: auto !important; }
+.re-filter { width: 50px; height: 50px; flex: 0 0 50px; border-radius: 14px; background: var(--surface-sunken); display: flex; align-items: center; justify-content: center; color: var(--ink); }
+.re-filter.on { background: #E3F2EA; }
+.re-sheet-layer { position: fixed; inset: 0; z-index: 60; background: rgba(17, 22, 19, 0.42); display: flex; align-items: flex-end; justify-content: center; }
+.re-sheet { width: 100%; max-width: 560px; background: var(--surface); border-radius: 24px 24px 0 0; padding: 8px 16px calc(20px + env(safe-area-inset-bottom, 0px)); }
+.re-sheet-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 0 auto 12px; }
+.re-sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.re-sheet-title { font-size: 18px; font-weight: 800; color: var(--ink); }
+.re-sheet-close, .re-sheet-clear { background: none; color: var(--ink); }
+.re-sheet-clear { font-size: 16px; font-weight: 500; color: var(--muted); }
+.re-sheet-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.re-sheet-chip { min-width: 48px; height: 46px; padding: 0 16px; border-radius: 14px; background: var(--surface-sunken); font-size: 16px; font-weight: 600; color: var(--ink); border: 2px solid transparent; }
+.re-sheet-chip.on { border-color: var(--ink); }
+.re-sheet-price { display: flex; gap: 8px; margin-bottom: 18px; }
+.re-sheet-price input { flex: 1; min-width: 0; height: 48px; border-radius: 13px; border: none; background: var(--surface-sunken); padding: 0 14px; font-size: 16px; }
+.re-sheet-apply { width: 100% !important; margin: 0 !important; }

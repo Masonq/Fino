@@ -900,7 +900,12 @@
     "show_count_other": "Show {{count}} listings",
     "search_in": "Search in {{name}}",
     "search_city": "Search in {{city}}",
-    "refine": "Refine the search"
+    "refine": "Refine the search",
+    "re_types": "Flats, houses, rooms…",
+    "all_filters": "All filters",
+    "all_categories": "All categories",
+    "clear": "Clear",
+    "apply": "Apply"
   },
   "fields": {
     "real-estate": {
@@ -1387,5 +1392,18 @@
     "beauty": "What beauty items are you looking for?",
     "services": "What services are you looking for?",
     "business": "What do you need for business?"
+  },
+  "landing_card": {
+    "auto": "Find a car",
+    "electronics": "Find electronics",
+    "home-garden": "Find for your home",
+    "fashion": "Find clothes",
+    "kids": "Find for kids",
+    "hobby-sport": "Find for hobbies",
+    "pets": "Find for your pet",
+    "beauty": "Find beauty items",
+    "services": "Find a specialist",
+    "business": "Find for business",
+    "real-estate": "All filters"
   }
 }

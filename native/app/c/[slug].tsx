@@ -11,7 +11,8 @@ import Icon from '../../src/components/Icon'
 import SheetFrame from '../../src/components/SheetFrame'
 import { CAR_BRANDS, CAR_MODELS, CAR_OTHER, LANDINGS, type LandingField, landingParams, LUI, t3 } from '../../src/landings'
 import JobsLanding from '../../src/components/JobsLanding'
-import { ART_BIG, ART_SMALL, TILE, tileFor } from '../../src/artFit'
+import { TILE, longestWordWidth, oneLineWidth, tileFor, type TileFit } from '../../src/artFit'
+import TileArt from '../../src/components/TileArt'
 import ListingCard from '../../src/components/ListingCard'
 import { SITE } from '../../src/config'
 import { select } from '../../src/haptics'
@@ -90,6 +91,26 @@ function findNode(list: Category[], slug: string): Category | null {
  * Страница раздела — как CategoryLanding сайта: название и число предложений, подразделы с картинками
  * (вглубь — своя страница), поиск внутри раздела, цена от/до, сортировка, объявления сеткой с подгрузкой.
  */
+// Заголовок цветной карточки поиска — как «Найти автомобиль» у Авито
+const CARD_TITLES: Record<string, string> = {"auto": "Найти автомобиль", "electronics": "Найти технику", "home-garden": "Найти для дома", "fashion": "Найти одежду", "kids": "Найти для детей", "hobby-sport": "Найти для хобби", "pets": "Найти для питомца", "beauty": "Найти для красоты", "services": "Найти исполнителя", "business": "Найти для бизнеса", "real-estate": "Все фильтры"}
+
+/** Плитки по образцу Авито: ряд из 3 или из 2 широких (длинное название); не больше 3 рядов, дальше — «Все категории →». */
+function gridRows<T>(list: T[], name: (x: T) => string, narrowText: number, maxRows = 3): (T | null)[][] {
+  // широкая плитка — если название не помещается в узкую одной строкой (запас по самому широкому шрифту)
+  const wide = (n: string) => oneLineWidth(n) > narrowText
+  const narrowQ = list.filter((x) => !wide(name(x))), wideQ = list.filter((x) => wide(name(x)))
+  const rows: (T | null)[][] = []
+  // ряды по очереди появления: короткие — по три, длинные — парами; остатки — парой или одной широкой
+  while ((narrowQ.length || wideQ.length) && rows.length < maxRows) {
+    const nextNarrow = narrowQ.length && (!wideQ.length || list.indexOf(narrowQ[0]) < list.indexOf(wideQ[0]))
+    if (nextNarrow && narrowQ.length >= 3) rows.push(narrowQ.splice(0, 3))
+    else if (!nextNarrow && wideQ.length >= 2) rows.push(wideQ.splice(0, 2))
+    else rows.push([...(nextNarrow ? narrowQ : wideQ).splice(0, 1), ...(nextNarrow ? wideQ : narrowQ).splice(0, 1)])
+  }
+  if ((narrowQ.length || wideQ.length) && rows.length) { const last = rows[rows.length - 1]; last[last.length - 1] = null }
+  return rows
+}
+
 // Вопрос-заголовок раздела — как «Какую работу вы ищете?»
 const LANDING_TITLES: Record<string, string> = {"real-estate": "Какую недвижимость ищете?", "auto": "Какой транспорт ищете?", "electronics": "Какую технику ищете?", "home-garden": "Что ищете для дома?", "fashion": "Какую одежду ищете?", "kids": "Что ищете для детей?", "hobby-sport": "Что ищете для хобби и спорта?", "pets": "Что ищете для питомца?", "beauty": "Что ищете для красоты?", "services": "Какие услуги ищете?", "business": "Что ищете для бизнеса?"}
 
@@ -111,6 +132,8 @@ function CategoryScreen() {
   const [picker, setPicker] = useState<'brand' | 'model' | null>(null)
   const [pickQ, setPickQ] = useState('')
   const [allSubs, setAllSubs] = useState(false)
+  const [sheet, setSheet] = useState<null | 'rooms' | 'price'>(null) // Недвижимость: шторки «Комнаты» и «Цена»
+  const [moreFilters, setMoreFilters] = useState(false) // Недвижимость: кнопка «фильтры» раскрывает остальные поля
   const [items, setItems] = useState<FeedItem[] | null>(null)
   const [total, setTotal] = useState(0)
   const [q, setQ] = useState('')
@@ -122,6 +145,7 @@ function CategoryScreen() {
   useEffect(() => { fetchCategories().then((list) => { setNode(findNode(list, String(slug))); setRoot(rootOf(list, String(slug))) }).catch(() => {}) }, [slug])
   // Особые фильтры — по верхнему разделу, как на сайте (в «Легковых» — те же, что в «Авто»)
   const landing = root ? LANDINGS[root.slug] : undefined
+  const isRE = root?.slug === 'real-estate' && node?.slug === root.slug // верх по образцу Авито — только на самой «Недвижимости»
   const setVal = (k: string, v: string) => setValues((prev) => ({ ...prev, [k]: v }))
 
   const load = useCallback(async () => {
@@ -173,50 +197,94 @@ function CategoryScreen() {
   const subs = node?.children ?? []
   const countWord = (n: number) => plural(n, { ru: ['объявление', 'объявления', 'объявлений'], en: ['listing', 'listings'], sr: ['oglas', 'oglasa', 'oglasa'] })
   const heroSlug = root?.slug ?? String(slug)
-  const head = (
-    <View>
-      {/* Как раздел «Работа» (по образцу Авито): вопрос-заголовок, число объявлений, все подразделы — два ряда
-          плиток с картинками и прокруткой вбок; фильтры ниже — в карточке «Подобрать точнее» */}
-      <View style={styles.lHead}>
-        <Text style={styles.lTitle}>{tr(node && root && node.slug !== root.slug ? nameOf(node) : (LANDING_TITLES[String(slug)] ?? nameOf(node)))}</Text>
-        <Text style={styles.lCount}>{items ? `${total} ${countWord(total)}` : ' '}</Text>
-      </View>
-      {subs.length > 0 && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.lTiles}>
-          <View style={{ gap: 8 }}>
-            {[subs.filter((_, k) => k % 2 === 0), subs.filter((_, k) => k % 2 === 1)].filter((r) => r.length).map((row, r) => (
-              <View key={r} style={styles.lRow}>
-                {row.map((c) => {
-                  const fit = tileFor(nameOf(c))
-                  return (
-                    <Pressable key={c.id} style={[styles.lTile, { width: fit.tile }]} onPress={() => { select(); router.push(`/c/${c.slug}`) }} accessibilityRole="button">
-                      <Text style={[styles.lTileText, { maxWidth: fit.text }]}>{nameOf(c)}</Text>
-                      <Image source={{ uri: `${SITE}/cat/${c.slug}.png` }} style={fit.art === 'big' ? ART_BIG : ART_SMALL} contentFit="contain" />
-                    </Pressable>
-                  )
-                })}
-              </View>
-            ))}
-          </View>
-        </ScrollView>
+  // ── сетка плиток подразделов по образцу Авито: по 3 в ряд или 2 широких, «Все категории →» последней
+  const gridW = width - space.page * 2
+  const smallW = Math.floor((gridW - 16) / 3), wideW = Math.floor((gridW - 8) / 2)
+  const grid = gridRows(subs, nameOf, smallW - 22)
+  const tile = (c: (typeof subs)[number] | null, w: number, key: string) => {
+    if (!c) {
+      return (
+        <Pressable key={key} style={[styles.lTile, { width: w }]} onPress={() => setAllSubs(true)} accessibilityRole="button">
+          <Text style={[styles.lTileText, { maxWidth: w - 22 }]}>{tr('Все категории')}</Text>
+          <View style={{ marginTop: 6 }}><Icon name="forward" size={18} color={colors.ink} /></View>
+        </Pressable>
+      )
+    }
+    // узкая плитка — надпись на всю ширину (название в одну строку); широкая — не шире половины, но не уже самого длинного слова: справа колонка под картинку
+    const fit: TileFit = { kind: '', tile: w, text: w < wideW ? w - 22 : Math.min(w - 22, Math.max(longestWordWidth(nameOf(c)) + 4, Math.round(w * 0.5))), art: 'big' }
+    return (
+      <Pressable key={key} style={[styles.lTile, { width: w }]} onPress={() => { select(); router.push(`/c/${c.slug}`) }} accessibilityRole="button">
+        <Text style={[styles.lTileText, { maxWidth: fit.text }]}>{nameOf(c)}</Text>
+        <TileArt uri={`${SITE}/cat/${c.slug}.png`} name={nameOf(c)} fit={fit} />
+      </Pressable>
+    )
+  }
+  const tilesGrid = subs.length > 0 && (
+    <View style={styles.grid}>
+      {grid.map((row, r) => (
+        <View key={r} style={styles.gridRow}>
+          {row.map((c, k) => tile(c, row.length === 3 ? smallW : row.length === 2 ? wideW : gridW, `${r}-${k}`))}
+        </View>
+      ))}
+    </View>
+  )
+  const showLabel = preview != null ? tr('Показать {n} {word}', { n: preview, word: countWord(preview) }) : tr('Показать')
+  const fullForm = (
+    <View style={styles.form}>
+      <Text style={styles.formTitle}>{tr(CARD_TITLES[String(root?.slug)] ?? 'Подобрать точнее')}</Text>
+      {!!landing?.deal && !isRE && (
+        <Segmented options={landing.deal.options.map((o) => ({ key: o.value, label: t3(o.label) }))} value={deal} onChange={(v) => setDeal(v === deal ? '' : v)} onSunken />
       )}
-
-      <View style={styles.form}>
-        <Text style={styles.formTitle}>{tr('Подобрать точнее')}</Text>
-        {!!landing?.deal && (
-          <View style={styles.deal}>
-            <Segmented options={landing.deal.options.map((o) => ({ key: o.value, label: t3(o.label) }))} value={deal} onChange={(v) => setDeal(v === deal ? '' : v)} onSunken />
-          </View>
+      {landing?.fields.filter((f) => f.type !== 'text' && !(isRE && (f.key === 'rooms' || f.key === 'price'))).map((f) => <FieldView key={f.key} f={f} values={values} setVal={setVal} onPick={(k) => { setPickQ(''); setPicker(k) }} />)}
+      <Pressable style={styles.go} onPress={apply} accessibilityRole="button"><Text style={styles.goText}>{showLabel}</Text></Pressable>
+    </View>
+  )
+  // ── Недвижимость: свой верх, как у Авито — заголовок по центру, сделка, категория, комнаты и цена, показать + фильтры
+  const roomsField = landing?.fields.find((f) => f.key === 'rooms')
+  const priceText = values.price_min && values.price_max ? `${values.price_min} – ${values.price_max} €` : values.price_min ? `${tr('от')} ${values.price_min} €` : values.price_max ? `${tr('до')} ${values.price_max} €` : ''
+  const reHead = (
+    <View style={styles.reHead}>
+      <Text style={styles.reTitle}>{nameOf(root)}</Text>
+      <Text style={styles.reCount}>{items ? `${total} ${countWord(total)}` : ' '}</Text>
+      {!!landing?.deal && <Segmented options={landing.deal.options.map((o) => ({ key: o.value, label: t3(o.label) }))} value={deal} onChange={(v) => setDeal(v === deal ? '' : v)} stretch />}
+      <Pressable style={styles.reField} onPress={() => setAllSubs(true)} accessibilityRole="button">
+        <Text style={styles.reFieldText} numberOfLines={1}>{tr('Квартиры, дома, комнаты…')}</Text>
+        <Icon name="down" size={16} color={colors.ink} />
+      </Pressable>
+      <View style={styles.reRow}>
+        {!!roomsField && (
+          <Pressable style={[styles.reField, { flex: 1 }]} onPress={() => setSheet('rooms')} accessibilityRole="button">
+            <Text style={[styles.reFieldText, !values.rooms && styles.reFieldPh]} numberOfLines={1}>{values.rooms ? `${tr('Комнаты')}: ${values.rooms}` : tr('Комнаты')}</Text>
+            <Icon name="down" size={16} color={colors.ink} />
+          </Pressable>
         )}
-        {landing?.fields.filter((f) => f.type !== 'text').map((f) => <FieldView key={f.key} f={f} values={values} setVal={setVal} onPick={(k) => { setPickQ(''); setPicker(k) }} />)}
-        <Pressable style={styles.go} onPress={apply} accessibilityRole="button">
-          <Text style={styles.goText}>{preview != null ? tr('Показать {n} {word}', { n: preview, word: countWord(preview) }) : tr('Показать')}</Text>
+        <Pressable style={[styles.reField, { flex: 1 }]} onPress={() => setSheet('price')} accessibilityRole="button">
+          <Text style={[styles.reFieldText, !priceText && styles.reFieldPh]} numberOfLines={1}>{priceText || tr('Цена')}</Text>
         </Pressable>
       </View>
+      <View style={styles.reRow}>
+        <Pressable style={[styles.go, styles.goWide]} onPress={apply} accessibilityRole="button"><Text style={styles.goText}>{showLabel}</Text></Pressable>
+        <Pressable style={[styles.reFilter, moreFilters && styles.reFilterOn]} onPress={() => { select(); setMoreFilters((v) => !v) }} accessibilityRole="button" accessibilityLabel={tr('Все фильтры')}>
+          <Icon name="filter" size={20} color={colors.ink} />
+        </Pressable>
+      </View>
+    </View>
+  )
+  const head = (
+    <View>
+      {isRE ? reHead : (
+        <View style={styles.lHead}>
+          <Text style={styles.lTitle}>{tr(node && root && node.slug !== root.slug ? nameOf(node) : (LANDING_TITLES[String(slug)] ?? nameOf(node)))}</Text>
+          <Text style={styles.lCount}>{items ? `${total} ${countWord(total)}` : ' '}</Text>
+        </View>
+      )}
+      {!isRE && tilesGrid}
+      {(!isRE || moreFilters) && fullForm}
       <Text style={styles.fresh}>{searched ? tr('Найдено: {n}', { n: items ? total : '…' }) : tr('Свежие объявления')}</Text>
       {items === null && <ActivityIndicator style={{ marginTop: 20 }} color={colors.primary} />}
     </View>
   )
+
 
   const pickList = picker === 'brand' ? CAR_BRANDS : picker === 'model' ? [...(CAR_MODELS[values.brand] ?? []), CAR_OTHER] : []
   const pickShown = pickList.filter((x) => x.toLowerCase().includes(pickQ.trim().toLowerCase()))
@@ -230,6 +298,42 @@ function CategoryScreen() {
             <TextInput value={q} onChangeText={setQ} placeholder={landing?.fields.find((f) => f.type === 'text')?.hint ? t3(landing.fields.find((f) => f.type === 'text')?.hint) : tr('Что ищете?')} placeholderTextColor={colors.muted} style={styles.searchInput} returnKeyType="search" onSubmitEditing={apply} />
           </View>
       </View>
+      <SheetFrame visible={sheet === 'rooms'} onClose={() => setSheet(null)}>
+        <View style={[styles.pickSheet, styles.sheetPad]}>
+          <View style={styles.pickHandle} />
+          <View style={styles.sheetHead}>
+            <Pressable onPress={() => setSheet(null)} hitSlop={8} accessibilityLabel={tr('Закрыть')}><Icon name="close" size={22} color={colors.ink} /></Pressable>
+            <Text style={styles.sheetTitle}>{tr('Комнаты')}</Text>
+            <Pressable onPress={() => setVal('rooms', '')} hitSlop={8}><Text style={styles.sheetClear}>{tr('Очистить')}</Text></Pressable>
+          </View>
+          <View style={styles.sheetChips}>
+            {(roomsField?.options ?? []).map((o) => {
+              const on = values.rooms === o.value
+              return (
+                <Pressable key={o.value} style={[styles.sheetChip, on && styles.sheetChipOn]} onPress={() => { select(); setVal('rooms', on ? '' : o.value) }} accessibilityRole="button" accessibilityState={{ selected: on }}>
+                  <Text style={[styles.sheetChipText, on && styles.sheetChipTextOn]}>{t3(o.label)}</Text>
+                </Pressable>
+              )
+            })}
+          </View>
+          <View style={styles.reRow}><Pressable style={[styles.go, styles.goWide]} onPress={() => { setSheet(null); apply() }}><Text style={styles.goText}>{tr('Применить')}</Text></Pressable></View>
+        </View>
+      </SheetFrame>
+      <SheetFrame visible={sheet === 'price'} onClose={() => setSheet(null)}>
+        <View style={[styles.pickSheet, styles.sheetPad]}>
+          <View style={styles.pickHandle} />
+          <View style={styles.sheetHead}>
+            <Pressable onPress={() => setSheet(null)} hitSlop={8} accessibilityLabel={tr('Закрыть')}><Icon name="close" size={22} color={colors.ink} /></Pressable>
+            <Text style={styles.sheetTitle}>{tr('Цена')}, €</Text>
+            <Pressable onPress={() => { setVal('price_min', ''); setVal('price_max', '') }} hitSlop={8}><Text style={styles.sheetClear}>{tr('Очистить')}</Text></Pressable>
+          </View>
+          <View style={[styles.priceRow, { marginBottom: 18 }]}>
+            <TextInput value={values.price_min ?? ''} onChangeText={(v) => setVal('price_min', v.replace(/\D/g, '').slice(0, 9))} placeholder={t3(LUI.from)} placeholderTextColor={colors.muted} keyboardType="number-pad" style={[styles.priceInput, { backgroundColor: colors.sunken, borderWidth: 0 }]} />
+            <TextInput value={values.price_max ?? ''} onChangeText={(v) => setVal('price_max', v.replace(/\D/g, '').slice(0, 9))} placeholder={t3(LUI.to)} placeholderTextColor={colors.muted} keyboardType="number-pad" style={[styles.priceInput, { backgroundColor: colors.sunken, borderWidth: 0 }]} />
+          </View>
+          <View style={styles.reRow}><Pressable style={[styles.go, styles.goWide]} onPress={() => { setSheet(null); apply() }}><Text style={styles.goText}>{tr('Применить')}</Text></Pressable></View>
+        </View>
+      </SheetFrame>
       <SheetFrame visible={allSubs} onClose={() => setAllSubs(false)}>
         <View style={styles.pickSheet}>
           <View style={styles.pickHandle} />
@@ -298,7 +402,9 @@ const styles = StyleSheet.create({
   roundChipOn: { borderColor: colors.primary, borderWidth: 1.5, backgroundColor: colors.primarySoft },
   roundChipText: { fontSize: 14, fontFamily: font[600], color: colors.ink },
   roundChipTextOn: { color: colors.primaryDeep, fontFamily: font[800] },
-  go: { marginTop: 10, height: 50, borderRadius: 14, backgroundColor: colors.ink, alignItems: 'center', justifyContent: 'center' },
+  // как у Авито: в карточке кнопка по ширине текста; в верху Недвижимости и в шторках — на всю ширину (goWide)
+  go: { marginTop: 6, height: 50, borderRadius: 14, backgroundColor: colors.ink, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start', paddingHorizontal: 22 },
+  goWide: { flex: 1, alignSelf: 'stretch', marginTop: 0 },
   goText: { color: '#fff', fontSize: 15, fontFamily: font[700] },
   fresh: { fontSize: 16, fontFamily: font[800], color: colors.ink, paddingHorizontal: 12, paddingTop: 14, paddingBottom: 10 },
   subs: { flexDirection: 'row', flexWrap: 'wrap', gap: 9, paddingHorizontal: 12, paddingTop: 20, paddingBottom: 4 },
@@ -308,26 +414,46 @@ const styles = StyleSheet.create({
   // minWidth 0 — длинное слово («электротранспорт») не выталкивает стрелку за край плитки
   subName: { maxWidth: '60%', fontSize: 12.5, lineHeight: 15.5, fontFamily: font[700], color: colors.ink, zIndex: 2 },
   // фильтры — серой карточкой, как карточки «Работы»
-  form: { marginHorizontal: space.page, marginTop: 4, padding: 16, borderRadius: 22, backgroundColor: colors.sunken, gap: 10 },
+  // цветная карточка поиска — как «Найти автомобиль» у Авито (у них голубая, у нас — в фирменном зелёном)
+  form: { marginHorizontal: space.page, marginTop: 8, padding: 16, borderRadius: 22, backgroundColor: '#E3F2EA', gap: 10 },
   formTitle: { fontSize: 19, fontFamily: font[800], color: colors.ink, letterSpacing: -0.3, marginBottom: 2 },
   lHead: { paddingHorizontal: space.page, paddingTop: 14 },
   lTitle: { fontSize: 26, lineHeight: 31, fontFamily: font[800], color: colors.ink, letterSpacing: -0.5 },
   lCount: { fontSize: 14, fontFamily: font[600], color: colors.muted, marginTop: 4 },
-  lTiles: { paddingHorizontal: space.page, paddingVertical: 16 },
-  lRow: { flexDirection: 'row', gap: 8 },
+  grid: { paddingHorizontal: space.page, paddingTop: 16, paddingBottom: 8, gap: 8 },
+  gridRow: { flexDirection: 'row', gap: 8 },
+  // верх Недвижимости по образцу Авито
+  reHead: { paddingHorizontal: space.page, paddingTop: 10, gap: 10 },
+  reTitle: { fontSize: 30, lineHeight: 36, fontFamily: font[800], color: colors.ink, textAlign: 'center', letterSpacing: -0.6 },
+  reCount: { fontSize: 14, fontFamily: font[600], color: colors.muted, textAlign: 'center', marginTop: -6, marginBottom: 4 },
+  reField: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 50, borderRadius: 14, backgroundColor: colors.sunken, paddingHorizontal: 16 },
+  reFieldText: { flex: 1, fontSize: 16, fontFamily: font[500], color: colors.ink },
+  reFieldPh: { color: colors.muted },
+  reRow: { flexDirection: 'row', gap: 8 },
+  reFilter: { width: 50, height: 50, borderRadius: 14, backgroundColor: colors.sunken, alignItems: 'center', justifyContent: 'center' },
+  reFilterOn: { backgroundColor: '#E3F2EA' },
+  sheetPad: { paddingHorizontal: space.page + 4, paddingBottom: 24 },
+  sheetHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
+  sheetTitle: { fontSize: 18, fontFamily: font[800], color: colors.ink },
+  sheetClear: { fontSize: 16, fontFamily: font[500], color: colors.muted },
+  sheetChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 18 },
+  sheetChip: { minWidth: 48, height: 46, paddingHorizontal: 16, borderRadius: 14, backgroundColor: colors.sunken, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'transparent' },
+  sheetChipOn: { borderColor: colors.ink },
+  sheetChipText: { fontSize: 16, fontFamily: font[600], color: colors.ink },
+  sheetChipTextOn: { color: colors.ink },
   lTile: { width: TILE.w, height: TILE.h, borderRadius: 16, backgroundColor: colors.sunken, padding: TILE.pad, overflow: 'hidden' },
   lTileText: { fontSize: 13.5, lineHeight: 17, fontFamily: font[700], color: colors.ink, maxWidth: TILE.text.narrow },
   search: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 46, borderRadius: 14, backgroundColor: colors.sunken, paddingHorizontal: 13 },
   searchInput: { flex: 1, flexBasis: 0, minWidth: 0, fontSize: 15, fontFamily: font[500], color: colors.ink, paddingVertical: 0 },
   priceRow: { flexDirection: 'row', gap: 8 },
   // как .landing-input сайта: 13 / 14 внутри, скругление 13, рамка, 16 / 600
-  priceInput: { flex: 1, flexBasis: 0, minWidth: 0, height: 48, borderRadius: 13, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.sunken, paddingHorizontal: 14, fontSize: 16, fontFamily: font[600], color: colors.ink },
+  priceInput: { flex: 1, flexBasis: 0, minWidth: 0, height: 48, borderRadius: 13, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, paddingHorizontal: 14, fontSize: 16, fontFamily: font[600], color: colors.ink },
   sorts: { gap: 6 },
   chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   // как .landing-label сайта: 13 / 700, ink-soft
   fieldLabel: { fontSize: 13, fontFamily: font[700], color: colors.inkSoft, marginTop: 6 },
   // как .landing-select сайта: 48, рамка, скругление 13, значение 16 / 600 слева
-  selectField: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 48, borderRadius: 13, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.sunken, paddingHorizontal: 14 },
+  selectField: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 48, borderRadius: 13, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, paddingHorizontal: 14 },
   subAll: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   selectLabel: { fontSize: 13.5, fontFamily: font[700], color: colors.inkSoft },
   selectValue: { flex: 1, fontSize: 16, fontFamily: font[600], color: colors.ink },

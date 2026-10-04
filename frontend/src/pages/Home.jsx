@@ -17,9 +17,16 @@ import FreshStories from '../components/FreshStories'
 import CategoryArt from '../components/CategoryArt'
 import Avatar from '../components/Avatar'
 import { hasLanding } from '../data/landings'
-import { tileFor } from '../utils/artFit'
+import { artBox, tileFor } from '../utils/artFit'
+import { useAspect } from '../components/TileArt'
 
 // Ширина плитки раздела — как у плиток внутри разделов: длинное слово — широкая, очень длинное — ещё шире
+// картинка плитки на телефоне — по её форме (artBox); на компьютере — прежняя сетка (размеры из CSS)
+function HomeTileArt({ slug, name }) {
+  const box = artBox(name, tileFor(name), useAspect(`/cat/${slug}.png`))
+  return <div className="cat-tile-2row-glyph" style={{ '--art-w': `${box.width}px`, '--art-h': `${box.height}px` }}><CategoryArt slug={slug} /></div>
+}
+
 const tileSize = (name) => { const k = tileFor(name).kind; return k ? ` ${k}` : '' }
 // крупная картинка или прежняя — если вторая строка названия доходит до места картинки
 const artClass = (name) => (tileFor(name).art === 'big' ? '' : ' small-art')
@@ -709,7 +716,7 @@ export default function Home() {
                 style={{ '--tile-text': `${tileFor(cat.name?.[i18n.language] || cat.name?.ru || '').text}px` }}
           >
             <div className="cat-tile-2row-label">{cat.name?.[i18n.language] || cat.name?.ru}</div>
-            <div className="cat-tile-2row-glyph"><CategoryArt slug={cat.slug} /></div>
+            <HomeTileArt slug={cat.slug} name={cat.name?.[i18n.language] || cat.name?.ru || ''} />
           </Link>
         )
         if (!catsLoaded || !revealed) {

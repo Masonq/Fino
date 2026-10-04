@@ -11,7 +11,8 @@ import { plural, tr } from '../i18n'
 import { colors, font, space } from '../theme'
 import Icon from './Icon'
 import ListingCard from './ListingCard'
-import { ART_BIG, ART_SMALL, TILE, tileFor } from '../artFit'
+import { TILE, tileFor } from '../artFit'
+import TileArt from './TileArt'
 import Sheet from './Sheet'
 
 /**
@@ -84,7 +85,7 @@ export default function JobsLanding() {
     return (
       <Pressable key={t.key} style={[styles.tile, { width: tileFor(tr(t.label)).tile }, on && styles.tileOn]} onPress={() => { setTile(on ? null : t); if (!on) toResults() }} accessibilityRole="button" accessibilityState={{ selected: on }}>
         <Text style={[styles.tileText, { maxWidth: tileFor(tr(t.label)).text }]}>{tr(t.label)}</Text>
-        <Image source={{ uri: `${SITE}/jobs/${t.key}.webp` }} style={tileFor(tr(t.label)).art === 'big' ? ART_BIG : ART_SMALL} contentFit="contain" />
+        <TileArt uri={`${SITE}/jobs/${t.key}.webp`} name={tr(t.label)} fit={tileFor(tr(t.label))} />
         {on && <View style={styles.tileCheck}><Icon name="check" size={12} color="#fff" /></View>}
       </Pressable>
     )

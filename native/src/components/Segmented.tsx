@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   trackStretch: { alignSelf: 'stretch' },
   trackOnSunken: { backgroundColor: '#E3E5E0' },
   itemStretch: { flex: 1, height: 40, paddingHorizontal: 6 },
-  labelStretch: { fontSize: 14 },
+  labelStretch: { fontSize: 13.5, fontFamily: font[600], letterSpacing: -0.1 },
   label: { fontSize: 14.5, fontFamily: font[800], color: colors.inkSoft },
   labelOn: { color: colors.ink },
 })

@@ -919,7 +919,12 @@
     "show_count_other": "Prikaži {{count}} oglasa",
     "search_in": "Pretraga u «{{name}}»",
     "search_city": "Pretraga u gradu {{city}}",
-    "refine": "Preciznija pretraga"
+    "refine": "Preciznija pretraga",
+    "re_types": "Stanovi, kuće, sobe…",
+    "all_filters": "Svi filteri",
+    "all_categories": "Sve kategorije",
+    "clear": "Obriši",
+    "apply": "Primeni"
   },
   "fields": {
     "real-estate": {
@@ -1426,5 +1431,18 @@
     "beauty": "Šta tražite za lepotu?",
     "services": "Koje usluge tražite?",
     "business": "Šta tražite za posao?"
+  },
+  "landing_card": {
+    "auto": "Pronađite automobil",
+    "electronics": "Pronađite tehniku",
+    "home-garden": "Pronađite za dom",
+    "fashion": "Pronađite odeću",
+    "kids": "Pronađite za decu",
+    "hobby-sport": "Pronađite za hobi",
+    "pets": "Pronađite za ljubimca",
+    "beauty": "Pronađite za lepotu",
+    "services": "Pronađite izvođača",
+    "business": "Pronađite za posao",
+    "real-estate": "Svi filteri"
   }
 }

@@ -7,7 +7,8 @@ import { api } from '../api/client'
 import CategoryArt from '../components/CategoryArt'
 import ListingCard from '../components/ListingCard'
 import JobsLanding from '../components/JobsLanding'
-import { tileFor } from '../utils/artFit'
+import { longestWordWidth, oneLineWidth, tileFor } from '../utils/artFit'
+import TileArt from '../components/TileArt'
 import { CardSkeletons } from '../components/Skeletons'
 import { LANDINGS, landingFor } from '../data/landings'
 import { MODE_WORDS } from '../data/modeWords'
@@ -53,6 +54,21 @@ const HERO_FALLBACK = {
 // в самом компоненте, у cached/cacheFresh.
 const LANDING_CACHE_TTL = 60_000
 const landingCache = {}
+
+/** Плитки по образцу Авито: короткие названия — по три в ряд, длинные — парами; не больше 3 рядов, дальше «Все категории →». */
+function gridRows(list, name, narrowText, maxRows = 3) {
+  const wide = (n) => oneLineWidth(n) > narrowText
+  const narrowQ = list.filter((x) => !wide(name(x))), wideQ = list.filter((x) => wide(name(x)))
+  const rows = []
+  while ((narrowQ.length || wideQ.length) && rows.length < maxRows) {
+    const nextNarrow = narrowQ.length && (!wideQ.length || list.indexOf(narrowQ[0]) < list.indexOf(wideQ[0]))
+    if (nextNarrow && narrowQ.length >= 3) rows.push(narrowQ.splice(0, 3))
+    else if (!nextNarrow && wideQ.length >= 2) rows.push(wideQ.splice(0, 2))
+    else rows.push([...(nextNarrow ? narrowQ : wideQ).splice(0, 1), ...(nextNarrow ? wideQ : narrowQ).splice(0, 1)])
+  }
+  if ((narrowQ.length || wideQ.length) && rows.length) { const last = rows[rows.length - 1]; last[last.length - 1] = null }
+  return rows
+}
 
 /** «Работа» — свой экран по образцу Авито (как в приложении), остальные разделы — как раньше. */
 export default function CategoryLanding() {
@@ -111,6 +127,19 @@ function CategoryLandingPage() {
   const [values, setValues] = useState(() => cacheFresh ? cached.values : {})
   const [text, setText] = useState(() => cacheFresh ? cached.text : '')
   const [showAllSubs, setShowAllSubs] = useState(false)
+  // по образцу Авито: верх «Недвижимости» (шторки «Комнаты» и «Цена», кнопка фильтров) и ширина колонки плиток
+  const [reSheet, setReSheet] = useState(null)
+  const [moreFilters, setMoreFilters] = useState(false)
+  const gridRef = useRef(null)
+  const [gridW, setGridW] = useState(() => Math.min(window.innerWidth, 620) - 24)
+  useLayoutEffect(() => {
+    const el = gridRef.current
+    if (!el || typeof ResizeObserver === 'undefined') return undefined
+    // ширина содержимого — без внутренних отступов сетки (иначе плитки вылезали за край на 24 точки)
+    const ro = new ResizeObserver(() => { const cs = getComputedStyle(el); const w = Math.floor(el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)); if (w > 0) setGridW(w) })
+    ro.observe(el)
+    return () => ro.disconnect()
+  })
 
   // category в зависимостях — сайдбар не существует в DOM, пока
   // категория не загрузилась; без этого обработчик мог бы читать
@@ -493,6 +522,11 @@ function CategoryLandingPage() {
     try { return !!localStorage.getItem('plonk_city') } catch { return false }
   })()
   const shownCount = liveCount ?? (hasCity ? 0 : category?.count ?? 0)
+  // «Недвижимость» — верх по образцу Авито
+  const isRE = slug === 'real-estate'
+  const roomsField = landing?.fields?.find((f) => f.key === 'rooms')
+  const priceText = values.price_min && values.price_max ? `${values.price_min} – ${values.price_max} €`
+    : values.price_min ? `${t('landing.from')} ${values.price_min} €` : values.price_max ? `${t('landing.to')} ${values.price_max} €` : ''
 
   return (
     <div className="landing">
@@ -550,28 +584,74 @@ function CategoryLandingPage() {
         </div>
       </div>
 
-      {/* Как раздел «Работа» (по образцу Авито): вопрос-заголовок, число объявлений, все подразделы — два ряда
-          плиток с картинками; фильтры ниже — карточкой «Подобрать точнее» */}
-      <div className="jl-head lp-head">
-        <h1 className="jl-h1">{category?.parent_id ? name : t(`landing_q.${slug}`, { defaultValue: name })}</h1>
-        {shownCount > 0 && <div className="lp-count">{t('landing.offers', { count: shownCount })}</div>}
-      </div>
-      {category?.children?.length > 0 && (() => {
+      {/* По образцу Авито: у «Недвижимости» свой верх (заголовок по центру, сделка, категория, комнаты и цена,
+          «Показать» + фильтры); у остальных — вопрос-заголовок, плитки сеткой по 3 (или 2 широких) с «Все категории →»,
+          ниже цветная карточка «Найти …». Как в приложении (native/app/c/[slug].tsx). */}
+      {isRE ? (
+        <div className="re-head">
+          <h1 className="re-title">{name}</h1>
+          {shownCount > 0 && <div className="re-count">{t('landing.offers', { count: shownCount })}</div>}
+          {landing?.deal && (
+            <div className="cat-modes landing-deal pill-row re-deal">
+              <SlidePill />
+              {landing.deal.options.map((opt) => (
+                <button key={opt.value} className={`cat-mode${deal === opt.value ? ' on' : ''}`} onClick={() => setDeal(deal === opt.value ? '' : opt.value)}>{t(opt.label)}</button>
+              ))}
+            </div>
+          )}
+          <button type="button" className="re-field" onClick={() => setShowAllSubs(true)}>
+            <span>{t('landing.re_types')}</span>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+          </button>
+          <div className="re-row">
+            {roomsField && (
+              <button type="button" className={`re-field${values.rooms ? '' : ' ph'}`} onClick={() => setReSheet('rooms')}>
+                <span>{values.rooms ? `${t('landing.rooms')}: ${values.rooms}` : t('landing.rooms')}</span>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+              </button>
+            )}
+            <button type="button" className={`re-field${priceText ? '' : ' ph'}`} onClick={() => setReSheet('price')}><span>{priceText || t('landing.price')}</span></button>
+          </div>
+          <div className="re-row">
+            <button type="button" className="landing-go re-go" onClick={() => search()}>{shownCount > 0 ? t('landing.show_count', { count: shownCount }) : t('landing.show')}</button>
+            <button type="button" className={`re-filter${moreFilters ? ' on' : ''}`} onClick={() => setMoreFilters((v) => !v)} aria-label={t('landing.all_filters')}>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" /><circle cx="16" cy="7" r="2" /><circle cx="10" cy="17" r="2" /></svg>
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="jl-head lp-head">
+          <h1 className="jl-h1">{category?.parent_id ? name : t(`landing_q.${slug}`, { defaultValue: name })}</h1>
+          {shownCount > 0 && <div className="lp-count">{t('landing.offers', { count: shownCount })}</div>}
+        </div>
+      )}
+      {!isRE && category?.children?.length > 0 && (() => {
         const subs = category.children
-        const rows = [subs.filter((_, k) => k % 2 === 0), subs.filter((_, k) => k % 2 === 1)].filter((x) => x.length)
+        const labelOf = (x) => x.name?.[i18n.language] || x.name?.ru
+        const smallW = Math.floor((gridW - 16) / 3), wideW = Math.floor((gridW - 8) / 2)
+        const rows = gridRows(subs, labelOf, smallW - 22)
         return (
-          <div className="jl-tiles lp-tiles">
-            {rows.map((row, k) => (
-              <div key={k} className="jl-tile-row">
-                {row.map((sub) => {
-                  const label = sub.name?.[i18n.language] || sub.name?.ru
-                  const fit = tileFor(label)
-                  const size = fit.kind ? ` ${fit.kind}` : ''
+          <div className="lp-grid" ref={gridRef}>
+            {rows.map((row, r) => (
+              <div key={r} className="lp-grid-row">
+                {row.map((sub, k) => {
+                  const w = row.length === 3 ? smallW : row.length === 2 ? wideW : gridW
+                  if (!sub) {
+                    return (
+                      <button key={`all-${k}`} type="button" className="jl-tile lp-all" style={{ width: w }} onClick={() => setShowAllSubs(true)}>
+                        <span className="jl-tile-text" style={{ maxWidth: w - 22 }}>{t('landing.all_categories')}</span>
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 6 6 6-6 6" /></svg>
+                      </button>
+                    )
+                  }
+                  const label = labelOf(sub)
+                  const text = w < wideW ? w - 22 : Math.min(w - 22, Math.max(longestWordWidth(label) + 4, Math.round(w * 0.5)))
+                  const fit = { kind: '', tile: w, text, art: 'big' }
                   return (
-                    <button key={sub.id} type="button" className={`jl-tile${size}${fit.art === 'big' ? '' : ' small-art'}`}
+                    <button key={sub.id} type="button" className="jl-tile" style={{ width: w }}
                       onClick={() => (sub.children?.length > 0 ? navigate(`/c/${sub.slug}`) : navigate(`/search?category=${sub.slug}`))}>
                       <span className="jl-tile-text" style={{ maxWidth: fit.text }}>{label}</span>
-                      <img className="jl-tile-img" src={`/cat/${sub.slug}.png`} alt="" loading="lazy" onError={(ev) => { ev.currentTarget.style.display = 'none' }} />
+                      <TileArt src={`/cat/${sub.slug}.png`} name={label} fit={fit} />
                     </button>
                   )
                 })}
@@ -588,9 +668,10 @@ function CategoryLandingPage() {
 
       {/* Первый вопрос делит раздел надвое: без ответа на него
           остальное бессмысленно. */}
+      {(!isRE || moreFilters) && (
       <div className="lp-filters">
-        <div className="lp-filters-title">{t('landing.refine')}</div>
-      {landing?.deal && (
+        <div className="lp-filters-title">{t(`landing_card.${rootSlug || slug}`, { defaultValue: t('landing.refine') })}</div>
+      {landing?.deal && !isRE && (
         <div className="cat-modes landing-deal pill-row">
           <SlidePill />
           {landing.deal.options.map((opt) => (
@@ -605,7 +686,7 @@ function CategoryLandingPage() {
         </div>
       )}
 
-      {landing?.fields?.map((field) => {
+      {landing?.fields?.filter((field) => !(isRE && (field.key === 'rooms' || field.key === 'price'))).map((field) => {
         // Модель без выбранной марки бессмысленна — список моделей
         // зависит от того, что выбрано выше, а «Другая» модели не
         // предполагает вовсе.
@@ -730,6 +811,7 @@ function CategoryLandingPage() {
           : t('landing.show')}
       </button>
       </div>
+      )}
       </div>
 
       <div className="landing-main">
@@ -778,6 +860,37 @@ function CategoryLandingPage() {
                 {sub.name?.[i18n.language] || sub.name?.ru}
               </button>
             ))}
+          </div>
+        </div>
+      )}
+
+      {reSheet && (
+        <div className="re-sheet-layer" onClick={() => setReSheet(null)}>
+          <div className="re-sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={reSheet === 'rooms' ? t('landing.rooms') : t('landing.price')}>
+            <div className="re-sheet-handle" />
+            <div className="re-sheet-head">
+              <button type="button" className="re-sheet-close" onClick={() => setReSheet(null)} aria-label={t('actions.close')}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+              </button>
+              <div className="re-sheet-title">{reSheet === 'rooms' ? t('landing.rooms') : `${t('landing.price')}, €`}</div>
+              <button type="button" className="re-sheet-clear" onClick={() => setValues(reSheet === 'rooms' ? { ...values, rooms: '' } : { ...values, price_min: '', price_max: '' })}>{t('landing.clear')}</button>
+            </div>
+            {reSheet === 'rooms' ? (
+              <div className="re-sheet-chips">
+                {(roomsField?.options || []).map((opt) => {
+                  const value = typeof opt === 'object' ? opt.value : opt
+                  const label = typeof opt === 'object' ? t(opt.label) : opt
+                  const on = values.rooms === value
+                  return <button key={value} type="button" className={`re-sheet-chip${on ? ' on' : ''}`} onClick={() => setValues({ ...values, rooms: on ? '' : value })}>{label}</button>
+                })}
+              </div>
+            ) : (
+              <div className="re-sheet-price">
+                <input inputMode="numeric" placeholder={t('landing.from')} value={values.price_min || ''} onChange={(e) => setValues({ ...values, price_min: e.target.value.replace(/\D/g, '').slice(0, 9) })} />
+                <input inputMode="numeric" placeholder={t('landing.to')} value={values.price_max || ''} onChange={(e) => setValues({ ...values, price_max: e.target.value.replace(/\D/g, '').slice(0, 9) })} />
+              </div>
+            )}
+            <button type="button" className="landing-go re-sheet-apply" onClick={() => { setReSheet(null); search() }}>{t('landing.apply')}</button>
           </div>
         </div>
       )}

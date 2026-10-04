@@ -11,7 +11,8 @@ import { type Category, fetchCategories } from '../api'
 import { SITE } from '../config'
 import { colors, font } from '../theme'
 import Skeleton from './Skeleton'
-import { ART_BIG, ART_SMALL, TILE, tileFor } from '../artFit'
+import { TILE, tileFor } from '../artFit'
+import TileArt from './TileArt'
 
 // как плитки внутри разделов (JobsLanding, c/[slug]): 142×100, широкие — 196 и 240
 const W = TILE.w
@@ -61,7 +62,7 @@ export default function CategoryTiles({ value, onPick }: { value: string | null;
         accessibilityRole="button" accessibilityState={{ selected: on }}>
         {/* Одно длинное слово («Недвижимость») не переносим посреди слова — слегка ужимаем */}
         <Text style={[styles.label, { maxWidth: widthFor(nameOf(c)).text }, on && styles.labelOn]}>{nameOf(c)}</Text>
-        <Image source={{ uri: `${SITE}/cat/${c.slug}.png` }} style={widthFor(nameOf(c)).art === 'big' ? ART_BIG : ART_SMALL} contentFit="contain" transition={200} />
+        <TileArt uri={`${SITE}/cat/${c.slug}.png`} name={nameOf(c)} fit={widthFor(nameOf(c))} />
       </Pressable>
     )
   }

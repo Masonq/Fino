@@ -42,7 +42,20 @@ def key_color(a: np.ndarray):
     q = Counter(map(tuple, (vivid // 32)))
     bucket = np.array(q.most_common(1)[0][0])
     sel = vivid[np.all(vivid // 32 == bucket, axis=1)]
-    return sel.mean(axis=0)
+    key = sel.mean(axis=0)
+    # 1) фоном бывает только «неестественный» цвет хромакея: пурпурный или ярко-зелёный.
+    #    Коричневый, бежевый, цвет шерсти, дерева, кожи — никогда (иначе вырезается сам предмет).
+    r, g, b = key
+    magenta = r > 150 and b > 130 and g < 0.6 * min(r, b)
+    green = g > 180 and r < 0.6 * g and b < 0.6 * g
+    if not (magenta or green):
+        return None
+    # 2) цвет фона почти не встречается внутри самого предмета
+    solid = ndimage.binary_erosion(al > 250, iterations=6)
+    inner = rgb[solid]
+    if len(inner) and (np.linalg.norm(inner - key, axis=1) < 70).mean() > 0.02:
+        return None
+    return key
 
 
 def despill(a: np.ndarray, key) -> np.ndarray:
@@ -51,6 +64,11 @@ def despill(a: np.ndarray, key) -> np.ndarray:
     kn = k / max(np.linalg.norm(k), 1)
     dist = np.linalg.norm(rgb - k, axis=2)
     a[dist < 70, 3] = 0                                  # почти цвет фона — это фон
+    # фон пурпурный — явно пурпурные пиксели убираем где угодно (между прутьями перил, у горшков на балконах):
+    # у тёплых цветов предмета (терракота, дерево, шерсть) синего мало — под это правило они не попадают
+    if k[0] > 150 and k[2] > 130 and k[1] < 0.6 * min(k[0], k[2]):
+        r_, g_, b_ = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+        a[(r_ > 140) & (b_ > 120) & (g_ < 0.62 * np.minimum(r_, b_)), 3] = 0
     # слегка окрашенные: убираем составляющую цвета фона сверх серого
     grey = rgb.mean(axis=2, keepdims=True)
     chroma = rgb - grey
@@ -58,7 +76,10 @@ def despill(a: np.ndarray, key) -> np.ndarray:
     kcn = kc / max(np.linalg.norm(kc), 1)
     proj = (chroma * kcn).sum(axis=2, keepdims=True)
     spill = np.clip(proj, 0, None)
-    tinted = (spill[..., 0] > 18) & (a[..., 3] > 0)
+    # оттенок снимаем только у краёв предмета (до 6 точек от прозрачного) — там и бывает кайма;
+    # внутри цвета не трогаем (иначе терракотовый горшок становился оливковым)
+    edge = ndimage.binary_dilation(a[..., 3] < 20, iterations=6)
+    tinted = (spill[..., 0] > 18) & (a[..., 3] > 0) & edge
     rgb[tinted] = (rgb - spill * kcn)[tinted]
     a[..., :3] = np.clip(rgb, 0, 255).astype(np.uint8)
     return a

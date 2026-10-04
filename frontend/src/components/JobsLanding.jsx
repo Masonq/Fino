@@ -5,6 +5,7 @@ import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import ListingCard from './ListingCard'
 import { tileFor } from '../utils/artFit'
+import TileArt from './TileArt'
 import { CardSkeletons } from './Skeletons'
 
 /**
@@ -65,7 +66,7 @@ export default function JobsLanding() {
       <button key={x.key} type="button" className={`jl-tile${tileFor(t(`jobs.tile_${x.key}`)).kind ? ' ' + tileFor(t(`jobs.tile_${x.key}`)).kind : ''}${on ? ' on' : ''}${tileFor(t(`jobs.tile_${x.key}`)).art === 'big' ? '' : ' small-art'}`} aria-pressed={on}
         onClick={() => { setTile(on ? null : x); if (!on) toResults() }}>
         <span className="jl-tile-text" style={{ maxWidth: tileFor(t(`jobs.tile_${x.key}`)).text }}>{t(`jobs.tile_${x.key}`)}</span>
-        <img className="jl-tile-img" src={`/jobs/${x.key}.webp`} alt="" loading="lazy" />
+        <TileArt src={`/jobs/${x.key}.webp`} name={t(`jobs.tile_${x.key}`)} fit={tileFor(t(`jobs.tile_${x.key}`))} />
         {on && <span className="jl-tile-check" aria-hidden>✓</span>}
       </button>
     )
