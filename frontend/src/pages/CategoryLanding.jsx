@@ -7,8 +7,8 @@ import { api } from '../api/client'
 import CategoryArt from '../components/CategoryArt'
 import ListingCard from '../components/ListingCard'
 import JobsLanding from '../components/JobsLanding'
-import { artLayout, catSrc, circleArt, longestWordWidth, oneLineWidth, tileFor } from '../utils/artFit'
-import TileArt from '../components/TileArt'
+import { artLayoutMeasured, catSrc, circleArt, longestWordWidth, oneLineWidth, tileFor } from '../utils/artFit'
+import TileArt, { useTileMeasure } from '../components/TileArt'
 import { CardSkeletons } from '../components/Skeletons'
 import { LANDINGS, landingFor } from '../data/landings'
 import { MODE_WORDS } from '../data/modeWords'
@@ -80,6 +80,7 @@ function CategoryLandingPage() {
   const { slug } = useParams()
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
+  const measure = useTileMeasure() // замер надписей плиток подразделов (колонка надписи — по нему)
 
   // Возврат из объявления сбрасывал всю страницу раздела к началу —
   // фильтры и уже найденные объявления терялись, прокрутка прыгала
@@ -705,7 +706,7 @@ function CategoryLandingPage() {
                   const label = labelOf(sub)
                   const text = w < wideW ? w - 22 : Math.min(w - 22, Math.max(longestWordWidth(label) + 4, Math.round(w * 0.5)))
                   // надпись и картинка — вместе: колонка надписи может стать уже, если картинка так выходит крупнее
-                  const { fit } = artLayout(label, { kind: '', tile: w, text, art: 'big' }, sub.slug)
+                  const { fit } = artLayoutMeasured(label, { kind: '', tile: w, text, art: 'big' }, sub.slug, measure, w - 26)
                   return (
                     <button key={sub.id} type="button" className="jl-tile" style={{ width: w }}
                       onClick={() => (sub.children?.length > 0 ? navigate(`/c/${sub.slug}`) : navigate(`/search?category=${sub.slug}`))}>

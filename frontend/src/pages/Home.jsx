@@ -17,16 +17,24 @@ import FreshStories from '../components/FreshStories'
 import CategoryArt from '../components/CategoryArt'
 import Avatar from '../components/Avatar'
 import { hasLanding } from '../data/landings'
-import { artLayout, catSrc, tileFor } from '../utils/artFit'
-import { useAspect } from '../components/TileArt'
+import { artBoxFor, artLayoutMeasured, catSrc, tileFor } from '../utils/artFit'
+import { useAspect, useTextLines, useTileMeasure } from '../components/TileArt'
 
 // Ширина плитки раздела — как у плиток внутри разделов: длинное слово — широкая, очень длинное — ещё шире
 // картинка плитки на телефоне — по её форме (artBox); на компьютере — прежняя сетка (размеры из CSS)
+// колонка надписи плитки главной — по точному замеру текста (та же, что у картинки в HomeTileArt)
+const homeTileFit = (name, slug, measure) => artLayoutMeasured(name, tileFor(name), slug, measure, tileFor(name).tile - 26).fit
+
 function HomeTileArt({ slug, name }) {
-  const { box } = artLayout(name, tileFor(name), slug, useAspect(catSrc(slug)))
+  const ref = useRef(null)
+  const aspect = useAspect(catSrc(slug))
+  const measure = useTileMeasure()
+  const fit = homeTileFit(name, slug, measure)
+  const lines = useTextLines(ref, '.cat-tile-2row-label', [name, fit.text, fit.tile])
+  const box = artBoxFor(name, fit, slug, measure, lines, aspect)
   // только сама картинка, без запасного контурного значка: нет файла — в плитке ничего (картинки делаются заново)
   return (
-    <div className="cat-tile-2row-glyph" style={{ '--art-w': `${box.width}px`, '--art-h': `${box.height}px` }}>
+    <div ref={ref} className="cat-tile-2row-glyph" style={{ '--art-w': `${box.width}px`, '--art-h': `${box.height}px` }}>
       <img className="cat-art" src={catSrc(slug)} alt="" loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none' }} />
     </div>
   )
@@ -85,6 +93,7 @@ const BRAND = { top: 'var(--bg)', grad: 'none' }
 
 export default function Home() {
   const { t, i18n } = useTranslation()
+  const tileMeasureNow = useTileMeasure() // замер надписей плиток разделов (колонка надписи — по нему)
   // Возвращает заголовок вкладки к общему, если он остался от
   // страницы категории (там он меняется на конкретный раздел —
   // см. CategoryLanding.jsx) — иначе после захода в «Авто» и
@@ -718,7 +727,7 @@ export default function Home() {
             key={cat.id}
             to={hasLanding(cat.slug) ? `/c/${cat.slug}` : `/search?category=${cat.slug}`}
             className={`cat-tile-2row${tileSize(cat.name?.[i18n.language] || cat.name?.ru || '')}${artClass(cat.name?.[i18n.language] || cat.name?.ru || '')}${cat.ready === false ? ' soon' : ''}`}
-                style={{ '--tile-text': `${artLayout(cat.name?.[i18n.language] || cat.name?.ru || '', tileFor(cat.name?.[i18n.language] || cat.name?.ru || ''), cat.slug).fit.text}px` }}
+                style={{ '--tile-text': `${homeTileFit(cat.name?.[i18n.language] || cat.name?.ru || '', cat.slug, tileMeasureNow).text}px` }}
           >
             <div className="cat-tile-2row-label">{cat.name?.[i18n.language] || cat.name?.ru}</div>
             <HomeTileArt slug={cat.slug} name={cat.name?.[i18n.language] || cat.name?.ru || ''} />

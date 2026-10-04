@@ -12,7 +12,7 @@ import SheetFrame from '../../src/components/SheetFrame'
 import { CAR_BRANDS, CAR_MODELS, CAR_OTHER, LANDINGS, type LandingField, landingParams, LUI, t3 } from '../../src/landings'
 import JobsLanding from '../../src/components/JobsLanding'
 import { TILE, artLayout, catPath, circleArt, longestWordWidth, oneLineWidth, tileFor, type TileFit } from '../../src/artFit'
-import TileArt from '../../src/components/TileArt'
+import { TileLabelArt } from '../../src/components/TileArt'
 import ListingCard from '../../src/components/ListingCard'
 import { SITE } from '../../src/config'
 import { select } from '../../src/haptics'
@@ -221,8 +221,7 @@ function CategoryScreen() {
     const { fit } = artLayout(nameOf(c), base, c.slug)
     return (
       <Pressable key={key} style={[styles.lTile, { width: w }]} onPress={() => { select(); router.push(`/c/${c.slug}`) }} accessibilityRole="button">
-        <Text style={[styles.lTileText, { maxWidth: fit.text }]}>{nameOf(c)}</Text>
-        <TileArt uri={`${SITE}${catPath(c.slug)}`} name={nameOf(c)} fit={fit} />
+        <TileLabelArt uri={`${SITE}${catPath(c.slug)}`} name={nameOf(c)} fit={fit} style={styles.lTileText} />
       </Pressable>
     )
   }

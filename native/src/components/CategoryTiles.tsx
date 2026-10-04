@@ -12,7 +12,7 @@ import { SITE } from '../config'
 import { colors, font } from '../theme'
 import Skeleton from './Skeleton'
 import { TILE, artLayout, catPath, tileFor } from '../artFit'
-import TileArt from './TileArt'
+import { TileLabelArt } from './TileArt'
 
 // как плитки внутри разделов (JobsLanding, c/[slug]): 142×100, широкие — 196 и 240
 const W = TILE.w
@@ -62,8 +62,7 @@ export default function CategoryTiles({ value, onPick }: { value: string | null;
       <Pressable key={c.slug} style={[styles.tile, { width: widthFor(nameOf(c), c.slug).tile }, on && styles.tileOn, c.ready === false && styles.soon]} onPress={() => { select(); router.push(`/c/${c.slug}`) }}
         accessibilityRole="button" accessibilityState={{ selected: on }}>
         {/* Одно длинное слово («Недвижимость») не переносим посреди слова — слегка ужимаем */}
-        <Text style={[styles.label, { maxWidth: widthFor(nameOf(c), c.slug).text }, on && styles.labelOn]}>{nameOf(c)}</Text>
-        <TileArt uri={`${SITE}${catPath(c.slug)}`} name={nameOf(c)} fit={widthFor(nameOf(c), c.slug)} />
+        <TileLabelArt uri={`${SITE}${catPath(c.slug)}`} name={nameOf(c)} fit={widthFor(nameOf(c), c.slug)} style={[styles.label, on && styles.labelOn]} />
       </Pressable>
     )
   }
