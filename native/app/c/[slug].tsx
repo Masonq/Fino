@@ -11,7 +11,7 @@ import Icon from '../../src/components/Icon'
 import SheetFrame from '../../src/components/SheetFrame'
 import { CAR_BRANDS, CAR_MODELS, CAR_OTHER, LANDINGS, type LandingField, landingParams, LUI, t3 } from '../../src/landings'
 import JobsLanding from '../../src/components/JobsLanding'
-import { TILE, longestWordWidth, oneLineWidth, tileFor, type TileFit } from '../../src/artFit'
+import { TILE, artLayout, circleArt, longestWordWidth, oneLineWidth, tileFor, type TileFit } from '../../src/artFit'
 import TileArt from '../../src/components/TileArt'
 import ListingCard from '../../src/components/ListingCard'
 import { SITE } from '../../src/config'
@@ -217,7 +217,8 @@ function CategoryScreen() {
       )
     }
     // узкая плитка — надпись на всю ширину (название в одну строку); широкая — не шире половины, но не уже самого длинного слова: справа колонка под картинку
-    const fit: TileFit = { kind: '', tile: w, text: w < wideW ? w - 22 : Math.min(w - 22, Math.max(longestWordWidth(nameOf(c)) + 4, Math.round(w * 0.5))), art: 'big' }
+    const base: TileFit = { kind: '', tile: w, text: w < wideW ? w - 22 : Math.min(w - 22, Math.max(longestWordWidth(nameOf(c)) + 4, Math.round(w * 0.5))), art: 'big' }
+    const { fit } = artLayout(nameOf(c), base, c.slug)
     return (
       <Pressable key={key} style={[styles.lTile, { width: w }]} onPress={() => { select(); router.push(`/c/${c.slug}`) }} accessibilityRole="button">
         <Text style={[styles.lTileText, { maxWidth: fit.text }]}>{nameOf(c)}</Text>
@@ -332,7 +333,7 @@ function CategoryScreen() {
       <View style={styles.circleGrid}>
         {subs.map((c) => (
           <Pressable key={c.id} style={[styles.circleItem, { width: circleW }]} onPress={() => { select(); router.push(`/c/${c.slug}`) }} accessibilityRole="button">
-            <View style={styles.circle}><Image source={{ uri: `${SITE}/cat/${c.slug}.png` }} style={styles.circleImg} contentFit="contain" /></View>
+            <View style={styles.circle}><Image source={{ uri: `${SITE}/cat/${c.slug}.png` }} style={circleArt(c.slug)} contentFit="contain" /></View>
             <Text style={styles.circleText}>{nameOf(c)}</Text>
           </Pressable>
         ))}

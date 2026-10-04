@@ -127,3 +127,6 @@ if __name__ == '__main__':
     args = [x for x in sys.argv[1:] if not x.startswith('--')]
     print(key_out(args[0], args[1], int(args[2]) if len(args) > 2 else 512, glass='--glass' in sys.argv,
                   keep_inner='--keep-inner' in sys.argv))
+    # форма и заполненность для размера на плитке — сразу, чтобы не разошлись с картинкой
+    import art_manifest
+    art_manifest.write()

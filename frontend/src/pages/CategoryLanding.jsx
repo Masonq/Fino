@@ -7,7 +7,7 @@ import { api } from '../api/client'
 import CategoryArt from '../components/CategoryArt'
 import ListingCard from '../components/ListingCard'
 import JobsLanding from '../components/JobsLanding'
-import { longestWordWidth, oneLineWidth, tileFor } from '../utils/artFit'
+import { artLayout, circleArt, longestWordWidth, oneLineWidth, tileFor } from '../utils/artFit'
 import TileArt from '../components/TileArt'
 import { CardSkeletons } from '../components/Skeletons'
 import { LANDINGS, landingFor } from '../data/landings'
@@ -663,7 +663,7 @@ function CategoryLandingPage() {
           <div className="lp-circles">
             {category.children.map((sub) => (
               <button key={sub.id} type="button" className="lp-circle-item" onClick={() => navigate(sub.children?.length > 0 ? `/c/${sub.slug}` : `/search?category=${sub.slug}`)}>
-                <span className="lp-circle"><img src={`/cat/${sub.slug}.png`} alt="" loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none' }} /></span>
+                <span className="lp-circle"><img src={`/cat/${sub.slug}.png`} style={circleArt(sub.slug)} alt="" loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none' }} /></span>
                 <span className="lp-circle-text">{sub.name?.[i18n.language] || sub.name?.ru}</span>
               </button>
             ))}
@@ -704,7 +704,8 @@ function CategoryLandingPage() {
                   }
                   const label = labelOf(sub)
                   const text = w < wideW ? w - 22 : Math.min(w - 22, Math.max(longestWordWidth(label) + 4, Math.round(w * 0.5)))
-                  const fit = { kind: '', tile: w, text, art: 'big' }
+                  // надпись и картинка — вместе: колонка надписи может стать уже, если картинка так выходит крупнее
+                  const { fit } = artLayout(label, { kind: '', tile: w, text, art: 'big' }, sub.slug)
                   return (
                     <button key={sub.id} type="button" className="jl-tile" style={{ width: w }}
                       onClick={() => (sub.children?.length > 0 ? navigate(`/c/${sub.slug}`) : navigate(`/search?category=${sub.slug}`))}>

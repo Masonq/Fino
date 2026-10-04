@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
-import { artBox } from '../utils/artFit'
+import { artLayout } from '../utils/artFit'
+
+// код раздела из адреса картинки (/cat/<код>.png) — по нему форма и заполненность из catArt.json
+export const slugOf = (src) => (String(src).match(/\/cat\/([^/]+)\.png$/) || [])[1] || ''
 
 // форма картинки (ширина / высота) — один раз на адрес, дальше из памяти
 const aspects = new Map()
@@ -19,7 +22,7 @@ export function useAspect(src) {
 /** Картинка плитки: размер — по её форме (artBox, как в приложении), прижата к правому нижнему углу. */
 export default function TileArt({ src, name, fit, className = 'jl-tile-img' }) {
   const aspect = useAspect(src)
-  const box = artBox(name, fit, aspect)
+  const { box } = artLayout(name, fit, slugOf(src), aspect)
   return (
     <img className={className} src={src} alt="" loading="lazy"
       style={{ width: box.width, height: box.height, right: box.right, bottom: box.bottom }}

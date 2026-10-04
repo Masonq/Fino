@@ -1,3 +1,5 @@
+import CAT_ART from '../data/catArt.json'
+
 /**
  * Крупная картинка (84) или прежняя (66) — для каждой плитки отдельно; та же формула, что в приложении
  * (native/src/artFit.ts): если вторая строка названия доходит до места картинки — у этой плитки картинка прежняя.
@@ -58,30 +60,83 @@ export function tileFor(name) {
 
 /**
  * Размер картинки на плитке по форме самой картинки — крупно, но целиком внутри плитки и не задевая надпись.
- * Места два: рядом с надписью (на всю высоту) или под первой строкой (на всю ширину); берётся то, где картинка
- * этой формы выходит крупнее. Надпись — с запасом по самому широкому шрифту. Координаты — внутри рамки плитки.
+ * Места три: рядом со всей надписью (на всю высоту), рядом с последней строкой (она обычно короче остальных)
+ * и под всеми строками (на всю ширину); берётся то, где картинка этой формы выходит крупнее. Надпись — с запасом
+ * по самому широкому шрифту: при узком шрифте слова уходят в строки раньше, последняя строка только короче.
+ *
+ * fill — доля непрозрачного в картинке (из catArt.json). Видимый размер считается по ней: разреженная
+ * композиция (самокат с велосипедом) в той же рамке выглядит мельче плотной (стопка кирпичей). Крупные
+ * уменьшаются до общего размера ART_TARGET, мелкие берут всё доступное место — так плитки ровнее друг с другом.
  */
-export function artBox(name, fit, aspect) {
+export const ART_TARGET = 48
+export const artSize = (w, h, fill) => Math.sqrt(w * h) * Math.pow(fill, 0.4)
+export function artBox(name, fit, aspect, fill, noTarget = false) {
   const Wi = fit.tile - 4, Hi = TILE.h - 4
-  const R = 5, B = 5, TOP = 6, LINE1 = 28, TEXT_X = 11
+  const R = 5, B = 5, TOP = 6, TEXT_X = 11
   const words = String(name || '').split(/\s+/).filter(Boolean)
   const oneLine = words.reduce((s, w, i) => s + wordWidth(w) + (i ? 4 : 0), 0) + 2
   const contain = (w, h) => (w <= 0 || h <= 0 ? [0, 0] : w / h > aspect ? [h * aspect, h] : [w, w / aspect])
-  const options = []
-  if (oneLine <= fit.text) {
-    options.push(contain(Wi - R - (TEXT_X + oneLine + 6), Hi - B - TOP)) // рядом с надписью
-    options.push(contain(Wi - R - 8, Hi - B - (LINE1 - 1))) // под надписью (буквы кончаются выше нижней границы строки)
-  } else {
-    options.push(contain(Wi - R - (TEXT_X + fit.text + 6), Hi - B - TOP)) // справа от колонки надписи
-    // под всеми строками: их число — по самому широкому шрифту (на любом устройстве строк столько же или меньше)
-    let lines = 1, cur = 0
-    for (const w of words) { const ww = wordWidth(w); if (cur && cur + 4 + ww > fit.text) { lines += 1; cur = ww } else cur = cur ? cur + 4 + ww : ww }
-    options.push(contain(Wi - R - 8, Hi - B - (TEXT_X + lines * 17 - 1)))
+  // строки по самому широкому шрифту: их число и ширина последней
+  const lines = []
+  if (oneLine <= fit.text) lines.push(oneLine)
+  else {
+    let cur = 0
+    for (const w of words) { const ww = wordWidth(w); if (cur && cur + 4 + ww > fit.text) { lines.push(cur); cur = ww } else cur = cur ? cur + 4 + ww : ww }
+    if (cur) lines.push(cur)
   }
+  const n = lines.length
+  const col = n > 1 ? fit.text : oneLine
+  const bottomOf = (k) => TEXT_X + k * 17 - 1 // низ k-й строки (буквы кончаются выше)
+  const options = [
+    contain(Wi - R - (TEXT_X + col + 6), Hi - B - TOP), // рядом со всей надписью
+    contain(Wi - R - 8, Hi - B - (n === 1 ? 27 : bottomOf(n))), // под всеми строками
+  ]
+  if (n > 1) options.push(contain(Wi - R - (TEXT_X + lines[n - 1] + 6), Hi - B - bottomOf(n - 1))) // рядом с последней строкой
   let [w, h] = options.reduce((best, o) => (o[0] * o[1] > best[0] * best[1] ? o : best), [0, 0])
-  const k = Math.min(1, (Wi * 0.85) / Math.max(w, 1), 72 / Math.max(h, 1)) // не крупнее 85% ширины плитки и 72 по высоте (было 2/3 — широкие предметы выходили мелкими)
+  let k = Math.min(1, (Wi * 0.85) / Math.max(w, 1), 72 / Math.max(h, 1)) // не крупнее 85% ширины плитки и 72 по высоте
+  if (fill > 0 && !noTarget) k = Math.min(k, ART_TARGET / Math.max(artSize(w, h, fill), 1))
   w *= k; h *= k
   return { position: 'absolute', right: R, bottom: B, width: Math.round(w), height: Math.round(h) }
+}
+
+/**
+ * Плитка раздела целиком: ширина надписи и рамка картинки — вместе. Если надпись в колонку поуже (лишняя строка,
+ * не больше трёх) освобождает место и картинка выходит заметно крупнее — колонка уже. Картинка — из catArt.json
+ * по коду раздела (форма известна сразу, без ожидания загрузки); нет в списке — форма из aspect, без выравнивания.
+ */
+export function artLayout(name, fit, slug, aspect = 1.3) {
+  const known = CAT_ART[slug]
+  const [asp, fill] = known || [aspect, undefined]
+  if (!known) return { fit, box: artBox(name, fit, asp) }
+  const size = (f) => { const b = artBox(name, f, asp, fill, true); return artSize(b.width, b.height, fill) }
+  let best = fit, bestSize = size(fit)
+  const minText = Math.ceil(Math.max(...String(name || '').split(/\s+/).filter(Boolean).map(wordWidth), 0)) + 2
+  for (let t = fit.text - 4; t >= minText; t -= 4) {
+    const f = { ...fit, text: t }
+    if (lineCount(name, t) > 3) break
+    if (loneShort(name, t)) continue // строка из одного короткого слова («и», «za») — некрасиво, такую колонку не берём
+    const s2 = size(f)
+    if (s2 > bestSize * 1.08 && s2 > bestSize + 3) { best = f; bestSize = s2 }
+  }
+  return { fit: best, box: artBox(name, best, asp, fill) }
+}
+/** Картинка в квадрате-кружке (разделы «Бизнеса»): видимый размер у всех один, не больше 76 из 84. */
+export function circleArt(slug) {
+  const [asp, fill] = CAT_ART[slug] || [1, 0]
+  let [w, h] = asp > 1 ? [66, 66 / asp] : [66 * asp, 66]
+  if (fill > 0) { const k = Math.min(52 / artSize(w, h, fill), 76 / Math.max(w, h)); w *= k; h *= k }
+  return { width: Math.round(w), height: Math.round(h) }
+}
+const loneShort = (name, text) => {
+  const ls = []
+  let cur = 0
+  for (const w of String(name || '').split(/\s+/).filter(Boolean)) { const ww = wordWidth(w); if (cur && cur + 4 + ww > text) { ls.push([w]); cur = ww } else { if (!ls.length) ls.push([]); ls[ls.length - 1].push(w); cur = cur ? cur + 4 + ww : ww } }
+  return ls.length > 1 && ls.some((l) => l.length === 1 && l[0].length <= 3)
+}
+const lineCount = (name, text) => {
+  let n = 0, cur = 0
+  for (const w of String(name || '').split(/\s+/).filter(Boolean)) { const ww = wordWidth(w); if (cur && cur + 4 + ww > text) { n += 1; cur = ww } else cur = cur ? cur + 4 + ww : ww }
+  return n + (cur ? 1 : 0)
 }
 
 /** Ширина самого длинного слова названия — с запасом по самому широкому шрифту (чтобы слово не рвалось). */

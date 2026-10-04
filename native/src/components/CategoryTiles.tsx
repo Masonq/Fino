@@ -11,13 +11,14 @@ import { type Category, fetchCategories } from '../api'
 import { SITE } from '../config'
 import { colors, font } from '../theme'
 import Skeleton from './Skeleton'
-import { TILE, tileFor } from '../artFit'
+import { TILE, artLayout, tileFor } from '../artFit'
 import TileArt from './TileArt'
 
 // как плитки внутри разделов (JobsLanding, c/[slug]): 142×100, широкие — 196 и 240
 const W = TILE.w
 const H = TILE.h
-const widthFor = (name: string) => tileFor(name)
+// плитка и колонка надписи — вместе с картинкой (как на сайте): надпись может уйти в колонку поуже ради картинки
+const widthFor = (name: string, slug = '') => artLayout(name, tileFor(name), slug).fit
 
 const nameOf = (c: Category) => (typeof c.name === 'string' ? c.name : c.name?.[getLang()] || c.name?.ru || c.slug)
 
@@ -58,11 +59,11 @@ export default function CategoryTiles({ value, onPick }: { value: string | null;
     }
     const on = value === c.slug
     return (
-      <Pressable key={c.slug} style={[styles.tile, { width: widthFor(nameOf(c)).tile }, on && styles.tileOn, c.ready === false && styles.soon]} onPress={() => { select(); router.push(`/c/${c.slug}`) }}
+      <Pressable key={c.slug} style={[styles.tile, { width: widthFor(nameOf(c), c.slug).tile }, on && styles.tileOn, c.ready === false && styles.soon]} onPress={() => { select(); router.push(`/c/${c.slug}`) }}
         accessibilityRole="button" accessibilityState={{ selected: on }}>
         {/* Одно длинное слово («Недвижимость») не переносим посреди слова — слегка ужимаем */}
-        <Text style={[styles.label, { maxWidth: widthFor(nameOf(c)).text }, on && styles.labelOn]}>{nameOf(c)}</Text>
-        <TileArt uri={`${SITE}/cat/${c.slug}.png`} name={nameOf(c)} fit={widthFor(nameOf(c))} />
+        <Text style={[styles.label, { maxWidth: widthFor(nameOf(c), c.slug).text }, on && styles.labelOn]}>{nameOf(c)}</Text>
+        <TileArt uri={`${SITE}/cat/${c.slug}.png`} name={nameOf(c)} fit={widthFor(nameOf(c), c.slug)} />
       </Pressable>
     )
   }

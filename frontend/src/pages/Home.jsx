@@ -17,13 +17,13 @@ import FreshStories from '../components/FreshStories'
 import CategoryArt from '../components/CategoryArt'
 import Avatar from '../components/Avatar'
 import { hasLanding } from '../data/landings'
-import { artBox, tileFor } from '../utils/artFit'
+import { artLayout, tileFor } from '../utils/artFit'
 import { useAspect } from '../components/TileArt'
 
 // Ширина плитки раздела — как у плиток внутри разделов: длинное слово — широкая, очень длинное — ещё шире
 // картинка плитки на телефоне — по её форме (artBox); на компьютере — прежняя сетка (размеры из CSS)
 function HomeTileArt({ slug, name }) {
-  const box = artBox(name, tileFor(name), useAspect(`/cat/${slug}.png`))
+  const { box } = artLayout(name, tileFor(name), slug, useAspect(`/cat/${slug}.png`))
   // только сама картинка, без запасного контурного значка: нет файла — в плитке ничего (картинки делаются заново)
   return (
     <div className="cat-tile-2row-glyph" style={{ '--art-w': `${box.width}px`, '--art-h': `${box.height}px` }}>
@@ -718,7 +718,7 @@ export default function Home() {
             key={cat.id}
             to={hasLanding(cat.slug) ? `/c/${cat.slug}` : `/search?category=${cat.slug}`}
             className={`cat-tile-2row${tileSize(cat.name?.[i18n.language] || cat.name?.ru || '')}${artClass(cat.name?.[i18n.language] || cat.name?.ru || '')}${cat.ready === false ? ' soon' : ''}`}
-                style={{ '--tile-text': `${tileFor(cat.name?.[i18n.language] || cat.name?.ru || '').text}px` }}
+                style={{ '--tile-text': `${artLayout(cat.name?.[i18n.language] || cat.name?.ru || '', tileFor(cat.name?.[i18n.language] || cat.name?.ru || ''), cat.slug).fit.text}px` }}
           >
             <div className="cat-tile-2row-label">{cat.name?.[i18n.language] || cat.name?.ru}</div>
             <HomeTileArt slug={cat.slug} name={cat.name?.[i18n.language] || cat.name?.ru || ''} />
