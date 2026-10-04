@@ -1,6 +1,6 @@
 import Icon, { Star } from '../../src/components/Icon'
+import SheetFrame from '../../src/components/SheetFrame'
 import { tr, getLang } from '../../src/i18n'
-import { Ionicons } from '@expo/vector-icons'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
@@ -36,14 +36,14 @@ const TABS: { key: FeedTab; label: string }[] = [
  * Подгружает дальше при прокрутке, обновляется жестом вниз. Пока грузится — заготовки карточек той же формы.
  */
 const SUGGEST: Record<string, string> = { 'real-estate': 'Недвижимость', auto: 'Авто', electronics: 'Электроника', 'home-garden': 'Дом и сад', fashion: 'Одежда и обувь', services: 'Услуги' }
-const SORT_LABEL: Record<string, string> = { new: 'Сначала новые', cheap: 'Дешевле', expensive: 'Дороже' }
+const SORT_NAME: Record<string, string> = { '': 'По умолчанию', new: 'Сначала новые', cheap: 'Дешевле', expensive: 'Дороже' }
 
 /** Активный фильтр плашкой с крестиком — как .active-filter-chip на странице поиска сайта. */
 function ActiveChip({ label, onPress }: { label: string; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} style={styles.activeChip} accessibilityRole="button" accessibilityLabel={label}>
       <Text style={styles.activeChipText} numberOfLines={1}>{label}</Text>
-      <Icon name="close" size={12} color={colors.primaryDeep} />
+      <View style={{ opacity: 0.7 }}><Icon name="close" size={12} color={colors.primaryDeep} /></View>
     </Pressable>
   )
 }
@@ -70,6 +70,7 @@ export default function Feed() {
   const [cityOpen, setCityOpen] = useState(false)
   const [filters, setFilters] = useState<Filters>({ currency: 'EUR' })
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [sortOpen, setSortOpen] = useState(false)
   // Подсказка поиска — как на сайте: «Найти холодильник / квартиру / велосипед…» с эффектом набора
   const [hint, setHint] = useState('')
   useEffect(() => {
@@ -98,6 +99,7 @@ export default function Feed() {
     setFilters({ currency: 'EUR', priceMin: params.price_min || undefined, priceMax: params.price_max || undefined, withPhoto: params.with_photo === '1' })
   }, [params.applied]) // eslint-disable-line react-hooks/exhaustive-deps
   const searchActive = !!(q || category || filters.priceMin || filters.priceMax || filters.withPhoto || filters.delivery || filters.sort)
+  const chipCount = [q, category, filters.priceMin || filters.priceMax, filters.withPhoto, filters.delivery].filter(Boolean).length
   useEffect(() => { setSavedState('idle') }, [q, category, city, filters])
   const onSave = async () => {
     if (!token) { router.push('/login'); return }
@@ -154,7 +156,7 @@ export default function Feed() {
       if (cached) { setItems(cached.items); setTotal(cached.total); setState('ready'); shown = true } else setState('loading')
     }
     try {
-      const res = await fetchFeed({ tab, offset: 0, q, city, category, filters })
+      const res = await fetchFeed({ tab: searchActive ? 'all' : tab, offset: 0, q, city, category, filters })
       if (id !== req.current) return
       setItems(res.items)
       setTotal(res.total)
@@ -180,7 +182,7 @@ export default function Feed() {
     setMore(true)
     const id = req.current
     try {
-      const res = await fetchFeed({ tab, offset: items.length, q, city, category, filters })
+      const res = await fetchFeed({ tab: searchActive ? 'all' : tab, offset: items.length, q, city, category, filters })
       if (id === req.current) setItems((prev) => [...prev, ...res.items.filter((n) => !prev.some((p) => p.id === n.id))])
     } catch {
       // подгрузка не удалась — следующая прокрутка попробует снова
@@ -272,6 +274,17 @@ export default function Feed() {
         )}
       </View>
       <CityPicker visible={cityOpen} value={city} onPick={pickCity} onClose={() => setCityOpen(false)} />
+      <SheetFrame visible={sortOpen} onClose={() => setSortOpen(false)}>
+        <View style={styles.sortSheet}>
+          <View style={styles.sortHandle} />
+          {(['', 'new', 'cheap', 'expensive'] as const).map((k) => (
+            <Pressable key={k || 'def'} style={styles.sortRow} onPress={() => { setFilters({ ...filters, sort: k }); setSortOpen(false) }}>
+              <Text style={[styles.sortRowText, (filters.sort || '') === k && { color: colors.primaryDeep, fontFamily: font[800] }]}>{tr(SORT_NAME[k])}</Text>
+              {(filters.sort || '') === k && <Icon name="check" size={16} color={colors.primary} />}
+            </Pressable>
+          ))}
+        </View>
+      </SheetFrame>
       <FiltersSheet visible={filtersOpen} value={filters} onApply={setFilters} onClose={() => setFiltersOpen(false)} />
 
       <FlatList
@@ -299,22 +312,37 @@ export default function Feed() {
                 <Pressable style={styles.geoNo} onPress={dismissGeo}><Text style={styles.geoNoText}>{tr('Не надо')}</Text></Pressable>
               </View>
             )}
-            {searchActive && state !== 'loading' && (
-              <View style={styles.found}>
-                <Text style={styles.foundText}>{tr('Найдено: {n}', { n: total })}</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
-                  {!!q && <ActiveChip label={`«${q}»`} onPress={() => { setQuery(''); setQ('') }} />}
-                  {!!category && <ActiveChip label={tr('Раздел')} onPress={() => setCategory(null)} />}
-                  {!!(filters.priceMin || filters.priceMax) && <ActiveChip label={`${filters.priceMin || '0'}–${filters.priceMax || '∞'} ${filters.currency === 'RSD' ? 'RSD' : '€'}`} onPress={() => setFilters({ ...filters, priceMin: undefined, priceMax: undefined })} />}
-                  {!!filters.withPhoto && <ActiveChip label={tr('с фото')} onPress={() => setFilters({ ...filters, withPhoto: false })} />}
-                  {!!filters.delivery && <ActiveChip label={tr('С доставкой')} onPress={() => setFilters({ ...filters, delivery: false })} />}
-                  {!!filters.sort && <ActiveChip label={tr(SORT_LABEL[filters.sort])} onPress={() => setFilters({ ...filters, sort: '' })} />}
-                </ScrollView>
+            {/* Поиск — как страница поиска сайта: плашки фильтров (+ «Сбросить»), ниже сортировка и «Сохранить поиск»;
+                «Все / Новое / Даром» при поиске нет */}
+            {searchActive ? (
+              <View style={styles.searchHead}>
+                {chipCount > 0 && (
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
+                    {!!q && <ActiveChip label={`«${q}»`} onPress={() => { setQuery(''); setQ('') }} />}
+                    {!!category && <ActiveChip label={tr('Раздел')} onPress={() => setCategory(null)} />}
+                    {!!(filters.priceMin || filters.priceMax) && <ActiveChip label={`${filters.priceMin || '0'}–${filters.priceMax || '∞'} ${filters.currency === 'RSD' ? 'RSD' : '€'}`} onPress={() => setFilters({ ...filters, priceMin: undefined, priceMax: undefined })} />}
+                    {!!filters.withPhoto && <ActiveChip label={tr('с фото')} onPress={() => setFilters({ ...filters, withPhoto: false })} />}
+                    {!!filters.delivery && <ActiveChip label={tr('С доставкой')} onPress={() => setFilters({ ...filters, delivery: false })} />}
+                    {chipCount > 1 && (
+                      <Pressable style={styles.clearAll} onPress={() => { setQuery(''); setQ(''); setCategory(null); setFilters({ currency: filters.currency, sort: filters.sort }) }} accessibilityRole="button">
+                        <Text style={styles.clearAllText}>{tr('Сбросить')}</Text>
+                      </Pressable>
+                    )}
+                  </ScrollView>
+                )}
+                <View style={styles.resultsHead}>
+                  <Pressable style={styles.sortBtn} onPress={() => setSortOpen(true)} accessibilityRole="button">
+                    <Text style={styles.sortBtnText}>{tr(SORT_NAME[filters.sort || ''])}</Text>
+                    <Icon name="down" size={12} color={colors.ink} />
+                  </Pressable>
+                  <Pressable style={[styles.saveBtn, savedState === 'saved' && styles.saveBtnOn]} disabled={savedState !== 'idle'} onPress={onSave} accessibilityRole="button">
+                    <Text style={[styles.saveText, savedState === 'saved' && { color: '#fff' }]}>{savedState === 'saved' ? tr('Сохранено') : tr('Сохранить поиск')}</Text>
+                  </Pressable>
+                </View>
               </View>
-            )}
-            <View style={styles.tabsRow}>
-              <Segmented options={TABS} value={tab} onChange={setTab} />
-              {!searchActive && (
+            ) : (
+              <View style={styles.tabsRow}>
+                <Segmented options={TABS} value={tab} onChange={setTab} />
                 <View style={styles.colsToggle}>
                   {([2, 1] as const).map((n) => (
                     <Pressable key={n} onPress={() => pickCols(n)} style={[styles.colBtn, cols === n && styles.colBtnOn]} accessibilityLabel={tr(n === 2 ? '2 колонки' : '1 колонка')} accessibilityState={{ selected: cols === n }}>
@@ -322,14 +350,8 @@ export default function Feed() {
                     </Pressable>
                   ))}
                 </View>
-              )}
-              {searchActive && (
-                <Pressable style={[styles.saveBtn, savedState === 'saved' && styles.saveBtnOn]} disabled={savedState !== 'idle'} onPress={onSave} accessibilityRole="button">
-                  <Ionicons name={savedState === 'saved' ? 'bookmark' : 'bookmark-outline'} size={16} color={savedState === 'saved' ? '#fff' : colors.primaryDeep} />
-                  <Text style={[styles.saveText, savedState === 'saved' && { color: '#fff' }]}>{savedState === 'saved' ? tr('Сохранено') : tr('Сохранить поиск')}</Text>
-                </Pressable>
-              )}
-            </View>
+              </View>
+            )}
           </View>
         }
         ListEmptyComponent={empty}
@@ -350,10 +372,23 @@ const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.bg },
   head: { paddingHorizontal: space.page, paddingTop: 6, paddingBottom: 10 },
   listHead: { gap: 12, paddingBottom: 2 },
+  searchHead: { gap: 0 },
+  chipsRow: { gap: 7, paddingHorizontal: space.page, paddingTop: 2, alignItems: 'center' },
+  clearAll: { paddingVertical: 7, paddingHorizontal: 12, borderRadius: 11, borderWidth: 1, borderColor: 'rgba(20,30,25,0.12)' },
+  clearAllText: { fontSize: 12.5, fontFamily: font[600], color: colors.muted },
+  // как .results-head сайта: слева сортировка, справа «Сохранить поиск»
+  resultsHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: space.page, paddingTop: 12, paddingBottom: 2 },
+  sortBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 7, paddingHorizontal: 11, borderRadius: 10, backgroundColor: colors.sunken },
+  sortBtnText: { fontSize: 12.5, fontFamily: font[700], color: colors.ink },
+  sortSheet: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 8, paddingBottom: 28 },
+  sortHandle: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: '#D8DCD8', marginBottom: 6 },
+  sortRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 52, paddingHorizontal: 20, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+  sortRowText: { fontSize: 16, fontFamily: font[600], color: colors.ink },
   found: { gap: 8, paddingHorizontal: space.page },
   foundText: { fontSize: 14, fontFamily: font[800], color: colors.ink },
-  activeChip: { flexDirection: 'row', alignItems: 'center', gap: 5, height: 30, paddingHorizontal: 10, borderRadius: 10, backgroundColor: colors.primarySoft, maxWidth: 220 },
-  activeChipText: { fontSize: 13, fontFamily: font[700], color: colors.primaryDeep, flexShrink: 1 },
+  // как .active-filter-chip сайта: 7/12, скругление 11, 12,5/600, крестик приглушённый
+  activeChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 7, paddingLeft: 13, paddingRight: 11, borderRadius: 11, backgroundColor: colors.primarySoft, maxWidth: 220 },
+  activeChipText: { fontSize: 12.5, fontFamily: font[600], color: colors.primaryDeep, flexShrink: 1 },
   suggest: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginTop: 8 },
   chip: { height: 34, paddingHorizontal: 12, borderRadius: 11, backgroundColor: colors.sunken, justifyContent: 'center' },
   chipText: { fontSize: 13.5, fontFamily: font[700], color: colors.ink },
@@ -378,9 +413,10 @@ const styles = StyleSheet.create({
   colsToggle: { flexDirection: 'row', gap: 2, padding: 3, borderRadius: 12, backgroundColor: colors.sunken },
   colBtn: { width: 34, height: 30, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
   colBtnOn: { backgroundColor: colors.primary },
-  saveBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, height: 36, paddingHorizontal: 12, borderRadius: 18, backgroundColor: colors.primarySoft },
+  // как .save-search сайта: 8/13, скругление 11, 12,5/700; сохранено — зелёная
+  saveBtn: { paddingVertical: 8, paddingHorizontal: 13, borderRadius: 11, backgroundColor: colors.primarySoft },
   saveBtnOn: { backgroundColor: colors.primary },
-  saveText: { fontSize: 13.5, fontFamily: font[800], color: colors.primaryDeep },
+  saveText: { fontSize: 12.5, fontFamily: font[700], color: colors.primaryDeep },
   filterBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
   filterDot: { position: 'absolute', top: 2, right: 0, minWidth: 16, height: 16, borderRadius: 8, paddingHorizontal: 4, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
   filterDotText: { color: '#fff', fontSize: 10, fontFamily: font[800] },
