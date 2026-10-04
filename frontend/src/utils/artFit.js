@@ -78,8 +78,8 @@ export const jobArt = (key) => (CAT_ART[`jobs-${key}`] ? catSrc(`jobs-${key}`) :
 
 export const ART_TARGET = 52
 export const artSize = (w, h, fill) => Math.sqrt(w * h) * Math.pow(fill, 0.4)
-export function artBox(name, fit, aspect, fill, noTarget = false, lines = null) {
-  return artBoxFromLines(fit.tile, aspect, fill, lines || estimateLines(name, fit), noTarget, fit.h || TILE.h)
+export function artBox(name, fit, aspect, fill, noTarget = false, lines = null, prof = null) {
+  return artBoxFromLines(fit.tile, aspect, fill, lines || estimateLines(name, fit), noTarget, fit.h || TILE.h, prof)
 }
 
 /**
@@ -106,7 +106,7 @@ export function estimateLines(name, fit) {
  * Перебираем все k и берём рамку, где картинка этой формы выходит крупнее.
  */
 export const ART_BLEED = 0.08
-export function artBoxFromLines(tileW, aspect, fill, lines, noTarget = false, tileH = TILE.h) {
+export function artBoxFromLines(tileW, aspect, fill, lines, noTarget = false, tileH = TILE.h, prof = null) {
   // Как у Авито: картинка прижата к правому нижнему углу вплотную и чуть уходит за край (ART_BLEED её ширины и
   // высоты срезает скругление плитки) — так она крупнее и «живее», чем целиком в рамке с полями.
   const Wi = tileW - 4, Hi = tileH - 4
@@ -114,11 +114,31 @@ export function artBoxFromLines(tileW, aspect, fill, lines, noTarget = false, ti
   const contain = (w, h) => (w <= 0 || h <= 0 ? [0, 0] : w / h > aspect ? [h * aspect, h] : [w, w / aspect])
   let best = [0, 0]
   for (let k = 0; k <= lines.length; k += 1) {
-    const top = k ? lines[k - 1].bottom - 3 : TOP // как у Авито: верх картинки может чуть зайти под низ строки (надпись поверх)
+    const top = k ? lines[k - 1].bottom + 2 : TOP // картинка начинается ниже строки — не задевает буквы
     const below = lines.slice(k)
     const left = below.length ? Math.max(...below.map((l) => l.right)) + GAP : 8
     const o = contain(Wi - left, Hi - top) // видимая часть картинки
     if (o[0] * o[1] > best[0] * best[1]) best = o
+  }
+  // Подъём по форме: там, где у картинки сверху пусто (у предмета нет верха над этой колонкой), она может зайти
+  // под надпись — не задевая буквы. Растим картинку от угла, пока ни одна колонка с предметом не дошла до строки.
+  if (prof && prof.length && lines.length) {
+    const n = prof.length
+    const ok = (vw, vh) => {
+      if (vw > Wi * 0.95 || vh > Hi - TOP) return false
+      const FW = vw / (1 - ART_BLEED), FH = vh / (1 - ART_BLEED), x0 = Wi - vw, y0 = Hi - vh
+      for (let c = 0; c < n; c += 1) {
+        if (prof[c] >= 1) continue
+        const cx0 = x0 + (c * FW) / n, cy = y0 + prof[c] * FH
+        for (const l of lines) if (cx0 < l.right + GAP && cy < l.bottom + 2) return false
+      }
+      return true
+    }
+    if (ok(best[0], best[1])) {
+      let s = 1
+      while (s < 1.6 && ok(best[0] * (s + 0.02), best[1] * (s + 0.02))) s += 0.02
+      best = [best[0] * s, best[1] * s]
+    }
   }
   let [w, h] = best
   let k = Math.min(1, (Wi * 0.9) / Math.max(w, 1), (Hi - 6) / Math.max(h, 1))
@@ -139,9 +159,9 @@ export function artBoxFromLines(tileW, aspect, fill, lines, noTarget = false, ti
  */
 export function artLayout(name, fit, slug, aspect = 1.3, lines = null) {
   const known = CAT_ART[slug]
-  const [asp, fill] = known || [aspect, undefined]
+  const [asp, fill, , prof] = known || [aspect, undefined, '', undefined]
   if (!known) return { fit, box: artBox(name, fit, asp, undefined, false, lines) }
-  const size = (f) => { const b = artBox(name, f, asp, fill, true); return artSize(b.width, b.height, fill) }
+  const size = (f) => { const b = artBox(name, f, asp, fill, true, null, prof || null); return artSize(b.width, b.height, fill) }
   let best = fit, bestSize = size(fit)
   const minText = Math.ceil(Math.max(...String(name || '').split(/\s+/).filter(Boolean).map(wordWidth), 0)) + 2
   for (let t = fit.text - 4; t >= minText; t -= 4) {
@@ -152,7 +172,7 @@ export function artLayout(name, fit, slug, aspect = 1.3, lines = null) {
     if (s2 > bestSize * 1.08 && s2 > bestSize + 3) { best = f; bestSize = s2 }
   }
   // настоящие строки (если уже измерены) — их мерили по этой же колонке: надпись выводится с best.text
-  return { fit: best, box: artBox(name, best, asp, fill, false, lines) }
+  return { fit: best, box: artBox(name, best, asp, fill, false, lines, prof || null) }
 }
 /** Картинка в квадрате-кружке (разделы «Бизнеса»): видимый размер у всех один, не больше 76 из 84. */
 export function circleArt(slug) {
@@ -185,10 +205,10 @@ export function measuredLines(name, text, measure) {
 export function artLayoutMeasured(name, fit, slug, measure, maxText = fit.text, lines = null) {
   const known = CAT_ART[slug]
   if (!known || !measure) return artLayout(name, fit, slug, known ? known[0] : 1.3, lines)
-  const [asp, fill] = known
+  const [asp, fill, , prof] = known
   const words = String(name || '').split(/\s+/).filter(Boolean)
   const minText = Math.ceil(Math.max(...words.map((w) => measure(w)), 0)) + 4
-  const size = (ls, tile) => { const b = artBoxFromLines(tile, asp, fill, ls, true, fit.h || TILE.h); return artSize(b.width, b.height, fill) }
+  const size = (ls, tile) => { const b = artBoxFromLines(tile, asp, fill, ls, true, fit.h || TILE.h, prof || null); return artSize(b.width, b.height, fill) }
   let best = null
   for (let t = Math.max(maxText, fit.text); t >= minText; t -= 4) {
     const ls = measuredLines(name, t, measure)
@@ -199,14 +219,14 @@ export function artLayoutMeasured(name, fit, slug, measure, maxText = fit.text, 
     if (!best || sz > best.size * 1.03) best = { t, size: sz }
   }
   const f = best ? { ...fit, text: best.t } : fit
-  return { fit: f, box: artBoxFromLines(fit.tile, asp, fill, lines || measuredLines(name, f.text, measure), false, fit.h || TILE.h) }
+  return { fit: f, box: artBoxFromLines(fit.tile, asp, fill, lines || measuredLines(name, f.text, measure), false, fit.h || TILE.h, prof || null) }
 }
 
 /** Рамка картинки при уже выбранной колонке надписи: по настоящим строкам, а пока их нет — по точному замеру. */
 export function artBoxFor(name, fit, slug, measure, lines = null, aspect = 1.3) {
   const known = CAT_ART[slug]
   if (!known || !measure) return artLayout(name, fit, slug, known ? known[0] : aspect, lines).box
-  return artBoxFromLines(fit.tile, known[0], known[1], lines || measuredLines(name, fit.text, measure), false, fit.h || TILE.h)
+  return artBoxFromLines(fit.tile, known[0], known[1], lines || measuredLines(name, fit.text, measure), false, fit.h || TILE.h, known[3] || null)
 }
 
 /** Ширина строки надписи плиток тем же шрифтом, что на экране (13,5 жирным): холст браузера, с памятью. */
