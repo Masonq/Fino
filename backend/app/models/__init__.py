@@ -23,11 +23,15 @@ from app.models.telegram_import_progress import TelegramImportProgress
 from app.models.listing_view_daily import ListingViewDaily
 from app.models.listing_signal_daily import ListingSignalDaily
 from app.models.notification import Notification
+from app.models.shops_jobs import (
+    JobResponse, Shop, ShopItem, ShopStatDaily, ShopViewLog, CreatorApplication, ShopOrder,
+)
 from app.models.support import (
     Ticket, TicketMessage, TicketStatus, TicketTopic,
 )
 
 __all__ = [
+    "JobResponse", "Shop", "ShopItem", "ShopStatDaily", "ShopViewLog", "CreatorApplication", "ShopOrder",
     "User", "UserRole", "Language",
     "Category",
     "Listing", "ListingTranslation", "ListingPhoto", "ListingStatus", "Currency",

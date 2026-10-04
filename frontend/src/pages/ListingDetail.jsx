@@ -17,6 +17,7 @@ import { displayCity } from '../data/cities'
 const LocationMap = lazy(() => import('../components/LocationMap'))
 import { addToHistory } from '../data/history'
 import { useAuth } from '../context/AuthContext'
+import JobRespond from '../components/JobRespond'
 import { useFavorites } from '../context/FavoritesContext'
 import ReportButton from '../components/ReportButton'
 import PromoteButton from '../components/PromoteButton'
@@ -1134,6 +1135,9 @@ export default function ListingDetail() {
           </Link>
         )}
 
+        {listing?.attributes?.listing_kind === 'vacancy' && listing?.status === 'active' && listing.external_source !== 'telegram' && (
+          <div className="jr-slot"><JobRespond listing={listing} /></div>
+        )}
         {isOwner && (
           <div className="detail-promote-slot">
             <PromoteButton listingId={listing.id} />

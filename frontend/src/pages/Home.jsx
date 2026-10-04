@@ -13,7 +13,7 @@ import OfflineNotice, { LoadError } from '../components/OfflineNotice'
 import { useAuth } from '../context/AuthContext'
 import { CITIES, cityLabel, nearestCity } from '../data/cities'
 import useFresh from '../hooks/useFresh'
-import FreshStories from '../components/FreshStories'
+import ShopsStrip from '../components/ShopsStrip'
 import CategoryArt from '../components/CategoryArt'
 import Avatar from '../components/Avatar'
 import { hasLanding } from '../data/landings'
@@ -701,7 +701,8 @@ export default function Home() {
           не должно менять высоту страницы; что меняет высоту — не липнет. */}
       <div className="promo-collapse">
         <div className="avito-promo-row">
-          <FreshStories items={revealed ? stories.items : null} seen={stories.seen} onOpen={stories.markSeen} />
+          {/* вместо историй — шопсы: короткие видео с объявлениями (ShopsStrip) */}
+          <ShopsStrip />
         </div>
       </div>
 

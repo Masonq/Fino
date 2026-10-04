@@ -97,6 +97,48 @@ function query(params) {
 }
 
 export const api = {
+  // Отклики на вакансии (backend/app/routers/job_responses.py)
+  jobRespond: (listingId, body) => request(`/jobs/${listingId}/respond`, { method: 'POST', body }),
+  jobMyResponse: (listingId) => request(`/jobs/${listingId}/my-response`),
+  jobMyResponses: () => request('/jobs/my-responses'),
+  jobIncoming: () => request('/jobs/incoming'),
+  jobResponses: (listingId, folder = 'new') => request(`/jobs/${listingId}/responses?folder=${folder}`),
+  jobSetStatus: (id, body) => request(`/jobs/responses/${id}/status`, { method: 'POST', body }),
+  // Шопсы (backend/app/routers/shops.py)
+  shopsFeed: (params = {}) => request(`/shops/feed?${query(params)}`),
+  shopsMine: () => request('/shops/mine'),
+  shopGet: (id) => request(`/shops/${id}`),
+  shopUpdate: (id, body) => request(`/shops/${id}`, { method: 'PUT', body }),
+  shopSubmit: (id) => request(`/shops/${id}/submit`, { method: 'POST' }),
+  shopRemove: (id) => request(`/shops/${id}`, { method: 'DELETE' }),
+  shopEvent: (id, body) => request(`/shops/${id}/event`, { method: 'POST', body }).catch(() => null),
+  shopStats: (id) => request(`/shops/${id}/stats`),
+  shopCreatorApply: (body) => request('/shops/creator/apply', { method: 'POST', body }),
+  shopOrders: (scope = 'open') => request(`/shops/orders/list?scope=${scope}`),
+  shopOrderCreate: (body) => request('/shops/orders', { method: 'POST', body }),
+  shopOrderTake: (id) => request(`/shops/orders/${id}/take`, { method: 'POST' }),
+  shopOrderCancel: (id) => request(`/shops/orders/${id}/cancel`, { method: 'POST' }),
+  shopAdminQueue: () => request('/shops/admin/queue'),
+  shopAdminShop: (id, body) => request(`/shops/admin/shops/${id}`, { method: 'POST', body }),
+  shopAdminCreator: (id, body) => request(`/shops/admin/creators/${id}`, { method: 'POST', body }),
+  // Видео шопса — с ходом загрузки (XHR: у fetch нет прогресса отправки)
+  shopUpload: (file, onProgress) => new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', `${API_BASE}/shops/upload`)
+    const token = getToken()
+    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+    xhr.upload.onprogress = (e) => { if (e.lengthComputable && onProgress) onProgress(e.loaded / e.total) }
+    xhr.onload = () => {
+      let data = null
+      try { data = JSON.parse(xhr.responseText) } catch { /* не JSON */ }
+      if (xhr.status >= 200 && xhr.status < 300) resolve(data)
+      else { const err = new Error(`Upload failed: ${xhr.status}`); err.code = data?.detail; reject(err) }
+    }
+    xhr.onerror = () => reject(new Error('network'))
+    const form = new FormData()
+    form.append('file', file)
+    xhr.send(form)
+  }),
   requestCode: (destination, channel) => request('/auth/request-code', {
     method: 'POST',
     body: JSON.stringify({ destination, channel }),

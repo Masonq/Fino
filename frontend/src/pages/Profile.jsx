@@ -281,6 +281,27 @@ export default function Profile() {
           их открывают раз в жизни, и место наравне с тем, чем
           пользуются каждый день, им ни к чему. */}
       <div className="profile-menu">
+        <Link viewTransition className="profile-row" to="/shops/mine">
+          <span className="profile-row-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="2.5" y="6" width="13" height="12" rx="2.5" /><path d="m15.5 10.5 6-3.5v10l-6-3.5" /></svg>
+          </span>
+          {t('shops.cabinet')}
+          <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+        </Link>
+        <Link viewTransition className="profile-row" to="/jobs/my">
+          <span className="profile-row-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" /><rect x="3" y="7" width="18" height="13" rx="2.5" /></svg>
+          </span>
+          {t('jobresp.my')}
+          <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+        </Link>
+        <Link viewTransition className="profile-row" to="/jobs/responses">
+          <span className="profile-row-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16v12H8l-4 4z" /><path d="M8 9h8M8 12h5" /></svg>
+          </span>
+          {t('jobresp.responses')}
+          <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+        </Link>
         {/* Приглашение друзей — обычной строкой списка, а не отдельной
             карточкой. Карточка висела сама по себе между балансом и
             списком и читалась как чужая вставка; при этом ведёт она
@@ -388,6 +409,13 @@ export default function Profile() {
         <>
           <div className="profile-section-title">{t('admin.staff')}</div>
           <div className="profile-menu">
+            <Link viewTransition className="profile-row" to="/admin/shops">
+          <span className="profile-row-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="2.5" y="6" width="13" height="12" rx="2.5" /><path d="m15.5 10.5 6-3.5v10l-6-3.5" /></svg>
+          </span>
+          {t('shops.moderation')}
+          <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+        </Link>
             <Link viewTransition className="profile-row" to="/moderation">
               <span className="profile-row-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M20 6 9 17l-5-5" /></svg>

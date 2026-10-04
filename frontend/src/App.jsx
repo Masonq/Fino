@@ -27,6 +27,12 @@ import NotFound from './pages/NotFound'
 const PostAd = lazy(() => import('./pages/PostAd'))
 const Categories = lazy(() => import('./pages/Categories'))
 const ChatScreen = lazy(() => import('./pages/ChatScreen'))
+const ShopsFeed = lazy(() => import('./pages/ShopsFeed'))
+const ShopEditor = lazy(() => import('./pages/ShopEditor'))
+const ShopsCabinet = lazy(() => import('./pages/ShopsCabinet'))
+const AdminShops = lazy(() => import('./pages/ShopsCabinet').then((m) => ({ default: m.AdminShops })))
+const JobResponses = lazy(() => import('./pages/JobResponses'))
+const MyJobResponses = lazy(() => import('./pages/JobResponses').then((m) => ({ default: m.MyJobResponses })))
 const ComingSoon = lazy(() => import('./pages/ComingSoon'))
 const Favorites = lazy(() => import('./pages/Favorites'))
 const BlockedUsers = lazy(() => import('./pages/BlockedUsers'))
@@ -437,6 +443,14 @@ export default function App() {
           <Route path="/go/:slug" element={<ListingDetail />} />
 
           <Route path="/chat/:id" element={<ChatScreen />} />
+          <Route path="/shops" element={<ShopsFeed />} />
+          <Route path="/shops/new" element={<ShopEditor />} />
+          <Route path="/shops/mine" element={<ShopsCabinet />} />
+          <Route path="/shops/:id/edit" element={<ShopEditor />} />
+          <Route path="/admin/shops" element={<AdminShops />} />
+          <Route path="/jobs/responses" element={<JobResponses />} />
+          <Route path="/jobs/responses/:id" element={<JobResponses />} />
+          <Route path="/jobs/my" element={<MyJobResponses />} />
           <Route path="/login" element={<Login />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/profile/blocked" element={<BlockedUsers />} />
