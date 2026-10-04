@@ -52,6 +52,7 @@ export default function ListingScreen() {
   // Карта места — на весь экран, как на сайте: «назад» и название, внизу адрес (по точке) и «скопировать»
   const [mapOpen, setMapOpen] = useState(false)
   const [descOpen, setDescOpen] = useState(false)
+  const [attrsOpen, setAttrsOpen] = useState(false)
   const [askOpen, setAskOpen] = useState(false)
   const [mapAddr, setMapAddr] = useState('')
   const [addrCopied, setAddrCopied] = useState(false)
@@ -281,13 +282,14 @@ export default function ListingScreen() {
             <View style={styles.section}>
               <Text style={styles.h3}>{tr('Характеристики')}</Text>
               <View style={styles.attrs}>
-                {attrs.map((r, k) => (
-                  <View key={r.label} style={[styles.attr, k === attrs.length - 1 && { borderBottomWidth: 0 }]}>
+                {(attrsOpen ? attrs : attrs.slice(0, 6)).map((r, k, arr) => (
+                  <View key={r.label} style={[styles.attr, k === arr.length - 1 && { borderBottomWidth: 0 }]}>
                     <Text style={styles.attrLabel}>{r.label}</Text>
                     <Text style={styles.attrValue}>{r.value}</Text>
                   </View>
                 ))}
               </View>
+              {!attrsOpen && attrs.length > 6 && <Pressable onPress={() => setAttrsOpen(true)} hitSlop={6}><Text style={styles.readMore}>{tr('Показать все')}</Text></Pressable>}
             </View>
           )}
 
@@ -304,11 +306,15 @@ export default function ListingScreen() {
               <Text style={styles.reportText}>{tr('Пожаловаться')}</Text>
             </Pressable>
           )}
-          <Text style={styles.footnote}>
-            {[data.views_count != null ? tr('просмотров: {n}', { n: data.views_count }) : '', data.number ? tr('Объявление №{n}', { n: String(data.number) }) : '', relTime(data.published_at)].filter(Boolean).join('  ·  ')}
-          </Text>
+          {/* как .detail-meta сайта: просмотры, в избранном, дата, номер — отдельными строками */}
+          <View style={styles.meta}>
+            {(data.views_count ?? 0) > 0 && <Text style={styles.metaLine}>{data.views_count} {plural(data.views_count ?? 0, { ru: ['просмотр', 'просмотра', 'просмотров'], en: ['view', 'views'], sr: ['pregled', 'pregleda', 'pregleda'] })}</Text>}
+            {((data as unknown as { favorites_count?: number }).favorites_count ?? 0) > 0 && <Text style={styles.metaLine}>{tr('{n} в избранном', { n: (data as unknown as { favorites_count: number }).favorites_count })}</Text>}
+            {!!data.published_at && <Text style={styles.metaLine}>{relTime(data.published_at)}</Text>}
+            {!!data.number && <Text style={styles.metaLine}>№ {data.number}</Text>}
+          </View>
         </View>
-        <CardsRow title={tr('Ещё у продавца')} items={more} exclude={data.id} />
+        <CardsRow title={tr('Ещё у этого продавца')} items={more} exclude={data.id} />
         <CardsRow title={tr('Похожие')} items={similar} exclude={data.id} />
       </ScrollView>
 
@@ -496,6 +502,9 @@ const styles = StyleSheet.create({
   reservedBanner: { marginBottom: 12, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 12, backgroundColor: '#FBF3E3' },
   reservedText: { fontSize: 13.5, fontFamily: font[700], color: '#8A6A1F' },
   ctaTg: { flexDirection: 'row', gap: 8, backgroundColor: '#229ED9' },
+  // как .detail-meta сайта: строки плотно, 12,5, серые
+  meta: { marginTop: 12, gap: 2 },
+  metaLine: { fontSize: 12.5, lineHeight: 17, fontFamily: font[500], color: colors.muted },
   readMore: { fontSize: 14, fontFamily: font[700], color: colors.primaryDeep, marginTop: 6 },
   mapLink: { fontSize: 13.5, fontFamily: font[700], color: colors.primaryDeep },
   mapPage: { flex: 1, backgroundColor: colors.bg },

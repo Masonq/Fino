@@ -1,5 +1,4 @@
 import { tr } from '../src/i18n'
-import { Ionicons } from '@expo/vector-icons'
 import * as Linking from 'expo-linking'
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
@@ -10,7 +9,7 @@ import { markAllNoticesRead, markNoticeRead, type Notice, notifications, clearAl
 import { useAuth } from '../src/auth'
 import Icon from '../src/components/Icon'
 import { SITE } from '../src/config'
-import { plainText, relTime } from '../src/format'
+import { plainText, relTime, timeAgo } from '../src/format'
 import { colors, font } from '../src/theme'
 
 /** Куда ведёт уведомление: переписка и объявление — внутри приложения, остальное — на сайте. */
@@ -77,13 +76,11 @@ export default function Notifications() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false) }} tintColor={colors.primary} colors={[colors.primary]} />}
           ItemSeparatorComponent={() => <View style={styles.sep} />}
           renderItem={({ item }) => (
-            <Pressable style={styles.row} onPress={() => open(item)}>
-              <View style={[styles.dot, item.is_read && { backgroundColor: 'transparent' }]} />
-              <View style={{ flex: 1, gap: 3 }}>
-                <Text style={[styles.text, !item.is_read && styles.textOn]}>{plainText(item.text)}</Text>
-                <Text style={styles.time}>{relTime(item.created_at)}</Text>
-              </View>
-              {!!item.link && <Ionicons name="chevron-forward" size={18} color={colors.muted} />}
+            // как .notif-row сайта: непрочитанное — зелёная подложка и точка слева; текст 13,5, время 11 («28 мин»)
+            <Pressable style={[styles.nRow, !item.is_read && styles.nRowUnread]} onPress={() => open(item)}>
+              {!item.is_read && <View style={styles.nDot} />}
+              <Text style={styles.nText}>{plainText(item.text)}</Text>
+              <Text style={styles.nTime}>{timeAgo(item.created_at)}</Text>
             </Pressable>
           )}
           ListEmptyComponent={
@@ -100,12 +97,17 @@ export default function Notifications() {
 }
 
 const styles = StyleSheet.create({
-  headActions: { flexDirection: 'row', alignItems: 'center', gap: 14, marginLeft: 'auto', paddingRight: 8 },
+  nRow: { paddingVertical: 14, paddingHorizontal: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border, backgroundColor: colors.surface },
+  nRowUnread: { backgroundColor: colors.primarySoft },
+  nDot: { position: 'absolute', left: 6, top: 19, width: 7, height: 7, borderRadius: 4, backgroundColor: colors.primary },
+  nText: { fontSize: 13.5, lineHeight: 19, fontFamily: font[500], color: colors.ink, paddingLeft: 14 },
+  nTime: { fontSize: 11, fontFamily: font[500], color: colors.muted, marginTop: 5, paddingLeft: 14 },
+  headActions: { flexDirection: 'row', alignItems: 'center', gap: 12, marginLeft: 'auto', paddingLeft: 12, paddingRight: 8 },
   page: { flex: 1, backgroundColor: colors.bg },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 8, paddingRight: 16, height: 52 },
   back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  h1: { flex: 1, fontSize: 20, fontFamily: font[800], color: colors.ink, marginLeft: 4 },
-  all: { fontSize: 14.5, fontFamily: font[700], color: colors.primaryDeep },
+  h1: { flex: 1, fontSize: 19, fontFamily: font[800], color: colors.ink, marginLeft: 4, flexShrink: 1 },
+  all: { fontSize: 13.5, fontFamily: font[700], color: colors.primaryDeep },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 14 },
   dot: { width: 9, height: 9, borderRadius: 5, backgroundColor: colors.accent },
   text: { fontFamily: font[400], fontSize: 15.5, lineHeight: 21, color: colors.inkSoft },

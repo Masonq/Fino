@@ -590,4 +590,13 @@ export const DICT: Record<string, { en?: string; sr?: string }> = {
   "Обычно отвечает за сутки": { en: "Usually replies within a day", sr: "Obično odgovara u roku od dana" },
   "Отвечает не сразу": { en: "Takes a while to reply", sr: "Ne odgovara odmah" },
   "Активный продавец": { en: "Active seller", sr: "Aktivan prodavac" },
+  "только что": { en: "just now", sr: "upravo sada" },
+  "мин": { en: "min", sr: "min" },
+  "ч": { en: "h", sr: "\u010d" },
+  "дн": { en: "d", sr: "d" },
+  "Вы": { en: "You", sr: "Vi" },
+  "Сообщений пока нет": { en: "No messages yet", sr: "Jo\u0161 nema poruka" },
+  "Показать все": { en: "Show all", sr: "Prika\u017ei sve" },
+  "{n} в избранном": { en: "{n} favorited", sr: "{n} u omiljenima" },
+  "Ещё у этого продавца": { en: "More from this seller", sr: "Jo\u0161 od ovog prodavca" },
 }

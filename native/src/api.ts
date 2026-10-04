@@ -292,7 +292,10 @@ export const ru = (l?: Label | null) => (!l ? '' : typeof l === 'string' ? l : l
 export function attrRows(attrs: Record<string, unknown> | undefined, schema: AttrField[]): { label: string; value: string }[] {
   if (!attrs) return []
   const out: { label: string; value: string }[] = []
-  for (const f of schema) {
+  // порядок — как на сайте: в каком порядке поля лежат в объявлении (Object.entries(attributes)), только поля схемы
+  for (const key of Object.keys(attrs)) {
+    const f = schema.find((x) => x.key === key)
+    if (!f) continue
     const raw = attrs[f.key]
     if (raw === undefined || raw === null || raw === '' || (Array.isArray(raw) && raw.length === 0)) continue
     const one = (v: unknown) => {

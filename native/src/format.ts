@@ -56,8 +56,8 @@ export function monthYear(d: Date): string {
 export function relTime(iso?: string | null): string {
   const d = parseTime(iso)
   if (!d) return ''
-  const startOf = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime()
-  const days = Math.round((startOf(new Date()) - startOf(d)) / 86400000)
+  // как relativeDate сайта: полные сутки с момента публикации (строка разбирается так же, как в браузере)
+  const days = Math.floor((Date.now() - new Date(iso as string).getTime()) / 86400000)
   if (days <= 0) return tr('сегодня')
   if (days === 1) return tr('вчера')
   if (days < 7) return tr('{n} дн. назад', { n: days })
@@ -99,4 +99,18 @@ export function nearestCity(lat: number, lng: number): string {
   let best = 'beograd', dist = Infinity
   for (const [slug, [a, b]] of Object.entries(CITY_COORDS)) { const d = (a - lat) ** 2 + ((b - lng) * Math.cos((lat * Math.PI) / 180)) ** 2; if (d < dist) { dist = d; best = slug } }
   return best
+}
+
+/** «только что», «16 мин», «3 ч», «2 дн», дальше — дата: как timeAgo сайта (переписки, уведомления). */
+export function timeAgo(iso?: string | null): string {
+  const d = parseTime(iso)
+  if (!d) return ''
+  const diff = (Date.now() - d.getTime()) / 1000
+  if (diff < 60) return tr('только что')
+  if (diff < 3600) return `${Math.floor(diff / 60)} ${tr('мин')}`
+  if (diff < 86400) return `${Math.floor(diff / 3600)} ${tr('ч')}`
+  const days = Math.floor(diff / 86400)
+  if (days < 7) return `${days} ${tr('дн')}`
+  const p = (n: number) => String(n).padStart(2, '0')
+  return getLang() === 'en' ? `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()}` : `${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()}${getLang() === 'sr' ? '.' : ''}`
 }

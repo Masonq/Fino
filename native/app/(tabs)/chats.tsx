@@ -12,7 +12,7 @@ import { useChats } from '../../src/chats'
 import Icon from '../../src/components/Icon'
 import Skeleton from '../../src/components/Skeleton'
 import { mediaUrl } from '../../src/config'
-import { plainText, shortTime } from '../../src/format'
+import { plainText, shortTime, timeAgo } from '../../src/format'
 import { colors, font } from '../../src/theme'
 
 /** Сообщения: список переписок — фото объявления, собеседник, последнее сообщение, время, непрочитанные. */
@@ -53,12 +53,12 @@ export default function Chats() {
         <View style={styles.rowBody}>
           <View style={styles.rowTop}>
             <Text style={styles.name} numberOfLines={1}>{name}</Text>
-            <Text style={styles.time}>{shortTime(item.last_at)}</Text>
+            <Text style={styles.time}>{timeAgo(item.last_at)}</Text>
           </View>
           {!!item.listing_title && <Text style={styles.listing} numberOfLines={1}>{item.listing_title}</Text>}
           <View style={styles.rowTop}>
             <Text style={[styles.preview, unread > 0 && styles.previewOn]} numberOfLines={1}>
-              {item.last_from_me ? tr('Вы: ') : ''}{preview}
+              {item.last_from_me && !!preview ? <Text style={styles.you}>{tr('Вы')}: </Text> : null}{preview || tr('Сообщений пока нет')}
             </Text>
             {unread > 0 && <View style={styles.badge}><Text style={styles.badgeText}>{unread > 99 ? '99+' : unread}</Text></View>}
           </View>
@@ -130,6 +130,7 @@ export default function Chats() {
 }
 
 const styles = StyleSheet.create({
+  you: { fontFamily: font[700], color: colors.ink },
   page: { flex: 1, backgroundColor: colors.bg },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 10 },
   h1: { fontSize: 22, fontFamily: font[800], letterSpacing: -0.3, color: colors.ink, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 10 },
@@ -147,8 +148,9 @@ const styles = StyleSheet.create({
   ctaText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
   row: { flexDirection: 'row', gap: 12, padding: 12, alignItems: 'center', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
   rowUnread: { backgroundColor: colors.primarySoft },
-  thumb: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.photo, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
-  thumbImg: { width: 48, height: 48 },
+  // как .chat-thumb сайта: 52, скругление 11 — фото объявления, не кружок
+  thumb: { width: 52, height: 52, borderRadius: 11, backgroundColor: colors.photo, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
+  thumbImg: { width: 52, height: 52 },
   rowBody: { flex: 1, gap: 2 },
   rowTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   name: { flex: 1, fontSize: 14, fontFamily: font[700], color: colors.ink },
