@@ -6760,3 +6760,18 @@ a.s-attrs{ display:block; }
 .lp-filters .landing-field, .lp-filters .landing-deal, .lp-filters .landing-go { margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; }
 .lp-filters .landing-go { width: 100%; }
 .jobs-landing .infinite-grid { padding-left: 12px; padding-right: 12px; }
+
+/* ——— Плитки разделов на главной (телефон) — как плитки внутри разделов (.jl-tile) ——— */
+@media (max-width: 619px) {
+  .cat-rows { gap: 8px; padding: 10px 12px 2px; }
+  .cat-row { gap: 8px; }
+  .cat-tile-2row { width: 142px; height: 100px; border-radius: 18px; background: var(--surface-sunken); border: 2px solid transparent; box-shadow: none; padding: 13px; }
+  .cat-tile-2row.wide { width: 196px; }
+  .cat-tile-2row.xwide { width: 240px; }
+  .cat-tile-2row-label { font-size: 14.5px; line-height: 1.25; max-width: 92px; letter-spacing: 0; white-space: normal; }
+  .cat-tile-2row.wide .cat-tile-2row-label { max-width: 150px; }
+  .cat-tile-2row.xwide .cat-tile-2row-label { max-width: 196px; }
+  .cat-tile-2row-glyph { width: 66px; height: 66px; right: -2px; bottom: -4px; }
+  .cat-tile-2row.all { background: var(--primary-soft); border-color: transparent; }
+  .cat-tile-2row-glyph.all-glyph { width: 52px; height: 52px; right: 8px; bottom: 6px; }
+}

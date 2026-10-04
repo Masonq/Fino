@@ -18,6 +18,12 @@ import CategoryArt from '../components/CategoryArt'
 import Avatar from '../components/Avatar'
 import { hasLanding } from '../data/landings'
 
+// Ширина плитки раздела — как у плиток внутри разделов: длинное слово — широкая, очень длинное — ещё шире
+const tileSize = (name) => {
+  const longest = Math.max(...name.split(/\s+/).map((w) => w.length))
+  return longest > 13 ? ' xwide' : (name.length > 13 || longest > 8 ? ' wide' : '')
+}
+
 // Лента живёт в памяти между заходами на страницу. Иначе при возврате из
 // объявления она загружается заново: страница успевает отрисоваться пустой,
 // потом появляются карточки, потом прыгает прокрутка — это и был рывок.
@@ -699,7 +705,7 @@ export default function Home() {
           <Link
             key={cat.id}
             to={hasLanding(cat.slug) ? `/c/${cat.slug}` : `/search?category=${cat.slug}`}
-            className={`cat-tile-2row${cat.ready === false ? ' soon' : ''}`}
+            className={`cat-tile-2row${tileSize(cat.name?.[i18n.language] || cat.name?.ru || '')}${cat.ready === false ? ' soon' : ''}`}
           >
             <div className="cat-tile-2row-label">{cat.name?.[i18n.language] || cat.name?.ru}</div>
             <div className="cat-tile-2row-glyph"><CategoryArt slug={cat.slug} /></div>
