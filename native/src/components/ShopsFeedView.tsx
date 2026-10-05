@@ -113,8 +113,15 @@ const Slide = memo(function Slide({ shop, active, near, muted, width, height, bo
 
   // источник — только в окне предзагрузки: дальние ролики не тратят трафик и память
   const loaded = useRef(false)
+  // включать ли сейчас: читается после загрузки ролика — play() до того, как источник подставился, на iPhone
+  // молча не срабатывает, и видео стояло на первом кадре
+  const wantPlay = useRef(false)
+  wantPlay.current = active && !paused
   useEffect(() => {
-    if (near && src && !loaded.current) { loaded.current = true; player.replaceAsync(src).catch(() => {}) }
+    if (near && src && !loaded.current) {
+      loaded.current = true
+      player.replaceAsync(src).then(() => { if (wantPlay.current) player.play() }).catch(() => {})
+    }
     if (!near && loaded.current) { loaded.current = false; player.replaceAsync(null).catch(() => {}) }
   }, [near, src, player])
   useEffect(() => { player.muted = muted }, [muted, player])
