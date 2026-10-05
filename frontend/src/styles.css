@@ -7430,3 +7430,4 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 .my-thumb{ border-radius:14px; }
 .my-actions button{ border-radius:12px; font-weight:700; }
 .my-row.skeleton{ box-shadow:var(--shadow); }
+.seller-head-info{ flex:1; } /* информация занимает середину — «Подписаться» прижата к правому краю */
