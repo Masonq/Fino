@@ -24,7 +24,7 @@ export function SheetAction({ label, onPress, danger, icon }: { label: string; o
   return (
     <Pressable style={styles.action} onPress={onPress} accessibilityRole="button">
       {icon}
-      <Text style={[styles.actionText, danger && { color: '#B42318' }]}>{label}</Text>
+      <Text style={[styles.actionText, danger && { color: colors.danger }]}>{label}</Text>
     </Pressable>
   )
 }
@@ -32,7 +32,7 @@ export function SheetAction({ label, onPress, danger, icon }: { label: string; o
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(17,22,19,0.42)' },
   sheet: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 8 },
-  handle: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: '#D8DCD8', marginBottom: 8 },
+  handle: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: colors.border, marginBottom: 8 },
   title: { fontSize: 18, fontFamily: font[800], color: colors.ink, paddingHorizontal: 20, paddingBottom: 8 },
   action: { height: 54, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', gap: 12 },
   actionText: { fontSize: 16.5, color: colors.ink, fontFamily: font[600] },

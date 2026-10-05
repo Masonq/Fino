@@ -171,7 +171,7 @@ export default function EditListing() {
             <View style={styles.grid}>
               {shots.map((s, i) => (
                 <Pressable key={s.key} style={styles.shot} disabled={s.state !== 'failed'} onPress={() => upload(s)}>
-                  {s.mime?.startsWith('video') && !s.uploaded && !s.existingId ? <View style={[styles.shotImg, { backgroundColor: '#1C2620' }]} /> : <Image source={{ uri: s.uri }} style={styles.shotImg} contentFit="cover" />}
+                  {s.mime?.startsWith('video') && !s.uploaded && !s.existingId ? <View style={[styles.shotImg, { backgroundColor: colors.ink }]} /> : <Image source={{ uri: s.uri }} style={styles.shotImg} contentFit="cover" />}
                   {s.mime?.startsWith('video') && s.state === 'done' && <View style={styles.playBadge}><Icon name="play" size={12} color="#fff" filled /></View>}
                   {s.state === 'loading' && <View style={styles.overlay}><ActivityIndicator color="#fff" /></View>}
                   {s.state === 'failed' && <View style={[styles.overlay, { backgroundColor: 'rgba(180,35,24,0.72)' }]}><Ionicons name="refresh" size={22} color="#fff" /></View>}
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
   addTileText: { fontSize: 12.5, fontFamily: font[700], color: colors.ink },
   makeCover: { position: 'absolute', left: 4, right: 4, bottom: 4, borderRadius: 7, backgroundColor: 'rgba(14,69,49,0.86)', paddingVertical: 3, alignItems: 'center' },
   makeCoverText: { color: '#fff', fontSize: 9.5, fontFamily: font[800], textAlign: 'center' },
-  coverErr: { fontSize: 13, fontFamily: font[600], color: '#B42318', marginTop: 6 },
+  coverErr: { fontSize: 13, fontFamily: font[600], color: colors.danger, marginTop: 6 },
   priceBox: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 50, borderRadius: 13, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, paddingLeft: 14, paddingRight: 4 },
   priceInput: { flex: 1, fontSize: 16, fontFamily: font[500], color: colors.ink, paddingVertical: 10 },
   check: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12 },
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
   switchText: { fontFamily: font[400], fontSize: 16, color: colors.ink },
   select: { minHeight: 50, borderRadius: 13, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 8 },
   selectText: { flex: 1, fontFamily: font[400], fontSize: 16, color: colors.ink, paddingVertical: 12 },
-  hint: { fontFamily: font[400], fontSize: 13.5, color: '#B42318', marginTop: 6, paddingHorizontal: 16 },
+  hint: { fontFamily: font[400], fontSize: 13.5, color: colors.danger, marginTop: 6, paddingHorizontal: 16 },
   cta: { marginTop: 26, height: 52, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
   ctaText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
   small: { fontFamily: font[400], fontSize: 13, color: colors.muted, textAlign: 'center', marginTop: 10 },

@@ -98,5 +98,5 @@ const styles = StyleSheet.create({
   chartAxis: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4, paddingHorizontal: 4 },
   axis: { fontSize: 11.5, fontFamily: font[600], color: colors.muted },
   tip: { marginTop: 12, padding: 12, borderRadius: 14, backgroundColor: colors.primarySoft, fontSize: 14, lineHeight: 19, fontFamily: font[600], color: colors.primaryDeep },
-  tipWarn: { backgroundColor: '#FBF3E3', color: '#8A6A1F' },
+  tipWarn: { backgroundColor: colors.warmBg, color: '#8A6A1F' },
 })

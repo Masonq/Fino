@@ -79,7 +79,7 @@ export const k = StyleSheet.create({
   input: { borderWidth: 1, borderColor: colors.border, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontFamily: font[500], fontSize: 16, color: colors.ink, backgroundColor: colors.surface },
   tabs: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingVertical: 8 },
   tab: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 36, paddingHorizontal: 14, borderRadius: 18, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface },
-  tabOn: { backgroundColor: colors.ink, borderColor: colors.ink },
+  tabOn: { backgroundColor: colors.inverse, borderColor: colors.inverse },
   tabText: { fontFamily: font[600], fontSize: 14, color: colors.ink },
   tabN: { minWidth: 20, height: 20, paddingHorizontal: 6, borderRadius: 10, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
   tabNText: { fontFamily: font[700], fontSize: 12, color: colors.primaryDeep },

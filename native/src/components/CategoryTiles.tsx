@@ -82,11 +82,11 @@ const styles = StyleSheet.create({
   wrapInner: { gap: 8 },
   row: { flexDirection: 'row', gap: 8 },
   // Размеры — как .cat-tile-2row на сайте: 118×86, отступы 9/8/6/11, подпись 12 полужирная, картинка 58×58 в углу
-  tile: { width: W, height: H, borderRadius: 16, backgroundColor: colors.sunken, borderWidth: 2, borderColor: 'transparent', padding: TILE.pad, overflow: 'hidden' },
+  tile: { width: W, height: H, borderRadius: 18, backgroundColor: colors.tile, borderWidth: 2, borderColor: 'transparent', padding: TILE.pad, overflow: 'hidden' },
   allTile: { backgroundColor: colors.primarySoft },
   tileOn: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
   soon: { opacity: 0.55 },
-  label: { fontSize: 13.5, lineHeight: 17, fontFamily: font[700], color: colors.ink, zIndex: 2 },
+  label: { fontSize: 13.5, lineHeight: 17, fontFamily: font[700], color: colors.onTile, zIndex: 2 },
   labelOn: { color: colors.primaryDeep },
   allIcon: { position: 'absolute', right: 10, bottom: 8 },
 })

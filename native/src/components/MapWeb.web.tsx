@@ -1,3 +1,4 @@
+import { colors } from '../theme'
 import { createElement, useEffect, useMemo, useRef } from 'react'
 import { View } from 'react-native'
 
@@ -25,7 +26,7 @@ export default function MapWeb({ mode, lat, lng, center, approximate, height = 2
     if (lat == null || lng == null) w?.clearPin?.(); else w?.moveTo?.(lat, lng)
   }, [lat, lng])
   return (
-    <View style={{ height, borderRadius: 14, overflow: 'hidden', backgroundColor: '#E9ECE8' }}>
+    <View style={{ height, borderRadius: 14, overflow: 'hidden', backgroundColor: colors.sunken }}>
       {createElement('iframe', { ref: frame, srcDoc, style: { border: 0, width: '100%', height: '100%' } })}
     </View>
   )

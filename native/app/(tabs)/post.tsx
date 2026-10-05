@@ -388,7 +388,7 @@ export default function Post() {
             {shots.map((s, i) => (
               <Pressable key={s.key} style={styles.shot} disabled={s.state !== 'failed'} onPress={() => upload(s)}>
                 {s.mime.startsWith('video')
-                  ? (s.uploaded?.thumbnail_url ? <Image source={{ uri: mediaUrl(s.uploaded.thumbnail_url) ?? undefined }} style={styles.shotImg} contentFit="cover" /> : <View style={[styles.shotImg, { backgroundColor: '#1C2620' }]} />)
+                  ? (s.uploaded?.thumbnail_url ? <Image source={{ uri: mediaUrl(s.uploaded.thumbnail_url) ?? undefined }} style={styles.shotImg} contentFit="cover" /> : <View style={[styles.shotImg, { backgroundColor: colors.ink }]} />)
                   : <Image source={{ uri: s.uri }} style={styles.shotImg} contentFit="cover" />}
                 {s.mime.startsWith('video') && s.state === 'done' && <View style={styles.playBadge}><Icon name="play" size={12} color="#fff" filled /></View>}
                 {s.state === 'loading' && <View style={styles.shotOverlay}><ActivityIndicator color="#fff" /></View>}
@@ -436,7 +436,7 @@ export default function Post() {
           <TextInput value={price} onChangeText={(v) => setPrice(v.replace(/\D/g, '').slice(0, 9))} placeholder={tr('Пусто — «цена не указана»')} placeholderTextColor={colors.muted} keyboardType="number-pad" style={styles.input} />
           <View style={styles.switchRow}>
             <Text style={styles.switchText}>{tr('Торг уместен')}</Text>
-            <Switch value={negotiable} onValueChange={setNegotiable} trackColor={{ true: colors.primary, false: '#D8DCD8' }} />
+            <Switch value={negotiable} onValueChange={setNegotiable} trackColor={{ true: colors.primary, false: colors.sunken }} />
           </View>
 
           <Text style={styles.label}>{tr('Город')}</Text>
@@ -477,7 +477,7 @@ const styles = StyleSheet.create({
   box: { width: 22, height: 22, borderRadius: 6, borderWidth: 1.5, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface },
   boxOn: { backgroundColor: colors.primary, borderColor: colors.primary },
   optSheet: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 8, paddingBottom: 26 },
-  optHandle: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: '#D8DCD8', marginBottom: 8 },
+  optHandle: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: colors.border, marginBottom: 8 },
   optTitle: { fontSize: 18, fontFamily: font[800], color: colors.ink, paddingHorizontal: 20, paddingBottom: 8 },
   optRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 50, paddingHorizontal: 20, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
   optText: { fontSize: 16, fontFamily: font[600], color: colors.ink },
@@ -516,7 +516,7 @@ const styles = StyleSheet.create({
   area: { minHeight: 120, paddingTop: 13, paddingBottom: 13 },
   switchRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 12 },
   switchText: { fontFamily: font[400], fontSize: 16, color: colors.ink },
-  hint: { fontFamily: font[400], fontSize: 13.5, color: '#B42318', marginTop: 6 },
+  hint: { fontFamily: font[400], fontSize: 13.5, color: colors.danger, marginTop: 6 },
   submit: { marginTop: 26, paddingHorizontal: 0 },
   small: { fontFamily: font[400], fontSize: 13, color: colors.muted, textAlign: 'center', marginTop: 10 },
 })

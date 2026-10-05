@@ -19,7 +19,7 @@ const ERR: Record<string, string> = {
 }
 const ST: Record<string, [string, string, string]> = {
   draft: ['Черновик', colors.sunken, colors.inkSoft], published: ['Опубликована', colors.primarySoft, colors.primaryDeep],
-  paused: ['Отпуск', '#FFF4D6', '#8A6400'], blocked: ['Заблокирована модератором', '#FBE3E3', '#A33232'],
+  paused: ['Отпуск', colors.warmBg, colors.goldDark], blocked: ['Заблокирована модератором', colors.dangerBg, '#A33232'],
 }
 const photo = (l: FeedItem) => l.cover_photo || l.photos?.[0] || null
 type Coll = { id: string | null; title: string; description: string; status: string; sort: string; listing_ids: string[] }
@@ -217,6 +217,6 @@ const s = StyleSheet.create({
   gridImg: { width: '100%', aspectRatio: 1, borderRadius: 8, backgroundColor: colors.photo },
   gridText: { marginTop: 4, fontFamily: font[600], fontSize: 12, color: colors.ink },
   gridCheck: { position: 'absolute', top: 8, right: 8, width: 22, height: 22, borderRadius: 11, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  toast: { position: 'absolute', alignSelf: 'center', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12, backgroundColor: colors.ink },
+  toast: { position: 'absolute', alignSelf: 'center', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12, backgroundColor: colors.inverse },
   toastText: { fontFamily: font[600], fontSize: 14, color: '#fff' },
 })

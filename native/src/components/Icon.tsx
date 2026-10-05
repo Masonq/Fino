@@ -1,3 +1,4 @@
+import { colors } from '../theme'
 import Svg, { Circle, Ellipse, Line, Path, Polygon, Polyline, Rect } from 'react-native-svg'
 
 /**
@@ -12,7 +13,7 @@ export type IconName = keyof typeof ICONS
 
 const TAGS = { path: Path, rect: Rect, circle: Circle, line: Line, polyline: Polyline, polygon: Polygon, ellipse: Ellipse } as const
 
-export default function Icon({ name, size = 24, color = '#1C2620', filled = false, strokeWidth }: {
+export default function Icon({ name, size = 24, color = colors.ink, filled = false, strokeWidth }: {
   name: string; size?: number; color?: string; filled?: boolean; strokeWidth?: number
 }) {
   const icon = ICONS[name]

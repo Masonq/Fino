@@ -57,7 +57,7 @@ export default function CategoryPicker({ visible, onPick, onClose }: {
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(17,22,19,0.42)' },
   sheet: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 8 },
-  handle: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: '#D8DCD8', marginBottom: 6 },
+  handle: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: colors.border, marginBottom: 6 },
   head: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingBottom: 8, minHeight: 40 },
   back: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
   title: { flex: 1, fontSize: 18, fontFamily: font[800], color: colors.ink, paddingHorizontal: 8 },

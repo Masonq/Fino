@@ -78,7 +78,7 @@ export default function TabsLayout() {
 
 const styles = StyleSheet.create({
   post: {
-    width: 40, height: 40, marginTop: -8, borderRadius: 14, backgroundColor: colors.ink, alignItems: 'center', justifyContent: 'center',
+    width: 40, height: 40, marginTop: -8, borderRadius: 14, backgroundColor: colors.inverse, alignItems: 'center', justifyContent: 'center',
     shadowColor: colors.ink, shadowOpacity: 0.28, shadowRadius: 8, shadowOffset: { width: 0, height: 5 }, elevation: 5,
   },
 })

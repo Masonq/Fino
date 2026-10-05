@@ -108,7 +108,7 @@ export default function SellerScreen() {
         <View style={styles.reviews}>
           <Text style={styles.reviewsTitle}>{tr('Отзывы')}</Text>
           <View style={styles.summary}>
-            <View style={{ flexDirection: 'row', gap: 1 }}>{[1, 2, 3, 4, 5].map((k) => <Star key={k} size={14} color={k <= Math.round(reviews.avg) ? '#E0A526' : '#D9DDD9'} />)}</View>
+            <View style={{ flexDirection: 'row', gap: 1 }}>{[1, 2, 3, 4, 5].map((k) => <Star key={k} size={14} color={k <= Math.round(reviews.avg) ? '#E0A526' : colors.sunken} />)}</View>
             <Text style={styles.ratingNum}>{reviews.avg.toFixed(1)}</Text>
             <Text style={styles.meta}>{reviews.count} {reviewsWord(reviews.count)}</Text>
           </View>
@@ -116,7 +116,7 @@ export default function SellerScreen() {
             <View key={r.id} style={[styles.review, i === 0 && { borderTopWidth: 0 }]}>
               <View style={styles.reviewTop}>
                 <Text style={styles.reviewName} numberOfLines={1}>{r.author_name || tr('Покупатель')}</Text>
-                <View style={{ flexDirection: 'row', gap: 1 }}>{[1, 2, 3, 4, 5].map((k) => <Star key={k} size={11} color={k <= r.rating ? '#E0A526' : '#D9DDD9'} />)}</View>
+                <View style={{ flexDirection: 'row', gap: 1 }}>{[1, 2, 3, 4, 5].map((k) => <Star key={k} size={11} color={k <= r.rating ? '#E0A526' : colors.sunken} />)}</View>
                 <Text style={styles.reviewDate}>{reviewDate(r.created_at)}</Text>
               </View>
               {!!r.comment && <Text style={styles.reviewText}>{r.comment}</Text>}

@@ -20,11 +20,11 @@ import { colors, font } from '../src/theme'
 type Tab = 'active' | 'pending' | 'rejected' | 'sold' | 'archived'
 const STATUS: Record<string, { label: string; tone: string; bg: string }> = {
   active: { label: 'Активно', tone: colors.primaryDeep, bg: colors.primarySoft },
-  pending_moderation: { label: 'На проверке', tone: '#8A6A1F', bg: '#FBF3E3' },
+  pending_moderation: { label: 'На проверке', tone: '#8A6A1F', bg: colors.warmBg },
   draft: { label: 'Черновик', tone: colors.inkSoft, bg: colors.sunken },
   sold: { label: 'Продано', tone: colors.inkSoft, bg: colors.sunken },
   archived: { label: 'В архиве', tone: colors.inkSoft, bg: colors.sunken },
-  rejected: { label: 'Отклонено', tone: '#B42318', bg: '#FDECEA' },
+  rejected: { label: 'Отклонено', tone: colors.danger, bg: colors.dangerBg },
 }
 const tabOf = (s: string): Tab => (s === 'active' ? 'active' : s === 'pending_moderation' ? 'pending' : s === 'rejected' ? 'rejected' : s === 'sold' ? 'sold' : 'archived')
 const rsd = (n: number) => `${String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00A0')}\u00A0RSD`
@@ -177,7 +177,7 @@ function expiresIn(n: number): string {
 const daysLeft = (iso?: string | null) => { const d = parseTime(iso); return d ? Math.max(0, Math.ceil((d.getTime() - Date.now()) / 86400000)) : null }
 
 const styles = StyleSheet.create({
-  expiry: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 6, paddingLeft: 10, paddingRight: 4, paddingVertical: 4, borderRadius: 10, backgroundColor: '#FBF3E3' },
+  expiry: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 6, paddingLeft: 10, paddingRight: 4, paddingVertical: 4, borderRadius: 10, backgroundColor: colors.warmBg },
   expiryText: { flex: 1, fontSize: 12.5, fontFamily: font[700], color: '#8A6A1F' },
   renew: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: colors.surface },
   renewText: { fontSize: 12.5, fontFamily: font[800], color: colors.ink },
@@ -233,5 +233,5 @@ const styles = StyleSheet.create({
   langRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginHorizontal: 16, marginTop: 14, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
   langText: { flex: 1, fontSize: 16, color: colors.ink, fontFamily: font[600] },
   logout: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 14, height: 50, marginHorizontal: 16, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
-  logoutText: { fontSize: 16, fontFamily: font[700], color: '#B42318' },
+  logoutText: { fontSize: 16, fontFamily: font[700], color: colors.danger },
 })

@@ -250,7 +250,7 @@ const s = StyleSheet.create({
   all: { alignSelf: 'flex-start', height: 30, paddingHorizontal: 12, borderRadius: 15, backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center' },
   allText: { fontFamily: font[700], fontSize: 13, color: '#fff' },
   progress: { position: 'absolute', left: 12, right: 12, height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.25)' },
-  progressFill: { height: 3, borderRadius: 2, backgroundColor: '#fff' },
+  progressFill: { height: 3, borderRadius: 2, backgroundColor: colors.surface },
 })
 
 

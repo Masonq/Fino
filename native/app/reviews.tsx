@@ -58,7 +58,7 @@ export default function Reviews() {
           <Text style={styles.sub}>{target?.target_name}</Text>
           <View style={styles.stars}>
             {[1, 2, 3, 4, 5].map((k) => (
-              <Pressable key={k} onPress={() => setRating(k)} hitSlop={4} accessibilityLabel={`${k}`}><Star size={36} color={k <= rating ? '#E0A526' : '#D9DDD9'} /></Pressable>
+              <Pressable key={k} onPress={() => setRating(k)} hitSlop={4} accessibilityLabel={`${k}`}><Star size={36} color={k <= rating ? '#E0A526' : colors.sunken} /></Pressable>
             ))}
           </View>
           <TextInput value={comment} onChangeText={setComment} placeholder={tr('Пара слов о сделке (необязательно)')} placeholderTextColor={colors.muted} multiline textAlignVertical="top" style={styles.input} maxLength={1000} />

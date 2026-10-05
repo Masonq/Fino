@@ -254,7 +254,7 @@ export default function ListingScreen() {
                 </View>
                 {(owner.rating_count ?? 0) > 0 ? (
                   <View style={styles.starsRow}>
-                    {[1, 2, 3, 4, 5].map((k) => <Star key={k} size={13} color={k <= Math.round(owner.rating_avg ?? 0) ? '#E0A526' : '#D9DDD9'} />)}
+                    {[1, 2, 3, 4, 5].map((k) => <Star key={k} size={13} color={k <= Math.round(owner.rating_avg ?? 0) ? '#E0A526' : colors.sunken} />)}
                     <Text style={[styles.sellerSub, { marginLeft: 4 }]}>{(owner.rating_avg ?? 0).toFixed(1)} · {owner.rating_count ?? 0} {plural(owner.rating_count ?? 0, { ru: ['отзыв', 'отзыва', 'отзывов'], en: ['review', 'reviews'], sr: ['recenzija', 'recenzije', 'recenzija'] })}</Text>
                   </View>
                 ) : <Text style={styles.sellerSub}>{tr('Пока нет отзывов')}</Text>}
@@ -375,7 +375,7 @@ export default function ListingScreen() {
               <Text style={styles.gaugeLead}>{tr(verdict?.title ?? '')}</Text>
               <View style={styles.gauge}>
                 <View style={[styles.gaugePart, { backgroundColor: '#BFE7D3' }]} />
-                <View style={[styles.gaugePart, { backgroundColor: '#ECECE6' }]} />
+                <View style={[styles.gaugePart, { backgroundColor: colors.sunken }]} />
                 <View style={[styles.gaugePart, { backgroundColor: '#F6CDB8' }]} />
                 <View style={[styles.gaugeMark, { left: `${pos * 100}%` }]} />
               </View>
@@ -479,7 +479,7 @@ function factChips(root: string, attrs: Record<string, unknown> | undefined, sch
 /** Оценка цены — та же, что на сайте («Дешевле похожих на PLONK»). */
 const VERDICTS: Record<string, { title: string; icon: IconName; color: string; bg: string }> = {
   cheap: { title: 'Дешевле похожих на PLONK', icon: 'trending-down', color: '#0B5C42', bg: '#DDF3E8' },
-  fair: { title: 'Цена как у похожих', icon: 'remove', color: '#4B554E', bg: '#ECECE6' },
+  fair: { title: 'Цена как у похожих', icon: 'remove', color: '#4B554E', bg: colors.sunken },
   expensive: { title: 'Дороже похожих на PLONK', icon: 'trending-up', color: '#B4501E', bg: '#FCE6DA' },
 }
 
@@ -505,7 +505,7 @@ const styles = StyleSheet.create({
   gone: { marginBottom: 12, padding: 12, borderRadius: 14, backgroundColor: colors.sunken, gap: 2 },
   goneTitle: { fontSize: 15, fontFamily: font[800], color: colors.ink },
   goneNote: { fontSize: 13.5, fontFamily: font[500], color: colors.inkSoft },
-  reservedBanner: { marginBottom: 12, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 12, backgroundColor: '#FBF3E3' },
+  reservedBanner: { marginBottom: 12, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 12, backgroundColor: colors.warmBg },
   reservedText: { fontSize: 13.5, fontFamily: font[700], color: '#8A6A1F' },
   ctaTg: { flexDirection: 'row', gap: 8, backgroundColor: '#229ED9' },
   // как .detail-meta сайта: строки плотно, 12,5, серые
@@ -571,7 +571,7 @@ const styles = StyleSheet.create({
   locRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   loc: { fontSize: 15, fontFamily: font[600], color: colors.inkSoft },
   attrs: { backgroundColor: colors.sunken, borderRadius: 16, paddingHorizontal: 16 },
-  attr: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#ECECE6' },
+  attr: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.sunken },
   attrLabel: { fontSize: 14.5, fontFamily: font[500], color: colors.muted, flex: 1 },
   attrValue: { fontSize: 14.5, fontFamily: font[700], color: colors.ink, flex: 1, textAlign: 'right' },
   text: { fontSize: 16, lineHeight: 23, fontFamily: font[400], color: colors.ink },

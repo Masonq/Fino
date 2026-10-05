@@ -42,7 +42,7 @@ export default function CityPicker({ visible, value, onPick, onClose }: {
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(17,22,19,0.42)' },
   sheet: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 8 },
-  handle: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: '#D8DCD8', marginBottom: 8 },
+  handle: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: colors.border, marginBottom: 8 },
   title: { fontSize: 18, fontFamily: font[800], color: colors.ink, paddingHorizontal: 20, paddingBottom: 8 },
   row: { height: 52, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   rowText: { fontFamily: font[400], fontSize: 16.5, color: colors.ink },

@@ -7,7 +7,7 @@ import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
 import * as Updates from 'expo-updates'
 import { useEffect } from 'react'
-import { AppState, Platform } from 'react-native'
+import { AppState, Appearance, Platform } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 import { AuthProvider } from '../src/auth'
@@ -18,7 +18,7 @@ import { LangProvider } from '../src/i18n'
 import { NetProvider } from '../src/net'
 import OfflineBanner from '../src/components/OfflineBanner'
 
-import { colors } from '../src/theme'
+import { colors, isDark } from '../src/theme'
 
 /**
  * Обновления приходят сами (expo-updates, сервер plonk.rs): при запуске приложение проверяет новую версию и
@@ -51,6 +51,13 @@ SplashScreen.preventAutoHideAsync().catch(() => {})
 
 export default function RootLayout() {
   useUpdatesOnResume()
+  // тема сменилась в системе — перезапуск: стили приложения собираются один раз под тему при запуске
+  useEffect(() => {
+    const sub = Appearance.addChangeListener(({ colorScheme }) => {
+      if ((colorScheme === 'dark') !== isDark) Updates.reloadAsync().catch(() => {})
+    })
+    return () => sub.remove()
+  }, [])
   const [fontsReady, fontsError] = useFonts({
     Onest_400Regular, Onest_500Medium, Onest_600SemiBold, Onest_700Bold, Onest_800ExtraBold,
   })
@@ -64,7 +71,7 @@ export default function RootLayout() {
       <AuthProvider>
       <FavoritesProvider>
       <ChatsProvider>
-      <StatusBar style="dark" />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <LangProvider>{(lang) => (
       <Stack key={lang} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'slide_from_right' }}>
         <Stack.Screen name="(tabs)" />

@@ -499,7 +499,7 @@ const styles = StyleSheet.create({
   roundChipText: { fontSize: 14, fontFamily: font[600], color: colors.ink },
   roundChipTextOn: { color: colors.primaryDeep, fontFamily: font[800] },
   // как у Авито: в карточке кнопка по ширине текста; в верху Недвижимости и в шторках — на всю ширину (goWide)
-  go: { marginTop: 6, height: 50, borderRadius: 14, backgroundColor: colors.ink, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start', paddingHorizontal: 22 },
+  go: { marginTop: 6, height: 50, borderRadius: 14, backgroundColor: colors.inverse, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start', paddingHorizontal: 22 },
   goWide: { flex: 1, alignSelf: 'stretch', marginTop: 0 },
   goText: { color: '#fff', fontSize: 15, fontFamily: font[700] },
   fresh: { fontSize: 16, fontFamily: font[800], color: colors.ink, paddingHorizontal: 12, paddingTop: 14, paddingBottom: 10 },
@@ -568,7 +568,7 @@ const styles = StyleSheet.create({
   selectLabel: { fontSize: 13.5, fontFamily: font[700], color: colors.inkSoft },
   selectValue: { flex: 1, fontSize: 16, fontFamily: font[600], color: colors.ink },
   pickSheet: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 8, paddingBottom: 24 },
-  pickHandle: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: '#D8DCD8', marginBottom: 8 },
+  pickHandle: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: colors.border, marginBottom: 8 },
   pickTitle: { fontSize: 18, fontFamily: font[800], color: colors.ink, paddingHorizontal: 20, paddingBottom: 8 },
   pickSearch: { marginHorizontal: 16, marginBottom: 6, height: 44, borderRadius: 12, backgroundColor: colors.sunken, paddingHorizontal: 13, fontSize: 15.5, fontFamily: font[500], color: colors.ink },
   pickRow: { minHeight: 48, paddingHorizontal: 20, justifyContent: 'center', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },

@@ -1,4 +1,4 @@
-import { font } from '../theme'
+import { font, colors } from '../theme'
 import * as Updates from 'expo-updates'
 import { Component, type ReactNode, useEffect, useState } from 'react'
 import { DevSettings, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
@@ -64,10 +64,10 @@ export default function CrashGuard({ children }: { children: ReactNode }) {
 
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: '#FAFAF9', paddingTop: 80, paddingHorizontal: 20, gap: 12 },
-  title: { fontSize: 22, fontFamily: font[800], color: '#1C2620' },
+  title: { fontSize: 22, fontFamily: font[800], color: colors.ink },
   text: { fontFamily: font[400], fontSize: 15, lineHeight: 21, color: '#4B554E' },
   box: { maxHeight: 360, backgroundColor: '#F2F2EF', borderRadius: 12, padding: 12 },
-  mono: { fontFamily: 'Menlo', fontSize: 12, color: '#1C2620' },
+  mono: { fontFamily: 'Menlo', fontSize: 12, color: colors.ink },
   btn: { height: 50, borderRadius: 14, backgroundColor: '#0E9F6E', alignItems: 'center', justifyContent: 'center' },
   btnText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
 })

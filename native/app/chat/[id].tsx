@@ -251,7 +251,7 @@ export default function ChatScreen() {
           ? <SheetAction label={tr('Снять бронь')} icon={<Icon name="lock" size={20} color={colors.ink} />} onPress={() => { setMenu(false); if (token && info?.listing_id) act(() => cancelReservation(token, info.listing_id as string)) }} />
           : <SheetAction label={tr('Забронировать для покупателя')} icon={<Icon name="lock" size={20} color={colors.ink} />} onPress={() => { setMenu(false); if (token && info?.listing_id && info?.buyer?.id) act(() => reserveListing(token, info.listing_id as string, info.buyer!.id, 48)) }} />)}
         {!isSeller && <SheetAction label={tr('Предложить цену')} icon={<Icon name="wallet" size={20} color={colors.ink} />} onPress={() => { setMenu(false); setOffer(''); setOfferOpen(true) }} />}
-        <SheetAction label={tr(blocked ? 'Разблокировать' : 'Заблокировать')} danger={!blocked} icon={<Icon name="lock" size={20} color={blocked ? colors.ink : '#B42318'} />}
+        <SheetAction label={tr(blocked ? 'Разблокировать' : 'Заблокировать')} danger={!blocked} icon={<Icon name="lock" size={20} color={blocked ? colors.ink : colors.danger} />}
           onPress={async () => { setMenu(false); if (!token) return; const next = !blocked; setBlocked(next); try { await blockChat(token, chatId, next) } catch { setBlocked(!next) } }} />
       </Sheet>
       <Sheet visible={offerOpen} title={tr('Ваша цена')} onClose={() => setOfferOpen(false)}>
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
   callYesText: { color: '#fff', fontSize: 13.5, fontFamily: font[800] },
   callNo: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 10, backgroundColor: colors.surface },
   callNoText: { color: colors.ink, fontSize: 13.5, fontFamily: font[700] },
-  reserved: { marginHorizontal: 12, marginTop: 8, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 12, backgroundColor: '#FBF3E3' },
+  reserved: { marginHorizontal: 12, marginTop: 8, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 12, backgroundColor: colors.warmBg },
   reservedText: { fontSize: 13, lineHeight: 18, fontFamily: font[700], color: '#8A6A1F' },
   typing: { fontSize: 12.5, fontFamily: font[600], color: colors.muted, paddingHorizontal: 16, paddingBottom: 4 },
   offerPill: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 10, marginLeft: 12, marginBottom: 6, paddingLeft: 12, paddingRight: 10, paddingVertical: 7, borderRadius: 12, backgroundColor: colors.primarySoft },
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
   bubble: { maxWidth: '80%', paddingHorizontal: 12, paddingTop: 8, paddingBottom: 6, borderRadius: 18 },
   bubbleThem: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderBottomLeftRadius: 6 },
   bubbleMe: { backgroundColor: colors.primary, borderBottomRightRadius: 6 },
-  bubbleFailed: { backgroundColor: '#B42318' },
+  bubbleFailed: { backgroundColor: colors.danger },
   bubbleText: { fontFamily: font[400], fontSize: 16, lineHeight: 21, color: colors.ink },
   bubbleTextMe: { color: '#fff' },
   meta: { fontFamily: font[400], fontSize: 11, color: colors.muted, marginTop: 3, alignSelf: 'flex-end' },

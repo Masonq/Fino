@@ -4,7 +4,7 @@ import { router, useFocusEffect } from 'expo-router'
 import Icon from '../../src/components/Icon'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  FlatList, LayoutAnimation, Platform, Pressable, RefreshControl, StyleSheet, Text, UIManager, useWindowDimensions, View,
+  FlatList, LayoutAnimation, ScrollView, Platform, Pressable, RefreshControl, StyleSheet, Text, UIManager, useWindowDimensions, View,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
@@ -53,7 +53,15 @@ export default function Favorites() {
   useEffect(() => { if (!token) setItems(null) }, [token])
 
   // Сняли сердечко где угодно (здесь или в ленте) — карточка уходит плавно
-  const visible = items && loaded ? items.filter((i) => isFav(i.id)) : items
+  const shown = items && loaded ? items.filter((i) => isFav(i.id)) : items
+  // PLONK 2.0: порядок — недавние / подешевели / дешевле / дороже (как на сайте)
+  const [sort, setSort] = useState<'added' | 'drop' | 'cheap' | 'exp'>('added')
+  const dropped = (l: FeedItem) => l.previous_price != null && l.price != null && Number(l.previous_price) > Number(l.price)
+  const priceOf = (l: FeedItem) => (l.is_free ? 0 : l.price == null ? Infinity : Number(l.price) * (l.currency === 'RSD' ? 1 / 117 : 1))
+  const visible = !shown || sort === 'added' ? shown
+    : sort === 'drop' ? [...shown].sort((a, b) => Number(dropped(b)) - Number(dropped(a)))
+      : [...shown].sort((a, b) => (sort === 'cheap' ? priceOf(a) - priceOf(b) : priceOf(b) - priceOf(a)))
+  const nDropped = shown ? shown.filter(dropped).length : 0
   const prevCount = useRef(visible?.length ?? 0)
   useEffect(() => {
     const n = visible?.length ?? 0
@@ -85,6 +93,15 @@ export default function Favorites() {
         <Text style={styles.h1}>{tr('Избранное')}</Text>
         {!!visible && visible.length > 0 && <Text style={styles.count}>{visible.length}</Text>}
       </View>
+      {!!visible && visible.length > 1 && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: space.page, paddingBottom: 12 }} style={{ flexGrow: 0 }}>
+          {([['added', tr('Недавние')], ['drop', nDropped ? `${tr('Подешевели')} · ${nDropped}` : tr('Подешевели')], ['cheap', tr('Дешевле')], ['exp', tr('Дороже')]] as const).map(([k, label]) => (
+            <Pressable key={k} onPress={() => setSort(k)} style={[styles.sortChip, sort === k && styles.sortChipOn]}>
+              <Text style={[styles.sortText, sort === k && { color: colors.onInverse }]}>{label}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      )}
       {visible === null ? (
         failed ? (
           <View style={styles.center}>
@@ -128,6 +145,9 @@ export default function Favorites() {
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.bg },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 10 },
+  sortChip: { height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, justifyContent: 'center' },
+  sortChipOn: { backgroundColor: colors.inverse, borderColor: colors.inverse },
+  sortText: { fontFamily: font[600], fontSize: 14, color: colors.ink },
   headRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: space.page + 4, paddingTop: 10, paddingBottom: 12 },
   // Как заголовок страницы и .fav-count сайта
   h1: { fontSize: 22, fontFamily: font[800], letterSpacing: -0.3, color: colors.ink },

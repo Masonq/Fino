@@ -1,3 +1,4 @@
+import { colors } from '../theme'
 import { useEffect, useMemo, useRef } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { WebView, type WebViewMessageEvent } from 'react-native-webview'
@@ -38,6 +39,6 @@ export default function MapWeb({ mode, lat, lng, center, approximate, height = 2
 }
 
 const styles = StyleSheet.create({
-  box: { borderRadius: 14, overflow: 'hidden', backgroundColor: '#E9ECE8' },
+  box: { borderRadius: 14, overflow: 'hidden', backgroundColor: colors.sunken },
   web: { flex: 1, backgroundColor: 'transparent' },
 })

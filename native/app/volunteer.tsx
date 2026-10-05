@@ -80,7 +80,7 @@ export default function Volunteer() {
                 <TextInput value={about} onChangeText={setAbout} style={[styles.input, styles.area]} multiline textAlignVertical="top" maxLength={2000} placeholder={tr(ABOUT_PH)} placeholderTextColor={colors.muted} />
                 <View style={styles.agree}>
                   <Text style={styles.agreeText}>{tr(CONSENT)}</Text>
-                  <Switch value={agree} onValueChange={setAgree} trackColor={{ true: colors.primary, false: '#D8DCD8' }} />
+                  <Switch value={agree} onValueChange={setAgree} trackColor={{ true: colors.primary, false: colors.sunken }} />
                 </View>
                 {!!error && <Text style={styles.error}>{error}</Text>}
                 <Pressable style={[styles.cta, busy && { opacity: 0.6 }]} disabled={busy} onPress={send}>{busy ? <ActivityIndicator color="#fff" /> : <Text style={styles.ctaText}>{tr('Отправить заявку')}</Text>}</Pressable>
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   area: { minHeight: 120, paddingTop: 13, paddingBottom: 13 },
   agree: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 18 },
   agreeText: { flex: 1, fontSize: 13.5, lineHeight: 19, fontFamily: font[600], color: colors.ink },
-  error: { fontSize: 13.5, fontFamily: font[600], color: '#B42318', marginTop: 12 },
+  error: { fontSize: 13.5, fontFamily: font[600], color: colors.danger, marginTop: 12 },
   cta: { marginTop: 18, height: 52, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
   ctaText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
 })

@@ -21,7 +21,7 @@ export default function OfflineBanner() {
 const styles = StyleSheet.create({
   bar: {
     position: 'absolute', left: 12, right: 12, zIndex: 50, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 10,
-    borderRadius: 14, backgroundColor: '#1C2620', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 6,
+    borderRadius: 14, backgroundColor: colors.ink, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 6,
   },
   text: { flex: 1, color: '#fff', fontSize: 13.5, fontFamily: font[700] },
   retry: { color: colors.accent, fontSize: 13.5, fontFamily: font[800] },

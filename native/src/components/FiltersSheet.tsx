@@ -47,11 +47,11 @@ export default function FiltersSheet({ visible, value, onApply, onClose }: {
           </View>
           <View style={styles.switchRow}>
             <Text style={styles.switchText}>{tr('Только с фото')}</Text>
-            <Switch value={!!f.withPhoto} onValueChange={(v) => set({ withPhoto: v })} trackColor={{ true: colors.primary, false: '#D8DCD8' }} />
+            <Switch value={!!f.withPhoto} onValueChange={(v) => set({ withPhoto: v })} trackColor={{ true: colors.primary, false: colors.sunken }} />
           </View>
           <View style={styles.switchRow}>
             <Text style={styles.switchText}>{tr('С доставкой')}</Text>
-            <Switch value={!!f.delivery} onValueChange={(v) => set({ delivery: v })} trackColor={{ true: colors.primary, false: '#D8DCD8' }} />
+            <Switch value={!!f.delivery} onValueChange={(v) => set({ delivery: v })} trackColor={{ true: colors.primary, false: colors.sunken }} />
           </View>
           <View style={{ gap: 4 }}>
             <Text style={styles.label}>{tr('Сортировка')}</Text>
@@ -77,7 +77,7 @@ export default function FiltersSheet({ visible, value, onApply, onClose }: {
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(17,22,19,0.42)' },
   sheet: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 8 },
-  handle: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: '#D8DCD8', marginBottom: 6 },
+  handle: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: colors.border, marginBottom: 6 },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12 },
   title: { fontSize: 20, fontFamily: font[800], color: colors.ink },
   reset: { fontSize: 15, fontFamily: font[700], color: colors.primaryDeep },

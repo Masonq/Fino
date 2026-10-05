@@ -13,8 +13,8 @@ import { creatorApply, money, type Order, type Shop, shopOrderCancel, shopOrderC
 import { colors, font } from '../../src/theme'
 
 const ST: Record<string, [string, string, string]> = {
-  processing: ['Обрабатывается', '#FFF4D6', '#8A6400'], draft: ['Черновик', colors.sunken, colors.inkSoft], moderation: ['На проверке', '#FFF4D6', '#8A6400'],
-  active: ['Опубликован', colors.primarySoft, colors.primaryDeep], rejected: ['Отклонён', '#FBE3E3', '#A33232'], failed: ['Ошибка видео', '#FBE3E3', '#A33232'],
+  processing: ['Обрабатывается', colors.warmBg, colors.goldDark], draft: ['Черновик', colors.sunken, colors.inkSoft], moderation: ['На проверке', colors.warmBg, colors.goldDark],
+  active: ['Опубликован', colors.primarySoft, colors.primaryDeep], rejected: ['Отклонён', colors.dangerBg, '#A33232'], failed: ['Ошибка видео', colors.dangerBg, '#A33232'],
 }
 const OST: Record<string, string> = { open: 'ищет автора', taken: 'в работе', done: 'готов', cancelled: 'отменён' }
 

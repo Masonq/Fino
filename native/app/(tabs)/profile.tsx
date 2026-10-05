@@ -220,6 +220,16 @@ export default function Profile() {
           {!bal?.payments_enabled && <Text style={styles.balanceNote}>{tr('Пополнение картой пока недоступно')}</Text>}
         </View>
 
+        {/* PLONK 2.0: профиль — панель продавца: главные действия крупными плитками, как на сайте */}
+        <View style={styles.actions}>
+          {([['plus', 'Разместить', '/post', true], ['grid', 'Витрина', '/vitrina', false], ['video', 'Снять шопс', '/shops/new', false]] as const).map(([ic, label, href, dark]) => (
+            <Pressable key={href} style={[styles.action, dark && { backgroundColor: colors.inverse }]} onPress={() => router.push(href as never)} accessibilityRole="button">
+              <Icon name={ic} size={24} color={dark ? colors.onInverse : colors.ink} />
+              <Text style={[styles.actionText, dark && { color: colors.onInverse }]}>{tr(label)}</Text>
+            </Pressable>
+          ))}
+        </View>
+
         {/* Меню — как на сайте, в том же порядке: сохранённые поиски — в приложении, остальное — страницы сайта */}
         <View style={styles.menu}>
           {row('heart', 'Избранное', () => router.push('/favorites' as never))}
@@ -263,8 +273,8 @@ export default function Profile() {
 
         <View style={styles.menu}>
           <Pressable style={[styles.row, styles.rowLast]} onPress={signOut} accessibilityRole="button">
-            <View style={[styles.rowIcon, { backgroundColor: '#FDECEA' }]}><Icon name="logout" size={17} color="#B42318" /></View>
-            <Text style={[styles.rowText, { color: '#B42318' }]}>{tr('Выйти')}</Text>
+            <View style={[styles.rowIcon, { backgroundColor: colors.dangerBg }]}><Icon name="logout" size={17} color="#B42318" /></View>
+            <Text style={[styles.rowText, { color: colors.danger }]}>{tr('Выйти')}</Text>
           </Pressable>
         </View>
 
@@ -304,6 +314,9 @@ export default function Profile() {
 }
 
 const styles = StyleSheet.create({
+  actions: { flexDirection: 'row', gap: 8, marginHorizontal: 12, marginBottom: 10 },
+  action: { flex: 1, height: 96, padding: 14, borderRadius: 22, backgroundColor: colors.surface, justifyContent: 'space-between', shadowColor: '#0F1512', shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 2 },
+  actionText: { fontFamily: font[700], fontSize: 14, color: colors.ink },
   // как .for-you-* / .profile-section-title / .profile-footer сайта
   // отступы — как у соседних блоков профиля
   forYou: { gap: 10, marginLeft: 12, marginTop: 6 },
@@ -329,7 +342,7 @@ const styles = StyleSheet.create({
   h1: { fontSize: 22, fontFamily: font[800], letterSpacing: -0.3, color: colors.ink },
   bell: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   bellDot: { position: 'absolute', top: 8, right: 9, width: 9, height: 9, borderRadius: 5, backgroundColor: colors.accent, borderWidth: 1.5, borderColor: colors.bg },
-  hint: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 12, marginBottom: 12, padding: 12, borderRadius: 14, backgroundColor: '#FBF3E3' },
+  hint: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 12, marginBottom: 12, padding: 12, borderRadius: 14, backgroundColor: colors.warmBg },
   hintText: { flex: 1, fontSize: 13, lineHeight: 18, fontFamily: font[700], color: '#8A6A1F' },
   hintBtn: { height: 32, paddingHorizontal: 12, borderRadius: 9, backgroundColor: '#F2E2BF', justifyContent: 'center' },
   hintBtnText: { fontSize: 13, fontFamily: font[800], color: '#6B5016' },
@@ -340,13 +353,13 @@ const styles = StyleSheet.create({
   cardBody: { flex: 1, paddingRight: 34 },
   cardName: { fontSize: 17, lineHeight: 21, letterSpacing: -0.3, fontFamily: font[800], color: colors.ink },
   cardMeta: { marginTop: 3, fontSize: 12.5, fontFamily: font[600], color: colors.muted },
-  verify: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10, height: 34, paddingHorizontal: 12, borderRadius: 10, backgroundColor: '#1C2620' },
-  verifyPending: { alignSelf: 'flex-start', marginTop: 10, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 9, backgroundColor: '#FBF3E3' },
+  verify: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10, height: 34, paddingHorizontal: 12, borderRadius: 10, backgroundColor: colors.ink },
+  verifyPending: { alignSelf: 'flex-start', marginTop: 10, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 9, backgroundColor: colors.warmBg },
   verifyPendingText: { fontSize: 12.5, fontFamily: font[800], color: '#8A6A1F' },
-  verifyReason: { marginTop: 8, fontSize: 12.5, lineHeight: 17, fontFamily: font[600], color: '#B42318' },
+  verifyReason: { marginTop: 8, fontSize: 12.5, lineHeight: 17, fontFamily: font[600], color: colors.danger },
   verifyText: { color: '#fff', fontSize: 13, fontFamily: font[800] },
   edit: { position: 'absolute', top: 12, right: 12, width: 32, height: 32, borderRadius: 10, backgroundColor: colors.sunken, alignItems: 'center', justifyContent: 'center' },
-  pending: { flexDirection: 'row', alignItems: 'center', gap: 9, marginHorizontal: 12, marginBottom: 12, paddingHorizontal: 14, height: 46, borderRadius: 14, backgroundColor: '#FBF3E3' },
+  pending: { flexDirection: 'row', alignItems: 'center', gap: 9, marginHorizontal: 12, marginBottom: 12, paddingHorizontal: 14, height: 46, borderRadius: 14, backgroundColor: colors.warmBg },
   pendingDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#C08A1E' },
   pendingText: { flex: 1, fontSize: 14, fontFamily: font[800], color: '#8A6A1F' },
   stats: { flexDirection: 'row', gap: 8, marginHorizontal: 12, marginBottom: 12 },

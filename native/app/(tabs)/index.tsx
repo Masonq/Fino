@@ -449,7 +449,7 @@ const styles = StyleSheet.create({
   sortBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 7, paddingHorizontal: 11, borderRadius: 10, backgroundColor: colors.sunken },
   sortBtnText: { fontSize: 12.5, fontFamily: font[700], color: colors.ink },
   sortSheet: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 8, paddingBottom: 28 },
-  sortHandle: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: '#D8DCD8', marginBottom: 6 },
+  sortHandle: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: colors.border, marginBottom: 6 },
   sortRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 52, paddingHorizontal: 20, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
   sortRowText: { fontSize: 16, fontFamily: font[600], color: colors.ink },
   found: { gap: 8, paddingHorizontal: space.page },

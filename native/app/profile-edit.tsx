@@ -248,7 +248,7 @@ export default function ProfileEdit() {
                 : verify.status === 'pending' ? <Text style={[styles.status, { color: '#8A6A1F' }]}>{tr(PENDING)}</Text>
                 : (
                   <>
-                    {verify.status === 'rejected' && <Text style={[styles.status, { color: '#B42318' }]}>{tr(REJECTED)}{verify.reason ? `\n${verify.reason}` : ''}</Text>}
+                    {verify.status === 'rejected' && <Text style={[styles.status, { color: colors.danger }]}>{tr(REJECTED)}{verify.reason ? `\n${verify.reason}` : ''}</Text>}
                     <Text style={styles.note}>{tr(VERIFY_HINT)}</Text>
                     <Pressable style={[styles.secondary, verifyBusy && { opacity: 0.6 }]} disabled={verifyBusy} onPress={startVerify}><Text style={styles.secondaryText}>{verifyBusy ? '…' : tr('Пройти проверку')}</Text></Pressable>
                   </>
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   title: { fontSize: 20, fontFamily: font[800], color: colors.ink, marginLeft: 4 },
   body: { paddingHorizontal: 12, gap: 12 },
-  warn: { padding: 12, borderRadius: 14, backgroundColor: '#FBF3E3', color: '#8A6A1F', fontSize: 13.5, lineHeight: 19, fontFamily: font[700] },
+  warn: { padding: 12, borderRadius: 14, backgroundColor: colors.warmBg, color: '#8A6A1F', fontSize: 13.5, lineHeight: 19, fontFamily: font[700] },
   card: { borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
   avatarCard: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 14 },
   avatar: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#7C6CF0', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
   ghost: { fontSize: 14, fontFamily: font[700], color: colors.muted },
   hint: { fontSize: 12.5, lineHeight: 17, fontFamily: font[500], color: colors.muted },
   note: { fontSize: 13, lineHeight: 18, fontFamily: font[500], color: colors.inkSoft },
-  error: { fontSize: 13.5, fontFamily: font[600], color: '#B42318', paddingHorizontal: 14, paddingBottom: 12 },
+  error: { fontSize: 13.5, fontFamily: font[600], color: colors.danger, paddingHorizontal: 14, paddingBottom: 12 },
   save: { height: 52, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
   saveText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
   status: { fontSize: 14, lineHeight: 19, fontFamily: font[700] },
