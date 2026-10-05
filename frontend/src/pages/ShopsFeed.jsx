@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import Comments from '../components/ShopComments'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
+import Sheet from '../components/Sheet'
+import { toast } from 'sonner'
 
 const PAGE = 8
 // плохая связь или «экономия трафика» — берём 480p
@@ -87,7 +88,6 @@ function Slide({ shop, index, active, near, muted, onActive }) {
   const [like, setLike] = useState({ on: shop.liked, n: shop.likes || 0 })
   const [nComments, setNComments] = useState(shop.comments || 0)
   const [burst, setBurst] = useState(0)
-  const [toast, setToast] = useState('')
   const lastTap = useRef(0)
   const isShop = shop.kind !== 'listing'
   const sent = useRef({ view: false, complete: false })
@@ -147,7 +147,7 @@ function Slide({ shop, index, active, near, muted, onActive }) {
     const url = `${window.location.origin}/shops?start=${shop.id}`
     const title = shop.caption || shop.items[0]?.title || 'PLONK'
     try { if (navigator.share) { await navigator.share({ title, url }); return } } catch { return }
-    try { await navigator.clipboard.writeText(url); setToast(t('shops.link_copied')); setTimeout(() => setToast(''), 1800) } catch { window.prompt('', url) }
+    try { await navigator.clipboard.writeText(url); toast(t('shops.link_copied')) } catch { window.prompt('', url) }
   }
 
   // просмотр — после 2 секунд на экране, досмотр — 90% ролика
@@ -207,7 +207,6 @@ function Slide({ shop, index, active, near, muted, onActive }) {
           <span>{t('shops.share')}</span>
         </button>
       </div>
-      {toast && createPortal(<div className="sf-toast" role="status">{toast}</div>, document.body)}
       {comments && <Comments shop={shop} item={shop.items[0]} onClose={() => setComments(false)} onCount={setNComments} onAsk={write} />}
       {paused && <div className="sh-paused" aria-hidden="true"><svg viewBox="0 0 24 24" width="56" height="56" fill="#fff"><path d="M8 5v14l11-7z" /></svg></div>}
       <div className="sh-shade" aria-hidden="true" />
@@ -234,11 +233,7 @@ function Slide({ shop, index, active, near, muted, onActive }) {
           )}
         </div>
       </div>
-      {sheet && createPortal(
-        <div className="jr-overlay" onClick={() => setSheet(false)}>
-          <div className="jr-sheet" onClick={(e) => e.stopPropagation()}>
-            <div className="jr-grab" />
-            <div className="jr-title">{t('shops.in_video')}</div>
+      <Sheet open={sheet} onClose={() => setSheet(false)} title={t('shops.in_video')}>
             {shop.items.map((it) => (
               <div key={it.item_id} className={`sh-item light${it.status !== 'active' ? ' sold' : ''}`}>
                 <button type="button" className="sh-item-main" onClick={() => openItem(it)}>
@@ -249,10 +244,7 @@ function Slide({ shop, index, active, near, muted, onActive }) {
                 {it.status === 'active' && <button type="button" className="sh-item-write" onClick={() => write(it)}>{t('shops.write')}</button>}
               </div>
             ))}
-          </div>
-        </div>,
-        document.body,
-      )}
+      </Sheet>
     </section>
   )
 }

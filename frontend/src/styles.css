@@ -7364,3 +7364,15 @@ html[data-theme="dark"] :is(.cat-tile-2row:not(.all), .cats-item, .post-cat-item
 html[data-theme="dark"] :is(.cats-item, .post-cat-item) *{ color:#0F1512; }
 .profile-row-value{ margin-left:auto; font-size:14px; font-weight:600; color:var(--muted); }
 button.profile-row{ width:100%; text-align:left; font:inherit; color:inherit; }
+
+/* ---------- PLONK 2.0: шторки на Vaul (Sheet.jsx) и уведомления Sonner ---------- */
+.vs-overlay{ position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,.42); }
+.vs-sheet{ position:fixed; left:0; right:0; bottom:0; z-index:1001; max-width:480px; margin:0 auto; max-height:88dvh; display:flex; flex-direction:column;
+  padding:8px 16px calc(16px + var(--sab)); border-radius:28px 28px 0 0; background:var(--surface); box-shadow:0 -10px 40px rgba(0,0,0,.18); outline:none; }
+.vs-grab{ width:40px; height:5px; border-radius:3px; background:var(--border-strong); margin:2px auto 14px; flex:none; }
+.vs-body{ overflow-y:auto; min-height:0; }
+.vs-sr{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+.vs-sheet.sh-cm{ height:72dvh; padding-bottom:0; }
+.vs-sheet.sh-cm .vs-body{ display:flex; flex-direction:column; flex:1; overflow:hidden; }
+[data-sonner-toaster] .pk-toast{ background:var(--inverse); color:var(--on-inverse); border:0; border-radius:16px; font-family:inherit; font-weight:600; font-size:14.5px; box-shadow:0 10px 30px rgba(0,0,0,.2); padding:12px 16px; }
+[data-sonner-toaster] .pk-toast-ok [data-icon]{ color:var(--primary); }

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
+import Sheet from './Sheet'
 
 /**
  * «Откликнуться» на вакансии — как у Авито: своё резюме с PLONK или короткая анкета; отклик уходит
@@ -75,11 +76,7 @@ export default function JobRespond({ listing }) {
   return (
     <>
       <button type="button" className="jr-cta" onClick={openForm}>{t('jobresp.respond')}</button>
-      {open && (
-        <div className="jr-overlay" onClick={() => setOpen(false)}>
-          <div className="jr-sheet" role="dialog" aria-label={t('jobresp.respond')} onClick={(e) => e.stopPropagation()}>
-            <div className="jr-grab" />
-            <div className="jr-title">{t('jobresp.form_title')}</div>
+      <Sheet open={open} onClose={() => setOpen(false)} title={t('jobresp.form_title')}>
             {resumes.length > 0 && (
               <label className="jr-field">
                 <span>{t('jobresp.resume')}</span>
@@ -101,9 +98,7 @@ export default function JobRespond({ listing }) {
             {err && <div className="jr-err">{err}</div>}
             <button type="button" className="jr-cta" disabled={busy} onClick={send}>{busy ? t('jobresp.sending') : t('jobresp.send')}</button>
             <div className="jr-hint">{t('jobresp.hint')}</div>
-          </div>
-        </div>
-      )}
+      </Sheet>
     </>
   )
 }

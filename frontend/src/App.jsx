@@ -76,6 +76,7 @@ import { rememberListPage } from './utils/lastList'
 import Island from './components/Island'
 import ConfirmHost from './components/ConfirmHost'
 import BottomNav from './components/BottomNav'
+import { Toaster } from 'sonner'
 import Footer from './components/Footer'
 import TopNav from './components/TopNav'
 
@@ -512,6 +513,9 @@ export default function App() {
       <Island />
       <ConfirmHost />
       {!hideNav && <BottomNav />}
+      {/* PLONK 2.0: короткие уведомления (Sonner) — над парящим меню, в цветах темы */}
+      <Toaster position="bottom-center" offset={110} mobileOffset={{ bottom: 110 }} visibleToasts={2} duration={2200}
+        toastOptions={{ classNames: { toast: 'pk-toast', success: 'pk-toast-ok' } }} />
     </div>
     </FavoritesProvider>
     </AuthProvider>

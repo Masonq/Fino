@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
+import { toast } from 'sonner'
 
 const priceOf = (l) => (l.price == null ? '' : `${Math.round(l.price).toLocaleString('ru-RU')} ${l.currency === 'EUR' ? '€' : l.currency || ''}`)
 const photoOf = (l) => l.photos?.[0] || l.cover_photo || l.photo
@@ -22,7 +23,6 @@ export default function StorefrontManage() {
   const [sf, setSf] = useState(null)
   const [form, setForm] = useState(null)
   const [err, setErr] = useState('')
-  const [saved, setSaved] = useState('')
   const [coll, setColl] = useState(null) // редактируемая подборка
   const [pause, setPause] = useState(null)
 
@@ -32,7 +32,7 @@ export default function StorefrontManage() {
 
   const run = (p, msg = 'sf.saved') => {
     setErr('')
-    return p.then((r) => { take(r); setSaved(t(msg)); setTimeout(() => setSaved(''), 1800); return true })
+    return p.then((r) => { take(r); toast.success(t(msg)); return true })
       .catch((e) => { setErr(t(ERR[e.code] || 'shops.err_save')); return false })
   }
 
@@ -72,7 +72,7 @@ export default function StorefrontManage() {
           <span className={`sh-status st-${sf.status === 'published' ? 'active' : sf.status === 'blocked' ? 'rejected' : sf.status === 'paused' ? 'moderation' : 'draft'}`}>{t(`sf.st_${sf.status}`)}</span>
           <span className="jr-muted">{t('sf.views_n', { count: sf.views })} · {t('sf.followers_n', { count: sf.followers })}</span>
         </div>
-        {live && <div className="sf-url"><span>{url.replace(/^https?:\/\//, '')}</span><button type="button" className="jr-btn ghost sm" onClick={() => navigator.clipboard?.writeText(url).then(() => { setSaved(t('sf.link_copied')); setTimeout(() => setSaved(''), 1800) })}>{t('sf.copy')}</button></div>}
+        {live && <div className="sf-url"><span>{url.replace(/^https?:\/\//, '')}</span><button type="button" className="jr-btn ghost sm" onClick={() => navigator.clipboard?.writeText(url).then(() => toast(t('sf.link_copied')))}>{t('sf.copy')}</button></div>}
         <div className="jr-actions">
           {sf.status === 'draft' && <button type="button" className="jr-btn primary" onClick={() => run(api.sfState({ action: 'publish' }, lang), 'sf.published')}>{t('sf.publish')}</button>}
           {sf.status === 'published' && <button type="button" className="jr-btn ghost" onClick={() => setPause({ until: '', note: '' })}>{t('sf.pause')}</button>}
@@ -166,7 +166,6 @@ export default function StorefrontManage() {
         </div>
       )}
       {err && <div className="jr-err sf-sticky-msg">{err}</div>}
-      {saved && <div className="sf-toast" role="status">{saved}</div>}
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
+import Sheet from './Sheet'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
@@ -45,10 +45,8 @@ export default function ShopComments({ shop, item, onClose, onCount, onAsk }) {
   const report = (c) => api.shopCommentReport(shop.id, c.id).then(() => setItems((cur) => cur.filter((x) => x.id !== c.id)))
 
   // в body, а не внутри ленты: у ленты свой слой ниже меню, и поле ввода оказывалось под нижним меню
-  return createPortal(
-    <div className="jr-overlay sh-cm-overlay" onClick={onClose}>
-      <div className="jr-sheet sh-cm" role="dialog" aria-label={t('shops.comments')} onClick={(e) => e.stopPropagation()}>
-        <div className="jr-grab" />
+  return (
+    <Sheet open onClose={onClose} hiddenTitle={t('shops.comments')} className="sh-cm">
         <div className="sh-cm-head">
           <div className="jr-title">{t('shops.comments')}</div>
           {item && item.status === 'active' && <button type="button" className="jr-btn primary sm" onClick={() => onAsk(item)}>{t('shops.ask_seller')}</button>}
@@ -75,8 +73,6 @@ export default function ShopComments({ shop, item, onClose, onCount, onAsk }) {
             onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') send() }} />
           <button type="button" className="jr-btn primary sm" disabled={busy || !text.trim()} onClick={send}>{t('shops.send')}</button>
         </div>
-      </div>
-    </div>,
-    document.body,
+    </Sheet>
   )
 }

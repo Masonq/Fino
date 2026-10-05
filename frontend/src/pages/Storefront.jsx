@@ -5,6 +5,8 @@ import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import ListingCard from '../components/ListingCard'
 import PageHeader from '../components/PageHeader'
+import Sheet from '../components/Sheet'
+import { toast } from 'sonner'
 
 const REASONS = ['spam', 'fraud', 'prohibited_item', 'offensive_user', 'other']
 
@@ -21,7 +23,6 @@ export default function Storefront() {
   const [error, setError] = useState(false)
   const [tab, setTab] = useState('items')
   const [busy, setBusy] = useState(false)
-  const [toast, setToast] = useState('')
   const [report, setReport] = useState(false)
 
   useEffect(() => {
@@ -46,7 +47,7 @@ export default function Storefront() {
     return coll.listing_ids.map((id) => byId[id]).filter(Boolean)
   }, [sf, coll])
 
-  const flash = (m) => { setToast(m); setTimeout(() => setToast(''), 2200) }
+  const flash = (m) => toast(m)
   const follow = () => {
     if (!user?.id) { navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`); return }
     setBusy(true)
@@ -147,16 +148,9 @@ export default function Storefront() {
         </>
       )}
 
-      {report && (
-        <div className="jr-overlay" onClick={() => setReport(false)}>
-          <div className="jr-sheet" onClick={(e) => e.stopPropagation()}>
-            <div className="jr-grab" />
-            <div className="jr-title">{t('sf.report')}</div>
+      <Sheet open={report} onClose={() => setReport(false)} title={t('sf.report')}>
             {REASONS.map((r) => <button key={r} type="button" className="sf-reason" onClick={() => sendReport(r)}>{t(`sf.reason_${r}`)}</button>)}
-          </div>
-        </div>
-      )}
-      {toast && <div className="sf-toast" role="status">{toast}</div>}
+      </Sheet>
     </div>
   )
 }
