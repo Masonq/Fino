@@ -73,18 +73,18 @@ export default function Feed() {
   // плашка города сжимается и разворачивается плавно, а не скачком
   useEffect(() => { LayoutAnimation.configureNext(LayoutAnimation.create(220, 'easeInEaseOut', 'opacity')) }, [focused])
   const [headBottom, setHeadBottom] = useState(0)
-  const [sug, setSug] = useState<{ categories: { slug: string; name: string; path: string }[]; completions: string[] }>({ categories: [], completions: [] })
+  const [sug, setSug] = useState<{ categories: { slug: string; name: string; path: string }[]; completions: string[]; fix?: string | null }>({ categories: [], completions: [] })
   useEffect(() => {
     const v = query.trim()
     if (!focused || v.length < 2) { setSug({ categories: [], completions: [] }); return undefined }
     let alive = true
     const t = setTimeout(() => {
       fetch(`${API}/search/suggest?q=${encodeURIComponent(v)}&lang=${getLang()}`).then((r) => r.json())
-        .then((d) => { if (alive) setSug({ categories: d.categories ?? [], completions: d.completions ?? [] }) }).catch(() => {})
+        .then((d) => { if (alive) setSug({ categories: d.categories ?? [], completions: d.completions ?? [], fix: d.fix ?? null }) }).catch(() => {})
     }, 200)
     return () => { alive = false; clearTimeout(t) }
   }, [query, focused])
-  const showSug = focused && query.trim().length >= 2 && (sug.categories.length > 0 || sug.completions.length > 0)
+  const showSug = focused && query.trim().length >= 2 && (sug.categories.length > 0 || sug.completions.length > 0 || !!sug.fix)
   const applyQuery = (v: string) => { setQuery(v); setQ(v.trim()); setFocused(false); Keyboard.dismiss() }
   const [city, setCity] = useState<string | null>(null)
   const [cityReady, setCityReady] = useState(false)
@@ -314,6 +314,13 @@ export default function Feed() {
       {showSug && (
         <View style={[styles.sugBox, { top: headBottom }]}>
           <ScrollView keyboardShouldPersistTaps="handled">
+            {/* опечатка: «Возможно, вы искали диван» — как на сайте */}
+            {!!sug.fix && (
+              <Pressable style={[styles.sugRow, { backgroundColor: colors.warmBg }]} onPress={() => applyQuery(sug.fix as string)} accessibilityRole="button">
+                <Icon name="search" size={18} color={colors.inkSoft} />
+                <Text style={[styles.sugText, styles.sugBody]} numberOfLines={1}>{tr('Возможно, вы искали')} <Text style={{ fontFamily: font[800] }}>{sug.fix}</Text></Text>
+              </Pressable>
+            )}
             {sug.categories.map((c) => (
               <Pressable key={c.slug} style={styles.sugRow} onPress={() => { setFocused(false); Keyboard.dismiss(); router.push(`/c/${c.slug}`) }} accessibilityRole="button">
                 <Icon name="list" size={18} color={colors.ink} />

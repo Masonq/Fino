@@ -43,6 +43,8 @@ export default function Search() {
   const sidebar = useStickyColumn(92)
   const [subscribed, setSubscribed] = useState(false)
   const [subscribedId, setSubscribedId] = useState(null)
+  // показали результаты по исправленному запросу (опечатка) — говорим об этом прямо над выдачей
+  const [corrected, setCorrected] = useState(null)
   // подписка на этот поиск: из шапки результатов и из пустого результата («Сообщить, когда появится»)
   const toggleSubscribe = async () => {
                 if (!user) { navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`); return }
@@ -192,6 +194,7 @@ export default function Search() {
         .then((res) => {
           setItems(res.items || [])
           setTotal(res.total || 0)
+          setCorrected(res.corrected || null)
           setError(false)
           searchCache = {
             key: JSON.stringify(query),
@@ -519,6 +522,12 @@ export default function Search() {
                   {t('actions.reset_filters')}
                 </button>
               )}
+            </div>
+          )}
+
+          {corrected && items.length > 0 && (
+            <div className="search-corrected">
+              {t('search.corrected_pre')} «{text.trim()}» {t('search.corrected_mid')} <button type="button" onClick={() => setText(corrected)}>«{corrected}»</button>
             </div>
           )}
 

@@ -36,6 +36,9 @@ export default function SearchOverlay({ open, onClose }) {
   const [loading, setLoading] = useState(false)
   const [recent, setRecent] = useState([])
   const [categories, setCategories] = useState([])
+  const [popular, setPopular] = useState([])
+  // подсказки на лету: исправление опечатки, продолжения запроса, разделы
+  const [sug, setSug] = useState(null)
 
   // Фокус ставится сразу при открытии — мы остаёмся на той же странице,
   // поэтому iOS считает это продолжением жеста и показывает клавиатуру.
@@ -43,10 +46,11 @@ export default function SearchOverlay({ open, onClose }) {
     if (open) {
       inputRef.current?.focus()
       setRecent(readRecent())
+      api.searchPopular(i18n.language).then((r) => setPopular((r.items || []).slice(0, 8))).catch(() => {})
       if (!categories.length) {
         api.getCategories().then((res) => setCategories(res || [])).catch(() => {})
       }
-    } else { setText(''); setItems([]) }
+    } else { setText(''); setItems([]); setSug(null) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
@@ -59,6 +63,13 @@ export default function SearchOverlay({ open, onClose }) {
         .catch(() => setItems([]))
         .finally(() => setLoading(false))
     }, 300)
+    return () => clearTimeout(id)
+  }, [text, open, i18n.language])
+
+  useEffect(() => {
+    const q = text.trim()
+    if (!open || q.length < 2) { setSug(null); return undefined }
+    const id = setTimeout(() => { api.searchSuggest(q, i18n.language).then(setSug).catch(() => setSug(null)) }, 180)
     return () => clearTimeout(id)
   }, [text, open, i18n.language])
 
@@ -121,6 +132,17 @@ export default function SearchOverlay({ open, onClose }) {
               </div>
             )}
 
+            {popular.length > 0 && (
+              <div className="suggest-block">
+                <div className="suggest-head"><span>{t('search.popular')}</span></div>
+                <div className="suggest-cats">
+                  {popular.filter((q) => !recent.includes(q)).map((q) => (
+                    <button key={q} type="button" className="suggest-cat" onClick={() => submit(q)}>{q}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {categories.length > 0 && (
               <div className="suggest-block">
                 <div className="suggest-head"><span>{t('common.all_categories')}</span></div>
@@ -141,6 +163,35 @@ export default function SearchOverlay({ open, onClose }) {
               </div>
             )}
           </>
+        )}
+
+        {/* подсказки на лету: «возможно, вы искали» (опечатка), продолжения запроса и разделы */}
+        {text.trim().length >= 2 && sug && (sug.fix || sug.completions?.length > 0 || sug.categories?.length > 0) && (
+          <div className="suggest-block live-suggest">
+            {sug.fix && (
+              <button type="button" className="ls-row ls-fix" onClick={() => setText(sug.fix)}>
+                <span className="ls-ico">✎</span>
+                <span>{t('search.did_you_mean')} <b>{sug.fix}</b></span>
+              </button>
+            )}
+            {(sug.completions || []).slice(0, 4).map((c) => {
+              const typed = text.trim().toLowerCase()
+              const rest = c.toLowerCase().startsWith(typed) ? c.slice(typed.length) : c
+              return (
+                <button key={c} type="button" className="ls-row" onClick={() => submit(c)}>
+                  <svg className="ls-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+                  <span>{c.toLowerCase().startsWith(typed) ? <>{text.trim()}<b>{rest}</b></> : c}</span>
+                  <span className="ls-fill" role="button" tabIndex={-1} aria-label={t('search.fill')} onClick={(e) => { e.stopPropagation(); setText(`${c} `); inputRef.current?.focus() }}>↖</span>
+                </button>
+              )
+            })}
+            {(sug.categories || []).slice(0, 3).map((c) => (
+              <button key={c.slug} type="button" className="ls-row ls-cat" onClick={() => { const q = text.trim(); saveRecent(q); onClose(); navigate(`/search?q=${encodeURIComponent(q)}&category=${c.slug}`) }}>
+                <svg className="ls-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="4" width="7" height="7" rx="2" /><rect x="13" y="4" width="7" height="7" rx="2" /><rect x="4" y="13" width="7" height="7" rx="2" /><rect x="13" y="13" width="7" height="7" rx="2" /></svg>
+                <span><b>{text.trim()}</b> {t('search.in_section')} <span className="ls-path">{c.name}</span></span>
+              </button>
+            ))}
+          </div>
         )}
 
         {loading && <p className="empty-hint">{t('search.searching')}</p>}

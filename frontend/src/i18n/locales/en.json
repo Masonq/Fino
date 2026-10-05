@@ -90,7 +90,13 @@
     "empty_hint": "Try another word or reset the filters. The “Follow” button will let you know when it shows up.",
     "empty_browse": "Browse categories",
     "notify_me": "Notify me when it appears",
-    "notify_done": "We will let you know"
+    "notify_done": "We will let you know",
+    "corrected_pre": "Nothing for",
+    "corrected_mid": "— showing results for",
+    "popular": "Popular searches",
+    "did_you_mean": "Did you mean",
+    "in_section": "in",
+    "fill": "Fill in the query"
   },
   "chat": {
     "empty": "No messages yet — say hello",
@@ -725,7 +731,12 @@
     "from_people": "Posted by people",
     "added_total": "Added in total",
     "added_total_hint": "including imported from chats",
-    "now": "right now"
+    "now": "right now",
+    "search_title": "Search",
+    "search_empty": "empty",
+    "search_zero": "Searched, not found",
+    "search_fixed": "Typos fixed",
+    "search_top": "Top searches"
   },
   "audit": {
     "title": "Action log",

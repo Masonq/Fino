@@ -350,7 +350,7 @@ def search_listings(
     # для вкладки «Даром» на главной: люди листают её из любопытства и
     # остаются.
     only_free: bool = Query(False),
-    lang: str = Query("ru"),
+    lang: str = Query("sr"),
     limit: int = Query(20, le=100),
     offset: int = 0,
     db: Session = Depends(get_db),
@@ -605,6 +605,7 @@ def search_listings(
     #
     # Включаем только когда обычный поиск пуст: на каждый запрос такое
     # сравнение считать дорого, а пустых запросов немного.
+    corrected = None
     if q_text and total == 0 and before_words is not None:
         words = [w for w in q_text.strip().split() if len(w) >= 4]
         if words:
@@ -631,6 +632,7 @@ def search_listings(
 
             found = [row[0] for row in similar]
             if found:
+                corrected = did_you_mean(db, q_text)
                 # Пересобираем запрос: прежний фильтр по словам ничего не
                 # дал, а остальные условия (город, цена, раздел) должны
                 # остаться — человек их задал осознанно.
@@ -1105,7 +1107,13 @@ def search_listings(
                 listing.category.slug if listing.category else None),
         }
 
-    return {"total": total, "items": [serialize(l) for l in items]}
+    # журнал запросов — только первая страница обычного поиска (без «ещё»), для «Популярного» и отчёта
+    if q_text and not offset:
+        log_search(db, q_text, lang, total, corrected)
+    out = {"total": total, "items": [serialize(l) for l in items]}
+    if corrected:
+        out["corrected"] = corrected  # показали результаты по исправленному запросу — интерфейс сообщит об этом
+    return out
 
 
 # «Только что» — полоска свежих объявлений в шапке главной.
@@ -1123,7 +1131,7 @@ _FRESH_LIMIT = 14
 @router.get("/fresh")
 def fresh_listings(
     city: str | None = None,
-    lang: str = Query("ru"),
+    lang: str = Query("sr"),
     db: Session = Depends(get_db),
 ):
     now = utcnow()
@@ -1171,7 +1179,7 @@ def fresh_listings(
 @router.get("/by-ids")
 def listings_by_ids(
     ids: str = Query(..., description="идентификаторы через запятую"),
-    lang: str = Query("ru"),
+    lang: str = Query("sr"),
     db: Session = Depends(get_db),
 ):
     """
@@ -1242,7 +1250,7 @@ def listings_by_ids(
 @router.get("/my/list")
 def my_listings(
     status: str | None = None,
-    lang: str = Query("ru"),
+    lang: str = Query("sr"),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -1582,7 +1590,7 @@ def compute_price_check(db, listing, lang: str) -> dict:
 
 @router.get("/for-you")
 def for_you(
-    lang: str = Query("ru"),
+    lang: str = Query("sr"),
     limit: int = Query(12, le=30),
     user: User | None = Depends(get_current_user_optional),
     db: Session = Depends(get_db),
@@ -1654,7 +1662,7 @@ def for_you(
 @router.get("/{listing_id}/price-check")
 def price_check(
     listing_id: uuid.UUID,
-    lang: str = Query("ru"),
+    lang: str = Query("sr"),
     db: Session = Depends(get_db),
 ):
     """Та же оценка отдельным запросом — на случай внешних обращений."""
@@ -1669,7 +1677,7 @@ def price_check(
 @router.get("/{listing_id}/similar")
 def similar_listings(
     listing_id: uuid.UUID,
-    lang: str = Query("ru"),
+    lang: str = Query("sr"),
     limit: int = Query(8, le=20),
     db: Session = Depends(get_db),
 ):
@@ -1795,7 +1803,7 @@ def similar_listings(
 @router.get("/by-seller/{seller_id}")
 def seller_listings(
     seller_id: uuid.UUID,
-    lang: str = Query("ru"),
+    lang: str = Query("sr"),
     limit: int = Query(20, le=60),
     offset: int = 0,
     db: Session = Depends(get_db),
@@ -2937,3 +2945,52 @@ def title_is_clear(title: str | None) -> bool:
     # вводного оборота и не содержит рекламных слов — вещь в нём
     # названа, пусть словарю она и незнакома.
     return len(body.split()) >= 2
+
+
+
+def log_search(db: Session, q_text: str, lang: str | None, total: int, corrected: str | None = None) -> None:
+    """Запрос — в журнал поиска (нормализованный). Ошибка журнала не должна ломать поиск."""
+    import re as _re
+    from app.models.search_log import SearchLog
+    norm = _re.sub(r"\s+", " ", (q_text or "").strip().lower())[:80]
+    if len(norm) < 2:
+        return
+    try:
+        db.add(SearchLog(query=norm, lang=(lang or "sr")[:4], results=int(total or 0), corrected=corrected))
+        db.commit()
+    except Exception:  # noqa: BLE001
+        db.rollback()
+
+
+def did_you_mean(db: Session, q_text: str) -> str | None:
+    """Исправление опечаток: каждое слово запроса (от 4 букв) заменяем ближайшим словом из названий живых
+    объявлений (pg_trgm similarity). «каляска» → «коляска», «халадильник» → «холодильник»."""
+    from sqlalchemy import text as sql_text
+    words = (q_text or "").strip().lower().split()
+    if not words:
+        return None
+    out, changed = [], False
+    for w in words:
+        if len(w) < 4:
+            out.append(w)
+            continue
+        try:
+            rows = db.execute(sql_text("""
+                select word from (
+                  select distinct lower(unnest(regexp_split_to_array(t.title, '[^[:alnum:]]+'))) as word
+                  from listing_translations t join listings l on l.id = t.listing_id
+                  where l.status = 'active'
+                ) x where length(word) >= 3 and word % :w
+                order by similarity(word, :w) desc limit 6"""), {"w": w}).fetchall()
+        except Exception:  # noqa: BLE001
+            db.rollback()
+            return None
+        # у коротких слов триграммная похожесть низкая («дивон»/«диван» — 0,33), поэтому кандидатов из базы
+        # проверяем ещё и посимвольно: берём лучшее совпадение не ниже 0,7
+        from difflib import SequenceMatcher
+        best = max(((SequenceMatcher(None, w, r[0]).ratio(), r[0]) for r in rows), default=(0, None))
+        if best[1] and best[1] != w and best[0] >= 0.7:
+            out.append(best[1]); changed = True
+        else:
+            out.append(w)
+    return " ".join(out) if changed else None

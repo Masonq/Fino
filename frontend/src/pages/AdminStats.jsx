@@ -314,6 +314,8 @@ export default function AdminStats() {
             </div>
           </div>
 
+          <SearchReport days={days} />
+
           <div className="stats-block">
             <div className="stats-block-title">{t('stats.by_source')}</div>
             <div className="stats-rows">
@@ -327,6 +329,29 @@ export default function AdminStats() {
           </div>
         </>
       )}
+    </div>
+  )
+}
+
+/** Поиск: сколько искали, доля пустых, что ищут, что не находят, какие опечатки исправили. Пустые поиски —
+ * главный список того, каких вещей и слов не хватает сайту (смотреть раз в неделю). */
+function SearchReport({ days }) {
+  const { t } = useTranslation()
+  const [r, setR] = useState(null)
+  useEffect(() => { api.searchReport(days).then(setR).catch(() => setR(null)) }, [days])
+  if (!r) return null
+  const share = r.total ? Math.round((r.empty / r.total) * 100) : 0
+  return (
+    <div className="stats-block">
+      <div className="stats-block-title">{t('stats.search_title')} · {r.total} · {t('stats.search_empty')} {share}%</div>
+      <div className="stats-rows">
+        {r.zero.length > 0 && <div className="stats-row stats-subhead"><span>{t('stats.search_zero')}</span><span /></div>}
+        {r.zero.map((x) => <div key={`z${x.q}`} className="stats-row"><span>«{x.q}»</span><span>{x.n}</span></div>)}
+        {r.fixed.length > 0 && <div className="stats-row stats-subhead"><span>{t('stats.search_fixed')}</span><span /></div>}
+        {r.fixed.map((x) => <div key={`f${x.q}${x.to}`} className="stats-row"><span>«{x.q}» → «{x.to}»</span><span>{x.n}</span></div>)}
+        {r.top.length > 0 && <div className="stats-row stats-subhead"><span>{t('stats.search_top')}</span><span /></div>}
+        {r.top.map((x) => <div key={`t${x.q}`} className="stats-row"><span>«{x.q}» · {x.results}</span><span>{x.n}</span></div>)}
+      </div>
     </div>
   )
 }

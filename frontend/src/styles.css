@@ -7435,3 +7435,18 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 .empty-notify.done{ background:var(--primary-soft); color:var(--primary-deep); }
 .sf-similar{ margin:28px -16px 8px; } /* ряд витрин во всю ширину, отступы — как у подборок на главной */
 .search-empty .empty-reset{ background:var(--surface); color:var(--ink); border:1px solid var(--border-strong); } /* главная кнопка — «Сообщить», сброс — второстепенная */
+.stats-subhead span:first-child{ font-weight:800; color:var(--ink); font-size:13px; } .stats-subhead{ margin-top:6px; }
+.search-corrected{ margin:4px 12px 10px; padding:12px 14px; border-radius:16px; background:var(--warn-bg); color:var(--ink-soft); font-size:14px; line-height:1.4; }
+.search-corrected button{ font:inherit; font-weight:800; color:var(--ink); text-decoration:underline; text-underline-offset:3px; }
+
+/* ---------- поиск: подсказки на лету ---------- */
+.live-suggest{ display:flex; flex-direction:column; gap:2px; margin-bottom:10px; }
+.ls-row{ display:flex; align-items:center; gap:12px; width:100%; min-height:46px; padding:8px 12px; border-radius:14px; text-align:left; font:inherit; font-size:15px; color:var(--ink); }
+.ls-row:active{ background:var(--surface-sunken); }
+.ls-row b{ font-weight:800; }
+.ls-ico{ flex:none; color:var(--muted); width:16px; text-align:center; }
+.ls-row > span:nth-child(2){ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ls-fill{ flex:none; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:10px; color:var(--muted); font-size:16px; }
+.ls-fix{ background:var(--warn-bg); }
+.ls-fix .ls-ico{ color:var(--ink-soft); }
+.ls-path{ color:var(--muted); }

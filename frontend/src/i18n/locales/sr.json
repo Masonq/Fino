@@ -90,7 +90,13 @@
     "empty_hint": "Probajte drugu reč ili resetujte filtere. Dugme „Prati“ javiće vam kad se pojavi.",
     "empty_browse": "Pogledajte kategorije",
     "notify_me": "Javi kada se pojavi",
-    "notify_done": "Javićemo vam"
+    "notify_done": "Javićemo vam",
+    "corrected_pre": "Za upit",
+    "corrected_mid": "nema ništa — prikazujemo",
+    "popular": "Često traže",
+    "did_you_mean": "Da li ste mislili",
+    "in_section": "u kategoriji",
+    "fill": "Dopuni upit"
   },
   "chat": {
     "empty": "Još nema poruka — započnite razgovor",
@@ -742,7 +748,12 @@
     "from_people": "Objavili ljudi",
     "added_total": "Ukupno dodato",
     "added_total_hint": "uključujući preneto iz ćaskanja",
-    "now": "sada"
+    "now": "sada",
+    "search_title": "Pretraga",
+    "search_empty": "praznih",
+    "search_zero": "Traže, a ne nalaze",
+    "search_fixed": "Ispravljene greške",
+    "search_top": "Najčešće pretrage"
   },
   "audit": {
     "title": "Dnevnik radnji",
