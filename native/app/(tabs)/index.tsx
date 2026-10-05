@@ -17,7 +17,6 @@ import FiltersSheet, { activeCount } from '../../src/components/FiltersSheet'
 import ListingCard from '../../src/components/ListingCard'
 import Segmented from '../../src/components/Segmented'
 import Skeleton from '../../src/components/Skeleton'
-import ShopsRow from '../../src/components/ShopsRow'
 import { useTabInset } from '../../src/tabInset'
 import HomeSections from '../../src/components/HomeSections'
 import { cityName } from '../../src/format'
@@ -383,16 +382,6 @@ export default function Feed() {
           <View style={styles.listHead}>
             {!q && <CategoryTiles value={category} onPick={setCategory} />}
             {/* шопсы — под разделами, как на сайте */}
-            {!q && (
-              <View style={{ marginTop: 16 }}>
-                {/* у блоков главной — заголовки, как на сайте */}
-                <View style={styles.secHead}>
-                  <Text style={styles.secTitle}>{tr('Шопсы')}</Text>
-                  <Pressable onPress={() => router.push('/shops' as never)} hitSlop={8}><Text style={styles.secAll}>{tr('Все')}</Text></Pressable>
-                </View>
-                <ShopsRow />
-              </View>
-            )}
             {/* PLONK 2.0: подборки между плитками и лентой, как на сайте */}
             {!q && !category && cityReady && <HomeSections city={city} />}
             {!q && cityReady && !city && geoAsk && (

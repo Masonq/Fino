@@ -13,7 +13,6 @@ import OfflineNotice, { LoadError } from '../components/OfflineNotice'
 import { useAuth } from '../context/AuthContext'
 import { CITIES, cityLabel, nearestCity } from '../data/cities'
 import useFresh from '../hooks/useFresh'
-import ShopsStrip from '../components/ShopsStrip'
 import HomeSections from '../components/HomeSections'
 import CategoryArt from '../components/CategoryArt'
 import Avatar from '../components/Avatar'
@@ -780,11 +779,6 @@ export default function Home() {
 
       {/* PLONK 2.0: подборки между плитками и лентой */}
       {/* шопсы — под разделами: сначала куда идти, потом что посмотреть */}
-      {/* у каждого блока главной — заголовок: видно, что это и куда ведёт (раньше у шопсов и ленты его не было) */}
-      <section className="hs home-shops">
-        <div className="hs-head"><h2 className="hs-title">{t('hs.shops')}</h2><Link to="/shops" className="hs-all">{t('hs.all')}</Link></div>
-        <ShopsStrip />
-      </section>
       <HomeSections city={city} />
 
       <div className="hs-head feed-title"><h2 className="hs-title">{t('hs.feed')}</h2></div>

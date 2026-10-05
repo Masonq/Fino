@@ -2,8 +2,6 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
-import { formatPrice } from '../utils/money'
-import { useAuth } from '../context/AuthContext'
 
 /**
  * PLONK 2.0: подборки на главной между плитками и лентой — чтобы у главной была иерархия, а не сплошной поток
@@ -12,26 +10,13 @@ import { useAuth } from '../context/AuthContext'
  */
 // Память между заходами: открыл объявление из подборки, вернулся — подборка на том же месте прокрутки,
 // без повторной загрузки и мигания скелетом (данные обновляются тихо в фоне).
-const memo = { key: null, stores: null, drops: null, scroll: {} }
+const memo = { key: null, stores: null, scroll: {} }
 
 export default function HomeSections({ city }) {
   const { t, i18n } = useTranslation()
   const key = `${city || ''}|${i18n.language}`
   const [stores, setStores] = useState(() => (memo.key === key ? memo.stores : null))
   const storesRow = useRef(null)
-  const { user } = useAuth()
-  // личное: «Подешевели в избранном» — повод вернуться к сохранённому
-  const [drops, setDrops] = useState(() => (memo.key === key ? memo.drops : null))
-  useEffect(() => {
-    let alive = true
-    if (user) {
-      api.getFavorites(i18n.language).then((r) => {
-        const list = (r.items || r || []).filter((l) => l.previous_price != null && l.price != null && Number(l.previous_price) > Number(l.price))
-        memo.drops = list; if (alive) setDrops(list)
-      }).catch(() => {})
-    } else { setDrops([]) }
-    return () => { alive = false }
-  }, [key, user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     let alive = true
     if (memo.key !== key) { memo.key = key; memo.stores = null; memo.scroll = {} }
@@ -44,22 +29,8 @@ export default function HomeSections({ city }) {
   }, [stores])
   const remember = (name) => (e) => { memo.scroll[name] = e.currentTarget.scrollLeft }
 
-  const mini = (l, old) => (
-    <Link key={l.id} to={l.path} className="hs-card">
-      <span className="hs-photo">{l.photos?.[0] && <img src={l.photos[0]} alt="" loading="lazy" decoding="async" />}</span>
-      <span className="hs-price">{l.is_free ? t('detail.free') : formatPrice(l.price, l.currency, i18n.language)}
-        {old && <s className="hs-old">{formatPrice(l.previous_price, l.currency, i18n.language)}</s>}</span>
-      <span className="hs-name">{l.title}</span>
-    </Link>
-  )
   return (
     <>
-      {drops?.length > 0 && (
-        <section className="hs">
-          <div className="hs-head"><h2 className="hs-title">{t('hs.drops')}</h2><Link to="/favorites" className="hs-all">{t('hs.all')}</Link></div>
-          <div className="hs-row">{drops.slice(0, 10).map((l) => mini(l, true))}</div>
-        </section>
-      )}
       {/* пока грузится — скелет того же размера, что и подборка: лента под ней не прыгает */}
       {stores === null && (
         <section className="hs" aria-hidden="true">
