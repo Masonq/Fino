@@ -19,7 +19,6 @@ import { NetProvider } from '../src/net'
 import OfflineBanner from '../src/components/OfflineBanner'
 
 import { colors, isDark } from '../src/theme'
-import { applyThemePref, getThemePref } from '../src/themePref'
 
 /**
  * Обновления приходят сами (expo-updates, сервер plonk.rs): при запуске приложение проверяет новую версию и
@@ -52,15 +51,8 @@ SplashScreen.preventAutoHideAsync().catch(() => {})
 
 export default function RootLayout() {
   useUpdatesOnResume()
-  // тема сменилась в системе — перезапуск: стили приложения собираются один раз под тему при запуске
-  useEffect(() => {
-    const sub = Appearance.addChangeListener(({ colorScheme }) => {
-      if ((colorScheme === 'dark') !== isDark) Updates.reloadAsync().catch(() => {})
-    })
-    // закреплённая в профиле тема: ставим при запуске; если отличается от текущей — сработает перезапуск выше
-    getThemePref().then(applyThemePref).catch(() => {})
-    return () => sub.remove()
-  }, [])
+  // приложение всегда светлое, даже если в телефоне включена тёмная тема
+  useEffect(() => { Appearance.setColorScheme('light') }, [])
   const [fontsReady, fontsError] = useFonts({
     Onest_400Regular, Onest_500Medium, Onest_600SemiBold, Onest_700Bold, Onest_800ExtraBold,
   })

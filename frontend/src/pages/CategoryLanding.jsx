@@ -13,6 +13,7 @@ import { CardSkeletons } from '../components/Skeletons'
 import { LANDINGS, ROOMS_IN, landingFor } from '../data/landings'
 import { CAR_BRANDS, CAR_MODELS, CAR_MODEL_OTHER } from '../data/carBrands'
 import useStickyColumn from '../hooks/useStickyColumn'
+import useHideOnScroll from '../hooks/useHideOnScroll'
 
 /**
  * Вход в раздел.
@@ -77,6 +78,7 @@ export default function CategoryLanding() {
 
 function CategoryLandingPage() {
   const { slug } = useParams()
+  const topHidden = useHideOnScroll()
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
   const measure = useTileMeasure() // замер надписей плиток подразделов (колонка надписи — по нему)
@@ -571,7 +573,7 @@ function CategoryLandingPage() {
 
           Полупрозрачная с размытием: поверх картинки читается, а
           когда под ней проезжает белый список — не сливается с ним. */}
-      <div className="landing-topbar">
+      <div className={`landing-topbar${topHidden ? ' is-hidden' : ''}`}>
         <button className="landing-back on-hero" onClick={goBack}
               aria-label={t('actions.back')}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3"

@@ -7319,49 +7319,9 @@ body.sh-open .nav-item.active .nav-icon-wrap::after{ background:var(--surface); 
 .profile-action.is-dark{ background:var(--inverse); color:var(--on-inverse); }
 
 
-/* =====================================================================
-   PLONK 2.0 — тёмная тема. По умолчанию — как в системе телефона; в профиле можно закрепить светлую или
-   тёмную (html[data-theme]). Плитки разделов остаются белыми: картинки на них не вырезаны из белого фона.
-   --inverse — фон «тёмных» кнопок и выбранных чипов (в тёмной теме он светлый, текст на нём тёмный).
-   ===================================================================== */
+/* Тёмной темы нет: плитки разделов с картинками — светлые, тёмный фон вокруг них не смотрится. */
 :root{ --inverse:#0F1512; --on-inverse:#FFFFFF; color-scheme:light; }
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
-  --bg:#0D100F; --card:#161A18; --surface:#161A18; --surface-sunken:#1F2421; --surface-sunken-2:#262C29;
-  --ink:#EEF2EF; --ink-soft:#BFC7C1; --muted:#87908A; --line:#272D2A; --border:rgba(255,255,255,.07); --border-strong:rgba(255,255,255,.14);
-  --primary:#1FBF7C; --primary-dark:#18A86C; --primary-deep:#7BE3B5; --primary-soft:#123326;
-  --accent:#FF6A3D; --accent-deep:#FF8A63; --accent-soft:#3A1F16;
-  --warn-bg:#2C2414; --warn-ink:#E9C46A; --danger-bg:#3A1A18; --danger-ink:#FF8A80;
-  --inverse:#EEF2EF; --on-inverse:#0D100F; --tile:#1F2421;
-  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35); --shadow-lg:0 6px 14px rgba(0,0,0,.4), 0 24px 48px rgba(0,0,0,.5);
-  color-scheme:dark;
-} }
-:root[data-theme="dark"]{
-  --bg:#0D100F; --card:#161A18; --surface:#161A18; --surface-sunken:#1F2421; --surface-sunken-2:#262C29;
-  --ink:#EEF2EF; --ink-soft:#BFC7C1; --muted:#87908A; --line:#272D2A; --border:rgba(255,255,255,.07); --border-strong:rgba(255,255,255,.14);
-  --primary:#1FBF7C; --primary-dark:#18A86C; --primary-deep:#7BE3B5; --primary-soft:#123326;
-  --accent:#FF6A3D; --accent-deep:#FF8A63; --accent-soft:#3A1F16;
-  --warn-bg:#2C2414; --warn-ink:#E9C46A; --danger-bg:#3A1A18; --danger-ink:#FF8A80;
-  --inverse:#EEF2EF; --on-inverse:#0D100F; --tile:#1F2421;
-  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35); --shadow-lg:0 6px 14px rgba(0,0,0,.4), 0 24px 48px rgba(0,0,0,.5);
-  color-scheme:dark;
-}
-@media (prefers-color-scheme: dark){ html:not([data-theme="light"]){ background:#050706; }
-  html:not([data-theme="light"]) .bottomnav{ background:rgba(22,26,24,.82); border-color:rgba(255,255,255,.06); box-shadow:0 10px 30px rgba(0,0,0,.5); }
-  html:not([data-theme="light"]) .s-fav{ background:rgba(22,26,24,.7); color:#fff; }
-  html:not([data-theme="light"]) .cat-tile-2row{ box-shadow:none; } }
-html[data-theme="dark"]{ background:#050706; }
-html[data-theme="dark"] .bottomnav{ background:rgba(22,26,24,.82); border-color:rgba(255,255,255,.06); box-shadow:0 10px 30px rgba(0,0,0,.5); }
-html[data-theme="dark"] .s-fav{ background:rgba(22,26,24,.7); color:#fff; }
-html[data-theme="dark"] .cat-tile-2row{ box-shadow:none; }
-/* плитки разделов в тёмной теме: белые (картинки не вырезаны), значит текст на них всегда тёмный */
-@media (prefers-color-scheme: dark){ html:not([data-theme="light"]) .cat-tile-2row:not(.all) .cat-tile-2row-label{ color:#0F1512; } }
-html[data-theme="dark"] .cat-tile-2row:not(.all) .cat-tile-2row-label{ color:#0F1512; }
 
-/* картинки разделов нарисованы на белом — их плитки белые и в тёмной теме, подписи на них тёмные */
-@media (prefers-color-scheme: dark){ html:not([data-theme="light"]) :is(.cat-tile-2row:not(.all), .cats-item, .post-cat-item){ background:#FFFFFF; color:#0F1512; }
-  html:not([data-theme="light"]) :is(.cats-item, .post-cat-item) *{ color:#0F1512; } }
-html[data-theme="dark"] :is(.cat-tile-2row:not(.all), .cats-item, .post-cat-item){ background:#FFFFFF; color:#0F1512; }
-html[data-theme="dark"] :is(.cats-item, .post-cat-item) *{ color:#0F1512; }
 .profile-row-value{ margin-left:auto; font-size:14px; font-weight:600; color:var(--muted); }
 button.profile-row{ width:100%; text-align:left; font:inherit; color:inherit; }
 
@@ -7413,3 +7373,14 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 .vmark svg{ display:block; }
 .vmark-label{ font-size:12px; font-weight:700; color:var(--primary-deep); }
 .sh-author .vmark{ vertical-align:middle; }
+
+/* шапки с поиском сворачиваются при прокрутке.
+   Главная: строка «город / избранное / профиль» уезжает вверх, поиск остаётся (сдвиг, не высота — без рывков).
+   Раздел и поиск: шапка уезжает при прокрутке вниз и возвращается при движении вверх; полоса под вырезом
+   экрана остаётся закрытой фоном шапки. */
+.avito-banner{ transition:transform .32s var(--ease-out), box-shadow .3s ease; }
+.avito-banner.collapsed{ transform:translateY(-54px); }
+.home-top{ transition:opacity .2s ease; }
+.avito-banner.collapsed .home-top{ opacity:0; pointer-events:none; }
+.landing-topbar, .search-topbar{ transition:transform .3s var(--ease-out); }
+.landing-topbar.is-hidden, .search-topbar.is-hidden{ transform:translateY(calc(-100% + var(--sat))); }

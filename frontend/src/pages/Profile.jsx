@@ -6,7 +6,6 @@ import Avatar from '../components/Avatar'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { getTheme, setTheme } from '../utils/theme'
 import PageHeader from '../components/PageHeader'
 import PhoneReminder from '../components/PhoneReminder'
 import { ProfileSkeleton } from '../components/Skeletons'
@@ -53,7 +52,6 @@ export default function Profile() {
   // из профиля было видно, что там есть работа, и не приходилось
   // заходить в каждую очередь наугад.
   const isStaff = user?.role === 'moderator' || user?.role === 'admin'
-  const [theme, setThemeState] = useState(getTheme)
   // Цифры и бейджи храним между заходами: без этого при каждом
   // возврате на профиль они на секунду пропадали и появлялись заново,
   // а строка «что требует внимания» успевала мигнуть.
@@ -300,14 +298,6 @@ export default function Profile() {
           их открывают раз в жизни, и место наравне с тем, чем
           пользуются каждый день, им ни к чему. */}
       <div className="profile-menu">
-        {/* PLONK 2.0: тема — как в системе / светлая / тёмная (по нажатию — следующая) */}
-        <button type="button" className="profile-row" onClick={() => { const next = { auto: 'light', light: 'dark', dark: 'auto' }[theme]; setThemeState(next); setTheme(next) }}>
-          <span className="profile-row-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
-          </span>
-          {t('profile.theme')}
-          <span className="profile-row-value">{t(`profile.theme_${theme}`)}</span>
-        </button>
         <Link viewTransition className="profile-row" to="/favorites">
           <span className="profile-row-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round"><path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" /></svg>

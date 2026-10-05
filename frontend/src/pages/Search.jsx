@@ -13,6 +13,7 @@ import { MODE_WORDS } from '../data/modeWords'
 import { LoadError } from '../components/OfflineNotice'
 import { useAuth } from '../context/AuthContext'
 import useStickyColumn from '../hooks/useStickyColumn'
+import useHideOnScroll from '../hooks/useHideOnScroll'
 
 const SORTS = [
   { key: 'relevance', labelKey: 'search.sort_relevance' },
@@ -32,6 +33,7 @@ const PAGE = 20
 let searchCache = { key: null, items: [], total: 0, fetchedAt: 0 }
 
 export default function Search() {
+  const topHidden = useHideOnScroll()
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
   // Липкая колонка фильтров — тот же хук, что на лендинге и в профиле
@@ -333,7 +335,7 @@ export default function Search() {
 
   return (
     <div className="search-page-full">
-      <div className="search-topbar">
+      <div className={`search-topbar${topHidden ? ' is-hidden' : ''}`}>
         <button className="search-back" onClick={() => navigate(-1)} aria-label={t('actions.back')}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
         </button>
