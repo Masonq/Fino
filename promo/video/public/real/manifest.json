@@ -1,82 +1,169 @@
 [
  {
-  "id": "482209dd-58f4-47c3-b2f7-514ca1638b9e",
-  "root": "services",
-  "category": "Уборка и помощь по дому",
-  "title": "Повар в семью / Рацион по каллориям на каждый день",
-  "price": 6000.0,
+  "id": "f5d3c313-eeca-463c-8239-35151421b1a9",
+  "root": "fashion",
+  "category": "Женская одежда",
+  "title": "Свадебное платье",
+  "price": 15000.0,
   "currency": "RSD",
   "city": "beograd",
-  "seller": "Ксения",
-  "views": 47,
+  "seller": "Аналог",
   "photos": [
    {
-    "file": "real/482209dd-0.jpg",
-    "w": 1099,
-    "h": 1600
+    "file": "real/f5d3c313-0.jpg",
+    "w": 783,
+    "h": 1280
    },
    {
-    "file": "real/482209dd-2.jpg",
-    "w": 1600,
-    "h": 971
+    "file": "real/f5d3c313-1.jpg",
+    "w": 727,
+    "h": 1280
    }
   ]
  },
  {
-  "id": "fbf01dec-0ed1-4578-a495-7d92dd50750c",
-  "root": "hobby-sport",
-  "category": "Велосипеды и самокаты",
-  "title": "Электрический велосипед MS Energy C300 Carbon Gate",
-  "price": 1300.0,
+  "id": "8d82e428-8642-48a7-87cf-22d11d28d1d2",
+  "root": "fashion",
+  "category": "Обувь",
+  "title": "Оригинальные кеды Trussardi",
+  "price": 5000.0,
+  "currency": "RSD",
+  "city": "beograd",
+  "seller": "Аналог",
+  "photos": [
+   {
+    "file": "real/8d82e428-0.jpg",
+    "w": 721,
+    "h": 1280
+   },
+   {
+    "file": "real/8d82e428-1.jpg",
+    "w": 721,
+    "h": 1280
+   },
+   {
+    "file": "real/8d82e428-2.jpg",
+    "w": 721,
+    "h": 1280
+   },
+   {
+    "file": "real/8d82e428-3.jpg",
+    "w": 721,
+    "h": 1280
+   },
+   {
+    "file": "real/8d82e428-4.jpg",
+    "w": 721,
+    "h": 1280
+   }
+  ]
+ },
+ {
+  "id": "d0ca9165-a7e5-47c9-830b-c67867be51a6",
+  "root": "electronics",
+  "category": "Периферия для компьютера",
+  "title": "Apple Magic Keyboard с цифровым блоком — RU/EN",
+  "price": 8000.0,
+  "currency": "RSD",
+  "city": "beograd",
+  "seller": "Барахолка",
+  "photos": [
+   {
+    "file": "real/d0ca9165-0.jpg",
+    "w": 1280,
+    "h": 960
+   }
+  ]
+ },
+ {
+  "id": "353db02c-3485-45a8-aa7f-adf2e6ee9e31",
+  "root": "electronics",
+  "category": "Планшеты и электронные книги",
+  "title": "LAVA ME 4 Carbon",
+  "price": 650.0,
   "currency": "EUR",
   "city": "beograd",
-  "seller": "uzatoorg",
-  "views": 9,
+  "seller": "Барахолка",
   "photos": [
    {
-    "file": "real/fbf01dec-0.jpg",
-    "w": 1600,
-    "h": 1200
-   },
-   {
-    "file": "real/fbf01dec-1.jpg",
-    "w": 1600,
-    "h": 1200
-   },
-   {
-    "file": "real/fbf01dec-2.jpg",
+    "file": "real/353db02c-0.jpg",
     "w": 1200,
+    "h": 1600
+   },
+   {
+    "file": "real/353db02c-1.jpg",
+    "w": 1200,
+    "h": 1600
+   },
+   {
+    "file": "real/353db02c-2.jpg",
+    "w": 1200,
+    "h": 1600
+   },
+   {
+    "file": "real/353db02c-3.jpg",
+    "w": 738,
     "h": 1600
    }
   ]
  },
  {
-  "id": "b8b6c7bd-3d55-4b99-ab80-ee5ef6223cde",
-  "root": "business",
-  "category": "Готовый бизнес",
-  "title": "Бизнес-кафе в Нови-Саде с 20-летней историей и стабильным потоком клиентов",
-  "price": 59800.0,
-  "currency": "EUR",
-  "city": "novi-sad",
-  "seller": "Kudini",
-  "views": 8,
+  "id": "cb2d407d-3b73-4ce0-aafd-6164dcf782f1",
+  "root": "electronics",
+  "category": "Игровые аксессуары",
+  "title": "Геймпад \\ джойстик DualSense",
+  "price": 5500.0,
+  "currency": "RSD",
+  "city": "beograd",
+  "seller": "Аналог",
   "photos": [
    {
-    "file": "real/b8b6c7bd-0.jpg",
-    "w": 1451,
-    "h": 999
+    "file": "real/cb2d407d-0.jpg",
+    "w": 1280,
+    "h": 1245
    },
    {
-    "file": "real/b8b6c7bd-1.jpg",
-    "w": 1536,
-    "h": 1024
+    "file": "real/cb2d407d-1.jpg",
+    "w": 1280,
+    "h": 896
    },
    {
-    "file": "real/b8b6c7bd-2.jpg",
-    "w": 1536,
-    "h": 1024
+    "file": "real/cb2d407d-2.jpg",
+    "w": 1280,
+    "h": 908
+   },
+   {
+    "file": "real/cb2d407d-3.jpg",
+    "w": 1280,
+    "h": 1139
+   },
+   {
+    "file": "real/cb2d407d-4.jpg",
+    "w": 983,
+    "h": 1280
    }
-  ],
-  "video": "real/b8b6c7bd.mp4"
+  ]
+ },
+ {
+  "id": "2c893f74-f62c-4a3f-948f-e3813591accc",
+  "root": "electronics",
+  "category": "Электроника",
+  "title": "iPhоne 14 Рrо 256 гб",
+  "price": 400.0,
+  "currency": "EUR",
+  "city": "novi-sad",
+  "seller": "Аналог",
+  "photos": [
+   {
+    "file": "real/2c893f74-0.jpg",
+    "w": 640,
+    "h": 480
+   },
+   {
+    "file": "real/2c893f74-1.jpg",
+    "w": 1280,
+    "h": 960
+   }
+  ]
  }
 ]
