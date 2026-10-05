@@ -1,4 +1,5 @@
 import { useEvent } from 'expo'
+import { LinearGradient } from 'expo-linear-gradient'
 import { Image } from 'expo-image'
 import { router } from 'expo-router'
 import { useVideoPlayer, VideoView } from 'expo-video'
@@ -172,7 +173,7 @@ const Slide = memo(function Slide({ shop, active, near, muted, width, height, bo
       <Pressable style={StyleSheet.absoluteFill} onPress={onTap} accessibilityLabel={tr(paused ? 'Смотреть' : 'Пауза')}>
         <VideoView player={player} style={StyleSheet.absoluteFill} contentFit="cover" nativeControls={false} allowsPictureInPicture={false} />
       </Pressable>
-      {paused && <View pointerEvents="none" style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}><Icon name="play" size={56} color="#fff" /></View>}
+      {paused && <View pointerEvents="none" style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}><Icon name="play" size={56} color="rgba(255,255,255,0.9)" filled /></View>}
       {burst > 0 && <View key={burst} pointerEvents="none" style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}><Icon name="heart" size={96} color="#FF3B5C" filled /></View>}
       <View style={[s.side, { bottom: bottom + 28 }]}>
         <Pressable style={s.sideAva} onPress={() => shop.author && router.push(`/seller/${shop.author.id}` as never)} accessibilityLabel={shop.author?.name}>
@@ -196,9 +197,10 @@ const Slide = memo(function Slide({ shop, active, near, muted, width, height, bo
         </Pressable>
       </View>
       {comments && <Comments shop={shop} onClose={() => setComments(false)} onCount={setNComments} onAsk={(it) => { setComments(false); write(it) }} bottom={bottom} />}
+      {/* затемнение под подписью — на всю ширину и плавное, без резкой границы у колонки кнопок */}
+      <LinearGradient pointerEvents="none" colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.18)', 'rgba(0,0,0,0.62)']} locations={[0, 0.35, 1]} style={s.shade} />
       <View pointerEvents="box-none" style={[s.meta, { paddingBottom: bottom + 18 }]}>
         <View style={k.row}>
-          <View style={s.ava}>{shop.author?.avatar ? <Image source={{ uri: mediaUrl(shop.author.avatar) ?? undefined }} style={StyleSheet.absoluteFill} /> : <Text style={s.avaText}>{(shop.author?.name || '?')[0]}</Text>}</View>
           <Text style={s.author}>{shop.author?.name}</Text>
           {shop.is_ad && <View style={s.ad}><Text style={s.adText}>{tr('Реклама')}</Text></View>}
         </View>
@@ -230,7 +232,8 @@ const s = StyleSheet.create({
   sideAva: { width: 46, height: 46, borderRadius: 23, borderWidth: 2, borderColor: '#fff', overflow: 'hidden', backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
   sideBtn: { alignItems: 'center', gap: 4, minWidth: 48 },
   sideText: { fontFamily: font[700], fontSize: 12, color: '#fff', textShadowColor: 'rgba(0,0,0,0.5)', textShadowRadius: 2 },
-  meta: { position: 'absolute', left: 0, right: 64, bottom: 0, paddingHorizontal: 12, paddingTop: 60, backgroundColor: 'rgba(0,0,0,0.28)' },
+  shade: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '46%' },
+  meta: { position: 'absolute', left: 0, right: 64, bottom: 0, paddingHorizontal: 12, paddingTop: 60 },
   ava: { width: 32, height: 32, borderRadius: 16, overflow: 'hidden', backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
   avaText: { fontFamily: font[800], fontSize: 14, color: colors.primaryDeep },
   author: { fontFamily: font[700], fontSize: 15, color: '#fff' },

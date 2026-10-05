@@ -50,7 +50,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="index" options={{ title: tr('Главная'), tabBarIcon: icon('home') }} />
       {/* «Шопсы» — вкладкой, как в TikTok: тёмное меню под тёмной лентой. «Избранное» — сердечко на главной и в профиле */}
       <Tabs.Screen name="shops" options={{
-        title: tr('Шопсы'), tabBarIcon: icon('video'),
+        title: tr('Шопсы'), tabBarIcon: icon('shops'),
         tabBarActiveTintColor: '#fff', tabBarInactiveTintColor: 'rgba(255,255,255,0.6)',
         tabBarStyle: { backgroundColor: '#000', borderTopColor: 'rgba(255,255,255,0.12)', height: BAR + insets.bottom, paddingTop: 8, paddingBottom: Math.max(insets.bottom, 6) },
         sceneStyle: { backgroundColor: '#000' },

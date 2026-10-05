@@ -6986,7 +6986,7 @@ body.sh-open .bottomnav .nav-item.active { color: #fff; }
 .sh-paused { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; opacity: .85; }
 .sh-progress { position: absolute; left: 12px; right: 12px; bottom: 4px; height: 3px; border-radius: 2px; background: rgba(255,255,255,.25); }
 .sh-progress span { display: block; height: 100%; border-radius: 2px; background: #fff; transition: width .25s linear; }
-.sh-meta { position: absolute; left: 0; right: 64px; bottom: 0; max-width: calc(100dvh * 9 / 16 - 64px); margin: 0 auto; padding: 60px 12px 16px; background: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.72)); color: #fff; }
+.sh-meta { position: absolute; left: 0; right: 64px; bottom: 0; max-width: calc(100dvh * 9 / 16 - 64px); margin: 0 auto; padding: 60px 12px 16px; color: #fff; }
 .sh-author { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; }
 .sh-author .sh-ava { width: 32px; height: 32px; font-size: 14px; }
 .sh-ad { padding: 2px 6px; border-radius: 6px; background: rgba(255,255,255,.2); font-size: 11px; font-weight: 700; }
@@ -7158,3 +7158,7 @@ body.sh-open .bottomnav .nav-item.active { color: #fff; }
 .shx-card { display: flex; align-items: center; gap: 14px; padding: 12px; margin-top: 10px; border-radius: 18px; background: var(--card); border: 1px solid var(--line); text-decoration: none; color: inherit; }
 .shx-card.shx-gap { margin-top: 18px; }
 .shx-link { display: inline-block; margin-top: 6px; font-size: 14px; font-weight: 700; color: var(--primary-deep); }
+
+/* затемнение под подписью — на всю ширину ролика и плавное, без резкой границы у колонки кнопок */
+.sh-shade { position: absolute; left: 0; right: 0; bottom: 0; height: 46%; pointer-events: none; background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.18) 35%, rgba(0,0,0,.62) 100%); }
+.sh-meta, .sh-side, .sh-progress { z-index: 2; }

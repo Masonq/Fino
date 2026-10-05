@@ -100,12 +100,28 @@ function Slide({ shop, index, active, near, muted, onActive }) {
     return () => io.disconnect()
   }, [index, onActive])
 
+  // iOS Safari запускает сам только видео без звука, и проверяет атрибут muted, а React его не ставит —
+  // из-за этого видео на сайте не шли. Ставим и свойство, и атрибут, и запускаем, когда данные пришли.
   useEffect(() => {
     const v = video.current
     if (!v) return
-    if (active && !paused) { v.play().catch(() => {}) } else { v.pause() }
+    v.muted = muted
+    v.defaultMuted = true
+    if (muted) v.setAttribute('muted', ''); else v.removeAttribute('muted')
+  }, [muted, near])
+  useEffect(() => {
+    const v = video.current
+    if (!v) return undefined
+    const tryPlay = () => { v.muted = muted; v.play().catch(() => setPaused(true)) }
+    if (active && !paused) {
+      if (v.readyState >= 2) tryPlay()
+      else { v.addEventListener('loadeddata', tryPlay, { once: true }); v.load() }
+      return () => v.removeEventListener('loadeddata', tryPlay)
+    }
+    v.pause()
     if (!active) { setPaused(false) }
-  }, [active, paused, near])
+    return undefined
+  }, [active, paused, near]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleLike = (force) => {
     if (!isShop) return
@@ -166,7 +182,7 @@ function Slide({ shop, index, active, near, muted, onActive }) {
 
   return (
     <section ref={ref} className="sh-slide" aria-label={shop.caption || shop.author?.name}>
-      <video ref={video} className="sh-video" playsInline loop muted={muted} poster={shop.poster_url || undefined}
+      <video ref={video} className="sh-video" playsInline webkit-playsinline="true" loop muted={muted} autoPlay={active} poster={shop.poster_url || undefined}
         preload={active ? 'auto' : near ? 'auto' : 'none'} src={near ? src : undefined} onTimeUpdate={onTime}
         onClick={onTap} />
       {burst > 0 && <div key={burst} className="sh-burst" aria-hidden="true"><svg viewBox="0 0 24 24" width="96" height="96"><path fill="#FF3B5C" d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" /></svg></div>}
@@ -194,10 +210,10 @@ function Slide({ shop, index, active, near, muted, onActive }) {
       {toast && createPortal(<div className="sf-toast" role="status">{toast}</div>, document.body)}
       {comments && <Comments shop={shop} item={shop.items[0]} onClose={() => setComments(false)} onCount={setNComments} onAsk={write} />}
       {paused && <div className="sh-paused" aria-hidden="true"><svg viewBox="0 0 24 24" width="56" height="56" fill="#fff"><path d="M8 5v14l11-7z" /></svg></div>}
+      <div className="sh-shade" aria-hidden="true" />
       <div className="sh-progress"><span style={{ width: `${Math.min(100, (time / dur) * 100)}%` }} /></div>
       <div className="sh-meta">
         <div className="sh-author">
-          <span className="sh-ava">{shop.author?.avatar ? <img src={shop.author.avatar} alt="" /> : (shop.author?.name || '?')[0]}</span>
           <span>{shop.author?.name}</span>
           {shop.is_ad && <span className="sh-ad">{t('shops.ad')}</span>}
         </div>
