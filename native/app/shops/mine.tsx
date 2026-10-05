@@ -11,6 +11,7 @@ import { tr } from '../../src/i18n'
 import { Btn, Empty, Field, Header, k, Tabs } from '../../src/components/Kit'
 import { creatorApply, money, type Order, type Shop, shopOrderCancel, shopOrderCreate, shopOrders, shopOrderTake, shopRemove, shopsMine } from '../../src/social'
 import { colors, font } from '../../src/theme'
+import { RowSkeletons } from '../../src/components/Skeleton'
 
 const ST: Record<string, [string, string, string]> = {
   processing: ['Обрабатывается', colors.warmBg, colors.goldDark], draft: ['Черновик', colors.sunken, colors.inkSoft], moderation: ['На проверке', colors.warmBg, colors.goldDark],
@@ -43,7 +44,7 @@ export default function ShopsCabinet() {
 
 function MyShops({ data, reload }: { data: { items: Shop[] } | null; reload: () => void }) {
   const { token } = useAuth()
-  if (!data) return <ActivityIndicator style={{ marginTop: 30 }} color={colors.primary} />
+  if (!data) return <RowSkeletons thumb="tall" />
   if (!data.items.length) return <Empty text={tr('У вас пока нет шопсов')}><Btn label={tr('Снимите первый шопс')} onPress={() => router.push('/shops/new' as never)} /></Empty>
   return data.items.map((sh) => {
     const [label, bg, fg] = ST[sh.status] ?? ST.draft
@@ -136,7 +137,7 @@ function Orders({ creator }: { creator: boolean }) {
             <Btn small kind="ghost" label={tr('Отказаться')} onPress={() => token && shopOrderCancel(token, o.id).then(reload)} />
           </> : null))}
           <Text style={k.section}>{tr('Заказы продавцов')}</Text>
-          {open === null ? <ActivityIndicator color={colors.primary} /> : !open.length ? <Text style={k.hint}>{tr('Свободных заказов пока нет')}</Text>
+          {open === null ? <RowSkeletons count={2} /> : !open.length ? <Text style={k.hint}>{tr('Свободных заказов пока нет')}</Text>
             : open.map((o) => card(o, <Btn small label={tr('Взять заказ')} onPress={() => token && shopOrderTake(token, o.id).then((r) => router.push(`/chat/${r.chat_id}` as never)).catch(reload)} />))}
         </>
       )}

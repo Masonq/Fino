@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
+import { RowSkeletons } from './Skeletons'
 
 const ago = (iso, lang) => {
   const m = Math.max(1, Math.round((Date.now() - new Date(iso).getTime()) / 60000))
@@ -52,7 +53,7 @@ export default function ShopComments({ shop, item, onClose, onCount, onAsk }) {
           {item && item.status === 'active' && <button type="button" className="jr-btn primary sm" onClick={() => onAsk(item)}>{t('shops.ask_seller')}</button>}
         </div>
         <div className="sh-cm-list">
-          {items === null ? <div className="jr-skel" /> : items.length === 0 ? <div className="jr-hint">{t('shops.no_comments')}</div> : items.map((c) => (
+          {items === null ? <RowSkeletons count={4} variant="plain" thumb="round" /> : items.length === 0 ? <div className="jr-hint">{t('shops.no_comments')}</div> : items.map((c) => (
             <div key={c.id} className="sh-cm-row">
               <div className="jr-ava sh-cm-ava">{c.user?.avatar ? <img src={c.user.avatar} alt="" /> : (c.user?.name || '?')[0]}</div>
               <div className="sh-cm-body">

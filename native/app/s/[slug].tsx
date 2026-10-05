@@ -13,6 +13,7 @@ import ListingCard from '../../src/components/ListingCard'
 import { sfFollow, sfPublic, sfReport, type StorefrontPublic } from '../../src/social'
 import { colors, font, space } from '../../src/theme'
 import VerifiedMark from '../../src/components/VerifiedMark'
+import Skeleton from '../../src/components/Skeleton'
 
 const REASONS: [string, string][] = [['spam', 'Спам'], ['fraud', 'Мошенничество'], ['prohibited_item', 'Запрещённые товары'], ['offensive_user', 'Выдаёт себя за другого или оскорбления'], ['other', 'Другое']]
 const items = (n: number) => plural(n, { ru: ['товар', 'товара', 'товаров'], en: ['item', 'items'], sr: ['stvar', 'stvari', 'stvari'] })
@@ -41,7 +42,19 @@ export default function Storefront() {
   }, [sf, coll])
 
   if (error) return <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top + 40 }}><Empty text={tr('Витрина не найдена или закрыта')}><Btn label={tr('Назад')} onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} /></Empty></View>
-  if (!sf) return <View style={{ flex: 1, backgroundColor: colors.bg }}><ActivityIndicator style={{ marginTop: insets.top + 80 }} color={colors.primary} /></View>
+  if (!sf) return (
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      <Skeleton style={{ height: 180, borderRadius: 0 }} />
+      <View style={{ alignItems: 'center', marginTop: -36, gap: 8 }}>
+        <Skeleton style={{ width: 72, height: 72, borderRadius: 36, borderWidth: 4, borderColor: colors.bg }} />
+        <Skeleton style={{ width: '46%', height: 24, borderRadius: 8 }} />
+        <Skeleton style={{ width: '30%', height: 14, borderRadius: 6 }} />
+      </View>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space.gap, padding: space.page, marginTop: 16 }}>
+        {[0, 1, 2, 3].map((i) => <View key={i} style={{ width: cardW }}><Skeleton style={{ height: cardW * 1.25, borderRadius: 20 }} /><Skeleton style={{ height: 18, width: '50%', borderRadius: 6, marginTop: 9 }} /></View>)}
+      </View>
+    </View>
+  )
 
   const follow = async () => {
     if (!token) { router.push('/login'); return }

@@ -21,9 +21,11 @@ on:
 permissions:
   contents: write
 
+# Идущая сборка доделывается до конца, новая встаёт в очередь (в очереди — только самая свежая).
+# Раньше каждая новая правка отменяла идущую сборку, и при частых правках до SideStore не доходило ничего.
 concurrency:
   group: native-build
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
   CI: '1'

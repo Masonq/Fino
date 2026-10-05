@@ -356,3 +356,23 @@ export function ReviewsSkeleton() {
   )
 }
 
+
+/**
+ * Строки-заглушки для списков PLONK 2.0 (отклики, шопсы, заказы, комментарии): превью слева, две строки текста.
+ * variant: 'card' — карточка с рамкой (как .jr-card), 'plain' — строка без рамки (комментарии).
+ */
+export function RowSkeletons({ count = 3, variant = 'card', thumb = 'square' }) {
+  return (
+    <div className={`row-sk-list${variant === 'plain' ? ' is-plain' : ''}`} aria-hidden="true">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="row-sk">
+          <span className={`sk-block row-sk-thumb${thumb === 'round' ? ' is-round' : thumb === 'tall' ? ' is-tall' : ''}`} />
+          <span className="row-sk-text">
+            <span className="sk-block row-sk-line" style={{ width: `${70 - i * 8}%` }} />
+            <span className="sk-block row-sk-line is-short" />
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}

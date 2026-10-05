@@ -9,6 +9,7 @@ import { Btn, Empty, Header, k } from '../../src/components/Kit'
 import { JOB_DOT, JOB_ST, when } from '../../src/components/ListingExtras'
 import { jobMyResponses, type JobResp } from '../../src/social'
 import { colors, font } from '../../src/theme'
+import { RowSkeletons } from '../../src/components/Skeleton'
 
 /** Соискатель: «Мои отклики» со статусами. */
 export default function MyResponses() {
@@ -20,7 +21,7 @@ export default function MyResponses() {
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <Header title={tr('Мои отклики')} />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: insets.bottom + 24 }}>
-        {items === null ? <ActivityIndicator style={{ marginTop: 30 }} color={colors.primary} /> : !items.length ? (
+        {items === null ? <RowSkeletons thumb="square" /> : !items.length ? (
           <Empty text={tr('Вы ещё не откликались на вакансии')}><Btn label={tr('Смотреть вакансии')} onPress={() => router.push('/c/jobs' as never)} /></Empty>
         ) : items.map((r) => (
           <View key={r.id} style={k.card}>

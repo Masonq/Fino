@@ -12,6 +12,7 @@ import { Btn, Empty, Field, Header, k, Tabs } from '../../src/components/Kit'
 import { when } from '../../src/components/ListingExtras'
 import { jobResponses, jobSetStatus, type JobResp } from '../../src/social'
 import { colors, font } from '../../src/theme'
+import { RowSkeletons } from '../../src/components/Skeleton'
 
 type Folder = 'new' | 'selected' | 'invited' | 'rejected'
 const pad = (n: number) => String(n).padStart(2, '0')
@@ -59,7 +60,7 @@ export default function VacancyResponses() {
       <ScrollView contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: insets.bottom + 24 }}>
         <Tabs value={folder} items={tabs} onChange={setFolder} />
         {!!err && <Text style={k.err}>{err}</Text>}
-        {data === null ? <ActivityIndicator style={{ marginTop: 30 }} color={colors.primary} /> : !data.items.length ? <Empty text={tr('Здесь пока никого')} /> : data.items.map((r) => (
+        {data === null ? <RowSkeletons thumb="round" /> : !data.items.length ? <Empty text={tr('Здесь пока никого')} /> : data.items.map((r) => (
           <View key={r.id} style={k.card}>
             <View style={k.row}>
               <View style={s.ava}>{r.avatar ? <Image source={{ uri: mediaUrl(r.avatar) ?? undefined }} style={StyleSheet.absoluteFill} /> : <Text style={s.avaText}>{(r.name || '?')[0]}</Text>}</View>

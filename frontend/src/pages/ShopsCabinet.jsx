@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
+import { RowSkeletons } from '../components/Skeletons'
 
 const money = (v, c) => (v == null ? '' : `${Number(v).toLocaleString('ru-RU')} ${c === 'EUR' ? '€' : c}`)
 
@@ -40,7 +41,7 @@ export default function ShopsCabinet() {
 
 function MyShops({ data, reload }) {
   const { t } = useTranslation()
-  if (!data) return <div className="jr-skel" />
+  if (!data) return <RowSkeletons count={3} thumb="tall" />
   if (!data.items.length) return <div className="empty-state"><p className="empty-hint">{t('shops.none_mine')}</p><Link className="jr-btn primary" to="/shops/new">{t('shops.create_first')}</Link></div>
   return data.items.map((s) => (
     <div key={s.id} className="sh-mine">
@@ -147,7 +148,7 @@ function Orders({ creator, lang }) {
             {o.status === 'taken' && <button type="button" className="jr-btn ghost sm" onClick={() => api.shopOrderCancel(o.id).then(reload)}>{t('shops.drop_order')}</button>}
           </>))}
           <div className="sh-section-title">{t('shops.open_orders')}</div>
-          {open === null ? <div className="jr-skel" /> : !open.length ? <div className="jr-hint">{t('shops.no_open_orders')}</div>
+          {open === null ? <RowSkeletons count={2} /> : !open.length ? <div className="jr-hint">{t('shops.no_open_orders')}</div>
             : open.map((o) => card(o, <button type="button" className="jr-btn primary sm" onClick={() => take(o)}>{t('shops.take')}</button>))}
         </>
       )}
@@ -197,7 +198,7 @@ export function AdminShops() {
   return (
     <div className="page sh-cab">
       <PageHeader title={t('shops.moderation')} />
-      {q === null ? <div className="jr-skel" /> : (
+      {q === null ? <RowSkeletons count={3} thumb="tall" /> : (
         <>
           <div className="sh-section-title">{t('shops.mod_shops', { n: q.shops.length })}</div>
           {q.shops.map((s) => (

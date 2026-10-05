@@ -12,6 +12,7 @@ import Icon from '../src/components/Icon'
 import { Btn, Field, Header, k } from '../src/components/Kit'
 import { money, sfAutobuild, sfDeleteCollection, sfEdit, sfItems, sfMe, sfSaveCollection, sfState, type StorefrontOwn } from '../src/social'
 import { colors, font } from '../src/theme'
+import { RowSkeletons } from '../src/components/Skeleton'
 
 const ERR: Record<string, string> = {
   slug_format: 'Адрес: латиница, цифры и дефис, 3–40 знаков', slug_reserved: 'Этот адрес занят системой', slug_taken: 'Адрес уже занят',
@@ -49,7 +50,7 @@ export default function Vitrina() {
       setErr(tr(ERR[(e as { message?: string }).message ?? ''] ?? 'Не получилось сохранить')); setBusy(false); return false
     }
   }
-  if (!data || !token) return <View style={{ flex: 1, backgroundColor: colors.bg }}><Header title={tr('Моя витрина')} /><ActivityIndicator style={{ marginTop: 30 }} color={colors.primary} /></View>
+  if (!data || !token) return <View style={{ flex: 1, backgroundColor: colors.bg }}><Header title={tr('Моя витрина')} /><View style={{ padding: 12 }}><RowSkeletons count={4} /></View></View>
 
   if (!sf) {
     const n = data.active_count ?? 0

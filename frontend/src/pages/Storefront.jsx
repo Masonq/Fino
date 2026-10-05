@@ -5,6 +5,7 @@ import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import ListingCard from '../components/ListingCard'
 import PageHeader from '../components/PageHeader'
+import { CardSkeletons } from '../components/Skeletons'
 import Sheet from '../components/Sheet'
 import { toast } from 'sonner'
 import VerifiedMark from '../components/VerifiedMark'
@@ -76,7 +77,21 @@ export default function Storefront() {
       </div>
     )
   }
-  if (!sf) return <div className="page"><div className="sf-cover-skel" /><div className="jr-skel" /></div>
+  if (!sf) {
+    // скелет витрины: обложка, аватар, имя, кнопки, сетка карточек — те же места, что у настоящей
+    return (
+      <div className="page sf-page" aria-hidden="true">
+        <div className="sf-cover sk-block" />
+        <div className="sf-head">
+          <div className="sf-ava sk-block" />
+          <div className="sk-block sf-sk-line" style={{ width: '46%', height: 26, marginTop: 10 }} />
+          <div className="sk-block sf-sk-line" style={{ width: '30%', height: 14, marginTop: 8 }} />
+          <div className="sf-actions"><span className="sk-block sf-sk-btn" /><span className="sk-block sf-sk-btn" /></div>
+        </div>
+        <div className="feed-grid sf-grid"><CardSkeletons count={4} /></div>
+      </div>
+    )
+  }
 
   const pausedUntil = sf.status === 'paused' && sf.pause_until ? new Date(sf.pause_until).toLocaleDateString(undefined, { day: 'numeric', month: 'long' }) : null
   return (
@@ -177,7 +192,7 @@ export function StorefrontDiscover() {
       <div className="jr-tabs">
         {['popular', 'new'].map((k) => <button key={k} type="button" className={`jr-tab${sort === k ? ' on' : ''}`} onClick={() => setSort(k)}>{t(`sf.sort_${k}`)}</button>)}
       </div>
-      {items === null ? <div className="jr-skel" /> : items.length === 0 ? (
+      {items === null ? <div className="sf-discover-sk">{[0, 1, 2].map((i) => <div key={i} className="sf-card"><div className="sf-card-previews">{[0, 1, 2].map((k) => <span key={k} className="sk-block" style={{ aspectRatio: '1', borderRadius: 10 }} />)}</div><div className="sk-block sf-sk-line" style={{ width: '50%', height: 18 }} /><div className="sk-block sf-sk-line" style={{ width: '35%', height: 13, marginTop: 6 }} /></div>)}</div> : items.length === 0 ? (
         <div className="empty-state"><p className="empty-hint">{t('sf.none')}</p></div>
       ) : items.map((s) => (
         <Link key={s.slug} className="sf-card" to={`/s/${s.slug}`}>

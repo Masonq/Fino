@@ -9,22 +9,24 @@ import { formatPrice } from '../format'
 import { plural, tr } from '../i18n'
 import { sfDiscover } from '../social'
 import { colors, font } from '../theme'
+import { SectionSkeleton } from './Skeleton'
 
 type Store = { slug: string; name: string; count: number; city?: string | null; previews: string[] }
 
 /** PLONK 2.0: подборки на главной — «Новое сегодня» и «Витрины продавцов», как на сайте. */
 export default function HomeSections({ city }: { city?: string | null }) {
-  const [fresh, setFresh] = useState<(FeedItem & { fresh?: boolean })[]>([])
-  const [stores, setStores] = useState<Store[]>([])
+  const [fresh, setFresh] = useState<(FeedItem & { fresh?: boolean })[] | null>(null)
+  const [stores, setStores] = useState<Store[] | null>(null)
   useEffect(() => {
     let alive = true
-    freshListings(city).then((r) => alive && setFresh(r.items)).catch(() => {})
-    sfDiscover(city).then((r) => alive && setStores(r.items)).catch(() => {})
+    freshListings(city).then((r) => alive && setFresh(r.items)).catch(() => alive && setFresh([]))
+    sfDiscover(city).then((r) => alive && setStores(r.items)).catch(() => alive && setStores([]))
     return () => { alive = false }
   }, [city])
   return (
     <View>
-      {fresh.length > 2 && (
+      {fresh === null && <SectionSkeleton />}
+      {!!fresh && fresh.length > 2 && (
         <View style={s.section}>
           <Text style={s.title}>{tr('Новое сегодня')}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.row}>
@@ -41,7 +43,8 @@ export default function HomeSections({ city }: { city?: string | null }) {
           </ScrollView>
         </View>
       )}
-      {stores.length > 0 && (
+      {stores === null && <SectionSkeleton wide />}
+      {!!stores && stores.length > 0 && (
         <View style={s.section}>
           <View style={s.head}>
             <Text style={s.title}>{tr('Витрины продавцов')}</Text>

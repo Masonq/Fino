@@ -22,6 +22,15 @@ export default function HomeSections({ city }) {
 
   return (
     <>
+      {/* пока грузится — скелет того же размера, что и подборка: лента под ней не прыгает */}
+      {fresh === null && (
+        <section className="hs" aria-hidden="true">
+          <div className="hs-head"><span className="sk-block hs-sk-title" /></div>
+          <div className="hs-row">{[0, 1, 2, 3].map((i) => (
+            <span key={i} className="hs-card"><span className="sk-block hs-photo" /><span className="sk-block hs-sk-price" /><span className="sk-block hs-sk-name" /></span>
+          ))}</div>
+        </section>
+      )}
       {fresh?.length > 2 && (
         <section className="hs">
           <div className="hs-head"><h2 className="hs-title">{t('hs.fresh')}</h2></div>
@@ -37,6 +46,14 @@ export default function HomeSections({ city }) {
               </Link>
             ))}
           </div>
+        </section>
+      )}
+      {stores === null && (
+        <section className="hs" aria-hidden="true">
+          <div className="hs-head"><span className="sk-block hs-sk-title" /></div>
+          <div className="hs-row">{[0, 1].map((i) => (
+            <span key={i} className="hs-store"><span className="sk-block hs-store-grid" /><span className="sk-block hs-sk-price" /><span className="sk-block hs-sk-name" style={{ width: '50%' }} /></span>
+          ))}</div>
         </section>
       )}
       {stores?.length > 0 && (

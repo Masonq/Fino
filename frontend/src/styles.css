@@ -7384,3 +7384,34 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 .avito-banner.collapsed .home-top{ opacity:0; pointer-events:none; }
 .landing-topbar, .search-topbar{ transition:transform .3s var(--ease-out); }
 .landing-topbar.is-hidden, .search-topbar.is-hidden{ transform:translateY(calc(-100% + var(--sat))); }
+
+/* ---------- скелеты в стиле PLONK 2.0 ----------
+   Карточка ленты без рамки: фото 4:5 со скруглением 20, цена (первая), две строки названия, город —
+   те же размеры, что у настоящей карточки, чтобы при подмене сетка не прыгала. */
+.card-skeleton{ background:transparent; border-radius:0; overflow:visible; display:flex; flex-direction:column; }
+.card-skeleton .sk-photo{ aspect-ratio:4/5; border-radius:20px; }
+.card-skeleton .sk-line.price{ order:2; height:20px; width:48%; margin:10px 2px 0; border-radius:6px; }
+.card-skeleton .sk-line.title{ order:3; height:34px; margin:5px 2px 0; border-radius:6px; }
+.card-skeleton .sk-line.attrs{ order:4; height:12px; width:42%; margin:5px 2px 0; }
+.card-skeleton .sk-line.meta{ order:5; height:12px; width:36%; margin:6px 2px 0; }
+/* подборки на главной */
+.hs-sk-title{ display:block; width:44%; height:24px; border-radius:8px; }
+.hs-card .sk-block.hs-photo{ display:block; }
+.hs-sk-price{ display:block; width:60%; height:18px; margin-top:9px; border-radius:6px; }
+.hs-sk-name{ display:block; width:85%; height:14px; margin-top:6px; border-radius:6px; }
+.hs-store .sk-block.hs-store-grid{ display:block; }
+/* превью шопсов */
+.shs-skel{ background:var(--surface-sunken-2); animation:sk-pulse 1.4s ease-in-out infinite; }
+.sf-sk-line{ display:block; margin-left:auto; margin-right:auto; border-radius:8px; }
+.sf-card .sf-sk-line{ margin-left:0; }
+.sf-sk-btn{ display:inline-block; width:120px; height:44px; border-radius:16px; }
+.sf-ava.sk-block{ border-color:var(--bg); }
+.row-sk-list{ display:flex; flex-direction:column; gap:10px; }
+.row-sk{ display:flex; align-items:center; gap:12px; padding:12px; border-radius:18px; background:var(--surface); box-shadow:var(--shadow); }
+.row-sk-list.is-plain .row-sk{ padding:8px 0; background:transparent; box-shadow:none; border-radius:0; }
+.row-sk-thumb{ flex:none; width:56px; height:56px; border-radius:14px; }
+.row-sk-thumb.is-round{ width:44px; height:44px; border-radius:50%; }
+.row-sk-thumb.is-tall{ width:64px; height:96px; border-radius:12px; }
+.row-sk-text{ flex:1; display:flex; flex-direction:column; gap:8px; }
+.row-sk-line{ display:block; height:14px; border-radius:6px; }
+.row-sk-line.is-short{ width:40%; height:12px; }

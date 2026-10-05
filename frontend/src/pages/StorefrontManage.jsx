@@ -5,6 +5,7 @@ import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
 import { toast } from 'sonner'
+import { RowSkeletons } from '../components/Skeletons'
 
 const priceOf = (l) => (l.price == null ? '' : `${Math.round(l.price).toLocaleString('ru-RU')} ${l.currency === 'EUR' ? '€' : l.currency || ''}`)
 const photoOf = (l) => l.photos?.[0] || l.cover_photo || l.photo
@@ -36,7 +37,7 @@ export default function StorefrontManage() {
       .catch((e) => { setErr(t(ERR[e.code] || 'shops.err_save')); return false })
   }
 
-  if (!data) return <div className="page"><div className="jr-skel" /></div>
+  if (!data) return <div className="page"><RowSkeletons count={4} /></div>
 
   if (!sf) {
     return (

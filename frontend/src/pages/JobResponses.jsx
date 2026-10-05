@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import PageHeader from '../components/PageHeader'
+import { RowSkeletons } from '../components/Skeletons'
 
 const FOLDERS = ['new', 'selected', 'invited', 'rejected']
 const when = (iso) => new Date(iso).toLocaleString(undefined, { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
@@ -20,7 +21,7 @@ function Incoming() {
   return (
     <div className="page jr-page">
       <PageHeader title={t('jobresp.responses')} />
-      {items === null ? <div className="jr-skel" /> : items.length === 0 ? (
+      {items === null ? <RowSkeletons count={3} thumb="round" /> : items.length === 0 ? (
         <div className="empty-state"><p className="empty-hint">{t('jobresp.none_incoming')}</p></div>
       ) : items.map(({ vacancy, counts }) => (
         <Link key={vacancy.id} className="jr-vac" to={`/jobs/responses/${vacancy.id}`}>
@@ -67,7 +68,7 @@ function VacancyResponses({ id }) {
           </button>
         ))}
       </div>
-      {data === null ? <div className="jr-skel" /> : data.items.length === 0 ? (
+      {data === null ? <RowSkeletons count={3} thumb="round" /> : data.items.length === 0 ? (
         <div className="empty-state"><p className="empty-hint">{t('jobresp.empty_folder')}</p></div>
       ) : data.items.map((r) => (
         <div key={r.id} className="jr-card">
@@ -119,7 +120,7 @@ export function MyJobResponses() {
   return (
     <div className="page jr-page">
       <PageHeader title={t('jobresp.my')} />
-      {items === null ? <div className="jr-skel" /> : items.length === 0 ? (
+      {items === null ? <RowSkeletons count={3} thumb="round" /> : items.length === 0 ? (
         <div className="empty-state"><p className="empty-hint">{t('jobresp.none_my')}</p>
           <Link className="jr-btn primary" to="/c/jobs">{t('jobresp.find_jobs')}</Link></div>
       ) : items.map((r) => (
