@@ -1676,5 +1676,24 @@
     "more_from_one": "{{count}} more item from this seller",
     "more_from_other": "{{count}} more items from this seller",
     "items_title": "Items · {{n}}"
+  },
+  "shx": {
+    "title": "What are shops",
+    "lead": "Short videos with your listings. People watch them in the Shops tab and on the home page — like TikTok, but every item can be bought right away",
+    "step1_t": "Film the item in use",
+    "step1_d": "A vertical video up to a minute: unfold the sofa, put on the jacket, turn on the console",
+    "step2_t": "Attach your listings",
+    "step2_d": "Up to five — each pops up as a card with the price at the right second",
+    "step3_t": "Buyers message you right from the video",
+    "step3_d": "The “Message” button on the card opens a chat with you — no need to find the listing",
+    "why": "Why it helps sellers",
+    "why1": "Video sells better than photos: the item is seen from all sides and in use",
+    "why2": "A shop is shown to everyone in the Shops tab for 30 days",
+    "why3": "You see how many watched, finished, liked and messaged you",
+    "store_t": "And a storefront is your shop",
+    "store_d": "All your listings on one page with your own link: collections, followers, “Share”. Your shops appear there in the “Videos” tab",
+    "creator_t": "Run a blog?",
+    "creator_d": "Become a creator: attach any PLONK listings to your videos and take sellers’ orders",
+    "creator_go": "Become a creator"
   }
 }

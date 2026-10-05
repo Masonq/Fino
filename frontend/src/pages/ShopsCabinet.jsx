@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
@@ -12,7 +12,8 @@ export default function ShopsCabinet() {
   const { t, i18n } = useTranslation()
   const { user, loading } = useAuth()
   const navigate = useNavigate()
-  const [tab, setTab] = useState('shops')
+  const [params] = useSearchParams()
+  const [tab, setTab] = useState(['orders', 'creator'].includes(params.get('tab')) ? params.get('tab') : 'shops')
   const [data, setData] = useState(null)
 
   useEffect(() => { if (!loading && !user?.id) navigate('/login?returnTo=/shops/mine') }, [loading, user?.id, navigate])

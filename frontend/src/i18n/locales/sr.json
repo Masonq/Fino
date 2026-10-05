@@ -1723,5 +1723,24 @@
     "more_from_few": "Još {{count}} stvari od prodavca",
     "more_from_other": "Još {{count}} stvari od prodavca",
     "items_title": "Stvari · {{n}}"
+  },
+  "shx": {
+    "title": "Šta su šopsovi",
+    "lead": "Kratki video snimci sa vašim oglasima. Gledaju se u kartici „Šopsovi” i na početnoj — kao TikTok, ali svaku stvar možete odmah kupiti",
+    "step1_t": "Snimite stvar u upotrebi",
+    "step1_d": "Vertikalni video do minuta: razvucite kauč, obucite jaknu, uključite konzolu",
+    "step2_t": "Dodajte oglase",
+    "step2_d": "Do pet — svaki se pojavljuje kao kartica sa cenom u pravoj sekundi",
+    "step3_t": "Kupci vam pišu direktno iz videa",
+    "step3_d": "Dugme „Piši” na kartici otvara čet sa vama — bez traženja oglasa",
+    "why": "Zašto to pomaže prodavcima",
+    "why1": "Video prodaje bolje od slika: stvar se vidi sa svih strana i u upotrebi",
+    "why2": "Šops se prikazuje svima u kartici „Šopsovi” 30 dana",
+    "why3": "Vidite koliko je ljudi pogledalo, odgledalo, lajkovalo i pisalo vam",
+    "store_t": "A izlog je vaša prodavnica",
+    "store_d": "Svi vaši oglasi na jednoj stranici sa vašim linkom: kolekcije, pratioci, „Podeli”. Vaši šopsovi su tamo u kartici „Video”",
+    "creator_t": "Vodite blog?",
+    "creator_d": "Postanite autor: dodajte bilo koje oglase PLONK-a u video i preuzimajte porudžbine prodavaca",
+    "creator_go": "Postani autor"
   }
 }

@@ -7007,7 +7007,7 @@ body.sh-open .bottomnav .nav-item.active { color: #fff; }
 
 /* ===== Шопсы: создание, кабинет, модерация ===== */
 .sh-editor, .sh-cab { padding-bottom: 40px; }
-.sh-drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-height: 260px; padding: 24px; border: 2px dashed var(--line); border-radius: 18px; background: var(--card); color: var(--ink-soft); text-align: center; cursor: pointer; }
+.sh-drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-height: 260px; padding: 24px; border: 2px dashed #C9D3CD; border-radius: 18px; background: var(--card); color: var(--ink-soft); text-align: center; cursor: pointer; }
 .sh-drop-title { font-weight: 800; font-size: 17px; color: var(--ink); }
 .sh-bar { width: 80%; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
 .sh-bar span { display: block; height: 100%; background: var(--primary); transition: width .2s; }
@@ -7141,3 +7141,20 @@ body.sh-open .bottomnav .nav-item.active { color: #fff; }
 .sh-cm-acts button { border: 0; background: none; padding: 0; color: var(--muted); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
 .sh-cm-input { display: flex; align-items: center; gap: 8px; margin: 0 -16px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); background: var(--card); }
 .sh-cm-input input { flex: 1; min-width: 0; height: 40px; border: 1px solid var(--line); border-radius: 20px; padding: 0 14px; font: inherit; font-size: 16px; background: var(--bg); color: var(--ink); }
+
+/* Объяснение шопсов и витрины на «Новом шопсе» (ShopsExplainer) */
+.shx { margin-top: 22px; }
+.shx-h2 { margin: 0 0 6px; font-size: 19px; font-weight: 800; color: var(--ink); }
+.shx-gap { margin-top: 18px; }
+.shx-lead { margin: 0 0 12px; color: var(--ink-soft); line-height: 1.45; }
+.shx-step { display: flex; align-items: center; gap: 14px; padding: 10px 0; }
+.shx-art { width: 84px; height: 84px; flex: none; border-radius: 18px; background: var(--card); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.shx-text { flex: 1; min-width: 0; }
+.shx-n { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 6px; margin-bottom: 4px; border-radius: 11px; background: var(--primary-soft); color: var(--primary-deep); font-size: 12px; font-weight: 800; }
+.shx-title { font-size: 16px; font-weight: 700; color: var(--ink); }
+.shx-desc { margin-top: 3px; font-size: 14px; line-height: 1.4; color: var(--ink-soft); }
+.shx-bullet { display: flex; align-items: flex-start; gap: 10px; padding: 5px 0; line-height: 1.4; color: var(--ink); }
+.shx-bullet svg { flex: none; margin-top: 1px; }
+.shx-card { display: flex; align-items: center; gap: 14px; padding: 12px; margin-top: 10px; border-radius: 18px; background: var(--card); border: 1px solid var(--line); text-decoration: none; color: inherit; }
+.shx-card.shx-gap { margin-top: 18px; }
+.shx-link { display: inline-block; margin-top: 6px; font-size: 14px; font-weight: 700; color: var(--primary-deep); }

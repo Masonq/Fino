@@ -1,5 +1,5 @@
 import { Image } from 'expo-image'
-import { router } from 'expo-router'
+import { router, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -22,7 +22,8 @@ const OST: Record<string, string> = { open: 'ищет автора', taken: 'в 
 export default function ShopsCabinet() {
   const { token } = useAuth()
   const insets = useSafeAreaInsets()
-  const [tab, setTab] = useState<'shops' | 'orders' | 'creator'>('shops')
+  const params = useLocalSearchParams<{ tab?: string }>()
+  const [tab, setTab] = useState<'shops' | 'orders' | 'creator'>(params.tab === 'creator' || params.tab === 'orders' ? params.tab : 'shops')
   const [data, setData] = useState<{ items: Shop[]; creator: { status: string | null } } | null>(null)
   const reload = useCallback(() => { if (token) shopsMine(token).then(setData).catch(() => setData({ items: [], creator: { status: null } })) }, [token])
   useEffect(() => { if (!token) router.replace('/login'); else reload() }, [token, reload])

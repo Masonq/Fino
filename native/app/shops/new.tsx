@@ -12,6 +12,7 @@ import { mediaUrl } from '../../src/config'
 import { tr } from '../../src/i18n'
 import Icon from '../../src/components/Icon'
 import { Btn, Field, Header, k } from '../../src/components/Kit'
+import ShopsExplainer from '../../src/components/ShopsExplainer'
 import { money, type Shop, shopGet, shopOrders, shopsMine, shopSubmit, shopUpdate, shopUpload } from '../../src/social'
 import { colors, font } from '../../src/theme'
 
@@ -154,6 +155,8 @@ export default function ShopEditor() {
             </>
           )}
           {!shop && !!err && <Text style={k.err}>{err}</Text>}
+          {/* пока видео не выбрано — что это такое и зачем, с картинками */}
+          {!shop && progress == null && <ShopsExplainer />}
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
@@ -161,7 +164,7 @@ export default function ShopEditor() {
 }
 
 const s = StyleSheet.create({
-  drop: { minHeight: 260, borderRadius: 18, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.border, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', gap: 10, padding: 24 },
+  drop: { minHeight: 260, borderRadius: 18, borderWidth: 2, borderStyle: 'dashed', borderColor: '#C9D3CD', backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', gap: 10, padding: 24 },
   dropTitle: { fontFamily: font[800], fontSize: 17, color: colors.ink },
   bar: { width: '80%', height: 6, borderRadius: 3, backgroundColor: colors.sunken, overflow: 'hidden' },
   barFill: { height: 6, backgroundColor: colors.primary },

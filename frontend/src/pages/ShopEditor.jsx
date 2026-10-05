@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
+import ShopsExplainer from '../components/ShopsExplainer'
 
 const MAX_ITEMS = 5
 const priceOf = (l) => (l.price == null ? '' : `${Math.round(l.price).toLocaleString('ru-RU')} ${l.currency === 'EUR' ? '€' : l.currency || ''}`)
@@ -183,6 +184,8 @@ export default function ShopEditor() {
         </>
       )}
       {!shop && err && <div className="jr-err">{err}</div>}
+      {/* пока видео не выбрано — что это такое и зачем, с картинками */}
+      {!shop && progress == null && <ShopsExplainer />}
     </div>
   )
 }
