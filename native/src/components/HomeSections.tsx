@@ -3,9 +3,7 @@ import { router } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 
-import { type FeedItem, freshListings } from '../api'
 import { mediaUrl } from '../config'
-import { formatPrice } from '../format'
 import { plural, tr } from '../i18n'
 import { sfDiscover } from '../social'
 import { colors, font } from '../theme'
@@ -13,36 +11,16 @@ import { SectionSkeleton } from './Skeleton'
 
 type Store = { slug: string; name: string; count: number; city?: string | null; previews: string[] }
 
-/** PLONK 2.0: подборки на главной — «Новое сегодня» и «Витрины продавцов», как на сайте. */
+/** PLONK 2.0: подборка «Витрины продавцов» на главной, как на сайте («Новое» — вкладка ленты). */
 export default function HomeSections({ city }: { city?: string | null }) {
-  const [fresh, setFresh] = useState<(FeedItem & { fresh?: boolean })[] | null>(null)
   const [stores, setStores] = useState<Store[] | null>(null)
   useEffect(() => {
     let alive = true
-    freshListings(city).then((r) => alive && setFresh(r.items)).catch(() => alive && setFresh([]))
     sfDiscover(city).then((r) => alive && setStores(r.items)).catch(() => alive && setStores([]))
     return () => { alive = false }
   }, [city])
   return (
     <View>
-      {fresh === null && <SectionSkeleton />}
-      {!!fresh && fresh.length > 2 && (
-        <View style={s.section}>
-          <Text style={s.title}>{tr('Новое сегодня')}</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.row}>
-            {fresh.slice(0, 12).map((l) => (
-              <Pressable key={l.id} style={s.card} onPress={() => router.push(`/listing/${l.id}` as never)}>
-                <View style={s.photo}>
-                  {!!l.cover_photo && <Image source={{ uri: mediaUrl(l.cover_photo) ?? undefined }} style={StyleSheet.absoluteFill} contentFit="cover" />}
-                  {l.fresh && <View style={s.new}><Text style={s.newText}>{tr('Новое')}</Text></View>}
-                </View>
-                <Text style={s.price} numberOfLines={1}>{formatPrice(l.price, l.currency, l.is_free)}</Text>
-                <Text style={s.name} numberOfLines={2}>{l.title}</Text>
-              </Pressable>
-            ))}
-          </ScrollView>
-        </View>
-      )}
       {stores === null && <SectionSkeleton wide />}
       {!!stores && stores.length > 0 && (
         <View style={s.section}>
