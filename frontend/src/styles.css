@@ -7450,3 +7450,20 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 .ls-fix{ background:var(--warn-bg); }
 .ls-fix .ls-ico{ color:var(--ink-soft); }
 .ls-path{ color:var(--muted); }
+
+/* ---------- главная: заголовки блоков, геобаннер, «наверх» ---------- */
+.home-shops{ margin-top:16px; }
+.home-shops .hs-head{ margin-bottom:10px; }
+.feed-title{ margin-top:20px; margin-bottom:10px; }
+.geo-ask{ display:flex; align-items:center; gap:10px; margin:14px 12px 0; padding:10px 10px 10px 12px; border-radius:18px; background:var(--surface); border:0; box-shadow:var(--shadow); flex-wrap:nowrap; }
+.geo-ask-ico{ flex:none; width:36px; height:36px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:var(--primary-soft); color:var(--primary-deep); }
+.geo-ask-text{ min-width:0; font-size:14px; font-weight:600; }
+.geo-ask-yes{ border-radius:12px; background:var(--inverse); color:var(--on-inverse); }
+.hs-old{ margin-left:6px; font-size:12.5px; font-weight:600; color:var(--muted); }
+.to-top{ position:fixed; right:16px; bottom:calc(var(--nav-h) + 14px); z-index:30; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  background:rgba(255,255,255,.86); backdrop-filter:blur(16px) saturate(1.5); -webkit-backdrop-filter:blur(16px) saturate(1.5); color:var(--ink); box-shadow:0 8px 24px rgba(15,21,18,.16);
+  opacity:0; transform:translateY(12px) scale(.9); pointer-events:none; transition:opacity .25s ease, transform .3s var(--ease-out); }
+.to-top.on{ opacity:1; transform:none; pointer-events:auto; }
+.geo-ask-text{ font-size:13.5px; line-height:1.3; }
+.geo-ask-yes{ padding:9px 13px; font-size:13.5px; }
+.geo-ask-no{ padding:9px 6px; font-size:13.5px; }

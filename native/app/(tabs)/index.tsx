@@ -383,7 +383,16 @@ export default function Feed() {
           <View style={styles.listHead}>
             {!q && <CategoryTiles value={category} onPick={setCategory} />}
             {/* шопсы — под разделами, как на сайте */}
-            {!q && <View style={{ marginTop: 12 }}><ShopsRow /></View>}
+            {!q && (
+              <View style={{ marginTop: 16 }}>
+                {/* у блоков главной — заголовки, как на сайте */}
+                <View style={styles.secHead}>
+                  <Text style={styles.secTitle}>{tr('Шопсы')}</Text>
+                  <Pressable onPress={() => router.push('/shops' as never)} hitSlop={8}><Text style={styles.secAll}>{tr('Все')}</Text></Pressable>
+                </View>
+                <ShopsRow />
+              </View>
+            )}
             {/* PLONK 2.0: подборки между плитками и лентой, как на сайте */}
             {!q && !category && cityReady && <HomeSections city={city} />}
             {!q && cityReady && !city && geoAsk && (
@@ -520,6 +529,9 @@ const styles = StyleSheet.create({
   list: { paddingHorizontal: 0, paddingBottom: 24, gap: space.gap },
   row: { gap: space.gap, paddingHorizontal: space.page },
   skelGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.gap, paddingHorizontal: space.page },
+  secHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', paddingHorizontal: 12, marginBottom: 10 },
+  secTitle: { fontFamily: font[800], fontSize: 21, letterSpacing: -0.5, color: colors.ink },
+  secAll: { fontFamily: font[700], fontSize: 14, color: colors.primaryDeep },
   notify: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 48, paddingHorizontal: 20, marginTop: 16, borderRadius: 16, backgroundColor: colors.inverse },
   notifyDone: { backgroundColor: colors.primarySoft },
   notifyText: { fontFamily: font[700], fontSize: 15, color: colors.onInverse },

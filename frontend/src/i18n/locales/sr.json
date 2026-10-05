@@ -1783,6 +1783,11 @@
   "hs": {
     "fresh": "Novo danas",
     "stores": "Izlozi prodavaca",
-    "all": "Svi"
+    "all": "Svi",
+    "seen": "Pogledali ste",
+    "drops": "Pojeftinilo u omiljenim",
+    "shops": "Šopsovi",
+    "feed": "Svi oglasi",
+    "top": "Na vrh"
   }
 }

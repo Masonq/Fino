@@ -1735,6 +1735,11 @@
   "hs": {
     "fresh": "New today",
     "stores": "Seller storefronts",
-    "all": "All"
+    "all": "All",
+    "seen": "Recently viewed",
+    "drops": "Price dropped in saved",
+    "shops": "Shops",
+    "feed": "All listings",
+    "top": "Back to top"
   }
 }

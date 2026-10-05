@@ -767,6 +767,9 @@ export default function Home() {
           города. */}
       {askGeo && (
         <div className="geo-ask">
+          <span className="geo-ask-ico" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></svg>
+          </span>
           <span className="geo-ask-text">{t('feed.geo_ask')}</span>
           <button className="geo-ask-yes" onClick={detectCity} disabled={geoBusy}>
             {geoBusy ? t('actions.loading') : t('feed.geo_yes')}
@@ -777,9 +780,14 @@ export default function Home() {
 
       {/* PLONK 2.0: подборки между плитками и лентой */}
       {/* шопсы — под разделами: сначала куда идти, потом что посмотреть */}
-      <div className="home-shops"><ShopsStrip /></div>
+      {/* у каждого блока главной — заголовок: видно, что это и куда ведёт (раньше у шопсов и ленты его не было) */}
+      <section className="hs home-shops">
+        <div className="hs-head"><h2 className="hs-title">{t('hs.shops')}</h2><Link to="/shops" className="hs-all">{t('hs.all')}</Link></div>
+        <ShopsStrip />
+      </section>
       <HomeSections city={city} />
 
+      <div className="hs-head feed-title"><h2 className="hs-title">{t('hs.feed')}</h2></div>
       <div className="feed-head-row">
         {/* Три взгляда на одну ленту.
             Названия короткие нарочно: с длинными «Рекомендации» третья
@@ -860,7 +868,26 @@ export default function Home() {
     </div>
 
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <ToTop />
       <FilterPanel open={filtersOpen} onClose={() => setFiltersOpen(false)} city={city} onCity={chooseCity} />
     </>
+  )
+}
+
+/** «Наверх» — круглая кнопка над меню, когда пролистали далеко вниз по ленте. */
+function ToTop() {
+  const { t } = useTranslation()
+  const [on, setOn] = useState(false)
+  useEffect(() => {
+    let raf = 0
+    const f = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => setOn(window.scrollY > 1800)) }
+    window.addEventListener('scroll', f, { passive: true })
+    return () => { window.removeEventListener('scroll', f); cancelAnimationFrame(raf) }
+  }, [])
+  return (
+    <button type="button" className={`to-top${on ? ' on' : ''}`} aria-label={t('hs.top')} tabIndex={on ? 0 : -1}
+      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
+    </button>
   )
 }
