@@ -1,0 +1,10 @@
+[Unit]
+Description=Каждые 10 минут — векторы для новых объявлений (поиск по смыслу)
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=10min
+Persistent=false
+
+[Install]
+WantedBy=timers.target

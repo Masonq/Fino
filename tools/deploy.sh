@@ -196,6 +196,12 @@ systemctl daemon-reload
 # нейросети. Поодиночке они дрались за один дневной запас: перевод,
 # работавший каждый час, выбирал его к утру, и уборка приходила к
 # пустому.
+# Служба поиска по смыслу — постоянная (не по таймеру): одна модель в памяти на весь сервер. После неё —
+# заполнение векторов в фоне (первый раз модель скачивается ~220 МБ, это пара минут; деплой не ждёт).
+systemctl enable plonk-embed 2>/dev/null || true
+systemctl restart plonk-embed 2>/dev/null || true
+systemctl start --no-block plonk-embed-index.service 2>/dev/null || true
+
 SKIP_TIMERS="plonk-digest.timer plonk-tg-import.timer plonk-cleanup.timer plonk-translate.timer"
 
 for timer in deploy/plonk-*.timer; do

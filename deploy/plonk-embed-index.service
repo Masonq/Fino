@@ -1,0 +1,9 @@
+[Unit]
+Description=PLONK — векторы для новых и изменённых объявлений (поиск по смыслу)
+After=network.target postgresql.service plonk-embed.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/fino/backend
+ExecStart=/opt/fino/backend/venv/bin/python3 -m app.semantic_index
+User=root

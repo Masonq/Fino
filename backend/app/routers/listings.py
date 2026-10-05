@@ -397,6 +397,7 @@ def search_listings(
     # текстовый поиск по заголовку и описанию на любом из языков
     title_hit = None
     early_desc_hit = None
+    sem_rank = None
     # Запрос без фильтра по словам — понадобится, если поиск ничего не
     # найдёт и мы будем пробовать с опечатками.
     before_words = None
@@ -424,7 +425,20 @@ def search_listings(
             # часто не дописывают.
             matches.append(haystack.op("@@")(func.plainto_tsquery("simple", spelling)))
             matches.append(ListingTranslation.title.ilike(f"{spelling}%"))
-        q = q.filter(Listing.translations.any(or_(*matches)))
+        word_filter = Listing.translations.any(or_(*matches))
+
+        # Поиск по смыслу (служба plonk-embed): «софа» находит «диван», «sofa» и «kauč» — тоже. Добавляем
+        # к совпадениям по словам, когда их мало (< 40): точные совпадения остаются первыми (title_hit ниже),
+        # близкие по смыслу идут следом по степени близости. Служба недоступна — поиск как раньше, по словам.
+        sem_ids = []
+        if q.filter(word_filter).limit(40).count() < 40:
+            from app.core.semantic import similar_ids
+            sem_ids = similar_ids(db, words)
+        if sem_ids:
+            q = q.filter(or_(word_filter, Listing.id.in_(sem_ids)))
+            sem_rank = case({lid: i for i, lid in enumerate(sem_ids)}, value=Listing.id, else_=len(sem_ids))
+        else:
+            q = q.filter(word_filter)
 
         # Название важнее описания: «стол» в заголовке — это стол, а в
         # описании дивана — соседняя вещь, о которой упомянули вскользь.
@@ -1039,6 +1053,9 @@ def search_listings(
         # в описании»: рано в тексте — ещё в тему, глубоко в длинном
         # перечне чужих вещей одного поста — уже нет.
         ordering = [title_hit, early_desc_hit, Listing.is_complete.desc()]
+        if sem_rank is not None:
+            # близкие по смыслу (без слова из запроса) — по степени близости, а не по свежести
+            ordering = [title_hit, early_desc_hit, sem_rank, Listing.is_complete.desc()]
     ordering.append(order)
     # Последний ключ — id, и он не про смысл выдачи, а про её
     # устойчивость. При равных значениях всех ключей выше (а так бывает

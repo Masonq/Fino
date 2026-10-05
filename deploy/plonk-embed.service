@@ -1,0 +1,18 @@
+[Unit]
+Description=PLONK — служба смысловых векторов для поиска по смыслу (одна модель на весь сервер)
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/fino/backend
+ExecStart=/opt/fino/backend/venv/bin/uvicorn app.embed_service:app --host 127.0.0.1 --port 8011 --workers 1
+Restart=always
+RestartSec=5
+# модель ~0,5 ГБ в памяти; потолок — чтобы при сбое служба не съела память сайта
+MemoryMax=1500M
+Environment=OMP_NUM_THREADS=2
+Environment=HF_HOME=/opt/fino/hf-cache
+Environment=FASTEMBED_CACHE_PATH=/opt/fino/hf-cache/fastembed
+User=root
+
+[Install]
+WantedBy=multi-user.target
