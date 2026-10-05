@@ -24,12 +24,12 @@ export const usePop = (delay = 0, damping = 14) => {
 }
 
 /** Подпись сверху — крупно, как в TikTok: слово за словом. */
-export const Caption: React.FC<{ text: string; sub?: string; dark?: boolean }> = ({ text, sub, dark }) => {
+export const Caption: React.FC<{ text: string; sub?: string; dark?: boolean; top?: number }> = ({ text, sub, dark, top = 120 }) => {
   const f = useCurrentFrame()
   // «|» — перенос строки: чтобы не оставлять одно слово на второй строке
   const words = text.split(' ')
   return (
-    <div style={{ position: 'absolute', top: 120, left: 70, right: 70, textAlign: 'center', fontFamily: FONT }}>
+    <div style={{ position: 'absolute', top, left: 70, right: 70, textAlign: 'center', fontFamily: FONT }}>
       <div style={{ fontSize: 66, fontWeight: 800, lineHeight: 1.12, color: dark ? '#fff' : C.ink, letterSpacing: -1, textShadow: dark ? '0 2px 14px rgba(0,0,0,.35)' : 'none' }}>
         {words.map((w, i) => {
           const p = interpolate(f, [i * 3, i * 3 + 8], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })

@@ -43,10 +43,10 @@ const ItemShot: React.FC<{ i: number }> = ({ i }) => {
     <AbsoluteFill style={{ fontFamily: FONT }}>
       <KenBurns src={real(it.photo)} land={it.land} dir={i % 2 ? -1 : 1} />
       <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: '28%', background: 'linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,0))' }} />
-      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '45%', background: 'linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.25) 40%,rgba(0,0,0,.72))' }} />
-      <div style={{ position: 'absolute', left: 70, bottom: 360, transform: `scale(${tag}) rotate(${-4 + i % 2 * 7}deg)`, transformOrigin: 'left bottom', padding: '18px 34px', borderRadius: 26, background: '#fff', color: C.ink, fontSize: 76, fontWeight: 800, letterSpacing: -1, boxShadow: '0 16px 40px rgba(0,0,0,.3)' }}>{it.price}</div>
-      <div style={{ position: 'absolute', left: 70, right: 70, bottom: 230, color: '#fff', fontSize: 58, fontWeight: 800, lineHeight: 1.1, opacity: txt, transform: `translateY(${(1 - txt) * 30}px)` }}>{it.title}</div>
-      <div style={{ position: 'absolute', left: 70, bottom: 160, display: 'flex', alignItems: 'center', gap: 10, color: 'rgba(255,255,255,.9)', fontSize: 36, fontWeight: 600, opacity: txt }}>
+      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '55%', background: 'linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.25) 40%,rgba(0,0,0,.72))' }} />
+      <div style={{ position: 'absolute', left: 70, bottom: 590, transform: `scale(${tag}) rotate(${-4 + i % 2 * 7}deg)`, transformOrigin: 'left bottom', padding: '18px 34px', borderRadius: 26, background: '#fff', color: C.ink, fontSize: 76, fontWeight: 800, letterSpacing: -1, boxShadow: '0 16px 40px rgba(0,0,0,.3)' }}>{it.price}</div>
+      <div style={{ position: 'absolute', left: 70, right: 200, bottom: 470, color: '#fff', fontSize: 58, fontWeight: 800, lineHeight: 1.1, opacity: txt, transform: `translateY(${(1 - txt) * 30}px)` }}>{it.title}</div>
+      <div style={{ position: 'absolute', left: 70, bottom: 405, display: 'flex', alignItems: 'center', gap: 10, color: 'rgba(255,255,255,.9)', fontSize: 36, fontWeight: 600, opacity: txt }}>
         <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2"><path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" /></svg>{it.city}
       </div>
     </AbsoluteFill>
@@ -56,18 +56,18 @@ const ItemShot: React.FC<{ i: number }> = ({ i }) => {
 // ---------- 1. Зацепка: зелёный кадр, вещи вылетают карточками ----------
 const Hook: React.FC = () => {
   const f = useCurrentFrame()
-  const cards = [['8d82e428-0', -12, 50, 880, '5 000 RSD'], ['353db02c-0', 10, 610, 960, '650 €'], ['f5d3c313-1-crop', -4, 310, 1290, '15 000 RSD']] as const
-  const l1 = spring({ frame: f, fps: 30, config: { damping: 11 } })
-  const l2 = spring({ frame: f - 16, fps: 30, config: { damping: 11 } })
+  const cards = [['8d82e428-0', -12, 60, 760, '5 000 RSD'], ['353db02c-0', 10, 600, 820, '650 €'], ['f5d3c313-1-crop', -4, 330, 1010, '15 000 RSD']] as const
+  const l1 = 0.8 + 0.2 * spring({ frame: f, fps: 30, config: { damping: 11 } })
+  const l2 = spring({ frame: f - 8, fps: 30, config: { damping: 11 } })
   return (
     <AbsoluteFill style={{ background: C.g, fontFamily: FONT, overflow: 'hidden' }}>
       <div style={{ position: 'absolute', width: 1200, height: 1200, borderRadius: '50%', left: -500, top: -520, background: 'rgba(255,255,255,.08)' }} />
-      <div style={{ position: 'absolute', top: 210, left: 60, right: 60, textAlign: 'center', color: '#fff' }}>
+      <div style={{ position: 'absolute', top: 250, left: 60, right: 60, textAlign: 'center', color: '#fff' }}>
         <div style={{ fontSize: 112, fontWeight: 800, letterSpacing: -3, lineHeight: 1, transform: `scale(${l1})` }}>Продаёшь<br />вещь?</div>
         <div style={{ marginTop: 34, display: 'inline-block', padding: '14px 30px', borderRadius: 24, background: C.o, fontSize: 54, fontWeight: 800, transform: `scale(${l2}) rotate(-2deg)` }}>Покажи её на видео</div>
       </div>
       {cards.map(([p, r, x, y, price], i) => {
-        const s = spring({ frame: f - 8 - i * 5, fps: 30, config: { damping: 12 } })
+        const s = spring({ frame: f - 4 - i * 4, fps: 30, config: { damping: 12 } })
         return (
           <div key={p} style={{ position: 'absolute', left: x, top: y + (1 - s) * 900 + Math.sin((f + i * 15) / 14) * 8, width: 420, height: 540, borderRadius: 34, overflow: 'hidden', transform: `rotate(${r}deg)`, boxShadow: '0 30px 60px rgba(0,0,0,.3)', border: '8px solid #fff' }}>
             <Img src={real(p)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -92,7 +92,7 @@ const Montage: React.FC = () => {
           </React.Fragment>
         ))}
       </TransitionSeries>
-      <Caption dark text="Продают рядом с тобой" sub="Белград · Нови-Сад · вся Сербия" />
+      <Caption dark top={230} text="Продают рядом с тобой" sub="Белград · Нови-Сад · вся Сербия" />
     </AbsoluteFill>
   )
 }
@@ -295,11 +295,11 @@ export const PromoReal: React.FC = () => {
             <div style={{ position: 'absolute', width: 900, height: 900, borderRadius: '50%', left: -380, top: -260, background: dark ? 'rgba(14,159,110,.25)' : C.gs, filter: 'blur(40px)' }} />
             <div style={{ position: 'absolute', width: 700, height: 700, borderRadius: '50%', right: -300, bottom: -200, background: dark ? 'rgba(255,106,61,.15)' : '#FFEDE6', filter: 'blur(50px)' }} />
           </AbsoluteFill>
-          <Sequence from={P0} durationInFrames={212}><Caption dark text="Шопсы — | видео вместо фото" sub="двойной тап — лайк, карточка — сразу к продавцу" /></Sequence>
-          <Sequence from={P0 + 212} durationInFrames={104}><Caption text="Пишешь продавцу | прямо из видео" /></Sequence>
-          <Sequence from={P0 + 316} durationInFrames={120}><Caption text="Своя витрина — | все вещи по одной ссылке" /></Sequence>
+          <Sequence from={P0} durationInFrames={212}><Caption dark top={230} text="Шопсы — | видео вместо фото" /></Sequence>
+          <Sequence from={P0 + 212} durationInFrames={104}><Caption top={230} text="Пишешь продавцу | прямо из видео" /></Sequence>
+          <Sequence from={P0 + 316} durationInFrames={120}><Caption top={230} text="Своя витрина — | все вещи по одной ссылке" /></Sequence>
           <div style={{ position: 'absolute', inset: 0, transform: `translateY(${(1 - phoneIn) * 1000 + phoneOut * 1300}px)` }}>
-            <Phone dark={dark}>
+            <Phone dark={dark} y={-20} scale={1.42}>
               <Sequence from={P0} durationInFrames={226}><Shops /></Sequence>
               <Sequence from={P0 + 212} durationInFrames={118}><Chat /></Sequence>
               <Sequence from={P0 + 316} durationInFrames={120}><Store /></Sequence>
