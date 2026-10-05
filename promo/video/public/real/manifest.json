@@ -1,0 +1,82 @@
+[
+ {
+  "id": "482209dd-58f4-47c3-b2f7-514ca1638b9e",
+  "root": "services",
+  "category": "Уборка и помощь по дому",
+  "title": "Повар в семью / Рацион по каллориям на каждый день",
+  "price": 6000.0,
+  "currency": "RSD",
+  "city": "beograd",
+  "seller": "Ксения",
+  "views": 47,
+  "photos": [
+   {
+    "file": "real/482209dd-0.jpg",
+    "w": 1099,
+    "h": 1600
+   },
+   {
+    "file": "real/482209dd-2.jpg",
+    "w": 1600,
+    "h": 971
+   }
+  ]
+ },
+ {
+  "id": "fbf01dec-0ed1-4578-a495-7d92dd50750c",
+  "root": "hobby-sport",
+  "category": "Велосипеды и самокаты",
+  "title": "Электрический велосипед MS Energy C300 Carbon Gate",
+  "price": 1300.0,
+  "currency": "EUR",
+  "city": "beograd",
+  "seller": "uzatoorg",
+  "views": 9,
+  "photos": [
+   {
+    "file": "real/fbf01dec-0.jpg",
+    "w": 1600,
+    "h": 1200
+   },
+   {
+    "file": "real/fbf01dec-1.jpg",
+    "w": 1600,
+    "h": 1200
+   },
+   {
+    "file": "real/fbf01dec-2.jpg",
+    "w": 1200,
+    "h": 1600
+   }
+  ]
+ },
+ {
+  "id": "b8b6c7bd-3d55-4b99-ab80-ee5ef6223cde",
+  "root": "business",
+  "category": "Готовый бизнес",
+  "title": "Бизнес-кафе в Нови-Саде с 20-летней историей и стабильным потоком клиентов",
+  "price": 59800.0,
+  "currency": "EUR",
+  "city": "novi-sad",
+  "seller": "Kudini",
+  "views": 8,
+  "photos": [
+   {
+    "file": "real/b8b6c7bd-0.jpg",
+    "w": 1451,
+    "h": 999
+   },
+   {
+    "file": "real/b8b6c7bd-1.jpg",
+    "w": 1536,
+    "h": 1024
+   },
+   {
+    "file": "real/b8b6c7bd-2.jpg",
+    "w": 1536,
+    "h": 1024
+   }
+  ],
+  "video": "real/b8b6c7bd.mp4"
+ }
+]
