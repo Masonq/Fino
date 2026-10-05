@@ -98,15 +98,15 @@ function query(params) {
 
 export const api = {
   // Витрина продавца (backend/app/routers/storefronts.py)
-  sfMe: (lang) => request(`/storefronts/me?lang=${lang || 'ru'}`),
-  sfAutobuild: (body, lang) => request(`/storefronts/me/autobuild?lang=${lang || 'ru'}`, { method: 'POST', body }),
-  sfEdit: (body, lang) => request(`/storefronts/me?lang=${lang || 'ru'}`, { method: 'PATCH', body }),
-  sfItems: (ids, lang) => request(`/storefronts/me/items?lang=${lang || 'ru'}`, { method: 'PUT', body: { listing_ids: ids } }),
-  sfAddCollection: (body, lang) => request(`/storefronts/me/collections?lang=${lang || 'ru'}`, { method: 'POST', body }),
-  sfEditCollection: (id, body, lang) => request(`/storefronts/me/collections/${id}?lang=${lang || 'ru'}`, { method: 'PUT', body }),
-  sfDeleteCollection: (id, lang) => request(`/storefronts/me/collections/${id}?lang=${lang || 'ru'}`, { method: 'DELETE' }),
-  sfState: (body, lang) => request(`/storefronts/me/state?lang=${lang || 'ru'}`, { method: 'POST', body }),
-  sfPublic: (slug, lang) => request(`/storefronts/${encodeURIComponent(slug)}?lang=${lang || 'ru'}`),
+  sfMe: (lang) => request(`/storefronts/me?lang=${lang || 'sr'}`),
+  sfAutobuild: (body, lang) => request(`/storefronts/me/autobuild?lang=${lang || 'sr'}`, { method: 'POST', body }),
+  sfEdit: (body, lang) => request(`/storefronts/me?lang=${lang || 'sr'}`, { method: 'PATCH', body }),
+  sfItems: (ids, lang) => request(`/storefronts/me/items?lang=${lang || 'sr'}`, { method: 'PUT', body: { listing_ids: ids } }),
+  sfAddCollection: (body, lang) => request(`/storefronts/me/collections?lang=${lang || 'sr'}`, { method: 'POST', body }),
+  sfEditCollection: (id, body, lang) => request(`/storefronts/me/collections/${id}?lang=${lang || 'sr'}`, { method: 'PUT', body }),
+  sfDeleteCollection: (id, lang) => request(`/storefronts/me/collections/${id}?lang=${lang || 'sr'}`, { method: 'DELETE' }),
+  sfState: (body, lang) => request(`/storefronts/me/state?lang=${lang || 'sr'}`, { method: 'POST', body }),
+  sfPublic: (slug, lang) => request(`/storefronts/${encodeURIComponent(slug)}?lang=${lang || 'sr'}`),
   sfByOwner: (ownerId) => request(`/storefronts/by-owner/${ownerId}`),
   sfDiscover: (params = {}) => request(`/storefronts/discover?${query(params)}`),
   sfFollow: (slug, on) => request(`/storefronts/${encodeURIComponent(slug)}/follow`, { method: on ? 'POST' : 'DELETE' }),
@@ -167,7 +167,7 @@ export const api = {
     body: JSON.stringify({
       destination, code, channel, display_name: displayName,
       // Язык страницы — на нём команда напишет первое сообщение новичку.
-      lang: localStorage.getItem('fino_lang') || 'ru',
+      lang: localStorage.getItem('fino_lang') || 'sr',
       // Кто пригласил — запомнили при заходе по ссылке ?ref=<id>
       // (см. main.jsx), значение имеет смысл только для НОВОГО
       // человека, на существующий аккаунт сервер его просто не смотрит.
@@ -190,7 +190,7 @@ export const api = {
     method: 'PATCH',
     body: JSON.stringify({ notify_enabled: enabled }),
   }),
-  userReviews: (userId, lang, offset = 0) => request(`/reviews/user/${userId}?${new URLSearchParams({ lang: lang || 'ru', offset })}`),
+  userReviews: (userId, lang, offset = 0) => request(`/reviews/user/${userId}?${new URLSearchParams({ lang: lang || 'sr', offset })}`),
   canReview: (targetId) => request(`/reviews/can-review/${targetId}`),
   dismissInvite: (chatId) => request(`/reviews/invite/${chatId}/dismiss`, { method: 'POST' }),
   createReview: (payload) => request('/reviews', {

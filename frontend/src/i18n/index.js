@@ -1,14 +1,9 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 
-// Русский — в первом файле, остальные догружаются по требованию.
-//
-// Раньше все три языка уезжали в общий файл: около 70 КБ, из которых
-// человеку нужен один. Русский оставляем сразу — он основной, на нём
-// открывается сайт по умолчанию и с ним не будет мигания при первой
-// отрисовке. Английский и сербский подгружаются, когда язык выбран:
-// это доли секунды и один раз за посещение.
-import ru from './locales/ru.json'
+// Сербский — язык по умолчанию (решение владельца, как и в приложении): он в первом файле, без мигания
+// при первой отрисовке. Русский и английский догружаются, когда их выбрали, — доли секунды, один раз.
+import sr from './locales/sr.json'
 
 const savedLang = localStorage.getItem('fino_lang')
 const browserLang = navigator.language?.slice(0, 2)
@@ -17,19 +12,20 @@ const browserLang = navigator.language?.slice(0, 2)
 const urlLang = ['en', 'sr'].includes(window.location.pathname.split('/')[1])
   ? window.location.pathname.split('/')[1]
   : null
-const defaultLang = urlLang || savedLang
-  || (['ru', 'en', 'sr'].includes(browserLang) ? browserLang : 'ru')
+// Выбор человека (адрес или сохранённый язык) главнее; без выбора — сербский, а не язык браузера.
+const defaultLang = urlLang || (['ru', 'en', 'sr'].includes(savedLang) ? savedLang : null) || 'sr'
+void browserLang
 
 i18n.use(initReactI18next).init({
-  resources: { ru: { translation: ru } },
-  lng: 'ru',
-  fallbackLng: 'ru',
+  resources: { sr: { translation: sr } },
+  lng: 'sr',
+  fallbackLng: 'sr',
   interpolation: { escapeValue: false },
 })
 
 const loaders = {
   en: () => import('./locales/en.json'),
-  sr: () => import('./locales/sr.json'),
+  ru: () => import('./locales/ru.json'),
 }
 
 /**
@@ -44,23 +40,28 @@ const loaders = {
  * подписей: человек видит рабочий сайт, а не рамки без слов.
  */
 export async function switchLanguage(code) {
-  if (code === 'ru' || i18n.hasResourceBundle(code, 'translation')) {
+  if (code === 'sr' || i18n.hasResourceBundle(code, 'translation')) {
     return i18n.changeLanguage(code)
   }
   const load = loaders[code]
-  if (!load) return i18n.changeLanguage('ru')
+  if (!load) return i18n.changeLanguage('sr')
   try {
     const pack = await load()
     i18n.addResourceBundle(code, 'translation', pack.default, true, true)
     return i18n.changeLanguage(code)
   } catch {
-    // Не догрузилось (сеть отвалилась) — остаёмся на русском, а не
+    // Не догрузилось (сеть отвалилась) — остаёмся на сербском, а не
     // показываем пустые подписи.
-    return i18n.changeLanguage('ru')
+    return i18n.changeLanguage('sr')
   }
 }
 
-// Язык по умолчанию — сразу после запуска, чтобы не ждать выбора.
-if (defaultLang !== 'ru') switchLanguage(defaultLang)
+// атрибут lang у страницы — по текущему языку (читалки экрана, перевод браузера, проверка орфографии)
+const setHtmlLang = (code) => { document.documentElement.lang = code }
+setHtmlLang('sr')
+i18n.on('languageChanged', setHtmlLang)
+
+// Выбранный раньше язык — сразу после запуска, чтобы не ждать выбора.
+if (defaultLang !== 'sr') switchLanguage(defaultLang)
 
 export default i18n
