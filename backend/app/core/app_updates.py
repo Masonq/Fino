@@ -218,13 +218,19 @@ def asset_path(uid: str, rel: str) -> Path | None:
 
 # ---------- «источник» для SideStore ----------
 
+# Сам файл приложения (.ipa) plonk.rs больше не раздаёт — его отдаёт GitHub (тот же файл из той же сборки).
+# Сайт объявлений, с которого скачиваются установщики приложений «в обход App Store», — один из признаков,
+# по которым Safe Browsing помечает сайт как обманный («пытается заставить установить ПО»).
+GITHUB_IPA = "https://github.com/Masonq/Fino/releases/download/native-latest/plonk-native.ipa"
+
+
 def sidestore_source(base: str) -> dict:
-    builds = ipa_builds()
+    builds = ipa_builds()[:1]  # только последняя сборка: на GitHub лежит одна, актуальная
     apps = []
     if builds:
         versions = [{
             "version": b["version"], "buildVersion": b["build"], "date": b["date"],
-            "downloadURL": f"{base}/api/app-updates/ipa/{b['build']}/plonk.ipa", "size": b["size"], "minOSVersion": b.get("min_os", "16.4"),
+            "downloadURL": GITHUB_IPA, "size": b["size"], "minOSVersion": b.get("min_os", "16.4"),
             # «Что нового» — подробный текст к этой сборке (native/whats-new в репозитории, выкладывается сборкой)
             "localizedDescription": b.get("notes") or f"Сборка {b['build']}.",
         } for b in builds]

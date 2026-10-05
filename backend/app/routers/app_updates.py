@@ -56,20 +56,8 @@ def sidestore(request: Request):
 
 
 @router.get("/ipa/{build}/plonk.ipa")
-def ipa_build(build: str):
-    """Своя ссылка у каждой сборки: SideStore всегда получает ровно ту, что указана в источнике."""
-    path = app_updates.ipa_path(build)
-    if not path:
-        raise HTTPException(404, "такой сборки нет")
-    return FileResponse(path, media_type="application/octet-stream", filename=f"plonk-{build}.ipa",
-                        headers={"cache-control": "public, max-age=31536000, immutable"})
-
-
 @router.get("/ipa")
-def ipa_latest():
-    """Последняя сборка — для старых записей источника и для ручной установки."""
-    builds = app_updates.ipa_builds()
-    path = app_updates.ipa_path(builds[0]["build"]) if builds else None
-    if not path:
-        raise HTTPException(404, "сборки пока нет")
-    return FileResponse(path, media_type="application/octet-stream", filename="plonk.ipa", headers={"cache-control": "no-cache"})
+def ipa_gone(build: str | None = None):
+    """Установщик приложения сайт больше не раздаёт (см. app_updates.GITHUB_IPA) — ссылки в источнике SideStore
+    ведут на GitHub. Здесь — только «больше нет», без переадресации на внешний адрес."""
+    raise HTTPException(410, "Сборка теперь скачивается с GitHub — обновите источник в SideStore")

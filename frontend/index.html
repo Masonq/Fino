@@ -121,7 +121,9 @@
        окно, и умеет закрывать его по кнопке «вернуться в чат».
        Грузится только внутри Telegram, на обычном сайте ничего не
        делает и весит полтора килобайта. -->
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Скрипт Telegram нужен только внутри Telegram (мини-приложение): обычным посетителям сайт не тянет чужой
+       скрипт — меньше внешнего кода на странице, меньше поводов у проверок Safe Browsing. -->
+  <script>if(/tgWebApp/.test(location.hash+location.search)||window.TelegramWebviewProxy||window.TelegramWebview){document.write('<script src="https://telegram.org/js/telegram-web-app.js"><\/script>')}</script>
 </head>
 <body>
   <div id="root"></div>
