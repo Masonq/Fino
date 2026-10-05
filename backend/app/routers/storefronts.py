@@ -552,7 +552,7 @@ def seo_page(slug: str, cid: str | None = None, db: Session = Depends(get_db)):
     if not sf or sf.status not in ("published", "paused"):
         return HTMLResponse("<!doctype html><html><head><meta name=robots content=noindex></head><body></body></html>",
                             status_code=404)
-    site = settings.public_base_url.rstrip("/")
+    site = settings.site_base_url.rstrip("/")
     if moved:
         return RedirectResponse(f"{site}/s/{sf.slug}", status_code=301)
     live = [it.listing for it in sf.items if it.listing and it.listing.status == ListingStatus.active]

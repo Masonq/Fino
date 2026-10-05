@@ -115,7 +115,7 @@ def _with_langs(site: str, path: str, changed=None, priority: str = "0.5",
 @router.get("/sitemap.xml")
 def sitemap(db: Session = Depends(get_db)):
     """Карта сайта: главная, разделы, объявления."""
-    site = settings.public_base_url.rstrip("/")
+    site = settings.site_base_url.rstrip("/")  # адрес сайта (plonk.rs), а не сервера приложения
     now = utcnow()
     urls = [_with_langs(site, "/", now, "1.0", "hourly")]
 
@@ -155,6 +155,15 @@ def sitemap(db: Session = Depends(get_db)):
             "0.7" if fresh else "0.5",
             "daily" if fresh else "weekly",
         ))
+
+    # Витрины продавцов и их каталог — отдельные страницы с собственным адресом (/s/<адрес>)
+    try:
+        from app.models.storefront import Storefront
+        urls.append(_url(f"{site}/vitriny", now, "0.6", "daily"))
+        for sf in db.query(Storefront).filter(Storefront.status == "published").all():
+            urls.append(_url(f"{site}/s/{sf.slug}", sf.updated_at or now, "0.6", "daily"))
+    except Exception:  # noqa: BLE001 — карта сайта не должна падать из-за витрин
+        db.rollback()
 
     body = ('<?xml version="1.0" encoding="UTF-8"?>'
             '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
@@ -309,7 +318,7 @@ def listing_page(listing_id: str, request: Request,
 
     from app.models import ListingPhoto, ListingTranslation
 
-    site = settings.public_base_url.rstrip("/")
+    site = settings.site_base_url.rstrip("/")  # адрес сайта (plonk.rs), а не сервера приложения
 
     # Номер может оказаться не номером: адрес удалённого объявления или
     # просто набранный от руки. Раньше такой запрос уходил в базу как
@@ -672,7 +681,7 @@ def category_page(slug: str, request: Request, db: Session = Depends(get_db),
 
     from app.models import Category, ListingTranslation
 
-    site = settings.public_base_url.rstrip("/")
+    site = settings.site_base_url.rstrip("/")  # адрес сайта (plonk.rs), а не сервера приложения
     url = _lang_url(site, f"/c/{slug}", lang)
 
     category = db.query(Category).filter(Category.slug == slug).first()
@@ -821,7 +830,15 @@ NOT_FOUND_PAGE = """<!DOCTYPE html>
 # хорошо», даже когда собственной страницы для поисковика у них нет.
 # Всё прочее — несуществующий адрес.
 KNOWN_PATHS = ("/", "/search", "/categories", "/login", "/rules", "/terms",
-               "/privacy", "/support")
+               "/privacy", "/support", "/vitriny", "/volunteer", "/enter")
+
+# Страницы, которые у человека открываются (после входа), а роботу раньше отвечали «страницы нет» (404).
+# Расхождение «человеку страница есть, роботу — нет» поисковик считает ошибкой, а проверки безопасности —
+# приметой обмана. Теперь робот получает ту же простую страницу, но с запретом индексации: она личная.
+PRIVATE_PATHS = ("/post", "/vitrina", "/shops/new", "/shops/mine", "/jobs/responses", "/jobs/my", "/favorites",
+                 "/notifications", "/reviews/waiting", "/chats", "/profile", "/my", "/saved", "/history",
+                 "/profile/edit", "/profile/blocked", "/profile/invite", "/tg/post", "/tg/my", "/moderation")
+PRIVATE_PREFIXES = ("/chat/", "/edit/", "/my/", "/jobs/responses/", "/shops/", "/admin")
 
 
 @router.get("/{full_path:path}", include_in_schema=False)
@@ -844,6 +861,16 @@ def not_found(full_path: str, request: Request):
         if path == lang or path.startswith(lang + "/"):
             path = path[len(lang):] or "/"
             break
+
+    if path.startswith("/seller/"):
+        page = _seller_page(site, path.rsplit("/", 1)[-1])
+        if page:
+            return HTMLResponse(page)
+        return HTMLResponse(NOT_FOUND_PAGE.format(site=site), status_code=404)
+
+    if path in PRIVATE_PATHS or path.startswith(PRIVATE_PREFIXES):
+        return HTMLResponse(_plain_page(site, path, request).replace(
+            "<head>\n", '<head>\n<meta name="robots" content="noindex">\n', 1))
 
     if path in KNOWN_PATHS:
         # Настоящая страница, а не заглушка с одной ссылкой.
@@ -880,6 +907,8 @@ def _plain_page(site: str, path: str, request: Request) -> str:
         "/terms": "Условия использования — PLONK",
         "/privacy": "Политика конфиденциальности — PLONK",
         "/support": "Поддержка — PLONK",
+        "/vitriny": "Витрины продавцов — PLONK",
+        "/volunteer": "Волонтёрам — PLONK",
     }
     title = titles.get(path, "PLONK — объявления в Белграде и Сербии")
 
@@ -924,5 +953,49 @@ def _plain_page(site: str, path: str, request: Request) -> str:
 {links}
 </ul>
 <p><a href="{site}">Все объявления</a></p>
+</body>
+</html>"""
+
+
+def _seller_page(site: str, user_id: str) -> str | None:
+    """Страница продавца для поисковика: имя и его объявления — то же, что видит человек."""
+    import uuid as _uuid
+    from xml.sax.saxutils import escape as esc
+
+    from app.core.database import SessionLocal
+    from app.models import Listing, ListingStatus, User
+
+    try:
+        uid = _uuid.UUID(user_id)
+    except ValueError:
+        return None
+    with SessionLocal() as db:
+        u = db.get(User, uid)
+        if not u or getattr(u, "is_blocked", False):
+            return None
+        rows = (db.query(Listing).filter(Listing.owner_id == uid, Listing.status == ListingStatus.active)
+                .order_by(Listing.published_at.desc().nullslast()).limit(40).all())
+        name = u.company_name or u.display_name or "Продавец"
+        items = []
+        for l in rows:
+            tr = l.translations[0] if l.translations else None
+            title = tr.title if tr else ""
+            items.append(f'<li><a href="{site}/go/{l.id}">{esc(title)}</a></li>')
+    return f"""<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>{esc(name)} — продавец на PLONK</title>
+<meta name="description" content="Объявления продавца {esc(name)} на PLONK: {len(items)} в продаже.">
+<link rel="canonical" href="{site}/seller/{uid}">
+</head>
+<body>
+<h1>{esc(name)}</h1>
+<p>Продавец на PLONK — доске объявлений Белграда и Сербии.</p>
+<h2>Объявления</h2>
+<ul>
+{chr(10).join(items) or '<li>Сейчас нет активных объявлений</li>'}
+</ul>
+<p><a href="{site}">Все объявления на PLONK</a></p>
 </body>
 </html>"""

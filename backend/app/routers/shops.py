@@ -705,7 +705,7 @@ seo_router = APIRouter(include_in_schema=False)
 
 @seo_router.get("/shops")
 def share_page(start: str | None = None, db: Session = Depends(get_db)):
-    site = settings.public_base_url.rstrip("/")
+    site = settings.site_base_url.rstrip("/")
     shop = None
     try:
         shop = _live(db.query(Shop)).filter(Shop.id == uuid.UUID(start)).first() if start else None
