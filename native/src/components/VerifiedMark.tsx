@@ -1,19 +1,17 @@
-import Svg, { Circle, Path } from 'react-native-svg'
+import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg'
 
-import { colors } from '../theme'
+// гладкий «цветок» с 12 лепестками — привычная форма значка проверенного аккаунта (как на сайте)
+const BADGE = 'M12.00 1.04 L12.70 1.28 L13.33 1.89 L13.88 2.53 L14.44 2.89 L15.10 2.85 L15.90 2.58 L16.75 2.37 L17.48 2.50 L17.97 3.07 L18.21 3.91 L18.37 4.74 L18.67 5.33 L19.26 5.63 L20.09 5.79 L20.93 6.03 L21.50 6.52 L21.63 7.25 L21.42 8.10 L21.15 8.90 L21.11 9.56 L21.47 10.12 L22.11 10.67 L22.72 11.30 L22.96 12.00 L22.72 12.70 L22.11 13.33 L21.47 13.88 L21.11 14.44 L21.15 15.10 L21.42 15.90 L21.63 16.75 L21.50 17.48 L20.93 17.97 L20.09 18.21 L19.26 18.37 L18.67 18.67 L18.37 19.26 L18.21 20.09 L17.97 20.93 L17.48 21.50 L16.75 21.63 L15.90 21.42 L15.10 21.15 L14.44 21.11 L13.88 21.47 L13.33 22.11 L12.70 22.72 L12.00 22.96 L11.30 22.72 L10.67 22.11 L10.12 21.47 L9.56 21.11 L8.90 21.15 L8.10 21.42 L7.25 21.63 L6.52 21.50 L6.03 20.93 L5.79 20.09 L5.63 19.26 L5.33 18.67 L4.74 18.37 L3.91 18.21 L3.07 17.97 L2.50 17.48 L2.37 16.75 L2.58 15.90 L2.85 15.10 L2.89 14.44 L2.53 13.88 L1.89 13.33 L1.28 12.70 L1.04 12.00 L1.28 11.30 L1.89 10.67 L2.53 10.12 L2.89 9.56 L2.85 8.90 L2.58 8.10 L2.37 7.25 L2.50 6.52 L3.07 6.03 L3.91 5.79 L4.74 5.63 L5.33 5.33 L5.63 4.74 L5.79 3.91 L6.03 3.07 L6.52 2.50 L7.25 2.37 L8.10 2.58 L8.90 2.85 L9.56 2.89 L10.12 2.53 L10.67 1.89 L11.30 1.28Z'
 
-/** Галочка у имени: official — команда PLONK («розетка»), verified — личность/компания подтверждены (круг). */
+/** Галочка у имени: official — команда PLONK (тёмный значок), verified — личность/компания подтверждены (синий). */
 export default function VerifiedMark({ official, verified, size = 16 }: { official?: boolean; verified?: boolean; size?: number }) {
   if (!official && !verified) return null
-  return official ? (
-    <Svg width={size} height={size} viewBox="0 0 24 24" accessibilityLabel="PLONK">
-      <Path fill={colors.primary} d="M12 1.6l2.4 1.8 3-.1.9 2.9 2.5 1.7-.9 2.9.9 2.9-2.5 1.7-.9 2.9-3-.1L12 22.4l-2.4-1.8-3 .1-.9-2.9-2.5-1.7.9-2.9-.9-2.9 2.5-1.7.9-2.9 3 .1z" />
-      <Path d="m8 12.2 2.7 2.7L16.2 9.4" fill="none" stroke="#fff" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-  ) : (
+  const [from, to] = official ? ['#2E3832', '#0F1512'] : ['#3BA4FF', '#1A73E8']
+  return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
-      <Circle cx={12} cy={12} r={10} fill={colors.primary} />
-      <Path d="m7.8 12.3 2.8 2.8 5.6-5.8" fill="none" stroke="#fff" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" />
+      <Defs><LinearGradient id="vm" x1="0" y1="0" x2="1" y2="1"><Stop offset="0" stopColor={from} /><Stop offset="1" stopColor={to} /></LinearGradient></Defs>
+      <Path fill="url(#vm)" d={BADGE} />
+      <Path d="M8.3 12.3l2.5 2.5 4.9-5.1" fill="none" stroke="#fff" strokeWidth={size <= 16 ? 2.3 : 2} strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }

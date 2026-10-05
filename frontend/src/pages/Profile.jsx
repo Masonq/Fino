@@ -272,9 +272,9 @@ export default function Profile() {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l1.5-5h15L21 9" /><path d="M4 9v11h16V9" /><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0" /></svg>
               <span>{t('profile.act_store')}</span>
             </Link>
-            <Link to="/shops/new" className="profile-action">
+            <Link to="/shops/mine" className="profile-action">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round"><rect x="4" y="3" width="16" height="18" rx="4" /><path d="m10 9 5 3-5 3z" /></svg>
-              <span>{t('profile.act_shop')}</span>
+              <span>{t('profile.act_shops')}</span>
             </Link>
           </div>
 
@@ -303,20 +303,6 @@ export default function Profile() {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round"><path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" /></svg>
           </span>
           {t('nav.favorites')}
-          <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
-        </Link>
-        <Link viewTransition className="profile-row" to="/vitrina">
-          <span className="profile-row-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l1.5-5h15L21 9" /><path d="M4 9v11h16V9" /><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0" /></svg>
-          </span>
-          {t('sf.my')}
-          <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
-        </Link>
-        <Link viewTransition className="profile-row" to="/shops/mine">
-          <span className="profile-row-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="2.5" y="6" width="13" height="12" rx="2.5" /><path d="m15.5 10.5 6-3.5v10l-6-3.5" /></svg>
-          </span>
-          {t('shops.cabinet')}
           <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
         </Link>
         <Link viewTransition className="profile-row" to="/jobs/my">

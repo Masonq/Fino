@@ -562,7 +562,7 @@ const styles = StyleSheet.create({
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   verified: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   seal: { width: 16, height: 16, borderRadius: 8, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  verifiedText: { fontSize: 12.5, fontFamily: font[700], color: colors.primaryDeep },
+  verifiedText: { fontSize: 12.5, fontFamily: font[700], color: colors.inkSoft },
   // Как .seller-name / .seller-meta сайта: имя 14,5 / 800, строки под ним 12 / 600
   name: { fontSize: 14.5, fontFamily: font[800], color: colors.ink, flexShrink: 1 },
   starsRow: { flexDirection: 'row', alignItems: 'center', gap: 1 },

@@ -1057,7 +1057,8 @@
     "theme": "Tema",
     "theme_auto": "Kao sistem",
     "theme_light": "Svetla",
-    "theme_dark": "Tamna"
+    "theme_dark": "Tamna",
+    "act_shops": "Moji šopsovi"
   },
   "verify": {
     "title": "Provera dokumenta",

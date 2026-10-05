@@ -1076,7 +1076,8 @@
     "theme": "Тема",
     "theme_auto": "Как в системе",
     "theme_light": "Светлая",
-    "theme_dark": "Тёмная"
+    "theme_dark": "Тёмная",
+    "act_shops": "Мои шопсы"
   },
   "verify": {
     "title": "Проверка документа",

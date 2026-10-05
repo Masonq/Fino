@@ -1030,7 +1030,8 @@
     "theme": "Theme",
     "theme_auto": "System",
     "theme_light": "Light",
-    "theme_dark": "Dark"
+    "theme_dark": "Dark",
+    "act_shops": "My shops"
   },
   "verify": {
     "title": "Identity verification",

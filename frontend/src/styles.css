@@ -5651,9 +5651,9 @@ a.s-attrs{ display:block; }
 /* Подпись к галочке: мельче имени, у самой галочки. Выровнена по
    первой строке — у длинного имени в две строки не должна сползать. */
 .seller-verified-note{
-  align-self:flex-start; margin-top:2px;
+  align-self:center;
   font-size:11.5px; font-weight:700; line-height:1.3;
-  color:var(--primary-deep); white-space:nowrap;
+  color:var(--ink-soft); white-space:nowrap;
 }
 /* Имя важнее подписи: на узком экране подпись целиком уходит на
    строку ниже, а имя не сжимается до «А л.». */
@@ -7371,7 +7371,7 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 /* галочка у имени (VerifiedMark): в строку с именем, по центру строки */
 .vmark{ display:inline-flex; align-items:center; gap:4px; vertical-align:-0.15em; flex:none; }
 .vmark svg{ display:block; }
-.vmark-label{ font-size:12px; font-weight:700; color:var(--primary-deep); }
+.vmark-label{ font-size:12px; font-weight:700; color:var(--ink-soft); }
 .sh-author .vmark{ vertical-align:middle; }
 
 /* шапки с поиском сворачиваются при прокрутке.
@@ -7415,3 +7415,4 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 .row-sk-text{ flex:1; display:flex; flex-direction:column; gap:8px; }
 .row-sk-line{ display:block; height:14px; border-radius:6px; }
 .row-sk-line.is-short{ width:40%; height:12px; }
+.seller-name .name-text{ flex:0 1 auto; min-width:0; padding-right:1px; } /* галочка — сразу за именем, а не у правого края */

@@ -224,7 +224,7 @@ export default function Profile() {
 
         {/* PLONK 2.0: профиль — панель продавца: главные действия крупными плитками, как на сайте */}
         <View style={styles.actions}>
-          {([['plus', 'Разместить', '/post', true], ['grid', 'Витрина', '/vitrina', false], ['video', 'Снять шопс', '/shops/new', false]] as const).map(([ic, label, href, dark]) => (
+          {([['plus', 'Разместить', '/post', true], ['grid', 'Витрина', '/vitrina', false], ['video', 'Мои шопсы', '/shops/mine', false]] as const).map(([ic, label, href, dark]) => (
             <Pressable key={href} style={[styles.action, dark && { backgroundColor: colors.inverse }]} onPress={() => router.push(href as never)} accessibilityRole="button">
               <Icon name={ic} size={24} color={dark ? colors.onInverse : colors.ink} />
               <Text style={[styles.actionText, dark && { color: colors.onInverse }]}>{tr(label)}</Text>
@@ -235,8 +235,6 @@ export default function Profile() {
         {/* Меню — как на сайте, в том же порядке: сохранённые поиски — в приложении, остальное — страницы сайта */}
         <View style={styles.menu}>
           {row('heart', 'Избранное', () => router.push('/favorites' as never))}
-          {row('grid', 'Моя витрина', () => router.push('/vitrina' as never))}
-          {row('video', 'Шопсы', () => router.push('/shops/mine' as never))}
           {row('doc', 'Мои отклики', () => router.push('/jobs/my' as never))}
           {row('chat', 'Отклики на вакансии', () => router.push('/jobs' as never))}
           {row('invite', 'Пригласите друга', () => router.push('/invite'))}

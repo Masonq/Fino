@@ -1,16 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 
 // лента шопсов один раз за открытие сайта: главная перерисовывается часто, а список меняется редко
 let cache = null
+let stripScroll = 0 // прокрутка полосы — та же после возврата из ролика
 
 /**
  * Шопсы на главной вместо историй: превью роликов 9:16, первой — «Снять шопс».
  * Нет ни одного опубликованного — одна плитка-приглашение, без пустой полосы скелетонов.
  */
 export default function ShopsStrip() {
+  const row = useRef(null)
+  useLayoutEffect(() => { if (row.current && stripScroll) row.current.scrollLeft = stripScroll })
   const { t, i18n } = useTranslation()
   const [items, setItems] = useState(cache)
 
@@ -25,7 +28,7 @@ export default function ShopsStrip() {
     return <div className="shs" aria-hidden="true">{Array.from({ length: 5 }, (_, i) => <div key={i} className="shs-tile shs-skel" />)}</div>
   }
   return (
-    <div className="shs" role="list" aria-label={t('shops.title')}>
+    <div className="shs" role="list" aria-label={t('shops.title')} ref={row} onScroll={(e) => { stripScroll = e.currentTarget.scrollLeft }}>
       <Link to="/shops/new" className="shs-tile shs-new" role="listitem">
         <span className="shs-plus">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
