@@ -9,7 +9,7 @@ const savedLang = localStorage.getItem('fino_lang')
 const browserLang = navigator.language?.slice(0, 2)
 // Язык из адреса главнее: человек пришёл по ссылке именно на нём
 // (см. main.jsx).
-const urlLang = ['en', 'sr'].includes(window.location.pathname.split('/')[1])
+const urlLang = ['en', 'ru'].includes(window.location.pathname.split('/')[1])
   ? window.location.pathname.split('/')[1]
   : null
 // Выбор человека (адрес или сохранённый язык) главнее; без выбора — сербский, а не язык браузера.

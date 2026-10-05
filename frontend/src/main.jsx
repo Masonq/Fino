@@ -50,7 +50,13 @@ window.addEventListener('unhandledrejection', (event) => {
   }
 })
 
-const LANG_PREFIXES = ['en', 'sr']
+// Сербский — основной язык и живёт без приставки; русский — /ru/…, английский — /en/….
+// Старые адреса /sr/… (когда основным был русский) тихо приводим к основным, без перезагрузки.
+const LANG_PREFIXES = ['en', 'ru']
+if (/^\/sr(\/|$)/.test(window.location.pathname)) {
+  try { localStorage.setItem('fino_lang', 'sr') } catch { /* не беда */ }
+  window.history.replaceState(null, '', (window.location.pathname.replace(/^\/sr/, '') || '/') + window.location.search + window.location.hash)
+}
 const first = window.location.pathname.split('/')[1]
 const urlLang = LANG_PREFIXES.includes(first) ? first : null
 const basename = urlLang ? `/${urlLang}` : '/'

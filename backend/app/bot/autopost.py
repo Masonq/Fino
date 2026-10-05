@@ -225,7 +225,8 @@ def caption_for(listing: Listing) -> tuple[str, str]:
         author_id=author_id,
         site_url=site,
     )
-    return caption, f"{site}{path}"
+    # чат @Baraholka_Plonk русскоязычный: ссылка сразу на русскую версию (основная версия сайта — сербская)
+    return caption, f"{site}/ru{path}"
 
 
 async def send_one(listing_id) -> bool:

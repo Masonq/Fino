@@ -28,8 +28,8 @@ export default function LanguageSwitcher({ variant }) {
     // Перезагружаем страницу целиком, а не переходим внутри приложения:
     // приставка задаётся роутеру один раз при запуске (basename в
     // main.jsx), и на ходу её не поменять.
-    const path = window.location.pathname.replace(/^\/(en|sr)(?=\/|$)/, '') || '/'
-    const prefix = code === 'ru' ? '' : `/${code}`
+    const path = window.location.pathname.replace(/^\/(en|sr|ru)(?=\/|$)/, '') || '/'
+    const prefix = code === 'sr' ? '' : `/${code}`  // сербский — основной, без приставки
     const next = prefix + path + window.location.search + window.location.hash
     if (next !== window.location.pathname + window.location.search + window.location.hash) {
       window.location.assign(next)

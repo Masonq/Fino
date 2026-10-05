@@ -17,7 +17,7 @@ from datetime import timedelta
 from xml.sax.saxutils import escape
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import HTMLResponse, Response
+from fastapi.responses import RedirectResponse, HTMLResponse, Response
 from sqlalchemy import String, cast
 from sqlalchemy.orm import Session
 
@@ -74,8 +74,8 @@ CATEGORY_TEXTS = {
 
 
 def _lang_url(site: str, path: str, lang: str) -> str:
-    """Адрес страницы на нужном языке."""
-    prefix = "" if lang == "ru" else f"/{lang}"
+    """Адрес страницы на нужном языке: сербский — основной, без приставки; русский — /ru/…, английский — /en/…"""
+    prefix = "" if lang == "sr" else f"/{lang}"
     return f"{site}{prefix}{path}"
 
 
@@ -91,16 +91,9 @@ def _url(loc: str, changed=None, priority: str = "0.5",
     # разных языках, а не две конкурирующие: иначе он выберет одну и
     # покажет её всем, включая тех, кто ищет по-сербски.
     for lang, href in (alternates or {}).items():
-        code = "x-default" if lang == "ru" else lang
-        parts.append(
-            f'<xhtml:link rel="alternate" hreflang="{code}" '
-            f'href="{escape(href)}"/>'
-        )
-        if lang == "ru":
-            parts.append(
-                f'<xhtml:link rel="alternate" hreflang="ru" '
-                f'href="{escape(href)}"/>'
-            )
+        parts.append(f'<xhtml:link rel="alternate" hreflang="{lang}" href="{escape(href)}"/>')
+        if lang == "sr":  # основная версия — сербская
+            parts.append(f'<xhtml:link rel="alternate" hreflang="x-default" href="{escape(href)}"/>')
     return "<url>" + "".join(parts) + "</url>"
 
 
@@ -108,7 +101,7 @@ def _with_langs(site: str, path: str, changed=None, priority: str = "0.5",
                 frequency: str = "daily") -> str:
     """Одна запись карты сайта — со ссылками на все языковые версии."""
     alternates = {lang: _lang_url(site, path, lang) for lang in LANGS}
-    return _url(_lang_url(site, path, "ru"), changed, priority, frequency,
+    return _url(_lang_url(site, path, "sr"), changed, priority, frequency,
                 alternates)
 
 
@@ -273,8 +266,10 @@ def short_listing_page(listing_id: str, request: Request,
 def nice_listing_page_localised(lang: str, city: str, category: str, slug: str,
                                 request: Request,
                                 db: Session = Depends(get_db)):
-    """Объявление на другом языке: /en/beograd/mebel/stol-45e17e58."""
-    if lang not in ("en", "sr"):
+    """Объявление на другом языке: /en/beograd/mebel/stol-45e17e58, /ru/…"""
+    if lang == "sr":  # сербский теперь без приставки — старые адреса /sr/… ведём на основные
+        return RedirectResponse(f"/{city}/{category}/{slug}", status_code=301)
+    if lang not in ("en", "ru"):
         return HTMLResponse(
             "<!doctype html><html><head><meta name=robots content=noindex>"
             "</head><body><h1>404</h1></body></html>", status_code=404)
@@ -297,7 +292,9 @@ def nice_listing_page(city: str, category: str, slug: str,
     # здесь, потому что этот маршрут объявлен раньше и перехватывает их
     # первым — поймал на живом запросе, английская страница отвечала
     # ошибкой про негодный ключ.
-    if city in ("en", "sr") and category == "c":
+    if city == "sr" and category == "c":
+        return RedirectResponse(f"/c/{slug}", status_code=301)
+    if city in ("en", "ru") and category == "c":
         return category_page(slug, request, db, lang=city)
 
     tail = listing_id_from(slug)
@@ -367,14 +364,13 @@ def listing_page(listing_id: str, request: Request,
     # Языка в адресе нет — берём язык объявления, как раньше: значит
     # открыта версия по умолчанию.
     path = request.url.path if hasattr(request, "url") else "/"
+    # язык — по приставке адреса: /en/ — английский, /ru/ — русский, без приставки — сербский (основной)
     if path.startswith("/en/"):
         lang = "en"
-    elif path.startswith("/sr/"):
-        lang = "sr"
+    elif path.startswith("/ru/"):
+        lang = "ru"
     else:
-        lang = (listing.source_language.value
-                if hasattr(listing.source_language, "value")
-                else str(listing.source_language or "ru"))
+        lang = "sr"
 
     # Адрес на том же языке, что открыт.
     #
@@ -394,7 +390,7 @@ def listing_page(listing_id: str, request: Request,
     alternates = "\n".join(
         f'<link rel="alternate" hreflang="{code}" '
         f'href="{_lang_url(site, path_for_langs, code_lang)}">'
-        for code, code_lang in (("x-default", "ru"), ("ru", "ru"),
+        for code, code_lang in (("x-default", "sr"), ("ru", "ru"),
                                 ("en", "en"), ("sr", "sr"))
     )
     translation = (
@@ -406,8 +402,8 @@ def listing_page(listing_id: str, request: Request,
     title = (translation.title if translation else "") or "Объявление"
     body = (translation.description if translation else "") or ""
 
-    price = _price_words(listing)
-    city = _city_words(listing.city)
+    price = _price_words(listing, lang)
+    city = _city_words(listing.city, lang)
     photo = (db.query(ListingPhoto)
              .filter(ListingPhoto.listing_id == listing.id)
              .order_by(ListingPhoto.sort_order).first())
@@ -503,19 +499,45 @@ def _clean(text: str) -> str:
     return " ".join(body.split())
 
 
-def _price_words(listing) -> str:
+def _price_words(listing, lang: str = "ru") -> str:
     if listing.is_free:
-        return "Бесплатно"
+        return {"sr": "Besplatno", "en": "Free"}.get(lang, "Бесплатно")
     if listing.price is None:
-        return "Цена не указана"
+        return {"sr": "Cena nije navedena", "en": "Price not specified"}.get(lang, "Цена не указана")
     whole = f"{int(listing.price):,}".replace(",", " ")
     sign = "€" if str(listing.currency).endswith("eur") else "RSD"
     return f"{whole} {sign}"
 
 
-def _city_words(city: str | None) -> str:
+_CITY_NAMES: dict | None = None
+
+
+def _city_names() -> dict:
+    """Названия городов на трёх языках — из того же списка, что у сайта (frontend/src/data/cities.js):
+    ключи — и код города, и его русское название (в объявлениях встречаются оба)."""
+    global _CITY_NAMES
+    if _CITY_NAMES is None:
+        import re as _re
+        from pathlib import Path
+        names = {}
+        try:
+            src = (Path(__file__).resolve().parents[3] / "frontend" / "src" / "data" / "cities.js").read_text("utf8")
+            for m in _re.finditer(r"slug:\s*'([^']+)',\s*ru:\s*'([^']+)',\s*en:\s*'([^']+)',\s*sr:\s*'([^']+)'", src):
+                row = {"ru": m.group(2), "en": m.group(3), "sr": m.group(4)}
+                names[m.group(1)] = row
+                names[m.group(2).lower()] = row
+        except OSError:
+            pass
+        _CITY_NAMES = names
+    return _CITY_NAMES
+
+
+def _city_words(city: str | None, lang: str = "ru") -> str:
     if not city:
         return ""
+    row = _city_names().get(city) or _city_names().get(city.lower())
+    if row:
+        return row.get(lang) or row["ru"]
     from app.bot.post_format import city_title
 
     return city_title(city)
@@ -668,8 +690,10 @@ CATEGORY_PAGE = """<!DOCTYPE html>
 @router.get("/{lang}/c/{slug}", include_in_schema=False)
 def category_page_localised(lang: str, slug: str, request: Request,
                             db: Session = Depends(get_db)):
-    """Тот же раздел на другом языке: /en/c/mebel, /sr/c/mebel."""
-    if lang not in ("en", "sr"):
+    """Тот же раздел на другом языке: /en/c/mebel, /ru/c/mebel."""
+    if lang == "sr":
+        return RedirectResponse(f"/c/{slug}", status_code=301)
+    if lang not in ("en", "ru"):
         return HTMLResponse(
             "<!doctype html><html><head><meta name=robots content=noindex>"
             "</head><body><h1>404</h1></body></html>", status_code=404)
@@ -678,7 +702,7 @@ def category_page_localised(lang: str, slug: str, request: Request,
 
 @router.get("/c/{slug}", include_in_schema=False)
 def category_page(slug: str, request: Request, db: Session = Depends(get_db),
-                  lang: str = "ru"):
+                  lang: str = "sr"):
     """Раздел с объявлениями — для поисковиков."""
     import json
     from html import escape as esc
@@ -788,7 +812,7 @@ def category_page(slug: str, request: Request, db: Session = Depends(get_db),
     alternates = "\n".join(
         f'<link rel="alternate" hreflang="{code}" '
         f'href="{_lang_url(site, f"/c/{slug}", code_lang)}">'
-        for code, code_lang in (("x-default", "ru"), ("ru", "ru"),
+        for code, code_lang in (("x-default", "sr"), ("ru", "ru"),
                                 ("en", "en"), ("sr", "sr"))
     )
 
@@ -860,10 +884,16 @@ def not_found(full_path: str, request: Request):
     if path.startswith(("/api", "/media", "/docs", "/openapi", "/redoc")):
         raise HTTPException(404, "not_found")
 
+    # Сербский — без приставки: старые адреса /sr/… ведём на основные
+    if path == "/sr" or path.startswith("/sr/"):
+        q = request.url.query
+        return RedirectResponse((path[3:] or "/") + (f"?{q}" if q else ""), status_code=301)
     # Языковую приставку отбрасываем: /en/search — тот же поиск.
-    for lang in ("/en", "/sr"):
+    plang = "sr"
+    for lang in ("/en", "/ru"):
         if path == lang or path.startswith(lang + "/"):
             path = path[len(lang):] or "/"
+            plang = lang[1:]
             break
 
     if path.startswith("/seller/"):
@@ -873,7 +903,7 @@ def not_found(full_path: str, request: Request):
         return HTMLResponse(NOT_FOUND_PAGE.format(site=site), status_code=404)
 
     if path in PRIVATE_PATHS or path.startswith(PRIVATE_PREFIXES):
-        return HTMLResponse(_plain_page(site, path, request).replace(
+        return HTMLResponse(_plain_page(site, path, request, plang).replace(
             "<head>\n", '<head>\n<meta name="robots" content="noindex">\n', 1))
 
     if path in KNOWN_PATHS:
@@ -889,74 +919,93 @@ def not_found(full_path: str, request: Request):
         #
         # Теперь отдаём то же, что видит человек: чем занимается сайт,
         # какие разделы есть, сколько объявлений.
-        return HTMLResponse(_plain_page(site, path, request))
+        return HTMLResponse(_plain_page(site, path, request, plang))
 
     return HTMLResponse(NOT_FOUND_PAGE.format(site=site), status_code=404)
 
 
-def _plain_page(site: str, path: str, request: Request) -> str:
-    """Простая, но настоящая страница для поисковиков и проверяющих."""
+def _plain_page(site: str, path: str, request: Request, lang: str = "sr") -> str:
+    """Простая, но настоящая страница для поисковиков и проверяющих — на языке адреса
+    (без приставки — сербский, /ru/ — русский, /en/ — английский)."""
     from xml.sax.saxutils import escape as esc
 
     from sqlalchemy import text
 
     from app.core.database import SessionLocal
 
-    titles = {
-        "/": "PLONK — объявления в Белграде и по всей Сербии",
-        "/search": "Поиск объявлений — PLONK",
-        "/categories": "Все разделы — PLONK",
-        "/login": "Вход на PLONK",
-        "/rules": "Правила размещения объявлений — PLONK",
-        "/terms": "Условия использования — PLONK",
-        "/privacy": "Политика конфиденциальности — PLONK",
-        "/support": "Поддержка — PLONK",
-        "/vitriny": "Витрины продавцов — PLONK",
-        "/volunteer": "Волонтёрам — PLONK",
+    T = {
+        "sr": {"/": "PLONK — oglasi u Beogradu i celoj Srbiji", "/search": "Pretraga oglasa — PLONK",
+               "/categories": "Sve kategorije — PLONK", "/login": "Prijava na PLONK",
+               "/rules": "Pravila objavljivanja oglasa — PLONK", "/terms": "Uslovi korišćenja — PLONK",
+               "/privacy": "Politika privatnosti — PLONK", "/support": "Podrška — PLONK",
+               "/vitriny": "Izlozi prodavaca — PLONK", "/volunteer": "Za volontere — PLONK",
+               "_": "PLONK — oglasi u Beogradu i Srbiji",
+               "desc": "Oglasi u Beogradu i širom Srbije: nekretnine, automobili, elektronika, posao, usluge. Trenutno oglasa na sajtu: {n}.",
+               "intro": "Besplatni oglasi za Beograd i celu Srbiju. Izdavanje i prodaja stanova, automobili, elektronika, nameštaj, posao, usluge — na srpskom, ruskom i engleskom.",
+               "count": "Trenutno objavljeno oglasa: {n}.", "sections": "Kategorije", "all": "Svi oglasi"},
+        "ru": {"/": "PLONK — объявления в Белграде и по всей Сербии", "/search": "Поиск объявлений — PLONK",
+               "/categories": "Все разделы — PLONK", "/login": "Вход на PLONK",
+               "/rules": "Правила размещения объявлений — PLONK", "/terms": "Условия использования — PLONK",
+               "/privacy": "Политика конфиденциальности — PLONK", "/support": "Поддержка — PLONK",
+               "/vitriny": "Витрины продавцов — PLONK", "/volunteer": "Волонтёрам — PLONK",
+               "_": "PLONK — объявления в Белграде и Сербии",
+               "desc": "Объявления в Белграде и по всей Сербии: недвижимость, авто, электроника, работа, услуги. Сейчас на сайте объявлений: {n}.",
+               "intro": "Бесплатная доска объявлений для Белграда и всей Сербии. Аренда и продажа жилья, автомобили, электроника, мебель, работа, услуги — на сербском, русском и английском.",
+               "count": "Сейчас опубликовано объявлений: {n}.", "sections": "Разделы", "all": "Все объявления"},
+        "en": {"/": "PLONK — classifieds in Belgrade and all of Serbia", "/search": "Search listings — PLONK",
+               "/categories": "All categories — PLONK", "/login": "Sign in to PLONK",
+               "/rules": "Posting rules — PLONK", "/terms": "Terms of use — PLONK",
+               "/privacy": "Privacy policy — PLONK", "/support": "Support — PLONK",
+               "/vitriny": "Seller storefronts — PLONK", "/volunteer": "For volunteers — PLONK",
+               "_": "PLONK — classifieds in Belgrade and Serbia",
+               "desc": "Classifieds in Belgrade and across Serbia: property, cars, electronics, jobs, services. Listings on the site now: {n}.",
+               "intro": "Free classifieds for Belgrade and all of Serbia. Flats to rent and buy, cars, electronics, furniture, jobs, services — in Serbian, Russian and English.",
+               "count": "Listings published now: {n}.", "sections": "Categories", "all": "All listings"},
     }
-    title = titles.get(path, "PLONK — объявления в Белграде и Сербии")
+    t = T.get(lang, T["sr"])
+    title = t.get(path, t["_"])
+    prefix = "" if lang == "sr" else f"/{lang}"
 
     rows, total = [], 0
     try:
         with SessionLocal() as db:
-            total = db.execute(text(
-                "select count(*) from listings where status = 'active'"
-            )).scalar() or 0
+            total = db.execute(text("select count(*) from listings where status = 'active'")).scalar() or 0
             rows = db.execute(text("""
-                select c.slug, c.name->>'ru'
+                select c.slug, coalesce(c.name->>:lang, c.name->>'ru')
                 from categories c
                 where c.parent_id is null
                 order by c.sort_order nulls last, c.slug
                 limit 14
-            """)).fetchall()
+            """), {"lang": lang}).fetchall()
     except Exception:                                      # noqa: BLE001
         pass
 
     links = "\n".join(
-        f'<li><a href="{site}/c/{esc(slug)}">{esc(name or slug)}</a></li>'
+        f'<li><a href="{site}{prefix}/c/{esc(slug)}">{esc(name or slug)}</a></li>'
         for slug, name in rows
     )
-
-
+    alts = "\n".join(
+        f'<link rel="alternate" hreflang="{code}" href="{site}{"" if code_l == "sr" else "/" + code_l}{path}">'
+        for code, code_l in (("x-default", "sr"), ("sr", "sr"), ("ru", "ru"), ("en", "en"))
+    )
     return f"""<!DOCTYPE html>
-<html lang="ru">
+<html lang="{lang}">
 <head>
 <meta charset="utf-8">
 <title>{esc(title)}</title>
-<meta name="description" content="Объявления в Белграде и по всей Сербии: недвижимость, авто, электроника, работа, услуги. Сейчас на сайте {_cnt(total, 'объявление', 'объявления', 'объявлений')}.">
-<link rel="canonical" href="{site}{path}">
+<meta name="description" content="{esc(t['desc'].format(n=total))}">
+<link rel="canonical" href="{site}{prefix}{path}">
+{alts}
 </head>
 <body>
 <h1>{esc(title)}</h1>
-<p>Бесплатная доска объявлений для Белграда и всей Сербии. Аренда и
-продажа жилья, автомобили, электроника, мебель, работа, услуги —
-на русском, английском и сербском.</p>
-<p>Сейчас опубликовано объявлений: {total}.</p>
-<h2>Разделы</h2>
+<p>{esc(t['intro'])}</p>
+<p>{esc(t['count'].format(n=total))}</p>
+<h2>{esc(t['sections'])}</h2>
 <ul>
 {links}
 </ul>
-<p><a href="{site}">Все объявления</a></p>
+<p><a href="{site}{prefix or '/'}">{esc(t['all'])}</a></p>
 </body>
 </html>"""
 
