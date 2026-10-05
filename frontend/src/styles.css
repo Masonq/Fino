@@ -7234,7 +7234,7 @@ h1, h2, h3, .page-title-text, .detail-title{ letter-spacing:-0.025em; }
 
 /* ---------- нижнее меню: парящая стеклянная плашка ---------- */
 .bottomnav{
-  left:12px; right:12px; bottom:calc(10px + var(--sab)); max-width:456px; border-radius:28px; padding:8px 4px;
+  left:12px; right:12px; bottom:max(8px, calc(var(--sab) - 12px)); max-width:456px; border-radius:28px; padding:8px 4px;
   background:rgba(255,255,255,.82); backdrop-filter:blur(22px) saturate(1.6); -webkit-backdrop-filter:blur(22px) saturate(1.6);
   border:1px solid rgba(255,255,255,.7); box-shadow:0 10px 30px rgba(15,21,18,.12), 0 1px 0 rgba(15,21,18,.04);
 }
@@ -7416,3 +7416,10 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 .row-sk-line{ display:block; height:14px; border-radius:6px; }
 .row-sk-line.is-short{ width:40%; height:12px; }
 .seller-name .name-text{ flex:0 1 auto; min-width:0; padding-right:1px; } /* галочка — сразу за именем, а не у правого края */
+
+/* меню ниже: на iPhone заходит в зону полоски «домой» (как родные панели iOS), на телефонах без неё — 8 px от края */
+:root{ --nav-h: calc(max(8px, calc(var(--sab) - 12px)) + 66px); } /* от низа экрана до верха меню */
+.app-shell > main.has-bottomnav{ padding-bottom:calc(var(--nav-h) + 24px); }
+.sh-meta{ padding-bottom:calc(var(--nav-h) + 16px) !important; }
+.sh-side{ bottom:calc(var(--nav-h) + 30px); }
+.sh-progress{ bottom:calc(var(--nav-h) + 8px); }
