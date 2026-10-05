@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { CITIES, cityLabel } from '../data/cities'
 import useScrollFade from '../hooks/useScrollFade'
+import Sheet from './Sheet'
 
 /*
  * Живая панель фильтров.
@@ -84,9 +85,8 @@ export default function FilterPanel({ open, onClose, city, onCity }) {
   const dirty = category || city || step !== LAST
 
   return (
-    <div className={`fp ${open ? 'is-open' : ''}`} aria-hidden={!open}>
-      <div className="fp-backdrop" onClick={onClose} />
-      <div className="fp-panel" role="dialog" aria-label={t('fpanel.title')}>
+    // PLONK 2.0: панель фильтров — шторка Vaul (тянется вниз, чтобы закрыть), как остальные шторки сайта
+    <Sheet open={open} onClose={onClose} hiddenTitle={t('fpanel.title')} className="fp-vs">
         <div className="fp-head">
           <span className="fp-title">{t('fpanel.title')}</span>
           {dirty && <button className="fp-reset" onClick={reset}>{t('fpanel.reset')}</button>}
@@ -140,7 +140,6 @@ export default function FilterPanel({ open, onClose, city, onCity }) {
             {count === null ? t('fpanel.show') : t('landing.show_count', { count })}
           </span>
         </button>
-      </div>
-    </div>
+    </Sheet>
   )
 }

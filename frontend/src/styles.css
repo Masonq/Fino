@@ -7376,3 +7376,17 @@ button.profile-row{ width:100%; text-align:left; font:inherit; color:inherit; }
 .vs-sheet.sh-cm .vs-body{ display:flex; flex-direction:column; flex:1; overflow:hidden; }
 [data-sonner-toaster] .pk-toast{ background:var(--inverse); color:var(--on-inverse); border:0; border-radius:16px; font-family:inherit; font-weight:600; font-size:14.5px; box-shadow:0 10px 30px rgba(0,0,0,.2); padding:12px 16px; }
 [data-sonner-toaster] .pk-toast-ok [data-icon]{ color:var(--primary); }
+/* панель фильтров главной — внутри шторки Vaul: старые размеры панели не нужны, отступы — как у шторки */
+.vs-sheet.fp-vs{ padding-top:6px; }
+.vs-sheet.fp-vs .fp-head{ padding-left:0; padding-right:0; }
+.vs-sheet.fp-vs .fp-block{ padding-left:0; padding-right:0; }
+.vs-sheet.fp-vs .fp-go{ margin-left:0; margin-right:0; width:100%; }
+/* PLONK 2.0: выбранное в переключателях и чипах — «перевёрнутым» цветом (как вкладки), не зелёным */
+.pill-track > .slide-pill, .col-toggle.pill-row > .slide-pill{ background:var(--inverse); }
+.pill-track > .on, .pill-track > .active, .pill-track > .chip-active,
+.col-toggle.pill-row > .on, .col-toggle.pill-row > .active{ color:var(--on-inverse) !important; }
+/* шторка фильтров главной: воздух между блоками, главная кнопка — как остальные главные действия */
+.vs-sheet.fp-vs .vs-body{ display:flex; flex-direction:column; gap:20px; }
+.vs-sheet.fp-vs .fp-block{ gap:10px; }
+.vs-sheet.fp-vs .fp-go{ background:var(--inverse); color:var(--on-inverse); margin-top:4px; }
+.vs-sheet.fp-vs .fp-go{ box-shadow:0 8px 20px rgba(15,21,18,.18); }
