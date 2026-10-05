@@ -13,7 +13,26 @@ from app.models import Listing, ListingStatus
 from app.models.embedding import ListingEmbedding
 
 
+def _wait_ready(seconds: int = 600) -> bool:
+    """Ждём, пока служба загрузит модель (в первый раз она скачивается — это минуты)."""
+    import json
+    import time
+    import urllib.request
+    end = time.time() + seconds
+    while time.time() < end:
+        try:
+            if json.loads(urllib.request.urlopen("http://127.0.0.1:8011/health", timeout=5).read()).get("ready"):
+                return True
+        except Exception:  # noqa: BLE001
+            pass
+        time.sleep(5)
+    return False
+
+
 def run(limit: int = 3000) -> int:
+    if not _wait_ready():
+        print("служба plonk-embed не готова — попробуем в следующий раз")
+        return 0
     db = SessionLocal()
     done = 0
     try:
