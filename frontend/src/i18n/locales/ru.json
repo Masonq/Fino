@@ -1070,7 +1070,11 @@
     "att_pending_other": "{{count}} объявлений на проверке",
     "for_you": "Может быть интересно",
     "act_store": "Витрина",
-    "act_shop": "Снять шопс"
+    "act_shop": "Снять шопс",
+    "theme": "Тема",
+    "theme_auto": "Как в системе",
+    "theme_light": "Светлая",
+    "theme_dark": "Тёмная"
   },
   "verify": {
     "title": "Проверка документа",

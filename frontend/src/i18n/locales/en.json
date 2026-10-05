@@ -1024,7 +1024,11 @@
     "att_pending_other": "{{count}} listings are being checked",
     "for_you": "You might like",
     "act_store": "Storefront",
-    "act_shop": "New shop"
+    "act_shop": "New shop",
+    "theme": "Theme",
+    "theme_auto": "System",
+    "theme_light": "Light",
+    "theme_dark": "Dark"
   },
   "verify": {
     "title": "Identity verification",

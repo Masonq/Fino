@@ -11,6 +11,10 @@ import '@fontsource/onest/600.css'
 import '@fontsource/onest/700.css'
 import '@fontsource/onest/800.css'
 import './styles.css'
+import { applyTheme, watchSystemTheme } from './utils/theme'
+
+applyTheme()
+watchSystemTheme()
 
 // Языковые адреса: /en/... и /sr/... Русский живёт без приставки —
 // он основной, и ломать существующие ссылки на него нельзя.

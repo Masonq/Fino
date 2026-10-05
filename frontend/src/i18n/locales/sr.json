@@ -1051,7 +1051,11 @@
     "for_you": "Možda vas zanima",
     "att_support_few": "Podrška je odgovorila na {{count}} zahteva",
     "act_store": "Izlog",
-    "act_shop": "Novi šops"
+    "act_shop": "Novi šops",
+    "theme": "Tema",
+    "theme_auto": "Kao sistem",
+    "theme_light": "Svetla",
+    "theme_dark": "Tamna"
   },
   "verify": {
     "title": "Provera dokumenta",
