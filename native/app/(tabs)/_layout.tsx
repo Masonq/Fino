@@ -2,7 +2,8 @@ import { select } from '../../src/haptics'
 import Icon, { Star } from '../../src/components/Icon'
 import { tr } from '../../src/i18n'
 import { Tabs } from 'expo-router'
-import { type ColorValue, StyleSheet, Text, View } from 'react-native'
+import { NativeTabs } from 'expo-router/unstable-native-tabs'
+import { type ColorValue, Platform, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { useChats } from '../../src/chats'
@@ -22,7 +23,45 @@ const icon = (name: string) => function TabIcon({ color }: { color: ColorValue; 
   return <Icon name={name} size={ICON} color={color as string} />
 }
 
+/**
+ * PLONK 2.0, iOS: родная панель вкладок — на iOS 26 с «жидким стеклом», сворачивается при прокрутке вниз;
+ * значки — SF Symbols, у выбранной вкладки — залитый вариант. На Android — своя парящая панель ниже.
+ */
+function IosTabs() {
+  const { unread } = useChats()
+  return (
+    <NativeTabs tintColor={colors.primary} minimizeBehavior="onScrollDown">
+      <NativeTabs.Trigger name="index">
+        <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} />
+        <NativeTabs.Trigger.Label>{tr('Главная')}</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="shops">
+        <NativeTabs.Trigger.Icon sf={{ default: 'play.rectangle', selected: 'play.rectangle.fill' }} />
+        <NativeTabs.Trigger.Label>{tr('Шопсы')}</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="post">
+        <NativeTabs.Trigger.Icon sf={{ default: 'plus.circle', selected: 'plus.circle.fill' }} />
+        <NativeTabs.Trigger.Label>{tr('Разместить')}</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="chats">
+        <NativeTabs.Trigger.Icon sf={{ default: 'bubble.left', selected: 'bubble.left.fill' }} />
+        <NativeTabs.Trigger.Label>{tr('Сообщения')}</NativeTabs.Trigger.Label>
+        {unread > 0 && <NativeTabs.Trigger.Badge>{unread > 99 ? '99+' : String(unread)}</NativeTabs.Trigger.Badge>}
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="profile">
+        <NativeTabs.Trigger.Icon sf={{ default: 'person', selected: 'person.fill' }} />
+        <NativeTabs.Trigger.Label>{tr('Профиль')}</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+    </NativeTabs>
+  )
+}
+
 export default function TabsLayout() {
+  if (Platform.OS === 'ios') return <IosTabs />
+  return <JsTabs />
+}
+
+function JsTabs() {
   const insets = useSafeAreaInsets()
   const { unread } = useChats()
   return (
@@ -57,7 +96,6 @@ export default function TabsLayout() {
         tabBarStyle: { backgroundColor: '#000', borderTopColor: 'rgba(255,255,255,0.12)', height: BAR + insets.bottom, paddingTop: 8, paddingBottom: Math.max(insets.bottom, 6) },
         sceneStyle: { backgroundColor: '#000' },
       }} />
-      <Tabs.Screen name="favorites" options={{ href: null, title: tr('Избранное') }} />
       <Tabs.Screen name="post" options={{
         title: tr('Разместить'),
         tabBarActiveTintColor: colors.ink,

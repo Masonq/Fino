@@ -19,6 +19,7 @@ import { NetProvider } from '../src/net'
 import OfflineBanner from '../src/components/OfflineBanner'
 
 import { colors, isDark } from '../src/theme'
+import { applyThemePref, getThemePref } from '../src/themePref'
 
 /**
  * Обновления приходят сами (expo-updates, сервер plonk.rs): при запуске приложение проверяет новую версию и
@@ -56,6 +57,8 @@ export default function RootLayout() {
     const sub = Appearance.addChangeListener(({ colorScheme }) => {
       if ((colorScheme === 'dark') !== isDark) Updates.reloadAsync().catch(() => {})
     })
+    // закреплённая в профиле тема: ставим при запуске; если отличается от текущей — сработает перезапуск выше
+    getThemePref().then(applyThemePref).catch(() => {})
     return () => sub.remove()
   }, [])
   const [fontsReady, fontsError] = useFonts({

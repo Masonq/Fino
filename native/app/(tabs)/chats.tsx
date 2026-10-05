@@ -14,9 +14,11 @@ import Skeleton from '../../src/components/Skeleton'
 import { mediaUrl } from '../../src/config'
 import { plainText, shortTime, timeAgo } from '../../src/format'
 import { colors, font } from '../../src/theme'
+import { useTabInset } from '../../src/tabInset'
 
 /** Сообщения: список переписок — фото объявления, собеседник, последнее сообщение, время, непрочитанные. */
 export default function Chats() {
+  const tabInset = useTabInset()
   const { token, ready } = useAuth()
   const { chats, refresh, failed } = useChats()
   const [refreshing, setRefreshing] = useState(false)
@@ -114,7 +116,7 @@ export default function Chats() {
           keyExtractor={(c) => c.id}
           renderItem={row}
           ItemSeparatorComponent={() => <View style={styles.sep} />}
-          contentContainerStyle={chats.length === 0 ? { flexGrow: 1 } : { paddingBottom: 16 }}
+          contentContainerStyle={chats.length === 0 ? { flexGrow: 1, paddingBottom: tabInset } : { paddingBottom: 16 + tabInset }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await refresh(); setRefreshing(false) }} tintColor={colors.primary} colors={[colors.primary]} />}
           ListEmptyComponent={
             <View style={styles.center}>

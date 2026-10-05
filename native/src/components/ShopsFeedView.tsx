@@ -13,6 +13,7 @@ import { mediaUrl } from '../config'
 import { tr } from '../i18n'
 import Icon from './Icon'
 import { Btn, k } from './Kit'
+import { useTabInset } from '../tabInset'
 import { money, type Shop, type ShopComment, type ShopItem, shopComment, shopCommentDelete, shopCommentReport, shopComments, shopEvent, shopLike, shopsFeed } from '../social'
 import { SITE } from '../config'
 import { colors, font } from '../theme'
@@ -29,6 +30,7 @@ export default function ShopsFeedView({ start, tab = false }: { start?: string; 
   const { width, height: winH } = useWindowDimensions()
   const [height, setHeight] = useState(winH) // высота ленты: во вкладке — экран минус меню
   const insets = useSafeAreaInsets()
+  const tabInset = useTabInset()
   const [items, setItems] = useState<Shop[]>([])
   const [total, setTotal] = useState<number | null>(null)
   const [active, setActive] = useState(0)
@@ -79,7 +81,7 @@ export default function ShopsFeedView({ start, tab = false }: { start?: string; 
         initialNumToRender={2}
         maxToRenderPerBatch={2}
         renderItem={({ item, index }) => (
-          <Slide shop={item} active={index === active} near={index >= active - 1 && index <= active + 2} muted={muted} width={width} height={height} bottom={tab ? 0 : insets.bottom} />
+          <Slide shop={item} active={index === active} near={index >= active - 1 && index <= active + 2} muted={muted} width={width} height={height} bottom={tab ? tabInset : insets.bottom} />
         )}
       />
       {!tab && <Pressable style={[s.round, { top: insets.top + 8, left: 12 }]} onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} hitSlop={8} accessibilityLabel={tr('Назад')}>

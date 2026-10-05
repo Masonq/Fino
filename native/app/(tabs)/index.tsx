@@ -18,6 +18,7 @@ import ListingCard from '../../src/components/ListingCard'
 import Segmented from '../../src/components/Segmented'
 import Skeleton from '../../src/components/Skeleton'
 import ShopsRow from '../../src/components/ShopsRow'
+import { useTabInset } from '../../src/tabInset'
 import HomeSections from '../../src/components/HomeSections'
 import { cityName } from '../../src/format'
 import { prefs } from '../../src/prefs'
@@ -57,6 +58,7 @@ const HINTS: Record<'ru' | 'en' | 'sr', string[]> = {
 }
 
 export default function Feed() {
+  const tabInset = useTabInset()
   const { width } = useWindowDimensions()
   // Колонки ленты — как переключатель на сайте: 2 или 1; выбор запоминается
   const [cols, setCols] = useState<1 | 2>(2)
@@ -358,7 +360,7 @@ export default function Feed() {
           ? <View style={{ paddingHorizontal: space.page }}><ListingCard item={item} width={cardW} large /></View>
           : <ListingCard item={item} width={cardW} />)}
         columnWrapperStyle={cols === 2 ? styles.row : undefined}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={[styles.list, { paddingBottom: 24 + tabInset }]}
         ListHeaderComponent={
           <View style={styles.listHead}>
             {/* вместо историй — шопсы: короткие видео с объявлениями */}

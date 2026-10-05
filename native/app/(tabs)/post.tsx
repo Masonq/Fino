@@ -21,6 +21,7 @@ import { mediaUrl, SITE } from '../../src/config'
 import { catPath } from '../../src/artFit'
 import { cityName, CITY_COORDS } from '../../src/format'
 import { colors, font } from '../../src/theme'
+import { useTabInset } from '../../src/tabInset'
 
 const MAX = 10
 type Shot = { key: string; uri: string; mime: string; state: 'loading' | 'done' | 'failed'; uploaded?: Uploaded }
@@ -52,6 +53,7 @@ function apartmentTitle(attrs: Record<string, unknown>): string {
 }
 
 export default function Post() {
+  const tabInset = useTabInset()
   const { token, ready } = useAuth()
   const [shots, setShots] = useState<Shot[]>([])
   const [cat, setCat] = useState<{ c: Category; path: string } | null>(null)
@@ -226,7 +228,7 @@ export default function Post() {
   if (step === 1) {
     return (
       <SafeAreaView style={styles.page} edges={['top']}>
-        <ScrollView contentContainerStyle={styles.form}>
+        <ScrollView contentContainerStyle={[styles.form, { paddingBottom: 24 + tabInset }]}>
           {dots}
           <Text style={styles.stepTitle}>{tr('Что продаёте?')}</Text>
           <Text style={styles.stepHint}>{tr('Выберите раздел — подраздел уточним на следующем шаге')}</Text>
@@ -249,7 +251,7 @@ export default function Post() {
     const level = trail[trail.length - 1]?.children ?? []
     return (
       <SafeAreaView style={styles.page} edges={['top']}>
-        <ScrollView contentContainerStyle={styles.form}>
+        <ScrollView contentContainerStyle={[styles.form, { paddingBottom: 24 + tabInset }]}>
           {dots}
           <View style={styles.stepHead}>
             <Pressable onPress={() => { const t = trail.slice(0, -1); setTrail(t); if (!t.length) setStep(1) }} hitSlop={10} style={styles.stepBack} accessibilityLabel={tr('Назад')}>
@@ -294,7 +296,7 @@ export default function Post() {
     return (
       <SafeAreaView style={styles.page} edges={['top']}>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
+          <ScrollView contentContainerStyle={[styles.form, { paddingBottom: 24 + tabInset }]} keyboardShouldPersistTaps="handled">
             {dots}
             <View style={styles.stepHead}>
               <Pressable onPress={() => setStep(1)} hitSlop={10} style={styles.stepBack} accessibilityLabel={tr('Назад')}><Icon name="back" size={22} color={colors.ink} /></Pressable>
@@ -360,7 +362,7 @@ export default function Post() {
   return (
     <SafeAreaView style={styles.page} edges={['top']}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={[styles.form, { paddingBottom: 24 + tabInset }]} keyboardShouldPersistTaps="handled">
           {dots}
           <Text style={styles.stepTitle}>{tr(step === 5 ? 'Цена и город' : 'Описание и фото')}</Text>
           {step === 4 && (<>

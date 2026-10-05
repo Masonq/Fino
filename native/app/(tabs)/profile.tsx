@@ -18,6 +18,8 @@ import { prefs } from '../../src/prefs'
 import { readCache, writeCache } from '../../src/cache'
 import { onRetry } from '../../src/net'
 import { colors, font } from '../../src/theme'
+import { getThemePref, setThemePref, type ThemePref } from '../../src/themePref'
+import { useTabInset } from '../../src/tabInset'
 
 const rsd = (n: number) => `${String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00A0')}\u00A0RSD`
 
@@ -27,6 +29,9 @@ const rsd = (n: number) => `${String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d)
  * баланс (полоса «деньги / бонусы» и две плитки); меню со значками в зелёных квадратах. Размеры — из стилей сайта.
  */
 export default function Profile() {
+  const tabInset = useTabInset()
+  const [theme, setTheme] = useState<ThemePref>('auto')
+  useEffect(() => { getThemePref().then(setTheme).catch(() => {}) }, [])
   const { user, ready, token, signOut } = useAuth()
   const { lang, setLang } = useLang()
   const { notices } = useChats()
@@ -121,7 +126,7 @@ export default function Profile() {
 
   return (
     <SafeAreaView style={styles.page} edges={['top']}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 32 }}
+      <ScrollView contentContainerStyle={{ paddingBottom: 32 + tabInset }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false) }} tintColor={colors.primary} colors={[colors.primary]} />}>
         <View style={styles.header}>
           <Text style={styles.h1}>{tr('Профиль')}</Text>
@@ -237,6 +242,10 @@ export default function Profile() {
           {row('video', 'Шопсы', () => router.push('/shops/mine' as never))}
           {row('doc', 'Мои отклики', () => router.push('/jobs/my' as never))}
           {row('chat', 'Отклики на вакансии', () => router.push('/jobs' as never))}
+          {row('moon', `${tr('Тема')}: ${tr({ auto: 'как в системе', light: 'светлая', dark: 'тёмная' }[theme])}`, () => {
+            const next = ({ auto: 'light', light: 'dark', dark: 'auto' } as const)[theme]
+            setTheme(next); setThemePref(next)
+          })}
           {row('invite', 'Пригласите друга', () => router.push('/invite'))}
           {waiting > 0 && row('star', 'Ждут отзыва', () => router.push('/reviews'), waiting)}
           {row('searchrow', 'Сохранённые поиски', () => router.push('/saved'))}

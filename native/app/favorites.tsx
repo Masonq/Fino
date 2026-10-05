@@ -1,21 +1,21 @@
-import { tr } from '../../src/i18n'
+import { tr } from '../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { router, useFocusEffect } from 'expo-router'
-import Icon from '../../src/components/Icon'
+import Icon from '../src/components/Icon'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   FlatList, LayoutAnimation, ScrollView, Platform, Pressable, RefreshControl, StyleSheet, Text, UIManager, useWindowDimensions, View,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { favoriteList, type FeedItem } from '../../src/api'
-import { useAuth } from '../../src/auth'
-import ListingCard from '../../src/components/ListingCard'
-import Skeleton from '../../src/components/Skeleton'
-import { useFavorites } from '../../src/favorites'
-import { readCache, writeCache } from '../../src/cache'
-import { onRetry } from '../../src/net'
-import { colors, radius, space, font } from '../../src/theme'
+import { favoriteList, type FeedItem } from '../src/api'
+import { useAuth } from '../src/auth'
+import ListingCard from '../src/components/ListingCard'
+import Skeleton from '../src/components/Skeleton'
+import { useFavorites } from '../src/favorites'
+import { readCache, writeCache } from '../src/cache'
+import { onRetry } from '../src/net'
+import { colors, radius, space, font } from '../src/theme'
 
 if (Platform.OS === 'android') UIManager.setLayoutAnimationEnabledExperimental?.(true)
 
