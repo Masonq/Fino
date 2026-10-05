@@ -1685,7 +1685,15 @@
     "build_text_other": "You have {{count}} listings. We will build a storefront in a minute — you can change everything later",
     "more_from_one": "{{count}} more item from this seller",
     "more_from_other": "{{count}} more items from this seller",
-    "items_title": "Items · {{n}}"
+    "items_title": "Items · {{n}}",
+    "drop_at": "Drop: opens at (optional)",
+    "drop_hint": "Until then buyers see a countdown instead of the items. Followers get notified now and when it opens",
+    "drop_opens": "Drop opens in",
+    "drop_days": "d",
+    "drop_notify": "Remind me",
+    "drop_will_notify": "We will notify you when it opens",
+    "drop_items_one": "{{count}} item",
+    "drop_items_other": "{{count}} items"
   },
   "shx": {
     "title": "What are shops",

@@ -8,7 +8,7 @@
 import re
 import uuid
 from collections import Counter
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from html import escape
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -103,6 +103,44 @@ def _coll_ids(c: StorefrontCollection) -> list[uuid.UUID]:
     return [it.listing_id for it in rows]
 
 
+def utcnow_local() -> datetime:
+    """Время Белграда без пояса — в нём продавец задаёт час дропа."""
+    from zoneinfo import ZoneInfo
+    return datetime.now(ZoneInfo("Europe/Belgrade")).replace(tzinfo=None)
+
+
+def _followers_ids(db: Session, owner_id) -> list:
+    return [r[0] for r in db.query(SellerSubscription.subscriber_id).filter(SellerSubscription.seller_id == owner_id).all()]
+
+
+def _announce_drop(db: Session, sf: Storefront, c: StorefrontCollection):
+    """Подписчикам — «скоро дроп» (один раз при назначении времени)."""
+    try:
+        from app.core.notifications import notify
+        when = c.drop_at.strftime("%d.%m в %H:%M")
+        for uid in _followers_ids(db, sf.owner_id):
+            notify(db, uid, f"⏳ {sf.name}: дроп «{c.title}» откроется {when}", link=f"/s/{sf.slug}/c/{c.id}")
+    except Exception:
+        pass
+
+
+def _open_due_drops(db: Session, sf: Storefront):
+    """Дропы, время которых пришло: сообщаем подписчикам один раз (проверка — при открытии витрины)."""
+    now = utcnow_local()
+    due = [c for c in sf.collections if c.drop_at and c.drop_at <= now and not c.drop_notified]
+    if not due:
+        return
+    try:
+        from app.core.notifications import notify
+        for c in due:
+            c.drop_notified = True
+            for uid in _followers_ids(db, sf.owner_id):
+                notify(db, uid, f"🔥 {sf.name}: дроп «{c.title}» открыт", link=f"/s/{sf.slug}/c/{c.id}")
+        db.commit()
+    except Exception:
+        db.rollback()
+
+
 def _owner_view(db: Session, sf: Storefront, lang: str) -> dict:
     live = _live_ids(sf)
     in_front = {it.listing_id for it in sf.items}
@@ -113,7 +151,8 @@ def _owner_view(db: Session, sf: Storefront, lang: str) -> dict:
         "pause_note": sf.pause_note, "views": sf.views, "followers": _followers(db, sf.owner_id),
         "items": _cards(db, live, lang), "not_added": _cards(db, others, lang),
         "collections": [{"id": str(c.id), "title": c.title, "description": c.description, "status": c.status,
-                         "sort": c.sort, "listing_ids": [str(i) for i in _coll_ids(c)]} for c in sf.collections],
+                         "sort": c.sort, "listing_ids": [str(i) for i in _coll_ids(c)],
+                         "drop_at": c.drop_at.isoformat() if c.drop_at else None} for c in sf.collections],
         "cover_options": list(dict.fromkeys(filter(None, (_cover_of(it.listing) for it in sf.items if it.listing))))[:12],
     }
 
@@ -231,6 +270,7 @@ class CollectionIn(BaseModel):
     status: str = "active"
     sort: str = "manual"
     listing_ids: list[uuid.UUID] = []
+    drop_at: datetime | None = None  # время открытия дропа (местное время Белграда, без пояса)
 
 
 def _apply_collection(db: Session, sf: Storefront, c: StorefrontCollection, p: CollectionIn):
@@ -243,6 +283,13 @@ def _apply_collection(db: Session, sf: Storefront, c: StorefrontCollection, p: C
     allowed = {it.listing_id for it in sf.items}
     c.items = [StorefrontCollectionItem(listing_id=i, position=n)
                for n, i in enumerate(x for x in dict.fromkeys(p.listing_ids) if x in allowed)]
+    new_drop = p.drop_at.replace(tzinfo=None) if p.drop_at else None
+    if new_drop and new_drop <= utcnow_local():
+        new_drop = None  # время уже прошло — это обычная подборка
+    if new_drop != c.drop_at:
+        c.drop_at, c.drop_notified = new_drop, False
+        if new_drop and sf.status == "published":
+            _announce_drop(db, sf, c)
 
 
 @router.post(f"{API}/me/collections")
@@ -403,7 +450,10 @@ def public(slug: str, request: Request, lang: str = "ru", user: User | None = De
         if res.rowcount:
             sf.views = (sf.views or 0) + 1
             db.commit()
-    live = _live_ids(sf)
+    _open_due_drops(db, sf)
+    now_local = utcnow_local()
+    hidden = {it.listing_id for c in sf.collections if c.status == "active" and c.drop_at and c.drop_at > now_local for it in c.items}
+    live = [i for i in _live_ids(sf) if i not in hidden]  # вещи закрытого дропа не видны до открытия
     followers = _followers(db, sf.owner_id)
     following = bool(user and db.query(SellerSubscription.id).filter_by(subscriber_id=user.id, seller_id=sf.owner_id).first())
     now = utcnow()
@@ -419,7 +469,9 @@ def public(slug: str, request: Request, lang: str = "ru", user: User | None = De
         "followers": followers if followers >= FOLLOWERS_PUBLIC_FROM else None, "following": following,
         "items": _cards(db, live, lang),
         "collections": [{"id": str(c.id), "title": c.title, "description": c.description,
-                         "listing_ids": [str(i) for i in _coll_ids(c)]}
+                         "drop_at": c.drop_at.isoformat() if c.drop_at and c.drop_at > now_local else None,
+                         "listing_ids": [] if c.drop_at and c.drop_at > now_local else [str(i) for i in _coll_ids(c)],
+                         "count": len(_coll_ids(c))}
                         for c in sf.collections if c.status == "active" and _coll_ids(c)],
         "shops": [{"id": str(s.id), "poster_url": s.poster_url, "caption": s.caption} for s in shops],
     }

@@ -80,8 +80,11 @@ export default function Storefront() {
         {sf.shops.length > 0 && <Tabs value={tab} onChange={setTab} items={[{ key: 'items', label: tr('Товары') }, { key: 'video', label: tr('Видео'), n: sf.shops.length }]} />}
         {tab === 'items' && sf.collections.length > 0 && (
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <Tabs value={coll} onChange={setColl} items={[{ key: 'all', label: tr('Все') }, ...sf.collections.map((c) => ({ key: c.id, label: c.title, n: c.listing_ids.length }))]} />
+            <Tabs value={coll} onChange={setColl} items={[{ key: 'all', label: tr('Все') }, ...sf.collections.map((c) => ({ key: c.id, label: `${c.drop_at ? '⏳ ' : ''}${c.title}`, n: c.count ?? c.listing_ids.length }))]} />
           </ScrollView>
+        )}
+        {tab === 'items' && !!sf.collections.find((x) => x.id === coll)?.drop_at && (
+          <DropCountdown at={sf.collections.find((x) => x.id === coll)!.drop_at!} following={sf.following} onFollow={sf.mine ? null : follow} />
         )}
         {tab === 'video' && (
           <View style={s.videos}>
@@ -106,7 +109,7 @@ export default function Storefront() {
         renderItem={({ item }) => <ListingCard item={item} width={cardW} />}
         columnWrapperStyle={{ gap: space.gap, paddingHorizontal: space.page }}
         contentContainerStyle={{ gap: space.gap, paddingBottom: insets.bottom + 24 }}
-        ListEmptyComponent={tab === 'items' ? <Empty text={tr('Здесь пока ничего нет')} /> : null}
+        ListEmptyComponent={tab === 'items' && !sf.collections.find((x) => x.id === coll)?.drop_at ? <Empty text={tr('Здесь пока ничего нет')} /> : null}
       />
       <Modal visible={report} transparent animationType="slide" onRequestClose={() => setReport(false)}>
         <Pressable style={k.sheetOverlay} onPress={() => setReport(false)}>
@@ -140,5 +143,25 @@ const s = StyleSheet.create({
   more: { width: 44, height: 44, borderRadius: 12, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
   videos: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   video: { aspectRatio: 9 / 16, borderRadius: 12, overflow: 'hidden', backgroundColor: '#1c2620' },
+  drop: { marginVertical: 8, paddingVertical: 22, paddingHorizontal: 18, borderRadius: 24, backgroundColor: colors.inverse, alignItems: 'center', gap: 8 },
+  dropLabel: { fontFamily: font[600], fontSize: 14, color: colors.onInverse, opacity: 0.8 },
+  dropTimer: { fontFamily: font[800], fontSize: 40, letterSpacing: -1, color: colors.onInverse, fontVariant: ['tabular-nums'] },
   reason: { paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: colors.border },
 })
+
+/** Закрытый дроп: обратный отсчёт до открытия и «Напомнить мне» (подписка на продавца). */
+function DropCountdown({ at, following, onFollow }: { at: string; following: boolean; onFollow: (() => void) | null }) {
+  const [now, setNow] = useState(Date.now())
+  useEffect(() => { const id = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(id) }, [])
+  const left = Math.max(0, new Date(at).getTime() - now)
+  const d = Math.floor(left / 864e5), h = Math.floor(left / 36e5) % 24, m = Math.floor(left / 6e4) % 60, sec = Math.floor(left / 1e3) % 60
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return (
+    <View style={s.drop}>
+      <Text style={s.dropLabel}>{tr('Дроп откроется через')}</Text>
+      <Text style={s.dropTimer}>{d > 0 ? `${d} ${tr('дн.')} ` : ''}{pad(h)}:{pad(m)}:{pad(sec)}</Text>
+      {!!onFollow && (following ? <Text style={s.dropLabel}>✓ {tr('Пришлём уведомление, когда откроется')}</Text>
+        : <Btn label={tr('Напомнить мне')} onPress={onFollow} />)}
+    </View>
+  )
+}

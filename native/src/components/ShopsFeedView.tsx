@@ -16,6 +16,7 @@ import { Btn, k } from './Kit'
 import { useTabInset } from '../tabInset'
 import { money, type Shop, type ShopComment, type ShopItem, shopComment, shopCommentDelete, shopCommentReport, shopComments, shopEvent, shopLike, shopsFeed } from '../social'
 import { SITE } from '../config'
+import { useFavorites } from '../favorites'
 import { colors, font } from '../theme'
 
 const PAGE = 8
@@ -131,8 +132,16 @@ const Slide = memo(function Slide({ shop, active, near, muted, width, height, bo
     if (isShop && !sent.current.complete && d && currentTime / d > 0.9) { sent.current.complete = true; shopEvent(token, shop.id, 'complete') }
   }, [currentTime, shop.duration, player, shop.id, token])
 
+  const fav = useFavorites()
+  const listingId = shop.items[0]?.id
+  const faved = !isShop && !!listingId && fav.isFav(listingId)
   const toggleLike = (force?: boolean) => {
-    if (!isShop) return
+    if (!isShop) {
+      // у видео из объявления своих лайков нет — сердце кладёт вещь в избранное
+      if (!token) { router.push('/login'); return }
+      if (listingId && (force !== true || !faved)) fav.toggle(listingId)
+      return
+    }
     if (!token) { router.push('/login'); return }
     const on = force ?? !like.on
     if (on === like.on) return
@@ -142,7 +151,7 @@ const Slide = memo(function Slide({ shop, active, near, muted, width, height, bo
   // один тап — пауза, два быстрых — лайк с сердечком (как в TikTok)
   const onTap = () => {
     const now = Date.now()
-    if (now - lastTap.current < 300) { lastTap.current = 0; setPaused(false); if (isShop) { toggleLike(true); setBurst((b) => b + 1) }; return }
+    if (now - lastTap.current < 300) { lastTap.current = 0; setPaused(false); toggleLike(true); setBurst((b) => b + 1); return }
     lastTap.current = now
     setTimeout(() => { if (lastTap.current === now) setPaused((p) => !p) }, 300)
   }
@@ -181,21 +190,16 @@ const Slide = memo(function Slide({ shop, active, near, muted, width, height, bo
         <Pressable style={s.sideAva} onPress={() => shop.author && router.push(`/seller/${shop.author.id}` as never)} accessibilityLabel={shop.author?.name}>
           {shop.author?.avatar ? <Image source={{ uri: mediaUrl(shop.author.avatar) ?? undefined }} style={StyleSheet.absoluteFill} /> : <Text style={s.avaText}>{(shop.author?.name || '?')[0]}</Text>}
         </Pressable>
-        {isShop && (
-          <Pressable style={s.sideBtn} onPress={() => toggleLike()} hitSlop={6} accessibilityRole="button" accessibilityLabel={tr('Нравится')} accessibilityState={{ selected: like.on }}>
-            <Icon name="heart" size={30} color={like.on ? '#FF3B5C' : '#fff'} filled={like.on} />
-            <Text style={s.sideText}>{like.n || ''}</Text>
-          </Pressable>
-        )}
-        {isShop && (
-          <Pressable style={s.sideBtn} onPress={() => setComments(true)} hitSlop={6} accessibilityLabel={tr('Комментарии')}>
-            <Icon name="chat" size={30} color="#fff" />
-            <Text style={s.sideText}>{nComments || ''}</Text>
-          </Pressable>
-        )}
+        <Pressable style={s.sideBtn} onPress={() => toggleLike()} hitSlop={6} accessibilityRole="button" accessibilityLabel={tr('Нравится')} accessibilityState={{ selected: isShop ? like.on : faved }}>
+          <Icon name="heart" size={30} color={(isShop ? like.on : faved) ? '#FF3B5C' : '#fff'} filled={isShop ? like.on : faved} />
+          <Text style={s.sideText}>{isShop ? (like.n || '') : ''}</Text>
+        </Pressable>
+        <Pressable style={s.sideBtn} onPress={() => (isShop ? setComments(true) : shop.items[0] && write(shop.items[0]))} hitSlop={6} accessibilityLabel={isShop ? tr('Комментарии') : tr('Спросить продавца')}>
+          <Icon name="chat" size={30} color="#fff" />
+          <Text style={s.sideText}>{isShop ? (nComments || '') : ''}</Text>
+        </Pressable>
         <Pressable style={s.sideBtn} onPress={share} hitSlop={6} accessibilityLabel={tr('Поделиться')}>
           <Icon name="share" size={28} color="#fff" />
-          <Text style={s.sideText}>{tr('Поделиться')}</Text>
         </Pressable>
       </View>
       {comments && <Comments shop={shop} onClose={() => setComments(false)} onCount={setNComments} onAsk={(it) => { setComments(false); write(it) }} bottom={bottom} />}
@@ -235,7 +239,7 @@ const s = StyleSheet.create({
   sideBtn: { alignItems: 'center', gap: 4, minWidth: 48 },
   sideText: { fontFamily: font[700], fontSize: 12, color: '#fff', textShadowColor: 'rgba(0,0,0,0.5)', textShadowRadius: 2 },
   shade: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '46%' },
-  meta: { position: 'absolute', left: 0, right: 64, bottom: 0, paddingHorizontal: 12, paddingTop: 60 },
+  meta: { position: 'absolute', left: 0, right: 76, bottom: 0, paddingHorizontal: 12, paddingTop: 60 },
   ava: { width: 32, height: 32, borderRadius: 16, overflow: 'hidden', backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
   avaText: { fontFamily: font[800], fontSize: 14, color: colors.primaryDeep },
   author: { fontFamily: font[700], fontSize: 15, color: '#fff' },

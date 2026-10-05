@@ -94,7 +94,7 @@ export function shopUpload(t: string, uri: string, mime: string, onProgress: (p:
 export type StorefrontPublic = {
   slug: string; moved: boolean; name: string; description?: string | null; cover_url?: string | null; status: string; pause_until?: string | null; pause_note?: string | null
   owner: { id: string; name: string; avatar?: string | null }; mine: boolean; followers: number | null; following: boolean
-  items: FeedItem[]; collections: { id: string; title: string; description?: string | null; listing_ids: string[] }[]
+  items: FeedItem[]; collections: { id: string; title: string; description?: string | null; listing_ids: string[]; drop_at?: string | null; count?: number }[]
   shops: { id: string; poster_url?: string | null; caption?: string | null }[]
 }
 export type StorefrontOwn = {

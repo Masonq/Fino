@@ -134,13 +134,14 @@ export default function Storefront() {
               <Link className={`jr-tab${!coll ? ' on' : ''}`} to={`/s/${sf.slug}`} replace>{t('sf.all')}</Link>
               {sf.collections.map((c) => (
                 <Link key={c.id} className={`jr-tab${coll?.id === c.id ? ' on' : ''}`} to={`/s/${sf.slug}/c/${c.id}`} replace>
-                  {c.title}<span className="jr-tab-n">{c.listing_ids.length}</span>
+                  {c.drop_at ? '⏳ ' : ''}{c.title}<span className="jr-tab-n">{c.count ?? c.listing_ids.length}</span>
                 </Link>
               ))}
             </div>
           )}
           {coll?.description && <p className="sf-desc sf-coll-desc">{coll.description}</p>}
-          {items.length === 0 ? (
+          {coll?.drop_at && <DropCountdown at={coll.drop_at} count={coll.count} following={sf.following} onFollow={sf.mine ? null : follow} />}
+          {coll?.drop_at ? null : items.length === 0 ? (
             <div className="empty-state"><p className="empty-hint">{t('sf.empty')}</p></div>
           ) : (
             <div className="feed-grid sf-grid">{items.map((l, i) => <ListingCard key={l.id} listing={l} priority={i < 4} />)}</div>
@@ -184,6 +185,27 @@ export function StorefrontDiscover() {
           <div className="jr-muted">{t('sf.items_n', { count: s.count })}{s.city ? ` · ${s.city}` : ''}{s.followers != null ? ` · ${t('sf.followers_n', { count: s.followers })}` : ''}</div>
         </Link>
       ))}
+    </div>
+  )
+}
+
+/** Закрытый дроп: обратный отсчёт до открытия и подписка, чтобы не пропустить. */
+function DropCountdown({ at, count, following, onFollow }) {
+  const { t } = useTranslation()
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => { const id = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(id) }, [])
+  const target = new Date(at).getTime()
+  const left = Math.max(0, target - now)
+  useEffect(() => { if (left === 0) { const id = setTimeout(() => window.location.reload(), 800); return () => clearTimeout(id) } return undefined }, [left === 0]) // eslint-disable-line react-hooks/exhaustive-deps
+  const d = Math.floor(left / 864e5), h = Math.floor(left / 36e5) % 24, m = Math.floor(left / 6e4) % 60, sec = Math.floor(left / 1e3) % 60
+  const pad = (n) => String(n).padStart(2, '0')
+  return (
+    <div className="sf-drop">
+      <div className="sf-drop-label">{t('sf.drop_opens')}</div>
+      <div className="sf-drop-timer">{d > 0 ? `${d} ${t('sf.drop_days')} ` : ''}{pad(h)}:{pad(m)}:{pad(sec)}</div>
+      <div className="sf-drop-sub">{t('sf.drop_items', { count })} · {new Date(at).toLocaleString(undefined, { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</div>
+      {onFollow && !following && <button type="button" className="jr-btn primary" onClick={onFollow}>{t('sf.drop_notify')}</button>}
+      {onFollow && following && <div className="sf-drop-sub">✓ {t('sf.drop_will_notify')}</div>}
     </div>
   )
 }

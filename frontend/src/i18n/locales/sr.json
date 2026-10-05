@@ -1732,7 +1732,16 @@
     "more_from_one": "Još {{count}} stvar od prodavca",
     "more_from_few": "Još {{count}} stvari od prodavca",
     "more_from_other": "Još {{count}} stvari od prodavca",
-    "items_title": "Stvari · {{n}}"
+    "items_title": "Stvari · {{n}}",
+    "drop_at": "Drop: otvara se u (opciono)",
+    "drop_hint": "Do tada kupci vide odbrojavanje umesto stvari. Pratioci dobijaju obaveštenje sada i kada se otvori",
+    "drop_opens": "Drop se otvara za",
+    "drop_days": "d",
+    "drop_notify": "Podseti me",
+    "drop_will_notify": "Javićemo kada se otvori",
+    "drop_items_one": "{{count}} stvar",
+    "drop_items_few": "{{count}} stvari",
+    "drop_items_other": "{{count}} stvari"
   },
   "shx": {
     "title": "Šta su šopsovi",

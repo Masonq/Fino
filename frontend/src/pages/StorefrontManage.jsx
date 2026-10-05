@@ -132,15 +132,20 @@ export default function StorefrontManage() {
       <div className="jr-hint sf-left">{t('sf.collections_hint')}</div>
       {sf.collections.map((c) => (
         <div key={c.id} className="sf-coll-row">
-          <div className="sh-pick-text"><div className="sh-item-title">{c.title}{c.status === 'hidden' ? ` · ${t('sf.hidden')}` : ''}</div><div className="jr-muted">{t('sf.items_n', { count: c.listing_ids.length })}</div></div>
-          <button type="button" className="jr-btn ghost sm" onClick={() => setColl({ ...c })}>{t('shops.edit')}</button>
+          <div className="sh-pick-text"><div className="sh-item-title">{c.drop_at ? '⏳ ' : ''}{c.title}{c.status === 'hidden' ? ` · ${t('sf.hidden')}` : ''}</div><div className="jr-muted">{t('sf.items_n', { count: c.listing_ids.length })}</div></div>
+          <button type="button" className="jr-btn ghost sm" onClick={() => setColl({ ...c, drop_at: c.drop_at ? c.drop_at.slice(0, 16) : '' })}>{t('shops.edit')}</button>
         </div>
       ))}
-      {!coll && <button type="button" className="jr-btn ghost wide" onClick={() => setColl({ id: null, title: '', description: '', status: 'active', sort: 'manual', listing_ids: [] })}>{t('sf.add_collection')}</button>}
+      {!coll && <button type="button" className="jr-btn ghost wide" onClick={() => setColl({ id: null, title: '', description: '', status: 'active', sort: 'manual', listing_ids: [], drop_at: '' })}>{t('sf.add_collection')}</button>}
       {coll && (
         <div className="sf-coll-edit">
           <label className="jr-field"><span>{t('sf.coll_title')}</span><input value={coll.title} maxLength={40} placeholder={t('sf.coll_title_ph')} onChange={(e) => setColl({ ...coll, title: e.target.value })} /></label>
           <label className="jr-field"><span>{t('sf.description')}</span><input value={coll.description || ''} maxLength={160} onChange={(e) => setColl({ ...coll, description: e.target.value })} /></label>
+          {/* «Дроп»: подборка откроется в назначенное время — до него покупатели видят обратный отсчёт, подписчикам придёт уведомление */}
+          <label className="jr-field"><span>{t('sf.drop_at')}</span>
+            <input type="datetime-local" value={coll.drop_at || ''} onChange={(e) => setColl({ ...coll, drop_at: e.target.value })} />
+          </label>
+          {coll.drop_at && <div className="jr-hint sf-left">{t('sf.drop_hint')}</div>}
           <div className="sf-coll-opts">
             <label><input type="checkbox" checked={coll.sort === 'newest'} onChange={(e) => setColl({ ...coll, sort: e.target.checked ? 'newest' : 'manual' })} /> {t('sf.newest_first')}</label>
             <label><input type="checkbox" checked={coll.status === 'hidden'} onChange={(e) => setColl({ ...coll, status: e.target.checked ? 'hidden' : 'active' })} /> {t('sf.hide')}</label>
@@ -159,7 +164,7 @@ export default function StorefrontManage() {
             {coll.id && <button type="button" className="jr-btn danger" onClick={() => { if (window.confirm(t('sf.confirm_delete_coll'))) run(api.sfDeleteCollection(coll.id, lang)).then((ok) => ok && setColl(null)) }}>{t('shops.remove')}</button>}
             <button type="button" className="jr-btn ghost" onClick={() => setColl(null)}>{t('jobresp.cancel')}</button>
             <button type="button" className="jr-btn primary" onClick={() => {
-              const body = { title: coll.title, description: coll.description, status: coll.status, sort: coll.sort, listing_ids: coll.listing_ids }
+              const body = { title: coll.title, description: coll.description, status: coll.status, sort: coll.sort, listing_ids: coll.listing_ids, drop_at: coll.drop_at || null }
               run(coll.id ? api.sfEditCollection(coll.id, body, lang) : api.sfAddCollection(body, lang)).then((ok) => ok && setColl(null))
             }}>{t('shops.save_draft')}</button>
           </div>

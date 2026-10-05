@@ -9,7 +9,7 @@
 import uuid
 from datetime import date, datetime
 
-from sqlalchemy import Date, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -61,6 +61,10 @@ class StorefrontCollection(Base):
     status: Mapped[str] = mapped_column(String(10), default="active")  # active | hidden
     sort: Mapped[str] = mapped_column(String(10), default="manual")  # manual | newest
     position: Mapped[int] = mapped_column(Integer, default=0)
+    # «Дроп»: подборка откроется в это время (до него покупатели видят обратный отсчёт, не вещи);
+    # drop_notified — подписчикам уже сообщили, что дроп открылся
+    drop_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    drop_notified: Mapped[bool] = mapped_column(Boolean, default=False)
 
     items = relationship("StorefrontCollectionItem", order_by="StorefrontCollectionItem.position",
                          cascade="all, delete-orphan")

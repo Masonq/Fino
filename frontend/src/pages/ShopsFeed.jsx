@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import Comments from '../components/ShopComments'
+import { useFavorites } from '../context/FavoritesContext'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
@@ -123,8 +124,15 @@ function Slide({ shop, index, active, near, muted, onActive }) {
     return undefined
   }, [active, paused, near]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const { isFavorite, toggle: toggleFav } = useFavorites()
+  const listingId = shop.items?.[0]?.id
+  const faved = !isShop && listingId ? isFavorite(listingId) : false
   const toggleLike = (force) => {
-    if (!isShop) return
+    if (!isShop) {
+      if (!user?.id) { navigate(`/login?returnTo=${encodeURIComponent(`/shops?start=${shop.id}`)}`); return }
+      if (listingId && (force !== true || !faved)) toggleFav(listingId)
+      return
+    }
     if (!user?.id) { navigate(`/login?returnTo=${encodeURIComponent(`/shops?start=${shop.id}`)}`); return }
     const on = force ?? !like.on
     if (on === like.on) return
@@ -137,7 +145,7 @@ function Slide({ shop, index, active, near, muted, onActive }) {
     if (now - lastTap.current < 300) {
       lastTap.current = 0
       setPaused(false)
-      if (isShop) { toggleLike(true); setBurst((b) => b + 1) }
+      toggleLike(true); setBurst((b) => b + 1)
       return
     }
     lastTap.current = now
@@ -190,21 +198,16 @@ function Slide({ shop, index, active, near, muted, onActive }) {
         <Link className="sh-side-ava" to={`/seller/${shop.author?.id}`} aria-label={shop.author?.name}>
           {shop.author?.avatar ? <img src={shop.author.avatar} alt="" /> : (shop.author?.name || '?')[0]}
         </Link>
-        {isShop && (
-          <button type="button" className={`sh-side-btn${like.on ? ' on' : ''}`} onClick={() => toggleLike()} aria-label={t('shops.like')} aria-pressed={like.on}>
-            <svg viewBox="0 0 24 24" width="30" height="30" fill={like.on ? '#FF3B5C' : 'none'} stroke={like.on ? '#FF3B5C' : '#fff'} strokeWidth="2" strokeLinejoin="round"><path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" /></svg>
-            <span>{like.n || ''}</span>
-          </button>
-        )}
-        {isShop && (
-          <button type="button" className="sh-side-btn" onClick={() => setComments(true)} aria-label={t('shops.comments')}>
-            <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#fff" strokeWidth="2" strokeLinejoin="round"><path d="M20.5 12a8 8 0 0 1-8.5 8 9 9 0 0 1-3.4-.6L4 21l1.4-4a8 8 0 0 1-1.4-4.6A8 8 0 0 1 12.5 4a8 8 0 0 1 8 8Z" /></svg>
-            <span>{nComments || ''}</span>
-          </button>
-        )}
+        <button type="button" className={`sh-side-btn${(isShop ? like.on : faved) ? ' on' : ''}`} onClick={() => toggleLike()} aria-label={t('shops.like')} aria-pressed={isShop ? like.on : faved}>
+          <svg viewBox="0 0 24 24" width="30" height="30" fill={(isShop ? like.on : faved) ? '#FF3B5C' : 'none'} stroke={(isShop ? like.on : faved) ? '#FF3B5C' : '#fff'} strokeWidth="2" strokeLinejoin="round"><path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" /></svg>
+          <span>{isShop ? (like.n || '') : ''}</span>
+        </button>
+        <button type="button" className="sh-side-btn" onClick={() => (isShop ? setComments(true) : shop.items?.[0] && write(shop.items[0]))} aria-label={isShop ? t('shops.comments') : t('shops.ask_seller')}>
+          <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#fff" strokeWidth="2" strokeLinejoin="round"><path d="M20.5 12a8 8 0 0 1-8.5 8 9 9 0 0 1-3.4-.6L4 21l1.4-4a8 8 0 0 1-1.4-4.6A8 8 0 0 1 12.5 4a8 8 0 0 1 8 8Z" /></svg>
+          <span>{isShop ? (nComments || '') : ''}</span>
+        </button>
         <button type="button" className="sh-side-btn" onClick={share} aria-label={t('shops.share')}>
           <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" /><path d="m16 6-4-4-4 4" /><path d="M12 2v13" /></svg>
-          <span>{t('shops.share')}</span>
         </button>
       </div>
       {comments && <Comments shop={shop} item={shop.items[0]} onClose={() => setComments(false)} onCount={setNComments} onAsk={write} />}
