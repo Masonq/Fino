@@ -240,6 +240,13 @@ export default function Feed() {
       <View style={styles.center}>
         <Text style={styles.emptyTitle}>{q ? tr('Ничего не нашлось') : tr('Здесь пока пусто')}</Text>
         {!!q && <Text style={styles.emptyText}>{tr('Попробуйте сказать иначе или убрать часть слов.')}</Text>}
+        {/* ничего не нашлось — не тупик: подписка на поиск, пришлём уведомление, как только такое появится */}
+        {searchActive && (
+          <Pressable style={[styles.notify, savedState === 'saved' && styles.notifyDone]} onPress={onSave} disabled={savedState !== 'idle'} accessibilityRole="button">
+            <Icon name={savedState === 'saved' ? 'check' : 'bell'} size={18} color={savedState === 'saved' ? colors.primaryDeep : colors.onInverse} />
+            <Text style={[styles.notifyText, savedState === 'saved' && { color: colors.primaryDeep }]}>{savedState === 'saved' ? tr('Сообщим, когда появится') : tr('Сообщить, когда появится')}</Text>
+          </Pressable>
+        )}
         {searchActive && (
           <>
             <Text style={[styles.emptyText, { marginTop: 10 }]}>{tr('Или посмотрите разделы:')}</Text>
@@ -506,6 +513,9 @@ const styles = StyleSheet.create({
   list: { paddingHorizontal: 0, paddingBottom: 24, gap: space.gap },
   row: { gap: space.gap, paddingHorizontal: space.page },
   skelGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.gap, paddingHorizontal: space.page },
+  notify: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 48, paddingHorizontal: 20, marginTop: 16, borderRadius: 16, backgroundColor: colors.inverse },
+  notifyDone: { backgroundColor: colors.primarySoft },
+  notifyText: { fontFamily: font[700], fontSize: 15, color: colors.onInverse },
   center: { alignItems: 'center', paddingTop: 80, paddingHorizontal: 32, gap: 8 },
   emptyTitle: { fontSize: 18, fontFamily: font[800], color: colors.ink, textAlign: 'center' },
   emptyText: { fontFamily: font[400], fontSize: 14.5, color: colors.inkSoft, textAlign: 'center', lineHeight: 20 },

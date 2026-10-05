@@ -88,7 +88,9 @@
     ],
     "empty_title": "Nothing found",
     "empty_hint": "Try another word or reset the filters. The “Follow” button will let you know when it shows up.",
-    "empty_browse": "Browse categories"
+    "empty_browse": "Browse categories",
+    "notify_me": "Notify me when it appears",
+    "notify_done": "We will let you know"
   },
   "chat": {
     "empty": "No messages yet — say hello",
@@ -1697,7 +1699,8 @@
     "drop_notify": "Remind me",
     "drop_will_notify": "We will notify you when it opens",
     "drop_items_one": "{{count}} item",
-    "drop_items_other": "{{count}} items"
+    "drop_items_other": "{{count}} items",
+    "similar": "Similar storefronts"
   },
   "shx": {
     "title": "What are shops",

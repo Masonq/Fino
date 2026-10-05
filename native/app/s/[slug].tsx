@@ -10,7 +10,7 @@ import { plural, tr } from '../../src/i18n'
 import Icon from '../../src/components/Icon'
 import { Btn, Empty, k, Tabs } from '../../src/components/Kit'
 import ListingCard from '../../src/components/ListingCard'
-import { sfFollow, sfPublic, sfReport, type StorefrontPublic } from '../../src/social'
+import { sfDiscover, sfFollow, sfPublic, sfReport, type StorefrontPublic } from '../../src/social'
 import { colors, font, space } from '../../src/theme'
 import VerifiedMark from '../../src/components/VerifiedMark'
 import Skeleton from '../../src/components/Skeleton'
@@ -124,6 +124,7 @@ export default function Storefront() {
         columnWrapperStyle={{ gap: space.gap, paddingHorizontal: space.page }}
         contentContainerStyle={{ gap: space.gap, paddingBottom: insets.bottom + 24 }}
         ListEmptyComponent={tab === 'items' && !sf.collections.find((x) => x.id === coll)?.drop_at ? <Empty text={tr('Здесь пока ничего нет')} /> : null}
+        ListFooterComponent={<SimilarStores slug={sf.slug} city={sf.city} />}
       />
       <Modal visible={report} transparent animationType="slide" onRequestClose={() => setReport(false)}>
         <Pressable style={k.sheetOverlay} onPress={() => setReport(false)}>
@@ -157,6 +158,10 @@ const s = StyleSheet.create({
   more: { width: 44, height: 44, borderRadius: 12, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
   videos: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   video: { aspectRatio: 9 / 16, borderRadius: 12, overflow: 'hidden', backgroundColor: '#1c2620' },
+  similarTitle: { fontFamily: font[800], fontSize: 20, color: colors.ink, letterSpacing: -0.4, paddingHorizontal: space.page, marginBottom: 10 },
+  similar: { width: 180, padding: 8, borderRadius: 20, backgroundColor: colors.surface },
+  similarName: { marginTop: 8, fontFamily: font[800], fontSize: 15, color: colors.ink },
+  similarSub: { marginTop: 1, fontFamily: font[500], fontSize: 12.5, color: colors.muted },
   drop: { marginVertical: 8, paddingVertical: 22, paddingHorizontal: 18, borderRadius: 24, backgroundColor: colors.inverse, alignItems: 'center', gap: 8 },
   dropLabel: { fontFamily: font[600], fontSize: 14, color: colors.onInverse, opacity: 0.8 },
   dropTimer: { fontFamily: font[800], fontSize: 40, letterSpacing: -1, color: colors.onInverse, fontVariant: ['tabular-nums'] },
@@ -176,6 +181,27 @@ function DropCountdown({ at, following, onFollow }: { at: string; following: boo
       <Text style={s.dropTimer}>{d > 0 ? `${d} ${tr('дн.')} ` : ''}{pad(h)}:{pad(m)}:{pad(sec)}</Text>
       {!!onFollow && (following ? <Text style={s.dropLabel}>✓ {tr('Пришлём уведомление, когда откроется')}</Text>
         : <Btn label={tr('Напомнить мне')} onPress={onFollow} />)}
+    </View>
+  )
+}
+
+/** «Похожие витрины» внизу витрины — продавцы того же города. */
+function SimilarStores({ slug, city }: { slug: string; city?: string | null }) {
+  const [items, setItems] = useState<{ slug: string; name: string; count: number; city?: string | null; previews: string[] }[]>([])
+  useEffect(() => { sfDiscover(city).then((r) => setItems(r.items.filter((x) => x.slug !== slug).slice(0, 8))).catch(() => {}) }, [slug, city])
+  if (!items.length) return null
+  return (
+    <View style={{ marginTop: 24, marginBottom: 16, marginHorizontal: -space.page }}>
+      <Text style={s.similarTitle}>{tr('Похожие витрины')}</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingHorizontal: space.page }}>
+        {items.map((x) => (
+          <Pressable key={x.slug} style={s.similar} onPress={() => router.push(`/s/${x.slug}` as never)}>
+            <Image source={{ uri: mediaUrl(x.previews[0]) ?? undefined }} style={{ height: 130, borderRadius: 14, backgroundColor: colors.photo }} contentFit="cover" />
+            <Text style={s.similarName} numberOfLines={1}>{x.name}</Text>
+            <Text style={s.similarSub} numberOfLines={1}>{x.count} · {x.city || ''}</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
     </View>
   )
 }

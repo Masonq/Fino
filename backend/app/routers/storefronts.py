@@ -454,6 +454,7 @@ def public(slug: str, request: Request, lang: str = "ru", user: User | None = De
     now_local = utcnow_local()
     hidden = {it.listing_id for c in sf.collections if c.status == "active" and c.drop_at and c.drop_at > now_local for it in c.items}
     live = [i for i in _live_ids(sf) if i not in hidden]  # вещи закрытого дропа не видны до открытия
+    top_city = Counter(c for (c,) in db.query(Listing.city).filter(Listing.id.in_(live)).all() if c).most_common(1) if live else []
     followers = _followers(db, sf.owner_id)
     following = bool(user and db.query(SellerSubscription.id).filter_by(subscriber_id=user.id, seller_id=sf.owner_id).first())
     now = utcnow()
@@ -462,6 +463,7 @@ def public(slug: str, request: Request, lang: str = "ru", user: User | None = De
     o = sf.owner
     return {
         "slug": sf.slug, "moved": moved, "name": sf.name, "description": sf.description, "cover_url": sf.cover_url,
+        "city": top_city[0][0] if top_city else None,  # город, где у продавца больше всего вещей — для «Похожих витрин»
         "status": sf.status, "pause_until": sf.pause_until.isoformat() if sf.pause_until else None, "pause_note": sf.pause_note,
         "owner": {"id": str(o.id), "name": o.display_name, "avatar": o.avatar_url,
                   "verified": bool(o.document_verified or o.company_verified),

@@ -88,7 +88,9 @@
     ],
     "empty_title": "Ništa nije nađeno",
     "empty_hint": "Probajte drugu reč ili resetujte filtere. Dugme „Prati“ javiće vam kad se pojavi.",
-    "empty_browse": "Pogledajte kategorije"
+    "empty_browse": "Pogledajte kategorije",
+    "notify_me": "Javi kada se pojavi",
+    "notify_done": "Javićemo vam"
   },
   "chat": {
     "empty": "Još nema poruka — započnite razgovor",
@@ -1745,7 +1747,8 @@
     "drop_will_notify": "Javićemo kada se otvori",
     "drop_items_one": "{{count}} stvar",
     "drop_items_few": "{{count}} stvari",
-    "drop_items_other": "{{count}} stvari"
+    "drop_items_other": "{{count}} stvari",
+    "similar": "Slični izlozi"
   },
   "shx": {
     "title": "Šta su šopsovi",

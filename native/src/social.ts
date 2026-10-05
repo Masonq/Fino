@@ -94,20 +94,20 @@ export function shopUpload(t: string, uri: string, mime: string, onProgress: (p:
 export type StorefrontPublic = {
   slug: string; moved: boolean; name: string; description?: string | null; cover_url?: string | null; status: string; pause_until?: string | null; pause_note?: string | null
   owner: { id: string; name: string; avatar?: string | null; verified?: boolean; official?: boolean }; mine: boolean; followers: number | null; following: boolean
-  items: FeedItem[]; collections: { id: string; title: string; description?: string | null; listing_ids: string[]; drop_at?: string | null; count?: number }[]
+  items: FeedItem[]; city?: string | null; collections: { id: string; title: string; description?: string | null; listing_ids: string[]; drop_at?: string | null; count?: number }[]
   shops: { id: string; poster_url?: string | null; caption?: string | null }[]
 }
 export type StorefrontOwn = {
   id: string; slug: string; name: string; description?: string | null; cover_url?: string | null; status: string; pause_until?: string | null; pause_note?: string | null
   views: number; followers: number; items: FeedItem[]; not_added: FeedItem[]; cover_options: string[]
-  collections: { id: string; title: string; description?: string | null; status: string; sort: string; listing_ids: string[] }[]
+  collections: { id: string; title: string; description?: string | null; status: string; sort: string; listing_ids: string[]; drop_at?: string | null }[]
 }
 type Own = { storefront: StorefrontOwn | null; active_count?: number }
 export const sfMe = (t: string) => call<Own>(`/storefronts/me?${L()}`, t)
 export const sfAutobuild = (t: string) => call<Own>(`/storefronts/me/autobuild?${L()}`, t, 'POST', {})
 export const sfEdit = (t: string, body: { name?: string; description?: string; slug?: string; cover_url?: string }) => call<Own>(`/storefronts/me?${L()}`, t, 'PATCH', body)
 export const sfItems = (t: string, ids: string[]) => call<Own>(`/storefronts/me/items?${L()}`, t, 'PUT', { listing_ids: ids })
-export const sfSaveCollection = (t: string, id: string | null, body: { title: string; description?: string; status: string; sort: string; listing_ids: string[] }) =>
+export const sfSaveCollection = (t: string, id: string | null, body: { title: string; description?: string; status: string; sort: string; listing_ids: string[]; drop_at?: string | null }) =>
   call<Own>(id ? `/storefronts/me/collections/${id}?${L()}` : `/storefronts/me/collections?${L()}`, t, id ? 'PUT' : 'POST', body)
 export const sfDeleteCollection = (t: string, id: string) => call<Own>(`/storefronts/me/collections/${id}?${L()}`, t, 'DELETE')
 export const sfState = (t: string, body: { action: string; until?: string | null; note?: string }) => call<Own>(`/storefronts/me/state?${L()}`, t, 'POST', body)

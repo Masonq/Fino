@@ -43,6 +43,39 @@ export default function Search() {
   const sidebar = useStickyColumn(92)
   const [subscribed, setSubscribed] = useState(false)
   const [subscribedId, setSubscribedId] = useState(null)
+  // подписка на этот поиск: из шапки результатов и из пустого результата («Сообщить, когда появится»)
+  const toggleSubscribe = async () => {
+                if (!user) { navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`); return }
+                // Повторное нажатие — снять слежение, не завести
+                // ещё одну (бэкенд её всё равно не завёл бы второй
+                // раз, но раньше и снять было нельзя не уходя в
+                // профиль).
+                if (subscribed && subscribedId) {
+                  try {
+                    await api.deleteSavedSearch(subscribedId)
+                    setSubscribed(false)
+                    setSubscribedId(null)
+                  } catch { /* оставляем как было */ }
+                  return
+                }
+                try {
+                  const res = await api.saveSearch({
+                    q: text.trim() || undefined,
+                    category_slug: category || undefined,
+                    price_min: priceMin || undefined,
+                    price_max: priceMax || undefined,
+                    city: city || undefined,
+                    // Раньше терялись при сохранении — подписка на «Снять»
+                    // присылала уведомления и про «Купить» тоже, а «только
+                    // с фото» вообще не учитывалась (хотя бэкенд её умеет
+                    // проверять).
+                    deal_type: fields.mode || undefined,
+                    with_photo: withPhoto || undefined,
+                  })
+                  setSubscribed(true)
+                  setSubscribedId(res.id)
+                } catch { /* уже сохранён или лимит */ }
+  }
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
 
@@ -523,38 +556,7 @@ export default function Search() {
           {(text.trim() || category || priceMin || priceMax || city) && (
             <button
               className={subscribed ? 'save-search done' : 'save-search'}
-              onClick={async () => {
-                if (!user) { navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`); return }
-                // Повторное нажатие — снять слежение, не завести
-                // ещё одну (бэкенд её всё равно не завёл бы второй
-                // раз, но раньше и снять было нельзя не уходя в
-                // профиль).
-                if (subscribed && subscribedId) {
-                  try {
-                    await api.deleteSavedSearch(subscribedId)
-                    setSubscribed(false)
-                    setSubscribedId(null)
-                  } catch { /* оставляем как было */ }
-                  return
-                }
-                try {
-                  const res = await api.saveSearch({
-                    q: text.trim() || undefined,
-                    category_slug: category || undefined,
-                    price_min: priceMin || undefined,
-                    price_max: priceMax || undefined,
-                    city: city || undefined,
-                    // Раньше терялись при сохранении — подписка на «Снять»
-                    // присылала уведомления и про «Купить» тоже, а «только
-                    // с фото» вообще не учитывалась (хотя бэкенд её умеет
-                    // проверять).
-                    deal_type: fields.mode || undefined,
-                    with_photo: withPhoto || undefined,
-                  })
-                  setSubscribed(true)
-                  setSubscribedId(res.id)
-                } catch { /* уже сохранён или лимит */ }
-              }}
+              onClick={toggleSubscribe}
             >
               {subscribed ? t('saved.done') : t('saved.subscribe')}
             </button>
@@ -591,6 +593,13 @@ export default function Search() {
               </div>
               <p className="search-empty-title">{t('search.empty_title')}</p>
               <p className="empty-hint">{t('search.empty_hint')}</p>
+              {/* ничего не нашлось — не тупик: подписка на поиск, пришлём уведомление, как только такое появится */}
+              {(text.trim() || category || priceMin || priceMax || city) && (
+                <button type="button" className={`empty-notify${subscribed ? ' done' : ''}`} onClick={toggleSubscribe}>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{subscribed ? <path d="M20 6 9 17l-5-5" /> : <><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></>}</svg>
+                  {subscribed ? t('search.notify_done') : t('search.notify_me')}
+                </button>
+              )}
               {(activeChips.length > 0 || text.trim()) && (
                 <button
                   className="empty-reset"

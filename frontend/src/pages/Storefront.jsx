@@ -165,6 +165,8 @@ export default function Storefront() {
         </>
       )}
 
+      <SimilarStores slug={sf.slug} city={sf.city} />
+
       <Sheet open={report} onClose={() => setReport(false)} title={t('sf.report')}>
             {REASONS.map((r) => <button key={r} type="button" className="sf-reason" onClick={() => sendReport(r)}>{t(`sf.reason_${r}`)}</button>)}
       </Sheet>
@@ -223,5 +225,33 @@ function DropCountdown({ at, count, following, onFollow }) {
       {onFollow && !following && <button type="button" className="jr-btn primary" onClick={onFollow}>{t('sf.drop_notify')}</button>}
       {onFollow && following && <div className="sf-drop-sub">✓ {t('sf.drop_will_notify')}</div>}
     </div>
+  )
+}
+
+/** «Похожие витрины» внизу витрины — продавцы того же города; покупатель не упирается в конец страницы. */
+function SimilarStores({ slug, city }) {
+  const { t } = useTranslation()
+  const [items, setItems] = useState(null)
+  useEffect(() => {
+    let alive = true
+    api.sfDiscover({ city: city || undefined, limit: 12 })
+      .then((r) => alive && setItems((r.items || []).filter((x) => x.slug !== slug).slice(0, 8)))
+      .catch(() => alive && setItems([]))
+    return () => { alive = false }
+  }, [slug, city])
+  if (!items || items.length === 0) return null
+  return (
+    <section className="hs sf-similar">
+      <div className="hs-head"><h2 className="hs-title">{t('sf.similar')}</h2><Link to="/vitriny" className="hs-all">{t('hs.all')}</Link></div>
+      <div className="hs-row">
+        {items.map((x) => (
+          <Link key={x.slug} to={`/s/${x.slug}`} className="hs-store">
+            <span className="hs-store-grid">{x.previews.slice(0, 3).map((p, i) => <img key={i} src={p} alt="" loading="lazy" />)}</span>
+            <span className="hs-store-name">{x.name}</span>
+            <span className="hs-store-sub">{t('sf.items_n', { count: x.count })}{x.city ? ` · ${x.city}` : ''}</span>
+          </Link>
+        ))}
+      </div>
+    </section>
   )
 }

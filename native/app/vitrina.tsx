@@ -23,7 +23,7 @@ const ST: Record<string, [string, string, string]> = {
   paused: ['Отпуск', colors.warmBg, colors.goldDark], blocked: ['Заблокирована модератором', colors.dangerBg, '#A33232'],
 }
 const photo = (l: FeedItem) => l.cover_photo || l.photos?.[0] || null
-type Coll = { id: string | null; title: string; description: string; status: string; sort: string; listing_ids: string[] }
+type Coll = { id: string | null; title: string; description: string; status: string; sort: string; listing_ids: string[]; drop?: string; drop_at?: string | null }
 
 /** Моя витрина: нет — собрать одним нажатием; есть — статус, оформление, товары, подборки (как на сайте). */
 export default function Vitrina() {
@@ -165,14 +165,16 @@ export default function Vitrina() {
                 <Text style={k.name}>{c.title}{c.status === 'hidden' ? ` · ${tr('скрыта')}` : ''}</Text>
                 <Text style={k.muted}>{c.listing_ids.length} {plural(c.listing_ids.length, { ru: ['товар', 'товара', 'товаров'], en: ['item', 'items'], sr: ['stvar', 'stvari', 'stvari'] })}</Text>
               </View>
-              <Btn small kind="ghost" label={tr('Изменить')} onPress={() => setColl({ ...c, description: c.description || '' })} />
+              <Btn small kind="ghost" label={tr('Изменить')} onPress={() => setColl({ ...c, description: c.description || '', drop: dropText(c.drop_at) })} />
             </View>
           ))}
-          {!coll && <Btn wide kind="ghost" label={tr('+ Подборка')} onPress={() => setColl({ id: null, title: '', description: '', status: 'active', sort: 'manual', listing_ids: [] })} />}
+          {!coll && <Btn wide kind="ghost" label={tr('+ Подборка')} onPress={() => setColl({ id: null, title: '', description: '', status: 'active', sort: 'manual', listing_ids: [], drop: '' })} />}
           {coll && (
             <View style={[k.card, { borderColor: colors.primary }]}>
               <Field label={tr('Название подборки')} value={coll.title} maxLength={40} placeholder={tr('Например, До €50')} onChangeText={(v) => setColl({ ...coll, title: v })} />
               <Field label={tr('Описание')} value={coll.description} maxLength={160} onChangeText={(v) => setColl({ ...coll, description: v })} />
+              {/* дроп: подборка откроется в это время — до него покупатели видят обратный отсчёт */}
+              <Field label={tr('Дроп: открыть (необязательно)')} value={coll.drop || ''} maxLength={11} placeholder={tr('ДД.ММ ЧЧ:ММ, например 12.10 20:00')} onChangeText={(v) => setColl({ ...coll, drop: v })} />
               <View style={[k.row, { marginBottom: 12, gap: 16 }]}>
                 <Pressable style={k.row} onPress={() => setColl({ ...coll, sort: coll.sort === 'newest' ? 'manual' : 'newest' })}><View style={[s.check, coll.sort === 'newest' && s.checkOn]}>{coll.sort === 'newest' && <Icon name="check" size={12} color="#fff" />}</View><Text style={k.body}>{tr('Сначала новые')}</Text></Pressable>
                 <Pressable style={k.row} onPress={() => setColl({ ...coll, status: coll.status === 'hidden' ? 'active' : 'hidden' })}><View style={[s.check, coll.status === 'hidden' && s.checkOn]}>{coll.status === 'hidden' && <Icon name="check" size={12} color="#fff" />}</View><Text style={k.body}>{tr('Скрыть')}</Text></Pressable>
@@ -192,7 +194,12 @@ export default function Vitrina() {
               <View style={k.actions}>
                 {!!coll.id && <Btn small kind="danger" label={tr('Удалить')} onPress={() => Alert.alert(tr('Удалить подборку? Объявления останутся'), '', [{ text: tr('Отмена'), style: 'cancel' }, { text: tr('Удалить'), style: 'destructive', onPress: async () => { if (await run(sfDeleteCollection(token, coll.id!))) setColl(null) } }])} />}
                 <Btn small kind="ghost" label={tr('Отмена')} onPress={() => setColl(null)} />
-                <Btn small busy={busy} label={tr('Сохранить')} onPress={async () => { if (await run(sfSaveCollection(token, coll.id, coll))) setColl(null) }} />
+                <Btn small busy={busy} label={tr('Сохранить')} onPress={async () => {
+                  const at = parseDrop(coll.drop || '')
+                  if (at === undefined) { Alert.alert(tr('Дроп: время в виде ДД.ММ ЧЧ:ММ, например 12.10 20:00')); return }
+                  const { drop: _d, ...body } = coll
+                  if (await run(sfSaveCollection(token, coll.id, { ...body, drop_at: at }))) setColl(null)
+                }} />
               </View>
             </View>
           )}
@@ -221,3 +228,24 @@ const s = StyleSheet.create({
   toast: { position: 'absolute', alignSelf: 'center', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12, backgroundColor: colors.inverse },
   toastText: { fontFamily: font[600], fontSize: 14, color: '#fff' },
 })
+
+/** «12.10 20:00» → «2026-10-12T20:00» (ближайшее будущее такое число); пусто → null; не разобрать → undefined. */
+function parseDrop(v: string): string | null | undefined {
+  const t = v.trim()
+  if (!t) return null
+  const m = t.match(/^(\d{1,2})\.(\d{1,2})\s+(\d{1,2}):(\d{2})$/)
+  if (!m) return undefined
+  const [d, mo, h, mi] = m.slice(1).map(Number)
+  if (mo < 1 || mo > 12 || d < 1 || d > 31 || h > 23 || mi > 59) return undefined
+  const now = new Date()
+  let y = now.getFullYear()
+  if (new Date(y, mo - 1, d, h, mi) < now) y += 1
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${y}-${p(mo)}-${p(d)}T${p(h)}:${p(mi)}`
+}
+function dropText(iso?: string | null) {
+  if (!iso) return ''
+  const p = (n: number) => String(n).padStart(2, '0')
+  const dt = new Date(iso)
+  return `${p(dt.getDate())}.${p(dt.getMonth() + 1)} ${p(dt.getHours())}:${p(dt.getMinutes())}`
+}

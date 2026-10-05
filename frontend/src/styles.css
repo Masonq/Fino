@@ -7431,3 +7431,7 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 .my-actions button{ border-radius:12px; font-weight:700; }
 .my-row.skeleton{ box-shadow:var(--shadow); }
 .seller-head-info{ flex:1; } /* информация занимает середину — «Подписаться» прижата к правому краю */
+.empty-notify{ display:inline-flex; align-items:center; gap:8px; height:48px; padding:0 22px; margin-top:14px; border-radius:16px; background:var(--inverse); color:var(--on-inverse); font-size:15px; font-weight:700; }
+.empty-notify.done{ background:var(--primary-soft); color:var(--primary-deep); }
+.sf-similar{ margin:28px -16px 8px; } /* ряд витрин во всю ширину, отступы — как у подборок на главной */
+.search-empty .empty-reset{ background:var(--surface); color:var(--ink); border:1px solid var(--border-strong); } /* главная кнопка — «Сообщить», сброс — второстепенная */
