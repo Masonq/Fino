@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "render": "remotion render src/index.ts Promo out/plonk-shops.mp4 --codec=h264 --crf=20",
+    "render": "remotion render src/index.ts PromoReal out/plonk-promo.mp4 --codec=h264 --crf=18",
     "studio": "remotion studio src/index.ts"
   },
   "keywords": [],
@@ -16,8 +16,9 @@
     "@remotion/bundler": "^4.0.532",
     "@remotion/cli": "^4.0.532",
     "@remotion/renderer": "^4.0.532",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "@remotion/transitions": "^4.0.532",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "remotion": "^4.0.532"
   },
   "private": true
