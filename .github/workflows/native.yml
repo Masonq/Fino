@@ -133,6 +133,20 @@ jobs:
           mkdir -p ../whats-new-out
           for f in whats-new/*.md; do n=$(basename "$f" .md); [ "$n" = next ] && n=${{ github.run_number }}; cp "$f" "../whats-new-out/whats-new-$n.txt"; done
           ls ../whats-new-out
+      - name: Источник SideStore (sidestore.json) — рядом с файлом приложения на GitHub, а не на plonk.rs
+        # Apple помечала plonk.rs как «мошеннический» сайт: сайт объявлений раздавал установщик iPhone-приложения в обход
+        # App Store. Теперь и файл приложения, и источник для SideStore живут только в выпуске GitHub.
+        run: >
+          node -e "const fs=require('fs');const n=process.env.GITHUB_RUN_NUMBER;
+          const notes=fs.existsSync('whats-new/next.md')?fs.readFileSync('whats-new/next.md','utf8').trim():'Сборка '+n+'.';
+          const base='https://github.com/Masonq/Fino/releases/download/native-latest/';
+          const icon='https://raw.githubusercontent.com/Masonq/Fino/main/frontend/public/icon-512.png';
+          const size=fs.statSync('../plonk-native.ipa').size;const date=new Date().toISOString().slice(0,10);
+          const v={version:'1.0.'+n,buildVersion:String(n),date,downloadURL:base+'plonk-native.ipa',size,minOSVersion:'16.4',localizedDescription:notes};
+          const app={name:'PLONK',bundleIdentifier:'rs.plonk.mobile',developerName:'PLONK',subtitle:'Объявления в Сербии',
+          localizedDescription:'Нативное приложение PLONK — тестовая сборка.',iconURL:icon,tintColor:'#0FA36A',versions:[v],
+          version:v.version,versionDate:date,versionDescription:notes,downloadURL:v.downloadURL,size,appPermissions:{entitlements:[],privacy:{}}};
+          fs.writeFileSync('../sidestore.json',JSON.stringify({name:'PLONK',identifier:'rs.plonk.source',sourceURL:base+'sidestore.json',iconURL:icon,apps:[app],news:[]},null,2))"
       - name: В выпуск native-latest (сам, не дожидаясь другой платформы)
         uses: softprops/action-gh-release@v2
         with:
@@ -140,8 +154,9 @@ jobs:
           name: PLONK — нативное приложение (тестовая сборка)
           prerelease: true
           make_latest: false
-          body: "iPhone: plonk-native.ipa — в SideStore (источник https://plonk.rs/api/app-updates/sidestore.json). Android: plonk-native.apk."
+          body: "iPhone: источник SideStore — https://github.com/Masonq/Fino/releases/download/native-latest/sidestore.json (файл приложения plonk-native.ipa рядом). Android: plonk-native.apk."
           files: |
             plonk-native.ipa
+            sidestore.json
             whats-new-out/*.txt
 
