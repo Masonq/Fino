@@ -121,6 +121,11 @@ export const api = {
   // Шопсы (backend/app/routers/shops.py)
   shopsFeed: (params = {}) => request(`/shops/feed?${query(params)}`),
   shopsMine: () => request('/shops/mine'),
+  shopLike: (id, on) => request(`/shops/${id}/like?on=${on ? 'true' : 'false'}`, { method: 'POST' }),
+  shopComments: (id) => request(`/shops/${id}/comments`),
+  shopComment: (id, text) => request(`/shops/${id}/comments`, { method: 'POST', body: { text } }),
+  shopCommentDelete: (id, cid) => request(`/shops/${id}/comments/${cid}`, { method: 'DELETE' }),
+  shopCommentReport: (id, cid) => request(`/shops/${id}/comments/${cid}/report`, { method: 'POST' }),
   shopGet: (id) => request(`/shops/${id}`),
   shopUpdate: (id, body) => request(`/shops/${id}`, { method: 'PUT', body }),
   shopSubmit: (id) => request(`/shops/${id}/submit`, { method: 'POST' }),

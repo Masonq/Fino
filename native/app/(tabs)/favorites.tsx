@@ -1,6 +1,7 @@
 import { tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { router, useFocusEffect } from 'expo-router'
+import Icon from '../../src/components/Icon'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   FlatList, LayoutAnimation, Platform, Pressable, RefreshControl, StyleSheet, Text, UIManager, useWindowDimensions, View,
@@ -77,6 +78,10 @@ export default function Favorites() {
   return (
     <SafeAreaView style={styles.page} edges={['top']}>
       <View style={styles.headRow}>
+        {/* «Избранное» открывается сердечком с главной или из профиля — есть куда вернуться */}
+        <Pressable onPress={() => (router.canGoBack() ? router.back() : router.navigate('/'))} hitSlop={10} accessibilityLabel={tr('Назад')} style={{ marginRight: 4 }}>
+          <Icon name="back" size={22} color={colors.ink} />
+        </Pressable>
         <Text style={styles.h1}>{tr('Избранное')}</Text>
         {!!visible && visible.length > 0 && <Text style={styles.count}>{visible.length}</Text>}
       </View>

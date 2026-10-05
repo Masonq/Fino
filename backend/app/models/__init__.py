@@ -24,7 +24,7 @@ from app.models.listing_view_daily import ListingViewDaily
 from app.models.listing_signal_daily import ListingSignalDaily
 from app.models.notification import Notification
 from app.models.shops_jobs import (
-    JobResponse, Shop, ShopItem, ShopStatDaily, ShopViewLog, CreatorApplication, ShopOrder,
+    JobResponse, Shop, ShopItem, ShopStatDaily, ShopViewLog, CreatorApplication, ShopOrder, ShopLike, ShopComment,
 )
 from app.models.storefront import (
     Storefront, StorefrontItem, StorefrontCollection, StorefrontCollectionItem, StorefrontOldSlug, StorefrontViewLog,

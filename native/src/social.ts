@@ -45,9 +45,16 @@ export type Shop = {
   id: string; status: string; reject_reason?: string | null; video_url?: string | null; video_low_url?: string | null; poster_url?: string | null
   duration?: number | null; caption?: string | null; is_ad: boolean; author?: { id: string; name: string; avatar?: string | null } | null
   items: ShopItem[]; mine: boolean; stats?: { views: number; completes: number; taps: number; chats: number }
+  kind?: 'shop' | 'listing'; likes?: number; comments?: number; liked?: boolean
 }
-export const shopsFeed = (params: { offset?: number; limit?: number; start?: string | null }, t?: string | null) =>
-  call<{ items: Shop[]; total: number }>(`/shops/feed?offset=${params.offset ?? 0}&limit=${params.limit ?? 8}${params.start ? `&start=${params.start}` : ''}&${L()}`, t)
+export type ShopComment = { id: string; text: string; created_at: string; user?: { id: string; name: string; avatar?: string | null } | null; is_author: boolean; can_delete: boolean }
+export const shopLike = (t: string, id: string, on: boolean) => call<{ liked: boolean; likes: number }>(`/shops/${id}/like?on=${on}`, t, 'POST')
+export const shopComments = (t: string | null, id: string) => call<{ items: ShopComment[]; total: number }>(`/shops/${id}/comments`, t)
+export const shopComment = (t: string, id: string, text: string) => call<ShopComment>(`/shops/${id}/comments`, t, 'POST', { text })
+export const shopCommentDelete = (t: string, id: string, cid: string) => call(`/shops/${id}/comments/${cid}`, t, 'DELETE')
+export const shopCommentReport = (t: string, id: string, cid: string) => call(`/shops/${id}/comments/${cid}/report`, t, 'POST')
+export const shopsFeed = (params: { offset?: number; limit?: number; start?: string | null; withListings?: boolean }, t?: string | null) =>
+  call<{ items: Shop[]; total: number }>(`/shops/feed?offset=${params.offset ?? 0}&limit=${params.limit ?? 8}${params.start ? `&start=${params.start}` : ''}${params.withListings ? '&with_listings=true' : ''}&${L()}`, t)
 export const shopsMine = (t: string) => call<{ items: Shop[]; creator: { status: string | null } }>(`/shops/mine?${L()}`, t)
 export const shopGet = (t: string | null, id: string) => call<Shop>(`/shops/${id}?${L()}`, t)
 export const shopUpdate = (t: string, id: string, body: { caption: string; items: { listing_id: string; appear_at: number }[]; order_id?: string | null }) =>

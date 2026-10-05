@@ -22,6 +22,7 @@ export default function TopNav() {
 
   const items = [
     { to: '/', key: 'nav.home' },
+    { to: '/shops', key: 'nav.shops' },
     { to: '/favorites', key: 'nav.favorites' },
     { to: '/chats', key: 'nav.chats' },
     { to: '/my', key: 'my.title' },

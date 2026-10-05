@@ -12,8 +12,9 @@ const ITEMS = [
     icon: <><path d="M3 11l9-8 9 8" /><path d="M5 10v10h14V10" /></>,
   },
   {
-    to: '/favorites', key: 'nav.favorites',
-    icon: <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />,
+    // «Шопсы» — видео с объявлениями, вкладкой как в TikTok; «Избранное» — сердечко в шапке главной и в профиле
+    to: '/shops', key: 'nav.shops',
+    icon: <><rect x="4" y="3" width="16" height="18" rx="4" /><path d="m10 9 5 3-5 3z" /></>,
   },
   {
     to: '/post', key: 'nav.post',

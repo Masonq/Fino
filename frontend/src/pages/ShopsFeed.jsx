@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import Comments from '../components/ShopComments'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
@@ -20,7 +22,6 @@ const price = (it) => (it.price == null ? '' : `${Math.round(it.price).toLocaleS
 export default function ShopsFeed() {
   const { t, i18n } = useTranslation()
   const [params] = useSearchParams()
-  const navigate = useNavigate()
   const [items, setItems] = useState([])
   const [total, setTotal] = useState(null)
   const [active, setActive] = useState(0)
@@ -31,7 +32,7 @@ export default function ShopsFeed() {
   const load = useCallback((offset) => {
     if (loading.current) return
     loading.current = true
-    api.shopsFeed({ offset, limit: PAGE, lang: i18n.language, ...(offset === 0 && start ? { start } : {}) })
+    api.shopsFeed({ offset, limit: PAGE, lang: i18n.language, with_listings: true, ...(offset === 0 && start ? { start } : {}) })
       .then((r) => {
         setTotal(r.total)
         setItems((prev) => {
@@ -52,13 +53,8 @@ export default function ShopsFeed() {
     return () => document.body.classList.remove('sh-open')
   }, [])
 
-  const close = () => (window.history.length > 1 ? navigate(-1) : navigate('/'))
-
   return (
     <div className="sh-feed">
-      <button type="button" className="sh-close" onClick={close} aria-label={t('shops.close')}>
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round"><path d="m15 18-6-6 6-6" /></svg>
-      </button>
       <button type="button" className="sh-sound" onClick={() => setMuted((m) => !m)} aria-label={muted ? t('shops.sound_on') : t('shops.sound_off')}>
         {muted
           ? <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 5 6 9H3v6h3l5 4V5Z" /><path d="m22 9-6 6M16 9l6 6" /></svg>
@@ -87,6 +83,13 @@ function Slide({ shop, index, active, near, muted, onActive }) {
   const [time, setTime] = useState(0)
   const [paused, setPaused] = useState(false)
   const [sheet, setSheet] = useState(false)
+  const [comments, setComments] = useState(false)
+  const [like, setLike] = useState({ on: shop.liked, n: shop.likes || 0 })
+  const [nComments, setNComments] = useState(shop.comments || 0)
+  const [burst, setBurst] = useState(0)
+  const [toast, setToast] = useState('')
+  const lastTap = useRef(0)
+  const isShop = shop.kind !== 'listing'
   const sent = useRef({ view: false, complete: false })
 
   useEffect(() => {
@@ -104,17 +107,44 @@ function Slide({ shop, index, active, near, muted, onActive }) {
     if (!active) { setPaused(false) }
   }, [active, paused, near])
 
+  const toggleLike = (force) => {
+    if (!isShop) return
+    if (!user?.id) { navigate(`/login?returnTo=${encodeURIComponent(`/shops?start=${shop.id}`)}`); return }
+    const on = force ?? !like.on
+    if (on === like.on) return
+    setLike((l) => ({ on, n: l.n + (on ? 1 : -1) }))
+    api.shopLike(shop.id, on).then((r) => setLike({ on: r.liked, n: r.likes })).catch(() => setLike((l) => ({ on: !on, n: l.n + (on ? -1 : 1) })))
+  }
+  // один тап — пауза, два быстрых — лайк с сердечком (как в TikTok)
+  const onTap = () => {
+    const now = Date.now()
+    if (now - lastTap.current < 300) {
+      lastTap.current = 0
+      setPaused(false)
+      if (isShop) { toggleLike(true); setBurst((b) => b + 1) }
+      return
+    }
+    lastTap.current = now
+    setTimeout(() => { if (lastTap.current === now) setPaused((p) => !p) }, 300)
+  }
+  const share = async () => {
+    const url = `${window.location.origin}/shops?start=${shop.id}`
+    const title = shop.caption || shop.items[0]?.title || 'PLONK'
+    try { if (navigator.share) { await navigator.share({ title, url }); return } } catch { return }
+    try { await navigator.clipboard.writeText(url); setToast(t('shops.link_copied')); setTimeout(() => setToast(''), 1800) } catch { window.prompt('', url) }
+  }
+
   // просмотр — после 2 секунд на экране, досмотр — 90% ролика
   useEffect(() => {
-    if (!active || sent.current.view) return undefined
+    if (!active || sent.current.view || !isShop) return undefined
     const id = setTimeout(() => { sent.current.view = true; api.shopEvent(shop.id, { type: 'view' }) }, 2000)
     return () => clearTimeout(id)
-  }, [active, shop.id])
+  }, [active, shop.id, isShop])
 
   const onTime = (e) => {
     const v = e.currentTarget
     setTime(v.currentTime)
-    if (!sent.current.complete && v.duration && v.currentTime / v.duration > 0.9) {
+    if (isShop && !sent.current.complete && v.duration && v.currentTime / v.duration > 0.9) {
       sent.current.complete = true
       api.shopEvent(shop.id, { type: 'complete' })
     }
@@ -138,7 +168,31 @@ function Slide({ shop, index, active, near, muted, onActive }) {
     <section ref={ref} className="sh-slide" aria-label={shop.caption || shop.author?.name}>
       <video ref={video} className="sh-video" playsInline loop muted={muted} poster={shop.poster_url || undefined}
         preload={active ? 'auto' : near ? 'auto' : 'none'} src={near ? src : undefined} onTimeUpdate={onTime}
-        onClick={() => setPaused((p) => !p)} />
+        onClick={onTap} />
+      {burst > 0 && <div key={burst} className="sh-burst" aria-hidden="true"><svg viewBox="0 0 24 24" width="96" height="96"><path fill="#FF3B5C" d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" /></svg></div>}
+      <div className="sh-side">
+        <Link className="sh-side-ava" to={`/seller/${shop.author?.id}`} aria-label={shop.author?.name}>
+          {shop.author?.avatar ? <img src={shop.author.avatar} alt="" /> : (shop.author?.name || '?')[0]}
+        </Link>
+        {isShop && (
+          <button type="button" className={`sh-side-btn${like.on ? ' on' : ''}`} onClick={() => toggleLike()} aria-label={t('shops.like')} aria-pressed={like.on}>
+            <svg viewBox="0 0 24 24" width="30" height="30" fill={like.on ? '#FF3B5C' : 'none'} stroke={like.on ? '#FF3B5C' : '#fff'} strokeWidth="2" strokeLinejoin="round"><path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" /></svg>
+            <span>{like.n || ''}</span>
+          </button>
+        )}
+        {isShop && (
+          <button type="button" className="sh-side-btn" onClick={() => setComments(true)} aria-label={t('shops.comments')}>
+            <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#fff" strokeWidth="2" strokeLinejoin="round"><path d="M20.5 12a8 8 0 0 1-8.5 8 9 9 0 0 1-3.4-.6L4 21l1.4-4a8 8 0 0 1-1.4-4.6A8 8 0 0 1 12.5 4a8 8 0 0 1 8 8Z" /></svg>
+            <span>{nComments || ''}</span>
+          </button>
+        )}
+        <button type="button" className="sh-side-btn" onClick={share} aria-label={t('shops.share')}>
+          <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" /><path d="m16 6-4-4-4 4" /><path d="M12 2v13" /></svg>
+          <span>{t('shops.share')}</span>
+        </button>
+      </div>
+      {toast && createPortal(<div className="sf-toast" role="status">{toast}</div>, document.body)}
+      {comments && <Comments shop={shop} item={shop.items[0]} onClose={() => setComments(false)} onCount={setNComments} onAsk={write} />}
       {paused && <div className="sh-paused" aria-hidden="true"><svg viewBox="0 0 24 24" width="56" height="56" fill="#fff"><path d="M8 5v14l11-7z" /></svg></div>}
       <div className="sh-progress"><span style={{ width: `${Math.min(100, (time / dur) * 100)}%` }} /></div>
       <div className="sh-meta">
@@ -164,7 +218,7 @@ function Slide({ shop, index, active, near, muted, onActive }) {
           )}
         </div>
       </div>
-      {sheet && (
+      {sheet && createPortal(
         <div className="jr-overlay" onClick={() => setSheet(false)}>
           <div className="jr-sheet" onClick={(e) => e.stopPropagation()}>
             <div className="jr-grab" />
@@ -180,7 +234,8 @@ function Slide({ shop, index, active, near, muted, onActive }) {
               </div>
             ))}
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </section>
   )

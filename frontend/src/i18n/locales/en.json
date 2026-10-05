@@ -20,7 +20,8 @@
     "profile": "Profile",
     "terms": "Terms of Use",
     "privacy": "Privacy Policy",
-    "rules": "Posting rules"
+    "rules": "Posting rules",
+    "shops": "Shops"
   },
   "categories": {
     "real-estate": "Real Estate",
@@ -1569,7 +1570,23 @@
     "reject": "Reject",
     "reject_reason": "Reason (the author will see it)",
     "all_items_one": "All items · {{count}}",
-    "all_items_other": "All items · {{count}}"
+    "all_items_other": "All items · {{count}}",
+    "like": "Like",
+    "comments": "Comments",
+    "share": "Share",
+    "comment_ph": "Add a comment…",
+    "send": "Send",
+    "no_comments": "No comments yet — be the first",
+    "err_contacts": "No phones or links — ask the seller in chat",
+    "err_comment": "Could not send",
+    "err_often": "Too often — try again in a few minutes",
+    "ask_seller": "Ask the seller",
+    "author_badge": "author",
+    "delete": "Delete",
+    "report_c": "Report",
+    "link_copied": "Link copied",
+    "open_listing": "Open listing",
+    "login_to": "Sign in to like and comment"
   },
   "sf": {
     "title_suffix": "storefront on PLONK",

@@ -68,6 +68,8 @@ class Shop(Base):
     completes: Mapped[int] = mapped_column(Integer, default=0)
     taps: Mapped[int] = mapped_column(Integer, default=0)
     chats: Mapped[int] = mapped_column(Integer, default=0)
+    likes: Mapped[int] = mapped_column(Integer, default=0)
+    comments: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, index=True)
     published_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, index=True)
     expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
@@ -144,3 +146,27 @@ class ShopOrder(Base):
     listing = relationship("Listing")
     seller = relationship("User", foreign_keys=[seller_id])
     creator = relationship("User", foreign_keys=[creator_id])
+
+
+class ShopLike(Base):
+    """Лайк шопса: один человек — один лайк; число — денормализовано в Shop.likes."""
+    __tablename__ = "shop_likes"
+
+    shop_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("shops.id", ondelete="CASCADE"), primary_key=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class ShopComment(Base):
+    """Комментарий к шопсу. Номера и ссылки не пропускаем — вопросы о товаре идут в чат с продавцом."""
+    __tablename__ = "shop_comments"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    shop_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("shops.id", ondelete="CASCADE"), index=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    text: Mapped[str] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(10), default="visible", index=True)  # visible | hidden
+    reports: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, index=True)
+
+    user = relationship("User")

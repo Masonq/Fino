@@ -27,7 +27,7 @@ export default function ShopsRow() {
           {!!sh.poster_url && <Image source={{ uri: mediaUrl(sh.poster_url) ?? undefined }} style={StyleSheet.absoluteFill} contentFit="cover" />}
           <View style={s.shade} />
           {sh.items[0]?.price != null && <View style={s.price}><Text style={s.priceText}>{money(sh.items[0].price, sh.items[0].currency)}</Text></View>}
-          <Text style={s.author} numberOfLines={2}>{sh.author?.name}</Text>
+          <Text style={s.author} numberOfLines={1}>{sh.author?.name}</Text>
         </Pressable>
       ))}
     </ScrollView>

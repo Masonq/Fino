@@ -96,4 +96,5 @@ from app.routers import job_responses, shops, storefronts  # noqa: E402
 app.include_router(storefronts.router)
 app.include_router(job_responses.router)
 app.include_router(shops.router)
+app.include_router(shops.seo_router)
 app.include_router(seo.router)

@@ -222,6 +222,7 @@ export default function Profile() {
 
         {/* Меню — как на сайте, в том же порядке: сохранённые поиски — в приложении, остальное — страницы сайта */}
         <View style={styles.menu}>
+          {row('heart', 'Избранное', () => router.push('/favorites' as never))}
           {row('grid', 'Моя витрина', () => router.push('/vitrina' as never))}
           {row('video', 'Шопсы', () => router.push('/shops/mine' as never))}
           {row('doc', 'Мои отклики', () => router.push('/jobs/my' as never))}

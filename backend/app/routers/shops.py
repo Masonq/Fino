@@ -16,7 +16,11 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, timedelta
 
+import re
+from html import escape
+
 from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import insert
@@ -26,8 +30,8 @@ from app.core.auth import get_current_user, get_current_user_optional, require_n
 from app.core.clock import utcnow
 from app.core.config import settings
 from app.core.database import SessionLocal, get_db
-from app.models import (Chat, CreatorApplication, Listing, ListingStatus, Message, Shop, ShopItem, ShopOrder,
-                        ShopStatDaily, ShopViewLog, User, UserRole, visitor_key)
+from app.models import (Chat, CreatorApplication, Listing, ListingPhoto, ListingStatus, Message, Shop, ShopComment, ShopItem,
+                        ShopLike, ShopOrder, ShopStatDaily, ShopViewLog, User, UserRole, visitor_key)
 from app.routers.job_responses import _brief
 
 router = APIRouter(prefix="/api/shops", tags=["shops"])
@@ -149,10 +153,13 @@ def _item(it: ShopItem, lang: str) -> dict | None:
     return b
 
 
-def _serialize(shop: Shop, db: Session, lang: str = "ru", viewer=None, stats: bool = False) -> dict:
+def _serialize(shop: Shop, db: Session, lang: str = "ru", viewer=None, stats: bool = False, liked: set | None = None) -> dict:
     a = shop.author
+    if liked is None:
+        liked = {shop.id} if viewer and db.query(ShopLike).filter_by(shop_id=shop.id, user_id=viewer.id).first() else set()
     out = {
-        "id": str(shop.id), "status": shop.status, "reject_reason": shop.reject_reason,
+        "id": str(shop.id), "kind": "shop", "status": shop.status,
+        "likes": shop.likes or 0, "comments": shop.comments or 0, "liked": shop.id in liked, "reject_reason": shop.reject_reason,
         "video_url": shop.video_url, "video_low_url": shop.video_low_url, "poster_url": shop.poster_url,
         "width": shop.width, "height": shop.height, "duration": shop.duration,
         "caption": shop.caption, "is_ad": shop.is_ad,
@@ -164,6 +171,7 @@ def _serialize(shop: Shop, db: Session, lang: str = "ru", viewer=None, stats: bo
     }
     if stats:
         out["stats"] = {"views": shop.views, "completes": shop.completes, "taps": shop.taps, "chats": shop.chats,
+                        "likes": shop.likes or 0, "comments": shop.comments or 0,
                         "items": {str(it.listing_id): it.taps for it in shop.items}}
     return out
 
@@ -173,25 +181,169 @@ def _live(q):
     return q.filter(Shop.status == "active", Shop.expires_at > now)
 
 
+def _listing_video(l: Listing, lang: str) -> dict | None:
+    """Объявление с видео — в ленту вкладки, пока шопсов мало: лента не бывает пустой."""
+    v = next((p for p in l.photos if p.is_video), None)
+    b = _brief(l, lang)
+    if not v or not b:
+        return None
+    b.update({"appear_at": 0, "item_id": f"l-{l.id}"})
+    o = l.owner
+    return {"id": f"l-{l.id}", "kind": "listing", "status": "active", "video_url": v.url, "video_low_url": None,
+            "poster_url": v.thumbnail_url, "duration": None, "caption": None, "is_ad": False, "likes": 0, "comments": 0,
+            "liked": False, "author": {"id": str(o.id), "name": o.display_name, "avatar": o.avatar_url} if o else None,
+            "items": [b], "mine": False}
+
+
 @router.get("/feed")
-def feed(offset: int = 0, limit: int = Query(10, le=30), start: uuid.UUID | None = None, lang: str = "ru",
-         user: User | None = Depends(get_current_user_optional), db: Session = Depends(get_db)):
+def feed(offset: int = 0, limit: int = Query(10, le=30), start: str | None = None, lang: str = "ru",
+         with_listings: bool = False, user: User | None = Depends(get_current_user_optional),
+         db: Session = Depends(get_db)):
     """
-    Порядок: свежесть и досматриваемость — досмотренный ролик выше. Возраст гасит вес за ~4 дня,
-    досмотры дают до двух «дней молодости». start — шопс, с которого открыли ленту, идёт первым.
+    Порядок шопсов: свежесть, досматриваемость и лайки (возраст гасит вес за ~4 дня, досмотры и лайки
+    дают до двух-трёх «дней молодости»). with_listings — для вкладки «Шопсы»: после каждых трёх шопсов —
+    свежее объявление с видео, а когда шопсы кончились — только они. start — ролик, с которого открыли.
     """
     q = _live(db.query(Shop)).options(joinedload(Shop.author), joinedload(Shop.items).joinedload(ShopItem.listing))
     age_h = func.extract("epoch", func.now() - Shop.published_at) / 3600.0
     rate = (Shop.completes + 1.0) / (Shop.views + 3.0)
-    q = q.order_by((age_h - rate * 48.0).asc())
-    rows = q.offset(offset).limit(limit).all()
+    likes = func.least(Shop.likes, 50) / 50.0
+    shops = q.order_by((age_h - rate * 48.0 - likes * 24.0).asc()).limit(300).all()
+    seq: list = list(shops)
+    if with_listings:
+        vids = (db.query(Listing).join(ListingPhoto, ListingPhoto.listing_id == Listing.id)
+                .filter(Listing.status == ListingStatus.active, ListingPhoto.is_video.is_(True))
+                .order_by(Listing.published_at.desc().nullslast()).limit(200).all())
+        vids = list(dict.fromkeys(vids))
+        seq, si = [], 0
+        while si < len(shops) or vids:
+            seq.extend(shops[si:si + 3]); si += 3
+            if vids:
+                seq.append(vids.pop(0))
+            if si >= len(shops):
+                seq.extend(vids); vids = []
     if start and offset == 0:
-        first = _live(db.query(Shop)).filter(Shop.id == start).first()
-        if first:
-            rows = [first] + [r for r in rows if r.id != first.id]
-    rows = list(dict.fromkeys(rows))
-    total = _live(db.query(func.count(Shop.id))).scalar() or 0
-    return {"items": [_serialize(s, db, lang, user) for s in rows], "total": total}
+        first = next((x for x in seq if (isinstance(x, Shop) and str(x.id) == start)
+                      or (isinstance(x, Listing) and f"l-{x.id}" == start)), None)
+        if first is None and not start.startswith("l-"):
+            try:
+                first = _live(db.query(Shop)).filter(Shop.id == uuid.UUID(start)).first()
+            except ValueError:
+                first = None
+        if first is not None:
+            seq = [first] + [x for x in seq if x is not first]
+    page = seq[offset:offset + limit]
+    shop_ids = [x.id for x in page if isinstance(x, Shop)]
+    liked = {r[0] for r in db.query(ShopLike.shop_id).filter(ShopLike.user_id == user.id, ShopLike.shop_id.in_(shop_ids)).all()} if user and shop_ids else set()
+    items = [(_serialize(x, db, lang, user, liked=liked) if isinstance(x, Shop) else _listing_video(x, lang)) for x in page]
+    return {"items": [i for i in items if i], "total": len(seq)}
+
+
+# ---------- лайки и комментарии ----------
+
+@router.post("/{shop_id}/like")
+def like(shop_id: uuid.UUID, on: bool = True, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    s = db.get(Shop, shop_id)
+    if not s or s.status != "active":
+        raise HTTPException(404, "shop_not_found")
+    if on:
+        res = db.execute(insert(ShopLike).values(shop_id=s.id, user_id=user.id, created_at=utcnow()).on_conflict_do_nothing())
+        if res.rowcount:
+            s.likes = (s.likes or 0) + 1
+    else:
+        n = db.query(ShopLike).filter_by(shop_id=s.id, user_id=user.id).delete()
+        if n:
+            s.likes = max(0, (s.likes or 0) - 1)
+    db.commit()
+    return {"liked": on, "likes": s.likes}
+
+
+# номера, ссылки и ники — мимо: вопросы о товаре — в чат с продавцом, а не обход площадки в комментариях
+_PHONE = re.compile(r"(?:\+?\d[\d\s\-().]{7,}\d)")
+_LINK = re.compile(r"(https?://|www\.|t\.me/|wa\.me/|viber|whats\s*app|@[a-z0-9_]{4,}|\b[a-z0-9-]+\.(com|rs|ru|net|org|me|io)\b)", re.I)
+
+
+def _comment(c: ShopComment, viewer, shop: Shop) -> dict:
+    u = c.user
+    return {"id": str(c.id), "text": c.text, "created_at": c.created_at.isoformat(),
+            "user": {"id": str(u.id), "name": u.display_name, "avatar": u.avatar_url} if u else None,
+            "is_author": bool(u and u.id == shop.author_id),
+            "can_delete": bool(viewer and (viewer.id == c.user_id or viewer.id == shop.author_id or _is_staff(viewer)))}
+
+
+@router.get("/{shop_id}/comments")
+def comments(shop_id: uuid.UUID, offset: int = 0, user: User | None = Depends(get_current_user_optional),
+             db: Session = Depends(get_db)):
+    s = db.get(Shop, shop_id)
+    if not s or s.status != "active":
+        raise HTTPException(404, "shop_not_found")
+    rows = (db.query(ShopComment).options(joinedload(ShopComment.user))
+            .filter(ShopComment.shop_id == s.id, ShopComment.status == "visible")
+            .order_by(ShopComment.created_at.desc()).offset(offset).limit(50).all())
+    return {"items": [_comment(c, user, s) for c in rows], "total": s.comments or 0}
+
+
+class CommentIn(BaseModel):
+    text: str
+
+
+@router.post("/{shop_id}/comments")
+def add_comment(shop_id: uuid.UUID, payload: CommentIn, user: User = Depends(require_named_user),
+                db: Session = Depends(get_db)):
+    s = db.get(Shop, shop_id)
+    if not s or s.status != "active":
+        raise HTTPException(404, "shop_not_found")
+    text = re.sub(r"\s+", " ", (payload.text or "")).strip()
+    if not 1 <= len(text) <= 500:
+        raise HTTPException(400, "comment_length")
+    if _PHONE.search(text) or _LINK.search(text):
+        raise HTTPException(400, "comment_contacts")
+    recent = (db.query(func.count(ShopComment.id)).filter(ShopComment.user_id == user.id,
+              ShopComment.created_at > utcnow() - timedelta(minutes=10)).scalar() or 0)
+    if recent >= 10:
+        raise HTTPException(429, "too_many_comments")
+    c = ShopComment(shop_id=s.id, user_id=user.id, text=text)
+    db.add(c)
+    s.comments = (s.comments or 0) + 1
+    db.commit()
+    if user.id != s.author_id:
+        try:
+            from app.core.notifications import notify
+            notify(db, s.author_id, f"💬 {user.display_name} прокомментировал ваш шопс: {text[:120]}", link=f"/shops?start={s.id}")
+        except Exception:
+            pass
+    return _comment(c, user, s)
+
+
+@router.delete("/{shop_id}/comments/{comment_id}")
+def delete_comment(shop_id: uuid.UUID, comment_id: uuid.UUID, user: User = Depends(get_current_user),
+                   db: Session = Depends(get_db)):
+    s = db.get(Shop, shop_id)
+    c = db.get(ShopComment, comment_id)
+    if not s or not c or c.shop_id != s.id or c.status != "visible":
+        raise HTTPException(404, "comment_not_found")
+    if user.id not in (c.user_id, s.author_id) and not _is_staff(user):
+        raise HTTPException(403, "forbidden")
+    c.status = "hidden"
+    s.comments = max(0, (s.comments or 0) - 1)
+    db.commit()
+    return {"ok": True}
+
+
+@router.post("/{shop_id}/comments/{comment_id}/report")
+def report_comment(shop_id: uuid.UUID, comment_id: uuid.UUID, user: User = Depends(get_current_user),
+                   db: Session = Depends(get_db)):
+    c = db.get(ShopComment, comment_id)
+    if not c or c.shop_id != shop_id:
+        raise HTTPException(404, "comment_not_found")
+    c.reports = (c.reports or 0) + 1
+    if c.reports >= 3 and c.status == "visible":  # три жалобы — скрываем до решения модератора
+        c.status = "hidden"
+        s = db.get(Shop, shop_id)
+        if s:
+            s.comments = max(0, (s.comments or 0) - 1)
+    db.commit()
+    return {"ok": True}
 
 
 @router.get("/mine")
@@ -540,3 +692,35 @@ def admin_creator(app_id: uuid.UUID, payload: DecisionIn, user: User = Depends(_
     except Exception:
         pass
     return {"ok": True, "status": a.status}
+
+
+# ---------- превью ссылки «Поделиться» (поисковикам и мессенджерам; людям nginx отдаёт сайт) ----------
+seo_router = APIRouter(include_in_schema=False)
+
+
+@seo_router.get("/shops")
+def share_page(start: str | None = None, db: Session = Depends(get_db)):
+    site = settings.public_base_url.rstrip("/")
+    shop = None
+    try:
+        shop = _live(db.query(Shop)).filter(Shop.id == uuid.UUID(start)).first() if start else None
+    except ValueError:
+        shop = None
+    title = "Шопсы на PLONK — видео с объявлениями"
+    desc = "Короткие видео с вещами из объявлений: смотрите и сразу пишите продавцу."
+    img = ""
+    if shop:
+        who = shop.author.display_name if shop.author else ""
+        title = f"{shop.caption[:80] if shop.caption else 'Шопс'} — {who} на PLONK"
+        names = ", ".join(it.listing.translations[0].title for it in shop.items if it.listing and it.listing.translations)[:200]
+        desc = names or desc
+        img = shop.poster_url or ""
+    url = f"{site}/shops" + (f"?start={start}" if shop else "")
+    return HTMLResponse(
+        "<!doctype html><html lang=ru><head><meta charset=utf-8>"
+        f"<title>{escape(title)}</title><meta name=description content=\"{escape(desc)}\">"
+        f"<meta property=og:type content=video.other><meta property=og:title content=\"{escape(title)}\">"
+        f"<meta property=og:description content=\"{escape(desc)}\"><meta property=og:url content=\"{url}\">"
+        + (f"<meta property=og:image content=\"{escape(img)}\">" if img else "")
+        + (f"<meta property=og:video content=\"{escape(shop.video_url)}\">" if shop and shop.video_url else "")
+        + f"<link rel=canonical href=\"{url}\"></head><body><h1>{escape(title)}</h1><p>{escape(desc)}</p></body></html>")

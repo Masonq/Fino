@@ -281,6 +281,10 @@ export default function Feed() {
             {activeCount(filters) > 0 && <View style={styles.filterDot}><Text style={styles.filterDotText}>{activeCount(filters)}</Text></View>}
           </Pressable>
         </View>
+        {/* «Избранное» ушло из меню (там теперь «Шопсы») — сердечко рядом с профилем, как на сайте */}
+        <Pressable style={styles.avatarPill} onPress={() => router.push('/favorites' as never)} accessibilityRole="button" accessibilityLabel={tr('Избранное')}>
+          <Icon name="heart" size={22} color={colors.ink} />
+        </Pressable>
         {/* Как на сайте: вошёл — аватар (в профиль), гость — «Войти»; непрочитанное — точкой на аватаре */}
         {user ? (
           <Pressable style={styles.avatarPill} onPress={() => router.navigate('/profile')} accessibilityRole="button" accessibilityLabel={tr('Профиль')}>

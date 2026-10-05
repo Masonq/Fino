@@ -48,7 +48,14 @@ export default function TabsLayout() {
       sceneStyle: { backgroundColor: colors.bg },
     }}>
       <Tabs.Screen name="index" options={{ title: tr('Главная'), tabBarIcon: icon('home') }} />
-      <Tabs.Screen name="favorites" options={{ title: tr('Избранное'), tabBarIcon: icon('heart') }} />
+      {/* «Шопсы» — вкладкой, как в TikTok: тёмное меню под тёмной лентой. «Избранное» — сердечко на главной и в профиле */}
+      <Tabs.Screen name="shops" options={{
+        title: tr('Шопсы'), tabBarIcon: icon('video'),
+        tabBarActiveTintColor: '#fff', tabBarInactiveTintColor: 'rgba(255,255,255,0.6)',
+        tabBarStyle: { backgroundColor: '#000', borderTopColor: 'rgba(255,255,255,0.12)', height: BAR + insets.bottom, paddingTop: 8, paddingBottom: Math.max(insets.bottom, 6) },
+        sceneStyle: { backgroundColor: '#000' },
+      }} />
+      <Tabs.Screen name="favorites" options={{ href: null, title: tr('Избранное') }} />
       <Tabs.Screen name="post" options={{
         title: tr('Разместить'),
         tabBarActiveTintColor: colors.accent,

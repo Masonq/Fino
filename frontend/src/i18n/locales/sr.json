@@ -20,7 +20,8 @@
     "profile": "Profil",
     "terms": "Uslovi korišćenja",
     "privacy": "Politika privatnosti",
-    "rules": "Pravila oglašavanja"
+    "rules": "Pravila oglašavanja",
+    "shops": "Šopsovi"
   },
   "categories": {
     "real-estate": "Nekretnine",
@@ -1611,7 +1612,23 @@
     "reject_reason": "Razlog (autor će videti)",
     "all_items_one": "Sve stvari · {{count}}",
     "all_items_few": "Sve stvari · {{count}}",
-    "all_items_other": "Sve stvari · {{count}}"
+    "all_items_other": "Sve stvari · {{count}}",
+    "like": "Sviđa mi se",
+    "comments": "Komentari",
+    "share": "Podeli",
+    "comment_ph": "Dodajte komentar…",
+    "send": "Pošalji",
+    "no_comments": "Još nema komentara — budite prvi",
+    "err_contacts": "Bez telefona i linkova — pitajte prodavca u četu",
+    "err_comment": "Slanje nije uspelo",
+    "err_often": "Prečesto — probajte za par minuta",
+    "ask_seller": "Pitaj prodavca",
+    "author_badge": "autor",
+    "delete": "Obriši",
+    "report_c": "Prijavi",
+    "link_copied": "Link je kopiran",
+    "open_listing": "Otvori oglas",
+    "login_to": "Prijavite se da biste lajkovali i komentarisali"
   },
   "sf": {
     "title_suffix": "izlog na PLONK-u",
