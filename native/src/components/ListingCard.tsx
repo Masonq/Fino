@@ -20,7 +20,7 @@ import HeartButton from './HeartButton'
 function ListingCard({ item, width, large = false }: { item: FeedItem; width: number; large?: boolean }) {
   const [index, setIndex] = useState(0)
   // Крупная карточка (одна колонка) — как .l-card сайта: фото 16 : 10,5
-  const photoH = Math.round(large ? (width * 10.5) / 16 : width * 0.95)
+  const photoH = Math.round(large ? (width * 10.5) / 16 : width * 1.25) // PLONK 2.0: фото 4:5, как на сайте
   const list = (item.photos && item.photos.length ? item.photos : item.cover_photo ? [item.cover_photo] : [])
     .map((u) => mediaUrl(u))
     .filter(Boolean) as string[]
@@ -79,11 +79,12 @@ function ListingCard({ item, width, large = false }: { item: FeedItem; width: nu
       </View>
 
       <View style={styles.body}>
-        <Text style={[styles.title, large && styles.titleLg]} numberOfLines={2}>{item.title}</Text>
+        {/* PLONK 2.0: цена — первой и крупно, название под ней, как на сайте */}
         <View style={styles.priceRow}>
           <Text style={styles.price} numberOfLines={1}>{formatPrice(item.price, item.currency, item.is_free)}</Text>
           {!!item.price_mark && <Ionicons name="flame" size={16} color={colors.accent} accessibilityLabel={tr('Дешевле похожих')} />}
         </View>
+        <Text style={[styles.title, large && styles.titleLg]} numberOfLines={2}>{item.title}</Text>
         <View style={styles.meta}>
           <Text style={styles.metaText} numberOfLines={1}>{cityName(item.city)}</Text>
           <Text style={styles.metaText}>{relTime(item.published_at)}</Text>
@@ -96,28 +97,28 @@ function ListingCard({ item, width, large = false }: { item: FeedItem; width: nu
 export default memo(ListingCard)
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: colors.surface, borderRadius: radius.card, overflow: 'hidden', borderWidth: 1, borderColor: colors.border },
-  highlighted: { backgroundColor: colors.warmBg, borderColor: colors.gold, borderWidth: 1.5 },
-  photoBox: { backgroundColor: colors.photo, overflow: 'hidden' },
+  card: { backgroundColor: 'transparent' }, // PLONK 2.0: без рамки — фото главное, текст на фоне страницы
+  highlighted: {},
+  photoBox: { backgroundColor: colors.photo, overflow: 'hidden', borderRadius: radius.card },
   topBadges: { position: 'absolute', top: 10, left: 10, gap: 6, alignItems: 'flex-start' },
   badge: { overflow: 'hidden', borderRadius: radius.chip, paddingHorizontal: 9, paddingVertical: 4, fontSize: 10.5, fontFamily: font[800] },
   badgeDark: { backgroundColor: colors.ink, color: '#fff' },
   badgeGold: { backgroundColor: colors.goldDark, color: '#fff' },
   badgeRow: { flexDirection: 'row', alignItems: 'center' },
-  fresh: { position: 'absolute', left: 10, bottom: 10, backgroundColor: colors.accent, borderRadius: radius.chip, paddingLeft: 7, paddingRight: 9, paddingVertical: 4, gap: 5 },
-  freshDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#fff' },
-  freshText: { color: '#fff', fontSize: 11, fontFamily: font[800] },
+  fresh: { position: 'absolute', left: 10, bottom: 10, backgroundColor: colors.lime, borderRadius: 10, paddingLeft: 7, paddingRight: 9, paddingVertical: 4, gap: 5 },
+  freshDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.ink },
+  freshText: { color: colors.ink, fontSize: 11, fontFamily: font[700] },
   company: { position: 'absolute', right: 10, bottom: 10, backgroundColor: colors.primarySoft, color: colors.primaryDeep },
   heart: { position: 'absolute', top: 8, right: 8 },
   heartLg: { position: 'absolute', top: 10, right: 10 },
   bars: { position: 'absolute', left: 10, right: 10, bottom: 4, flexDirection: 'row', gap: 3 },
   bar: { flex: 1, height: 2.5, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.45)' },
   barOn: { backgroundColor: '#fff' },
-  body: { paddingHorizontal: 10, paddingTop: 8, paddingBottom: 10 },
-  title: { fontFamily: font[400], fontSize: 14.5, lineHeight: 19, color: colors.ink, minHeight: 38 },
+  body: { paddingHorizontal: 2, paddingTop: 9, paddingBottom: 4 },
+  title: { fontFamily: font[500], fontSize: 14, lineHeight: 18, color: colors.inkSoft, minHeight: 36, marginTop: 2 },
   titleLg: { fontSize: 16, lineHeight: 21, fontFamily: font[600], minHeight: 0 },
-  priceRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
-  price: { fontSize: 18, fontFamily: font[800], color: colors.ink, flexShrink: 1 },
+  priceRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  price: { fontSize: 18.5, fontFamily: font[800], color: colors.ink, flexShrink: 1, letterSpacing: -0.3, fontVariant: ['tabular-nums'] },
   meta: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4, gap: 6 },
   metaText: { fontFamily: font[400], fontSize: 12, color: colors.muted, flexShrink: 1 },
 })

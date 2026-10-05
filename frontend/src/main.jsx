@@ -4,6 +4,12 @@ import { BrowserRouter } from 'react-router-dom'
 import './i18n'
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
+// Onest — свой шрифт с сайта (кириллица + латиница), без запроса к Google: быстрее и не зависит от их доступности
+import '@fontsource/onest/400.css'
+import '@fontsource/onest/500.css'
+import '@fontsource/onest/600.css'
+import '@fontsource/onest/700.css'
+import '@fontsource/onest/800.css'
 import './styles.css'
 
 // Языковые адреса: /en/... и /sr/... Русский живёт без приставки —

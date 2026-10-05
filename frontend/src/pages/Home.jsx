@@ -640,13 +640,10 @@ export default function Home() {
           backgroundImage: collapsed ? 'none' : BRAND.grad,
         }}
       >
-        <div className="avito-toprow">
-          {/* Город — слева в строке поиска, как у Avito: поиск и город
-              меняют одно и то же, и держать город отдельной плашкой ниже
-              было незачем. Это <select> поверх подписи: тап открывает
-              системный выбор, а сама строка поиска — по остальной площади. */}
-          <div className="avito-search">
-            <label className="search-city" aria-label={t('post.city')}>
+        {/* PLONK 2.0: первой строкой — город, избранное и профиль; поиск — во всю ширину второй строкой,
+            чтобы подсказка в нём не обрезалась на узком телефоне */}
+        <div className="home-top">
+          <label className="search-city" aria-label={t('post.city')}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" /></svg>
               <span>{city ? cityLabel(city, i18n.language) : t('search.all_cities')}</span>
               <svg className="search-city-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8"><path d="m6 9 6 6 6-6" /></svg>
@@ -655,17 +652,7 @@ export default function Home() {
                 {CITIES.map((c) => <option key={c.slug} value={c.slug}>{cityLabel(c.slug, i18n.language)}</option>)}
               </select>
             </label>
-            <button type="button" className="avito-search-main" onClick={() => setSearchOpen(true)}>
-              <TypingHint className="avito-search-hint" />
-            </button>
-            {/* Фильтры — своя кнопка, не значок внутри строки поиска:
-                вложенное «нажимаемое в нажимаемом» недопустимо, а тап по
-                значку должен открывать панель, не поиск. */}
-            <button type="button" className="avito-search-filter" aria-label={t('misc.filters')}
-              data-label={t('misc.find')} onClick={() => setFiltersOpen(true)}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
-            </button>
-          </div>
+          <span className="home-top-gap" />
           {/* «Избранное» ушло из нижнего меню (там теперь «Шопсы») — сердечко рядом с профилем */}
           <Link to="/favorites" className="avito-fav-pill" aria-label={t('nav.favorites')}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" /></svg>
@@ -689,6 +676,24 @@ export default function Home() {
                 )
                 : t('common.login')}
           </Link>
+        </div>
+        <div className="avito-toprow">
+          {/* Город — слева в строке поиска, как у Avito: поиск и город
+              меняют одно и то же, и держать город отдельной плашкой ниже
+              было незачем. Это <select> поверх подписи: тап открывает
+              системный выбор, а сама строка поиска — по остальной площади. */}
+          <div className="avito-search">
+            <button type="button" className="avito-search-main" onClick={() => setSearchOpen(true)}>
+              <TypingHint className="avito-search-hint" />
+            </button>
+            {/* Фильтры — своя кнопка, не значок внутри строки поиска:
+                вложенное «нажимаемое в нажимаемом» недопустимо, а тап по
+                значку должен открывать панель, не поиск. */}
+            <button type="button" className="avito-search-filter" aria-label={t('misc.filters')}
+              data-label={t('misc.find')} onClick={() => setFiltersOpen(true)}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
+            </button>
+          </div>
         </div>
       </div>
 

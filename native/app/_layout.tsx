@@ -1,7 +1,7 @@
-import { IBMPlexMono_700Bold } from '@expo-google-fonts/ibm-plex-mono'
+// PLONK 2.0: Onest — один шрифт для кириллицы и латиницы (у Plus Jakarta Sans кириллицы не было)
 import {
-  PlusJakartaSans_400Regular, PlusJakartaSans_500Medium, PlusJakartaSans_600SemiBold, PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold, useFonts,
-} from '@expo-google-fonts/plus-jakarta-sans'
+  Onest_400Regular, Onest_500Medium, Onest_600SemiBold, Onest_700Bold, Onest_800ExtraBold, useFonts,
+} from '@expo-google-fonts/onest'
 import { Stack } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
@@ -49,19 +49,10 @@ function useUpdatesOnResume() {
 // Заставка держится, пока не загрузятся шрифты сайта — без «прыжка» текста с системного шрифта на фирменный
 SplashScreen.preventAutoHideAsync().catch(() => {})
 
-// Только веб-превью: в Plus Jakarta Sans нет кириллицы — браузер подставлял шрифт с засечками. Показываем её
-// системным без засечек, как iPhone и Safari на сайте, чтобы превью честно совпадало с телефоном.
-if (Platform.OS === 'web' && typeof document !== 'undefined') {
-  const fams = ['PlusJakartaSans_400Regular', 'PlusJakartaSans_500Medium', 'PlusJakartaSans_600SemiBold', 'PlusJakartaSans_700Bold', 'PlusJakartaSans_800ExtraBold']
-  const css = fams.map((f, i) => `@font-face { font-family: '${f}'; src: local('-apple-system'), local('Helvetica Neue'), url('/preview-fonts/${i >= 3 ? 'DejaVuSans-Bold' : 'DejaVuSans'}.ttf'); unicode-range: U+0400-04FF, U+2116; }`).join('\n')
-  const el = document.createElement('style'); el.textContent = css; document.head.appendChild(el)
-}
-
 export default function RootLayout() {
   useUpdatesOnResume()
   const [fontsReady, fontsError] = useFonts({
-    PlusJakartaSans_400Regular, PlusJakartaSans_500Medium, PlusJakartaSans_600SemiBold, PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold,
-    IBMPlexMono_700Bold,
+    Onest_400Regular, Onest_500Medium, Onest_600SemiBold, Onest_700Bold, Onest_800ExtraBold,
   })
   useEffect(() => { if (fontsReady || fontsError) SplashScreen.hideAsync().catch(() => {}) }, [fontsReady, fontsError])
   // Шрифты не загрузились — показываем системными, а не висим на заставке

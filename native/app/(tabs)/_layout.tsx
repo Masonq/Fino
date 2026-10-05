@@ -29,11 +29,13 @@ export default function TabsLayout() {
     <Tabs screenListeners={{ tabPress: () => select() }}
       screenOptions={{
       headerShown: false,
-      tabBarActiveTintColor: colors.primaryDeep,
+      tabBarActiveTintColor: colors.ink,
       tabBarInactiveTintColor: colors.muted,
+      // PLONK 2.0: меню — парящая плашка со скруглением, как на сайте (без линии сверху, с мягкой тенью)
       tabBarStyle: {
-        backgroundColor: colors.surface, borderTopColor: colors.border,
-        height: BAR + insets.bottom, paddingTop: 8, paddingBottom: Math.max(insets.bottom, 6),
+        backgroundColor: colors.surface, borderTopWidth: 0, borderRadius: 28,
+        marginHorizontal: 12, marginBottom: Math.max(insets.bottom - 6, 8), height: BAR, paddingTop: 8, paddingBottom: 8,
+        shadowColor: '#0F1512', shadowOpacity: 0.12, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 10,
       },
       tabBarItemStyle: { paddingHorizontal: 0 },
       // Иконка не должна растягиваться и отбирать место у подписи (раньше подпись сжималась до 4 точек)
@@ -58,10 +60,10 @@ export default function TabsLayout() {
       <Tabs.Screen name="favorites" options={{ href: null, title: tr('Избранное') }} />
       <Tabs.Screen name="post" options={{
         title: tr('Разместить'),
-        tabBarActiveTintColor: colors.accent,
+        tabBarActiveTintColor: colors.ink,
         tabBarInactiveTintColor: colors.inkSoft,
         tabBarIcon: () => (
-          <View style={styles.post}><Icon name="plus" size={20} color="#fff" /></View>
+          <View style={styles.post}><Icon name="plus" size={22} color="#fff" /></View>
         ),
       }} />
       <Tabs.Screen name="chats" options={{
@@ -76,7 +78,7 @@ export default function TabsLayout() {
 
 const styles = StyleSheet.create({
   post: {
-    width: 34, height: 34, borderRadius: 17, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center',
-    shadowColor: colors.accent, shadowOpacity: 0.35, shadowRadius: 6, shadowOffset: { width: 0, height: 4 }, elevation: 4,
+    width: 40, height: 40, marginTop: -8, borderRadius: 14, backgroundColor: colors.ink, alignItems: 'center', justifyContent: 'center',
+    shadowColor: colors.ink, shadowOpacity: 0.28, shadowRadius: 8, shadowOffset: { width: 0, height: 5 }, elevation: 5,
   },
 })
