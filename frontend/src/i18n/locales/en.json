@@ -321,7 +321,11 @@
   "favorites": {
     "title": "Saved",
     "need_auth": "Introduce yourself so your saved listings don't get lost.",
-    "empty": "Nothing saved yet. Tap the heart on a listing to come back to it later."
+    "empty": "Nothing saved yet. Tap the heart on a listing to come back to it later.",
+    "sort_added": "Recent",
+    "sort_drop": "Price dropped",
+    "sort_cheap": "Cheapest",
+    "sort_exp": "Most expensive"
   },
   "identify": {
     "title": "What should we call you?",
@@ -1018,7 +1022,9 @@
     "att_expiring_other": "{{count}} listings expire soon — you can extend them",
     "att_pending_one": "{{count}} listing is being checked",
     "att_pending_other": "{{count}} listings are being checked",
-    "for_you": "You might like"
+    "for_you": "You might like",
+    "act_store": "Storefront",
+    "act_shop": "New shop"
   },
   "verify": {
     "title": "Identity verification",
@@ -1695,5 +1701,10 @@
     "creator_t": "Run a blog?",
     "creator_d": "Become a creator: attach any PLONK listings to your videos and take sellers’ orders",
     "creator_go": "Become a creator"
+  },
+  "hs": {
+    "fresh": "New today",
+    "stores": "Seller storefronts",
+    "all": "All"
   }
 }

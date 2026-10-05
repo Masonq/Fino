@@ -261,6 +261,22 @@ export default function Profile() {
             </div>
           </div>
 
+          {/* PLONK 2.0: профиль — панель продавца: главные действия крупными плитками */}
+          <div className="profile-actions">
+            <Link to="/post" className="profile-action is-dark">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
+              <span>{t('nav.post')}</span>
+            </Link>
+            <Link to="/vitrina" className="profile-action">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l1.5-5h15L21 9" /><path d="M4 9v11h16V9" /><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0" /></svg>
+              <span>{t('profile.act_store')}</span>
+            </Link>
+            <Link to="/shops/new" className="profile-action">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round"><rect x="4" y="3" width="16" height="18" rx="4" /><path d="m10 9 5 3-5 3z" /></svg>
+              <span>{t('profile.act_shop')}</span>
+            </Link>
+          </div>
+
           <BalanceCard onReady={markBalanceReady} />
         </div>
 

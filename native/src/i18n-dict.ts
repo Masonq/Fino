@@ -634,6 +634,8 @@ export const DICT: Record<string, { en?: string; sr?: string }> = {
   "Найти для бизнеса": { en: "Find for business", sr: "Prona\u0111ite za posao" },
   "Применить": { en: "Apply", sr: "Primeni" },
   "Комнаты": { en: "Rooms", sr: "Sobe" },
+  "Витрины продавцов": { en: "Seller storefronts", sr: "Izlozi prodavaca" },
+  "Новое сегодня": { en: "New today", sr: "Novo danas" },
   "Что такое шопсы": { en: "What are shops", sr: "Šta su šopsovi" },
   "Короткие видео с вашими объявлениями. Их смотрят во вкладке «Шопсы» и на главной — как в TikTok, только каждую вещь можно сразу купить": { en: "Short videos with your listings. People watch them in the Shops tab and on the home page — like TikTok, but every item can be bought right away", sr: "Kratki video snimci sa vašim oglasima. Gledaju se u kartici „Šopsovi” i na početnoj — kao TikTok, ali svaku stvar možete odmah kupiti" },
   "Снимите вещь в деле": { en: "Film the item in use", sr: "Snimite stvar u upotrebi" },

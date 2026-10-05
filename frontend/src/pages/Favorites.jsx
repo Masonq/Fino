@@ -23,6 +23,8 @@ export default function Favorites() {
 
   const [items, setItems] = useState([])
   const [loaded, setLoaded] = useState(false)
+  // PLONK 2.0: порядок — недавно добавленные / дешевле / дороже / сначала подешевевшие
+  const [sort, setSort] = useState('added')
 
   const userId = user?.id
 
@@ -39,12 +41,18 @@ export default function Favorites() {
   }, [userId, i18n.language, authLoading])
 
   // убираем из списка то, что сняли с сердечка прямо на этом экране
-  const visible = idsLoaded ? items.filter((l) => ids.has(l.id)) : items
+  const shown = idsLoaded ? items.filter((l) => ids.has(l.id)) : items
+  const dropped = (l) => l.previous_price != null && l.price != null && Number(l.previous_price) > Number(l.price)
+  const priceOf = (l) => (l.is_free ? 0 : l.price == null ? Infinity : Number(l.price) * (l.currency === 'RSD' ? 1 / 117 : 1))
+  const visible = sort === 'added' ? shown
+    : sort === 'drop' ? [...shown].sort((a, b) => Number(dropped(b)) - Number(dropped(a)))
+      : [...shown].sort((a, b) => (sort === 'cheap' ? priceOf(a) - priceOf(b) : priceOf(b) - priceOf(a)))
+  const nDropped = shown.filter(dropped).length
 
   if (!userId && !authLoading) {
     return (
       <div className="fav-page">
-        <PageHeader title={t('favorites.title')} back={false} />
+        <PageHeader title={t('favorites.title')} />
         <div className="fav-empty">
           <div className="fav-empty-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -62,7 +70,14 @@ export default function Favorites() {
 
   return (
     <div className="fav-page">
-      <PageHeader title={t('favorites.title')} count={loaded ? visible.length : 0} back={false} />
+      <PageHeader title={t('favorites.title')} count={loaded ? visible.length : 0} />
+      {loaded && visible.length > 1 && (
+        <div className="fav-sort">
+          {[['added', t('favorites.sort_added')], ['drop', nDropped ? `${t('favorites.sort_drop')} · ${nDropped}` : t('favorites.sort_drop')], ['cheap', t('favorites.sort_cheap')], ['exp', t('favorites.sort_exp')]].map(([k, label]) => (
+            <button key={k} type="button" className={`jr-tab${sort === k ? ' on' : ''}`} onClick={() => setSort(k)}>{label}</button>
+          ))}
+        </div>
+      )}
 
       {!loaded ? (
         <div className="infinite-grid no-pad"><CardSkeletons count={4} /></div>

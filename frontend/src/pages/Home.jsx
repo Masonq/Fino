@@ -14,6 +14,7 @@ import { useAuth } from '../context/AuthContext'
 import { CITIES, cityLabel, nearestCity } from '../data/cities'
 import useFresh from '../hooks/useFresh'
 import ShopsStrip from '../components/ShopsStrip'
+import HomeSections from '../components/HomeSections'
 import CategoryArt from '../components/CategoryArt'
 import Avatar from '../components/Avatar'
 import { hasLanding } from '../data/landings'
@@ -775,6 +776,9 @@ export default function Home() {
           <button className="geo-ask-no" onClick={dismissGeo}>{t('feed.geo_no')}</button>
         </div>
       )}
+
+      {/* PLONK 2.0: подборки между плитками и лентой */}
+      <HomeSections city={city} />
 
       <div className="feed-head-row">
         {/* Три взгляда на одну ленту.

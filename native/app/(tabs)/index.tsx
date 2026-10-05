@@ -18,6 +18,7 @@ import ListingCard from '../../src/components/ListingCard'
 import Segmented from '../../src/components/Segmented'
 import Skeleton from '../../src/components/Skeleton'
 import ShopsRow from '../../src/components/ShopsRow'
+import HomeSections from '../../src/components/HomeSections'
 import { cityName } from '../../src/format'
 import { prefs } from '../../src/prefs'
 import * as Location from 'expo-location'
@@ -363,6 +364,8 @@ export default function Feed() {
             {/* вместо историй — шопсы: короткие видео с объявлениями */}
             {!q && <ShopsRow />}
             {!q && <CategoryTiles value={category} onPick={setCategory} />}
+            {/* PLONK 2.0: подборки между плитками и лентой, как на сайте */}
+            {!q && !category && cityReady && <HomeSections city={city} />}
             {!q && cityReady && !city && geoAsk && (
               <View style={styles.geo}>
                 <Text style={styles.geoText}>{tr('Показать объявления рядом с вами?')}</Text>

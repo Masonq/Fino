@@ -113,6 +113,8 @@ export const sfDeleteCollection = (t: string, id: string) => call<Own>(`/storefr
 export const sfState = (t: string, body: { action: string; until?: string | null; note?: string }) => call<Own>(`/storefronts/me/state?${L()}`, t, 'POST', body)
 export const sfPublic = (slug: string, t?: string | null) => call<StorefrontPublic>(`/storefronts/${encodeURIComponent(slug)}?${L()}`, t)
 export const sfByOwner = (ownerId: string) => call<{ storefront: { slug: string; name: string; cover_url?: string | null; count: number } | null }>(`/storefronts/by-owner/${ownerId}`)
+export const sfDiscover = (city?: string | null) =>
+  call<{ items: { slug: string; name: string; count: number; city?: string | null; previews: string[] }[] }>(`/storefronts/discover?limit=10${city ? `&city=${encodeURIComponent(city)}` : ''}`)
 export const sfFollow = (t: string, slug: string, on: boolean) => call<{ following: boolean }>(`/storefronts/${encodeURIComponent(slug)}/follow`, t, on ? 'POST' : 'DELETE')
 export const sfReport = (t: string, slug: string, reason: string) => call(`/storefronts/${encodeURIComponent(slug)}/report`, t, 'POST', { reason })
 

@@ -325,7 +325,11 @@
   "favorites": {
     "title": "Sačuvano",
     "need_auth": "Predstavite se da vam sačuvani oglasi ne bi nestali.",
-    "empty": "Još ništa nije sačuvano. Dodirnite srce na oglasu da mu se vratite kasnije."
+    "empty": "Još ništa nije sačuvano. Dodirnite srce na oglasu da mu se vratite kasnije.",
+    "sort_added": "Nedavno",
+    "sort_drop": "Pojeftinilo",
+    "sort_cheap": "Jeftinije",
+    "sort_exp": "Skuplje"
   },
   "identify": {
     "title": "Kako da vas oslovimo?",
@@ -1045,7 +1049,9 @@
     "att_pending_few": "{{count}} oglasa su na proveri",
     "att_pending_other": "{{count}} oglasa je na proveri",
     "for_you": "Možda vas zanima",
-    "att_support_few": "Podrška je odgovorila na {{count}} zahteva"
+    "att_support_few": "Podrška je odgovorila na {{count}} zahteva",
+    "act_store": "Izlog",
+    "act_shop": "Novi šops"
   },
   "verify": {
     "title": "Provera dokumenta",
@@ -1742,5 +1748,10 @@
     "creator_t": "Vodite blog?",
     "creator_d": "Postanite autor: dodajte bilo koje oglase PLONK-a u video i preuzimajte porudžbine prodavaca",
     "creator_go": "Postani autor"
+  },
+  "hs": {
+    "fresh": "Novo danas",
+    "stores": "Izlozi prodavaca",
+    "all": "Svi"
   }
 }
