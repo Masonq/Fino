@@ -11,6 +11,7 @@ from pydantic import BaseModel, field_validator
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from app.routers.chats import add_safety_note
 from app.core.auth import get_current_user, require_named_user
 from app.core.clock import utcnow
 from app.core.database import get_db
@@ -130,6 +131,7 @@ def respond(listing_id: uuid.UUID, payload: RespondIn, lang: str = "ru",
         chat = Chat(listing_id=listing.id, buyer_id=user.id, seller_id=listing.owner_id)
         db.add(chat)
         db.flush()
+        add_safety_note(db, chat, listing.owner_id)  # памятка о безопасности — как в любой переписке
 
     vacancy = _title(listing, lang)
     lines = [f"📄 Отклик на вакансию «{vacancy}»", f"Имя: {payload.name}"]

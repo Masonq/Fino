@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import or_, func
@@ -172,6 +172,17 @@ def _serialize_message(m: Message) -> dict:
     }
 
 
+
+def add_safety_note(db: Session, chat, sender_id, at=None):
+    """Памятка о безопасности первым сообщением — в каждой переписке по объявлению (обычный чат, отклик
+    на вакансию, заказ шопса). Одна на переписку."""
+    if db.query(Message.id).filter(Message.chat_id == chat.id, Message.kind == "safety_note").first():
+        return
+    m = Message(id=uuid.uuid4(), chat_id=chat.id, sender_id=sender_id, kind="safety_note", text="")
+    if at is not None:
+        m.created_at = at
+    db.add(m)
+
 @router.post("/start")
 def start_chat(
     payload: StartChatIn,
@@ -222,13 +233,7 @@ def start_chat(
         # пролистывают не читая, а сообщение стоит в потоке, его видят
         # оба и к нему можно вернуться. Одно на переписку — дальше
         # молчим, иначе превратится в шум, который перестанут замечать.
-        db.add(Message(
-            id=uuid.uuid4(),
-            chat_id=chat.id,
-            sender_id=listing.owner_id,
-            kind="safety_note",
-            text="",
-        ))
+        add_safety_note(db, chat, listing.owner_id)
 
         # Сигнал интереса для формулы релевантности в поиске — только
         # при первом обращении, не при каждом открытии уже идущей
@@ -274,7 +279,13 @@ def list_messages(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    _require_participant(chat_id, user, db)
+    chat = _require_participant(chat_id, user, db)
+    if before is None and getattr(chat, "listing_id", None):
+        has_note = db.query(Message.id).filter(Message.chat_id == chat_id, Message.kind == "safety_note").first()
+        if not has_note:
+            first = db.query(func.min(Message.created_at)).filter(Message.chat_id == chat_id).scalar()
+            add_safety_note(db, chat, chat.seller_id, at=(first - timedelta(seconds=1)) if first else None)
+            db.commit()
 
     # Берём последние сообщения, а не всю историю: при долгой переписке
     # это тысячи записей на каждое открытие чата, а опрос повторяет запрос

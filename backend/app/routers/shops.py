@@ -26,6 +26,7 @@ from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session, joinedload
 
+from app.routers.chats import add_safety_note
 from app.core.auth import get_current_user, get_current_user_optional, require_named_user
 from app.core.clock import utcnow
 from app.core.config import settings
@@ -608,6 +609,7 @@ def take_order(order_id: uuid.UUID, lang: str = "ru", user: User = Depends(requi
         chat = Chat(listing_id=o.listing_id, buyer_id=user.id, seller_id=o.seller_id)
         db.add(chat)
         db.flush()
+        add_safety_note(db, chat, o.seller_id)  # памятка о безопасности — как в любой переписке
     fee = f" за {float(o.fee):g} {o.currency}" if o.fee else ""
     text = f"🎬 Беру ваш заказ на шопс{fee}. Обсудим детали: что показать в ролике и как рассчитаемся?"
     m = Message(chat_id=chat.id, sender_id=user.id, text=text, kind="user")
