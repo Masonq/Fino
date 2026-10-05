@@ -2,7 +2,8 @@
 Материал для промо-ролика: лучшие живые объявления с базы — фото (и немного видео) в promo/video/public/real
 и manifest.json с названием, ценой, городом и разделом. Затем коммит и пуш только этой папки.
 
-Запуск на сервере (из /opt/fino): GH_TOKEN=<токен> backend/venv/bin/python tools/promo-assets.py
+Запуск на сервере (из /opt/fino): GH_TOKEN=<токен> backend/venv/bin/python tools/promo-assets.py [начала id …]
+С началами id (последние 8 знаков ссылки объявления) берёт ровно эти объявления: все фото до пяти, без видео.
 
 Отбор: активные объявления с 3+ фото, обложка не меньше 900 px по короткой стороне, без импортов из Telegram
 (у них чужие фото); по каждому корневому разделу — самые просматриваемые, чтобы в ролике было разнообразие.
@@ -23,6 +24,8 @@ from PIL import Image  # noqa: E402
 
 from app.core.config import settings  # noqa: E402
 from app.core.database import SessionLocal  # noqa: E402
+from sqlalchemy import String, cast, or_  # noqa: E402
+
 from app.models import Listing, ListingStatus  # noqa: E402
 
 OUT = os.path.join(ROOT, "promo", "video", "public", "real")
@@ -47,12 +50,12 @@ def local(url: str | None) -> str | None:
     return None
 
 
-def save_jpg(src: str, dst: str) -> tuple[int, int] | None:
+def save_jpg(src: str, dst: str, min_side: int = 900) -> tuple[int, int] | None:
     try:
         im = Image.open(src).convert("RGB")
     except Exception:
         return None
-    if min(im.size) < 900:
+    if min(im.size) < min_side:
         return None
     im.thumbnail((1600, 1600))
     im.save(dst, "JPEG", quality=88, optimize=True)
@@ -65,8 +68,43 @@ def root_of(cat):
     return cat
 
 
+def picked(db, prefixes: list[str]) -> list[dict]:
+    """Выбранные вручную объявления — в порядке, в каком их перечислили."""
+    out = []
+    for pre in prefixes:
+        l = db.query(Listing).filter(cast(Listing.id, String).like(f"{pre.lower()}%")).first()
+        if not l:
+            print(f"не найдено: {pre}")
+            continue
+        photos = [p for p in sorted(l.photos, key=lambda p: (not p.is_cover, p.sort_order)) if not p.is_video]
+        files = []
+        for i, p in enumerate(photos[:5]):
+            src = local(p.url)
+            name = f"{str(l.id)[:8]}-{i}.jpg"
+            size = save_jpg(src, os.path.join(OUT, name), min_side=480) if src else None
+            if size:
+                files.append({"file": f"real/{name}", "w": size[0], "h": size[1]})
+        tr = next((t for t in l.translations if t.language == "ru"), l.translations[0] if l.translations else None)
+        r = root_of(l.category)
+        out.append({"id": str(l.id), "root": r.slug if r else None, "category": ((l.category.name or {}).get("ru") if l.category else None),
+                    "title": tr.title if tr else "", "price": float(l.price) if l.price is not None else None,
+                    "currency": l.currency.value if hasattr(l.currency, "value") else l.currency, "city": l.city,
+                    "seller": (l.owner.display_name or "").split(" ")[0] if l.owner else "", "photos": files})
+        print(f"{tr.title if tr else l.id}: фото {len(files)}")
+    return out
+
+
 def main():
     db = SessionLocal()
+    prefixes = [a for a in sys.argv[1:] if a.strip()]
+    if prefixes:
+        shutil.rmtree(OUT, ignore_errors=True)
+        os.makedirs(OUT, exist_ok=True)
+        manifest = picked(db, prefixes)
+        with open(os.path.join(OUT, "manifest.json"), "w", encoding="utf-8") as f:
+            json.dump(manifest, f, ensure_ascii=False, indent=1)
+        print(f"объявлений: {len(manifest)}")
+        return push()
     rows = (db.query(Listing).filter(Listing.status == ListingStatus.active)
             .order_by(Listing.views_count.desc().nullslast()).limit(3000).all())
     by_root = defaultdict(list)
@@ -138,13 +176,16 @@ def main():
     with open(os.path.join(OUT, "manifest.json"), "w", encoding="utf-8") as f:
         json.dump(manifest, f, ensure_ascii=False, indent=1)
     print(f"объявлений: {len(manifest)}, видео: {len(videos)}, разделы: {sorted({m['root'] for m in manifest})}")
+    push()
 
+
+def push():
     token = os.environ.get("GH_TOKEN")
     if not token:
         print("GH_TOKEN не задан — файлы собраны, но не отправлены")
         return
     git = ["git", "-C", ROOT, "-c", "user.name=Masonq", "-c", "user.email=masonq@users.noreply.github.com"]
-    subprocess.run(git + ["add", "-f", "promo/video/public/real"], check=True)
+    subprocess.run(git + ["add", "-A", "-f", "promo/video/public/real"], check=True)
     subprocess.run(git + ["commit", "-q", "-m", "Материал для промо-ролика: фото и видео лучших объявлений"], check=False)
     subprocess.run(git + ["push", "-q", f"https://x-access-token:{token}@github.com/Masonq/Fino.git", "HEAD:main"], check=True)
     print("отправлено в GitHub")
