@@ -7,10 +7,10 @@ import { C, Caption, Film, FONT, LightLeaks, Logo, Nav, Phone } from './ui'
 
 const clamp = { extrapolateLeft: 'clamp' as const, extrapolateRight: 'clamp' as const }
 const out3 = Easing.bezier(0.16, 1, 0.3, 1)
-const real = (f: string) => staticFile(`real/${f}.jpg`)
+export const real = (f: string) => staticFile(`real/${f}.jpg`)
 
 // Настоящие объявления с plonk.rs (выбраны вручную); у платья — кадр без лица
-const ITEMS = [
+export const ITEMS = [
   { photo: 'f5d3c313-0-crop', title: 'Свадебное платье', price: '15 000 RSD', city: 'Белград', land: false },
   { photo: '8d82e428-0', title: 'Кеды Trussardi', price: '5 000 RSD', city: 'Белград', land: false },
   { photo: '353db02c-0', title: 'Гитара LAVA ME 4 Carbon', price: '650 €', city: 'Белград', land: false },
@@ -98,7 +98,7 @@ const Montage: React.FC = () => {
 }
 
 /** «Ролик» шопса из фото объявления: быстрые кадры с наездом — как видео, снятое на телефон. */
-const FakeVideo: React.FC<{ photos: string[]; every?: number }> = ({ photos, every = 14 }) => {
+export const FakeVideo: React.FC<{ photos: string[]; every?: number }> = ({ photos, every = 14 }) => {
   const f = useCurrentFrame()
   const i = Math.floor(f / every) % photos.length
   const local = f % every
@@ -106,7 +106,7 @@ const FakeVideo: React.FC<{ photos: string[]; every?: number }> = ({ photos, eve
   return <Img src={real(photos[i])} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${z})` }} />
 }
 
-const Side: React.FC<{ liked: boolean; likes: number; pulse: number; who: string }> = ({ liked, likes, pulse, who }) => (
+export const Side: React.FC<{ liked: boolean; likes: number; pulse: number; who: string }> = ({ liked, likes, pulse, who }) => (
   <div style={{ position: 'absolute', right: 4, width: 64, bottom: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, color: '#fff', fontSize: 12, fontWeight: 700, textShadow: '0 1px 2px rgba(0,0,0,.5)' }}>
     <div style={{ width: 44, height: 44, borderRadius: 22, border: '2px solid #fff', background: C.gs, color: C.gd, fontSize: 17, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{who}</div>
     <div style={{ textAlign: 'center' }}>
@@ -124,7 +124,7 @@ const Side: React.FC<{ liked: boolean; likes: number; pulse: number; who: string
   </div>
 )
 
-const ShopCard: React.FC<{ photo: string; title: string; price: string; t: number; press?: boolean }> = ({ photo, title, price, t, press }) => (
+export const ShopCard: React.FC<{ photo: string; title: string; price: string; t: number; press?: boolean }> = ({ photo, title, price, t, press }) => (
   <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8, padding: 6, borderRadius: 14, background: 'rgba(255,255,255,.96)', color: C.ink, transform: `translateY(${(1 - t) * 40}px)`, opacity: t }}>
     <Img src={real(photo)} style={{ width: 46, height: 46, borderRadius: 10, objectFit: 'cover' }} />
     <div style={{ flex: 1, minWidth: 0 }}>
