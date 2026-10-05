@@ -109,7 +109,10 @@ export const ART_BLEED = 0.08
 export function artBoxFromLines(tileW, aspect, fill, lines, noTarget = false, tileH = TILE.h, prof = null) {
   // Как у Авито: картинка прижата к правому нижнему углу вплотную и чуть уходит за край (ART_BLEED её ширины и
   // высоты срезает скругление плитки) — так она крупнее и «живее», чем целиком в рамке с полями.
-  const Wi = tileW - 4, Hi = tileH - 4
+  // PLONK 2.0: скругление плиток стало крупнее (22 px) и срезало край картинки — сдвигаем её от угла влево
+  // и чуть вверх. Сдвиг учтён в доступной ширине и высоте, чтобы картинка по-прежнему не задевала надпись.
+  const SHIFT_X = 7, SHIFT_Y = 3
+  const Wi = tileW - 4 - SHIFT_X, Hi = tileH - 4 - SHIFT_Y
   const TOP = 6, GAP = 4
   const contain = (w, h) => (w <= 0 || h <= 0 ? [0, 0] : w / h > aspect ? [h * aspect, h] : [w, w / aspect])
   let best = [0, 0]
@@ -148,7 +151,7 @@ export function artBoxFromLines(tileW, aspect, fill, lines, noTarget = false, ti
   if (fill && fill > 0 && !noTarget) k = Math.min(k, (ART_TARGET * wideBoost * tileH / TILE.h) / Math.max(artSize(w, h, fill), 1))
   w *= k; h *= k
   const W = w / (1 - ART_BLEED), H = h / (1 - ART_BLEED)
-  return { position: 'absolute', right: -Math.round(W - w), bottom: -Math.round(H - h), width: Math.round(W), height: Math.round(H) }
+  return { position: 'absolute', right: SHIFT_X - Math.round(W - w), bottom: SHIFT_Y - Math.round(H - h), width: Math.round(W), height: Math.round(H) }
 }
 
 
