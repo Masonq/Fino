@@ -114,10 +114,10 @@ def _code_letter(code: str) -> str:
 <html lang="ru"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width">
 <title>{SUBJECT}</title></head>
-<body style="margin:0;padding:0;background:#f4f6f5;
+<body style="margin:0;padding:0;background:#F5F4F0;
              font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
-       style="background:#f4f6f5;padding:32px 16px;">
+       style="background:#F5F4F0;padding:32px 16px;">
 <tr><td align="center">
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
@@ -138,7 +138,7 @@ def _code_letter(code: str) -> str:
   </td></tr>
 
   <tr><td align="center" style="padding:12px 32px 0;">
-    <div style="font-size:19px;font-weight:700;color:#101828;">
+    <div style="font-size:19px;font-weight:700;color:#0F1512;">
       Вход на PLONK
     </div>
   </td></tr>
@@ -155,21 +155,21 @@ def _code_letter(code: str) -> str:
          выделение прихватывало пустое место, и в буфер попадал код с
          хвостом пробелов. -->
     <div style="display:inline-block;padding:14px 28px;border-radius:14px;
-                background:#f0fdf6;border:1px solid #d1fae0;
+                background:#DDF4E8;border:1px solid #C9EEDB;
                 font-size:32px;font-weight:700;letter-spacing:8px;
                 text-indent:8px;
-                color:#0E9F6E;font-family:'SF Mono',Menlo,monospace;
+                color:#0FA36A;font-family:'SF Mono',Menlo,monospace;
                 -webkit-user-select:all;-moz-user-select:all;user-select:all;">{code}</div>
   </td></tr>
 
   <tr><td align="center" style="padding:4px 32px 28px;">
-    <div style="font-size:13px;color:#98a2b3;">
+    <div style="font-size:13px;color:#7C847E;">
       Код действует 15 минут
     </div>
   </td></tr>
 
   <tr><td style="padding:0 32px;">
-    <div style="height:1px;background:#eaecf0;"></div>
+    <div style="height:1px;background:#E5E4DE;"></div>
   </td></tr>
 
   <!-- Предупреждение остаётся.
@@ -178,8 +178,8 @@ def _code_letter(code: str) -> str:
        письма со ссылками. Значит виноваты были ссылки, а не текст. -->
 
   <tr><td style="padding:0 32px 28px;">
-    <div style="border-top:1px solid #eef1f4;padding-top:16px;
-                font-size:13px;line-height:20px;color:#98a2b3;text-align:center;">
+    <div style="border-top:1px solid #E5E4DE;padding-top:16px;
+                font-size:13px;line-height:20px;color:#7C847E;text-align:center;">
       Код запросили при входе на сайте. Если это были не вы — просто не
       отвечайте на письмо: без кода в профиль никто не войдёт.
     </div>
@@ -199,7 +199,7 @@ def _code_letter(code: str) -> str:
      Сам текст письму не мешал — оно доходило и с ним. Мешали ссылки:
      код рядом с ними это рисунок поддельного письма, и Apple режет
      такое молча. Поэтому названия разделов теперь просто слова. -->
-<div style="margin-top:20px;font-size:12px;line-height:18px;color:#98a2b3;">
+<div style="margin-top:20px;font-size:12px;line-height:18px;color:#7C847E;">
   PLONK &nbsp;·&nbsp; объявления в Белграде и по всей Сербии
   <br>
   Недвижимость &nbsp;·&nbsp; Транспорт &nbsp;·&nbsp; Электроника
@@ -312,10 +312,10 @@ def _notification_letter(title: str, body_text: str) -> str:
 <html lang="ru"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width">
 <title>{html_module.escape(title)}</title></head>
-<body style="margin:0;padding:0;background:#f4f6f5;
+<body style="margin:0;padding:0;background:#F5F4F0;
              font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
-       style="background:#f4f6f5;padding:32px 16px;">
+       style="background:#F5F4F0;padding:32px 16px;">
 <tr><td align="center">
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
@@ -329,7 +329,7 @@ def _notification_letter(title: str, body_text: str) -> str:
   </td></tr>
 
   <tr><td align="center" style="padding:16px 32px 4px;">
-    <div style="font-size:18px;font-weight:700;color:#101828;">
+    <div style="font-size:18px;font-weight:700;color:#0F1512;">
       PLONK
     </div>
   </td></tr>
@@ -342,7 +342,7 @@ def _notification_letter(title: str, body_text: str) -> str:
 
 </table>
 
-<div style="margin-top:20px;font-size:12px;color:#98a2b3;">
+<div style="margin-top:20px;font-size:12px;color:#7C847E;">
   PLONK &nbsp;·&nbsp; объявления в Сербии
 </div>
 

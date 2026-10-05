@@ -91,7 +91,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    иконки, — чтобы подписи всех пяти пунктов остались на одной линии. */
 .nav-item-post .nav-icon-wrap{
   width:34px; height:34px; margin:-3.5px 0; border-radius:50%; background:var(--accent); color:#fff;
-  box-shadow:0 4px 12px rgba(255,106,61,.35);
+  box-shadow:0 4px 12px rgba(255,91,46,.35);
 }
 .nav-item-post .nav-icon-wrap svg{ width:20px; height:20px; }
 .nav-item-post{ color:var(--ink-soft); }
@@ -252,7 +252,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   mask:radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
 }
 .story:active .story-ring{ transform:scale(.94); }
-.story.hot .story-ring::before{ background:conic-gradient(from 210deg, #FF6A3D, #FFB03D, #FF6A3D); }
+.story.hot .story-ring::before{ background:conic-gradient(from 210deg, var(--accent), #FFB03D, var(--accent)); }
 .story-photo{
   width:100%; height:100%; border-radius:50%; overflow:hidden; background:var(--surface-sunken-2);
   display:flex; align-items:center; justify-content:center;
@@ -324,7 +324,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   transition:transform .15s ease;
 }
 .cat-tile-2row:active{ transform:scale(.97); }
-.cat-tile-2row.all{ border-color:rgba(14,159,110,.3); background:var(--primary-soft); }
+.cat-tile-2row.all{ border-color:rgba(15,163,106,.3); background:var(--primary-soft); }
 /* Подпись занимает верх целиком, картинка — свой угол внизу справа.
    Раньше картинка лежала фоном под подписью и наезжала на неё:
    «Одежда и обувь» упиралась в вешалку, «Услуги» — в валик. Теперь у
@@ -479,7 +479,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .s-price{ font-size:18px; font-weight:800; padding:0 0 0 10px; color:var(--ink); display:flex; align-items:center; gap:4px; flex:0 1 auto; min-width:0; }
 .s-price-fill{ flex:1; align-self:stretch; min-width:8px; }
 .s-price-arrow{ flex-shrink:0; }
-.s-price-arrow.down{ color:var(--brand,#0E9F6E); }
+.s-price-arrow.down{ color:var(--brand,var(--primary)); }
 .s-price-arrow.up{ color:var(--coral); }
 .l-card .s-price{ font-size:18px; }
 .l-card .s-price-line{ font-size:18px; }
@@ -633,7 +633,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .location-geo-btn{
   width:44px; flex-shrink:0; border-radius:11px;
-  background:var(--tile); border:1px solid var(--border); color:var(--primary-deep,#0A7A54);
+  background:var(--tile); border:1px solid var(--border); color:var(--primary-deep,var(--primary-dark));
   display:flex; align-items:center; justify-content:center;
 }
 .location-geo-btn:disabled{ opacity:.6; }
@@ -658,7 +658,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .push-toggle-unsupported{ font-size:11.5px; color:var(--muted); margin-left:auto; }
 .location-geo-spinner{
   width:16px; height:16px; border-radius:50%; border:2px solid rgba(20,30,25,.15);
-  border-top-color:var(--primary-deep,#0A7A54); animation:spin .7s linear infinite;
+  border-top-color:var(--primary-deep,var(--primary-dark)); animation:spin .7s linear infinite;
 }
 @keyframes spin{ to{ transform:rotate(360deg); } }
 .location-search-hint{ font-size:11.5px; color:var(--muted); margin-top:5px; }
@@ -689,7 +689,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 .post-submit-btn{
   width:100%; padding:15px; border-radius:15px; background:var(--primary); color:#fff;
-  font-weight:800; font-size:14.5px; box-shadow:0 8px 18px rgba(14,159,110,.3);
+  font-weight:800; font-size:14.5px; box-shadow:0 8px 18px rgba(15,163,106,.3);
 }
 .post-submit-btn:disabled{ background:var(--line); color:var(--muted); box-shadow:none; }
 .post-error{ color:var(--coral); font-size:12.5px; font-weight:600; margin-bottom:10px; }
@@ -847,9 +847,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .detail-sheet{ background:var(--surface); border-radius:24px 24px 0 0; margin-top:-22px; position:relative; padding:20px 20px 100px; box-shadow:0 -6px 20px rgba(20,30,25,.05); }
 /* Хлебные крошки видны только на десктопе — см. медиазапрос ниже. */
 .breadcrumbs{ display:none; }
-.detail-price{ font-family:'IBM Plex Mono',monospace; font-weight:800; font-size:25px; color:var(--primary-deep); }
+.detail-price{ font-family:inherit; font-variant-numeric:tabular-nums; font-weight:800; font-size:25px; color:var(--primary-deep); }
 .price-old{
-  font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:15px; color:var(--muted);
+  font-family:inherit; font-variant-numeric:tabular-nums; font-weight:600; font-size:15px; color:var(--muted);
   text-decoration:line-through; margin-left:9px;
 }
 .neg-pill{ font-size:10px; font-weight:700; color:var(--primary-dark); background:var(--primary-soft); padding:4px 9px; border-radius:8px; margin-top:7px; display:inline-block; }
@@ -959,7 +959,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    ехать, а не просто исчезать/появляться рывком. */
 .sticky-cta.hidden{ transform:translateY(150%); }
 .cta-btn{ flex:1; text-align:center; padding:14px; border-radius:15px; font-weight:800; font-size:14px; }
-.cta-btn.primary{ background:var(--primary); color:#fff; box-shadow:0 8px 18px rgba(14,159,110,.3); }
+.cta-btn.primary{ background:var(--primary); color:#fff; box-shadow:0 8px 18px rgba(15,163,106,.3); }
 .cta-btn.icon{ flex:0 0 50px; background:var(--surface-sunken); color:var(--ink); display:flex; align-items:center; justify-content:center; }
 
 /* ===== chat screen ===== */
@@ -1028,7 +1028,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   align-self:flex-start; display:inline-flex; align-items:center; justify-content:center;
   min-height:44px; padding:0 24px; border-radius:999px; margin-top:2px;
   background:var(--accent); color:#fff; font-size:15px; font-weight:700; text-decoration:none;
-  box-shadow:0 6px 16px rgba(255,107,53,.26);
+  box-shadow:0 6px 16px rgba(255,91,46,.26);
 }
 .team-letter .team-btn:active{ transform:scale(.97); }
 /* Ссылки в пузыре подчёркнуты и зелёные — кнопка на них не похожа. */
@@ -1161,7 +1161,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .offer-panel-open-row{ display:flex; gap:8px; align-items:center; margin:10px 0; }
 .offer-panel-open{
   flex:1; padding:11px;
-  border-radius:13px; background:var(--primary-soft); color:var(--primary-deep,#0A7A54);
+  border-radius:13px; background:var(--primary-soft); color:var(--primary-deep,var(--primary-dark));
   font-size:13.5px; font-weight:700; text-align:center;
 }
 .offer-panel-dismiss{
@@ -1382,7 +1382,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .fav-empty p{ font-size:13.5px; line-height:1.5; color:var(--muted); max-width:280px; }
 .fav-cta{
   padding:12px 24px; border-radius:13px; background:var(--primary); color:#fff;
-  font-size:13.5px; font-weight:700; box-shadow:0 6px 16px rgba(14,159,110,.28);
+  font-size:13.5px; font-weight:700; box-shadow:0 6px 16px rgba(15,163,106,.28);
 }
 
 /* ===== список переписок ===== */
@@ -1522,7 +1522,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .auth-method svg{ width:20px; height:20px; flex-shrink:0; }
 .auth-method.primary{
   background:var(--primary); border-color:transparent; color:#fff;
-  box-shadow:0 6px 18px rgba(14,159,110,.26);
+  box-shadow:0 6px 18px rgba(15,163,106,.26);
 }
 
 .auth-divider{
@@ -1544,7 +1544,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .auth-submit{
   width:100%; max-width:340px; padding:15px; border-radius:14px; margin-top:6px;
   background:var(--primary); color:#fff; font-size:14.5px; font-weight:700;
-  box-shadow:0 6px 18px rgba(14,159,110,.26);
+  box-shadow:0 6px 18px rgba(15,163,106,.26);
 }
 .auth-submit:disabled{ background:var(--surface-sunken-2); color:#fff; box-shadow:none; }
 
@@ -1663,7 +1663,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .invite-card-icon{
   width:32px; height:32px; border-radius:10px; flex-shrink:0;
-  background:var(--primary-soft); color:var(--primary-deep,#0A7A54);
+  background:var(--primary-soft); color:var(--primary-deep,var(--primary-dark));
   display:flex; align-items:center; justify-content:center;
 }
 .invite-card-text{ display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
@@ -1900,7 +1900,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
      не то. */
   display:inline-flex; align-items:center; min-height:34px;
   font-size:11.5px; font-weight:700; color:var(--primary-deep); background:var(--surface);
-  padding:0 11px; border-radius:9px; border:1px solid rgba(14,159,110,.3);
+  padding:0 11px; border-radius:9px; border:1px solid rgba(15,163,106,.3);
 }
 .mod-bulkbar{
   position:fixed; left:12px; right:12px; bottom:calc(96px + var(--sab)); max-width:456px; margin:0 auto;
@@ -1927,7 +1927,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .mod-arrived{
   display:block; width:100%; margin:0 0 10px; padding:11px; border-radius:12px;
   background:var(--accent); color:#fff; font-size:13.5px; font-weight:800; text-align:center;
-  box-shadow:0 6px 16px rgba(255,106,61,.3);
+  box-shadow:0 6px 16px rgba(255,91,46,.3);
 }
 .mod-undo{
   position:fixed; left:50%; transform:translateX(-50%); bottom:calc(96px + var(--sab));
@@ -1938,7 +1938,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .mod-undo button{ color:#FFB59E; font-weight:800; font-size:13.5px; padding:4px 2px; }
 @keyframes undo-in{ from{ opacity:0; transform:translate(-50%, 8px);} to{ opacity:1; transform:translate(-50%, 0);} }
 @media (min-width:900px){ .mod-undo{ bottom:32px; } }
-.mod-category{ font-size:11px; font-weight:700; color:var(--primary-deep,#0A7A54); margin-bottom:4px; }
+.mod-category{ font-size:11px; font-weight:700; color:var(--primary-deep,var(--primary-dark)); margin-bottom:4px; }
 .mod-forbidden-warning{
   font-size:12px; font-weight:700; color:#8A1F11; background:#FBE4DE;
   border:1px solid #E8A08D; border-radius:8px; padding:6px 10px; margin-bottom:8px;
@@ -2011,7 +2011,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .review-request{
   align-self:center; width:100%; max-width:320px; margin:10px 0;
   padding:14px; border-radius:15px;
-  background:var(--surface); border:1px solid rgba(14,159,110,.18);
+  background:var(--surface); border:1px solid rgba(15,163,106,.18);
   box-shadow:0 4px 14px var(--border);
   text-align:center;
 }
@@ -2219,7 +2219,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .edit-save{
   background:var(--primary); color:#fff;
-  box-shadow:0 6px 18px rgba(14,159,110,.26);
+  box-shadow:0 6px 18px rgba(15,163,106,.26);
 }
 .edit-save:disabled{ background:var(--surface-sunken-2); box-shadow:none; }
 .edit-cancel{ background:var(--surface-sunken); color:var(--ink-soft); }
@@ -3000,7 +3000,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   .topnav-post{
     padding:10px 18px; border-radius:12px;
     background:var(--primary); color:#fff; font-size:13.5px; font-weight:700;
-    box-shadow:0 4px 12px rgba(14,159,110,.24);
+    box-shadow:0 4px 12px rgba(15,163,106,.24);
   }
   .topnav-login{
     padding:10px 16px; border-radius:12px; background:var(--surface-sunken);
@@ -3198,7 +3198,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .active-filter-chip{
   flex-shrink:0; display:flex; align-items:center; gap:6px; padding:7px 12px 7px 13px;
   border-radius:11px; background:var(--primary-soft,#E6F7EF); border:1px solid transparent;
-  font-size:12.5px; font-weight:600; color:var(--primary-dark,#0A7A54); white-space:nowrap;
+  font-size:12.5px; font-weight:600; color:var(--primary-dark,var(--primary-dark)); white-space:nowrap;
 }
 .active-filter-chip svg{ opacity:.7; }
 .active-filter-chip.clear-all{
@@ -3412,8 +3412,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   color:var(--ink-soft);
 }
 .admin-filters .chip-active {
-  background: var(--brand, #0E9F6E);
-  border-color: var(--brand, #0E9F6E);
+  background: var(--brand, var(--primary));
+  border-color: var(--brand, var(--primary));
   color: #fff;
 }
 
@@ -3622,7 +3622,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   width: 9px; height: 9px; border-radius: 3px; display: inline-block;
 }
 .stats-legend .dot-all { background: var(--primary-soft); }
-.stats-legend .dot-own { background: var(--brand, #0E9F6E); margin-left: 10px; }
+.stats-legend .dot-own { background: var(--brand, var(--primary)); margin-left: 10px; }
 
 /* Столбики рисуем сами: ради одного графика тянуть библиотеку незачем. */
 .stats-bars-info {
@@ -3649,7 +3649,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   background: none; border: none; padding: 0; font: inherit; -webkit-tap-highlight-color: transparent;
 }
 .stats-bar.selected .stats-bar-fill { background: #a9d9c4; }
-.stats-bar.selected .stats-bar-day { color: var(--brand, #0E9F6E); font-weight: 700; }
+.stats-bar.selected .stats-bar-day { color: var(--brand, var(--primary)); font-weight: 700; }
 .stats-bar-track {
   width: 100%;
   height: 110px;
@@ -3667,7 +3667,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .stats-bar-own {
   width: 100%;
-  background: var(--brand, #0E9F6E);
+  background: var(--brand, var(--primary));
   border-radius: 4px 4px 0 0;
 }
 .stats-bar-day { margin-top: 4px; font-size: 10px; color:var(--muted); overflow: hidden; white-space: nowrap; }
@@ -3744,7 +3744,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   padding: 14px;
   border: 0;
   border-radius: 12px;
-  background: var(--brand, #0E9F6E);
+  background: var(--brand, var(--primary));
   color: #fff;
   font-size: 15px;
   font-weight: 600;
@@ -3915,7 +3915,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* «Бесплатно» выделяем цветом: это и есть то, ради чего такое
    объявление открывают, а серым оно теряется рядом с ценами. */
-.price-free{ color: var(--brand, #0E9F6E); }
+.price-free{ color: var(--brand, var(--primary)); }
 
 /* Вход по ссылке из бота: короткая страница, человек тут не задерживается */
 .enter-page{ display:flex; flex-direction:column; align-items:center;
@@ -3947,7 +3947,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .email-current{ font-size:14px; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .email-change-btn{
-  flex-shrink:0; font-size:12.5px; font-weight:700; color:var(--primary-deep,#0A7A54);
+  flex-shrink:0; font-size:12.5px; font-weight:700; color:var(--primary-deep,var(--primary-dark));
 }
 .email-form{ display:flex; flex-direction:column; gap:8px; }
 .email-form-actions{ display:flex; gap:8px; }
@@ -3996,7 +3996,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   font-size:14px; font-weight:600;
 }
 .promo-check-banner.checking{ background:var(--warn-bg); color:var(--warn-ink); }
-.promo-check-banner.confirmed{ background:#E3F5EC; color:#0A7A54; }
+.promo-check-banner.confirmed{ background:#E3F5EC; color:var(--primary-dark); }
 .promo-check-banner.pending{ background:var(--surface-sunken); color:#374151; }
 
 /* Напоминание указать телефон — тот же жёлтый, что и «в процессе» у
@@ -4073,7 +4073,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 .desc-more{
   margin-top:8px; padding:0; border:0; background:none;
-  color:var(--accent,#0E9F6E); font-size:14px; font-weight:600;
+  color:var(--accent,var(--primary)); font-size:14px; font-weight:600;
 }
 
 /* Раздел без выбора. Три объявления хуже, чем ни одного: они обещают
@@ -4121,7 +4121,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   font-size:14px; color:#344054; white-space:nowrap;
 }
 .cat-chip.on{
-  background:var(--accent,#0E9F6E); border-color:var(--accent,#0E9F6E);
+  background:var(--accent,var(--primary)); border-color:var(--accent,var(--primary));
   color:#fff; font-weight:600;
 }
 
@@ -4503,7 +4503,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* Кто говорит — подписью, а не выравниванием по сторонам: в служебном
    разборе важнее читать подряд, чем узнавать «свои» сообщения. */
 .flagged-who{ font-weight:700; margin-right:6px; }
-.flagged-msg.buyer .flagged-who{ color:#0E9F6E; }
+.flagged-msg.buyer .flagged-who{ color:var(--primary); }
 .flagged-msg.seller .flagged-who{ color:#5B6B63; }
 .flagged-actions{ display:flex; gap:8px; margin-top:12px; }
 .flagged-clear, .flagged-open{
@@ -4687,12 +4687,12 @@ a.s-attrs{ display:block; }
 .geo-ask{
   display:flex; align-items:center; gap:8px; flex-wrap:wrap;
   margin:0 12px 10px; padding:11px 13px; border-radius:12px;
-  background:var(--primary-soft); border:1px solid rgba(14,159,110,.18);
+  background:var(--primary-soft); border:1px solid rgba(15,163,106,.18);
 }
 .geo-ask-text{ flex:1; min-width:150px; font-size:13.5px; color:var(--ink); line-height:1.3; }
 .geo-ask-yes{
   padding:7px 14px; border-radius:9px; border:none;
-  background:#0E9F6E; color:#FFFFFF; font-size:13px; font-weight:700;
+  background:var(--primary); color:#FFFFFF; font-size:13px; font-weight:700;
 }
 .geo-ask-yes:disabled{ opacity:.6; }
 .geo-ask-no{
@@ -6310,7 +6310,7 @@ a.s-attrs{ display:block; }
   position:sticky; bottom:0; flex-shrink:0;
   height:52px; border-radius:999px; background:var(--accent); color:#fff;
   font-size:15px; font-weight:700; display:flex; align-items:center; justify-content:center;
-  box-shadow:0 8px 20px rgba(255,107,53,.28);
+  box-shadow:0 8px 20px rgba(255,91,46,.28);
 }
 .fp-go:active{ transform:scale(.985); }
 .fp-go-text{ animation:island-swap .34s cubic-bezier(.2,.8,.3,1) both; }
@@ -6960,7 +6960,7 @@ a.s-attrs{ display:block; }
 /* ===== Шопсы: полоса на главной ===== */
 .shs { display: flex; gap: 8px; overflow-x: auto; margin: 0 -12px; padding: 2px 10px 6px; scroll-padding-left: 10px; scrollbar-width: none; scroll-snap-type: x proximity; }
 .shs::-webkit-scrollbar { display: none; }
-.shs-tile { position: relative; flex: none; width: 92px; height: 140px; border-radius: 14px; overflow: hidden; background: #1c2620; color: #fff; text-decoration: none; scroll-snap-align: start; }
+.shs-tile { position: relative; flex: none; width: 92px; height: 140px; border-radius: 14px; overflow: hidden; background: var(--ink); color: #fff; text-decoration: none; scroll-snap-align: start; }
 .shs-tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .shs-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(0,0,0,.65)); }
 .shs-price { position: absolute; left: 8px; top: 8px; padding: 2px 6px; border-radius: 6px; background: rgba(255,255,255,.92); color: var(--ink); font-size: 11px; font-weight: 800; }
@@ -7028,7 +7028,7 @@ body.sh-open .bottomnav .nav-item.active { color: #fff; }
 .sh-save { justify-content: stretch; }
 .sh-save .jr-btn { flex: 1; height: 48px; }
 .sh-mine { display: flex; gap: 12px; padding: 10px; margin-bottom: 10px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); }
-.sh-mine-poster { width: 76px; height: 116px; flex: none; border-radius: 12px; overflow: hidden; background: #1c2620; display: flex; align-items: center; justify-content: center; }
+.sh-mine-poster { width: 76px; height: 116px; flex: none; border-radius: 12px; overflow: hidden; background: var(--ink); display: flex; align-items: center; justify-content: center; }
 .sh-mine-poster img { width: 100%; height: 100%; object-fit: cover; }
 .sh-mine-body { flex: 1; min-width: 0; }
 .sh-mine-caption { margin-top: 6px; font-weight: 600; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
@@ -7423,3 +7423,10 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 .sh-meta{ padding-bottom:calc(var(--nav-h) + 16px) !important; }
 .sh-side{ bottom:calc(var(--nav-h) + 30px); }
 .sh-progress{ bottom:calc(var(--nav-h) + 8px); }
+
+/* ---------- PLONK 2.0: «Мои объявления» — карточками, как остальные списки ---------- */
+.my-list{ gap:10px; padding:0 12px; }
+.my-row{ border-bottom:0; background:var(--surface); border-radius:20px; box-shadow:var(--shadow); padding:12px; }
+.my-thumb{ border-radius:14px; }
+.my-actions button{ border-radius:12px; font-weight:700; }
+.my-row.skeleton{ box-shadow:var(--shadow); }

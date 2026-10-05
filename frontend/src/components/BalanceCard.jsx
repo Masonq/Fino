@@ -41,7 +41,7 @@ const GiftIcon = () => (
 const CONFETTI = Array.from({ length: 14 }, (_, i) => {
   const a = (i / 14) * Math.PI * 2
   const r = 70 + (i % 3) * 22
-  const colors = ['#0E9F6E', '#FF6A3D', '#D9A857', '#4B554E', '#7C6CF0']
+  const colors = ['#0FA36A', '#FF5B2E', '#D9A857', '#4B554E', '#7C6CF0']
   return { '--dx': `${Math.round(Math.cos(a) * r)}px`, '--dy': `${Math.round(Math.sin(a) * r - 30)}px`, background: colors[i % colors.length], animationDelay: `${(i % 4) * 25}ms` }
 })
 

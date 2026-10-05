@@ -53,10 +53,10 @@ export default class ErrorBoundary extends Component {
       <div style={{
         minHeight: '100vh', display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center', padding: '32px 20px',
-        textAlign: 'center', fontFamily: '-apple-system, sans-serif', background: 'var(--bg, #F6F6F2)', color: 'var(--ink, #1C2620)',
+        textAlign: 'center', fontFamily: '-apple-system, sans-serif', background: 'var(--bg, #F5F4F0)', color: 'var(--ink, #0F1512)',
       }}>
         <div style={{ fontSize: 40, marginBottom: 12 }}>⚠️</div>
-        <div style={{ fontSize: 17, fontWeight: 800, color: '#1C2620', marginBottom: 6 }}>
+        <div style={{ fontSize: 17, fontWeight: 800, color: '#0F1512', marginBottom: 6 }}>
           Что-то пошло не так
         </div>
         <div style={{ fontSize: 13.5, color: '#8A9088', marginBottom: 20, maxWidth: 320 }}>
@@ -66,7 +66,7 @@ export default class ErrorBoundary extends Component {
         <button
           onClick={() => window.location.reload()}
           style={{
-            padding: '12px 24px', borderRadius: 12, background: '#0E9F6E',
+            padding: '12px 24px', borderRadius: 12, background: '#0FA36A',
             color: '#fff', fontWeight: 700, fontSize: 14, border: 'none', marginBottom: 24,
           }}
         >
@@ -78,7 +78,7 @@ export default class ErrorBoundary extends Component {
           </summary>
           <pre style={{
             marginTop: 10, padding: 10, background: 'var(--card, #fff)', borderRadius: 10,
-            fontSize: 10.5, color: '#1C2620', textAlign: 'left', overflowX: 'auto',
+            fontSize: 10.5, color: '#0F1512', textAlign: 'left', overflowX: 'auto',
             whiteSpace: 'pre-wrap', wordBreak: 'break-word', border: '1px solid rgba(20,30,25,.08)',
           }}>
             {message}

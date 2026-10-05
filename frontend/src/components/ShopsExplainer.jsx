@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
-const G = '#0E9F6E', GS = '#E4F6EE', GD = '#0B5C42', O = '#FF6A3D', INK = '#1C2620'
+const G = '#0FA36A', GS = '#DDF4E8', GD = '#075C3C', O = '#FF5B2E', INK = '#0F1512'
 
 const ArtShoot = () => (
   <svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true">

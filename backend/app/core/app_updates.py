@@ -232,7 +232,7 @@ def sidestore_source(base: str) -> dict:
         apps.append({
             "name": "PLONK", "bundleIdentifier": builds[0].get("bundle_id", "rs.plonk.mobile"), "developerName": "PLONK",
             "subtitle": "Объявления в Сербии", "localizedDescription": "Нативное приложение PLONK — тестовая сборка.",
-            "iconURL": f"{base}/icon-512.png", "tintColor": "#0E9F6E",
+            "iconURL": f"{base}/icon-512.png", "tintColor": "#0FA36A",
             "versions": versions,
             # старые версии SideStore читают поля прямо у приложения — там всегда последняя сборка
             "version": latest["version"], "versionDate": latest["date"], "versionDescription": latest["localizedDescription"],

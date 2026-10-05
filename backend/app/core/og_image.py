@@ -36,13 +36,13 @@ FONT_PATH = Path(__file__).resolve().parent.parent / "assets" / "Manrope.ttf"
 LOGO_PATH = Path(__file__).resolve().parent.parent / "assets" / "logo-mark.png"
 CACHE_DIR = Path(os.getenv("OG_CACHE_DIR", "/tmp/plonk-og"))
 
-BG = (250, 250, 249)
-INK = (16, 21, 19)
-SOFT = (107, 117, 112)
-LINE = (231, 231, 226)
-GREEN = (10, 122, 84)
-ACCENT = (255, 106, 61)
-PHOTO_BG = (233, 233, 228)
+BG = (245, 244, 240)  # PLONK 2.0 — «тёплая бумага»
+INK = (15, 21, 18)
+SOFT = (124, 132, 126)
+LINE = (229, 228, 222)
+GREEN = (7, 92, 60)
+ACCENT = (255, 91, 46)
+PHOTO_BG = (231, 230, 224)
 
 
 def _font(size: int, weight: int = 700) -> ImageFont.FreeTypeFont:
