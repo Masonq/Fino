@@ -9,7 +9,7 @@ sys.path.insert(0, ".")
 import numpy as np  # noqa: E402
 
 from app.core.database import SessionLocal  # noqa: E402
-from app.core.semantic import _matrix, embed  # noqa: E402
+from app.core.semantic import GAP, MIN_SIM, _matrix, embed  # noqa: E402
 from app.models import ListingTranslation  # noqa: E402
 
 try:
@@ -28,4 +28,6 @@ for q in (sys.argv[1:] or ["софа", "sofa", "kauč", "детская коля
         print(q, "— нет ответа"); continue
     sims = mat @ v[0]
     top = np.argsort(-sims)[:6]
-    print(f"\n«{q}»:", " | ".join(f"{sims[i]:.2f} {str(titles.get(ids[i], ''))[:28]}" for i in top))
+    best = float(sims[top[0]]) if len(top) else 0
+    # ✓ — попадёт в выдачу по смыслу при нынешних порогах
+    print(f"\n«{q}»:", " | ".join(f"{'✓' if sims[i] >= MIN_SIM and sims[i] >= best - GAP else '·'}{sims[i]:.2f} {str(titles.get(ids[i], ''))[:26]}" for i in top))
