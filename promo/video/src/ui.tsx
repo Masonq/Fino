@@ -24,7 +24,7 @@ export const usePop = (delay = 0, damping = 14) => {
 }
 
 /** Подпись сверху — крупно, как в TikTok: слово за словом. */
-export const Caption: React.FC<{ text: string; sub?: string; dark?: boolean; top?: number }> = ({ text, sub, dark, top = 120 }) => {
+export const Caption: React.FC<{ text: string; sub?: string; dark?: boolean; top?: number; hl?: number[] }> = ({ text, sub, dark, top = 120, hl = [] }) => {
   const f = useCurrentFrame()
   // «|» — перенос строки: чтобы не оставлять одно слово на второй строке
   const words = text.split(' ')
@@ -34,7 +34,14 @@ export const Caption: React.FC<{ text: string; sub?: string; dark?: boolean; top
         {words.map((w, i) => {
           const p = interpolate(f, [i * 3, i * 3 + 8], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
           if (w === '|') return <br key={i} />
-          return <span key={i} style={{ display: 'inline-block', opacity: p, transform: `translateY(${(1 - p) * 24}px)`, marginRight: 16 }}>{w}</span>
+          // выделенные слова: маркер «прорисовывается» под словом после появления — как фломастером
+          const m = hl.includes(i) ? interpolate(f, [i * 3 + 10, i * 3 + 20], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }) : 0
+          const pop = spring({ frame: f - i * 3, fps: 30, config: { damping: 9, mass: 0.5 } })
+          return (
+            <span key={i} style={{ display: 'inline-block', opacity: p, transform: `translateY(${(1 - p) * 30}px) scale(${0.7 + 0.3 * pop})`, marginRight: 16, padding: hl.includes(i) ? '0 6px' : 0,
+              backgroundImage: hl.includes(i) ? `linear-gradient(${dark ? 'rgba(255,106,61,.85)' : 'rgba(14,159,110,.28)'}, ${dark ? 'rgba(255,106,61,.85)' : 'rgba(14,159,110,.28)'})` : 'none',
+              backgroundRepeat: 'no-repeat', backgroundPosition: '0 88%', backgroundSize: `${m * 100}% 38%`, borderRadius: 8 }}>{w}</span>
+          )
         })}
       </div>
       {sub && (
@@ -98,3 +105,42 @@ export const Backdrop: React.FC<{ dark?: boolean }> = ({ dark }) => {
 export const Logo: React.FC<{ size?: number }> = ({ size = 90 }) => <Img src={staticFile('logo-mark.png')} style={{ width: size, height: size, borderRadius: size / 2 }} />
 
 export const Price: React.FC<{ v: string }> = ({ v }) => <span style={{ fontWeight: 800 }}>{v}</span>
+
+
+/** «Ламповая» плёнка поверх всего кадра: живое зерно, мягкая виньетка и тёплый тон. */
+export const Film: React.FC = () => {
+  const f = useCurrentFrame()
+  return (
+    <AbsoluteFill style={{ pointerEvents: 'none' }}>
+      <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0, opacity: 0.11, mixBlendMode: 'overlay' }}>
+        <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed={f % 12} stitchTiles="stitch" /><feColorMatrix type="saturate" values="0" /></filter>
+        <rect width="100%" height="100%" filter="url(#grain)" />
+      </svg>
+      <AbsoluteFill style={{ background: 'radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 55%, rgba(20,10,0,.28) 100%)' }} />
+      <AbsoluteFill style={{ background: 'rgba(255,170,90,.06)', mixBlendMode: 'soft-light' }} />
+    </AbsoluteFill>
+  )
+}
+
+/** Засветка плёнки на склейке: тёплое пятно проходит через кадр (screen), как в старых камерах. */
+export const LightLeaks: React.FC<{ at: number[]; dur?: number }> = ({ at, dur = 14 }) => {
+  const f = useCurrentFrame()
+  return (
+    <AbsoluteFill style={{ pointerEvents: 'none', mixBlendMode: 'screen' }}>
+      {at.map((s, k) => {
+        const t = (f - s + dur / 2) / dur
+        if (t < 0 || t > 1) return null
+        const o = Math.sin(t * Math.PI)
+        const x = -40 + t * 120
+        const cols = [['#FF6A3D', '#FFB86B'], ['#FF8A5B', '#FFD27A'], ['#F25F8B', '#FFB86B']][k % 3]
+        return (
+          <React.Fragment key={s}>
+            <div style={{ position: 'absolute', left: `${x}%`, top: '-10%', width: '80%', height: '120%', borderRadius: '50%', background: `radial-gradient(closest-side, ${cols[0]}, transparent)`, opacity: o * 0.42, filter: 'blur(70px)', transform: 'rotate(18deg)' }} />
+            <div style={{ position: 'absolute', left: `${x + 25}%`, top: '20%', width: '50%', height: '70%', borderRadius: '50%', background: `radial-gradient(closest-side, ${cols[1]}, transparent)`, opacity: o * 0.32, filter: 'blur(60px)' }} />
+            <AbsoluteFill style={{ background: '#FFF4E6', opacity: o * 0.07 }} />
+          </React.Fragment>
+        )
+      })}
+    </AbsoluteFill>
+  )
+}

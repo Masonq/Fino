@@ -3,7 +3,7 @@ import { AbsoluteFill, Easing, Img, interpolate, Sequence, spring, staticFile, u
 import { linearTiming, springTiming, TransitionSeries } from '@remotion/transitions'
 import { slide } from '@remotion/transitions/slide'
 import { wipe } from '@remotion/transitions/wipe'
-import { C, Caption, FONT, Logo, Nav, Phone } from './ui'
+import { C, Caption, Film, FONT, LightLeaks, Logo, Nav, Phone } from './ui'
 
 const clamp = { extrapolateLeft: 'clamp' as const, extrapolateRight: 'clamp' as const }
 const out3 = Easing.bezier(0.16, 1, 0.3, 1)
@@ -44,7 +44,7 @@ const ItemShot: React.FC<{ i: number }> = ({ i }) => {
       <KenBurns src={real(it.photo)} land={it.land} dir={i % 2 ? -1 : 1} />
       <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: '28%', background: 'linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,0))' }} />
       <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '55%', background: 'linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.25) 40%,rgba(0,0,0,.72))' }} />
-      <div style={{ position: 'absolute', left: 70, bottom: 590, transform: `scale(${tag}) rotate(${-4 + i % 2 * 7}deg)`, transformOrigin: 'left bottom', padding: '18px 34px', borderRadius: 26, background: '#fff', color: C.ink, fontSize: 76, fontWeight: 800, letterSpacing: -1, boxShadow: '0 16px 40px rgba(0,0,0,.3)' }}>{it.price}</div>
+      <div style={{ position: 'absolute', left: 70, bottom: 590, transform: `scale(${tag}) rotate(${-4 + i % 2 * 7 + Math.sin(f / 4) * 1.5 * Math.max(0, 1 - f / 24)}deg)`, transformOrigin: 'left bottom', padding: '18px 34px', borderRadius: 26, background: '#fff', color: C.ink, fontSize: 76, fontWeight: 800, letterSpacing: -1, boxShadow: '0 16px 40px rgba(0,0,0,.3)' }}>{it.price}</div>
       <div style={{ position: 'absolute', left: 70, right: 200, bottom: 470, color: '#fff', fontSize: 58, fontWeight: 800, lineHeight: 1.1, opacity: txt, transform: `translateY(${(1 - txt) * 30}px)` }}>{it.title}</div>
       <div style={{ position: 'absolute', left: 70, bottom: 405, display: 'flex', alignItems: 'center', gap: 10, color: 'rgba(255,255,255,.9)', fontSize: 36, fontWeight: 600, opacity: txt }}>
         <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2"><path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" /></svg>{it.city}
@@ -87,12 +87,12 @@ const Montage: React.FC = () => {
       <TransitionSeries>
         {ITEMS.map((_, i) => (
           <React.Fragment key={i}>
-            {i > 0 && <TransitionSeries.Transition presentation={t(i)} timing={springTiming({ config: { damping: 200 }, durationInFrames: 9 })} />}
-            <TransitionSeries.Sequence durationInFrames={36}><ItemShot i={i} /></TransitionSeries.Sequence>
+            {i > 0 && <TransitionSeries.Transition presentation={t(i)} timing={springTiming({ config: { damping: 200 }, durationInFrames: 8 })} />}
+            <TransitionSeries.Sequence durationInFrames={28}><ItemShot i={i} /></TransitionSeries.Sequence>
           </React.Fragment>
         ))}
       </TransitionSeries>
-      <Caption dark top={230} text="Продают рядом с тобой" sub="Белград · Нови-Сад · вся Сербия" />
+      <Caption dark top={230} hl={[1, 2, 3]} text="Продают рядом с тобой" sub="Белград · Нови-Сад · вся Сербия" />
     </AbsoluteFill>
   )
 }
@@ -138,13 +138,13 @@ const ShopCard: React.FC<{ photo: string; title: string; price: string; t: numbe
 // ---------- 3. Вкладка «Шопсы»: кеды → двойной тап → свайп → гитара → «Написать» ----------
 const Shops: React.FC = () => {
   const f = useCurrentFrame()
-  const tap = 58
+  const tap = 60
   const liked = f >= tap
   const burst = spring({ frame: f - tap, fps: 30, config: { damping: 9 } })
   const burstOut = interpolate(f, [tap + 12, tap + 28], [1, 0], clamp)
-  const swipe = interpolate(f, [104, 118], [0, -768], { ...clamp, easing: out3 })
+  const swipe = interpolate(f, [100, 114], [0, -768], { ...clamp, easing: out3 })
   const card1 = spring({ frame: f - 22, fps: 30, config: { damping: 13 } })
-  const card2 = spring({ frame: f - 128, fps: 30, config: { damping: 13 } })
+  const card2 = spring({ frame: f - 122, fps: 30, config: { damping: 13 } })
   const shade = <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '48%', background: 'linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.18) 35%,rgba(0,0,0,.62))' }} />
   return (
     <div style={{ position: 'absolute', inset: 0, background: '#000' }}>
@@ -170,12 +170,12 @@ const Shops: React.FC = () => {
           <div style={{ position: 'absolute', left: 12, right: 74, bottom: 20, color: '#fff' }}>
             <div style={{ fontSize: 15, fontWeight: 700 }}>Никола</div>
             <div style={{ fontSize: 13, marginTop: 5 }}>Звук — в видео, кейс в комплекте 🎸</div>
-            <ShopCard photo="353db02c-0" title="LAVA ME 4 Carbon" price="650 €" t={card2} press={f >= 186 && f < 194} />
+            <ShopCard photo="353db02c-0" title="LAVA ME 4 Carbon" price="650 €" t={card2} press={f >= 176 && f < 184} />
           </div>
         </div>
       </div>
       <div style={{ position: 'absolute', left: 12, right: 12, top: 764, height: 3, borderRadius: 2, background: 'rgba(255,255,255,.25)' }}>
-        <div style={{ width: `${f < 110 ? interpolate(f, [0, 110], [0, 100], clamp) : interpolate(f, [118, 200], [0, 70], clamp)}%`, height: 3, borderRadius: 2, background: '#fff' }} />
+        <div style={{ width: `${f < 106 ? interpolate(f, [0, 106], [0, 100], clamp) : interpolate(f, [114, 200], [0, 70], clamp)}%`, height: 3, borderRadius: 2, background: '#fff' }} />
       </div>
       <Nav active="shops" dark />
     </div>
@@ -187,9 +187,9 @@ const Chat: React.FC = () => {
   const f = useCurrentFrame()
   const enter = interpolate(f, [0, 12], [393, 0], { ...clamp, easing: out3 })
   const typed = 'Здравствуйте! Гитара ещё продаётся?'
-  const n = Math.floor(interpolate(f, [14, 44], [0, typed.length], clamp))
-  const sent = f >= 52
-  const reply = spring({ frame: f - 70, fps: 30, config: { damping: 13 } })
+  const n = Math.floor(interpolate(f, [12, 34], [0, typed.length], clamp))
+  const sent = f >= 40
+  const reply = spring({ frame: f - 60, fps: 30, config: { damping: 13 } })
   return (
     <div style={{ position: 'absolute', inset: 0, background: C.bg, transform: `translateX(${enter}px)` }}>
       <div style={{ padding: '56px 14px 10px', display: 'flex', alignItems: 'center', gap: 10, background: '#fff', borderBottom: `1px solid ${C.line}` }}>
@@ -198,11 +198,11 @@ const Chat: React.FC = () => {
       </div>
       <div style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
         {sent && <div style={{ alignSelf: 'flex-end', maxWidth: 270, padding: '10px 14px', borderRadius: '18px 18px 4px 18px', background: C.g, color: '#fff', fontSize: 15 }}>{typed}</div>}
-        {f >= 70 && <div style={{ alignSelf: 'flex-start', maxWidth: 270, padding: '10px 14px', borderRadius: '18px 18px 18px 4px', background: '#fff', color: C.ink, fontSize: 15, transform: `scale(${reply})`, transformOrigin: 'left bottom', boxShadow: '0 1px 2px rgba(0,0,0,.05)' }}>Да! Могу показать сегодня, с 18:00 🙌</div>}
+        {f >= 60 && <div style={{ alignSelf: 'flex-start', maxWidth: 270, padding: '10px 14px', borderRadius: '18px 18px 18px 4px', background: '#fff', color: C.ink, fontSize: 15, transform: `scale(${reply})`, transformOrigin: 'left bottom', boxShadow: '0 1px 2px rgba(0,0,0,.05)' }}>Да! Могу показать сегодня, с 18:00 🙌</div>}
       </div>
       <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '10px 12px 30px', background: '#fff', borderTop: `1px solid ${C.line}`, display: 'flex', gap: 8 }}>
         <div style={{ flex: 1, height: 42, borderRadius: 21, background: C.sunken, padding: '0 14px', display: 'flex', alignItems: 'center', fontSize: 15, color: sent ? C.muted : C.ink, whiteSpace: 'nowrap', overflow: 'hidden' }}>{sent ? 'Сообщение' : typed.slice(0, n)}{!sent && f % 16 < 8 && <span style={{ color: C.g }}>|</span>}</div>
-        <div style={{ width: 42, height: 42, borderRadius: 21, background: C.g, display: 'flex', alignItems: 'center', justifyContent: 'center', transform: `scale(${f >= 46 && f < 52 ? 0.86 : 1})` }}>
+        <div style={{ width: 42, height: 42, borderRadius: 21, background: C.g, display: 'flex', alignItems: 'center', justifyContent: 'center', transform: `scale(${f >= 36 && f < 40 ? 0.86 : 1})` }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z" /></svg>
         </div>
       </div>
@@ -214,7 +214,7 @@ const Chat: React.FC = () => {
 const Store: React.FC = () => {
   const f = useCurrentFrame()
   const enter = interpolate(f, [0, 12], [393, 0], { ...clamp, easing: out3 })
-  const follow = f >= 70
+  const follow = f >= 60
   const grid = [['2c893f74-1', 'iPhone 14 Pro 256 ГБ', '400 €'], ['d0ca9165-0', 'Apple Magic Keyboard', '8 000 RSD'], ['cb2d407d-0', 'Геймпад DualSense', '5 500 RSD'], ['353db02c-1', 'LAVA ME 4 Carbon', '650 €']]
   return (
     <div style={{ position: 'absolute', inset: 0, background: C.bg, transform: `translateX(${enter}px)` }}>
@@ -226,7 +226,7 @@ const Store: React.FC = () => {
         <div style={{ fontSize: 21, fontWeight: 800, marginTop: 6 }}>Tech Corner</div>
         <div style={{ fontSize: 13, color: C.muted, marginTop: 2 }}>18 товаров · {follow ? 241 : 240} подписчиков</div>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 12 }}>
-          <div style={{ minWidth: 136, height: 40, borderRadius: 12, background: follow ? '#fff' : C.g, border: `1px solid ${follow ? C.line : 'transparent'}`, color: follow ? C.ink : '#fff', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', transform: `scale(${f >= 64 && f < 70 ? 0.92 : 1})` }}>{follow ? 'Вы подписаны ✓' : 'Подписаться'}</div>
+          <div style={{ minWidth: 136, height: 40, borderRadius: 12, background: follow ? '#fff' : C.g, border: `1px solid ${follow ? C.line : 'transparent'}`, color: follow ? C.ink : '#fff', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', transform: `scale(${f >= 54 && f < 60 ? 0.92 : 1})` }}>{follow ? 'Вы подписаны ✓' : 'Подписаться'}</div>
           <div style={{ minWidth: 110, height: 40, borderRadius: 12, background: '#fff', border: `1px solid ${C.line}`, fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Поделиться</div>
         </div>
       </div>
@@ -260,7 +260,7 @@ const Final: React.FC = () => {
       <div style={{ position: 'absolute', width: 800, height: 800, borderRadius: '50%', right: -340, bottom: -260, background: '#FFEDE6', filter: 'blur(50px)' }} />
       <div style={{ position: 'relative', transform: `scale(${p})`, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <Logo size={170} />
-        <div style={{ marginTop: 28, fontSize: 128, fontWeight: 800, letterSpacing: -4, color: C.ink }}>PLONK</div>
+        <div style={{ marginTop: 28, fontSize: 128, fontWeight: 800, letterSpacing: -4, color: 'transparent', backgroundImage: `linear-gradient(110deg, ${C.ink} 40%, #7BE3B5 50%, ${C.ink} 60%)`, backgroundSize: '300% 100%', backgroundPosition: `${interpolate(f, [20, 50], [100, 0], clamp)}% 0`, WebkitBackgroundClip: 'text', backgroundClip: 'text' }}>PLONK</div>
         <div style={{ marginTop: 8, fontSize: 50, fontWeight: 700, color: C.soft, textAlign: 'center', lineHeight: 1.2 }}>Объявления,<br />которые можно посмотреть</div>
       </div>
       <div style={{ position: 'relative', marginTop: 60, display: 'flex', gap: 14 }}>
@@ -276,38 +276,40 @@ const Final: React.FC = () => {
 }
 
 // ---------- монтаж: 0–2 с зацепка, 2–7,6 вещи, 7,6–14,6 шопсы, 14,6–18 чат, 18–22 витрина, 22–25,5 финал ----------
-export const MONTAGE = 6 * 36 - 5 * 9 // 171 кадр
+export const MONTAGE = 6 * 28 - 5 * 8 // 128 кадров: склейка каждые 20 кадров = доля при 90 BPM
 export const PromoReal: React.FC = () => {
   const f = useCurrentFrame()
-  const P0 = 60 + MONTAGE // 231 — телефон
+  const P0 = 200 // телефон — на долю (10-я)
   const phoneIn = spring({ frame: f - P0, fps: 30, config: { damping: 16 } })
-  const phoneOut = interpolate(f, [652, 664], [0, 1], { ...clamp, easing: Easing.in(Easing.cubic) })
-  const dark = f < P0 + 212
+  const phoneOut = interpolate(f, [580, 592], [0, 1], { ...clamp, easing: Easing.in(Easing.cubic) })
+  const dark = f < P0 + 200
   return (
     <AbsoluteFill style={{ background: C.bg }}>
-      <Sequence durationInFrames={64}><Hook /></Sequence>
-      <Sequence from={60} durationInFrames={MONTAGE + 4}>
-        <AbsoluteFill style={{ opacity: interpolate(f, [60, 66], [0, 1], clamp) }}><Montage /></AbsoluteFill>
+      <Sequence durationInFrames={84}><Hook /></Sequence>
+      <Sequence from={80} durationInFrames={MONTAGE + 4}>
+        <AbsoluteFill style={{ opacity: interpolate(f, [80, 86], [0, 1], clamp) }}><Montage /></AbsoluteFill>
       </Sequence>
-      {f >= P0 && f < 664 && (
+      {f >= P0 && f < 594 && (
         <AbsoluteFill>
           <AbsoluteFill style={{ background: dark ? '#0F1612' : C.bg }}>
             <div style={{ position: 'absolute', width: 900, height: 900, borderRadius: '50%', left: -380, top: -260, background: dark ? 'rgba(14,159,110,.25)' : C.gs, filter: 'blur(40px)' }} />
             <div style={{ position: 'absolute', width: 700, height: 700, borderRadius: '50%', right: -300, bottom: -200, background: dark ? 'rgba(255,106,61,.15)' : '#FFEDE6', filter: 'blur(50px)' }} />
           </AbsoluteFill>
-          <Sequence from={P0} durationInFrames={212}><Caption dark top={230} text="Шопсы — | видео вместо фото" /></Sequence>
-          <Sequence from={P0 + 212} durationInFrames={104}><Caption top={230} text="Пишешь продавцу | прямо из видео" /></Sequence>
-          <Sequence from={P0 + 316} durationInFrames={120}><Caption top={230} text="Своя витрина — | все вещи по одной ссылке" /></Sequence>
-          <div style={{ position: 'absolute', inset: 0, transform: `translateY(${(1 - phoneIn) * 1000 + phoneOut * 1300}px)` }}>
+          <Sequence from={P0} durationInFrames={200}><Caption dark top={230} text="Шопсы — | видео вместо фото" hl={[3, 4, 5]} /></Sequence>
+          <Sequence from={P0 + 200} durationInFrames={90}><Caption top={230} text="Пишешь продавцу | прямо из видео" hl={[3, 4, 5]} /></Sequence>
+          <Sequence from={P0 + 290} durationInFrames={110}><Caption top={230} text="Своя витрина — | все вещи по одной ссылке" hl={[6, 7, 8]} /></Sequence>
+          <div style={{ position: 'absolute', inset: 0, transform: `perspective(2200px) translateY(${(1 - phoneIn) * 1000 + phoneOut * 1300}px) rotateX(${(1 - phoneIn) * 28}deg) rotateZ(${(1 - phoneIn) * -6}deg)`, transformOrigin: '50% 100%' }}>
             <Phone dark={dark} y={-20} scale={1.42}>
-              <Sequence from={P0} durationInFrames={226}><Shops /></Sequence>
-              <Sequence from={P0 + 212} durationInFrames={118}><Chat /></Sequence>
-              <Sequence from={P0 + 316} durationInFrames={120}><Store /></Sequence>
+              <Sequence from={P0} durationInFrames={214}><Shops /></Sequence>
+              <Sequence from={P0 + 200} durationInFrames={104}><Chat /></Sequence>
+              <Sequence from={P0 + 290} durationInFrames={112}><Store /></Sequence>
             </Phone>
           </div>
         </AbsoluteFill>
       )}
-      <Sequence from={658}><Final /></Sequence>
+      <Sequence from={588}><Final /></Sequence>
+      <LightLeaks at={[80, 128, 168, 200, 400, 490, 590]} />
+      <Film />
     </AbsoluteFill>
   )
 }
