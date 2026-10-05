@@ -7408,3 +7408,8 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 .sf-drop-timer{ font-size:44px; font-weight:800; letter-spacing:-0.03em; font-variant-numeric:tabular-nums; line-height:1.05; }
 .sf-drop-sub{ font-size:14px; opacity:.8; }
 .sf-drop .jr-btn.primary{ margin-top:6px; background:var(--primary); color:#fff; }
+/* галочка у имени (VerifiedMark): в строку с именем, по центру строки */
+.vmark{ display:inline-flex; align-items:center; gap:4px; vertical-align:-0.15em; flex:none; }
+.vmark svg{ display:block; }
+.vmark-label{ font-size:12px; font-weight:700; color:var(--primary-deep); }
+.sh-author .vmark{ vertical-align:middle; }

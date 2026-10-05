@@ -7,6 +7,7 @@ import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import Sheet from '../components/Sheet'
 import { toast } from 'sonner'
+import VerifiedMark from '../components/VerifiedMark'
 
 const PAGE = 8
 // плохая связь или «экономия трафика» — берём 480p
@@ -217,6 +218,7 @@ function Slide({ shop, index, active, near, muted, onActive }) {
       <div className="sh-meta">
         <div className="sh-author">
           <span>{shop.author?.name}</span>
+          <VerifiedMark official={shop.author?.official} verified={shop.author?.verified} size={16} />
           {shop.is_ad && <span className="sh-ad">{t('shops.ad')}</span>}
         </div>
         {shop.caption && <p className="sh-caption">{shop.caption}</p>}

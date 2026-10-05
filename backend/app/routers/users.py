@@ -70,6 +70,7 @@ def public_profile(user_id: uuid.UUID, lang: str = "ru", db: Session = Depends(g
         "company_description": user.company_description if user.role == UserRole.seller_business else None,
         "document_verified": user.document_verified,
         "company_verified": user.company_verified,
+        "official": user.role in (UserRole.admin, UserRole.moderator),  # команда PLONK
         "rating_avg": float(user.rating_avg or 0),
         "rating_count": int(user.rating_count or 0),
         "active_listings": active,

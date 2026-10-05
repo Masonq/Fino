@@ -15,6 +15,7 @@ import LanguageSwitcher from '../components/LanguageSwitcher'
 import BalanceCard from '../components/BalanceCard'
 import useStickyColumn from '../hooks/useStickyColumn'
 import { api } from '../api/client'
+import VerifiedMark from '../components/VerifiedMark'
 
 /**
  * Почта в карточке — с точкой переноса перед «собакой».
@@ -201,7 +202,7 @@ export default function Profile() {
                 справа от аватара. Раньше всё это стояло столбиком под
                 ним, и карточка занимала пол-экрана ради трёх строк. */}
             <div className="profile-card-body">
-              <div className="profile-card-name">{user.company_name || user.display_name}</div>
+              <div className="profile-card-name">{user.company_name || user.display_name} <VerifiedMark official={user.role === 'admin' || user.role === 'moderator'} verified={user.document_verified || user.company_verified} /></div>
               <div className="profile-card-meta">
                 {memberSince && <span>{memberSince}</span>}
                 <span>{isCompany ? t('seller.company_badge') : t('profile.person')}</span>

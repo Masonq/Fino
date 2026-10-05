@@ -669,7 +669,9 @@
     "delete_warn": "This permanently erases {{name}}, all their listings ({{listings}}) and all their chats. This cannot be undone — use a block for real people.",
     "err_delete": "Could not delete",
     "alert_photo_reuse": "Similar photo from different sellers",
-    "alert_photo_reuse_hint": "“{{value}}” — the photo nearly matches another seller's listing. Make sure it is the seller's own"
+    "alert_photo_reuse_hint": "“{{value}}” — the photo nearly matches another seller's listing. Make sure it is the seller's own",
+    "verify": "Mark as verified",
+    "unverify": "Remove verification"
   },
   "stats": {
     "title": "Numbers",
@@ -1039,7 +1041,8 @@
     "rejected": "Couldn’t verify the document",
     "err_format": "Unsupported file format",
     "err_generic": "Couldn’t send it, please try again",
-    "err_unavailable": "Verification is temporarily unavailable, try again later"
+    "err_unavailable": "Verification is temporarily unavailable, try again later",
+    "official": "PLONK team"
   },
   "balance": {
     "title": "Balance",

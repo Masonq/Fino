@@ -31,6 +31,7 @@ import { formatPrice } from '../utils/money'
 import { relativeDate, sinceMonth } from '../utils/time'
 import { hasLanding } from '../data/landings'
 import { showIsland } from '../utils/island'
+import VerifiedMark from '../components/VerifiedMark'
 
 const REASON_KEYS = [
   'wrong_category', 'bad_photos', 'unclear_description',
@@ -1087,16 +1088,12 @@ export default function ListingDetail() {
             <div>
               <div className="seller-name">
                 <span className="name-text">{listing.owner.company_name || listing.owner.display_name}</span>
-                {(listing.owner.company_verified || listing.owner.document_verified) && (
-                  <div className="seal seal-sm">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><path d="M20 6 9 17l-5-5" /></svg>
-                  </div>
-                )}
+                <VerifiedMark official={listing.owner.official} verified={listing.owner.company_verified || listing.owner.document_verified} />
                 {/* Подпись к галочке — рядом с ней, а не отдельной
                     строкой ниже: иначе непонятно, к чему относится
                     сама галочка, а карточка растёт на целую строку. */}
-                {listing.owner.document_verified && (
-                  <span className="seller-verified-note">{t('seller.fact_verified')}</span>
+                {(listing.owner.official || listing.owner.document_verified) && (
+                  <span className="seller-verified-note">{listing.owner.official ? t('verify.official') : t('seller.fact_verified')}</span>
                 )}
               </div>
               <div className="seller-meta">

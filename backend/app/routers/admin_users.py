@@ -336,6 +336,23 @@ def change_role(
     return {"ok": True, "role": user.role.value}
 
 
+class VerifyIn(BaseModel):
+    verified: bool
+
+
+@router.post("/{user_id}/verify")
+def set_verified(user_id: uuid.UUID, payload: VerifyIn, admin: User = Depends(require_admin), db: Session = Depends(get_db)):
+    """Галочка «Личность подтверждена» вручную — когда проверили человека сами, без сервиса проверки документов."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, "user_not_found")
+    was = bool(user.document_verified)
+    user.document_verified = payload.verified
+    record(db, admin, "user.verify", target_type="user", target_id=user.id, was=was, became=payload.verified, about=user.display_name)
+    db.commit()
+    return {"ok": True, "document_verified": user.document_verified}
+
+
 @router.post("/{user_id}/block")
 def block(
     user_id: uuid.UUID,

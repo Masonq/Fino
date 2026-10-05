@@ -2067,6 +2067,7 @@ def get_listing(listing_id: str, request: Request, db: Session = Depends(get_db)
             "rating_count": listing.owner.rating_count,
             "document_verified": listing.owner.document_verified,
             "company_verified": listing.owner.company_verified,
+            "official": listing.owner.role in (UserRole.admin, UserRole.moderator),
             # Сам номер тут не отдаём — только флаг, есть ли он вообще.
             # Иконка звонка на этой странице ведёт в чат, где и решается,
             # раскрывать номер или нет; если его нет в профиле у

@@ -218,6 +218,7 @@ export const api = {
     method: 'POST',
     body: JSON.stringify({ role }),
   }),
+  adminVerify: (id, verified) => request(`/admin/users/${id}/verify`, { method: 'POST', body: { verified } }),
   adminBlock: (id, reason) => request(`/admin/users/${id}/block`, {
     method: 'POST',
     body: JSON.stringify({ reason }),

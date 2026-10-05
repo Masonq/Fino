@@ -165,7 +165,8 @@ def _serialize(shop: Shop, db: Session, lang: str = "ru", viewer=None, stats: bo
         "caption": shop.caption, "is_ad": shop.is_ad,
         "published_at": shop.published_at.isoformat() if shop.published_at else None,
         "expires_at": shop.expires_at.isoformat() if shop.expires_at else None,
-        "author": {"id": str(a.id), "name": a.display_name, "avatar": a.avatar_url} if a else None,
+        "author": {"id": str(a.id), "name": a.display_name, "avatar": a.avatar_url, "verified": bool(a.document_verified),
+                   "official": a.role in (UserRole.admin, UserRole.moderator)} if a else None,
         "items": [x for x in (_item(it, lang) for it in shop.items) if x],
         "mine": bool(viewer and viewer.id == shop.author_id),
     }
@@ -191,7 +192,8 @@ def _listing_video(l: Listing, lang: str) -> dict | None:
     o = l.owner
     return {"id": f"l-{l.id}", "kind": "listing", "status": "active", "video_url": v.url, "video_low_url": None,
             "poster_url": v.thumbnail_url, "duration": None, "caption": None, "is_ad": False, "likes": 0, "comments": 0,
-            "liked": False, "author": {"id": str(o.id), "name": o.display_name, "avatar": o.avatar_url} if o else None,
+            "liked": False, "author": {"id": str(o.id), "name": o.display_name, "avatar": o.avatar_url, "verified": bool(o.document_verified),
+                       "official": o.role in (UserRole.admin, UserRole.moderator)} if o else None,
             "items": [b], "mine": False}
 
 

@@ -28,6 +28,7 @@ import Skeleton from '../../src/components/Skeleton'
 import { SITE, mediaUrl } from '../../src/config'
 import { cityName, formatPrice, isFresh, monthYear, parseTime, relTime } from '../../src/format'
 import { colors, font, mono, radius } from '../../src/theme'
+import VerifiedMark from '../../src/components/VerifiedMark'
 
 /**
  * Объявление: галерея на всю ширину (листается, «1 / 5»), цена, название, город и время, метки, описание,
@@ -245,10 +246,10 @@ export default function ListingScreen() {
               <View style={{ flex: 1, gap: 2 }}>
                 <View style={styles.nameRow}>
                   <Text style={styles.name} numberOfLines={1}>{owner.company_name || owner.display_name || tr('Продавец')}</Text>
-                  {owner.document_verified && (
+                  {(owner.official || owner.document_verified) && (
                     <View style={styles.verified}>
-                      <View style={styles.seal}><Icon name="check" size={10} color="#fff" /></View>
-                      <Text style={styles.verifiedText}>{tr('Личность подтверждена')}</Text>
+                      <VerifiedMark official={owner.official} verified={owner.document_verified} />
+                      <Text style={styles.verifiedText}>{owner.official ? tr('Команда PLONK') : tr('Личность подтверждена')}</Text>
                     </View>
                   )}
                 </View>

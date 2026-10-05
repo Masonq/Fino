@@ -13,6 +13,7 @@ import { mediaUrl } from '../../src/config'
 import { monthYear, parseTime } from '../../src/format'
 import { getLang, plural, tr } from '../../src/i18n'
 import { colors, font, space } from '../../src/theme'
+import VerifiedMark from '../../src/components/VerifiedMark'
 
 // «Обычно отвечает…» — тексты сайта (seller.reply_*)
 const REPLY: Record<string, string> = {"minutes": "Обычно отвечает за несколько минут", "hour": "Обычно отвечает в течение часа", "hours": "Обычно отвечает в течение дня", "day": "Обычно отвечает за сутки", "days": "Отвечает не сразу"}
@@ -84,7 +85,7 @@ export default function SellerScreen() {
         <View style={{ flex: 1, gap: 2 }}>
           <View style={styles.nameRow}>
             <Text style={styles.name} numberOfLines={1}>{name}</Text>
-            {seller.document_verified && <View style={styles.seal}><Icon name="check" size={10} color="#fff" /></View>}
+            <VerifiedMark official={seller.official} verified={seller.document_verified} size={18} />
           </View>
           {(seller.rating_count ?? 0) > 0
             ? <Text style={styles.rating}><Text style={styles.ratingNum}>{(seller.rating_avg ?? 0).toFixed(1)}</Text>  {seller.rating_count} {reviewsWord(seller.rating_count ?? 0)}</Text>

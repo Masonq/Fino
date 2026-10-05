@@ -17,6 +17,7 @@ import { useTabInset } from '../tabInset'
 import { money, type Shop, type ShopComment, type ShopItem, shopComment, shopCommentDelete, shopCommentReport, shopComments, shopEvent, shopLike, shopsFeed } from '../social'
 import { SITE } from '../config'
 import { useFavorites } from '../favorites'
+import VerifiedMark from './VerifiedMark'
 import { colors, font } from '../theme'
 
 const PAGE = 8
@@ -208,6 +209,7 @@ const Slide = memo(function Slide({ shop, active, near, muted, width, height, bo
       <View pointerEvents="box-none" style={[s.meta, { paddingBottom: bottom + 18 }]}>
         <View style={k.row}>
           <Text style={s.author}>{shop.author?.name}</Text>
+          <VerifiedMark official={shop.author?.official} verified={shop.author?.verified} size={15} />
           {shop.is_ad && <View style={s.ad}><Text style={s.adText}>{tr('Реклама')}</Text></View>}
         </View>
         {!!shop.caption && <Text style={s.caption} numberOfLines={3}>{shop.caption}</Text>}

@@ -194,6 +194,11 @@ export default function AdminUser() {
           <select value={card.role} disabled={busy} onChange={(e) => changeRole(e.target.value)}>
             {ROLES.map((role) => <option key={role} value={role}>{roleName(role)}</option>)}
           </select>
+          {/* галочка «Личность подтверждена» вручную — когда проверили сами */}
+          <button disabled={busy} onClick={async () => {
+            const res = await api.adminVerify(card.id, !card.document_verified).catch(() => null)
+            if (res) setCard((c) => ({ ...c, document_verified: res.document_verified }))
+          }}>{card.document_verified ? t('admin.unverify') : t('admin.verify')}</button>
           {card.is_blocked
             ? <button disabled={busy} onClick={unblock}>{t('admin.unblock')}</button>
             : <button className="danger" disabled={busy} onClick={() => setBlocking(true)}>{t('admin.block')}</button>}

@@ -10,6 +10,7 @@ import SellerReviews from '../components/SellerReviews'
 import ReportButton from '../components/ReportButton'
 import { sinceMonth } from '../utils/time'
 import { CardSkeletons } from '../components/Skeletons'
+import VerifiedMark from '../components/VerifiedMark'
 
 // Сколько карточек показывать, пока не развернули весь список.
 const PREVIEW_COUNT = 6
@@ -144,11 +145,7 @@ export default function SellerProfile() {
         <div className="seller-head-info">
           <div className="seller-name lg">
             <span className="name-text">{profile.company_name || profile.display_name}</span>
-            {(profile.company_verified || profile.document_verified) && (
-              <div className="seal seal-sm">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><path d="M20 6 9 17l-5-5" /></svg>
-              </div>
-            )}
+            <VerifiedMark official={profile.official} verified={profile.company_verified || profile.document_verified} size={20} />
           </div>
           {profile.is_company && <div className="seller-badge">{t('seller.company_badge')}</div>}
           {profile.rating_count > 0 && (

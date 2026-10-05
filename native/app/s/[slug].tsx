@@ -12,6 +12,7 @@ import { Btn, Empty, k, Tabs } from '../../src/components/Kit'
 import ListingCard from '../../src/components/ListingCard'
 import { sfFollow, sfPublic, sfReport, type StorefrontPublic } from '../../src/social'
 import { colors, font, space } from '../../src/theme'
+import VerifiedMark from '../../src/components/VerifiedMark'
 
 const REASONS: [string, string][] = [['spam', 'Спам'], ['fraud', 'Мошенничество'], ['prohibited_item', 'Запрещённые товары'], ['offensive_user', 'Выдаёт себя за другого или оскорбления'], ['other', 'Другое']]
 const items = (n: number) => plural(n, { ru: ['товар', 'товара', 'товаров'], en: ['item', 'items'], sr: ['stvar', 'stvari', 'stvari'] })
@@ -62,7 +63,7 @@ export default function Storefront() {
       </View>
       <View style={s.head}>
         <View style={s.ava}>{sf.owner.avatar ? <Image source={{ uri: mediaUrl(sf.owner.avatar) ?? undefined }} style={StyleSheet.absoluteFill} /> : <Text style={s.avaText}>{(sf.name || '?')[0]}</Text>}</View>
-        <Text style={s.name}>{sf.name}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 }}><Text style={[s.name, { marginTop: 0 }]}>{sf.name}</Text><VerifiedMark official={sf.owner.official} verified={sf.owner.verified} size={20} /></View>
         <Text style={s.sub}>
           {sf.owner.name !== sf.name ? `${sf.owner.name} · ` : ''}{sf.items.length} {items(sf.items.length)}
           {sf.followers != null ? ` · ${sf.followers} ${plural(sf.followers, { ru: ['подписчик', 'подписчика', 'подписчиков'], en: ['follower', 'followers'], sr: ['pratilac', 'pratioca', 'pratilaca'] })}` : ''}

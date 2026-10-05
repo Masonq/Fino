@@ -40,6 +40,7 @@ export type Owner = {
   rating_avg?: number | null
   rating_count?: number
   document_verified?: boolean
+  official?: boolean // команда PLONK
   is_company?: boolean
   company_name?: string | null
   since?: string | null
@@ -278,7 +279,7 @@ export const freshListings = (city?: string | null) =>
 export type Seller = {
   active_seller?: boolean; reply_speed?: { label: string } | null
   id: string; display_name?: string | null; company_name?: string | null; is_company?: boolean; avatar_url?: string | null
-  rating_avg?: number | null; rating_count?: number; document_verified?: boolean; created_at?: string | null
+  rating_avg?: number | null; rating_count?: number; document_verified?: boolean; official?: boolean; created_at?: string | null
   active_listings?: number; company_description?: string | null; is_subscribed?: boolean
 }
 export const sellerProfile = (userId: string) => get<Seller>(`/users/${encodeURIComponent(userId)}/public?lang=${getLang()}`)

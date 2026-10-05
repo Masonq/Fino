@@ -43,7 +43,7 @@ export const jobSetStatus = (t: string, id: string, body: { status: string; inte
 export type ShopItem = Brief & { appear_at: number; item_id: string }
 export type Shop = {
   id: string; status: string; reject_reason?: string | null; video_url?: string | null; video_low_url?: string | null; poster_url?: string | null
-  duration?: number | null; caption?: string | null; is_ad: boolean; author?: { id: string; name: string; avatar?: string | null } | null
+  duration?: number | null; caption?: string | null; is_ad: boolean; author?: { id: string; name: string; avatar?: string | null; verified?: boolean; official?: boolean } | null
   items: ShopItem[]; mine: boolean; stats?: { views: number; completes: number; taps: number; chats: number }
   kind?: 'shop' | 'listing'; likes?: number; comments?: number; liked?: boolean
 }
@@ -93,7 +93,7 @@ export function shopUpload(t: string, uri: string, mime: string, onProgress: (p:
 // ---------- витрина ----------
 export type StorefrontPublic = {
   slug: string; moved: boolean; name: string; description?: string | null; cover_url?: string | null; status: string; pause_until?: string | null; pause_note?: string | null
-  owner: { id: string; name: string; avatar?: string | null }; mine: boolean; followers: number | null; following: boolean
+  owner: { id: string; name: string; avatar?: string | null; verified?: boolean; official?: boolean }; mine: boolean; followers: number | null; following: boolean
   items: FeedItem[]; collections: { id: string; title: string; description?: string | null; listing_ids: string[]; drop_at?: string | null; count?: number }[]
   shops: { id: string; poster_url?: string | null; caption?: string | null }[]
 }

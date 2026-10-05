@@ -7,6 +7,7 @@ import ListingCard from '../components/ListingCard'
 import PageHeader from '../components/PageHeader'
 import Sheet from '../components/Sheet'
 import { toast } from 'sonner'
+import VerifiedMark from '../components/VerifiedMark'
 
 const REASONS = ['spam', 'fraud', 'prohibited_item', 'offensive_user', 'other']
 
@@ -88,7 +89,7 @@ export default function Storefront() {
       </div>
       <div className="sf-head">
         <div className="sf-ava">{sf.owner.avatar ? <img src={sf.owner.avatar} alt="" /> : (sf.name || '?')[0]}</div>
-        <h1 className="sf-name">{sf.name}</h1>
+        <h1 className="sf-name">{sf.name} <VerifiedMark official={sf.owner.official} verified={sf.owner.verified} size={22} /></h1>
         <div className="sf-sub">
           {sf.owner.name !== sf.name && <><Link to={`/seller/${sf.owner.id}`}>{sf.owner.name}</Link><span>·</span></>}
           <span>{t('sf.items_n', { count: sf.items.length })}</span>
