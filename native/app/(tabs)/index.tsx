@@ -5,7 +5,7 @@ import { tr, getLang } from '../../src/i18n'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, useWindowDimensions, View, ScrollView, Keyboard } from 'react-native'
+  ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, useWindowDimensions, View, ScrollView, Keyboard, LayoutAnimation } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { fetchFeed, type FeedItem, type FeedTab, type Filters, saveSearch } from '../../src/api'
@@ -70,6 +70,8 @@ export default function Feed() {
   const [q, setQ] = useState('')
   // Подсказки поиска — как у Авито: разделы и продолжения запроса по мере ввода
   const [focused, setFocused] = useState(false)
+  // плашка города сжимается и разворачивается плавно, а не скачком
+  useEffect(() => { LayoutAnimation.configureNext(LayoutAnimation.create(220, 'easeInEaseOut', 'opacity')) }, [focused])
   const [headBottom, setHeadBottom] = useState(0)
   const [sug, setSug] = useState<{ categories: { slug: string; name: string; path: string }[]; completions: string[] }>({ categories: [], completions: [] })
   useEffect(() => {
@@ -256,10 +258,12 @@ export default function Feed() {
     <SafeAreaView style={styles.page} edges={['top']}>
       <View style={[styles.head, styles.headRow]} onLayout={(e) => setHeadBottom(e.nativeEvent.layout.y + e.nativeEvent.layout.height)}>
         <View style={[styles.search, { flex: 1 }]}>
-          <Pressable style={styles.city} onPress={() => setCityOpen(true)} accessibilityRole="button" accessibilityLabel={tr('Выбрать город')}>
+          {/* пока ищут — плашка города сжимается до значка, место отдаётся полю поиска; поиск закрыли — разворачивается */}
+          <Pressable style={[styles.city, focused && styles.cityCompact]} onPress={() => setCityOpen(true)} accessibilityRole="button"
+            accessibilityLabel={`${tr('Выбрать город')}: ${city ? cityName(city) : tr('Все города')}`}>
             <Icon name="pin" size={15} color={colors.ink} />
-            <Text style={styles.cityText} numberOfLines={1}>{city ? cityName(city) : tr('Все города')}</Text>
-            <Icon name="down" size={13} color={colors.inkSoft} />
+            {!focused && <Text style={styles.cityText} numberOfLines={1}>{city ? cityName(city) : tr('Все города')}</Text>}
+            {!focused && <Icon name="down" size={13} color={colors.inkSoft} />}
           </Pressable>
           <TextInput
             value={query}
@@ -491,6 +495,7 @@ const styles = StyleSheet.create({
   filterDot: { position: 'absolute', top: 2, right: 0, minWidth: 16, height: 16, borderRadius: 8, paddingHorizontal: 4, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
   filterDotText: { color: '#fff', fontSize: 10, fontFamily: font[800] },
   city: { flexDirection: 'row', alignItems: 'center', gap: 4, height: 36, paddingHorizontal: 10, borderRadius: 11, backgroundColor: colors.surface, maxWidth: 150, flexShrink: 0 },
+  cityCompact: { width: 36, paddingHorizontal: 0, justifyContent: 'center' },
   cityText: { fontSize: 13.5, fontFamily: font[800], color: colors.ink, flexShrink: 1 },
   search: {
     flexDirection: 'row', alignItems: 'center', gap: 8, height: 46, paddingHorizontal: 14,
