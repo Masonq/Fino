@@ -7,7 +7,7 @@
 звуки интерфейса; музыка приглушается под голосом), затем свести:
 `ffmpeg -i out/plonk-promo.mp4 -i out/mix.wav -map 0:v -map 1:a -c:v libx264 -crf 21 -c:a aac -b:a 192k -shortest -movflags +faststart out/plonk-promo-web.mp4`.
 
-Голос — Piper, модель `ru_RU-dmitri-medium` (лицензия CC0, зеркало github.com/Rotem12/piper-russian-voices):
-`echo "текст" | python3 -m piper -m ru_RU-dmitri-medium.onnx -f l1.wav --length-scale 0.9`.
+Голос — Piper, модель `ru_RU-sova200-medium` (женский, Apache-2.0; ещё в `voice/`: terra5871, kat580, luka; зеркало github.com/Rotem12/piper-russian-voices). Другой голос: `VOICE=terra5871 python3 mix.py`.
+`echo "текст" | python3 -m piper -m ru_RU-dmitri-medium.onnx -f voice/sova200_l1.wav --length-scale 0.92`.
 Склейки стоят на долях: 20 кадров = доля при 90 BPM, такт = 80 кадров.
 Кадр рассчитан на безопасные зоны TikTok/Reels: сверху ~220 px, снизу ~380 px, справа ~150 px — важное туда не ставить.

@@ -1,8 +1,9 @@
 """
 Звук промо-ролика PromoReal (24 с, 30 к/с): ламповый lo-fi саундтрек 90 BPM (такт = 80 кадров — склейки
-ролика стоят на долях), голос (Piper, голос dmitri, лицензия CC0), звуки интерфейса. Всё синтезировано
+ролика стоят на долях), голос (Piper, по умолчанию женский sova200 — Apache-2.0; VOICE=… для другого), звуки интерфейса. Всё синтезировано
 или сгенерировано локально — чужих треков и сэмплов нет. Музыка приглушается под голосом.
 """
+import os
 import wave
 
 import numpy as np
@@ -112,10 +113,10 @@ fade = int(SR * 1.2); music[N - fade:N] *= np.linspace(1, 0, fade)
 voice = np.zeros(N + SR)
 VO = [("l1", 0.15), ("l2", 2.8), ("l3", 6.9), ("l4", 9.6), ("l5", 13.5), ("l6", 16.6), ("l7", 20.2)]
 for name, at in VO:
-    w = wave.open(f"/home/claude/tts/{name}.wav"); sr = w.getframerate()
+    w = wave.open(os.path.join(os.environ.get("VOICE_DIR", "voice"), f"{os.environ.get('VOICE', 'sova200')}_{name}.wav")); sr = w.getframerate()
     x = np.frombuffer(w.readframes(w.getnframes()), dtype="<i2").astype(float) / 32768
     x = np.interp(np.arange(int(len(x) * SR / sr)) * sr / SR, np.arange(len(x)), x)  # 22,05 → 48 кГц
-    x = x - lowpass(x, 90)                                                            # без гула
+    x = x - lowpass(x, 110)                                                           # без гула
     x = np.tanh(x * 2.2) / np.tanh(2.2)                                               # мягкое уплотнение
     place(voice, x, int(at * SR), 0.9)
 # музыка уходит на задний план, пока говорит голос
@@ -185,6 +186,6 @@ mix = mix[:N]
 mix = np.tanh(mix * 1.1) / np.tanh(1.1)                    # мягкий лимитер
 mix = mix / np.abs(mix).max() * 0.89
 st = np.stack([mix, mix], 1)
-with wave.open("out/mix.wav", "wb") as w:
+with wave.open(os.environ.get("MIX_OUT", "out/mix.wav"), "wb") as w:
     w.setnchannels(2); w.setsampwidth(2); w.setframerate(SR); w.writeframes((st * 32767).astype("<i2").tobytes())
 print("ok", round(float(np.sqrt((mix ** 2).mean())), 3))
