@@ -579,28 +579,32 @@ def _listing_schema(listing, title: str, body: str, url: str,
     # Google показывает его в выдаче вместо длинного адреса: вместо
     # «plonk.rs/beograd/computers/igrovoy-...» человек видит
     # «Белград › Настольные компьютеры». Понятнее и заметнее.
-    crumbs = []
-    if listing.city:
-        crumbs.append(_city_words(listing.city))
-    if listing.category and listing.category.name:
-        section = (listing.category.name or {}).get("ru")
-        if section:
-            crumbs.append(section)
-
-    if crumbs:
-        site_root = url.split("/", 3)[:3]
-        site_root = "/".join(site_root)
+    # У каждой ступени, кроме последней, Google требует адрес (поле item) — раньше у «города» и «раздела» его не
+    # было, и Search Console помечал «Строки навигации» как недопустимые. Теперь: PLONK → раздел (→ подраздел) → вещь,
+    # у каждой ступени — настоящая страница сайта.
+    site_root = "/".join(url.split("/", 3)[:3])
+    crumbs = [("PLONK", site_root + "/")]
+    cat = listing.category
+    chain = []
+    from sqlalchemy.orm import object_session
+    sess = object_session(listing)
+    while cat is not None and len(chain) < 3:
+        chain.append(cat)
+        cat = sess.get(Category, cat.parent_id) if (sess and cat.parent_id) else None
+    for c in reversed(chain):
+        label = (c.name or {}).get("ru")
+        if label and c.slug:
+            crumbs.append((label, f"{site_root}/c/{c.slug}"))
+    crumbs.append((title, url))
+    if len(crumbs) > 1:
         trail = {
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
             "itemListElement": [
-                {"@type": "ListItem", "position": i + 1, "name": name}
-                for i, name in enumerate(crumbs)
+                {"@type": "ListItem", "position": i + 1, "name": name, "item": item}
+                for i, (name, item) in enumerate(crumbs)
             ],
         }
-        trail["itemListElement"].append(
-            {"@type": "ListItem", "position": len(crumbs) + 1,
-             "name": title, "item": url})
         return json.dumps([data, trail], ensure_ascii=False, indent=1)
 
     return json.dumps(data, ensure_ascii=False, indent=1)
