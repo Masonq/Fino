@@ -426,7 +426,8 @@ def submit(shop_id: uuid.UUID, lang: str = "ru", user: User = Depends(get_curren
         raise HTTPException(404, "shop_not_found")
     if s.status not in ("draft", "rejected"):
         raise HTTPException(400, "not_ready")
-    if not s.items:
+    # сотрудники могут выпускать «системные» шопсы без товаров — например, про сам PLONK
+    if not s.items and not _is_staff(user):
         raise HTTPException(400, "no_items")
     if _is_staff(user):
         _activate(s)

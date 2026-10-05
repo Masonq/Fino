@@ -14,7 +14,7 @@ let cache: Shop[] | null = null
 /** Шопсы на главной вместо историй: превью роликов 9:16, первой — «Снять шопс». */
 export default function ShopsRow() {
   const [items, setItems] = useState<Shop[] | null>(cache)
-  useEffect(() => { if (!cache) shopsFeed({ limit: 12 }).then((r) => { cache = r.items; setItems(r.items) }).catch(() => setItems([])) }, [])
+  useEffect(() => { if (!cache) shopsFeed({ limit: 12, withListings: true }).then((r) => { cache = r.items; setItems(r.items) }).catch(() => setItems([])) }, [])
   if (items === null) return <View style={s.row}>{[0, 1, 2, 3, 4].map((i) => <View key={i} style={[s.tile, { backgroundColor: colors.sunken }]} />)}</View>
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.row}>

@@ -16,7 +16,7 @@ export default function ShopsStrip() {
 
   useEffect(() => {
     if (cache) return
-    api.shopsFeed({ limit: 12, lang: i18n.language })
+    api.shopsFeed({ limit: 12, lang: i18n.language, with_listings: true })
       .then((r) => { cache = r.items || []; setItems(cache) })
       .catch(() => setItems([]))
   }, [i18n.language])

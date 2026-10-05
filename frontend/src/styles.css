@@ -7249,7 +7249,7 @@ h1, h2, h3, .page-title-text, .detail-title{ letter-spacing:-0.025em; }
 .nav-item-post .nav-icon-wrap::after{ display:none; }
 .nav-item-post .nav-icon-wrap svg{ width:22px; height:22px; }
 body.sh-open .bottomnav{ background:rgba(10,12,11,.72); border-color:rgba(255,255,255,.08); }
-body.sh-open .nav-item-post .nav-icon-wrap{ background:var(--surface); color:#000; }
+body.sh-open .nav-item-post .nav-icon-wrap{ background:#fff; color:#000; }
 body.sh-open .nav-item.active .nav-icon-wrap::after{ background:var(--surface); }
 .sh-feed{ bottom:0; }
 
@@ -7265,7 +7265,7 @@ body.sh-open .nav-item.active .nav-icon-wrap::after{ background:var(--surface); 
 /* ---------- кнопки и поля ---------- */
 .jr-btn{ border-radius:16px; font-weight:700; letter-spacing:-0.01em; }
 .jr-btn.primary{ background:var(--inverse); color:var(--on-inverse); }
-.jr-btn.primary:hover{ background:#000; }
+@media (hover:hover){ .jr-btn.primary:hover{ opacity:.88; } } /* на телефоне «наведение» залипает после нажатия — только для мыши */
 .jr-field input, .jr-field textarea, .jr-field select{ border-radius:16px; background:var(--surface); }
 
 /* ---------- заголовки страниц ---------- */
@@ -7390,3 +7390,11 @@ button.profile-row{ width:100%; text-align:left; font:inherit; color:inherit; }
 .vs-sheet.fp-vs .fp-block{ gap:10px; }
 .vs-sheet.fp-vs .fp-go{ background:var(--inverse); color:var(--on-inverse); margin-top:4px; }
 .vs-sheet.fp-vs .fp-go{ box-shadow:0 8px 20px rgba(15,21,18,.18); }
+
+/* «+» в меню: значок — цветом «на перевёрнутом» фоне (в тёмной теме кнопка светлая — значок тёмный) */
+.nav-item-post .nav-icon-wrap{ color:var(--on-inverse); }
+body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
+.home-shops{ margin-top:14px; }
+.home-shops .shs{ margin:0; padding-left:12px; padding-right:12px; scroll-padding-left:12px; }
+/* ценник на превью шопса — белая плашка, текст на ней тёмный в обеих темах */
+.shs-price{ color:#0F1512 !important; }

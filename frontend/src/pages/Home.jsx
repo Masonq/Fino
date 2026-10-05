@@ -711,8 +711,6 @@ export default function Home() {
           не должно менять высоту страницы; что меняет высоту — не липнет. */}
       <div className="promo-collapse">
         <div className="avito-promo-row">
-          {/* вместо историй — шопсы: короткие видео с объявлениями (ShopsStrip) */}
-          <ShopsStrip />
         </div>
       </div>
 
@@ -778,6 +776,8 @@ export default function Home() {
       )}
 
       {/* PLONK 2.0: подборки между плитками и лентой */}
+      {/* шопсы — под разделами: сначала куда идти, потом что посмотреть */}
+      <div className="home-shops"><ShopsStrip /></div>
       <HomeSections city={city} />
 
       <div className="feed-head-row">

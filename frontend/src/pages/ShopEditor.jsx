@@ -106,7 +106,8 @@ export default function ShopEditor() {
 
   const save = async (submit) => {
     if (!shop) return
-    if (submit && !items.length) { setErr(t('shops.err_no_items')); return }
+    const staff = user?.role === 'admin' || user?.role === 'moderator'
+    if (submit && !items.length && !staff) { setErr(t('shops.err_no_items')); return }
     setBusy(true); setErr('')
     try {
       await api.shopUpdate(shop.id, { caption, items: items.map((x) => ({ listing_id: x.id, appear_at: x.appear_at || 0 })), order_id: orderId || null })

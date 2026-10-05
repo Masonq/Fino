@@ -363,9 +363,9 @@ export default function Feed() {
         contentContainerStyle={[styles.list, { paddingBottom: 24 + tabInset }]}
         ListHeaderComponent={
           <View style={styles.listHead}>
-            {/* вместо историй — шопсы: короткие видео с объявлениями */}
-            {!q && <ShopsRow />}
             {!q && <CategoryTiles value={category} onPick={setCategory} />}
+            {/* шопсы — под разделами, как на сайте */}
+            {!q && <View style={{ marginTop: 12 }}><ShopsRow /></View>}
             {/* PLONK 2.0: подборки между плитками и лентой, как на сайте */}
             {!q && !category && cityReady && <HomeSections city={city} />}
             {!q && cityReady && !city && geoAsk && (

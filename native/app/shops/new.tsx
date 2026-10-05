@@ -23,7 +23,7 @@ const photoOf = (l: FeedItem) => l.cover_photo || l.photos?.[0] || null
 /** Снять шопс: видео до минуты → до 5 объявлений со своей секундой → подпись → на проверку. */
 export default function ShopEditor() {
   const { id, order } = useLocalSearchParams<{ id?: string; order?: string }>()
-  const { token } = useAuth()
+  const { token, user } = useAuth()
   const insets = useSafeAreaInsets()
   const [shop, setShop] = useState<Shop | null>(null)
   const [progress, setProgress] = useState<number | null>(null)
@@ -86,7 +86,8 @@ export default function ShopEditor() {
   const setAt = (lid: string) => setItems(items.map((x) => (x.id === lid ? { ...x, appear_at: Math.round((player.currentTime || 0) * 10) / 10 } : x)))
   const save = async (submit: boolean) => {
     if (!shop || !token) return
-    if (submit && !items.length) { setErr(tr('Прикрепите хотя бы одно объявление')); return }
+    const staff = user?.role === 'admin' || user?.role === 'moderator'
+    if (submit && !items.length && !staff) { setErr(tr('Прикрепите хотя бы одно объявление')); return }
     setBusy(true); setErr('')
     try {
       await shopUpdate(token, shop.id, { caption, items: items.map((x) => ({ listing_id: x.id, appear_at: x.appear_at })), order_id: order || null })
