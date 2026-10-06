@@ -212,3 +212,28 @@ def test_city_section_page_is_in_the_city():
         html = city_category_page("novi-sad", cat.slug, _Request(), db, lang="sr").body.decode()
         assert "u Novom Sadu" in html
         assert city_category_page("zagreb", cat.slug, _Request(), db).status_code == 404
+
+
+# ── Полезное ────────────────────────────────────────────────────────────────
+def test_every_guide_is_complete_in_three_languages():
+    """Каждая статья — на трёх языках, с обложкой, датой проверки и кнопкой в живой раздел."""
+    from app.data.guides import GUIDES
+    from app.routers.seo import CITY_IN
+
+    from app.data.category_intros import INTROS
+
+    sections = set(INTROS)  # все разделы с текстами: верхний и второй уровень
+    sections |= {"flats", "cars", "jobs", "electronics", "pets-supplies"}
+    assert len({g["slug"] for g in GUIDES}) == len(GUIDES)
+    for g in GUIDES:
+        assert (ROOT / "frontend/public" / g["cover"].lstrip("/")).exists(), g["cover"]
+        for lang in ("sr", "ru", "en"):
+            loc = g[lang]
+            assert loc["title"] and loc["lead"], (g["slug"], lang)
+            kind, (label, href) = loc["blocks"][-1]
+            assert kind == "cta" and label
+            m = re.fullmatch(r"(?:/([a-z-]+))?/c/([a-z0-9-]+)", href)
+            if m:
+                city, section = m.groups()
+                assert city is None or city in CITY_IN, href
+                assert section in sections, href
