@@ -7551,7 +7551,7 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
    PLONK 2.0 — главная: плитки разделов в своих мягких цветах (картинки вырезаны — фон любой),
    «Все» — тёмная плитка-якорь. Цвет помогает узнавать раздел с первого взгляда, как у Avito/Vinted.
    ===================================================================== */
-.cat-tile-2row{ box-shadow:none; transition:transform .18s var(--ease-out); }
+.cat-tile-2row{ box-shadow:none; transition:opacity .15s ease; }
 .cat-tile-2row[data-cat="real-estate"]{ background:#E2F1E6; }
 .cat-tile-2row[data-cat="auto"]{ background:#E3ECFA; }
 .cat-tile-2row[data-cat="services"]{ background:#FCEADB; }
@@ -7588,13 +7588,14 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
   filter:blur(10px); animation:aurora 14s ease-in-out infinite alternate; }
 @keyframes aurora{ from{ transform:translate3d(0,0,0) scale(1); } to{ transform:translate3d(4%,2%,0) scale(1.08); } }
 .home .avito-banner:not(.collapsed){ background-color:transparent !important; }
-/* отклик на нажатие: плитки и карточки чуть «проседают» */
-.cat-tile-2row:active, .s-card:active .s-photo-wrap, .hs-store:active{ transform:scale(.97); }
-.s-photo-wrap{ transition:transform .18s var(--ease-out); }
+/* отклик на нажатие — только прозрачностью: масштаб (transform) в момент касания на iPhone обрывал свайп
+   по фото карточки и прокрутку ряда плиток — листать картинки в ленте было нельзя */
+.cat-tile-2row:active, .hs-store:active{ opacity:.82; }
+.s-card:active .s-title, .s-card:active .s-price{ opacity:.7; }
 /* карточки ленты плавно поднимаются при появлении на экране (CSS scroll-driven animations, без JS) */
 @supports (animation-timeline: view()){
   .feed-grid .s-card{ animation:card-rise linear both; animation-timeline:view(); animation-range:entry 0% entry 35%; }
-  @keyframes card-rise{ from{ opacity:0; transform:translateY(22px) scale(.98); } to{ opacity:1; transform:none; } }
+  @keyframes card-rise{ from{ opacity:0; } to{ opacity:1; } }
 }
 @media (prefers-reduced-motion: reduce){
   .home::before, .home-hello-1, .home-hello-2, .feed-grid .s-card{ animation:none !important; }
