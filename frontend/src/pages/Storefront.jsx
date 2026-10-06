@@ -189,7 +189,7 @@ export function StorefrontDiscover() {
   }, [sort, q])
   return (
     <div className="page sf-discover">
-      <PageHeader title={t('sf.discover')}><Link className="jr-btn primary sm sh-head-btn" to="/vitrina">{t('sf.my')}</Link></PageHeader>
+      <PageHeader title={t('sf.discover')} kicker={t('sf.discover_kicker')}><Link className="jr-btn primary sm sh-head-btn" to="/vitrina">{t('sf.my')}</Link></PageHeader>
       <input className="sh-search" value={q} placeholder={t('sf.search_ph')} onChange={(e) => setQ(e.target.value)} />
       <div className="jr-tabs">
         {['popular', 'new'].map((k) => <button key={k} type="button" className={`jr-tab${sort === k ? ' on' : ''}`} onClick={() => setSort(k)}>{t(`sf.sort_${k}`)}</button>)}

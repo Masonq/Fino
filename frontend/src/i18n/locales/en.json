@@ -291,7 +291,8 @@
     "title_auto_hint": "The title is built from the number of rooms and area — this makes listings easier to scan and compare",
     "need_description": "Add a description",
     "contact_hint": "The description contains contacts ({{found}}). Remove them: buyers message through the site, and a number in the text stays in search forever.",
-    "contact_fix": "Remove"
+    "contact_fix": "Remove",
+    "step_of": "Step {{n}} of {{total}}"
   },
   "detail": {
     "loading": "Loading…",
@@ -473,7 +474,8 @@
     "delete_has_history_force_confirm": "This listing has chat history, reports, reviews, or support tickets attached — they will be permanently deleted along with the listing. Delete anyway?",
     "renew": "Extend",
     "expires_in_one": "Expires in {{count}} day",
-    "expires_in_other": "Expires in {{count}} days"
+    "expires_in_other": "Expires in {{count}} days",
+    "kicker": "Your sales"
   },
   "mod": {
     "title": "Moderation",
@@ -579,7 +581,8 @@
     "done": "Tracking",
     "need_login": "Introduce yourself to save searches and get notified about new listings.",
     "empty": "No saved searches yet. Set up filters and tap “Follow” — new listings will find you.",
-    "notify": "Notify"
+    "notify": "Notify",
+    "kicker": "New listings will come to you"
   },
   "similar": {
     "title": "Similar listings"
@@ -587,7 +590,8 @@
   "history": {
     "title": "Recently viewed",
     "clear": "Clear",
-    "empty": "Listings you open will show up here"
+    "empty": "Listings you open will show up here",
+    "kicker": "Recently opened"
   },
   "net": {
     "offline": "No internet connection",
@@ -848,7 +852,8 @@
     "subject_label": "In short",
     "body_label": "What happened",
     "contact_label": "Where to reply",
-    "queue_empty_hint": "All tickets handled. New ones will show up here right away."
+    "queue_empty_hint": "All tickets handled. New ones will show up here right away.",
+    "kicker": "We reply within a day"
   },
   "enter": {
     "working": "Signing you in…",
@@ -1014,7 +1019,9 @@
     "need_auth": "Sign in to see your notifications.",
     "read_all": "Mark all read",
     "clear_all": "Clear",
-    "clear_all_confirm": "Delete all notifications?"
+    "clear_all_confirm": "Delete all notifications?",
+    "kicker_new": "Something new",
+    "kicker_all": "All caught up"
   },
   "ldash": {
     "title": "Listing stats",
@@ -1162,7 +1169,8 @@
     "and_more_other": "and {{count}} more invited",
     "step_joined": "Signed up",
     "step_posted": "Posted a listing",
-    "step_rewarded": "Bonus paid"
+    "step_rewarded": "Bonus paid",
+    "kicker": "Bonuses for you and a friend"
   },
   "footer": {
     "about": "Classifieds in Serbia — in Russian, English and Serbian. Buy and sell close to home.",
@@ -1753,7 +1761,8 @@
     "drop_will_notify": "We will notify you when it opens",
     "drop_items_one": "{{count}} item",
     "drop_items_other": "{{count}} items",
-    "similar": "Similar storefronts"
+    "similar": "Similar storefronts",
+    "discover_kicker": "Shops and private sellers"
   },
   "shx": {
     "title": "What are shops",

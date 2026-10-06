@@ -27,7 +27,7 @@ export default function History() {
 
   return (
     <div className="fav-page">
-      <PageHeader title={t('history.title')} count={items.length}>
+      <PageHeader title={t('history.title')} count={items.length} kicker={t('history.kicker')}>
         {items.length > 0 && (
           <button
             className="history-clear"

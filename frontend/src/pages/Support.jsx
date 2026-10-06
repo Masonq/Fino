@@ -57,7 +57,7 @@ export default function Support() {
 
   return (
     <div className="page support">
-      <PageHeader title={t('support.title')} />
+      <PageHeader title={t('support.title')} kicker={t('support.kicker')} />
 
       {sent && <p className="support-sent">{t('support.sent')}</p>}
 

@@ -8,7 +8,8 @@ import { useNavigate } from 'react-router-dom'
  * PLONK 2.0: с kicker — шапка как на главной: сверху ряд капсул (назад и действия), ниже маленькая строка-подводка
  * и крупный заголовок («Добрый вечер» / «Что ищем сегодня?» → «4 вещи · 1 подешевела» / «Избранное»).
  */
-export default function PageHeader({ title, count, back = true, kicker, children }) {
+export default function PageHeader({ title, count, back = true, kicker, subtitle, compact = false, children }) {
+  if (kicker === undefined && subtitle) kicker = subtitle
   const { t } = useTranslation()
   const navigate = useNavigate()
   const backBtn = back && (
@@ -23,7 +24,8 @@ export default function PageHeader({ title, count, back = true, kicker, children
     </button>
   )
 
-  if (kicker !== undefined) {
+  // PLONK 2.0: шапка-приветствие на всех страницах (как на главной); compact — старая строка для узких мест
+  if (!compact) {
     return (
       <div className="page-hero">
         {(back || children) && (

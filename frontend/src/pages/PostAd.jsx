@@ -412,6 +412,8 @@ export default function PostAd() {
           <div key={s} className={i <= step ? 'post-step-dot active' : 'post-step-dot'} />
         ))}
       </div>
+      {/* подводка над заголовком шага — как «Добрый вечер» над «Что ищем сегодня?» на главной */}
+      <div className="post-kicker">{t('post.step_of', { n: step + 1, total: STEPS.length })}</div>
 
       {step === 0 && (() => {
         // Текущий уровень — либо корневые категории (path пуст), либо

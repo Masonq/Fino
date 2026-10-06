@@ -55,7 +55,7 @@ export default function InviteFriend() {
 
   return (
     <div className="invite-page">
-      <PageHeader title={t('invite.title')} />
+      <PageHeader title={t('invite.title')} kicker={t('invite.kicker')} />
 
       {/* Обещание — первым экраном и одной фразой: человек решает,
           читать ли дальше, именно здесь. */}

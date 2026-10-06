@@ -66,7 +66,7 @@ export default function SavedSearches() {
 
   return (
     <div className="fav-page saved-page">
-      <PageHeader title={t('saved.title')} count={items.length} />
+      <PageHeader title={t('saved.title')} count={items.length} kicker={t('saved.kicker')} />
 
       {!loaded ? (
         <div className="saved-list"><SavedRowSkeletons count={3} /></div>

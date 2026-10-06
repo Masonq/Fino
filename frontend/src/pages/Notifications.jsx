@@ -106,7 +106,7 @@ export default function Notifications() {
 
   return (
     <div className="fav-page notif-page">
-      <PageHeader title={t('notif.title')}>
+      <PageHeader title={t('notif.title')} kicker={hasUnread ? t('notif.kicker_new') : t('notif.kicker_all')}>
         {hasUnread && (
           <button className="notif-read-all" onClick={readAll}>{t('notif.read_all')}</button>
         )}

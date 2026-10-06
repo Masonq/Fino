@@ -151,7 +151,7 @@ export default function MyListings() {
   if (!user && !authLoading) {
     return (
       <div className="fav-page">
-        <PageHeader title={t('my.title')} />
+        <PageHeader title={t('my.title')} kicker={t('my.kicker')} />
         <div className="fav-empty">
           <div className="fav-empty-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -171,7 +171,7 @@ export default function MyListings() {
 
   return (
     <div className="fav-page">
-      <PageHeader title={t('my.title')} />
+      <PageHeader title={t('my.title')} kicker={t('my.kicker')} />
 
       <div className="my-tabs">
         <div className="pill-track pill-row">

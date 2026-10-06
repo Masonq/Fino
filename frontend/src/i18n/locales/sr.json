@@ -295,7 +295,8 @@
     "title_auto_hint": "Naslov se sam sastavlja od broja soba i površine — tako se oglasi lakše pretražuju i upoređuju",
     "need_description": "Dodajte opis",
     "contact_hint": "U opisu su kontakti ({{found}}). Uklonite ih: kupci pišu preko sajta, a broj u tekstu zauvek ostaje u pretrazi.",
-    "contact_fix": "Ukloni"
+    "contact_fix": "Ukloni",
+    "step_of": "Korak {{n}} od {{total}}"
   },
   "detail": {
     "loading": "Učitavanje…",
@@ -482,7 +483,8 @@
     "renew": "Produži",
     "expires_in_one": "Skidamo za {{count}} dan",
     "expires_in_few": "Skidamo za {{count}} dana",
-    "expires_in_other": "Skidamo za {{count}} dana"
+    "expires_in_other": "Skidamo za {{count}} dana",
+    "kicker": "Vaše prodaje"
   },
   "mod": {
     "title": "Moderacija",
@@ -594,7 +596,8 @@
     "done": "Pratite",
     "need_login": "Predstavite se da biste sačuvali pretrage i dobijali obaveštenja o novom.",
     "empty": "Još nema sačuvanih pretraga. Podesite filtere i dodirnite „Prati“ — novi oglasi će sami stići do vas.",
-    "notify": "Obaveštavaj"
+    "notify": "Obaveštavaj",
+    "kicker": "Novi oglasi stižu sami"
   },
   "similar": {
     "title": "Slični oglasi"
@@ -602,7 +605,8 @@
   "history": {
     "title": "Nedavno gledano",
     "clear": "Obriši",
-    "empty": "Ovde će se pojaviti oglasi koje otvorite"
+    "empty": "Ovde će se pojaviti oglasi koje otvorite",
+    "kicker": "Nedavno otvoreno"
   },
   "net": {
     "offline": "Nema internet veze",
@@ -870,7 +874,8 @@
     "subject_label": "Ukratko",
     "body_label": "Šta se desilo",
     "contact_label": "Gde da odgovorimo",
-    "queue_empty_hint": "Svi zahtevi su rešeni. Novi će se odmah pojaviti ovde."
+    "queue_empty_hint": "Svi zahtevi su rešeni. Novi će se odmah pojaviti ovde.",
+    "kicker": "Odgovaramo u roku od jednog dana"
   },
   "enter": {
     "working": "Prijavljujemo vas…",
@@ -1037,7 +1042,9 @@
     "need_auth": "Prijavite se da biste videli svoja obaveštenja.",
     "read_all": "Označi sve kao pročitano",
     "clear_all": "Obriši",
-    "clear_all_confirm": "Obrisati sva obaveštenja?"
+    "clear_all_confirm": "Obrisati sva obaveštenja?",
+    "kicker_new": "Ima novog",
+    "kicker_all": "Sve je pročitano"
   },
   "ldash": {
     "title": "Statistika oglasa",
@@ -1196,7 +1203,8 @@
     "and_more_other": "i još {{count}} pozvanih",
     "step_joined": "Registrovao se",
     "step_posted": "Objavio oglas",
-    "step_rewarded": "Bonus uplaćen"
+    "step_rewarded": "Bonus uplaćen",
+    "kicker": "Bonusi za vas i prijatelja"
   },
   "footer": {
     "about": "Oglasi u Srbiji — na ruskom, engleskom i srpskom. Kupujte i prodajte u svom komšiluku.",
@@ -1805,7 +1813,8 @@
     "drop_items_one": "{{count}} stvar",
     "drop_items_few": "{{count}} stvari",
     "drop_items_other": "{{count}} stvari",
-    "similar": "Slični izlozi"
+    "similar": "Slični izlozi",
+    "discover_kicker": "Prodavnice i privatni prodavci"
   },
   "shx": {
     "title": "Šta su šopsovi",
