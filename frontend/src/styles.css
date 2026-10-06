@@ -7903,3 +7903,43 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 .post-ad-page h2, .edit-listing-page h2{ font-size:30px !important; letter-spacing:-0.04em !important; margin-top:0; }
 .post-steps .post-step-dot.active{ background:var(--inverse); }
 .ph-actions > .jr-btn{ height:40px !important; min-height:0 !important; padding:0 16px !important; font-size:14px !important; border-radius:20px !important; }
+
+/* =====================================================================
+   PLONK 2.0 — переписка заново: шапка-стекло с белыми капсулами, вещь — белой карточкой, чужие сообщения — белые
+   с тенью (как карточки главной), свои — зелёные; поле ввода — парящая стеклянная плашка, как нижнее меню
+   ===================================================================== */
+.chat-page{ background:var(--bg); position:relative; isolation:isolate; }
+.chat-page::before{ content:""; position:absolute; z-index:-1; left:0; right:0; top:-40px; height:300px; pointer-events:none;
+  background:radial-gradient(40% 50% at 15% 30%, rgba(15,163,106,.13), transparent 70%), radial-gradient(35% 45% at 90% 20%, rgba(217,244,92,.22), transparent 70%); filter:blur(10px); }
+.chat-head{ background:color-mix(in srgb, var(--bg) 55%, transparent); backdrop-filter:blur(18px) saturate(1.4); -webkit-backdrop-filter:blur(18px) saturate(1.4); box-shadow:none; padding:calc(10px + var(--sat)) 12px 10px; }
+.chat-head .cats-back, .chat-head .chat-menu-btn, .chat-head .chat-head-call-btn{ width:40px; height:40px; border-radius:50%; background:var(--surface); box-shadow:0 1px 2px rgba(15,21,18,.05), 0 6px 18px rgba(15,21,18,.06); display:flex; align-items:center; justify-content:center; color:var(--ink); }
+.chat-head-name{ font-size:18px; font-weight:800; letter-spacing:-0.02em; }
+.chat-listing-bar{ margin:4px 12px 4px; padding:10px; border-radius:20px; background:var(--surface); box-shadow:var(--shadow); border:0; }
+.chat-listing-thumb{ width:46px; height:46px; border-radius:14px; overflow:hidden; }
+.chat-listing-title{ font-weight:700; }
+.chat-listing-price{ font-weight:800; }
+.chat-messages{ gap:10px; padding:14px 12px 10px; }
+.chat-bubble{ background:var(--surface); box-shadow:0 1px 2px rgba(15,21,18,.05), 0 4px 14px rgba(15,21,18,.05); font-size:15px; padding:11px 14px; border-radius:20px 20px 20px 6px; }
+.chat-bubble.mine{ background:var(--primary); box-shadow:0 6px 16px rgba(15,163,106,.22); border-radius:20px 20px 6px 20px; }
+.chat-safety-note, .chat-system-note{ border-radius:20px; background:var(--surface); box-shadow:var(--shadow); border:0; }
+.chat-input-row{ margin:0 10px calc(8px + var(--sab)); padding:8px; border-radius:26px; gap:8px; align-items:center;
+  background:rgba(255,255,255,.84); backdrop-filter:blur(22px) saturate(1.6); -webkit-backdrop-filter:blur(22px) saturate(1.6);
+  border:1px solid rgba(255,255,255,.7); box-shadow:0 10px 30px rgba(15,21,18,.12); }
+.chat-input-row input, .chat-input-row textarea{ border:0 !important; background:var(--surface-sunken); border-radius:20px; min-height:44px; padding:10px 16px; font-size:16px; }
+.chat-send-btn{ width:44px; height:44px; background:var(--inverse); color:var(--on-inverse); }
+.chat-send-btn:disabled{ background:var(--surface-sunken-2); color:var(--muted); }
+.quick-replies{ background:transparent !important; padding:8px 12px 6px !important; }
+
+/* =====================================================================
+   PLONK 2.0 — витрина продавца: обложка со скруглением снизу, аватар — белый круг с тенью (без мятного), имя крупно,
+   кнопки — тёмная и белая капсулы, подборки — капсулы как сортировка в избранном
+   ===================================================================== */
+.sf-cover{ border-radius:0 0 28px 28px; overflow:hidden; }
+.sf-ava{ background:var(--surface) !important; color:var(--ink) !important; box-shadow:0 0 0 4px var(--bg), 0 10px 28px rgba(15,21,18,.14); font-weight:800; }
+.sf-name{ font-size:28px; font-weight:800; letter-spacing:-0.035em; }
+.sf-sub{ font-weight:600; color:var(--ink-soft); }
+.sf-desc{ font-size:15.5px; color:var(--ink); }
+.sf-actions .jr-btn, .sf-actions button, .sf-actions a{ min-height:46px; border-radius:23px !important; padding:0 20px; font-weight:800; box-shadow:0 1px 2px rgba(15,21,18,.05), 0 6px 18px rgba(15,21,18,.06); }
+.sf-back{ width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,.88); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); box-shadow:0 4px 14px rgba(15,21,18,.12); }
+.sf-back{ color:var(--ink) !important; background:rgba(255,255,255,.92) !important; }
+.sf-link{ border:0 !important; background:var(--surface) !important; box-shadow:var(--shadow) !important; border-radius:22px !important; }
