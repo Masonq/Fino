@@ -1123,7 +1123,12 @@
   },
   "home": {
     "phone_reminder": "Укажите телефон — покупатели смогут звонить вам напрямую",
-    "phone_reminder_cta": "Указать"
+    "phone_reminder_cta": "Указать",
+    "hello_night": "Доброй ночи",
+    "hello_morning": "Доброе утро",
+    "hello_day": "Добрый день",
+    "hello_evening": "Добрый вечер",
+    "what_today": "Что ищем сегодня?"
   },
   "blocked": {
     "title": "Заблокированные",

@@ -1104,7 +1104,12 @@
   },
   "home": {
     "phone_reminder": "Dodajte broj telefona — kupci će moći direktno da vas pozovu",
-    "phone_reminder_cta": "Dodaj"
+    "phone_reminder_cta": "Dodaj",
+    "hello_night": "Laku noć",
+    "hello_morning": "Dobro jutro",
+    "hello_day": "Dobar dan",
+    "hello_evening": "Dobro veče",
+    "what_today": "Šta tražimo danas?"
   },
   "blocked": {
     "title": "Blokirani korisnici",

@@ -1077,7 +1077,12 @@
   },
   "home": {
     "phone_reminder": "Add your phone — buyers will be able to call you directly",
-    "phone_reminder_cta": "Add"
+    "phone_reminder_cta": "Add",
+    "hello_night": "Good night",
+    "hello_morning": "Good morning",
+    "hello_day": "Good afternoon",
+    "hello_evening": "Good evening",
+    "what_today": "What are you looking for today?"
   },
   "blocked": {
     "title": "Blocked users",

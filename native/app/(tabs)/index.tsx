@@ -262,6 +262,13 @@ export default function Feed() {
 
   return (
     <SafeAreaView style={styles.page} edges={['top']}>
+      {/* приветствие крупным шрифтом, как на сайте: по времени суток и по имени; во время поиска прячется */}
+      {!focused && !query && (
+        <View style={styles.hello}>
+          <Text style={styles.hello1}>{greeting()}{user?.display_name ? `, ${user.display_name.split(' ')[0]}` : ''}</Text>
+          <Text style={styles.hello2}>{tr('Что ищем сегодня?')}</Text>
+        </View>
+      )}
       <View style={[styles.head, styles.headRow]} onLayout={(e) => setHeadBottom(e.nativeEvent.layout.y + e.nativeEvent.layout.height)}>
         <View style={[styles.search, { flex: 1 }]}>
           {/* пока ищут — плашка города сжимается до значка, место отдаётся полю поиска; поиск закрыли — разворачивается */}
@@ -518,6 +525,9 @@ const styles = StyleSheet.create({
   list: { paddingHorizontal: 0, paddingBottom: 24, gap: space.gap },
   row: { gap: space.gap, paddingHorizontal: space.page },
   skelGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.gap, paddingHorizontal: space.page },
+  hello: { paddingHorizontal: 18, paddingTop: 6, paddingBottom: 2 },
+  hello1: { fontFamily: font[600], fontSize: 15, color: colors.inkSoft },
+  hello2: { fontFamily: font[800], fontSize: 28, letterSpacing: -0.8, color: colors.ink, marginTop: 1 },
   secHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', paddingHorizontal: 12, marginBottom: 10 },
   secTitle: { fontFamily: font[800], fontSize: 21, letterSpacing: -0.5, color: colors.ink },
   secAll: { fontFamily: font[700], fontSize: 14, color: colors.primaryDeep },
@@ -530,3 +540,9 @@ const styles = StyleSheet.create({
   retry: { marginTop: 8, height: 44, paddingHorizontal: 20, borderRadius: 12, backgroundColor: colors.primary, justifyContent: 'center' },
   retryText: { color: '#fff', fontFamily: font[800], fontSize: 15 },
 })
+
+/** Доброе утро / Добрый день / Добрый вечер — по часам устройства. */
+function greeting() {
+  const h = new Date().getHours()
+  return h < 5 ? tr('Доброй ночи') : h < 12 ? tr('Доброе утро') : h < 18 ? tr('Добрый день') : tr('Добрый вечер')
+}

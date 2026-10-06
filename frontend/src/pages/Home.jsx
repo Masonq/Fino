@@ -96,6 +96,16 @@ const BRAND = { top: 'var(--bg)', grad: 'none' }
 
 export default function Home() {
   const { t, i18n } = useTranslation()
+  // высота строки «город / избранное / профиль» + приветствия — на столько уезжает шапка при прокрутке, поиск остаётся
+  const homeHeadRef = useRef(null)
+  const [headH, setHeadH] = useState(100)
+  useEffect(() => {
+    const el = homeHeadRef.current
+    if (!el || typeof ResizeObserver === 'undefined') return undefined
+    const ro = new ResizeObserver(() => setHeadH(el.offsetHeight + 10))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
   const tileMeasureNow = useTileMeasure() // замер надписей плиток разделов (колонка надписи — по нему)
   // Возвращает заголовок вкладки к общему, если он остался от
   // страницы категории (там он меняется на конкретный раздел —
@@ -638,10 +648,12 @@ export default function Home() {
         style={{
           backgroundColor: BRAND.top,
           backgroundImage: collapsed ? 'none' : BRAND.grad,
+          '--hide': `${headH}px`,
         }}
       >
         {/* PLONK 2.0: первой строкой — город, избранное и профиль; поиск — во всю ширину второй строкой,
             чтобы подсказка в нём не обрезалась на узком телефоне */}
+        <div className="home-head" ref={homeHeadRef}>
         <div className="home-top">
           <label className="search-city" aria-label={t('post.city')}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" /></svg>
@@ -676,6 +688,12 @@ export default function Home() {
                 )
                 : t('common.login')}
           </Link>
+        </div>
+        {/* Приветствие крупным шрифтом — у главной появляется «лицо» (как у Airbnb и Vinted): по времени суток и по имени */}
+        <div className="home-hello">
+          <span className="home-hello-1">{greeting(t)}{user?.display_name ? `, ${user.display_name.split(' ')[0]}` : ''}</span>
+          <span className="home-hello-2">{t('home.what_today')}</span>
+        </div>
         </div>
         <div className="avito-toprow">
           {/* Город — слева в строке поиска, как у Avito: поиск и город
@@ -883,4 +901,10 @@ function ToTop() {
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
     </button>
   )
+}
+
+/** Доброе утро / Добрый день / Добрый вечер — по часам устройства. */
+function greeting(t) {
+  const h = new Date().getHours()
+  return h < 5 ? t('home.hello_night') : h < 12 ? t('home.hello_morning') : h < 18 ? t('home.hello_day') : t('home.hello_evening')
 }
