@@ -52,14 +52,14 @@ export default function CategoryTiles({ value, onPick }: { value: string | null;
       const on = value === null
       return (
         <Pressable key="all" style={[styles.tile, styles.allTile]} onPress={() => { select(); onPick(null); router.push('/categories') }} accessibilityRole="button" accessibilityState={{ selected: on }}>
-          <Text style={[styles.label, styles.labelOn]}>{tr('Все')}</Text>
-          <View style={styles.allIcon}><Icon name="grid" size={30} color={colors.primary} /></View>
+          <Text style={[styles.label, { color: colors.onInverse }]}>{tr('Все')}</Text>
+          <View style={styles.allIcon}><Icon name="grid" size={30} color={colors.lime} /></View>
         </Pressable>
       )
     }
     const on = value === c.slug
     return (
-      <Pressable key={c.slug} style={[styles.tile, { width: widthFor(nameOf(c), c.slug).tile }, on && styles.tileOn, c.ready === false && styles.soon]} onPress={() => { select(); router.push(`/c/${c.slug}`) }}
+      <Pressable key={c.slug} style={[styles.tile, { width: widthFor(nameOf(c), c.slug).tile, backgroundColor: TINT[c.slug] ?? colors.tile }, on && styles.tileOn, c.ready === false && styles.soon]} onPress={() => { select(); router.push(`/c/${c.slug}`) }}
         accessibilityRole="button" accessibilityState={{ selected: on }}>
         {/* Одно длинное слово («Недвижимость») не переносим посреди слова — слегка ужимаем */}
         <TileLabelArt uri={`${SITE}${catPath(c.slug)}`} name={nameOf(c)} fit={widthFor(nameOf(c), c.slug)} style={[styles.label, on && styles.labelOn]} />
@@ -76,6 +76,12 @@ export default function CategoryTiles({ value, onPick }: { value: string | null;
   )
 }
 
+/** Мягкие цвета плиток разделов — как на сайте (картинки вырезаны, фон любой). «Все» — тёмная плитка-якорь. */
+const TINT: Record<string, string> = {
+  'real-estate': '#E2F1E6', auto: '#E3ECFA', services: '#FCEADB', jobs: '#F3EBDB', electronics: '#EAE7FA', fashion: '#FAE5EE',
+  'home-garden': '#ECF0DD', 'hobby-sport': '#DDF0F3', kids: '#FFF0D2', pets: '#F1E8DE', beauty: '#F7E4F1', business: '#E5EAF0',
+}
+
 const styles = StyleSheet.create({
   wrap: { paddingHorizontal: 12, gap: 8 },
   scroll: { paddingHorizontal: 12 },
@@ -83,7 +89,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 8 },
   // Размеры — как .cat-tile-2row на сайте: 118×86, отступы 9/8/6/11, подпись 12 полужирная, картинка 58×58 в углу
   tile: { width: W, height: H, borderRadius: 18, backgroundColor: colors.tile, borderWidth: 2, borderColor: 'transparent', padding: TILE.pad, overflow: 'hidden' },
-  allTile: { backgroundColor: colors.primarySoft },
+  allTile: { backgroundColor: colors.inverse },
   tileOn: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
   soon: { opacity: 0.55 },
   label: { fontSize: 13.5, lineHeight: 17, fontFamily: font[700], color: colors.onTile, zIndex: 2 },

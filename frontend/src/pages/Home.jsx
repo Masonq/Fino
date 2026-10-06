@@ -736,6 +736,7 @@ export default function Home() {
             key={cat.id}
             to={hasLanding(cat.slug) ? `/c/${cat.slug}` : `/search?category=${cat.slug}`}
             className={`cat-tile-2row${tileSize(cat.name?.[i18n.language] || cat.name?.ru || '')}${artClass(cat.name?.[i18n.language] || cat.name?.ru || '')}${cat.ready === false ? ' soon' : ''}`}
+            data-cat={cat.slug}
                 style={{ '--tile-text': `${homeTileFit(cat.name?.[i18n.language] || cat.name?.ru || '', cat.slug, tileMeasureNow).text}px`, '--tile-w': `${tileFor(cat.name?.[i18n.language] || cat.name?.ru || '').tile}px` }}
           >
             <div className="cat-tile-2row-label">{cat.name?.[i18n.language] || cat.name?.ru}</div>

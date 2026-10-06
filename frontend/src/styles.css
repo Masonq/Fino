@@ -7546,3 +7546,26 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
   .detail-sheet .similar-title{ font-size:20px; letter-spacing:-0.025em; margin-bottom:12px; }
   .detail-sheet .detail-meta{ border-bottom:0; }
 }
+
+/* =====================================================================
+   PLONK 2.0 — главная: плитки разделов в своих мягких цветах (картинки вырезаны — фон любой),
+   «Все» — тёмная плитка-якорь. Цвет помогает узнавать раздел с первого взгляда, как у Avito/Vinted.
+   ===================================================================== */
+.cat-tile-2row{ box-shadow:none; transition:transform .18s var(--ease-out); }
+.cat-tile-2row[data-cat="real-estate"]{ background:#E2F1E6; }
+.cat-tile-2row[data-cat="auto"]{ background:#E3ECFA; }
+.cat-tile-2row[data-cat="services"]{ background:#FCEADB; }
+.cat-tile-2row[data-cat="jobs"]{ background:#F3EBDB; }
+.cat-tile-2row[data-cat="electronics"]{ background:#EAE7FA; }
+.cat-tile-2row[data-cat="fashion"]{ background:#FAE5EE; }
+.cat-tile-2row[data-cat="home-garden"]{ background:#ECF0DD; }
+.cat-tile-2row[data-cat="hobby-sport"]{ background:#DDF0F3; }
+.cat-tile-2row[data-cat="kids"]{ background:#FFF0D2; }
+.cat-tile-2row[data-cat="pets"]{ background:#F1E8DE; }
+.cat-tile-2row[data-cat="beauty"]{ background:#F7E4F1; }
+.cat-tile-2row[data-cat="business"]{ background:#E5EAF0; }
+.cat-tile-2row.all{ background:var(--inverse); border-color:transparent; }
+.cat-tile-2row.all .cat-tile-2row-label{ color:var(--on-inverse); }
+.cat-tile-2row.all .all-glyph{ color:var(--lime); }
+.cat-tile-2row-label{ font-weight:800; letter-spacing:-0.01em; }
+.cat-tile-2row.all .cat-tile-2row-glyph.all-glyph svg{ color:var(--lime); }
