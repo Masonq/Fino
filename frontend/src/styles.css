@@ -7649,38 +7649,38 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
    Крупные заголовки шагов, поля 52 px со скруглением 16 на белом, подсветка при вводе, подразделы — одной
    карточкой со стрелками, «Далее» — тёмная кнопка. Шрифт полей 16 px — iPhone не приближает страницу.
    ===================================================================== */
-.post-ad-page h2{ font-size:26px; font-weight:800; letter-spacing:-0.03em; line-height:1.15; margin-bottom:12px; }
-.post-ad-page .post-back{ display:inline-flex; align-items:center; gap:4px; height:30px; padding:0 12px 0 8px; border-radius:15px; background:var(--surface); box-shadow:0 1px 2px rgba(15,21,18,.05); font-size:13px; font-weight:700; color:var(--ink-soft); margin-bottom:10px; }
-.post-ad-page label, .post-ad-page .post-field > span:first-child{ font-size:13px; font-weight:700; color:var(--ink-soft); letter-spacing:0; }
-.post-ad-page .post-field, .post-ad-page .cat-fields > *{ margin-bottom:14px; }
+.post-ad-page h2, .edit-listing-page h2{ font-size:26px; font-weight:800; letter-spacing:-0.03em; line-height:1.15; margin-bottom:12px; }
+.post-ad-page .post-back, .edit-listing-page .post-back{ display:inline-flex; align-items:center; gap:4px; height:30px; padding:0 12px 0 8px; border-radius:15px; background:var(--surface); box-shadow:0 1px 2px rgba(15,21,18,.05); font-size:13px; font-weight:700; color:var(--ink-soft); margin-bottom:10px; }
+.post-ad-page label, .post-ad-page .post-field > span:first-child, .edit-listing-page label, .edit-listing-page .post-field > span:first-child{ font-size:13px; font-weight:700; color:var(--ink-soft); letter-spacing:0; }
+.post-ad-page .post-field, .post-ad-page .cat-fields > *, .edit-listing-page .post-field, .edit-listing-page .cat-fields > *{ margin-bottom:14px; }
 .post-ad-page input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]),
-.post-ad-page textarea, .post-ad-page select{
+.post-ad-page textarea, .post-ad-page select, .edit-listing-page textarea, .edit-listing-page select{
   width:100%; min-height:52px; border-radius:16px; background:var(--surface); border:1.5px solid transparent;
   box-shadow:0 1px 2px rgba(15,21,18,.05); padding:0 14px; font-size:16px; font-family:inherit; color:var(--ink);
   transition:border-color .15s ease, box-shadow .15s ease; }
-.post-ad-page textarea{ min-height:130px; padding:14px; line-height:1.45; }
-.post-ad-page input:focus, .post-ad-page textarea:focus, .post-ad-page select:focus{
+.post-ad-page textarea, .edit-listing-page textarea{ min-height:130px; padding:14px; line-height:1.45; }
+.post-ad-page input:focus, .post-ad-page textarea:focus, .post-ad-page select:focus, .edit-listing-page input:focus, .edit-listing-page textarea:focus, .edit-listing-page select:focus{
   outline:none; border-color:var(--primary); box-shadow:0 0 0 4px rgba(15,163,106,.12); }
-.post-ad-page select{ appearance:none; -webkit-appearance:none; padding-right:40px; cursor:pointer;
+.post-ad-page select, .edit-listing-page select{ appearance:none; -webkit-appearance:none; padding-right:40px; cursor:pointer;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237C847E' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat:no-repeat; background-position:right 14px center; }
-.post-ad-page .post-checkbox{ display:flex; align-items:center; gap:12px; min-height:52px; padding:0 14px; border-radius:16px; background:var(--surface); box-shadow:0 1px 2px rgba(15,21,18,.05); font-size:15px; font-weight:600; color:var(--ink); }
-.post-ad-page .post-checkbox input{ width:22px; height:22px; accent-color:var(--primary); flex:none; }
-.post-ad-page .post-submit-btn{ min-height:56px; border-radius:18px; background:var(--inverse); color:var(--on-inverse); font-size:16px; font-weight:800; box-shadow:0 8px 20px rgba(15,21,18,.16); }
-.post-ad-page .post-submit-btn:disabled{ background:var(--surface-sunken-2); color:var(--muted); box-shadow:none; }
+.post-ad-page .post-checkbox, .edit-listing-page .post-checkbox{ display:flex; align-items:center; gap:12px; min-height:52px; padding:0 14px; border-radius:16px; background:var(--surface); box-shadow:0 1px 2px rgba(15,21,18,.05); font-size:15px; font-weight:600; color:var(--ink); }
+.post-ad-page .post-checkbox input, .edit-listing-page .post-checkbox input{ width:22px; height:22px; accent-color:var(--primary); flex:none; }
+.post-ad-page .post-submit-btn, .edit-listing-page .post-submit-btn{ min-height:56px; border-radius:18px; background:var(--inverse); color:var(--on-inverse); font-size:16px; font-weight:800; box-shadow:0 8px 20px rgba(15,21,18,.16); }
+.post-ad-page .post-submit-btn:disabled, .edit-listing-page .post-submit-btn:disabled{ background:var(--surface-sunken-2); color:var(--muted); box-shadow:none; }
 /* подразделы — одной белой карточкой со стрелками, как список в профиле */
-.post-ad-page .post-sub-list{ background:var(--surface); border-radius:22px; box-shadow:var(--shadow); overflow:hidden; gap:0; }
-.post-ad-page .post-sub-item{ position:relative; border:0; border-radius:0; background:transparent; box-shadow:none; min-height:54px; padding:14px 44px 14px 16px; font-size:15.5px; font-weight:600; text-align:left; }
-.post-ad-page .post-sub-item + .post-sub-item{ border-top:1px solid var(--line); }
-.post-ad-page .post-sub-item::after{ content:""; position:absolute; right:16px; top:50%; width:8px; height:8px; margin-top:-5px; border-right:2px solid var(--muted); border-bottom:2px solid var(--muted); transform:rotate(-45deg); }
-.post-ad-page .post-sub-item:active{ background:var(--surface-sunken); }
-.post-ad-page .post-sub-note{ display:block; margin-top:2px; font-size:12.5px; font-weight:500; color:var(--muted); }
+.post-ad-page .post-sub-list, .edit-listing-page .post-sub-list{ background:var(--surface); border-radius:22px; box-shadow:var(--shadow); overflow:hidden; gap:0; }
+.post-ad-page .post-sub-item, .edit-listing-page .post-sub-item{ position:relative; border:0; border-radius:0; background:transparent; box-shadow:none; min-height:54px; padding:14px 44px 14px 16px; font-size:15.5px; font-weight:600; text-align:left; }
+.post-ad-page .post-sub-item + .post-sub-item, .edit-listing-page .post-sub-item + .post-sub-item{ border-top:1px solid var(--line); }
+.post-ad-page .post-sub-item::after, .edit-listing-page .post-sub-item::after{ content:""; position:absolute; right:16px; top:50%; width:8px; height:8px; margin-top:-5px; border-right:2px solid var(--muted); border-bottom:2px solid var(--muted); transform:rotate(-45deg); }
+.post-ad-page .post-sub-item:active, .edit-listing-page .post-sub-item:active{ background:var(--surface-sunken); }
+.post-ad-page .post-sub-note, .edit-listing-page .post-sub-note{ display:block; margin-top:2px; font-size:12.5px; font-weight:500; color:var(--muted); }
 /* фото: плитки добавления — крупные, пунктир бренда */
-.post-ad-page .photo-add{ border-radius:18px; border:2px dashed rgba(15,163,106,.35); background:var(--primary-soft); color:var(--primary-deep); }
-.post-ad-page .photo-thumb{ border-radius:18px; }
+.post-ad-page .photo-add, .edit-listing-page .photo-add{ border-radius:18px; border:2px dashed rgba(15,163,106,.35); background:var(--primary-soft); color:var(--primary-deep); }
+.post-ad-page .photo-thumb, .edit-listing-page .photo-thumb{ border-radius:18px; }
 /* фото в форме — три в ряд, крупные квадраты: легче попасть пальцем, видно, что получилось */
-.post-ad-page .photo-grid{ grid-template-columns:repeat(3, 1fr); gap:10px; }
-.post-ad-page .photo-add{ width:auto; height:auto; aspect-ratio:1/1; font-size:14px; font-weight:700; }
+.post-ad-page .photo-grid, .edit-listing-page .photo-grid{ grid-template-columns:repeat(3, 1fr); gap:10px; }
+.post-ad-page .photo-add, .edit-listing-page .photo-add{ width:auto; height:auto; aspect-ratio:1/1; font-size:14px; font-weight:700; }
 
 /* =====================================================================
    PLONK 2.0 — внутренние страницы на одном языке с главной (по сравнению скриншотов):
@@ -7736,3 +7736,10 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 .quick-replies button{ background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(15,21,18,.05), 0 4px 12px rgba(15,21,18,.06); }
 .chat-row.unread{ background:var(--surface); }
 .chat-row.unread .chat-row-title, .chat-row.unread .chat-name{ font-weight:800; }
+
+/* правка объявления — та же форма, что при размещении; «Сохранить» — тёмная главная кнопка */
+.edit-save{ background:var(--inverse) !important; color:var(--on-inverse) !important; border-radius:18px; min-height:54px; font-weight:800; box-shadow:0 8px 20px rgba(15,21,18,.16); }
+.edit-cancel{ border-radius:18px; min-height:50px; }
+/* витрина: счётчики в чипах подборок — нейтральные, аватар — белый круг с тенью */
+.sf-page .jr-tab-n{ background:var(--surface-sunken); color:var(--ink-soft); }
+.sf-page .jr-tab.on .jr-tab-n{ background:rgba(255,255,255,.18); color:var(--on-inverse); }
