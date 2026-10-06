@@ -1334,10 +1334,13 @@ def _guide_page(site: str, path: str, lang: str) -> str | None:
         elif t == "cta":
             body.append(f'<p><a href="{site}{prefix}{v[1] if v[1] != "/" else "/"}">{esc(v[0])}</a></p>')
     schema = _json.dumps({"@context": "https://schema.org", "@type": "Article", "headline": loc["title"],
-                          "description": loc["lead"], "datePublished": g["date"], "inLanguage": lang,
+                          "description": loc["lead"], "datePublished": g["date"], "dateModified": g["date"],
+                          "image": f"{site}{g['cover']}", "inLanguage": lang,
                           "publisher": {"@type": "Organization", "name": "PLONK", "url": site},
                           "mainEntityOfPage": f"{site}{prefix}{path}"}, ensure_ascii=False)
     return (f'<!DOCTYPE html>\n<html lang="{lang}">\n<head>\n<meta charset="utf-8">\n<title>{esc(loc["title"])} | PLONK</title>\n'
             f'<meta name="description" content="{esc(loc["lead"])}">\n<link rel="canonical" href="{site}{prefix}{path}">\n{alts}\n'
+            f'<meta property="og:type" content="article">\n<meta property="og:title" content="{esc(loc["title"])}">\n'
+            f'<meta property="og:description" content="{esc(loc["lead"])}">\n<meta property="og:image" content="{site}{g["cover"]}">\n'
             f'<script type="application/ld+json">{schema}</script>\n</head>\n<body>\n<article>\n<h1>{esc(loc["title"])}</h1>\n'
             f'<p>{esc(loc["lead"])}</p>\n' + "\n".join(body) + f'\n</article>\n<p><a href="{site}{prefix}/vodic">{esc(HEADINGS[lang])}</a></p>\n</body>\n</html>')
