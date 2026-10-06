@@ -22,6 +22,7 @@ import { catPath } from '../../src/artFit'
 import { cityName, CITY_COORDS } from '../../src/format'
 import { colors, font } from '../../src/theme'
 import { useTabInset } from '../../src/tabInset'
+import { TINTS } from '../../src/tints'
 
 const MAX = 10
 type Shot = { key: string; uri: string; mime: string; state: 'loading' | 'done' | 'failed'; uploaded?: Uploaded }
@@ -235,7 +236,7 @@ export default function Post() {
           {roots === null ? <ActivityIndicator style={{ marginTop: 30 }} color={colors.primary} /> : (
             <View style={styles.grid}>
               {roots.map((c) => (
-                <Pressable key={c.id} style={styles.catItem} onPress={() => choose(c)} accessibilityRole="button">
+                <Pressable key={c.id} style={[styles.catItem, TINTS[c.slug] ? { backgroundColor: TINTS[c.slug], borderWidth: 0 } : null]} onPress={() => choose(c)} accessibilityRole="button">
                   <Image source={{ uri: `${SITE}${catPath(c.slug)}` }} style={styles.catImg} contentFit="contain" />
                   <Text style={styles.catLabel} numberOfLines={2}>{nameOf(c)}</Text>
                 </Pressable>

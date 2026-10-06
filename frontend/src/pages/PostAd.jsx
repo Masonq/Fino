@@ -435,7 +435,7 @@ export default function PostAd() {
                 {current.name?.[i18n.language] || current.name?.ru}
               </button>
             )}
-            <h2>{isRoot ? t('listing.select_category') : t('listing.select_subcategory')}</h2>
+            <h2 className="post-step-title">{isRoot ? t('listing.select_category') : t('listing.select_subcategory')}</h2>
             {isRoot && <p className="post-cat-hint">{t('listing.select_category_hint')}</p>}
             <div className={isRoot ? 'post-cat-grid' : 'post-sub-list'}>
               {/* Третий уровень — уточнение, а не обязанность. Без этой
@@ -453,6 +453,7 @@ export default function PostAd() {
                 <button
                   key={cat.id}
                   className={isRoot ? 'post-cat-item' : 'post-sub-item'}
+                  data-cat={isRoot ? cat.slug : undefined}
                   onClick={() => ((cat.children || []).length ? setPath((p) => [...p, cat]) : pickCategory(cat))}
                 >
                   {isRoot ? (

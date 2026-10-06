@@ -7552,18 +7552,11 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
    «Все» — тёмная плитка-якорь. Цвет помогает узнавать раздел с первого взгляда, как у Avito/Vinted.
    ===================================================================== */
 .cat-tile-2row{ box-shadow:none; transition:opacity .15s ease; }
-.cat-tile-2row[data-cat="real-estate"]{ background:#E2F1E6; }
-.cat-tile-2row[data-cat="auto"]{ background:#E3ECFA; }
-.cat-tile-2row[data-cat="services"]{ background:#FCEADB; }
-.cat-tile-2row[data-cat="jobs"]{ background:#F3EBDB; }
-.cat-tile-2row[data-cat="electronics"]{ background:#EAE7FA; }
-.cat-tile-2row[data-cat="fashion"]{ background:#FAE5EE; }
-.cat-tile-2row[data-cat="home-garden"]{ background:#ECF0DD; }
-.cat-tile-2row[data-cat="hobby-sport"]{ background:#DDF0F3; }
-.cat-tile-2row[data-cat="kids"]{ background:#FFF0D2; }
-.cat-tile-2row[data-cat="pets"]{ background:#F1E8DE; }
-.cat-tile-2row[data-cat="beauty"]{ background:#F7E4F1; }
-.cat-tile-2row[data-cat="business"]{ background:#E5EAF0; }
+[data-cat="real-estate"]{ --tint:#E2F1E6; } [data-cat="auto"]{ --tint:#E3ECFA; } [data-cat="services"]{ --tint:#FCEADB; }
+[data-cat="jobs"]{ --tint:#F3EBDB; } [data-cat="electronics"]{ --tint:#EAE7FA; } [data-cat="fashion"]{ --tint:#FAE5EE; }
+[data-cat="home-garden"]{ --tint:#ECF0DD; } [data-cat="hobby-sport"]{ --tint:#DDF0F3; } [data-cat="kids"]{ --tint:#FFF0D2; }
+[data-cat="pets"]{ --tint:#F1E8DE; } [data-cat="beauty"]{ --tint:#F7E4F1; } [data-cat="business"]{ --tint:#E5EAF0; }
+.cat-tile-2row[data-cat], .post-cat-item[data-cat]{ background:var(--tint); }
 .cat-tile-2row.all{ background:var(--inverse); border-color:transparent; }
 .cat-tile-2row.all .cat-tile-2row-label{ color:var(--on-inverse); }
 .cat-tile-2row.all .all-glyph{ color:var(--lime); }
@@ -7626,3 +7619,25 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 .guides-intro{ margin:0 4px 14px; }
 .guides-list{ padding:0 0 24px; }
 .guide{ padding:0 4px 32px; }
+
+
+/* =====================================================================
+   PLONK 2.0 — проход по страницам: размещение, раздел, избранное и др.
+   ===================================================================== */
+:root{ --heart:#FF3B5C; }
+/* одно сердечко на весь сайт — как в шопсах (раньше в ленте и избранном было оранжевым) */
+.s-fav.on{ color:var(--heart); }
+/* размещение: заголовок шага — крупно, плитки разделов — в цветах разделов, как на главной */
+.post-ad-page h2.post-step-title{ font-size:26px; font-weight:800; letter-spacing:-0.03em; line-height:1.15; }
+.post-cat-item{ border:0; box-shadow:none; border-radius:22px; }
+.post-cat-item span{ font-weight:800; }
+/* страница раздела: подразделы — в цвете своего раздела; форма подбора — белая карточка, а не мятная плашка */
+.landing .landing-sub:not(.skeleton){ background:var(--tint, var(--surface-sunken)); }
+.landing .lp-filters{ background:var(--surface); border:0; box-shadow:var(--shadow); border-radius:24px; }
+.landing .lp-filters input, .landing .lp-filters select, .landing .lp-filters .landing-input{ background:var(--surface-sunken); border-color:transparent; }
+.landing .lp-filters .cat-chip, .landing .lp-filters .landing-chip{ background:var(--surface-sunken); border-color:transparent; }
+.jl-tile{ background:var(--tint, #F3EBDB); } /* плитки подразделов — в цвете своего раздела («Работа» вне страницы раздела — песочный) */
+/* пустые экраны: кнопка-переход — тёмная, как остальные навигационные кнопки (зелёная — только «Написать продавцу») */
+.fav-cta{ background:var(--inverse); color:var(--on-inverse); box-shadow:none; border-radius:16px; }
+/* заголовки разделов страниц — как у блоков главной */
+.seller-section-title{ font-size:20px; font-weight:800; letter-spacing:-0.025em; }

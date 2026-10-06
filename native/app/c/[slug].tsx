@@ -19,6 +19,7 @@ import { select } from '../../src/haptics'
 import { getLang, plural, tr } from '../../src/i18n'
 import { cityList, cityName } from '../../src/format'
 import { colors, font, space } from '../../src/theme'
+import { TINTS } from '../../src/tints'
 
 /** Картинка подраздела; своей нет — картинка родительского раздела, как CategoryArt на сайте. */
 function SubArt({ slug, fallback }: { slug: string; fallback?: string }) {
@@ -220,7 +221,7 @@ function CategoryScreen() {
     const base: TileFit = { kind: '', tile: w, text: w < wideW ? w - 22 : Math.min(w - 22, Math.max(longestWordWidth(nameOf(c)) + 4, Math.round(w * 0.5))), art: 'big' }
     const { fit } = artLayout(nameOf(c), base, c.slug)
     return (
-      <Pressable key={key} style={[styles.lTile, { width: w }]} onPress={() => { select(); router.push(`/c/${c.slug}`) }} accessibilityRole="button">
+      <Pressable key={key} style={[styles.lTile, { width: w }, TINTS[root?.slug ?? String(slug)] ? { backgroundColor: TINTS[root?.slug ?? String(slug)] } : null]} onPress={() => { select(); router.push(`/c/${c.slug}`) }} accessibilityRole="button">
         <TileLabelArt uri={`${SITE}${catPath(c.slug)}`} name={nameOf(c)} fit={fit} style={styles.lTileText} />
       </Pressable>
     )

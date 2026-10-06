@@ -10,6 +10,7 @@ import { TILE, catPath, type TileFit } from '../src/artFit'
 import { TileLabelArt } from '../src/components/TileArt'
 import { getLang, tr } from '../src/i18n'
 import { colors, font } from '../src/theme'
+import { TINTS } from '../src/tints'
 
 /** «Все разделы» — как /categories сайта: сетка разделов с картинками; ещё не готовые — «Скоро». */
 export default function Categories() {
@@ -30,7 +31,7 @@ export default function Categories() {
       {cats === null ? <ActivityIndicator style={{ marginTop: 30 }} color={colors.primary} /> : (
         <ScrollView contentContainerStyle={styles.grid}>
           {cats.map((c) => (
-            <Pressable key={c.id} style={[styles.item, { width: colW }, c.ready === false && { opacity: 0.55 }]} onPress={() => router.push(`/c/${c.slug}`)} accessibilityRole="button">
+            <Pressable key={c.id} style={[styles.item, { width: colW, backgroundColor: TINTS[c.slug] ?? colors.sunken }, c.ready === false && { opacity: 0.55 }]} onPress={() => router.push(`/c/${c.slug}`)} accessibilityRole="button">
               <TileLabelArt uri={`${SITE}${catPath(c.slug)}`} name={nameOf(c)} fit={fit} style={styles.label} />
               {c.ready === false && <Text style={styles.soon}>{tr('Скоро')}</Text>}
             </Pressable>

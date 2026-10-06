@@ -83,7 +83,7 @@ export default function JobsLanding() {
   const tileView = (t: Tile) => {
     const on = tile?.key === t.key
     return (
-      <Pressable key={t.key} style={[styles.tile, { width: tileFor(tr(t.label)).tile }, on && styles.tileOn]} onPress={() => { setTile(on ? null : t); if (!on) toResults() }} accessibilityRole="button" accessibilityState={{ selected: on }}>
+      <Pressable key={t.key} style={[styles.tile, { width: tileFor(tr(t.label)).tile, backgroundColor: '#F3EBDB' }, on && styles.tileOn]} onPress={() => { setTile(on ? null : t); if (!on) toResults() }} accessibilityRole="button" accessibilityState={{ selected: on }}>
         <TileLabelArt uri={`${SITE}${jobPath(t.key)}`} name={tr(t.label)} fit={tileFor(tr(t.label))} style={styles.tileText} />
         {on && <View style={styles.tileCheck}><Icon name="check" size={12} color="#fff" /></View>}
       </Pressable>

@@ -14,6 +14,7 @@ import { LANDINGS, ROOMS_IN, landingFor } from '../data/landings'
 import { CAR_BRANDS, CAR_MODELS, CAR_MODEL_OTHER } from '../data/carBrands'
 import useStickyColumn from '../hooks/useStickyColumn'
 import useHideOnScroll from '../hooks/useHideOnScroll'
+import { TINTS } from '../utils/tints'
 
 /**
  * Вход в раздел.
@@ -542,7 +543,7 @@ function CategoryLandingPage() {
     : values.price_min ? `${t('landing.from')} ${values.price_min} €` : values.price_max ? `${t('landing.to')} ${values.price_max} €` : ''
 
   return (
-    <div className="landing">
+    <div className="landing" style={{ '--tint': TINTS[rootSlug || slug] }}>
       {searched && (
         <div className="landing-head plain-head">
           <button className="landing-back" onClick={() => setSearched(false)}
