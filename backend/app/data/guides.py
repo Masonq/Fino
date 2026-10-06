@@ -284,8 +284,9 @@ GUIDES = [
 # Расширенная аренда и новые статьи, сверенные с законом (см. guides_extra.py). Свежие — сверху списка.
 from app.data.guides_extra import CAR, JOBS, PARCELS, SAFE_EXTRA, STAN  # noqa: E402
 from app.data.guides_extra2 import BANK, DISTRICTS, PETS, PROPERTY  # noqa: E402
+from app.data.guides_extra3 import CARSEAT, LICENSE, PHONE, SCOOTER  # noqa: E402
 
-GUIDES = ([STAN, DISTRICTS, PROPERTY, CAR, PARCELS, BANK, JOBS, PETS]
+GUIDES = ([STAN, DISTRICTS, PROPERTY, CAR, LICENSE, PARCELS, BANK, JOBS, PETS, PHONE, SCOOTER, CARSEAT]
           + [g for g in GUIDES if g["slug"] != STAN["slug"]])
 for _g in GUIDES:
     if _g["slug"] == "bezbedna-kupovina":
