@@ -7601,13 +7601,15 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 .guides-list{ display:flex; flex-direction:column; gap:12px; padding:0 12px 24px; }
 .guide-card{ display:flex; gap:14px; align-items:center; padding:12px; border-radius:22px; background:var(--surface); box-shadow:var(--shadow); color:var(--ink); }
 .guide-card-art{ flex:none; width:84px; height:84px; border-radius:18px; background:var(--primary-soft); display:flex; align-items:center; justify-content:center; overflow:hidden; }
-.guide-card-art img{ width:78%; height:78%; object-fit:contain; }
+/* Обложки статей бывают широкими (телефон с SIM, права с ключами) — даём им почти всю плитку. */
+.guide-card-art img{ width:88%; height:88%; object-fit:contain; }
 .guide-card-text{ display:flex; flex-direction:column; gap:4px; min-width:0; }
 .guide-card-title{ font-size:16px; font-weight:800; letter-spacing:-0.015em; line-height:1.25; }
 .guide-card-lead{ font-size:13.5px; color:var(--muted); line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 .guide{ padding:0 16px 32px; max-width:680px; margin:0 auto; }
 .guide-hero{ height:170px; border-radius:26px; background:linear-gradient(135deg, var(--primary-soft), #F3F8D9); display:flex; align-items:center; justify-content:center; margin-bottom:18px; }
-.guide-hero img{ height:78%; object-fit:contain; }
+/* Ограничение и по ширине: широкая обложка раньше выходила за края плашки. */
+.guide-hero img{ max-width:86%; max-height:78%; width:auto; height:auto; object-fit:contain; }
 .guide-title{ font-size:28px; font-weight:800; letter-spacing:-0.03em; line-height:1.15; margin:0 0 10px; }
 .guide-lead{ font-size:17px; line-height:1.5; color:var(--ink-soft); margin:0 0 8px; }
 .guide-h2{ font-size:20px; font-weight:800; letter-spacing:-0.02em; margin:24px 0 8px; }

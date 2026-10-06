@@ -297,6 +297,14 @@ for _g in GUIDES:
             _at = next((i for i, b in enumerate(_blocks) if b[0] == "cta"), len(_blocks))
             _g[_lang]["blocks"] = _blocks[:_at] + _extra + _blocks[_at:]
 
+# Свои обложки статей (frontend/public/guides/<адрес статьи>.png) — вместо картинок разделов, если файл есть.
+from pathlib import Path as _Path  # noqa: E402
+
+_COVERS = _Path(__file__).resolve().parents[3] / "frontend" / "public" / "guides"
+for _g in GUIDES:
+    if (_COVERS / f"{_g['slug']}.png").exists():
+        _g["cover"] = f"/guides/{_g['slug']}.png"
+
 BY_SLUG = {g["slug"]: g for g in GUIDES}
 TITLES = {"sr": "Vodič — saveti za kupovinu i prodaju | PLONK", "ru": "Полезное — советы по покупке и продаже | PLONK",
           "en": "Guides — buying and selling tips | PLONK"}
