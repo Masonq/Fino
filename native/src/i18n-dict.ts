@@ -634,6 +634,7 @@ export const DICT: Record<string, { en?: string; sr?: string }> = {
   "Найти для бизнеса": { en: "Find for business", sr: "Prona\u0111ite za posao" },
   "Применить": { en: "Apply", sr: "Primeni" },
   "Комнаты": { en: "Rooms", sr: "Sobe" },
+  "Разделы": { en: "Categories", sr: "Kategorije" },
   "Возможно, вы искали": { en: "Did you mean", sr: "Da li ste mislili" },
   "Похожие витрины": { en: "Similar storefronts", sr: "Slični izlozi" },
   "Дроп: время в виде ДД.ММ ЧЧ:ММ, например 12.10 20:00": { en: "Drop: time as DD.MM HH:MM, e.g. 12.10 20:00", sr: "Drop: vreme kao DD.MM SS:MM, npr. 12.10 20:00" },

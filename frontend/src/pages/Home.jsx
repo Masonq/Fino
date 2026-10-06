@@ -708,10 +708,8 @@ export default function Home() {
           под пальцем, браузер сдвигал прокрутку, шапка раскрывалась
           обратно — и так по кругу (дрожание на записи экрана). Что липнет,
           не должно менять высоту страницы; что меняет высоту — не липнет. */}
-      <div className="promo-collapse">
-        <div className="avito-promo-row">
-        </div>
-      </div>
+      {/* у каждого блока главной — заголовок: «Разделы» → «Все объявления» (пустой контейнер от полосы шопсов убран) */}
+      <div className="hs-head home-cats-head"><h2 className="hs-title">{t('hs.sections')}</h2><Link to="/categories" className="hs-all">{t('hs.all')}</Link></div>
 
       {(() => {
         const all = [{ id: '__all', slug: null, isAll: true }, ...categories]
@@ -773,7 +771,10 @@ export default function Home() {
           <button className="geo-ask-yes" onClick={detectCity} disabled={geoBusy}>
             {geoBusy ? t('actions.loading') : t('feed.geo_yes')}
           </button>
-          <button className="geo-ask-no" onClick={dismissGeo}>{t('feed.geo_no')}</button>
+          {/* «Не надо» — крестиком: место отдано тексту, он помещается в две строки */}
+          <button className="geo-ask-no" onClick={dismissGeo} aria-label={t('feed.geo_no')}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
         </div>
       )}
 
