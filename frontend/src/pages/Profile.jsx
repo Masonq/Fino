@@ -150,7 +150,7 @@ export default function Profile() {
 
   return (
     <div className="fav-page profile-page">
-      <PageHeader title={t('nav.profile')} back={false}>
+      <PageHeader title={t('nav.profile')} back={false} kicker={`${profileGreeting(t)}${user.display_name ? `, ${user.display_name.split(' ')[0]}` : ''}`}>
         <NotificationBell />
       </PageHeader>
 
@@ -297,6 +297,7 @@ export default function Profile() {
           Документы и ссылки на Telegram ушли в подвал мелким текстом —
           их открывают раз в жизни, и место наравне с тем, чем
           пользуются каждый день, им ни к чему. */}
+      <div className="profile-section-title">{t('profile.sec_activity')}</div>
       <div className="profile-menu">
         <Link viewTransition className="profile-row" to="/favorites">
           <span className="profile-row-icon">
@@ -575,4 +576,9 @@ export default function Profile() {
     </div>
       </div>
   )
+}
+
+function profileGreeting(t) {
+  const h = new Date().getHours()
+  return h < 5 ? t('home.hello_night') : h < 12 ? t('home.hello_morning') : h < 18 ? t('home.hello_day') : t('home.hello_evening')
 }

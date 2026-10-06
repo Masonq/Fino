@@ -97,7 +97,11 @@
     "popular": "Često traže",
     "did_you_mean": "Da li ste mislili",
     "in_section": "u kategoriji",
-    "fill": "Dopuni upit"
+    "fill": "Dopuni upit",
+    "hero_for": "Za upit „{{q}}“",
+    "hero_n_one": "{{count}} oglas",
+    "hero_n_few": "{{count}} oglasa",
+    "hero_n_other": "{{count}} oglasa"
   },
   "chat": {
     "empty": "Još nema poruka — započnite razgovor",
@@ -351,7 +355,14 @@
     "sort_added": "Nedavno",
     "sort_drop": "Pojeftinilo",
     "sort_cheap": "Jeftinije",
-    "sort_exp": "Skuplje"
+    "sort_exp": "Skuplje",
+    "kicker_empty": "Sačuvajte ono što vam se dopada srcem",
+    "kicker_n_one": "{{count}} stvar",
+    "kicker_n_few": "{{count}} stvari",
+    "kicker_n_other": "{{count}} stvari",
+    "kicker_drop_one": "{{count}} pojeftinila",
+    "kicker_drop_few": "{{count}} pojeftinile",
+    "kicker_drop_other": "{{count}} pojeftinilo"
   },
   "identify": {
     "title": "Kako da vas oslovimo?",
@@ -403,7 +414,12 @@
     "deleted": "Prepiska obrisana",
     "undo": "Poništi",
     "muted": "Utišano",
-    "pinned": "Zakačeno"
+    "pinned": "Zakačeno",
+    "kicker_all": "Kupovina i prodaja",
+    "kicker_unread_one": "{{count}} nepročitana",
+    "kicker_unread_few": "{{count}} nepročitane",
+    "kicker_unread_other": "{{count}} nepročitanih",
+    "voice": "Glasovna poruka"
   },
   "auth": {
     "title": "Prijava na PLONK",
@@ -1051,7 +1067,7 @@
   },
   "profile": {
     "sec_listings": "Oglasi",
-    "sec_activity": "Aktivnost",
+    "sec_activity": "Kupovina i prodaja",
     "sec_info": "Informacije",
     "sec_settings": "Podešavanja",
     "language": "Jezik",

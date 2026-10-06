@@ -27,7 +27,7 @@ export default function ChatList({ activeId, onLoaded, query = '', filter = 'all
   useEffect(() => {
     if (!userId) { setLoaded(true); onLoaded?.(0); return }
     api.getChats(i18n.language)
-      .then((res) => { const list = res.items || []; setItems(list); onLoaded?.(list.length) })
+      .then((res) => { const list = res.items || []; setItems(list); onLoaded?.(list.length, list.reduce((n, c) => n + (c.unread ? 1 : 0), 0)) })
       .catch(() => { setItems([]); onLoaded?.(0) })
       .finally(() => { setLoaded(true) })
   // Намеренно: обработчик задаёт родитель заново на каждой отрисовке; добавить его в зависимости — значит перезапрашивать список без конца.
@@ -127,7 +127,7 @@ export default function ChatList({ activeId, onLoaded, query = '', filter = 'all
             <div className="chat-row-bottom">
               <span className="chat-last">
                 {c.last_from_me && <span className="chat-you">{t('chats.you')}: </span>}
-                {c.last_kind === 'team' ? plainTeamText(c.last_text) : (c.last_text || t('chats.no_messages'))}
+                {c.last_kind === 'team' ? plainTeamText(c.last_text) : c.last_kind === 'voice' ? `🎤 ${t('chats.voice')}` : (c.last_text || t('chats.no_messages'))}
               </span>
               {c.unread > 0 && <span className="chat-badge">{c.unread}</span>}
               {c.pinned && !c.unread && <svg className="chat-flag pin" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-label={t('chats.pinned')}><path d="M16 3a1 1 0 0 1 .7 1.7L15 6.4V10l2.6 2.6a1 1 0 0 1-.7 1.7H13v6l-1 1-1-1v-6H7.1a1 1 0 0 1-.7-1.7L9 10V6.4L7.3 4.7A1 1 0 0 1 8 3h8z" /></svg>}

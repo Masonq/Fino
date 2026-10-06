@@ -97,7 +97,12 @@
     "popular": "Часто ищут",
     "did_you_mean": "Возможно, вы искали",
     "in_section": "в разделе",
-    "fill": "Дополнить запрос"
+    "fill": "Дополнить запрос",
+    "hero_for": "По запросу «{{q}}»",
+    "hero_n_one": "{{count}} объявление",
+    "hero_n_few": "{{count}} объявления",
+    "hero_n_many": "{{count}} объявлений",
+    "hero_n_other": "{{count}} объявления"
   },
   "chat": {
     "empty": "Сообщений пока нет — начните разговор",
@@ -349,7 +354,16 @@
     "sort_added": "Недавние",
     "sort_drop": "Подешевели",
     "sort_cheap": "Дешевле",
-    "sort_exp": "Дороже"
+    "sort_exp": "Дороже",
+    "kicker_empty": "Сохраняйте понравившееся сердечком",
+    "kicker_n_one": "{{count}} вещь",
+    "kicker_n_few": "{{count}} вещи",
+    "kicker_n_many": "{{count}} вещей",
+    "kicker_n_other": "{{count}} вещи",
+    "kicker_drop_one": "{{count}} подешевела",
+    "kicker_drop_few": "{{count}} подешевели",
+    "kicker_drop_many": "{{count}} подешевели",
+    "kicker_drop_other": "{{count}} подешевели"
   },
   "identify": {
     "title": "Как к вам обращаться?",
@@ -401,7 +415,13 @@
     "deleted": "Переписка удалена",
     "undo": "Отменить",
     "muted": "Уведомления выключены",
-    "pinned": "Закреплено"
+    "pinned": "Закреплено",
+    "kicker_all": "Покупки и продажи",
+    "kicker_unread_one": "{{count}} непрочитанная",
+    "kicker_unread_few": "{{count}} непрочитанные",
+    "kicker_unread_many": "{{count}} непрочитанных",
+    "kicker_unread_other": "{{count}} непрочитанных",
+    "voice": "Голосовое сообщение"
   },
   "auth": {
     "title": "Вход в PLONK",
@@ -1064,7 +1084,7 @@
   },
   "profile": {
     "sec_listings": "Объявления",
-    "sec_activity": "Общение",
+    "sec_activity": "Покупки и продажи",
     "sec_info": "Информация",
     "sec_settings": "Настройки",
     "language": "Язык",

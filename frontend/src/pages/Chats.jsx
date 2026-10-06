@@ -14,6 +14,7 @@ export default function Chats() {
   // Поиск и отбор нужны, когда есть что отбирать: при пустом списке
   // они только занимают верх экрана.
   const [count, setCount] = useState(null)
+  const [unreadN, setUnreadN] = useState(0)
   // Пока список грузится (count === null), панель поиска показываем, если в прошлый раз переписки были: она приходила
   // после загрузки и сдвигала список вниз на всю свою высоту (замер обхода: 104 точки). Помним только «были или нет».
   const [hadChats] = useState(() => { try { return localStorage.getItem('plonk_had_chats') === '1' } catch { return false } })
@@ -29,7 +30,7 @@ export default function Chats() {
   if (!user) {
     return (
       <div className="fav-page chats-page">
-        <PageHeader title={t('nav.chats')} back={false} />
+        <PageHeader title={t('nav.chats')} back={false} kicker={t('chats.kicker_all')} />
         <div className="fav-empty">
           <div className="fav-empty-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -47,7 +48,8 @@ export default function Chats() {
 
   return (
     <div className="fav-page chats-page">
-      <PageHeader title={t('nav.chats')} back={false} />
+      <PageHeader title={t('nav.chats')} back={false}
+        kicker={unreadN > 0 ? t('chats.kicker_unread', { count: unreadN }) : t('chats.kicker_all')} />
 
       {/* На десктопе список — левая колонка постоянно открытой
           двухпанельной переписки (см. .chats-layout в styles.css и
@@ -94,7 +96,7 @@ export default function Chats() {
 
       <div className="chats-layout">
         <div className="chats-list-pane">
-          <ChatList query={query} filter={filter} onLoaded={setCount} />
+          <ChatList query={query} filter={filter} onLoaded={(n, u) => { setCount(n); setUnreadN(u || 0) }} />
         </div>
         <div className="chats-content-pane chats-placeholder">
           <div className="fav-empty-icon">

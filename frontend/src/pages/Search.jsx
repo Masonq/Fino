@@ -531,6 +531,14 @@ export default function Search() {
             </div>
           )}
 
+          {/* итог поиска крупно, как приветствие на главной: что искали и сколько нашлось */}
+          {loaded && text.trim() && items.length > 0 && (
+            <div className="ph-text search-hero">
+              <span className="ph-kicker">{t('search.hero_for', { q: text.trim() })}</span>
+              <h1 className="ph-title">{t('search.hero_n', { count: total })}</h1>
+            </div>
+          )}
+
           <div className="results-head">
         <div className="results-head-left">
           {/* Раньше тут же был счётчик «Найдено: N» — при добавлении

@@ -52,7 +52,7 @@ export default function Favorites() {
   if (!userId && !authLoading) {
     return (
       <div className="fav-page">
-        <PageHeader title={t('favorites.title')} />
+        <PageHeader title={t('favorites.title')} kicker={t('favorites.kicker_empty')} />
         <div className="fav-empty">
           <div className="fav-empty-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -70,7 +70,8 @@ export default function Favorites() {
 
   return (
     <div className="fav-page">
-      <PageHeader title={t('favorites.title')} count={loaded ? visible.length : 0} />
+      <PageHeader title={t('favorites.title')}
+        kicker={loaded && visible.length ? `${t('favorites.kicker_n', { count: visible.length })}${nDropped ? ` · ${t('favorites.kicker_drop', { count: nDropped })}` : ''}` : t('favorites.kicker_empty')} />
       {loaded && visible.length > 1 && (
         <div className="fav-sort">
           {[['added', t('favorites.sort_added')], ['drop', nDropped ? `${t('favorites.sort_drop')} · ${nDropped}` : t('favorites.sort_drop')], ['cheap', t('favorites.sort_cheap')], ['exp', t('favorites.sort_exp')]].map(([k, label]) => (

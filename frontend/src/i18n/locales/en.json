@@ -97,7 +97,10 @@
     "popular": "Popular searches",
     "did_you_mean": "Did you mean",
     "in_section": "in",
-    "fill": "Fill in the query"
+    "fill": "Fill in the query",
+    "hero_for": "Results for “{{q}}”",
+    "hero_n_one": "{{count}} listing",
+    "hero_n_other": "{{count}} listings"
   },
   "chat": {
     "empty": "No messages yet — say hello",
@@ -347,7 +350,12 @@
     "sort_added": "Recent",
     "sort_drop": "Price dropped",
     "sort_cheap": "Cheapest",
-    "sort_exp": "Most expensive"
+    "sort_exp": "Most expensive",
+    "kicker_empty": "Save what you like with the heart",
+    "kicker_n_one": "{{count}} item",
+    "kicker_n_other": "{{count}} items",
+    "kicker_drop_one": "{{count}} price drop",
+    "kicker_drop_other": "{{count}} price drops"
   },
   "identify": {
     "title": "What should we call you?",
@@ -399,7 +407,11 @@
     "deleted": "Chat deleted",
     "undo": "Undo",
     "muted": "Muted",
-    "pinned": "Pinned"
+    "pinned": "Pinned",
+    "kicker_all": "Buying and selling",
+    "kicker_unread_one": "{{count}} unread",
+    "kicker_unread_other": "{{count}} unread",
+    "voice": "Voice message"
   },
   "auth": {
     "title": "Sign in to PLONK",
@@ -1030,7 +1042,7 @@
   },
   "profile": {
     "sec_listings": "Listings",
-    "sec_activity": "Activity",
+    "sec_activity": "Buying and selling",
     "sec_info": "Information",
     "sec_settings": "Settings",
     "language": "Language",
