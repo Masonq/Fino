@@ -1796,5 +1796,11 @@
     "feed": "Svi oglasi",
     "top": "Na vrh",
     "sections": "Kategorije"
+  },
+  "guides": {
+    "title": "Vodič",
+    "intro": "Saveti za iznajmljivanje, kupovinu i prodaju u Srbiji — kratko i jasno.",
+    "missing": "Članak nije pronađen",
+    "more": "Još saveta"
   }
 }

@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
 from app.core.global_rate_limit import GlobalRateLimitMiddleware
 from app.routers import (
+    guides,
     admin_audit, admin_settings, admin_stats, admin_users, auth, auth_telegram, tg_webapp, tg_publish,
     categories, chats,
     favorites, listings,
@@ -97,4 +98,5 @@ app.include_router(storefronts.router)
 app.include_router(job_responses.router)
 app.include_router(shops.router)
 app.include_router(shops.seo_router)
+app.include_router(guides.router)
 app.include_router(seo.router)

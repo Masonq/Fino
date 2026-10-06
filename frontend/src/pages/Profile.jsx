@@ -359,6 +359,13 @@ export default function Profile() {
           {t('history.title')}
           <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
         </Link>
+        <Link viewTransition className="profile-row" to="/vodic">
+          <span className="profile-row-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z" /><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20" /><path d="M9 8h7M9 12h5" /></svg>
+          </span>
+          {t('guides.title')}
+          <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+        </Link>
         <Link viewTransition className="profile-row" to="/support">
           <span className="profile-row-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><circle cx="12" cy="12" r="9" /><path d="M12 16v.01M12 13c0-1.8 2-1.8 2-3.5A2 2 0 0 0 12 7.5 2 2 0 0 0 10 9.5" /></svg>
@@ -556,6 +563,7 @@ export default function Profile() {
           <a href="https://t.me/Baraholka_plonk_bot" target="_blank" rel="noopener noreferrer">{t('profile.f_bot')}</a>
         </div>
         <div className="profile-footer-links">
+          <Link to="/vodic">{t('guides.title')}</Link>
           <Link to="/rules">{t('profile.f_rules')}</Link>
           <Link to="/terms">{t('profile.f_terms')}</Link>
           <Link to="/privacy">{t('profile.f_privacy')}</Link>

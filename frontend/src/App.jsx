@@ -79,6 +79,7 @@ import BottomNav from './components/BottomNav'
 import { Toaster } from 'sonner'
 import Footer from './components/Footer'
 import TopNav from './components/TopNav'
+import { GuideArticle, GuidesList } from './pages/Guides'
 
 export default function App() {
   const location = useLocation()
@@ -472,6 +473,8 @@ export default function App() {
           <Route path="/tg/my" element={<TgMy />} />
           <Route path="/terms" element={<LegalDoc doc="terms" />} />
           <Route path="/privacy" element={<LegalDoc doc="privacy" />} />
+          <Route path="/vodic" element={<GuidesList />} />
+          <Route path="/vodic/:slug" element={<GuideArticle />} />
           <Route path="/rules" element={<LegalDoc doc="rules" />} />
           <Route path="/chats" element={<Chats />} />
           <Route path="/profile" element={<Profile />} />

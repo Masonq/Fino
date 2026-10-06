@@ -1748,5 +1748,11 @@
     "feed": "All listings",
     "top": "Back to top",
     "sections": "Categories"
+  },
+  "guides": {
+    "title": "Guides",
+    "intro": "Tips on renting, buying and selling in Serbia — short and practical.",
+    "missing": "Article not found",
+    "more": "More guides"
   }
 }

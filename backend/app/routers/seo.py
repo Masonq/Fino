@@ -149,6 +149,12 @@ def sitemap(db: Session = Depends(get_db)):
             "daily" if fresh else "weekly",
         ))
 
+    # Статьи-путеводители — на трёх языках (сербский без приставки, /ru/, /en/)
+    from app.data.guides import GUIDES
+    urls.append(_with_langs(site, "/vodic", now, "0.6", "weekly"))
+    for g in GUIDES:
+        urls.append(_with_langs(site, f"/vodic/{g['slug']}", now, "0.7", "monthly"))
+
     # Витрины продавцов и их каталог — отдельные страницы с собственным адресом (/s/<адрес>)
     try:
         from app.models.storefront import Storefront
@@ -292,6 +298,12 @@ def nice_listing_page(city: str, category: str, slug: str,
     # здесь, потому что этот маршрут объявлен раньше и перехватывает их
     # первым — поймал на живом запросе, английская страница отвечала
     # ошибкой про негодный ключ.
+    if category == "vodic" and city in ("en", "ru", "sr"):
+        if city == "sr":
+            return RedirectResponse(f"/vodic/{slug}", status_code=301)
+        from app.core.config import settings as _s
+        page = _guide_page(_s.site_base_url.rstrip("/"), f"/vodic/{slug}", city)
+        return HTMLResponse(page) if page else HTMLResponse(NOT_FOUND_PAGE.format(site=_s.site_base_url.rstrip("/")), status_code=404)
     if city == "sr" and category == "c":
         return RedirectResponse(f"/c/{slug}", status_code=301)
     if city in ("en", "ru") and category == "c":
@@ -896,6 +908,12 @@ def not_found(full_path: str, request: Request):
             plang = lang[1:]
             break
 
+    if path == "/vodic" or path.startswith("/vodic/"):
+        page = _guide_page(site, path, plang)
+        if page:
+            return HTMLResponse(page)
+        return HTMLResponse(NOT_FOUND_PAGE.format(site=site), status_code=404)
+
     if path.startswith("/seller/"):
         page = _seller_page(site, path.rsplit("/", 1)[-1])
         if page:
@@ -1052,3 +1070,43 @@ def _seller_page(site: str, user_id: str) -> str | None:
 <p><a href="{site}">Все объявления на PLONK</a></p>
 </body>
 </html>"""
+
+
+def _guide_page(site: str, path: str, lang: str) -> str | None:
+    """Статья или список статей для поисковика — полный текст на языке адреса, со связями языковых версий."""
+    import json as _json
+    from xml.sax.saxutils import escape as esc
+
+    from app.data.guides import BY_SLUG, GUIDES, HEADINGS, TITLES, localized
+    prefix = "" if lang == "sr" else f"/{lang}"
+    alts = "\n".join(
+        f'<link rel="alternate" hreflang="{code}" href="{site}{"" if code_l == "sr" else "/" + code_l}{path}">'
+        for code, code_l in (("x-default", "sr"), ("sr", "sr"), ("ru", "ru"), ("en", "en")))
+    if path == "/vodic":
+        items = "\n".join(f'<li><a href="{site}{prefix}/vodic/{g["slug"]}">{esc(localized(g, lang)["title"])}</a> — '
+                          f'{esc(localized(g, lang)["lead"])}</li>' for g in GUIDES)
+        return (f'<!DOCTYPE html>\n<html lang="{lang}">\n<head>\n<meta charset="utf-8">\n<title>{esc(TITLES[lang])}</title>\n'
+                f'<link rel="canonical" href="{site}{prefix}/vodic">\n{alts}\n</head>\n<body>\n<h1>{esc(HEADINGS[lang])}</h1>\n'
+                f'<ul>\n{items}\n</ul>\n</body>\n</html>')
+    g = BY_SLUG.get(path.rsplit("/", 1)[-1])
+    if not g:
+        return None
+    loc = localized(g, lang)
+    body = []
+    for t, v in loc["blocks"]:
+        if t == "h2":
+            body.append(f"<h2>{esc(v)}</h2>")
+        elif t == "p":
+            body.append(f"<p>{esc(v)}</p>")
+        elif t == "ul":
+            body.append("<ul>" + "".join(f"<li>{esc(x)}</li>" for x in v) + "</ul>")
+        elif t == "cta":
+            body.append(f'<p><a href="{site}{prefix}{v[1] if v[1] != "/" else "/"}">{esc(v[0])}</a></p>')
+    schema = _json.dumps({"@context": "https://schema.org", "@type": "Article", "headline": loc["title"],
+                          "description": loc["lead"], "datePublished": g["date"], "inLanguage": lang,
+                          "publisher": {"@type": "Organization", "name": "PLONK", "url": site},
+                          "mainEntityOfPage": f"{site}{prefix}{path}"}, ensure_ascii=False)
+    return (f'<!DOCTYPE html>\n<html lang="{lang}">\n<head>\n<meta charset="utf-8">\n<title>{esc(loc["title"])} | PLONK</title>\n'
+            f'<meta name="description" content="{esc(loc["lead"])}">\n<link rel="canonical" href="{site}{prefix}{path}">\n{alts}\n'
+            f'<script type="application/ld+json">{schema}</script>\n</head>\n<body>\n<article>\n<h1>{esc(loc["title"])}</h1>\n'
+            f'<p>{esc(loc["lead"])}</p>\n' + "\n".join(body) + f'\n</article>\n<p><a href="{site}{prefix}/vodic">{esc(HEADINGS[lang])}</a></p>\n</body>\n</html>')
