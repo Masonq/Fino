@@ -708,8 +708,6 @@ export default function Home() {
           под пальцем, браузер сдвигал прокрутку, шапка раскрывалась
           обратно — и так по кругу (дрожание на записи экрана). Что липнет,
           не должно менять высоту страницы; что меняет высоту — не липнет. */}
-      {/* у каждого блока главной — заголовок: «Разделы» → «Все объявления» (пустой контейнер от полосы шопсов убран) */}
-      <div className="hs-head home-cats-head"><h2 className="hs-title">{t('hs.sections')}</h2><Link to="/categories" className="hs-all">{t('hs.all')}</Link></div>
 
       {(() => {
         const all = [{ id: '__all', slug: null, isAll: true }, ...categories]
@@ -783,7 +781,6 @@ export default function Home() {
       {/* шопсы — под разделами: сначала куда идти, потом что посмотреть */}
       <HomeSections city={city} />
 
-      <div className="hs-head feed-title"><h2 className="hs-title">{t('hs.feed')}</h2></div>
       <div className="feed-head-row">
         {/* Три взгляда на одну ленту.
             Названия короткие нарочно: с длинными «Рекомендации» третья

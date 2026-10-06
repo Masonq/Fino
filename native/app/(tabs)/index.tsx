@@ -380,13 +380,6 @@ export default function Feed() {
         contentContainerStyle={[styles.list, { paddingBottom: 24 + tabInset }]}
         ListHeaderComponent={
           <View style={styles.listHead}>
-            {/* у блоков главной — заголовки, как на сайте: «Разделы» */}
-            {!q && (
-              <View style={[styles.secHead, { marginTop: 14 }]}>
-                <Text style={styles.secTitle}>{tr('Разделы')}</Text>
-                <Pressable onPress={() => router.push('/categories' as never)} hitSlop={8}><Text style={styles.secAll}>{tr('Все')}</Text></Pressable>
-              </View>
-            )}
             {!q && <CategoryTiles value={category} onPick={setCategory} />}
             {/* шопсы — под разделами, как на сайте */}
             {/* PLONK 2.0: подборки между плитками и лентой, как на сайте */}
