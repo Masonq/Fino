@@ -370,6 +370,7 @@ export const api = {
     return refresh()
   },
   getCategorySchema: (slug) => request(`/categories/${slug}/schema`),
+  getCategoryIntro: (slug) => request(`/categories/${slug}/intro`),
   searchListings: (params) => request(`/listings?${query(params)}`),
   getListing: (id) => {
     // Отдаём заранее запрошенный ответ, если он есть (см. prefetchListing).

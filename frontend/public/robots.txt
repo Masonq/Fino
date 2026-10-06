@@ -17,4 +17,20 @@ Disallow: /enter
 Disallow: /favorites
 Disallow: /my
 
+# То же на русском и английском: язык — приставкой в адресе.
+Disallow: /ru/profile
+Disallow: /ru/admin
+Disallow: /ru/tg
+Disallow: /ru/chats
+Disallow: /ru/enter
+Disallow: /ru/favorites
+Disallow: /ru/my
+Disallow: /en/profile
+Disallow: /en/admin
+Disallow: /en/tg
+Disallow: /en/chats
+Disallow: /en/enter
+Disallow: /en/favorites
+Disallow: /en/my
+
 Sitemap: https://plonk.rs/sitemap.xml

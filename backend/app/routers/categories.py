@@ -71,6 +71,26 @@ def list_categories(db: Session = Depends(get_db)):
     return [serialize(c) for c in top_level]
 
 
+@router.get("/{slug}/intro")
+def get_category_intro(slug: str, city: str | None = None, db: Session = Depends(get_db)):
+    """Текст раздела на трёх языках — тот же, что видит поисковик на /c/<раздел>.
+
+    Человеку и поисковику страница должна говорить одно и то же: текст,
+    который есть только у робота, — подмена содержимого. Своего текста
+    нет — берём ближайшего родителя, как и страница для поисковика.
+    """
+    from app.data.category_intros import intro
+
+    cat = db.query(Category).filter(Category.slug == slug).first()
+    if not cat:
+        return {}
+    out, node = {}, cat
+    while node is not None and not out:
+        out = {lang: text for lang in ("sr", "ru", "en") if (text := intro(node.slug, lang))}
+        node = node.parent
+    return out
+
+
 @router.get("/{slug}/schema")
 def get_category_schema(slug: str, db: Session = Depends(get_db)):
     """Схема динамических атрибутов для формы публикации объявления."""

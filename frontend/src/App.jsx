@@ -12,6 +12,18 @@ function CategoryLandingPage() {
 }
 import ListingDetail from './pages/ListingDetail'
 import NotFound from './pages/NotFound'
+import { CITIES } from './data/cities'
+
+// Раздел в городе: /novi-sad/c/namestaj. Сюда приводит поиск по запросу
+// «nameštaj Novi Sad» — человек должен увидеть тот же раздел, уже с этим
+// городом, что поисковик видит на этом адресе. Город запоминаем так же,
+// как при выборе вручную: раздел, лента и поиск берут его оттуда.
+function CityCategoryPage() {
+  const { city, slug } = useParams()
+  if (!CITIES.some((c) => c.slug === city)) return <NotFound />
+  try { localStorage.setItem('plonk_city', city) } catch { /* приватный режим — откроется без города */ }
+  return <CategoryLanding key={`${city}/${slug}`} />
+}
 
 // Остальные страницы — по требованию.
 //
@@ -442,6 +454,7 @@ export default function App() {
           {/* Вход в раздел со своими полями: человек ищет не
               «что-нибудь», а двушку до тысячи евро. */}
           <Route path="/c/:slug" element={<CategoryLandingPage />} />
+          <Route path="/:city/c/:slug" element={<CityCategoryPage />} />
           {/* Короткий путь по ключу — для админки и служебных ссылок,
               где понятного адреса взять неоткуда. Приложение по хвосту
               найдёт объявление и покажет его. */}

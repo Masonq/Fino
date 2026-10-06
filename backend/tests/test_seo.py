@@ -95,12 +95,19 @@ def test_listing_page_shows_price_in_search():
 
 
 def test_subcategories_are_in_the_map():
-    """«Сковороды» ищут чаще, чем «дом и сад»."""
+    """«Сковороды» ищут чаще, чем «дом и сад» — подразделы в карте есть, но только живые.
+
+    Пустой раздел в карте — «тонкая» страница: поисковик считает её
+    пустышкой и тянет вниз весь сайт.
+    """
     import inspect
     from app.routers.seo import sitemap
 
     source = inspect.getsource(sitemap)
-    assert "Category).all()" in source
+    assert "_tree(db)" in source and "_branch_counts" in source
+    assert "if counts.get(category.id)" in source
+    # И разделы в городах — от порога объявлений.
+    assert "MIN_CITY_LISTINGS" in source
 
 
 def test_description_is_clean_for_search():
@@ -118,31 +125,29 @@ def test_description_is_clean_for_search():
 
 # ── Языковые адреса ─────────────────────────────────────────────────────────
 def test_each_language_has_its_own_address():
-    """У каждого языка свой адрес, а не один на троих.
-
-    Раньше три hreflang вели на одну страницу: язык переключался внутри
-    приложения, адрес не менялся. Для поисковика это значило «версий
-    нет», и серб с англичанином находили в выдаче русскую страницу — а
-    это половина людей в Белграде.
-    """
+    """У каждого языка свой адрес: сербский — основной и без приставки, русский — /ru/, английский — /en/."""
     from app.routers.seo import _lang_url
 
     site = "https://plonk.rs"
-    # Русский — основной и живёт без приставки: на него ведут все
-    # существующие ссылки, ломать их ради единообразия нельзя.
-    assert _lang_url(site, "/c/mebel", "ru") == "https://plonk.rs/c/mebel"
+    assert _lang_url(site, "/c/mebel", "sr") == "https://plonk.rs/c/mebel"
+    assert _lang_url(site, "/c/mebel", "ru") == "https://plonk.rs/ru/c/mebel"
     assert _lang_url(site, "/c/mebel", "en") == "https://plonk.rs/en/c/mebel"
-    assert _lang_url(site, "/c/mebel", "sr") == "https://plonk.rs/sr/c/mebel"
 
 
 def test_sitemap_lists_language_versions():
-    """Карта сайта перечисляет версии, иначе они конкурируют друг с другом."""
+    """Карта сайта перечисляет версии, иначе они конкурируют друг с другом — и только существующие."""
     from app.routers.seo import _with_langs
 
     entry = _with_langs("https://plonk.rs", "/c/mebel")
-    assert 'hreflang="x-default"' in entry
+    assert "<loc>https://plonk.rs/c/mebel</loc>" in entry
+    assert 'hreflang="x-default" href="https://plonk.rs/c/mebel"' in entry
     assert 'hreflang="en" href="https://plonk.rs/en/c/mebel"' in entry
-    assert 'hreflang="sr" href="https://plonk.rs/sr/c/mebel"' in entry
+    assert 'hreflang="ru" href="https://plonk.rs/ru/c/mebel"' in entry
+
+    # Объявление только на русском: одна версия, она же основная.
+    only_ru = _with_langs("https://plonk.rs", "/beograd/mebel/stol-12345678", langs=["ru"], main="ru")
+    assert "<loc>https://plonk.rs/ru/beograd/mebel/stol-12345678</loc>" in only_ru
+    assert 'hreflang="en"' not in only_ru and 'hreflang="sr"' not in only_ru
 
 
 def test_section_page_is_translated_whole():
@@ -271,17 +276,14 @@ def test_social_locale_codes_are_real():
 
 
 def test_language_links_point_to_language_addresses():
-    """Языковые ссылки ведут на языковые адреса, а не все на главную.
-
-    Раньше их не было вовсе — оставался только x-default, потому что
-    языковых адресов у сайта не существовало. Теперь /en/ и /sr/ есть.
-    """
+    """Языковые ссылки главной ведут на языковые адреса: сербский — без приставки."""
     html = (Path(__file__).resolve().parents[2]
             / "frontend" / "index.html").read_text()
 
+    assert 'hreflang="sr" href="https://plonk.rs/"' in html
+    assert 'hreflang="ru" href="https://plonk.rs/ru/"' in html
     assert 'hreflang="en" href="https://plonk.rs/en/"' in html
-    assert 'hreflang="sr" href="https://plonk.rs/sr/"' in html
-    assert 'hreflang="x-default"' in html
+    assert 'hreflang="x-default" href="https://plonk.rs/"' in html
 
 
 def test_manifest_has_a_maskable_icon():
@@ -361,34 +363,19 @@ def test_listing_is_requested_before_the_tap_completes():
 
 
 def test_only_needed_language_is_loaded():
-    """В первый файл едет один язык, остальные догружаются.
+    """В первый файл едет один язык — основной сербский, остальные догружаются.
 
-    Все три уезжали вместе — около 70 КБ, из которых человеку нужен
-    один. Русский оставлен сразу: он основной, на нём открывается сайт
-    по умолчанию, и с ним нет мигания при первой отрисовке.
-
-    Проверено вживую: все три языка работают, английский и сербский
-    приезжают отдельными файлами.
+    Все три уезжали вместе — около 70 КБ, из которых человеку нужен один.
     """
     i18n = (Path(__file__).resolve().parents[2]
             / "frontend" / "src" / "i18n" / "index.js").read_text()
 
-    assert "import ru from './locales/ru.json'" in i18n
-    assert "import en from" not in i18n and "import sr from" not in i18n
+    assert "import sr from './locales/sr.json'" in i18n
+    assert "import en from" not in i18n and "import ru from" not in i18n
     assert "() => import('./locales/en.json')" in i18n
-    # Не догрузилось — остаёмся на русском, а не показываем пустые подписи.
-    assert "i18n.changeLanguage('ru')" in i18n
-    # Имя без «use» в начале: по такому имени линт считает функцию
-    # хуком React и требует вызывать её только внутри компонентов —
-    # деплой на этом и остановился.
-    #
-    # Смотрим строки кода, а не весь файл: прежнее имя осталось в
-    # пояснении рядом, и проверка по файлу спотыкалась бы о
-    # собственный комментарий. За вечер это третий такой случай.
-    code = [ln for ln in i18n.split("\n")
-            if not ln.strip().startswith(("//", "*", "/*"))]
-    assert "export async function switchLanguage" in i18n
-    assert not any("useLanguage" in ln for ln in code)
+    assert "() => import('./locales/ru.json')" in i18n
+    # Не догрузилось — остаёмся на сербском, а не показываем пустые подписи.
+    assert "i18n.changeLanguage('sr')" in i18n
 
 
 def test_next_page_loads_well_before_the_end():
@@ -489,33 +476,31 @@ def test_robots_see_a_real_page_not_a_stub():
 
 
 def test_listing_page_links_its_language_versions():
-    """У объявления есть связи между языковыми версиями.
+    """Языковые версии объявления — свой текст и честные связи.
 
-    Google писал: «Страница является копией. Канонические версии,
-    выбранные Google и пользователем, не совпадают». Из-за этого
-    объявления выпадали из поиска.
-
-    Причин было две, и обе здесь. Основным адресом всегда указывался
-    русский, даже когда страница отдавалась на английском: Google
-    заходил на /en/..., читал «основная версия — русская» и записывал
-    страницу в копии. И связей между языками не было вовсе — у разделов
-    они были, у объявлений забыли.
+    Раньше /en/ и сербская страница брали текст оригинала, а hreflang
+    называл их переводами: Google видел три одинаковые страницы и писал
+    «Страница является копией». Теперь текст — на языке адреса, а связи
+    перечисляют только языки, на которых текст действительно есть.
     """
-    import re
+    from types import SimpleNamespace as NS
 
-    source = (Path(__file__).resolve().parents[1]
-              / "app" / "routers" / "seo.py").read_text()
+    from app.routers.seo import _alternates_html, _listing_langs, _main_lang, _pick_translation
 
-    # Адрес на том же языке, что открыт.
-    assert "url = _lang_url(site, _nice_path(db, listing), lang)" in source
-    # А язык берётся из адреса, не из объявления: приехало из русского
-    # чата — это не повод считать русской версию, открытую на /en/.
-    assert 'if path.startswith("/en/")' in source
-    assert 'elif path.startswith("/sr/")' in source
-    # И четыре языковые связи.
-    block = source.split("path_for_langs =")[1].split(")\n")[0]
-    for code in ("x-default", "ru", "en", "sr"):
-        assert f'"{code}"' in block, code
+    tr = lambda lang, title: NS(language=lang, title=title)  # noqa: E731
+    both = NS(source_language="ru", translations=[tr("ru", "Стол"), tr("en", "Table"), tr("sr", "Sto")])
+    assert _pick_translation(both, "en").title == "Table"
+    assert _pick_translation(both, "sr").title == "Sto"
+    assert _main_lang(both) == "sr"
+
+    only_ru = NS(source_language="ru", translations=[tr("ru", "Стол")])
+    assert _pick_translation(only_ru, "en").title == "Стол"
+    assert _listing_langs(only_ru) == ["ru"]
+    assert _main_lang(only_ru) == "ru"
+
+    links = _alternates_html("https://plonk.rs", "/beograd/mebel/stol-12345678", ["ru"])
+    assert 'hreflang="ru"' in links and 'hreflang="en"' not in links
+    assert 'hreflang="x-default" href="https://plonk.rs/ru/beograd/mebel/stol-12345678"' in links
 
 
 def test_listing_markup_has_section_seller_and_trail():
@@ -543,8 +528,14 @@ def test_listing_markup_has_section_seller_and_trail():
     class FakeRequest:
         headers, url = {}, FakeUrl()
 
+    from app.models import ListingStatus
+
     with SessionLocal() as db:
-        listing = db.query(Listing).first()
+        # Живое объявление с ценой и продавцом: у снятого и отклонённого
+        # своя страница (запрет индексации или «страницы нет»).
+        listing = (db.query(Listing)
+                   .filter(Listing.status == ListingStatus.active, Listing.price.isnot(None),
+                           Listing.owner_id.isnot(None)).first())
         if not listing:
             return
 

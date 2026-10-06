@@ -164,6 +164,7 @@ function CategoryLandingPage() {
   // на миг после перехода не показать поля прошлого раздела.
   const [rootSlug, setRootSlug] = useState(null)
   const [schema, setSchema] = useState(null)
+  const [intro, setIntro] = useState({})
   // Пока корень не известен — только заливка, без запроса за чужой картинкой.
   const heroSlug = LANDINGS[slug] ? slug : rootSlug
   const landing = landingFor(slug, rootSlug, schema?.slug === slug ? schema.fields : null)
@@ -204,6 +205,9 @@ function CategoryLandingPage() {
     api.getCategories()
       .then((all) => setCategory(findBySlug(all)))
       .catch(() => setCategory(null))
+
+    // Текст раздела — внизу страницы, тот же, что у поисковика.
+    api.getCategoryIntro(slug).then((res) => setIntro(res || {})).catch(() => setIntro({}))
 
     // Схема нужна только подразделу: у раздела поля свои. Не пришла —
     // останется одна цена, страница от этого не ломается.
@@ -985,6 +989,12 @@ function CategoryLandingPage() {
             {fresh.map((l, i) => <ListingCard key={l.id} listing={l} priority={i < 4} />)}
           </div>
         </div>
+      )}
+
+      {/* О разделе — после объявлений: человеку он нужен меньше всего, а
+          поисковику страница по этому адресу показывает тот же текст. */}
+      {!freshLoading && (intro[i18n.language] || intro.sr) && (
+        <p className="landing-about">{intro[i18n.language] || intro.sr}</p>
       )}
       </div>
       </div>

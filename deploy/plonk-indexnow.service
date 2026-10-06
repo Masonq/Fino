@@ -1,0 +1,9 @@
+[Unit]
+Description=PLONK — сообщает Bing и Яндексу о новых объявлениях (IndexNow)
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/fino/backend
+ExecStart=/opt/fino/backend/venv/bin/python3 -m app.core.indexnow
+User=root

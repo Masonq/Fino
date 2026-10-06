@@ -285,6 +285,14 @@ INTROS.update({
 })
 
 
+# Подразделы второго уровня — отдельным файлом, чтобы этот не разрастался.
+# Свои тексты выше главнее: setdefault их не перезаписывает.
+from app.data.category_intros_more import MORE  # noqa: E402
+
+for _slug, (_sr, _ru, _en) in MORE.items():
+    INTROS.setdefault(_slug, {"sr": _sr, "ru": _ru, "en": _en})
+
+
 def intro(slug: str, lang: str = "ru", parent_slug: str | None = None) -> str | None:
     """
     Текст раздела на нужном языке.

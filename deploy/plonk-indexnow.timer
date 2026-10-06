@@ -1,0 +1,10 @@
+[Unit]
+Description=Каждые 15 минут отправляет новые и изменённые объявления в IndexNow
+
+[Timer]
+# Окно отправки — 20 минут, шаг — 15: стык таймера не теряет объявлений.
+OnBootSec=3min
+OnUnitActiveSec=15min
+
+[Install]
+WantedBy=timers.target

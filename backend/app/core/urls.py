@@ -68,6 +68,30 @@ def slugify(text: str) -> str:
     return slug or "obyavlenie"
 
 
+# Города, которые сайт знает (frontend/src/data/cities.js), во всех
+# написаниях, что встречаются в объявлениях. «Белград» латиницей давал
+# «belgrad», а «Belgrade» — «belgrade»: у одного города выходило три адреса,
+# и страницы «раздел в городе» (/beograd/c/…) с ними не совпадали.
+CITY_CODES = {
+    "beograd": ("beograd", "белград", "belgrade", "београд"),
+    "novi-sad": ("novi-sad", "нови-сад", "нови сад", "novi sad"),
+    "nis": ("nis", "ниш", "niš"),
+    "kragujevac": ("kragujevac", "крагуевац"),
+    "subotica": ("subotica", "суботица"),
+    "zrenjanin": ("zrenjanin", "зренянин"),
+    "pancevo": ("pancevo", "панчево", "pančevo"),
+    "cacak": ("cacak", "чачак", "čačak"),
+    "novi-pazar": ("novi-pazar", "нови-пазар", "нови пазар", "novi pazar"),
+    "kraljevo": ("kraljevo", "кралево", "kraljevo"),
+}
+_CITY_LOOKUP = {name: code for code, names in CITY_CODES.items() for name in names}
+
+
+def city_code(city: str) -> str:
+    """Часть адреса для города: код известного города, иначе название латиницей."""
+    return _CITY_LOOKUP.get((city or "").strip().lower()) or slugify(city)
+
+
 def listing_path(listing_id: str, title: str,
                  city: str | None = None,
                  category: str | None = None) -> str:
@@ -85,7 +109,7 @@ def listing_path(listing_id: str, title: str,
     # пришлось бы разбирать по-разному, а треть объявлений записана без
     # города. Пусть будет «bez-goroda» — зато устройство одинаковое.
     parts = [
-        slugify(city) if city else "srbija",
+        city_code(city) if city else "srbija",
         slugify(category) if category else "raznoe",
         f"{slugify(title)}-{tail}",
     ]

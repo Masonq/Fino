@@ -4296,6 +4296,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 .landing-fresh{ padding:20px 12px 0; }
 .landing-fresh h2{ font-size:16px; font-weight:800; color:var(--ink); margin-bottom:10px; }
+/* Текст о разделе внизу страницы: тихий, одной шириной с лентой над ним. */
+.landing-about{ margin:24px 12px 8px; font-size:13px; line-height:1.5; color:var(--muted, #6b7570); }
 
 /* Результаты поиска прямо на лендинге — вместо перехода на /search. */
 .landing-results{ padding:20px 12px 0; }
