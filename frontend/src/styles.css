@@ -7711,3 +7711,28 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 .profile-stat b, .profile-stat .profile-stat-num{ font-size:22px; letter-spacing:-0.03em; }
 .profile-card{ border:0; box-shadow:var(--shadow); border-radius:24px; }
 .profile-menu, .profile-rows{ border:0; box-shadow:var(--shadow); border-radius:24px; }
+
+/* =====================================================================
+   PLONK 2.0 — проход №2 по страницам (мои объявления, мои данные, каталог, витрина, шопсы, поддержка)
+   ===================================================================== */
+/* одна главная кнопка формы на весь сайт — тёмная (было: где-то зелёная, где-то чёрная) */
+.form-save, .jr-btn.primary, .landing-go{ background:var(--inverse) !important; color:var(--on-inverse) !important; box-shadow:0 8px 20px rgba(15,21,18,.16); border-radius:18px; min-height:54px; font-weight:800; }
+.form-save:disabled{ background:var(--surface-sunken-2) !important; color:var(--muted) !important; box-shadow:none; }
+/* выбранный чип в формах — тёмный, как вкладки и сортировка (был зелёным) */
+.field-chips .chip-active, .tg-my-actions .chip-active{ background:var(--inverse); color:var(--on-inverse); border-color:var(--inverse); }
+/* карточки форм — белые с тенью без рамок, как на главной */
+.form-card{ border:0; box-shadow:var(--shadow); border-radius:24px; }
+/* «Поднять просмотры» в моих объявлениях — без мятной плашки: спокойная кнопка с тёмным текстом и молнией */
+.my-promote-slot .promo-trigger{ background:var(--surface-sunken); color:var(--ink); border:0; box-shadow:none; font-weight:700; border-radius:12px; }
+/* каталог разделов: заголовок как у остальных страниц — крупно слева, «назад» — белая капсула */
+.cats-head{ gap:10px; padding:calc(10px + var(--sat)) 16px 10px; }
+.cats-back{ width:40px; height:40px; }
+.cats-title{ position:static; text-align:left; font-size:28px; letter-spacing:-0.035em; }
+/* «Мои шопсы» и подобные кабинеты — вкладки-капсулы как сортировка в избранном */
+.jr-tab{ box-shadow:0 1px 2px rgba(15,21,18,.05); }
+.jl-tile[data-cat]{ background:var(--tint); } /* каталог разделов — в цветах разделов, как на главной */
+/* чат: быстрые вопросы — белые капсулы с тенью (были мятными), непрочитанная переписка — белая карточка с жирным
+   названием, а не мятная полоса */
+.quick-replies button{ background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(15,21,18,.05), 0 4px 12px rgba(15,21,18,.06); }
+.chat-row.unread{ background:var(--surface); }
+.chat-row.unread .chat-row-title, .chat-row.unread .chat-name{ font-weight:800; }

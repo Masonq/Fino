@@ -61,6 +61,7 @@ export default function Categories() {
               key={cat.id}
               to={hasLanding(cat.slug) ? `/c/${cat.slug}` : `/search?category=${cat.slug}`}
               className={`jl-tile cats-tile${cat.ready === false ? ' soon' : ''}`}
+              data-cat={cat.slug}
             >
               <span className="jl-tile-text" style={{ maxWidth: fit.text }}>{label}</span>
               {cat.ready === false && <span className="cats-soon">{t('categories.soon')}</span>}
