@@ -108,6 +108,7 @@ export const api = {
   sfState: (body, lang) => request(`/storefronts/me/state?lang=${lang || 'sr'}`, { method: 'POST', body }),
   sfPublic: (slug, lang) => request(`/storefronts/${encodeURIComponent(slug)}?lang=${lang || 'sr'}`),
   sfByOwner: (ownerId) => request(`/storefronts/by-owner/${ownerId}`),
+  chatPref: (id, action) => request(`/chats/${id}/prefs`, { method: 'POST', body: JSON.stringify({ action }) }),
   guides: (lang) => request(`/guides?lang=${lang || 'sr'}`),
   guide: (slug, lang) => request(`/guides/${slug}?lang=${lang || 'sr'}`),
   searchSuggest: (q, lang) => request(`/search/suggest?${new URLSearchParams({ q, lang: lang || 'sr' })}`),

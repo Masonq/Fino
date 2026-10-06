@@ -10,7 +10,8 @@
     "login": "Prijava",
     "safe_deal": "Sigurna kupovina",
     "yes": "Da",
-    "no": "Ne"
+    "no": "Ne",
+    "error": "Nije uspelo, pokušajte ponovo"
   },
   "nav": {
     "home": "Početna",
@@ -379,7 +380,18 @@
     "filter_unread": "Nepročitano",
     "filter_buying": "Kupujem",
     "filter_selling": "Prodajem",
-    "nothing_found": "Ništa nije nađeno"
+    "nothing_found": "Ništa nije nađeno",
+    "pin": "Zakači",
+    "unpin": "Otkači",
+    "mark_unread": "Nepročitano",
+    "mark_read": "Pročitano",
+    "mute": "Utišaj",
+    "unmute": "Uključi zvuk",
+    "delete": "Obriši",
+    "deleted": "Prepiska obrisana",
+    "undo": "Poništi",
+    "muted": "Utišano",
+    "pinned": "Zakačeno"
   },
   "auth": {
     "title": "Prijava na PLONK",

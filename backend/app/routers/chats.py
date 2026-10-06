@@ -382,9 +382,12 @@ async def send_message(
         if chat_row and chat_row.listing and chat_row.listing.translations:
             tr = pick_translation(chat_row.listing, "ru")
             listing_title = tr.title if tr else None
-        notify_new_message(db, other_id, sender_id, sender.display_name if sender else "",
-                          payload.text or "", chat_id=chat_id, message_id=message.id,
-                          listing_title=listing_title)
+        from app.models.chat_pref import ChatPref
+        muted = db.query(ChatPref.id).filter(ChatPref.chat_id == chat_id, ChatPref.user_id == other_id, ChatPref.muted.is_(True)).first()
+        if not muted:
+            notify_new_message(db, other_id, sender_id, sender.display_name if sender else "",
+                               payload.text or "", chat_id=chat_id, message_id=message.id,
+                               listing_title=listing_title)
     except Exception:
         pass
     return _serialize_message(message)
@@ -658,6 +661,11 @@ def list_chats(
         .limit(100)
         .all()
     )
+    from app.models.chat_pref import ChatPref
+    prefs = {p.chat_id: p for p in db.query(ChatPref).filter(ChatPref.user_id == user_id).all()}
+    chats = [c for c in chats if not (prefs.get(c.id) and prefs[c.id].hidden_at
+                                      and (c.last_message_at or c.created_at) <= prefs[c.id].hidden_at)]
+    chats.sort(key=lambda c: 0 if (prefs.get(c.id) and prefs[c.id].pinned) else 1)  # закреплённые — сверху, порядок внутри тот же
     if not chats:
         return {"total": 0, "items": []}
 
@@ -728,7 +736,9 @@ def list_chats(
             # видно «# Привет!» — для этого и нужен вид сообщения.
             "last_kind": (msg.kind or "user") if msg else None,
             "is_team": c.listing_id is None and c.seller_id == team_id,
-            "unread": unread.get(c.id, 0),
+            "unread": unread.get(c.id, 0) or (1 if (prefs.get(c.id) and prefs[c.id].marked_unread) else 0),
+            "pinned": bool(prefs.get(c.id) and prefs[c.id].pinned),
+            "muted": bool(prefs.get(c.id) and prefs[c.id].muted),
         })
 
     return {"total": len(items), "items": items}
@@ -747,6 +757,8 @@ async def mark_read(
         Message.sender_id != user_id,
         Message.is_read.is_(False),
     ).update({Message.is_read: True}, synchronize_session=False)
+    from app.models.chat_pref import ChatPref
+    db.query(ChatPref).filter(ChatPref.chat_id == chat_id, ChatPref.user_id == user_id).update({ChatPref.marked_unread: False}, synchronize_session=False)
     db.commit()
     if changed:
         # «Прочитано» у собеседника — тоже вживую, галочки должны
@@ -819,3 +831,36 @@ async def chat_ws(websocket: WebSocket, chat_id: uuid.UUID, token: str = Query(.
         pass
     finally:
         manager.disconnect(str(chat_id), websocket)
+
+
+
+class ChatPrefIn(BaseModel):
+    action: str  # hide | pin | unpin | mute | unmute | unread | read
+
+
+@router.post("/{chat_id}/prefs")
+def chat_prefs(chat_id: uuid.UUID, body: ChatPrefIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Свайп в списке переписок: удалить у себя, закрепить, без звука, пометить непрочитанной."""
+    from app.core.clock import utcnow
+    from app.models.chat_pref import ChatPref
+    _require_participant(chat_id, user, db)
+    p = db.query(ChatPref).filter(ChatPref.chat_id == chat_id, ChatPref.user_id == user.id).first()
+    if not p:
+        p = ChatPref(chat_id=chat_id, user_id=user.id)
+        db.add(p)
+    a = body.action
+    if a == "hide":
+        p.hidden_at, p.pinned = utcnow(), False
+    elif a == "unhide":  # «Отменить» сразу после удаления
+        p.hidden_at = None
+    elif a in ("pin", "unpin"):
+        p.pinned = a == "pin"
+    elif a in ("mute", "unmute"):
+        p.muted = a == "mute"
+    elif a in ("unread", "read"):
+        p.marked_unread = a == "unread"
+    else:
+        raise HTTPException(400, "bad_action")
+    p.updated_at = utcnow()
+    db.commit()
+    return {"ok": True, "pinned": p.pinned, "muted": p.muted, "hidden": a == "hide"}

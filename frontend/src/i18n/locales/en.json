@@ -10,7 +10,8 @@
     "login": "Log in",
     "safe_deal": "Safe deal",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "error": "Something went wrong, try again"
   },
   "nav": {
     "home": "Home",
@@ -375,7 +376,18 @@
     "filter_unread": "Unread",
     "filter_buying": "Buying",
     "filter_selling": "Selling",
-    "nothing_found": "Nothing found"
+    "nothing_found": "Nothing found",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "mark_unread": "Unread",
+    "mark_read": "Read",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "delete": "Delete",
+    "deleted": "Chat deleted",
+    "undo": "Undo",
+    "muted": "Muted",
+    "pinned": "Pinned"
   },
   "auth": {
     "title": "Sign in to PLONK",

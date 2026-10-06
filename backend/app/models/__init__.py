@@ -28,6 +28,7 @@ from app.models.shops_jobs import (
 )
 from app.models.search_log import SearchLog  # noqa: F401
 from app.models.embedding import ListingEmbedding  # noqa: F401
+from app.models.chat_pref import ChatPref  # noqa: F401
 from app.models.storefront import (
     Storefront, StorefrontItem, StorefrontCollection, StorefrontCollectionItem, StorefrontOldSlug, StorefrontViewLog,
 )

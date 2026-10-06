@@ -7743,3 +7743,32 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 /* витрина: счётчики в чипах подборок — нейтральные, аватар — белый круг с тенью */
 .sf-page .jr-tab-n{ background:var(--surface-sunken); color:var(--ink-soft); }
 .sf-page .jr-tab.on .jr-tab-n{ background:rgba(255,255,255,.18); color:var(--on-inverse); }
+
+/* ---------- переписки: свайп как в Telegram ---------- */
+.sw-row{ position:relative; overflow:hidden; }
+.sw-front{ position:relative; z-index:1; background:var(--bg); touch-action:pan-y; will-change:transform; }
+.sw-front.anim{ transition:transform .32s cubic-bezier(.2,.9,.25,1.1); }
+.sw-actions{ position:absolute; top:0; bottom:0; display:flex; overflow:hidden; }
+.sw-actions.left{ left:0; }
+.sw-actions.right{ right:0; justify-content:flex-end; }
+.sw-btn{ flex:0 0 76px; display:flex; align-items:center; justify-content:center; padding:0 6px; color:#fff; font-size:12.5px; font-weight:800; text-align:center; line-height:1.15; }
+.sw-pin{ background:var(--inverse); }
+.sw-unread{ background:#2F7BF6; }
+.sw-mute{ background:#8A938D; }
+.sw-del{ background:#FF3B30; }
+.chat-flag{ display:inline-block; margin-left:5px; vertical-align:-1px; color:var(--muted); }
+.chat-flag.pin{ margin-left:auto; flex:none; }
+.app-shell{ overflow-x:clip; } /* сияние и любые выступы не расширяют страницу вбок (на iPhone справа появлялась пустая полоса) */
+
+/* ---------- анимации открытия: всё, что ещё появлялось рывком ---------- */
+.flame-sheet, .re-sheet, .cs-sheet, .promo-sheet{ animation:ui-sheet-up .42s cubic-bezier(.2,1.12,.35,1); }
+.jl-tips{ animation:ui-drop .22s cubic-bezier(.2,1.2,.4,1); transform-origin:top center; }
+.sw-actions .sw-btn{ animation:ui-fade-in .2s ease; }
+/* тактильный отклик главных кнопок — пружинка при нажатии (только отдельные кнопки, не в прокручиваемых рядах) */
+.form-save, .cta-btn, .post-submit-btn, .edit-save, .fav-cta, .geo-ask-yes, .guide-cta, .empty-notify, .page-back, .search-back, .cats-back{
+  transition:transform .18s cubic-bezier(.2,1.4,.4,1), background-color .15s ease; }
+.form-save:active, .cta-btn:active, .post-submit-btn:active, .edit-save:active, .fav-cta:active, .geo-ask-yes:active, .guide-cta:active,
+.empty-notify:active, .page-back:active, .search-back:active, .cats-back:active{ transform:scale(.96); }
+@media (prefers-reduced-motion: reduce){
+  .flame-sheet, .re-sheet, .cs-sheet, .promo-sheet, .jl-tips{ animation:none; }
+}
