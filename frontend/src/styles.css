@@ -7480,3 +7480,29 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 .geo-ask-yes, .geo-ask-no{ white-space:nowrap; flex:none; }
 .geo-ask-no{ width:36px; height:36px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:12px; color:var(--muted); background:transparent; }
 .geo-ask{ padding-right:6px; gap:10px; }
+
+/* ---------- страница объявления: по исследованиям Baymard ---------- */
+/* путь по разделам на телефоне — над ценой */
+.m-crumbs{ display:flex; flex-wrap:wrap; align-items:center; gap:2px 0; margin:0 0 8px; font-size:13px; font-weight:600; }
+.m-crumbs a{ color:var(--muted); }
+.m-crumbs a:active{ color:var(--ink); }
+.m-crumbs-sep{ margin:0 6px; color:var(--border-strong); }
+/* мини-кадры поверх низа фотографии */
+.photo-minis{ position:absolute; left:12px; bottom:34px; z-index:4; display:flex; gap:6px; padding:5px; border-radius:16px;
+  background:rgba(255,255,255,.6); backdrop-filter:blur(14px) saturate(1.4); -webkit-backdrop-filter:blur(14px) saturate(1.4); box-shadow:0 4px 14px rgba(0,0,0,.12); }
+.photo-mini{ position:relative; width:38px; height:38px; padding:0; border-radius:10px; overflow:hidden; background:var(--surface-sunken); opacity:.7; transition:opacity .2s, box-shadow .2s; }
+.photo-mini img{ width:100%; height:100%; object-fit:cover; display:block; }
+.photo-mini.on{ opacity:1; box-shadow:0 0 0 2px var(--ink); }
+.photo-mini-more{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(15,21,18,.55); color:#fff; font-size:12px; font-weight:800; }
+/* характеристики — таблица в одну колонку с чередованием строк: легко сопоставить подпись и значение */
+.attr-row{ border-bottom:0; padding:11px 12px; border-radius:12px; font-size:13.5px; gap:12px; }
+.attr-row:nth-child(odd){ background:var(--surface-sunken); }
+.attr-row .v{ text-align:right; }
+.detail-photo:has(.photo-minis) .photo-count{ left:auto; right:12px; transform:none; bottom:42px; } /* счётчик справа — слева мини-кадры */
+/* путь по разделам — одной строкой с прокруткой, не переносится на вторую */
+.m-crumbs{ flex-wrap:nowrap; overflow-x:auto; white-space:nowrap; scrollbar-width:none; margin-right:-16px; padding-right:16px; }
+.m-crumbs::-webkit-scrollbar{ display:none; }
+/* просмотры · дата · номер — одной строкой через точку, а не столбиком */
+.detail-meta{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 0; flex-direction:row; }
+.detail-meta > span{ display:inline-flex; align-items:center; }
+.detail-meta > span + span::before{ content:"·"; margin:0 8px; color:var(--border-strong); }

@@ -326,7 +326,8 @@
     "unit_m2": "м²",
     "unit_km": "км",
     "unit_liters": "л",
-    "unit_floor": "эт."
+    "unit_floor": "эт.",
+    "section": "Раздел"
   },
   "favorites": {
     "title": "Избранное",

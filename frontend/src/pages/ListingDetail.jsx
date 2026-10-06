@@ -925,6 +925,18 @@ export default function ListingDetail() {
         {photos.length > 1 && (
           <div className="photo-count">{photoIdx + 1} / {photos.length}</div>
         )}
+        {/* Телефон: мини-кадры поверх низа фотографии — видно, сколько снимков и что на них, можно сразу
+            перейти к нужному (Baymard: 76% мобильных сайтов не показывают миниатюры, и люди пропускают фото). */}
+        {!wide && photos.length > 2 && (
+          <div className="photo-minis" aria-hidden="true">
+            {photos.slice(0, 5).map((ph, i) => (
+              <button type="button" tabIndex={-1} key={ph.url || i} className={i === photoIdx ? 'photo-mini on' : 'photo-mini'} onClick={() => goToPhoto(i)}>
+                {ph.thumbnail_url || ph.url ? <img src={ph.thumbnail_url || ph.url} alt="" loading="lazy" /> : null}
+                {i === 4 && photos.length > 5 && <span className="photo-mini-more">+{photos.length - 5}</span>}
+              </button>
+            ))}
+          </div>
+        )}
         {/* Стрелки — видны только на десктопе (styles.css, скрыты через
             hover:none touch-медиазапрос на телефоне/планшете, там и
             так свайп). Без них у мыши без сенсора и тачпада не было
@@ -1013,6 +1025,18 @@ export default function ListingDetail() {
             </div>
             <div className="gone-banner-note">{t('detail.gone_note')}</div>
           </div>
+        )}
+        {/* Путь по разделам на телефоне — над ценой, мелко (Baymard: без полного пути разделов на мобильной
+            странице товара люди теряются; 36% сайтов его не дают). На широком экране путь — отдельной строкой сверху. */}
+        {!wide && listing.category_path?.length > 0 && (
+          <nav className="m-crumbs" aria-label={t('detail.section')}>
+            {listing.category_path.map((c, i) => (
+              <span key={c.slug}>
+                {i > 0 && <span className="m-crumbs-sep">›</span>}
+                <Link to={hasLanding(c.slug) ? `/c/${c.slug}` : `/search?category=${c.slug}`}>{c.name?.[lang] || c.name?.ru || c.slug}</Link>
+              </span>
+            ))}
+          </nav>
         )}
         <div className="detail-price">
           {listing.price != null

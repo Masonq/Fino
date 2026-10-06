@@ -328,7 +328,8 @@
     "unit_m2": "m²",
     "unit_km": "km",
     "unit_liters": "l",
-    "unit_floor": "sprat"
+    "unit_floor": "sprat",
+    "section": "Kategorija"
   },
   "favorites": {
     "title": "Sačuvano",
