@@ -1814,7 +1814,8 @@
     "drop_items_few": "{{count}} stvari",
     "drop_items_other": "{{count}} stvari",
     "similar": "Slični izlozi",
-    "discover_kicker": "Prodavnice i privatni prodavci"
+    "discover_kicker": "Prodavnice i privatni prodavci",
+    "discover_short": "Izlozi"
   },
   "shx": {
     "title": "Šta su šopsovi",

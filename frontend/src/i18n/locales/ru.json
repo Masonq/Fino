@@ -1856,7 +1856,8 @@
     "drop_items_many": "{{count}} вещей",
     "drop_items_other": "{{count}} вещи",
     "similar": "Похожие витрины",
-    "discover_kicker": "Магазины и частные продавцы"
+    "discover_kicker": "Магазины и частные продавцы",
+    "discover_short": "Витрины"
   },
   "shx": {
     "title": "Что такое шопсы",

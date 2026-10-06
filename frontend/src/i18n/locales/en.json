@@ -1762,7 +1762,8 @@
     "drop_items_one": "{{count}} item",
     "drop_items_other": "{{count}} items",
     "similar": "Similar storefronts",
-    "discover_kicker": "Shops and private sellers"
+    "discover_kicker": "Shops and private sellers",
+    "discover_short": "Storefronts"
   },
   "shx": {
     "title": "What are shops",

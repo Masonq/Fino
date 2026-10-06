@@ -26,18 +26,15 @@ export default function PageHeader({ title, count, back = true, kicker, subtitle
 
   // PLONK 2.0: шапка-приветствие на всех страницах (как на главной); compact — старая строка для узких мест
   if (!compact) {
+    // «назад», текст и действия — в одну строку: шапка вдвое ниже, чем ряд капсул над заголовком (было 137 px)
     return (
-      <div className="page-hero">
-        {(back || children) && (
-          <div className="ph-top">
-            {backBtn || <span />}
-            {children && <div className="ph-actions">{children}</div>}
-          </div>
-        )}
+      <div className={`page-hero${back ? ' has-back' : ''}`}>
+        {backBtn}
         <div className="ph-text">
           {kicker && <span className="ph-kicker">{kicker}</span>}
-          <h1 className="ph-title"><span className="page-title-text">{title}</span>{count > 0 && <span className="fav-count">{count}</span>}</h1>
+          <h1 className={`ph-title${String(title || '').length > (children ? 12 : 16) ? ' is-long' : ''}`}><span className="page-title-text">{title}</span>{count > 0 && <span className="fav-count">{count}</span>}</h1>
         </div>
+        {children && <div className="ph-actions">{children}</div>}
       </div>
     )
   }

@@ -7945,3 +7945,16 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 .sf-back{ width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,.88); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); box-shadow:0 4px 14px rgba(15,21,18,.12); }
 .sf-back{ color:var(--ink) !important; background:rgba(255,255,255,.92) !important; }
 .sf-link{ border:0 !important; background:var(--surface) !important; box-shadow:var(--shadow) !important; border-radius:22px !important; }
+/* шапка страниц — компактно: «назад» | подводка+заголовок | действия в одну строку */
+.page-hero{ display:flex; align-items:center; gap:12px; padding:calc(10px + var(--sat)) 16px 12px; }
+.page-hero .page-back{ align-self:center; flex:none; }
+.page-hero .ph-text{ flex:1; min-width:0; margin:0; gap:1px; }
+.page-hero .ph-kicker{ font-size:13.5px; line-height:1.25; }
+.page-hero .ph-title{ font-size:27px; line-height:1.12; }
+.page-hero .ph-title .page-title-text{ min-width:0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.page-hero .ph-actions{ flex:none; }
+.page-hero:not(.has-back){ padding-top:calc(14px + var(--sat)); }
+.page-hero:not(.has-back) .ph-title{ font-size:30px; }
+/* длинный заголовок (или рядом кнопка) — чуть мельче, чтобы стоял в одну строку; подводка — в одну строку */
+.page-hero .ph-title.is-long{ font-size:22px; letter-spacing:-0.03em; }
+.page-hero .ph-kicker{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
