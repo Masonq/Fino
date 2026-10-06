@@ -1,4 +1,7 @@
-import { useState } from 'react'
+import { useRef, useState, useSyncExternalStore } from 'react'
+import { toast } from 'sonner'
+import { hidden } from '../data/hidden'
+import Sheet from './Sheet'
 import { Link, useNavigate } from 'react-router-dom'
 import PriceFlame from './Flame'
 import { useTranslation } from 'react-i18next'
@@ -11,6 +14,11 @@ import { relativeDate, isFresh } from '../utils/time'
 
 export default function ListingCard({ listing, large = false, priority = false }) {
   const [photoIndex, setPhotoIndex] = useState(0)
+  // долгое нажатие — быстрые действия: поделиться, в избранное, «не интересно», скрыть продавца, пожаловаться
+  useSyncExternalStore(hidden.subscribe, hidden.get)
+  const [menu, setMenu] = useState(false)
+  const holdT = useRef(null)
+  const held = useRef(false)
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { isFavorite, toggle } = useFavorites()
@@ -53,8 +61,16 @@ export default function ListingCard({ listing, large = false, priority = false }
     }
   }
 
+  if (hidden.isHidden(listing)) return null
+  const hold = {
+    onTouchStart: () => { held.current = false; clearTimeout(holdT.current); holdT.current = setTimeout(() => { held.current = true; setMenu(true); try { navigator.vibrate?.(12) } catch { /* нет */ } }, 480) },
+    onTouchMove: () => clearTimeout(holdT.current),
+    onTouchEnd: () => clearTimeout(holdT.current),
+    onContextMenu: (e) => { e.preventDefault(); setMenu(true) },
+    onClickCapture: (e) => { if (held.current) { e.preventDefault(); e.stopPropagation(); held.current = false } },
+  }
   return (
-    <div className={cardClass}>
+    <div className={`${cardClass}${menu ? ' is-held' : ''}`} {...hold}>
       {/* Адрес приходит от приложения: он одинаков везде — в ленте,
           в боте, в письме и в карте сайта. Запасной на случай старых
           записей. */}
@@ -192,6 +208,32 @@ export default function ListingCard({ listing, large = false, priority = false }
         <span>{listing.city ? displayCity(listing.city, i18n.language) : ''}</span>
         {listing.published_at && <span className="s-date">{relativeDate(listing.published_at, t, i18n.language)}</span>}
       </Link>
+          <Sheet open={menu} onClose={() => setMenu(false)} title={listing.title}>
+        <div className="card-menu">
+          <button type="button" className="card-menu-item" onClick={() => { setMenu(false); const url = `${window.location.origin}${listing.path || `/go/${listing.id}`}`; if (navigator.share) navigator.share({ title: listing.title, url }).catch(() => {}); else navigator.clipboard?.writeText(url).then(() => toast(t('cardmenu.copied'))).catch(() => {}) }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M16 6l-4-4-4 4M12 2v14" /></svg>
+            {t('cardmenu.share')}
+          </button>
+          <button type="button" className="card-menu-item" onClick={() => { setMenu(false); toggle(listing.id) }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill={isFavorite(listing.id) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z" /></svg>
+            {isFavorite(listing.id) ? t('cardmenu.unfav') : t('cardmenu.fav')}
+          </button>
+          <button type="button" className="card-menu-item" onClick={() => { setMenu(false); hidden.hideListing(listing.id); toast(t('cardmenu.hidden'), { action: { label: t('cardmenu.undo'), onClick: () => hidden.unhideListing(listing.id) } }) }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.9 17.9A10 10 0 0 1 12 20c-7 0-10-8-10-8a18 18 0 0 1 4.1-5.1M9.9 4.2A9 9 0 0 1 12 4c7 0 10 8 10 8a18 18 0 0 1-2.2 3.2M2 2l20 20" /></svg>
+            {t('cardmenu.not_interested')}
+          </button>
+          {listing.owner_id && (
+            <button type="button" className="card-menu-item" onClick={() => { setMenu(false); hidden.hideSeller(listing.owner_id); toast(t('cardmenu.seller_hidden'), { action: { label: t('cardmenu.undo'), onClick: () => hidden.unhideSeller(listing.owner_id) } }) }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="8" r="4" /><path d="M2 21a7 7 0 0 1 14 0M17 8l5 5M22 8l-5 5" /></svg>
+              {t('cardmenu.hide_seller')}
+            </button>
+          )}
+          <button type="button" className="card-menu-item danger" onClick={() => { setMenu(false); navigate(`${listing.path || `/go/${listing.id}`}?report=1`) }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 22V4a1 1 0 0 1 1-1h12l-2 4 2 4H5" /></svg>
+            {t('cardmenu.report')}
+          </button>
+        </div>
+      </Sheet>
     </div>
   )
 }

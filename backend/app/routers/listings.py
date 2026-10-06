@@ -1116,6 +1116,7 @@ def search_listings(
             "attributes": listing.attributes,
             "category_slug": listing.category.slug if listing.category else None,
             "is_company": bool(listing.owner and listing.owner.role == UserRole.seller_business),
+            "owner_id": str(listing.owner_id) if listing.owner_id else None,  # «Скрыть продавца» долгим нажатием
             # Понятный адрес собираем здесь: он должен быть одинаков
             # везде — в ленте, в боте, в письме и в карте сайта.
             "path": listing_path(

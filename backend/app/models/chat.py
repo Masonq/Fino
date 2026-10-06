@@ -1,9 +1,9 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import String, ForeignKey, DateTime, Text, Boolean, Numeric
+from sqlalchemy import String, ForeignKey, DateTime, Text, Boolean, Numeric, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 
 from app.core.database import Base
 from app.core.clock import utcnow
@@ -85,5 +85,15 @@ class Message(Base):
 
     is_read: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+    # Ответ на сообщение (как в Telegram): ссылка и снимок цитаты — показываем без лишнего запроса
+    reply_to_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
+    reply_text: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    reply_sender_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
+    # Реакции: {"👍": ["<user_id>", …]} — у каждого участника по одной реакции каждого вида
+    reactions: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    # Голосовое сообщение (kind="voice"): файл и длительность
+    audio_url: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    audio_seconds: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     chat = relationship("Chat", back_populates="messages")

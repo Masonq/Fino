@@ -154,7 +154,19 @@
       "yes": "Yes, still available",
       "evening": "You can see it in the evening",
       "final": "The price is final"
-    }
+    },
+    "them": "Them",
+    "translated": "Translation",
+    "reply": "Reply",
+    "translate": "Translate",
+    "untranslate": "Hide translation",
+    "copy": "Copy",
+    "reply_to": "Reply to",
+    "you_lower": "you",
+    "translate_failed": "Could not translate",
+    "hold_to_record": "Hold to record",
+    "release_to_send": "Release to send",
+    "copied": "Copied"
   },
   "promo": {
     "safe_deal": "Safe deal",
@@ -1766,5 +1778,17 @@
     "intro": "Tips on renting, buying and selling in Serbia — short and practical.",
     "missing": "Article not found",
     "more": "More guides"
+  },
+  "cardmenu": {
+    "share": "Share",
+    "fav": "Save",
+    "unfav": "Remove from saved",
+    "not_interested": "Not interested",
+    "hide_seller": "Hide seller",
+    "report": "Report",
+    "hidden": "We won’t show this item again",
+    "seller_hidden": "Seller’s listings hidden",
+    "undo": "Undo",
+    "copied": "Link copied"
   }
 }

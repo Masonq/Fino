@@ -140,6 +140,8 @@ export default function ChatScreen() {
             prev.some((m) => m.id === data.message.id) ? prev : [...prev, data.message]
           ))
           if (data.message.sender_id !== myId) api.markChatRead(id).catch(() => {})
+        } else if (data.type === 'reaction') {
+          setMessages((prev) => prev.map((m) => (m.id === data.message_id ? { ...m, reactions: data.reactions } : m)))
         } else if (data.type === 'typing' && data.user_id !== myId) {
           setTyping(true)
           clearTimeout(typingTimer.current)
@@ -250,13 +252,40 @@ export default function ChatScreen() {
 
   // Готовый текст (быстрый ответ) уходит сразу; иначе берём из поля.
   // Обработчик нажатия передаёт событие — его за текст не считаем.
+  // ответ, реакции, перевод — долгим нажатием на сообщение (как в Telegram)
+  const [replyTo, setReplyTo] = useState(null)
+  const [menuFor, setMenuFor] = useState(null)
+  const [translated, setTranslated] = useState({})
+  const holdTimer = useRef(null)
+  const voiceOk = typeof window !== 'undefined' && !!window.MediaRecorder && !!navigator.mediaDevices?.getUserMedia
+  const holdHandlers = (m) => ({
+    onContextMenu: (e) => { e.preventDefault(); setMenuFor(m) },
+    onTouchStart: () => { clearTimeout(holdTimer.current); holdTimer.current = setTimeout(() => { setMenuFor(m); try { navigator.vibrate?.(12) } catch { /* нет вибрации */ } }, 420) },
+    onTouchMove: () => clearTimeout(holdTimer.current),
+    onTouchEnd: () => clearTimeout(holdTimer.current),
+  })
+  const react = (m, emoji) => {
+    setMenuFor(null)
+    api.reactMessage(id, m.id, emoji).then((r) => setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, reactions: r.reactions } : x)))).catch(() => {})
+  }
+  const doTranslate = (m) => {
+    setMenuFor(null)
+    if (translated[m.id]) { setTranslated((x) => { const n = { ...x }; delete n[m.id]; return n }); return }
+    api.translateMessage(id, m.id, i18n.language).then((r) => setTranslated((x) => ({ ...x, [m.id]: r.text }))).catch(() => setSendError(t('chat.translate_failed')))
+  }
+  const jumpTo = (mid) => {
+    const el = document.querySelector(`[data-mid="${mid}"]`)
+    if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 1200) }
+  }
+
   const send = async (ready) => {
     const body = (typeof ready === 'string' ? ready : text).trim()
     if (!body || !myId) return
     setSending(true)
     setSendError(null)
     try {
-      await api.sendMessage(id, body)
+      await api.sendMessage(id, body, null, replyTo?.id)
+      setReplyTo(null)
       if (typeof ready !== 'string') setText('')
       const res = await api.getChatMessages(id)
       setMessages(res)
@@ -629,9 +658,18 @@ export default function ChatScreen() {
                   )}
                 </div>
               ) : (
-                <div key={m.id} className={m.sender_id === myId ? 'chat-bubble-wrap mine' : 'chat-bubble-wrap'}>
-                <div className={m.sender_id === myId ? 'chat-bubble mine' : 'chat-bubble'}>
-                  {m.kind === 'team' ? teamText(m.text) : m.text}
+                <div key={m.id} data-mid={m.id} className={m.sender_id === myId ? 'chat-bubble-wrap mine' : 'chat-bubble-wrap'}>
+                <div className={`${m.sender_id === myId ? 'chat-bubble mine' : 'chat-bubble'}${menuFor?.id === m.id ? ' is-held' : ''}`}
+                  {...holdHandlers(m)}>
+                  {m.reply_to && (
+                    <button type="button" className="msg-quote" onClick={() => jumpTo(m.reply_to.id)}>
+                      <span className="msg-quote-who">{m.reply_to.sender_id === myId ? t('chat.you') : (otherName() || t('chat.them'))}</span>
+                      <span className="msg-quote-text">{m.reply_to.text || '🎤'}</span>
+                    </button>
+                  )}
+                  {m.kind === 'voice' ? <VoicePlayer src={m.audio_url} seconds={m.audio_seconds} mine={m.sender_id === myId} />
+                    : (m.kind === 'team' ? teamText(m.text) : m.text)}
+                  {translated[m.id] && <div className="msg-translated"><span>{t('chat.translated')}</span>{translated[m.id]}</div>}
                   {/* Галочка у своих сообщений: одна — доставлено,
                       две — собеседник открыл чат и прочитал. Без неё
                       переписка ощущается односторонней: написал и не
@@ -651,6 +689,15 @@ export default function ChatScreen() {
                     но говорим получателю, чего остеречься. Только под
                     чужими: предупреждать человека о его собственных
                     словах глупо. */}
+                {Object.keys(m.reactions || {}).length > 0 && (
+                  <div className={m.sender_id === myId ? 'msg-reacts mine' : 'msg-reacts'}>
+                    {Object.entries(m.reactions).map(([e, who]) => (
+                      <button key={e} type="button" className={who.includes(String(myId)) ? 'msg-react on' : 'msg-react'} onClick={() => react(m, e)}>
+                        {e}{who.length > 1 && <b>{who.length}</b>}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {m.risk && m.sender_id !== myId && (
                   <div className="chat-risk">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"
@@ -664,6 +711,34 @@ export default function ChatScreen() {
               )
             ))}
             {messages.length === 0 && <p className="empty-hint">{t('chat.empty')}</p>}
+            {menuFor && (
+              <div className="msg-menu-backdrop" onClick={() => setMenuFor(null)}>
+                <div className="msg-menu" onClick={(e) => e.stopPropagation()} role="menu">
+                  <div className="msg-menu-reacts">
+                    {['👍', '❤️', '😂', '😮', '🙏', '🔥'].map((e) => (
+                      <button key={e} type="button" className={(menuFor.reactions?.[e] || []).includes(String(myId)) ? 'on' : ''} onClick={() => react(menuFor, e)}>{e}</button>
+                    ))}
+                  </div>
+                  <div className="msg-menu-preview">{menuFor.kind === 'voice' ? '🎤' : menuFor.text}</div>
+                  <button type="button" className="msg-menu-item" onClick={() => { setReplyTo(menuFor); setMenuFor(null); document.querySelector('.chat-input-row textarea, .chat-input-row input')?.focus() }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 14 4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" /></svg>
+                    {t('chat.reply')}
+                  </button>
+                  {menuFor.kind !== 'voice' && (menuFor.text || '').trim() && (
+                    <button type="button" className="msg-menu-item" onClick={() => doTranslate(menuFor)}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m5 8 6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6" /></svg>
+                      {translated[menuFor.id] ? t('chat.untranslate') : t('chat.translate')}
+                    </button>
+                  )}
+                  {menuFor.kind !== 'voice' && (menuFor.text || '').trim() && (
+                    <button type="button" className="msg-menu-item" onClick={() => { navigator.clipboard?.writeText(menuFor.text).catch(() => {}); setMenuFor(null) }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="12" height="12" rx="2" /><path d="M5 15V5a2 2 0 0 1 2-2h10" /></svg>
+                      {t('chat.copy')}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </>
         )}
         {typing && (
@@ -777,6 +852,17 @@ export default function ChatScreen() {
               ))}
             </div>
           )}
+          {replyTo && (
+            <div className="reply-bar">
+              <div className="reply-bar-body">
+                <span className="reply-bar-who">{t('chat.reply_to')} · {replyTo.sender_id === myId ? t('chat.you') : (otherName() || '')}</span>
+                <span className="reply-bar-text">{replyTo.kind === 'voice' ? '🎤' : replyTo.text}</span>
+              </div>
+              <button type="button" className="reply-bar-x" aria-label={t('actions.close')} onClick={() => setReplyTo(null)}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>
+              </button>
+            </div>
+          )}
           <div className="chat-input-row">
             <input
               type="text"
@@ -785,16 +871,78 @@ export default function ChatScreen() {
               onKeyDown={(e) => e.key === 'Enter' && send()}
               placeholder={t('chat.message_ph')}
             />
-            <button className="chat-send-btn" disabled={sending || !text.trim()} onClick={send} aria-label={t('actions.send')}>
+{!text.trim() && voiceOk ? (
+              <VoiceButton onSend={(blob, secs) => api.sendVoice(id, blob, secs, replyTo?.id).then((msg) => { setReplyTo(null); setMessages((prev) => (prev.some((x) => x.id === msg.id) ? prev : [...prev, msg])) }).catch(() => setSendError(t('chat.send_failed')))} />
+            ) : (            <button className="chat-send-btn" disabled={sending || !text.trim()} onClick={send} aria-label={t('actions.send')}>
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
                 <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z" />
               </svg>
-            </button>
+            </button>)}
           </div>
         </>
       )}
       </div>
       </div>
+    </div>
+  )
+}
+
+/** Кнопка голосового: удерживать — запись (до 2 минут), отпустить — отправить, увести палец в сторону — отмена. */
+function VoiceButton({ onSend }) {
+  const { t } = useTranslation()
+  const [rec, setRec] = useState(null) // { mr, start, chunks, stream }
+  const [secs, setSecs] = useState(0)
+  const cancelRef = useRef(false)
+  const timer = useRef(null)
+  const start = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const type = MediaRecorder.isTypeSupported?.('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : (MediaRecorder.isTypeSupported?.('audio/mp4') ? 'audio/mp4' : '')
+      const mr = new MediaRecorder(stream, type ? { mimeType: type } : undefined)
+      const chunks = []
+      mr.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data) }
+      const st = Date.now()
+      mr.onstop = () => {
+        stream.getTracks().forEach((tr) => tr.stop())
+        const dur = (Date.now() - st) / 1000
+        if (!cancelRef.current && dur >= 0.8 && chunks.length) onSend(new Blob(chunks, { type: mr.mimeType || 'audio/webm' }), dur)
+      }
+      cancelRef.current = false
+      mr.start()
+      setRec({ mr, st }); setSecs(0)
+      timer.current = setInterval(() => { const s = Math.round((Date.now() - st) / 1000); setSecs(s); if (s >= 120) stop() }, 250)
+      try { navigator.vibrate?.(10) } catch { /* нет вибрации */ }
+    } catch { /* нет доступа к микрофону */ }
+  }
+  const stop = () => { clearInterval(timer.current); setRec((r) => { if (r && r.mr.state !== 'inactive') r.mr.stop(); return null }) }
+  return (
+    <>
+      {rec && <div className="voice-rec"><span className="voice-dot" />{Math.floor(secs / 60)}:{String(secs % 60).padStart(2, '0')}<span className="voice-hint">{t('chat.release_to_send')}</span></div>}
+      <button type="button" className={rec ? 'chat-voice-btn on' : 'chat-voice-btn'} aria-label={t('chat.hold_to_record')}
+        onTouchStart={(e) => { e.preventDefault(); start() }} onTouchEnd={stop}
+        onTouchMove={(e) => { const tch = e.touches[0]; const r = e.currentTarget.getBoundingClientRect(); if (tch.clientX < r.left - 80) { cancelRef.current = true; stop() } }}
+        onMouseDown={start} onMouseUp={stop} onMouseLeave={() => { if (rec) stop() }}>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></svg>
+      </button>
+    </>
+  )
+}
+
+/** Голосовое сообщение: кнопка «играть», полоска прогресса и длительность. */
+function VoicePlayer({ src, seconds, mine }) {
+  const a = useRef(null)
+  const [playing, setPlaying] = useState(false)
+  const [pos, setPos] = useState(0)
+  const dur = seconds || 1
+  return (
+    <div className={mine ? 'voice mine' : 'voice'}>
+      <button type="button" className="voice-play" onClick={() => { const el = a.current; if (!el) return; if (el.paused) el.play().catch(() => {}); else el.pause() }}>
+        {playing ? <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
+          : <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.9l10-6.5a1 1 0 0 0 0-1.7l-10-6.5A1 1 0 0 0 8 5.5z" /></svg>}
+      </button>
+      <span className="voice-track"><span className="voice-fill" style={{ width: `${Math.min(100, (pos / dur) * 100)}%` }} /></span>
+      <span className="voice-time">{Math.floor(dur / 60)}:{String(Math.round(dur % 60)).padStart(2, '0')}</span>
+      <audio ref={a} src={src} preload="none" onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => { setPlaying(false); setPos(0) }} onTimeUpdate={(e) => setPos(e.currentTarget.currentTime)} />
     </div>
   )
 }

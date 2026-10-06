@@ -565,10 +565,19 @@ export const api = {
   // строку ниже. Из-за этого фронтенд переворачивал уже правильный
   // порядок в неправильный. Без разворота здесь.
   getChatMessages: (chatId, before) => request(`/chats/${chatId}/messages${before ? `?before=${encodeURIComponent(before)}` : ''}`),
-  sendMessage: (chatId, text, offerPrice) => request(`/chats/${chatId}/messages`, {
+  sendMessage: (chatId, text, offerPrice, replyTo) => request(`/chats/${chatId}/messages`, {
     method: 'POST',
-    body: JSON.stringify({ text: text || null, offer_price: offerPrice || null }),
+    body: JSON.stringify({ text: text || null, offer_price: offerPrice || null, reply_to_id: replyTo || null }),
   }),
+  reactMessage: (chatId, messageId, emoji) => request(`/chats/${chatId}/messages/${messageId}/react`, { method: 'POST', body: JSON.stringify({ emoji }) }),
+  translateMessage: (chatId, messageId, lang) => request(`/chats/${chatId}/messages/${messageId}/translate?lang=${lang}`, { method: 'POST' }),
+  sendVoice: (chatId, blob, seconds, replyTo) => {
+    const fd = new FormData()
+    fd.append('file', blob, blob.type.includes('mp4') ? 'voice.m4a' : 'voice.webm')
+    fd.append('seconds', String(Math.round(seconds)))
+    if (replyTo) fd.append('reply_to_id', replyTo)
+    return request(`/chats/${chatId}/voice`, { method: 'POST', body: fd })
+  },
   respondToOffer: (chatId, messageId, status) => request(`/chats/${chatId}/offers/${messageId}/respond`, {
     method: 'POST',
     body: JSON.stringify({ status }),

@@ -47,7 +47,8 @@ export default function ReportButton({
   const navigate = useNavigate()
   const { user } = useAuth()
 
-  const [openState, setOpenState] = useState(false)
+  // «Пожаловаться» из меню карточки в ленте ведёт сюда с ?report=1 — сразу открываем жалобу
+  const [openState, setOpenState] = useState(() => !!user && !!listingId && new URLSearchParams(window.location.search).get('report') === '1')
   const controlled = openProp !== undefined
   const open = controlled ? openProp : openState
   const setOpen = controlled ? onOpenChange : setOpenState

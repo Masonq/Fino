@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import UploadFile, File, Form, APIRouter, Depends, HTTPException, Query
 from sqlalchemy import or_, func
 from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel, field_validator
@@ -36,6 +36,7 @@ class SendMessageIn(BaseModel):
     # комментарий к цене) или само по себе; ниже проверяется, что хоть
     # что-то одно всё же есть — пустое сообщение ни с чем отправить нельзя.
     offer_price: float | None = None
+    reply_to_id: uuid.UUID | None = None  # ответ на сообщение
 
     @field_validator("offer_price")
     @classmethod
@@ -169,6 +170,11 @@ def _serialize_message(m: Message) -> dict:
         # получателю строку под сообщением.
         "risk": _risk_for(m),
         "created_at": m.created_at.isoformat(),
+        "reply_to": ({"id": str(m.reply_to_id), "text": m.reply_text or "", "sender_id": str(m.reply_sender_id) if m.reply_sender_id else None}
+                     if m.reply_to_id else None),
+        "reactions": m.reactions or {},
+        "audio_url": m.audio_url,
+        "audio_seconds": m.audio_seconds,
     }
 
 
@@ -337,6 +343,11 @@ async def send_message(
         offer_price=payload.offer_price,
         kind="price_offer" if payload.offer_price is not None else "user",
     )
+    if payload.reply_to_id:
+        src = db.query(Message).filter(Message.id == payload.reply_to_id, Message.chat_id == chat_id).first()
+        if src:
+            message.reply_to_id, message.reply_sender_id = src.id, src.sender_id
+            message.reply_text = ((src.text or "") if src.kind != "voice" else "🎤")[:200]
     db.add(message)
     chat.last_message_at = utcnow()
 
@@ -864,3 +875,105 @@ def chat_prefs(chat_id: uuid.UUID, body: ChatPrefIn, user: User = Depends(get_cu
     p.updated_at = utcnow()
     db.commit()
     return {"ok": True, "pinned": p.pinned, "muted": p.muted, "hidden": a == "hide"}
+
+
+
+REACTIONS = ("👍", "❤️", "😂", "😮", "🙏", "🔥")
+
+
+class ReactIn(BaseModel):
+    emoji: str
+
+
+@router.post("/{chat_id}/messages/{message_id}/react")
+async def react(chat_id: uuid.UUID, message_id: uuid.UUID, body: ReactIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Реакция на сообщение (повторное нажатие той же — снять). Собеседник видит сразу — через соединение чата."""
+    _require_participant(chat_id, user, db)
+    if body.emoji not in REACTIONS:
+        raise HTTPException(400, "bad_emoji")
+    m = db.query(Message).filter(Message.id == message_id, Message.chat_id == chat_id).first()
+    if not m:
+        raise HTTPException(404, "message_not_found")
+    r = {k: list(v) for k, v in (m.reactions or {}).items()}
+    uid = str(user.id)
+    who = r.get(body.emoji, [])
+    if uid in who:
+        who.remove(uid)
+    else:
+        who.append(uid)
+    if who:
+        r[body.emoji] = who
+    else:
+        r.pop(body.emoji, None)
+    m.reactions = r
+    db.commit()
+    await manager.broadcast(str(chat_id), {"type": "reaction", "message_id": str(m.id), "reactions": r})
+    return {"reactions": r}
+
+
+_TR_CACHE: dict[tuple, str] = {}
+
+
+@router.post("/{chat_id}/messages/{message_id}/translate")
+def translate_message(chat_id: uuid.UUID, message_id: uuid.UUID, lang: str = "sr", user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Перевод сообщения на язык читающего — русскоязычный продавец и сербский покупатель понимают друг друга."""
+    _require_participant(chat_id, user, db)
+    m = db.query(Message).filter(Message.id == message_id, Message.chat_id == chat_id).first()
+    if not m or not (m.text or "").strip():
+        raise HTTPException(404, "message_not_found")
+    lang = lang if lang in ("ru", "sr", "en") else "sr"
+    key = (m.id, lang)
+    if key not in _TR_CACHE:
+        from app.core.translate import translate
+        out = translate(m.text, "auto", lang)
+        if not out:
+            raise HTTPException(503, "translate_unavailable")
+        if len(_TR_CACHE) > 5000:
+            _TR_CACHE.clear()
+        _TR_CACHE[key] = out
+    return {"text": _TR_CACHE[key], "lang": lang}
+
+
+@router.post("/{chat_id}/voice")
+async def send_voice(chat_id: uuid.UUID, file: UploadFile = File(...), seconds: int = Form(0), reply_to_id: str | None = Form(None),
+                     user: User = Depends(require_named_user), db: Session = Depends(get_db)):
+    """Голосовое сообщение: до 2 минут и 3 МБ (запись из браузера — webm/opus или mp4/aac на iPhone)."""
+    import os
+    chat = _require_participant(chat_id, user, db)
+    other_id = _other_id(chat, user.id)
+    if _is_blocked(db, other_id, user.id):
+        raise HTTPException(403, "blocked_by_recipient")
+    from app.core.rate_limit import check_message_limit
+    check_message_limit(db, user.id, chat_id)
+    data = await file.read()
+    if not data or len(data) > 3 * 1024 * 1024:
+        raise HTTPException(400, "voice_too_big")
+    ctype = (file.content_type or "").lower()
+    ext = "m4a" if ("mp4" in ctype or "aac" in ctype or "m4a" in ctype) else ("ogg" if "ogg" in ctype else "webm")
+    from app.core.config import settings
+    folder = os.path.join(settings.media_dir, "voice")
+    os.makedirs(folder, exist_ok=True)
+    name = f"{uuid.uuid4().hex}.{ext}"
+    with open(os.path.join(folder, name), "wb") as f:
+        f.write(data)
+    message = Message(id=uuid.uuid4(), chat_id=chat_id, sender_id=user.id, kind="voice", text="",
+                      audio_url=f"/media/voice/{name}", audio_seconds=max(1, min(int(seconds or 1), 120)))
+    if reply_to_id:
+        try:
+            src = db.query(Message).filter(Message.id == uuid.UUID(reply_to_id), Message.chat_id == chat_id).first()
+        except ValueError:
+            src = None
+        if src:
+            message.reply_to_id, message.reply_sender_id, message.reply_text = src.id, src.sender_id, ((src.text or "🎤")[:200])
+    db.add(message)
+    chat.last_message_at = utcnow()
+    db.commit()
+    await manager.broadcast(str(chat_id), {"type": "message", "message": _serialize_message(message)})
+    try:
+        from app.models.chat_pref import ChatPref
+        if not db.query(ChatPref.id).filter(ChatPref.chat_id == chat_id, ChatPref.user_id == other_id, ChatPref.muted.is_(True)).first():
+            from app.core.notifications import notify_new_message
+            notify_new_message(db, other_id, user.id, user.display_name or "", "🎤", chat_id=chat_id, message_id=message.id)
+    except Exception:  # noqa: BLE001
+        pass
+    return _serialize_message(message)

@@ -154,7 +154,19 @@
       "yes": "Da, dostupno je",
       "evening": "Može da se vidi uveče",
       "final": "Cena je fiksna"
-    }
+    },
+    "them": "Sagovornik",
+    "translated": "Prevod",
+    "reply": "Odgovori",
+    "translate": "Prevedi",
+    "untranslate": "Sakrij prevod",
+    "copy": "Kopiraj",
+    "reply_to": "Odgovor",
+    "you_lower": "vama",
+    "translate_failed": "Prevod nije uspeo",
+    "hold_to_record": "Držite da snimite",
+    "release_to_send": "Pustite — šalje se",
+    "copied": "Kopirano"
   },
   "promo": {
     "safe_deal": "Sigurna kupovina",
@@ -1814,5 +1826,17 @@
     "intro": "Saveti za iznajmljivanje, kupovinu i prodaju u Srbiji — kratko i jasno.",
     "missing": "Članak nije pronađen",
     "more": "Još saveta"
+  },
+  "cardmenu": {
+    "share": "Podeli",
+    "fav": "Sačuvaj",
+    "unfav": "Ukloni iz omiljenih",
+    "not_interested": "Ne zanima me",
+    "hide_seller": "Sakrij prodavca",
+    "report": "Prijavi",
+    "hidden": "Više nećemo prikazivati ovaj oglas",
+    "seller_hidden": "Oglasi prodavca su sakriveni",
+    "undo": "Poništi",
+    "copied": "Link je kopiran"
   }
 }
