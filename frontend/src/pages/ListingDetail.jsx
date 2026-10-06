@@ -1063,6 +1063,27 @@ export default function ListingDetail() {
         )}
 
         {!wide && <div className="detail-title">{translation?.title}</div>}
+        {/* PLONK 2.0: главные факты одной строкой значками — где, когда, сколько смотрели */}
+        <div className="fact-chips">
+          {listing.city && (
+            <span className="fact-chip">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></svg>
+              {displayCity(listing.city, lang)}
+            </span>
+          )}
+          {(listing.published_at || listing.created_at) && (
+            <span className="fact-chip">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+              {relativeDate(listing.published_at || listing.created_at, t, lang)}
+            </span>
+          )}
+          {listing.views_count > 0 && (
+            <span className="fact-chip">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+              {listing.views_count}
+            </span>
+          )}
+        </div>
         {/* Помечаем явно: иначе продавец с нашего сайта конкурирует с
             перепечаткой и не понимает, почему объявление ведёт себя иначе. */}
         {listing.external_source === 'telegram' && (
@@ -1302,7 +1323,7 @@ export default function ListingDetail() {
             только одно из двух: показываем блок, если есть хоть что-то,
             и каждую часть — по своему условию. */}
         {(listing.city || listing.location_lat != null) && (
-          <>
+          <div className="loc-block">
             <div className="desc-title loc-title">{t('detail.map_location_label')}</div>
             <div className="detail-loc-row">
               {listing.city && (
@@ -1353,7 +1374,7 @@ export default function ListingDetail() {
             </div>
           </div>
         )}
-          </>
+          </div>
         )}
 
         {/* Показываем только то, что описано в схеме категории. Иначе на
@@ -1468,13 +1489,13 @@ export default function ListingDetail() {
             этой строки, никак не связан с id объявления в остальном
             коде. */}
         <div className="detail-meta">
-          {listing.views_count > 0 && (
+          {wide && listing.views_count > 0 && (
             <span>{t('detail.views', { count: listing.views_count })}</span>
           )}
           {listing.favorites_count > 0 && (
             <span>{t('detail.favorited_count', { count: listing.favorites_count })}</span>
           )}
-          {listing.published_at && <span>{relativeDate(listing.published_at, t, i18n.language)}</span>}
+          {wide && listing.published_at && <span>{relativeDate(listing.published_at, t, i18n.language)}</span>}
           {listing.number && <span>{t('detail.id', { id: listing.number })}</span>}
         </div>
 

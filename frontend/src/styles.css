@@ -7506,3 +7506,43 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 .detail-meta{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 0; flex-direction:row; }
 .detail-meta > span{ display:inline-flex; align-items:center; }
 .detail-meta > span + span::before{ content:"·"; margin:0 8px; color:var(--border-strong); }
+
+/* =====================================================================
+   PLONK 2.0 — страница объявления: новый вид (телефон)
+   Фон «бумага» с карточками-секциями на нём, крупная цена, факты значками, парящая стеклянная панель действий.
+   ===================================================================== */
+@media (max-width: 899px){
+  .detail-sheet{ background:var(--bg); border-radius:28px 28px 0 0; margin-top:-26px; padding:22px 16px 120px; box-shadow:0 -8px 28px rgba(15,21,18,.08); }
+  .detail-price{ font-size:34px; font-weight:800; letter-spacing:-0.035em; line-height:1.05; }
+  .detail-title{ font-size:19px; font-weight:600; line-height:1.3; letter-spacing:-0.01em; margin-top:6px; color:var(--ink); }
+  /* секции — белые карточки на фоне страницы */
+  .detail-sheet .seller-row,
+  .detail-sheet .desc-block,
+  .detail-sheet .attrs-block,
+  .detail-sheet .detail-loc-row{ background:var(--surface); border-radius:22px; padding:16px; box-shadow:var(--shadow); margin-top:12px; }
+  .detail-sheet .seller-row{ margin-top:16px; padding:14px; }
+  .desc-title{ font-size:17px; font-weight:800; letter-spacing:-0.015em; margin-bottom:10px; }
+  .detail-sheet .attrs-block .attr-row:nth-child(odd){ background:var(--bg); }
+}
+/* факты значками под названием */
+.fact-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+.fact-chip{ display:inline-flex; align-items:center; gap:6px; height:30px; padding:0 11px; border-radius:15px; background:var(--surface); box-shadow:0 1px 2px rgba(15,21,18,.05); font-size:13px; font-weight:600; color:var(--ink-soft); }
+.fact-chip svg{ color:var(--muted); flex:none; }
+/* панель действий — парящая стеклянная плашка, как нижнее меню; «Написать» — единственная зелёная кнопка на странице */
+.sticky-cta{ left:12px; right:12px; bottom:max(8px, calc(var(--sab) - 12px)); border-radius:26px; padding:8px; gap:8px;
+  background:rgba(255,255,255,.84); backdrop-filter:blur(22px) saturate(1.6); -webkit-backdrop-filter:blur(22px) saturate(1.6);
+  border:1px solid rgba(255,255,255,.7); box-shadow:0 10px 30px rgba(15,21,18,.14); }
+.cta-btn{ border-radius:18px; padding:15px; font-size:15px; }
+.cta-btn.icon{ flex:0 0 52px; border-radius:18px; background:var(--surface-sunken); }
+.cta-btn.primary{ box-shadow:0 8px 20px rgba(15,163,106,.32); }
+@media (max-width: 899px){
+  .detail-sheet .detail-loc-row{ background:none; box-shadow:none; padding:0; margin-top:0; border-radius:0; }
+  .detail-sheet .loc-block{ background:var(--surface); border-radius:22px; padding:16px; box-shadow:var(--shadow); margin-top:12px; }
+  .detail-sheet .loc-block .loc-title{ margin-top:0; }
+}
+@media (max-width: 899px){
+  /* «Ещё у этого продавца» и «Похожие» — заголовки как у блоков главной, без линий-разделителей */
+  .detail-sheet .similar-block{ border-top:0; padding-top:0; margin-top:26px; }
+  .detail-sheet .similar-title{ font-size:20px; letter-spacing:-0.025em; margin-bottom:12px; }
+  .detail-sheet .detail-meta{ border-bottom:0; }
+}
