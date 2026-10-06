@@ -7681,3 +7681,33 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 /* фото в форме — три в ряд, крупные квадраты: легче попасть пальцем, видно, что получилось */
 .post-ad-page .photo-grid{ grid-template-columns:repeat(3, 1fr); gap:10px; }
 .post-ad-page .photo-add{ width:auto; height:auto; aspect-ratio:1/1; font-size:14px; font-weight:700; }
+
+/* =====================================================================
+   PLONK 2.0 — внутренние страницы на одном языке с главной (по сравнению скриншотов):
+   1) у главной есть «атмосфера» (сияние бренда) — внутренние были плоскими; 2) на главной кнопки шапки —
+   белые капсулы с тенью, на страницах — голые стрелки; 3) на страницах мятные плашки как украшение
+   (иконки меню, пустые экраны, «Следить») — на главной мятного нет; 4) карточки статистики профиля — с рамкой,
+   на главной — тень без рамки.
+   ===================================================================== */
+/* 1. сияние бренда сверху на каждой странице — то же, что на главной, но тише */
+.app-shell > main{ position:relative; isolation:isolate; }
+.app-shell > main::before{ content:""; position:absolute; z-index:-1; left:-20%; right:-20%; top:-40px; height:340px; pointer-events:none;
+  background:radial-gradient(40% 50% at 20% 30%, rgba(15,163,106,.16), transparent 70%), radial-gradient(35% 45% at 85% 20%, rgba(217,244,92,.28), transparent 70%);
+  filter:blur(10px); }
+.app-shell > main:has(.home)::before, .app-shell > main:has(.sh-feed)::before, .app-shell > main:has(.detail-page)::before{ display:none; }
+.page-header{ background:color-mix(in srgb, var(--bg) 45%, transparent) !important; backdrop-filter:blur(18px) saturate(1.4); -webkit-backdrop-filter:blur(18px) saturate(1.4); }
+/* 2. «назад» и кнопки шапки — белые круглые капсулы с тенью, как сердечко и профиль на главной */
+.page-back, .search-back{ width:40px; height:40px; margin-left:0; border-radius:50%; background:var(--surface); box-shadow:0 1px 2px rgba(15,21,18,.05), 0 6px 18px rgba(15,21,18,.06); }
+.page-title-text{ font-size:28px; letter-spacing:-0.035em; }
+.page-header{ gap:10px; }
+/* 3. мятное как украшение — убрано: значки меню нейтральные, пустые экраны — белый круг с тенью */
+.profile-row-icon{ background:var(--surface-sunken); color:var(--ink); border-radius:12px; width:36px; height:36px; }
+.fav-empty-icon{ width:72px; height:72px; background:var(--surface); color:var(--ink); box-shadow:var(--shadow); }
+.save-search{ background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(15,21,18,.05), 0 6px 18px rgba(15,21,18,.06); border:0; }
+.save-search.done{ background:var(--inverse); color:var(--on-inverse); }
+.fav-count{ background:var(--inverse); color:var(--on-inverse); }
+/* 4. карточки профиля — как карточки главной: белые, без рамки, мягкая тень, крупные цифры */
+.profile-stat{ border:0; box-shadow:var(--shadow); border-radius:20px; }
+.profile-stat b, .profile-stat .profile-stat-num{ font-size:22px; letter-spacing:-0.03em; }
+.profile-card{ border:0; box-shadow:var(--shadow); border-radius:24px; }
+.profile-menu, .profile-rows{ border:0; box-shadow:var(--shadow); border-radius:24px; }
