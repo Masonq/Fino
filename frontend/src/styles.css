@@ -7596,33 +7596,97 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
   .home::before, .home-hello-1, .home-hello-2, .feed-grid .s-card{ animation:none !important; }
 }
 
-/* ---------- «Полезное»: статьи-путеводители ---------- */
-.guides-intro{ margin:0 16px 14px; color:var(--ink-soft); font-size:15px; line-height:1.45; }
-.guides-list{ display:flex; flex-direction:column; gap:12px; padding:0 12px 24px; }
-.guide-card{ display:flex; gap:14px; align-items:center; padding:12px; border-radius:22px; background:var(--surface); box-shadow:var(--shadow); color:var(--ink); }
-.guide-card-art{ flex:none; width:84px; height:84px; border-radius:18px; background:var(--primary-soft); display:flex; align-items:center; justify-content:center; overflow:hidden; }
-/* Обложки статей бывают широкими (телефон с SIM, права с ключами) — даём им почти всю плитку. */
-.guide-card-art img{ width:88%; height:88%; object-fit:contain; }
-.guide-card-text{ display:flex; flex-direction:column; gap:4px; min-width:0; }
-.guide-card-title{ font-size:16px; font-weight:800; letter-spacing:-0.015em; line-height:1.25; }
-.guide-card-lead{ font-size:13.5px; color:var(--muted); line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-.guide{ padding:0 16px 32px; max-width:680px; margin:0 auto; }
-.guide-hero{ height:170px; border-radius:26px; background:linear-gradient(135deg, var(--primary-soft), #F3F8D9); display:flex; align-items:center; justify-content:center; margin-bottom:18px; }
-/* Ограничение и по ширине: широкая обложка раньше выходила за края плашки. */
-.guide-hero img{ max-width:86%; max-height:78%; width:auto; height:auto; object-fit:contain; }
-.guide-title{ font-size:28px; font-weight:800; letter-spacing:-0.03em; line-height:1.15; margin:0 0 10px; }
-.guide-lead{ font-size:17px; line-height:1.5; color:var(--ink-soft); margin:0 0 8px; }
-.guide-h2{ font-size:20px; font-weight:800; letter-spacing:-0.02em; margin:24px 0 8px; }
-.guide-p{ font-size:16px; line-height:1.6; color:var(--ink); margin:0 0 10px; }
-.guide-ul{ margin:0 0 10px; padding-left:20px; display:flex; flex-direction:column; gap:8px; font-size:16px; line-height:1.5; }
-.guide-cta{ display:inline-flex; margin:18px 0 6px; padding:14px 20px; border-radius:16px; background:var(--inverse); color:var(--on-inverse); font-weight:800; font-size:15px; }
-.guide-more{ margin-top:28px; padding:16px; border-radius:22px; background:var(--surface); box-shadow:var(--shadow); display:flex; flex-direction:column; gap:10px; }
-.guide-more-title{ font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
-.guide-more-link{ font-size:15.5px; font-weight:700; color:var(--ink); }
-/* статьи: поля как у остальных страниц — без двойного отступа */
-.guides-intro{ margin:0 4px 14px; }
-.guides-list{ padding:0 0 24px; }
-.guide{ padding:0 4px 32px; }
+/* ---------- «Полезное»: статьи-путеводители (редизайн 7 окт. 2026) ---------- */
+/* Цвет плашки обложки — по теме статьи: список читается блоками, а не лентой одинаковых карточек.
+   Полупрозрачные тона — одинаково мягкие на светлом и тёмном фоне. */
+.topic-home{ --tint:rgba(15,163,106,.13); --tint-ink:#0B7F53; }
+.topic-docs{ --tint:rgba(120,96,220,.13); --tint-ink:#5B45C2; }
+.topic-auto{ --tint:rgba(38,120,220,.13); --tint-ink:#1D63B8; }
+.topic-deals{ --tint:rgba(240,140,50,.15); --tint-ink:#B4610F; }
+.topic-family{ --tint:rgba(225,180,20,.17); --tint-ink:#8E6D00; }
+
+.guides-hero{ padding:0 4px 4px; }
+.guides-intro{ margin:0 0 14px; color:var(--ink-soft); font-size:15.5px; line-height:1.5; max-width:560px; }
+.guides-search{ display:flex; align-items:center; gap:10px; height:48px; padding:0 16px; border-radius:16px; background:var(--surface); box-shadow:var(--shadow); color:var(--muted); }
+.guides-search input{ flex:1; min-width:0; height:100%; border:0; outline:0; background:transparent; font:inherit; font-size:16px; color:var(--ink); }
+.guides-search input::-webkit-search-cancel-button{ cursor:pointer; }
+/* Темы — горизонтальная лента, на телефоне листается пальцем, края без обрезанных кнопок */
+.guides-topics{ display:flex; gap:8px; margin:14px -16px 0; padding:0 16px 2px; overflow-x:auto; scrollbar-width:none; }
+.guides-topics::-webkit-scrollbar{ display:none; }
+.guides-topic{ flex:none; height:38px; padding:0 16px; border:0; border-radius:999px; background:var(--surface); box-shadow:var(--shadow); color:var(--ink); font:inherit; font-size:14.5px; font-weight:700; line-height:38px; cursor:pointer; transition:background .15s, color .15s; }
+.guides-topic.is-on{ background:var(--inverse); color:var(--on-inverse); box-shadow:none; }
+
+.guides-featured{ padding:18px 4px 0; }
+.guides-grid{ display:grid; grid-template-columns:1fr; gap:12px; padding:12px 4px 28px; }
+@media (min-width:720px){ .guides-grid{ grid-template-columns:repeat(2, 1fr); gap:16px; } }
+@media (min-width:1080px){ .guides-grid:not(.guides-grid--related){ grid-template-columns:repeat(3, 1fr); } .guides-grid--related{ grid-template-columns:repeat(3, 1fr); } }
+.guides-empty{ padding:28px 8px; text-align:center; }
+
+/* Карточка статьи: обложка на цветной плашке сверху, ниже тема · время чтения, заголовок, лид */
+.gcard{ display:flex; flex-direction:column; border-radius:24px; background:var(--surface); box-shadow:var(--shadow); color:var(--ink); overflow:hidden; transition:transform .18s ease, box-shadow .18s ease; }
+@media (hover:hover){ .gcard:hover{ transform:translateY(-2px); } }
+.gcard:active{ transform:scale(.99); }
+.gcard-art{ display:flex; align-items:center; justify-content:center; aspect-ratio:16 / 9; background:var(--tint); }
+.gcard-art img{ max-width:74%; max-height:76%; width:auto; height:auto; object-fit:contain; }
+.gcard-body{ display:flex; flex-direction:column; gap:6px; padding:14px 16px 16px; }
+.gcard-meta{ display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; color:var(--muted); }
+.gcard-dot{ opacity:.6; }
+.gcard-title{ font-size:17px; font-weight:800; letter-spacing:-0.015em; line-height:1.28; }
+.gcard-lead{ font-size:14px; color:var(--ink-soft); line-height:1.42; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+/* На телефоне обычные карточки — строкой: обложка слева, текст справа. Так на экран влезает
+   втрое больше статей, а крупной остаётся только главная. */
+@media (max-width:719px){
+  .gcard:not(.gcard--big){ flex-direction:row; align-items:stretch; border-radius:22px; }
+  .gcard:not(.gcard--big) .gcard-art{ flex:0 0 104px; aspect-ratio:auto; min-height:104px; }
+  .gcard:not(.gcard--big) .gcard-art img{ max-width:82%; max-height:78%; }
+  .gcard:not(.gcard--big) .gcard-body{ padding:12px 14px; gap:4px; justify-content:center; }
+  .gcard:not(.gcard--big) .gcard-title{ font-size:15.5px; }
+  .gcard:not(.gcard--big) .gcard-lead{ font-size:13.5px; }
+}
+/* Главная статья — крупнее; на широком экране обложка слева, текст справа */
+.gcard--big .gcard-art{ aspect-ratio:16 / 8; }
+.gcard--big .gcard-title{ font-size:22px; letter-spacing:-0.025em; line-height:1.2; }
+.gcard--big .gcard-lead{ font-size:15px; -webkit-line-clamp:3; }
+@media (min-width:720px){
+  .gcard--big{ flex-direction:row; }
+  .gcard--big .gcard-art{ flex:0 0 52%; aspect-ratio:auto; min-height:260px; }
+  .gcard--big .gcard-body{ justify-content:center; padding:28px; }
+  .gcard--big .gcard-title{ font-size:28px; }
+}
+
+/* ---- Статья ---- */
+.guide{ padding:0 4px 40px; max-width:720px; margin:0 auto; }
+.guide-top{ display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:4px 0 12px; }
+.guide-topic{ display:inline-flex; align-items:center; height:28px; padding:0 12px; border-radius:999px; background:var(--tint); color:var(--tint-ink); font-size:13px; font-weight:800; }
+.guide-meta{ font-size:13.5px; font-weight:600; color:var(--muted); }
+.guide-title{ font-size:30px; font-weight:800; letter-spacing:-0.035em; line-height:1.12; margin:0 0 12px; text-wrap:balance; }
+@media (min-width:720px){ .guide-title{ font-size:40px; } }
+.guide-lead{ font-size:18px; line-height:1.5; color:var(--ink-soft); margin:0 0 20px; text-wrap:pretty; }
+.guide-hero{ display:flex; align-items:center; justify-content:center; height:220px; border-radius:28px; background:var(--tint); margin:0 0 24px; }
+@media (min-width:720px){ .guide-hero{ height:320px; } }
+.guide-hero img{ max-width:80%; max-height:80%; width:auto; height:auto; object-fit:contain; }
+.guide-toc{ margin:0 0 28px; padding:18px 20px; border-radius:22px; background:var(--surface); box-shadow:var(--shadow); }
+.guide-toc-title{ font-size:12.5px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:10px; }
+.guide-toc ol{ margin:0; padding-left:22px; display:flex; flex-direction:column; gap:8px; }
+.guide-toc li::marker{ color:var(--muted); font-weight:700; }
+.guide-toc a{ color:var(--ink); font-size:15.5px; font-weight:700; line-height:1.35; }
+.guide-body{ font-size:17px; }
+.guide-h2{ font-size:22px; font-weight:800; letter-spacing:-0.02em; line-height:1.25; margin:32px 0 10px; scroll-margin-top:calc(env(safe-area-inset-top, 0px) + 80px); }
+.guide-p{ font-size:17px; line-height:1.65; color:var(--ink); margin:0 0 14px; }
+/* Списки — галочками в кружке, текст ровно по левому краю абзацев */
+.guide-ul{ list-style:none; margin:0 0 14px; padding:0; display:flex; flex-direction:column; gap:10px; }
+.guide-ul li{ position:relative; padding-left:30px; font-size:17px; line-height:1.55; }
+.guide-ul li::before{ content:""; position:absolute; left:0; top:4px; width:20px; height:20px; border-radius:50%; background:var(--primary-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='m6 10.5 2.6 2.6L14 7.5' fill='none' stroke='%230FA36A' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 20px no-repeat; }
+.guide-note{ display:flex; gap:12px; align-items:flex-start; margin:24px 0 8px; padding:14px 16px; border-radius:18px; background:var(--primary-soft); color:var(--primary); }
+.guide-note svg{ flex:none; margin-top:1px; }
+.guide-note p{ margin:0; font-size:14.5px; line-height:1.5; color:var(--ink-soft); }
+.guide-cta{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin:24px 0 8px; padding:18px 20px; border-radius:20px; background:var(--inverse); color:var(--on-inverse); font-weight:800; font-size:16.5px; }
+.guide-actions{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin:24px 0 0; padding-top:18px; border-top:1px solid var(--line, rgba(0,0,0,.08)); }
+.guide-share{ display:inline-flex; align-items:center; gap:8px; height:44px; padding:0 18px; border:0; border-radius:14px; background:var(--surface); box-shadow:var(--shadow); color:var(--ink); font:inherit; font-size:15px; font-weight:700; cursor:pointer; }
+.guide-all{ font-size:15px; font-weight:700; color:var(--muted); }
+.guide-more{ margin-top:36px; }
+.guide-more-title{ font-size:22px; font-weight:800; letter-spacing:-0.02em; margin:0 0 2px; padding:0 4px; }
+.guide-more .guides-grid{ padding-left:0; padding-right:0; }
 
 
 /* =====================================================================

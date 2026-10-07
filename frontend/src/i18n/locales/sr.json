@@ -1856,9 +1856,25 @@
   },
   "guides": {
     "title": "Vodič",
-    "intro": "Saveti za iznajmljivanje, kupovinu i prodaju u Srbiji — kratko i jasno.",
+    "intro": "Iznajmljivanje, dokumenta, kupovina i prodaja u Srbiji — kratko, jasno i provereno po zakonu.",
     "missing": "Članak nije pronađen",
-    "more": "Još saveta"
+    "more": "Pročitajte i",
+    "search": "Pretraga članaka",
+    "all": "Sve",
+    "topic_home": "Stanovanje",
+    "topic_auto": "Auto",
+    "topic_docs": "Dokumenta i novac",
+    "topic_deals": "Kupovina i prodaja",
+    "topic_family": "Porodica i ljubimci",
+    "min": "{{n}} min",
+    "updated": "Ažurirano {{date}}",
+    "contents": "Sadržaj",
+    "share": "Podeli",
+    "copied": "Link je kopiran",
+    "empty": "Ništa nije pronađeno — probajte drugu reč",
+    "featured": "Novo",
+    "checked": "Provereno",
+    "back_all": "Svi članci"
   },
   "cardmenu": {
     "share": "Podeli",

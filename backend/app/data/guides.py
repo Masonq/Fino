@@ -286,9 +286,10 @@ from app.data.guides_extra import CAR, JOBS, PARCELS, SAFE_EXTRA, STAN  # noqa: 
 from app.data.guides_extra2 import BANK, DISTRICTS, PETS, PROPERTY  # noqa: E402
 from app.data.guides_extra3 import CARSEAT, LICENSE, PHONE, SCOOTER  # noqa: E402
 from app.data.guides_extra4 import CAR_SELL, SIM, UTILITIES  # noqa: E402
+from app.data.guides_extra5 import BULKY, RENT_OUT, RESIDENCE, SELL_FAST  # noqa: E402
 
-GUIDES = ([STAN, UTILITIES, DISTRICTS, PROPERTY, CAR, CAR_SELL, LICENSE, SIM, PARCELS, BANK, JOBS, PETS,
-           PHONE, SCOOTER, CARSEAT]
+GUIDES = ([STAN, RESIDENCE, UTILITIES, DISTRICTS, PROPERTY, RENT_OUT, CAR, CAR_SELL, LICENSE, SIM, PARCELS, BANK,
+           JOBS, PETS, PHONE, SELL_FAST, BULKY, SCOOTER, CARSEAT]
           + [g for g in GUIDES if g["slug"] != STAN["slug"]])
 for _g in GUIDES:
     if _g["slug"] == "bezbedna-kupovina":
@@ -307,6 +308,32 @@ for _g in GUIDES:
         # Метка содержимого в адресе: заменили картинку — у неё новый адрес, и телефон не покажет старую из кэша.
         _ver = __import__("hashlib").sha1(_file.read_bytes()).hexdigest()[:8]
         _g["cover"] = f"/guides/{_g['slug']}.png?v={_ver}"
+
+# Тема статьи — для фильтра «Жильё / Авто / Документы…» и для подбора похожих статей внизу.
+TOPICS = {
+    "home": ["stan-bez-agencije", "racuni-infostan-struja", "opstine-beograda-gde-ziveti", "kupovina-stana-stranac",
+             "izdavanje-stana", "polovni-namestaj-beograd", "odvoz-kabastog-otpada"],
+    "auto": ["kupovina-polovnog-automobila", "prodaja-automobila", "vozacka-dozvola-za-strance", "elektricni-trotinet-pravila"],
+    "docs": ["privremeni-boravak-osnovi", "sim-kartica-registracija", "racun-u-banci-i-menjacnice", "posao-za-strance-u-srbiji",
+             "paketi-iz-inostranstva-carina"],
+    "deals": ["bezbedna-kupovina", "kako-brzo-prodati", "provera-polovnog-telefona", "prodaja-stvari-pre-selidbe"],
+    "family": ["selidba-sa-ljubimcem", "auto-sediste-za-decu"],
+}
+_TOPIC_OF = {slug: topic for topic, slugs in TOPICS.items() for slug in slugs}
+for _g in GUIDES:
+    _g["topic"] = _TOPIC_OF.get(_g["slug"], "deals")
+
+
+def read_minutes(loc: dict) -> int:
+    """Минуты чтения: ~200 слов в минуту, не меньше одной."""
+    words = len((loc.get("lead") or "").split())
+    for kind, value in loc.get("blocks", []):
+        if kind in ("p", "h2"):
+            words += len(str(value).split())
+        elif kind == "ul":
+            words += sum(len(x.split()) for x in value)
+    return max(1, round(words / 200))
+
 
 BY_SLUG = {g["slug"]: g for g in GUIDES}
 TITLES = {"sr": "Vodič — saveti za kupovinu i prodaju | PLONK", "ru": "Полезное — советы по покупке и продаже | PLONK",

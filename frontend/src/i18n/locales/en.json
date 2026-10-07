@@ -1804,9 +1804,25 @@
   },
   "guides": {
     "title": "Guides",
-    "intro": "Tips on renting, buying and selling in Serbia — short and practical.",
-    "missing": "Article not found",
-    "more": "More guides"
+    "intro": "Renting, paperwork, buying and selling in Serbia — short, practical and checked against the law.",
+    "missing": "Guide not found",
+    "more": "Read next",
+    "search": "Search guides",
+    "all": "All",
+    "topic_home": "Home",
+    "topic_auto": "Cars",
+    "topic_docs": "Papers & money",
+    "topic_deals": "Buying & selling",
+    "topic_family": "Family & pets",
+    "min": "{{n}} min",
+    "updated": "Updated {{date}}",
+    "contents": "Contents",
+    "share": "Share",
+    "copied": "Link copied",
+    "empty": "Nothing found — try another word",
+    "featured": "New",
+    "checked": "Checked",
+    "back_all": "All guides"
   },
   "cardmenu": {
     "share": "Share",
