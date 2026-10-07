@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { allowCall, blockChat, cancelReservation, type Chat, chatInfo, chatMessages, chatWsUrl, declineCall, markChatRead, type Message, requestCall, reserveListing, respondOffer, revokeCall, sendMessage, sendOffer, isOffer, reactMessage, translateMessage } from '../../src/api'
 import Icon from '../../src/components/Icon'
+import { VoiceButton, VoicePlayer } from '../../src/components/Voice'
 import TeamLetter from '../../src/components/TeamLetter'
 import Sheet, { SheetAction } from '../../src/components/Sheet'
 import { useAuth } from '../../src/auth'
@@ -41,6 +42,8 @@ export default function ChatScreen() {
   const [replyTo, setReplyTo] = useState<Message | null>(null)
   const [menuFor, setMenuFor] = useState<Message | null>(null)
   const [translated, setTranslated] = useState<Record<string, string>>({})
+  const [voiceNote, setVoiceNote] = useState('')
+  useEffect(() => { if (!voiceNote) return; const t = setTimeout(() => setVoiceNote(''), 2600); return () => clearTimeout(t) }, [voiceNote])
   const [text, setText] = useState('')
   const lastCount = useRef(0)
   const [menu, setMenu] = useState(false)
@@ -191,7 +194,7 @@ export default function ChatScreen() {
               <Text style={[styles.quoteText, me && styles.bubbleTextMe]} numberOfLines={1}>{item.reply_text}</Text>
             </View>
           )}
-          <Text style={[styles.bubbleText, me && styles.bubbleTextMe]}>{item.audio_url ? `🎤 ${tr('Голосовое сообщение')}` : body}</Text>
+          {item.audio_url ? <VoicePlayer url={item.audio_url} seconds={item.audio_seconds} mine={me} /> : <Text style={[styles.bubbleText, me && styles.bubbleTextMe]}>{body}</Text>}
           {!!translated[item.id] && <Text style={[styles.translated, me && styles.bubbleTextMe]}>{translated[item.id]}</Text>}
           {isOffer(item.kind) && !me && (!item.offer_status || item.offer_status === 'pending') && (
             <View style={styles.offerBtns}>
@@ -351,6 +354,7 @@ export default function ChatScreen() {
         </Pressable>
       </Modal>
 
+      {!!voiceNote && <Text style={styles.voiceNote}>{voiceNote}</Text>}
       {/* ответ на сообщение — полоска над полем ввода */}
       {!!replyTo && (
         <View style={styles.replyBar}>
@@ -373,9 +377,16 @@ export default function ChatScreen() {
           maxLength={2000}
         />
         {/* Как .chat-send-btn сайта: самолётик; пусто — серая кнопка с серым значком */}
-        <Pressable style={[styles.sendBtn, !text.trim() && styles.sendOff]} disabled={!text.trim()} onPress={() => send(text)} accessibilityLabel={tr('Отправить')}>
+{/* пустое поле — микрофон (удерживать — голосовое), есть текст — «отправить» */}
+        {!text.trim() && !!token ? (
+          <VoiceButton token={token} chatId={chatId} replyTo={replyTo?.id}
+            onSent={(m) => { setReplyTo(null); const msg = m as Message; setMsgs((prev) => (prev?.some((x) => x.id === msg.id) ? prev : [...(prev ?? []), msg])) }}
+            onError={(e) => setVoiceNote(e)} />
+        ) : (
+                <Pressable style={[styles.sendBtn, !text.trim() && styles.sendOff]} disabled={!text.trim()} onPress={() => send(text)} accessibilityLabel={tr('Отправить')}>
           <Icon name="send" size={19} color={text.trim() ? '#fff' : colors.muted} />
         </Pressable>
+        )}
       </View>
       </>
       )}
@@ -384,6 +395,7 @@ export default function ChatScreen() {
 }
 
 const styles = StyleSheet.create({
+  voiceNote: { alignSelf: 'center', marginBottom: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16, backgroundColor: colors.surface, overflow: 'hidden', fontFamily: font[600], fontSize: 13, color: colors.ink },
   quote: { borderLeftWidth: 3, borderLeftColor: colors.primary, paddingLeft: 8, marginBottom: 6, borderRadius: 3 },
   quoteMe: { borderLeftColor: 'rgba(255,255,255,0.7)' },
   quoteWho: { fontFamily: font[800], fontSize: 12.5, color: colors.primaryDeep },

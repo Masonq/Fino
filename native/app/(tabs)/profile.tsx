@@ -258,6 +258,7 @@ export default function Profile() {
           {waiting > 0 && row('star', 'Ждут отзыва', () => router.push('/reviews'), waiting)}
           {row('searchrow', 'Сохранённые поиски', () => router.push('/saved'))}
           {row('history', 'Вы смотрели', () => router.push('/history'))}
+          {row('doc', 'Полезное', () => router.push('/vodic' as never))}
           {row('help', 'Написать в поддержку', () => router.push('/support'))}
           {row('volunteer', 'Волонтёрство', () => router.push('/volunteer'), undefined, true)}
         </View>

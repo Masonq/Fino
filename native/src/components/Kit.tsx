@@ -8,14 +8,18 @@ import { colors, font } from '../theme'
 import Icon from './Icon'
 
 /** Шапка экрана — как у «Вы смотрели»: назад, заголовок, справа — своё. */
-export function Header({ title, right, fallback = '/profile' }: { title: string; right?: ReactNode; fallback?: string }) {
+/** Шапка экрана как на сайте: «назад» белой капсулой, подводка мелко и крупный заголовок, справа — действия. */
+export function Header({ title, right, fallback = '/profile', kicker }: { title: string; right?: ReactNode; fallback?: string; kicker?: string }) {
   const insets = useSafeAreaInsets()
   return (
-    <View style={[k.top, { paddingTop: insets.top + 6 }]}>
+    <View style={[k.top, { paddingTop: insets.top + 8 }]}>
       <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace(fallback as never))} hitSlop={10} style={k.back} accessibilityLabel={tr('Назад')}>
-        <Icon name="back" size={22} color={colors.ink} />
+        <Icon name="back" size={21} color={colors.ink} />
       </Pressable>
-      <Text style={k.title} numberOfLines={1}>{title}</Text>
+      <View style={{ flex: 1, minWidth: 0 }}>
+        {!!kicker && <Text style={k.kicker} numberOfLines={1}>{kicker}</Text>}
+        <Text style={[k.title, title.length > 19 && { fontSize: 22 }]} numberOfLines={1} adjustsFontSizeToFit>{title}</Text>
+      </View>
       {right}
     </View>
   )
@@ -63,9 +67,11 @@ export const Empty = ({ text, children }: { text: string; children?: ReactNode }
 )
 
 export const k = StyleSheet.create({
-  top: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingBottom: 8, backgroundColor: colors.bg },
-  back: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  title: { flex: 1, fontFamily: font[800], fontSize: 22, color: colors.ink },
+  top: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingBottom: 12, backgroundColor: colors.bg },
+  back: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface,
+    shadowColor: '#0F1512', shadowOpacity: 0.07, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
+  kicker: { fontFamily: font[600], fontSize: 13.5, color: colors.inkSoft },
+  title: { fontFamily: font[800], fontSize: 27, letterSpacing: -0.8, color: colors.ink },
   btn: { height: 44, paddingHorizontal: 16, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'transparent' },
   btnSm: { height: 36, paddingHorizontal: 12 },
   btnWide: { alignSelf: 'stretch', height: 50 },
