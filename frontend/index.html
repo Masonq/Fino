@@ -123,7 +123,30 @@
        делает и весит полтора килобайта. -->
   <!-- Скрипт Telegram нужен только внутри Telegram (мини-приложение): обычным посетителям сайт не тянет чужой
        скрипт — меньше внешнего кода на странице, меньше поводов у проверок Safe Browsing. -->
-  <script>if(/tgWebApp/.test(location.hash+location.search)||window.TelegramWebviewProxy||window.TelegramWebview){document.write('<script src="https://telegram.org/js/telegram-web-app.js"><\/script>')}</script>
+  <!-- Только для настоящего мини-приложения (в адресе есть tgWebAppData). Раньше скрипт грузился в любом окне
+       Telegram, в том числе при открытии обычной ссылки на объявление, — и встроенный браузер Telegram на iPhone мог
+       остаться на белом экране. -->
+  <script>if(/tgWebAppData|tgWebAppPlatform/.test(location.hash+location.search)){document.write('<script src="https://telegram.org/js/telegram-web-app.js"><\/script>')}</script>
+  <!-- Страховка от белого экрана: ошибки до запуска сайта запоминаем и отправляем на сервер (журнал plonk), а если
+       через 8 секунд страница всё ещё пустая — показываем, что делать, вместо белого листа. -->
+  <script>
+    (function () {
+      var errs = [];
+      function rec(m) { try { errs.push(String(m).slice(0, 300)) } catch (e) {} }
+      window.addEventListener('error', function (e) { rec((e.message || 'error') + ' @ ' + (e.filename || (e.target && (e.target.src || e.target.href)) || '') + ':' + (e.lineno || '')) }, true);
+      window.addEventListener('unhandledrejection', function (e) { rec('promise: ' + (e.reason && (e.reason.stack || e.reason.message) || e.reason)) });
+      setTimeout(function () {
+        var root = document.getElementById('root');
+        if (root && root.children.length) return;
+        try { navigator.sendBeacon('/api/client-log', JSON.stringify({ kind: 'blank', url: location.href, ua: navigator.userAgent, errors: errs })) } catch (e) {}
+        var ru = /\/ru(\/|$)/.test(location.pathname) || /^ru/.test(navigator.language || '');
+        root.innerHTML = '<div style="max-width:420px;margin:90px auto;padding:0 24px;font:16px/1.5 -apple-system,system-ui,sans-serif;text-align:center;color:#141E19">'
+          + '<div style="font-size:20px;font-weight:800;margin-bottom:10px">' + (ru ? 'Страница не загрузилась' : 'Stranica se nije učitala') + '</div>'
+          + '<div style="color:#5B6B63;margin-bottom:20px">' + (ru ? 'Попробуйте обновить или открыть в браузере.' : 'Pokušajte ponovo ili otvorite u pregledaču.') + '</div>'
+          + '<a href="' + location.href + '" style="display:inline-block;padding:12px 22px;border-radius:14px;background:#CDEFE0;color:#085041;font-weight:800;text-decoration:none">' + (ru ? 'Обновить' : 'Osveži') + '</a></div>';
+      }, 8000);
+    })();
+  </script>
 </head>
 <body>
   <div id="root"></div>

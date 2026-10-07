@@ -37,6 +37,8 @@ app.add_middleware(
 os.makedirs(settings.media_dir, exist_ok=True)
 app.mount("/media", StaticFiles(directory=settings.media_dir), name="media")
 
+from app.routers import client_log as _client_log
+app.include_router(_client_log.router)
 app.include_router(categories.router)
 app.include_router(listings.router)
 app.include_router(users.router)
