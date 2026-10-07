@@ -5,11 +5,9 @@ import { languageReady } from './i18n'
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 // Onest — свой шрифт с сайта (кириллица + латиница), без запроса к Google: быстрее и не зависит от их доступности
-import '@fontsource/onest/400.css'
-import '@fontsource/onest/500.css'
-import '@fontsource/onest/600.css'
-import '@fontsource/onest/700.css'
-import '@fontsource/onest/800.css'
+// Onest переменной толщины: один файл на алфавит вместо пяти (400–800) — кириллица и латиница весят 49 КБ
+// вместо 107 КБ в десяти файлах, и текст раньше встаёт своим шрифтом
+import '@fontsource-variable/onest'
 import './styles.css'
 // тёмной темы нет — сбрасываем выбор, сохранённый раньше
 // тема: «светлая» / «тёмная» / «как в системе» — до первой отрисовки, чтобы не мигало светлым
