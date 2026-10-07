@@ -819,7 +819,9 @@
       "ticket": "Request",
       "user": "User",
       "settings_card_payments_on": "Card payments turned on",
-      "settings_card_payments_off": "Card payments turned off"
+      "settings_card_payments_off": "Card payments turned off",
+      "user.verify": "Marked as verified",
+      "user.unverify": "Changed verification mark"
     },
     "kind_staff": "Staff",
     "kind_system": "System",

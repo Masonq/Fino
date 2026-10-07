@@ -840,7 +840,9 @@
       "ticket": "Zahtev",
       "user": "Korisnik",
       "settings_card_payments_on": "Plaćanje karticom uključeno",
-      "settings_card_payments_off": "Plaćanje karticom isključeno"
+      "settings_card_payments_off": "Plaćanje karticom isključeno",
+      "user.verify": "Označio kao proverenog",
+      "user.unverify": "Promenio oznaku provere"
     },
     "kind_staff": "Osoblje",
     "kind_system": "Sistemske",

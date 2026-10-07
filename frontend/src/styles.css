@@ -8138,3 +8138,58 @@ body, .app-shell{ background:transparent !important; }
   .cat-tile-2row-label{ max-width:none !important; width:auto !important; display:block !important; -webkit-line-clamp:unset !important; overflow:visible !important; text-overflow:clip !important; white-space:normal !important; }
   .cat-tile-2row-glyph{ width:66px !important; height:66px !important; }
 }
+
+/* =====================================================================
+   PLONK 2.0 — админка, полный проход: обращения, ответы команде, ночные работы, журнал действий
+   Те же решения, что на главной и в переписке: выбор — тёмные капсулы (не зелёные), имена — тёмным жирным
+   (не синими ссылками), сообщения — пузыри как в чате (чужие белые с тенью, свои зелёные), поле ответа —
+   белое скруглённое, главная кнопка — тёмная, вторая — белая капсула; списки — карточками, у каждой работы —
+   цветная точка состояния.
+   ===================================================================== */
+/* фильтры-капсулы во всей админке */
+.admin-chips .chip{ min-height:40px; padding:0 16px; border-radius:20px; border:0; background:var(--surface); box-shadow:0 1px 2px rgba(15,21,18,.05), 0 6px 18px rgba(15,21,18,.05); font-size:14px; font-weight:800; }
+.admin-chips .chip-active{ background:var(--inverse) !important; color:var(--on-inverse) !important; box-shadow:none; }
+.admin-chips .chip b{ margin-left:6px; }
+.admin-chips .chip:not(.chip-active) b{ color:var(--ink-soft); }
+.admin-chips-sep{ background:var(--line); }
+/* строки и карточки */
+.admin-list{ display:flex; flex-direction:column; gap:10px; background:transparent !important; box-shadow:none !important; border-radius:0 !important; overflow:visible !important; }
+.admin-row{ background:var(--surface); border:0 !important; border-radius:22px; box-shadow:var(--shadow); padding:14px 16px; }
+.admin-row-name, .admin-row-name a{ color:var(--ink) !important; font-weight:800; font-size:16px; text-decoration:none; }
+.admin-row-meta{ color:var(--muted); font-weight:600; }
+.admin-row .tag{ background:var(--surface-sunken); color:var(--ink-soft); border-radius:10px; font-weight:700; }
+.admin-card{ background:transparent !important; border:0 !important; box-shadow:none !important; padding:6px 0 0 !important; }
+/* переписка обращения — как в чате */
+.support-thread{ gap:10px; margin:12px 0; }
+.support-msg{ background:var(--surface-sunken); border-radius:20px 20px 20px 6px; padding:11px 14px; font-size:15px; line-height:1.45; box-shadow:none; }
+.support-msg.from-staff{ background:var(--primary); color:#fff; border-radius:20px 20px 6px 20px; box-shadow:0 6px 16px rgba(15,163,106,.2); }
+.support-msg.from-staff .support-author{ color:rgba(255,255,255,.75); }
+.support-msg .team-letter, .support-msg.from-staff .team-letter{ color:inherit; }
+.support-author{ font-size:12px; font-weight:600; margin-top:6px; }
+/* поле ответа и кнопки */
+.admin-card textarea, .admin-card .field-input{ border:0 !important; background:var(--surface-sunken) !important; border-radius:18px !important; min-height:96px; padding:14px !important; font-size:16px; }
+.admin-card textarea:focus, .admin-card .field-input:focus{ outline:none; box-shadow:0 0 0 3px rgba(15,163,106,.18); }
+.admin-actions button, .admin-actions select{ min-height:48px; border-radius:16px; border:0 !important; background:var(--surface-sunken); color:var(--ink) !important; font-size:15px; font-weight:800; }
+.admin-actions button:first-child{ background:var(--inverse); color:var(--on-inverse) !important; }
+.admin-actions .danger{ background:#FDE4E2; color:#C4302B !important; }
+/* ночные работы — отдельными карточками, состояние — цветной точкой и капсулой */
+.jobs-list{ display:flex; flex-direction:column; gap:10px; background:transparent !important; box-shadow:none !important; border:0 !important; }
+.job-card{ background:var(--surface); border-radius:22px; box-shadow:var(--shadow); padding:16px !important; border:0 !important; }
+.job-card + .job-card{ border-top:0 !important; }
+.job-name{ font-size:16.5px; font-weight:800; letter-spacing:-0.01em; }
+.job-name::first-letter{ text-transform:uppercase; }
+.job-done{ display:inline-flex; align-items:center; gap:6px; margin-top:8px; padding:4px 10px; border-radius:10px; font-size:13px; font-weight:800; background:var(--surface-sunken); color:var(--ink-soft); }
+.job-done::before{ content:""; width:7px; height:7px; border-radius:50%; background:var(--muted); }
+.job-done.some{ background:#DFF4E8; color:#0B7A4E; }
+.job-done.some::before{ background:#0FA36A; }
+.job-numbers{ margin-top:8px; display:flex; flex-wrap:wrap; gap:6px; }
+.job-numbers > *{ padding:3px 9px; border-radius:9px; background:var(--bg); font-size:12.5px; font-weight:700; }
+.job-runs{ margin-top:8px; font-size:12.5px; color:var(--muted); font-weight:600; }
+/* журнал действий: сотрудники — белые капсулы, дни — карточками */
+.audit-actors > *{ border:0 !important; border-radius:18px !important; box-shadow:var(--shadow) !important; }
+.audit-day{ background:var(--surface); border-radius:22px; box-shadow:var(--shadow); overflow:hidden; margin-bottom:12px; }
+.audit-day-title{ background:var(--surface) !important; padding:14px 16px 6px !important; border-radius:22px 22px 0 0; font-size:12.5px; font-weight:800; letter-spacing:.06em; color:var(--muted); }
+.audit-line{ border-color:var(--line) !important; padding:12px 16px !important; }
+.audit-at{ font-variant-numeric:tabular-nums; color:var(--muted); font-weight:700; }
+.audit-what{ font-weight:700; }
+.audit-day .audit-day-title{ position:static !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important; } /* в карточке дня заголовок обычный: липкий наезжал на первую строку */

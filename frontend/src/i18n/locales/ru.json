@@ -855,7 +855,9 @@
       "ticket": "Обращение",
       "user": "Пользователь",
       "settings_card_payments_on": "Оплата картой включена",
-      "settings_card_payments_off": "Оплата картой выключена"
+      "settings_card_payments_off": "Оплата картой выключена",
+      "user.verify": "Поставил галочку «Проверен»",
+      "user.unverify": "Изменил отметку проверки"
     },
     "kind_staff": "Сотрудники",
     "kind_system": "Служебные",
