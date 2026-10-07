@@ -72,7 +72,8 @@ export default function Favorites() {
     <div className="fav-page">
       <PageHeader title={t('favorites.title')}
         kicker={!loaded ? '\u00a0' : visible.length ? `${t('favorites.kicker_n', { count: visible.length })}${nDropped ? ` · ${t('favorites.kicker_drop', { count: nDropped })}` : ''}` : t('favorites.kicker_empty')} />
-      {loaded && visible.length > 1 && (
+      {/* сортировка видна и пока грузится — иначе она появлялась позже и сдвигала сетку вниз на 50 px */}
+      {(!loaded || visible.length > 1) && (
         <div className="fav-sort">
           {[['added', t('favorites.sort_added')], ['drop', nDropped ? `${t('favorites.sort_drop')} · ${nDropped}` : t('favorites.sort_drop')], ['cheap', t('favorites.sort_cheap')], ['exp', t('favorites.sort_exp')]].map(([k, label]) => (
             <button key={k} type="button" className={`jr-tab${sort === k ? ' on' : ''}`} onClick={() => setSort(k)}>{label}</button>

@@ -559,10 +559,11 @@ export default function Search() {
           />
 
           {/* итог поиска крупно, как приветствие на главной: что искали и сколько нашлось */}
-          {loaded && text.trim() && items.length > 0 && (
+          {/* итог видно и пока ищем (число — заготовкой): иначе он появлялся после загрузки и сдвигал всё вниз */}
+          {text.trim() && (!loaded || items.length > 0) && (
             <div className="ph-text search-hero">
               <span className="ph-kicker">{t('search.hero_for', { q: text.trim() })}</span>
-              <h1 className="ph-title">{t('search.hero_n', { count: total })}</h1>
+              <h1 className="ph-title">{loaded ? t('search.hero_n', { count: total }) : <span className="sk-block" style={{ display: 'inline-block', width: 170, height: 28, borderRadius: 8 }} />}</h1>
             </div>
           )}
 

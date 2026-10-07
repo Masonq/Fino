@@ -28,14 +28,14 @@ export default function History() {
   return (
     <div className="fav-page">
       <PageHeader title={t('history.title')} count={items.length} kicker={t('history.kicker')}>
-        {items.length > 0 && (
-          <button
-            className="history-clear"
-            onClick={() => { clearHistory(); setItems([]) }}
-          >
-            {t('history.clear')}
-          </button>
-        )}
+        {/* кнопка есть всегда (пока пусто — невидима): иначе шапка меняла высоту, когда история загружалась */}
+        <button
+          className="history-clear"
+          style={items.length ? undefined : { visibility: 'hidden' }}
+          onClick={() => { clearHistory(); setItems([]) }}
+        >
+          {t('history.clear')}
+        </button>
       </PageHeader>
 
       {!loaded ? (
