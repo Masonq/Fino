@@ -133,7 +133,8 @@ export function artBoxFromLines(tileW, aspect, fill, lines, noTarget = false, ti
       for (let c = 0; c < n; c += 1) {
         if (prof[c] >= 1) continue
         const cx0 = x0 + (c * FW) / n, cy = y0 + prof[c] * FH
-        for (const l of lines) if (cx0 < l.right + GAP && cy < l.bottom + 2) return false
+        // запас вокруг букв при подъёме под надпись — 10 px (с 4 px ручка ракетки касалась слова «отдых»)
+        for (const l of lines) if (cx0 < l.right + 10 && cy < l.bottom + 4) return false
       }
       return true
     }
