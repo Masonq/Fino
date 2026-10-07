@@ -512,7 +512,7 @@ const styles = StyleSheet.create({
   subName: { maxWidth: '60%', fontSize: 12.5, lineHeight: 15.5, fontFamily: font[700], color: colors.ink, zIndex: 2 },
   // фильтры — серой карточкой, как карточки «Работы»
   // цветная карточка поиска — как «Найти автомобиль» у Авито (у них голубая, у нас — в фирменном зелёном)
-  form: { marginHorizontal: space.page, marginTop: 8, padding: 16, borderRadius: 22, backgroundColor: '#E3F2EA', gap: 10 },
+  form: { marginHorizontal: space.page, marginTop: 8, padding: 16, borderRadius: 22, backgroundColor: colors.primarySoft, gap: 10 },
   formTitle: { fontSize: 19, fontFamily: font[800], color: colors.ink, letterSpacing: -0.3, marginBottom: 2 },
   lHead: { paddingHorizontal: space.page, paddingTop: 14 },
   lTitle: { fontSize: 26, lineHeight: 31, fontFamily: font[800], color: colors.ink, letterSpacing: -0.5 },
@@ -542,7 +542,7 @@ const styles = StyleSheet.create({
   reFieldPh: { color: colors.muted },
   reRow: { flexDirection: 'row', gap: 8 },
   reFilter: { width: 50, height: 50, borderRadius: 14, backgroundColor: colors.sunken, alignItems: 'center', justifyContent: 'center' },
-  reFilterOn: { backgroundColor: '#E3F2EA' },
+  reFilterOn: { backgroundColor: colors.primarySoft },
   sheetPad: { paddingHorizontal: space.page + 4, paddingBottom: 24 },
   sheetHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
   sheetTitle: { fontSize: 18, fontFamily: font[800], color: colors.ink },

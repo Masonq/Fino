@@ -262,22 +262,9 @@ export default function Feed() {
 
   return (
     <SafeAreaView style={styles.page} edges={['top']}>
-      {/* приветствие крупным шрифтом, как на сайте: по времени суток и по имени; во время поиска прячется */}
-      {!focused && !query && (
-        <View style={styles.hello}>
-          <Text style={styles.hello1}>{greeting()}{user?.display_name ? `, ${user.display_name.split(' ')[0]}` : ''}</Text>
-          <Text style={styles.hello2}>{tr('Что ищем сегодня?')}</Text>
-        </View>
-      )}
       <View style={[styles.head, styles.headRow]} onLayout={(e) => setHeadBottom(e.nativeEvent.layout.y + e.nativeEvent.layout.height)}>
         <View style={[styles.search, { flex: 1 }]}>
-          {/* пока ищут — плашка города сжимается до значка, место отдаётся полю поиска; поиск закрыли — разворачивается */}
-          <Pressable style={[styles.city, focused && styles.cityCompact]} onPress={() => setCityOpen(true)} accessibilityRole="button"
-            accessibilityLabel={`${tr('Выбрать город')}: ${city ? cityName(city) : tr('Все города')}`}>
-            <Icon name="pin" size={15} color={colors.ink} />
-            {!focused && <Text style={styles.cityText} numberOfLines={1}>{city ? cityName(city) : tr('Все города')}</Text>}
-            {!focused && <Icon name="down" size={13} color={colors.inkSoft} />}
-          </Pressable>
+          <Icon name="search" size={18} color={colors.muted} />
           <TextInput
             value={query}
             onChangeText={setQuery}
@@ -296,27 +283,34 @@ export default function Feed() {
               <Icon name="close" size={16} color={colors.muted} />
             </Pressable>
           )}
-          <Pressable onPress={() => setFiltersOpen(true)} hitSlop={8} style={styles.filterBtn} accessibilityRole="button" accessibilityLabel={tr('Фильтры')}>
+          {(focused || activeCount(filters) > 0) && <Pressable onPress={() => setFiltersOpen(true)} hitSlop={8} style={styles.filterBtn} accessibilityRole="button" accessibilityLabel={tr('Фильтры')}>
             <Icon name="filter" size={21} color={colors.ink} />
             {activeCount(filters) > 0 && <View style={styles.filterDot}><Text style={styles.filterDotText}>{activeCount(filters)}</Text></View>}
-          </Pressable>
+          </Pressable>}
         </View>
         {/* «Избранное» ушло из меню (там теперь «Шопсы») — сердечко рядом с профилем, как на сайте */}
         <Pressable style={styles.avatarPill} onPress={() => router.push('/favorites' as never)} accessibilityRole="button" accessibilityLabel={tr('Избранное')}>
           <Icon name="heart" size={22} color={colors.ink} />
         </Pressable>
-        {/* Как на сайте: вошёл — аватар (в профиль), гость — «Войти»; непрочитанное — точкой на аватаре */}
-        {user ? (
-          <Pressable style={styles.avatarPill} onPress={() => router.navigate('/profile')} accessibilityRole="button" accessibilityLabel={tr('Профиль')}>
-            <LinearGradient colors={['#7C6CF0', '#9B8FFF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.avatarMini}>
-              <Text style={styles.avatarMiniText}>{(user.display_name || user.email || '?').slice(0, 1).toUpperCase()}</Text>
-            </LinearGradient>
-            {notices > 0 && <View style={styles.avatarDot} />}
-          </Pressable>
-        ) : (
+        {/* профиль сверху убран — он в нижнем меню; гостю — «Войти» */}
+        {!user && (
           <Pressable style={styles.loginPill} onPress={() => router.push('/login')} accessibilityRole="button"><Text style={styles.loginPillText}>{tr('Войти')}</Text></Pressable>
         )}
       </View>
+      {!focused && !query && (
+        <View style={styles.helloRow}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={styles.hello1} numberOfLines={1}>{greeting()}{user?.display_name ? `, ${user.display_name.split(' ')[0]}` : ''}</Text>
+            <Text style={styles.hello2} numberOfLines={1} adjustsFontSizeToFit>{tr('Что ищем сегодня?')}</Text>
+          </View>
+          <Pressable style={styles.cityPill} onPress={() => setCityOpen(true)} accessibilityRole="button"
+            accessibilityLabel={`${tr('Выбрать город')}: ${city ? cityName(city) : tr('Все города')}`}>
+            <Icon name="pin" size={14} color={colors.ink} />
+            <Text style={styles.cityText} numberOfLines={1}>{city ? cityName(city) : tr('Все города')}</Text>
+            <Icon name="down" size={12} color={colors.inkSoft} />
+          </Pressable>
+        </View>
+      )}
       {showSug && (
         <View style={[styles.sugBox, { top: headBottom }]}>
           <ScrollView keyboardShouldPersistTaps="handled">
@@ -455,6 +449,9 @@ export default function Feed() {
 }
 
 const styles = StyleSheet.create({
+  helloRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingHorizontal: 16, paddingTop: 4, paddingBottom: 8 },
+  cityPill: { width: 140, height: 34, borderRadius: 17, backgroundColor: colors.surface, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, marginTop: 0,
+    shadowColor: '#0F1512', shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
   // подсказки — поверх ленты, сразу под шапкой
   sugBox: { position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 20, backgroundColor: colors.bg },
   sugRow: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 54, paddingHorizontal: 18, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
@@ -515,7 +512,7 @@ const styles = StyleSheet.create({
   filterDotText: { color: '#fff', fontSize: 10, fontFamily: font[800] },
   city: { flexDirection: 'row', alignItems: 'center', gap: 4, height: 36, paddingHorizontal: 10, borderRadius: 11, backgroundColor: colors.surface, maxWidth: 150, flexShrink: 0 },
   cityCompact: { width: 36, paddingHorizontal: 0, justifyContent: 'center' },
-  cityText: { fontSize: 13.5, fontFamily: font[800], color: colors.ink, flexShrink: 1 },
+  cityText: { flex: 1, fontSize: 13.5, fontFamily: font[800], color: colors.ink },
   search: {
     flexDirection: 'row', alignItems: 'center', gap: 8, height: 46, paddingHorizontal: 14,
     borderRadius: radius.field, backgroundColor: colors.sunken, paddingLeft: 5,
@@ -526,7 +523,7 @@ const styles = StyleSheet.create({
   row: { gap: space.gap, paddingHorizontal: space.page },
   skelGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.gap, paddingHorizontal: space.page },
   hello: { paddingHorizontal: 18, paddingTop: 6, paddingBottom: 2 },
-  hello1: { fontFamily: font[600], fontSize: 15, color: colors.inkSoft },
+  hello1: { fontFamily: font[600], fontSize: 15, lineHeight: 34, color: colors.inkSoft },
   hello2: { fontFamily: font[800], fontSize: 28, letterSpacing: -0.8, color: colors.ink, marginTop: 1 },
   secHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', paddingHorizontal: 12, marginBottom: 10 },
   secTitle: { fontFamily: font[800], fontSize: 21, letterSpacing: -0.5, color: colors.ink },

@@ -1,7 +1,7 @@
 import { Image } from 'expo-image'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useState } from 'react'
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { type MyListing, myListings } from '../../src/api'
@@ -9,7 +9,7 @@ import { useAuth } from '../../src/auth'
 import { mediaUrl } from '../../src/config'
 import { tr } from '../../src/i18n'
 import { Btn, Empty, Field, Header, k, Tabs } from '../../src/components/Kit'
-import { creatorApply, money, type Order, type Shop, shopOrderCancel, shopOrderCreate, shopOrders, shopOrderTake, shopRemove, shopsMine } from '../../src/social'
+import { shopStats, type ShopStatsDay, creatorApply, money, type Order, type Shop, shopOrderCancel, shopOrderCreate, shopOrders, shopOrderTake, shopRemove, shopsMine } from '../../src/social'
 import { colors, font } from '../../src/theme'
 import { RowSkeletons } from '../../src/components/Skeleton'
 
@@ -44,9 +44,12 @@ export default function ShopsCabinet() {
 
 function MyShops({ data, reload }: { data: { items: Shop[] } | null; reload: () => void }) {
   const { token } = useAuth()
+  const [statsFor, setStatsFor] = useState<Shop | null>(null)
   if (!data) return <RowSkeletons thumb="tall" />
   if (!data.items.length) return <Empty text={tr('У вас пока нет шопсов')}><Btn label={tr('Снимите первый шопс')} onPress={() => router.push('/shops/new' as never)} /></Empty>
-  return data.items.map((sh) => {
+  return (<>
+    {statsFor && !!token && <ShopStatsModal shop={statsFor} token={token} onClose={() => setStatsFor(null)} />}
+    {data.items.map((sh) => {
     const [label, bg, fg] = ST[sh.status] ?? ST.draft
     return (
       <View key={sh.id} style={[k.card, { flexDirection: 'row', gap: 12, padding: 10 }]}>
@@ -55,7 +58,14 @@ function MyShops({ data, reload }: { data: { items: Shop[] } | null; reload: () 
           <View style={[k.status, { backgroundColor: bg }]}><Text style={[k.statusText, { color: fg }]}>{tr(label)}</Text></View>
           <Text style={[k.name, { marginTop: 6 }]} numberOfLines={2}>{sh.caption || tr('Без подписи')}</Text>
           {sh.status === 'rejected' && !!sh.reject_reason && <Text style={k.err}>{sh.reject_reason}</Text>}
-          {!!sh.stats && <Text style={[k.muted, { marginTop: 6 }]}>👁 {sh.stats.views}   ✓ {sh.stats.completes}   👆 {sh.stats.taps}   💬 {sh.stats.chats}</Text>}
+          {/* цифры с подписями (были значки-эмодзи), нажатие — подробная статистика, как на сайте */}
+          {!!sh.stats && (
+            <Pressable style={st.stats} onPress={() => setStatsFor(sh)} accessibilityRole="button">
+              {([[sh.stats.views, tr('просмотры')], [pct(sh.stats.completes, sh.stats.views), tr('досмотрели')], [sh.stats.taps, tr('нажали')], [sh.stats.chats, tr('написали')]] as [number | string, string][]).map(([n, l]) => (
+                <View key={l} style={st.stat}><Text style={st.statN}>{n}</Text><Text style={st.statL} numberOfLines={1}>{l}</Text></View>
+              ))}
+            </Pressable>
+          )}
           <View style={k.actions}>
             {sh.status === 'active' && <Btn small kind="ghost" label={tr('Смотреть')} onPress={() => router.push(`/shops?start=${sh.id}` as never)} />}
             {sh.status !== 'processing' && <Btn small kind="ghost" label={tr('Изменить')} onPress={() => router.push(`/shops/new?id=${sh.id}` as never)} />}
@@ -64,7 +74,8 @@ function MyShops({ data, reload }: { data: { items: Shop[] } | null; reload: () 
         </View>
       </View>
     )
-  })
+  })}
+  </>)
 }
 
 function Orders({ creator }: { creator: boolean }) {
@@ -173,4 +184,67 @@ const s = StyleSheet.create({
   lst: { width: 110, padding: 6, borderRadius: 12, borderWidth: 2, borderColor: 'transparent', backgroundColor: colors.surface },
   lstImg: { width: '100%', height: 80, borderRadius: 8, backgroundColor: colors.photo },
   lstText: { marginTop: 4, fontFamily: font[600], fontSize: 12, color: colors.ink },
+})
+
+const pct = (a: number, b: number) => (b ? `${Math.round((a / b) * 100)}%` : '—')
+
+/** Статистика шопса: воронка «показали → досмотрели → нажали → написали», просмотры по дням и подсказка. */
+export function ShopStatsModal({ shop, token, onClose }: { shop: Shop; token: string; onClose: () => void }) {
+  const [days, setDays] = useState<ShopStatsDay[]>([])
+  const [tot, setTot] = useState(shop.stats!)
+  useEffect(() => { shopStats(token, shop.id).then((r) => { setTot(r.total); setDays(r.days.slice(-14)) }).catch(() => {}) }, [token, shop.id])
+  const steps: [string, number][] = [[tr('Показали'), tot.views], [tr('Досмотрели до конца'), tot.completes], [tr('Нажали на вещь'), tot.taps], [tr('Написали продавцу'), tot.chats]]
+  const max = Math.max(1, ...days.map((d) => d.views))
+  const w = tot.views ? tot.completes / tot.views : 0
+  const tap = tot.completes ? tot.taps / tot.completes : 0
+  const tip = !tot.views ? tr('Шопс только вышел — первые показы появятся в течение дня.') : w < 0.3 ? tr('Досматривают мало: покажите вещь в первые 2 секунды и сократите ролик до 15–20 секунд.') : tap < 0.1 ? tr('Смотрят, но не нажимают: прикрепите вещь, когда её лучше видно, и укажите цену в подписи.') : tr('Шопс работает хорошо — можно снять похожий для других вещей.')
+  return (
+    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
+      <Pressable style={st.backdrop} onPress={onClose} />
+      <View style={st.sheet}>
+        <View style={st.handle} />
+        <Text style={st.title}>{tr('Статистика шопса')}</Text>
+        <Text style={st.sub} numberOfLines={1}>{shop.caption || tr('Без подписи')}</Text>
+        {steps.map(([label, n], i) => (
+          <View key={label} style={{ marginTop: 12 }}>
+            <View style={st.stepTop}><Text style={st.stepL}>{label}</Text><Text style={st.stepN}>{n}</Text></View>
+            <View style={st.bar}><View style={[st.barIn, { width: `${tot.views ? Math.max(3, (n / tot.views) * 100) : 0}%` }]} /></View>
+            {i > 0 && <Text style={st.rate}>{pct(n, steps[i - 1][1])} {tr('от предыдущего шага')}</Text>}
+          </View>
+        ))}
+        {days.length > 1 && (
+          <>
+            <Text style={st.sec}>{tr('Просмотры по дням')}</Text>
+            <View style={st.chart}>{days.map((d) => <View key={d.day} style={[st.col, { height: `${Math.max(4, (d.views / max) * 100)}%` }]} />)}</View>
+          </>
+        )}
+        <Text style={st.tip}>{tip}</Text>
+        <Pressable style={st.close} onPress={onClose}><Text style={st.closeText}>{tr('Готово')}</Text></Pressable>
+      </View>
+    </Modal>
+  )
+}
+
+const st = StyleSheet.create({
+  stats: { flexDirection: 'row', marginTop: 8, padding: 10, borderRadius: 14, backgroundColor: colors.sunken, gap: 4 },
+  stat: { flex: 1 },
+  statN: { fontFamily: font[800], fontSize: 16, color: colors.ink },
+  statL: { fontFamily: font[600], fontSize: 11, color: colors.muted },
+  backdrop: { flex: 1, backgroundColor: 'rgba(15,21,18,0.32)' },
+  sheet: { backgroundColor: colors.surface, borderTopLeftRadius: 26, borderTopRightRadius: 26, padding: 16, paddingBottom: 34 },
+  handle: { width: 40, height: 5, borderRadius: 3, backgroundColor: colors.sunken, alignSelf: 'center', marginBottom: 12 },
+  title: { fontFamily: font[800], fontSize: 20, color: colors.ink },
+  sub: { fontFamily: font[400], fontSize: 13.5, color: colors.muted, marginTop: 2 },
+  stepTop: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  stepL: { fontFamily: font[700], fontSize: 14, color: colors.ink },
+  stepN: { fontFamily: font[800], fontSize: 16, color: colors.ink },
+  bar: { height: 10, borderRadius: 5, backgroundColor: colors.sunken, overflow: 'hidden' },
+  barIn: { height: 10, borderRadius: 5, backgroundColor: colors.primary },
+  rate: { fontFamily: font[600], fontSize: 12, color: colors.muted, marginTop: 4 },
+  sec: { fontFamily: font[800], fontSize: 12.5, color: colors.muted, marginTop: 18, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.6 },
+  chart: { flexDirection: 'row', alignItems: 'flex-end', gap: 4, height: 90, padding: 6, borderRadius: 14, backgroundColor: colors.sunken },
+  col: { flex: 1, borderRadius: 3, backgroundColor: colors.primary, minHeight: 3 },
+  tip: { marginTop: 16, padding: 12, borderRadius: 16, backgroundColor: colors.primarySoft, fontFamily: font[400], fontSize: 14, lineHeight: 20, color: colors.ink },
+  close: { marginTop: 14, height: 50, borderRadius: 16, backgroundColor: colors.inverse, alignItems: 'center', justifyContent: 'center' },
+  closeText: { fontFamily: font[800], fontSize: 16, color: colors.onInverse },
 })

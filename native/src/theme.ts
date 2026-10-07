@@ -1,6 +1,20 @@
 /** Цвета и размеры — те же, что у сайта plonk.rs (styles.css), чтобы приложение выглядело как одна семья. */
-/** Тёмной темы нет: плитки разделов с картинками светлые, тёмный фон вокруг них не смотрится. */
-export const isDark = false
+import { Appearance, Platform } from 'react-native'
+import * as SecureStore from 'expo-secure-store'
+
+/**
+ * Тема: «светлая» / «тёмная» / «как в системе» — как на сайте. Выбор читается синхронно при запуске (стили
+ * собираются один раз), смена в профиле перезапускает приложение, чтобы всё перекрасилось сразу.
+ * Тёмная — мягкая, графитово-зелёная, не чёрная.
+ */
+export function themePref(): 'light' | 'dark' | 'system' {
+  try {
+    const v = Platform.OS === 'web' ? globalThis.localStorage?.getItem('plonk_theme') : SecureStore.getItem('plonk_theme')
+    return v === 'dark' || v === 'system' ? v : 'light'
+  } catch { return 'light' }
+}
+const pref = themePref()
+export const isDark = pref === 'dark' || (pref === 'system' && Appearance.getColorScheme() === 'dark')
 
 const light = {
   // PLONK 2.0 — «тёплая бумага», почти чёрные чернила, зелёный бренда ярче; лайм — метка «новое»
@@ -30,29 +44,29 @@ const light = {
 }
 type Palette = { [K in keyof typeof light]: string }
 const dark: Palette = {
-  bg: '#0D100F',
-  surface: '#161A18',
-  sunken: '#1F2421',
+  bg: '#1E2421',
+  surface: '#272E2A',
+  sunken: '#323A35',
   ink: '#EEF2EF',
-  inkSoft: '#BFC7C1',
-  muted: '#87908A',
+  inkSoft: '#C4CCC6',
+  muted: '#939D96',
   border: 'rgba(255,255,255,0.08)',
   primary: '#1FBF7C',
-  primaryDeep: '#7BE3B5',
-  primarySoft: '#123326',
+  primaryDeep: '#9FE1CB',
+  primarySoft: '#24453A',
   accent: '#FF6A3D',
-  accentSoft: '#3A1F16',
+  accentSoft: '#4A3127',
   gold: '#D9A857',
   goldDark: '#E9C46A',
-  warmBg: '#2C2414',
-  photo: '#1F2421',
+  warmBg: '#3A3222',
+  photo: '#323A35',
   lime: '#D9F45C',
-  inverse: '#EEF2EF',
-  onInverse: '#0D100F',
-  tile: '#E9E8E3', // картинки разделов нарисованы на светлом — плитки светлые и в тёмной теме
-  onTile: '#0F1512',
+  inverse: '#2E5A4B',
+  onInverse: '#DFF5EA',
+  tile: '#2D3530',
+  onTile: '#EEF2EF',
   danger: '#FF8A80',
-  dangerBg: '#3A1A18',
+  dangerBg: '#4A2A2A',
 }
 export const colors: Palette = isDark ? dark : light
 

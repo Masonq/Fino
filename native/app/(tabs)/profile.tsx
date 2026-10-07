@@ -1,3 +1,5 @@
+import * as SecureStore from 'expo-secure-store'
+import * as Updates from 'expo-updates'
 import { Image } from 'expo-image'
 import * as Linking from 'expo-linking'
 import { router, useFocusEffect } from 'expo-router'
@@ -17,7 +19,7 @@ import { formatPrice } from '../../src/format'
 import { prefs } from '../../src/prefs'
 import { readCache, writeCache } from '../../src/cache'
 import { onRetry } from '../../src/net'
-import { colors, font } from '../../src/theme'
+import { themePref, colors, font } from '../../src/theme'
 import { useTabInset } from '../../src/tabInset'
 
 const rsd = (n: number) => `${String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00A0')}\u00A0RSD`
@@ -60,8 +62,23 @@ export default function Profile() {
   useFocusEffect(useCallback(() => { load() }, [load]))
   useEffect(() => onRetry(() => { load() }), [load])
 
-  const langRow = (
+  const themeRow = (
     <View style={[styles.row, styles.rowLast]}>
+      <View style={styles.rowIcon}><Icon name="moon" size={17} color={colors.primary} /></View>
+      <Text style={styles.rowText}>{tr('Тема')}</Text>
+      <View style={{ alignSelf: 'center' }}>
+        <Segmented options={[{ key: 'light', label: tr('Светлая') }, { key: 'dark', label: tr('Тёмная') }, { key: 'system', label: tr('Авто') }]}
+          value={themePref()} onChange={(v) => {
+            // стили приложения собираются при запуске — новую тему применяем перезапуском (одна секунда)
+            try { SecureStore.setItem('plonk_theme', v) } catch { /* не беда */ }
+            Updates.reloadAsync().catch(() => { /* в разработке — перезапуск вручную */ })
+          }} />
+      </View>
+    </View>
+  )
+
+  const langRow = (
+    <View style={styles.row}>
       <View style={styles.rowIcon}><Icon name="globe" size={17} color={colors.primary} /></View>
       <Text style={styles.rowText}>{tr('Язык')}</Text>
       {/* обёртка: у переключателя alignSelf flex-start (для колонок) — в строке он прижимался к верху */}
@@ -268,6 +285,7 @@ export default function Profile() {
         <Text style={styles.sectionTitle}>{tr('Настройки')}</Text>
         <View style={styles.menu}>
           {langRow}
+          {themeRow}
           {row('lock', 'Заблокированные', () => router.push('/blocked'), undefined, true)}
         </View>
 

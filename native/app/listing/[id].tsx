@@ -480,7 +480,7 @@ function factChips(root: string, attrs: Record<string, unknown> | undefined, sch
 /** Оценка цены — та же, что на сайте («Дешевле похожих на PLONK»). */
 const VERDICTS: Record<string, { title: string; icon: IconName; color: string; bg: string }> = {
   cheap: { title: 'Дешевле похожих на PLONK', icon: 'trending-down', color: '#0B5C42', bg: '#DDF3E8' },
-  fair: { title: 'Цена как у похожих', icon: 'remove', color: '#4B554E', bg: colors.sunken },
+  fair: { title: 'Цена как у похожих', icon: 'remove', color: colors.inkSoft, bg: colors.sunken },
   expensive: { title: 'Дороже похожих на PLONK', icon: 'trending-up', color: '#B4501E', bg: '#FCE6DA' },
 }
 

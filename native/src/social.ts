@@ -60,6 +60,8 @@ export const shopGet = (t: string | null, id: string) => call<Shop>(`/shops/${id
 export const shopUpdate = (t: string, id: string, body: { caption: string; items: { listing_id: string; appear_at: number }[]; order_id?: string | null }) =>
   call<Shop>(`/shops/${id}?${L()}`, t, 'PUT', body)
 export const shopSubmit = (t: string, id: string) => call<Shop>(`/shops/${id}/submit?${L()}`, t, 'POST')
+export type ShopStatsDay = { day: string; views: number; completes: number; taps: number; chats: number }
+export const shopStats = (t: string, id: string) => call<{ total: { views: number; completes: number; taps: number; chats: number }; days: ShopStatsDay[] }>(`/shops/${id}/stats`, t)
 export const shopRemove = (t: string, id: string) => call<{ ok: boolean }>(`/shops/${id}`, t, 'DELETE')
 export const shopEvent = (t: string | null, id: string, type: string, listingId?: string) =>
   call(`/shops/${id}/event`, t, 'POST', { type, listing_id: listingId ?? null }).catch(() => null)
