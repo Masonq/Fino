@@ -12,6 +12,7 @@ const fetch = async (input: string, init?: RequestInit): Promise<Response> => {
 
 export type FeedItem = {
   id: string
+  owner_id?: string | null
   title: string
   price: number | null
   previous_price?: number | null
@@ -186,11 +187,14 @@ export type Chat = {
   id: string; listing_id?: string | null; listing_title?: string | null; listing_photo?: string | null; listing_price?: number | null
   currency?: string | null; other_name?: string | null; last_text?: string | null; last_kind?: string | null; last_from_me?: boolean
   last_at?: string | null; unread?: number; is_seller?: boolean; is_team?: boolean
+  pinned?: boolean; muted?: boolean; marked_unread?: boolean
 }
 
 export type Message = {
   id: string; sender_id?: string | null; text?: string | null; kind: string; is_read?: boolean
   offer_price?: number | null; offer_status?: string | null; created_at: string
+  reply_to_id?: string | null; reply_text?: string | null; reply_sender_id?: string | null
+  reactions?: Record<string, string[]> | null; audio_url?: string | null; audio_seconds?: number | null
 }
 
 /** Предложение цены: сервер помечает его как price_offer (раньше — offer) */
@@ -199,8 +203,14 @@ export const isOffer = (kind?: string | null) => kind === 'price_offer' || kind 
 export const chatList = (token: string) => authed<{ total: number; items: Chat[] }>(`/chats?lang=${getLang()}`, token)
 export const chatInfo = (token: string, id: string) => authed<Chat>(`/chats/${encodeURIComponent(id)}?lang=${getLang()}`, token)
 export const chatMessages = (token: string, id: string) => authed<Message[]>(`/chats/${encodeURIComponent(id)}/messages`, token)
-export const sendMessage = (token: string, id: string, text: string) =>
-  authed<Message>(`/chats/${encodeURIComponent(id)}/messages`, token, 'POST', { text, offer_price: null })
+export const sendMessage = (token: string, id: string, text: string, replyTo?: string | null) =>
+  authed<Message>(`/chats/${encodeURIComponent(id)}/messages`, token, 'POST', { text, offer_price: null, reply_to_id: replyTo || null })
+export const reactMessage = (token: string, id: string, mid: string, emoji: string) =>
+  authed<{ reactions: Record<string, string[]> }>(`/chats/${encodeURIComponent(id)}/messages/${mid}/react`, token, 'POST', { emoji })
+export const translateMessage = (token: string, id: string, mid: string) =>
+  authed<{ text: string }>(`/chats/${encodeURIComponent(id)}/messages/${mid}/translate?lang=${getLang()}`, token, 'POST')
+/** Свайп/меню переписки: hide | unhide | pin | unpin | mute | unmute | unread | read */
+export const chatPref = (token: string, id: string, action: string) => authed<unknown>(`/chats/${encodeURIComponent(id)}/prefs`, token, 'POST', { action })
 export const markChatRead = (token: string, id: string) => authed<unknown>(`/chats/${encodeURIComponent(id)}/read`, token, 'POST')
 export const startChat = (token: string, listingId: string) => authed<Chat>(`/chats/start?lang=${getLang()}`, token, 'POST', { listing_id: listingId })
 

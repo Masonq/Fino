@@ -35,7 +35,7 @@ import VerifiedMark from '../../src/components/VerifiedMark'
  * продавец с рейтингом и проверкой. Внизу всегда видна «Написать продавцу» — пока ведёт в переписку на сайте.
  */
 export default function ListingScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>()
+  const { id, report } = useLocalSearchParams<{ id: string; report?: string }>()
   const { width } = useWindowDimensions()
   const insets = useSafeAreaInsets()
   const [data, setData] = useState<Listing | null>(null)
@@ -48,6 +48,8 @@ export default function ListingScreen() {
   const [similar, setSimilar] = useState<FeedItem[] | null>(null)
   const [more, setMore] = useState<FeedItem[] | null>(null)
   const [reportOpen, setReportOpen] = useState(false)
+  // «Пожаловаться» из меню карточки в ленте открывает форму жалобы сразу
+  useEffect(() => { if (report === '1' && token) setReportOpen(true) }, [report, token])
   const [gaugeOpen, setGaugeOpen] = useState(false)
   // Фото на весь экран: увеличение щипком и двойным касанием, листание, закрытие смахиванием
   const [viewer, setViewer] = useState<number | null>(null)

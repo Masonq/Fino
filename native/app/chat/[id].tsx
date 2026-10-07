@@ -1,13 +1,15 @@
+import * as Haptics from 'expo-haptics'
+import * as Clipboard from 'expo-clipboard'
 import { success, tap } from '../../src/haptics'
 import { tr } from '../../src/i18n'
 import { Image } from 'expo-image'
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  ActivityIndicator, AppState, FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View, Linking, ScrollView } from 'react-native'
+  ActivityIndicator, AppState, FlatList, Modal, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View, Linking, ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { allowCall, blockChat, cancelReservation, type Chat, chatInfo, chatMessages, chatWsUrl, declineCall, markChatRead, type Message, requestCall, reserveListing, respondOffer, revokeCall, sendMessage, sendOffer, isOffer } from '../../src/api'
+import { allowCall, blockChat, cancelReservation, type Chat, chatInfo, chatMessages, chatWsUrl, declineCall, markChatRead, type Message, requestCall, reserveListing, respondOffer, revokeCall, sendMessage, sendOffer, isOffer, reactMessage, translateMessage } from '../../src/api'
 import Icon from '../../src/components/Icon'
 import TeamLetter from '../../src/components/TeamLetter'
 import Sheet, { SheetAction } from '../../src/components/Sheet'
@@ -35,6 +37,10 @@ export default function ChatScreen() {
   const { refresh: refreshList, chats } = useChats()
   const [chat, setChat] = useState<Chat | null>(null)
   const [msgs, setMsgs] = useState<(Message & { pending?: boolean; failed?: boolean })[] | null>(null)
+  // как на сайте: долгое нажатие на сообщение — реакции, «Ответить», «Перевести», «Копировать»
+  const [replyTo, setReplyTo] = useState<Message | null>(null)
+  const [menuFor, setMenuFor] = useState<Message | null>(null)
+  const [translated, setTranslated] = useState<Record<string, string>>({})
   const [text, setText] = useState('')
   const lastCount = useRef(0)
   const [menu, setMenu] = useState(false)
@@ -85,6 +91,9 @@ export default function ChatScreen() {
           setMsgs((prev) => (prev?.some((x) => x.id === m.id) ? prev : [...(prev ?? []).filter((x) => !(x.pending && x.text === m.text && m.sender_id === user?.id)), m]))
           if (m.sender_id !== user?.id) { setTyping(false); markChatRead(token, chatId).then(() => refreshList()).catch(() => {}) }
           refreshInfo()
+        } else if (d.type === 'reaction' && (d as { message_id?: string }).message_id) {
+          const rd = d as unknown as { message_id: string; reactions: Record<string, string[]> }
+          setMsgs((prev) => (prev ?? []).map((x) => (x.id === rd.message_id ? { ...x, reactions: rd.reactions } : x)))
         } else if (d.type === 'typing' && d.user_id !== user?.id) {
           setTyping(true)
           clearTimeout(typingTimer.current)
@@ -118,8 +127,10 @@ export default function ChatScreen() {
     const optimistic = { id: localId, kind: 'text', text: value, sender_id: user?.id, created_at: new Date().toISOString(), pending: true }
     setMsgs((prev) => [...(prev ?? []).filter((m) => m.id !== localId), optimistic])
     if (!retryId) setText('')
+    const replyId = retryId ? null : replyTo?.id ?? null
+    if (!retryId) setReplyTo(null)
     try {
-      await sendMessage(token, chatId, value)
+      await sendMessage(token, chatId, value, replyId)
       setMsgs((prev) => (prev ?? []).filter((m) => m.id !== localId))
       await load()
       refreshList()
@@ -170,9 +181,18 @@ export default function ChatScreen() {
       ? tr('Предлагаю {price}', { price: formatPrice(item.offer_price ?? null, info?.currency) }) + (item.offer_status === 'accepted' ? tr(' — принято') : item.offer_status === 'declined' ? tr(' — отклонено') : '')
       : plainText(item.text)
     return (
-      <Pressable disabled={!item.failed} onPress={() => send(item.text || '', item.id)} style={[styles.bubbleRow, me && styles.bubbleRowMe]}>
+      <Pressable onPress={item.failed ? () => send(item.text || '', item.id) : undefined}
+        onLongPress={item.pending || item.failed ? undefined : () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); setMenuFor(item) }}
+        delayLongPress={420} style={[styles.bubbleRow, me && styles.bubbleRowMe]}>
         <View style={[styles.bubble, me ? styles.bubbleMe : styles.bubbleThem, item.failed && styles.bubbleFailed]}>
-          <Text style={[styles.bubbleText, me && styles.bubbleTextMe]}>{body}</Text>
+          {!!item.reply_text && (
+            <View style={[styles.quote, me && styles.quoteMe]}>
+              <Text style={[styles.quoteWho, me && styles.bubbleTextMe]} numberOfLines={1}>{item.reply_sender_id === user?.id ? tr('Вы') : (info?.other_name || tr('Собеседник'))}</Text>
+              <Text style={[styles.quoteText, me && styles.bubbleTextMe]} numberOfLines={1}>{item.reply_text}</Text>
+            </View>
+          )}
+          <Text style={[styles.bubbleText, me && styles.bubbleTextMe]}>{item.audio_url ? `🎤 ${tr('Голосовое сообщение')}` : body}</Text>
+          {!!translated[item.id] && <Text style={[styles.translated, me && styles.bubbleTextMe]}>{translated[item.id]}</Text>}
           {isOffer(item.kind) && !me && (!item.offer_status || item.offer_status === 'pending') && (
             <View style={styles.offerBtns}>
               <Pressable style={[styles.offerBtn, styles.offerYes]} onPress={async () => { if (token) { await respondOffer(token, chatId, item.id, 'accepted').catch(() => {}); load() } }}><Text style={styles.offerYesText}>{tr('Принять')}</Text></Pressable>
@@ -182,6 +202,15 @@ export default function ChatScreen() {
           <Text style={[styles.meta, me && styles.metaMe]}>
             {item.failed ? tr('Не отправлено — нажмите, чтобы повторить') : item.pending ? tr('Отправляется…') : hhmm(item.created_at)}
           </Text>
+          {!!item.reactions && Object.keys(item.reactions).length > 0 && (
+            <View style={[styles.reacts, me && { alignSelf: 'flex-end' }]}>
+              {Object.entries(item.reactions).map(([e, who]) => (
+                <Pressable key={e} style={[styles.react, who.includes(user?.id || '') && styles.reactMine]} onPress={() => token && reactMessage(token, chatId, item.id, e).then((r) => setMsgs((prev) => (prev ?? []).map((x) => (x.id === item.id ? { ...x, reactions: r.reactions } : x)))).catch(() => {})}>
+                  <Text style={styles.reactText}>{e}{who.length > 1 ? ` ${who.length}` : ''}</Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
         </View>
       </Pressable>
     )
@@ -295,6 +324,44 @@ export default function ChatScreen() {
       {info?.blocked_by_them ? (
         <Text style={[styles.blockedNote, { paddingBottom: Math.max(insets.bottom, 10) + 6 }]}>{tr('Этот пользователь заблокировал вас — писать ему нельзя.')}</Text>
       ) : (
+      <>
+      {/* меню сообщения: реакции и действия (как на сайте) */}
+      <Modal visible={!!menuFor} transparent animationType="fade" onRequestClose={() => setMenuFor(null)}>
+        <Pressable style={styles.menuBack} onPress={() => setMenuFor(null)}>
+          <View style={styles.menu}>
+            <View style={styles.menuReacts}>
+              {['👍', '❤️', '😂', '😮', '🙏', '🔥'].map((e) => (
+                <Pressable key={e} style={styles.menuReact} onPress={() => {
+                  const m = menuFor; setMenuFor(null)
+                  if (m && token) reactMessage(token, chatId, m.id, e).then((r) => setMsgs((prev) => (prev ?? []).map((x) => (x.id === m.id ? { ...x, reactions: r.reactions } : x)))).catch(() => {})
+                }}><Text style={{ fontSize: 26 }}>{e}</Text></Pressable>
+              ))}
+            </View>
+            <Pressable style={styles.menuItem} onPress={() => { setReplyTo(menuFor); setMenuFor(null) }}><Icon name="back" size={18} color={colors.ink} /><Text style={styles.menuText}>{tr('Ответить')}</Text></Pressable>
+            {!!menuFor?.text && (
+              <Pressable style={styles.menuItem} onPress={() => {
+                const m = menuFor; setMenuFor(null)
+                if (m && token) translateMessage(token, chatId, m.id).then((r) => setTranslated((p) => ({ ...p, [m.id]: r.text }))).catch(() => {})
+              }}><Icon name="globe" size={18} color={colors.ink} /><Text style={styles.menuText}>{tr('Перевести')}</Text></Pressable>
+            )}
+            {!!menuFor?.text && (
+              <Pressable style={[styles.menuItem, { borderBottomWidth: 0 }]} onPress={() => { Clipboard.setStringAsync(menuFor?.text || '').catch(() => {}); setMenuFor(null) }}><Icon name="copy" size={18} color={colors.ink} /><Text style={styles.menuText}>{tr('Копировать')}</Text></Pressable>
+            )}
+          </View>
+        </Pressable>
+      </Modal>
+
+      {/* ответ на сообщение — полоска над полем ввода */}
+      {!!replyTo && (
+        <View style={styles.replyBar}>
+          <View style={styles.replyLine} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.quoteWho}>{tr('Ответ')}: {replyTo.sender_id === user?.id ? tr('Вы') : (info?.other_name || tr('Собеседник'))}</Text>
+            <Text style={styles.quoteText} numberOfLines={1}>{replyTo.text}</Text>
+          </View>
+          <Pressable onPress={() => setReplyTo(null)} hitSlop={10}><Icon name="close" size={16} color={colors.muted} /></Pressable>
+        </View>
+      )}
       <View style={[styles.inputBar, { paddingBottom: Math.max(insets.bottom, 10) }]}>
         <TextInput
           value={text}
@@ -310,12 +377,30 @@ export default function ChatScreen() {
           <Icon name="send" size={19} color={text.trim() ? '#fff' : colors.muted} />
         </Pressable>
       </View>
+      </>
       )}
     </KeyboardAvoidingView>
   )
 }
 
 const styles = StyleSheet.create({
+  quote: { borderLeftWidth: 3, borderLeftColor: colors.primary, paddingLeft: 8, marginBottom: 6, borderRadius: 3 },
+  quoteMe: { borderLeftColor: 'rgba(255,255,255,0.7)' },
+  quoteWho: { fontFamily: font[800], fontSize: 12.5, color: colors.primaryDeep },
+  quoteText: { fontFamily: font[400], fontSize: 13, color: colors.inkSoft },
+  translated: { marginTop: 6, paddingTop: 6, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border, fontFamily: font[400], fontSize: 14.5, color: colors.inkSoft },
+  reacts: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 6 },
+  react: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  reactMine: { borderColor: colors.primary },
+  reactText: { fontSize: 13, color: colors.ink },
+  menuBack: { flex: 1, backgroundColor: 'rgba(15,21,18,0.32)', justifyContent: 'flex-end', padding: 12, paddingBottom: 40 },
+  menu: { backgroundColor: colors.surface, borderRadius: 22, overflow: 'hidden' },
+  menuReacts: { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+  menuReact: { width: 46, height: 46, alignItems: 'center', justifyContent: 'center', borderRadius: 23 },
+  menuItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 18, height: 54, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+  menuText: { fontFamily: font[600], fontSize: 16, color: colors.ink },
+  replyBar: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 8, backgroundColor: colors.surface, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
+  replyLine: { width: 3, alignSelf: 'stretch', borderRadius: 2, backgroundColor: colors.primary },
   page: { flex: 1, backgroundColor: colors.bg },
   head: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingBottom: 10, backgroundColor: colors.surface, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
   backCircle: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', marginRight: 6 },

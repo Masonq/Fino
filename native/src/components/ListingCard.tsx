@@ -1,9 +1,11 @@
+import * as Haptics from 'expo-haptics'
+import { hideListing, hideSeller, isHidden, useHidden } from '../hidden'
 import { tr } from '../i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import { router } from 'expo-router'
 import { memo, useState } from 'react'
-import { FlatList, NativeScrollEvent, NativeSyntheticEvent, Pressable, StyleSheet, Text, View } from 'react-native'
+import { ActionSheetIOS, Alert, FlatList, NativeScrollEvent, NativeSyntheticEvent, Platform, Pressable, Share, StyleSheet, Text, View } from 'react-native'
 
 import { type FeedItem, prefetchListing } from '../api'
 import { seedListing } from '../seed'
@@ -26,6 +28,23 @@ function ListingCard({ item, width, large = false }: { item: FeedItem; width: nu
     .filter(Boolean) as string[]
   // Объявление открывается мгновенно: данные карточки — сразу, полная версия начинает грузиться ещё при касании
   const open = () => { seedListing(item); router.push(`/listing/${item.id}`) }
+  useHidden()
+  // долгое нажатие — меню карточки, как на сайте: поделиться, не интересно, скрыть продавца, пожаловаться
+  const menu = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {})
+    const acts: [string, () => void][] = [
+      [tr('Поделиться'), () => { Share.share({ message: `${item.title} — https://plonk.rs/go/${item.id}` }).catch(() => {}) }],
+      [tr('Не интересно'), () => hideListing(item.id)],
+      ...(item.owner_id ? [[tr('Скрыть продавца'), () => hideSeller(item.owner_id!)] as [string, () => void]] : []),
+      [tr('Пожаловаться'), () => { seedListing(item); router.push(`/listing/${item.id}?report=1` as never) }],
+    ]
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions({ options: [...acts.map((a) => a[0]), tr('Отмена')], destructiveButtonIndex: acts.length - 1, cancelButtonIndex: acts.length }, (i) => acts[i]?.[1]())
+    } else {
+      Alert.alert(item.title, undefined, [...acts.map((a) => ({ text: a[0], onPress: a[1] })), { text: tr('Отмена'), style: 'cancel' as const }])
+    }
+  }
+  if (isHidden(item)) return null
   const warm = () => { prefetchListing(item.id) }
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const next = Math.round(e.nativeEvent.contentOffset.x / width)
@@ -33,7 +52,7 @@ function ListingCard({ item, width, large = false }: { item: FeedItem; width: nu
   }
 
   return (
-    <Pressable onPress={open} onPressIn={warm} style={[styles.card, { width }, large && { borderRadius: 18 }, item.is_highlighted && styles.highlighted]}
+    <Pressable onPress={open} onPressIn={warm} onLongPress={menu} delayLongPress={450} style={[styles.card, { width }, large && { borderRadius: 18 }, item.is_highlighted && styles.highlighted]}
       accessibilityRole="button" accessibilityLabel={`${item.title}, ${formatPrice(item.price, item.currency, item.is_free)}`}>
       <View style={[styles.photoBox, { height: photoH }]}>
         {list.length > 1 ? (

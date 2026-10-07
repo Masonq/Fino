@@ -1,12 +1,13 @@
+import * as Haptics from 'expo-haptics'
 import { tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
-import { FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native'
+import { ActionSheetIOS, Alert, FlatList, Platform, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { type Chat, isOffer } from '../../src/api'
+import { type Chat, chatPref, isOffer } from '../../src/api'
 import { useAuth } from '../../src/auth'
 import { useChats } from '../../src/chats'
 import Icon from '../../src/components/Icon'
@@ -27,6 +28,24 @@ export default function Chats() {
 
   useFocusEffect(useCallback(() => { refresh() }, [refresh]))
 
+  // как свайп на сайте: долгое нажатие на переписку — закрепить, без звука, непрочитано, удалить у себя
+  const chatMenu = (c: Chat) => {
+    if (!token) return
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {})
+    const acts: [string, string][] = [
+      [c.pinned ? 'unpin' : 'pin', c.pinned ? tr('Открепить') : tr('Закрепить')],
+      [c.muted ? 'unmute' : 'mute', c.muted ? tr('Включить звук') : tr('Без звука')],
+      [(c.unread ?? 0) > 0 ? 'read' : 'unread', (c.unread ?? 0) > 0 ? tr('Прочитано') : tr('Непрочитано')],
+      ['hide', tr('Удалить у себя')],
+    ]
+    const run = (i: number) => { const a = acts[i]; if (a) chatPref(token, c.id, a[0]).then(() => refresh()).catch(() => {}) }
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions({ options: [...acts.map((a) => a[1]), tr('Отмена')], destructiveButtonIndex: 3, cancelButtonIndex: 4 }, run)
+    } else {
+      Alert.alert(c.other_name || tr('Переписка'), undefined, [...acts.map((a, i) => ({ text: a[1], style: (i === 3 ? 'destructive' : 'default') as 'destructive' | 'default', onPress: () => run(i) })), { text: tr('Отмена'), style: 'cancel' as const }])
+    }
+  }
+
   if (!ready) return <SafeAreaView style={styles.page} />
   if (!token) {
     return (
@@ -45,7 +64,7 @@ export default function Chats() {
     const preview = isOffer(item.last_kind) ? tr('Предложение цены') : plainText(item.last_text).replace(/\n+/g, ' ')
     const unread = item.unread || 0
     return (
-      <Pressable style={[styles.row, unread > 0 && styles.rowUnread]} onPress={() => router.push(`/chat/${item.id}`)} accessibilityRole="button">
+      <Pressable style={[styles.row, unread > 0 && styles.rowUnread]} onPress={() => router.push(`/chat/${item.id}`)} onLongPress={() => chatMenu(item)} delayLongPress={420} accessibilityRole="button">
         <View style={styles.thumb}>
           {item.is_team
             ? <Image source={require('../../assets/icon.png')} style={styles.thumbImg} contentFit="cover" />
@@ -55,6 +74,8 @@ export default function Chats() {
         <View style={styles.rowBody}>
           <View style={styles.rowTop}>
             <Text style={styles.name} numberOfLines={1}>{name}</Text>
+            {item.pinned && <Ionicons name="pin" size={13} color={colors.muted} />}
+            {item.muted && <Ionicons name="notifications-off-outline" size={13} color={colors.muted} />}
             <Text style={styles.time}>{timeAgo(item.last_at)}</Text>
           </View>
           {!!item.listing_title && <Text style={styles.listing} numberOfLines={1}>{item.listing_title}</Text>}
@@ -106,7 +127,7 @@ export default function Chats() {
         )
       ) : (
         <FlatList
-          data={chats.filter((c) => {
+          data={[...chats].sort((a, b) => Number(!!b.pinned) - Number(!!a.pinned)).filter((c) => {
             if (filter === 'unread' && !(c.unread ?? 0)) return false
             if (filter === 'buy' && c.is_seller) return false
             if (filter === 'sell' && !c.is_seller) return false
