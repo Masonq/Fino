@@ -62,14 +62,14 @@ export default function Segmented<K extends string>({ options, value, onChange, 
 }
 
 const styles = StyleSheet.create({
-  track: { flexDirection: 'row', padding: 3, borderRadius: 13, backgroundColor: colors.sunken, alignSelf: 'flex-start' },
+  track: { flexDirection: 'row', padding: 3, borderRadius: 13, backgroundColor: colors.sunken, alignSelf: 'flex-start', overflow: 'hidden' },
   pill: {
     position: 'absolute', top: 3, bottom: 3, borderRadius: 10, backgroundColor: colors.surface,
     shadowColor: '#14201A', shadowOpacity: 0.12, shadowRadius: 4, shadowOffset: { width: 0, height: 1 }, elevation: 2,
   },
   item: { height: 36, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center' },
   trackStretch: { alignSelf: 'stretch' },
-  trackOnSunken: { backgroundColor: '#E3E5E0' },
+  trackOnSunken: { backgroundColor: colors.bg },
   itemStretch: { flex: 1, height: 40, paddingHorizontal: 6 },
   labelStretch: { fontSize: 13.5, fontFamily: font[600], letterSpacing: -0.1 },
   label: { fontSize: 14.5, fontFamily: font[800], color: colors.inkSoft },

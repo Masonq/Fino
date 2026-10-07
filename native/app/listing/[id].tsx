@@ -169,8 +169,11 @@ export default function ListingScreen() {
   const stripH = photoH + insets.top + SHEET_OVERLAP
   // название раздела для «Сейчас: …» в окне переноса
   const cp = (data as unknown as { category_path?: { name?: Record<string, string> | string }[] }).category_path
+  const nm = (n: unknown) => (typeof n === 'string' ? n : (n as Record<string, string> | undefined)?.[getLang()] || (n as Record<string, string> | undefined)?.ru || '')
   const lastCat = Array.isArray(cp) && cp.length ? cp[cp.length - 1]?.name : null
-  const catTitle = lastCat ? (typeof lastCat === 'string' ? lastCat : lastCat[getLang()] || lastCat.ru) : (data.category_slug ?? null)
+  const catTitle = lastCat ? nm(lastCat) : (data.category_slug ?? null)
+  // путь целиком, как на сайте: «Электроника › Периферия для компьютера»
+  const catPathText = Array.isArray(cp) && cp.length ? cp.map((c) => nm(c?.name)).filter(Boolean).join(' › ') : catTitle
   const staffDelete = () => {
     if (!token) return
     Alert.alert(tr('Удалить объявление?'), tr('Объявление пропадёт из ленты и у продавца.'), [
@@ -224,7 +227,7 @@ export default function ListingScreen() {
           {/* путь по разделам над ценой — как на сайте */}
           {!!catTitle && (
             <Pressable onPress={() => data.category_slug && router.push(`/c/${data.category_slug}` as never)}>
-              <Text style={styles.crumbs} numberOfLines={1}>{catTitle}</Text>
+              <Text style={styles.crumbs} numberOfLines={1}>{catPathText}</Text>
             </Pressable>
           )}
           <View style={styles.priceRow}>
@@ -235,7 +238,7 @@ export default function ListingScreen() {
           {/* факты значками под названием: город, когда, просмотры — как на сайте */}
           <View style={styles.factChips}>
             {!!data.city && <View style={styles.factChip}><Icon name="pin" size={13} color={colors.inkSoft} /><Text style={styles.factChipT}>{cityName(data.city)}</Text></View>}
-            {!!data.published_at && <View style={styles.factChip}><Icon name="clock" size={13} color={colors.inkSoft} /><Text style={styles.factChipT}>{timeAgo(data.published_at)}</Text></View>}
+            {!!data.published_at && <View style={styles.factChip}><Icon name="clock" size={13} color={colors.inkSoft} /><Text style={styles.factChipT}>{relTime(data.published_at)}</Text></View>}
             {!!(data as { views_count?: number }).views_count && <View style={styles.factChip}><Icon name="eye" size={13} color={colors.inkSoft} /><Text style={styles.factChipT}>{(data as { views_count?: number }).views_count}</Text></View>}
           </View>
           {data.external_source === 'telegram' && <Text style={styles.fromTg}>{tr('Объявление из Telegram')}</Text>}
@@ -541,7 +544,7 @@ const styles = StyleSheet.create({
   factChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 },
   factChip: { flexDirection: 'row', alignItems: 'center', gap: 5, height: 30, paddingHorizontal: 10, borderRadius: 15, backgroundColor: colors.surface, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
   factChipT: { fontFamily: font[700], fontSize: 12.5, color: colors.inkSoft },
-  page: { flex: 1, backgroundColor: colors.surface },
+  page: { flex: 1, backgroundColor: colors.bg },
   center: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 8 },
   back: {
     position: 'absolute', left: 12, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(20,26,22,0.38)',
@@ -561,7 +564,7 @@ const styles = StyleSheet.create({
   // как .detail-meta сайта: строки плотно, 12,5, серые
   meta: { marginTop: 12, gap: 2 },
   metaLine: { fontSize: 12.5, lineHeight: 17, fontFamily: font[500], color: colors.muted },
-  readMore: { fontSize: 14, fontFamily: font[700], color: colors.primaryDeep, marginTop: 6 },
+  readMore: { fontSize: 15, fontFamily: font[800], color: colors.accent, marginTop: 8 },
   mapLink: { fontSize: 13.5, fontFamily: font[700], color: colors.primaryDeep },
   mapPage: { flex: 1, backgroundColor: colors.bg },
   mapHead: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 8 },
@@ -578,14 +581,14 @@ const styles = StyleSheet.create({
   counter: { position: 'absolute', alignSelf: 'center', backgroundColor: 'rgba(28,38,32,0.62)', borderRadius: radius.chip, paddingHorizontal: 12, paddingVertical: 5 },
   counterText: { color: '#fff', fontSize: 13, fontFamily: font[700] },
   sheet: {
-    marginTop: -SHEET_OVERLAP, backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 20, paddingTop: 22,
+    marginTop: -SHEET_OVERLAP, backgroundColor: colors.bg, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 20, paddingTop: 22,
     shadowColor: '#14201A', shadowOpacity: 0.05, shadowRadius: 12, shadowOffset: { width: 0, height: -6 },
   },
   priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 10 },
   price: { fontFamily: mono, fontSize: 32, letterSpacing: -1, color: colors.ink },
   oldPrice: { fontFamily: mono, fontSize: 15, color: colors.muted, textDecorationLine: 'line-through' },
   // Как .detail-title сайта: 17,5 / 800 / межстрочный 1,3
-  title: { fontFamily: font[800], fontSize: 17.5, lineHeight: 23, letterSpacing: -0.18, color: colors.ink, marginTop: 12 },
+  title: { fontFamily: font[600], fontSize: 21, lineHeight: 27, letterSpacing: -0.3, color: colors.ink, marginTop: 10 },
   fromTg: { alignSelf: 'flex-start', marginTop: 8, paddingHorizontal: 9, paddingVertical: 4, borderRadius: 8, overflow: 'hidden', backgroundColor: '#EAF3FF', color: '#2D7DD2', fontFamily: font[700], fontSize: 12.5 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 },
   facts: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12 },
@@ -617,7 +620,7 @@ const styles = StyleSheet.create({
   name: { fontSize: 14.5, fontFamily: font[800], color: colors.ink, flexShrink: 1 },
   starsRow: { flexDirection: 'row', alignItems: 'center', gap: 1 },
   sellerSub: { fontSize: 12, fontFamily: font[600], color: colors.muted, marginTop: 2 },
-  section: { marginTop: 26, gap: 8 },
+  section: { marginTop: 12, gap: 8, padding: 16, borderRadius: 22, backgroundColor: colors.surface },
   h3: { fontSize: 18, fontFamily: font[800], color: colors.ink },
   locRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   loc: { fontSize: 15, fontFamily: font[600], color: colors.inkSoft },
@@ -631,7 +634,7 @@ const styles = StyleSheet.create({
   report: { alignSelf: 'center', marginTop: 28, paddingVertical: 8, paddingHorizontal: 12 },
   reportText: { fontSize: 15, fontFamily: font[700], color: colors.muted },
   footnote: { marginTop: 10, marginBottom: 6, fontSize: 13, fontFamily: font[500], color: colors.muted },
-  bar: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 16, paddingTop: 10, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border },
+  bar: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 16, paddingTop: 10, backgroundColor: colors.bg, borderTopWidth: 1, borderTopColor: colors.border },
   cta: { height: 52, borderRadius: 16, backgroundColor: colors.primary, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   ctaText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
   ctaRow: { flexDirection: 'row', gap: 10 },

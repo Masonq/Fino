@@ -47,7 +47,7 @@ function Card({ g, big }: { g: GuideCard; big?: boolean }) {
   return (
     <Pressable style={[styles.card, big && styles.cardBig]} onPress={() => router.push(`/vodic/${g.slug}` as never)}>
       <View style={[big ? styles.artBig : styles.art, { backgroundColor: TOPIC_BG[g.topic] || colors.sunken }]}>
-        <Image source={{ uri: `${SITE}${g.cover}` }} style={{ width: '100%', height: '100%' }} contentFit="contain" />
+        <Image source={{ uri: `${SITE}${g.cover}` }} style={StyleSheet.absoluteFill} contentFit="contain" />
       </View>
       <View style={styles.body}>
         <Text style={styles.topic}>{tr(TOPICS.find(([k]) => k === g.topic)?.[1] || '')}</Text>
@@ -67,8 +67,9 @@ const styles = StyleSheet.create({
   chipTextOn: { color: colors.onInverse },
   card: { flexDirection: 'row', marginHorizontal: 16, marginBottom: 12, borderRadius: 22, backgroundColor: colors.surface, overflow: 'hidden' },
   cardBig: { flexDirection: 'column', borderRadius: 24 },
-  art: { width: 110, minHeight: 120 },
-  artBig: { width: '100%', height: 200 },
+  // картинка — по размеру ячейки, а не своей высоты: раньше растягивала карточку на полэкрана
+  art: { width: 110, alignSelf: 'stretch', minHeight: 124, overflow: 'hidden' },
+  artBig: { width: '100%', height: 200, overflow: 'hidden' },
   body: { flex: 1, padding: 14, gap: 4 },
   topic: { fontFamily: font[700], fontSize: 12.5, color: colors.muted },
   title: { fontFamily: font[800], fontSize: 16, letterSpacing: -0.3, color: colors.ink },
