@@ -26,7 +26,7 @@ function clearRecent() {
   try { localStorage.removeItem(RECENT_KEY) } catch { /* см. выше */ }
 }
 
-export default function SearchOverlay({ open, onClose }) {
+export default function SearchOverlay({ open, onClose, onFilters }) {
   // Пока открыт поиск, страница под ним не прокручивается (замок прокрутки для iOS: body в position:fixed с
   // запомненным местом). Без замка Safari при вводе подкручивал страницу под окном, и поле с курсором «дрожало».
   useEffect(() => {
@@ -117,6 +117,12 @@ export default function SearchOverlay({ open, onClose }) {
             </button>
           )}
         </div>
+        {/* фильтры — здесь, в окне поиска (раньше значок был в строке поиска на главной) */}
+        {onFilters && (
+          <button type="button" className="search-filters-btn" onClick={onFilters} aria-label={t('misc.filters')}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
+          </button>
+        )}
       </div>
 
       <div className="search-suggest">
