@@ -340,7 +340,7 @@ function SearchReport({ days }) {
 }
 
 /** Карточка показателя: крупное число, подпись, изменение к прошлому такому же периоду и мини-график по дням. */
-function KpiGrid({ days, active, pending }) {
+export function KpiGrid({ days, active, pending }) {
   const { t } = useTranslation()
   const [rows, setRows] = useState(null)
   useEffect(() => { api.adminStatsDaily(Math.min(days * 2, 90)).then((r) => setRows(r.items || [])).catch(() => setRows([])) }, [days])

@@ -434,6 +434,11 @@ export default function Profile() {
         <>
           <div className="profile-section-title">{t('admin.staff')}</div>
           <div className="profile-menu">
+            <Link viewTransition className="profile-row ah-entry" to="/admin">
+              <span className="profile-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="9" rx="2" /><rect x="14" y="3" width="7" height="5" rx="2" /><rect x="14" y="12" width="7" height="9" rx="2" /><rect x="3" y="16" width="7" height="5" rx="2" /></svg></span>
+              {t('adminhub.title')}
+              <svg className="profile-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+            </Link>
             <Link viewTransition className="profile-row" to="/admin/shops">
           <span className="profile-row-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="2.5" y="6" width="13" height="12" rx="2.5" /><path d="m15.5 10.5 6-3.5v10l-6-3.5" /></svg>

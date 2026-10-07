@@ -92,6 +92,7 @@ import { Toaster } from 'sonner'
 import Footer from './components/Footer'
 import TopNav from './components/TopNav'
 import { GuideArticle, GuidesList } from './pages/Guides'
+import AdminHome from './pages/AdminHome'
 
 export default function App() {
   const location = useLocation()
@@ -493,6 +494,7 @@ export default function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/seller/:id" element={<SellerProfile />} />
           <Route path="/my" element={<MyListings />} />
+          <Route path="/admin" element={<AdminHome />} />
           <Route path="/moderation" element={<Moderation />} />
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/users/:id" element={<AdminUser />} />

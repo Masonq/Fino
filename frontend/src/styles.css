@@ -8104,3 +8104,37 @@ body, .app-shell{ background:transparent !important; }
 /* пользователи: аватары нейтральные (были мятными), список — одной карточкой */
 .admin-user-row .avatar, .admin-row-ava, .admin-users .avatar{ background:var(--surface-sunken) !important; color:var(--ink) !important; }
 .admin-avatar, .admin-avatar-inner{ background:var(--surface-sunken) !important; color:var(--ink) !important; } .admin-list{ border:0 !important; box-shadow:var(--shadow) !important; border-radius:24px !important; overflow:hidden; }
+
+/* ---------- Панель команды (/admin) ---------- */
+.admin-home .ah-title{ margin:20px 4px 10px; font-size:20px; font-weight:800; letter-spacing:-0.025em; }
+.ah-queues{ display:flex; flex-direction:column; gap:8px; }
+.ah-queue{ display:flex; align-items:center; gap:14px; padding:14px 16px; border-radius:22px; background:var(--surface); box-shadow:var(--shadow); color:var(--ink); }
+.ah-queue-n{ min-width:48px; height:48px; padding:0 10px; border-radius:16px; display:flex; align-items:center; justify-content:center; background:var(--inverse); color:var(--on-inverse); font-size:20px; font-weight:800; font-variant-numeric:tabular-nums; }
+.ah-queue-label{ flex:1; font-size:15.5px; font-weight:700; line-height:1.3; }
+.ah-queue-go{ color:var(--muted); flex:none; }
+.ah-calm{ display:flex; align-items:center; gap:14px; padding:16px; border-radius:22px; background:var(--surface); box-shadow:var(--shadow); font-size:14px; color:var(--ink-soft); line-height:1.4; }
+.ah-calm b{ color:var(--ink); font-size:16px; }
+.ah-calm-ico{ flex:none; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:#DFF4E8; color:#0B7A4E; font-size:20px; font-weight:800; }
+.ah-grid{ display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; padding-bottom:12px; }
+@media (min-width: 900px){ .ah-grid{ grid-template-columns:repeat(4, 1fr); } .admin-home{ max-width:1040px; margin:0 auto; } }
+.ah-tile{ position:relative; display:flex; flex-direction:column; justify-content:space-between; gap:18px; min-height:104px; padding:14px; border-radius:22px; color:var(--ink); font-size:15px; font-weight:800; letter-spacing:-0.01em; transition:opacity .15s ease; }
+.ah-tile:active{ opacity:.8; }
+.ah-tile svg{ color:var(--ink); }
+.ah-tile-n{ position:absolute; top:12px; right:12px; min-width:26px; height:26px; padding:0 8px; border-radius:13px; display:flex; align-items:center; justify-content:center; background:var(--inverse); color:var(--on-inverse); font-size:12.5px; }
+@media (min-width: 900px){
+  /* плитки разделов на компьютере: картинка была 116 px в плитке высотой 86 — обрезалась и наезжала на подпись
+     («Недвижимость», «Детские товары»); теперь плитка выше, картинка вписана целиком в правый нижний угол,
+     и 13 плиток стоят двумя рядами по 7, а не 6+6+1 */
+  .cat-tile-2row{ height:104px !important; padding:12px 14px !important; }
+  .cat-tile-2row-glyph{ width:74px !important; height:74px !important; right:8px !important; bottom:6px !important; }
+  .cat-tile-2row-glyph img, .cat-tile-2row-glyph .cat-art{ width:100% !important; height:100% !important; object-fit:contain !important; object-position:right bottom; }
+  .cat-tile-2row-label{ max-width:62%; font-size:14px; line-height:1.2; }
+  .cat-tile-2row.all .all-glyph svg{ width:70%; height:70%; margin:15%; }
+}
+@media (min-width: 900px){ .cat-rows{ grid-template-columns:repeat(7, 1fr) !important; } }
+@media (min-width: 900px){
+  /* подпись — во всю ширину плитки сверху (была обрезана: «Недвижимос», «Бизнес и оборудовани»), картинка — ниже */
+  .cat-tile-2row{ height:116px !important; }
+  .cat-tile-2row-label{ max-width:none !important; width:auto !important; display:block !important; -webkit-line-clamp:unset !important; overflow:visible !important; text-overflow:clip !important; white-space:normal !important; }
+  .cat-tile-2row-glyph{ width:66px !important; height:66px !important; }
+}

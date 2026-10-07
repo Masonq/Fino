@@ -1887,5 +1887,31 @@
     "seller_hidden": "Oglasi prodavca su sakriveni",
     "undo": "Poništi",
     "copied": "Link je kopiran"
+  },
+  "adminhub": {
+    "title": "Tabla tima",
+    "kicker_admin": "PLONK ove nedelje",
+    "kicker_mod": "Redovi i sekcije",
+    "attention": "Zahteva pažnju",
+    "calm": "Sve je rešeno",
+    "calm_sub": "Redovi su prazni — novo će se pojaviti ovde.",
+    "sections": "Sekcije",
+    "q_moderation": "oglasa čeka proveru",
+    "q_support": "zahteva bez odgovora",
+    "q_team": "odgovora na pisma tima",
+    "q_flagged": "sumnjivih prepiski",
+    "q_volunteers": "prijava volontera",
+    "s_moderation": "Moderacija",
+    "s_support": "Podrška",
+    "s_users": "Korisnici",
+    "s_stats": "Pokazatelji",
+    "s_alerts": "Upozorenja",
+    "s_shops": "Šopsovi",
+    "s_jobs": "Poslovi",
+    "s_team_chats": "Pisma tima",
+    "s_volunteers": "Volonteri",
+    "s_audit": "Dnevnik radnji",
+    "s_settings": "Podešavanja",
+    "s_flagged_chats": "Sumnjive prepiske"
   }
 }
