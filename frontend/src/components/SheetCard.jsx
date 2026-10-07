@@ -14,11 +14,13 @@ export default function SheetCard({ base = 'reasons-card', className = '', onClo
   const onTouchStart = (e) => {
     const el = ref.current
     if (!el || el.scrollTop > 0 || e.touches.length > 1) return
-    // Палец на прокручиваемом списке внутри окна (список разделов в «Перенести в раздел»), который уже
-    // прокручен вниз, — это прокрутка списка, а не смахивание окна. Раньше проверялась только сама карточка:
-    // список нельзя было прокрутить обратно вверх — вместо этого тянулось всё окно.
+    // Палец на прокручиваемом списке внутри окна (список разделов в «Перенести в раздел» и т. п.) — это всегда
+    // прокрутка списка, окно не тянем вовсе: на iPhone любое изменение transform у окна во время жеста обрывает
+    // прокрутку списка (поэтому он не листался ни вверх, ни вниз). Смахнуть окно можно за полоску, заголовок и
+    // всё, что вне списка.
     for (let n = e.target; n && n !== el; n = n.parentElement) {
-      if (n.scrollHeight > n.clientHeight + 1 && n.scrollTop > 0) return
+      const oy = getComputedStyle(n).overflowY
+      if ((oy === 'auto' || oy === 'scroll') && n.scrollHeight > n.clientHeight + 1) return
     }
     drag.current = { y: e.touches[0].clientY, dy: 0, at: performance.now() }
   }
@@ -27,6 +29,7 @@ export default function SheetCard({ base = 'reasons-card', className = '', onClo
     const el = ref.current
     if (!d || !el) return
     d.dy = Math.max(0, e.touches[0].clientY - d.y)
+    if (d.dy < 4 && !el.classList.contains('sheet-dragging')) return
     el.classList.add('sheet-dragging')
     el.style.transform = `translateY(${d.dy}px)`
     el.style.setProperty('--sheet-drag', `${d.dy}px`)
