@@ -777,7 +777,14 @@
     "search_empty": "empty",
     "search_zero": "Searched, not found",
     "search_fixed": "Typos fixed",
-    "search_top": "Top searches"
+    "search_top": "Top searches",
+    "kpi_visitors": "Visitors",
+    "kpi_listings": "New listings",
+    "kpi_people": "New people",
+    "kpi_active": "In the feed now",
+    "kpi_pending": "{{count}} pending",
+    "kpi_no_prev": "no previous period",
+    "kpi_was_zero": "was 0 before"
   },
   "audit": {
     "title": "Action log",

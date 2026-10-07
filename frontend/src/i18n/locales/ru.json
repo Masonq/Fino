@@ -813,7 +813,14 @@
     "search_empty": "пустых",
     "search_zero": "Ищут и не находят",
     "search_fixed": "Исправили опечатку",
-    "search_top": "Чаще всего ищут"
+    "search_top": "Чаще всего ищут",
+    "kpi_visitors": "Посетители",
+    "kpi_listings": "Новые объявления",
+    "kpi_people": "Новые люди",
+    "kpi_active": "В ленте сейчас",
+    "kpi_pending": "{{count}} на проверке",
+    "kpi_no_prev": "нет прошлого периода",
+    "kpi_was_zero": "раньше было 0"
   },
   "audit": {
     "title": "Журнал действий",

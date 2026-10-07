@@ -104,26 +104,9 @@ export default function AdminStats() {
               что перенесено из чатов: цифра выглядит бодро, а растёт
               от работы конвейера, а не от людей. Сколько разместили
               сами — единственное, что говорит, живёт ли площадка. */}
-          <div className="stats-hero">
-            <div className="stats-hero-item">
-              <div className="stats-hero-value">{data.listings.active}</div>
-              <div className="stats-hero-label">
-                {t('stats.in_feed')}
-                {/* «Сейчас» — не украшение: без него подпись слева в одну
-                    строку, справа в две, и числа с подписями стоят на
-                    разных уровнях. А заодно это правда: лента — единственное
-                    число на странице, которое не зависит от выбранного срока. */}
-                <span className="stats-period">{t('stats.now')}</span>
-              </div>
-            </div>
-            <div className="stats-hero-item">
-              <div className="stats-hero-value accent">+{data.listings.fresh_own}</div>
-              <div className="stats-hero-label">
-                {t('stats.from_people')}
-                <span className="stats-period">{t('stats.days', { count: days })}</span>
-              </div>
-            </div>
-          </div>
+          {/* 4 главных показателя карточками (по исследованиям дашбордов — Stripe, NN/g: 4–5 крупных чисел наверху,
+              у каждого сравнение с прошлым периодом и мини-график по дням; подробности — ниже) */}
+          <KpiGrid days={days} active={data.listings.active} pending={data.listings.pending} />
 
           <div className="stats-list">
             <div className="stats-list-row">
@@ -351,6 +334,59 @@ function SearchReport({ days }) {
         {r.fixed.map((x) => <div key={`f${x.q}${x.to}`} className="stats-row"><span>«{x.q}» → «{x.to}»</span><span>{x.n}</span></div>)}
         {r.top.length > 0 && <div className="stats-row stats-subhead"><span>{t('stats.search_top')}</span><span /></div>}
         {r.top.map((x) => <div key={`t${x.q}`} className="stats-row"><span>«{x.q}» · {x.results}</span><span>{x.n}</span></div>)}
+      </div>
+    </div>
+  )
+}
+
+/** Карточка показателя: крупное число, подпись, изменение к прошлому такому же периоду и мини-график по дням. */
+function KpiGrid({ days, active, pending }) {
+  const { t } = useTranslation()
+  const [rows, setRows] = useState(null)
+  useEffect(() => { api.adminStatsDaily(Math.min(days * 2, 90)).then((r) => setRows(r.items || [])).catch(() => setRows([])) }, [days])
+  if (!rows) return <div className="kpi-grid">{[0, 1, 2, 3].map((i) => <div key={i} className="kpi sk-block" style={{ height: 112 }} />)}</div>
+  const cur = rows.slice(-days)
+  const prev = rows.slice(-days * 2, -days)
+  const sum = (arr, k) => arr.reduce((n, r) => n + (Number(r[k]) || 0), 0)
+  const card = (key, label, k) => {
+    const now = sum(cur, k)
+    const before = prev.length === days ? sum(prev, k) : null
+    // в прошлом периоде был ноль — процент роста бессмыслен («+100%» при любом числе), пишем как есть
+    const delta = before === null || before === 0 ? null : Math.round(((now - before) / before) * 100)
+    const note = before === 0 ? t('stats.kpi_was_zero') : null
+    return <Kpi key={key} label={label} value={now} delta={delta} note={note} series={cur.map((r) => Number(r[k]) || 0)} />
+  }
+  return (
+    <div className="kpi-grid">
+      {card('v', t('stats.kpi_visitors'), 'visitors')}
+      {card('l', t('stats.kpi_listings'), 'own')}
+      {card('p', t('stats.kpi_people'), 'signups')}
+      <Kpi label={t('stats.kpi_active')} value={active} note={pending ? t('stats.kpi_pending', { count: pending }) : t('stats.now')} />
+    </div>
+  )
+}
+
+function Kpi({ label, value, delta, series, note }) {
+  const { t } = useTranslation()
+  const pts = (() => {
+    if (!series || series.length < 2) return null
+    const max = Math.max(...series, 1)
+    return series.map((v, i) => `${(i / (series.length - 1)) * 100},${28 - (v / max) * 24}`).join(' ')
+  })()
+  const up = delta > 0, down = delta < 0
+  return (
+    <div className="kpi">
+      <div className="kpi-label">{label}</div>
+      <div className="kpi-value">{Number(value).toLocaleString('ru-RU')}</div>
+      <div className="kpi-foot">
+        {delta === null || delta === undefined
+          ? <span className="kpi-note">{note || t('stats.kpi_no_prev')}</span>
+          : <span className={`kpi-delta${up ? ' up' : down ? ' down' : ''}`}>{up ? '↑' : down ? '↓' : '→'} {Math.abs(delta)}%</span>}
+        {pts && (
+          <svg className="kpi-spark" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
+            <polyline points={pts} fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+          </svg>
+        )}
       </div>
     </div>
   )

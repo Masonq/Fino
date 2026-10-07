@@ -798,7 +798,14 @@
     "search_empty": "praznih",
     "search_zero": "Traže, a ne nalaze",
     "search_fixed": "Ispravljene greške",
-    "search_top": "Najčešće pretrage"
+    "search_top": "Najčešće pretrage",
+    "kpi_visitors": "Posetioci",
+    "kpi_listings": "Novi oglasi",
+    "kpi_people": "Novi ljudi",
+    "kpi_active": "Sada u feedu",
+    "kpi_pending": "{{count}} na proveri",
+    "kpi_no_prev": "nema prethodnog perioda",
+    "kpi_was_zero": "ranije 0"
   },
   "audit": {
     "title": "Dnevnik radnji",

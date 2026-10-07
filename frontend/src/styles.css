@@ -8004,3 +8004,39 @@ body, .app-shell{ background:transparent !important; }
 .auth-method.primary{ background:var(--inverse) !important; color:var(--on-inverse) !important; box-shadow:0 8px 20px rgba(15,21,18,.18); }
 .auth-method.telegram{ background:var(--surface) !important; }
 .auth-close{ width:40px; height:40px; border-radius:50%; background:var(--surface); box-shadow:0 1px 2px rgba(15,21,18,.05), 0 6px 18px rgba(15,21,18,.06); display:flex; align-items:center; justify-content:center; }
+@media (min-width: 900px){
+  /* профиль на компьютере: цифры — три цветные плитки в ряд (стояли столбиком во всю ширину колонки) */
+  .profile-sidebar .profile-stats{ display:grid !important; grid-template-columns:repeat(3, 1fr); flex-direction:row !important; gap:8px; }
+  .profile-sidebar .profile-stat{ min-height:78px; padding:12px !important; }
+  .profile-sidebar .profile-stat b{ font-size:22px !important; }
+  .profile-sidebar .profile-actions{ display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin:0 0 10px; }
+  .page-hero{ max-width:1040px; margin:0 auto; }
+}
+
+/* =====================================================================
+   PLONK 2.0 — админка: показатели по правилам дашбордов (4 крупных числа наверху, сравнение с прошлым периодом,
+   мини-график; цвет — только со смыслом: зелёный рост, красный спад), блоки — белые карточки как на главной
+   ===================================================================== */
+.kpi-grid{ display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; margin:4px 0 14px; }
+@media (min-width: 900px){ .kpi-grid{ grid-template-columns:repeat(4, 1fr); } }
+.kpi{ display:flex; flex-direction:column; gap:2px; padding:14px 14px 12px; border-radius:22px; background:var(--surface); box-shadow:var(--shadow); min-height:112px; }
+.kpi-label{ font-size:12.5px; font-weight:700; color:var(--ink-soft); }
+.kpi-value{ font-size:30px; font-weight:800; letter-spacing:-0.04em; line-height:1.1; color:var(--ink); font-variant-numeric:tabular-nums; }
+.kpi-foot{ margin-top:auto; display:flex; align-items:center; gap:8px; }
+.kpi-delta{ flex:none; padding:3px 8px; border-radius:10px; font-size:12px; font-weight:800; background:var(--surface-sunken); color:var(--ink-soft); }
+.kpi-delta.up{ background:#DFF4E8; color:#0B7A4E; }
+.kpi-delta.down{ background:#FDE4E2; color:#C4302B; }
+.kpi-note{ font-size:12px; font-weight:600; color:var(--muted); }
+.kpi-spark{ flex:1; height:28px; color:var(--primary); opacity:.85; }
+.stats-block, .stats-list{ border:0 !important; box-shadow:var(--shadow) !important; border-radius:22px !important; }
+.stats-block-title{ font-size:17px; font-weight:800; letter-spacing:-0.015em; }
+/* модерация: фото — крупной лентой во всю ширину карточки (4:5, со скруглением), карточка — как на главной */
+.mod-card{ border:0 !important; border-radius:24px !important; box-shadow:var(--shadow) !important; overflow:hidden; }
+.mod-photos{ gap:6px; padding:10px 10px 0; }
+.mod-photos img{ width:auto; height:200px; aspect-ratio:4/5; border-radius:16px; }
+.mod-title{ font-size:17px !important; font-weight:800 !important; letter-spacing:-0.015em; }
+.mod-approve{ border-radius:16px !important; min-height:50px; font-weight:800; }
+.mod-reject{ border-radius:16px !important; min-height:50px; font-weight:800; }
+/* пользователи: аватары нейтральные (были мятными), список — одной карточкой */
+.admin-user-row .avatar, .admin-row-ava, .admin-users .avatar{ background:var(--surface-sunken) !important; color:var(--ink) !important; }
+.admin-avatar, .admin-avatar-inner{ background:var(--surface-sunken) !important; color:var(--ink) !important; } .admin-list{ border:0 !important; box-shadow:var(--shadow) !important; border-radius:24px !important; overflow:hidden; }
