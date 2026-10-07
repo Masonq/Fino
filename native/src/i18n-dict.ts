@@ -900,6 +900,7 @@ export const DICT: Record<string, { en?: string; sr?: string }> = {
   "Не сможет входить и писать; объявления скроются": { en: "Can’t sign in or write; listings get hidden", sr: "Neće moći da se prijavi ni piše; oglasi se sakrivaju" },
   "Владелец": { en: "Owner", sr: "Vlasnik" },
   "Модератор": { en: "Moderator", sr: "Moderator" },
+  "Не указано": { en: "Not set", sr: "Nije navedeno" },
   "Оформление": { en: "Appearance", sr: "Izgled" },
   "Ошибка видео": { en: "Video error", sr: "Greška videa" },
   "Пара слов о ролике": { en: "A few words about the video", sr: "Par reči o videu" },

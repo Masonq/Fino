@@ -8602,3 +8602,8 @@ html[data-theme="dark"] input::placeholder, html[data-theme="dark"] textarea::pl
 /* картинки пустых экранов (public/empty) — объёмный предмет без фона над текстом, как плитки разделов */
 .empty-art{ display:block; width:168px; height:168px; object-fit:contain; margin:4px auto 6px; filter:drop-shadow(0 14px 22px rgba(15,21,18,.12)); animation:ui-fade-in .3s ease; }
 @media (min-width: 900px){ .empty-art{ width:200px; height:200px; } }
+/* правка объявления: блок «Характеристики» — белой карточкой, как остальные поля */
+.edit-attrs{ display:flex; flex-direction:column; gap:14px; padding:16px; border-radius:22px; background:var(--surface); box-shadow:var(--shadow); }
+.edit-attrs-title{ font-size:17px; font-weight:800; letter-spacing:-0.01em; }
+.edit-attrs input[type="text"], .edit-attrs input[type="number"], .edit-attrs select{ background:var(--surface-sunken) !important; border-color:transparent !important; box-shadow:none !important; }
+.edit-attrs .post-checkbox{ background:transparent !important; box-shadow:none !important; padding-left:0; }

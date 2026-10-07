@@ -345,7 +345,8 @@
     "unit_km": "km",
     "unit_liters": "l",
     "unit_floor": "floor",
-    "section": "Category"
+    "section": "Category",
+    "params": "Details"
   },
   "favorites": {
     "title": "Saved",

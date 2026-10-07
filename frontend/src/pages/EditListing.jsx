@@ -16,6 +16,9 @@ export default function EditListing() {
   const { user, loading: authLoading } = useAuth()
 
   const [listing, setListing] = useState(null)
+  // характеристики раздела (комнаты, марка, размер…) — как при размещении; раньше в правке их не было вовсе
+  const [attrs, setAttrs] = useState({})
+  const [schema, setSchema] = useState([])
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState('')
@@ -73,6 +76,9 @@ export default function EditListing() {
         }
         setHideExactAddress(!!l.hide_exact_address)
         setPhotos(l.photos || [])
+        setAttrs(l.attributes || {})
+        const slug = l.category_slug || l.category?.slug
+        if (slug) api.getCategorySchema(slug).then((r) => setSchema(Array.isArray(r) ? r : (r?.attribute_schema || r?.fields || []))).catch(() => setSchema([]))
       })
       .catch(() => setListing(null))
   }, [id])
@@ -175,6 +181,7 @@ export default function EditListing() {
         location_lat: locationLat,
         location_lng: locationLng,
         hide_exact_address: hideExactAddress,
+        ...(schema.length ? { attributes: attrs } : {}),
       })
       setSaved(true)
       setTimeout(() => navigate('/my'), 1200)
@@ -292,6 +299,32 @@ export default function EditListing() {
           <label>{t('detail.description')}</label>
           <textarea rows={5} value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
+
+        {schema.length > 0 && (
+          <div className="edit-attrs">
+            <div className="edit-attrs-title">{t('detail.params')}</div>
+            {schema.map((field) => {
+              const label = field.label?.[i18n.language] || field.label?.ru || field.key
+              const set = (v) => setAttrs((a) => ({ ...a, [field.key]: v }))
+              return (
+                <div key={field.key} className="post-field">
+                  {field.type !== 'boolean' && <label>{label}{field.required && ' *'}</label>}
+                  {field.type === 'text' && <input type="text" value={attrs[field.key] ?? ''} onChange={(e) => set(e.target.value)} />}
+                  {field.type === 'number' && <input type="number" inputMode="decimal" value={attrs[field.key] ?? ''} onChange={(e) => set(e.target.value)} />}
+                  {field.type === 'boolean' && (
+                    <label className="post-checkbox"><input type="checkbox" checked={!!attrs[field.key]} onChange={(e) => set(e.target.checked)} />{label}</label>
+                  )}
+                  {field.type === 'select' && (
+                    <select value={attrs[field.key] ?? ''} onChange={(e) => set(e.target.value)}>
+                      <option value="">—</option>
+                      {field.options?.map((opt) => <option key={opt.value} value={opt.value}>{opt.label?.[i18n.language] || opt.label?.ru || opt.value}</option>)}
+                    </select>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
 
         {/* Цена во всю ширину, с валютой внутри поля, и «Торг уместен»
             сразу под ней: это свойство цены. Раньше галочка стояла

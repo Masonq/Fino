@@ -350,7 +350,8 @@
     "unit_km": "km",
     "unit_liters": "l",
     "unit_floor": "sprat",
-    "section": "Kategorija"
+    "section": "Kategorija",
+    "params": "Karakteristike"
   },
   "favorites": {
     "title": "Sačuvano",

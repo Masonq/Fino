@@ -1,4 +1,4 @@
-import { tr } from '../../src/i18n'
+import { getLang, tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
@@ -6,11 +6,12 @@ import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
 import {
   ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View,
+  ActionSheetIOS as _ASheet, Switch as _Switch,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import {
-  addListingPhoto, ApiError, deleteListingPhoto, fetchListing, type ListingPatch, textOf, updateListing, type Uploaded, uploadPhoto, reorderListingPhotos, uploadVideo } from '../../src/api'
+  addListingPhoto, ApiError, deleteListingPhoto, fetchListing, type ListingPatch, textOf, updateListing, type Uploaded, uploadPhoto, reorderListingPhotos, uploadVideo, type AttrField, categorySchema } from '../../src/api'
 import { useAuth } from '../../src/auth'
 import CityPicker from '../../src/components/CityPicker'
 import Segmented from '../../src/components/Segmented'
@@ -52,6 +53,11 @@ export default function EditListing() {
   }
   const [removed, setRemoved] = useState<string[]>([])
   const [title, setTitle] = useState('')
+  // характеристики раздела (комнаты, марка, размер…) — как при размещении; раньше в правке их не было вовсе
+  const [schema, setSchema] = useState<AttrField[]>([])
+  const [attrs, setAttrs] = useState<Record<string, unknown>>({})
+  const [attrsChanged, setAttrsChanged] = useState(false)
+  const setAttr = (k: string, v: unknown) => { setAttrs((a) => ({ ...a, [k]: v })); setAttrsChanged(true) }
   const [desc, setDesc] = useState('')
   const [price, setPrice] = useState('')
   const [currency, setCurrency] = useState<'EUR' | 'RSD'>('EUR')
@@ -71,6 +77,9 @@ export default function EditListing() {
       // видео тоже показываем (раньше отфильтровывалось — его нельзя было ни увидеть, ни удалить)
       setPoint({ lat: l.location_lat ?? null, lng: l.location_lng ?? null }); setHideAddr(!!l.hide_exact_address)
       setShots(l.photos.map((p) => ({ key: p.id, existingId: p.id, uri: mediaUrl(p.thumbnail_url || p.url) as string, state: 'done' as const, mime: p.is_video ? 'video/mp4' : 'image/jpeg' })))
+      setAttrs(((l as unknown as { attributes?: Record<string, unknown> }).attributes) || {})
+      const cs = (l as unknown as { category_slug?: string }).category_slug
+      if (cs) categorySchema(cs).then((r) => setSchema(r.attribute_schema ?? [])).catch(() => setSchema([]))
       setLoaded(true)
     }).catch(() => setError(tr('Не удалось открыть объявление')))
   }, [id])
@@ -145,6 +154,7 @@ export default function EditListing() {
       // точка на карте — только если изменилась
       if (point.lat !== (orig.location_lat ?? null) || point.lng !== (orig.location_lng ?? null)) { patch.location_lat = point.lat; patch.location_lng = point.lng }
       if (hideAddr !== !!orig.hide_exact_address) patch.hide_exact_address = hideAddr
+      if (attrsChanged && schema.length) (patch as { attributes?: Record<string, unknown> }).attributes = attrs
       if (Object.keys(patch).length) await updateListing(token, String(id), patch)
       for (const photoId of removed) await deleteListingPhoto(token, String(id), photoId)
       for (const s of shots) if (!s.existingId && s.uploaded) await addListingPhoto(token, String(id), s.uploaded)
@@ -200,6 +210,42 @@ export default function EditListing() {
             <TextInput value={title} onChangeText={setTitle} style={styles.input} maxLength={120} />
             <Text style={styles.label}>{tr('Описание')}</Text>
             <TextInput value={desc} onChangeText={setDesc} style={[styles.input, styles.area]} multiline maxLength={5000} textAlignVertical="top" />
+            {schema.length > 0 && (
+              <View style={styles.attrsCard}>
+                <Text style={styles.attrsTitle}>{tr('Характеристики')}</Text>
+                {schema.map((f) => {
+                  const lbl = (typeof f.label === 'string' ? f.label : (f.label as Record<string, string> | undefined)?.[getLang()] || (f.label as Record<string, string> | undefined)?.ru) || f.key
+                  const v = attrs[f.key]
+                  if (f.type === 'boolean') return (
+                    <View key={f.key} style={styles.attrRow}><Text style={styles.attrBool}>{lbl}</Text><_Switch value={!!v} onValueChange={(x) => setAttr(f.key, x)} trackColor={{ true: colors.primary, false: colors.sunken }} /></View>
+                  )
+                  if (f.type === 'select') {
+                    const opts = (f.options ?? []).map((o) => ({ value: String(o.value), label: (typeof o.label === 'string' ? o.label : (o.label as Record<string, string> | undefined)?.[getLang()] || (o.label as Record<string, string> | undefined)?.ru) || String(o.value) }))
+                    const cur = opts.find((o) => o.value === String(v ?? ''))
+                    return (
+                      <View key={f.key}>
+                        <Text style={styles.label}>{lbl}{f.required ? ' *' : ''}</Text>
+                        <Pressable style={styles.attrSelect} onPress={() => {
+                          const names = [...opts.map((o) => o.label), tr('Не указано'), tr('Отмена')]
+                          const pick = (k: number) => { if (k < opts.length) setAttr(f.key, opts[k].value); else if (k === opts.length) setAttr(f.key, '') }
+                          if (Platform.OS === 'ios') _ASheet.showActionSheetWithOptions({ title: lbl, options: names, cancelButtonIndex: names.length - 1 }, pick)
+                          else Alert.alert(lbl, undefined, [...opts.map((o, k) => ({ text: o.label, onPress: () => pick(k) })), { text: tr('Отмена'), style: 'cancel' as const }])
+                        }}>
+                          <Text style={[styles.attrSelectT, !cur && { color: colors.muted }]}>{cur ? cur.label : '—'}</Text>
+                          <Icon name="down" size={14} color={colors.muted} />
+                        </Pressable>
+                      </View>
+                    )
+                  }
+                  return (
+                    <View key={f.key}>
+                      <Text style={styles.label}>{lbl}{f.required ? ' *' : ''}</Text>
+                      <TextInput value={v === undefined || v === null ? '' : String(v)} onChangeText={(t) => setAttr(f.key, t)} keyboardType={f.type === 'number' ? 'decimal-pad' : 'default'} style={[styles.input, { backgroundColor: colors.sunken, borderWidth: 0 }]} placeholderTextColor={colors.muted} />
+                    </View>
+                  )
+                })}
+              </View>
+            )}
             <Text style={styles.label}>{tr('Цена')}</Text>
             <View style={styles.priceBox}>
               <TextInput value={price} onChangeText={(v) => setPrice(v.replace(/\D/g, '').slice(0, 9))} placeholder={tr('Пусто — «цена не указана»')} placeholderTextColor={colors.muted} keyboardType="number-pad" style={styles.priceInput} />
@@ -233,6 +279,12 @@ export default function EditListing() {
 }
 
 const styles = StyleSheet.create({
+  attrsCard: { gap: 10, marginTop: 14, padding: 16, borderRadius: 22, backgroundColor: colors.surface },
+  attrsTitle: { fontFamily: font[800], fontSize: 17, color: colors.ink },
+  attrRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 44 },
+  attrBool: { flex: 1, fontFamily: font[600], fontSize: 15, color: colors.ink },
+  attrSelect: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', height: 48, borderRadius: 14, backgroundColor: colors.sunken, paddingHorizontal: 14 },
+  attrSelectT: { fontFamily: font[400], fontSize: 16, color: colors.ink },
   page: { flex: 1, backgroundColor: colors.bg },
   head: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, height: 52 },
   back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
