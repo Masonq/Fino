@@ -8307,3 +8307,58 @@ button.au-row:active{ background:var(--surface-sunken); }
   /* левая колонка на компьютере узкая: «Снять надолго», «Посуточно» обрезались — мельче и с переносом */
   .search-sidebar .cat-mode{ font-size:12.5px !important; padding:4px 6px !important; white-space:normal !important; line-height:1.15; overflow:visible !important; text-overflow:clip !important; }
 }
+
+/* =====================================================================
+   Админка: обращения и ответы команде — карточки-переписки; журнал — лента событий; ночные работы
+   ===================================================================== */
+.tk{ background:var(--surface); border-radius:22px; box-shadow:var(--shadow); overflow:hidden; }
+.tk + .tk{ margin-top:10px; }
+.tk-head{ display:flex; align-items:center; gap:12px; width:100%; padding:14px; text-align:left; font:inherit; color:var(--ink); background:transparent; border:0; }
+.tk-ava{ flex:none; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, #7C6CF0, #A08CFF); color:#fff; font-size:18px; font-weight:800; }
+.tk-main{ flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+.tk-subject{ font-size:16px; font-weight:800; letter-spacing:-0.01em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.tk-meta{ display:flex; align-items:center; gap:6px; min-width:0; }
+.tk-topic{ flex:none; padding:2px 8px; border-radius:8px; background:var(--surface-sunken); font-size:12px; font-weight:800; color:var(--ink-soft); }
+.tk-contact, .tk-last{ font-size:13px; font-weight:600; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.tk-last b{ color:var(--ink-soft); }
+.tk-side{ flex:none; display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
+.tk-time{ font-size:12px; font-weight:600; color:var(--muted); }
+.tk-unread{ min-width:22px; height:22px; padding:0 7px; border-radius:11px; background:var(--primary); color:#fff; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; }
+.tk-chev{ color:var(--muted); transition:transform .25s ease; }
+.tk.open .tk-chev{ transform:rotate(180deg); }
+.tk-body{ padding:0 14px 14px; border-top:1px solid var(--line); animation:ui-fade-in .2s ease; }
+.tk-loading{ display:flex; flex-direction:column; gap:8px; padding:12px 0; }
+.tk-listing{ display:inline-flex; align-items:center; gap:8px; height:38px; padding:0 14px; margin:2px 0 10px; border-radius:19px; background:var(--surface-sunken); font-size:13.5px; font-weight:800; color:var(--ink); }
+.tk-quick{ display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; margin:0 -14px 8px; padding:0 14px; }
+.tk-quick::-webkit-scrollbar{ display:none; }
+.tk-quick button{ flex:none; height:34px; padding:0 12px; border-radius:17px; background:var(--bg); border:1px solid var(--line); font-size:13px; font-weight:700; color:var(--ink); }
+.tk-input{ width:100%; border:0 !important; background:var(--surface-sunken) !important; border-radius:18px !important; padding:12px 14px !important; font-size:16px; font-family:inherit; min-height:48px; }
+.tk-input:focus{ outline:none; box-shadow:0 0 0 3px rgba(15,163,106,.18); }
+.tk-actions{ display:flex; gap:8px; margin-top:10px; }
+.tk-send, .tk-close{ flex:1; height:48px; border-radius:16px; font-size:15px; font-weight:800; }
+.tk-send{ background:var(--inverse); color:var(--on-inverse); }
+.tk-send:disabled{ background:var(--surface-sunken-2); color:var(--muted); }
+.tk-close{ background:var(--surface-sunken); color:var(--ink); }
+.admin-support .admin-list, .admin-team .admin-list{ gap:0; }
+/* журнал — лента событий: значок в цветном круге на линии времени */
+.audit-line{ position:relative; display:flex !important; align-items:flex-start; gap:10px; }
+.audit-day .audit-line::before{ content:""; position:absolute; left:31px; top:0; bottom:0; width:2px; background:var(--line); }
+.audit-day .audit-line:first-of-type::before{ top:22px; }
+.audit-day .audit-line:last-child::before{ bottom:calc(100% - 22px); }
+.audit-ico{ position:relative; z-index:1; flex:none; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--surface-sunken); color:var(--ink-soft); box-shadow:0 0 0 3px var(--surface); }
+.tone-ok .audit-ico{ background:#DFF4E8; color:#0B7A4E; }
+.tone-bad .audit-ico{ background:#FDE4E2; color:#C4302B; }
+.tone-edit .audit-ico{ background:#E3ECFA; color:#2459B8; }
+.audit-line .audit-at{ order:3; margin-left:auto; padding-top:6px; font-size:12px; }
+.audit-line .audit-body{ order:2; flex:1; min-width:0; padding-top:5px; }
+.audit-line .audit-go{ order:4; margin-top:8px; }
+.audit-line{ border-top:0 !important; }
+.jobs-sum{ display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:12px; }
+.jobs-sum-item{ display:flex; flex-direction:column; justify-content:flex-end; min-height:78px; padding:12px 14px; border-radius:20px; background:#DFF4E8; }
+.jobs-sum-item:nth-child(2){ background:var(--surface); box-shadow:var(--shadow); }
+.jobs-sum-item.bad{ background:#FDE4E2; }
+.jobs-sum-item:nth-child(3){ background:#E3ECFA; }
+.jobs-sum-item b{ font-size:26px; font-weight:800; letter-spacing:-0.04em; line-height:1.1; }
+.jobs-sum-item span{ font-size:12.5px; font-weight:700; color:var(--ink-soft); }
+.page-fallback-head{ display:flex; align-items:center; gap:12px; padding:calc(10px + var(--sat)) 0 16px; }
+.audit-day .audit-day-title + .audit-line::before{ top:22px; } .audit-day .audit-line:only-of-type::before{ display:none; }

@@ -88,22 +88,26 @@ export default function AdminTeamChats() {
       <div className="admin-list">
         {!loaded && <AdminRowSkeletons count={4} />}
         {items.map((c) => (
-          <div key={c.id} className="admin-row">
-            <button className="admin-row-main" onClick={() => open(c.id)}>
-              <div className="admin-row-name">
-                <span className="name-text">{c.person?.name || '—'}</span>
-                {c.unread > 0 && <span className="tag tag-new">{c.unread}</span>}
-              </div>
-              <div className="admin-row-meta team-row-last">
-                {c.last_from_team && <span>{t('chats.you')}: </span>}
-                {(c.last_text || '').replace(/[#*]/g, '').replace(/\s+/g, ' ').slice(0, 70)}
-                {' · '}{timeAgo(c.last_at, t, i18n.language)}
-              </div>
+          <div key={c.id} className={openId === c.id ? 'tk open' : 'tk'}>
+            {/* человек наверху карточки: круг с буквой, имя, последняя реплика и когда; непрочитанное — числом */}
+            <button className="tk-head" onClick={() => open(c.id)}>
+              <span className="tk-ava">{(c.person?.name || '?').slice(0, 1).toUpperCase()}</span>
+              <span className="tk-main">
+                <span className="tk-subject">{c.person?.name || '—'}</span>
+                <span className="tk-last">
+                  {c.last_from_team && <b>{t('chats.you')}: </b>}
+                  {(c.last_text || '').replace(/[#*]/g, '').replace(/\s+/g, ' ').slice(0, 70)}
+                </span>
+              </span>
+              <span className="tk-side">
+                <span className="tk-time">{timeAgo(c.last_at, t, i18n.language)}</span>
+                {c.unread > 0 && <span className="tk-unread">{c.unread}</span>}
+              </span>
             </button>
 
             {openId === c.id && (
-              <div className="admin-card">
-                {!thread && <p className="empty">{t('admin.loading')}</p>}
+              <div className="tk-body">
+                {!thread && <div className="tk-loading"><span className="sk-block" style={{ height: 44, width: '70%' }} /><span className="sk-block" style={{ height: 44, width: '55%', alignSelf: 'flex-end' }} /></div>}
                 {thread?.error && <p className="empty">{t('admin.card_error')}</p>}
                 {thread && !thread.error && (
                   <>
@@ -115,13 +119,13 @@ export default function AdminTeamChats() {
                       ))}
                     </div>
                     <input
-                      className="field-input"
+                      className="field-input tk-input"
                       value={draft}
                       onChange={(e) => setDraft(e.target.value)}
                       placeholder={t('team_inbox.reply_ph')}
                     />
-                    <div className="admin-actions">
-                      <button disabled={busy || !draft.trim()} onClick={() => send(c.id)}>
+                    <div className="tk-actions">
+                      <button className="tk-send" disabled={busy || !draft.trim()} onClick={() => send(c.id)}>
                         {t('support.send')}
                       </button>
                     </div>

@@ -42,6 +42,13 @@ export default function AttrChips({ rootSlug, attributes, schema, attrLabel, att
   const { t } = useTranslation()
   const keys = ORDER[rootSlug]
   if (!keys || !attributes) return null
+  // схема полей приходит отдельным запросом: пока её нет, держим место под ряд значков — иначе ряд появлялся
+  // позже и сталкивал карточку продавца вниз на 46 px (замер сдвига вёрстки на странице объявления)
+  if (!schema || !schema.length) {
+    return keys.some((key) => attributes[key] !== undefined && attributes[key] !== null && attributes[key] !== '')
+      ? <div className="attr-chips attr-chips-sk" aria-hidden="true"><span className="sk-block" style={{ width: 120, height: 34, borderRadius: 12 }} /></div>
+      : null
+  }
 
   const chips = keys
     .filter((key) => attributes[key] !== undefined && attributes[key] !== null && attributes[key] !== '')

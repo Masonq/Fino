@@ -239,7 +239,9 @@ export default function AdminAudit() {
               // идущие решения одного человека и так его.
               const sameAsPrev = index > 0 && (rows[index - 1].actor || '') === (row.actor || '')
               return (
-                <Row key={row.id} className="audit-line" {...(to ? { to } : {})}>
+                <Row key={row.id} className={`audit-line tone-${actionTone(row.action)}`} {...(to ? { to } : {})}>
+                  {/* лента событий: значок действия в цветном круге на вертикальной линии времени */}
+                  <span className="audit-ico" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d={actionIcon(row.action)} /></svg></span>
                   <span className="audit-at">{timeOnly(row.created_at, i18n.language)}</span>
                   <span className="audit-body">
                     <span className="audit-what">
@@ -264,4 +266,22 @@ export default function AdminAudit() {
       </div>
     </div>
   )
+}
+
+/** Цвет события в ленте: зелёный — одобрил/подтвердил, красный — отклонил/заблокировал/удалил, синий — перенёс/изменил, серый — прочее. */
+function actionTone(a = '') {
+  if (/approve|unblock|verify$|answer|payments_on|renew|flag_cleared/.test(a)) return 'ok'
+  if (/reject|block|delete|suspicious|unverify|payments_off|failed/.test(a)) return 'bad'
+  if (/move|role|retitle|reset_name|return/.test(a)) return 'edit'
+  return 'info'
+}
+function actionIcon(a = '') {
+  const tone = actionTone(a)
+  if (/move|return/.test(a)) return 'M5 12h14M13 6l6 6-6 6'
+  if (/payments/.test(a)) return 'M2 7h20v10H2zM2 11h20'
+  if (/role|reset_name|retitle/.test(a)) return 'M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z'
+  if (/ticket|answer|chat/.test(a)) return 'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'
+  if (tone === 'ok') return 'm5 12 5 5 9-10'
+  if (tone === 'bad') return 'M6 6l12 12M18 6 6 18'
+  return 'M12 8v4M12 16h.01M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z'
 }

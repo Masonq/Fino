@@ -1417,7 +1417,13 @@
     "tip_2": "Označite da li je potreban srpski: mnogi traže posao bez jezika.",
     "tip_3": "Odgovorite u porukama prvog dana — tako kandidati ne odlaze drugima.",
     "tip_4": "Opišite zadatke jednostavno i dodajte fotografiju radnog mesta.",
-    "tips_ok": "Razumem"
+    "tips_ok": "Razumem",
+    "kicker_one": "{{count}} posao preko noći",
+    "kicker_few": "{{count}} posla preko noći",
+    "kicker_other": "{{count}} poslova preko noći",
+    "sum_ok": "bez grešaka",
+    "sum_err": "sa greškom",
+    "sum_done": "urađeno ukupno"
   },
   "volunteer": {
     "title": "Volontiranje",
@@ -1947,5 +1953,15 @@
     "any": "Bilo koja",
     "reset": "Poništi",
     "apply": "Prikaži"
+  },
+  "tk": {
+    "q1_short": "Proverićemo",
+    "q1": "Zdravo! Hvala što ste pisali — proverićemo i odgovoriti danas.",
+    "q2_short": "Ispravljeno",
+    "q2": "Proverili smo i ispravili — pokušajte ponovo.",
+    "q3_short": "Treba snimak ekrana",
+    "q3": "Pošaljite snimak ekrana — tako ćemo brže rešiti.",
+    "q4_short": "Hvala",
+    "q4": "Hvala! Ako bude još nešto, pišite ovde."
   }
 }

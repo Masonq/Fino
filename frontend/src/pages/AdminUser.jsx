@@ -123,8 +123,16 @@ export default function AdminUser() {
   if (!card) {
     return (
       <div className="page admin-users">
-        <PageHeader title={t('admin.title')} />
-        <p className="empty">{t('admin.loading')}</p>
+        <PageHeader title={t('au.title')} />
+        {/* скелет — в форме новой страницы: карточка человека, контакты, три плитки, список управления */}
+        <div className="au-card" aria-hidden="true">
+          <span className="sk-block" style={{ width: 84, height: 84, borderRadius: '50%' }} />
+          <span className="sk-block" style={{ width: 160, height: 24, borderRadius: 8 }} />
+          <span className="sk-block" style={{ width: 120, height: 22, borderRadius: 10 }} />
+        </div>
+        <div className="sk-block" style={{ height: 118, borderRadius: 22, marginBottom: 12 }} />
+        <div className="au-stats">{[0, 1, 2].map((i) => <div key={i} className="au-stat sk-block" />)}</div>
+        <div className="sk-block" style={{ height: 176, borderRadius: 22 }} />
       </div>
     )
   }

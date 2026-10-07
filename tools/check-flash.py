@@ -61,14 +61,29 @@ def main():
         for route in ROUTES:
             try:
                 pg.goto(BASE + route, wait_until="domcontentloaded", timeout=40000)
-                pg.wait_for_timeout(int(DELAY * 0.6))
+                # снимок «до данных» — как только приложение что-то нарисовало (код страницы загрузился), а ответы API
+                # ещё в пути; иначе в разработке ловили момент, когда сайт вообще не запустился
+                t0 = time.time()
+                pg.wait_for_function("document.querySelector('main') && document.querySelector('main').children.length > 0", timeout=20000)
+                waited = (time.time() - t0) * 1000
+                if waited > DELAY * 0.8:
+                    print(f"{route} · (код страницы грузился {int(waited)} мс — снимок «до данных» неточен)")
+                pg.wait_for_timeout(150)
                 early = pg.evaluate("document.querySelector('main')?.innerText || document.body.innerText").lower()
+                sk = pg.evaluate("document.querySelectorAll('main .skeleton, main .sk-block, main [class*=skeleton], main .sk').length")
                 pg.wait_for_timeout(DELAY * 4)
                 late = pg.evaluate("document.querySelector('main')?.innerText || document.body.innerText").lower()
                 cls = pg.evaluate("window.__cls||0")
             except Exception as e:  # noqa: BLE001
                 print(f"{route} · не открылась · {str(e)[:60]}"); found += 1
                 continue
+            # скелет: пока данные идут, на месте будущего содержимого должна быть заготовка, а не пустота или «Загрузка…»
+            if sk == 0 and ("загруз" in early or "loading" in early):
+                found += 1
+                print(f"{route} · вместо скелета — текст «Загрузка…»")
+            elif sk == 0 and len(late) - len(early) > 120:
+                found += 1
+                print(f"{route} · нет скелета — пока грузится, место пустое (потом появляется {len(late) - len(early)} знаков)")
             flashed = [w for w in EMPTY if w in early and w not in late]
             if flashed:
                 found += 1

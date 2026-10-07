@@ -446,7 +446,7 @@ export default function App() {
             Пустая заглушка лучше вертушки: подгрузка занимает доли
             секунды, а вертушка, мелькнувшая на миг, выглядит как
             дёрганье. */}
-        <Suspense fallback={null}>
+        <Suspense fallback={<PageFallback />}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/search" element={<Search />} />
@@ -537,5 +537,19 @@ export default function App() {
     </div>
     </FavoritesProvider>
     </AuthProvider>
+  )
+}
+
+/**
+ * Пока подгружается код страницы (страницы грузятся частями), вместо пустоты — заготовка в форме обычной страницы:
+ * шапка и несколько строк. Раньше на медленной связи на долю секунды был пустой экран, потом появлялся скелет,
+ * потом содержимое — тройная смена картинки.
+ */
+function PageFallback() {
+  return (
+    <div className="page page-fallback" aria-hidden="true">
+      <div className="page-fallback-head"><span className="sk-block" style={{ width: 40, height: 40, borderRadius: '50%' }} /><span className="sk-block" style={{ width: 180, height: 28, borderRadius: 9 }} /></div>
+      {[0, 1, 2, 3].map((i) => <div key={i} className="sk-block" style={{ height: 84, borderRadius: 22, marginBottom: 10 }} />)}
+    </div>
   )
 }

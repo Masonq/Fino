@@ -1375,7 +1375,12 @@
     "tip_2": "Mark whether Serbian is required: many look for jobs without it.",
     "tip_3": "Reply in messages on the first day — so candidates don’t go elsewhere.",
     "tip_4": "Describe the tasks in plain words and add a photo of the workplace.",
-    "tips_ok": "Got it"
+    "tips_ok": "Got it",
+    "kicker_one": "{{count}} job overnight",
+    "kicker_other": "{{count}} jobs overnight",
+    "sum_ok": "no errors",
+    "sum_err": "with errors",
+    "sum_done": "done in total"
   },
   "volunteer": {
     "title": "Volunteering",
@@ -1895,5 +1900,15 @@
     "any": "Any",
     "reset": "Reset",
     "apply": "Show"
+  },
+  "tk": {
+    "q1_short": "Will check",
+    "q1": "Hi! Thanks for writing — we will look into it and reply today.",
+    "q2_short": "Fixed",
+    "q2": "We checked and fixed it — please try again.",
+    "q3_short": "Need a screenshot",
+    "q3": "Please send a screenshot — it helps us sort it out faster.",
+    "q4_short": "Thanks",
+    "q4": "Thank you! If anything else comes up, write here."
   }
 }

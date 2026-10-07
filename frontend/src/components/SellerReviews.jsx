@@ -26,7 +26,7 @@ function Stars({ value, size = 14, onPick }) {
 // мешала бы долистать вниз, до самих объявлений.
 const PREVIEW_COUNT = 4
 
-export default function SellerReviews({ sellerId, listingId }) {
+export default function SellerReviews({ sellerId, listingId, expected }) {
   const { t, i18n } = useTranslation()
 
   const [data, setData] = useState(null)
@@ -78,7 +78,9 @@ export default function SellerReviews({ sellerId, listingId }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sellerId, i18n.language])
 
-  if (!data) return <ReviewsSkeleton />
+  // отзывов нет (известно из профиля) — заготовка размером с короткую карточку «Пока нет отзывов», а не со списком:
+  // высокий скелет сменялся маленькой карточкой, и объявления ниже подпрыгивали на ~200 px
+  if (!data) return expected === 0 ? <div className="sk-block" style={{ height: 76, borderRadius: 24, margin: '12px 0 0' }} /> : <ReviewsSkeleton />
 
   return (
     <div className="reviews-block">

@@ -100,6 +100,15 @@ export default function SellerProfile() {
     return (
       <div className="page page-wide">
         <PageHeader title={t('seller.title')} />
+        {/* скелет повторяет новую раскладку: карточка-шапка с аватаром и кнопкой, отзывы, заголовок, сетка */}
+        <div className="seller-head seller-head-sk" aria-hidden="true">
+          <span className="sk-block" style={{ width: 84, height: 84, borderRadius: '50%' }} />
+          <span className="sk-block" style={{ width: 150, height: 24, borderRadius: 8 }} />
+          <span className="sk-block" style={{ width: 120, height: 14, borderRadius: 7 }} />
+          <span className="sk-block" style={{ width: 220, height: 48, borderRadius: 16 }} />
+        </div>
+        <div className="sk-block" style={{ height: 76, borderRadius: 24, margin: '12px 0 0' }} />
+        <div className="sk-block" style={{ width: 170, height: 24, borderRadius: 8, margin: '22px 0 12px' }} />
         <CardSkeletons count={2} />
       </div>
     )
@@ -196,7 +205,7 @@ export default function SellerProfile() {
       )}
 
       <div className="seller-section">
-        <SellerReviews sellerId={profile.id} />
+        <SellerReviews sellerId={profile.id} expected={profile.rating_count ?? profile.reviews_count} />
       </div>
 
       {listings.length > 0 && (

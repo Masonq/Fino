@@ -35,10 +35,19 @@ export default function AdminJobs() {
 
   return (
     <div className="page">
-      <PageHeader title={t('jobs.title')} />
+      <PageHeader title={t('jobs.title')} kicker={data?.jobs?.length ? t('jobs.kicker', { count: data.jobs.length }) : '\u00a0'} />
+
+      {/* сводка сверху: сколько работ, сколько с ошибкой, сколько сделали за последний запуск — понятно за секунду */}
+      {data?.jobs?.length > 0 && (
+        <div className="jobs-sum">
+          <div className="jobs-sum-item"><b>{data.jobs.filter((j) => !j.error).length}</b><span>{t('jobs.sum_ok')}</span></div>
+          <div className={data.jobs.some((j) => j.error) ? 'jobs-sum-item bad' : 'jobs-sum-item'}><b>{data.jobs.filter((j) => j.error).length}</b><span>{t('jobs.sum_err')}</span></div>
+          <div className="jobs-sum-item"><b>{data.jobs.reduce((n, j) => n + (j.done || 0), 0)}</b><span>{t('jobs.sum_done')}</span></div>
+        </div>
+      )}
 
       {!data ? (
-        <p className="empty-hint">{t('actions.loading')}</p>
+        <div className="jobs-list">{[0, 1, 2, 3].map((i) => <div key={i} className="job-card sk-block" style={{ height: 104 }} />)}</div>
       ) : data.jobs.length === 0 ? (
         <p className="empty-hint">{t('jobs.empty')}</p>
       ) : (

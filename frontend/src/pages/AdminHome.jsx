@@ -51,7 +51,9 @@ export default function AdminHome() {
     <div className="page admin-home">
       <PageHeader title={t('adminhub.title')} kicker={isAdmin ? t('adminhub.kicker_admin') : t('adminhub.kicker_mod')} />
 
-      {isAdmin && stats && <KpiGrid days={7} active={stats.listings.active} pending={stats.listings.pending} />}
+      {isAdmin && (stats
+        ? <KpiGrid days={7} active={stats.listings.active} pending={stats.listings.pending} />
+        : <div className="kpi-grid">{[0, 1, 2, 3].map((i) => <div key={i} className="kpi sk-block" style={{ height: 112 }} />)}</div>)}
 
       <div className="ah-title">{t('adminhub.attention')}</div>
       {c === null ? <div className="ah-queues"><div className="ah-queue sk-block" style={{ height: 76 }} /></div>

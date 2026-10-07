@@ -8,6 +8,7 @@ import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
 import { AdminRowSkeletons } from '../components/Skeletons'
+import { relativeDate } from '../utils/time'
 
 const TABS = [
   { key: 'open', label: 'support.status.open' },
@@ -18,7 +19,7 @@ const TABS = [
 export default function AdminSupport() {
   // Возвращаемся туда, где человек оставил список.
   useKeepPlace('admin-support')
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()
 
@@ -122,64 +123,67 @@ export default function AdminSupport() {
       </div>
       <div className="admin-list">
         {!loaded && <AdminRowSkeletons count={6} />}
-        {items.map((ticket) => (
-          <div key={ticket.id} className="admin-row">
-            <button className="admin-row-main" onClick={() => openCard(ticket.id)}>
-              <div className="admin-row-name">
-                <span className="name-text">{ticket.subject}</span>
-                <span className="tag">{t(`support.topic.${ticket.topic}`)}</span>
-              </div>
-              <div className="admin-row-meta">{ticket.contact}</div>
+        {items.map((ticket) => {
+          const who = (ticket.contact || '?').replace(/^[@+]/, '')
+          const isOpen = openId === ticket.id
+          return (
+          <div key={ticket.id} className={isOpen ? 'tk open' : 'tk'}>
+            {/* обращение — карточка: кто (круг с буквой), тема, раздел и когда; нажатие раскрывает переписку */}
+            <button className="tk-head" onClick={() => openCard(ticket.id)}>
+              <span className="tk-ava">{who.slice(0, 1).toUpperCase()}</span>
+              <span className="tk-main">
+                <span className="tk-subject">{ticket.subject}</span>
+                <span className="tk-meta">
+                  <span className="tk-topic">{t(`support.topic.${ticket.topic}`)}</span>
+                  <span className="tk-contact">{ticket.contact}</span>
+                </span>
+              </span>
+              <span className="tk-side">
+                {ticket.updated_at && <span className="tk-time">{relativeDate(ticket.updated_at, t, i18n.language)}</span>}
+                <svg className="tk-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="m6 9 6 6 6-6" /></svg>
+              </span>
             </button>
 
-            {openId === ticket.id && (
-              <div className="admin-card">
-                {!card && <p className="empty">{t('admin.loading')}</p>}
+            {isOpen && (
+              <div className="tk-body">
+                {!card && <div className="tk-loading"><span className="sk-block" style={{ height: 44, width: '70%' }} /><span className="sk-block" style={{ height: 44, width: '55%', alignSelf: 'flex-end' }} /></div>}
                 {card?.error && <p className="empty">{t('admin.card_error')}</p>}
                 {card && !card.error && (
                   <>
                     <div className="support-thread">
                       {(card.messages || []).map((m) => (
-                        <div
-                          key={m.id}
-                          className={`support-msg ${m.from_staff ? 'from-staff' : ''}`}
-                        >
+                        <div key={m.id} className={`support-msg ${m.from_staff ? 'from-staff' : ''}`}>
                           {m.body}
-                          {m.author && <span className="support-author">{m.author}</span>}
+                          {(m.author || m.created_at) && <span className="support-author">{m.author}{m.author && m.created_at ? ' · ' : ''}{m.created_at ? relativeDate(m.created_at, t, i18n.language) : ''}</span>}
                         </div>
                       ))}
                     </div>
 
                     {card.listing_id && (
-                      <button
-                        className="admin-listing"
-                        onClick={() => navigate(`/go/${card.listing_id}`)}
-                      >
-                        <span>{t('support.open_listing')}</span>
+                      <button className="tk-listing" onClick={() => navigate(`/go/${card.listing_id}`)}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 3h7v7M10 14 21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5" /></svg>
+                        {t('support.open_listing')}
                       </button>
                     )}
 
-                    <textarea
-                      className="support-body"
-                      value={draft}
-                      onChange={(e) => setDraft(e.target.value)}
-                      placeholder={t('support.answer')}
-                      rows={3}
-                    />
-                    <div className="admin-actions">
-                      <button disabled={busy} onClick={() => answer(ticket.id)}>
-                        {t('support.send')}
-                      </button>
-                      <button disabled={busy} onClick={() => close(ticket.id)}>
-                        {t('support.close')}
-                      </button>
+                    {/* быстрые ответы — частые фразы одним нажатием, дальше можно дописать */}
+                    <div className="tk-quick">
+                      {['q1', 'q2', 'q3', 'q4'].map((k) => (
+                        <button key={k} type="button" onClick={() => setDraft((d) => (d ? `${d} ` : '') + t(`tk.${k}`))}>{t(`tk.${k}_short`)}</button>
+                      ))}
+                    </div>
+                    <textarea className="support-body tk-input" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={t('support.answer')} rows={3} />
+                    <div className="tk-actions">
+                      <button className="tk-send" disabled={busy || !draft.trim()} onClick={() => answer(ticket.id)}>{t('support.send')}</button>
+                      <button className="tk-close" disabled={busy} onClick={() => close(ticket.id)}>{t('support.close')}</button>
                     </div>
                   </>
                 )}
               </div>
             )}
           </div>
-        ))}
+          )
+        })}
       </div>
       {loaded && !items.length && (
         <div className="admin-empty">
