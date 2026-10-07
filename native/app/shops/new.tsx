@@ -103,9 +103,9 @@ export default function ShopEditor() {
   const candidates = (creator && q.trim().length >= 2 ? found : mine).filter((l) => !items.some((x) => x.id === l.id))
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <Header title={id ? tr('Шопс') : tr('Новый шопс')} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: insets.bottom + 32 }} keyboardShouldPersistTaps="handled">
+          <Header bleed={12} bleedTop={0} title={id ? tr('Шопс') : tr('Новый шопс')} />
           {!shop ? (
             <Pressable style={s.drop} onPress={pickVideo} disabled={progress != null} accessibilityRole="button">
               {progress != null ? (

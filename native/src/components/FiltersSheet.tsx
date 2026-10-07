@@ -95,6 +95,6 @@ const styles = StyleSheet.create({
   radioDot: { width: 11, height: 11, borderRadius: 6, backgroundColor: colors.primary },
   sortText: { fontFamily: font[400], fontSize: 16, color: colors.ink },
   sortOn: { fontFamily: font[700] },
-  apply: { marginHorizontal: 20, marginTop: 14, height: 52, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  applyText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
+  apply: { marginHorizontal: 20, marginTop: 14, height: 52, borderRadius: 16, backgroundColor: colors.inverse, alignItems: 'center', justifyContent: 'center' },
+  applyText: { color: colors.onInverse, fontSize: 16, fontFamily: font[800] },
 })

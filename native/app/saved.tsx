@@ -47,6 +47,9 @@ export default function Saved() {
 
   return (
     <View style={[styles.page, { paddingTop: insets.top }]}>
+      {(
+        <FlatList
+          ListHeaderComponent={<>
       <View style={styles.head}>
         <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/profile'))} hitSlop={10} style={styles.back} accessibilityLabel={tr('Назад')}>
           <Icon name="back" size={22} color={colors.ink} />
@@ -54,11 +57,11 @@ export default function Saved() {
         <Text style={styles.h1}>{tr('Сохранённые поиски')}</Text>
         {!!items?.length && <Text style={styles.count}>{items.length}</Text>}
       </View>
-      {items === null ? <ActivityIndicator style={{ marginTop: 30 }} color={colors.primary} /> : (
-        <FlatList
-          data={items}
+
+          </>}
+          data={items ?? []}
           keyExtractor={(s) => s.id}
-          contentContainerStyle={items.length === 0 ? { flexGrow: 1 } : { paddingHorizontal: 16, paddingBottom: 24 }}
+          contentContainerStyle={!items || items.length === 0 ? { flexGrow: 1 } : { paddingHorizontal: 16, paddingBottom: 24 }}
           renderItem={({ item }) => (
             <View style={styles.row}>
               <Pressable onPress={() => open(item)} style={{ gap: 2 }}>
@@ -74,7 +77,7 @@ export default function Saved() {
               </View>
             </View>
           )}
-          ListEmptyComponent={
+          ListEmptyComponent={items === null ? <ActivityIndicator style={{ marginTop: 30 }} color={colors.primary} /> : 
             <View style={styles.empty}>
               <View style={styles.circle}><Ionicons name="bookmark-outline" size={28} color={colors.primaryDeep} /></View>
               <Text style={styles.emptyTitle}>{tr('Нет сохранённых поисков')}</Text>

@@ -19,8 +19,8 @@ export default function MyResponses() {
   useEffect(() => { if (token) jobMyResponses(token).then((r) => setItems(r.items)).catch(() => setItems([])); else router.replace('/login') }, [token])
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <Header title={tr('Мои отклики')} />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: insets.bottom + 24 }}>
+        <Header bleed={12} bleedTop={0} title={tr('Мои отклики')} />
         {items === null ? <RowSkeletons thumb="square" /> : !items.length ? (
           <Empty text={tr('Вы ещё не откликались на вакансии')}><Btn label={tr('Смотреть вакансии')} onPress={() => router.push('/c/jobs' as never)} /></Empty>
         ) : items.map((r) => (

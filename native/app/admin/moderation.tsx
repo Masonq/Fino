@@ -27,9 +27,9 @@ export default function Moderation() {
   }
   return (
     <View style={styles.page}>
-      <Header title={tr('Модерация')} kicker={items ? tr('{n} в очереди', { n: items.length }) : ' '} fallback="/admin" />
       {!items ? <View style={{ padding: 16, gap: 12 }}><Skeleton style={{ height: 380, borderRadius: 24 }} /></View> : (
         <FlatList
+          ListHeaderComponent={<Header bleed={16} bleedTop={16} title={tr('Модерация')} kicker={items ? tr('{n} в очереди', { n: items.length }) : ' '} fallback="/admin" />}
           data={items}
           keyExtractor={(i) => i.id}
           contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 60 }}

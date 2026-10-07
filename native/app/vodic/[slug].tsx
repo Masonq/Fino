@@ -18,11 +18,11 @@ export default function GuideScreen() {
   useEffect(() => { fetch(`${API}/guides/${slug}?lang=${getLang()}`).then((r) => r.json()).then(setG).catch(() => {}) }, [slug])
   return (
     <View style={styles.page}>
-      <Header title={tr('Полезное')} fallback="/vodic" />
       {!g ? (
         <View style={{ padding: 16, gap: 12 }}><Skeleton style={{ height: 220, borderRadius: 24 }} /><Skeleton style={{ height: 30, width: '80%' }} /><Skeleton style={{ height: 120 }} /></View>
       ) : (
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 48 }}>
+          <Header bleed={16} bleedTop={16} title={tr('Полезное')} fallback="/vodic" />
           <View style={styles.art}><Image source={{ uri: `${SITE}${g.cover}` }} style={{ width: '100%', height: '100%' }} contentFit="contain" /></View>
           <Text style={styles.h1}>{g.title}</Text>
           <Text style={styles.lead}>{g.lead}</Text>

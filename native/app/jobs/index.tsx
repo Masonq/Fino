@@ -19,8 +19,8 @@ export default function Incoming() {
   useEffect(() => { if (token) jobIncoming(token).then((r) => setItems(r.items)).catch(() => setItems([])); else router.replace('/login') }, [token])
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <Header title={tr('Отклики на вакансии')} />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: insets.bottom + 24 }}>
+        <Header bleed={12} bleedTop={0} title={tr('Отклики на вакансии')} />
         {items === null ? <RowSkeletons thumb="square" /> : !items.length ? <Empty text={tr('Откликов пока нет. Они появятся здесь и в чатах')} /> : items.map(({ vacancy, counts }) => (
           <Pressable key={vacancy.id} style={[k.card, k.row]} onPress={() => router.push(`/jobs/${vacancy.id}` as never)}>
             <Text style={[k.name, { flex: 1 }]} numberOfLines={2}>{vacancy.title}</Text>

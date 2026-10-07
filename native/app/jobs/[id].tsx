@@ -56,8 +56,8 @@ export default function VacancyResponses() {
   }))
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <Header title={data?.vacancy?.title || tr('Отклики')} />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: insets.bottom + 24 }}>
+        <Header bleed={12} bleedTop={0} title={data?.vacancy?.title || tr('Отклики')} />
         <Tabs value={folder} items={tabs} onChange={setFolder} />
         {!!err && <Text style={k.err}>{err}</Text>}
         {data === null ? <RowSkeletons thumb="round" /> : !data.items.length ? <Empty text={tr('Здесь пока никого')} /> : data.items.map((r) => (

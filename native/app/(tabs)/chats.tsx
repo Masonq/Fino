@@ -4,8 +4,8 @@ import { tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import { router, useFocusEffect } from 'expo-router'
-import { useCallback, useState } from 'react'
-import { ActionSheetIOS, Alert, FlatList, Platform, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native'
+import { useCallback, useRef, useState } from 'react'
+import { ActionSheetIOS, Alert, Animated, FlatList, Platform, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { type Chat, chatPref, isOffer } from '../../src/api'
@@ -26,6 +26,8 @@ export default function Chats() {
   const [refreshing, setRefreshing] = useState(false)
   const [q, setQ] = useState('')
   const [filter, setFilter] = useState<'all' | 'unread' | 'buy' | 'sell'>('all')
+  const scrollY = useRef(new Animated.Value(0)).current
+  const [headH, setHeadH] = useState(150)
 
   useFocusEffect(useCallback(() => { refresh() }, [refresh]))
 
@@ -105,6 +107,10 @@ export default function Chats() {
 
   return (
     <SafeAreaView style={styles.page} edges={['top']}>
+      {/* шапка (заголовок, поиск, фильтры) уезжает вверх при прокрутке, как на сайте, и возвращается при
+          прокрутке назад к началу; поверх списка, список начинается под ней */}
+      <Animated.View onLayout={(e) => setHeadH(e.nativeEvent.layout.height)}
+        style={[styles.headWrap, { transform: [{ translateY: scrollY.interpolate({ inputRange: [0, Math.max(1, headH)], outputRange: [0, -headH], extrapolate: 'clamp' }) }] }]}>
       {/* как на сайте: подводка (непрочитанные) и крупный заголовок */}
       <View style={{ paddingHorizontal: 16, paddingTop: 10, paddingBottom: 10 }}>
         <Text style={styles.kicker}>{(() => { const n = (chats ?? []).filter((c) => (c.unread ?? 0) > 0).length; return n ? tr('{n} непрочитанных', { n }) : tr('Покупки и продажи') })()}</Text>
@@ -123,6 +129,7 @@ export default function Chats() {
           </Pressable>
         ))}
       </View>
+      </Animated.View>
       {chats === null ? (
         failed ? (
           <View style={styles.center}>
@@ -130,7 +137,7 @@ export default function Chats() {
             <Pressable style={styles.cta} onPress={refresh}><Text style={styles.ctaText}>{tr('Повторить')}</Text></Pressable>
           </View>
         ) : (
-          <View style={{ paddingHorizontal: 16, gap: 18, paddingTop: 6 }}>
+          <View style={{ paddingHorizontal: 16, gap: 18, paddingTop: 6 + headH }}>
             {Array.from({ length: 6 }).map((_, i) => (
               <View key={i} style={{ flexDirection: 'row', gap: 12 }}>
                 <Skeleton style={{ width: 56, height: 56, borderRadius: 14 }} />
@@ -143,7 +150,9 @@ export default function Chats() {
           </View>
         )
       ) : (
-        <FlatList
+        <Animated.FlatList
+          onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
+          scrollEventThrottle={16}
           data={[...chats].sort((a, b) => Number(!!b.pinned) - Number(!!a.pinned)).filter((c) => {
             if (filter === 'unread' && !(c.unread ?? 0)) return false
             if (filter === 'buy' && c.is_seller) return false
@@ -153,8 +162,9 @@ export default function Chats() {
           })}
           keyExtractor={(c) => c.id}
           renderItem={row}
+          progressViewOffset={headH}
           ItemSeparatorComponent={() => <View style={styles.sep} />}
-          contentContainerStyle={chats.length === 0 ? { flexGrow: 1, paddingBottom: tabInset } : { paddingBottom: 16 + tabInset }}
+          contentContainerStyle={chats.length === 0 ? { flexGrow: 1, paddingTop: headH, paddingBottom: tabInset } : { paddingTop: headH, paddingBottom: 16 + tabInset }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await refresh(); setRefreshing(false) }} tintColor={colors.primary} colors={[colors.primary]} />}
           ListEmptyComponent={
             <View style={styles.center}>
@@ -170,6 +180,7 @@ export default function Chats() {
 }
 
 const styles = StyleSheet.create({
+  headWrap: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 5, backgroundColor: colors.bg },
   you: { fontFamily: font[700], color: colors.ink },
   page: { flex: 1, backgroundColor: colors.bg },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 10 },

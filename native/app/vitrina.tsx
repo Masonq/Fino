@@ -84,9 +84,9 @@ export default function Vitrina() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <Header title={tr('Моя витрина')} right={live ? <Btn small kind="ghost" label={tr('Открыть')} onPress={() => router.push(`/s/${sf.slug}` as never)} /> : undefined} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: insets.bottom + 40 }} keyboardShouldPersistTaps="handled">
+          <Header bleed={12} bleedTop={0} title={tr('Моя витрина')} right={live ? <Btn small kind="ghost" label={tr('Открыть')} onPress={() => router.push(`/s/${sf.slug}` as never)} /> : undefined} />
           <View style={k.card}>
             <View style={[k.row, { justifyContent: 'space-between' }]}>
               <View style={[k.status, { backgroundColor: bg }]}><Text style={[k.statusText, { color: fg }]}>{tr(label)}</Text></View>

@@ -31,15 +31,18 @@ export default function History() {
 
   return (
     <View style={[styles.page, { paddingTop: insets.top }]}>
+      {(
+        <FlatList data={items ?? []} keyExtractor={(i) => i.id} numColumns={2} renderItem={({ item }) => <ListingCard item={item} width={cardW} />}
+          ListHeaderComponent={<>
       <View style={styles.top}>
         <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/profile'))} hitSlop={10} style={styles.back} accessibilityLabel={tr('Назад')}><Icon name="back" size={22} color={colors.ink} /></Pressable>
         <Text style={styles.title}>{tr('Вы смотрели')}</Text>
         {!!items?.length && <Pressable onPress={async () => { await clearViewed(); setItems([]) }} hitSlop={8}><Text style={styles.clear}>{tr('Очистить')}</Text></Pressable>}
       </View>
-      {items === null ? <ActivityIndicator style={{ marginTop: 30 }} color={colors.primary} /> : (
-        <FlatList data={items} keyExtractor={(i) => i.id} numColumns={2} renderItem={({ item }) => <ListingCard item={item} width={cardW} />}
-          columnWrapperStyle={{ gap: space.gap, paddingHorizontal: space.page }} contentContainerStyle={items.length ? { gap: space.gap, paddingBottom: 24 } : undefined}
-          ListEmptyComponent={<View style={styles.emptyBox}><View style={styles.emptyIcon}><Icon name="history" size={28} color={colors.primary} /></View><Text style={styles.emptyMsg}>{tr('Здесь появятся объявления, которые вы открывали')}</Text><Pressable style={styles.emptyBtn} onPress={() => router.navigate('/')}><Text style={styles.emptyBtnText}>{tr('К объявлениям')}</Text></Pressable></View>} />
+
+          </>}
+          columnWrapperStyle={{ gap: space.gap, paddingHorizontal: space.page }} contentContainerStyle={(items ?? []).length ? { gap: space.gap, paddingBottom: 24 } : undefined}
+          ListEmptyComponent={items === null ? <ActivityIndicator style={{ marginTop: 30 }} color={colors.primary} /> : <View style={styles.emptyBox}><View style={styles.emptyIcon}><Icon name="history" size={28} color={colors.primary} /></View><Text style={styles.emptyMsg}>{tr('Здесь появятся объявления, которые вы открывали')}</Text><Pressable style={styles.emptyBtn} onPress={() => router.navigate('/')}><Text style={styles.emptyBtnText}>{tr('К объявлениям')}</Text></Pressable></View>} />
       )}
     </View>
   )

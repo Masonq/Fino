@@ -9,10 +9,11 @@ import Icon from './Icon'
 
 /** Шапка экрана — как у «Вы смотрели»: назад, заголовок, справа — своё. */
 /** Шапка экрана как на сайте: «назад» белой капсулой, подводка мелко и крупный заголовок, справа — действия. */
-export function Header({ title, right, fallback = '/profile', kicker }: { title: string; right?: ReactNode; fallback?: string; kicker?: string }) {
+export function Header({ title, right, fallback = '/profile', kicker, bleed = 0, bleedTop = 0 }: { title: string; right?: ReactNode; fallback?: string; kicker?: string; bleed?: number; bleedTop?: number }) {
   const insets = useSafeAreaInsets()
   return (
-    <View style={[k.top, { paddingTop: insets.top + 8 }]}>
+    // bleed/bleedTop — шапка внутри прокрутки (уезжает вверх вместе со страницей, как на сайте): гасим поля контейнера
+    <View style={[k.top, { paddingTop: insets.top + 8, marginHorizontal: -bleed, marginTop: -bleedTop }]}>
       <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace(fallback as never))} hitSlop={10} style={k.back} accessibilityLabel={tr('Назад')}>
         <Icon name="back" size={21} color={colors.ink} />
       </Pressable>

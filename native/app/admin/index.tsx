@@ -48,8 +48,8 @@ export default function AdminHome() {
   ]
   return (
     <View style={styles.page}>
-      <Header title={tr('Панель команды')} kicker={isAdmin ? tr('Всё о PLONK за неделю') : tr('Очереди и разделы')} />
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 60 }}>
+        <Header bleed={16} bleedTop={16} title={tr('Панель команды')} kicker={isAdmin ? tr('Всё о PLONK за неделю') : tr('Очереди и разделы')} />
         {isAdmin && (kpi === null
           ? <View style={styles.kpis}>{[0, 1, 2, 3].map((i) => <Skeleton key={i} style={styles.kpi} />)}</View>
           : <View style={styles.kpis}>{kpi.map((k) => (

@@ -31,6 +31,6 @@ const styles = StyleSheet.create({
   circle: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   title: { fontSize: 20, fontFamily: font[800], color: colors.ink, textAlign: 'center' },
   text: { fontFamily: font[400], fontSize: 15, lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },
-  btn: { marginTop: 10, height: 48, paddingHorizontal: 22, borderRadius: 14, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  btnText: { color: '#fff', fontSize: 15.5, fontFamily: font[800] },
+  btn: { marginTop: 10, height: 48, paddingHorizontal: 22, borderRadius: 14, backgroundColor: colors.inverse, alignItems: 'center', justifyContent: 'center' },
+  btnText: { color: colors.onInverse, fontSize: 15.5, fontFamily: font[800] },
 })

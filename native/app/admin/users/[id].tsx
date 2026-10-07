@@ -29,8 +29,8 @@ export default function UserScreen() {
   const name = u.company_name || u.display_name || '—'
   return (
     <View style={st.page}>
-      <Header title={tr('Пользователь')} fallback="/admin/users" />
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 60, gap: 12 }}>
+        <Header bleed={16} bleedTop={16} title={tr('Пользователь')} fallback="/admin/users" />
         <View style={st.card}>
           <View style={st.ava}><Text style={st.avaT}>{name.slice(0, 1).toUpperCase()}</Text></View>
           <Text style={st.name}>{name}</Text>

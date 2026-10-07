@@ -24,13 +24,13 @@ export default function Users() {
   }, [token, q])
   return (
     <View style={st.page}>
-      <Header title={tr('Пользователи')} kicker={items ? tr('{n} человек', { n: items.length }) : ' '} fallback="/admin" />
       <View style={st.search}>
         <Icon name="search" size={17} color={colors.muted} />
         <TextInput style={st.input} value={q} onChangeText={setQ} placeholder={tr('Имя, почта или телефон')} placeholderTextColor={colors.muted} autoCorrect={false} autoCapitalize="none" />
       </View>
       {!items ? <View style={{ padding: 16, gap: 10 }}>{[0, 1, 2, 3].map((i) => <Skeleton key={i} style={{ height: 76, borderRadius: 20 }} />)}</View> : (
         <FlatList
+          ListHeaderComponent={<Header bleed={16} bleedTop={4} title={tr('Пользователи')} kicker={items ? tr('{n} человек', { n: items.length }) : ' '} fallback="/admin" />}
           data={items}
           keyExtractor={(u) => u.id}
           contentContainerStyle={{ padding: 16, paddingTop: 4, gap: 8, paddingBottom: 60 }}

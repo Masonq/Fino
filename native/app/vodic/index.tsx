@@ -28,8 +28,8 @@ export default function Guides() {
   const rest = featured ? shown.filter((g) => g !== featured) : shown
   return (
     <View style={styles.page}>
-      <Header title={tr('Полезное')} kicker={tr('Жильё, документы, покупки в Сербии')} />
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+        <Header bleed={0} bleedTop={0} title={tr('Полезное')} kicker={tr('Жильё, документы, покупки в Сербии')} />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
           {TOPICS.filter(([k]) => k === 'all' || (items || []).some((g) => g.topic === k)).map(([k, l]) => (
             <Pressable key={k} style={[styles.chip, topic === k && styles.chipOn]} onPress={() => setTopic(k)}><Text style={[styles.chipText, topic === k && styles.chipTextOn]}>{tr(l)}</Text></Pressable>

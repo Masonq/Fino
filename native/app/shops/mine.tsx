@@ -32,8 +32,8 @@ export default function ShopsCabinet() {
   const creator = data?.creator?.status ?? null
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <Header title={tr('Шопсы')} right={<Btn small label={tr('Снять шопс')} onPress={() => router.push('/shops/new' as never)} />} />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: insets.bottom + 32 }} keyboardShouldPersistTaps="handled">
+        <Header bleed={12} bleedTop={0} title={tr('Шопсы')} right={<Btn small label={tr('Снять шопс')} onPress={() => router.push('/shops/new' as never)} />} />
         <Tabs value={tab} onChange={setTab} items={[{ key: 'shops', label: tr('Мои шопсы') }, { key: 'orders', label: tr('Заказы') }, { key: 'creator', label: tr('Автор') }]} />
         {tab === 'shops' && <MyShops data={data} reload={reload} />}
         {tab === 'orders' && <Orders creator={creator === 'approved'} />}
