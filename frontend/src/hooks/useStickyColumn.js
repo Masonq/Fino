@@ -31,6 +31,7 @@ export default function useStickyColumn(topGap = 20, ready = true) {
   const [stuck, setStuck] = useState(false)
   const [left, setLeft] = useState(0)
   const [bottomTop, setBottomTop] = useState(0)
+  const [height, setHeight] = useState(0)
 
   useEffect(() => {
     const measure = () => {
@@ -39,11 +40,15 @@ export default function useStickyColumn(topGap = 20, ready = true) {
       if (!el || !parent) return
       const box = parent.getBoundingClientRect()
       const height = el.offsetHeight
+      setHeight(height)
       // Блок выше собственной колонки — липнуть некуда: любое
       // «прибитое» положение вынесет его за нижний край колонки, и он
       // накроет то, что идёт следом (поймал на снимке: фильтры поиска
       // легли поверх подвала). Оставляем в обычном потоке.
-      if (height >= box.height) {
+      // Колонка выше окна — тоже не прибиваем: её низ всё равно не увидеть. Раньше такая колонка выпадала из
+      // потока, страница становилась ниже, колонка возвращалась — и так по кругу: страница «тряслась» у низа и не
+      // давала долистать до подвала (раздел «Авто» на компьютере).
+      if (height >= box.height || height > window.innerHeight - topGap * 2) {
         setStuck(false)
         return
       }
@@ -86,6 +91,8 @@ export default function useStickyColumn(topGap = 20, ready = true) {
     stuck,
     // Класс дописывается к своему имени колонки: .is-fixed / .is-bottom
     className: stuck ? ` is-${stuck}` : '',
+    // заглушка на месте вынутой колонки — той же высоты, чтобы высота страницы не менялась при прилипании
+    spacerStyle: { height },
     style: stuck === 'fixed' ? { left }
       : stuck === 'bottom' ? { top: bottomTop }
         : undefined,

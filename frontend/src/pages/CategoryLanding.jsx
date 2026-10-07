@@ -566,7 +566,7 @@ function CategoryLandingPage() {
           когда сайдбар вынут из потока (см. useStickyColumn
           выше), чтобы освободившееся место не схлопывалось и соседняя
           колонка не «прыгала» вбок в момент переключения. */}
-      {sidebar.stuck && <div className="landing-sidebar-spacer" aria-hidden="true" />}
+      {sidebar.stuck && <div className="landing-sidebar-spacer" style={sidebar.spacerStyle} aria-hidden="true" />}
       <div
         ref={sidebar.ref}
         className={`landing-sidebar${sidebar.className}`}
