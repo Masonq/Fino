@@ -215,7 +215,7 @@ SUB_SUBCATEGORIES: dict[str, list[dict]] = {
     # Корм, переноска и когтеточка — три разных отдела в любом
     # зоомагазине не просто так.
     "pets-supplies": [
-        {"slug": "pets-food", "name": {"ru": "Корм", "en": "Food", "sr": "Hrana"}},
+        {"slug": "pet-food", "name": {"ru": "Корма и лакомства", "en": "Food & treats", "sr": "Hrana i poslastice"}},
         {"slug": "pets-carriers", "name": {"ru": "Переноски и клетки", "en": "Carriers & cages", "sr": "Nosiljke i kavezi"}},
         {"slug": "pets-accessories", "name": {"ru": "Аксессуары и игрушки", "en": "Accessories & toys", "sr": "Dodaci i igračke"}},
     ],

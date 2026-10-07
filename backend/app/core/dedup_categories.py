@@ -91,11 +91,37 @@ def find(db) -> list[tuple[Category, Category, str]]:
     return pairs
 
 
+# Решения владельца, какой из пары оставить: старый адрес → (новый адрес, названия). Если раздела с новым адресом
+# уже нет (дубли слили раньше в «старый»), старый просто переименовывается — объявления остаются на месте.
+RENAMES = {
+    "pets-food": ("pet-food", {"ru": "Корма и лакомства", "en": "Food & treats", "sr": "Hrana i poslastice"}),
+}
+
+
+def _renames(db, apply: bool) -> None:
+    for old, (new, names) in RENAMES.items():
+        o = db.query(Category).filter(Category.slug == old).first()
+        n = db.query(Category).filter(Category.slug == new).first()
+        if o and not n:
+            print(f"«{(o.name or {}).get('ru')}» ({old}) → переименовать в «{names['ru']}» ({new})")
+            if apply:
+                o.slug, o.name = new, {**(o.name or {}), **names}
+        elif n and (n.name or {}).get("ru") != names["ru"]:
+            print(f"«{(n.name or {}).get('ru')}» ({new}) → название «{names['ru']}»")
+            if apply:
+                n.name = {**(n.name or {}), **names}
+    if apply:
+        db.flush()
+
+
 def run(apply: bool) -> None:
     db = SessionLocal()
     try:
+        _renames(db, apply)
         pairs = find(db)
         if not pairs:
+            if apply:
+                db.commit()
             print("Дублей нет")
             return
         for keep, drop, why in pairs:
