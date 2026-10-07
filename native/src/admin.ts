@@ -22,3 +22,5 @@ export const supportQueue = async (t: string, status: string) => {
 export const supportTicket = (t: string, id: string) => authed<Ticket>(`/support/${id}`, t)
 export const supportAnswer = (t: string, id: string, body: string) => authed<unknown>(`/support/${id}/answer`, t, 'POST', { body })
 export const supportClose = (t: string, id: string) => authed<unknown>(`/support/${id}/close`, t, 'POST')
+export const modMove = (t: string, id: string, categoryId: string) => authed<unknown>(`/moderation/${id}/move`, t, 'POST', { category_id: categoryId })
+export const deleteListingStaff = (t: string, id: string, force?: boolean) => authed<unknown>(`/listings/${id}${force ? '?force=true' : ''}`, t, 'DELETE')

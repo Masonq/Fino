@@ -6,12 +6,14 @@ import * as Linking from 'expo-linking'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useState, useRef } from 'react'
 import {
-  FlatList, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, Share, StyleSheet, Text, useWindowDimensions, View, Modal } from 'react-native'
+  Alert, FlatList, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, Share, StyleSheet, Text, useWindowDimensions, View, Modal } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { JobRespond, StorefrontLink } from '../../src/components/ListingExtras'
 import { attrRows, type AttrField, ru, categorySchema, type FeedItem, loadListing, type Listing, sellerListings, similarListings, startChat, textOf, sendMessage } from '../../src/api'
 import { useAuth } from '../../src/auth'
+import { deleteListingStaff } from '../../src/admin'
+import MoveSheet from '../../src/components/MoveSheet'
 import { readCache } from '../../src/cache'
 import { rememberViewed } from '../../src/history'
 import { onRetry } from '../../src/net'
@@ -43,6 +45,9 @@ export default function ListingScreen() {
   const [photo, setPhoto] = useState(0)
   const [attempt, setAttempt] = useState(0)
   const { token, user } = useAuth()
+  const staff = user?.role === 'admin' || user?.role === 'moderator'
+  const [moveOpen, setMoveOpen] = useState(false)
+  const [movedTo, setMovedTo] = useState<string | null>(null)
   const [opening, setOpening] = useState(false)
   const [schema, setSchema] = useState<AttrField[]>([])
   const [similar, setSimilar] = useState<FeedItem[] | null>(null)
@@ -162,6 +167,17 @@ export default function ListingScreen() {
     try { const chat = await startChat(token, data.id); router.push(`/chat/${chat.id}`) } catch { /* сеть */ } finally { setOpening(false) }
   }
   const stripH = photoH + insets.top + SHEET_OVERLAP
+  // название раздела для «Сейчас: …» в окне переноса
+  const cp = (data as unknown as { category_path?: { name?: Record<string, string> | string }[] }).category_path
+  const lastCat = Array.isArray(cp) && cp.length ? cp[cp.length - 1]?.name : null
+  const catTitle = lastCat ? (typeof lastCat === 'string' ? lastCat : lastCat[getLang()] || lastCat.ru) : (data.category_slug ?? null)
+  const staffDelete = () => {
+    if (!token) return
+    Alert.alert(tr('Удалить объявление?'), tr('Объявление пропадёт из ленты и у продавца.'), [
+      { text: tr('Отмена'), style: 'cancel' },
+      { text: tr('Удалить'), style: 'destructive', onPress: () => { deleteListingStaff(token, data.id, true).then(() => router.back()).catch(() => Alert.alert(tr('Не получилось удалить'))) } },
+    ])
+  }
 
   return (
     <View style={styles.page}>
@@ -333,6 +349,21 @@ export default function ListingScreen() {
         <Icon name="share" size={19} color="#fff" />
       </Pressable>
       <HeartButton id={data.id} size={40} dark style={[styles.heartTop, { top: insets.top + 8 }]} />
+      {/* сотрудникам — как на сайте: перенести в другой раздел и удалить */}
+      {staff && (
+        <>
+          <Pressable style={[styles.shareTop, { top: insets.top + 8, right: 108 }]} hitSlop={6} accessibilityLabel={tr('Перенести в раздел')} onPress={() => setMoveOpen(true)}>
+            <Icon name="list" size={18} color="#fff" />
+          </Pressable>
+          <Pressable style={[styles.shareTop, { top: insets.top + 8, right: 156 }]} hitSlop={6} accessibilityLabel={tr('Удалить')} onPress={staffDelete}>
+            <Icon name="trash" size={18} color="#FFB4AB" />
+          </Pressable>
+        </>
+      )}
+      {moveOpen && !!token && (
+        <MoveSheet token={token} listingId={data.id} current={movedTo || catTitle} onClose={() => setMoveOpen(false)}
+          onMoved={(name: string) => { setMovedTo(name); setMoveOpen(false); Alert.alert(tr('Перенесено'), name) }} />
+      )}
       <ImageView
         images={photos.map((uri) => ({ uri }))}
         imageIndex={Math.max(0, viewer ?? 0)}
