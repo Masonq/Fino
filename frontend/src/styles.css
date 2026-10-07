@@ -8408,3 +8408,18 @@ button.au-row:active{ background:var(--surface-sunken); }
   .home .avito-banner .avito-toprow{ position:sticky; top:calc(8px + var(--sat)); z-index:30; margin:0 16px 10px; }
   .home .avito-banner .avito-search{ box-shadow:0 1px 2px rgba(15,21,18,.06), 0 8px 24px rgba(15,21,18,.10); }
 }
+
+/* =====================================================================
+   Главная: поиск закреплён (position:fixed), а не «липкий» (sticky).
+   В Safari на iPhone липкий элемент во время инерционной прокрутки пересчитывается не вместе с прокруткой, а с
+   отставанием на кадр, если над ним есть слои (WebKit bug 106062: «laggy update… correct position only when
+   momentum scroll comes to a halt») — отсюда дрожание, сколько ни убирай остального. Закреплённый элемент
+   Safari двигает вместе с экраном без отставания. Поэтому поиск теперь всегда наверху (как в Avito), а город,
+   приветствие и плитки идут под ним и прокручиваются.
+   ===================================================================== */
+@media (max-width: 899px){
+  .home .avito-banner .avito-toprow{
+    position:fixed !important; top:calc(8px + var(--sat)); left:16px; right:16px; z-index:40; margin:0 !important; }
+  .home{ padding-top:calc(8px + var(--sat) + 52px + 6px); }
+  .home .avito-banner .home-head, .home .avito-banner.collapsed .home-head{ padding-top:6px !important; }
+}
