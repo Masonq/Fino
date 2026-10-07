@@ -226,7 +226,7 @@ def test_every_guide_is_complete_in_three_languages():
     sections |= {"flats", "cars", "jobs", "electronics", "pets-supplies"}
     assert len({g["slug"] for g in GUIDES}) == len(GUIDES)
     for g in GUIDES:
-        assert (ROOT / "frontend/public" / g["cover"].lstrip("/")).exists(), g["cover"]
+        assert (ROOT / "frontend/public" / g["cover"].split("?")[0].lstrip("/")).exists(), g["cover"]
         for lang in ("sr", "ru", "en"):
             loc = g[lang]
             assert loc["title"] and loc["lead"], (g["slug"], lang)

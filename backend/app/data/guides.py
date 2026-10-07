@@ -302,8 +302,11 @@ from pathlib import Path as _Path  # noqa: E402
 
 _COVERS = _Path(__file__).resolve().parents[3] / "frontend" / "public" / "guides"
 for _g in GUIDES:
-    if (_COVERS / f"{_g['slug']}.png").exists():
-        _g["cover"] = f"/guides/{_g['slug']}.png"
+    _file = _COVERS / f"{_g['slug']}.png"
+    if _file.exists():
+        # Метка содержимого в адресе: заменили картинку — у неё новый адрес, и телефон не покажет старую из кэша.
+        _ver = __import__("hashlib").sha1(_file.read_bytes()).hexdigest()[:8]
+        _g["cover"] = f"/guides/{_g['slug']}.png?v={_ver}"
 
 BY_SLUG = {g["slug"]: g for g in GUIDES}
 TITLES = {"sr": "Vodič — saveti za kupovinu i prodaju | PLONK", "ru": "Полезное — советы по покупке и продаже | PLONK",
