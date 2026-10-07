@@ -24,7 +24,27 @@ export default function TypingHint({ className = '' }) {
   const list = Array.isArray(examples) ? examples : [t('search.placeholder')]
 
   const [text, setText] = useState('')
+  const [frozen, setFrozen] = useState(false)
   const timer = useRef(0)
+  const paused = useRef(false)
+
+  // Пока страница прокручивается или поиск уже прилип сверху — не печатаем. Каждая новая буква (раз в 35–70 мс)
+  // меняла текст в липком блоке, и Safari на iPhone на каждой букве пересчитывал липкий поиск посреди
+  // инерционной прокрутки — поиск подрагивал. Печать — только когда страница стоит у самого верха.
+  useEffect(() => {
+    let idle = 0
+    const onScroll = () => {
+      paused.current = true
+      setFrozen(true)
+      clearTimeout(idle)
+      idle = setTimeout(() => {
+        if (window.scrollY < 40) { paused.current = false; setFrozen(false) }
+      }, 700)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    if (window.scrollY >= 40) { paused.current = true; setFrozen(true) }
+    return () => { window.removeEventListener('scroll', onScroll); clearTimeout(idle) }
+  }, [])
 
   useEffect(() => {
     const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -36,6 +56,13 @@ export default function TypingHint({ className = '' }) {
 
     const tick = () => {
       const target = list[word % list.length]
+      if (paused.current) {
+        // на паузе — целое слово без мигающего курсора, без изменений текста; проверяем раз в полсекунды
+        letters = target.length; erasing = true
+        setText(target)
+        timer.current = setTimeout(tick, 500)
+        return
+      }
       if (!erasing) {
         letters += 1
         setText(target.slice(0, letters))
@@ -67,7 +94,7 @@ export default function TypingHint({ className = '' }) {
   return (
     <span className={className}>
       {text}
-      <i className="typing-caret" aria-hidden="true" />
+      {!frozen && <i className="typing-caret" aria-hidden="true" />}
     </span>
   )
 }
