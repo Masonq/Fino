@@ -24,8 +24,6 @@ function GuideCard({ g, big = false }) {
       <span className="gcard-body">
         <span className="gcard-meta">
           <span>{t(`guides.topic_${g.topic}`)}</span>
-          <span className="gcard-dot" aria-hidden="true">·</span>
-          <span>{t('guides.min', { n: g.minutes })}</span>
         </span>
         <span className="gcard-title">{g.title}</span>
         <span className="gcard-lead">{g.lead}</span>
@@ -50,8 +48,13 @@ export function GuidesList() {
       && (!needle || `${g.title} ${g.lead}`.toLowerCase().includes(needle)))
   }, [items, topic, q])
   // Главная статья — только в общем виде: при поиске или фильтре важнее ровный список.
-  const featured = topic === 'all' && !q.trim() ? shown[0] : null
-  const rest = featured ? shown.slice(1) : shown
+  // Главная статья — каждый раз другая: по очереди при каждом открытии раздела (номер — в памяти устройства),
+  // чтобы наверху не стояла всегда одна и та же.
+  const [turn] = useState(() => {
+    try { const n = (Number(localStorage.getItem('plonk_guide_turn')) || 0) + 1; localStorage.setItem('plonk_guide_turn', String(n)); return n } catch { return Math.floor(Math.random() * 1000) }
+  })
+  const featured = topic === 'all' && !q.trim() && shown.length ? shown[turn % shown.length] : null
+  const rest = featured ? shown.filter((g) => g !== featured) : shown
 
   return (
     <div className="page guides-page">
@@ -120,7 +123,7 @@ export function GuideArticle() {
         <article className="guide">
           <div className="guide-top">
             <span className={`guide-topic topic-${g.topic}`}>{t(`guides.topic_${g.topic}`)}</span>
-            <span className="guide-meta">{t('guides.min', { n: g.minutes })} · {t('guides.updated', { date: dateLabel(g.date, i18n.language) })}</span>
+            <span className="guide-meta">{t('guides.updated', { date: dateLabel(g.date, i18n.language) })}</span>
           </div>
           <h1 className="guide-title">{g.title}</h1>
           <p className="guide-lead">{g.lead}</p>

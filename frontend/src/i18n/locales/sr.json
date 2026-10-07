@@ -1129,7 +1129,8 @@
     "theme_auto": "Kao sistem",
     "theme_light": "Svetla",
     "theme_dark": "Tamna",
-    "act_shops": "Moji šopsovi"
+    "act_shops": "Moji šopsovi",
+    "theme_system": "Auto"
   },
   "verify": {
     "title": "Provera dokumenta",
@@ -1725,7 +1726,22 @@
     "report_c": "Prijavi",
     "link_copied": "Link je kopiran",
     "open_listing": "Otvori oglas",
-    "login_to": "Prijavite se da biste lajkovali i komentarisali"
+    "login_to": "Prijavite se da biste lajkovali i komentarisali",
+    "m_views": "pregleda",
+    "m_watched": "odgledalo",
+    "m_taps": "kliknulo na stvar",
+    "m_chats": "pisalo",
+    "stats_title": "Statistika šopsa",
+    "f_views": "Prikazano",
+    "f_watched": "Odgledali do kraja",
+    "f_taps": "Kliknuli na stvar",
+    "f_chats": "Pisali prodavcu",
+    "of_prev": "{{p}} od prethodnog koraka",
+    "by_day": "Pregledi po danima",
+    "tip_new": "Šops je tek objavljen — prvi pregledi stižu u toku dana.",
+    "tip_watch": "Malo ih gleda do kraja: pokažite stvar u prve 2 sekunde i skratite na 15–20 sekundi.",
+    "tip_tap": "Gledaju, ali ne klikću: zakačite stvar kad se najbolje vidi i navedite cenu u opisu.",
+    "tip_ok": "Šops radi dobro — snimite sličan za druge stvari."
   },
   "sf": {
     "title_suffix": "izlog na PLONK-u",

@@ -12,7 +12,12 @@ import '@fontsource/onest/700.css'
 import '@fontsource/onest/800.css'
 import './styles.css'
 // тёмной темы нет — сбрасываем выбор, сохранённый раньше
-try { localStorage.removeItem('plonk_theme') } catch { /* без хранилища */ }
+// тема: «светлая» / «тёмная» / «как в системе» — до первой отрисовки, чтобы не мигало светлым
+try {
+  const pref = localStorage.getItem('plonk_theme') || 'light'
+  const dark = pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+} catch { /* без хранилища — светлая */ }
 
 // Языковые адреса: /en/... и /sr/... Русский живёт без приставки —
 // он основной, и ломать существующие ссылки на него нельзя.

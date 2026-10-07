@@ -393,6 +393,13 @@ export default function Profile() {
           {t('profile.language')}
           <LanguageSwitcher variant="light" />
         </div>
+        <div className="profile-row profile-row-static">
+          <span className="profile-row-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
+          </span>
+          {t('profile.theme')}
+          <ThemeSwitch t={t} />
+        </div>
         <Link viewTransition className="profile-row" to="/profile/blocked">
           <span className="profile-row-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><circle cx="12" cy="12" r="9" /><path d="m5.5 5.5 13 13" /></svg>
@@ -485,4 +492,22 @@ export default function Profile() {
 function profileGreeting(t) {
   const h = new Date().getHours()
   return h < 5 ? t('home.hello_night') : h < 12 ? t('home.hello_morning') : h < 18 ? t('home.hello_day') : t('home.hello_evening')
+}
+
+/** «Светлая / Тёмная / Авто»: запоминаем на устройстве, применяем сразу (тема — атрибут data-theme у страницы). */
+function ThemeSwitch({ t }) {
+  const [pref, setPref] = useState(() => { try { return localStorage.getItem('plonk_theme') || 'light' } catch { return 'light' } })
+  const apply = (p) => {
+    setPref(p)
+    try { localStorage.setItem('plonk_theme', p) } catch { /* без хранилища */ }
+    const dark = p === 'dark' || (p === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+  }
+  return (
+    <span className="theme-switch" role="radiogroup" aria-label={t('profile.theme')}>
+      {['light', 'dark', 'system'].map((k) => (
+        <button key={k} type="button" role="radio" aria-checked={pref === k} className={pref === k ? 'on' : ''} onClick={() => apply(k)}>{t(`profile.theme_${k}`)}</button>
+      ))}
+    </span>
+  )
 }

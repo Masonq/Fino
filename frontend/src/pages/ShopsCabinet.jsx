@@ -41,22 +41,27 @@ export default function ShopsCabinet() {
 
 function MyShops({ data, reload }) {
   const { t } = useTranslation()
+  const [statsFor, setStatsFor] = useState(null)
   if (!data) return <RowSkeletons count={3} thumb="tall" />
   if (!data.items.length) return <div className="empty-state"><p className="empty-hint">{t('shops.none_mine')}</p><Link className="jr-btn primary" to="/shops/new">{t('shops.create_first')}</Link></div>
-  return data.items.map((s) => (
+  return (<>
+    {statsFor && <ShopStatsSheet shop={statsFor} onClose={() => setStatsFor(null)} />}
+    {data.items.map((s) => (
     <div key={s.id} className="sh-mine">
       <div className="sh-mine-poster">{s.poster_url ? <img src={s.poster_url} alt="" /> : <span className="sh-spin" />}</div>
       <div className="sh-mine-body">
         <span className={`sh-status st-${s.status}`}>{t(`shops.st_${s.status}`)}</span>
         <div className="sh-mine-caption">{s.caption || t('shops.no_caption')}</div>
         {s.status === 'rejected' && s.reject_reason && <div className="jr-err sm">{s.reject_reason}</div>}
+        {/* цифры шопса — подписанными плитками (были значки-эмодзи без подписей); нажатие — подробная статистика */}
         {s.stats && (
-          <div className="sh-stats">
-            <span title={t('shops.views')}>👁 {s.stats.views}</span>
-            <span title={t('shops.completes')}>✓ {s.stats.completes}</span>
-            <span title={t('shops.taps')}>👆 {s.stats.taps}</span>
-            <span title={t('shops.chats')}>💬 {s.stats.chats}</span>
-          </div>
+          <button type="button" className="shm-stats" onClick={() => setStatsFor(s)}>
+            <span><b>{s.stats.views}</b>{t('shops.m_views')}</span>
+            <span><b>{pct(s.stats.completes, s.stats.views)}</b>{t('shops.m_watched')}</span>
+            <span><b>{s.stats.taps}</b>{t('shops.m_taps')}</span>
+            <span><b>{s.stats.chats}</b>{t('shops.m_chats')}</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="m9 6 6 6-6 6" /></svg>
+          </button>
         )}
         <div className="jr-actions">
           {s.status === 'active' && <Link className="jr-btn ghost sm" to={`/shops?start=${s.id}`}>{t('shops.watch')}</Link>}
@@ -65,7 +70,8 @@ function MyShops({ data, reload }) {
         </div>
       </div>
     </div>
-  ))
+  ))}
+  </>)
 }
 
 function Orders({ creator, lang }) {
@@ -229,6 +235,57 @@ export function AdminShops() {
           ))}
         </>
       )}
+    </div>
+  )
+}
+
+const pct = (a, b) => (b ? `${Math.round((a / b) * 100)}%` : '—')
+
+/**
+ * Статистика шопса: воронка «показали → досмотрели → нажали на вещь → написали» с долями на каждом шаге,
+ * график просмотров по дням и подсказка, что улучшить, — чтобы автор видел, где теряются зрители.
+ */
+function ShopStatsSheet({ shop, onClose }) {
+  const { t } = useTranslation()
+  const [data, setData] = useState(null)
+  useEffect(() => { api.shopStats(shop.id).then(setData).catch(() => setData({ total: shop.stats, days: [] })) }, [shop.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  const tot = data?.total || shop.stats
+  const steps = [
+    ['views', t('shops.f_views'), tot.views],
+    ['completes', t('shops.f_watched'), tot.completes],
+    ['taps', t('shops.f_taps'), tot.taps],
+    ['chats', t('shops.f_chats'), tot.chats],
+  ]
+  const days = (data?.days || []).slice(-14)
+  const max = Math.max(1, ...days.map((d) => d.views))
+  const watchRate = tot.views ? tot.completes / tot.views : 0
+  const tapRate = tot.completes ? tot.taps / tot.completes : 0
+  const tip = !tot.views ? t('shops.tip_new') : watchRate < 0.3 ? t('shops.tip_watch') : tapRate < 0.1 ? t('shops.tip_tap') : t('shops.tip_ok')
+  return (
+    <div className="shs-backdrop" onClick={onClose}>
+      <div className="shs" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={t('shops.stats_title')}>
+        <div className="shs-handle" />
+        <div className="shs-head"><b>{t('shops.stats_title')}</b><span>{shop.caption || t('shops.no_caption')}</span></div>
+        <div className="shs-funnel">
+          {steps.map(([k, label, n], i) => (
+            <div key={k} className="shs-step">
+              <div className="shs-step-top"><span>{label}</span><b>{n}</b></div>
+              <div className="shs-bar"><i style={{ width: `${tot.views ? Math.max(3, (n / tot.views) * 100) : 0}%` }} /></div>
+              {i > 0 && <div className="shs-rate">{t('shops.of_prev', { p: pct(n, steps[i - 1][2]) })}</div>}
+            </div>
+          ))}
+        </div>
+        {days.length > 1 && (
+          <>
+            <div className="shs-sub">{t('shops.by_day')}</div>
+            <div className="shs-chart">
+              {days.map((d) => <span key={d.day} title={`${d.day}: ${d.views}`} style={{ height: `${Math.max(4, (d.views / max) * 100)}%` }} />)}
+            </div>
+          </>
+        )}
+        <div className="shs-tip">{tip}</div>
+        <button type="button" className="shs-close" onClick={onClose}>{t('qb.done')}</button>
+      </div>
     </div>
   )
 }

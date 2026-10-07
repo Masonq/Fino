@@ -1098,7 +1098,8 @@
     "theme_auto": "System",
     "theme_light": "Light",
     "theme_dark": "Dark",
-    "act_shops": "My shops"
+    "act_shops": "My shops",
+    "theme_system": "Auto"
   },
   "verify": {
     "title": "Identity verification",
@@ -1678,7 +1679,22 @@
     "report_c": "Report",
     "link_copied": "Link copied",
     "open_listing": "Open listing",
-    "login_to": "Sign in to like and comment"
+    "login_to": "Sign in to like and comment",
+    "m_views": "views",
+    "m_watched": "watched",
+    "m_taps": "tapped item",
+    "m_chats": "messaged",
+    "stats_title": "Shop stats",
+    "f_views": "Shown",
+    "f_watched": "Watched to the end",
+    "f_taps": "Tapped the item",
+    "f_chats": "Messaged the seller",
+    "of_prev": "{{p}} of previous step",
+    "by_day": "Views by day",
+    "tip_new": "Just published — first views will come within a day.",
+    "tip_watch": "Few watch to the end: show the item in the first 2 seconds and keep it to 15–20 seconds.",
+    "tip_tap": "Watched but not tapped: pin the item when it is best visible and add the price to the caption.",
+    "tip_ok": "This shop works well — record a similar one for other items."
   },
   "sf": {
     "title_suffix": "storefront on PLONK",

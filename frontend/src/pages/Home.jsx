@@ -689,25 +689,7 @@ export default function Home() {
           <Link to="/favorites" className="avito-fav-pill" aria-label={t('nav.favorites')}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" /></svg>
           </Link>
-          <Link to={user ? '/profile' : '/login'} className="avito-login-pill">
-            {/* Пока идёт проверка токена, user ещё null — раньше тут
-                на секунду показывалось «Войти» текстом, а затем резко
-                сжималось в кружок аватара: заметный скачок макета при
-                каждом обновлении у любого вошедшего человека. Нейтральный
-                кружок того же размера, что и у итогового аватара, не
-                дёргается ни в одну сторону, каким бы ни был исход. */}
-            {authLoading
-              ? <div className="avatar-mini skeleton" />
-              : user
-                ? (
-                  <Avatar
-                    src={user.avatar_url}
-                    name={user.company_name || user.display_name}
-                    className={user.role === 'seller_business' ? 'avatar-mini is-company' : 'avatar-mini'}
-                  />
-                )
-                : t('common.login')}
-          </Link>
+          {/* профиль сверху убран — он есть в нижнем меню */}
         </div>
       </div>
 
