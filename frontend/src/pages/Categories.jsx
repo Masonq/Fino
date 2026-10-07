@@ -1,3 +1,4 @@
+import { goBack } from '../utils/goBack'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
@@ -39,7 +40,7 @@ export default function Categories() {
   return (
     <div className="categories-page">
       <div className="cats-head">
-        <button className="cats-back" onClick={() => navigate(-1)} aria-label={t('actions.back')}>
+        <button className="cats-back" onClick={() => goBack(navigate, '/')} aria-label={t('actions.back')}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
         </button>
         <div className="cats-title">{t('common.all_categories')}</div>

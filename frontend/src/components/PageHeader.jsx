@@ -1,3 +1,4 @@
+import { goBack } from '../utils/goBack'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
@@ -15,7 +16,7 @@ export default function PageHeader({ title, count, back = true, kicker, subtitle
   const backBtn = back && (
     <button
       className="page-back"
-      onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))}
+      onClick={() => goBack(navigate, '/')}
       aria-label={t('actions.back')}
     >
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">

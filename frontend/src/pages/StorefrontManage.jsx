@@ -75,7 +75,7 @@ export default function StorefrontManage() {
           <span className={`sh-status st-${sf.status === 'published' ? 'active' : sf.status === 'blocked' ? 'rejected' : sf.status === 'paused' ? 'moderation' : 'draft'}`}>{t(`sf.st_${sf.status}`)}</span>
           <span className="jr-muted">{t('sf.views_n', { count: sf.views })} · {t('sf.followers_n', { count: sf.followers })}</span>
         </div>
-        {live && <div className="sf-url"><span>{url.replace(/^https?:\/\//, '')}</span><button type="button" className="jr-btn ghost sm" onClick={() => navigator.clipboard?.writeText(url).then(() => toast(t('sf.link_copied')))}>{t('sf.copy')}</button></div>}
+        {live && <div className="sf-url"><span>{url.replace(/^https?:\/\//, '')}</span><button type="button" className="jr-btn ghost sm" onClick={() => navigator.clipboard?.writeText(url).then(() => toast(t('sf.link_copied'))).catch(() => {})}>{t('sf.copy')}</button></div>}
         <div className="jr-actions">
           {sf.status === 'draft' && <button type="button" className="jr-btn primary" onClick={() => run(api.sfState({ action: 'publish' }, lang), 'sf.published')}>{t('sf.publish')}</button>}
           {sf.status === 'published' && <button type="button" className="jr-btn ghost" onClick={() => setPause({ until: '', note: '' })}>{t('sf.pause')}</button>}

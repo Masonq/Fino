@@ -1,3 +1,4 @@
+import { goBack } from '../utils/goBack'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -98,7 +99,7 @@ export default function Storefront() {
     <div className="page sf-page">
       <div className="sf-cover">
         {sf.cover_url ? <img src={sf.cover_url} alt="" /> : <span className="sf-cover-empty" />}
-        <button type="button" className="sf-back" onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))} aria-label={t('shops.close')}>
+        <button type="button" className="sf-back" onClick={() => goBack(navigate, '/vitriny')} aria-label={t('shops.close')}>
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round"><path d="m15 18-6-6 6-6" /></svg>
         </button>
       </div>

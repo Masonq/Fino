@@ -1,3 +1,4 @@
+import { goBack } from '../utils/goBack'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -428,7 +429,7 @@ export default function EditListing() {
           <button className="edit-save" disabled={busy} onClick={save}>
             {busy ? '…' : t('edit.save')}
           </button>
-          <button className="edit-cancel" onClick={() => navigate(-1)}>
+          <button className="edit-cancel" onClick={() => goBack(navigate, '/my')}>
             {t('rev.cancel')}
           </button>
         </div>
