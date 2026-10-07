@@ -8513,20 +8513,71 @@ html[data-theme="dark"] img{ filter:none; }
 .shm-stats span{ display:flex; flex-direction:column; font-size:11px; font-weight:600; color:var(--muted); line-height:1.2; }
 .shm-stats b{ font-size:17px; font-weight:800; color:var(--ink); letter-spacing:-0.02em; }
 .shm-stats svg{ color:var(--muted); }
-.shs-backdrop{ position:fixed; inset:0; z-index:70; background:rgba(15,21,18,.32); display:flex; align-items:flex-end; animation:ui-fade-in .18s ease; }
-.shs{ width:100%; max-width:520px; margin:0 auto; background:var(--surface); border-radius:26px 26px 0 0; padding:8px 16px calc(16px + var(--sab)); animation:ui-sheet-up .38s cubic-bezier(.2,1.1,.35,1); max-height:88vh; overflow-y:auto; }
-.shs-handle{ width:40px; height:5px; border-radius:3px; background:var(--surface-sunken-2); margin:4px auto 12px; }
-.shs-head{ display:flex; flex-direction:column; gap:2px; margin-bottom:14px; }
-.shs-head b{ font-size:20px; font-weight:800; letter-spacing:-0.02em; }
-.shs-head span{ font-size:13.5px; color:var(--muted); }
-.shs-funnel{ display:flex; flex-direction:column; gap:12px; }
-.shs-step-top{ display:flex; justify-content:space-between; font-size:14px; font-weight:700; margin-bottom:6px; }
-.shs-step-top b{ font-size:16px; font-weight:800; }
-.shs-bar{ height:10px; border-radius:5px; background:var(--surface-sunken); overflow:hidden; }
-.shs-bar i{ display:block; height:100%; border-radius:5px; background:var(--primary); transition:width .5s ease; }
-.shs-rate{ margin-top:4px; font-size:12px; font-weight:600; color:var(--muted); }
-.shs-sub{ margin:18px 0 8px; font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
-.shs-chart{ display:flex; align-items:flex-end; gap:4px; height:90px; padding:6px; border-radius:14px; background:var(--surface-sunken); }
-.shs-chart span{ flex:1; border-radius:4px 4px 2px 2px; background:var(--primary); opacity:.85; min-height:3px; }
-.shs-tip{ margin-top:16px; padding:12px 14px; border-radius:16px; background:var(--primary-soft); color:var(--ink); font-size:14px; line-height:1.45; }
-.shs-close{ width:100%; height:50px; margin-top:14px; border-radius:16px; background:var(--inverse); color:var(--on-inverse); font-size:16px; font-weight:800; }
+.shst-backdrop{ position:fixed; inset:0; z-index:70; background:rgba(15,21,18,.32); display:flex; align-items:flex-end; animation:ui-fade-in .18s ease; }
+.shst{ width:100%; max-width:520px; margin:0 auto; background:var(--surface); border-radius:26px 26px 0 0; padding:8px 16px calc(16px + var(--sab)); animation:ui-sheet-up .38s cubic-bezier(.2,1.1,.35,1); max-height:88vh; overflow-y:auto; }
+.shst-handle{ width:40px; height:5px; border-radius:3px; background:var(--surface-sunken-2); margin:4px auto 12px; }
+.shst-head{ display:flex; flex-direction:column; gap:2px; margin-bottom:14px; }
+.shst-head b{ font-size:20px; font-weight:800; letter-spacing:-0.02em; }
+.shst-head span{ font-size:13.5px; color:var(--muted); }
+.shst-funnel{ display:flex; flex-direction:column; gap:12px; }
+.shst-step-top{ display:flex; justify-content:space-between; font-size:14px; font-weight:700; margin-bottom:6px; }
+.shst-step-top b{ font-size:16px; font-weight:800; }
+.shst-bar{ height:10px; border-radius:5px; background:var(--surface-sunken); overflow:hidden; }
+.shst-bar i{ display:block; height:100%; border-radius:5px; background:var(--primary); transition:width .5s ease; }
+.shst-rate{ margin-top:4px; font-size:12px; font-weight:600; color:var(--muted); }
+.shst-sub{ margin:18px 0 8px; font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+.shst-chart{ display:flex; align-items:flex-end; gap:4px; height:90px; padding:6px; border-radius:14px; background:var(--surface-sunken); }
+.shst-chart span{ flex:1; border-radius:4px 4px 2px 2px; background:var(--primary); opacity:.85; min-height:3px; }
+.shst-tip{ margin-top:16px; padding:12px 14px; border-radius:16px; background:var(--primary-soft); color:var(--ink); font-size:14px; line-height:1.45; }
+.shst-close{ width:100%; height:50px; margin-top:14px; border-radius:16px; background:var(--inverse); color:var(--on-inverse); font-size:16px; font-weight:800; }
+/* цифры шопса: короткие подписи в одну строку, числа на одной линии */
+.shm-stats{ align-items:start; }
+.shm-stats span{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.shm-stats svg{ align-self:center; }
+/* переключатель темы — прижат вправо, как язык */
+.profile-row .theme-switch{ margin-left:auto; flex:none; }
+
+/* =====================================================================
+   Тёмная тема — доводка по замеру контраста: плитки подразделов на страницах разделов задают цвет прямо в
+   разметке (светлый пастельный) — в тёмной теме смешиваем его с фоном карточки, подписи остаются светлыми;
+   чипы форм, поля и прочие места со светлыми цветами «по умолчанию» — тёмные.
+   ===================================================================== */
+html[data-theme="dark"] .jl-tile, html[data-theme="dark"] .cat-tile-2row[data-cat], html[data-theme="dark"] .post-cat-item[data-cat],
+html[data-theme="dark"] .landing .landing-sub:not(.skeleton){ background:color-mix(in srgb, var(--tint, #F3EBDB) 14%, #272E2A) !important; }
+html[data-theme="dark"] .jl-tile-text, html[data-theme="dark"] .cat-tile-2row-label{ color:var(--ink) !important; }
+html[data-theme="dark"] .landing-chip, html[data-theme="dark"] .cat-chip, html[data-theme="dark"] .lp-filters .cat-chip, html[data-theme="dark"] .field-chips .chip{
+  background:var(--surface-sunken) !important; color:var(--ink) !important; border-color:transparent !important; }
+html[data-theme="dark"] .landing-chip.on, html[data-theme="dark"] .cat-chip.on, html[data-theme="dark"] .field-chips .chip-active{ background:var(--inverse) !important; color:var(--on-inverse) !important; }
+html[data-theme="dark"] .lp-filters input, html[data-theme="dark"] .lp-filters select, html[data-theme="dark"] .landing-input{ background:var(--surface-sunken) !important; color:var(--ink) !important; }
+html[data-theme="dark"] .lp-all .jl-tile-text svg, html[data-theme="dark"] .lp-all svg{ color:var(--ink); }
+/* тёмная тема — по замеру контраста: тёмно-зелёный текст ссылок и подписей → светло-зелёный; плитки с цветом
+   в разметке (цифры профиля, разделы «Панели команды», сводки) → приглушённые оттенки */
+html[data-theme="dark"]{ --primary-deep:#86DDB6; --accent-deep:#F4A98C; --warn-ink:#F2CF85; --danger-ink:#F5A9A6; }
+html[data-theme="dark"] .profile-stats > *, html[data-theme="dark"] .ah-tile, html[data-theme="dark"] .au-stat, html[data-theme="dark"] .jobs-sum-item{
+  background:color-mix(in srgb, currentColor 0%, #2F3833) !important; }
+html[data-theme="dark"] .profile-stats > :nth-child(1){ background:#2A3D32 !important; }
+html[data-theme="dark"] .profile-stats > :nth-child(2){ background:#2A3446 !important; }
+html[data-theme="dark"] .profile-stats > :nth-child(3){ background:#45313B !important; }
+html[data-theme="dark"] .profile-stat span, html[data-theme="dark"] .profile-stat small, html[data-theme="dark"] .au-stat span, html[data-theme="dark"] .jobs-sum-item span{ color:var(--ink-soft) !important; }
+html[data-theme="dark"] .ah-tile, html[data-theme="dark"] .ah-tile svg{ color:var(--ink) !important; }
+html[data-theme="dark"] .funnel-pct, html[data-theme="dark"] .stats-bars-info, html[data-theme="dark"] .mod-category, html[data-theme="dark"] .hs-all,
+html[data-theme="dark"] .seller-show-all{ color:var(--primary-deep) !important; }
+html[data-theme="dark"] .stats-bars-info{ color:var(--ink-soft) !important; }
+html[data-theme="dark"] b, html[data-theme="dark"] strong{ color:inherit; }
+html[data-theme="dark"] .au-sec.danger, html[data-theme="dark"] .au-group.danger .au-row.bad .au-row-value{ color:#F5A9A6 !important; }
+/* плитка цифр шопса: подписи в одну строку, числа на одной линии */
+.shm-stats{ align-items:start; }
+.shm-stats span{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.shm-stats svg{ align-self:center; }
+/* переключатель темы — прижат вправо, как язык */
+.theme-switch{ margin-left:auto; }
+/* тёмная тема — доделки: плитки подразделов на страницах разделов (их цвет задаётся на странице светлым оттенком —
+   в тёмной смешиваем его с фоном карточки), «+» в меню и значок «Все» — светлые на тёмно-мятном */
+html[data-theme="dark"] .landing .jl-tile, html[data-theme="dark"] .jl-tile{ background:color-mix(in srgb, var(--tint, #8a8a8a) 16%, var(--surface)) !important; }
+html[data-theme="dark"] .jl-tile-text, html[data-theme="dark"] .cat-tile-2row-label, html[data-theme="dark"] .post-cat-item span{ color:var(--ink) !important; }
+html[data-theme="dark"] .nav-item-post .nav-icon-wrap, html[data-theme="dark"] body.sh-open .nav-item-post .nav-icon-wrap{ color:var(--on-inverse) !important; }
+html[data-theme="dark"] .cat-tile-2row.all .all-glyph svg, html[data-theme="dark"] .cat-tile-2row.all .cat-tile-2row-glyph.all-glyph svg{ color:var(--on-inverse) !important; }
+html[data-theme="dark"] .cat-chip, html[data-theme="dark"] .landing-chip, html[data-theme="dark"] .cat-mode{ background:var(--surface-sunken) !important; color:var(--ink) !important; }
+html[data-theme="dark"] .cat-chip.on, html[data-theme="dark"] .landing-chip.on, html[data-theme="dark"] .cat-mode.on{ background:var(--inverse) !important; color:var(--on-inverse) !important; }
+html[data-theme="dark"] .lp-all svg, html[data-theme="dark"] .lp-all .jl-tile-text svg{ color:var(--ink); }
+html[data-theme="dark"] select{ background-color:var(--surface-sunken); }

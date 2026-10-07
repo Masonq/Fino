@@ -262,29 +262,29 @@ function ShopStatsSheet({ shop, onClose }) {
   const tapRate = tot.completes ? tot.taps / tot.completes : 0
   const tip = !tot.views ? t('shops.tip_new') : watchRate < 0.3 ? t('shops.tip_watch') : tapRate < 0.1 ? t('shops.tip_tap') : t('shops.tip_ok')
   return (
-    <div className="shs-backdrop" onClick={onClose}>
-      <div className="shs" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={t('shops.stats_title')}>
-        <div className="shs-handle" />
-        <div className="shs-head"><b>{t('shops.stats_title')}</b><span>{shop.caption || t('shops.no_caption')}</span></div>
-        <div className="shs-funnel">
+    <div className="shst-backdrop" onClick={onClose}>
+      <div className="shst" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={t('shops.stats_title')}>
+        <div className="shst-handle" />
+        <div className="shst-head"><b>{t('shops.stats_title')}</b><span>{shop.caption || t('shops.no_caption')}</span></div>
+        <div className="shst-funnel">
           {steps.map(([k, label, n], i) => (
-            <div key={k} className="shs-step">
-              <div className="shs-step-top"><span>{label}</span><b>{n}</b></div>
-              <div className="shs-bar"><i style={{ width: `${tot.views ? Math.max(3, (n / tot.views) * 100) : 0}%` }} /></div>
-              {i > 0 && <div className="shs-rate">{t('shops.of_prev', { p: pct(n, steps[i - 1][2]) })}</div>}
+            <div key={k} className="shst-step">
+              <div className="shst-step-top"><span>{label}</span><b>{n}</b></div>
+              <div className="shst-bar"><i style={{ width: `${tot.views ? Math.max(3, (n / tot.views) * 100) : 0}%` }} /></div>
+              {i > 0 && <div className="shst-rate">{t('shops.of_prev', { p: pct(n, steps[i - 1][2]) })}</div>}
             </div>
           ))}
         </div>
         {days.length > 1 && (
           <>
-            <div className="shs-sub">{t('shops.by_day')}</div>
-            <div className="shs-chart">
+            <div className="shst-sub">{t('shops.by_day')}</div>
+            <div className="shst-chart">
               {days.map((d) => <span key={d.day} title={`${d.day}: ${d.views}`} style={{ height: `${Math.max(4, (d.views / max) * 100)}%` }} />)}
             </div>
           </>
         )}
-        <div className="shs-tip">{tip}</div>
-        <button type="button" className="shs-close" onClick={onClose}>{t('qb.done')}</button>
+        <div className="shst-tip">{tip}</div>
+        <button type="button" className="shst-close" onClick={onClose}>{t('qb.done')}</button>
       </div>
     </div>
   )
