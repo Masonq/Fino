@@ -334,7 +334,7 @@ export default function Moderation() {
 
   return (
     <div className="fav-page mod-page">
-      <PageHeader title={t('mod.title')} count={total} />
+      <PageHeader title={t('mod.title')} kicker={!loaded ? '\u00a0' : total > 0 ? t('mod.kicker_n', { count: total }) : t('mod.kicker_empty')} />
 
       {/* Вкладки той же полосой, что отборы на остальных экранах
           админки: на каждом экране одно и то же место и один и тот же
@@ -356,16 +356,16 @@ export default function Moderation() {
       </div>
 
       {tab === 'listings' && !day && (
-        <div className="mod-day" aria-hidden="true" style={{ visibility: 'hidden' }}>
+        <div className="mod-day mod-day-tiles" aria-hidden="true" style={{ visibility: 'hidden' }}>
           <span><b>0</b> {t('mod.day_mine')}</span>
           <span><b>0</b> {t('mod.day_team')}</span>
           <span><b>0</b> {t('mod.day_oldest')}</span>
         </div>
       )}
       {tab === 'listings' && day && (
-        <div className="mod-day">
-          <span><b>{day.mine.approved + day.mine.rejected}</b> {t('mod.day_mine')}</span>
-          <span><b>{day.team.approved + day.team.rejected}</b> {t('mod.day_team')}</span>
+        <div className="mod-day mod-day-tiles">
+          <span className="t1"><b>{day.mine.approved + day.mine.rejected}</b> {t('mod.day_mine')}</span>
+          <span className="t2"><b>{day.team.approved + day.team.rejected}</b> {t('mod.day_team')}</span>
           {day.oldest_waiting_hours != null && (
             <span className={day.oldest_waiting_hours > 24 ? 'warn' : ''}>
               <b>{day.oldest_waiting_hours < 1 ? '<1' : Math.round(day.oldest_waiting_hours)}</b> {t('mod.day_oldest')}

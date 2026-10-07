@@ -530,7 +530,9 @@
     "pick_owner": "Select all {{count}}",
     "picked_one": "{{count}} selected",
     "picked_other": "{{count}} selected",
-    "duplicate_hint": "Looks like a duplicate: seller already has this live"
+    "duplicate_hint": "Looks like a duplicate: seller already has this live",
+    "kicker_n": "{{count}} awaiting review",
+    "kicker_empty": "Queue is empty"
   },
   "rev": {
     "title": "Reviews",
@@ -1705,7 +1707,8 @@
     "tip_new": "Just published — first views will come within a day.",
     "tip_watch": "Few watch to the end: show the item in the first 2 seconds and keep it to 15–20 seconds.",
     "tip_tap": "Watched but not tapped: pin the item when it is best visible and add the price to the caption.",
-    "tip_ok": "This shop works well — record a similar one for other items."
+    "tip_ok": "This shop works well — record a similar one for other items.",
+    "mod_none": "Nothing to review"
   },
   "sf": {
     "title_suffix": "storefront on PLONK",

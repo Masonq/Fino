@@ -204,10 +204,11 @@ export function AdminShops() {
   }
   return (
     <div className="page sh-cab">
-      <PageHeader title={t('shops.moderation')} />
+      <PageHeader title={t('shops.moderation')} kicker={q ? ((q.shops.length + q.creators.length) ? t('mod.kicker_n', { count: q.shops.length + q.creators.length }) : t('mod.kicker_empty')) : '\u00a0'} />
       {q === null ? <RowSkeletons count={3} thumb="tall" /> : (
         <>
           <div className="sh-section-title">{t('shops.mod_shops', { n: q.shops.length })}</div>
+          {q.shops.length === 0 && <div className="admin-empty-card">{t('shops.mod_none')}</div>}
           {q.shops.map((s) => (
             <div key={s.id} className="sh-mod">
               <video src={s.video_url} poster={s.poster_url} controls playsInline className="sh-mod-video" />
@@ -223,6 +224,7 @@ export function AdminShops() {
             </div>
           ))}
           <div className="sh-section-title">{t('shops.mod_creators', { n: q.creators.length })}</div>
+          {q.creators.length === 0 && <div className="admin-empty-card">{t('shops.mod_none')}</div>}
           {q.creators.map((a) => (
             <div key={a.id} className="jr-card">
               <div className="jr-name">{a.user.name}{a.audience ? ` · ${a.audience.toLocaleString('ru-RU')}` : ''}</div>

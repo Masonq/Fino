@@ -544,7 +544,9 @@
     "picked_one": "{{count}} označen",
     "picked_few": "{{count}} označena",
     "picked_other": "{{count}} označenih",
-    "duplicate_hint": "Liči na duplikat: prodavac već ima ovo aktivno"
+    "duplicate_hint": "Liči na duplikat: prodavac već ima ovo aktivno",
+    "kicker_n": "{{count}} čeka proveru",
+    "kicker_empty": "Red je prazan"
   },
   "rev": {
     "title": "Recenzije",
@@ -1752,7 +1754,8 @@
     "tip_new": "Šops je tek objavljen — prvi pregledi stižu u toku dana.",
     "tip_watch": "Malo ih gleda do kraja: pokažite stvar u prve 2 sekunde i skratite na 15–20 sekundi.",
     "tip_tap": "Gledaju, ali ne klikću: zakačite stvar kad se najbolje vidi i navedite cenu u opisu.",
-    "tip_ok": "Šops radi dobro — snimite sličan za druge stvari."
+    "tip_ok": "Šops radi dobro — snimite sličan za druge stvari.",
+    "mod_none": "Nema ništa za proveru"
   },
   "sf": {
     "title_suffix": "izlog na PLONK-u",
