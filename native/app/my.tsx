@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   tabTextOn: { color: colors.onInverse },
   tabCount: { fontSize: 12, fontFamily: font[800], color: colors.muted },
   emptyBox: { alignItems: 'center', gap: 14, paddingTop: 44, paddingHorizontal: 32 },
-  emptyIcon: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  emptyIcon: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
   emptyText: { fontSize: 14.5, fontFamily: font[600], color: colors.muted },
   emptyBtn: { marginTop: 4, height: 42, paddingHorizontal: 20, borderRadius: 13, backgroundColor: colors.inverse, justifyContent: 'center' },
   emptyBtnText: { color: colors.onInverse, fontSize: 14.5, fontFamily: font[800] },

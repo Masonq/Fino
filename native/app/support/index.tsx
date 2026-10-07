@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.bg },
   top: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, height: 52 },
   back: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, shadowColor: '#0F1512', shadowOpacity: 0.07, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
-  title: { fontSize: 20, fontFamily: font[800], color: colors.ink, marginLeft: 4 },
+  title: { fontSize: 27, fontFamily: font[800], letterSpacing: -0.8, color: colors.ink, marginLeft: 8 },
   body: { paddingHorizontal: 12 },
   card: { borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
   section: { padding: 12, gap: 8 },
