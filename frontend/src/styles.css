@@ -7994,3 +7994,13 @@ body, .app-shell{ background:transparent !important; }
 .page-hero:has(.ph-actions > :nth-child(2)) .ph-actions{ order:3; width:100%; padding-left:52px; }
 .page-hero:has(.ph-actions > :nth-child(2)) .ph-title.is-long{ font-size:27px; }
 .page-hero:has(.ph-actions > :nth-child(2)) .ph-actions{ justify-content:flex-start; } .page-hero:has(.ph-actions > :nth-child(2)) .ph-actions > *{ margin-left:0 !important; }
+
+/* вход — первое, что видит новичок: на фоне с сиянием бренда, логотип со свечением, кнопки как на главной */
+.auth-page{ background:transparent !important; }
+.auth-logo{ filter:drop-shadow(0 10px 24px rgba(15,163,106,.28)); }
+.auth-page h1, .auth-page h2{ font-size:30px; letter-spacing:-0.04em; }
+.auth-method{ min-height:56px; border-radius:18px; font-size:16px; font-weight:800; border:0 !important; box-shadow:0 1px 2px rgba(15,21,18,.05), 0 6px 18px rgba(15,21,18,.06); transition:transform .18s cubic-bezier(.2,1.4,.4,1); }
+.auth-method:active{ transform:scale(.97); }
+.auth-method.primary{ background:var(--inverse) !important; color:var(--on-inverse) !important; box-shadow:0 8px 20px rgba(15,21,18,.18); }
+.auth-method.telegram{ background:var(--surface) !important; }
+.auth-close{ width:40px; height:40px; border-radius:50%; background:var(--surface); box-shadow:0 1px 2px rgba(15,21,18,.05), 0 6px 18px rgba(15,21,18,.06); display:flex; align-items:center; justify-content:center; }

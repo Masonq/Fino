@@ -32,7 +32,7 @@ export default function PageHeader({ title, count, back = true, kicker, subtitle
         {backBtn}
         <div className="ph-text">
           {kicker && <span className="ph-kicker">{kicker}</span>}
-          <h1 className={`ph-title${String(title || '').length > (children ? 12 : 16) ? ' is-long' : ''}`}><span className="page-title-text">{title}</span>{count > 0 && <span className="fav-count">{count}</span>}</h1>
+          <h1 className={`ph-title${String(title || '').length > (children ? 12 : 19) ? ' is-long' : ''}`}><span className="page-title-text">{title}</span>{count > 0 && <span className="fav-count">{count}</span>}</h1>
         </div>
         {children && <div className="ph-actions">{children}</div>}
       </div>
