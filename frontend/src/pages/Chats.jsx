@@ -49,7 +49,7 @@ export default function Chats() {
   return (
     <div className="fav-page chats-page">
       <PageHeader title={t('nav.chats')} back={false}
-        kicker={unreadN > 0 ? t('chats.kicker_unread', { count: unreadN }) : t('chats.kicker_all')} />
+        kicker={count === null ? '\u00a0' : unreadN > 0 ? t('chats.kicker_unread', { count: unreadN }) : t('chats.kicker_all')} />
 
       {/* На десктопе список — левая колонка постоянно открытой
           двухпанельной переписки (см. .chats-layout в styles.css и

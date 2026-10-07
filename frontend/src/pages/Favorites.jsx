@@ -71,7 +71,7 @@ export default function Favorites() {
   return (
     <div className="fav-page">
       <PageHeader title={t('favorites.title')}
-        kicker={loaded && visible.length ? `${t('favorites.kicker_n', { count: visible.length })}${nDropped ? ` · ${t('favorites.kicker_drop', { count: nDropped })}` : ''}` : t('favorites.kicker_empty')} />
+        kicker={!loaded ? '\u00a0' : visible.length ? `${t('favorites.kicker_n', { count: visible.length })}${nDropped ? ` · ${t('favorites.kicker_drop', { count: nDropped })}` : ''}` : t('favorites.kicker_empty')} />
       {loaded && visible.length > 1 && (
         <div className="fav-sort">
           {[['added', t('favorites.sort_added')], ['drop', nDropped ? `${t('favorites.sort_drop')} · ${nDropped}` : t('favorites.sort_drop')], ['cheap', t('favorites.sort_cheap')], ['exp', t('favorites.sort_exp')]].map(([k, label]) => (

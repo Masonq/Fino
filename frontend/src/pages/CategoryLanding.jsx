@@ -693,6 +693,15 @@ function CategoryLandingPage() {
           </div>
         </>
       )}
+      {/* скелет плиток подразделов — на том же месте, где появятся плитки (раньше он стоял ниже формы подбора:
+          плитки приходили сверху и сталкивали форму вниз на ~300 px — замер CLS 0,37 на «Авто») */}
+      {!category && !isRE && !isParts && !isBusiness && (
+        <div className="lp-grid lp-grid-sk" aria-hidden="true">
+          {[3, 2, 2].map((n, r) => (
+            <div key={r} className="lp-grid-row">{Array.from({ length: n }).map((_, i) => <div key={i} className="jl-tile sk-block" style={{ flex: 1 }} />)}</div>
+          ))}
+        </div>
+      )}
       {!isRE && !isParts && !isBusiness && category?.children?.length > 0 && (() => {
         const subs = category.children
         const labelOf = (x) => x.name?.[i18n.language] || x.name?.ru
@@ -906,13 +915,6 @@ function CategoryLandingPage() {
           настоящих плиток скелетон будет чуть выше финального блока,
           это меньшее зло по сравнению с прежним скачком со всей
           высоты разом. */}
-      {!category && (
-        <div className="landing-subs">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div className="landing-sub skeleton" key={i} />
-          ))}
-        </div>
-      )}
       {/* Подразделы: если отвечать на вопросы нечем, человек всё равно
           видит, что тут есть. Как у Авито — несколько плиток с картинкой
           и «Все категории» последней, а не весь список сразу: длинный

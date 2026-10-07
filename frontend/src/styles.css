@@ -8193,3 +8193,10 @@ body, .app-shell{ background:transparent !important; }
 .audit-at{ font-variant-numeric:tabular-nums; color:var(--muted); font-weight:700; }
 .audit-what{ font-weight:700; }
 .audit-day .audit-day-title{ position:static !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important; } /* в карточке дня заголовок обычный: липкий наезжал на первую строку */
+/* шапка-приветствие страниц: без въезда снизу — при открытии текст не «прыгает», только мягко проявляется */
+.page-hero .ph-kicker, .page-hero .ph-title{ animation:ui-fade-in .25s ease both !important; }
+/* продавец: «Подписаться» — внутри полей карточки и не во всю ширину; «пожаловаться» — нормальный значок */
+.seller-head .seller-sub-btn{ align-self:center !important; width:auto; min-width:200px; max-width:280px; padding:0 28px; margin-top:4px; }
+.ph-actions svg{ width:18px; height:18px; }
+.ph-actions .report-btn svg, .ph-actions button svg{ width:18px !important; height:18px !important; }
+.ph-actions > .report-icon-btn, .ph-actions > .notif-bell{ width:40px; padding:0 !important; } .ph-actions svg{ flex:none; } /* значок-кнопка: поля 16 px сжимали значок до 8 px */
