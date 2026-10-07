@@ -1,3 +1,4 @@
+import EmptyArt from '../src/components/EmptyArt'
 import { success } from '../src/haptics'
 import { Image } from 'expo-image'
 import { router, useFocusEffect } from 'expo-router'
@@ -40,7 +41,7 @@ export default function Reviews() {
       </View>
       {items === null ? <ActivityIndicator style={{ marginTop: 30 }} color={colors.primary} /> : (
         <ScrollView contentContainerStyle={{ padding: 16, gap: 10 }}>
-          {items.length === 0 && <View style={styles.emptyBox}><View style={styles.emptyIcon}><Icon name="star" size={28} color={colors.primary} /></View><Text style={styles.emptyMsg}>{tr('Никто не ждёт отзыва. Отзывы появляются после переписки, похожей на сделку.')}</Text></View>}
+          {items.length === 0 && <View style={styles.emptyBox}><EmptyArt name="reviews" /><Text style={styles.emptyMsg}>{tr('Никто не ждёт отзыва. Отзывы появляются после переписки, похожей на сделку.')}</Text></View>}
           {items.map((w) => (
             <Pressable key={w.chat_id} style={styles.card} onPress={() => { setTarget(w); setRating(0); setComment('') }}>
               <View style={styles.thumb}>{w.listing_photo ? <Image source={{ uri: mediaUrl(w.listing_photo) ?? undefined }} style={{ width: 52, height: 52 }} contentFit="cover" /> : null}</View>

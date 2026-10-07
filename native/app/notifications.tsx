@@ -1,3 +1,4 @@
+import EmptyArt from '../src/components/EmptyArt'
 import { tr } from '../src/i18n'
 import * as Linking from 'expo-linking'
 import { router, useFocusEffect } from 'expo-router'
@@ -86,7 +87,7 @@ export default function Notifications() {
           ListEmptyComponent={
             // Как на сайте: значок и текст вверху экрана, без отдельного заголовка
             <View style={styles.empty}>
-              <View style={styles.circle}><Icon name="bell" size={28} color={colors.primary} /></View>
+              <EmptyArt name="notifications" />
               <Text style={styles.emptyText}>{tr('Уведомлений пока нет — здесь появятся решения по объявлениям, ответы в чатах и новое по вашим подпискам.')}</Text>
             </View>
           }

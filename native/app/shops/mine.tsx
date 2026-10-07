@@ -47,7 +47,7 @@ function MyShops({ data, reload }: { data: { items: Shop[] } | null; reload: () 
   const { token } = useAuth()
   const [statsFor, setStatsFor] = useState<Shop | null>(null)
   if (!data) return <RowSkeletons thumb="tall" />
-  if (!data.items.length) return <Empty text={tr('У вас пока нет шопсов')}><Btn label={tr('Снимите первый шопс')} onPress={() => router.push('/shops/new' as never)} /></Empty>
+  if (!data.items.length) return <Empty art="shops" text={tr('У вас пока нет шопсов')}><Btn label={tr('Снимите первый шопс')} onPress={() => router.push('/shops/new' as never)} /></Empty>
   return (<>
     {statsFor && !!token && <ShopStatsModal shop={statsFor} token={token} onClose={() => setStatsFor(null)} />}
     {data.items.map((sh) => {

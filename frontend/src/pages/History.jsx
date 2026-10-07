@@ -1,3 +1,4 @@
+import EmptyArt from '../components/EmptyArt'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -42,11 +43,7 @@ export default function History() {
         <div className="infinite-grid no-pad"><CardSkeletons count={4} /></div>
       ) : items.length === 0 ? (
         <div className="fav-empty">
-          <div className="fav-empty-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
-            </svg>
-          </div>
+          <EmptyArt name="history" />
           <p>{t('history.empty')}</p>
           <Link className="fav-cta" to="/">{t('actions.to_listings')}</Link>
         </div>

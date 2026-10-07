@@ -1,3 +1,4 @@
+import EmptyArt from '../src/components/EmptyArt'
 import { tr } from '../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { router, useFocusEffect } from 'expo-router'
@@ -79,7 +80,7 @@ export default function Saved() {
           )}
           ListEmptyComponent={items === null ? <ActivityIndicator style={{ marginTop: 30 }} color={colors.primary} /> : 
             <View style={styles.empty}>
-              <View style={styles.circle}><Ionicons name="bookmark-outline" size={28} color={colors.primaryDeep} /></View>
+              <EmptyArt name="saved" />
               <Text style={styles.emptyTitle}>{tr('Нет сохранённых поисков')}</Text>
               <Text style={styles.emptyText}>{tr('Найдите что-нибудь на главной и нажмите «Сохранить поиск» — пришлём уведомление, когда появится новое.')}</Text>
             </View>
@@ -101,9 +102,9 @@ const styles = StyleSheet.create({
   checkText: { fontSize: 13.5, fontFamily: font[700], color: colors.ink },
   del: { fontSize: 13.5, fontFamily: font[700], color: '#E5533D' },
   page: { flex: 1, backgroundColor: colors.bg },
-  head: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, height: 52 },
+  head: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 6, paddingBottom: 12 },
   back: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, shadowColor: '#0F1512', shadowOpacity: 0.07, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
-  h1: { fontSize: 20, fontFamily: font[800], color: colors.ink, marginLeft: 4 },
+  h1: { flexShrink: 1, fontSize: 27, letterSpacing: -0.8, fontFamily: font[800], color: colors.ink },
   card: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
   title: { flex: 1, fontFamily: font[800], fontSize: 27, letterSpacing: -0.8, color: colors.ink },
   sub: { fontSize: 13, fontFamily: font[500], color: colors.muted },

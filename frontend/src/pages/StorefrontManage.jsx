@@ -1,3 +1,4 @@
+import EmptyArt from '../components/EmptyArt'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -44,6 +45,7 @@ export default function StorefrontManage() {
       <div className="page sf-manage">
         <PageHeader title={t('sf.my')} />
         <div className="sf-build">
+          <EmptyArt name="vitrina" />
           <div className="sf-build-title">{t('sf.build_title')}</div>
           <p className="sf-build-text">{data.active_count ? t('sf.build_text', { count: data.active_count }) : t('sf.build_none')}</p>
           {data.active_count > 0 ? (

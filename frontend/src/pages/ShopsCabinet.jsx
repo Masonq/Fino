@@ -1,3 +1,4 @@
+import EmptyArt from '../components/EmptyArt'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -43,7 +44,7 @@ function MyShops({ data, reload }) {
   const { t } = useTranslation()
   const [statsFor, setStatsFor] = useState(null)
   if (!data) return <RowSkeletons count={3} thumb="tall" />
-  if (!data.items.length) return <div className="empty-state"><p className="empty-hint">{t('shops.none_mine')}</p><Link className="jr-btn primary" to="/shops/new">{t('shops.create_first')}</Link></div>
+  if (!data.items.length) return <div className="empty-state"><EmptyArt name="shops" /><p className="empty-hint">{t('shops.none_mine')}</p><Link className="jr-btn primary" to="/shops/new">{t('shops.create_first')}</Link></div>
   return (<>
     {statsFor && <ShopStatsSheet shop={statsFor} onClose={() => setStatsFor(null)} />}
     {data.items.map((s) => (

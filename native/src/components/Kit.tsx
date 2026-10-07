@@ -1,3 +1,4 @@
+import EmptyArt, { type EmptyArtName } from './EmptyArt'
 import { router } from 'expo-router'
 import type { ReactNode } from 'react'
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, type TextInputProps, View } from 'react-native'
@@ -63,8 +64,8 @@ export function Tabs<T extends string>({ value, items, onChange }: { value: T; i
   )
 }
 
-export const Empty = ({ text, children }: { text: string; children?: ReactNode }) => (
-  <View style={k.empty}><Text style={k.emptyText}>{text}</Text>{children}</View>
+export const Empty = ({ text, children, art }: { text: string; children?: ReactNode; art?: EmptyArtName }) => (
+  <View style={k.empty}>{!!art && <EmptyArt name={art} />}<Text style={k.emptyText}>{text}</Text>{children}</View>
 )
 
 export const k = StyleSheet.create({

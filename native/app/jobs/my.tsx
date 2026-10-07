@@ -22,7 +22,7 @@ export default function MyResponses() {
       <ScrollView contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: insets.bottom + 24 }}>
         <Header bleed={12} bleedTop={0} title={tr('Мои отклики')} />
         {items === null ? <RowSkeletons thumb="square" /> : !items.length ? (
-          <Empty text={tr('Вы ещё не откликались на вакансии')}><Btn label={tr('Смотреть вакансии')} onPress={() => router.push('/c/jobs' as never)} /></Empty>
+          <Empty art="responses" text={tr('Вы ещё не откликались на вакансии')}><Btn label={tr('Смотреть вакансии')} onPress={() => router.push('/c/jobs' as never)} /></Empty>
         ) : items.map((r) => (
           <View key={r.id} style={k.card}>
             {!!r.vacancy && <Pressable onPress={() => router.push(`/listing/${r.vacancy!.id}` as never)}><Text style={k.name}>{r.vacancy.title}</Text></Pressable>}

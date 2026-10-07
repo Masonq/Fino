@@ -1,3 +1,4 @@
+import EmptyArt from '../src/components/EmptyArt'
 import { tr } from '../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { router, useFocusEffect } from 'expo-router'
@@ -75,7 +76,7 @@ export default function Favorites() {
   if (!token) {
     return (
       <SafeAreaView style={[styles.page, styles.center]} edges={['top']}>
-        <View style={styles.circle}><Ionicons name="heart-outline" size={30} color={colors.primaryDeep} /></View>
+        <EmptyArt name="favorites" />
         <Text style={styles.title}>{tr('Сохраняйте понравившееся')}</Text>
         <Text style={styles.text}>{tr('Нажмите сердечко на объявлении — оно появится здесь. Для этого нужно войти.')}</Text>
         <Pressable style={styles.cta} onPress={() => router.push('/login')}><Text style={styles.ctaText}>{tr('Войти')}</Text></Pressable>
@@ -130,7 +131,7 @@ export default function Favorites() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load() }} tintColor={colors.primary} colors={[colors.primary]} />}
           ListEmptyComponent={
             <View style={styles.center}>
-              <View style={styles.circle}><Ionicons name="heart-outline" size={30} color={colors.primaryDeep} /></View>
+              <EmptyArt name="favorites" />
               <Text style={styles.title}>{tr('Пока пусто')}</Text>
               <Text style={styles.text}>{tr('Нажмите сердечко на объявлении — оно сохранится здесь.')}</Text>
               <Pressable style={styles.cta} onPress={() => router.navigate('/')}><Text style={styles.ctaText}>{tr('Смотреть ленту')}</Text></Pressable>

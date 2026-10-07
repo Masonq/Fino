@@ -1,3 +1,4 @@
+import EmptyArt from '../components/EmptyArt'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -22,7 +23,7 @@ function Incoming() {
     <div className="page jr-page">
       <PageHeader title={t('jobresp.responses')} />
       {items === null ? <RowSkeletons count={3} thumb="round" /> : items.length === 0 ? (
-        <div className="empty-state"><p className="empty-hint">{t('jobresp.none_incoming')}</p></div>
+        <div className="empty-state"><EmptyArt name="responses" /><p className="empty-hint">{t('jobresp.none_incoming')}</p></div>
       ) : items.map(({ vacancy, counts }) => (
         <Link key={vacancy.id} className="jr-vac" to={`/jobs/responses/${vacancy.id}`}>
           <div className="jr-vac-title">{vacancy.title}</div>
@@ -121,7 +122,7 @@ export function MyJobResponses() {
     <div className="page jr-page">
       <PageHeader title={t('jobresp.my')} />
       {items === null ? <RowSkeletons count={3} thumb="round" /> : items.length === 0 ? (
-        <div className="empty-state"><p className="empty-hint">{t('jobresp.none_my')}</p>
+        <div className="empty-state"><EmptyArt name="responses" /><p className="empty-hint">{t('jobresp.none_my')}</p>
           <Link className="jr-btn primary" to="/c/jobs">{t('jobresp.find_jobs')}</Link></div>
       ) : items.map((r) => (
         <div key={r.id} className="jr-card">

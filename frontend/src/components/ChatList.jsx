@@ -1,3 +1,4 @@
+import EmptyArt from './EmptyArt'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
 import { plainTeamText } from '../utils/teamText'
 import { useEffect, useRef, useState } from 'react'
@@ -67,11 +68,7 @@ export default function ChatList({ activeId, onLoaded, query = '', filter = 'all
   if (items.length === 0) {
     return (
       <div className="fav-empty">
-        <div className="fav-empty-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20.5 12a8 8 0 0 1-8.5 8 9 9 0 0 1-3.4-.6L4 21l1.4-4a8 8 0 0 1-1.4-4.6A8 8 0 0 1 12.5 4a8 8 0 0 1 8 8Z" />
-          </svg>
-        </div>
+        <EmptyArt name="chats" />
         <p>{t('chats.empty')}</p>
         <Link className="fav-cta" to="/">{t('actions.to_listings')}</Link>
       </div>

@@ -1,3 +1,4 @@
+import EmptyArt from '../components/EmptyArt'
 import SlidePill from '../components/SlidePill'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
 import { showIsland } from '../utils/island'
@@ -153,11 +154,7 @@ export default function MyListings() {
       <div className="fav-page">
         <PageHeader title={t('my.title')} kicker={t('my.kicker')} />
         <div className="fav-empty">
-          <div className="fav-empty-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="4" width="18" height="17" rx="2.5" /><path d="M7 9h10M7 13h10M7 17h6" />
-            </svg>
-          </div>
+          <EmptyArt name="my" />
           <p>{t('my.need_login')}</p>
           <button className="fav-cta" onClick={() => navigate('/login?returnTo=%2Fmy')}>
             {t('common.login')}
@@ -193,11 +190,7 @@ export default function MyListings() {
         <div className="my-list"><ListRowSkeletons count={4} /></div>
       ) : visible.length === 0 ? (
         <div className="fav-empty">
-          <div className="fav-empty-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="4" width="18" height="17" rx="2.5" /><path d="M7 9h10M7 13h10M7 17h6" />
-            </svg>
-          </div>
+          <EmptyArt name="my" />
           <p>{t('my.empty')}</p>
           <Link className="fav-cta" to="/post">{t('nav.post')}</Link>
         </div>

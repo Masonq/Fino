@@ -1,3 +1,4 @@
+import EmptyArt from '../src/components/EmptyArt'
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
@@ -25,7 +26,7 @@ export default function Blocked() {
       </View>
       {items === null ? <ActivityIndicator style={{ marginTop: 30 }} color={colors.primary} /> : (
         <ScrollView contentContainerStyle={{ padding: 16, gap: 10 }}>
-          {items.length === 0 && <View style={styles.emptyBox}><View style={styles.emptyIcon}><Icon name="ban" size={28} color={colors.primary} /></View><Text style={styles.emptyMsg}>{tr('Никого не заблокировали')}</Text></View>}
+          {items.length === 0 && <View style={styles.emptyBox}><EmptyArt name="blocked" /><Text style={styles.emptyMsg}>{tr('Никого не заблокировали')}</Text></View>}
           {items.map((u) => (
             <View key={u.id} style={styles.row}>
               <View style={styles.avatar}><Text style={styles.letter}>{(u.display_name || '?').slice(0, 1).toUpperCase()}</Text></View>

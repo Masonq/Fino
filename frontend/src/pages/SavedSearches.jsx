@@ -1,3 +1,4 @@
+import EmptyArt from '../components/EmptyArt'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -50,11 +51,7 @@ export default function SavedSearches() {
       <div className="fav-page saved-page">
         <PageHeader title={t('saved.title')} />
         <div className="fav-empty">
-          <div className="fav-empty-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" />
-            </svg>
-          </div>
+          <EmptyArt name="saved" />
           <p>{t('saved.need_login')}</p>
           <button className="fav-cta" onClick={() => navigate('/login?returnTo=%2Fsaved')}>
             {t('common.login')}
@@ -72,11 +69,7 @@ export default function SavedSearches() {
         <div className="saved-list"><SavedRowSkeletons count={3} /></div>
       ) : items.length === 0 ? (
         <div className="fav-empty">
-          <div className="fav-empty-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" />
-            </svg>
-          </div>
+          <EmptyArt name="saved" />
           <p>{t('saved.empty')}</p>
           <button className="fav-cta" onClick={() => navigate('/search')}>
             {t('nav.home')}

@@ -60,7 +60,7 @@ export default function VacancyResponses() {
         <Header bleed={12} bleedTop={0} title={data?.vacancy?.title || tr('Отклики')} />
         <Tabs value={folder} items={tabs} onChange={setFolder} />
         {!!err && <Text style={k.err}>{err}</Text>}
-        {data === null ? <RowSkeletons thumb="round" /> : !data.items.length ? <Empty text={tr('Здесь пока никого')} /> : data.items.map((r) => (
+        {data === null ? <RowSkeletons thumb="round" /> : !data.items.length ? <Empty art="responses" text={tr('Здесь пока никого')} /> : data.items.map((r) => (
           <View key={r.id} style={k.card}>
             <View style={k.row}>
               <View style={s.ava}>{r.avatar ? <Image source={{ uri: mediaUrl(r.avatar) ?? undefined }} style={StyleSheet.absoluteFill} /> : <Text style={s.avaText}>{(r.name || '?')[0]}</Text>}</View>

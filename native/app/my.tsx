@@ -1,3 +1,4 @@
+import EmptyArt from '../src/components/EmptyArt'
 import { getLang, tr } from '../src/i18n'
 import { success } from '../src/haptics'
 import { Ionicons } from '@expo/vector-icons'
@@ -104,7 +105,7 @@ export default function MyListings() {
 
         {items === null ? <ActivityIndicator style={{ marginTop: 24 }} color={colors.primary} /> : shown.length === 0 ? (
           <View style={styles.emptyBox}>
-            <View style={styles.emptyIcon}><Icon name="doc" size={28} color={colors.primary} /></View>
+            <EmptyArt name="my" />
             <Text style={styles.emptyText}>{tr('Здесь пока пусто')}</Text>
             <Pressable style={styles.emptyBtn} onPress={() => router.navigate('/post')}><Text style={styles.emptyBtnText}>{tr('Разместить')}</Text></Pressable>
           </View>

@@ -1,3 +1,4 @@
+import EmptyArt from '../components/EmptyArt'
 import { useEffect, useState } from 'react'
 import Avatar from '../components/Avatar'
 import { useTranslation } from 'react-i18next'
@@ -32,11 +33,7 @@ export default function BlockedUsers() {
 
       {!loaded ? null : items.length === 0 ? (
         <div className="fav-empty">
-          <div className="fav-empty-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="9" /><path d="m5.5 5.5 13 13" />
-            </svg>
-          </div>
+          <EmptyArt name="blocked" />
           <p>{t('blocked.empty')}</p>
         </div>
       ) : (

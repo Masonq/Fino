@@ -8598,3 +8598,7 @@ html[data-theme="dark"] input::placeholder, html[data-theme="dark"] textarea::pl
 .move-current{ text-align:left !important; margin:2px 0 4px; font-size:14px; color:var(--ink-soft); } /* «Сейчас: …» — по левому краю, как заголовок окна */
 .move-current{ padding-left:6px; } /* по одной линии с заголовком окна */
 .move-list{ overscroll-behavior:contain; touch-action:pan-y; } /* прокрутка списка не уходит на страницу под окном */
+
+/* картинки пустых экранов (public/empty) — объёмный предмет без фона над текстом, как плитки разделов */
+.empty-art{ display:block; width:168px; height:168px; object-fit:contain; margin:4px auto 6px; filter:drop-shadow(0 14px 22px rgba(15,21,18,.12)); animation:ui-fade-in .3s ease; }
+@media (min-width: 900px){ .empty-art{ width:200px; height:200px; } }

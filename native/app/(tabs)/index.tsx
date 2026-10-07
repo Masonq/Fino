@@ -1,3 +1,4 @@
+import EmptyArt from '../../src/components/EmptyArt'
 import Icon, { Star } from '../../src/components/Icon'
 import SheetFrame from '../../src/components/SheetFrame'
 import { API } from '../../src/config'
@@ -237,6 +238,7 @@ export default function Feed() {
     }
     return (
       <View style={styles.center}>
+        {!!q && <EmptyArt name="nothing-found" />}
         <Text style={styles.emptyTitle}>{q ? tr('Ничего не нашлось') : tr('Здесь пока пусто')}</Text>
         {!!q && <Text style={styles.emptyText}>{tr('Попробуйте сказать иначе или убрать часть слов.')}</Text>}
         {/* ничего не нашлось — не тупик: подписка на поиск, пришлём уведомление, как только такое появится */}

@@ -21,7 +21,7 @@ export default function Incoming() {
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: insets.bottom + 24 }}>
         <Header bleed={12} bleedTop={0} title={tr('Отклики на вакансии')} />
-        {items === null ? <RowSkeletons thumb="square" /> : !items.length ? <Empty text={tr('Откликов пока нет. Они появятся здесь и в чатах')} /> : items.map(({ vacancy, counts }) => (
+        {items === null ? <RowSkeletons thumb="square" /> : !items.length ? <Empty art="responses" text={tr('Откликов пока нет. Они появятся здесь и в чатах')} /> : items.map(({ vacancy, counts }) => (
           <Pressable key={vacancy.id} style={[k.card, k.row]} onPress={() => router.push(`/jobs/${vacancy.id}` as never)}>
             <Text style={[k.name, { flex: 1 }]} numberOfLines={2}>{vacancy.title}</Text>
             {counts.new > 0 && <View style={s.badge}><Text style={s.badgeText}>{tr('{n} новых', { n: counts.new })}</Text></View>}

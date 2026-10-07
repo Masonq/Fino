@@ -1,3 +1,4 @@
+import EmptyArt from '../components/EmptyArt'
 import SlidePill from '../components/SlidePill'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { withoutRemoved } from '../utils/removedListings'
@@ -631,11 +632,7 @@ export default function Search() {
           ? <LoadError onRetry={() => { setLoaded(false); setRetry((n) => n + 1) }} />
           : (
             <div className="empty-state search-empty">
-              <div className="search-empty-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round">
-                  <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /><path d="M8.5 11h5" />
-                </svg>
-              </div>
+              <EmptyArt name="nothing-found" />
               <p className="search-empty-title">{t('search.empty_title')}</p>
               <p className="empty-hint">{t('search.empty_hint')}</p>
               {/* ничего не нашлось — не тупик: подписка на поиск, пришлём уведомление, как только такое появится */}

@@ -1,3 +1,4 @@
+import EmptyArt from '../components/EmptyArt'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
 import { useEffect, useState } from 'react'
 import { useKeepPlace } from '../utils/keepPlace'
@@ -54,11 +55,7 @@ export default function Favorites() {
       <div className="fav-page">
         <PageHeader title={t('favorites.title')} kicker={t('favorites.kicker_empty')} />
         <div className="fav-empty">
-          <div className="fav-empty-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />
-            </svg>
-          </div>
+          <EmptyArt name="favorites" />
           <p>{t('favorites.need_auth')}</p>
           <button className="fav-cta" onClick={() => navigate('/login?returnTo=%2Ffavorites')}>
             {t('actions.continue')}
@@ -85,11 +82,7 @@ export default function Favorites() {
         <div className="infinite-grid no-pad"><CardSkeletons count={4} /></div>
       ) : visible.length === 0 ? (
         <div className="fav-empty">
-          <div className="fav-empty-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" />
-            </svg>
-          </div>
+          <EmptyArt name="favorites" />
           <p>{t('favorites.empty')}</p>
           <Link className="fav-cta" to="/">{t('actions.to_listings')}</Link>
         </div>

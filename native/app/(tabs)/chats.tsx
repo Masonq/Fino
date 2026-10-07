@@ -1,3 +1,4 @@
+import EmptyArt from '../../src/components/EmptyArt'
 import * as Haptics from 'expo-haptics'
 import SwipeRow from '../../src/components/SwipeRow'
 import { tr } from '../../src/i18n'
@@ -53,7 +54,7 @@ export default function Chats() {
   if (!token) {
     return (
       <SafeAreaView style={[styles.page, styles.center]} edges={['top']}>
-        <View style={styles.circle}><Ionicons name="chatbubble-outline" size={28} color={colors.primaryDeep} /></View>
+        <EmptyArt name="chats" />
         <Text style={styles.title}>{tr('Переписка с продавцами')}</Text>
         <Text style={styles.text}>{tr('Войдите, чтобы писать продавцам и отвечать покупателям.')}</Text>
         <Pressable style={styles.cta} onPress={() => router.push('/login')}><Text style={styles.ctaText}>{tr('Войти')}</Text></Pressable>
@@ -168,7 +169,7 @@ export default function Chats() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await refresh(); setRefreshing(false) }} tintColor={colors.primary} colors={[colors.primary]} />}
           ListEmptyComponent={
             <View style={styles.center}>
-              <View style={styles.circle}><Ionicons name="chatbubble-outline" size={28} color={colors.primaryDeep} /></View>
+              <EmptyArt name="chats" />
               <Text style={styles.title}>{tr('Пока нет переписок')}</Text>
               <Text style={styles.text}>{tr('Откройте объявление и нажмите «Написать продавцу».')}</Text>
             </View>

@@ -1,3 +1,4 @@
+import EmptyArt from '../components/EmptyArt'
 import SlidePill from '../components/SlidePill'
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -32,11 +33,7 @@ export default function Chats() {
       <div className="fav-page chats-page">
         <PageHeader title={t('nav.chats')} back={false} kicker={t('chats.kicker_all')} />
         <div className="fav-empty">
-          <div className="fav-empty-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20.5 12a8 8 0 0 1-8.5 8 9 9 0 0 1-3.4-.6L4 21l1.4-4a8 8 0 0 1-1.4-4.6A8 8 0 0 1 12.5 4a8 8 0 0 1 8 8Z" />
-            </svg>
-          </div>
+          <EmptyArt name="chats" />
           <p>{t('chats.need_auth')}</p>
           <button className="fav-cta" onClick={() => navigate('/login?returnTo=%2Fchats')}>
             {t('actions.continue')}
@@ -99,11 +96,7 @@ export default function Chats() {
           <ChatList query={query} filter={filter} onLoaded={(n, u) => { setCount(n); setUnreadN(u || 0) }} />
         </div>
         <div className="chats-content-pane chats-placeholder">
-          <div className="fav-empty-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20.5 12a8 8 0 0 1-8.5 8 9 9 0 0 1-3.4-.6L4 21l1.4-4a8 8 0 0 1-1.4-4.6A8 8 0 0 1 12.5 4a8 8 0 0 1 8 8Z" />
-            </svg>
-          </div>
+          <EmptyArt name="chats" />
           <p>{t('chats.pick_one')}</p>
         </div>
       </div>

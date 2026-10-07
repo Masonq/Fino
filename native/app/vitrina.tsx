@@ -1,3 +1,4 @@
+import EmptyArt from '../src/components/EmptyArt'
 import { Image } from 'expo-image'
 import { router } from 'expo-router'
 import { useEffect, useState } from 'react'
@@ -58,6 +59,7 @@ export default function Vitrina() {
       <View style={{ flex: 1, backgroundColor: colors.bg }}>
         <Header title={tr('Моя витрина')} />
         <View style={[k.card, { margin: 12, padding: 20, alignItems: 'center' }]}>
+          <View style={{ alignItems: 'center' }}><EmptyArt name="vitrina" size={170} /></View>
           <Text style={s.buildTitle}>{tr('Ваша витрина на PLONK')}</Text>
           <Text style={[k.body, { textAlign: 'center', color: colors.inkSoft, marginVertical: 12 }]}>
             {n ? tr('У вас {n} {w}. Соберём из них витрину за минуту — потом всё можно поменять', { n, w: plural(n, { ru: ['объявление', 'объявления', 'объявлений'], en: ['listing', 'listings'], sr: ['oglas', 'oglasa', 'oglasa'] }) })
