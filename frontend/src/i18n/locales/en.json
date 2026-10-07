@@ -1899,7 +1899,8 @@
     "city": "City",
     "any": "Any",
     "reset": "Reset",
-    "apply": "Show"
+    "apply": "Show",
+    "done": "Done"
   },
   "tk": {
     "q1_short": "Will check",

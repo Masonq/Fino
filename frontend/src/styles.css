@@ -8362,3 +8362,29 @@ button.au-row:active{ background:var(--surface-sunken); }
 .jobs-sum-item span{ font-size:12.5px; font-weight:700; color:var(--ink-soft); }
 .page-fallback-head{ display:flex; align-items:center; gap:12px; padding:calc(10px + var(--sat)) 0 16px; }
 .audit-day .audit-day-title + .audit-line::before{ top:22px; } .audit-day .audit-line:only-of-type::before{ display:none; }
+
+/* =====================================================================
+   Дрожание поля поиска (главная при прокрутке и окно поиска при вводе):
+   у блоков с полем ввода — без размытия под ними (backdrop-filter): в Safari курсор и само поле в таком блоке
+   перерисовываются с подрагиванием (известная особенность WebKit); фон почти непрозрачный, заметной разницы нет.
+   Липкая шапка главной — на своём слое (translate3d), чтобы при прокрутке не дёргалась.
+   ===================================================================== */
+.home .avito-banner, .home .avito-banner.collapsed, .search-topbar, .landing-topbar{
+  backdrop-filter:none !important; -webkit-backdrop-filter:none !important; }
+.home .avito-banner.collapsed, .search-topbar, .landing-topbar{ background:color-mix(in srgb, var(--bg) 94%, transparent) !important; }
+.home .avito-banner{ will-change:transform; backface-visibility:hidden; -webkit-backface-visibility:hidden; }
+.avito-banner.collapsed{ transform:translate3d(0, calc(-1 * var(--hide, 54px)), 0); }
+/* окно поиска: появляется только прозрачностью (сдвиг при появлении задевал поле с курсором), без прокрутки сквозь */
+.search-overlay{ animation:ui-fade-in .2s ease !important; overscroll-behavior:contain; }
+.search-suggest{ overscroll-behavior:contain; }
+.filters-done{ display:none; }
+@media (max-width: 899px){ .filters-panel.open .filters-done{ display:block; width:100%; height:50px; margin-top:12px; border-radius:16px; background:var(--inverse); color:var(--on-inverse); font-size:16px; font-weight:800; } }
+
+/* =====================================================================
+   Без чёрной заливки: тёмные кнопки и выбранные капсулы — глубокий спокойный зелёный (цвет бренда, приглушённый),
+   а не чёрный. Белый текст на нём читается с запасом (контраст ~7:1). Меняется один токен — по всему сайту:
+   «Отправить», «Сохранить», «Показать», выбранные вкладки и фильтры, плитка «Все», кнопка «+» в меню.
+   ===================================================================== */
+:root{ --inverse:#2C5E4C !important; --on-inverse:#FFFFFF; }
+.nav-item-post .nav-icon-wrap{ box-shadow:0 6px 16px rgba(44,94,76,.32) !important; }
+.badge-fresh .badge-dot{ background:#2C5E4C; }

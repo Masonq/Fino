@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { useNavigationType } from 'react-router-dom'
 
 /**
  * Возвращает страницу туда, где человек её оставил.

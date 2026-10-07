@@ -3,7 +3,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { withoutRemoved } from '../utils/removedListings'
 import TypingHint from '../components/TypingHint'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link, useNavigationType } from 'react-router-dom'
 import { api } from '../api/client'
 import ListingCard from '../components/ListingCard'
 import { CardSkeletons, CategorySkeletons } from '../components/Skeletons'
@@ -338,6 +338,7 @@ export default function Home() {
   const [fromCache, setFromCache] = useState(false)
   // Куда вернуть прокрутку, когда карточки вкладки уже отрисованы.
   const pendingScroll = useRef(null)
+  const navTypeHome = useNavigationType()
   // Высота ленты на момент смены вкладки.
   //
   // Лента пересоздаётся, её высота падает до нуля, и браузер сам
@@ -404,7 +405,8 @@ export default function Home() {
       // Раньше возвращали сразу: карточки ещё не нарисованы, страница
       // короткая, и человек успевал увидеть её верх, а потом прыжок
       // вниз. Это и читалось как мелькание.
-      pendingScroll.current = saved.scroll || 0
+      // место — только при возврате «назад»; пришли на главную из меню — она открывается сверху (лента та же)
+      pendingScroll.current = navTypeHome === 'POP' ? (saved.scroll || 0) : 0
       setFromCache(true)
       return
     }

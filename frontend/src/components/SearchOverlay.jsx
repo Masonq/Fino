@@ -27,6 +27,16 @@ function clearRecent() {
 }
 
 export default function SearchOverlay({ open, onClose }) {
+  // Пока открыт поиск, страница под ним не прокручивается (замок прокрутки для iOS: body в position:fixed с
+  // запомненным местом). Без замка Safari при вводе подкручивал страницу под окном, и поле с курсором «дрожало».
+  useEffect(() => {
+    if (!open) return undefined
+    const y = window.scrollY
+    const b = document.body.style
+    const prev = { position: b.position, top: b.top, width: b.width, overflow: b.overflow }
+    b.position = 'fixed'; b.top = `-${y}px`; b.width = '100%'; b.overflow = 'hidden'
+    return () => { Object.assign(b, prev); window.scrollTo(0, y) }
+  }, [open])
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const inputRef = useRef(null)

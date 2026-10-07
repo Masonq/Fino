@@ -477,6 +477,8 @@ export default function Search() {
             {activeCount > 0 && (
               <button className="filters-reset" onClick={resetFilters}>{t('actions.reset_filters')}</button>
             )}
+            {/* на телефоне панель раскрывается капсулой «Фильтры» — «Готово» её сворачивает (раньше закрыть было нечем) */}
+            <button type="button" className="filters-done" onClick={() => setShowFilters(false)}>{t('qb.done')}</button>
           </div>
 
           {/* Поля именно этого раздела: у квартиры «снять или купить», у
@@ -553,7 +555,7 @@ export default function Search() {
             t={t} lang={i18n.language} fieldsKey={fieldsKey} fields={fields} setFields={setFields}
             subs={subs.filter((x) => !DEAL_ALIAS[x.slug])} rowParent={rowParent} category={category} setCategory={setCategory}
             priceMin={priceMin} priceMax={priceMax} setPriceMin={setPriceMin} setPriceMax={setPriceMax}
-            city={city} setCity={setCity} activeCount={activeCount} openFilters={() => setShowFilters(true)}
+            city={city} setCity={setCity} activeCount={activeCount} openFilters={() => setShowFilters((v) => !v)}
           />
 
           {/* итог поиска крупно, как приветствие на главной: что искали и сколько нашлось */}
