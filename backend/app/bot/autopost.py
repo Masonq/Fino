@@ -29,7 +29,7 @@ import os
 
 from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
-from aiogram.types import InputMediaPhoto
+from aiogram.types import FSInputFile, InputMediaPhoto
 
 from app.bot.post_format import build_caption
 from app.core.clock import utcnow
@@ -144,7 +144,7 @@ def pick(db, limit: int = POST_LIMIT) -> list[Listing]:
     # будто на площадке только диваны.
     recent = (
         db.query(Listing)
-        .filter(Listing.tg_post_id.isnot(None))
+        .filter(Listing.tg_post_id.isnot(None), Listing.tg_post_id != 0)   # 0 — пропущенные, не публиковались
         .order_by(Listing.tg_posted_at.desc().nullslast())
         .limit(6)
         .all()
@@ -229,6 +229,50 @@ def caption_for(listing: Listing) -> tuple[str, str]:
     return caption, f"{site}/ru{path}"
 
 
+
+def _photo_src(url: str):
+    """
+    Фото для Telegram: файл с нашего диска, если он у нас (Telegram не всегда может сам скачать снимок по ссылке —
+    «WEBPAGE_MEDIA_EMPTY»), иначе полная ссылка.
+    """
+    u = url or ""
+    if u.startswith(settings.public_base_url.rstrip("/")):
+        u = u[len(settings.public_base_url.rstrip("/")):]
+    if u.startswith("/media/"):
+        path = os.path.join(settings.media_dir, u[len("/media/"):].split("?")[0])
+        if os.path.isfile(path):
+            return FSInputFile(path)
+    if u.startswith("/"):
+        return settings.public_base_url.rstrip("/") + u
+    return u
+
+
+async def _send(bot, chat, topic, caption, photos):
+    """
+    Отправка с запасными вариантами: альбом → одно фото → только текст. Раньше одна битая фотография
+    («WEBPAGE_MEDIA_EMPTY») роняла отправку целиком, объявление оставалось первым в очереди, и чат стоял:
+    каждый заход пытался отправить его снова.
+    """
+    last = None
+    if len(photos) > 1:
+        try:
+            media = [InputMediaPhoto(media=_photo_src(p.url), caption=caption if i == 0 else None,
+                                     parse_mode="HTML" if i == 0 else None) for i, p in enumerate(photos)]
+            return (await bot.send_media_group(chat, media, message_thread_id=topic))[0]
+        except Exception as exc:                         # noqa: BLE001
+            last = exc
+            log.warning("альбом не ушёл (%s) — пробую одно фото", exc)
+    for p in photos:
+        try:
+            return await bot.send_photo(chat, _photo_src(p.url), caption=caption, message_thread_id=topic)
+        except Exception as exc:                         # noqa: BLE001
+            last = exc
+            log.warning("фото не ушло (%s) — пробую следующее или текст", exc)
+    try:
+        return await bot.send_message(chat, caption, message_thread_id=topic)
+    except Exception as exc:                             # noqa: BLE001
+        raise exc from last
+
 async def send_one(listing_id) -> bool:
     """
     Отправляет в чат одно объявление — прямо сейчас.
@@ -261,24 +305,7 @@ async def send_one(listing_id) -> bool:
             is_wanted=(listing.attributes or {}).get("listing_kind") == "wanted",
         )
         try:
-            if len(photos) > 1:
-                media = [
-                    InputMediaPhoto(
-                        media=p.url,
-                        caption=caption if i == 0 else None,
-                        parse_mode="HTML" if i == 0 else None,
-                    )
-                    for i, p in enumerate(photos)
-                ]
-                posted = (await bot.send_media_group(
-                    TARGET_CHAT, media, message_thread_id=topic))[0]
-            elif photos:
-                posted = await bot.send_photo(
-                    TARGET_CHAT, photos[0].url, caption=caption,
-                    message_thread_id=topic)
-            else:
-                posted = await bot.send_message(
-                    TARGET_CHAT, caption, message_thread_id=topic)
+            posted = await _send(bot, TARGET_CHAT, topic, caption, photos)
         except Exception as exc:                        # noqa: BLE001
             log.warning("не ушло объявление %s: %s", listing_id, exc)
             return False
@@ -319,32 +346,13 @@ async def run() -> int:
                 is_wanted=(listing.attributes or {}).get("listing_kind") == "wanted",
             )
             try:
-                if len(photos) > 1:
-                    # Подпись задаётся при создании первого снимка, а не
-                    # присваиванием после: в aiogram 3 эти объекты
-                    # неизменяемы, и присваивание падает проверкой
-                    # («Instance is frozen»), а объявление не уходит.
-                    media = [
-                        InputMediaPhoto(
-                            media=p.url,
-                            caption=caption if i == 0 else None,
-                            parse_mode="HTML" if i == 0 else None,
-                        )
-                        for i, p in enumerate(photos)
-                    ]
-                    posted = (await bot.send_media_group(
-                        TARGET_CHAT, media, message_thread_id=topic))[0]
-                elif photos:
-                    posted = await bot.send_photo(
-                        TARGET_CHAT, photos[0].url, caption=caption,
-                        message_thread_id=topic)
-                else:
-                    # Без фотографии ссылка разворачивается сама — пусть
-                    # хотя бы так: карточка с фото и ценой есть на сайте.
-                    posted = await bot.send_message(
-                        TARGET_CHAT, caption, message_thread_id=topic)
+                posted = await _send(bot, TARGET_CHAT, topic, caption, photos)
             except Exception as exc:                    # noqa: BLE001
-                log.warning("не ушло объявление %s: %s", listing.id, exc)
+                # совсем не ушло — помечаем пропущенным (0), чтобы очередь шла дальше, а не стояла на нём
+                log.warning("не ушло объявление %s: %s — пропускаю", listing.id, exc)
+                listing.tg_post_id = 0
+                listing.tg_posted_at = utcnow()
+                db.commit()
                 continue
 
             listing.tg_post_id = posted.message_id
