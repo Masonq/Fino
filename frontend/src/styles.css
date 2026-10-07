@@ -8200,3 +8200,53 @@ body, .app-shell{ background:transparent !important; }
 .ph-actions svg{ width:18px; height:18px; }
 .ph-actions .report-btn svg, .ph-actions button svg{ width:18px !important; height:18px !important; }
 .ph-actions > .report-icon-btn, .ph-actions > .notif-bell{ width:40px; padding:0 !important; } .ph-actions svg{ flex:none; } /* значок-кнопка: поля 16 px сжимали значок до 8 px */
+
+/* =====================================================================
+   PLONK 2.0 — страница пользователя в админке (полный редизайн)
+   ===================================================================== */
+.au-card{ display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px; margin:4px 0 12px; padding:22px 18px 18px; background:var(--surface); border-radius:28px; box-shadow:var(--shadow); }
+.au-ava-wrap{ position:relative; }
+.au-card .admin-avatar.big{ width:84px; height:84px; font-size:34px; box-shadow:0 0 0 4px var(--bg), 0 8px 24px rgba(15,21,18,.12); }
+.au-online{ position:absolute; right:4px; bottom:4px; width:16px; height:16px; border-radius:50%; background:#0FA36A; box-shadow:0 0 0 3px var(--surface); }
+.au-name{ font-size:24px; font-weight:800; letter-spacing:-0.03em; line-height:1.15; overflow-wrap:anywhere; }
+.au-badges{ display:flex; flex-wrap:wrap; justify-content:center; gap:6px; }
+.au-badge{ padding:4px 10px; border-radius:10px; background:var(--surface-sunken); color:var(--ink-soft); font-size:12.5px; font-weight:800; }
+.au-badge.ok{ background:#DFF4E8; color:#0B7A4E; }
+.au-badge.bad{ background:#FDE4E2; color:#C4302B; }
+.au-badge.warn{ background:#FFF0D2; color:#8A5A00; }
+.au-when{ font-size:13px; font-weight:600; color:var(--muted); }
+.au-group{ background:var(--surface); border-radius:22px; box-shadow:var(--shadow); overflow:hidden; margin-bottom:12px; }
+.au-row{ display:flex; align-items:center; gap:12px; width:100%; min-height:58px; padding:10px 14px; text-align:left; font:inherit; color:var(--ink); background:transparent; border:0; }
+.au-row + .au-row{ border-top:1px solid var(--line); }
+.au-row:disabled{ opacity:.55; }
+button.au-row:active{ background:var(--surface-sunken); }
+.au-ico{ flex:none; width:36px; height:36px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:var(--surface-sunken); color:var(--ink); }
+.au-row-main{ flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+.au-row-label{ font-size:12.5px; font-weight:600; color:var(--muted); }
+.au-row-value{ font-size:15.5px; font-weight:700; overflow-wrap:anywhere; }
+.au-row-go{ flex:none; height:34px; padding:0 14px; border-radius:17px; display:flex; align-items:center; background:var(--inverse); color:var(--on-inverse); font-size:13px; font-weight:800; }
+.au-chev{ flex:none; color:var(--muted); }
+.au-select{ flex:none; max-width:46%; height:36px; padding:0 30px 0 12px; border-radius:12px; border:0; background:var(--surface-sunken); font:inherit; font-size:14px; font-weight:700; color:var(--ink); appearance:none; -webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%237C847E' stroke-width='2.6' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; }
+.au-switch{ flex:none; width:46px; height:28px; border-radius:14px; background:var(--surface-sunken-2); position:relative; transition:background .2s ease; }
+.au-switch i{ position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%; background:#fff; box-shadow:0 2px 6px rgba(15,21,18,.2); transition:transform .25s cubic-bezier(.2,1.2,.4,1); }
+.au-switch.on{ background:#0FA36A; }
+.au-switch.on i{ transform:translateX(18px); }
+.au-stats{ display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:12px; }
+.au-stat{ display:flex; flex-direction:column; justify-content:flex-end; min-height:84px; padding:12px 14px; border-radius:20px; }
+.au-stat b{ font-size:26px; font-weight:800; letter-spacing:-0.04em; line-height:1.1; }
+.au-stat span{ font-size:12.5px; font-weight:700; color:var(--ink-soft); }
+.au-alert{ margin:0 0 12px; padding:12px 14px; border-radius:18px; font-size:14px; font-weight:600; line-height:1.4; }
+.au-alert.bad{ background:#FDE4E2; color:#8E2420; }
+.au-alert.warn{ background:#FFF0D2; color:#6B4700; }
+.au-sec{ margin:18px 4px 8px; font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+.au-sec.danger{ color:#C4302B; }
+.au-group.danger .au-row.bad .au-row-value{ color:#C4302B; }
+/* объявления человека — карточками, статус цветной капсулой */
+.admin-user-page .admin-listings{ gap:8px; }
+.admin-user-page .admin-listing{ display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:54px; padding:12px 14px; background:var(--surface); border:0 !important; border-radius:18px; box-shadow:var(--shadow); color:var(--ink); font-weight:700; }
+.admin-listing-status{ flex:none; padding:4px 10px; border-radius:10px; font-size:12.5px; font-weight:800; background:var(--surface-sunken); color:var(--ink-soft); }
+.admin-listing-status.st-active{ background:#DFF4E8; color:#0B7A4E; }
+.admin-listing-status.st-rejected{ background:#FDE4E2; color:#C4302B; }
+.admin-listing-status.st-pending_moderation{ background:#FFF0D2; color:#8A5A00; }
+.admin-user-page .admin-login-row{ background:var(--surface); border:0; border-radius:18px; box-shadow:var(--shadow); margin-bottom:8px; padding:12px 14px; }

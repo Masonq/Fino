@@ -1915,5 +1915,21 @@
     "s_audit": "Dnevnik radnji",
     "s_settings": "Podešavanja",
     "s_flagged_chats": "Sumnjive prepiske"
+  },
+  "au": {
+    "title": "Korisnik",
+    "online": "Sada na sajtu",
+    "email": "Pošta",
+    "phone": "Telefon",
+    "write": "Piši",
+    "call": "Pozovi",
+    "manage": "Upravljanje",
+    "role": "Uloga",
+    "verified": "Oznaka „Proveren“",
+    "verified_note": "Stavite kada ste sami proverili identitet",
+    "reset_note": "Smisliće novo pri sledećoj prijavi",
+    "danger": "Opasna zona",
+    "block_note": "Neće moći da se prijavi ni piše; oglasi se sakrivaju",
+    "delete_note": "Nalog i svi oglasi — trajno"
   }
 }

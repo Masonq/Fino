@@ -1863,5 +1863,21 @@
     "s_audit": "Audit log",
     "s_settings": "Settings",
     "s_flagged_chats": "Flagged chats"
+  },
+  "au": {
+    "title": "User",
+    "online": "Online now",
+    "email": "Email",
+    "phone": "Phone",
+    "write": "Write",
+    "call": "Call",
+    "manage": "Manage",
+    "role": "Role",
+    "verified": "“Verified” badge",
+    "verified_note": "Set it when you have checked the identity yourself",
+    "reset_note": "They will pick a new one at next sign-in",
+    "danger": "Danger zone",
+    "block_note": "Can’t sign in or write; listings get hidden",
+    "delete_note": "Account and all listings — permanently"
   }
 }

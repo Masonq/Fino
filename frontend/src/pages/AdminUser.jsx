@@ -133,81 +133,106 @@ export default function AdminUser() {
 
   return (
     <div className="page admin-users admin-user-page">
-      <PageHeader title={name} />
+      <PageHeader title={t('au.title')} />
 
-      <div className="admin-user-head">
-        {/* Удаление — маленькой кнопкой в углу карточки, а не в общем
-            ряду действий: в ряду она не помещалась и уезжала за правый
-            край экрана. */}
-        {canEdit && card.role !== 'admin' && (
-          <button className="admin-user-del" disabled={busy} onClick={() => setDeleting(true)}>
-            {t('admin.delete_user')}
-          </button>
-        )}
-        <Avatar
-          src={card.avatar_url}
-          name={name}
-          className={`admin-avatar big${card.role === 'seller_business' ? ' is-company' : ''}`}
-        />
-        <div className="admin-user-facts">
-          <div className="admin-row-name">
-            <span className="name-text">{name}</span>
-            {card.is_blocked && <span className="tag tag-danger">{t('admin.tag_blocked')}</span>}
-            {card.must_rename && <span className="tag tag-warn">{t('admin.tag_renaming')}</span>}
-            {card.document_verified && <span className="tag tag-ok">{t('admin.tag_verified')}</span>}
-            <span className="tag">{roleName(card.role)}</span>
-          </div>
-          <div className="admin-row-meta">{card.email || '—'}</div>
-          <div className="admin-row-meta">{card.phone || '—'}</div>
-          <div className="admin-row-meta">
-            {t('admin.registered', { when: card.created_at ? since(card.created_at, t, i18n.language) : '—' })}
-            {' · '}
-            {card.last_seen_at ? t('admin.seen', { when: since(card.last_seen_at, t, i18n.language) }) : t('admin.never_seen')}
-          </div>
+      {/* PLONK 2.0: карточка человека — как профиль продавца (аватар, имя, отметки), под ней — контакты строками
+          с действием (написать, позвонить) и цифры цветными плитками; управление — списком настроек, а опасное
+          («Заблокировать», «Удалить навсегда») — отдельной красной зоной в самом низу, подальше от случайного
+          нажатия (раньше «Удалить навсегда» стояло прямо рядом с именем). */}
+      <div className="au-card">
+        <div className="au-ava-wrap">
+          <Avatar src={card.avatar_url} name={name} className={`admin-avatar big${card.role === 'seller_business' ? ' is-company' : ''}`} />
+          {card.last_seen_at && (Date.now() - new Date(card.last_seen_at).getTime()) < 5 * 60 * 1000 && <span className="au-online" title={t('au.online')} />}
+        </div>
+        <div className="au-name">{name}</div>
+        <div className="au-badges">
+          <span className="au-badge">{roleName(card.role)}</span>
+          {card.document_verified && <span className="au-badge ok">✓ {t('admin.tag_verified')}</span>}
+          {card.is_blocked && <span className="au-badge bad">{t('admin.tag_blocked')}</span>}
+          {card.must_rename && <span className="au-badge warn">{t('admin.tag_renaming')}</span>}
+        </div>
+        <div className="au-when">
+          {t('admin.registered', { when: card.created_at ? since(card.created_at, t, i18n.language) : '—' })}
+          {' · '}
+          {card.last_seen_at ? t('admin.seen', { when: since(card.last_seen_at, t, i18n.language) }) : t('admin.never_seen')}
         </div>
       </div>
 
-      <div className="admin-overview admin-user-stats">
-        <div className="admin-stat"><b>{card.listings_active}</b><span>{t('admin.in_feed_label')}</span></div>
-        <div className="admin-stat"><b>{card.listings}</b><span>{t('admin.all_listings')}</span></div>
-        <div className="admin-stat"><b>{card.rating_count || 0}</b><span>{t('admin.reviews')}</span></div>
+      <div className="au-group">
+        <div className="au-row">
+          <span className="au-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="3" /><path d="m22 7-10 6L2 7" /></svg></span>
+          <span className="au-row-main"><span className="au-row-label">{t('au.email')}</span><span className="au-row-value">{card.email || '—'}</span></span>
+          {card.email && <a className="au-row-go" href={`mailto:${card.email}`}>{t('au.write')}</a>}
+        </div>
+        <div className="au-row">
+          <span className="au-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z" /></svg></span>
+          <span className="au-row-main"><span className="au-row-label">{t('au.phone')}</span><span className="au-row-value">{card.phone || '—'}</span></span>
+          {card.phone && <a className="au-row-go" href={`tel:${card.phone}`}>{t('au.call')}</a>}
+        </div>
+      </div>
+
+      <div className="au-stats">
+        <div className="au-stat" style={{ background: '#E2F1E6' }}><b>{card.listings_active}</b><span>{t('admin.in_feed_label')}</span></div>
+        <div className="au-stat" style={{ background: '#E3ECFA' }}><b>{card.listings}</b><span>{t('admin.all_listings')}</span></div>
+        <div className="au-stat" style={{ background: '#FAE5EE' }}><b>{card.rating_count || 0}</b><span>{t('admin.reviews')}</span></div>
       </div>
 
       {card.block_reason && (
-        <p className="admin-note">{t('admin.block_reason', { reason: card.block_reason })}</p>
+        <div className="au-alert bad">{t('admin.block_reason', { reason: card.block_reason })}</div>
       )}
       {summary?.listings_suspicious && (
-        <p className="admin-note admin-note-warn">
-          {t('admin.suspicious', { count: summary.listings_last_day, days: summary.account_age_days })}
-        </p>
+        <div className="au-alert warn">{t('admin.suspicious', { count: summary.listings_last_day, days: summary.account_age_days })}</div>
       )}
       {summary?.device_changed && (summary?.country_changed || summary?.isp_changed) && (
-        <p className="admin-note admin-note-warn">
-          {t('admin.suspicious_device', {
-            location: summary.last_city ? `${summary.last_city}, ${summary.last_country}` : summary.last_country,
-          })}
-        </p>
+        <div className="au-alert warn">
+          {t('admin.suspicious_device', { location: summary.last_city ? `${summary.last_city}, ${summary.last_country}` : summary.last_country })}
+        </div>
       )}
 
       {canEdit && (
-        <div className="admin-actions admin-user-actions">
-          <select value={card.role} disabled={busy} onChange={(e) => changeRole(e.target.value)}>
-            {ROLES.map((role) => <option key={role} value={role}>{roleName(role)}</option>)}
-          </select>
-          {/* галочка «Личность подтверждена» вручную — когда проверили сами */}
-          <button disabled={busy} onClick={async () => {
-            const res = await api.adminVerify(card.id, !card.document_verified).catch(() => null)
-            if (res) setCard((c) => ({ ...c, document_verified: res.document_verified }))
-          }}>{card.document_verified ? t('admin.unverify') : t('admin.verify')}</button>
-          {card.is_blocked
-            ? <button disabled={busy} onClick={unblock}>{t('admin.unblock')}</button>
-            : <button className="danger" disabled={busy} onClick={() => setBlocking(true)}>{t('admin.block')}</button>}
-          {/* Сбросить имя — мягче блокировки: человек ничего не нарушил,
-              кроме того, что назвался рядом значков. */}
-          <button disabled={busy || card.must_rename} onClick={resetName}>
-            {card.must_rename ? t('admin.name_reset_done') : t('admin.reset_name')}
-          </button>
-        </div>
+        <>
+          <div className="au-sec">{t('au.manage')}</div>
+          <div className="au-group">
+            <label className="au-row">
+              <span className="au-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg></span>
+              <span className="au-row-main"><span className="au-row-value">{t('au.role')}</span></span>
+              <select className="au-select" value={card.role} disabled={busy} onChange={(e) => changeRole(e.target.value)}>
+                {ROLES.map((role) => <option key={role} value={role}>{roleName(role)}</option>)}
+              </select>
+            </label>
+            <button type="button" className="au-row" disabled={busy} onClick={async () => {
+              const res = await api.adminVerify(card.id, !card.document_verified).catch(() => null)
+              if (res) setCard((c) => ({ ...c, document_verified: res.document_verified }))
+            }}>
+              <span className="au-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 12 2 2 4-4" /><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z" /></svg></span>
+              <span className="au-row-main"><span className="au-row-value">{t('au.verified')}</span><span className="au-row-label">{t('au.verified_note')}</span></span>
+              <span className={card.document_verified ? 'au-switch on' : 'au-switch'} aria-hidden="true"><i /></span>
+            </button>
+            <button type="button" className="au-row" disabled={busy || card.must_rename} onClick={resetName}>
+              <span className="au-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" /></svg></span>
+              <span className="au-row-main"><span className="au-row-value">{card.must_rename ? t('admin.name_reset_done') : t('admin.reset_name')}</span><span className="au-row-label">{t('au.reset_note')}</span></span>
+              <svg className="au-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="m9 6 6 6-6 6" /></svg>
+            </button>
+          </div>
+
+          <div className="au-sec danger">{t('au.danger')}</div>
+          <div className="au-group danger">
+            {card.is_blocked ? (
+              <button type="button" className="au-row" disabled={busy} onClick={unblock}>
+                <span className="au-row-main"><span className="au-row-value">{t('admin.unblock')}</span></span>
+              </button>
+            ) : (
+              <button type="button" className="au-row bad" disabled={busy} onClick={() => setBlocking(true)}>
+                <span className="au-row-main"><span className="au-row-value">{t('admin.block')}</span><span className="au-row-label">{t('au.block_note')}</span></span>
+              </button>
+            )}
+            {card.role !== 'admin' && (
+              <button type="button" className="au-row bad" disabled={busy} onClick={() => setDeleting(true)}>
+                <span className="au-row-main"><span className="au-row-value">{t('admin.delete_user')}</span><span className="au-row-label">{t('au.delete_note')}</span></span>
+              </button>
+            )}
+          </div>
+        </>
       )}
 
       {blocking && (
@@ -260,7 +285,7 @@ export default function AdminUser() {
             {listings.map((l) => (
               <Link key={l.id} className="admin-listing" to={`/go/${l.id}`}>
                 <span>{l.title || t('admin.untitled')}</span>
-                <span className="admin-listing-status">{t(`admin.st_${l.status}`, l.status)}</span>
+                <span className={`admin-listing-status st-${l.status}`}>{t(`admin.st_${l.status}`, l.status)}</span>
               </Link>
             ))}
           </div>
