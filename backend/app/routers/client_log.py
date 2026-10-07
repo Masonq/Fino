@@ -18,5 +18,7 @@ async def client_log(request: Request):
         d = json.loads(raw or b"{}")
     except Exception:  # noqa: BLE001
         d = {"raw": raw.decode("utf8", "replace")[:500]}
-    log.warning("client-log %s | %s | %s | %s", d.get("kind"), str(d.get("url"))[:200], str(d.get("ua"))[:200], " || ".join(map(str, d.get("errors") or []))[:1500])
+    line = "client-log %s | %s | %s | %s" % (d.get("kind"), str(d.get("url"))[:200], str(d.get("ua"))[:200], " || ".join(map(str, d.get("errors") or []))[:1500])
+    log.warning(line)
+    print(line, flush=True)   # в журнал службы наверняка (настройки журналов приложения могут глушить warning)
     return {"ok": True}
