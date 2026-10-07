@@ -1,3 +1,4 @@
+import { TINTS } from '../tints'
 import { select } from '../haptics'
 import Icon, { Star } from './Icon'
 import { getLang, tr } from '../i18n'
@@ -77,10 +78,9 @@ export default function CategoryTiles({ value, onPick }: { value: string | null;
 }
 
 /** Мягкие цвета плиток разделов — как на сайте (картинки вырезаны, фон любой). «Все» — тёмная плитка-якорь. */
-const TINT: Record<string, string> = {
-  'real-estate': '#E2F1E6', auto: '#E3ECFA', services: '#FCEADB', jobs: '#F3EBDB', electronics: '#EAE7FA', fashion: '#FAE5EE',
-  'home-garden': '#ECF0DD', 'hobby-sport': '#DDF0F3', kids: '#FFF0D2', pets: '#F1E8DE', beauty: '#F7E4F1', business: '#E5EAF0',
-}
+// цвета разделов — общие (src/tints.ts): в тёмной теме приглушённые; свой список здесь не переключался и в тёмной
+// теме плитки оставались светлыми с белыми, нечитаемыми подписями
+const TINT: Record<string, string> = TINTS
 
 const styles = StyleSheet.create({
   wrap: { paddingHorizontal: 12, gap: 8 },

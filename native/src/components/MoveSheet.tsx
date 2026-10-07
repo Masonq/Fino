@@ -1,3 +1,4 @@
+import SheetFrame from './SheetFrame'
 /** «Перенести в раздел» для сотрудников — как на сайте: поиск по всем разделам с путём, список листается. */
 import { useEffect, useMemo, useState } from 'react'
 import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
@@ -31,8 +32,7 @@ export default function MoveSheet({ token, listingId, current, onClose, onMoved 
     try { await modMove(token, listingId, c.id); onMoved(nameOf(c)) } catch { /* остаётся открытым */ } finally { setBusy(false) }
   }
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={st.back} onPress={onClose} />
+    <SheetFrame visible onClose={onClose}>
       <View style={st.sheet}>
         <View style={st.handle} />
         <Text style={st.title}>{tr('Перенести в раздел')}</Text>
@@ -53,7 +53,7 @@ export default function MoveSheet({ token, listingId, current, onClose, onMoved 
         />
         <Pressable style={st.cancel} onPress={onClose}><Text style={st.cancelT}>{tr('Отмена')}</Text></Pressable>
       </View>
-    </Modal>
+    </SheetFrame>
   )
 }
 

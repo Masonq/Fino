@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react'
-import { Animated, Easing, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet } from 'react-native'
+import { Animated, Easing, KeyboardAvoidingView, Modal, PanResponder, Platform, Pressable, StyleSheet } from 'react-native'
 
 import { tr } from '../i18n'
 
@@ -12,6 +12,24 @@ export default function SheetFrame({ visible, onClose, children }: { visible: bo
   const [mounted, setMounted] = useState(visible)
   const fade = useRef(new Animated.Value(0)).current
   const slide = useRef(new Animated.Value(1)).current
+  // смахивание вниз, как в iOS: тянуть можно за верх шторки (полоска, заголовок — первые 72 точки),
+  // ниже — списки и поля, их жесты не перехватываем, чтобы листание работало
+  const drag = useRef(new Animated.Value(0)).current
+  const sheetTop = useRef(0)   // верх шторки на экране — чтобы отличать «тянут за верх» от прокрутки списка
+  const closeRef = useRef(onClose)
+  closeRef.current = onClose
+  const pan = useRef(PanResponder.create({
+    onMoveShouldSetPanResponder: (e, g) => e.nativeEvent.pageY - g.dy - sheetTop.current < 72 && g.dy > 6 && Math.abs(g.dy) > Math.abs(g.dx) * 1.2,
+    onPanResponderMove: (_, g) => { drag.setValue(Math.max(0, g.dy)) },
+    onPanResponderRelease: (_, g) => {
+      if (g.dy > 110 || g.vy > 0.9) {
+        Animated.timing(drag, { toValue: 700, duration: 180, useNativeDriver: true }).start(() => { closeRef.current(); drag.setValue(0) })
+      } else {
+        Animated.spring(drag, { toValue: 0, useNativeDriver: true, damping: 20, stiffness: 260 }).start()
+      }
+    },
+    onPanResponderTerminate: () => { Animated.spring(drag, { toValue: 0, useNativeDriver: true }).start() },
+  })).current
 
   useEffect(() => {
     if (visible) {
@@ -39,7 +57,7 @@ export default function SheetFrame({ visible, onClose, children }: { visible: bo
         </Animated.View>
         {/* Высота шторки — не больше 88 % экрана; ограничение здесь, а не у самой шторки: иначе проценты считались
             от этой же обёртки, и шторка не доставала до низа на 70 точек */}
-        <Animated.View style={{ maxHeight: '88%', transform: [{ translateY: slide.interpolate({ inputRange: [0, 1], outputRange: [0, 700] }) }] }}>
+        <Animated.View {...pan.panHandlers} onLayout={(e) => { sheetTop.current = e.nativeEvent.layout.y }} style={{ maxHeight: '88%', transform: [{ translateY: Animated.add(slide.interpolate({ inputRange: [0, 1], outputRange: [0, 700] }), drag) }] }}>
           {children}
         </Animated.View>
       </KeyboardAvoidingView>

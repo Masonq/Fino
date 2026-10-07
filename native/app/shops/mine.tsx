@@ -1,3 +1,4 @@
+import SheetFrame from '../../src/components/SheetFrame'
 import { Image } from 'expo-image'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useState } from 'react'
@@ -199,8 +200,7 @@ export function ShopStatsModal({ shop, token, onClose }: { shop: Shop; token: st
   const tap = tot.completes ? tot.taps / tot.completes : 0
   const tip = !tot.views ? tr('Шопс только вышел — первые показы появятся в течение дня.') : w < 0.3 ? tr('Досматривают мало: покажите вещь в первые 2 секунды и сократите ролик до 15–20 секунд.') : tap < 0.1 ? tr('Смотрят, но не нажимают: прикрепите вещь, когда её лучше видно, и укажите цену в подписи.') : tr('Шопс работает хорошо — можно снять похожий для других вещей.')
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={st.backdrop} onPress={onClose} />
+    <SheetFrame visible onClose={onClose}>
       <View style={st.sheet}>
         <View style={st.handle} />
         <Text style={st.title}>{tr('Статистика шопса')}</Text>
@@ -221,7 +221,7 @@ export function ShopStatsModal({ shop, token, onClose }: { shop: Shop; token: st
         <Text style={st.tip}>{tip}</Text>
         <Pressable style={st.close} onPress={onClose}><Text style={st.closeText}>{tr('Готово')}</Text></Pressable>
       </View>
-    </Modal>
+    </SheetFrame>
   )
 }
 

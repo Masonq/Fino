@@ -41,7 +41,7 @@ export default function AdminHome() {
   const SECTIONS: [string, string, string, () => void][] = [
     ['shield', tr('Модерация'), TINTS['real-estate'], () => router.push('/admin/moderation' as never)],
     ['chat', tr('Обращения'), TINTS.auto, () => router.push('/admin/support' as never)],
-    ['user', tr('Пользователи'), TINTS.fashion, () => Linking.openURL(`${SITE}/ru/admin/users`)],
+    ['user', tr('Пользователи'), TINTS.fashion, () => router.push('/admin/users' as never)],
     ['list', tr('Показатели'), TINTS.electronics, () => Linking.openURL(`${SITE}/ru/admin/stats`)],
     ['flag', tr('Подозрительные чаты'), TINTS.services, () => Linking.openURL(`${SITE}/ru/admin/flagged`)],
     ['doc', tr('Журнал действий'), TINTS.business, () => Linking.openURL(`${SITE}/ru/admin/audit`)],

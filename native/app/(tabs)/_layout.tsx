@@ -30,7 +30,7 @@ const icon = (name: string) => function TabIcon({ color }: { color: ColorValue; 
 function IosTabs() {
   const { unread } = useChats()
   return (
-    <NativeTabs tintColor={colors.primary} minimizeBehavior="onScrollDown">
+    <NativeTabs tintColor={colors.ink} /* выбранная вкладка — цветом текста: зелёная подпись на «жидком стекле» плохо читалась */ minimizeBehavior="onScrollDown">
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} />
         <NativeTabs.Trigger.Label>{tr('Главная')}</NativeTabs.Trigger.Label>

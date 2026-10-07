@@ -1,4 +1,5 @@
 import * as Haptics from 'expo-haptics'
+import SwipeRow from '../../src/components/SwipeRow'
 import { tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
@@ -63,7 +64,18 @@ export default function Chats() {
     const name = item.is_team ? tr('Команда PLONK') : (item.other_name || tr('Собеседник'))
     const preview = isOffer(item.last_kind) ? tr('Предложение цены') : plainText(item.last_text).replace(/\n+/g, ' ')
     const unread = item.unread || 0
+    const act = (action: string) => { if (token) chatPref(token, item.id, action).then(() => refresh()).catch(() => {}) }
     return (
+      // свайп, как на сайте: вправо — «Закрепить» / «Непрочитано», влево — «Без звука» / «Удалить» (длинный — сразу)
+      <SwipeRow
+        left={[
+          { label: item.pinned ? tr('Открепить') : tr('Закрепить'), color: '#2F6BFF', onPress: () => act(item.pinned ? 'unpin' : 'pin') },
+          { label: unread > 0 ? tr('Прочитано') : tr('Непрочитано'), color: '#0FA36A', onPress: () => act(unread > 0 ? 'read' : 'unread') },
+        ]}
+        right={[
+          { label: item.muted ? tr('Включить звук') : tr('Без звука'), color: '#8A8F8C', onPress: () => act(item.muted ? 'unmute' : 'mute') },
+          { label: tr('Удалить у себя'), color: '#E5533D', onPress: () => act('hide') },
+        ]}>
       <Pressable style={[styles.row, unread > 0 && styles.rowUnread]} onPress={() => router.push(`/chat/${item.id}`)} onLongPress={() => chatMenu(item)} delayLongPress={420} accessibilityRole="button">
         <View style={styles.thumb}>
           {item.is_team
@@ -87,6 +99,7 @@ export default function Chats() {
           </View>
         </View>
       </Pressable>
+      </SwipeRow>
     )
   }
 
@@ -175,8 +188,8 @@ const styles = StyleSheet.create({
   text: { fontFamily: font[400], fontSize: 15, lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },
   cta: { marginTop: 10, height: 50, paddingHorizontal: 36, borderRadius: 14, backgroundColor: colors.inverse, alignItems: 'center', justifyContent: 'center' },
   ctaText: { color: colors.onInverse, fontSize: 16, fontFamily: font[800] },
-  row: { flexDirection: 'row', gap: 12, padding: 12, alignItems: 'center', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
-  rowUnread: { backgroundColor: colors.primarySoft },
+  row: { flexDirection: 'row', gap: 12, padding: 12, alignItems: 'center', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border, backgroundColor: colors.bg },
+  rowUnread: { backgroundColor: colors.surface },
   // как .chat-thumb сайта: 52, скругление 11 — фото объявления, не кружок
   thumb: { width: 52, height: 52, borderRadius: 11, backgroundColor: colors.photo, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   thumbImg: { width: 52, height: 52 },
