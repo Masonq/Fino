@@ -8,6 +8,7 @@ import PageHeader from '../components/PageHeader'
 import { EditFormSkeleton } from '../components/Skeletons'
 import LocationPicker from '../components/LocationPicker'
 import PriceField from '../components/PriceField'
+import Sheet from '../components/Sheet'
 
 export default function EditListing() {
   const { t, i18n } = useTranslation()
@@ -19,6 +20,18 @@ export default function EditListing() {
   // характеристики раздела (комнаты, марка, размер…) — как при размещении; раньше в правке их не было вовсе
   const [attrs, setAttrs] = useState({})
   const [schema, setSchema] = useState([])
+  // раздел: можно сменить, если ошибся при размещении
+  const [catSlug, setCatSlug] = useState('')
+  const [catPath, setCatPath] = useState('')
+  const [catOpen, setCatOpen] = useState(false)
+  const [catQuery, setCatQuery] = useState('')
+  const [tree, setTree] = useState([])
+  const loadSchema = (slug, keep) => api.getCategorySchema(slug).then((r) => {
+    const sc = Array.isArray(r) ? r : (r?.attribute_schema || r?.fields || [])
+    setSchema(sc)
+    // при смене раздела оставляем только подходящие новому разделу характеристики
+    if (!keep) setAttrs((a) => Object.fromEntries(Object.entries(a).filter(([k]) => sc.some((f) => f.key === k))))
+  }).catch(() => setSchema([]))
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState('')
@@ -78,7 +91,10 @@ export default function EditListing() {
         setPhotos(l.photos || [])
         setAttrs(l.attributes || {})
         const slug = l.category_slug || l.category?.slug
-        if (slug) api.getCategorySchema(slug).then((r) => setSchema(Array.isArray(r) ? r : (r?.attribute_schema || r?.fields || []))).catch(() => setSchema([]))
+        setCatSlug(slug || '')
+        const path = (l.category_path || []).map((c) => (typeof c.name === 'string' ? c.name : c.name?.[i18n.language] || c.name?.ru)).filter(Boolean)
+        setCatPath(path.join(' › '))
+        if (slug) loadSchema(slug, true)
       })
       .catch(() => setListing(null))
   }, [id])
@@ -182,6 +198,7 @@ export default function EditListing() {
         location_lng: locationLng,
         hide_exact_address: hideExactAddress,
         ...(schema.length ? { attributes: attrs } : {}),
+        ...(catSlug && catSlug !== (listing?.category_slug || listing?.category?.slug) ? { category_slug: catSlug } : {}),
       })
       setSaved(true)
       setTimeout(() => navigate('/my'), 1200)
@@ -300,6 +317,17 @@ export default function EditListing() {
           <textarea rows={5} value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
 
+        {/* раздел — с кнопкой «Изменить»: поиск по всем конечным разделам с путём, как «Перенести в раздел» */}
+        <div className="post-field">
+          <label>{t('edit.category')}</label>
+          <button type="button" className="edit-cat" onClick={() => {
+            setCatOpen(true)
+            if (!tree.length) api.getCategories().then((r) => setTree(Array.isArray(r) ? r : (r?.items || []))).catch(() => {})
+          }}>
+            <span>{catPath || '—'}</span><b>{t('actions.change')}</b>
+          </button>
+        </div>
+
         {schema.length > 0 && (
           <div className="edit-attrs">
             <div className="edit-attrs-title">{t('detail.params')}</div>
@@ -405,6 +433,28 @@ export default function EditListing() {
           </button>
         </div>
       </div>
+      <Sheet open={catOpen} onClose={() => setCatOpen(false)} title={t('edit.category')}>
+        <input className="move-search" placeholder={t('move.search')} value={catQuery} onChange={(e) => setCatQuery(e.target.value)} />
+        <div className="move-list">
+          {(() => {
+            const nm = (c) => (typeof c.name === 'string' ? c.name : c.name?.[i18n.language] || c.name?.ru || c.slug)
+            const out = []
+            const walk = (n, trail) => { const kids = n.children || []; if (!kids.length && trail.length) out.push({ c: n, path: trail.join(' › ') }); kids.forEach((k) => walk(k, [...trail, nm(n)])) }
+            tree.forEach((r) => walk(r, []))
+            const q = catQuery.trim().toLowerCase()
+            const shown = q ? out.filter(({ c }) => nm(c).toLowerCase().includes(q)) : out
+            if (!tree.length) return <div className="empty-hint">…</div>
+            if (!shown.length) return <div className="empty-hint">{t('move.nothing')}</div>
+            return shown.slice(0, 200).map(({ c, path }) => (
+              <button key={c.slug} type="button" className="reasons-item move-found" onClick={() => {
+                setCatSlug(c.slug); setCatPath(`${path} › ${nm(c)}`); setCatOpen(false); setCatQuery(''); loadSchema(c.slug, false)
+              }}>
+                <b>{nm(c)}</b><span>{path}</span>
+              </button>
+            ))
+          })()}
+        </div>
+      </Sheet>
     </div>
   )
 }

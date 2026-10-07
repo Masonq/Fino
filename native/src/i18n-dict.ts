@@ -901,6 +901,8 @@ export const DICT: Record<string, { en?: string; sr?: string }> = {
   "Владелец": { en: "Owner", sr: "Vlasnik" },
   "Модератор": { en: "Moderator", sr: "Moderator" },
   "Не указано": { en: "Not set", sr: "Nije navedeno" },
+  "Сообщение удалено": { en: "Message deleted", sr: "Poruka je obrisana" },
+  "Удалить сообщение у вас и у собеседника?": { en: "Delete this message for everyone?", sr: "Obrisati poruku za oboje?" },
   "Оформление": { en: "Appearance", sr: "Izgled" },
   "Ошибка видео": { en: "Video error", sr: "Greška videa" },
   "Пара слов о ролике": { en: "A few words about the video", sr: "Par reči o videu" },

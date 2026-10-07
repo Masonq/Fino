@@ -173,7 +173,10 @@
     "copied": "Kopirano",
     "mic_denied": "Nema pristupa mikrofonu — dozvolite ga za plonk.rs u podešavanjima pregledača",
     "mic_failed": "Mikrofon nije moguće uključiti",
-    "hold_hint": "Držite dugme dok govorite"
+    "hold_hint": "Držite dugme dok govorite",
+    "delete": "Obriši",
+    "delete_confirm": "Obrisati poruku za oboje?",
+    "deleted": "Poruka je obrisana"
   },
   "promo": {
     "safe_deal": "Sigurna kupovina",
@@ -231,7 +234,8 @@
     "copy": "Kopiraj",
     "delete": "Obriši",
     "retry": "Pokušaj ponovo",
-    "done": "Gotovo"
+    "done": "Gotovo",
+    "change": "Promeni"
   },
   "post": {
     "step_params": "Detalji",
@@ -572,7 +576,8 @@
     "save_short": "Izmeni",
     "photo_failed": "Nije uspelo menjanje slike, pokušajte ponovo",
     "cover": "Naslovna",
-    "make_cover": "Postavi kao naslovnu"
+    "make_cover": "Postavi kao naslovnu",
+    "category": "Kategorija"
   },
   "report": {
     "button": "Prijavi",
@@ -1134,7 +1139,9 @@
     "theme_light": "Svetla",
     "theme_dark": "Tamna",
     "act_shops": "Moji šopsovi",
-    "theme_system": "Auto"
+    "theme_system": "Auto",
+    "delete_account": "Obriši nalog",
+    "delete_confirm": "Trajno obrisati nalog? Oglasi će biti skinuti, lični podaci obrisani. Ovo se ne može poništiti."
   },
   "verify": {
     "title": "Provera dokumenta",

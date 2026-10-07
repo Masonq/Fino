@@ -17,7 +17,7 @@ import PageHeader from '../components/PageHeader'
 export default function EditProfile() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
-  const { user, loading: authLoading, updateUser } = useAuth()
+  const { user, loading: authLoading, updateUser, signOut } = useAuth()
 
   const [name, setName] = useState('')
   const [avatar, setAvatar] = useState('')
@@ -428,6 +428,11 @@ export default function EditProfile() {
         )}
       </div>
 
+      {/* удаление аккаунта — по просьбе самого человека (в приложении было, на сайте не было) */}
+      <button type="button" className="edit-delete-account" onClick={async () => {
+        if (!window.confirm(t('profile.delete_confirm'))) return
+        try { await api.deleteMe(); signOut?.(); window.location.href = '/' } catch { window.alert(t('support.failed')) }
+      }}>{t('profile.delete_account')}</button>
     </div>
   )
 }

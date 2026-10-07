@@ -185,6 +185,7 @@ export const api = {
     body: JSON.stringify({ credential }),
   }),
   me: () => request('/auth/me'),
+  deleteMe: () => request('/auth/me', { method: 'DELETE' }),
   logout: () => request('/auth/logout', { method: 'POST' }),
   savedSearches: () => request('/saved-searches'),
   saveSearch: (filters, name) => request('/saved-searches', {
@@ -573,6 +574,7 @@ export const api = {
     method: 'POST',
     body: JSON.stringify({ text: text || null, offer_price: offerPrice || null, reply_to_id: replyTo || null }),
   }),
+  deleteMessage: (chatId, messageId) => request(`/chats/${chatId}/messages/${messageId}`, { method: 'DELETE' }),
   reactMessage: (chatId, messageId, emoji) => request(`/chats/${chatId}/messages/${messageId}/react`, { method: 'POST', body: JSON.stringify({ emoji }) }),
   translateMessage: (chatId, messageId, lang) => request(`/chats/${chatId}/messages/${messageId}/translate?lang=${lang}`, { method: 'POST' }),
   sendVoice: (chatId, blob, seconds, replyTo) => {

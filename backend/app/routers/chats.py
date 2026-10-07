@@ -911,6 +911,29 @@ async def react(chat_id: uuid.UUID, message_id: uuid.UUID, body: ReactIn, user: 
     return {"reactions": r}
 
 
+@router.delete("/{chat_id}/messages/{message_id}")
+async def delete_message(chat_id: uuid.UUID, message_id: uuid.UUID, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """
+    Удалить своё сообщение — у обоих (раньше удалить отправленное было нельзя вовсе). Вместо текста —
+    «Сообщение удалено»; собеседник видит сразу, через соединение чата. Служебные (предложение цены, звонок) — нельзя.
+    """
+    _require_participant(chat_id, user, db)
+    m = db.query(Message).filter(Message.id == message_id, Message.chat_id == chat_id).first()
+    if not m:
+        raise HTTPException(404, "message_not_found")
+    if m.sender_id != user.id:
+        raise HTTPException(403, "not_your_message")
+    if m.kind not in ("user", "voice"):
+        raise HTTPException(400, "cannot_delete")
+    m.kind = "deleted"
+    m.text = None
+    m.audio_url = None
+    m.reactions = None
+    db.commit()
+    await manager.broadcast(str(chat_id), {"type": "message_deleted", "message_id": str(m.id)})
+    return {"ok": True}
+
+
 _TR_CACHE: dict[tuple, str] = {}
 
 

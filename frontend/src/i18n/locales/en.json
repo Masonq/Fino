@@ -172,7 +172,10 @@
     "copied": "Copied",
     "mic_denied": "No microphone access — allow it for plonk.rs in browser settings",
     "mic_failed": "Could not turn on the microphone",
-    "hold_hint": "Hold the button while you speak"
+    "hold_hint": "Hold the button while you speak",
+    "delete": "Delete",
+    "delete_confirm": "Delete this message for everyone?",
+    "deleted": "Message deleted"
   },
   "promo": {
     "safe_deal": "Safe deal",
@@ -230,7 +233,8 @@
     "copy": "Copy",
     "delete": "Delete",
     "retry": "Try again",
-    "done": "Done"
+    "done": "Done",
+    "change": "Change"
   },
   "post": {
     "step_params": "Details",
@@ -557,7 +561,8 @@
     "save_short": "Edit",
     "photo_failed": "Couldn't change the photo, please try again",
     "cover": "Cover",
-    "make_cover": "Set as cover"
+    "make_cover": "Set as cover",
+    "category": "Category"
   },
   "report": {
     "button": "Report",
@@ -1103,7 +1108,9 @@
     "theme_light": "Light",
     "theme_dark": "Dark",
     "act_shops": "My shops",
-    "theme_system": "Auto"
+    "theme_system": "Auto",
+    "delete_account": "Delete account",
+    "delete_confirm": "Delete your account permanently? Listings will be unpublished and personal data erased. This cannot be undone."
   },
   "verify": {
     "title": "Identity verification",

@@ -205,6 +205,8 @@ export const chatInfo = (token: string, id: string) => authed<Chat>(`/chats/${en
 export const chatMessages = (token: string, id: string) => authed<Message[]>(`/chats/${encodeURIComponent(id)}/messages`, token)
 export const sendMessage = (token: string, id: string, text: string, replyTo?: string | null) =>
   authed<Message>(`/chats/${encodeURIComponent(id)}/messages`, token, 'POST', { text, offer_price: null, reply_to_id: replyTo || null })
+export const deleteMessage = (token: string, id: string, mid: string) =>
+  authed<{ ok: boolean }>(`/chats/${encodeURIComponent(id)}/messages/${mid}`, token, 'DELETE')
 export const reactMessage = (token: string, id: string, mid: string, emoji: string) =>
   authed<{ reactions: Record<string, string[]> }>(`/chats/${encodeURIComponent(id)}/messages/${mid}/react`, token, 'POST', { emoji })
 export const translateMessage = (token: string, id: string, mid: string) =>

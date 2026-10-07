@@ -2507,6 +2507,8 @@ class ListingUpdate(BaseModel):
     location_lat: float | None = None
     location_lng: float | None = None
     hide_exact_address: bool | None = None
+    # раздел можно поменять при правке (раньше нельзя — ошибся при размещении, исправить было никак)
+    category_slug: str | None = None
     attributes: dict | None = None
     title: str | None = None
     description: str | None = None
@@ -2548,6 +2550,14 @@ def update_listing(
 
     content_changed = False
     history_written = False
+    if payload.category_slug and (not listing.category or payload.category_slug != listing.category.slug):
+        new_cat = db.query(Category).filter(Category.slug == payload.category_slug).first()
+        if not new_cat:
+            raise HTTPException(400, "category_not_found")
+        if db.query(Category.id).filter(Category.parent_id == new_cat.id).first() is not None:
+            raise HTTPException(400, "category_not_leaf")   # только конечный раздел, как при размещении
+        listing.category_id = new_cat.id
+        content_changed = True                             # смена раздела — на проверку, как правка текста
     # Цена до правки: цикл ниже перезапишет её раньше, чем дойдёт до валюты.
     old_price = float(listing.price) if listing.price is not None else None
 

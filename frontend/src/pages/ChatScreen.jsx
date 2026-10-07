@@ -140,6 +140,8 @@ export default function ChatScreen() {
             prev.some((m) => m.id === data.message.id) ? prev : [...prev, data.message]
           ))
           if (data.message.sender_id !== myId) api.markChatRead(id).catch(() => {})
+        } else if (data.type === 'message_deleted') {
+          setMessages((prev) => prev.map((m) => (m.id === data.message_id ? { ...m, kind: 'deleted', text: null, audio_url: null, reactions: null } : m)))
         } else if (data.type === 'reaction') {
           setMessages((prev) => prev.map((m) => (m.id === data.message_id ? { ...m, reactions: data.reactions } : m)))
         } else if (data.type === 'typing' && data.user_id !== myId) {
@@ -667,7 +669,8 @@ export default function ChatScreen() {
                       <span className="msg-quote-text">{m.reply_to.text || '🎤'}</span>
                     </button>
                   )}
-                  {m.kind === 'voice' ? <VoicePlayer src={m.audio_url} seconds={m.audio_seconds} mine={m.sender_id === myId} />
+                  {m.kind === 'deleted' ? <span className="msg-deleted">{t('chat.deleted')}</span>
+                    : m.kind === 'voice' ? <VoicePlayer src={m.audio_url} seconds={m.audio_seconds} mine={m.sender_id === myId} />
                     : (m.kind === 'team' ? teamText(m.text) : m.text)}
                   {translated[m.id] && <div className="msg-translated"><span>{t('chat.translated')}</span>{translated[m.id]}</div>}
                   {/* Галочка у своих сообщений: одна — доставлено,
@@ -734,6 +737,18 @@ export default function ChatScreen() {
                     <button type="button" className="msg-menu-item" onClick={() => { navigator.clipboard?.writeText(menuFor.text).catch(() => {}); setMenuFor(null) }}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="12" height="12" rx="2" /><path d="M5 15V5a2 2 0 0 1 2-2h10" /></svg>
                       {t('chat.copy')}
+                    </button>
+                  )}
+                  {/* своё сообщение можно удалить — у обоих (раньше отправленное было не убрать) */}
+                  {menuFor.sender_id === myId && (menuFor.kind === 'user' || menuFor.kind === 'voice') && (
+                    <button type="button" className="msg-menu-item danger" onClick={() => {
+                      const m = menuFor; setMenuFor(null)
+                      if (!window.confirm(t('chat.delete_confirm'))) return
+                      setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, kind: 'deleted', text: null, audio_url: null, reactions: null } : x)))
+                      api.deleteMessage(id, m.id).catch(() => {})
+                    }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /></svg>
+                      {t('chat.delete')}
                     </button>
                   )}
                 </div>
