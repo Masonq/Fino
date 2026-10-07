@@ -2,6 +2,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
+  // метка сборки: кэши, которые должны сбрасываться при каждом обновлении сайта (например, список разделов)
+  define: { __BUILD__: JSON.stringify(String(Date.now())) },
   plugins: [react()],
   server: {
     port: 5173,

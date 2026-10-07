@@ -332,7 +332,11 @@ export const api = {
   getFresh: (city, lang) => request(`/listings/fresh?${new URLSearchParams({ lang, ...(city ? { city } : {}) })}`),
 
   getCategories: async () => {
-    const CACHE_KEY = 'plonk_categories'
+    // В имени — метка сборки: после обновления сайта (слили дубли, переименовали раздел) список берётся заново,
+    // а не из часового запаса на устройстве — раньше удалённые дубли ещё час висели у тех, кто уже заходил.
+    // eslint-disable-next-line no-undef
+    const CACHE_KEY = `plonk_categories_${typeof __BUILD__ !== 'undefined' ? __BUILD__ : 'dev'}`
+    try { Object.keys(localStorage).filter((k) => k.startsWith('plonk_categories') && k !== CACHE_KEY).forEach((k) => localStorage.removeItem(k)) } catch { /* не беда */ }
     // Час, а не сутки.
     //
     // Разделы меняются редко, но когда меняются — ждать сутки нельзя:
