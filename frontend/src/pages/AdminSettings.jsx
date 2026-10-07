@@ -64,7 +64,7 @@ export default function AdminSettings() {
       <PageHeader title={t('settings.title')} />
 
       {denied && <p className="empty-hint">{t('settings.no_access')}</p>}
-      {!denied && !state && !error && <p className="empty-hint">{t('actions.loading')}</p>}
+      {!denied && !state && !error && <div aria-hidden="true">{[0, 1, 2, 3].map((i) => <div key={i} className="sk-block" style={{ height: 76, borderRadius: 20, marginBottom: 10 }} />)}</div>}
 
       {state && (
         <div className="setting-card">

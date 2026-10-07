@@ -29,7 +29,7 @@ export default function WaitingReviews() {
       <PageHeader title={t('reviews.waiting_title')} />
 
       {items === null ? (
-        <p className="empty-hint">{t('actions.loading')}</p>
+        <div aria-hidden="true">{[0, 1, 2, 3].map((i) => <div key={i} className="sk-block" style={{ height: 76, borderRadius: 20, marginBottom: 10 }} />)}</div>
       ) : items.length === 0 ? (
         <div className="fav-empty">
           <div className="fav-empty-icon">

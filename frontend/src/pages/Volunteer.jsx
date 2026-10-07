@@ -20,6 +20,9 @@ export default function Volunteer() {
   const navigate = useNavigate()
 
   const [mine, setMine] = useState(null)
+  // пока не знаем, в команде ли человек и подавал ли заявку, — не показываем ни анкету, ни «спасибо»:
+  // раньше сначала рисовалась анкета, а через полсекунды её сменяло «Вы уже в команде» (мелькание на записи)
+  const [known, setKnown] = useState(false)
   const [isTeam, setIsTeam] = useState(false)
   const [role, setRole] = useState('support')
   const [langs, setLangs] = useState(['ru'])
@@ -30,11 +33,12 @@ export default function Volunteer() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (!user) return
+    if (!user) { if (!authLoading) setKnown(true); return }
     api.volunteerMine()
       .then((res) => { setMine(res.application); setIsTeam(!!res.is_team) })
       .catch(() => {})
-  }, [user])
+      .finally(() => setKnown(true))
+  }, [user, authLoading])
 
   const toggleLang = (code) => setLangs((prev) => (
     prev.includes(code) ? (prev.length > 1 ? prev.filter((l) => l !== code) : prev) : [...prev, code]
@@ -78,16 +82,18 @@ export default function Volunteer() {
         ))}
       </div>
 
-      {isTeam && (
+      {!known && <div className="sk-block" style={{ height: 220, borderRadius: 24, marginTop: 12 }} aria-hidden="true" />}
+
+      {known && isTeam && (
         <div className="volunteer-state is-ok">{t('volunteer.in_team')}</div>
       )}
 
-      {!isTeam && pending && (
+      {known && !isTeam && pending && (
         <div className="volunteer-state">{t('volunteer.pending')}</div>
       )}
 
       {/* Заявка подана до появления галочки: без подтверждения её принять нельзя. */}
-      {!isTeam && pending && !mine.confidentiality_accepted && (
+      {known && !isTeam && pending && !mine.confidentiality_accepted && (
         <div className="form-card volunteer-consent-card">
           <label className="post-checkbox volunteer-consent">
             <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
@@ -110,7 +116,7 @@ export default function Volunteer() {
         </div>
       )}
 
-      {!isTeam && !pending && !authLoading && (
+      {known && !isTeam && !pending && !authLoading && (
         <>
           <div className="form-card">
             <div className="field-row">

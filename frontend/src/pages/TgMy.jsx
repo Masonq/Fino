@@ -108,7 +108,7 @@ export default function TgMy() {
   })
 
   if (items === null) {
-    return <div className="tg-page"><p className="empty-hint">{t('actions.loading')}</p></div>
+    return <div className="tg-page"><div aria-hidden="true">{[0, 1, 2, 3].map((i) => <div key={i} className="sk-block" style={{ height: 76, borderRadius: 20, marginBottom: 10 }} />)}</div></div>
   }
 
   return (

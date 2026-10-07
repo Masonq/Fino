@@ -400,7 +400,7 @@ export default function EditProfile() {
       <div className="form-card">
         <div className="form-card-title">{t('verify.title')}</div>
         {!verify ? (
-          <p className="field-note">{t('actions.loading')}</p>
+          <p className="field-note"><span className="sk-block" style={{ display: 'inline-block', width: 180, height: 14, borderRadius: 6 }} aria-hidden="true" /></p>
         ) : verify.status === 'verified' ? (
           <div className="verify-line ok">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M20 6 9 17l-5-5" /></svg>

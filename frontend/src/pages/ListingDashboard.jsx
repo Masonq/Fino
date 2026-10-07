@@ -83,7 +83,7 @@ export default function ListingDashboard() {
       {denied ? (
         <p className="empty-hint">{t('ldash.not_owner')}</p>
       ) : !data ? (
-        <p className="empty-hint">{t('actions.loading')}</p>
+        <div aria-hidden="true">{[0, 1, 2, 3].map((i) => <div key={i} className="sk-block" style={{ height: 76, borderRadius: 20, marginBottom: 10 }} />)}</div>
       ) : (
         <>
           {/* Итог неделей и человеческим языком: цифры сами по себе не

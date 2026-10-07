@@ -61,7 +61,12 @@ const setHtmlLang = (code) => { document.documentElement.lang = code }
 setHtmlLang('sr')
 i18n.on('languageChanged', setHtmlLang)
 
-// Выбранный раньше язык — сразу после запуска, чтобы не ждать выбора.
-if (defaultLang !== 'sr') switchLanguage(defaultLang)
+// Выбранный раньше язык — ДО первой отрисовки: main.jsx ждёт languageReady и только потом рисует сайт.
+// Раньше сайт рисовался сразу на сербском, а через долю секунды переключался на русский — на /ru/ каждая
+// страница на миг была сербской («Sve», «Svi gradovi», «Prikaži» → «Все», «Все города», «Показать»).
+// Пакет языка — несколько десятков КБ и грузится параллельно с кодом сайта; ждём не дольше 1,5 с.
+export const languageReady = defaultLang === 'sr'
+  ? Promise.resolve()
+  : Promise.race([switchLanguage(defaultLang), new Promise((r) => setTimeout(r, 1500))])
 
 export default i18n

@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
-import './i18n'
+import { languageReady } from './i18n'
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 // Onest — свой шрифт с сайта (кириллица + латиница), без запроса к Google: быстрее и не зависит от их доступности
@@ -96,7 +96,7 @@ try {
   if (changed) window.history.replaceState({}, '', u.pathname + u.search + u.hash)
 } catch { /* всё равно ничего не сломает, просто параметры останутся в строке */ }
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+languageReady.finally(() => ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary>
       <BrowserRouter basename={basename}>
@@ -104,4 +104,4 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       </BrowserRouter>
     </ErrorBoundary>
   </React.StrictMode>,
-)
+))
