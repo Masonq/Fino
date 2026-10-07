@@ -45,8 +45,8 @@ export default function Categories() {
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.bg },
   top: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, height: 52 },
-  back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: 20, fontFamily: font[800], color: colors.ink, marginLeft: 4 },
+  back: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, shadowColor: '#0F1512', shadowOpacity: 0.07, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
+  title: { flex: 1, fontFamily: font[800], fontSize: 27, letterSpacing: -0.8, color: colors.ink },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingHorizontal: 12, paddingBottom: 32, paddingTop: 4 },
   item: { height: 96, borderRadius: 16, padding: TILE.pad, backgroundColor: colors.sunken, borderWidth: 2, borderColor: 'transparent', overflow: 'hidden' },
   label: { fontSize: 13.5, lineHeight: 17, fontFamily: font[700], color: colors.ink, zIndex: 2 },

@@ -87,7 +87,7 @@ export default function Favorites() {
     <SafeAreaView style={styles.page} edges={['top']}>
       <View style={styles.headRow}>
         {/* «Избранное» открывается сердечком с главной или из профиля — есть куда вернуться */}
-        <Pressable onPress={() => (router.canGoBack() ? router.back() : router.navigate('/'))} hitSlop={10} accessibilityLabel={tr('Назад')} style={{ marginRight: 4 }}>
+        <Pressable onPress={() => (router.canGoBack() ? router.back() : router.navigate('/'))} hitSlop={10} accessibilityLabel={tr('Назад')} style={{ marginRight: 8, width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, shadowColor: '#0F1512', shadowOpacity: 0.07, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 }}>
           <Icon name="back" size={22} color={colors.ink} />
         </Pressable>
         <Text style={styles.h1}>{tr('Избранное')}</Text>
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   sortText: { fontFamily: font[600], fontSize: 14, color: colors.ink },
   headRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: space.page + 4, paddingTop: 10, paddingBottom: 12 },
   // Как заголовок страницы и .fav-count сайта
-  h1: { fontSize: 22, fontFamily: font[800], letterSpacing: -0.3, color: colors.ink },
+  h1: { fontFamily: font[800], fontSize: 27, letterSpacing: -0.8, color: colors.ink },
   count: { fontSize: 12, fontFamily: font[800], color: colors.primaryDeep, backgroundColor: colors.primarySoft, borderRadius: 8, overflow: 'hidden', paddingHorizontal: 8, paddingVertical: 3 },
   circle: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   title: { fontSize: 20, fontFamily: font[800], color: colors.ink, textAlign: 'center' },

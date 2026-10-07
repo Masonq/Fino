@@ -396,6 +396,24 @@ export default function Feed() {
                 «Все / Новое / Даром» при поиске нет */}
             {searchActive ? (
               <View style={styles.searchHead}>
+                {/* фильтры одной строкой капсул, как на сайте: выбранное — мятной капсулой с подписью выбора */}
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
+                  <Pressable style={[styles.cap, activeCount(filters) > 0 && styles.capOn]} onPress={() => setFiltersOpen(true)}>
+                    <Icon name="filter" size={15} color={activeCount(filters) > 0 ? colors.onInverse : colors.ink} />
+                    <Text style={[styles.capText, activeCount(filters) > 0 && styles.capTextOn]}>{tr('Фильтры')}{activeCount(filters) > 0 ? ` ${activeCount(filters)}` : ''}</Text>
+                  </Pressable>
+                  <Pressable style={[styles.cap, !!(filters.priceMin || filters.priceMax) && styles.capOn]} onPress={() => setFiltersOpen(true)}>
+                    <Text style={[styles.capText, !!(filters.priceMin || filters.priceMax) && styles.capTextOn]}>{filters.priceMin || filters.priceMax ? `${filters.priceMin || 0}–${filters.priceMax || '∞'}` : tr('Цена')}</Text>
+                    <Icon name="down" size={11} color={colors.inkSoft} />
+                  </Pressable>
+                  <Pressable style={[styles.cap, !!city && styles.capOn]} onPress={() => setCityOpen(true)}>
+                    <Text style={[styles.capText, !!city && styles.capTextOn]} numberOfLines={1}>{city ? cityName(city) : tr('Город')}</Text>
+                    <Icon name="down" size={11} color={colors.inkSoft} />
+                  </Pressable>
+                  <Pressable style={[styles.cap, !!filters.withPhoto && styles.capOn]} onPress={() => setFilters({ ...filters, withPhoto: !filters.withPhoto })}>
+                    <Text style={[styles.capText, !!filters.withPhoto && styles.capTextOn]}>{tr('с фото')}</Text>
+                  </Pressable>
+                </ScrollView>
                 {chipCount > 0 && (
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
                     {!!q && <ActiveChip label={`«${q}»`} onPress={() => { setQuery(''); setQ('') }} />}
@@ -463,6 +481,11 @@ const styles = StyleSheet.create({
   head: { paddingHorizontal: space.page, paddingTop: 6, paddingBottom: 10 },
   listHead: { gap: 12, paddingBottom: 2 },
   searchHead: { gap: 0 },
+  cap: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 38, paddingHorizontal: 14, borderRadius: 19, backgroundColor: colors.surface,
+    shadowColor: '#0F1512', shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: 3 }, elevation: 1 },
+  capOn: { backgroundColor: colors.inverse },
+  capText: { fontFamily: font[700], fontSize: 14, color: colors.ink },
+  capTextOn: { color: colors.onInverse },
   chipsRow: { gap: 7, paddingHorizontal: space.page, paddingTop: 2, alignItems: 'center' },
   clearAll: { paddingVertical: 7, paddingHorizontal: 12, borderRadius: 11, borderWidth: 1, borderColor: 'rgba(20,30,25,0.12)' },
   clearAllText: { fontSize: 12.5, fontFamily: font[600], color: colors.muted },
