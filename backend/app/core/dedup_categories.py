@@ -35,11 +35,12 @@ def _roots(name: str) -> frozenset[str]:
 
 def _code_slugs() -> set[str]:
     """Разделы, заведённые в коде (они «официальные»); остальные появились в базе сами и чаще всего дублируют их."""
-    from app.data.subcategories import SUBCATEGORIES
+    from app.data.subcategories import SUB_SUBCATEGORIES, SUBCATEGORIES
     out = set()
-    for kids in SUBCATEGORIES.values():
-        for k in kids:
-            out.add(k["slug"])
+    for tree in (SUBCATEGORIES, SUB_SUBCATEGORIES):   # третий уровень («Корм», «Переноски») — во втором словаре
+        for kids in tree.values():
+            for k in kids:
+                out.add(k["slug"])
     try:
         from app.core.seed_missing_categories import NEW
         for kids in NEW.values():
