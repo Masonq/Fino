@@ -73,7 +73,7 @@ export default function Profile() {
   // порядок хуков между отрисовками меняется.
   useEffect(() => {
     if (!user) return
-    api.forYou(i18n.language).then((r) => setForYou(r.items || [])).catch(() => {})
+    api.forYou(i18n.language).then((r) => setForYou(r.items || [])).catch(() => setForYou([]))
   // Намеренно: зависим от user?.id, а не от всего объекта: он пересобирается при каждом обновлении профиля, и запрос уходил бы снова и снова.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, i18n.language])
@@ -81,7 +81,7 @@ export default function Profile() {
   const [queues, setQueues] = useState(() => readValue('profile-queues', null))
   // Подборка «может быть интересно» — внизу профиля: человек сюда
   // заходит между делом, и уходить ни с чем ему незачем.
-  const [forYou, setForYou] = useState([])
+  const [forYou, setForYou] = useState(null) // null — ещё грузится: держим место заготовкой
   useEffect(() => {
     if (!isStaff) { setQueues(null); return }
     let alive = true
@@ -383,32 +383,6 @@ export default function Profile() {
         </Link>
       </div>
 
-      {forYou.length > 0 && (
-        <div className="for-you">
-          <div className="for-you-title">{t('profile.for_you')}</div>
-          <div className="for-you-row">
-            {forYou.map((l) => (
-              <Link key={l.id} to={l.path} className="for-you-card">
-                <div className="for-you-photo">
-                  {l.cover_photo ? <img src={l.cover_photo} alt="" loading="lazy" />
-                    : <div className="photo-placeholder" />}
-                </div>
-                {(l.is_free || l.price != null) && (
-                  <div className="for-you-price">
-                    {l.is_free ? t('detail.free') : formatPrice(l.price, l.currency, i18n.language)}
-                  </div>
-                )}
-                {/* Без цены заголовок и есть главное в карточке — иначе
-                    под фотографией висела пустая строка, а название
-                    читалось как подпись к ней. */}
-                <div className={l.price == null && !l.is_free ? 'for-you-name strong' : 'for-you-name'}>
-                  {l.title}
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
 
       <div className="profile-section-title">{t('profile.sec_settings')}</div>
       <div className="profile-menu">
@@ -443,6 +417,40 @@ export default function Profile() {
         </>
       )}
 
+      {/* «Может быть интересно» — в самом низу, перед «Выйти»: подборка приходит позже остального профиля, и в
+          середине страницы её появление сталкивало вниз настройки и служебное (страница прыгала) */}
+      {forYou === null && (
+        <div className="for-you" aria-hidden="true">
+          <div className="sk-block" style={{ width: 190, height: 20, borderRadius: 7, marginBottom: 12 }} />
+          <div className="for-you-row">{[0, 1, 2].map((i) => <div key={i} className="for-you-card"><div className="for-you-photo sk-block" /><div className="sk-block" style={{ height: 14, width: '60%', marginTop: 8, borderRadius: 6 }} /></div>)}</div>
+        </div>
+      )}
+      {forYou?.length > 0 && (
+        <div className="for-you">
+          <div className="for-you-title">{t('profile.for_you')}</div>
+          <div className="for-you-row">
+            {forYou.map((l) => (
+              <Link key={l.id} to={l.path} className="for-you-card">
+                <div className="for-you-photo">
+                  {l.cover_photo ? <img src={l.cover_photo} alt="" loading="lazy" />
+                    : <div className="photo-placeholder" />}
+                </div>
+                {(l.is_free || l.price != null) && (
+                  <div className="for-you-price">
+                    {l.is_free ? t('detail.free') : formatPrice(l.price, l.currency, i18n.language)}
+                  </div>
+                )}
+                {/* Без цены заголовок и есть главное в карточке — иначе
+                    под фотографией висела пустая строка, а название
+                    читалось как подпись к ней. */}
+                <div className={l.price == null && !l.is_free ? 'for-you-name strong' : 'for-you-name'}>
+                  {l.title}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
       <button
         className="profile-logout"
         onClick={() => { signOut(); navigate('/') }}
