@@ -8651,3 +8651,8 @@ html[data-theme="dark"] .mod-reject{ background:#4A2A2A !important; color:#F7C1C
 .sh-cab .sh-mod, .sh-cab .jr-card{ border:0 !important; border-radius:22px !important; background:var(--surface) !important; box-shadow:var(--shadow) !important; }
 .admin-alert, .admin-list .admin-alert{ border:0 !important; border-radius:20px !important; background:var(--surface) !important; box-shadow:var(--shadow) !important; }
 .vol-page .empty-hint, .admin-users .empty, .mod-page > .empty-hint{ padding:18px 16px; border-radius:20px; background:var(--surface); box-shadow:var(--shadow); text-align:center; }
+.s-price-line .s-price{ order:0 !important; } /* цена слева: старое правило для компьютера ставило её после пустого места, и она уезжала вправо */
+@media (min-width: 900px){
+  /* «Новые объявления» справа — по одной линии с заголовком раздела слева (были выше и мельче) */
+  .landing-fresh > h2{ font-size:20px; line-height:1.2; letter-spacing:-0.02em; margin-top:5px; }
+}
