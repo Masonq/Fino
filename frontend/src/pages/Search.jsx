@@ -32,6 +32,13 @@ const PAGE = 20
 // запросов разные результаты, общее хранилище перепутало бы их.
 let searchCache = { key: null, items: [], total: 0, fetchedAt: 0 }
 
+const DEAL_ALIAS = {
+  'flats-rent': ['flats', { mode: 'rent' }],
+  'flats-sale': ['flats', { mode: 'sale' }],
+  'daily-rent': ['flats', { mode: 'daily' }],
+  'flats-studio': ['flats', { chip: 'studio' }],
+}
+
 export default function Search() {
   const topHidden = useHideOnScroll()
   const { t, i18n } = useTranslation()
@@ -118,6 +125,13 @@ export default function Search() {
     mode: params.get('mode') || '',
     chip: params.get('chip') || '',
   })
+  // «Аренда квартир», «Продажа квартир», «Студии», «Посуточная аренда» — это не отдельные разделы, а тип сделки
+  // у квартир: открываем «Квартиры» с нужной вкладкой («Снять надолго» и т. д.). Раньше вкладка не горела, а
+  // подразделы дублировали вкладки отдельным рядом чипов.
+  useEffect(() => {
+    const a = DEAL_ALIAS[category]
+    if (a) { setCategory(a[0]); setFields((f) => ({ ...f, ...a[1] })) }
+  }, [category])
 
   const inputRef = useRef(null)
 
@@ -487,7 +501,7 @@ export default function Search() {
               <div className="sub-chip skeleton" style={{ width: 100 }} />
             </div>
           )}
-          {subs.length > 0 && (
+          {subs.filter((x) => !DEAL_ALIAS[x.slug]).length > 0 && (
             <div className="sub-row">
               <button
                 className={category === rowParent.slug ? 'sub-chip active' : 'sub-chip'}
@@ -495,7 +509,7 @@ export default function Search() {
               >
                 {t('search.all_in_category')}
               </button>
-              {subs.map((sub) => (
+              {subs.filter((x) => !DEAL_ALIAS[x.slug]).map((sub) => (
                 <button
                   key={sub.id}
                   className={category === sub.slug ? 'sub-chip active' : 'sub-chip'}

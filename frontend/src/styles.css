@@ -8250,3 +8250,22 @@ button.au-row:active{ background:var(--surface-sunken); }
 .admin-listing-status.st-rejected{ background:#FDE4E2; color:#C4302B; }
 .admin-listing-status.st-pending_moderation{ background:#FFF0D2; color:#8A5A00; }
 .admin-user-page .admin-login-row{ background:var(--surface); border:0; border-radius:18px; box-shadow:var(--shadow); margin-bottom:8px; padding:12px 14px; }
+
+/* =====================================================================
+   PLONK 2.0 — страница поиска/раздела: фильтры в стиле главной
+   Выбор везде одним языком — тёмная капсула (кнопка «Фильтры» и выбранные подразделы были зелёными, вкладки
+   сделки — серыми без выбранной), вкладки «Купить / Снять надолго / Посуточно» — переключатель с выбранной белой
+   «таблеткой», чипы комнат — белые капсулы с тенью, выбранная — тёмная.
+   ===================================================================== */
+.search-filter-btn{ border-radius:14px; background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(15,21,18,.05), 0 6px 18px rgba(15,21,18,.06); }
+.search-filter-btn.on{ background:var(--inverse) !important; color:var(--on-inverse) !important; }
+.sub-chip{ border:0 !important; background:var(--surface); box-shadow:0 1px 2px rgba(15,21,18,.05), 0 6px 18px rgba(15,21,18,.05); font-weight:700; border-radius:18px; }
+.sub-chip.active{ background:var(--inverse) !important; color:var(--on-inverse) !important; box-shadow:none; }
+.cat-modes{ background:var(--surface-sunken) !important; border-radius:18px !important; padding:4px !important; gap:4px; }
+.cat-mode{ border-radius:14px !important; font-weight:800 !important; color:var(--ink-soft) !important; background:transparent !important; min-height:40px; }
+.cat-mode.on{ background:var(--surface) !important; color:var(--ink) !important; box-shadow:0 1px 3px rgba(15,21,18,.12) !important; }
+.cat-chip{ border:0 !important; background:var(--surface) !important; box-shadow:0 1px 2px rgba(15,21,18,.05), 0 6px 18px rgba(15,21,18,.05); font-weight:700; border-radius:18px !important; }
+.cat-chip.on{ background:var(--inverse) !important; color:var(--on-inverse) !important; box-shadow:none; }
+.sort-dd-btn, .results-sort{ border-radius:14px; background:var(--surface); box-shadow:0 1px 2px rgba(15,21,18,.05), 0 6px 18px rgba(15,21,18,.05); }
+.search-empty .empty-icon, .search-empty .fav-empty-icon{ background:var(--surface) !important; color:var(--ink) !important; box-shadow:var(--shadow); }
+.active-filter-chip{ background:var(--surface) !important; color:var(--ink) !important; border:0 !important; box-shadow:0 1px 2px rgba(15,21,18,.05), 0 6px 18px rgba(15,21,18,.05); border-radius:16px; font-weight:700; } .active-filter-chip.clear-all{ background:transparent !important; box-shadow:none; color:var(--muted) !important; }

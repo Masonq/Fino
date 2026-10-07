@@ -22,7 +22,8 @@ function fmtNum(n) {
 const CARD_META = {
   flats: (a, t) => {
     const parts = []
-    if (a.rooms) parts.push(`${a.rooms}-${t('card.rooms_short')}`)
+    // «studio» — не число: «Студия», а не «studio-комн.»
+    if (a.rooms) parts.push(a.rooms === 'studio' ? t('card.studio') : `${a.rooms}-${t('card.rooms_short')}`)
     if (a.area_m2) parts.push(`${fmtNum(a.area_m2)}${NBSP}${t('card.sqm')}`)
     if (a.floor) parts.push(a.total_floors ? `${a.floor}/${a.total_floors}${NBSP}${t('card.floor_short')}` : `${a.floor}${NBSP}${t('card.floor_short')}`)
     return parts

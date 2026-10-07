@@ -1020,7 +1020,8 @@
     "sotka": "sotka",
     "year_short": "",
     "km": "km",
-    "gb": "GB"
+    "gb": "GB",
+    "studio": "Studio"
   },
   "notif": {
     "title": "Notifications",

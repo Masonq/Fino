@@ -6,7 +6,7 @@ from app.core.urls import listing_path
 from datetime import datetime, timedelta, date as date_type
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from sqlalchemy import String, cast, case, exists, func, or_, Float
+from sqlalchemy import String, and_, cast, case, exists, func, or_, Float
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, aliased, joinedload
 from pydantic import BaseModel, Field, field_validator
@@ -16,6 +16,15 @@ from app.core.database import get_db
 from app.core.search_terms import variants as search_variants
 from app.models import Listing, ListingStatus, ListingTranslation, ListingPhoto, Category, Currency, User, UserRole, PromotionType
 from app.core.clock import utcnow
+
+
+# Подразделы недвижимости, которые по сути — тип сделки в общем разделе
+REAL_ESTATE_DEAL_ALIASES = {
+    "flats-rent": ("flats", "rent"),
+    "flats-sale": ("flats", "sale"),
+    "daily-rent": ("real-estate", "daily"),
+    "flats-studio": ("flats", "studio"),
+}
 
 router = APIRouter(prefix="/api/listings", tags=["listings"])
 
@@ -500,7 +509,21 @@ def search_listings(
             # По родительской категории показываем и её подкатегории — иначе
             # «Электроника» была бы пустой, ведь объявления лежат в «Телефонах».
             cat = db.query(Category).filter(Category.slug == category_slug).first()
-            if cat:
+            deal_alias = REAL_ESTATE_DEAL_ALIASES.get(category_slug)
+            if cat and deal_alias:
+                # «Аренда квартир», «Продажа квартир», «Посуточная аренда»: большинство квартир лежит в общем разделе
+                # «Квартиры» с отметкой типа сделки (attributes.deal_type) — без этого подраздел показывал «ничего не
+                # нашлось», хотя сдаваемых квартир десятки.
+                parent_slug, deal = deal_alias
+                parent = db.query(Category).filter(Category.slug == parent_slug).first()
+                cond = Listing.category_id.in_(_branch_ids(cat))
+                if parent and deal == "studio":
+                    # «Гарсоньеры и студии» — по числу комнат, а не по сделке
+                    cond = or_(cond, and_(Listing.category_id.in_(_branch_ids(parent)), Listing.attributes["rooms"].astext.in_(["studio", "0.5"])))
+                elif parent:
+                    cond = or_(cond, and_(Listing.category_id.in_(_branch_ids(parent)), Listing.attributes["deal_type"].astext == deal))
+                q = q.filter(cond)
+            elif cat:
                 # Все уровни вниз, а не только прямые дети: появился третий
                 # уровень («Оборудование» → «Пищевое»), и объявления из него
                 # выпадали — счётчик обещал три, список показывал одно.
