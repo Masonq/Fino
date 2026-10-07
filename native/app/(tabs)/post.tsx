@@ -491,7 +491,7 @@ const styles = StyleSheet.create({
   stepDotOn: { backgroundColor: colors.primary },
   stepHead: { flexDirection: 'row', alignItems: 'center', gap: 4, marginLeft: -8 },
   stepBack: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  stepTitle: { flexShrink: 1, fontSize: 20, fontFamily: font[800], letterSpacing: -0.3, color: colors.ink },
+  stepTitle: { flexShrink: 1, fontSize: 28, fontFamily: font[800], letterSpacing: -0.9, color: colors.ink },
   stepHint: { fontSize: 13, lineHeight: 18, fontFamily: font[500], color: colors.muted, marginTop: 4, marginBottom: 14 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   catItem: { width: '31.9%', height: 118, borderRadius: 16, paddingTop: 10, paddingHorizontal: 6, paddingBottom: 9, alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },

@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   headRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: space.page + 4, paddingTop: 10, paddingBottom: 12 },
   // Как заголовок страницы и .fav-count сайта
   h1: { fontFamily: font[800], fontSize: 27, letterSpacing: -0.8, color: colors.ink },
-  count: { fontSize: 12, fontFamily: font[800], color: colors.primaryDeep, backgroundColor: colors.primarySoft, borderRadius: 8, overflow: 'hidden', paddingHorizontal: 8, paddingVertical: 3 },
+  count: { fontSize: 15, fontFamily: font[700], color: colors.muted, marginLeft: 2 },
   circle: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   title: { fontSize: 20, fontFamily: font[800], color: colors.ink, textAlign: 'center' },
   text: { fontFamily: font[400], fontSize: 15, lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },

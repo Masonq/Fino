@@ -29,7 +29,7 @@ export default function HeartButton({ id, size = 36, style, dark }: { id: string
     <Pressable onPress={press} hitSlop={6} style={[styles.btn, dark && styles.dark, { width: size, height: size, borderRadius: size / 2 }, style]}
       accessibilityRole="button" accessibilityLabel={on ? tr('Убрать из избранного') : tr('В избранное')} accessibilityState={{ selected: on }}>
       <Animated.View style={{ transform: [{ scale }] }}>
-        <Icon name="heart" filled={on} strokeWidth={1.7} size={Math.round(size * 0.56)} color={on ? colors.accent : dark ? '#fff' : colors.ink} />
+        <Icon name="heart" filled={on} strokeWidth={1.7} size={Math.round(size * 0.56)} color={on ? '#FF3B5C' : dark ? '#fff' : colors.ink} />
       </Animated.View>
     </Pressable>
   )

@@ -97,14 +97,16 @@ export default function Notifications() {
 }
 
 const styles = StyleSheet.create({
-  nRow: { paddingVertical: 14, paddingHorizontal: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border, backgroundColor: colors.surface },
-  nRowUnread: { backgroundColor: colors.primarySoft },
+  nRow: { paddingVertical: 14, paddingHorizontal: 16, marginHorizontal: 12, marginTop: 8, borderRadius: 20, backgroundColor: colors.surface,
+    shadowColor: '#0F1512', shadowOpacity: 0.05, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 1 },
+  nRowUnread: { borderLeftWidth: 3, borderLeftColor: colors.primary },
   nDot: { position: 'absolute', left: 6, top: 19, width: 7, height: 7, borderRadius: 4, backgroundColor: colors.primary },
   nText: { fontSize: 13.5, lineHeight: 19, fontFamily: font[500], color: colors.ink, paddingLeft: 14 },
   nTime: { fontSize: 11, fontFamily: font[500], color: colors.muted, marginTop: 5, paddingLeft: 14 },
-  headActions: { flexDirection: 'row', alignItems: 'center', gap: 12, marginLeft: 'auto', paddingLeft: 12, paddingRight: 8 },
+  // кнопки «Прочитать всё» и «Очистить» — строкой под заголовком, как на сайте (рядом с ним они сжимали заголовок)
+  headActions: { flexDirection: 'row', alignItems: 'center', gap: 16, width: '100%', paddingLeft: 52, marginTop: 4 },
   page: { flex: 1, backgroundColor: colors.bg },
-  head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 8, paddingRight: 16, height: 52 },
+  head: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 6, paddingBottom: 8 },
   back: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, shadowColor: '#0F1512', shadowOpacity: 0.07, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
   h1: { fontFamily: font[800], fontSize: 27, letterSpacing: -0.8, color: colors.ink },
   all: { fontSize: 13.5, fontFamily: font[700], color: colors.primaryDeep },
@@ -115,7 +117,7 @@ const styles = StyleSheet.create({
   time: { fontFamily: font[400], fontSize: 12.5, color: colors.muted },
   sep: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginLeft: 37 },
   empty: { alignItems: 'center', gap: 14, paddingTop: 44, paddingHorizontal: 32 },
-  circle: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  circle: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
   emptyTitle: { fontSize: 20, fontFamily: font[800], color: colors.ink },
   emptyText: { fontSize: 14, lineHeight: 20, fontFamily: font[500], color: colors.muted, textAlign: 'center' },
 })

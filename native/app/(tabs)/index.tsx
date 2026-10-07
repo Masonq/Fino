@@ -444,7 +444,7 @@ export default function Feed() {
                 <View style={styles.colsToggle}>
                   {([2, 1] as const).map((n) => (
                     <Pressable key={n} onPress={() => pickCols(n)} style={[styles.colBtn, cols === n && styles.colBtnOn]} accessibilityLabel={tr(n === 2 ? '2 колонки' : '1 колонка')} accessibilityState={{ selected: cols === n }}>
-                      <Icon name={n === 2 ? 'cols2' : 'cols1'} size={16} color={cols === n ? '#fff' : colors.inkSoft} />
+                      <Icon name={n === 2 ? 'cols2' : 'cols1'} size={16} color={cols === n ? colors.onInverse : colors.inkSoft} />
                     </Pressable>
                   ))}
                 </View>
@@ -505,10 +505,11 @@ const styles = StyleSheet.create({
   suggest: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginTop: 8 },
   chip: { height: 34, paddingHorizontal: 12, borderRadius: 11, backgroundColor: colors.sunken, justifyContent: 'center' },
   chipText: { fontSize: 13.5, fontFamily: font[700], color: colors.ink },
-  geo: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: space.page, padding: 10, paddingLeft: 14, borderRadius: 14, backgroundColor: colors.primarySoft },
-  geoText: { flex: 1, fontSize: 14, lineHeight: 18, fontFamily: font[700], color: colors.primaryDeep },
-  geoYes: { height: 34, paddingHorizontal: 12, borderRadius: 10, backgroundColor: colors.primary, justifyContent: 'center' },
-  geoYesText: { color: '#fff', fontSize: 13.5, fontFamily: font[800] },
+  geo: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: space.page, padding: 10, paddingLeft: 14, borderRadius: 20, backgroundColor: colors.surface,
+    shadowColor: '#0F1512', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
+  geoText: { flex: 1, fontSize: 14, lineHeight: 18, fontFamily: font[700], color: colors.ink },
+  geoYes: { height: 36, paddingHorizontal: 14, borderRadius: 12, backgroundColor: colors.inverse, justifyContent: 'center' },
+  geoYesText: { color: colors.onInverse, fontSize: 13.5, fontFamily: font[800] },
   geoNo: { height: 34, paddingHorizontal: 8, justifyContent: 'center' },
   geoNoText: { color: colors.primaryDeep, fontSize: 13.5, fontFamily: font[700] },
   headRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
@@ -525,7 +526,7 @@ const styles = StyleSheet.create({
   tabsRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, paddingHorizontal: space.page },
   colsToggle: { flexDirection: 'row', gap: 2, padding: 3, borderRadius: 12, backgroundColor: colors.sunken },
   colBtn: { width: 34, height: 30, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
-  colBtnOn: { backgroundColor: colors.primary },
+  colBtnOn: { backgroundColor: colors.inverse },
   // как .save-search сайта: 8/13, скругление 11, 12,5/700; сохранено — зелёная
   saveBtn: { paddingVertical: 8, paddingHorizontal: 13, borderRadius: 11, backgroundColor: colors.primarySoft },
   saveBtnOn: { backgroundColor: colors.primary },
