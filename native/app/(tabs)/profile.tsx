@@ -8,6 +8,7 @@ import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, StyleS
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { ApiError, balance as fetchBalance, deleteMe, type MyListing, startVerification, verificationStatus, myListings, type Seller, sellerProfile, waitingReviews, type FeedItem, forYouList } from '../../src/api'
+import { TINTS } from '../../src/tints'
 import { useAuth } from '../../src/auth'
 import { useChats } from '../../src/chats'
 import Icon from '../../src/components/Icon'
@@ -64,7 +65,7 @@ export default function Profile() {
 
   const themeRow = (
     <View style={[styles.row, styles.rowLast]}>
-      <View style={styles.rowIcon}><Icon name="moon" size={17} color={colors.primary} /></View>
+      <View style={styles.rowIcon}><Icon name="moon" size={17} color={colors.ink} /></View>
       <Text style={styles.rowText}>{tr('Тема')}</Text>
       <View style={{ alignSelf: 'center' }}>
         <Segmented options={[{ key: 'light', label: tr('Светлая') }, { key: 'dark', label: tr('Тёмная') }, { key: 'system', label: tr('Авто') }]}
@@ -79,7 +80,7 @@ export default function Profile() {
 
   const langRow = (
     <View style={styles.row}>
-      <View style={styles.rowIcon}><Icon name="globe" size={17} color={colors.primary} /></View>
+      <View style={styles.rowIcon}><Icon name="globe" size={17} color={colors.ink} /></View>
       <Text style={styles.rowText}>{tr('Язык')}</Text>
       {/* обёртка: у переключателя alignSelf flex-start (для колонок) — в строке он прижимался к верху */}
       <View style={{ alignSelf: 'center' }}><Segmented options={LANGS} value={lang} onChange={setLang} /></View>
@@ -131,7 +132,7 @@ export default function Profile() {
 
   const row = (icon: string, label: string, onPress: () => void, badge?: number, last?: boolean) => (
     <Pressable style={[styles.row, last && styles.rowLast]} onPress={onPress} accessibilityRole="button">
-      <View style={styles.rowIcon}><Icon name={icon} size={17} color={colors.primary} /></View>
+      <View style={styles.rowIcon}><Icon name={icon} size={17} color={colors.ink} /></View>
       <Text style={styles.rowText}>{tr(label)}</Text>
       {!!badge && <View style={styles.badge}><Text style={styles.badgeText}>{badge > 9 ? '9+' : badge}</Text></View>}
       <Icon name="forward" size={16} color={colors.muted} />
@@ -143,7 +144,11 @@ export default function Profile() {
       <ScrollView contentContainerStyle={{ paddingBottom: 32 + tabInset }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false) }} tintColor={colors.primary} colors={[colors.primary]} />}>
         <View style={styles.header}>
-          <Text style={styles.h1}>{tr('Профиль')}</Text>
+          {/* как на сайте: приветствие по времени суток и имени, под ним крупно «Профиль» */}
+          <View style={{ flex: 1 }}>
+            <Text style={styles.kicker} numberOfLines={1}>{hello()}{user.display_name ? `, ${user.display_name.split(' ')[0]}` : ''}</Text>
+            <Text style={styles.h1}>{tr('Профиль')}</Text>
+          </View>
           <Pressable onPress={() => router.push('/notifications')} hitSlop={8} style={styles.bell} accessibilityLabel={tr('Уведомления')}>
             <Icon name="bell" size={23} color={colors.ink} />
             {notices > 0 && <View style={styles.bellDot} />}
@@ -190,7 +195,7 @@ export default function Profile() {
                     else Alert.alert(tr('Не получилось'), tr('Проверьте интернет и попробуйте ещё раз.'))
                   } finally { setVerifying(false) }
                 }}>
-                  <Icon name="shield" size={15} color="#fff" />
+                  <Icon name="shield" size={15} color={colors.onInverse} />
                   <Text style={styles.verifyText}>{tr(verify?.status === 'rejected' ? 'Пройти ещё раз' : 'Подтвердить личность')}</Text>
                 </Pressable>
               </>
@@ -210,15 +215,15 @@ export default function Profile() {
         )}
 
         <View style={styles.stats}>
-          <Pressable style={styles.stat} onPress={() => router.push('/my')}>
+          <Pressable style={[styles.stat, { backgroundColor: TINTS['real-estate'] }]} onPress={() => router.push('/my')}>
             <View style={{ flex: 1 }}>
               <Text style={styles.statValue}>{items ? active.length : '—'}</Text>
               <Text style={styles.statLabel}>{tr('объявлений')}</Text>
             </View>
             <Icon name="forward" size={15} color={colors.muted} />
           </Pressable>
-          <View style={styles.stat}><View><Text style={styles.statValue}>{items ? views : '—'}</Text><Text style={styles.statLabel}>{tr('просмотров')}</Text></View></View>
-          <View style={styles.stat}><View><Text style={styles.statValue}>{items ? favs : '—'}</Text><Text style={styles.statLabel}>{tr('в избранном')}</Text></View></View>
+          <View style={[styles.stat, { backgroundColor: TINTS.auto }]}><View><Text style={styles.statValue}>{items ? views : '—'}</Text><Text style={styles.statLabel}>{tr('просмотров')}</Text></View></View>
+          <View style={[styles.stat, { backgroundColor: TINTS.fashion }]}><View><Text style={styles.statValue}>{items ? favs : '—'}</Text><Text style={styles.statLabel}>{tr('в избранном')}</Text></View></View>
         </View>
 
         <View style={styles.balance}>
@@ -367,7 +372,8 @@ const styles = StyleSheet.create({
   cta: { marginTop: 10, height: 50, paddingHorizontal: 40, borderRadius: 14, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
   ctaText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 12 },
-  h1: { fontSize: 22, fontFamily: font[800], letterSpacing: -0.3, color: colors.ink },
+  h1: { fontSize: 30, fontFamily: font[800], letterSpacing: -1, color: colors.ink },
+  kicker: { fontSize: 15, fontFamily: font[600], color: colors.inkSoft },
   bell: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   bellDot: { position: 'absolute', top: 8, right: 9, width: 9, height: 9, borderRadius: 5, backgroundColor: colors.accent, borderWidth: 1.5, borderColor: colors.bg },
   hint: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 12, marginBottom: 12, padding: 12, borderRadius: 14, backgroundColor: colors.warmBg },
@@ -381,17 +387,17 @@ const styles = StyleSheet.create({
   cardBody: { flex: 1, paddingRight: 34 },
   cardName: { fontSize: 17, lineHeight: 21, letterSpacing: -0.3, fontFamily: font[800], color: colors.ink },
   cardMeta: { marginTop: 3, fontSize: 12.5, fontFamily: font[600], color: colors.muted },
-  verify: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10, height: 34, paddingHorizontal: 12, borderRadius: 10, backgroundColor: colors.ink },
+  verify: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10, height: 36, paddingHorizontal: 14, borderRadius: 12, backgroundColor: colors.inverse },
   verifyPending: { alignSelf: 'flex-start', marginTop: 10, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 9, backgroundColor: colors.warmBg },
   verifyPendingText: { fontSize: 12.5, fontFamily: font[800], color: '#8A6A1F' },
   verifyReason: { marginTop: 8, fontSize: 12.5, lineHeight: 17, fontFamily: font[600], color: colors.danger },
-  verifyText: { color: '#fff', fontSize: 13, fontFamily: font[800] },
+  verifyText: { color: colors.onInverse, fontSize: 13, fontFamily: font[800] },
   edit: { position: 'absolute', top: 12, right: 12, width: 32, height: 32, borderRadius: 10, backgroundColor: colors.sunken, alignItems: 'center', justifyContent: 'center' },
   pending: { flexDirection: 'row', alignItems: 'center', gap: 9, marginHorizontal: 12, marginBottom: 12, paddingHorizontal: 14, height: 46, borderRadius: 14, backgroundColor: colors.warmBg },
   pendingDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#C08A1E' },
   pendingText: { flex: 1, fontSize: 14, fontFamily: font[800], color: '#8A6A1F' },
   stats: { flexDirection: 'row', gap: 8, marginHorizontal: 12, marginBottom: 12 },
-  stat: { flex: 1, flexDirection: 'row', alignItems: 'center', minHeight: 62, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  stat: { flex: 1, flexDirection: 'row', alignItems: 'flex-end', minHeight: 78, paddingHorizontal: 12, paddingVertical: 12, borderRadius: 20 },
   statValue: { fontSize: 18, fontFamily: font[800], color: colors.ink },
   statLabel: { fontSize: 11.5, fontFamily: font[600], color: colors.muted, marginTop: 1 },
   // .balance-card: отступы 0 12 10, внутри 16/14/14, скругление 18; .balance-bar 10, .balance-part 10/12/11, скругление 14
@@ -416,10 +422,16 @@ const styles = StyleSheet.create({
   menu: { marginHorizontal: 12, marginBottom: 10, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, minHeight: 56, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
   rowLast: { borderBottomWidth: 0 },
-  rowIcon: { width: 32, height: 32, borderRadius: 10, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  rowIcon: { width: 32, height: 32, borderRadius: 10, backgroundColor: colors.sunken, alignItems: 'center', justifyContent: 'center' },
   rowText: { flex: 1, fontSize: 15.5, fontFamily: font[700], color: colors.ink },
   delete: { alignSelf: 'center', marginTop: 6, paddingVertical: 10, paddingHorizontal: 14 },
   deleteText: { fontSize: 13.5, fontFamily: font[700], color: colors.muted },
   badge: { minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: 6, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
   badgeText: { color: '#fff', fontSize: 11, fontFamily: font[800] },
 })
+
+/** Приветствие по времени суток — как на сайте и на главной */
+function hello() {
+  const h = new Date().getHours()
+  return h < 5 ? tr('Доброй ночи') : h < 12 ? tr('Доброе утро') : h < 18 ? tr('Добрый день') : tr('Добрый вечер')
+}

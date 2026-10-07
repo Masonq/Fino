@@ -52,7 +52,8 @@ SplashScreen.preventAutoHideAsync().catch(() => {})
 export default function RootLayout() {
   useUpdatesOnResume()
   // приложение всегда светлое, даже если в телефоне включена тёмная тема
-  useEffect(() => { Appearance.setColorScheme('light') }, [])
+  // системные элементы (клавиатура, нижние вкладки iOS) — в тон выбранной теме приложения; в браузере такого нет
+  useEffect(() => { Appearance.setColorScheme?.(isDark ? 'dark' : 'light') }, [])
   const [fontsReady, fontsError] = useFonts({
     Onest_400Regular, Onest_500Medium, Onest_600SemiBold, Onest_700Bold, Onest_800ExtraBold,
   })

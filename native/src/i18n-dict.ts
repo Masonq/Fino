@@ -876,6 +876,8 @@ export const DICT: Record<string, { en?: string; sr?: string }> = {
   "Перенесено": { en: "Moved", sr: "Premešteno" },
   "Объявление пропадёт из ленты и у продавца.": { en: "The listing will disappear from the feed and from the seller.", sr: "Oglas će nestati iz feeda i kod prodavca." },
   "Не получилось удалить": { en: "Could not delete", sr: "Brisanje nije uspelo" },
+  "{n} непрочитанных": { en: "{n} unread", sr: "{n} nepročitanih" },
+  "Покупки и продажи": { en: "Buying and selling", sr: "Kupovina i prodaja" },
   "Оформление": { en: "Appearance", sr: "Izgled" },
   "Ошибка видео": { en: "Video error", sr: "Greška videa" },
   "Пара слов о ролике": { en: "A few words about the video", sr: "Par reči o videu" },

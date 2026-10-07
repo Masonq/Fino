@@ -28,7 +28,7 @@ import * as Clipboard from 'expo-clipboard'
 import ImageView from '../../src/components/PhotoViewer'
 import Skeleton from '../../src/components/Skeleton'
 import { SITE, mediaUrl } from '../../src/config'
-import { cityName, formatPrice, isFresh, monthYear, parseTime, relTime } from '../../src/format'
+import { cityName, formatPrice, isFresh, monthYear, parseTime, relTime, timeAgo } from '../../src/format'
 import { colors, font, mono, radius } from '../../src/theme'
 import VerifiedMark from '../../src/components/VerifiedMark'
 
@@ -221,11 +221,23 @@ export default function ListingScreen() {
           {!gone && !!data.is_reserved && (
             <View style={styles.reservedBanner}><Text style={styles.reservedText}>{tr(data.reserved_for_me ? 'Продавец забронировал это для вас' : 'Забронировано другим покупателем')}</Text></View>
           )}
+          {/* путь по разделам над ценой — как на сайте */}
+          {!!catTitle && (
+            <Pressable onPress={() => data.category_slug && router.push(`/c/${data.category_slug}` as never)}>
+              <Text style={styles.crumbs} numberOfLines={1}>{catTitle}</Text>
+            </Pressable>
+          )}
           <View style={styles.priceRow}>
             <Text style={styles.price}>{formatPrice(data.price, data.currency, data.is_free)}</Text>
             {!!data.previous_price && !data.is_free && <Text style={styles.oldPrice}>{formatPrice(data.previous_price, data.currency)}</Text>}
           </View>
           <Text style={styles.title}>{title}</Text>
+          {/* факты значками под названием: город, когда, просмотры — как на сайте */}
+          <View style={styles.factChips}>
+            {!!data.city && <View style={styles.factChip}><Icon name="pin" size={13} color={colors.inkSoft} /><Text style={styles.factChipT}>{cityName(data.city)}</Text></View>}
+            {!!data.published_at && <View style={styles.factChip}><Icon name="clock" size={13} color={colors.inkSoft} /><Text style={styles.factChipT}>{timeAgo(data.published_at)}</Text></View>}
+            {!!(data as { views_count?: number }).views_count && <View style={styles.factChip}><Icon name="eye" size={13} color={colors.inkSoft} /><Text style={styles.factChipT}>{(data as { views_count?: number }).views_count}</Text></View>}
+          </View>
           {data.external_source === 'telegram' && <Text style={styles.fromTg}>{tr('Объявление из Telegram')}</Text>}
           {keyFacts.length > 0 && (
             <View style={styles.facts}>
@@ -525,6 +537,10 @@ const toneStyle = StyleSheet.create({
 })
 
 const styles = StyleSheet.create({
+  crumbs: { fontFamily: font[600], fontSize: 13.5, color: colors.muted, marginBottom: 4 },
+  factChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 },
+  factChip: { flexDirection: 'row', alignItems: 'center', gap: 5, height: 30, paddingHorizontal: 10, borderRadius: 15, backgroundColor: colors.surface, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+  factChipT: { fontFamily: font[700], fontSize: 12.5, color: colors.inkSoft },
   page: { flex: 1, backgroundColor: colors.surface },
   center: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 8 },
   back: {
@@ -566,7 +582,7 @@ const styles = StyleSheet.create({
     shadowColor: '#14201A', shadowOpacity: 0.05, shadowRadius: 12, shadowOffset: { width: 0, height: -6 },
   },
   priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 10 },
-  price: { fontFamily: mono, fontSize: 25, color: colors.primaryDeep },
+  price: { fontFamily: mono, fontSize: 32, letterSpacing: -1, color: colors.ink },
   oldPrice: { fontFamily: mono, fontSize: 15, color: colors.muted, textDecorationLine: 'line-through' },
   // Как .detail-title сайта: 17,5 / 800 / межстрочный 1,3
   title: { fontFamily: font[800], fontSize: 17.5, lineHeight: 23, letterSpacing: -0.18, color: colors.ink, marginTop: 12 },
@@ -588,7 +604,8 @@ const styles = StyleSheet.create({
   pcTitle: { fontSize: 14.5, fontFamily: font[800], letterSpacing: -0.15, color: colors.ink },
   pcSub: { fontSize: 12.5, fontFamily: font[600], color: colors.muted, marginTop: 1 },
   chip: { overflow: 'hidden', borderRadius: radius.chip, paddingHorizontal: 10, paddingVertical: 5, fontSize: 12, fontFamily: font[800] },
-  seller: { marginTop: 20, flexDirection: 'row', alignItems: 'center', gap: 11, paddingVertical: 12, paddingHorizontal: 13, borderRadius: 17, backgroundColor: colors.sunken },
+  seller: { marginTop: 20, flexDirection: 'row', alignItems: 'center', gap: 11, paddingVertical: 14, paddingHorizontal: 14, borderRadius: 22, backgroundColor: colors.surface,
+    shadowColor: '#0F1512', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
   avatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: '#7C6CF0', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   avatarImg: { width: 52, height: 52 },
   avatarLetter: { color: '#fff', fontSize: 20, fontFamily: font[800] },

@@ -512,7 +512,8 @@ const styles = StyleSheet.create({
   subName: { maxWidth: '60%', fontSize: 12.5, lineHeight: 15.5, fontFamily: font[700], color: colors.ink, zIndex: 2 },
   // фильтры — серой карточкой, как карточки «Работы»
   // цветная карточка поиска — как «Найти автомобиль» у Авито (у них голубая, у нас — в фирменном зелёном)
-  form: { marginHorizontal: space.page, marginTop: 8, padding: 16, borderRadius: 22, backgroundColor: colors.primarySoft, gap: 10 },
+  form: { marginHorizontal: space.page, marginTop: 8, padding: 16, borderRadius: 24, backgroundColor: colors.surface, gap: 10,
+    shadowColor: '#0F1512', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
   formTitle: { fontSize: 19, fontFamily: font[800], color: colors.ink, letterSpacing: -0.3, marginBottom: 2 },
   lHead: { paddingHorizontal: space.page, paddingTop: 14 },
   lTitle: { fontSize: 26, lineHeight: 31, fontFamily: font[800], color: colors.ink, letterSpacing: -0.5 },
@@ -558,13 +559,13 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, flexBasis: 0, minWidth: 0, fontSize: 15, fontFamily: font[500], color: colors.ink, paddingVertical: 0 },
   priceRow: { flexDirection: 'row', gap: 8 },
   // как .landing-input сайта: 13 / 14 внутри, скругление 13, рамка, 16 / 600
-  priceInput: { flex: 1, flexBasis: 0, minWidth: 0, height: 48, borderRadius: 13, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, paddingHorizontal: 14, fontSize: 16, fontFamily: font[600], color: colors.ink },
+  priceInput: { flex: 1, flexBasis: 0, minWidth: 0, height: 48, borderRadius: 16, borderWidth: 0, borderColor: colors.border, backgroundColor: colors.sunken, paddingHorizontal: 14, fontSize: 16, fontFamily: font[600], color: colors.ink },
   sorts: { gap: 6 },
   chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   // как .landing-label сайта: 13 / 700, ink-soft
   fieldLabel: { fontSize: 13, fontFamily: font[700], color: colors.inkSoft, marginTop: 6 },
   // как .landing-select сайта: 48, рамка, скругление 13, значение 16 / 600 слева
-  selectField: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 48, borderRadius: 13, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, paddingHorizontal: 14 },
+  selectField: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 48, borderRadius: 16, borderWidth: 0, borderColor: colors.border, backgroundColor: colors.sunken, paddingHorizontal: 14 },
   subAll: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   selectLabel: { fontSize: 13.5, fontFamily: font[700], color: colors.inkSoft },
   selectValue: { flex: 1, fontSize: 16, fontFamily: font[600], color: colors.ink },

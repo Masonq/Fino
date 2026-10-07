@@ -92,7 +92,11 @@ export default function Chats() {
 
   return (
     <SafeAreaView style={styles.page} edges={['top']}>
-      <Text style={styles.h1}>{tr('Сообщения')}</Text>
+      {/* как на сайте: подводка (непрочитанные) и крупный заголовок */}
+      <View style={{ paddingHorizontal: 16, paddingTop: 10, paddingBottom: 10 }}>
+        <Text style={styles.kicker}>{(() => { const n = (chats ?? []).filter((c) => (c.unread ?? 0) > 0).length; return n ? tr('{n} непрочитанных', { n }) : tr('Покупки и продажи') })()}</Text>
+        <Text style={[styles.h1, { paddingHorizontal: 0, paddingTop: 0, paddingBottom: 0 }]}>{tr('Сообщения')}</Text>
+      </View>
       {/* Поиск и фильтры — как на сайте */}
       <View style={styles.search}>
         <Icon name="search" size={17} color={colors.muted} />
@@ -156,15 +160,17 @@ const styles = StyleSheet.create({
   you: { fontFamily: font[700], color: colors.ink },
   page: { flex: 1, backgroundColor: colors.bg },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 10 },
-  h1: { fontSize: 22, fontFamily: font[800], letterSpacing: -0.3, color: colors.ink, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 10 },
-  search: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 12, height: 44, borderRadius: 14, backgroundColor: colors.sunken, paddingHorizontal: 13 },
+  kicker: { fontSize: 15, fontFamily: font[600], color: colors.inkSoft },
+  h1: { fontSize: 30, fontFamily: font[800], letterSpacing: -1, color: colors.ink, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 10 },
+  search: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 12, height: 46, borderRadius: 18, backgroundColor: colors.surface, paddingHorizontal: 14,
+    shadowColor: '#0F1512', shadowOpacity: 0.05, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 1 },
   searchInput: { flex: 1, flexBasis: 0, minWidth: 0, fontSize: 15, fontFamily: font[500], color: colors.ink, paddingVertical: 0 },
   filters: { flexDirection: 'row', alignSelf: 'flex-start', gap: 2, marginHorizontal: 12, marginTop: 10, marginBottom: 8, padding: 3, borderRadius: 14, backgroundColor: colors.sunken },
   pill: { height: 34, paddingHorizontal: 12, borderRadius: 11, justifyContent: 'center' },
-  pillOn: { backgroundColor: colors.primary },
+  pillOn: { backgroundColor: colors.inverse },
   pillText: { fontSize: 13.5, fontFamily: font[700], color: colors.inkSoft },
-  pillTextOn: { color: '#fff' },
-  circle: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  pillTextOn: { color: colors.onInverse },
+  circle: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   title: { fontSize: 20, fontFamily: font[800], color: colors.ink, textAlign: 'center' },
   text: { fontFamily: font[400], fontSize: 15, lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },
   cta: { marginTop: 10, height: 50, paddingHorizontal: 36, borderRadius: 14, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
