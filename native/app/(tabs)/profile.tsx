@@ -139,6 +139,8 @@ export default function Profile() {
     </Pressable>
   )
 
+  // проверенным считается и тот, кому галочку поставила команда вручную (без заявки) — тогда кнопки «Подтвердить личность» нет
+  const isVerified = !!(pub?.document_verified || (user as { document_verified?: boolean } | null)?.document_verified || verify?.status === 'verified')
   return (
     <SafeAreaView style={styles.page} edges={['top']}>
       <ScrollView contentContainerStyle={{ paddingBottom: 32 + tabInset }}
@@ -171,10 +173,10 @@ export default function Profile() {
             <Text style={styles.cardName}>{name}</Text>
             <Text style={styles.cardMeta}>{tr(pub?.is_company ? 'Компания' : 'Частное лицо')}  ·  {rating}</Text>
             {/* Подтверждение личности — сразу открываем страницу сервиса проверки; статус обновится при возвращении */}
-            {pub && !pub.document_verified && verify?.status === 'pending' && (
+            {pub && !isVerified && verify?.status === 'pending' && (
               <View style={styles.verifyPending}><Text style={styles.verifyPendingText}>{tr('Проверка личности идёт')}</Text></View>
             )}
-            {pub && !pub.document_verified && verify?.status !== 'pending' && verify?.status !== 'verified' && (
+            {pub && !isVerified && verify?.status !== 'pending' && verify?.status !== 'verified' && (
               <>
                 {verify?.status === 'rejected' && !!verify.reason && <Text style={styles.verifyReason}>{tr('Проверку не прошли: {r}', { r: verify.reason })}</Text>}
                 <Pressable style={[styles.verify, verifying && { opacity: 0.6 }]} disabled={verifying} onPress={async () => {
