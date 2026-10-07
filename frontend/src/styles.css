@@ -8408,6 +8408,3 @@ button.au-row:active{ background:var(--surface-sunken); }
   .home .avito-banner .avito-toprow{ position:sticky; top:calc(8px + var(--sat)); z-index:30; margin:0 16px 10px; }
   .home .avito-banner .avito-search{ box-shadow:0 1px 2px rgba(15,21,18,.06), 0 8px 24px rgba(15,21,18,.10); }
 }
-/* появление карточек по прокрутке (animation-timeline: view()) — выключено: в Safari такие анимации пересчитываются
-   на каждом кадре прокрутки вместе с липким поиском и добавляли подрагивание */
-.feed-grid .s-card{ animation:none !important; }
