@@ -67,6 +67,9 @@ def serialize(user: User, listings: int = 0, active: int = 0) -> dict:
         "company_verified": user.company_verified,
         "rating_avg": round(user.rating_avg or 0, 2),
         "rating_count": user.rating_count,
+        # баланс в админке: внесённые деньги и бонусы отдельно — видно, что бонус начислился
+        "balance": float(user.balance or 0),
+        "bonus_balance": float(getattr(user, "bonus_balance", 0) or 0),
         "listings": listings,
         "listings_active": active,
         "created_at": user.created_at.isoformat() if user.created_at else None,

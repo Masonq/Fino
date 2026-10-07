@@ -185,6 +185,12 @@ export default function AdminUser() {
         <div className="au-stat" style={{ background: '#FAE5EE' }}><b>{card.rating_count || 0}</b><span>{t('admin.reviews')}</span></div>
       </div>
 
+      {/* баланс человека: внесённые деньги и бонусы отдельно — видно, начислился ли бонус (за первое объявление, приглашение) */}
+      <div className="au-balance">
+        <div><span>{t('admin.balance_money')}</span><b>{Math.round(card.balance || 0).toLocaleString('ru-RU')} RSD</b></div>
+        <div className="bonus"><span>{t('admin.balance_bonus')}</span><b>{Math.round(card.bonus_balance || 0).toLocaleString('ru-RU')} RSD</b></div>
+      </div>
+
       {card.block_reason && (
         <div className="au-alert bad">{t('admin.block_reason', { reason: card.block_reason })}</div>
       )}

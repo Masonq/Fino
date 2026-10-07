@@ -8656,3 +8656,35 @@ html[data-theme="dark"] .mod-reject{ background:#4A2A2A !important; color:#F7C1C
   /* «Новые объявления» справа — по одной линии с заголовком раздела слева (были выше и мельче) */
   .landing-fresh > h2{ font-size:20px; line-height:1.2; letter-spacing:-0.02em; margin-top:5px; }
 }
+.au-balance{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+.au-balance > div{ display:flex; flex-direction:column; gap:2px; padding:12px 14px; border-radius:18px; background:var(--surface); box-shadow:var(--shadow); }
+.au-balance span{ font-size:12.5px; font-weight:700; color:var(--muted); }
+.au-balance b{ font-size:20px; font-weight:800; letter-spacing:-0.02em; color:var(--ink); }
+.au-balance .bonus b{ color:var(--primary-deep); }
+.admin-row-balance{ color:var(--primary-deep) !important; font-weight:700; }
+
+/* =====================================================================
+   Шопсы на компьютере: были на весь экран чёрным поверх шапки сайта — вернуться было некуда, кнопки не было.
+   Теперь шапка сайта видна сверху (лента начинается под ней), ролик — по центру в формате телефона со
+   скруглёнными углами, кнопки «нравится / написать / поделиться» — справа от ролика, фон — цвет страницы.
+   ===================================================================== */
+@media (min-width: 900px){
+  .sh-feed{ top:72px !important; bottom:0 !important; z-index:5 !important; background:var(--bg) !important; }
+  .sh-slide{ height:calc(100dvh - 72px) !important; padding:12px 0 16px; }
+  .sh-slide .sh-video{ height:100% !important; width:auto !important; aspect-ratio:9/16; max-width:none !important; border-radius:24px; background:#000; box-shadow:0 18px 50px rgba(15,21,18,.25); object-fit:cover !important; }
+  .sh-side{ right:auto !important; left:calc(50% + (100dvh - 100px) * 9 / 32 + 20px) !important; bottom:40px !important; }
+  .sh-side, .sh-side *{ color:var(--ink) !important; }
+  .sh-side-ava{ border-color:var(--surface) !important; }
+  .sh-sound{ top:88px !important; right:auto !important; left:calc(50% + (100dvh - 100px) * 9 / 32 - 52px) !important; z-index:6; }
+  .app-shell:has(.sh-feed) .topnav{ position:relative; z-index:6; }
+}
+@media (min-width: 900px){ body.sh-open .topnav{ display:flex !important; } }
+@media (min-width: 900px){
+  /* слайд — колонкой ровно по ролику: затемнение, подпись и полоса прогресса — внутри ролика, а не на всю ширину */
+  .sh-slide{ width:calc((100dvh - 100px) * 9 / 16) !important; margin:0 auto !important; overflow:visible !important; padding:0 !important; height:calc(100dvh - 72px) !important; }
+  .sh-slide .sh-video{ width:100% !important; height:calc(100% - 28px) !important; margin-top:12px; }
+  .sh-slide > *:not(.sh-video):not(.sh-side){ border-radius:0 0 24px 24px; }
+  .sh-side{ left:auto !important; right:-70px !important; bottom:40px !important; }
+  .sh-side svg{ stroke:var(--ink) !important; }
+  .sh-sound{ left:auto !important; right:calc(50% - (100dvh - 100px) * 9 / 32 + 14px) !important; top:96px !important; }
+}

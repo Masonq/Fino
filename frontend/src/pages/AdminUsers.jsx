@@ -233,6 +233,11 @@ export default function AdminUsers() {
                   {' · '}
                   {u.last_seen_at ? t('admin.seen', { when: since(u.last_seen_at, t, i18n.language) }) : t('admin.never_seen')}
                 </span>
+                {(u.balance > 0 || u.bonus_balance > 0) && (
+                  <span className="admin-row-meta admin-row-balance">
+                    {t('admin.balance_short', { money: Math.round(u.balance || 0), bonus: Math.round(u.bonus_balance || 0) })}
+                  </span>
+                )}
               </span>
               <span className={`admin-row-count${u.listings_active ? ' has' : ''}`}>
                 <b>{u.listings_active || 0}</b>

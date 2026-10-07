@@ -750,7 +750,10 @@
     "alert_photo_reuse": "Slična fotografija kod različitih prodavaca",
     "alert_photo_reuse_hint": "„{{value}}“ — fotografija se skoro poklapa sa oglasom drugog prodavca. Proverite da nije tuđa",
     "verify": "Označi kao proverenog",
-    "unverify": "Ukloni proveru"
+    "unverify": "Ukloni proveru",
+    "balance_money": "Novac",
+    "balance_bonus": "Bonusi",
+    "balance_short": "Stanje: {{money}} RSD · bonusi {{bonus}} RSD"
   },
   "stats": {
     "title": "Brojevi",

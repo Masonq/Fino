@@ -78,6 +78,11 @@ def _user_payload(user: User) -> dict:
         "telegram_linked": bool(user.telegram_id),
         "role": user.role.value if user.role else None,
         "must_rename": bool(user.must_rename),
+        # проверка личности — в т. ч. галочка, поставленная командой вручную; без этого поля сайт считал человека
+        # непроверенным и показывал «Подтвердить личность» тому, кто уже проверен
+        "document_verified": bool(getattr(user, "document_verified", False)),
+        "company_name": getattr(user, "company_name", None),
+        "company_verified": bool(getattr(user, "company_verified", False)),
     }
 
 

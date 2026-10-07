@@ -731,7 +731,10 @@
     "alert_photo_reuse": "Similar photo from different sellers",
     "alert_photo_reuse_hint": "“{{value}}” — the photo nearly matches another seller's listing. Make sure it is the seller's own",
     "verify": "Mark as verified",
-    "unverify": "Remove verification"
+    "unverify": "Remove verification",
+    "balance_money": "Money",
+    "balance_bonus": "Bonuses",
+    "balance_short": "Balance: {{money}} RSD · bonuses {{bonus}} RSD"
   },
   "stats": {
     "title": "Numbers",

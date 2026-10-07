@@ -763,7 +763,10 @@
     "alert_photo_reuse": "Похожее фото у разных продавцов",
     "alert_photo_reuse_hint": "«{{value}}» — фото почти совпадает с объявлением другого продавца. Проверьте, не чужое ли",
     "verify": "Поставить галочку",
-    "unverify": "Снять галочку"
+    "unverify": "Снять галочку",
+    "balance_money": "Деньги",
+    "balance_bonus": "Бонусы",
+    "balance_short": "Баланс: {{money}} RSD · бонусы {{bonus}} RSD"
   },
   "stats": {
     "title": "Показатели",
