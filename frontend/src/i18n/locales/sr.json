@@ -170,7 +170,10 @@
     "translate_failed": "Prevod nije uspeo",
     "hold_to_record": "Držite da snimite",
     "release_to_send": "Pustite — šalje se",
-    "copied": "Kopirano"
+    "copied": "Kopirano",
+    "mic_denied": "Nema pristupa mikrofonu — dozvolite ga za plonk.rs u podešavanjima pregledača",
+    "mic_failed": "Mikrofon nije moguće uključiti",
+    "hold_hint": "Držite dugme dok govorite"
   },
   "promo": {
     "safe_deal": "Sigurna kupovina",

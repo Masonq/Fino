@@ -956,6 +956,21 @@ async def send_voice(chat_id: uuid.UUID, file: UploadFile = File(...), seconds: 
     name = f"{uuid.uuid4().hex}.{ext}"
     with open(os.path.join(folder, name), "wb") as f:
         f.write(data)
+    # webm/ogg (запись из Chrome/Android) iPhone проигрывает не везде — переводим в m4a (AAC), его играют все.
+    # ffmpeg уже стоит на сервере (видео шопсов); нет его или не вышло — оставляем как записано.
+    if ext != "m4a":
+        import shutil
+        import subprocess
+        if shutil.which("ffmpeg"):
+            src_path = os.path.join(folder, name)
+            m4a = name.rsplit(".", 1)[0] + ".m4a"
+            try:
+                subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", src_path, "-vn", "-c:a", "aac", "-b:a", "64k",
+                                "-movflags", "+faststart", os.path.join(folder, m4a)], check=True, timeout=60)
+                os.remove(src_path)
+                name = m4a
+            except Exception:  # noqa: BLE001
+                pass
     message = Message(id=uuid.uuid4(), chat_id=chat_id, sender_id=user.id, kind="voice", text="",
                       audio_url=f"/media/voice/{name}", audio_seconds=max(1, min(int(seconds or 1), 120)))
     if reply_to_id:

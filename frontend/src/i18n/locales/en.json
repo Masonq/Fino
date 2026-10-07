@@ -169,7 +169,10 @@
     "translate_failed": "Could not translate",
     "hold_to_record": "Hold to record",
     "release_to_send": "Release to send",
-    "copied": "Copied"
+    "copied": "Copied",
+    "mic_denied": "No microphone access — allow it for plonk.rs in browser settings",
+    "mic_failed": "Could not turn on the microphone",
+    "hold_hint": "Hold the button while you speak"
   },
   "promo": {
     "safe_deal": "Safe deal",

@@ -890,38 +890,69 @@ export default function ChatScreen() {
 /** Кнопка голосового: удерживать — запись (до 2 минут), отпустить — отправить, увести палец в сторону — отмена. */
 function VoiceButton({ onSend }) {
   const { t } = useTranslation()
-  const [rec, setRec] = useState(null) // { mr, start, chunks, stream }
+  const [rec, setRec] = useState(null) // { mr, st }
   const [secs, setSecs] = useState(0)
+  const [note, setNote] = useState('')
   const cancelRef = useRef(false)
+  const pressed = useRef(false)     // палец/кнопка мыши всё ещё зажаты
+  const recRef = useRef(null)
   const timer = useRef(null)
+  const say = (msg) => { setNote(msg); setTimeout(() => setNote(''), 2600) }
+
   const start = async () => {
+    pressed.current = true
+    cancelRef.current = false
+    let stream
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const type = MediaRecorder.isTypeSupported?.('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : (MediaRecorder.isTypeSupported?.('audio/mp4') ? 'audio/mp4' : '')
-      const mr = new MediaRecorder(stream, type ? { mimeType: type } : undefined)
-      const chunks = []
-      mr.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data) }
-      const st = Date.now()
-      mr.onstop = () => {
-        stream.getTracks().forEach((tr) => tr.stop())
-        const dur = (Date.now() - st) / 1000
-        if (!cancelRef.current && dur >= 0.8 && chunks.length) onSend(new Blob(chunks, { type: mr.mimeType || 'audio/webm' }), dur)
-      }
-      cancelRef.current = false
-      mr.start()
-      setRec({ mr, st }); setSecs(0)
-      timer.current = setInterval(() => { const s = Math.round((Date.now() - st) / 1000); setSecs(s); if (s >= 120) stop() }, 250)
-      try { navigator.vibrate?.(10) } catch { /* нет вибрации */ }
-    } catch { /* нет доступа к микрофону */ }
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    } catch (e) {
+      pressed.current = false
+      say(e?.name === 'NotAllowedError' ? t('chat.mic_denied') : t('chat.mic_failed'))
+      return
+    }
+    // Микрофон открывается не мгновенно, а в первый раз iPhone ещё и спрашивает разрешение (палец при этом
+    // «отпускается»). Если кнопку уже отпустили — ничего не записываем, просто подсказываем удерживать.
+    if (!pressed.current) {
+      stream.getTracks().forEach((tr) => tr.stop())
+      say(t('chat.hold_hint'))
+      return
+    }
+    // iPhone пишет mp4/aac (его же и проигрывают все), остальные — webm/opus
+    const type = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm'].find((x) => MediaRecorder.isTypeSupported?.(x)) || ''
+    const mr = new MediaRecorder(stream, type ? { mimeType: type } : undefined)
+    const chunks = []
+    mr.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data) }
+    const st = Date.now()
+    mr.onstop = () => {
+      stream.getTracks().forEach((tr) => tr.stop())
+      const dur = (Date.now() - st) / 1000
+      if (cancelRef.current) return
+      if (dur < 0.8 || !chunks.length) { say(t('chat.hold_hint')); return }
+      onSend(new Blob(chunks, { type: mr.mimeType || type || 'audio/webm' }), dur)
+    }
+    mr.start(250)
+    recRef.current = { mr, st }
+    setRec({ mr, st }); setSecs(0)
+    timer.current = setInterval(() => { const s2 = Math.round((Date.now() - st) / 1000); setSecs(s2); if (s2 >= 120) stop() }, 250)
+    try { navigator.vibrate?.(10) } catch { /* нет вибрации */ }
   }
-  const stop = () => { clearInterval(timer.current); setRec((r) => { if (r && r.mr.state !== 'inactive') r.mr.stop(); return null }) }
+  const stop = () => {
+    pressed.current = false
+    clearInterval(timer.current)
+    const r = recRef.current
+    recRef.current = null
+    if (r && r.mr.state !== 'inactive') r.mr.stop()
+    setRec(null)
+  }
   return (
     <>
       {rec && <div className="voice-rec"><span className="voice-dot" />{Math.floor(secs / 60)}:{String(secs % 60).padStart(2, '0')}<span className="voice-hint">{t('chat.release_to_send')}</span></div>}
+      {!rec && note && <div className="voice-rec voice-note">{note}</div>}
       <button type="button" className={rec ? 'chat-voice-btn on' : 'chat-voice-btn'} aria-label={t('chat.hold_to_record')}
-        onTouchStart={(e) => { e.preventDefault(); start() }} onTouchEnd={stop}
+        onTouchStart={(e) => { e.preventDefault(); start() }} onTouchEnd={stop} onTouchCancel={stop}
         onTouchMove={(e) => { const tch = e.touches[0]; const r = e.currentTarget.getBoundingClientRect(); if (tch.clientX < r.left - 80) { cancelRef.current = true; stop() } }}
-        onMouseDown={start} onMouseUp={stop} onMouseLeave={() => { if (rec) stop() }}>
+        onMouseDown={start} onMouseUp={stop} onMouseLeave={() => { if (recRef.current) stop() }}
+        onContextMenu={(e) => e.preventDefault()}>
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></svg>
       </button>
     </>

@@ -6,4 +6,4 @@ add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" alway
 add_header X-Content-Type-Options "nosniff" always;
 add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 add_header Content-Security-Policy "frame-ancestors 'self'" always;
-add_header Permissions-Policy "camera=(self), microphone=(), geolocation=(self), payment=()" always;
+add_header Permissions-Policy "camera=(self), microphone=(self), geolocation=(self), payment=()" always;

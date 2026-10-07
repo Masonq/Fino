@@ -8581,3 +8581,4 @@ html[data-theme="dark"] .cat-chip, html[data-theme="dark"] .landing-chip, html[d
 html[data-theme="dark"] .cat-chip.on, html[data-theme="dark"] .landing-chip.on, html[data-theme="dark"] .cat-mode.on{ background:var(--inverse) !important; color:var(--on-inverse) !important; }
 html[data-theme="dark"] .lp-all svg, html[data-theme="dark"] .lp-all .jl-tile-text svg{ color:var(--ink); }
 html[data-theme="dark"] select{ background-color:var(--surface-sunken); }
+.voice-note{ background:var(--surface) !important; color:var(--ink) !important; font-weight:600; }
