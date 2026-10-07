@@ -1,3 +1,4 @@
+import logging
 import json
 import re
 import uuid
@@ -286,7 +287,18 @@ def create_listing(
 
     from app.core.autopublish import apply as maybe_publish
 
-    maybe_publish(db, listing, user)
+    published_now = maybe_publish(db, listing, user)
+    if published_now:
+        # Опубликовано сразу, без модерации (проверенный или знакомый продавец) — подарок за первое объявление и
+        # награда пригласившему начислялись только при одобрении модератором, и такие люди их не получали.
+        db.commit()
+        try:
+            from app.core.referrals import reward_referral_if_first_listing
+            from app.core.welcome_bonus import reward_first_listing
+            reward_referral_if_first_listing(db, listing)
+            reward_first_listing(db, listing)
+        except Exception as exc:  # noqa: BLE001
+            logging.getLogger(__name__).warning("бонус за первое объявление не начислен: %s", exc)
 
     db.commit()
     db.refresh(listing)
