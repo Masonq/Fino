@@ -1932,5 +1932,20 @@
     "danger": "Opasna zona",
     "block_note": "Neće moći da se prijavi ni piše; oglasi se sakrivaju",
     "delete_note": "Nalog i svi oglasi — trajno"
+  },
+  "qb": {
+    "filters": "Filteri",
+    "mode": "Posao",
+    "mode_real-estate": "Tip ponude",
+    "mode_jobs": "Tip",
+    "more": "Još",
+    "chip_real-estate": "Sobe",
+    "chip_jobs": "Radno vreme",
+    "price": "Cena",
+    "section": "Kategorija",
+    "city": "Grad",
+    "any": "Bilo koja",
+    "reset": "Poništi",
+    "apply": "Prikaži"
   }
 }

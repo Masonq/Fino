@@ -4,7 +4,8 @@ import { withoutRemoved } from '../utils/removedListings'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
-import CategoryFields, { fieldsKeyFor } from '../components/CategoryFields'
+import CategoryFields, { FIELDS, fieldsKeyFor } from '../components/CategoryFields'
+import Sheet from '../components/Sheet'
 import ListingCard from '../components/ListingCard'
 import { CardSkeletons } from '../components/Skeletons'
 import { CITIES, cityLabel } from '../data/cities'
@@ -545,6 +546,16 @@ export default function Search() {
             </div>
           )}
 
+          {/* Телефон: все фильтры — одной строкой капсул, как у Avito («Фильтры · Сделка · Комнаты · Цена · Раздел ·
+              Город»); каждая открывает шторку снизу. Раньше над объявлениями стояли три ряда фильтров и занимали
+              пол-экрана. На компьютере фильтры — в левой колонке, строка не нужна. */}
+          <QuickBar
+            t={t} lang={i18n.language} fieldsKey={fieldsKey} fields={fields} setFields={setFields}
+            subs={subs.filter((x) => !DEAL_ALIAS[x.slug])} rowParent={rowParent} category={category} setCategory={setCategory}
+            priceMin={priceMin} priceMax={priceMax} setPriceMin={setPriceMin} setPriceMax={setPriceMax}
+            city={city} setCity={setCity} activeCount={activeCount} openFilters={() => setShowFilters(true)}
+          />
+
           {/* итог поиска крупно, как приветствие на главной: что искали и сколько нашлось */}
           {loaded && text.trim() && items.length > 0 && (
             <div className="ph-text search-hero">
@@ -672,6 +683,80 @@ export default function Search() {
       </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+/** Строка фильтров-капсул для телефона; каждая капсула — шторка снизу с вариантами. */
+function QuickBar({ t, lang, fieldsKey, fields, setFields, subs, rowParent, category, setCategory, priceMin, priceMax, setPriceMin, setPriceMax, city, setCity, activeCount, openFilters }) {
+  const [open, setOpen] = useState(null)
+  const [pmin, setPmin] = useState(priceMin)
+  const [pmax, setPmax] = useState(priceMax)
+  const conf = fieldsKey ? FIELDS[fieldsKey] : null
+  const label = (x) => x?.name?.[lang] || x?.name?.ru || ''
+  const curSub = subs.find((x) => x.slug === category)
+  const priceText = priceMin || priceMax ? `${priceMin || 0}–${priceMax || '∞'}` : t('qb.price')
+  const Cap = ({ id, on, children, onClick }) => (
+    <button type="button" className={on ? 'qb-cap on' : 'qb-cap'} onClick={onClick || (() => setOpen(id))}>
+      {children}
+      {!onClick && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round"><path d="m6 9 6 6 6-6" /></svg>}
+    </button>
+  )
+  const Option = ({ on, onClick, children }) => (
+    <button type="button" className={on ? 'qb-opt on' : 'qb-opt'} onClick={() => { onClick(); setOpen(null) }}>
+      <span>{children}</span>
+      {on && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 5 5 9-10" /></svg>}
+    </button>
+  )
+  return (
+    <div className="qb">
+      <div className="qb-row">
+        <button type="button" className={activeCount ? 'qb-cap qb-filters on' : 'qb-cap qb-filters'} onClick={openFilters}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
+          {t('qb.filters')}{activeCount > 0 && <b>{activeCount}</b>}
+        </button>
+        {conf?.modes && <Cap id="mode" on={!!fields.mode}>{fields.mode ? t(`fields.${fieldsKey}.${fields.mode}`) : t(`qb.mode_${fieldsKey}`, { defaultValue: t('qb.mode') })}</Cap>}
+        {conf?.chips && <Cap id="chip" on={!!fields.chip}>{fields.chip ? t(`fields.${fieldsKey}.${fields.chip}`) : t(`qb.chip_${fieldsKey}`, { defaultValue: t('qb.more') })}</Cap>}
+        <Cap id="price" on={!!(priceMin || priceMax)}>{priceText}</Cap>
+        {subs.length > 0 && <Cap id="sub" on={!!curSub}>{curSub ? label(curSub) : t('qb.section')}</Cap>}
+        <Cap id="city" on={!!city}>{city ? cityLabel(city, lang) : t('qb.city')}</Cap>
+      </div>
+
+      <Sheet open={open === 'mode'} onClose={() => setOpen(null)} title={t(`qb.mode_${fieldsKey}`, { defaultValue: t('qb.mode') })}>
+        <div className="qb-opts">
+          <Option on={!fields.mode} onClick={() => setFields((f) => ({ ...f, mode: '' }))}>{t('qb.any')}</Option>
+          {conf?.modes?.map((m) => <Option key={m} on={fields.mode === m} onClick={() => setFields((f) => ({ ...f, mode: m }))}>{t(`fields.${fieldsKey}.${m}`)}</Option>)}
+        </div>
+      </Sheet>
+      <Sheet open={open === 'chip'} onClose={() => setOpen(null)} title={t(`qb.chip_${fieldsKey}`, { defaultValue: t('qb.more') })}>
+        <div className="qb-opts">
+          <Option on={!fields.chip} onClick={() => setFields((f) => ({ ...f, chip: '' }))}>{t('qb.any')}</Option>
+          {conf?.chips?.map((c) => <Option key={c} on={fields.chip === c} onClick={() => setFields((f) => ({ ...f, chip: c }))}>{t(`fields.${fieldsKey}.${c}`)}</Option>)}
+        </div>
+      </Sheet>
+      <Sheet open={open === 'sub'} onClose={() => setOpen(null)} title={t('qb.section')}>
+        <div className="qb-opts">
+          {rowParent && <Option on={category === rowParent.slug} onClick={() => setCategory(rowParent.slug)}>{t('search.all_in_category')}</Option>}
+          {subs.map((x) => <Option key={x.id} on={category === x.slug} onClick={() => setCategory(x.slug)}>{label(x)}</Option>)}
+        </div>
+      </Sheet>
+      <Sheet open={open === 'city'} onClose={() => setOpen(null)} title={t('qb.city')}>
+        <div className="qb-opts">
+          <Option on={!city} onClick={() => setCity('')}>{t('search.all_cities')}</Option>
+          {CITIES.map((c) => <Option key={c.slug} on={city === c.slug} onClick={() => setCity(c.slug)}>{cityLabel(c.slug, lang)}</Option>)}
+        </div>
+      </Sheet>
+      <Sheet open={open === 'price'} onClose={() => setOpen(null)} title={t('qb.price')}>
+        <div className="qb-price">
+          <input inputMode="numeric" placeholder={t('search.price_from')} value={pmin} onChange={(e) => setPmin(e.target.value.replace(/[^0-9]/g, ''))} />
+          <span>—</span>
+          <input inputMode="numeric" placeholder={t('search.price_to')} value={pmax} onChange={(e) => setPmax(e.target.value.replace(/[^0-9]/g, ''))} />
+        </div>
+        <div className="qb-price-actions">
+          <button type="button" className="qb-reset" onClick={() => { setPmin(''); setPmax(''); setPriceMin(''); setPriceMax(''); setOpen(null) }}>{t('qb.reset')}</button>
+          <button type="button" className="qb-apply" onClick={() => { setPriceMin(pmin); setPriceMax(pmax); setOpen(null) }}>{t('qb.apply')}</button>
+        </div>
+      </Sheet>
     </div>
   )
 }

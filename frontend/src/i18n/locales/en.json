@@ -1880,5 +1880,20 @@
     "danger": "Danger zone",
     "block_note": "Can’t sign in or write; listings get hidden",
     "delete_note": "Account and all listings — permanently"
+  },
+  "qb": {
+    "filters": "Filters",
+    "mode": "Deal",
+    "mode_real-estate": "Deal",
+    "mode_jobs": "Type",
+    "more": "More",
+    "chip_real-estate": "Rooms",
+    "chip_jobs": "Schedule",
+    "price": "Price",
+    "section": "Category",
+    "city": "City",
+    "any": "Any",
+    "reset": "Reset",
+    "apply": "Show"
   }
 }
