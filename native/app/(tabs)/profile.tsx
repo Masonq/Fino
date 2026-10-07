@@ -290,6 +290,15 @@ export default function Profile() {
           {row('lock', 'Заблокированные', () => router.push('/blocked'), undefined, true)}
         </View>
 
+        {(user.role === 'admin' || user.role === 'moderator') && (
+          <>
+            <Text style={styles.sectionTitle}>{tr('Служебное')}</Text>
+            <View style={styles.menu}>
+              {row('grid', 'Панель команды', () => router.push('/admin' as never), undefined, true)}
+            </View>
+          </>
+        )}
+
         <View style={styles.menu}>
           <Pressable style={[styles.row, styles.rowLast]} onPress={signOut} accessibilityRole="button">
             <View style={[styles.rowIcon, { backgroundColor: colors.dangerBg }]}><Icon name="logout" size={17} color="#B42318" /></View>
