@@ -502,7 +502,7 @@ const styles = StyleSheet.create({
   // как у Авито: в карточке кнопка по ширине текста; в верху Недвижимости и в шторках — на всю ширину (goWide)
   go: { marginTop: 6, height: 50, borderRadius: 14, backgroundColor: colors.inverse, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start', paddingHorizontal: 22 },
   goWide: { flex: 1, alignSelf: 'stretch', marginTop: 0 },
-  goText: { color: '#fff', fontSize: 15, fontFamily: font[700] },
+  goText: { color: colors.onInverse, fontSize: 15, fontFamily: font[700] },
   fresh: { fontSize: 16, fontFamily: font[800], color: colors.ink, paddingHorizontal: 12, paddingTop: 14, paddingBottom: 10 },
   subs: { flexDirection: 'row', flexWrap: 'wrap', gap: 9, paddingHorizontal: 12, paddingTop: 20, paddingBottom: 4 },
   // как .landing-sub сайта: 68 высотой, название слева (не шире 60 %), картинка 74 справа, чуть за краем

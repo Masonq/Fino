@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
   hintText: { fontFamily: font[400], fontSize: 15, color: colors.ink },
   hintRow: { flexDirection: 'row', gap: 8 },
   hintBtn: { height: 40, paddingHorizontal: 14, borderRadius: 10, backgroundColor: colors.inverse, justifyContent: 'center' },
-  hintBtnText: { color: '#fff', fontFamily: font[800], fontSize: 14 },
+  hintBtnText: { color: colors.onInverse, fontFamily: font[800], fontSize: 14 },
   hintGhost: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: colors.ink },
   hintGhostText: { color: colors.ink, fontFamily: font[800], fontSize: 14 },
   error: { fontFamily: font[400], fontSize: 14.5, color: colors.danger, lineHeight: 20 },

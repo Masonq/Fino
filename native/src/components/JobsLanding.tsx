@@ -106,7 +106,7 @@ export default function JobsLanding() {
       </ScrollView>
       <Pressable style={styles.h2Row} onPress={() => needLogin(() => router.push('/my'))}>
         <Text style={styles.h2}>{tr('Кабинет соискателя')}</Text>
-        <View style={styles.h2Arrow}><Icon name="forward" size={13} color="#fff" /></View>
+        <View style={styles.h2Arrow}><Icon name="forward" size={13} color={colors.onInverse} /></View>
       </Pressable>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cabinet}>
         <Pressable style={styles.cabCard} onPress={() => needLogin(() => router.push({ pathname: '/post', params: { cat: 'resumes' } }))}>
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   heroTitle: { fontSize: 21, fontFamily: font[800], color: colors.ink, letterSpacing: -0.3 },
   heroText: { fontSize: 14, lineHeight: 19, fontFamily: font[500], color: colors.inkSoft },
   heroBtn: { alignSelf: 'flex-start', marginTop: 6, height: 44, paddingHorizontal: 18, borderRadius: 14, backgroundColor: colors.inverse, justifyContent: 'center' },
-  heroBtnText: { color: '#fff', fontSize: 14.5, fontFamily: font[700] },
+  heroBtnText: { color: colors.onInverse, fontSize: 14.5, fontFamily: font[700] },
   // как у Авито: человек крупно, прижат к правому и нижнему краю карточки
   heroImg: { width: 116, height: 176, marginRight: -18, marginBottom: -26, alignSelf: 'flex-end' },
   grid: { flexDirection: 'row', gap: 8, marginTop: 8 },

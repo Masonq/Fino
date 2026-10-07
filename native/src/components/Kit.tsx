@@ -49,8 +49,8 @@ export function Tabs<T extends string>({ value, items, onChange }: { value: T; i
         const on = it.key === value
         return (
           <Pressable key={it.key} onPress={() => onChange(it.key)} style={[k.tab, on && k.tabOn]} accessibilityRole="tab" accessibilityState={{ selected: on }}>
-            <Text style={[k.tabText, on && { color: '#fff' }]}>{it.label}</Text>
-            {!!it.n && <View style={[k.tabN, on && { backgroundColor: 'rgba(255,255,255,0.2)' }]}><Text style={[k.tabNText, on && { color: '#fff' }]}>{it.n}</Text></View>}
+            <Text style={[k.tabText, on && { color: colors.onInverse }]}>{it.label}</Text>
+            {!!it.n && <View style={[k.tabN, on && { backgroundColor: colors.onInverse }]}><Text style={[k.tabNText, on && { color: '#fff' }]}>{it.n}</Text></View>}
           </Pressable>
         )
       })}

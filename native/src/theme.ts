@@ -21,8 +21,8 @@ const light = {
   warmBg: '#FBF3E3',
   photo: '#E7E6E0',
   lime: '#D9F45C',
-  inverse: '#2C5E4C', // фон «тёмных» кнопок; в тёмной теме — светлый
-  onInverse: '#FFFFFF',
+  inverse: '#CDEFE0', // фон «тёмных» кнопок; в тёмной теме — светлый
+  onInverse: '#085041',
   tile: '#ECEBE6', // плитки разделов с картинками
   onTile: '#0F1512',
   danger: '#B42318',

@@ -101,7 +101,7 @@ function JsTabs() {
         tabBarActiveTintColor: colors.ink,
         tabBarInactiveTintColor: colors.inkSoft,
         tabBarIcon: () => (
-          <View style={styles.post}><Icon name="plus" size={22} color="#fff" /></View>
+          <View style={styles.post}><Icon name="plus" size={22} color={colors.onInverse} /></View>
         ),
       }} />
       <Tabs.Screen name="chats" options={{

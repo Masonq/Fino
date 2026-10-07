@@ -8423,3 +8423,18 @@ button.au-row:active{ background:var(--surface-sunken); }
   .home{ padding-top:calc(8px + var(--sat) + 52px + 6px); }
   .home .avito-banner .home-head, .home .avito-banner.collapsed .home-head{ padding-top:6px !important; }
 }
+
+/* =====================================================================
+   Цвет кнопок и выбранного — мягкая мята (светлая заливка, тёмно-зелёный текст) вместо тёмной заливки.
+   Зелёная «Написать продавцу» остаётся самой яркой кнопкой на странице.
+   ===================================================================== */
+:root{ --inverse:#CDEFE0 !important; --on-inverse:#085041 !important; }
+.nav-item-post .nav-icon-wrap{ color:#085041 !important; box-shadow:0 6px 16px rgba(8,80,65,.18) !important; }
+body.sh-open .nav-item-post .nav-icon-wrap{ color:#085041 !important; }
+.cat-tile-2row.all .all-glyph svg, .cat-tile-2row.all .cat-tile-2row-glyph.all-glyph svg{ color:#085041 !important; }
+.badge-fresh .badge-dot{ background:#085041 !important; }
+/* на мятном «таблетки» с числами внутри выбранного — тёмные, чтобы читались */
+.qb-cap.on b, .chip-active b{ background:#085041; color:#fff; }
+.fp-range::-webkit-slider-thumb, .fp-range::-moz-range-thumb{ background:#085041 !important; }
+.sf-toast{ color:var(--on-inverse) !important; }
+.sf-page .jr-tab.on .jr-tab-n{ background:rgba(8,80,65,.12) !important; }
