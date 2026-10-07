@@ -8582,3 +8582,18 @@ html[data-theme="dark"] .cat-chip.on, html[data-theme="dark"] .landing-chip.on, 
 html[data-theme="dark"] .lp-all svg, html[data-theme="dark"] .lp-all .jl-tile-text svg{ color:var(--ink); }
 html[data-theme="dark"] select{ background-color:var(--surface-sunken); }
 .voice-note{ background:var(--surface) !important; color:var(--ink) !important; font-weight:600; }
+
+/* поле поиска раздела в «Перенести в раздел»: был жёстко светлый фон — в тёмной теме светлый текст на нём не читался;
+   теперь цвета темы, как у остальных полей, и с подсветкой при вводе */
+.move-search{ height:48px !important; border:0 !important; border-radius:16px !important; background:var(--surface-sunken) !important; color:var(--ink) !important; padding:0 16px !important; }
+.move-search::placeholder{ color:var(--muted); }
+.move-search:focus{ outline:none; box-shadow:0 0 0 3px rgba(15,163,106,.22); }
+/* тёмная тема: поля ввода с жёстко заданным светлым фоном — в цвета темы */
+html[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), html[data-theme="dark"] textarea{ color:var(--ink); }
+html[data-theme="dark"] input::placeholder, html[data-theme="dark"] textarea::placeholder{ color:var(--muted); }
+/* найденный раздел: название, под ним путь мелким (были склеены в одну строку: «Кормление и гигиенаДетские товары») */
+.move-found{ display:flex !important; flex-direction:column !important; align-items:flex-start !important; gap:2px !important; text-align:left; padding-top:12px !important; padding-bottom:12px !important; }
+.move-found b{ font-size:16px; font-weight:800; color:var(--ink); }
+.move-found span{ font-size:13px; font-weight:600; color:var(--muted); }
+.move-current{ text-align:left !important; margin:2px 0 4px; font-size:14px; color:var(--ink-soft); } /* «Сейчас: …» — по левому краю, как заголовок окна */
+.move-current{ padding-left:6px; } /* по одной линии с заголовком окна */
