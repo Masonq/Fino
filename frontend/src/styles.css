@@ -8597,3 +8597,4 @@ html[data-theme="dark"] input::placeholder, html[data-theme="dark"] textarea::pl
 .move-found span{ font-size:13px; font-weight:600; color:var(--muted); }
 .move-current{ text-align:left !important; margin:2px 0 4px; font-size:14px; color:var(--ink-soft); } /* «Сейчас: …» — по левому краю, как заголовок окна */
 .move-current{ padding-left:6px; } /* по одной линии с заголовком окна */
+.move-list{ overscroll-behavior:contain; touch-action:pan-y; } /* прокрутка списка не уходит на страницу под окном */
