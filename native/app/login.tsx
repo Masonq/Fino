@@ -225,7 +225,7 @@ export default function Login() {
             )}
             {!!error && <Text style={styles.error}>{error}</Text>}
             <Pressable style={[styles.cta, (!valid || busy) && styles.ctaOff]} disabled={!valid || busy} onPress={() => send()}>
-              {busy ? <ActivityIndicator color="#fff" /> : <Text style={styles.ctaText}>{tr('Получить код')}</Text>}
+              {busy ? <ActivityIndicator color={colors.onInverse} /> : <Text style={styles.ctaText}>{tr('Получить код')}</Text>}
             </Pressable>
           </View>
         ) : (
@@ -282,9 +282,9 @@ const styles = StyleSheet.create({
   hintGhost: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: colors.ink },
   hintGhostText: { color: colors.ink, fontFamily: font[800], fontSize: 14 },
   error: { fontFamily: font[400], fontSize: 14.5, color: colors.danger, lineHeight: 20 },
-  cta: { height: 52, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', marginTop: 6, alignSelf: 'center', width: '100%', maxWidth: 340 },
+  cta: { height: 52, borderRadius: 16, backgroundColor: colors.inverse, alignItems: 'center', justifyContent: 'center', marginTop: 6, alignSelf: 'center', width: '100%', maxWidth: 340 },
   ctaOff: { opacity: 0.45 },
-  ctaText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
+  ctaText: { color: colors.onInverse, fontSize: 16, fontFamily: font[800] },
   cells: { flexDirection: 'row', gap: 8, marginTop: 10 },
   cell: { flex: 1, height: 56, borderRadius: 12, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
   cellOn: { borderColor: colors.primary },

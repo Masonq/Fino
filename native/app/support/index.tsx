@@ -77,7 +77,7 @@ export default function Support() {
             </View>
           </View>
           {!!note && <Text style={styles.note}>{note}</Text>}
-          <Pressable style={[styles.cta, busy && { opacity: 0.6 }]} disabled={busy} onPress={send}>{busy ? <ActivityIndicator color="#fff" /> : <Text style={styles.ctaText}>{tr('Отправить')}</Text>}</Pressable>
+          <Pressable style={[styles.cta, busy && { opacity: 0.6 }]} disabled={busy} onPress={send}>{busy ? <ActivityIndicator color={colors.onInverse} /> : <Text style={styles.ctaText}>{tr('Отправить')}</Text>}</Pressable>
 
           {items === null ? <ActivityIndicator style={{ marginTop: 20 }} color={colors.primary} /> : items.length > 0 && (
             <>
@@ -113,7 +113,7 @@ export default function Support() {
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.bg },
   top: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, height: 52 },
-  back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  back: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, shadowColor: '#0F1512', shadowOpacity: 0.07, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
   title: { fontSize: 20, fontFamily: font[800], color: colors.ink, marginLeft: 4 },
   body: { paddingHorizontal: 12 },
   card: { borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
@@ -122,14 +122,14 @@ const styles = StyleSheet.create({
   label: { fontSize: 12.5, fontFamily: font[700], color: colors.inkSoft },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   chip: { height: 34, paddingHorizontal: 13, borderRadius: 17, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, justifyContent: 'center' },
-  chipOn: { backgroundColor: colors.primary, borderColor: colors.primary },
+  chipOn: { backgroundColor: colors.inverse, borderColor: colors.inverse },
   chipText: { fontSize: 13, fontFamily: font[700], color: colors.ink },
-  chipTextOn: { color: '#fff' },
+  chipTextOn: { color: colors.onInverse },
   input: { fontSize: 15, fontFamily: font[500], color: colors.ink, paddingVertical: 2 },
   area: { minHeight: 110 },
   note: { fontSize: 13.5, fontFamily: font[600], color: colors.inkSoft, marginTop: 10 },
-  cta: { marginTop: 12, height: 50, borderRadius: 14, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  ctaText: { color: '#fff', fontSize: 15.5, fontFamily: font[800] },
+  cta: { marginTop: 12, height: 50, borderRadius: 14, backgroundColor: colors.inverse, alignItems: 'center', justifyContent: 'center' },
+  ctaText: { color: colors.onInverse, fontSize: 15.5, fontFamily: font[800] },
   h2: { fontSize: 16, fontFamily: font[800], color: colors.ink, marginTop: 22, marginBottom: 10 },
   ticket: { padding: 12, marginBottom: 10, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, gap: 8 },
   ticketHead: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },

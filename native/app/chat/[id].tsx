@@ -384,7 +384,7 @@ export default function ChatScreen() {
             onError={(e) => setVoiceNote(e)} />
         ) : (
                 <Pressable style={[styles.sendBtn, !text.trim() && styles.sendOff]} disabled={!text.trim()} onPress={() => send(text)} accessibilityLabel={tr('Отправить')}>
-          <Icon name="send" size={19} color={text.trim() ? '#fff' : colors.muted} />
+          <Icon name="send" size={19} color={text.trim() ? colors.onInverse : colors.muted} />
         </Pressable>
         )}
       </View>
@@ -472,7 +472,7 @@ const styles = StyleSheet.create({
   // как .chat-input-row сайта: белая полоса с тенью вверх, поле 12/16, скругление 20, рамка
   inputBar: { flexDirection: 'row', alignItems: 'flex-end', gap: 10, paddingHorizontal: 16, paddingTop: 12, backgroundColor: colors.surface, shadowColor: '#14201A', shadowOpacity: 0.08, shadowRadius: 20, shadowOffset: { width: 0, height: -4 }, elevation: 6 },
   input: { flex: 1, minHeight: 44, maxHeight: 120, borderRadius: 20, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, paddingHorizontal: 16, paddingTop: 11, paddingBottom: 11, fontSize: 16, fontFamily: font[400], color: colors.ink },
-  sendBtn: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+  sendBtn: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.inverse, alignItems: 'center', justifyContent: 'center' },
   sendOff: { backgroundColor: colors.border },
   dots: { fontSize: 24, lineHeight: 26, color: colors.ink, fontFamily: font[800] },
   offerBtns: { flexDirection: 'row', gap: 8, marginTop: 8 },
@@ -482,6 +482,6 @@ const styles = StyleSheet.create({
   offerNoText: { color: colors.ink, fontSize: 13.5, fontFamily: font[700] },
   offerHint: { fontSize: 14, fontFamily: font[600], color: colors.muted },
   offerInput: { height: 56, borderRadius: 14, backgroundColor: colors.sunken, paddingHorizontal: 16, fontSize: 24, fontFamily: font[800], color: colors.ink },
-  offerSend: { height: 52, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
-  offerSendText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
+  offerSend: { height: 52, borderRadius: 16, backgroundColor: colors.inverse, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
+  offerSendText: { color: colors.onInverse, fontSize: 16, fontFamily: font[800] },
 })

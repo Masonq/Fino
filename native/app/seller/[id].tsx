@@ -82,7 +82,7 @@ export default function SellerScreen() {
         <View style={styles.avatar}>
           {avatar ? <Image source={{ uri: avatar }} style={styles.avatarImg} contentFit="cover" /> : <Text style={styles.avatarLetter}>{name.slice(0, 1).toUpperCase()}</Text>}
         </View>
-        <View style={{ flex: 1, gap: 2 }}>
+        <View style={{ alignItems: 'center', gap: 3 }}>
           <View style={styles.nameRow}>
             <Text style={styles.name} numberOfLines={1}>{name}</Text>
             <VerifiedMark official={seller.official} verified={seller.document_verified} size={18} />
@@ -154,16 +154,17 @@ export default function SellerScreen() {
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.bg },
   top: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingBottom: 8 },
-  back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  topTitle: { flex: 1, fontSize: 20, fontFamily: font[800], letterSpacing: -0.3, color: colors.ink },
+  back: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, shadowColor: '#0F1512', shadowOpacity: 0.07, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
+  topTitle: { flex: 1, fontSize: 27, fontFamily: font[800], letterSpacing: -0.8, color: colors.ink, marginLeft: 8 },
   flag: { width: 36, height: 36, borderRadius: 18, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', marginRight: 6 },
-  head: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 30 },
-  avatar: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#7C6CF0', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  head: { alignItems: 'center', gap: 8, marginHorizontal: 12, marginTop: 6, marginBottom: 22, paddingVertical: 22, paddingHorizontal: 18, borderRadius: 28, backgroundColor: colors.surface,
+    shadowColor: '#0F1512', shadowOpacity: 0.06, shadowRadius: 16, shadowOffset: { width: 0, height: 6 }, elevation: 2 },
+  avatar: { width: 84, height: 84, borderRadius: 42, borderWidth: 4, borderColor: colors.bg, backgroundColor: '#7C6CF0', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   avatarImg: { width: 56, height: 56 },
-  avatarLetter: { color: '#fff', fontSize: 21, fontFamily: font[800] },
+  avatarLetter: { color: '#fff', fontSize: 34, fontFamily: font[800] },
   // как на сайте: галочка у правого края колонки с именем
   nameRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 6 },
-  name: { fontSize: 17, fontFamily: font[800], color: colors.ink, flexShrink: 1 },
+  name: { fontSize: 24, letterSpacing: -0.6, textAlign: 'center', fontFamily: font[800], color: colors.ink, flexShrink: 1 },
   seal: { width: 17, height: 17, borderRadius: 9, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
   rating: { fontSize: 12.5, fontFamily: font[600], color: colors.muted },
   ratingNum: { fontSize: 13.5, fontFamily: font[800], color: colors.ink },
@@ -173,9 +174,9 @@ const styles = StyleSheet.create({
   reply: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
   showAll: { marginHorizontal: space.page, marginTop: 4, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(20,30,25,0.09)', backgroundColor: colors.surface, alignItems: 'center' },
   showAllText: { fontSize: 13.5, fontFamily: font[700], color: colors.ink },
-  sub: { paddingVertical: 9, paddingHorizontal: 14, borderRadius: 11, backgroundColor: colors.primary },
+  sub: { alignSelf: 'center', minWidth: 200, alignItems: 'center', marginTop: 6, paddingVertical: 13, paddingHorizontal: 26, borderRadius: 16, backgroundColor: colors.inverse },
   subOn: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
-  subText: { color: '#fff', fontSize: 13, fontFamily: font[700] },
+  subText: { color: colors.onInverse, fontSize: 15, fontFamily: font[800] },
   subTextOn: { color: colors.ink },
   reviews: { marginHorizontal: 12, marginBottom: 14, padding: 14, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
   reviewsTitle: { fontSize: 16, fontFamily: font[800], color: colors.ink },

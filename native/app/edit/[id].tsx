@@ -217,7 +217,7 @@ export default function EditListing() {
             <LocationPicker lat={point.lat} lng={point.lng} hide={hideAddr} center={city ? CITY_COORDS[city] : undefined} onChange={(a, b) => setPoint({ lat: a, lng: b })} onHide={setHideAddr} />
             {!!error && <Text style={[styles.hint, { marginTop: 14 }]}>{error}</Text>}
             <Pressable style={[styles.cta, saving && { opacity: 0.6 }]} disabled={saving} onPress={save} accessibilityRole="button" accessibilityLabel={tr('Сохранить изменения')}>
-              {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.ctaText}>{tr('Сохранить')}</Text>}
+              {saving ? <ActivityIndicator color={colors.onInverse} /> : <Text style={styles.ctaText}>{tr('Сохранить')}</Text>}
             </Pressable>
             <Text style={styles.small}>{tr('После изменения фото, названия, описания или цены объявление снова пройдёт проверку')}</Text>
           </ScrollView>
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   select: { minHeight: 50, borderRadius: 13, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 8 },
   selectText: { flex: 1, fontFamily: font[400], fontSize: 16, color: colors.ink, paddingVertical: 12 },
   hint: { fontFamily: font[400], fontSize: 13.5, color: colors.danger, marginTop: 6, paddingHorizontal: 16 },
-  cta: { marginTop: 26, height: 52, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  ctaText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
+  cta: { marginTop: 26, height: 52, borderRadius: 16, backgroundColor: colors.inverse, alignItems: 'center', justifyContent: 'center' },
+  ctaText: { color: colors.onInverse, fontSize: 16, fontFamily: font[800] },
   small: { fontFamily: font[400], fontSize: 13, color: colors.muted, textAlign: 'center', marginTop: 10 },
 })

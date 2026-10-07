@@ -30,8 +30,8 @@ export function Btn({ label, onPress, kind = 'primary', small, wide, disabled, b
   return (
     <Pressable onPress={onPress} disabled={disabled || busy} accessibilityRole="button"
       style={({ pressed }) => [k.btn, small && k.btnSm, wide && k.btnWide, k[kind], (disabled || busy) && { opacity: 0.55 }, pressed && { opacity: 0.8 }]}>
-      {busy ? <ActivityIndicator color={kind === 'primary' ? '#fff' : colors.primary} /> : (
-        <Text style={[k.btnText, small && k.btnTextSm, { color: kind === 'primary' ? '#fff' : kind === 'danger' ? '#C93C3C' : colors.ink }]}>{label}</Text>
+      {busy ? <ActivityIndicator color={kind === 'primary' ? colors.onInverse : colors.primary} /> : (
+        <Text style={[k.btnText, small && k.btnTextSm, { color: kind === 'primary' ? colors.onInverse : kind === 'danger' ? '#C93C3C' : colors.ink }]}>{label}</Text>
       )}
     </Pressable>
   )
@@ -75,7 +75,7 @@ export const k = StyleSheet.create({
   btn: { height: 44, paddingHorizontal: 16, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'transparent' },
   btnSm: { height: 36, paddingHorizontal: 12 },
   btnWide: { alignSelf: 'stretch', height: 50 },
-  primary: { backgroundColor: colors.primary },
+  primary: { backgroundColor: colors.inverse },
   ghost: { backgroundColor: colors.surface, borderColor: colors.border },
   danger: { backgroundColor: colors.surface, borderColor: '#F1D2D2' },
   btnText: { fontFamily: font[700], fontSize: 15 },

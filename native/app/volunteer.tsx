@@ -83,7 +83,7 @@ export default function Volunteer() {
                   <Switch value={agree} onValueChange={setAgree} trackColor={{ true: colors.primary, false: colors.sunken }} />
                 </View>
                 {!!error && <Text style={styles.error}>{error}</Text>}
-                <Pressable style={[styles.cta, busy && { opacity: 0.6 }]} disabled={busy} onPress={send}>{busy ? <ActivityIndicator color="#fff" /> : <Text style={styles.ctaText}>{tr('Отправить заявку')}</Text>}</Pressable>
+                <Pressable style={[styles.cta, busy && { opacity: 0.6 }]} disabled={busy} onPress={send}>{busy ? <ActivityIndicator color={colors.onInverse} /> : <Text style={styles.ctaText}>{tr('Отправить заявку')}</Text>}</Pressable>
               </>
             )}
           </ScrollView>
@@ -110,14 +110,14 @@ const styles = StyleSheet.create({
   label: { fontSize: 15, fontFamily: font[800], color: colors.ink, marginTop: 18, marginBottom: 8 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { height: 36, paddingHorizontal: 13, borderRadius: 11, backgroundColor: colors.sunken, justifyContent: 'center' },
-  chipOn: { backgroundColor: colors.primary },
+  chipOn: { backgroundColor: colors.inverse },
   chipText: { fontSize: 13.5, fontFamily: font[700], color: colors.inkSoft },
-  chipTextOn: { color: '#fff' },
+  chipTextOn: { color: colors.onInverse },
   input: { minHeight: 50, borderRadius: 13, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 14, fontSize: 16, fontFamily: font[500], color: colors.ink },
   area: { minHeight: 120, paddingTop: 13, paddingBottom: 13 },
   agree: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 18 },
   agreeText: { flex: 1, fontSize: 13.5, lineHeight: 19, fontFamily: font[600], color: colors.ink },
   error: { fontSize: 13.5, fontFamily: font[600], color: colors.danger, marginTop: 12 },
-  cta: { marginTop: 18, height: 52, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  ctaText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
+  cta: { marginTop: 18, height: 52, borderRadius: 16, backgroundColor: colors.inverse, alignItems: 'center', justifyContent: 'center' },
+  ctaText: { color: colors.onInverse, fontSize: 16, fontFamily: font[800] },
 })

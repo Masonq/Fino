@@ -107,6 +107,6 @@ const styles = StyleSheet.create({
   link: { flexDirection: 'row', alignItems: 'center', gap: 10, height: 50, borderRadius: 13, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 14, marginTop: 18 },
   linkText: { flex: 1, fontSize: 14.5, fontFamily: font[600], color: colors.ink },
   copy: { fontSize: 14, fontFamily: font[800], color: colors.primaryDeep },
-  cta: { marginTop: 10, height: 52, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  ctaText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
+  cta: { marginTop: 10, height: 52, borderRadius: 16, backgroundColor: colors.inverse, alignItems: 'center', justifyContent: 'center' },
+  ctaText: { color: colors.onInverse, fontSize: 16, fontFamily: font[800] },
 })

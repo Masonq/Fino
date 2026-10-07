@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   sub: { fontSize: 13, fontFamily: font[500], color: colors.muted },
   trash: { width: 32, alignItems: 'center' },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 10 },
-  circle: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  circle: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
   emptyTitle: { fontSize: 20, fontFamily: font[800], color: colors.ink, textAlign: 'center' },
   emptyText: { fontFamily: font[400], fontSize: 15, lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },
 })

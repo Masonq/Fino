@@ -51,7 +51,7 @@ export default function TicketScreen() {
         <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, 10) }]}>
           <TextInput value={text} onChangeText={setText} placeholder={tr('Сообщение')} placeholderTextColor={colors.muted} multiline style={styles.input} maxLength={4000} />
           <Pressable style={[styles.sendBtn, (!text.trim() || busy) && { opacity: 0.4 }]} disabled={!text.trim() || busy} onPress={send} accessibilityLabel={tr('Отправить')}>
-            <Icon name="forward" size={20} color="#fff" strokeWidth={2.6} />
+            <Icon name="forward" size={20} color={colors.onInverse} strokeWidth={2.6} />
           </Pressable>
         </View>
       )}
@@ -74,5 +74,5 @@ const styles = StyleSheet.create({
   time: { fontSize: 11, fontFamily: font[500], color: colors.muted, alignSelf: 'flex-end', marginTop: 3 },
   bar: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, paddingHorizontal: 10, paddingTop: 8, backgroundColor: colors.surface, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
   input: { flex: 1, minHeight: 42, maxHeight: 120, borderRadius: 21, backgroundColor: colors.sunken, paddingHorizontal: 16, paddingTop: 11, paddingBottom: 11, fontSize: 16, fontFamily: font[400], color: colors.ink },
-  sendBtn: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+  sendBtn: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.inverse, alignItems: 'center', justifyContent: 'center' },
 })

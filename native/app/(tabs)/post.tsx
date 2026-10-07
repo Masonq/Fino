@@ -468,8 +468,8 @@ const styles = StyleSheet.create({
   circle: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   title: { fontSize: 20, fontFamily: font[800], color: colors.ink, textAlign: 'center' },
   text: { fontFamily: font[400], fontSize: 15, lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },
-  cta: { marginTop: 10, height: 52, paddingHorizontal: 36, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  ctaText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
+  cta: { marginTop: 10, height: 52, paddingHorizontal: 36, borderRadius: 16, backgroundColor: colors.inverse, alignItems: 'center', justifyContent: 'center' },
+  ctaText: { color: colors.onInverse, fontSize: 16, fontFamily: font[800] },
   link: { fontSize: 15.5, fontFamily: font[700], color: colors.primaryDeep },
   form: { paddingHorizontal: 16, paddingBottom: 40, paddingTop: 10 },
   // Как на сайте: .post-steps (полоски 4 px), .post-cat-grid (3 колонки, 8 px), .post-cat-item (118, скругление 16)
