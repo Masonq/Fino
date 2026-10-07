@@ -8388,3 +8388,23 @@ button.au-row:active{ background:var(--surface-sunken); }
 :root{ --inverse:#2C5E4C !important; --on-inverse:#FFFFFF; }
 .nav-item-post .nav-icon-wrap{ box-shadow:0 6px 16px rgba(44,94,76,.32) !important; }
 .badge-fresh .badge-dot{ background:#2C5E4C; }
+
+/* =====================================================================
+   Главная: «дрожание» поиска при прокрутке — причина и решение.
+   Шапка была липкой (sticky) и при прокрутке СДВИГАЛАСЬ вверх через transform с анимацией, а момент сдвига решал
+   скрипт по scrollY. В Safari на iPhone липкое положение считается на одном потоке, а transform и инерционная
+   прокрутка — на другом: шапка отставала на кадр и догоняла (подрагивала), а у верха страницы при «резинке»
+   ещё и переключалась туда-обратно. Плюс заплатки поверх (фон-полоса, размытие).
+   Теперь без скрипта и без transform: обёртка шапки «растворена» (display:contents), её строки стоят прямо в
+   странице, и липким остаётся только сам поиск — браузер держит его сам, как обычный sticky. Приветствие и
+   строка города уезжают естественно, полосы фона за поиском нет — плывёт только белая капсула.
+   ===================================================================== */
+@media (max-width: 899px){
+  .home .avito-banner, .home .avito-banner.collapsed{
+    display:contents !important; transform:none !important; transition:none !important; box-shadow:none !important;
+    background:none !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important; will-change:auto !important; }
+  .home .avito-banner .home-head, .home .avito-banner.collapsed .home-head{ opacity:1 !important; pointer-events:auto !important;
+    display:block; padding:calc(10px + var(--sat)) 16px 0; }
+  .home .avito-banner .avito-toprow{ position:sticky; top:calc(8px + var(--sat)); z-index:30; margin:0 16px 10px; }
+  .home .avito-banner .avito-search{ box-shadow:0 1px 2px rgba(15,21,18,.06), 0 8px 24px rgba(15,21,18,.10); }
+}
