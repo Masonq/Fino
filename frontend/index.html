@@ -137,7 +137,7 @@
       window.addEventListener('unhandledrejection', function (e) { rec('promise: ' + (e.reason && (e.reason.stack || e.reason.message) || e.reason)) });
       setTimeout(function () {
         var root = document.getElementById('root');
-        if (root && root.children.length) return;
+        if (root && !document.getElementById('boot')) return;
         try { navigator.sendBeacon('/api/client-log', JSON.stringify({ kind: 'blank', url: location.href, ua: navigator.userAgent, errors: errs })) } catch (e) {}
         var ru = /\/ru(\/|$)/.test(location.pathname) || /^ru/.test(navigator.language || '');
         root.innerHTML = '<div style="max-width:420px;margin:90px auto;padding:0 24px;font:16px/1.5 -apple-system,system-ui,sans-serif;text-align:center;color:#141E19">'
@@ -149,7 +149,22 @@
   </script>
 </head>
 <body>
-  <div id="root"></div>
+  <!-- Заставка до запуска сайта: виден логотип, а не пустой (в тёмной теме — чёрный) экран. React при запуске
+       заменяет её содержимым. Если скрипты не запустились (так бывает во встроенном браузере Telegram на iPhone),
+       через 5 с появляется кнопка «Открыть в Safari». -->
+  <div id="root"><div class="boot" id="boot">
+    <style>
+      .boot{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#F5F4F0;color:#141E19;font:600 16px/1.4 -apple-system,system-ui,sans-serif;text-align:center;padding:24px}
+      .boot b{font-size:30px;font-weight:900;letter-spacing:-1px}
+      .boot i{width:26px;height:26px;border-radius:50%;border:3px solid rgba(15,163,106,.25);border-top-color:#0FA36A;animation:bootspin .8s linear infinite}
+      .boot a{display:inline-block;visibility:hidden;margin-top:10px;padding:12px 22px;border-radius:14px;background:#CDEFE0;color:#085041;font-weight:800;text-decoration:none;animation:bootshow 0s 5s forwards}
+      @keyframes bootspin{to{transform:rotate(360deg)}} @keyframes bootshow{to{visibility:visible}}
+      @media (prefers-color-scheme: dark){.boot{background:#1E2421;color:#EEF2EF}}
+    </style>
+    <b>PLONK</b><i></i>
+    <a id="boot-safari" href="x-safari-https://plonk.rs/">Открыть в Safari / Otvori u Safariju</a>
+    <script>try{document.getElementById('boot-safari').href='x-safari-https://plonk.rs'+location.pathname+location.search}catch(e){}</script>
+  </div></div>
   <noscript>
     <!-- Сайт собирается в браузере, и без скриптов человек видел пустоту.
          Пусть хотя бы понимает, что происходит и куда идти. -->
