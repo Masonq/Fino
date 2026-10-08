@@ -4,11 +4,13 @@ import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 
 /** В объявлении: «Ещё N товаров продавца → Витрина» — главный вход в витрину и во второй просмотр. */
-export default function StorefrontLink({ ownerId, listingId }) {
+export default function StorefrontLink({ ownerId, listingId, initial }) {
   const { t } = useTranslation()
-  const [sf, setSf] = useState(null)
+  // initial — витрина уже пришла вместе с объявлением: блок рисуется сразу, без второго запроса и без скачка
+  const [sf, setSf] = useState(initial === undefined ? null : initial)
   useEffect(() => {
     if (!ownerId) return
+    if (initial !== undefined) return
     api.sfByOwner(ownerId).then((r) => setSf(r.storefront)).catch(() => {})
   }, [ownerId])
   if (!sf) return null

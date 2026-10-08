@@ -307,12 +307,12 @@ export default function Moderation() {
     if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   }, [focus])
 
-  if (authLoading) return <div className="fav-page mod-page"><PageHeader title={t('mod.title')} /></div>
+  if (authLoading) return <div className="fav-page mod-page"><PageHeader title={t('mod.title')} kicker={'\u00a0'} /></div>
 
   if (!user) {
     return (
       <div className="fav-page mod-page">
-        <PageHeader title={t('mod.title')} />
+        <PageHeader title={t('mod.title')} kicker={'\u00a0'} />
         <div className="fav-empty">
           <p>{t('mod.need_login')}</p>
           <button className="fav-cta" onClick={() => navigate('/login?returnTo=%2Fmoderation')}>
@@ -326,7 +326,7 @@ export default function Moderation() {
   if (denied) {
     return (
       <div className="fav-page mod-page">
-        <PageHeader title={t('mod.title')} />
+        <PageHeader title={t('mod.title')} kicker={'\u00a0'} />
         <p className="empty-hint">{t('mod.no_access')}</p>
       </div>
     )

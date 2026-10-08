@@ -340,6 +340,14 @@ def _map_point(listing) -> tuple[float | None, float | None]:
     return float(lat), float(lng)
 
 
+def _owner_storefront(db, owner_id):
+    try:
+        from app.routers.storefronts import by_owner
+        return by_owner(owner_id, db).get("storefront")
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def card_photos(photos, cover) -> list[str]:
     """
     Превью для листания фото прямо в карточке ленты: обложка первой, дальше по порядку, видео не берём.
@@ -2152,6 +2160,9 @@ def get_listing(listing_id: str, request: Request, db: Session = Depends(get_db)
         # черновика.
         "published_at": listing.published_at.isoformat() if listing.published_at else None,
         "number": listing.number,
+        # витрина продавца — сразу в ответе: блок «Ещё N товаров у продавца» приходил вторым запросом и толкал
+        # объявление вниз на 76 px у человека на глазах
+        "owner_storefront": _owner_storefront(db, listing.owner_id),
         "owner": {
             "id": str(listing.owner.id),
             "display_name": listing.owner.display_name,

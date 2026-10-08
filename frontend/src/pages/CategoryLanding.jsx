@@ -168,6 +168,11 @@ function CategoryLandingPage() {
   // Пока корень не известен — только заливка, без запроса за чужой картинкой.
   const heroSlug = LANDINGS[slug] ? slug : rootSlug
   const landing = landingFor(slug, rootSlug, schema?.slug === slug ? schema.fields : null)
+  // подраздел строит фильтры по полям раздела (второй запрос): пока они не пришли, тело страницы скрыто, а не
+  // собирается без них — иначе фильтры дорастали на 250 px и сдвигали ленту у человека на глазах (не дольше 2 с)
+  const [schemaWaitOver, setSchemaWaitOver] = useState(false)
+  useEffect(() => { setSchemaWaitOver(false); const t = setTimeout(() => setSchemaWaitOver(true), 2000); return () => clearTimeout(t) }, [slug])
+  const schemaPending = !LANDINGS[slug] && schema?.slug !== slug && !schemaWaitOver
 
   // Заголовок вкладки браузера — раньше document.title вообще нигде на
   // сайте программно не менялся, все страницы показывали один и тот
@@ -547,7 +552,7 @@ function CategoryLandingPage() {
     : values.price_min ? `${t('landing.from')} ${values.price_min} €` : values.price_max ? `${t('landing.to')} ${values.price_max} €` : ''
 
   return (
-    <div className="landing" style={{ '--tint': TINTS[rootSlug || slug] }}>
+    <div className={`landing${schemaPending ? ' lp-pending' : ''}`} style={{ '--tint': TINTS[rootSlug || slug] }}>
       {searched && (
         <div className="landing-head plain-head">
           <button className="landing-back" onClick={() => setSearched(false)}

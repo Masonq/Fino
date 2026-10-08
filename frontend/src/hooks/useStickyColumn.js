@@ -38,6 +38,10 @@ export default function useStickyColumn(topGap = 20, ready = true) {
       const el = ref.current
       const parent = el?.parentElement
       if (!el || !parent) return
+      // липкая колонка — только на компьютере: на телефоне колонка идёт обычным потоком. Без этой проверки на
+      // телефоне колонка «прилипала», над ней вставала заглушка в её высоту — пустота в 700+ px сверху страницы
+      // раздела и скачок, когда данные приходили и колонка меняла высоту
+      if (window.innerWidth < 900) { setStuck(false); return }
       const box = parent.getBoundingClientRect()
       const height = el.offsetHeight
       setHeight(height)

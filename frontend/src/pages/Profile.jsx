@@ -56,14 +56,19 @@ export default function Profile() {
   // возврате на профиль они на секунду пропадали и появлялись заново,
   // а строка «что требует внимания» успевала мигнуть.
   const [balanceReady, setBalanceReady] = useState(false)
+  const [balanceTimeout, setBalanceTimeout] = useState(false)
   const markBalanceReady = useCallback(() => setBalanceReady(true), [])
-  useEffect(() => { const timer = setTimeout(() => setBalanceReady(true), 1200); return () => clearTimeout(timer) }, [])
+  useEffect(() => { const timer = setTimeout(() => { setBalanceReady(true); setBalanceTimeout(true) }, 2500); return () => clearTimeout(timer) }, [])
   const [stats, setStats] = useState(() => readValue('profile-stats', null))
+  // показываем профиль, когда пришли и баланс, и цифры: из цифр строится «Требует внимания» над плитками —
+  // пока она приходила позже, весь профиль под ней съезжал вниз на 54 px (не дольше 2,5 с ожидания)
+  const [statsFresh, setStatsFresh] = useState(false)
+  const statsLoaded = statsFresh || balanceTimeout
   useEffect(() => {
     if (!user) return
     api.myStats()
-      .then((res) => { setStats(res); keepValue('profile-stats', res) })
-      .catch(() => setStats({ listings: 0, views: 0, favorites: 0 }))
+      .then((res) => { setStats(res); keepValue('profile-stats', res); setStatsFresh(true) })
+      .catch(() => { setStats({ listings: 0, views: 0, favorites: 0 }); setStatsFresh(true) })
   // Намеренно: зависим от user?.id, а не от всего объекта: он пересобирается при каждом обновлении профиля, и запрос уходил бы снова и снова.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id])
@@ -165,11 +170,11 @@ export default function Profile() {
           справа весь остальной контент, шире и с уже готовой сеткой
           пунктов в .profile-menu (была сделана раньше в сессии, но
           терялась в узкой 600px странице). */}
-      {!balanceReady && <ProfileSkeleton showStaff={user.role === 'moderator' || user.role === 'admin'} />}
+      {!(balanceReady && statsLoaded) && <ProfileSkeleton showStaff={user.role === 'moderator' || user.role === 'admin'} />}
       {/* Шапка, баланс и меню показываются вместе: пока баланс грузится, блок собран, но невидим и места не
           занимает, а на экране скелет той же формы. Раньше шапка появлялась, через треть секунды — баланс,
           ещё позже — кнопка «Пополнить»: три волны. Не дольше 1,2 с, дальше баланс догрузится сам. */}
-      <div className={balanceReady ? 'profile-reveal' : 'profile-hold'} aria-hidden={balanceReady ? undefined : 'true'}>
+      <div className={balanceReady && statsLoaded ? 'profile-reveal' : 'profile-hold'} aria-hidden={balanceReady && statsLoaded ? undefined : 'true'}>
       <div className="profile-layout">
         <div
           ref={sidebar.ref}

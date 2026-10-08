@@ -21,13 +21,16 @@ export default function EditListing() {
   // характеристики раздела (комнаты, марка, размер…) — как при размещении; раньше в правке их не было вовсе
   const [attrs, setAttrs] = useState({})
   const [schema, setSchema] = useState([])
+  // форма показывается, когда пришли и объявление, и поля раздела: характеристики приходили вторым запросом и
+  // перестраивали форму у человека на глазах (поля съезжали на сотни пикселей)
+  const [schemaReady, setSchemaReady] = useState(false)
   // раздел: можно сменить, если ошибся при размещении
   const [catSlug, setCatSlug] = useState('')
   const [catPath, setCatPath] = useState('')
   const [catOpen, setCatOpen] = useState(false)
   const [catQuery, setCatQuery] = useState('')
   const [tree, setTree] = useState([])
-  const loadSchema = (slug, keep) => api.getCategorySchema(slug).then((r) => {
+  const loadSchema = (slug, keep) => api.getCategorySchema(slug).finally(() => setSchemaReady(true)).then((r) => {
     const sc = Array.isArray(r) ? r : (r?.attribute_schema || r?.fields || [])
     setSchema(sc)
     // при смене раздела оставляем только подходящие новому разделу характеристики
@@ -210,7 +213,7 @@ export default function EditListing() {
     }
   }
 
-  if (authLoading || !listing) {
+  if (authLoading || !listing || (!schemaReady && (listing.category_slug || listing.category?.slug))) {
     return (
       <div className="fav-page edit-listing-page">
         <PageHeader title={t('edit.title')} />

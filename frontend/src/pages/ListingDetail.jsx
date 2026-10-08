@@ -1179,7 +1179,7 @@ export default function ListingDetail() {
         )}
 
         {listing?.owner?.id && listing?.attributes?.listing_kind !== 'vacancy' && listing?.attributes?.listing_kind !== 'resume' && (
-          <StorefrontLink ownerId={listing.owner.id} listingId={listing.id} />
+          <StorefrontLink ownerId={listing.owner.id} listingId={listing.id} initial={listing.owner_storefront} />
         )}
         {listing?.attributes?.listing_kind === 'vacancy' && listing?.status === 'active' && listing.external_source !== 'telegram' && (
           <div className="jr-slot"><JobRespond listing={listing} /></div>
