@@ -1,5 +1,5 @@
 import EmptyArt from '../src/components/EmptyArt'
-import { tr } from '../src/i18n'
+import { plural, tr } from '../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { router, useFocusEffect } from 'expo-router'
 import Icon from '../src/components/Icon'
@@ -91,8 +91,11 @@ export default function Favorites() {
         <Pressable onPress={() => (router.canGoBack() ? router.back() : router.navigate('/'))} hitSlop={10} accessibilityLabel={tr('Назад')} style={{ marginRight: 8, width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, shadowColor: '#0F1512', shadowOpacity: 0.07, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 }}>
           <Icon name="back" size={22} color={colors.ink} />
         </Pressable>
-        <Text style={styles.h1}>{tr('Избранное')}</Text>
-        {!!visible && visible.length > 0 && <Text style={styles.count}>{visible.length}</Text>}
+        {/* как на сайте: число вещей — подводкой над заголовком */}
+        <View style={{ flex: 1 }}>
+          <Text style={styles.kicker}>{visible && visible.length > 0 ? plural(visible.length, { ru: ['{n} вещь', '{n} вещи', '{n} вещей'], en: ['{n} item', '{n} items', '{n} items'], sr: ['{n} stvar', '{n} stvari', '{n} stvari'] }) : ' '}</Text>
+          <Text style={styles.h1}>{tr('Избранное')}</Text>
+        </View>
       </View>
       {!!visible && visible.length > 1 && (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: space.page, paddingBottom: 12 }} style={{ flexGrow: 0 }}>
@@ -144,6 +147,7 @@ export default function Favorites() {
 }
 
 const styles = StyleSheet.create({
+  kicker: { fontFamily: font[600], fontSize: 14, color: colors.inkSoft },
   page: { flex: 1, backgroundColor: colors.bg },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 10 },
   sortChip: { height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, justifyContent: 'center' },

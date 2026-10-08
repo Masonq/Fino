@@ -28,6 +28,8 @@ export default function Chats() {
   const [q, setQ] = useState('')
   const [filter, setFilter] = useState<'all' | 'unread' | 'buy' | 'sell'>('all')
   const insets = useSafeAreaInsets()
+  // поиск и фильтры показываем, когда переписки есть (как на сайте); пока грузятся — тоже, чтобы шапка не прыгала
+  const hasChats = chats === null || chats === undefined || (Array.isArray(chats) && chats.length > 0)
   const scrollY = useRef(new Animated.Value(0)).current
   const [headH, setHeadH] = useState(150)
 
@@ -120,7 +122,8 @@ export default function Chats() {
         <Text style={styles.kicker}>{(() => { const n = (chats ?? []).filter((c) => (c.unread ?? 0) > 0).length; return n ? tr('{n} непрочитанных', { n }) : tr('Покупки и продажи') })()}</Text>
         <Text style={[styles.h1, { paddingHorizontal: 0, paddingTop: 0, paddingBottom: 0 }]}>{tr('Сообщения')}</Text>
       </View>
-      {/* Поиск и фильтры — как на сайте */}
+      {/* Поиск и фильтры — как на сайте: только когда есть переписки (пустому списку они ни к чему) */}
+      {hasChats && <>
       <View style={styles.search}>
         <Icon name="search" size={17} color={colors.muted} />
         <TextInput value={q} onChangeText={setQ} placeholder={tr('Поиск по переписке')} placeholderTextColor={colors.muted} style={styles.searchInput} returnKeyType="search" />
@@ -133,6 +136,7 @@ export default function Chats() {
           </Pressable>
         ))}
       </View>
+      </>}
       </Animated.View>
       {chats === null ? (
         failed ? (
@@ -173,8 +177,8 @@ export default function Chats() {
           ListEmptyComponent={
             <View style={styles.center}>
               <EmptyArt name="chats" />
-              <Text style={styles.title}>{tr('Пока нет переписок')}</Text>
-              <Text style={styles.text}>{tr('Откройте объявление и нажмите «Написать продавцу».')}</Text>
+              <Text style={styles.text}>{tr('Переписок пока нет. Напишите продавцу — диалог появится здесь.')}</Text>
+              <Pressable style={styles.emptyBtn} onPress={() => router.navigate('/')}><Text style={styles.emptyBtnT}>{tr('К объявлениям')}</Text></Pressable>
             </View>
           }
         />
@@ -184,6 +188,8 @@ export default function Chats() {
 }
 
 const styles = StyleSheet.create({
+  emptyBtn: { marginTop: 6, height: 42, paddingHorizontal: 22, borderRadius: 21, backgroundColor: colors.inverse, alignItems: 'center', justifyContent: 'center' },
+  emptyBtnT: { fontFamily: font[800], fontSize: 14.5, color: colors.onInverse },
   headWrap: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 5, backgroundColor: colors.bg },
   you: { fontFamily: font[700], color: colors.ink },
   page: { flex: 1, backgroundColor: colors.bg },
