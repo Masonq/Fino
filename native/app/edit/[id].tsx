@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
   attrSelectT: { fontFamily: font[400], fontSize: 16, color: colors.ink },
   page: { flex: 1, backgroundColor: colors.bg },
   head: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, height: 52 },
-  back: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface }   // «назад» кружком — как на сайте и на остальных экранах,
+  back: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface },   // «назад» кружком — как на сайте и на остальных экранах
   h1: { fontSize: 20, fontFamily: font[800], color: colors.ink, marginLeft: 4 },
   form: { paddingHorizontal: 16, paddingBottom: 40 },
   // как подписи полей формы сайта: 12,5 / 700, серо-зелёные

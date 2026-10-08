@@ -493,7 +493,7 @@ const styles = StyleSheet.create({
   intro: { fontFamily: font[400], fontSize: 13.5, lineHeight: 20, color: colors.muted, marginHorizontal: space.page, marginTop: 18, marginBottom: 30 },
   page: { flex: 1, backgroundColor: colors.bg },
   top: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingBottom: 10 },
-  back: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface }   // «назад» кружком — как на сайте и на остальных экранах,
+  back: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface },   // «назад» кружком — как на сайте и на остальных экранах
   title: { fontSize: 21, fontFamily: font[800], letterSpacing: -0.3, color: colors.ink },
   count: { fontSize: 13, fontFamily: font[600], color: colors.muted, marginTop: 1 },
   hero: { height: 132, paddingHorizontal: 12, paddingBottom: 12, justifyContent: 'flex-end', overflow: 'hidden', borderBottomLeftRadius: 18, borderBottomRightRadius: 18, backgroundColor: '#D8DED9' },
