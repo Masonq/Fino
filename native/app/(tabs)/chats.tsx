@@ -7,7 +7,7 @@ import { Image } from 'expo-image'
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useRef, useState } from 'react'
 import { ActionSheetIOS, Alert, Animated, FlatList, Platform, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { type Chat, chatPref, isOffer } from '../../src/api'
 import { useAuth } from '../../src/auth'
@@ -27,6 +27,7 @@ export default function Chats() {
   const [refreshing, setRefreshing] = useState(false)
   const [q, setQ] = useState('')
   const [filter, setFilter] = useState<'all' | 'unread' | 'buy' | 'sell'>('all')
+  const insets = useSafeAreaInsets()
   const scrollY = useRef(new Animated.Value(0)).current
   const [headH, setHeadH] = useState(150)
 
@@ -108,10 +109,12 @@ export default function Chats() {
 
   return (
     <SafeAreaView style={styles.page} edges={['top']}>
+      {/* полоса под часами — цветом страницы: уехавшая шапка прячется под неё, а не налезает на часы */}
+      <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: insets.top, backgroundColor: colors.bg, zIndex: 6 }} />
       {/* шапка (заголовок, поиск, фильтры) уезжает вверх при прокрутке, как на сайте, и возвращается при
           прокрутке назад к началу; поверх списка, список начинается под ней */}
       <Animated.View onLayout={(e) => setHeadH(e.nativeEvent.layout.height)}
-        style={[styles.headWrap, { transform: [{ translateY: scrollY.interpolate({ inputRange: [0, Math.max(1, headH)], outputRange: [0, -headH], extrapolate: 'clamp' }) }] }]}>
+        style={[styles.headWrap, { top: insets.top, transform: [{ translateY: scrollY.interpolate({ inputRange: [0, Math.max(1, headH)], outputRange: [0, -headH], extrapolate: 'clamp' }) }] }]}>
       {/* как на сайте: подводка (непрочитанные) и крупный заголовок */}
       <View style={{ paddingHorizontal: 16, paddingTop: 10, paddingBottom: 10 }}>
         <Text style={styles.kicker}>{(() => { const n = (chats ?? []).filter((c) => (c.unread ?? 0) > 0).length; return n ? tr('{n} непрочитанных', { n }) : tr('Покупки и продажи') })()}</Text>

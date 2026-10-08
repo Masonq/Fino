@@ -36,12 +36,13 @@ export function LangProvider({ children }: { children: (lang: Lang) => ReactNode
       setReady(true)
     })
   }, [])
-  const setLang = useCallback((l: Lang) => {
+  const setLang = useCallback((l: Lang, back: string = '/profile') => {
     current = l
     setLangState(l)
     prefs.set('plonk_lang', l)
-    // экраны перестраиваются с новым языком — возвращаем человека туда, где он менял язык
-    setTimeout(() => router.replace('/profile'), 0)
+    // экраны перестраиваются с новым языком — возвращаем человека туда, где он менял язык:
+    // из профиля — в профиль, с барабана на главной — на главную (раньше всегда в профиль)
+    setTimeout(() => router.replace(back as never), 0)
   }, [])
   const value = useMemo(() => ({ lang, setLang, ready }), [lang, setLang, ready])
   return <LangCtx.Provider value={value}>{children(lang)}</LangCtx.Provider>
