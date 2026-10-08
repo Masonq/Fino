@@ -295,9 +295,12 @@ export default function TgPost() {
           </div>
         ))}
         {photos.length < 8 && (
-          <label className="tg-photo tg-photo-add">
-            {uploading ? '…' : (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 5v14M5 12h14" /></svg>
+          <label className={`tg-photo tg-photo-add${photos.length ? '' : ' wide'}`}>
+            {uploading ? <span className="tg-photo-add-text">…</span> : (
+              <>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.3-2h5.2l1.3 2h1.6A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5z" /><circle cx="12" cy="12.5" r="3.4" /></svg>
+                {!photos.length && <span className="tg-photo-add-text"><b>{t('tg_post.add_photo')}</b><small>{t('tg_post.add_photo_hint')}</small></span>}
+              </>
             )}
             <input
               ref={fileInput}

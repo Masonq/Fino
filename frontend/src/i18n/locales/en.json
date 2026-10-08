@@ -1307,7 +1307,9 @@
     "go_to_bot": "Go and post",
     "or_on_site": "Or post on the site",
     "full_form": "Flat, car or a job ad",
-    "full_form_sub": "With area, mileage and hours"
+    "full_form_sub": "With area, mileage and hours",
+    "add_photo": "Add photos",
+    "add_photo_hint": "up to 8 photos or videos · the first is the cover"
   },
   "errors": {
     "generic": "Something went wrong. Try again."
