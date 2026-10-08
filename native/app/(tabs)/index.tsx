@@ -85,6 +85,13 @@ export default function Feed() {
     return () => { alive = false; clearTimeout(t) }
   }, [query, focused])
   const showSug = focused && query.trim().length >= 2 && (sug.categories.length > 0 || sug.completions.length > 0 || !!sug.fix)
+  // «Часто ищут» — при пустом поиске, как в окне поиска сайта
+  const [popular, setPopular] = useState<string[]>([])
+  useEffect(() => {
+    if (!focused || popular.length) return
+    fetch(`${API}/search/popular?lang=${getLang()}`).then((r) => r.json()).then((d) => setPopular((d.items || []).slice(0, 8))).catch(() => {})
+  }, [focused, popular.length])
+  const showPopular = focused && !query.trim() && popular.length > 0
   const applyQuery = (v: string) => { setQuery(v); setQ(v.trim()); setFocused(false); Keyboard.dismiss() }
   const [city, setCity] = useState<string | null>(null)
   const [cityReady, setCityReady] = useState(false)
@@ -313,6 +320,14 @@ export default function Feed() {
           </Pressable>
         </View>
       )}
+      {showPopular && (
+        <View style={[styles.sugBox, { top: headBottom, padding: 14 }]}>
+          <Text style={styles.popTitle}>{tr('Часто ищут')}</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {popular.map((w) => <Pressable key={w} style={styles.chip} onPress={() => applyQuery(w)}><Text style={styles.chipText}>{w}</Text></Pressable>)}
+          </View>
+        </View>
+      )}
       {showSug && (
         <View style={[styles.sugBox, { top: headBottom }]}>
           <ScrollView keyboardShouldPersistTaps="handled">
@@ -469,6 +484,7 @@ export default function Feed() {
 }
 
 const styles = StyleSheet.create({
+  popTitle: { fontFamily: font[800], fontSize: 13, color: colors.muted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 },
   helloRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingHorizontal: 16, paddingTop: 4, paddingBottom: 8 },
   cityPill: { width: 140, height: 34, borderRadius: 17, backgroundColor: colors.surface, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, marginTop: 0,
     shadowColor: '#0F1512', shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },

@@ -406,7 +406,7 @@ export const deleteMe = (token: string) => authed<{ ok: boolean }>('/auth/me', t
 export type BlockedUser = { id: string; display_name?: string | null; avatar_url?: string | null; blocked_at?: string | null }
 export const blockedUsers = (token: string) => authed<{ items: BlockedUser[] }>('/users/blocked', token)
 export const unblockUser = (token: string, userId: string) => authed<unknown>(`/users/blocked/${encodeURIComponent(userId)}/unblock`, token, 'POST')
-export type VolunteerApp = { id: string; role: string; status: 'new' | 'accepted' | 'rejected'; created_at: string; note?: string | null }
+export type VolunteerApp = { id: string; role: string; status: 'new' | 'accepted' | 'rejected'; created_at: string; note?: string | null; confidentiality_accepted?: boolean }
 export const volunteerMine = (token: string) => authed<{ application: VolunteerApp | null }>('/volunteer/mine', token)
 export const volunteerApply = (token: string, a: { role: string; languages: string[]; hours_per_week: string; about: string; accept_confidentiality: boolean }) =>
   authed<{ application: VolunteerApp }>('/volunteer/apply', token, 'POST', a)

@@ -1067,6 +1067,7 @@ export const DICT: Record<string, { en?: string; sr?: string }> = {
   "Были проблемы": { en: "There were problems", sr: "Bilo je problema" },
   "Расскажите, как прошла сделка (необязательно)": { en: "Tell how the deal went (optional)", sr: "Opišite kako je prošlo (neobavezno)" },
   "Не сейчас": { en: "Not now", sr: "Ne sada" },
+  "Часто ищут": { en: "Popular searches", sr: "Često se traži" },
   "Оформление": { en: "Appearance", sr: "Izgled" },
   "Ошибка видео": { en: "Video error", sr: "Greška videa" },
   "Пара слов о ролике": { en: "A few words about the video", sr: "Par reči o videu" },

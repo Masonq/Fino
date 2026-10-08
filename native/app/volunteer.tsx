@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react'
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { volunteerApply, type VolunteerApp, volunteerMine } from '../src/api'
+import { authed, volunteerApply, type VolunteerApp, volunteerMine } from '../src/api'
 import { useAuth } from '../src/auth'
 import Icon from '../src/components/Icon'
 import { tr } from '../src/i18n'
@@ -68,6 +68,13 @@ export default function Volunteer() {
             ))}
             {app ? (
               <View style={styles.status}><Text style={styles.statusTitle}>{tr(status)}</Text>{!!app.note && <Text style={styles.statusNote}>{app.note}</Text>}</View>
+            {/* заявка подана до появления галочки — без подтверждения её не принять (как на сайте) */}
+            {app.status === 'new' && app.confidentiality_accepted === false && (
+              <View style={[styles.status, { gap: 10 }]}>
+                <Text style={styles.statusNote}>{tr('Я обязуюсь сохранять конфиденциальность всего, что увижу при модерации (обращения, объявления, переписку), и понимаю, что участие безвозмездно и не является работой.')}</Text>
+                <Pressable style={styles.cta} onPress={() => { if (token) authed<{ application: VolunteerApp }>('/volunteer/consent', token, 'POST').then((r) => setApp(r.application)).catch(() => {}) }}><Text style={styles.ctaText}>{tr('Подтвердить')}</Text></Pressable>
+              </View>
+            )}
             ) : (
               <>
                 <Text style={styles.label}>{tr('Чем хотите помогать')}</Text>
