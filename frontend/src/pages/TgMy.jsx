@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 import { Link, useNavigate } from 'react-router-dom'
 
 import { api } from '../api/client'
@@ -119,6 +120,8 @@ export default function TgMy() {
           <div className="tg-title">{t('tg_my.title')}</div>
           <div className="tg-sub">{t('tg_my.subtitle')}</div>
         </div>
+        {/* язык — прямо в окне Telegram, сверху справа */}
+        <LanguageSwitcher variant="light" />
       </div>
 
       {error === 'not_in_telegram' ? (

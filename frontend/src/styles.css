@@ -8755,3 +8755,7 @@ html[data-theme="dark"] .mod-reject{ background:#4A2A2A !important; color:#F7C1C
 }
 .sh-side{ right:10px !important; }
 .sh-follow{ font-size:15px; line-height:18px; padding-bottom:1px; }
+/* мини-приложение в Telegram: переключатель языка справа в шапке, компактно */
+.tg-head .lang-switch{ flex:none; align-self:flex-start; margin-top:4px; }
+.tg-head .lang-switch button{ min-width:34px; height:30px; padding:0 8px; font-size:12.5px; }
+.tg-head .lang-switch{ width:auto !important; padding:3px !important; gap:2px !important; }

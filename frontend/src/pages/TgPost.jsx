@@ -2,6 +2,7 @@ import SlidePill from '../components/SlidePill'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 
 import { api } from '../api/client'
 import { CITIES, cityLabel } from '../data/cities'
@@ -257,6 +258,8 @@ export default function TgPost() {
           <div className="tg-title">{t('tg_post.title')}</div>
           <div className="tg-sub">{t('tg_post.subtitle')}</div>
         </div>
+        {/* язык — прямо в окне Telegram, сверху справа */}
+        <LanguageSwitcher variant="light" />
       </div>
 
       {/* Путь к своим объявлениям — строкой во всю ширину под шапкой.
