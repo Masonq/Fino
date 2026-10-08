@@ -1,4 +1,5 @@
 import { getLang, tr } from '../../src/i18n'
+import MoveSheet from '../../src/components/MoveSheet'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
@@ -57,6 +58,11 @@ export default function EditListing() {
   const [schema, setSchema] = useState<AttrField[]>([])
   const [attrs, setAttrs] = useState<Record<string, unknown>>({})
   const [attrsChanged, setAttrsChanged] = useState(false)
+  // раздел: можно сменить, если ошибся при размещении (как на сайте)
+  const [catSlug, setCatSlug] = useState('')
+  const [origCat, setOrigCat] = useState('')
+  const [catPath, setCatPath] = useState('')
+  const [catOpen, setCatOpen] = useState(false)
   const setAttr = (k: string, v: unknown) => { setAttrs((a) => ({ ...a, [k]: v })); setAttrsChanged(true) }
   const [desc, setDesc] = useState('')
   const [price, setPrice] = useState('')
@@ -80,6 +86,9 @@ export default function EditListing() {
       setAttrs(((l as unknown as { attributes?: Record<string, unknown> }).attributes) || {})
       const cs = (l as unknown as { category_slug?: string }).category_slug
       if (cs) categorySchema(cs).then((r) => setSchema(r.attribute_schema ?? [])).catch(() => setSchema([]))
+      setCatSlug(cs || ''); setOrigCat(cs || '')
+      const cp = (l as unknown as { category_path?: { name?: Record<string, string> | string }[] }).category_path
+      if (Array.isArray(cp)) setCatPath(cp.map((c) => (typeof c?.name === 'string' ? c.name : c?.name?.[getLang()] || c?.name?.ru || '')).filter(Boolean).join(' › '))
       setLoaded(true)
     }).catch(() => setError(tr('Не удалось открыть объявление')))
   }, [id])
@@ -155,6 +164,7 @@ export default function EditListing() {
       if (point.lat !== (orig.location_lat ?? null) || point.lng !== (orig.location_lng ?? null)) { patch.location_lat = point.lat; patch.location_lng = point.lng }
       if (hideAddr !== !!orig.hide_exact_address) patch.hide_exact_address = hideAddr
       if (attrsChanged && schema.length) (patch as { attributes?: Record<string, unknown> }).attributes = attrs
+      if (catSlug && catSlug !== origCat) (patch as { category_slug?: string }).category_slug = catSlug
       if (Object.keys(patch).length) await updateListing(token, String(id), patch)
       for (const photoId of removed) await deleteListingPhoto(token, String(id), photoId)
       for (const s of shots) if (!s.existingId && s.uploaded) await addListingPhoto(token, String(id), s.uploaded)
@@ -210,6 +220,22 @@ export default function EditListing() {
             <TextInput value={title} onChangeText={setTitle} style={styles.input} maxLength={120} />
             <Text style={styles.label}>{tr('Описание')}</Text>
             <TextInput value={desc} onChangeText={setDesc} style={[styles.input, styles.area]} multiline maxLength={5000} textAlignVertical="top" />
+            {/* раздел — с «Изменить»: поиск по конечным разделам с путём */}
+            <Text style={styles.label}>{tr('Раздел')}</Text>
+            <Pressable style={styles.attrSelect} onPress={() => setCatOpen(true)}>
+              <Text style={[styles.attrSelectT, { flex: 1 }]} numberOfLines={1}>{catPath || '—'}</Text>
+              <Text style={{ fontFamily: font[800], fontSize: 14, color: colors.primaryDeep }}>{tr('Изменить')}</Text>
+            </Pressable>
+            {catOpen && !!token && (
+              <MoveSheet token={token} listingId={id} current={catPath} title={tr('Раздел')} onClose={() => setCatOpen(false)} onMoved={() => {}}
+                onPick={(c, name, path) => {
+                  setCatOpen(false); setCatSlug(c.slug); setCatPath(path ? `${path.replace(/ → /g, ' › ')} › ${name}` : name)
+                  categorySchema(c.slug).then((r) => {
+                    const sc = r.attribute_schema ?? []
+                    setSchema(sc); setAttrs((a) => Object.fromEntries(Object.entries(a).filter(([k]) => sc.some((f) => f.key === k)))); setAttrsChanged(true)
+                  }).catch(() => setSchema([]))
+                }} />
+            )}
             {schema.length > 0 && (
               <View style={styles.attrsCard}>
                 <Text style={styles.attrsTitle}>{tr('Характеристики')}</Text>

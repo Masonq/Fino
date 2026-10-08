@@ -9,8 +9,10 @@ import { colors, font } from '../theme'
 
 const nameOf = (c: Category) => (typeof c.name === 'string' ? c.name : c.name?.[getLang()] || c.name?.ru || c.slug)
 
-export default function MoveSheet({ token, listingId, current, onClose, onMoved }: {
+export default function MoveSheet({ token, listingId, current, onClose, onMoved, onPick, title }: {
   token: string; listingId: string; current?: string | null; onClose: () => void; onMoved: (name: string) => void
+  // выбор раздела владельцем при правке: только конечные разделы, без переноса на сервере — решает экран правки
+  onPick?: (c: Category, name: string, path: string) => void; title?: string
 }) {
   const [tree, setTree] = useState<Category[] | null>(null)
   const [q, setQ] = useState('')
@@ -20,7 +22,7 @@ export default function MoveSheet({ token, listingId, current, onClose, onMoved 
   const all = useMemo(() => {
     const out: { c: Category; path: string }[] = []
     const walk = (n: Category, trail: string[]) => {
-      if (trail.length) out.push({ c: n, path: trail.join(' → ') })
+      if (trail.length && (!onPick || !(n.children || []).length)) out.push({ c: n, path: trail.join(' → ') })
       ;(n.children || []).forEach((k) => walk(k, [...trail, nameOf(n)]))
     }
     ;(tree || []).forEach((r) => walk(r, []))
@@ -28,6 +30,7 @@ export default function MoveSheet({ token, listingId, current, onClose, onMoved 
   }, [tree])
   const shown = q.trim() ? all.filter(({ c }) => `${nameOf(c)} ${c.slug}`.toLowerCase().includes(q.trim().toLowerCase())) : all
   const pick = async (c: Category) => {
+    if (onPick) { onPick(c, nameOf(c), all.find((x) => x.c.id === c.id)?.path || ''); return }
     setBusy(true)
     try { await modMove(token, listingId, c.id); onMoved(nameOf(c)) } catch { /* остаётся открытым */ } finally { setBusy(false) }
   }
@@ -35,7 +38,7 @@ export default function MoveSheet({ token, listingId, current, onClose, onMoved 
     <SheetFrame visible onClose={onClose}>
       <View style={st.sheet}>
         <View style={st.handle} />
-        <Text style={st.title}>{tr('Перенести в раздел')}</Text>
+        <Text style={st.title}>{title || tr('Перенести в раздел')}</Text>
         {!!current && <Text style={st.now}>{tr('Сейчас')}: <Text style={{ fontFamily: font[800], color: colors.ink }}>{current}</Text></Text>}
         <TextInput style={st.input} value={q} onChangeText={setQ} placeholder={tr('Найти раздел')} placeholderTextColor={colors.muted} autoCorrect={false} />
         <FlatList

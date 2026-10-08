@@ -149,7 +149,7 @@ export function verifyCode(email: string, code: string) {
 
 // ---------- избранное (нужен вход) ----------
 
-export async function authed<T>(path: string, token: string, method: 'GET' | 'POST' | 'DELETE' | 'PATCH' = 'GET', body?: unknown): Promise<T> {
+export async function authed<T>(path: string, token: string, method: 'GET' | 'POST' | 'DELETE' | 'PATCH' | 'PUT' = 'GET', body?: unknown): Promise<T> {
   const res = await fetch(`${API}${path}`, {
     method,
     headers: { Accept: 'application/json', Authorization: `Bearer ${token}`, ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
@@ -205,6 +205,11 @@ export const chatInfo = (token: string, id: string) => authed<Chat>(`/chats/${en
 export const chatMessages = (token: string, id: string) => authed<Message[]>(`/chats/${encodeURIComponent(id)}/messages`, token)
 export const sendMessage = (token: string, id: string, text: string, replyTo?: string | null) =>
   authed<Message>(`/chats/${encodeURIComponent(id)}/messages`, token, 'POST', { text, offer_price: null, reply_to_id: replyTo || null })
+export const editMessage = (token: string, id: string, mid: string, text: string) =>
+  authed<{ ok: boolean; text: string; edited_at: string }>(`/chats/${encodeURIComponent(id)}/messages/${mid}`, token, 'PATCH', { text })
+export type NotifyPrefs = Record<'messages' | 'price_drop' | 'searches' | 'following' | 'digest', boolean>
+export const notifyPrefs = (token: string) => authed<NotifyPrefs>('/users/me/notify-prefs', token)
+export const setNotifyPrefs = (token: string, prefs: Partial<NotifyPrefs>) => authed<NotifyPrefs>('/users/me/notify-prefs', token, 'PUT', { prefs })
 export const deleteMessage = (token: string, id: string, mid: string) =>
   authed<{ ok: boolean }>(`/chats/${encodeURIComponent(id)}/messages/${mid}`, token, 'DELETE')
 export const reactMessage = (token: string, id: string, mid: string, emoji: string) =>

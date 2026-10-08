@@ -294,6 +294,7 @@ export default function Profile() {
         <View style={styles.menu}>
           {langRow}
           {themeRow}
+          {row('bell', 'Уведомления', () => router.push('/notify-settings' as never))}
           {row('lock', 'Заблокированные', () => router.push('/blocked'), undefined, true)}
         </View>
 

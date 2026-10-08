@@ -9,7 +9,7 @@ import {
   ActivityIndicator, Alert, AppState, FlatList, Modal, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View, Linking, ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { allowCall, blockChat, cancelReservation, type Chat, chatInfo, chatMessages, chatWsUrl, declineCall, markChatRead, type Message, requestCall, reserveListing, respondOffer, revokeCall, sendMessage, sendOffer, isOffer, reactMessage, translateMessage, deleteMessage } from '../../src/api'
+import { allowCall, blockChat, cancelReservation, type Chat, chatInfo, chatMessages, chatWsUrl, declineCall, markChatRead, type Message, requestCall, reserveListing, respondOffer, revokeCall, sendMessage, sendOffer, isOffer, reactMessage, translateMessage, deleteMessage, editMessage } from '../../src/api'
 import Icon from '../../src/components/Icon'
 import { VoiceButton, VoicePlayer } from '../../src/components/Voice'
 import TeamLetter from '../../src/components/TeamLetter'
@@ -94,6 +94,9 @@ export default function ChatScreen() {
           setMsgs((prev) => (prev?.some((x) => x.id === m.id) ? prev : [...(prev ?? []).filter((x) => !(x.pending && x.text === m.text && m.sender_id === user?.id)), m]))
           if (m.sender_id !== user?.id) { setTyping(false); markChatRead(token, chatId).then(() => refreshList()).catch(() => {}) }
           refreshInfo()
+        } else if (d.type === 'message_edited' && (d as { message_id?: string }).message_id) {
+          const e = d as unknown as { message_id: string; text: string; edited_at: string }
+          setMsgs((prev) => (prev ?? []).map((x) => (x.id === e.message_id ? { ...x, text: e.text, edited_at: e.edited_at } : x)))
         } else if (d.type === 'message_deleted' && (d as { message_id?: string }).message_id) {
           const mid = (d as unknown as { message_id: string }).message_id
           setMsgs((prev) => (prev ?? []).map((x) => (x.id === mid ? { ...x, kind: 'deleted', text: null, audio_url: null, reactions: null } : x)))
@@ -198,7 +201,7 @@ export default function ChatScreen() {
             </View>
           )}
           {item.kind === 'deleted' ? <Text style={[styles.bubbleText, me && styles.bubbleTextMe, { fontStyle: 'italic', opacity: 0.65 }]}>{tr('Сообщение удалено')}</Text>
-            : item.audio_url ? <VoicePlayer url={item.audio_url} seconds={item.audio_seconds} mine={me} /> : <Text style={[styles.bubbleText, me && styles.bubbleTextMe]}>{body}</Text>}
+            : item.audio_url ? <VoicePlayer url={item.audio_url} seconds={item.audio_seconds} mine={me} /> : <Text style={[styles.bubbleText, me && styles.bubbleTextMe]}>{body}{!!(item as { edited_at?: string }).edited_at && <Text style={{ fontSize: 11, opacity: 0.55, fontStyle: 'italic' }}>{'  '}{tr('изменено')}</Text>}</Text>}
           {!!translated[item.id] && <Text style={[styles.translated, me && styles.bubbleTextMe]}>{translated[item.id]}</Text>}
           {isOffer(item.kind) && !me && (!item.offer_status || item.offer_status === 'pending') && (
             <View style={styles.offerBtns}>
@@ -353,6 +356,21 @@ export default function ChatScreen() {
             )}
             {!!menuFor?.text && (
               <Pressable style={styles.menuItem} onPress={() => { Clipboard.setStringAsync(menuFor?.text || '').catch(() => {}); setMenuFor(null) }}><Icon name="copy" size={18} color={colors.ink} /><Text style={styles.menuText}>{tr('Копировать')}</Text></Pressable>
+            )}
+            {/* своё текстовое сообщение можно исправить — в течение суток */}
+            {!!menuFor && menuFor.sender_id === user?.id && (menuFor.kind === 'user' || !menuFor.kind) && !!menuFor.text && Date.now() - new Date(menuFor.created_at).getTime() < 864e5 && (
+              <Pressable style={styles.menuItem} onPress={() => {
+                const m = menuFor; setMenuFor(null)
+                Alert.prompt(tr('Исправить сообщение'), undefined, [
+                  { text: tr('Отмена'), style: 'cancel' },
+                  { text: tr('Сохранить'), onPress: (v?: string) => {
+                    const next = (v || '').trim()
+                    if (!next || next === m.text || !token) return
+                    setMsgs((prev) => (prev ?? []).map((x) => (x.id === m.id ? { ...x, text: next, edited_at: new Date().toISOString() } : x)))
+                    editMessage(token, chatId, m.id, next).catch(() => setMsgs((prev) => (prev ?? []).map((x) => (x.id === m.id ? { ...x, text: m.text } : x))))
+                  } },
+                ], 'plain-text', m.text || '')
+              }}><Icon name="edit" size={18} color={colors.ink} /><Text style={styles.menuText}>{tr('Изменить')}</Text></Pressable>
             )}
             {/* своё сообщение можно удалить — у обоих */}
             {!!menuFor && menuFor.sender_id === user?.id && (menuFor.kind === 'user' || menuFor.kind === 'voice' || !menuFor.kind) && (
