@@ -312,7 +312,7 @@ def add_comment(shop_id: uuid.UUID, payload: CommentIn, user: User = Depends(req
     if user.id != s.author_id:
         try:
             from app.core.notifications import notify
-            notify(db, s.author_id, f"💬 {user.display_name} прокомментировал ваш шопс: {text[:120]}", link=f"/shops?start={s.id}")
+            notify(db, s.author_id, f"💬 {user.display_name} прокомментировал ваш шопс: {text[:120]}", link=f"/shops?start={s.id}", kind="following")
         except Exception:
             pass
     return _comment(c, user, s)

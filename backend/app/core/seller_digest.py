@@ -165,7 +165,7 @@ def run(dry_run: bool = False, limit: int | None = None) -> int:
 
             notify(db, owner_id, text, allow_email=True,
                    subject="PLONK — ваши объявления за неделю",
-                   link="/my")
+                   link="/my", kind="digest")
             user.seller_digest_at = utcnow()
             db.commit()
             sent += 1

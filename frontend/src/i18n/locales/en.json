@@ -175,7 +175,10 @@
     "hold_hint": "Hold the button while you speak",
     "delete": "Delete",
     "delete_confirm": "Delete this message for everyone?",
-    "deleted": "Message deleted"
+    "deleted": "Message deleted",
+    "edit": "Edit",
+    "edit_prompt": "Edit message",
+    "edited": "edited"
   },
   "promo": {
     "safe_deal": "Safe deal",
@@ -1944,5 +1947,19 @@
     "q3": "Please send a screenshot — it helps us sort it out faster.",
     "q4_short": "Thanks",
     "q4": "Thank you! If anything else comes up, write here."
+  },
+  "notify": {
+    "title": "Notifications",
+    "hint": "What to send to Telegram, email and your phone. The bell on the site shows everything.",
+    "messages": "Messages",
+    "messages_hint": "New messages and replies",
+    "price_drop": "Price drops",
+    "price_drop_hint": "Something in your favourites got cheaper",
+    "searches": "Saved searches",
+    "searches_hint": "New listings for your search",
+    "following": "Following",
+    "following_hint": "News from sellers and shops you follow, comments on your shops",
+    "digest": "Seller summary",
+    "digest_hint": "How your listings are doing: views, favourites"
   }
 }

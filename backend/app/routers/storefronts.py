@@ -119,7 +119,7 @@ def _announce_drop(db: Session, sf: Storefront, c: StorefrontCollection):
         from app.core.notifications import notify
         when = c.drop_at.strftime("%d.%m в %H:%M")
         for uid in _followers_ids(db, sf.owner_id):
-            notify(db, uid, f"⏳ {sf.name}: дроп «{c.title}» откроется {when}", link=f"/s/{sf.slug}/c/{c.id}")
+            notify(db, uid, f"⏳ {sf.name}: дроп «{c.title}» откроется {when}", link=f"/s/{sf.slug}/c/{c.id}", kind="following")
     except Exception:
         pass
 
@@ -135,7 +135,7 @@ def _open_due_drops(db: Session, sf: Storefront):
         for c in due:
             c.drop_notified = True
             for uid in _followers_ids(db, sf.owner_id):
-                notify(db, uid, f"🔥 {sf.name}: дроп «{c.title}» открыт", link=f"/s/{sf.slug}/c/{c.id}")
+                notify(db, uid, f"🔥 {sf.name}: дроп «{c.title}» открыт", link=f"/s/{sf.slug}/c/{c.id}", kind="following")
         db.commit()
     except Exception:
         db.rollback()

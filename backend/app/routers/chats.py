@@ -173,6 +173,7 @@ def _serialize_message(m: Message) -> dict:
         "reply_to": ({"id": str(m.reply_to_id), "text": m.reply_text or "", "sender_id": str(m.reply_sender_id) if m.reply_sender_id else None}
                      if m.reply_to_id else None),
         "reactions": m.reactions or {},
+        "edited_at": m.edited_at.isoformat() if getattr(m, "edited_at", None) else None,
         "audio_url": m.audio_url,
         "audio_seconds": m.audio_seconds,
     }
@@ -932,6 +933,34 @@ async def delete_message(chat_id: uuid.UUID, message_id: uuid.UUID, user: User =
     db.commit()
     await manager.broadcast(str(chat_id), {"type": "message_deleted", "message_id": str(m.id)})
     return {"ok": True}
+
+
+class EditMessage(BaseModel):
+    text: str
+
+
+@router.patch("/{chat_id}/messages/{message_id}")
+async def edit_message(chat_id: uuid.UUID, message_id: uuid.UUID, body: EditMessage,
+                       user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Исправить своё текстовое сообщение (опечатку) — в течение суток; у собеседника сразу, с пометкой «изменено»."""
+    _require_participant(chat_id, user, db)
+    m = db.query(Message).filter(Message.id == message_id, Message.chat_id == chat_id).first()
+    if not m:
+        raise HTTPException(404, "message_not_found")
+    if m.sender_id != user.id:
+        raise HTTPException(403, "not_your_message")
+    if m.kind != "user" or not m.text:
+        raise HTTPException(400, "cannot_edit")
+    if m.created_at and utcnow() - m.created_at > timedelta(hours=24):
+        raise HTTPException(400, "too_old")
+    text = (body.text or "").strip()
+    if not text or len(text) > 4000:
+        raise HTTPException(400, "bad_text")
+    m.text = text
+    m.edited_at = utcnow()
+    db.commit()
+    await manager.broadcast(str(chat_id), {"type": "message_edited", "message_id": str(m.id), "text": text, "edited_at": m.edited_at.isoformat()})
+    return {"ok": True, "text": text, "edited_at": m.edited_at.isoformat()}
 
 
 _TR_CACHE: dict[tuple, str] = {}

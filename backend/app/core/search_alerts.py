@@ -122,7 +122,7 @@ def notify_subscribers(db: Session, listing: Listing) -> int:
             )
             # Человек сам включил уведомления по этой подписке — если
             # Telegram не привязан, уходит на почту.
-            if notify(db, s.user_id, text, allow_email=True,
+            if notify(db, s.user_id, text, kind="searches", allow_email=True,
                       subject=f"PLONK — новое по поиску «{s.name}»",
                       link=f"/go/{listing.id}"):
                 sent += 1
@@ -183,7 +183,7 @@ def notify_seller_subscribers(db: Session, listing: Listing) -> int:
             f"<b>{title}</b>\n{price}"
         )
         try:
-            if notify(db, s.subscriber_id, text, allow_email=True,
+            if notify(db, s.subscriber_id, text, kind="following", allow_email=True,
                       subject=f"PLONK — новое объявление от {seller_name}",
                       link=f"/go/{listing.id}"):
                 sent += 1
@@ -248,7 +248,7 @@ def notify_price_drop(db: Session, listing: Listing) -> int:
             f"{prev_price:.0f} → {listing.price:.0f} {listing.currency}"
         )
         try:
-            if notify(db, fav.user_id, text, subject="PLONK — цена снизилась",
+            if notify(db, fav.user_id, text, kind="price_drop", subject="PLONK — цена снизилась",
                       link=f"/go/{listing.id}"):
                 sent += 1
         except Exception:

@@ -122,5 +122,5 @@ def reply(chat_id: uuid.UUID, payload: ReplyIn,
     db.commit()
 
     from app.core.notifications import notify
-    notify(db, chat.buyer_id, "Команда PLONK ответила вам", link=f"/chat/{chat.id}")
+    notify(db, chat.buyer_id, "Команда PLONK ответила вам", link=f"/chat/{chat.id}", kind="messages")
     return {"status": "ok"}

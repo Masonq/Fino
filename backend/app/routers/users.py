@@ -488,3 +488,29 @@ def unlink_telegram(user: User = Depends(get_current_user),
     user.telegram_id = None
     db.commit()
     return {"status": "unlinked"}
+
+
+# ---------- какие уведомления присылать (Профиль → Уведомления) ----------
+NOTIFY_KINDS = ("messages", "price_drop", "searches", "following", "digest")
+
+
+class NotifyPrefsIn(BaseModel):
+    prefs: dict
+
+
+@router.get("/me/notify-prefs")
+def get_notify_prefs(user: User = Depends(get_current_user)):
+    """Что присылать в Telegram / на почту / пушем. Не указано — включено."""
+    p = user.notify_prefs or {}
+    return {k: p.get(k, True) is not False for k in NOTIFY_KINDS}
+
+
+@router.put("/me/notify-prefs")
+def set_notify_prefs(body: NotifyPrefsIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    p = dict(user.notify_prefs or {})
+    for k, v in (body.prefs or {}).items():
+        if k in NOTIFY_KINDS:
+            p[k] = bool(v)
+    user.notify_prefs = p
+    db.commit()
+    return {k: p.get(k, True) is not False for k in NOTIFY_KINDS}

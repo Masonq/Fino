@@ -50,7 +50,7 @@ def _send_telegram(chat_id: str, text: str) -> bool:
 
 def notify(db: Session, user_id, text: str, force: bool = False,
            allow_email: bool = False, subject: str | None = None,
-           link: str | None = None) -> bool:
+           link: str | None = None, kind: str | None = None) -> bool:
     """
     Отправляет уведомление, если человек не в приложении прямо сейчас.
 
@@ -75,6 +75,11 @@ def notify(db: Session, user_id, text: str, force: bool = False,
 
     db.add(Notification(user_id=user_id, text=_strip_tags(text), link=link))
     db.commit()
+
+    # Человек выключил этот вид уведомлений (Профиль → Уведомления): в колокольчике оставляем, а в Telegram,
+    # на почту и пушем не шлём. Важное (решения модерации, force) — всегда.
+    if kind and not force and (user.notify_prefs or {}).get(kind) is False:
+        return False
 
     if not force and user.last_seen_at:
         if utcnow() - user.last_seen_at < ACTIVE_WINDOW:
@@ -179,7 +184,7 @@ def notify_new_message(db: Session, recipient_id, sender_id, sender_name: str,
         head += f" · {listing_title[:60]}"
     text = f"{head}\n\n{preview[:120]}"
     link = f"/chat/{chat_id}" if chat_id else None
-    return notify(db, recipient_id, text, link=link)
+    return notify(db, recipient_id, text, link=link, kind="messages")
 
 
 def notify_review_request(db: Session, user_id, other_name: str, chat_id=None) -> bool:

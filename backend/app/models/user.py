@@ -4,7 +4,7 @@ from datetime import datetime
 
 from sqlalchemy import String, Boolean, DateTime, Enum, Float, Integer, Text, Numeric, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 
 from app.core.database import Base
 from app.core.clock import utcnow
@@ -80,6 +80,8 @@ class User(Base):
     # Подарок новичку за первое одобренное объявление — начисляется один
     # раз в жизни, отсюда флаг, а не подсчёт объявлений: объявление можно
     # снять и подать заново, и без флага бонус капал бы каждый раз.
+    # что человек не хочет получать в Telegram / почту / пуш (в колокольчике на сайте остаётся всё): {"messages": false, …}
+    notify_prefs: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     welcome_bonus_given: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # Business seller fields (APR verification — Serbian company registry)

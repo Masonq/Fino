@@ -400,6 +400,7 @@ export default function Profile() {
           {t('profile.theme')}
           <ThemeSwitch t={t} />
         </div>
+        <NotifySettings t={t} />
         <Link viewTransition className="profile-row" to="/profile/blocked">
           <span className="profile-row-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><circle cx="12" cy="12" r="9" /><path d="m5.5 5.5 13 13" /></svg>
@@ -509,5 +510,41 @@ function ThemeSwitch({ t }) {
         <button key={k} type="button" role="radio" aria-checked={pref === k} className={pref === k ? 'on' : ''} onClick={() => apply(k)}>{t(`profile.theme_${k}`)}</button>
       ))}
     </span>
+  )
+}
+
+
+/** Какие уведомления присылать в Telegram, на почту и пушем (в колокольчике на сайте остаются все). */
+function NotifySettings({ t }) {
+  const [open, setOpen] = useState(false)
+  const [prefs, setPrefs] = useState(null)
+  const KINDS = ['messages', 'price_drop', 'searches', 'following', 'digest']
+  const toggle = (k) => {
+    const next = { ...prefs, [k]: !prefs[k] }
+    setPrefs(next)
+    api.setNotifyPrefs({ [k]: next[k] }).then(setPrefs).catch(() => setPrefs(prefs))
+  }
+  return (
+    <>
+      <button type="button" className="profile-row" onClick={() => { setOpen((o) => !o); if (!prefs) api.notifyPrefs().then(setPrefs).catch(() => {}) }} aria-expanded={open}>
+        <span className="profile-row-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
+        </span>
+        {t('notify.title')}
+        <svg className="profile-row-chev" style={{ marginLeft: 'auto', color: 'var(--muted)', transition: 'transform .2s', transform: open ? 'rotate(90deg)' : 'none' }} viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
+      </button>
+      {open && (
+        <div className="notify-prefs">
+          <p className="notify-hint">{t('notify.hint')}</p>
+          {!prefs ? <div className="sk-block" style={{ height: 160, borderRadius: 16 }} /> : KINDS.map((k) => (
+            <label key={k} className="notify-row">
+              <span><b>{t(`notify.${k}`)}</b><small>{t(`notify.${k}_hint`)}</small></span>
+              <input type="checkbox" className="au-switch-input" checked={!!prefs[k]} onChange={() => toggle(k)} />
+              <i className={`notify-switch${prefs[k] ? ' on' : ''}`} aria-hidden="true" />
+            </label>
+          ))}
+        </div>
+      )}
+    </>
   )
 }

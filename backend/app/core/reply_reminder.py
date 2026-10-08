@@ -76,7 +76,7 @@ def remind_silent_chats(db: Session) -> int:
             + " уже больше суток"
         )
         try:
-            if notify(db, recipient_id, text, link=f"/chat/{chat.id}"):
+            if notify(db, recipient_id, text, link=f"/chat/{chat.id}", kind="messages"):
                 sent += 1
         except Exception as exc:                     # noqa: BLE001
             log.warning("Напоминание о молчании не отправлено: %s", exc)

@@ -75,7 +75,7 @@ def run() -> int:
             if notify(db, fav.user_id, "\n".join(text_lines),
                       allow_email=True,
                       subject="Подешевело объявление из избранного",
-                      link=None):
+                      link=None, kind="price_drop"):
                 sent += 1
 
             told[str(fav.user_id)] = str(listing.price)

@@ -176,7 +176,10 @@
     "hold_hint": "Držite dugme dok govorite",
     "delete": "Obriši",
     "delete_confirm": "Obrisati poruku za oboje?",
-    "deleted": "Poruka je obrisana"
+    "deleted": "Poruka je obrisana",
+    "edit": "Izmeni",
+    "edit_prompt": "Izmeni poruku",
+    "edited": "izmenjeno"
   },
   "promo": {
     "safe_deal": "Sigurna kupovina",
@@ -1997,5 +2000,19 @@
     "q3": "Pošaljite snimak ekrana — tako ćemo brže rešiti.",
     "q4_short": "Hvala",
     "q4": "Hvala! Ako bude još nešto, pišite ovde."
+  },
+  "notify": {
+    "title": "Obaveštenja",
+    "hint": "Šta slati u Telegram, na e-poštu i na telefon. U zvoncu na sajtu vidi se sve.",
+    "messages": "Poruke",
+    "messages_hint": "Nove poruke i odgovori",
+    "price_drop": "Pad cene",
+    "price_drop_hint": "Pojeftinilo nešto iz omiljenih",
+    "searches": "Sačuvane pretrage",
+    "searches_hint": "Novi oglasi za vašu pretragu",
+    "following": "Praćenja",
+    "following_hint": "Novo kod prodavaca i izloga koje pratite, komentari na šopsove",
+    "digest": "Pregled za prodavca",
+    "digest_hint": "Kako idu vaši oglasi: pregledi, omiljeni"
   }
 }

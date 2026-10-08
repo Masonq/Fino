@@ -92,6 +92,8 @@ class Message(Base):
     reply_sender_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
     # Реакции: {"👍": ["<user_id>", …]} — у каждого участника по одной реакции каждого вида
     reactions: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    # когда сообщение исправили (правка своего сообщения) — в переписке показывается «изменено»
+    edited_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     # Голосовое сообщение (kind="voice"): файл и длительность
     audio_url: Mapped[str | None] = mapped_column(String(300), nullable=True)
     audio_seconds: Mapped[int | None] = mapped_column(Integer, nullable=True)

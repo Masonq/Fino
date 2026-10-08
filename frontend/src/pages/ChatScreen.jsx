@@ -141,6 +141,8 @@ export default function ChatScreen() {
             prev.some((m) => m.id === data.message.id) ? prev : [...prev, data.message]
           ))
           if (data.message.sender_id !== myId) api.markChatRead(id).catch(() => {})
+        } else if (data.type === 'message_edited') {
+          setMessages((prev) => prev.map((m) => (m.id === data.message_id ? { ...m, text: data.text, edited_at: data.edited_at } : m)))
         } else if (data.type === 'message_deleted') {
           setMessages((prev) => prev.map((m) => (m.id === data.message_id ? { ...m, kind: 'deleted', text: null, audio_url: null, reactions: null } : m)))
         } else if (data.type === 'reaction') {
@@ -673,6 +675,7 @@ export default function ChatScreen() {
                   {m.kind === 'deleted' ? <span className="msg-deleted">{t('chat.deleted')}</span>
                     : m.kind === 'voice' ? <VoicePlayer src={m.audio_url} seconds={m.audio_seconds} mine={m.sender_id === myId} />
                     : (m.kind === 'team' ? teamText(m.text) : m.text)}
+                  {m.edited_at && m.kind !== 'deleted' && <span className="msg-edited">{t('chat.edited')}</span>}
                   {translated[m.id] && <div className="msg-translated"><span>{t('chat.translated')}</span>{translated[m.id]}</div>}
                   {/* Галочка у своих сообщений: одна — доставлено,
                       две — собеседник открыл чат и прочитал. Без неё
@@ -738,6 +741,19 @@ export default function ChatScreen() {
                     <button type="button" className="msg-menu-item" onClick={() => { navigator.clipboard?.writeText(menuFor.text).catch(() => {}); setMenuFor(null) }}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="12" height="12" rx="2" /><path d="M5 15V5a2 2 0 0 1 2-2h10" /></svg>
                       {t('chat.copy')}
+                    </button>
+                  )}
+                  {/* своё текстовое сообщение можно исправить — в течение суток, у обоих с пометкой «изменено» */}
+                  {menuFor.sender_id === myId && menuFor.kind === 'user' && menuFor.text && (Date.now() - new Date(menuFor.created_at).getTime() < 864e5) && (
+                    <button type="button" className="msg-menu-item" onClick={() => {
+                      const m = menuFor; setMenuFor(null)
+                      const next = window.prompt(t('chat.edit_prompt'), m.text)
+                      if (next == null || !next.trim() || next.trim() === m.text) return
+                      setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, text: next.trim(), edited_at: new Date().toISOString() } : x)))
+                      api.editMessage(id, m.id, next.trim()).catch(() => setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, text: m.text, edited_at: m.edited_at } : x))))
+                    }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+                      {t('chat.edit')}
                     </button>
                   )}
                   {/* своё сообщение можно удалить — у обоих (раньше отправленное было не убрать) */}

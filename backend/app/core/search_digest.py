@@ -127,7 +127,7 @@ def run(dry_run: bool = False, limit: int | None = None) -> int:
 
             notify(db, user_id, text, allow_email=True,
                    subject=f"PLONK — новое по вашим поискам: {total}",
-                   link=link)
+                   link=link, kind="searches")
 
             # Отмечаем поиски как рассказанные и считаем неоткрытые
             # сводки: счётчик обнуляется, когда человек заходит на сайт

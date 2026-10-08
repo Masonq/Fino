@@ -88,7 +88,7 @@ def run() -> int:
             if notify(db, search.user_id, "\n".join(text_lines),
                       allow_email=True,
                       subject=f"Новое по запросу «{search.name}»",
-                      link=first.get("path")):
+                      link=first.get("path"), kind="searches"):
                 sent += 1
 
             search.notified_at = utcnow()
