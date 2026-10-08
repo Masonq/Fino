@@ -393,6 +393,9 @@ export default function App() {
   // (прозрачное стекло); листаешь вверх или ты у самого верха — полоска возвращается, и панель снова в цвет шапки.
   // Сдвиг translateY(-100%) Safari 26 не считает «верхним элементом» — на этом и держится переключение.
   const [tintHidden, setTintHidden] = useState(false)
+  // цвет полоски — прямо в её style, а сама полоска пересоздаётся при смене страницы (key): Safari перечитывает цвет
+  // панели, когда у края появляется новый элемент; после чёрных шопсов он оставался чёрным и на главной
+  const [topTint, setTopTint] = useState('#EBF1E7')
   useEffect(() => {
     // листается не всегда окно: на части страниц прокручивается внутренний контейнер — ловим прокрутку любого
     // элемента (capture) и берём положение того, что прокрутилось
@@ -423,6 +426,7 @@ export default function App() {
     const dark = document.documentElement.getAttribute('data-theme') === 'dark'
     const black = pathname.startsWith('/shops') && !pathname.startsWith('/shops/') || /\/[a-z0-9-]+-[0-9a-f]{8}\/?$/.test(pathname) || pathname.startsWith('/go/')
     const color = black ? '#000000' : dark ? '#1E2421' : '#EBF1E7'
+    setTopTint(color)
     document.documentElement.style.setProperty('--top-tint', color)
     document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.remove())
     const meta = document.createElement('meta')
@@ -472,7 +476,7 @@ export default function App() {
           история, там обратная логика (виден по умолчанию, прячется на
           десктопе через CSS), и на мобильном его действительно не должно
           быть на этих трёх страницах — там условие оставляем как было. */}
-      <div className={`top-tint${tintHidden ? ' hidden' : ''}`} aria-hidden="true" />
+      <div key={`tint${pathname}`} className={`top-tint${tintHidden ? ' hidden' : ''}`} style={{ backgroundColor: topTint }} aria-hidden="true" />
       <TopNav />
       <main className={hideNav ? '' : 'has-bottomnav'}>
         {/* Пока подгружается страница по требованию — ничего не рисуем.
