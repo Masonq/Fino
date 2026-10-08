@@ -34,3 +34,10 @@ export const adminSetRole = (t: string, id: string, role: string) => authed<unkn
 export const adminVerify = (t: string, id: string, verified: boolean) => authed<{ document_verified: boolean }>(`/admin/users/${id}/verify`, t, 'POST', { verified })
 export const adminBlock = (t: string, id: string, reason: string) => authed<unknown>(`/admin/users/${id}/block`, t, 'POST', { reason })
 export const adminUnblock = (t: string, id: string) => authed<unknown>(`/admin/users/${id}/unblock`, t, 'POST')
+
+export type AdminStats = { days: number; listings: { total: number; active: number; pending: number; own: number; imported: number; fresh: number; fresh_own: number }; people: { total: number; fresh: number; sellers: number; blocked: number } }
+export type DayRow = { day: string; listings: number; own: number; visitors: number; signups: number; logins: number }
+export const adminStats = (t: string, days: number) => authed<AdminStats>(`/admin/stats?days=${days}`, t)
+export const adminDaily = (t: string, days: number) => authed<{ items: DayRow[] }>(`/admin/stats/daily?days=${days}`, t)
+export type AuditItem = { id: string; actor: string; action: string; target_type: string; target_id: string; reason?: string | null; details?: Record<string, unknown> | null; created_at: string }
+export const adminAudit = (t: string, kind: string) => authed<{ total: number; items: AuditItem[] }>(`/admin/audit?days=30&limit=100${kind ? `&action=${kind}` : ''}`, t)

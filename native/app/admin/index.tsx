@@ -42,9 +42,9 @@ export default function AdminHome() {
     ['shield', tr('Модерация'), TINTS['real-estate'], () => router.push('/admin/moderation' as never)],
     ['chat', tr('Обращения'), TINTS.auto, () => router.push('/admin/support' as never)],
     ['user', tr('Пользователи'), TINTS.fashion, () => router.push('/admin/users' as never)],
-    ['list', tr('Показатели'), TINTS.electronics, () => Linking.openURL(`${SITE}/ru/admin/stats`)],
+    ['list', tr('Показатели'), TINTS.electronics, () => router.push('/admin/stats' as never)],
     ['flag', tr('Подозрительные чаты'), TINTS.services, () => Linking.openURL(`${SITE}/ru/admin/flagged`)],
-    ['doc', tr('Журнал действий'), TINTS.business, () => Linking.openURL(`${SITE}/ru/admin/audit`)],
+    ['doc', tr('Журнал действий'), TINTS.business, () => router.push('/admin/audit' as never)],
   ]
   return (
     <View style={styles.page}>
