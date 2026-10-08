@@ -59,11 +59,15 @@ export default function Volunteer() {
       {app === undefined ? <ActivityIndicator style={{ marginTop: 30 }} color={colors.primary} /> : (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-            <Text style={styles.lead}>{tr(LEAD)}</Text>
-            {POINTS.map(([title, text]) => (
-              <View key={title} style={styles.point}>
-                <View style={styles.dot} />
-                <View style={{ flex: 1 }}><Text style={styles.pointTitle}>{tr(title)}</Text><Text style={styles.pointText}>{tr(text)}</Text></View>
+            {/* PLONK 2.0: вступление карточкой с меткой и три пункта цветными плитками со значками (как на сайте) */}
+            <View style={styles.hero}>
+              <View style={styles.heroTag}><Text style={styles.heroTagT}>{tr('Команда PLONK')}</Text></View>
+              <Text style={styles.heroText}>{tr(LEAD)}</Text>
+            </View>
+            {POINTS.map(([title, text], n) => (
+              <View key={title} style={[styles.tile, { backgroundColor: ['#E3ECFA', '#E2F1E6', '#FAE5EE'][n % 3] }]}>
+                <View style={styles.tileIcon}><Icon name={(['chat', 'shield', 'heart'] as const)[n % 3]} size={20} color="#0F1512" /></View>
+                <View style={{ flex: 1 }}><Text style={styles.tileT}>{tr(title)}</Text><Text style={styles.tileS}>{tr(text)}</Text></View>
               </View>
             ))}
             {app ? (
@@ -103,6 +107,14 @@ export default function Volunteer() {
 }
 
 const styles = StyleSheet.create({
+  hero: { padding: 16, borderRadius: 24, backgroundColor: colors.surface, marginBottom: 10, gap: 10 },
+  heroTag: { alignSelf: 'flex-start', height: 26, paddingHorizontal: 10, borderRadius: 13, backgroundColor: colors.inverse, justifyContent: 'center' },
+  heroTagT: { fontFamily: font[800], fontSize: 12, color: colors.onInverse },
+  heroText: { fontFamily: font[500], fontSize: 15.5, lineHeight: 22, color: colors.ink },
+  tile: { flexDirection: 'row', gap: 12, padding: 14, borderRadius: 22, marginBottom: 8, alignItems: 'flex-start' },
+  tileIcon: { width: 42, height: 42, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.75)', alignItems: 'center', justifyContent: 'center' },
+  tileT: { fontFamily: font[800], fontSize: 15.5, color: '#0F1512' },
+  tileS: { fontFamily: font[400], fontSize: 13.5, lineHeight: 19, color: '#434B46', marginTop: 2 },
   page: { flex: 1, backgroundColor: colors.bg },
   top: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 16, minHeight: 56 },
   back: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, shadowColor: '#0F1512', shadowOpacity: 0.07, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
