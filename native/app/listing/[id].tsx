@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { JobRespond, StorefrontLink } from '../../src/components/ListingExtras'
 import { attrRows, type AttrField, ru, categorySchema, type FeedItem, loadListing, type Listing, sellerListings, similarListings, startChat, textOf, sendMessage } from '../../src/api'
 import { useAuth } from '../../src/auth'
-import { deleteListingStaff } from '../../src/admin'
+import { deleteListingStaff, modApprove, modReject, modReturn, MOD_REASONS } from '../../src/admin'
 import MoveSheet from '../../src/components/MoveSheet'
 import { readCache } from '../../src/cache'
 import { rememberViewed } from '../../src/history'
@@ -142,6 +142,7 @@ export default function ListingScreen() {
   if (owner?.is_company) chips.push({ label: 'Компания', tone: 'primary' })
   if (data.delivery_available) chips.push({ label: 'Доставка', tone: 'plain' })
   if (data.price_negotiable) chips.push({ label: 'Торг уместен', tone: 'plain' })
+  if ((data as unknown as { safe_deal_available?: boolean }).safe_deal_available) chips.push({ label: 'Безопасная сделка', tone: 'primary' })
   const attrs = attrRows(data.attributes as Record<string, unknown> | undefined, schema)
   const keyFacts = factChips(rootSlug(data), data.attributes as Record<string, unknown> | undefined, schema)
   const verdict = VERDICTS[(data as unknown as { price_check?: { verdict?: string } }).price_check?.verdict ?? '']
@@ -224,6 +225,20 @@ export default function ListingScreen() {
           {!gone && !!data.is_reserved && (
             <View style={styles.reservedBanner}><Text style={styles.reservedText}>{tr(data.reserved_for_me ? 'Продавец забронировал это для вас' : 'Забронировано другим покупателем')}</Text></View>
           )}
+          {/* модератору — решение прямо на странице объявления, как на сайте */}
+          {staff && (data as unknown as { status?: string }).status === 'pending_moderation' && (
+            <View style={styles.modBar}>
+              <Text style={styles.modBarT}>{tr('Объявление ждёт проверки')}</Text>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <Pressable style={[styles.modBtn, { backgroundColor: colors.inverse }]} onPress={() => token && modApprove(token, data.id).then(() => { Alert.alert(tr('Одобрено')); router.back() }).catch(() => Alert.alert(tr('Не получилось')))}><Text style={[styles.modBtnT, { color: colors.onInverse }]}>{tr('Одобрить')}</Text></Pressable>
+                <Pressable style={[styles.modBtn, { backgroundColor: colors.dangerBg }]} onPress={() => Alert.alert(tr('Причина отказа'), undefined, [
+                  ...MOD_REASONS.map((r) => ({ text: tr(r), onPress: () => { if (token) modReject(token, data.id, tr(r)).then(() => router.back()).catch(() => Alert.alert(tr('Не получилось'))) } })),
+                  { text: tr('Отправить на доработку'), onPress: () => { if (token) modReturn(token, data.id).then(() => router.back()).catch(() => Alert.alert(tr('Не получилось'))) } },
+                  { text: tr('Отмена'), style: 'cancel' as const },
+                ])}><Text style={[styles.modBtnT, { color: colors.danger }]}>{tr('Отклонить')}</Text></Pressable>
+              </View>
+            </View>
+          )}
           {/* путь по разделам над ценой — как на сайте */}
           {!!catTitle && (
             <Pressable onPress={() => data.category_slug && router.push(`/c/${data.category_slug}` as never)}>
@@ -232,6 +247,7 @@ export default function ListingScreen() {
           )}
           <View style={styles.priceRow}>
             <Text style={styles.price}>{formatPrice(data.price, data.currency, data.is_free)}</Text>
+            {isResume && data.price != null && <Text style={styles.salaryNote}>{tr('Желаемая зарплата')}</Text>}
             {!!data.previous_price && !data.is_free && <Text style={styles.oldPrice}>{formatPrice(data.previous_price, data.currency)}</Text>}
           </View>
           <Text style={styles.title}>{title}</Text>
@@ -541,6 +557,11 @@ const toneStyle = StyleSheet.create({
 })
 
 const styles = StyleSheet.create({
+  salaryNote: { fontFamily: font[600], fontSize: 13, color: colors.muted, alignSelf: 'flex-end', marginBottom: 6 },
+  modBar: { gap: 10, padding: 14, marginBottom: 14, borderRadius: 18, backgroundColor: colors.warmBg },
+  modBarT: { fontFamily: font[800], fontSize: 14.5, color: colors.ink },
+  modBtn: { flex: 1, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  modBtnT: { fontFamily: font[800], fontSize: 14.5 },
   crumbs: { fontFamily: font[600], fontSize: 13.5, color: colors.muted, marginBottom: 4 },
   factChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 },
   factChip: { flexDirection: 'row', alignItems: 'center', gap: 5, height: 30, paddingHorizontal: 10, borderRadius: 15, backgroundColor: colors.surface, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },

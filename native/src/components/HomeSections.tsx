@@ -26,6 +26,8 @@ export default function HomeSections({ city }: { city?: string | null }) {
         <View style={s.section}>
           <View style={s.head}>
             <Text style={s.title}>{tr('Витрины продавцов')}</Text>
+            {/* «Все» — как на сайте: страница всех витрин с поиском */}
+            <Pressable hitSlop={8} onPress={() => router.push('/vitriny' as never)}><Text style={s.all}>{tr('Все')}</Text></Pressable>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.row}>
             {stores.map((st) => (
@@ -48,6 +50,7 @@ export default function HomeSections({ city }: { city?: string | null }) {
 }
 
 const s = StyleSheet.create({
+  all: { fontFamily: font[800], fontSize: 14.5, color: colors.primaryDeep },
   section: { marginTop: 16, marginBottom: 4 },
   head: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
   title: { fontFamily: font[800], fontSize: 21, letterSpacing: -0.5, color: colors.ink, paddingHorizontal: 12, marginBottom: 10 },

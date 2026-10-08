@@ -63,3 +63,7 @@ export const teamChat = (t: string, id: string) => authed<{ messages: { id?: str
 export const teamReply = (t: string, id: string, text: string) => authed<unknown>(`/team/chats/${id}/reply`, t, 'POST', { text })
 export const adminSettings = (t: string) => authed<{ card_payments_enabled: boolean; updated_at?: string | null }>('/admin/settings', t)
 export const setCardPayments = (t: string, enabled: boolean) => authed<{ card_payments_enabled: boolean }>('/admin/settings/card-payments', t, 'POST', { enabled })
+
+// причины отказа — общие для очереди модерации и экрана объявления
+export const MOD_REASONS = ['Непонятный заголовок', 'Плохие или чужие фото', 'Запрещённый товар', 'Дубль объявления', 'Не тот раздел']
+export const modReturn = (t: string, id: string) => authed<unknown>(`/moderation/${id}/return`, t, 'POST')
