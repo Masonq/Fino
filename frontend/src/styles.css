@@ -8812,3 +8812,19 @@ html[data-theme="dark"] .tg-page{ background:var(--bg) !important; }
 .tg-page .tg-my-link, .tg-page .tg-full-form, .tg-page .form-save, .tg-page .tg-publish{ margin-left:16px !important; margin-right:16px !important; width:auto !important; }
 .tg-page .form-save, .tg-page .tg-publish{ display:block !important; width:calc(100% - 32px) !important; }
 .tg-page .tg-my-entry{ margin-left:16px !important; margin-right:16px !important; }
+
+/* последние блоки старого вида (рамка вместо тени) → PLONK 2.0: белая карточка без рамки, мягкая тень, скругление 22 */
+.sf-card, .sf-build, .reviews-block, .shx-card, .setting-card{ border:0 !important; box-shadow:var(--shadow) !important; border-radius:22px !important; background:var(--surface) !important; }
+/* остатки «рамочного» вида: поиск витрин, плитка-пример в шопсах, кнопки и строки в «Моей витрине», капсулы-чипы
+   в поддержке и волонтёрстве — как остальной сайт: без рамки, белое с мягкой тенью или серая подложка */
+.sh-search{ border:0 !important; border-radius:18px !important; height:48px; box-shadow:var(--shadow) !important; background:var(--surface) !important; }
+.shx-art{ border:0 !important; box-shadow:var(--shadow) !important; background:var(--surface) !important; }
+.jr-btn.ghost{ border:0 !important; background:var(--surface-sunken) !important; color:var(--ink) !important; }
+.sf-slug, .sf-arrow{ border:0 !important; background:var(--surface-sunken) !important; }
+.sf-coll-row{ border:0 !important; box-shadow:var(--shadow) !important; background:var(--surface) !important; border-radius:18px !important; }
+.sf-state{ border:0 !important; }
+.chip{ border:0 !important; background:var(--surface) !important; box-shadow:0 1px 2px rgba(15,21,18,.06), 0 2px 8px rgba(15,21,18,.05) !important; }
+.chip.chip-active, .chip.active{ background:var(--inverse) !important; color:var(--on-inverse) !important; box-shadow:none !important; }
+.sf-slug input{ background:transparent !important; border:0 !important; box-shadow:none !important; }
+/* подводка над заголовком не обрезается многоточием, если рядом кнопка («Магазины и частные продавцы» у «Витрин») */
+.ph-kicker{ white-space:normal !important; overflow:visible !important; text-overflow:clip !important; }
