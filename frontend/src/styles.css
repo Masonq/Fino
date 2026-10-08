@@ -8688,3 +8688,13 @@ html[data-theme="dark"] .mod-reject{ background:#4A2A2A !important; color:#F7C1C
   .sh-side svg{ stroke:var(--ink) !important; }
   .sh-sound{ left:auto !important; right:calc(50% - (100dvh - 100px) * 9 / 32 + 14px) !important; top:96px !important; }
 }
+@media (min-width: 900px){
+  /* «Все категории» на компьютере — плитки на всю ширину страницы (стояли по 206 px с пустотой справа) */
+  .cats-grid{ grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)) !important; }
+}
+@media (min-width: 900px){
+  /* вкладки «Купить / Снять надолго / Посуточно» в боковой колонке — целиком, без «Куп…»: по ширине текста,
+     шрифт чуть меньше; если колонка всё же уже — переносятся на вторую строку, а не обрезаются */
+  .landing-sidebar .landing-deal{ flex-wrap:wrap; }
+  .landing-sidebar .landing-deal .cat-mode{ flex:1 1 auto !important; min-width:auto !important; font-size:12.5px !important; padding:9px 6px !important; overflow:visible !important; text-overflow:clip !important; white-space:nowrap !important; }
+}

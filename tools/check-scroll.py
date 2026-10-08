@@ -49,11 +49,13 @@ with sync_playwright() as p:
                 pg.goto(BASE + route, wait_until="domcontentloaded", timeout=60000)
                 pg.wait_for_timeout(3000)
                 pg.mouse.move(w // 2, h // 2)
-                heights, ys = set(), []
+                heights, ys, seq_h = set(), [], []
                 for _ in range(45):
                     pg.mouse.wheel(0, 350)
                     pg.wait_for_timeout(70)
-                    heights.add(pg.evaluate("document.documentElement.scrollHeight"))
+                    hh = pg.evaluate("document.documentElement.scrollHeight")
+                    heights.add(hh)
+                    seq_h.append(hh)
                     ys.append(pg.evaluate("Math.round(scrollY)"))
                 pg.wait_for_timeout(500)
                 still = []
@@ -71,8 +73,9 @@ with sync_playwright() as p:
             hs = sorted(heights)
             # «тряска»: высота меняется туда-обратно (не просто подгрузка, когда растёт и не уменьшается)
             seq = []
-            if len(hs) > 1:
-                problems.append(f"высота страницы менялась: {hs[:4]}")
+            # подгрузка ленты — высота только растёт; тряска — высота уменьшается после роста (что-то выпадает и возвращается)
+            if any(b < a - 4 for a, b in zip(seq_h, seq_h[1:])):
+                problems.append(f"высота страницы прыгает туда-обратно: {hs[:4]}")
             if not info["atBottom"]:
                 problems.append("не долистать до низа")
             if len(set(still)) > 1:

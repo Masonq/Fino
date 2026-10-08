@@ -59,6 +59,8 @@ PROBE = r"""() => {
     if (hides && (e.scrollWidth > e.clientWidth + 2 || e.scrollHeight > e.clientHeight + 3) && e.clientWidth > 0) {
       // заголовок карточки/строка с намеренным многоточием в ленте — допустимо; остальное — в отчёт
       if (e.matches('.s-title,.chat-last,.hs-store-name,.ph-kicker') ) continue
+      // плитка раздела: картинка нарочно выходит за край (обрезается скруглением) — это не обрезанный текст
+      if (e.matches('.jl-tile,.cats-tile,.cat-tile-2row,.post-cat-item,.hs-tile')) continue
       out.push(['обрезан текст', txt(e)])
     }
     const r = e.getBoundingClientRect()
