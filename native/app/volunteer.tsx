@@ -67,6 +67,7 @@ export default function Volunteer() {
               </View>
             ))}
             {app ? (
+              <>
               <View style={styles.status}><Text style={styles.statusTitle}>{tr(status)}</Text>{!!app.note && <Text style={styles.statusNote}>{app.note}</Text>}</View>
             {/* заявка подана до появления галочки — без подтверждения её не принять (как на сайте) */}
             {app.status === 'new' && app.confidentiality_accepted === false && (
@@ -75,6 +76,7 @@ export default function Volunteer() {
                 <Pressable style={styles.cta} onPress={() => { if (token) authed<{ application: VolunteerApp }>('/volunteer/consent', token, 'POST').then((r) => setApp(r.application)).catch(() => {}) }}><Text style={styles.ctaText}>{tr('Подтвердить')}</Text></Pressable>
               </View>
             )}
+            </>
             ) : (
               <>
                 <Text style={styles.label}>{tr('Чем хотите помогать')}</Text>
