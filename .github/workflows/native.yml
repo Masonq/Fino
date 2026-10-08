@@ -108,6 +108,11 @@ jobs:
         run: node -e "const f='app.json',a=require('./'+f),n=process.env.GITHUB_RUN_NUMBER;a.expo.version='1.0.'+n;a.expo.ios=Object.assign({},a.expo.ios,{buildNumber:n});a.expo.android=Object.assign({},a.expo.android,{versionCode:Number(n)});require('fs').writeFileSync(f,JSON.stringify(a,null,2))"
       - name: Нативный проект iOS
         run: set -o pipefail; npx expo prebuild --platform ios 2>&1 | tee ../build-ios-prebuild.log
+      # Сборка для SideStore: убираем «Войти с Apple» и покупки из прав приложения — бесплатный аккаунт разработчика,
+      # которым SideStore переподписывает приложение, их не даёт, и установка бы не прошла (в App Store — со всем)
+      - name: Права приложения для SideStore
+        working-directory: native
+        run: for f in ios/*/*.entitlements; do /usr/libexec/PlistBuddy -c 'Delete :com.apple.developer.applesignin' "$f" 2>/dev/null || true; /usr/libexec/PlistBuddy -c 'Delete :com.apple.developer.in-app-payments' "$f" 2>/dev/null || true; done
       - name: Сборка без подписи (подписывает SideStore твоим Apple ID)
         timeout-minutes: 25
         run: >

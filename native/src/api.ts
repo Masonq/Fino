@@ -476,8 +476,13 @@ export const forYouList = (token: string) => authed<{ items: FeedItem[] }>(`/lis
 // ---------- продвижение объявления (как PromoteButton сайта) ----------
 export type PromoInfo = { prices: Record<'bump' | 'highlight' | 'xl_card', number>; balance: number; money: number; bonus: number; payments_enabled: boolean; items: { type: string; active?: boolean; until?: string | null }[] }
 export const promotions = (token: string, id: string) => authed<PromoInfo>(`/listings/${id}/promotions`, token)
-export const startPromotion = (token: string, id: string, type: string, consent: boolean) =>
-  authed<{ status?: string; confirmation_url?: string }>(`/listings/${id}/promotions`, token, 'POST', { type, pay_method: 'balance', consent_immediate: consent })
+// в приложении — только бонусами (деньги с сайта тратить в приложении правила App Store / Google Play не разрешают)
+export const startPromotion = (token: string, id: string, type: string) =>
+  authed<{ status?: string }>(`/listings/${id}/promotions`, token, 'POST', { type, pay_method: 'bonus' })
+// покупка в магазине: сервер сам проверяет её у Apple / Google и включает продвижение
+export const iapVerify = (token: string, body: { platform: 'ios' | 'android'; listing_id: string; type: string; transaction_id?: string; purchase_token?: string }) =>
+  authed<{ ok: boolean }>('/iap/verify', token, 'POST', body)
+export const IAP_SKU: Record<'bump' | 'highlight' | 'xl_card', string> = { bump: 'rs.plonk.promo.bump', highlight: 'rs.plonk.promo.highlight', xl_card: 'rs.plonk.promo.xl' }
 
 // сигналы интереса к объявлению (листал фото, раскрыл описание) — по ним строится лента «Для вас», как на сайте
 export const listingSignal = (token: string | null, id: string, type: 'gallery_view' | 'desc_expand') =>

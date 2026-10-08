@@ -10,6 +10,8 @@ import { ApiError, requestCode, verifyCode } from '../src/api'
 import { useAuth } from '../src/auth'
 import Icon from '../src/components/Icon'
 import { API, SITE } from '../src/config'
+import Constants from 'expo-constants'
+import * as AppleAuthentication from 'expo-apple-authentication'
 import * as WebBrowser from 'expo-web-browser'
 import Svg, { Path } from 'react-native-svg'
 import * as Crypto from 'expo-crypto'
@@ -62,6 +64,25 @@ export default function Login() {
   // Вход через Google — через сайт: ключи Google у нас только для сайта, поэтому приложение открывает страницу входа
   // plonk.rs в защищённом окне браузера (ASWebAuthenticationSession / Custom Tabs); там — настоящая кнопка Google,
   // а готовый вход сайт возвращает по ссылке plonk://auth?token=…
+  // «Войти с Apple» — правило App Store 4.8 (есть вход через Google — нужен и через Apple); только на iPhone
+  const [appleOk, setAppleOk] = useState(false)
+  useEffect(() => { if (Platform.OS === 'ios' && Constants.expoConfig?.extra?.storeBuild) AppleAuthentication.isAvailableAsync().then(setAppleOk).catch(() => {}) }, [])
+  const startApple = async () => {
+    setError('')
+    try {
+      const c = await AppleAuthentication.signInAsync({ requestedScopes: [AppleAuthentication.AppleAuthenticationScope.FULL_NAME, AppleAuthentication.AppleAuthenticationScope.EMAIL] })
+      if (!c.identityToken) throw new Error('no_token')
+      const name = [c.fullName?.givenName, c.fullName?.familyName].filter(Boolean).join(' ')
+      const r = await fetch(`${API}/auth/apple`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ identity_token: c.identityToken, name: name || null }) })
+      if (!r.ok) throw new Error('auth')
+      const j = await r.json()
+      await signIn(j.token, j.user)
+      router.back()
+    } catch (e) {
+      if ((e as { code?: string })?.code === 'ERR_REQUEST_CANCELED') return
+      setError(tr('Не удалось войти через Apple. Попробуйте ещё раз.'))
+    }
+  }
   const [googleBusy, setGoogleBusy] = useState(false)
   const startGoogle = async () => {
     setGoogleBusy(true); setError('')
@@ -178,6 +199,12 @@ export default function Login() {
               <GoogleG />
               <Text style={styles.methodTgText}>{tr('Войти через Google')}</Text>
             </Pressable>
+            {appleOk && (
+              <AppleAuthentication.AppleAuthenticationButton
+                buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+                buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+                cornerRadius={16} style={{ height: 52, alignSelf: 'stretch' }} onPress={startApple} />
+            )}
             {!!error && <Text style={styles.error}>{error}</Text>}
             <Text style={styles.consent}>
               {tr('Продолжая, вы принимаете')} <Text style={styles.consentLink} onPress={() => router.push('/legal/terms')}>{tr('условия')}</Text> {tr('и')} <Text style={styles.consentLink} onPress={() => router.push('/legal/privacy')}>{tr('политику конфиденциальности')}</Text>.

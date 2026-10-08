@@ -1,0 +1,25 @@
+# Сборка для App Store и Google Play (через EAS) — запускается вручную, когда готовы аккаунты Apple / Google.
+# Нужен секрет EXPO_TOKEN (expo.dev → Access tokens); ключи Apple и Google — в проекте на expo.dev (eas credentials).
+name: store
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: ios / android / all
+        default: ios
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      STORE_BUILD: '1'
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Зависимости
+        working-directory: native
+        run: npm ci --legacy-peer-deps
+      - name: Сборка и отправка в App Store Connect / Google Play (внутреннее тестирование)
+        working-directory: native
+        run: npx eas-cli@latest build --platform ${{ github.event.inputs.platform }} --profile production --non-interactive --auto-submit

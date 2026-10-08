@@ -1,0 +1,17 @@
+{
+  "cli": { "version": ">= 16.0.0", "appVersionSource": "remote" },
+  "build": {
+    "production": {
+      "autoIncrement": true,
+      "ios": { "resourceClass": "m-medium" },
+      "android": { "buildType": "app-bundle" }
+    },
+    "preview": { "distribution": "internal" }
+  },
+  "submit": {
+    "production": {
+      "ios": { "ascAppId": "ВПИСАТЬ_ПОСЛЕ_СОЗДАНИЯ_В_APP_STORE_CONNECT" },
+      "android": { "track": "internal" }
+    }
+  }
+}

@@ -195,6 +195,22 @@ def start_promotion(
 
     price = PROMOTION_PRICES[payload.type]
 
+    if payload.pay_method == "bonus":
+        # приложение в App Store: только бесплатные бонусы (деньги, внесённые на сайте, в приложении тратить нельзя —
+        # правило Apple 3.1.1); не хватает бонусов — покупка через магазин (/api/iap/verify)
+        fresh = db.query(User).filter(User.id == user.id).with_for_update().first()
+        from app.core import wallet
+
+        if wallet._d(fresh.bonus_balance) < wallet._d(price):
+            raise HTTPException(400, "insufficient_bonus")
+        fresh.bonus_balance = wallet._d(fresh.bonus_balance) - wallet._d(price)
+        promo = Promotion(listing_id=listing_id, user_id=user.id, type=payload.type,
+                          status=PromotionStatus.pending, price_paid=price, currency="RSD")
+        db.add(promo)
+        db.flush()
+        _activate_promotion(db, promo)
+        return {"paid_from_bonus": True, **wallet.view(fresh)}
+
     if payload.pay_method == "balance":
         # Свежее значение баланса, не то, что могло прийти закэшированным
         # в объекте user из предыдущего запроса. FOR UPDATE — держит

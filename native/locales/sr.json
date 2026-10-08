@@ -1,0 +1,6 @@
+{
+  "NSPhotoLibraryUsageDescription": "PLONK koristi fotografije iz galerije samo za oglas koji pravite.",
+  "NSCameraUsageDescription": "PLONK otvara kameru da biste fotografisali stvar za oglas.",
+  "NSLocationWhenInUseUsageDescription": "PLONK određuje vaš grad da bi prikazao oglase u blizini. Koordinate se nigde ne šalju.",
+  "NSMicrophoneUsageDescription": "PLONK koristi mikrofon za snimanje glasovnih poruka u razgovorima."
+}

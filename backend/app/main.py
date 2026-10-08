@@ -53,6 +53,8 @@ app.include_router(moderation.router)
 app.include_router(notifications.router)
 app.include_router(verification.router)
 app.include_router(promotions.router)
+from app.routers import iap as _iap   # встроенные покупки App Store / Google Play
+app.include_router(_iap.router)
 app.include_router(reviews.router)
 app.include_router(reports.router)
 app.include_router(saved_searches.router)

@@ -1,0 +1,6 @@
+{
+  "NSPhotoLibraryUsageDescription": "PLONK берёт фото из галереи только для вашего объявления.",
+  "NSCameraUsageDescription": "PLONK открывает камеру, чтобы вы сфотографировали вещь для объявления.",
+  "NSLocationWhenInUseUsageDescription": "PLONK определяет ваш город, чтобы показать объявления рядом. Координаты никуда не отправляются.",
+  "NSMicrophoneUsageDescription": "PLONK использует микрофон, чтобы записывать голосовые сообщения в переписке."
+}

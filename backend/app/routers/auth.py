@@ -315,6 +315,26 @@ class GoogleIn(BaseModel):
     credential: str
 
 
+class AppleIn(BaseModel):
+    identity_token: str
+    name: str | None = None      # Apple присылает имя только при первом входе — приложение передаёт его сюда
+
+
+@router.post("/apple")
+def apple_login(payload: AppleIn, db: Session = Depends(get_db)):
+    """«Войти с Apple» из приложения: токен проверяется ключами Apple, дальше — как вход через Google."""
+    from app.core.apple_auth import verify_apple_token
+
+    try:
+        claims = verify_apple_token(payload.identity_token)
+    except ValueError:
+        raise HTTPException(401, "bad_token")
+    email = claims.get("email") if str(claims.get("email_verified")).lower() == "true" else None
+    user = _link_oauth(db, "apple", external_id=claims["sub"], email=email,
+                       display_name=(payload.name or "").strip() or None, avatar_url=None)
+    return {"token": create_access_token(user.id, user.token_version), "user": _user_payload(user)}
+
+
 @router.post("/google")
 def google_login(payload: GoogleIn, db: Session = Depends(get_db)):
     """
