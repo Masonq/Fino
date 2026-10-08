@@ -2,7 +2,7 @@ import { useLocalSearchParams } from 'expo-router'
 import * as Linking from 'expo-linking'
 import { useEffect, useState } from 'react'
 import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native'
-import { adminBlock, adminSetRole, adminUnblock, type AdminUser, adminUser, adminVerify } from '../../../src/admin'
+import { adminBlock, adminResetName, adminSetRole, adminUnblock, type AdminUser, adminUser, adminUserLogins, adminUserSummary, adminVerify, type Login, type UserSummary } from '../../../src/admin'
 import { useAuth } from '../../../src/auth'
 import { timeAgo } from '../../../src/format'
 import { tr } from '../../../src/i18n'
@@ -21,7 +21,14 @@ export default function UserScreen() {
   const { token, user: me } = useAuth()
   const [u, setU] = useState<AdminUser | null>(null)
   const [busy, setBusy] = useState(false)
-  const load = () => { if (token) adminUser(token, id).then(setU).catch(() => {}) }
+  const [sum, setSum] = useState<UserSummary | null>(null)
+  const [logins, setLogins] = useState<Login[] | null>(null)
+  const load = () => {
+    if (!token) return
+    adminUser(token, id).then(setU).catch(() => {})
+    adminUserSummary(token, id).then(setSum).catch(() => {})
+    adminUserLogins(token, id).then((r) => setLogins(r.items)).catch(() => setLogins([]))
+  }
   useEffect(load, [token, id]) // eslint-disable-line react-hooks/exhaustive-deps
   const canEdit = me?.role === 'admin'
   const act = async (fn: () => Promise<unknown>) => { setBusy(true); try { await fn(); load() } catch { Alert.alert(tr('Не получилось')) } finally { setBusy(false) } }
@@ -54,6 +61,25 @@ export default function UserScreen() {
         </View>
 
         {!!u.block_reason && <Text style={st.alert}>{tr('Причина блокировки')}: {u.block_reason}</Text>}
+        {/* подозрительное — как на сайте */}
+        {!!sum?.listings_suspicious && <Text style={st.warn}>{tr('За сутки объявлений: {n}, учётной записи {d} дн. — стоит посмотреть внимательнее.', { n: sum.listings_last_day, d: sum.account_age_days })}</Text>}
+        {!!sum?.device_changed && (sum.country_changed || sum.isp_changed) && <Text style={st.warn}>{tr('Резко сменились и устройство, и страна разом (последний вход — {where}) — похоже, аккаунтом пользуется кто-то другой.', { where: sum.last_city ? `${sum.last_city}, ${sum.last_country}` : (sum.last_country || '—') })}</Text>}
+        {/* последние входы: когда, откуда, адрес, устройство */}
+        {!!logins && logins.length > 0 && (
+          <>
+            <Text style={st.sec}>{tr('Входы')}</Text>
+            <View style={st.group}>
+              {logins.slice(0, 10).map((l, i) => (
+                <View key={l.id} style={[st.row, i === Math.min(logins.length, 10) - 1 && { borderBottomWidth: 0 }]}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={st.rowT}>{l.city ? `${l.city}, ${l.country}` : (l.country || '—')}</Text>
+                    <Text style={st.rowS}>{l.created_at ? timeAgo(l.created_at) : '—'} · {l.ip_address || '—'} · {l.device_guid ? l.device_guid.slice(0, 8) : '—'}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </>
+        )}
 
         {canEdit && (
           <>
@@ -70,6 +96,13 @@ export default function UserScreen() {
                 <Switch value={!!u.document_verified} disabled={busy} onValueChange={(v) => act(() => adminVerify(token!, u.id, v))} trackColor={{ true: colors.primary, false: colors.sunken }} />
               </View>
             </View>
+            <Pressable style={[st.group, st.row, { borderBottomWidth: 0, marginTop: 8 }]} disabled={busy} onPress={() => Alert.alert(tr('Сбросить имя?'), tr('Имя заменится нейтральным, человек должен будет придумать новое.'), [
+              { text: tr('Отмена'), style: 'cancel' },
+              { text: tr('Сбросить'), style: 'destructive', onPress: () => act(() => adminResetName(token!, u.id)) },
+            ])}>
+              <View style={st.ico}><Icon name="edit" size={18} color={colors.ink} /></View>
+              <View style={{ flex: 1 }}><Text style={st.rowT}>{tr('Сбросить имя')}</Text><Text style={st.rowS}>{tr('Если имя оскорбительное или чужое')}</Text></View>
+            </Pressable>
             <Text style={[st.sec, { color: colors.danger }]}>{tr('Опасная зона')}</Text>
             <View style={st.group}>
               {u.is_blocked ? (
@@ -123,6 +156,7 @@ const st = StyleSheet.create({
   stat: { flex: 1, minHeight: 80, padding: 12, borderRadius: 20, justifyContent: 'flex-end' },
   statN: { fontFamily: font[800], fontSize: 24, color: colors.ink },
   statL: { fontFamily: font[700], fontSize: 12, color: colors.inkSoft },
+  warn: { padding: 12, borderRadius: 16, backgroundColor: colors.warmBg, color: colors.ink, fontFamily: font[600], fontSize: 13.5, lineHeight: 19 },
   alert: { padding: 12, borderRadius: 16, backgroundColor: colors.dangerBg, color: colors.danger, fontFamily: font[600], fontSize: 14 },
   sec: { fontFamily: font[800], fontSize: 13, letterSpacing: 0.6, textTransform: 'uppercase', color: colors.muted, marginTop: 8, marginLeft: 4 },
 })

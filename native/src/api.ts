@@ -478,3 +478,7 @@ export type PromoInfo = { prices: Record<'bump' | 'highlight' | 'xl_card', numbe
 export const promotions = (token: string, id: string) => authed<PromoInfo>(`/listings/${id}/promotions`, token)
 export const startPromotion = (token: string, id: string, type: string, consent: boolean) =>
   authed<{ status?: string; confirmation_url?: string }>(`/listings/${id}/promotions`, token, 'POST', { type, pay_method: 'balance', consent_immediate: consent })
+
+// сигналы интереса к объявлению (листал фото, раскрыл описание) — по ним строится лента «Для вас», как на сайте
+export const listingSignal = (token: string | null, id: string, type: 'gallery_view' | 'desc_expand') =>
+  fetch(`${API}/listings/${encodeURIComponent(id)}/signal`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: JSON.stringify({ type }) }).catch(() => {})

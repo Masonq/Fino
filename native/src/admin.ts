@@ -67,3 +67,16 @@ export const setCardPayments = (t: string, enabled: boolean) => authed<{ card_pa
 // причины отказа — общие для очереди модерации и экрана объявления
 export const MOD_REASONS = ['Непонятный заголовок', 'Плохие или чужие фото', 'Запрещённый товар', 'Дубль объявления', 'Не тот раздел']
 export const modReturn = (t: string, id: string) => authed<unknown>(`/moderation/${id}/return`, t, 'POST')
+
+// ---------- жалобы и день модератора (как на сайте) ----------
+export type Report = { id: string; reason: string; comment?: string | null; listing_id?: string | null; listing_title?: string | null; target_user_id?: string | null; target_user_name?: string | null; same_target_count?: number; created_at: string }
+export const reportsQueue = (t: string) => authed<{ total: number; items: Report[] }>('/reports/queue', t)
+export const resolveReport = (t: string, id: string, action: 'dismiss' | 'block_listing' | 'block_user') => authed<unknown>(`/reports/${id}/resolve`, t, 'POST', { action })
+export type ModDay = { mine: { approved: number; rejected: number }; team: { approved: number; rejected: number }; oldest_waiting_hours: number | null }
+export const modMyDay = (t: string) => authed<ModDay>('/moderation/my-day', t)
+
+export type UserSummary = { listings_last_day: number; account_age_days: number; listings_suspicious: boolean; device_changed: boolean; country_changed: boolean; isp_changed: boolean; last_country?: string | null; last_city?: string | null }
+export const adminUserSummary = (t: string, id: string) => authed<UserSummary>(`/admin/users/${id}/summary`, t)
+export type Login = { id: string; created_at?: string | null; city?: string | null; country?: string | null; ip_address?: string | null; device_guid?: string | null }
+export const adminUserLogins = (t: string, id: string) => authed<{ items: Login[] }>(`/admin/users/${id}/logins`, t)
+export const adminResetName = (t: string, id: string) => authed<{ display_name?: string }>(`/admin/users/${id}/reset-name`, t, 'POST')

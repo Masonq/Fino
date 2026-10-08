@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, FlatList, ImageBackground, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { type Category, fetchCategories, fetchFeed, type FeedItem, type Filters } from '../../src/api'
+import { type Category, fetchCategories, fetchFeed, type FeedItem, type Filters, get } from '../../src/api'
 import Icon from '../../src/components/Icon'
 import SheetFrame from '../../src/components/SheetFrame'
 import { CAR_BRANDS, CAR_MODELS, CAR_OTHER, LANDINGS, type LandingField, landingParams, LUI, t3 } from '../../src/landings'
@@ -129,6 +129,11 @@ function CategoryScreen() {
   const cardW = Math.floor((width - space.page * 2 - space.gap) / 2)
   const [node, setNode] = useState<Category | null>(null)
   const [root, setRoot] = useState<Category | null>(null)
+  const [intro, setIntro] = useState<string | null>(null)
+  useEffect(() => {
+    if (!slug) return
+    get<Record<string, string>>(`/categories/${encodeURIComponent(String(slug))}/intro`).then((r) => setIntro(r?.[getLang()] || r?.sr || null)).catch(() => {})
+  }, [slug])
   const [deal, setDeal] = useState('')
   const [values, setValues] = useState<Record<string, string>>({})
   const [picker, setPicker] = useState<'brand' | 'model' | null>(null)
@@ -476,13 +481,16 @@ function CategoryScreen() {
         onEndReachedThreshold={0.6}
         onEndReached={loadMore}
         ListEmptyComponent={items ? <Text style={styles.empty}>{tr('В этом разделе пока ничего нет. Попробуйте изменить условия.')}</Text> : null}
-        ListFooterComponent={more ? <ActivityIndicator style={{ marginVertical: 16 }} color={colors.primary} /> : null}
+        ListFooterComponent={more ? <ActivityIndicator style={{ marginVertical: 16 }} color={colors.primary} />
+          /* вступление о разделе внизу — как на сайте */
+          : intro ? <Text style={styles.intro}>{intro}</Text> : null}
       />
     </View>
   )
 }
 
 const styles = StyleSheet.create({
+  intro: { fontFamily: font[400], fontSize: 13.5, lineHeight: 20, color: colors.muted, marginHorizontal: space.page, marginTop: 18, marginBottom: 30 },
   page: { flex: 1, backgroundColor: colors.bg },
   top: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingBottom: 10 },
   back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },

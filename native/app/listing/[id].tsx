@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { JobRespond, StorefrontLink } from '../../src/components/ListingExtras'
 import { attrRows, type AttrField, ru, categorySchema, type FeedItem, loadListing, type Listing, sellerListings, similarListings, startChat, textOf, sendMessage } from '../../src/api'
 import { useAuth } from '../../src/auth'
+import { listingSignal } from '../../src/api'
 import { deleteListingStaff, modApprove, modReject, modReturn, MOD_REASONS } from '../../src/admin'
 import MoveSheet from '../../src/components/MoveSheet'
 import { readCache } from '../../src/cache'
@@ -100,7 +101,13 @@ export default function ListingScreen() {
   // лента — фото и видео, как на сайте; на весь экран открываются только фото
   const media = (data?.photos ?? []).map((p) => ({ uri: mediaUrl(p.url) as string, poster: mediaUrl(p.thumbnail_url || p.url) as string, video: !!p.is_video })).filter((m) => !!m.uri)
   const photos = media.filter((m) => !m.video).map((m) => m.uri)
-  const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => setPhoto(Math.round(e.nativeEvent.contentOffset.x / width))
+  const galleryTold = useRef(false)
+  const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const idx = Math.round(e.nativeEvent.contentOffset.x / width)
+    setPhoto(idx)
+    // листает фото дальше первого — интерес к объявлению (один раз), как на сайте
+    if (idx > 0 && !galleryTold.current && data) { galleryTold.current = true; listingSignal(token, data.id, 'gallery_view') }
+  }
   const back = (
     <Pressable style={[styles.back, { top: insets.top + 8 }]} onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
       accessibilityLabel={tr('Назад')} hitSlop={8}>
@@ -350,7 +357,7 @@ export default function ListingScreen() {
             <View style={styles.section}>
               <Text style={styles.h3}>{tr('Описание')}</Text>
               <Text style={styles.text} numberOfLines={descOpen || description.length <= 320 ? undefined : 7}>{description}</Text>
-              {description.length > 320 && !descOpen && <Pressable onPress={() => setDescOpen(true)} hitSlop={6}><Text style={styles.readMore}>{tr('Читать полностью')}</Text></Pressable>}
+              {description.length > 320 && !descOpen && <Pressable onPress={() => { setDescOpen(true); listingSignal(token, data.id, 'desc_expand') }} hitSlop={6}><Text style={styles.readMore}>{tr('Читать полностью')}</Text></Pressable>}
             </View>
           )}
 
