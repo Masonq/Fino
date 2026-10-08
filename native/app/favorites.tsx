@@ -93,7 +93,7 @@ export default function Favorites() {
         </Pressable>
         {/* как на сайте: число вещей — подводкой над заголовком */}
         <View style={{ flex: 1 }}>
-          <Text style={styles.kicker}>{visible && visible.length > 0 ? plural(visible.length, { ru: ['{n} вещь', '{n} вещи', '{n} вещей'], en: ['{n} item', '{n} items', '{n} items'], sr: ['{n} stvar', '{n} stvari', '{n} stvari'] }) : ' '}</Text>
+          <Text style={styles.kicker}>{visible && visible.length > 0 ? plural(visible.length, { ru: ['{n} вещь', '{n} вещи', '{n} вещей'], en: ['{n} item', '{n} items', '{n} items'], sr: ['{n} stvar', '{n} stvari', '{n} stvari'] }).replace('{n}', String(visible.length)) : ' '}</Text>
           <Text style={styles.h1}>{tr('Избранное')}</Text>
         </View>
       </View>
