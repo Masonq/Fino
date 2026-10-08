@@ -389,14 +389,18 @@ export default function App() {
      
   }, [pathname])
 
-  // на не-главных экранах статус-бар под цвет фона страницы;
-  // на главной им управляет баннер
+  // «Шторка» сверху (статус-бар) — в цвет шапки на всех страницах: мятно-лаймовое свечение шапки, на тёмной теме —
+  // тёмный фон, на шопсах и объявлении (видео / фото у верхнего края) — чёрный. iOS 26 Safari берёт цвет из
+  // фона элемента у верхнего края (.top-tint), остальные браузеры — из meta theme-color.
   useEffect(() => {
-    if (pathname === '/') return
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const black = pathname.startsWith('/shops') && !pathname.startsWith('/shops/') || /\/[a-z0-9-]+-[0-9a-f]{8}\/?$/.test(pathname) || pathname.startsWith('/go/')
+    const color = black ? '#000000' : dark ? '#1E2421' : '#EAF2E6'
+    document.documentElement.style.setProperty('--top-tint', color)
     document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.remove())
     const meta = document.createElement('meta')
     meta.setAttribute('name', 'theme-color')
-    meta.setAttribute('content', '#FAFAF9')
+    meta.setAttribute('content', color)
     document.head.appendChild(meta)
   }, [pathname])
 
@@ -441,6 +445,7 @@ export default function App() {
           история, там обратная логика (виден по умолчанию, прячется на
           десктопе через CSS), и на мобильном его действительно не должно
           быть на этих трёх страницах — там условие оставляем как было. */}
+      <div className="top-tint" aria-hidden="true" />
       <TopNav />
       <main className={hideNav ? '' : 'has-bottomnav'}>
         {/* Пока подгружается страница по требованию — ничего не рисуем.

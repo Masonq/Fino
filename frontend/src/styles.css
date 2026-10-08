@@ -8897,3 +8897,6 @@ html[data-theme="dark"] .vol-tile *{ filter:none; }
 .lang-drum-reel > span{ height:46px; line-height:46px; font-size:14px; font-weight:900; letter-spacing:.03em; color:var(--ink); }
 .lang-drum-reel.roll{ transform:translateY(-46px); transition:transform .38s cubic-bezier(.3,1.45,.5,1); }
 @media (prefers-reduced-motion: reduce){ .lang-drum-reel.roll{ transition:none; } }
+/* «шторка» у верхнего края — в цвет шапки (цвет ставит App.jsx в --top-tint) */
+.top-tint{ position:fixed; z-index:200; top:0; left:0; right:0; height:var(--sat, 0px); background-color:var(--top-tint, #EAF2E6); pointer-events:none; }
+html{ background-color:var(--bg) !important; }
