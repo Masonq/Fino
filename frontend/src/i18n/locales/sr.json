@@ -11,7 +11,8 @@
     "safe_deal": "Sigurna kupovina",
     "yes": "Da",
     "no": "Ne",
-    "error": "Nije uspelo, pokušajte ponovo"
+    "error": "Nije uspelo, pokušajte ponovo",
+    "back": "Nazad"
   },
   "nav": {
     "home": "Početna",
@@ -1061,7 +1062,8 @@
     "year_short": "g.",
     "km": "km",
     "gb": "GB",
-    "studio": "Garsonjera"
+    "studio": "Garsonjera",
+    "free": "Besplatno"
   },
   "notif": {
     "title": "Obaveštenja",
@@ -1546,7 +1548,11 @@
   },
   "map": {
     "open_external": "Otvori na mapi",
-    "no_webgl": "Mapa se nije otvorila na ovom uređaju — unesite adresu u pretragu iznad"
+    "no_webgl": "Ovaj pregledač ne prikazuje mapu",
+    "title": "Oglasi na mapi",
+    "count": "{{count}} oglasa",
+    "list": "Lista",
+    "on_map": "Na mapi"
   },
   "landing_q": {
     "real-estate": "Kakvu nekretninu tražite?",

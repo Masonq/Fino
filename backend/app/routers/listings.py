@@ -312,6 +312,34 @@ from app.core.category_tree import branch_ids as _branch_ids  # noqa: E402
 CARD_PHOTOS = 5
 
 
+def _map_point(listing) -> tuple[float | None, float | None]:
+    """
+    Точка для поиска на карте. Точный адрес — только если продавец его не скрыл; скрыт — округляем до ~1 км
+    (видно район, но не дом). Координат нет вовсе — None: карта поставит объявление в центр его города.
+    """
+    lat, lng = getattr(listing, "location_lat", None), getattr(listing, "location_lng", None)
+    if lat is None or lng is None:
+        # адреса нет — центр города объявления, устойчиво разнесённый (~до 1,5 км) по номеру объявления, чтобы
+        # объявления одного города не ложились в одну точку
+        from app.data.city_coords import CITY_COORDS
+        raw = (getattr(listing, "city", None) or "").strip()
+        c = CITY_COORDS.get(raw)
+        if not c:   # город записан названием («Белград», «Novi Sad») — ищем по подписям городов
+            from app.data.cities_data import CITY_LABELS
+            low = raw.lower()
+            slug = next((s for s, names in CITY_LABELS.items() if low in {n.lower() for n in names.values()}), None)
+            c = CITY_COORDS.get(slug or "")
+        if not c:
+            return None, None
+        import hashlib, math
+        h = int(hashlib.md5(str(listing.id).encode()).hexdigest()[:8], 16)
+        a, r = (h % 360) * math.pi / 180, ((h >> 9) % 1000) / 1000 * 0.012
+        return round(c[0] + math.cos(a) * r, 5), round(c[1] + math.sin(a) * r, 5)
+    if getattr(listing, "hide_exact_address", False):
+        return round(float(lat), 2), round(float(lng), 2)
+    return float(lat), float(lng)
+
+
 def card_photos(photos, cover) -> list[str]:
     """
     Превью для листания фото прямо в карточке ленты: обложка первой, дальше по порядку, видео не берём.
@@ -1140,6 +1168,7 @@ def search_listings(
             "currency": listing.currency,
             "city": listing.city,
             "cover_photo": cover.thumbnail_url if cover else None,
+            "map_point": _map_point(listing),
             "photos": card_photos(listing.photos, cover),
             "cover_is_video": bool(cover.is_video) if cover else False,
             "is_reserved": bool(listing.reserved_until and listing.reserved_until > utcnow()),
@@ -1290,6 +1319,7 @@ def listings_by_ids(
             "path": listing_path(l.id, tr.title if tr else "", l.city,
                                  l.category.slug if l.category else None),
             "cover_photo": cover.thumbnail_url if cover else None,
+            "map_point": _map_point(l),
             "photos": card_photos(l.photos, cover),
             "cover_is_video": bool(cover.is_video) if cover else False,
             "is_reserved": bool(l.reserved_until and l.reserved_until > utcnow()),
@@ -1362,6 +1392,7 @@ def my_listings(
             "path": listing_path(l.id, tr.title if tr else "", l.city,
                                  l.category.slug if l.category else None),
             "cover_photo": cover.thumbnail_url if cover else None,
+            "map_point": _map_point(l),
             "cover_is_video": bool(cover.is_video) if cover else False,
             "is_reserved": bool(l.reserved_until and l.reserved_until > utcnow()),
             "cover_video_url": cover.url if (cover and cover.is_video) else None,
@@ -1707,6 +1738,7 @@ def for_you(
             "path": listing_path(l.id, tr.title if tr else "", l.city,
                                  l.category.slug if l.category else None),
             "cover_photo": cover.thumbnail_url if cover else None,
+            "map_point": _map_point(l),
         }
 
     return {"items": [card(l) for l in rows[:limit]]}
@@ -1842,6 +1874,7 @@ def similar_listings(
             "is_xl": l.id in promo[PromotionType.xl_card],
             "is_highlighted": l.id in promo[PromotionType.highlight],
             "cover_photo": cover.thumbnail_url if cover else None,
+            "map_point": _map_point(l),
             "photos": card_photos(l.photos, cover),
             "cover_is_video": bool(cover.is_video) if cover else False,
             "is_reserved": bool(l.reserved_until and l.reserved_until > utcnow()),
@@ -1899,6 +1932,7 @@ def seller_listings(
             "attributes": l.attributes,
             "category_slug": l.category.slug if l.category else None,
             "cover_photo": cover.thumbnail_url if cover else None,
+            "map_point": _map_point(l),
             "photos": card_photos(l.photos, cover),
             "cover_is_video": bool(cover.is_video) if cover else False,
             "is_reserved": bool(l.reserved_until and l.reserved_until > utcnow()),

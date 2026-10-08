@@ -37,6 +37,7 @@ function CityCategoryPage() {
 // раздел, поиск. Всё остальное подгружается, когда человек туда идёт —
 // это доли секунды, и он их не замечает.
 const PostAd = lazy(() => import('./pages/PostAd'))
+const MapSearch = lazy(() => import('./pages/MapSearch'))
 const Categories = lazy(() => import('./pages/Categories'))
 const ChatScreen = lazy(() => import('./pages/ChatScreen'))
 const Storefront = lazy(() => import('./pages/Storefront'))
@@ -450,6 +451,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/search" element={<Search />} />
+          <Route path="/map" element={<MapSearch />} />
           <Route path="/post" element={<PostAd />} />
           <Route path="/categories" element={<Categories />} />
           {/* Вход в раздел со своими полями: человек ищет не

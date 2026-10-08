@@ -600,6 +600,11 @@ export default function Search() {
           </div>
         </div>
         <div className="results-head-right">
+          {/* поиск на карте — с теми же отборами */}
+          <Link className="on-map-btn" to={`/map?${new URLSearchParams(Object.fromEntries(Object.entries({ q: text.trim(), category_slug: category, city, price_min: priceMin, price_max: priceMax }).filter(([, v]) => v))).toString()}`}>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z" /><path d="M9 4v14M15 6v14" /></svg>
+            {t('map.on_map')}
+          </Link>
           {(text.trim() || category || priceMin || priceMax || city) && (
             <button
               className={subscribed ? 'save-search done' : 'save-search'}
