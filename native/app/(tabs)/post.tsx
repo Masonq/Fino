@@ -239,7 +239,10 @@ export default function Post() {
       setDone({ id: res.id })
       clearDraft()   // опубликовано — черновик больше не нужен
     } catch (e) {
-      setError(e instanceof ApiError && e.message ? e.message : tr('Не удалось отправить. Проверьте интернет и попробуйте ещё раз.'))
+      // коды сервера — понятным текстом, как на сайте (limits.*)
+      const LIMITS: Record<string, string> = { too_many_listings_day: 'Достигнут дневной предел объявлений', too_many_listings_hour: 'Слишком много объявлений за час. Попробуйте позже' }
+      const code = e instanceof ApiError ? e.message : ''
+      setError(LIMITS[code] ? tr(LIMITS[code]) : (code && !/^[a-z_]+$/.test(code) ? code : tr('Не удалось отправить. Проверьте интернет и попробуйте ещё раз.')))
     } finally {
       setSending(false)
     }

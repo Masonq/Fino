@@ -14,6 +14,7 @@ import Icon from '../../src/components/Icon'
 import { VoiceButton, VoicePlayer } from '../../src/components/Voice'
 import TeamLetter from '../../src/components/TeamLetter'
 import Sheet, { SheetAction } from '../../src/components/Sheet'
+import ReviewRequest from '../../src/components/ReviewRequest'
 import { useAuth } from '../../src/auth'
 import { useChats } from '../../src/chats'
 import { mediaUrl } from '../../src/config'
@@ -150,11 +151,17 @@ export default function ChatScreen() {
 
   const mine = (m: Message) => !!user && m.sender_id === user.id
   // Служебные записи без текста (карточка объявления и т.п.) — не рисуем пустым пузырём
-  const data = [...(msgs ?? [])].filter((m) => isOffer(m.kind) || m.kind === 'safety_note' || plainText(m.text)).reverse()
+  const data = [...(msgs ?? [])].filter((m) => isOffer(m.kind) || m.kind === 'safety_note' || m.kind === 'review_request' || plainText(m.text)).reverse()
   const photo = mediaUrl(info?.listing_photo)
   const title = info?.is_team ? tr('Команда PLONK') : (info?.other_name || tr('Переписка'))
 
   const bubble = ({ item }: { item: Message & { pending?: boolean; failed?: boolean } }) => {
+    if (item.kind === 'review_request') {
+      // «Как прошла сделка?» — как на сайте: оценка того, с кем переписка
+      const c = chat as unknown as { buyer?: { id: string; display_name?: string }; seller?: { id: string; display_name?: string } } | null
+      const other = c?.buyer?.id === user?.id ? c?.seller : c?.buyer
+      return token ? <ReviewRequest token={token} chatId={chatId} targetId={other?.id} listingId={chat?.listing_id} name={other?.display_name} /> : null
+    }
     if (item.kind === 'safety_note') {
       return (
         <View style={styles.safety}>

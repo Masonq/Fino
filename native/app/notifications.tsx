@@ -7,6 +7,8 @@ import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Tex
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { markAllNoticesRead, markNoticeRead, type Notice, notifications, clearAllNotifications } from '../src/api'
+import SwipeRow from '../src/components/SwipeRow'
+import { authed } from '../src/api'
 import { useAuth } from '../src/auth'
 import Icon from '../src/components/Icon'
 import { SITE } from '../src/config'
@@ -36,6 +38,10 @@ export default function Notifications() {
   }, [token])
   useFocusEffect(useCallback(() => { load() }, [load]))
 
+  const remove = (id: string) => {
+    setItems((x) => (x ?? []).filter((n) => n.id !== id))
+    if (token) authed(`/notifications/${id}`, token, 'DELETE').catch(() => {})
+  }
   const open = (n: Notice) => {
     if (!n.is_read && token) {
       setItems((all) => (all ?? []).map((x) => (x.id === n.id ? { ...x, is_read: true } : x)))
@@ -78,11 +84,14 @@ export default function Notifications() {
           ItemSeparatorComponent={() => <View style={styles.sep} />}
           renderItem={({ item }) => (
             // как .notif-row сайта: непрочитанное — зелёная подложка и точка слева; текст 13,5, время 11 («28 мин»)
+            // свайп влево — «Удалить», как на сайте
+            <SwipeRow right={[{ label: tr('Удалить'), color: '#E5533D', onPress: () => remove(item.id) }]}>
             <Pressable style={[styles.nRow, !item.is_read && styles.nRowUnread]} onPress={() => open(item)}>
               {!item.is_read && <View style={styles.nDot} />}
               <Text style={styles.nText}>{plainText(item.text)}</Text>
               <Text style={styles.nTime}>{timeAgo(item.created_at)}</Text>
             </Pressable>
+            </SwipeRow>
           )}
           ListEmptyComponent={
             // Как на сайте: значок и текст вверху экрана, без отдельного заголовка
