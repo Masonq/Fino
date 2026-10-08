@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import LangOrb from './LangOrb'
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -55,6 +56,7 @@ export default function TopNav() {
       )}
 
       <div className="topnav-right">
+        <LangOrb />
         <Link to="/post" className="topnav-post">{t('nav.post')}</Link>
         {/* Тот же скачок макета, что чинил в Home.jsx: пока идёт
             проверка токена, user ещё null — без этого тут на секунду

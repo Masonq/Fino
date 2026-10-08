@@ -263,7 +263,7 @@ export default function ProfileEdit() {
 
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.bg },
-  top: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, height: 52 },
+  top: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 16, minHeight: 56 },
   back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   title: { fontSize: 20, fontFamily: font[800], color: colors.ink, marginLeft: 4 },
   body: { paddingHorizontal: 12, gap: 12 },

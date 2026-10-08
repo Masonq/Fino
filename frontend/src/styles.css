@@ -8828,3 +8828,57 @@ html[data-theme="dark"] .tg-page{ background:var(--bg) !important; }
 .sf-slug input{ background:transparent !important; border:0 !important; box-shadow:none !important; }
 /* подводка над заголовком не обрезается многоточием, если рядом кнопка («Магазины и частные продавцы» у «Витрин») */
 .ph-kicker{ white-space:normal !important; overflow:visible !important; text-overflow:clip !important; }
+/* единый отступ «назад» — заголовок на всех страницах: 16 px (был 10–12, крупный заголовок почти прилипал к кнопке) */
+.page-hero, .page-header{ gap:16px !important; }
+.cats-head{ gap:16px !important; }
+
+/* ===== Переключатель языка «шар» ===== */
+@property --orb-a { syntax:'<angle>'; inherits:false; initial-value:0deg; }
+.lang-orb{ position:relative; flex:none; height:46px; display:flex; align-items:center; }
+.lang-orb-btn{ position:relative; width:46px; height:46px; border-radius:50%; border:0; padding:0; background:var(--surface); box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+.lang-orb-ring{ position:absolute; inset:3px; border-radius:50%;
+  background:conic-gradient(from var(--orb-a), #0FA36A, #B7E35A, #FF7A59, #6FC3FF, #0FA36A);
+  -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px)); mask:radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
+  animation:orb-spin 6s linear infinite; }
+@keyframes orb-spin{ to{ --orb-a:360deg; } }
+.lang-orb-code{ position:relative; font-size:13px; font-weight:900; letter-spacing:.02em; color:var(--ink); }
+.lang-orb-btn:active{ transform:scale(.94); }
+.lang-orb-pill{ position:relative; display:flex; align-items:center; height:46px; padding:4px; border-radius:23px; background:var(--surface); box-shadow:var(--shadow); animation:orb-open .28s cubic-bezier(.2,.9,.3,1.2) both; transform-origin:right center; }
+@keyframes orb-open{ from{ clip-path:inset(0 0 0 calc(100% - 46px) round 23px); opacity:.6; } to{ clip-path:inset(0 0 0 0 round 23px); opacity:1; } }
+.lang-orb-pill button{ position:relative; z-index:1; width:44px; height:38px; border:0; background:none; border-radius:19px; font-size:13.5px; font-weight:800; color:var(--ink-soft); cursor:pointer; }
+.lang-orb-pill button.on{ color:var(--on-inverse); }
+.lang-orb-thumb{ position:absolute; top:4px; left:4px; width:44px; height:38px; border-radius:19px; background:var(--inverse); transform:translateX(calc(var(--i) * 44px)); transition:transform .25s cubic-bezier(.2,.9,.3,1.2); }
+.topnav-right{ display:flex; align-items:center; gap:10px; }
+@media (prefers-reduced-motion: reduce){ .lang-orb-ring{ animation:none; } .lang-orb-pill{ animation:none; } }
+
+/* ===== Волонтёрство / Пригласить друга / Поддержка — PLONK 2.0 ===== */
+.vol-hero{ margin:4px 16px 12px; padding:18px; border-radius:24px; background:
+  radial-gradient(120% 90% at 0% 0%, rgba(205,239,224,.9), rgba(205,239,224,0) 60%),
+  radial-gradient(100% 90% at 100% 0%, rgba(236,244,206,.9), rgba(236,244,206,0) 60%), var(--surface); box-shadow:var(--shadow); }
+.vol-hero-kicker{ display:inline-flex; height:26px; align-items:center; padding:0 10px; border-radius:13px; background:var(--inverse); color:var(--on-inverse); font-size:12px; font-weight:800; }
+.vol-hero-text{ margin:10px 0 0; font-size:16px; line-height:1.5; color:var(--ink); font-weight:500; }
+.vol-tiles{ display:grid; grid-template-columns:1fr; gap:10px; margin:0 16px 18px; }
+.vol-tile{ display:grid; grid-template-columns:44px 1fr; column-gap:12px; row-gap:2px; padding:14px; border-radius:22px; }
+.vol-tile-icon{ grid-row:span 2; width:44px; height:44px; border-radius:14px; background:rgba(255,255,255,.75); display:flex; align-items:center; justify-content:center; color:var(--ink); }
+.vol-tile-title{ font-size:15.5px; font-weight:800; color:#0F1512; align-self:end; }
+.vol-tile-text{ font-size:13.5px; line-height:1.4; color:#434B46; }
+html[data-theme="dark"] .vol-tile{ filter:brightness(.42) saturate(1.2); }
+html[data-theme="dark"] .vol-tile *{ filter:none; }
+@media (min-width: 700px){ .vol-tiles{ grid-template-columns:repeat(3, 1fr); } .vol-tile{ grid-template-columns:1fr; } .vol-tile-icon{ grid-row:auto; margin-bottom:8px; } }
+/* анкета: группы отдельными белыми карточками (как мини-приложение и правка объявления), без линий-разделителей */
+.volunteer .form-card, .support-page .form-card{ background:transparent !important; box-shadow:none !important; border:0 !important; padding:0 !important; display:flex; flex-direction:column; gap:10px; }
+.volunteer .form-card > .field-row, .support-page .form-card > .field-row{ background:var(--surface); border-radius:20px; box-shadow:var(--shadow); padding:14px 16px !important; border:0 !important; margin:0 !important; }
+.volunteer-consent-card, .volunteer .post-checkbox{ border-radius:20px; }
+/* пригласить друга: шаги, ссылка и вопросы — карточками */
+.invite-page .invite-steps, .invite-page .invite-link-box{ background:var(--surface); border-radius:22px; box-shadow:var(--shadow); padding:14px 16px; border:0 !important; }
+.invite-page details, .invite-page .invite-faq-item{ background:var(--surface); border-radius:18px; box-shadow:var(--shadow); padding:4px 16px; margin-bottom:8px; border:0 !important; }
+.invite-page .invite-link{ display:block; margin:10px 0 0; padding:12px 14px; border-radius:14px; background:var(--surface-sunken); font-size:13px; font-weight:700; color:var(--ink-soft); text-align:center; word-break:break-all; }
+.invite-page .invite-faq-item{ padding:2px 16px !important; }
+.invite-page .invite-faq{ border:0 !important; }
+.page:has(.support-mine) .form-card, .page:has(.support-sent) .form-card{ background:transparent !important; box-shadow:none !important; border:0 !important; padding:0 !important; display:flex; flex-direction:column; gap:10px; }
+.page:has(.support-mine) .form-card > .field-row{ background:var(--surface); border-radius:20px; box-shadow:var(--shadow); padding:14px 16px !important; border:0 !important; margin:0 !important; }
+.vol-hero, .vol-tiles{ margin-left:0 !important; margin-right:0 !important; }
+.support .form-card{ background:transparent !important; box-shadow:none !important; border:0 !important; padding:0 !important; display:flex; flex-direction:column; gap:10px; }
+.support .form-card > .field-row{ background:var(--surface); border-radius:20px; box-shadow:var(--shadow); padding:14px 16px !important; border:0 !important; margin:0 !important; }
+.invite-page .invite-steps{ margin-left:16px !important; margin-right:16px !important; }
+.invite-page .invite-faq{ padding-left:0 !important; padding-right:0 !important; margin-left:16px !important; margin-right:16px !important; } .invite-page .invite-faq-item{ margin-left:0 !important; margin-right:0 !important; }

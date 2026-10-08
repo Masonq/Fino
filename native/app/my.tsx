@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   text: { fontFamily: font[400], fontSize: 15, lineHeight: 21, color: colors.inkSoft, textAlign: 'center' },
   cta: { marginTop: 10, height: 50, paddingHorizontal: 40, borderRadius: 14, backgroundColor: colors.inverse, alignItems: 'center', justifyContent: 'center' },
   ctaText: { color: colors.onInverse, fontSize: 16, fontFamily: font[800] },
-  head: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16 },
+  head: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16 },
   avatar: { width: 60, height: 60, borderRadius: 30, backgroundColor: '#7C6CF0', alignItems: 'center', justifyContent: 'center' },
   avatarLetter: { color: '#fff', fontSize: 24, fontFamily: font[800] },
   name: { fontSize: 21, fontFamily: font[800], color: colors.ink },

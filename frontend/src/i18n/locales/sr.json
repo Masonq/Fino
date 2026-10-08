@@ -1497,7 +1497,8 @@
     "consent_needed": "Potvrdite da ćete čuvati poverljivost: bez toga prijava ne može biti prihvaćena.",
     "consent_confirm": "Potvrdi",
     "consent_yes": "✓ Potvrdio poverljivost i da je učešće bez naknade",
-    "no_consent_admin": "Nema potvrde poverljivosti — ne može se prihvatiti dok osoba ne potvrdi na stranici „Volontiranje“."
+    "no_consent_admin": "Nema potvrde poverljivosti — ne može se prihvatiti dok osoba ne potvrdi na stranici „Volontiranje“.",
+    "hero_kicker": "PLONK tim"
   },
   "team_inbox": {
     "title": "Odgovori timu",

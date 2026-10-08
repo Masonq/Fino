@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   emptyBtn: { height: 42, paddingHorizontal: 20, borderRadius: 13, backgroundColor: colors.inverse, justifyContent: 'center' },
   emptyBtnText: { color: colors.onInverse, fontSize: 14.5, fontFamily: font[800] },
   page: { flex: 1, backgroundColor: colors.bg },
-  top: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, height: 52 },
+  top: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 16, minHeight: 56 },
   back: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, shadowColor: '#0F1512', shadowOpacity: 0.07, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
   title: { flex: 1, fontFamily: font[800], fontSize: 27, letterSpacing: -0.8, color: colors.ink },
   empty: { fontSize: 14.5, lineHeight: 20, fontFamily: font[500], color: colors.muted, textAlign: 'center', marginTop: 24 },

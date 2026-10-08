@@ -3,6 +3,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { withoutRemoved } from '../utils/removedListings'
 import TypingHint from '../components/TypingHint'
 import { useTranslation } from 'react-i18next'
+import LangOrb from '../components/LangOrb'
 import { Link, useNavigationType } from 'react-router-dom'
 import { api } from '../api/client'
 import ListingCard from '../components/ListingCard'
@@ -686,6 +687,7 @@ export default function Home() {
 
           </div>
           {/* сердечко и профиль — в одной строке с поиском, наверху (строка закреплена) */}
+          <LangOrb />
           <Link to="/favorites" className="avito-fav-pill" aria-label={t('nav.favorites')}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" /></svg>
           </Link>

@@ -69,7 +69,8 @@ export const Empty = ({ text, children, art }: { text: string; children?: ReactN
 )
 
 export const k = StyleSheet.create({
-  top: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingBottom: 12, backgroundColor: colors.bg },
+  top: { flexDirection: 'row', alignItems: 'center', gap: 16,   // единый отступ «назад» — заголовок: 16, как на сайте
+  paddingHorizontal: 16, paddingBottom: 12, backgroundColor: colors.bg },
   back: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface,
     shadowColor: '#0F1512', shadowOpacity: 0.07, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
   kicker: { fontFamily: font[600], fontSize: 13.5, color: colors.inkSoft },

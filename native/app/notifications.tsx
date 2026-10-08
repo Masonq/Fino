@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   // кнопки «Прочитать всё» и «Очистить» — строкой под заголовком, как на сайте (рядом с ним они сжимали заголовок)
   headActions: { flexDirection: 'row', alignItems: 'center', gap: 16, width: '100%', paddingLeft: 52, marginTop: 4 },
   page: { flex: 1, backgroundColor: colors.bg },
-  head: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 6, paddingBottom: 8 },
+  head: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 16, paddingHorizontal: 16, paddingTop: 6, paddingBottom: 8 },
   back: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, shadowColor: '#0F1512', shadowOpacity: 0.07, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
   h1: { fontFamily: font[800], fontSize: 27, letterSpacing: -0.8, color: colors.ink },
   all: { fontSize: 13.5, fontFamily: font[700], color: colors.primaryDeep },

@@ -14,6 +14,8 @@ const HOURS = ['1–3', '3–7', '7+']
  * люди. Страница объясняет, что делает команда, и принимает короткую
  * анкету. Принятому владелец выдаёт роль модератора.
  */
+const ICONS = {"answer": "<path d=\"M20.5 12a8 8 0 0 1-8.5 8 9 9 0 0 1-3.4-.7L4 20.5l1.3-3.9A8 8 0 1 1 20.5 12Z\" />", "moderate": "<path d=\"M12 3 4 6.5v5c0 4.6 3.4 8.4 8 9.5 4.6-1.1 8-4.9 8-9.5v-5z\" /><path d=\"m9 12 2 2 4-4\" />", "rules": "<path d=\"M20.8 4.6a5 5 0 0 0-7 0L12 6.4l-1.8-1.8a5 5 0 0 0-7 7L12 20.5l8.8-8.9a5 5 0 0 0 0-7Z\" />"}
+
 export default function Volunteer() {
   const { t } = useTranslation()
   const { user, loading: authLoading } = useAuth()
@@ -66,18 +68,18 @@ export default function Volunteer() {
     <div className="page volunteer">
       <PageHeader title={t('volunteer.title')} />
 
-      <p className="page-lead">{t('volunteer.lead')}</p>
-
-      {/* Что делает команда — три коротких пункта, чтобы человек
-          понимал, на что подписывается, до анкеты. */}
-      <div className="volunteer-what">
-        {['answer', 'moderate', 'rules'].map((key) => (
-          <div key={key} className="volunteer-what-row">
-            <span className="volunteer-what-mark" />
-            <div>
-              <div className="volunteer-what-title">{t(`volunteer.what_${key}`)}</div>
-              <div className="volunteer-what-text">{t(`volunteer.what_${key}_text`)}</div>
-            </div>
+      {/* PLONK 2.0: вступление карточкой со свечением и три пункта цветными плитками со значками
+          (было — текст и маркированный список с оранжевыми точками) */}
+      <div className="vol-hero">
+        <span className="vol-hero-kicker">{t('volunteer.hero_kicker')}</span>
+        <p className="vol-hero-text">{t('volunteer.lead')}</p>
+      </div>
+      <div className="vol-tiles">
+        {[['answer', '#E3ECFA'], ['moderate', '#E2F1E6'], ['rules', '#FAE5EE']].map(([key, bg]) => (
+          <div key={key} className="vol-tile" style={{ background: bg }}>
+            <span className="vol-tile-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" dangerouslySetInnerHTML={{ __html: ICONS[key] }} /></span>
+            <div className="vol-tile-title">{t(`volunteer.what_${key}`)}</div>
+            <div className="vol-tile-text">{t(`volunteer.what_${key}_text`)}</div>
           </div>
         ))}
       </div>
