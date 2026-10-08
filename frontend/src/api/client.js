@@ -1,3 +1,4 @@
+import i18n from '../i18n'
 const API_BASE = import.meta.env.VITE_API_BASE || '/api'
 
 export const TOKEN_KEY = 'plonk_token'
@@ -57,6 +58,8 @@ async function request(path, options = {}) {
     ...(body === undefined ? {} : { body }),
     headers: {
       'Content-Type': 'application/json',
+      // язык страницы — сервер показывает имена людей латиницей на сербском и английском
+      'X-Lang': (i18n.language || 'sr').slice(0, 2),
       'X-Device-Id': getDeviceId(),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),

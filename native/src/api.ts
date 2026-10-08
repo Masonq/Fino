@@ -70,7 +70,7 @@ export type Listing = Omit<FeedItem, 'photos'> & {
 export type FeedTab = 'all' | 'new' | 'free'
 
 export async function get<T>(path: string): Promise<T> {
-  const res = await fetch(`${API}${path}`, { headers: { Accept: 'application/json' } })
+  const res = await fetch(`${API}${path}`, { headers: { Accept: 'application/json', 'X-Lang': getLang() } })
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   return res.json() as Promise<T>
 }
@@ -128,7 +128,7 @@ export class ApiError extends Error {
 async function post<T>(path: string, body: unknown, token?: string | null): Promise<T> {
   const res = await fetch(`${API}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Lang': getLang(), ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     body: JSON.stringify(body),
   })
   if (!res.ok) {
@@ -153,7 +153,7 @@ export function verifyCode(email: string, code: string) {
 export async function authed<T>(path: string, token: string, method: 'GET' | 'POST' | 'DELETE' | 'PATCH' | 'PUT' = 'GET', body?: unknown): Promise<T> {
   const res = await fetch(`${API}${path}`, {
     method,
-    headers: { Accept: 'application/json', Authorization: `Bearer ${token}`, ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
+    headers: { Accept: 'application/json', 'X-Lang': getLang(), Authorization: `Bearer ${token}`, ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
     body: body !== undefined ? JSON.stringify(body) : undefined,
   })
   if (!res.ok) {
@@ -266,7 +266,7 @@ export type NewListing = {
 export async function createListing(token: string, l: NewListing) {
   const res = await fetch(`${API}/listings`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: `Bearer ${token}` },
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Lang': getLang(), Authorization: `Bearer ${token}` },
     body: JSON.stringify({
       category_id: l.category_id, source_language: getLang(), price: l.price, currency: l.currency, price_negotiable: l.price_negotiable,
       // характеристики раздела — как на сайте (раньше уходил пустой объект, и объявления из приложения не находились по фильтрам)

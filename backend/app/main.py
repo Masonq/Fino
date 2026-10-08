@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from app.core.name_translit import NameTranslitMiddleware
 from app.core.config import settings
 from app.core.global_rate_limit import GlobalRateLimitMiddleware
 from app.routers import (
@@ -25,6 +26,8 @@ app = FastAPI(title=settings.app_name)
 # браузер показал бы человеку невнятную ошибку CORS вместо настоящей
 # причины (429).
 app.add_middleware(GlobalRateLimitMiddleware)
+# имена людей латиницей на сербском и английском (только показ — в базе как написал человек)
+app.add_middleware(NameTranslitMiddleware)
 
 app.add_middleware(
     CORSMiddleware,

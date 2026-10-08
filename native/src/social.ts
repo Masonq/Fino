@@ -11,7 +11,7 @@ type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 async function call<T>(path: string, token?: string | null, method: Method = 'GET', body?: unknown): Promise<T> {
   const res = await fetch(`${API}${path}`, {
     method,
-    headers: { Accept: 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
+    headers: { Accept: 'application/json', 'X-Lang': getLang(), ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
     body: body !== undefined ? JSON.stringify(body) : undefined,
   })
   if (!res.ok) {
