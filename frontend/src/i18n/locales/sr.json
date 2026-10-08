@@ -1079,7 +1079,10 @@
     "clear_all": "Obriši",
     "clear_all_confirm": "Obrisati sva obaveštenja?",
     "kicker_new": "Ima novog",
-    "kicker_all": "Sve je pročitano"
+    "kicker_all": "Sve je pročitano",
+    "day_today": "Danas",
+    "day_yesterday": "Juče",
+    "day_earlier": "Ranije"
   },
   "ldash": {
     "title": "Statistika oglasa",

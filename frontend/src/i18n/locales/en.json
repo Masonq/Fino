@@ -1056,7 +1056,10 @@
     "clear_all": "Clear",
     "clear_all_confirm": "Delete all notifications?",
     "kicker_new": "Something new",
-    "kicker_all": "All caught up"
+    "kicker_all": "All caught up",
+    "day_today": "Today",
+    "day_yesterday": "Yesterday",
+    "day_earlier": "Earlier"
   },
   "ldash": {
     "title": "Listing stats",

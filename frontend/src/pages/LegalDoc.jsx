@@ -21,8 +21,14 @@ export default function LegalDoc({ doc }) {
     <div className="page legal-page page-narrow">
       <PageHeader title={content.title} />
       <p className="legal-updated">{content.updated}</p>
-      {content.sections.map((s) => (
-        <div className="legal-section" key={s.h}>
+      {/* содержание — чипами: длинный документ, переход к нужному разделу одним нажатием */}
+      <nav className="legal-toc">
+        {content.sections.map((s, i) => (
+          <a key={s.h} href={`#s${i}`} onClick={(e) => { e.preventDefault(); document.getElementById(`s${i}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }}>{s.h.replace(/^\d+\.\s*/, '')}</a>
+        ))}
+      </nav>
+      {content.sections.map((s, i) => (
+        <div className="legal-section" key={s.h} id={`s${i}`}>
           <h3>{s.h}</h3>
           {s.p.map((paragraph, i) => (
             <p key={i}>{paragraph}</p>

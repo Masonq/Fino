@@ -9021,3 +9021,51 @@ html[data-theme="dark"] .invite-card:first-child, html[data-theme="dark"] .invit
 html[data-theme="dark"] .sup-q{ filter:brightness(.45) saturate(1.2); }
 .invite-page .invite-cards{ margin:0 0 14px !important; } .invite-page .invite-timeline{ margin-left:0 !important; margin-right:0 !important; }
 .invite-page .invite-timeline{ margin-left:16px !important; margin-right:16px !important; }
+
+/* ===== Уведомления — значок по виду, группы по дням ===== */
+.notif-day{ margin:14px 4px 8px; font-size:13px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+.notif-row{ display:flex !important; align-items:flex-start; gap:12px; border:0 !important; border-radius:20px !important; background:var(--surface) !important; box-shadow:var(--shadow) !important; padding:12px 14px !important; }
+.notif-row.unread{ box-shadow:inset 3px 0 0 var(--primary), var(--shadow) !important; }
+.notif-ico{ flex:none; width:40px; height:40px; border-radius:13px; display:flex; align-items:center; justify-content:center; color:#0F1512; background:#ECEBE6; }
+.notif-ico.k-chat{ background:#E3ECFA; } .notif-ico.k-price{ background:#FFE8DD; } .notif-ico.k-check{ background:#E2F1E6; }
+.notif-ico.k-money{ background:#FFF1C9; } .notif-ico.k-team{ background:#EDE7FA; }
+.notif-body{ flex:1; min-width:0; }
+.notif-text{ font-size:14.5px !important; line-height:1.4 !important; white-space:pre-line; color:var(--ink); }
+.notif-time{ font-size:12px !important; color:var(--muted) !important; margin-top:4px; }
+.notif-list{ display:flex; flex-direction:column; gap:8px; }
+html[data-theme="dark"] .notif-ico{ filter:brightness(.5) saturate(1.2); }
+
+/* ===== Документы (правила, условия, конфиденциальность) ===== */
+.legal-toc{ display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; margin:4px -16px 14px; padding:0 16px; }
+.legal-toc::-webkit-scrollbar{ display:none; }
+.legal-toc a{ flex:none; height:36px; display:flex; align-items:center; padding:0 14px; border-radius:18px; background:var(--surface); box-shadow:0 1px 2px rgba(15,21,18,.06),0 2px 8px rgba(15,21,18,.05); font-size:13px; font-weight:700; color:var(--ink); white-space:nowrap; }
+.legal-section{ background:var(--surface); border-radius:22px; box-shadow:var(--shadow); padding:16px 16px 6px; margin-bottom:10px; scroll-margin-top:calc(80px + var(--sat)); }
+.legal-section h3{ font-size:17px !important; font-weight:800 !important; letter-spacing:-0.01em; margin:0 0 8px !important; }
+.legal-section p{ font-size:14.5px !important; line-height:1.6 !important; color:var(--ink-soft) !important; margin:0 0 10px !important; }
+.legal-updated{ font-size:13px; color:var(--muted); margin:0 0 10px; }
+
+/* ===== «Мои данные» — как настройки iOS: фото крупно сверху, группы с заголовками над карточкой ===== */
+.edit-profile .form-card{ border:0 !important; box-shadow:var(--shadow) !important; border-radius:22px !important; overflow:hidden; }
+.edit-profile .form-card:first-of-type{ display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; padding:20px 16px !important;
+  background:radial-gradient(120% 90% at 0% 0%, rgba(205,239,224,.9), rgba(205,239,224,0) 60%), radial-gradient(100% 90% at 100% 0%, rgba(236,244,206,.9), rgba(236,244,206,0) 60%), var(--surface) !important; }
+.edit-profile .form-card:first-of-type .field-row{ border:0 !important; flex-direction:column; align-items:center; padding:0 !important; }
+.edit-profile .profile-avatar{ width:84px !important; height:84px !important; font-size:32px !important; box-shadow:0 0 0 4px var(--surface), 0 6px 18px rgba(15,21,18,.12); }
+.edit-profile .form-card:first-of-type .field-action, .edit-profile .form-card:first-of-type button{ margin-top:4px; height:36px; padding:0 16px; border-radius:18px; background:var(--inverse); color:var(--on-inverse); font-weight:800; font-size:13.5px; border:0; }
+.edit-profile .form-card-title{ position:relative; top:0; margin:-2px 0 6px; padding:0 !important; font-size:12.5px !important; font-weight:800 !important; color:var(--muted) !important; text-transform:uppercase; letter-spacing:.06em; }
+.edit-profile .field-row{ padding:12px 16px !important; }
+.edit-profile .field-label{ font-size:12px !important; font-weight:800 !important; color:var(--muted) !important; }
+.edit-profile .field-input{ font-size:16.5px !important; font-weight:600; }
+.edit-profile .field-action{ font-weight:800 !important; color:var(--primary-deep) !important; }
+.edit-profile .verify-line{ border-radius:14px; padding:10px 12px; font-weight:700; }
+.edit-profile .verify-line.ok{ background:#E2F1E6; color:#085041; } .edit-profile .verify-line.wait{ background:#FFF1D6; color:#8A5A00; } .edit-profile .verify-line.bad{ background:#FBEAE7; color:#C0392B; }
+.edit-profile .form-card:has(.profile-avatar){ display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; padding:20px 16px !important;
+  background:radial-gradient(120% 90% at 0% 0%, rgba(205,239,224,.9), rgba(205,239,224,0) 60%), radial-gradient(100% 90% at 100% 0%, rgba(236,244,206,.9), rgba(236,244,206,0) 60%), var(--surface) !important; }
+.edit-profile .form-card:has(.profile-avatar) .field-row, .edit-profile .form-card:has(.profile-avatar) > *{ border:0 !important; flex-direction:column !important; align-items:center !important; text-align:center; padding:0 !important; gap:8px; }
+.edit-profile .form-card:has(.profile-avatar) button, .edit-profile .form-card:has(.profile-avatar) .field-action{ height:36px; padding:0 16px; border-radius:18px; background:var(--inverse) !important; color:var(--on-inverse) !important; font-weight:800; font-size:13.5px; border:0; display:inline-flex; align-items:center; }
+/* уведомления: красная кнопка «удалить» под строкой не просвечивает по краям */
+.notif-swipe-wrap{ border-radius:20px; overflow:hidden; }
+.notif-row{ border-radius:20px !important; }
+.notif-row{ margin:0 !important; width:100% !important; box-sizing:border-box; position:relative; z-index:1; }
+.notif-row .notif-text, .notif-row .notif-time{ padding-left:0 !important; margin-left:0 !important; }
+.notif-row.unread::before{ display:none !important; }
+.notif-delete-btn{ border-radius:20px; }

@@ -1097,7 +1097,10 @@
     "clear_all": "Очистить",
     "clear_all_confirm": "Удалить все уведомления?",
     "kicker_new": "Есть новое",
-    "kicker_all": "Всё прочитано"
+    "kicker_all": "Всё прочитано",
+    "day_today": "Сегодня",
+    "day_yesterday": "Вчера",
+    "day_earlier": "Ранее"
   },
   "ldash": {
     "title": "Показатели объявления",
