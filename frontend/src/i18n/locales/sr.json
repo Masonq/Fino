@@ -902,7 +902,13 @@
     "body_label": "Šta se desilo",
     "contact_label": "Gde da odgovorimo",
     "queue_empty_hint": "Svi zahtevi su rešeni. Novi će se odmah pojaviti ovde.",
-    "kicker": "Odgovaramo u roku od jednog dana"
+    "kicker": "Odgovaramo u roku od jednog dana",
+    "hero_title": "Tu smo",
+    "hero_text": "Odgovaraju pravi ljudi iz tima — obično u toku dana.",
+    "q_rules": "Pravila",
+    "q_rules_hint": "Šta se sme prodavati",
+    "q_guides": "Korisno",
+    "q_guides_hint": "Kako brže prodati"
   },
   "enter": {
     "working": "Prijavljujemo vas…",

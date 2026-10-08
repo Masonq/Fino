@@ -66,8 +66,16 @@ export default function InviteFriend() {
             она грузилась первой, это главная картинка экрана. */}
         <img src="/invite/hero.webp" alt="" width="1000" height="604"
              fetchPriority="high" decoding="async" />
+        <div className="invite-hero-badges">
+          <span className="invite-badge">+{BONUS} RSD <small>{t('invite.card_you')}</small></span>
+          <span className="invite-badge alt">+{BONUS} RSD <small>{t('invite.card_friend')}</small></span>
+        </div>
         <h1>{t('invite.hero_title')}</h1>
         <p>{t('invite.hero_text', { count: BONUS })}</p>
+        <div className="invite-hero-share">
+          <span className="invite-hero-link">{link.replace(/^https?:\/\//, '')}</span>
+          <button type="button" className="invite-hero-btn" onClick={share}>{copied ? t('invite.copied') : t('invite.share_btn')}</button>
+        </div>
       </div>
 
       {/* Что получит каждый — двумя карточками: это две разные выгоды,
@@ -92,7 +100,7 @@ export default function InviteFriend() {
 
       {/* Что должно произойти — тремя шагами вместо абзаца мелким
           шрифтом: так видно, что условие одно и оно простое. */}
-      <div className="invite-steps">
+      <div className="invite-steps invite-timeline">
         <div className="invite-block-title">{t('invite.how_title')}</div>
         {[1, 2, 3].map((step) => (
           <div className="invite-step" key={step}>

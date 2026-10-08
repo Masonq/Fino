@@ -8982,3 +8982,42 @@ main.page-in-back{ animation:page-in-back .28s var(--ease-out) backwards; }
 .s-card:nth-child(2){ animation-delay:.04s; } .s-card:nth-child(3){ animation-delay:.08s; } .s-card:nth-child(4){ animation-delay:.12s; }
 .s-card:nth-child(5){ animation-delay:.16s; } .s-card:nth-child(6){ animation-delay:.2s; } .s-card:nth-child(7){ animation-delay:.24s; } .s-card:nth-child(8){ animation-delay:.28s; }
 @media (prefers-reduced-motion: reduce){ .s-card{ animation:none !important; } }
+
+/* ===== «Пригласить друга» — PLONK 2.0, всерьёз ===== */
+.invite-hero{ margin:4px 16px 14px !important; padding:18px 18px 16px !important; border-radius:28px !important; text-align:center;
+  background:radial-gradient(120% 80% at 0% 0%, #CDEFE0 0%, rgba(205,239,224,0) 60%), radial-gradient(100% 80% at 100% 0%, #ECF4CE 0%, rgba(236,244,206,0) 60%), var(--surface) !important; box-shadow:var(--shadow); }
+.invite-hero img{ max-width:78% !important; margin:0 auto -6px; display:block; }
+.invite-hero-badges{ display:flex; justify-content:center; gap:8px; margin:6px 0 10px; }
+.invite-badge{ display:inline-flex; align-items:baseline; gap:6px; padding:8px 14px; border-radius:16px; background:var(--inverse); color:var(--on-inverse); font-size:18px; font-weight:900; letter-spacing:-0.02em; }
+.invite-badge.alt{ background:#FFE3D6; color:#9A3412; }
+.invite-badge small{ font-size:12px; font-weight:800; opacity:.8; }
+.invite-hero h1{ font-size:26px !important; font-weight:800 !important; letter-spacing:-0.03em; margin:4px 0 4px !important; }
+.invite-hero p{ font-size:14.5px !important; color:var(--ink-soft) !important; margin:0 0 14px !important; }
+.invite-hero-share{ display:flex; align-items:center; gap:8px; padding:6px; border-radius:18px; background:var(--surface); box-shadow:0 1px 2px rgba(15,21,18,.06), 0 6px 18px rgba(15,21,18,.06); }
+.invite-hero-link{ flex:1; min-width:0; padding-left:10px; font-size:13.5px; font-weight:700; color:var(--ink-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:left; }
+.invite-hero-btn{ flex:none; height:44px; padding:0 18px; border:0; border-radius:14px; background:var(--inverse); color:var(--on-inverse); font-size:14.5px; font-weight:800; }
+.invite-cards{ display:grid !important; grid-template-columns:1fr 1fr; gap:10px !important; margin:0 16px 14px !important; }
+.invite-card{ flex-direction:column !important; align-items:flex-start !important; gap:8px !important; padding:14px !important; border-radius:22px !important; border:0 !important; box-shadow:none !important; }
+.invite-card:first-child{ background:#E2F1E6 !important; } .invite-card:last-child{ background:#FFE8DD !important; }
+.invite-card img{ width:56px !important; height:56px !important; object-fit:contain; }
+.invite-card-title{ font-size:12.5px !important; font-weight:800 !important; color:#434B46 !important; text-transform:uppercase; letter-spacing:.04em; }
+.invite-card-sub{ font-size:14px !important; font-weight:700 !important; color:#0F1512 !important; line-height:1.35; }
+.invite-timeline{ position:relative; padding:16px 16px 6px !important; }
+.invite-timeline .invite-step{ position:relative; display:flex; align-items:center; gap:12px; padding:0 0 14px; font-size:14.5px; font-weight:700; }
+.invite-timeline .invite-step-num{ position:relative; z-index:1; flex:none; width:30px; height:30px; border-radius:50%; background:var(--inverse); color:var(--on-inverse); display:flex; align-items:center; justify-content:center; font-weight:900; }
+.invite-timeline .invite-step:not(:last-child)::before{ content:''; position:absolute; left:14px; top:30px; bottom:0; width:2px; background:rgba(15,163,106,.25); }
+.invite-bottom{ display:none !important; }   /* ссылка и «Поделиться» теперь в верхнем блоке */
+html[data-theme="dark"] .invite-card:first-child, html[data-theme="dark"] .invite-card:last-child{ filter:brightness(.45) saturate(1.2); }
+
+/* ===== «Написать в поддержку» ===== */
+.sup-hero{ display:flex; align-items:center; gap:14px; margin:4px 0 10px; padding:16px; border-radius:24px;
+  background:radial-gradient(120% 90% at 0% 0%, rgba(205,239,224,.95), rgba(205,239,224,0) 60%), radial-gradient(100% 90% at 100% 0%, rgba(236,244,206,.9), rgba(236,244,206,0) 60%), var(--surface); box-shadow:var(--shadow); }
+.sup-hero-icon{ flex:none; width:52px; height:52px; border-radius:16px; background:var(--inverse); color:var(--on-inverse); display:flex; align-items:center; justify-content:center; }
+.sup-hero b{ display:block; font-size:18px; font-weight:800; letter-spacing:-0.02em; }
+.sup-hero span{ display:block; font-size:13.5px; color:var(--ink-soft); margin-top:2px; line-height:1.35; }
+.sup-quick{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+.sup-q{ display:flex; flex-direction:column; gap:2px; padding:14px; border-radius:20px; color:#0F1512; }
+.sup-q b{ font-size:15px; font-weight:800; } .sup-q span{ font-size:12.5px; color:#434B46; }
+html[data-theme="dark"] .sup-q{ filter:brightness(.45) saturate(1.2); }
+.invite-page .invite-cards{ margin:0 0 14px !important; } .invite-page .invite-timeline{ margin-left:0 !important; margin-right:0 !important; }
+.invite-page .invite-timeline{ margin-left:16px !important; margin-right:16px !important; }

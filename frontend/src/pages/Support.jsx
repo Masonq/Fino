@@ -1,6 +1,7 @@
 import { showIsland } from '../utils/island'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { api, getToken } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import PageHeader from '../components/PageHeader'
@@ -58,6 +59,16 @@ export default function Support() {
   return (
     <div className="page support">
       <PageHeader title={t('support.title')} kicker={t('support.kicker')} />
+
+      {/* PLONK 2.0: вступление карточкой и быстрые ответы — многое решается без обращения */}
+      <div className="sup-hero">
+        <span className="sup-hero-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.5 12a8 8 0 0 1-8.5 8 9 9 0 0 1-3.4-.7L4 20.5l1.3-3.9A8 8 0 1 1 20.5 12Z" /><path d="M8.5 11h.01M12 11h.01M15.5 11h.01" /></svg></span>
+        <div><b>{t('support.hero_title')}</b><span>{t('support.hero_text')}</span></div>
+      </div>
+      <div className="sup-quick">
+        <Link to="/rules" className="sup-q" style={{ background: '#E3ECFA' }}><b>{t('support.q_rules')}</b><span>{t('support.q_rules_hint')}</span></Link>
+        <Link to="/vodic" className="sup-q" style={{ background: '#E2F1E6' }}><b>{t('support.q_guides')}</b><span>{t('support.q_guides_hint')}</span></Link>
+      </div>
 
       {sent && <p className="support-sent">{t('support.sent')}</p>}
 

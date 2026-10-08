@@ -880,7 +880,13 @@
     "body_label": "What happened",
     "contact_label": "Where to reply",
     "queue_empty_hint": "All tickets handled. New ones will show up here right away.",
-    "kicker": "We reply within a day"
+    "kicker": "We reply within a day",
+    "hero_title": "We’re here",
+    "hero_text": "Real people from the team reply — usually within a day.",
+    "q_rules": "Rules",
+    "q_rules_hint": "What you can sell",
+    "q_guides": "Guides",
+    "q_guides_hint": "How to sell faster"
   },
   "enter": {
     "working": "Signing you in…",
