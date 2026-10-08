@@ -1,5 +1,5 @@
 import { Routes, Route, useLocation, useNavigationType, useParams } from 'react-router-dom'
-import { Suspense, lazy, useEffect, useLayoutEffect, useRef } from 'react'
+import { Suspense, lazy, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import Home from './pages/Home'
 import Search from './pages/Search'
 import CategoryLanding from './pages/CategoryLanding'
@@ -389,6 +389,33 @@ export default function App() {
      
   }, [pathname])
 
+  // «Шторка» при прокрутке: листаешь вниз — полоска уезжает, и Safari показывает под панелью саму страницу
+  // (прозрачное стекло); листаешь вверх или ты у самого верха — полоска возвращается, и панель снова в цвет шапки.
+  // Сдвиг translateY(-100%) Safari 26 не считает «верхним элементом» — на этом и держится переключение.
+  const [tintHidden, setTintHidden] = useState(false)
+  useEffect(() => {
+    // листается не всегда окно: на части страниц прокручивается внутренний контейнер — ловим прокрутку любого
+    // элемента (capture) и берём положение того, что прокрутилось
+    let last = 0, raf = 0, src = null
+    const pos = () => (src && src !== document && src !== window ? src.scrollTop : window.scrollY) || 0
+    const onScroll = (e) => {
+      const t = e?.target
+      src = t && t !== document && t.nodeType === 1 && t.scrollHeight > t.clientHeight + 40 ? t : null
+      if (raf) return
+      raf = requestAnimationFrame(() => {
+        raf = 0
+        const y = pos(), dy = y - last
+        if (y < 12) setTintHidden(false)
+        else if (dy > 6) setTintHidden(true)
+        else if (dy < -6) setTintHidden(false)
+        if (Math.abs(dy) > 6 || y < 12) last = y
+      })
+    }
+    document.addEventListener('scroll', onScroll, { passive: true, capture: true })
+    return () => { document.removeEventListener('scroll', onScroll, { capture: true }); cancelAnimationFrame(raf) }
+  }, [])
+  useEffect(() => { setTintHidden(false) }, [pathname])
+
   // «Шторка» сверху (статус-бар) — в цвет шапки на всех страницах: мятно-лаймовое свечение шапки, на тёмной теме —
   // тёмный фон, на шопсах и объявлении (видео / фото у верхнего края) — чёрный. iOS 26 Safari берёт цвет из
   // фона элемента у верхнего края (.top-tint), остальные браузеры — из meta theme-color.
@@ -445,7 +472,7 @@ export default function App() {
           история, там обратная логика (виден по умолчанию, прячется на
           десктопе через CSS), и на мобильном его действительно не должно
           быть на этих трёх страницах — там условие оставляем как было. */}
-      <div className="top-tint" aria-hidden="true" />
+      <div className={`top-tint${tintHidden ? ' hidden' : ''}`} aria-hidden="true" />
       <TopNav />
       <main className={hideNav ? '' : 'has-bottomnav'}>
         {/* Пока подгружается страница по требованию — ничего не рисуем.
