@@ -75,7 +75,7 @@ export default function TgPost() {
   useEffect(() => {
     const app = tg()
     if (!app) return
-    try { app.setBackgroundColor?.('#EAF2E6'); app.setHeaderColor?.('#EAF2E6'); app.setBottomBarColor?.('#F5F4F0') } catch { /* не беда */ }   // шапка Telegram в цвет нашей шапки
+    try { app.setBackgroundColor?.('#EBF1E7'); app.setHeaderColor?.('#EBF1E7'); app.setBottomBarColor?.('#F5F4F0') } catch { /* не беда */ }   // шапка Telegram в цвет нашей шапки
     // Появилось в Bot API 7.7; на старых клиентах метода нет, и тогда
     // остаётся подтверждение ниже.
     try { app.disableVerticalSwipes?.() } catch { /* не беда */ }

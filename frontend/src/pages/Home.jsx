@@ -284,7 +284,7 @@ export default function Home() {
       document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.remove())
       const meta = document.createElement('meta')
       meta.setAttribute('name', 'theme-color')
-      meta.setAttribute('content', mq.matches ? PAGE_BG : (getComputedStyle(document.documentElement).getPropertyValue('--top-tint').trim() || '#EAF2E6'))
+      meta.setAttribute('content', mq.matches ? PAGE_BG : (getComputedStyle(document.documentElement).getPropertyValue('--top-tint').trim() || '#EBF1E7'))
       document.head.appendChild(meta)
     }
     apply()

@@ -59,7 +59,7 @@ export default function TgMy() {
     const app = tg()
     if (!app?.initData) { setItems([]); setError('not_in_telegram'); return }
     app.ready()
-    try { app.setHeaderColor?.('#EAF2E6'); app.setBackgroundColor?.('#EAF2E6'); app.setBottomBarColor?.('#F5F4F0') } catch { /* не беда */ }   // шапка Telegram в цвет нашей
+    try { app.setHeaderColor?.('#EBF1E7'); app.setBackgroundColor?.('#EBF1E7'); app.setBottomBarColor?.('#F5F4F0') } catch { /* не беда */ }   // шапка Telegram в цвет нашей
     app.expand()
     api.tgWebAppAuth(app.initData)
       .then((res) => {

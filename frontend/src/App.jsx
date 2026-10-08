@@ -395,7 +395,7 @@ export default function App() {
   useEffect(() => {
     const dark = document.documentElement.getAttribute('data-theme') === 'dark'
     const black = pathname.startsWith('/shops') && !pathname.startsWith('/shops/') || /\/[a-z0-9-]+-[0-9a-f]{8}\/?$/.test(pathname) || pathname.startsWith('/go/')
-    const color = black ? '#000000' : dark ? '#1E2421' : '#EAF2E6'
+    const color = black ? '#000000' : dark ? '#1E2421' : '#EBF1E7'
     document.documentElement.style.setProperty('--top-tint', color)
     document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.remove())
     const meta = document.createElement('meta')

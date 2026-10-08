@@ -8898,7 +8898,7 @@ html[data-theme="dark"] .vol-tile *{ filter:none; }
 .lang-drum-reel.roll{ transform:translateY(-46px); transition:transform .38s cubic-bezier(.3,1.45,.5,1); }
 @media (prefers-reduced-motion: reduce){ .lang-drum-reel.roll{ transition:none; } }
 /* «шторка» у верхнего края — в цвет шапки (цвет ставит App.jsx в --top-tint) */
-.top-tint{ position:fixed; z-index:200; top:0; left:0; right:0; height:var(--sat, 0px); background-color:var(--top-tint, #EAF2E6); pointer-events:none; }
+.top-tint{ position:fixed; z-index:200; top:0; left:0; right:0; height:var(--sat, 0px); background-color:var(--top-tint, #EBF1E7); pointer-events:none; }
 html{ background-color:var(--bg) !important; }
 /* iOS 26 Safari (Liquid Glass) берёт цвет «шторки» из фона position:fixed-элемента у самого верха страницы, но только
    если он во всю ширину и не ниже 6 px (meta theme-color Safari 26 больше не читает). В обычной вкладке Safari зона
@@ -8906,3 +8906,18 @@ html{ background-color:var(--bg) !important; }
 .top-tint{ height:max(6px, var(--sat, 0px)) !important; width:100% !important; }
 /* запасной цвет, если элемента не будет: Safari берёт фон <body> */
 body{ background-color:transparent; }
+/* Шов между «шторкой» Safari и шапкой: Safari красит полосу одним цветом (#EBF1E7), а свечение страницы было
+   ярче всего прямо у верхнего края (мята слева, лайм справа) — под полосой проходила видимая граница. Теперь у
+   самого края страница ровно того же цвета, что и полоса, и плавно, за ~150 px, переходит в свечение шапки. */
+html{ background:
+  linear-gradient(to bottom, var(--top-tint, #EBF1E7) 0, color-mix(in srgb, var(--top-tint, #EBF1E7) 0%, transparent) 150px),
+  radial-gradient(60% 300px at 18% 0%, rgba(15,163,106,.17), transparent 75%),
+  radial-gradient(55% 280px at 88% 0%, rgba(217,244,92,.30), transparent 75%),
+  var(--bg) !important;
+  background-repeat:no-repeat !important; }
+html[data-theme="dark"]{ background:var(--bg) !important; }
+.tg-page{ background:
+  linear-gradient(to bottom, #EBF1E7 0, rgba(235,241,231,0) 150px),
+  radial-gradient(120% 60% at 0% 0%, rgba(205,239,224,.85) 0%, rgba(205,239,224,0) 55%),
+  radial-gradient(90% 50% at 100% 0%, rgba(236,244,206,.85) 0%, rgba(236,244,206,0) 55%),
+  var(--bg) !important; }
