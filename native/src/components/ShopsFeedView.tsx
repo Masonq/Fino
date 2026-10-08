@@ -7,7 +7,7 @@ import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Share, StatusBar, StyleSheet, Text, TextInput, useWindowDimensions, View, type ViewToken } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { startChat } from '../api'
+import { startChat, subscribeSeller } from '../api'
 import { useAuth } from '../auth'
 import { mediaUrl } from '../config'
 import { tr } from '../i18n'
@@ -89,6 +89,15 @@ export default function ShopsFeedView({ start, tab = false }: { start?: string; 
       {!tab && <Pressable style={[s.round, { top: insets.top + 8, left: 12 }]} onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} hitSlop={8} accessibilityLabel={tr('Назад')}>
         <Icon name="back" size={22} color="#fff" />
       </Pressable>}
+      {/* вкладка «Шопсы»: заголовок и «Снять шопс» слева сверху, как у Reels — понятно, где ты и как снять своё */}
+      {tab && (
+        <View style={[s.topBar, { top: insets.top + 8 }]}>
+          <Text style={s.topTitle}>{tr('Шопсы')}</Text>
+          <Pressable style={s.create} onPress={() => router.push((token ? '/shops/new' : '/login') as never)} hitSlop={8} accessibilityLabel={tr('Снять шопс')}>
+            <Icon name="plus" size={18} color="#fff" />
+          </Pressable>
+        </View>
+      )}
       <Pressable style={[s.round, { top: insets.top + 8, right: 12 }]} onPress={() => setMuted((m) => !m)} hitSlop={8} accessibilityLabel={tr(muted ? 'Включить звук' : 'Выключить звук')}>
         <Icon name={muted ? 'soundOff' : 'soundOn'} size={20} color="#fff" />
       </Pressable>
@@ -97,8 +106,9 @@ export default function ShopsFeedView({ start, tab = false }: { start?: string; 
 }
 
 const Slide = memo(function Slide({ shop, active, near, muted, width, height, bottom }: { shop: Shop; active: boolean; near: boolean; muted: boolean; width: number; height: number; bottom: number }) {
-  const { token } = useAuth()
+  const { token, user } = useAuth()
   const [paused, setPaused] = useState(false)
+  const [following, setFollowing] = useState(!!(shop.author as unknown as { is_subscribed?: boolean } | undefined)?.is_subscribed)
   const [sheet, setSheet] = useState(false)
   const [comments, setComments] = useState(false)
   const [like, setLike] = useState({ on: !!shop.liked, n: shop.likes ?? 0 })
@@ -190,24 +200,34 @@ const Slide = memo(function Slide({ shop, active, near, muted, width, height, bo
     <View style={{ width, height, backgroundColor: '#000' }}>
       {!!shop.poster_url && <Image source={{ uri: mediaUrl(shop.poster_url) ?? undefined }} style={StyleSheet.absoluteFill} contentFit="cover" />}
       <Pressable style={StyleSheet.absoluteFill} onPress={onTap} accessibilityLabel={tr(paused ? 'Смотреть' : 'Пауза')}>
-        <VideoView player={player} style={StyleSheet.absoluteFill} contentFit="cover" nativeControls={false} allowsPictureInPicture={false} />
+        <VideoView player={player} style={StyleSheet.absoluteFill} contentFit="cover" nativeControls={false} allowsPictureInPicture={false} allowsVideoFrameAnalysis={false} />
       </Pressable>
       {paused && <View pointerEvents="none" style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}><Icon name="play" size={56} color="rgba(255,255,255,0.9)" filled /></View>}
+      {paused && <View pointerEvents="none" style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}><View style={s.pauseBadge}><Icon name="play" size={34} color="#fff" filled /></View></View>}
       {burst > 0 && <View key={burst} pointerEvents="none" style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}><Icon name="heart" size={96} color="#FF3B5C" filled /></View>}
       <View style={[s.side, { bottom: bottom + 28 }]}>
-        <Pressable style={s.sideAva} onPress={() => shop.author && router.push(`/seller/${shop.author.id}` as never)} accessibilityLabel={shop.author?.name}>
-          {shop.author?.avatar ? <Image source={{ uri: mediaUrl(shop.author.avatar) ?? undefined }} style={StyleSheet.absoluteFill} /> : <Text style={s.avaText}>{(shop.author?.name || '?')[0]}</Text>}
-        </Pressable>
+        <View style={{ alignItems: 'center', marginBottom: 6 }}>
+          <Pressable style={s.sideAva} onPress={() => shop.author && router.push(`/seller/${shop.author.id}` as never)} accessibilityLabel={shop.author?.name}>
+            {shop.author?.avatar ? <Image source={{ uri: mediaUrl(shop.author.avatar) ?? undefined }} style={StyleSheet.absoluteFill} /> : <Text style={s.avaText}>{(shop.author?.name || '?')[0]}</Text>}
+          </Pressable>
+          {!!shop.author && shop.author.id !== user?.id && (
+            <Pressable style={[s.follow, following && s.followOn]} hitSlop={8} accessibilityLabel={tr(following ? 'Вы подписаны' : 'Подписаться')}
+              onPress={() => { if (!token) { router.push('/login'); return } const on = !following; setFollowing(on); subscribeSeller(token, shop.author!.id, on).catch(() => setFollowing(!on)) }}>
+              <Text style={s.followT}>{following ? '✓' : '+'}</Text>
+            </Pressable>
+          )}
+        </View>
         <Pressable style={s.sideBtn} onPress={() => toggleLike()} hitSlop={6} accessibilityRole="button" accessibilityLabel={tr('Нравится')} accessibilityState={{ selected: isShop ? like.on : faved }}>
           <Icon name="heart" size={30} color={(isShop ? like.on : faved) ? '#FF3B5C' : '#fff'} filled={isShop ? like.on : faved} />
-          <Text style={s.sideText}>{isShop ? (like.n || '') : ''}</Text>
+          <Text style={s.sideText}>{isShop ? (like.n || tr('Нравится')) : tr('В избранное')}</Text>
         </Pressable>
         <Pressable style={s.sideBtn} onPress={() => (isShop ? setComments(true) : shop.items[0] && write(shop.items[0]))} hitSlop={6} accessibilityLabel={isShop ? tr('Комментарии') : tr('Спросить продавца')}>
           <Icon name="chat" size={30} color="#fff" />
-          <Text style={s.sideText}>{isShop ? (nComments || '') : ''}</Text>
+          <Text style={s.sideText}>{isShop ? (nComments || tr('Обсудить')) : tr('Спросить')}</Text>
         </Pressable>
         <Pressable style={s.sideBtn} onPress={share} hitSlop={6} accessibilityLabel={tr('Поделиться')}>
           <Icon name="share" size={28} color="#fff" />
+          <Text style={s.sideText}>{tr('Поделиться')}</Text>
         </Pressable>
       </View>
       {comments && <Comments shop={shop} onClose={() => setComments(false)} onCount={setNComments} onAsk={(it) => { setComments(false); write(it) }} bottom={bottom} />}
@@ -215,8 +235,10 @@ const Slide = memo(function Slide({ shop, active, near, muted, width, height, bo
       <LinearGradient pointerEvents="none" colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.18)', 'rgba(0,0,0,0.62)']} locations={[0, 0.35, 1]} style={s.shade} />
       <View pointerEvents="box-none" style={[s.meta, { paddingBottom: bottom + 18 }]}>
         <View style={k.row}>
-          <Text style={s.author}>{shop.author?.name}</Text>
-          <VerifiedMark official={shop.author?.official} verified={shop.author?.verified} size={15} />
+          <Pressable onPress={() => shop.author && router.push(`/seller/${shop.author.id}` as never)} style={{ flexDirection: 'row', alignItems: 'center', gap: 5, flexShrink: 1 }}>
+            <Text style={s.author} numberOfLines={1}>{shop.author?.name}</Text>
+            <VerifiedMark official={shop.author?.official} verified={shop.author?.verified} size={16} />
+          </Pressable>
           {shop.is_ad && <View style={s.ad}><Text style={s.adText}>{tr('Реклама')}</Text></View>}
         </View>
         {!!shop.caption && <Text style={s.caption} numberOfLines={3}>{shop.caption}</Text>}
@@ -227,7 +249,7 @@ const Slide = memo(function Slide({ shop, active, near, muted, width, height, bo
           )}
         </View>
       </View>
-      <View style={[s.progress, { bottom: bottom + 6 }]}><View style={[s.progressFill, { width: `${progress * 100}%` }]} /></View>
+      <View style={[s.progress, { bottom }]}><View style={[s.progressFill, { width: `${progress * 100}%` }]} /></View>
       <Modal visible={sheet} transparent animationType="slide" onRequestClose={() => setSheet(false)}>
         <Pressable style={k.sheetOverlay} onPress={() => setSheet(false)}>
           <Pressable style={[k.sheet, { paddingBottom: bottom + 16 }]} onPress={() => {}}>
@@ -242,16 +264,23 @@ const Slide = memo(function Slide({ shop, active, near, muted, width, height, bo
 })
 
 const s = StyleSheet.create({
+  topBar: { position: 'absolute', left: 16, flexDirection: 'row', alignItems: 'center', gap: 10, height: 40 },
+  topTitle: { fontFamily: font[800], fontSize: 22, letterSpacing: -0.5, color: '#fff', textShadowColor: 'rgba(0,0,0,0.45)', textShadowRadius: 4 },
+  create: { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center' },
   round: { position: 'absolute', width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center' },
   side: { position: 'absolute', right: 8, alignItems: 'center', gap: 18, zIndex: 2 },
   sideAva: { width: 46, height: 46, borderRadius: 23, borderWidth: 2, borderColor: '#fff', overflow: 'hidden', backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
   sideBtn: { alignItems: 'center', gap: 4, minWidth: 48 },
+  pauseBadge: { width: 74, height: 74, borderRadius: 37, backgroundColor: 'rgba(0,0,0,0.38)', alignItems: 'center', justifyContent: 'center', paddingLeft: 5 },
+  follow: { marginTop: -11, width: 22, height: 22, borderRadius: 11, backgroundColor: '#FF3B5C', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#fff' },
+  followOn: { backgroundColor: colors.primary },
+  followT: { color: '#fff', fontFamily: font[800], fontSize: 13, lineHeight: 15, marginTop: -1 },
   sideText: { fontFamily: font[700], fontSize: 12, color: '#fff', textShadowColor: 'rgba(0,0,0,0.5)', textShadowRadius: 2 },
   shade: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '46%' },
   meta: { position: 'absolute', left: 0, right: 76, bottom: 0, paddingHorizontal: 12, paddingTop: 60 },
   ava: { width: 32, height: 32, borderRadius: 16, overflow: 'hidden', backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
   avaText: { fontFamily: font[800], fontSize: 14, color: colors.primaryDeep },
-  author: { fontFamily: font[700], fontSize: 15, color: '#fff' },
+  author: { fontFamily: font[800], fontSize: 16, color: '#fff', textShadowColor: 'rgba(0,0,0,0.45)', textShadowRadius: 3, flexShrink: 1 },
   ad: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, backgroundColor: 'rgba(255,255,255,0.2)' },
   adText: { fontFamily: font[700], fontSize: 11, color: '#fff' },
   caption: { marginTop: 8, fontFamily: font[500], fontSize: 14, lineHeight: 20, color: '#fff' },
@@ -264,8 +293,8 @@ const s = StyleSheet.create({
   writeText: { fontFamily: font[700], fontSize: 13, color: '#fff' },
   all: { alignSelf: 'flex-start', height: 30, paddingHorizontal: 12, borderRadius: 15, backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center' },
   allText: { fontFamily: font[700], fontSize: 13, color: '#fff' },
-  progress: { position: 'absolute', left: 12, right: 12, height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.25)' },
-  progressFill: { height: 3, borderRadius: 2, backgroundColor: colors.surface },
+  progress: { position: 'absolute', left: 0, right: 0, height: 2, backgroundColor: 'rgba(255,255,255,0.22)' },
+  progressFill: { height: 2, backgroundColor: '#FFFFFF' },
 })
 
 

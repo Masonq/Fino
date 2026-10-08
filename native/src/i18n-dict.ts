@@ -1075,6 +1075,8 @@ export const DICT: Record<string, { en?: string; sr?: string }> = {
   "за неделю": { en: "this week", sr: "ove nedelje" },
   "сейчас на сайте": { en: "online now", sr: "sada na sajtu" },
   "заблокировано": { en: "blocked", sr: "blokirano" },
+  "Обсудить": { en: "Comment", sr: "Komentariši" },
+  "Спросить": { en: "Ask", sr: "Pitaj" },
   "Оформление": { en: "Appearance", sr: "Izgled" },
   "Ошибка видео": { en: "Video error", sr: "Greška videa" },
   "Пара слов о ролике": { en: "A few words about the video", sr: "Par reči o videu" },

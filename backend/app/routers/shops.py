@@ -31,6 +31,7 @@ from app.core.auth import get_current_user, get_current_user_optional, require_n
 from app.core.clock import utcnow
 from app.core.config import settings
 from app.core.database import SessionLocal, get_db
+from app.models.seller_subscription import SellerSubscription
 from app.models import (Chat, CreatorApplication, Listing, ListingPhoto, ListingStatus, Message, Shop, ShopComment, ShopItem,
                         ShopLike, ShopOrder, ShopStatDaily, ShopViewLog, User, UserRole, visitor_key)
 from app.routers.job_responses import _brief
@@ -167,7 +168,9 @@ def _serialize(shop: Shop, db: Session, lang: str = "ru", viewer=None, stats: bo
         "published_at": shop.published_at.isoformat() if shop.published_at else None,
         "expires_at": shop.expires_at.isoformat() if shop.expires_at else None,
         "author": {"id": str(a.id), "name": a.display_name, "avatar": a.avatar_url, "verified": bool(a.document_verified),
-                   "official": a.role in (UserRole.admin, UserRole.moderator)} if a else None,
+                   "official": a.role in (UserRole.admin, UserRole.moderator),
+                   # подписан ли смотрящий на автора — для «+» / «✓» у аватара в ленте шопсов
+                   "is_subscribed": bool(viewer and viewer.id != a.id and db.query(SellerSubscription.id).filter_by(subscriber_id=viewer.id, seller_id=a.id).first())} if a else None,
         "items": [x for x in (_item(it, lang) for it in shop.items) if x],
         "mine": bool(viewer and viewer.id == shop.author_id),
     }
