@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ScrollView, StyleSheet, Text, View } from 'react-native'
-import { adminDaily, adminStats, type AdminStats, type DayRow } from '../../src/admin'
+import { adminCatStats, adminDaily, adminFunnel, adminQuality, adminSources, adminStats, type AdminStats, type DayRow, type Funnel } from '../../src/admin'
+import { getLang } from '../../src/i18n'
 import { useAuth } from '../../src/auth'
 import { tr } from '../../src/i18n'
 import { Header } from '../../src/components/Kit'
@@ -15,11 +16,19 @@ export default function Stats() {
   const [days, setDays] = useState<'7' | '30'>('7')
   const [s, setS] = useState<AdminStats | null>(null)
   const [daily, setDaily] = useState<DayRow[] | null>(null)
+  const [fun, setFun] = useState<Funnel | null>(null)
+  const [src, setSrc] = useState<{ source: string; title?: string | null; count: number }[] | null>(null)
+  const [cats, setCats] = useState<{ slug: string; count: number; name: Record<string, string> }[] | null>(null)
+  const [qual, setQual] = useState<Record<string, number> | null>(null)
   useEffect(() => {
     if (!token) return
     setS(null)
     adminStats(token, +days).then(setS).catch(() => {})
     adminDaily(token, 14).then((r) => setDaily(r.items)).catch(() => setDaily([]))
+    adminFunnel(token, +days).then(setFun).catch(() => {})
+    adminSources(token, +days).then((r) => setSrc(r.items)).catch(() => setSrc([]))
+    adminCatStats(token, +days).then((r) => setCats(r.items)).catch(() => setCats([]))
+    adminQuality(token, +days).then(setQual).catch(() => {})
   }, [token, days])
   const tiles: [string, number | undefined, string][] = s ? [
     [tr('Объявлений в ленте'), s.listings.active, TINTS['real-estate']], [tr('Новых за период'), s.listings.fresh, TINTS.auto],
@@ -42,6 +51,46 @@ export default function Stats() {
             {!daily ? <Skeleton style={{ height: 110, borderRadius: 12 }} /> : <Bars rows={daily} k={k} />}
           </View>
         ))}
+        {/* воронка: показы → просмотры → контакты, как на сайте */}
+        {!!fun && (
+          <View style={st.card}>
+            <Text style={st.cardT}>{tr('Воронка')}</Text>
+            {([[tr('Показы в ленте'), fun.funnel.impressions], [tr('Открыли объявление'), fun.funnel.views], [tr('Связались'), fun.funnel.contacts], [tr('Написали'), fun.funnel.messages], [tr('Открыли телефон'), fun.funnel.phone_reveals]] as [string, number][]).map(([l, n], i, arr) => (
+              <View key={l} style={st.fRow}>
+                <Text style={st.fL}>{l}</Text>
+                <View style={st.fBarBox}><View style={[st.fBar, { width: `${Math.max(2, (n / Math.max(1, arr[0][1])) * 100)}%` }]} /></View>
+                <Text style={st.fN}>{n.toLocaleString('ru-RU')}</Text>
+              </View>
+            ))}
+            <Text style={st.note}>{tr('Объявлений за период: {n}, с контактом: {c}, продано: {s}', { n: fun.liquidity.listings, c: fun.liquidity.with_contact, s: fun.liquidity.sold })}{fun.liquidity.median_hours_to_contact != null ? ` · ${tr('до первого контакта ~{h} ч', { h: Math.round(fun.liquidity.median_hours_to_contact) })}` : ''}</Text>
+          </View>
+        )}
+        {!!cats && cats.length > 0 && (
+          <View style={st.card}>
+            <Text style={st.cardT}>{tr('Новые объявления по разделам')}</Text>
+            {cats.slice(0, 8).map((c) => (
+              <View key={c.slug} style={st.fRow}>
+                <Text style={st.fL} numberOfLines={1}>{c.name?.[getLang()] || c.name?.ru || c.slug}</Text>
+                <View style={st.fBarBox}><View style={[st.fBar, { width: `${Math.max(2, (c.count / Math.max(1, cats[0].count)) * 100)}%` }]} /></View>
+                <Text style={st.fN}>{c.count}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+        {!!src && src.length > 0 && (
+          <View style={st.card}>
+            <Text style={st.cardT}>{tr('Откуда объявления')}</Text>
+            {src.map((x) => <View key={x.source + (x.title || '')} style={st.fRow}><Text style={st.fL} numberOfLines={1}>{x.source === 'own' ? tr('Размещены на PLONK') : (x.title || x.source)}</Text><Text style={st.fN}>{x.count}</Text></View>)}
+          </View>
+        )}
+        {!!qual && (
+          <View style={st.card}>
+            <Text style={st.cardT}>{tr('Качество ленты')}</Text>
+            {([[tr('Без цены'), qual.no_price], [tr('Без фото'), qual.no_photo], [tr('Без города'), qual.no_city], [tr('Без перевода'), qual.not_translated]] as [string, number][]).map(([l, n]) => (
+              <View key={l} style={st.fRow}><Text style={st.fL}>{l}</Text><Text style={[st.fN, n > 0 && { color: colors.danger }]}>{n} / {qual.active}</Text></View>
+            ))}
+          </View>
+        )}
       </ScrollView>
     </View>
   )
@@ -79,5 +128,11 @@ const st = StyleSheet.create({
   bar: { width: '100%', borderRadius: 4, backgroundColor: colors.primary },
   barN: { fontFamily: font[700], fontSize: 9, color: colors.muted, marginBottom: 2 },
   axis: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
+  fRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4 },
+  fL: { width: 130, fontFamily: font[600], fontSize: 13, color: colors.inkSoft },
+  fBarBox: { flex: 1, height: 10, borderRadius: 5, backgroundColor: colors.sunken, overflow: 'hidden' },
+  fBar: { height: 10, borderRadius: 5, backgroundColor: colors.primary },
+  fN: { minWidth: 44, textAlign: 'right', fontFamily: font[800], fontSize: 13.5, color: colors.ink, marginLeft: 'auto' },
+  note: { fontFamily: font[400], fontSize: 12.5, color: colors.muted, lineHeight: 18 },
   axisT: { fontFamily: font[600], fontSize: 11, color: colors.muted },
 })

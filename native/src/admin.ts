@@ -40,7 +40,7 @@ export type DayRow = { day: string; listings: number; own: number; visitors: num
 export const adminStats = (t: string, days: number) => authed<AdminStats>(`/admin/stats?days=${days}`, t)
 export const adminDaily = (t: string, days: number) => authed<{ items: DayRow[] }>(`/admin/stats/daily?days=${days}`, t)
 export type AuditItem = { id: string; actor: string; action: string; target_type: string; target_id: string; reason?: string | null; details?: Record<string, unknown> | null; created_at: string }
-export const adminAudit = (t: string, kind: string) => authed<{ total: number; items: AuditItem[] }>(`/admin/audit?days=30&limit=100${kind ? `&action=${kind}` : ''}`, t)
+export const adminAudit = (t: string, kind: string, actor = '') => authed<{ total: number; items: AuditItem[] }>(`/admin/audit?days=30&limit=100${kind ? `&action=${kind}` : ''}${actor ? `&actor=${encodeURIComponent(actor)}` : ''}`, t)
 
 // ---------- оставшиеся разделы «Панели команды» ----------
 export type Alert = { kind: string; level: string; count: number; value?: string | null; listing_id?: string; user_id?: string }
@@ -85,3 +85,12 @@ export type UserListing = { id: string; title?: string | null; status: string; p
 export const adminUserListings = (t: string, id: string) => authed<{ items: UserListing[] }>(`/admin/users/${id}/listings`, t)
 export const adminUserAudit = (t: string, id: string) => authed<{ items: AuditItem[] }>(`/admin/audit?target_id=${id}&limit=30`, t)
 export const adminDeleteUser = (t: string, id: string) => authed<unknown>(`/admin/users/${id}`, t, 'DELETE')
+
+// ---------- расширенные отчёты, фильтр журнала по сотруднику, массовая модерация (как на сайте) ----------
+export type Funnel = { funnel: { impressions: number; views: number; contacts: number; messages: number; phone_reveals: number }; liquidity: { listings: number; with_contact: number; median_hours_to_contact: number | null; sold: number } }
+export const adminFunnel = (t: string, days: number) => authed<Funnel>(`/admin/stats/funnel?days=${days}`, t)
+export const adminSources = (t: string, days: number) => authed<{ items: { source: string; title?: string | null; count: number }[] }>(`/admin/stats/sources?days=${days}`, t)
+export const adminCatStats = (t: string, days: number) => authed<{ items: { slug: string; count: number; name: Record<string, string> }[] }>(`/admin/stats/categories?days=${days}`, t)
+export const adminQuality = (t: string, days: number) => authed<{ active: number; no_price: number; no_photo: number; no_city: number; not_translated: number }>(`/admin/stats/quality?days=${days}`, t)
+export const auditActors = (t: string) => authed<{ items: { id: string; name: string; approved: number; rejected: number; blocked: number; total: number }[] }>('/admin/audit/actors?days=30', t)
+export const modBulk = (t: string, ids: string[], approve: boolean, reason?: string) => authed<unknown>('/moderation/bulk', t, 'POST', { ids, approve, reason: reason || null })
