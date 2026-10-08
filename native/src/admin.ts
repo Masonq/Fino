@@ -41,3 +41,25 @@ export const adminStats = (t: string, days: number) => authed<AdminStats>(`/admi
 export const adminDaily = (t: string, days: number) => authed<{ items: DayRow[] }>(`/admin/stats/daily?days=${days}`, t)
 export type AuditItem = { id: string; actor: string; action: string; target_type: string; target_id: string; reason?: string | null; details?: Record<string, unknown> | null; created_at: string }
 export const adminAudit = (t: string, kind: string) => authed<{ total: number; items: AuditItem[] }>(`/admin/audit?days=30&limit=100${kind ? `&action=${kind}` : ''}`, t)
+
+// ---------- оставшиеся разделы «Панели команды» ----------
+export type Alert = { kind: string; level: string; count: number; value?: string | null; listing_id?: string; user_id?: string }
+export const adminAlerts = (t: string) => authed<{ items: Alert[] }>('/admin/users/alerts', t)
+export type FlaggedChat = { id: string; reason?: string | null; seller_id?: string; listing?: { title?: string } | null; messages?: { from?: string; text?: string }[] }
+export const flaggedChats = (t: string) => authed<{ items: FlaggedChat[] }>('/moderation/flagged-chats', t)
+export const clearChatFlag = (t: string, id: string) => authed<unknown>(`/moderation/flagged-chats/${id}/clear`, t, 'POST')
+export type JobRun = { name: string; at?: string | null; done: number; error?: boolean; reason?: string | null }
+export const adminJobs = (t: string) => authed<{ days: number; jobs: JobRun[] }>('/admin/audit/jobs?days=7', t)
+export type VolApp = { id: string; user?: { display_name?: string; email?: string } | null; role?: string; languages?: string[] | string; hours_per_week?: number; about?: string; status?: string; created_at?: string }
+export const volunteerQueue = (t: string, status: string) => authed<{ items: VolApp[]; counts: Record<string, number> }>(`/volunteer/queue?status=${status}`, t)
+export const volunteerDecide = (t: string, id: string, accept: boolean) => authed<unknown>(`/volunteer/${id}/decide`, t, 'POST', { accept, note: '' })
+export type ShopQ = { id: string; caption?: string | null; poster_url?: string | null; author?: { name?: string } | null; name?: string; display_name?: string }
+export const shopQueue = (t: string) => authed<{ shops: ShopQ[]; creators: ShopQ[] }>('/shops/admin/queue', t)
+export const shopDecide = (t: string, id: string, approve: boolean) => authed<unknown>(`/shops/admin/shops/${id}`, t, 'POST', { approve })
+export const creatorDecide = (t: string, id: string, approve: boolean) => authed<unknown>(`/shops/admin/creators/${id}`, t, 'POST', { approve })
+export type TeamChat = { id: string; person?: { name?: string } | null; last_text?: string | null; last_at?: string | null; last_from_team?: boolean; unread?: number }
+export const teamChats = (t: string) => authed<{ items: TeamChat[]; unread: number }>('/team/chats', t)
+export const teamChat = (t: string, id: string) => authed<{ messages: { id?: string; text: string; from_team?: boolean }[]; person?: { name?: string } }>(`/team/chats/${id}`, t)
+export const teamReply = (t: string, id: string, text: string) => authed<unknown>(`/team/chats/${id}/reply`, t, 'POST', { text })
+export const adminSettings = (t: string) => authed<{ card_payments_enabled: boolean; updated_at?: string | null }>('/admin/settings', t)
+export const setCardPayments = (t: string, enabled: boolean) => authed<{ card_payments_enabled: boolean }>('/admin/settings/card-payments', t, 'POST', { enabled })

@@ -35,16 +35,22 @@ export default function AdminHome() {
   const queues = [
     { n: c?.moderation, label: tr('объявлений ждут проверки'), go: () => router.push('/admin/moderation' as never) },
     { n: c?.support, label: tr('обращений без ответа'), go: () => router.push('/admin/support' as never) },
-    { n: c?.team_chats, label: tr('ответов на письма команды'), go: () => Linking.openURL(`${SITE}/ru/admin/team-chats`) },
-    { n: c?.flagged_chats, label: tr('подозрительных переписок'), go: () => Linking.openURL(`${SITE}/ru/admin/flagged`) },
+    { n: c?.team_chats, label: tr('ответов на письма команды'), go: () => router.push('/admin/team' as never) },
+    { n: c?.flagged_chats, label: tr('подозрительных переписок'), go: () => router.push('/admin/flagged' as never) },
   ].filter((q) => (q.n ?? 0) > 0)
   const SECTIONS: [string, string, string, () => void][] = [
     ['shield', tr('Модерация'), TINTS['real-estate'], () => router.push('/admin/moderation' as never)],
     ['chat', tr('Обращения'), TINTS.auto, () => router.push('/admin/support' as never)],
     ['user', tr('Пользователи'), TINTS.fashion, () => router.push('/admin/users' as never)],
     ['list', tr('Показатели'), TINTS.electronics, () => router.push('/admin/stats' as never)],
-    ['flag', tr('Подозрительные чаты'), TINTS.services, () => Linking.openURL(`${SITE}/ru/admin/flagged`)],
+    ['flag', tr('Подозрительные чаты'), TINTS.services, () => router.push('/admin/flagged' as never)],
     ['doc', tr('Журнал действий'), TINTS.business, () => router.push('/admin/audit' as never)],
+    ['bell', tr('Тревоги'), TINTS.kids, () => router.push('/admin/alerts' as never)],
+    ['play', tr('Шопсы на проверке'), TINTS['hobby-sport'], () => router.push('/admin/shops' as never)],
+    ['mail', tr('Письма команды'), TINTS.pets, () => router.push('/admin/team' as never)],
+    ['user', tr('Заявки в команду'), TINTS.beauty, () => router.push('/admin/volunteers' as never)],
+    ['clock', tr('Фоновые задачи'), TINTS['home-garden'], () => router.push('/admin/jobs' as never)],
+    ...(user?.role === 'admin' ? [['lock', tr('Настройки'), TINTS.business, () => router.push('/admin/settings' as never)] as [string, string, string, () => void]] : []),
   ]
   return (
     <View style={styles.page}>
