@@ -100,7 +100,7 @@ def _fit_square(img: Image.Image, side: int) -> Image.Image:
 
 
 def render(*, title: str, price_text: str, meta: str, photo_url: str | None,
-           is_free: bool = False, is_fresh: bool = False) -> bytes:
+           is_free: bool = False, is_fresh: bool = False, lang: str = "ru") -> bytes:
     """
     Карточка в стиле сайта (PLONK 2.0): тёплая бумага с мятным и лаймовым свечением, как шапка сайта; фото —
     скруглённой карточкой с мягкой тенью; справа раздел, крупная цена, заголовок, город капсулой; внизу знак
@@ -140,9 +140,10 @@ def render(*, title: str, price_text: str, meta: str, photo_url: str | None,
         card.paste(ph, (M, M), mask)
     if is_fresh:
         bf = _font(24, 800)
-        tw = draw.textlength("Новое", font=bf)
+        new_word = {"ru": "Новое", "en": "New", "sr": "Novo"}.get(lang, "Новое")
+        tw = draw.textlength(new_word, font=bf)
         draw.rounded_rectangle([M + 22, M + 22, M + 22 + tw + 40, M + 22 + 50], 25, fill=ACCENT)
-        draw.text((M + 22 + 20, M + 22 + 25), "Новое", font=bf, fill=(255, 255, 255), anchor="lm")
+        draw.text((M + 22 + 20, M + 22 + 25), new_word, font=bf, fill=(255, 255, 255), anchor="lm")
 
     x = M + side + 52
     right = W - 56
@@ -184,7 +185,7 @@ def render(*, title: str, price_text: str, meta: str, photo_url: str | None,
         pass
     draw.text((x + 64, fy + 26), "plonk.rs", font=_font(28, 800), fill=INK, anchor="lm")
     bf = _font(24, 800)
-    label = "Смотреть"
+    label = {"ru": "Смотреть", "en": "View", "sr": "Pogledaj"}.get(lang, "Смотреть")
     bw = draw.textlength(label, font=bf) + 56
     draw.rounded_rectangle([right - bw, fy, right, fy + 52], 26, fill=(205, 239, 224))
     draw.text((right - bw / 2, fy + 26), label, font=bf, fill=(8, 80, 65), anchor="mm")
@@ -202,7 +203,7 @@ def cached(key: str, **kwargs) -> bytes:
     """
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     # версия рисунка в ключе: после смены оформления старые картинки из кэша не отдаются
-    name = hashlib.sha256(("v2|" + key).encode()).hexdigest()[:24] + ".png"
+    name = hashlib.sha256(("v3|" + key).encode()).hexdigest()[:24] + ".png"
     path = CACHE_DIR / name
     if path.exists():
         try:

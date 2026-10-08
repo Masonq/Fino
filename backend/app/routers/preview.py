@@ -151,7 +151,7 @@ def listing_preview(
     # Собранная карточка вместо голой фотографии: с ценой, городом и
     # домом. Размер указываем явно — иначе Telegram показывает её
     # маленькой иконкой сбоку, а не картинкой во всю ширину.
-    card = f"{base}/api/og/listing/{listing.id}.png?v=2"   # ?v — новый адрес после смены оформления: мессенджеры хранят картинку по адресу
+    card = f"{base}/api/og/listing/{listing.id}.png?v=3"   # ?v — новый адрес после смены оформления: мессенджеры хранят картинку по адресу
     image_tags = (
         f'<meta property="og:image" content="{html.escape(card)}" />\n'
         f'<meta property="og:image:width" content="1200" />\n'
@@ -171,7 +171,7 @@ def listing_preview(
     ))
 
 @router.get("/api/og/listing/{listing_id}.png")
-def og_card(listing_id: uuid.UUID, db: Session = Depends(get_db)):
+def og_card(listing_id: uuid.UUID, lang: str = "ru", db: Session = Depends(get_db)):
     """
     Картинка объявления для ссылок в мессенджерах.
 
@@ -192,11 +192,15 @@ def og_card(listing_id: uuid.UUID, db: Session = Depends(get_db)):
         raise HTTPException(404, "not_found")
 
     by_lang = {t.language: t for t in listing.translations}
-    tr = next((by_lang[l] for l in ("ru", "en", "sr") if l in by_lang), None)
+    # язык карточки = язык страницы, где стоит ссылка (раньше всегда русский — при сербском тексте превью)
+    lang = lang if lang in ("ru", "en", "sr") else "ru"
+    order = [lang] + [l for l in ("ru", "en", "sr") if l != lang]
+    tr = next((by_lang[l] for l in order if l in by_lang), None)
     title = (tr.title if tr else "") or SITE
+    L = {"ru": ("Бесплатно", "Цена не указана"), "en": ("Free", "Price on request"), "sr": ("Besplatno", "Cena nije navedena")}[lang]
 
     if listing.is_free:
-        price_text = "Бесплатно"
+        price_text = L[0]
     elif listing.price:
         amount = f"{float(listing.price):,.0f}".replace(",", "\u2009")
         # Валюта — перечисление, а не строка: в подпись уезжало
@@ -204,21 +208,26 @@ def og_card(listing_id: uuid.UUID, db: Session = Depends(get_db)):
         code = getattr(listing.currency, "value", listing.currency) or ""
         price_text = f"{amount} {'€' if code.upper() == 'EUR' else code}".strip()
     else:
-        price_text = "Цена не указана"
+        price_text = L[1]
 
     # Название города по-русски: слаг «beograd» в картинке выглядел бы
     # техническим. Берём первое написание из списка и делаем заглавной
     # первую букву — там русское идёт первым.
     city = ""
     if listing.city:
-        from app.data.cities_data import _CITIES
+        from app.data.cities_data import _CITIES, city_label
 
-        variants = _CITIES.get(listing.city) or []
-        city = (variants[0].title() if variants else listing.city.title())
+        try:
+            city = city_label(listing.city, lang) or ""
+        except Exception:                                # noqa: BLE001
+            city = ""
+        if not city or city == listing.city:
+            variants = _CITIES.get(listing.city) or []
+            city = (variants[0].title() if variants else listing.city.title())
     section = ""
     if listing.category:
         names = listing.category.name or {}
-        section = names.get("ru") or names.get("en") or listing.category.slug
+        section = names.get(lang) or names.get("ru") or names.get("en") or listing.category.slug
     meta = " · ".join(p for p in (city, section) if p)
 
     cover = next((p for p in listing.photos if p.is_cover and not p.is_video),
@@ -232,10 +241,10 @@ def og_card(listing_id: uuid.UUID, db: Session = Depends(get_db)):
     fresh = bool(listing.published_at and
                  (utcnow() - listing.published_at) < timedelta(hours=24))
     key = "|".join([
-        str(listing.id), title, price_text, meta, photo_url or "", str(fresh),
+        str(listing.id), lang, title, price_text, meta, photo_url or "", str(fresh),
     ])
     data = cached(key, title=title, price_text=price_text, meta=meta,
-                  photo_url=photo_url, is_free=bool(listing.is_free), is_fresh=fresh)
+                  photo_url=photo_url, is_free=bool(listing.is_free), is_fresh=fresh, lang=lang)
     # Кэш на сутки: карточка меняется только вместе с объявлением, а
     # мессенджеры дёргают её при каждой пересылке ссылки.
     return Response(content=data, media_type="image/png",
