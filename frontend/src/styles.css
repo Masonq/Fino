@@ -1,3 +1,4 @@
+:root{ --gutter:16px; }   /* единый боковой отступ страниц на телефоне */
 /* PLONK 2.0: Onest — гротеск, сделанный для кириллицы и латиницы сразу (раньше кириллица падала в системный шрифт
    и выглядела иначе, чем латиница). Один шрифт на всё: заголовки, текст, цены (цифры моноширинные). */
 
@@ -305,7 +306,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* ===== категории — сетка в 2 ряда, подпись сверху-слева, фото снизу-справа внахлёст ===== */
 .cat-rows{
   display:flex; flex-direction:column; gap:7px;
-  padding:10px 12px 2px; overflow-x:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain;
+  padding:10px var(--gutter) 2px; overflow-x:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain;
 }
 .cat-rows::-webkit-scrollbar{ display:none; }
 .cat-row{ display:flex; gap:7px; width:max-content; }
@@ -364,11 +365,11 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .section-link{ font-size:11.5px; font-weight:700; color:var(--primary); }
 
 /* ===== category tiles (photo-based) ===== */
-.cat-scroll{ display:flex; gap:9px; padding:0 12px 4px; overflow-x:auto; overscroll-behavior-x:contain; -webkit-overflow-scrolling:touch; }
+.cat-scroll{ display:flex; gap:9px; padding:0 var(--gutter) 4px; overflow-x:auto; overscroll-behavior-x:contain; -webkit-overflow-scrolling:touch; }
 .cat-scroll::-webkit-scrollbar{ display:none; }
 
 /* ===== feed header + column toggle ===== */
-.feed-head-row{ display:flex; justify-content:space-between; align-items:center; padding:12px 12px 10px; }
+.feed-head-row{ display:flex; justify-content:space-between; align-items:center; padding:12px var(--gutter) 10px; }
 .feed-heading{ font-size:19px; font-weight:800; letter-spacing:-0.01em; }
 .col-toggle{ display:flex; background:var(--surface); border-radius:11px; padding:3px; box-shadow:var(--shadow); gap:2px; }
 .col-btn{ width:32px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--muted); }
@@ -377,7 +378,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* ===== simple listing card (Avito-style) ===== */
 .infinite-grid{
-  display:grid; grid-template-columns:1fr 1fr; gap:12px 8px; padding:0 12px;
+  display:grid; grid-template-columns:1fr 1fr; gap:12px 8px; padding:0 var(--gutter);
   /* dense — если XL-карточка (на 2 колонки) попадёт на нечётную
      позицию, следующая обычная карточка подтянется в образовавшуюся
      дыру вместо того, чтобы оставить пустое место в ряду. Без этого
@@ -390,7 +391,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    Класса не было в CSS вовсе: и настоящие карточки, и их скелетон
    отображались без сетки, просто друг под другом. */
 .feed-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px 8px; }
-.infinite-list{ display:flex; flex-direction:column; gap:20px; padding:0 12px; }
+.infinite-list{ display:flex; flex-direction:column; gap:20px; padding:0 var(--gutter); }
 
 /* Карточка — колонка, чтобы низ у соседей совпадал.
    У объявлений с признаками («3-комн. · 58 м²») город с датой
@@ -500,7 +501,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    Раньше здесь была своя раскладка с картинкой из пустого поля image_url. */
 .cats-grid{
   display:grid; grid-template-columns:repeat(2,1fr);
-  gap:9px; padding:4px 12px 12px;
+  gap:9px; padding:4px var(--gutter) 12px;
 }
 .cats-item{
   position:relative; height:98px; border-radius:15px; overflow:hidden;
@@ -887,7 +888,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    перебивали её — с обычным потоком спорить не с чем, наложения
    попросту нет. */
 .map-page-address{
-  flex-shrink:0; margin:0 12px 16px; z-index:1;
+  flex-shrink:0; margin:0 var(--gutter) 16px; z-index:1;
   background:var(--surface); border-radius:14px; padding:12px 14px;
   box-shadow:0 6px 20px rgba(20,30,25,.14);
 }
@@ -1264,7 +1265,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 .results-head{
   display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center;
-  padding:14px 12px 10px; gap:10px;
+  padding:14px var(--gutter) 10px; gap:10px;
 }
 .results-head-left{ display:flex; align-items:center; gap:10px; min-width:0; flex-wrap:wrap; }
 .results-head-right{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
@@ -1363,13 +1364,13 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .fav-page.no-header{ padding-top:calc(14px + var(--sat)); }
 .fav-page h2{
   display:flex; align-items:center; gap:8px;
-  font-size:22px; font-weight:800; letter-spacing:-0.01em; padding:0 12px 14px;
+  font-size:22px; font-weight:800; letter-spacing:-0.01em; padding:0 var(--gutter) 14px;
 }
 .fav-count{
   font-size:12px; font-weight:800; color:var(--primary-deep);
   background:var(--primary-soft); border-radius:8px; padding:3px 8px;
 }
-.infinite-grid.no-pad{ padding:0 12px; }
+.infinite-grid.no-pad{ padding:0 var(--gutter); }
 .fav-empty{
   display:flex; flex-direction:column; align-items:center; text-align:center;
   gap:14px; padding:44px 32px;
@@ -1588,7 +1589,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    секунды, пока сама картинка ещё не загрузилась, и не будет ни
    пустого, ни белого фона в этот момент. */
 .profile-head{
-  display:flex; align-items:center; gap:14px; padding:6px 12px 18px;
+  display:flex; align-items:center; gap:14px; padding:6px var(--gutter) 18px;
 }
 .profile-avatar{
   width:64px; height:64px; border-radius:50%; flex-shrink:0; overflow:hidden;
@@ -1627,9 +1628,9 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   flex-shrink:0; width:38px; height:38px; border-radius:50%; background:var(--surface-sunken); color:var(--ink);
   display:flex; align-items:center; justify-content:center; align-self:flex-start; margin-top:2px;
 }
-.profile-stats{ display:flex; gap:8px; margin:0 12px 10px; }
+.profile-stats{ display:flex; gap:8px; margin:0 var(--gutter) 10px; }
 .profile-stat{
-  flex:1; min-width:0; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:11px 12px 10px;
+  flex:1; min-width:0; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:11px var(--gutter) 10px;
   display:flex; flex-direction:column; gap:2px; color:var(--ink);
 }
 .profile-stat.is-link{ position:relative; }
@@ -1658,7 +1659,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    чтобы не выглядело чужеродной вставкой рядом с ней. */
 .invite-card{
   display:flex; align-items:center; gap:12px;
-  margin:0 12px 0; padding:14px; border-radius:16px;
+  margin:0 var(--gutter) 0; padding:14px; border-radius:16px;
   background:var(--surface); border:1px solid var(--border);
 }
 .invite-card-icon{
@@ -1681,7 +1682,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   color:var(--muted);
 }
 .profile-menu{
-  margin:0 12px 22px; border-radius:16px; background:var(--surface);
+  margin:0 var(--gutter) 22px; border-radius:16px; background:var(--surface);
   border:1px solid var(--border); overflow:hidden;
 }
 .profile-row{
@@ -1718,7 +1719,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* Список заблокированных — своя простая строка: аватар, имя,
    кнопка разблокировать, тем же духом, что и у .profile-row рядом. */
-.blocked-list{ background:var(--surface); border-radius:16px; overflow:hidden; margin:0 12px; }
+.blocked-list{ background:var(--surface); border-radius:16px; overflow:hidden; margin:0 var(--gutter); }
 .blocked-row{
   display:flex; align-items:center; gap:12px; padding:12px 14px;
   border-bottom:1px solid var(--border);
@@ -1765,7 +1766,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* ===== мои объявления ===== */
 .my-tabs{
-  display:flex; gap:7px; padding:0 12px 14px;
+  display:flex; gap:7px; padding:0 var(--gutter) 14px;
   overflow-x:auto; scrollbar-width:none;
 }
 .my-tabs::-webkit-scrollbar{ display:none; }
@@ -1863,7 +1864,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 
 /* ===== модерация ===== */
-.mod-list{ display:flex; flex-direction:column; gap:12px; padding:0 12px; }
+.mod-list{ display:flex; flex-direction:column; gap:12px; padding:0 var(--gutter); }
 .mod-card{ background:var(--surface); border-radius:14px; overflow:hidden; border:1px solid var(--border); }
 .mod-photos{ display:flex; gap:4px; overflow-x:auto; scrollbar-width:none; }
 .mod-photos::-webkit-scrollbar{ display:none; }
@@ -1878,7 +1879,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .mod-meta{ font-size:11.5px; color:var(--muted); margin-top:8px; }
 /* Сводка за сутки: разбор очереди — работа без видимого результата,
    список всегда непустой. Цифры показывают, что дело движется. */
-.mod-day{ display:flex; gap:16px; padding:0 12px 10px; min-height:26px; font-size:11.5px; color:var(--muted); font-weight:600; }
+.mod-day{ display:flex; gap:16px; padding:0 var(--gutter) 10px; min-height:26px; font-size:11.5px; color:var(--muted); font-weight:600; }
 .mod-day b{ font-size:14px; font-weight:800; color:var(--ink); letter-spacing:-0.01em; margin-right:3px; font-variant-numeric:tabular-nums; }
 .mod-day .warn b{ color:var(--danger-ink); }
 .mod-dup{
@@ -1914,12 +1915,12 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .mod-bulkbar button:disabled{ opacity:.5; }
 @media (min-width:900px){ .mod-bulkbar{ bottom:32px; } }
 .mod-keys-hint{ display:none; }
-@media (min-width:900px){ .mod-keys-hint{ display:block; font-size:12px; color:var(--muted); font-weight:600; padding:0 12px 10px; } }
+@media (min-width:900px){ .mod-keys-hint{ display:block; font-size:12px; color:var(--muted); font-weight:600; padding:0 var(--gutter) 10px; } }
 .mod-card.focused{ box-shadow:0 0 0 2px var(--ink); }
 @media (hover:none){ .mod-card.focused{ box-shadow:none; } }
 .mod-seller{
   display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
-  margin:0 12px 10px; padding:9px 11px; border-radius:11px; background:var(--surface-sunken);
+  margin:0 var(--gutter) 10px; padding:9px 11px; border-radius:11px; background:var(--surface-sunken);
 }
 .mod-seller-name{ display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; color:var(--ink); min-width:0; }
 .mod-seller-facts{ display:flex; gap:10px; font-size:11.5px; font-weight:600; color:var(--muted); white-space:nowrap; }
@@ -1944,7 +1945,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   border:1px solid #E8A08D; border-radius:8px; padding:6px 10px; margin-bottom:8px;
 }
 .mod-open-link{ display:block; color:inherit; text-decoration:none; }
-.mod-reason-box{ padding:0 12px 12px; }
+.mod-reason-box{ padding:0 var(--gutter) 12px; }
 .mod-reason-box .mod-actions{ padding:0 0 12px; }
 .mod-reason-chips{ display:flex; flex-wrap:wrap; gap:7px; margin-bottom:10px; }
 .mod-reason-chip{
@@ -1957,7 +1958,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   border:1px solid rgba(20,30,25,.12); background:var(--surface-sunken); font-size:16px;
   font-family:inherit; resize:vertical; margin-bottom:8px;
 }
-.mod-actions{ display:flex; gap:8px; padding:0 12px 12px; }
+.mod-actions{ display:flex; gap:8px; padding:0 var(--gutter) 12px; }
 .mod-actions button{ flex:1; padding:11px; border-radius:11px; font-size:13px; font-weight:700; }
 .mod-approve{ background:var(--primary); color:#fff; }
 .mod-reject{ background:var(--danger-bg); color:var(--coral); }
@@ -2211,7 +2212,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 }
 
 /* ===== форма редактирования ===== */
-.edit-fields{ padding:0 12px; }
+.edit-fields{ padding:0 var(--gutter); }
 .edit-actions{ display:flex; flex-direction:column; gap:9px; margin-top:18px; }
 .edit-actions button{
   width:100%; padding:15px; border-radius:14px;
@@ -2257,7 +2258,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .similar-strip{
   display:flex; gap:10px; overflow-x:auto; scrollbar-width:none;
   -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain;
-  margin:0 -12px; padding:0 12px 4px;
+  margin:0 calc(-1 * var(--gutter)); padding:0 var(--gutter) 4px;
 }
 .similar-strip::-webkit-scrollbar{ display:none; }
 .similar-card{ flex:0 0 132px; }
@@ -3175,7 +3176,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* Полоса подкатегорий над лентой */
 .sub-row{
-  display:flex; gap:7px; overflow-x:auto; padding:10px 12px 2px;   /* общий край страницы — 12, а не 16 */
+  display:flex; gap:7px; overflow-x:auto; padding:10px var(--gutter) 2px;   /* общий край страницы — 12, а не 16 */
   scrollbar-width:none; -webkit-overflow-scrolling:touch;
 }
 .sub-row::-webkit-scrollbar{ display:none; }
@@ -3191,7 +3192,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    это навигация по подразделу, здесь — активный отбор, который можно
    убрать (крестик), поэтому берём мягкий акцентный фон, а не серый. */
 .active-filters-row{
-  display:flex; gap:7px; overflow-x:auto; padding:10px 12px 2px; align-items:center;
+  display:flex; gap:7px; overflow-x:auto; padding:10px var(--gutter) 2px; align-items:center;
   scrollbar-width:none; -webkit-overflow-scrolling:touch;
 }
 .active-filters-row::-webkit-scrollbar{ display:none; }
@@ -3212,7 +3213,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   padding:20px 0 24px;
 }
 .empty-state .empty-hint{ padding:0; }
-.search-empty{ gap:10px; padding:32px 12px 24px; }
+.search-empty{ gap:10px; padding:32px var(--gutter) 24px; }
 .search-empty-icon{
   width:60px; height:60px; border-radius:50%; background:var(--primary-soft); color:var(--primary);
   display:flex; align-items:center; justify-content:center; margin-bottom:2px;
@@ -3589,7 +3590,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .edit-company-desc{ resize:vertical; min-height:90px; font-family:inherit; line-height:1.4; }
 
 .verify-card{
-  margin:0 12px 22px; padding:16px; border-radius:16px; background:var(--surface);
+  margin:0 var(--gutter) 22px; padding:16px; border-radius:16px; background:var(--surface);
   border:1px solid var(--border);
 }
 .verify-hint{ font-size:13px; color:var(--muted); line-height:1.5; margin-bottom:12px; }
@@ -3607,7 +3608,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
   color:#fff; font-size:13.5px; font-weight:700;
 }
 .verify-upload.disabled{ opacity:.6; pointer-events:none; }
-.ldash-listing-title{ padding:0 12px 14px; font-size:14px; font-weight:700; color:var(--ink); }
+.ldash-listing-title{ padding:0 var(--gutter) 14px; font-size:14px; font-weight:700; color:var(--ink); }
 .ldash-hint{ margin:14px 12px 0; padding:12px 14px; border-radius:12px; background:var(--warn-bg); font-size:12.5px; line-height:1.5; color:#8a6d1f; }
 
 .stats-legend {
@@ -4003,7 +4004,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    баннера подтверждения оплаты выше, тот же смысл: «стоит обратить
    внимание», не тревога и не праздник. */
 .phone-reminder{
-  display:flex; align-items:center; gap:10px; margin:0 12px 14px;
+  display:flex; align-items:center; gap:10px; margin:0 var(--gutter) 14px;
   padding:11px 12px 11px 14px; border-radius:14px;
   background:var(--warn-bg); color:var(--warn-ink);
 }
@@ -4089,7 +4090,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 /* Поля раздела: у квартиры спрашивают «снять или купить», у машины —
    марку. Общая форма с ценой ни на один из этих вопросов не отвечает. */
-.cat-fields{ padding:10px 12px 4px; }
+.cat-fields{ padding:10px var(--gutter) 4px; }
 
 .cat-modes{
   display:flex; gap:6px; padding:4px;
@@ -4206,8 +4207,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
    поиска стоит прямо на цветном фоне раздела. Так первое, что видит
    человек на странице раздела, — это способ найти нужное, а не список
    подразделов. */
-.landing-search{ padding:10px 12px 2px; }
-.landing-search.on-hero{ margin-top:auto; padding:0 12px 4px; }
+.landing-search{ padding:10px var(--gutter) 2px; }
+.landing-search.on-hero{ margin-top:auto; padding:0 var(--gutter) 4px; }
 .landing-search.on-hero .search-field{
   background:rgba(255,255,255,.94); border-color:transparent;
   box-shadow:0 6px 20px rgba(16,24,40,.18);
@@ -4215,8 +4216,8 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .landing-hero .search-field{ background:var(--surface); border-color:transparent; box-shadow:0 4px 14px rgba(16,24,40,.14); }
 
 
-.landing-head{ display:flex; align-items:center; gap:10px; padding:14px 12px 6px; flex-wrap:wrap; }
-.landing-hero .landing-head{ padding:0 12px; }
+.landing-head{ display:flex; align-items:center; gap:10px; padding:14px var(--gutter) 6px; flex-wrap:wrap; }
+.landing-hero .landing-head{ padding:0 var(--gutter); }
 /* Простая шапка над результатами — баннер, фильтры и подразделы в этом
    режиме убраны совсем, а не просто прокручены мимо, поэтому заголовок
    здесь свой, без градиента и без white-текста «on-hero». */
@@ -4230,16 +4231,16 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 /* В шапке кнопки «назад» нет — она в липкой строке над картинкой,
    поэтому отступа под неё счётчику не нужно. */
 .landing-hero .landing-count{ padding-left:0; margin-top:2px; }
-.landing-search{ padding:6px 12px 4px; }
+.landing-search{ padding:6px var(--gutter) 4px; }
 
 /* Полоса «Купить / Снять / Посуточно» на телефоне шла от края до края
    экрана и вплотную к плиткам: боковые отступы ей давал только
    десктопный .landing-sidebar. Те же 14px, что у плиток и полей. */
-.landing-deal{ margin:12px 12px 4px; }
+.landing-deal{ margin:12px var(--gutter) 4px; }
 /* С отступами полоса стала уже, и «Снять надолго» переносилось на две
    строки. Ширина кнопки — по её тексту, перенос запрещён. */
 .landing-deal .cat-mode{ flex:1 1 auto; padding:10px 6px; white-space:nowrap; }
-.landing-field{ padding:10px 12px 4px; }
+.landing-field{ padding:10px var(--gutter) 4px; }
 .landing-label{ font-size:13px; font-weight:700; color:var(--ink-soft); margin-bottom:8px; }
 
 .landing-input{
@@ -4265,7 +4266,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 
 .landing-subs{
   display:grid; grid-template-columns:repeat(2,1fr); gap:9px;
-  padding:14px 12px 4px;
+  padding:14px var(--gutter) 4px;
 }
 /* Тот же приём, что у плиток категорий на главной (.cat-tile-2row):
    картинка на белом фоне — том же белом, что и бумага на самой
@@ -4297,7 +4298,7 @@ button{ border:none; background:none; font-family:inherit; cursor:pointer; user-
 .landing-fresh{ padding:20px 12px 0; }
 .landing-fresh h2{ font-size:16px; font-weight:800; color:var(--ink); margin-bottom:10px; }
 /* Текст о разделе внизу страницы: тихий, одной шириной с лентой над ним. */
-.landing-about{ margin:24px 12px 8px; font-size:13px; line-height:1.5; color:var(--muted, #6b7570); }
+.landing-about{ margin:24px var(--gutter) 8px; font-size:13px; line-height:1.5; color:var(--muted, #6b7570); }
 
 /* Результаты поиска прямо на лендинге — вместо перехода на /search. */
 .landing-results{ padding:20px 12px 0; }
@@ -4688,7 +4689,7 @@ a.s-attrs{ display:block; }
    отказывает не глядя. Здесь человек сперва видит ленту и решает сам. */
 .geo-ask{
   display:flex; align-items:center; gap:8px; flex-wrap:wrap;
-  margin:0 12px 10px; padding:11px 13px; border-radius:12px;
+  margin:0 var(--gutter) 10px; padding:11px 13px; border-radius:12px;
   background:var(--primary-soft); border:1px solid rgba(15,163,106,.18);
 }
 .geo-ask-text{ flex:1; min-width:150px; font-size:13.5px; color:var(--ink); line-height:1.3; }
@@ -4763,10 +4764,10 @@ a.s-attrs{ display:block; }
 
 /* ===== статистика объявления: итог и советы ===== */
 .ldash-summary{
-  margin:0 12px 10px; font-size:14.5px; font-weight:700; line-height:1.35; color:var(--ink);
+  margin:0 var(--gutter) 10px; font-size:14.5px; font-weight:700; line-height:1.35; color:var(--ink);
 }
 .ldash-tip{
-  display:flex; gap:10px; margin:0 12px 8px; padding:11px 13px; border-radius:13px;
+  display:flex; gap:10px; margin:0 var(--gutter) 8px; padding:11px 13px; border-radius:13px;
   background:var(--warn-bg); color:var(--warn-ink);
   font-size:13px; line-height:1.4; font-weight:600;
 }
@@ -4796,7 +4797,7 @@ a.s-attrs{ display:block; }
 /* ===== скоро снимем ===== */
 .my-expiry{
   display:flex; align-items:center; justify-content:space-between; gap:10px;
-  margin:0 12px 12px; padding:9px 12px; border-radius:11px;
+  margin:0 var(--gutter) 12px; padding:9px 12px; border-radius:11px;
   background:var(--warn-bg); color:var(--warn-ink); font-size:12.5px; font-weight:700;
 }
 .my-expiry button{
@@ -4843,7 +4844,7 @@ a.s-attrs{ display:block; }
    как в настройках телефона; в каждой строке подпись сверху мелким,
    значение крупным. */
 .form-card{
-  background:var(--surface); border-radius:18px; margin:0 12px 12px;
+  background:var(--surface); border-radius:18px; margin:0 var(--gutter) 12px;
   padding:4px 14px; box-shadow:var(--shadow);
 }
 .form-card-title{
@@ -4892,7 +4893,7 @@ a.s-attrs{ display:block; }
 .field-note{ font-size:12.5px; line-height:1.4; color:var(--warn-ink); }
 
 .form-save{
-  display:block; width:calc(100% - 24px); margin:4px 12px 18px; height:50px;
+  display:block; width:calc(100% - 24px); margin:4px var(--gutter) 18px; height:50px;
   border-radius:14px; background:var(--primary); color:#fff; font-size:15px; font-weight:800;
 }
 .form-save:disabled{ opacity:.55; }
@@ -4913,7 +4914,7 @@ a.s-attrs{ display:block; }
    выглядел анкетой из разных кусков. Стало: карточки, внутри строки
    «подпись сверху, значение снизу», разделённые тонкой линией. */
 .form-card{
-  background:var(--surface); border-radius:17px; margin:0 12px 12px;
+  background:var(--surface); border-radius:17px; margin:0 var(--gutter) 12px;
   padding:4px 15px; box-shadow:var(--shadow);
 }
 .form-card-title{
@@ -4974,7 +4975,7 @@ a.s-attrs{ display:block; }
 .field-note{ font-size:12.5px; line-height:1.45; color:var(--muted); margin:8px 0; }
 
 .form-save{
-  display:block; width:calc(100% - 24px); margin:4px 12px 14px; height:50px;
+  display:block; width:calc(100% - 24px); margin:4px var(--gutter) 14px; height:50px;
   border-radius:15px; background:var(--primary); color:#fff; font-size:15px; font-weight:800;
 }
 .form-save:disabled{ opacity:.6; }
@@ -5041,7 +5042,7 @@ a.s-attrs{ display:block; }
 .profile-card{
   /* Строкой, а не столбиком: аватар слева, всё остальное справа.
      Столбиком карточка занимала пол-экрана ради трёх строк текста. */
-  position:relative; margin:0 12px 12px; padding:14px 14px 14px;
+  position:relative; margin:0 var(--gutter) 12px; padding:14px 14px 14px;
   display:flex; align-items:flex-start; gap:13px;
   background:var(--surface); border-radius:18px; box-shadow:var(--shadow);
 }
@@ -5081,7 +5082,7 @@ a.s-attrs{ display:block; }
    искать приходится как раз тогда, когда список уже прокручен. */
 .chats-tools{
   position:sticky; top:52px; z-index:11;
-  padding:0 12px 10px;
+  padding:0 var(--gutter) 10px;
   background:color-mix(in srgb, var(--bg) 90%, transparent);
   backdrop-filter:saturate(1.4) blur(14px);
   -webkit-backdrop-filter:saturate(1.4) blur(14px);
@@ -5117,7 +5118,7 @@ a.s-attrs{ display:block; }
 .chats-chips .chip{ white-space:nowrap; flex:0 0 auto; }
 
 /* ===== что требует внимания ===== */
-.profile-attention{ margin:0 12px 12px; display:flex; flex-direction:column; gap:8px; }
+.profile-attention{ margin:0 var(--gutter) 12px; display:flex; flex-direction:column; gap:8px; }
 .attention-row{
   display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:14px;
   background:var(--warn-bg); color:var(--warn-ink);
@@ -5276,7 +5277,7 @@ a.s-attrs{ display:block; }
 .tg-photo-play svg{ width:14px; height:14px; margin-left:1px; }
 
 /* ===== свои объявления в публикаторе ===== */
-.tg-my-list{ display:flex; flex-direction:column; gap:10px; padding:0 12px; }
+.tg-my-list{ display:flex; flex-direction:column; gap:10px; padding:0 var(--gutter); }
 .tg-my-card{
   background:var(--surface); border-radius:16px; padding:12px;
   box-shadow:var(--shadow);
@@ -5342,7 +5343,7 @@ a.s-attrs{ display:block; }
    не ломает ряд шапки, где кнопка переносилась на две строки. */
 .tg-my-entry{
   display:flex; align-items:center; gap:10px;
-  margin:0 12px 14px; padding:12px 14px; border-radius:14px;
+  margin:0 var(--gutter) 14px; padding:12px 14px; border-radius:14px;
   background:var(--surface); box-shadow:var(--shadow);
   color:var(--ink); font-size:14px; font-weight:700; text-decoration:none;
 }
@@ -6382,7 +6383,7 @@ a.s-attrs{ display:block; }
 /* ══ Баланс: деньги и бонусы раздельно ═══════════════════════════════════════════════
    Зелёный — деньги (вносил сам), оранжевый — бонусы (подарок, только на продвижение). */
 .balance-card{
-  margin:0 12px 10px; padding:16px 14px 14px; border-radius:18px; background:var(--surface);
+  margin:0 var(--gutter) 10px; padding:16px 14px 14px; border-radius:18px; background:var(--surface);
   border:1px solid var(--border); box-shadow:0 1px 0 rgba(20,30,25,.03);
 }
 /* Шапка блока не перестраивается от данных: раньше кнопка при загрузке стояла рядом с суммой, а широкая сумма
@@ -6416,7 +6417,7 @@ a.s-attrs{ display:block; }
 
 /* Две плитки под полосой */
 .balance-parts{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
-.balance-part{ min-width:0; padding:10px 12px 11px; border-radius:14px; }
+.balance-part{ min-width:0; padding:10px var(--gutter) 11px; border-radius:14px; }
 .balance-part.money{ background:var(--primary-soft); color:var(--primary-deep); }
 .balance-part.bonus{ background:var(--accent-soft); color:#A2401D; }
 .balance-part-top{ display:flex; align-items:center; gap:6px; font-size:12px; line-height:16px; font-weight:700; }
@@ -6704,7 +6705,7 @@ a.s-attrs{ display:block; }
 .jl-tabs { flex: 1; display: flex; gap: 22px; padding-left: 6px; border-bottom: 1.5px solid var(--border); margin-right: 12px; }
 .jl-tab { padding: 8px 0 8px; font-size: 18px; font-weight: 800; color: var(--muted); letter-spacing: -0.01em; border-bottom: 3px solid transparent; margin-bottom: -1.5px; background: none; }
 .jl-tab.on { color: var(--ink); border-bottom-color: var(--ink); }
-.jl-head { padding: 18px 12px 4px; }
+.jl-head { padding: 18px var(--gutter) 4px; }
 .jl-h1 { font-size: 26px; line-height: 1.2; font-weight: 800; letter-spacing: -0.02em; margin: 0; }
 .jl-search { display: flex; align-items: center; gap: 10px; height: 50px; border-radius: 16px; background: var(--surface-sunken); padding: 0 15px; margin-top: 14px; color: var(--muted); }
 .jl-search input { flex: 1; min-width: 0; border: none; background: none; font-size: 16px; color: var(--ink); }
@@ -6743,7 +6744,7 @@ a.s-attrs{ display:block; }
 .jl-card.how { background: #ECE9FB; }
 .jl-card b { font-size: 15.5px; line-height: 1.3; font-weight: 800; color: var(--ink); }
 .jl-card small { font-size: 13.5px; line-height: 1.35; color: var(--ink-soft); }
-.jl-results-title { padding: 0 12px; }
+.jl-results-title { padding: 0 var(--gutter); }
 .jl-empty { text-align: center; color: var(--muted); font-size: 14px; padding: 16px 30px; }
 .jl-tips-layer { position: fixed; inset: 0; z-index: 50; background: rgba(17, 22, 19, 0.42); display: flex; align-items: flex-end; justify-content: center; }
 .jl-tips { width: 100%; max-width: 560px; background: var(--surface); border-radius: 24px 24px 0 0; padding: 20px 20px calc(20px + var(--sab, 0px)); }
@@ -6754,11 +6755,11 @@ a.s-attrs{ display:block; }
 /* ——— Страницы разделов в стиле «Работы» ——— */
 .lp-head { padding-bottom: 0; }
 .lp-count { margin-top: 4px; font-size: 14px; font-weight: 600; color: var(--muted); }
-.lp-tiles { padding: 16px 12px 18px; margin-right: 0; }
+.lp-tiles { padding: 16px var(--gutter) 18px; margin-right: 0; }
 .jl-tile.xwide { width: 240px; }
 .jl-tile.xwide .jl-tile-text { max-width: 196px; }
 .jl-tile.wide .jl-tile-text { max-width: 150px; }
-.lp-filters { margin: 4px 12px 18px; padding: 16px; border-radius: 22px; background: var(--surface-sunken); display: flex; flex-direction: column; gap: 10px; }
+.lp-filters { margin: 4px var(--gutter) 18px; padding: 16px; border-radius: 22px; background: var(--surface-sunken); display: flex; flex-direction: column; gap: 10px; }
 .lp-filters-title { font-size: 19px; font-weight: 800; letter-spacing: -0.015em; color: var(--ink); }
 .lp-filters .pill-row { background: var(--surface-sunken-2); }
 .lp-filters .landing-field, .lp-filters .landing-deal, .lp-filters .landing-go { margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; }
@@ -6767,7 +6768,7 @@ a.s-attrs{ display:block; }
 
 /* ——— Плитки разделов на главной (телефон) — как плитки внутри разделов (.jl-tile) ——— */
 @media (max-width: 619px) {
-  .cat-rows { gap: 8px; padding: 10px 12px 2px; }
+  .cat-rows { gap: 8px; padding: 10px var(--gutter) 2px; }
   .cat-row { gap: 8px; }
   .cat-tile-2row { width: 142px; height: 100px; border-radius: 18px; background: var(--surface-sunken); border: 2px solid transparent; box-shadow: none; padding: 13px; }
   .cat-tile-2row.wide { width: 196px; }
@@ -6825,14 +6826,14 @@ a.s-attrs{ display:block; }
 }
 
 /* ——— Страницы разделов по образцу Авито (как в приложении) ——— */
-.lp-grid { padding: 16px 12px 8px; display: flex; flex-direction: column; gap: 8px; }
+.lp-grid { padding: 16px var(--gutter) 8px; display: flex; flex-direction: column; gap: 8px; }
 .lp-grid-row { display: flex; gap: 8px; }
 .lp-grid .jl-tile { flex: 0 0 auto; }
 .lp-all { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
 .lp-filters { background: var(--primary-soft); }
 .lp-filters .landing-select, .lp-filters input, .lp-filters .landing-range input { background:var(--surface); }
 .lp-filters .landing-go { width: auto; align-self: flex-start; padding-left: 22px; padding-right: 22px; }
-.re-head { padding: 10px 12px 4px; display: flex; flex-direction: column; gap: 10px; }
+.re-head { padding: 10px var(--gutter) 4px; display: flex; flex-direction: column; gap: 10px; }
 .re-title { margin: 0; text-align: center; font-size: 30px; line-height: 36px; font-weight: 800; letter-spacing: -0.02em; color: var(--ink); }
 .re-count { text-align: center; margin-top: -6px; margin-bottom: 4px; font-size: 14px; font-weight: 600; color: var(--muted); }
 .re-deal { margin: 0 !important; }
@@ -6861,16 +6862,16 @@ a.s-attrs{ display:block; }
 @media (min-width: 900px) { .re-go { font-size: 14px; } }
 
 /* ——— Особые блоки разделов по образцу Авито: «Запчасти», «Бизнес», «Услуги» ——— */
-.lp-quick { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 14px 12px 6px; }
+.lp-quick { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 14px var(--gutter) 6px; }
 .lp-quick::-webkit-scrollbar { display: none; }
 .lp-quick-chip { flex: 0 0 auto; height: 40px; padding: 0 16px; border-radius: 14px; background: var(--surface-sunken); font-size: 15px; font-weight: 600; color: var(--ink); white-space: nowrap; }
-.lp-circles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 8px; padding: 16px 12px 4px; }
+.lp-circles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 8px; padding: 16px var(--gutter) 4px; }
 .lp-circle-item { display: flex; flex-direction: column; align-items: center; gap: 6px; background: none; }
 .lp-circle { width: 84px; height: 84px; border-radius: 24px; background: var(--surface-sunken); display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .lp-circle img { width: 66px; height: 66px; object-fit: contain; }
 .lp-circle-text { font-size: 13px; line-height: 16px; font-weight: 600; color: var(--ink); text-align: center; }
-.lp-services-title { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; margin: 22px 12px 10px; color: var(--ink); }
-.lp-services { display: flex; gap: 8px; padding: 0 12px 6px; }
+.lp-services-title { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; margin: 22px var(--gutter) 10px; color: var(--ink); }
+.lp-services { display: flex; gap: 8px; padding: 0 var(--gutter) 6px; }
 .lp-service { flex: 1; min-height: 150px; border-radius: 22px; background: var(--surface-sunken); padding: 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; text-align: left; }
 .lp-service-icon { width: 44px; height: 44px; border-radius: 14px; background: var(--surface); display: flex; align-items: center; justify-content: center; color: var(--primary); margin-bottom: 6px; }
 .lp-service-title { font-size: 16px; line-height: 20px; font-weight: 800; color: var(--ink); }
@@ -6949,7 +6950,7 @@ a.s-attrs{ display:block; }
 .jr-card .jr-state { min-height: 0; padding: 0; border: 0; margin-top: 6px; font-size: 14px; }
 .jr-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
 .jr-btn { display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 16px; border-radius: 12px; border: 1px solid transparent; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none; }
-.jr-btn.sm { height: 34px; padding: 0 12px; font-size: 13px; }
+.jr-btn.sm { height: 34px; padding: 0 var(--gutter); font-size: 13px; }
 .jr-btn.wide { width: 100%; height: 48px; }
 .jr-btn.primary { background: var(--primary); color: #fff; }
 .jr-btn.ghost { background: var(--card); border-color: var(--line); color: var(--ink); }
@@ -6960,7 +6961,7 @@ a.s-attrs{ display:block; }
 @keyframes jr-shine { to { background-position: -200% 0; } }
 
 /* ===== Шопсы: полоса на главной ===== */
-.shs { display: flex; gap: 8px; overflow-x: auto; margin: 0 -12px; padding: 2px 10px 6px; scroll-padding-left: 10px; scrollbar-width: none; scroll-snap-type: x proximity; }
+.shs { display: flex; gap: 8px; overflow-x: auto; margin: 0 calc(-1 * var(--gutter)); padding: 2px 10px 6px; scroll-padding-left: 10px; scrollbar-width: none; scroll-snap-type: x proximity; }
 .shs::-webkit-scrollbar { display: none; }
 .shs-tile { position: relative; flex: none; width: 92px; height: 140px; border-radius: 14px; overflow: hidden; background: var(--ink); color: #fff; text-decoration: none; scroll-snap-align: start; }
 .shs-tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
@@ -6990,7 +6991,7 @@ body.sh-open .bottomnav .nav-item.active { color: #fff; }
 .sh-paused { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; opacity: .85; }
 .sh-progress { position: absolute; left: 12px; right: 12px; bottom: 4px; height: 3px; border-radius: 2px; background: rgba(255,255,255,.25); }
 .sh-progress span { display: block; height: 100%; border-radius: 2px; background:var(--surface); transition: width .25s linear; }
-.sh-meta { position: absolute; left: 0; right: 64px; bottom: 0; max-width: calc(100dvh * 9 / 16 - 64px); margin: 0 auto; padding: 60px 12px 16px; color: #fff; }
+.sh-meta { position: absolute; left: 0; right: 64px; bottom: 0; max-width: calc(100dvh * 9 / 16 - 64px); margin: 0 auto; padding: 60px var(--gutter) 16px; color: #fff; }
 .sh-author { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; }
 .sh-author .sh-ava { width: 32px; height: 32px; font-size: 14px; }
 .sh-ad { padding: 2px 6px; border-radius: 6px; background: rgba(255,255,255,.2); font-size: 11px; font-weight: 700; }
@@ -7005,8 +7006,8 @@ body.sh-open .bottomnav .nav-item.active { color: #fff; }
 .sh-item-text, .sh-pick-text { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 2px; }
 .sh-item-title { font-weight: 700; font-size: 14px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sh-item-price { font-weight: 800; font-size: 14px; }
-.sh-item-write { flex: none; height: 36px; padding: 0 12px; border: 0; border-radius: 10px; background: var(--primary); color: #fff; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
-.sh-all { align-self: flex-start; height: 30px; padding: 0 12px; border: 0; border-radius: 15px; background: rgba(255,255,255,.2); color: #fff; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.sh-item-write { flex: none; height: 36px; padding: 0 var(--gutter); border: 0; border-radius: 10px; background: var(--primary); color: #fff; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.sh-all { align-self: flex-start; height: 30px; padding: 0 var(--gutter); border: 0; border-radius: 15px; background: rgba(255,255,255,.2); color: #fff; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
 .sh-empty { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px; color: #fff; text-align: center; line-height: 1.45; }
 
 /* ===== Шопсы: создание, кабинет, модерация ===== */
@@ -7053,7 +7054,7 @@ body.sh-open .bottomnav .nav-item.active { color: #fff; }
 
 /* ===== Витрина продавца (Storefront, StorefrontManage, StorefrontLink) ===== */
 .sf-page { padding-top: 0; padding-bottom: 40px; }
-.sf-cover { position: relative; height: 180px; margin: 0 -12px; overflow: hidden; background: var(--primary-soft); }
+.sf-cover { position: relative; height: 180px; margin: 0 calc(-1 * var(--gutter)); overflow: hidden; background: var(--primary-soft); }
 .sf-cover img { width: 100%; height: 100%; object-fit: cover; filter: saturate(1.05); }
 .sf-cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.28), rgba(0,0,0,0) 45%); }
 .sf-cover-empty { display: block; width: 100%; height: 100%; }
@@ -7070,7 +7071,7 @@ body.sh-open .bottomnav .nav-item.active { color: #fff; }
 .sf-paused { display: inline-block; margin-top: 10px; padding: 8px 12px; border-radius: 12px; background: var(--warn-bg); color: #8A6400; font-weight: 600; font-size: 14px; }
 .sf-actions { display: flex; justify-content: center; gap: 8px; margin: 14px 0 16px; }
 .sf-actions .jr-btn { min-width: 120px; }
-.sf-actions .sf-more { min-width: 44px; padding: 0 12px; letter-spacing: 1px; }
+.sf-actions .sf-more { min-width: 44px; padding: 0 var(--gutter); letter-spacing: 1px; }
 .sf-tabs { justify-content: center; }
 .sf-colls { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 12px; scrollbar-width: none; }
 .sf-colls::-webkit-scrollbar { display: none; }
@@ -7295,10 +7296,10 @@ body.sh-open .nav-item.active .nav-icon-wrap::after{ background:var(--surface); 
 
 /* ---------- подборки на главной (HomeSections) ---------- */
 .hs{ margin:18px 0 6px; }
-.hs-head{ display:flex; align-items:baseline; justify-content:space-between; padding:0 12px; margin-bottom:10px; }
+.hs-head{ display:flex; align-items:baseline; justify-content:space-between; padding:0 var(--gutter); margin-bottom:10px; }
 .hs-title{ font-size:21px; font-weight:800; letter-spacing:-0.025em; color:var(--ink); }
 .hs-all{ font-size:14px; font-weight:700; color:var(--primary-deep); }
-.hs-row{ display:flex; gap:12px; overflow-x:auto; padding:2px 12px 8px; scroll-padding-left:12px; scroll-snap-type:x proximity; scrollbar-width:none; }
+.hs-row{ display:flex; gap:12px; overflow-x:auto; padding:2px var(--gutter) 8px; scroll-padding-left:var(--gutter); scroll-snap-type:x proximity; scrollbar-width:none; }
 .hs-row::-webkit-scrollbar{ display:none; }
 .hs-card{ flex:none; width:140px; scroll-snap-align:start; display:flex; flex-direction:column; color:var(--ink); }
 .hs-photo{ position:relative; display:block; width:140px; aspect-ratio:4/5; border-radius:18px; overflow:hidden; background:var(--surface-sunken); }
@@ -7315,7 +7316,7 @@ body.sh-open .nav-item.active .nav-icon-wrap::after{ background:var(--surface); 
 .fav-sort{ display:flex; gap:8px; overflow-x:auto; padding:0 16px 12px; scrollbar-width:none; }
 .fav-sort::-webkit-scrollbar{ display:none; }
 .fav-sort .jr-tab{ flex:none; }
-.profile-actions{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:0 12px 10px; }
+.profile-actions{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:0 var(--gutter) 10px; }
 .profile-action{ display:flex; flex-direction:column; align-items:flex-start; justify-content:space-between; gap:18px; height:96px; padding:14px; border-radius:22px; background:var(--surface); box-shadow:var(--shadow); color:var(--ink); font-size:14px; font-weight:700; letter-spacing:-0.01em; }
 .profile-action svg{ width:24px; height:24px; }
 .profile-action.is-dark{ background:var(--inverse); color:var(--on-inverse); }
@@ -7427,7 +7428,7 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 .sh-progress{ bottom:calc(var(--nav-h) + 8px); }
 
 /* ---------- PLONK 2.0: «Мои объявления» — карточками, как остальные списки ---------- */
-.my-list{ gap:10px; padding:0 12px; }
+.my-list{ gap:10px; padding:0 var(--gutter); }
 .my-row{ border-bottom:0; background:var(--surface); border-radius:20px; box-shadow:var(--shadow); padding:12px; }
 .my-thumb{ border-radius:14px; }
 .my-actions button{ border-radius:12px; font-weight:700; }
@@ -7438,7 +7439,7 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 .sf-similar{ margin:28px -16px 8px; } /* ряд витрин во всю ширину, отступы — как у подборок на главной */
 .search-empty .empty-reset{ background:var(--surface); color:var(--ink); border:1px solid var(--border-strong); } /* главная кнопка — «Сообщить», сброс — второстепенная */
 .stats-subhead span:first-child{ font-weight:800; color:var(--ink); font-size:13px; } .stats-subhead{ margin-top:6px; }
-.search-corrected{ margin:4px 12px 10px; padding:12px 14px; border-radius:16px; background:var(--warn-bg); color:var(--ink-soft); font-size:14px; line-height:1.4; }
+.search-corrected{ margin:4px var(--gutter) 10px; padding:12px 14px; border-radius:16px; background:var(--warn-bg); color:var(--ink-soft); font-size:14px; line-height:1.4; }
 .search-corrected button{ font:inherit; font-weight:800; color:var(--ink); text-decoration:underline; text-underline-offset:3px; }
 
 /* ---------- поиск: подсказки на лету ---------- */
@@ -7657,7 +7658,7 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 /* ---- Статья ---- */
 .guide{ padding:0 4px 40px; max-width:720px; margin:0 auto; }
 .guide-top{ display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:4px 0 12px; }
-.guide-topic{ display:inline-flex; align-items:center; height:28px; padding:0 12px; border-radius:999px; background:var(--tint); color:var(--tint-ink); font-size:13px; font-weight:800; }
+.guide-topic{ display:inline-flex; align-items:center; height:28px; padding:0 var(--gutter); border-radius:999px; background:var(--tint); color:var(--tint-ink); font-size:13px; font-weight:800; }
 .guide-meta{ font-size:13.5px; font-weight:600; color:var(--muted); }
 .guide-title{ font-size:30px; font-weight:800; letter-spacing:-0.035em; line-height:1.12; margin:0 0 12px; text-wrap:balance; }
 @media (min-width:720px){ .guide-title{ font-size:40px; } }
@@ -7865,9 +7866,9 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 .msg-menu-reacts button:active{ transform:scale(1.25); }
 .msg-menu-reacts button.on{ background:var(--primary-soft); }
 .msg-menu-preview{ margin:10px 8px 6px; font-size:13.5px; color:var(--muted); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-.msg-menu-item{ display:flex; align-items:center; gap:12px; width:100%; min-height:50px; padding:0 12px; border-radius:16px; font-size:16px; font-weight:600; color:var(--ink); text-align:left; }
+.msg-menu-item{ display:flex; align-items:center; gap:12px; width:100%; min-height:50px; padding:0 var(--gutter); border-radius:16px; font-size:16px; font-weight:600; color:var(--ink); text-align:left; }
 .msg-menu-item:active{ background:var(--surface-sunken); }
-.reply-bar{ display:flex; align-items:center; gap:10px; margin:0 12px 6px; padding:8px 8px 8px 12px; border-radius:16px; background:var(--surface); box-shadow:0 1px 3px rgba(15,21,18,.08); border-left:3px solid var(--primary); animation:ui-fade-in .2s ease; }
+.reply-bar{ display:flex; align-items:center; gap:10px; margin:0 var(--gutter) 6px; padding:8px 8px 8px 12px; border-radius:16px; background:var(--surface); box-shadow:0 1px 3px rgba(15,21,18,.08); border-left:3px solid var(--primary); animation:ui-fade-in .2s ease; }
 .reply-bar-body{ flex:1; min-width:0; display:flex; flex-direction:column; }
 .reply-bar-who{ font-size:12.5px; font-weight:800; color:var(--primary-deep); }
 .reply-bar-text{ font-size:13.5px; color:var(--ink-soft); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -7942,7 +7943,7 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
    скруглённым квадратом, непрочитанные — жирным и зелёной точкой; поиск — белая капсула
    ===================================================================== */
 .chats-page .chats-search, .chats-page .chat-search, .chats-page .search-field{ background:var(--surface) !important; border:0 !important; box-shadow:0 1px 2px rgba(15,21,18,.05), 0 6px 18px rgba(15,21,18,.05); border-radius:18px !important; }
-.chats-page .chat-list{ margin:4px 12px 16px; background:var(--surface); border-radius:24px; box-shadow:var(--shadow); overflow:hidden; }
+.chats-page .chat-list{ margin:4px var(--gutter) 16px; background:var(--surface); border-radius:24px; box-shadow:var(--shadow); overflow:hidden; }
 .chats-page .sw-front{ background:var(--surface); }
 .chats-page .chat-row{ background:transparent; border-bottom:0; padding:12px 14px; }
 .chats-page .sw-row + .sw-row .chat-row{ border-top:1px solid var(--line); }
@@ -7980,11 +7981,11 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 .chat-head{ background:color-mix(in srgb, var(--bg) 55%, transparent); backdrop-filter:blur(18px) saturate(1.4); -webkit-backdrop-filter:blur(18px) saturate(1.4); box-shadow:none; padding:calc(10px + var(--sat)) 12px 10px; }
 .chat-head .cats-back, .chat-head .chat-menu-btn, .chat-head .chat-head-call-btn{ width:40px; height:40px; border-radius:50%; background:var(--surface); box-shadow:0 1px 2px rgba(15,21,18,.05), 0 6px 18px rgba(15,21,18,.06); display:flex; align-items:center; justify-content:center; color:var(--ink); }
 .chat-head-name{ font-size:18px; font-weight:800; letter-spacing:-0.02em; }
-.chat-listing-bar{ margin:4px 12px 4px; padding:10px; border-radius:20px; background:var(--surface); box-shadow:var(--shadow); border:0; }
+.chat-listing-bar{ margin:4px var(--gutter) 4px; padding:10px; border-radius:20px; background:var(--surface); box-shadow:var(--shadow); border:0; }
 .chat-listing-thumb{ width:46px; height:46px; border-radius:14px; overflow:hidden; }
 .chat-listing-title{ font-weight:700; }
 .chat-listing-price{ font-weight:800; }
-.chat-messages{ gap:10px; padding:14px 12px 10px; }
+.chat-messages{ gap:10px; padding:14px var(--gutter) 10px; }
 .chat-bubble{ background:var(--surface); box-shadow:0 1px 2px rgba(15,21,18,.05), 0 4px 14px rgba(15,21,18,.05); font-size:15px; padding:11px 14px; border-radius:20px 20px 20px 6px; }
 .chat-bubble.mine{ background:var(--primary); box-shadow:0 6px 16px rgba(15,163,106,.22); border-radius:20px 20px 6px 20px; }
 .chat-safety-note, .chat-system-note{ border-radius:20px; background:var(--surface); box-shadow:var(--shadow); border:0; }
@@ -7994,7 +7995,7 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#000; }
 .chat-input-row input, .chat-input-row textarea{ border:0 !important; background:var(--surface-sunken); border-radius:20px; min-height:44px; padding:10px 16px; font-size:16px; }
 .chat-send-btn{ width:44px; height:44px; background:var(--inverse); color:var(--on-inverse); }
 .chat-send-btn:disabled{ background:var(--surface-sunken-2); color:var(--muted); }
-.quick-replies{ background:transparent !important; padding:8px 12px 6px !important; }
+.quick-replies{ background:transparent !important; padding:8px var(--gutter) 6px !important; }
 
 /* =====================================================================
    PLONK 2.0 — витрина продавца: обложка со скруглением снизу, аватар — белый круг с тенью (без мятного), имя крупно,
@@ -8044,7 +8045,7 @@ body, .app-shell{ background:transparent !important; }
   box-shadow:none !important; }
 .home .avito-banner.collapsed{ background:color-mix(in srgb, var(--bg) 18%, transparent) !important; backdrop-filter:blur(20px) saturate(1.5); -webkit-backdrop-filter:blur(20px) saturate(1.5); }
 /* уведомления — карточками на фоне, а не белым полотном во всю ширину (оно отрезало сияние резкой линией) */
-.notif-list{ gap:8px; padding:4px 12px 16px; }
+.notif-list{ gap:8px; padding:4px var(--gutter) 16px; }
 .notif-row{ border-bottom:0; border-radius:20px; box-shadow:var(--shadow); padding:14px 16px; }
 .notif-row.unread{ background:var(--surface); box-shadow:inset 3px 0 0 var(--primary), var(--shadow); }
 /* уведомления: подложка «Удалить» под карточкой — того же скругления (раньше торчала оранжевой полоской справа) */
@@ -8302,7 +8303,7 @@ button.au-row:active{ background:var(--surface-sunken); }
   .qb{ margin:2px 0 10px; }
   .qb-row{ padding:2px 2px 6px; }
 }
-@media (max-width: 899px){ .qb-row{ padding:2px 12px 6px; } }
+@media (max-width: 899px){ .qb-row{ padding:2px var(--gutter) 6px; } }
 @media (min-width: 900px){
   /* левая колонка на компьютере узкая: «Снять надолго», «Посуточно» обрезались — мельче и с переносом */
   .search-sidebar .cat-mode{ font-size:12.5px !important; padding:4px 6px !important; white-space:normal !important; line-height:1.15; overflow:visible !important; text-overflow:clip !important; }
@@ -8331,7 +8332,7 @@ button.au-row:active{ background:var(--surface-sunken); }
 .tk-listing{ display:inline-flex; align-items:center; gap:8px; height:38px; padding:0 14px; margin:2px 0 10px; border-radius:19px; background:var(--surface-sunken); font-size:13.5px; font-weight:800; color:var(--ink); }
 .tk-quick{ display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; margin:0 -14px 8px; padding:0 14px; }
 .tk-quick::-webkit-scrollbar{ display:none; }
-.tk-quick button{ flex:none; height:34px; padding:0 12px; border-radius:17px; background:var(--bg); border:1px solid var(--line); font-size:13px; font-weight:700; color:var(--ink); }
+.tk-quick button{ flex:none; height:34px; padding:0 var(--gutter); border-radius:17px; background:var(--bg); border:1px solid var(--line); font-size:13px; font-weight:700; color:var(--ink); }
 .tk-input{ width:100%; border:0 !important; background:var(--surface-sunken) !important; border-radius:18px !important; padding:12px 14px !important; font-size:16px; font-family:inherit; min-height:48px; }
 .tk-input:focus{ outline:none; box-shadow:0 0 0 3px rgba(15,163,106,.18); }
 .tk-actions{ display:flex; gap:8px; margin-top:10px; }
@@ -8454,7 +8455,7 @@ body.sh-open .nav-item-post .nav-icon-wrap{ color:#085041 !important; }
 }
 .home-hello-row{ display:flex; align-items:center; gap:12px; }
 .home-hello-row .home-hello{ flex:1; min-width:0; margin-bottom:14px; }
-.home-hello-row .search-city{ flex:none; width:148px; height:40px; margin-bottom:14px; padding:0 12px; border-radius:20px; background:var(--surface);
+.home-hello-row .search-city{ flex:none; width:148px; height:40px; margin-bottom:14px; padding:0 var(--gutter); border-radius:20px; background:var(--surface);
   box-shadow:0 1px 2px rgba(15,21,18,.05), 0 6px 18px rgba(15,21,18,.06); display:flex; align-items:center; gap:6px; position:relative; }
 .home-hello-row .search-city span{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:14px; font-weight:700; }
 .home-hello-row .search-city svg{ flex:none; }
@@ -8628,7 +8629,7 @@ html[data-theme="dark"] input::placeholder, html[data-theme="dark"] textarea::pl
 .mod-day-tiles span.warn b{ color:#C0392B; }
 html[data-theme="dark"] .mod-day-tiles .t1{ background:#2A3D32; } html[data-theme="dark"] .mod-day-tiles .t2{ background:#2A3446; } html[data-theme="dark"] .mod-day-tiles span:nth-child(3){ background:#45313B; }
 .mod-card{ position:relative; border:0 !important; border-radius:26px !important; background:var(--surface) !important; box-shadow:var(--shadow) !important; padding:12px !important; }
-.mod-card .mod-photos{ display:flex !important; gap:8px; overflow-x:auto; scrollbar-width:none; margin:0 -12px; padding:0 12px; scroll-snap-type:x mandatory; }
+.mod-card .mod-photos{ display:flex !important; gap:8px; overflow-x:auto; scrollbar-width:none; margin:0 calc(-1 * var(--gutter)); padding:0 var(--gutter); scroll-snap-type:x mandatory; }
 .mod-card .mod-photos::-webkit-scrollbar{ display:none; }
 .mod-card .mod-photos img{ flex:none; width:62% !important; max-width:260px; aspect-ratio:4/5 !important; height:auto !important; object-fit:cover; border-radius:18px !important; scroll-snap-align:start; background:var(--surface-sunken); }
 .mod-card .mod-photos img:only-child{ width:100% !important; max-width:none; aspect-ratio:4/3 !important; }
@@ -9069,3 +9070,27 @@ html[data-theme="dark"] .notif-ico{ filter:brightness(.5) saturate(1.2); }
 .notif-row .notif-text, .notif-row .notif-time{ padding-left:0 !important; margin-left:0 !important; }
 .notif-row.unread::before{ display:none !important; }
 .notif-delete-btn{ border-radius:20px; }
+@media (max-width: 899px){
+  .feed-grid, .infinite-grid, .infinite-list{ padding-left:var(--gutter) !important; padding-right:var(--gutter) !important; }
+}
+.vol-hero{ padding:16px !important; }
+.invite-hero{ padding:16px !important; }
+/* «Полезное»: карточки статей и поиск — на общем отступе 16 (были 20: внутри блоков был ещё свой отступ 4 px) */
+.guides-hero, .guides-featured, .guides-grid{ padding-left:0 !important; padding-right:0 !important; }
+.guides-hero .guides-topics{ margin-left:calc(-1 * var(--gutter)) !important; margin-right:calc(-1 * var(--gutter)) !important; padding-left:var(--gutter) !important; padding-right:var(--gutter) !important; }
+/* мелкие цели нажатия — увеличиваем область касания, не меняя вид */
+.search-clear, .photo-remove, .sh-follow, .lang-btn{ position:relative; }
+.search-clear::after, .photo-remove::after, .sh-follow::after, .lang-btn::after{ content:''; position:absolute; inset:-10px; }
+.geo-ask{ margin-left:var(--gutter) !important; margin-right:var(--gutter) !important; }
+@media (max-width: 899px){ .feed-grid{ padding-left:var(--gutter) !important; padding-right:var(--gutter) !important; } }
+@media (max-width: 899px){
+  /* лента раздела: отступ даёт сама сетка (16), у обёртки свой отступ 12 давал карточки на 28 px от края */
+  .landing-fresh{ padding-left:0 !important; padding-right:0 !important; }
+  .landing-fresh > h2, .landing-fresh-head, .landing-fresh > .lp-more{ padding-left:var(--gutter) !important; padding-right:var(--gutter) !important; }
+}
+.home-hello{ margin-left:0 !important; margin-right:0 !important; }   /* приветствие ровно по краю поиска (было на 2 px правее) */
+/* кнопка города — по ширине названия («Все города» целиком), внутренний отступ свой, не общий отступ страницы */
+.home-hello-row .search-city{ width:auto !important; max-width:190px; padding:0 12px !important; gap:6px; }
+.home-hello-row .search-city span{ overflow:visible; text-overflow:clip; }
+.jr-btn.sm{ padding-left:12px !important; padding-right:12px !important; }
+@media (max-width: 899px){ .chat-input-row{ padding-left:calc(var(--gutter) - 4px) !important; padding-right:calc(var(--gutter) - 4px) !important; } }
