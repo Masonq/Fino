@@ -1767,7 +1767,12 @@
     "tip_watch": "Malo ih gleda do kraja: pokažite stvar u prve 2 sekunde i skratite na 15–20 sekundi.",
     "tip_tap": "Gledaju, ali ne klikću: zakačite stvar kad se najbolje vidi i navedite cenu u opisu.",
     "tip_ok": "Šops radi dobro — snimite sličan za druge stvari.",
-    "mod_none": "Nema ništa za proveru"
+    "mod_none": "Nema ništa za proveru",
+    "follow": "Prati",
+    "following": "Pratite",
+    "r_save": "Sačuvaj",
+    "r_discuss": "Komentariši",
+    "r_ask": "Pitaj"
   },
   "sf": {
     "title_suffix": "izlog na PLONK-u",

@@ -8730,3 +8730,28 @@ html[data-theme="dark"] .mod-reject{ background:#4A2A2A !important; color:#F7C1C
 @media (min-width: 900px){ .map-card{ left:auto; right:24px; width:380px; } .map-top{ max-width:640px; } }
 .on-map-btn{ display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 14px; border-radius:18px; background:var(--surface); box-shadow:var(--shadow); font-weight:800; font-size:13.5px; color:var(--ink); }
 .landing-fresh-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; } .landing-fresh-head h2{ margin:0; }
+
+/* =====================================================================
+   Шопсы — редизайн по образцу Reels / TikTok: заголовок и «Снять шопс» сверху слева, у аватара «+» подписки,
+   подписи под всеми кнопками (не пустота при нуле), имя автора ссылкой и читаемый значок проверки (белая
+   подложка на видео), полоса прогресса тонкая во всю ширину у самого низа ролика.
+   ===================================================================== */
+.sh-top{ position:absolute; z-index:3; top:calc(10px + var(--sat, 0px)); left:16px; display:flex; align-items:center; gap:10px; height:40px; }
+.sh-top-title{ font-size:22px; font-weight:800; letter-spacing:-0.02em; color:#fff; text-shadow:0 1px 6px rgba(0,0,0,.45); }
+.sh-create{ width:32px; height:32px; border-radius:50%; background:rgba(0,0,0,.35); color:#fff; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+.sh-side-who{ display:flex; flex-direction:column; align-items:center; margin-bottom:6px; }
+.sh-follow{ margin-top:-11px; width:22px; height:22px; border-radius:50%; border:2px solid #fff; background:#FF3B5C; color:#fff; font-size:14px; font-weight:900; line-height:1; display:flex; align-items:center; justify-content:center; padding:0; position:relative; z-index:1; }
+.sh-follow.on{ background:var(--primary); font-size:11px; }
+.sh-side-btn span{ font-size:12px !important; font-weight:700; text-shadow:0 1px 3px rgba(0,0,0,.5); }
+.sh-author{ gap:6px !important; }
+.sh-author-name{ color:#fff; font-size:16px; font-weight:800; text-shadow:0 1px 4px rgba(0,0,0,.45); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.sh-author .vmark{ background:#fff; border-radius:50%; padding:1px; display:inline-flex; }
+.sh-progress{ left:0 !important; right:0 !important; bottom:0 !important; height:2px !important; border-radius:0 !important; background:rgba(255,255,255,.22) !important; }
+.sh-progress span{ border-radius:0 !important; background:#fff !important; }
+@media (min-width: 900px){ .sh-top{ display:none; } }
+/* полоса прогресса — над нижним меню (лента уходит под меню), как подпись; колонка кнопок — с отступом от края */
+@media (max-width: 899px){
+  .sh-progress{ bottom:calc(84px + var(--sab)) !important; }
+}
+.sh-side{ right:10px !important; }
+.sh-follow{ font-size:15px; line-height:18px; padding-bottom:1px; }

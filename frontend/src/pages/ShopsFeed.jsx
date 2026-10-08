@@ -23,6 +23,7 @@ const price = (it) => (it.price == null ? '' : `${Math.round(it.price).toLocaleS
  * Карточки объявлений поверх видео, каждая со своей секунды.
  */
 export default function ShopsFeed() {
+  const { user } = useAuth()   // для «+» «Снять шопс» сверху
   const { t, i18n } = useTranslation()
   const [params] = useSearchParams()
   const [items, setItems] = useState([])
@@ -58,6 +59,12 @@ export default function ShopsFeed() {
 
   return (
     <div className="sh-feed">
+      <div className="sh-top">
+        <span className="sh-top-title">{t('shops.title')}</span>
+        <Link className="sh-create" to={user ? '/shops/new' : '/login'} aria-label={t('shops.new_title')}>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
+        </Link>
+      </div>
       <button type="button" className="sh-sound" onClick={() => setMuted((m) => !m)} aria-label={muted ? t('shops.sound_on') : t('shops.sound_off')}>
         {muted
           ? <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 5 6 9H3v6h3l5 4V5Z" /><path d="m22 9-6 6M16 9l6 6" /></svg>
@@ -85,6 +92,7 @@ function Slide({ shop, index, active, near, muted, onActive }) {
   const video = useRef(null)
   const [time, setTime] = useState(0)
   const [paused, setPaused] = useState(false)
+  const [following, setFollowing] = useState(!!shop.author?.is_subscribed)
   const [sheet, setSheet] = useState(false)
   const [comments, setComments] = useState(false)
   const [like, setLike] = useState({ on: shop.liked, n: shop.likes || 0 })
@@ -196,19 +204,31 @@ function Slide({ shop, index, active, near, muted, onActive }) {
         onClick={onTap} />
       {burst > 0 && <div key={burst} className="sh-burst" aria-hidden="true"><svg viewBox="0 0 24 24" width="96" height="96"><path fill="#FF3B5C" d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" /></svg></div>}
       <div className="sh-side">
-        <Link className="sh-side-ava" to={`/seller/${shop.author?.id}`} aria-label={shop.author?.name}>
-          {shop.author?.avatar ? <img src={shop.author.avatar} alt="" /> : (shop.author?.name || '?')[0]}
-        </Link>
+        <div className="sh-side-who">
+          <Link className="sh-side-ava" to={`/seller/${shop.author?.id}`} aria-label={shop.author?.name}>
+            {shop.author?.avatar ? <img src={shop.author.avatar} alt="" /> : (shop.author?.name || '?')[0]}
+          </Link>
+          {/* подписка на автора прямо с ролика — «+», после подписки «✓» (как у Reels / TikTok) */}
+          {shop.author && !shop.mine && (
+            <button type="button" className={`sh-follow${following ? ' on' : ''}`} aria-label={following ? t('shops.following') : t('shops.follow')}
+              onClick={() => {
+                if (!user) { navigate('/login'); return }
+                const on = !following; setFollowing(on)
+                ;(on ? api.subscribeToSeller(shop.author.id) : api.unsubscribeFromSeller(shop.author.id)).catch(() => setFollowing(!on))
+              }}>{following ? '✓' : '+'}</button>
+          )}
+        </div>
         <button type="button" className={`sh-side-btn${(isShop ? like.on : faved) ? ' on' : ''}`} onClick={() => toggleLike()} aria-label={t('shops.like')} aria-pressed={isShop ? like.on : faved}>
           <svg viewBox="0 0 24 24" width="30" height="30" fill={(isShop ? like.on : faved) ? '#FF3B5C' : 'none'} stroke={(isShop ? like.on : faved) ? '#FF3B5C' : '#fff'} strokeWidth="2" strokeLinejoin="round"><path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.8a5 5 0 0 0 0-6.9z" /></svg>
-          <span>{isShop ? (like.n || '') : ''}</span>
+          <span>{isShop ? (like.n || t('shops.like')) : t('shops.r_save')}</span>
         </button>
         <button type="button" className="sh-side-btn" onClick={() => (isShop ? setComments(true) : shop.items?.[0] && write(shop.items[0]))} aria-label={isShop ? t('shops.comments') : t('shops.ask_seller')}>
           <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#fff" strokeWidth="2" strokeLinejoin="round"><path d="M20.5 12a8 8 0 0 1-8.5 8 9 9 0 0 1-3.4-.6L4 21l1.4-4a8 8 0 0 1-1.4-4.6A8 8 0 0 1 12.5 4a8 8 0 0 1 8 8Z" /></svg>
-          <span>{isShop ? (nComments || '') : ''}</span>
+          <span>{isShop ? (nComments || t('shops.r_discuss')) : t('shops.r_ask')}</span>
         </button>
         <button type="button" className="sh-side-btn" onClick={share} aria-label={t('shops.share')}>
           <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" /><path d="m16 6-4-4-4 4" /><path d="M12 2v13" /></svg>
+          <span>{t('shops.share')}</span>
         </button>
       </div>
       {comments && <Comments shop={shop} item={shop.items[0]} onClose={() => setComments(false)} onCount={setNComments} onAsk={write} />}
@@ -217,7 +237,7 @@ function Slide({ shop, index, active, near, muted, onActive }) {
       <div className="sh-progress"><span style={{ width: `${Math.min(100, (time / dur) * 100)}%` }} /></div>
       <div className="sh-meta">
         <div className="sh-author">
-          <span>{shop.author?.name}</span>
+          <Link to={`/seller/${shop.author?.id}`} className="sh-author-name">{shop.author?.name}</Link>
           <VerifiedMark official={shop.author?.official} verified={shop.author?.verified} size={16} />
           {shop.is_ad && <span className="sh-ad">{t('shops.ad')}</span>}
         </div>

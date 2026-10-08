@@ -1720,7 +1720,12 @@
     "tip_watch": "Few watch to the end: show the item in the first 2 seconds and keep it to 15–20 seconds.",
     "tip_tap": "Watched but not tapped: pin the item when it is best visible and add the price to the caption.",
     "tip_ok": "This shop works well — record a similar one for other items.",
-    "mod_none": "Nothing to review"
+    "mod_none": "Nothing to review",
+    "follow": "Follow",
+    "following": "Following",
+    "r_save": "Save",
+    "r_discuss": "Comment",
+    "r_ask": "Ask"
   },
   "sf": {
     "title_suffix": "storefront on PLONK",
