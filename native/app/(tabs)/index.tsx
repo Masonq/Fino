@@ -21,6 +21,7 @@ import Segmented from '../../src/components/Segmented'
 import Skeleton from '../../src/components/Skeleton'
 import { useTabInset } from '../../src/tabInset'
 import HomeSections from '../../src/components/HomeSections'
+import { markHomeReady } from '../../src/ready'
 import { cityName } from '../../src/format'
 import { prefs } from '../../src/prefs'
 import * as Location from 'expo-location'
@@ -155,8 +156,11 @@ export default function Feed() {
 
   // «Показать объявления рядом с вами?» — как на сайте: над лентой, а не окном; пока город не выбран и не отказались
   const [geoAsk, setGeoAsk] = useState(false)
+  const [geoLoaded, setGeoLoaded] = useState(false)
   const [geoBusy, setGeoBusy] = useState(false)
-  useEffect(() => { prefs.get('plonk_geo_ask').then((v) => setGeoAsk(v !== 'no')) }, [])
+  useEffect(() => { prefs.get('plonk_geo_ask').then((v) => { setGeoAsk(v !== 'no'); setGeoLoaded(true) }) }, [])
+  // первый экран собран — можно убирать заставку (src/ready.ts)
+  useEffect(() => { if (cityReady && geoLoaded && state !== 'loading') markHomeReady() }, [cityReady, geoLoaded, state])
   const dismissGeo = () => { setGeoAsk(false); prefs.set('plonk_geo_ask', 'no') }
   const detectCity = async () => {
     setGeoBusy(true)

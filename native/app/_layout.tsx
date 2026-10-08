@@ -4,6 +4,7 @@ import {
 } from '@expo-google-fonts/onest'
 import { Stack } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
+import { waitHomeReady } from '../src/ready'
 import { StatusBar } from 'expo-status-bar'
 import * as Updates from 'expo-updates'
 import { useEffect } from 'react'
@@ -57,7 +58,11 @@ export default function RootLayout() {
   const [fontsReady, fontsError] = useFonts({
     Onest_400Regular, Onest_500Medium, Onest_600SemiBold, Onest_700Bold, Onest_800ExtraBold,
   })
-  useEffect(() => { if (fontsReady || fontsError) SplashScreen.hideAsync().catch(() => {}) }, [fontsReady, fontsError])
+  // заставку убираем, когда главная собрала первый экран (src/ready.ts) — иначе блоки досаживались у человека на глазах
+  useEffect(() => {
+    if (!(fontsReady || fontsError)) return
+    waitHomeReady().then(() => SplashScreen.hideAsync().catch(() => {}))
+  }, [fontsReady, fontsError])
   // Шрифты не загрузились — показываем системными, а не висим на заставке
   if (!fontsReady && !fontsError) return null
   return (
