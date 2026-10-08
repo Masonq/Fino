@@ -1,4 +1,5 @@
 import { cardMeta } from '../cardMeta'
+import { useAppear, usePressScale } from '../motion'
 import * as Haptics from 'expo-haptics'
 import { hideListing, hideSeller, isHidden, useHidden } from '../hidden'
 import { tr } from '../i18n'
@@ -6,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import { router } from 'expo-router'
 import { memo, useState } from 'react'
-import { ActionSheetIOS, Alert, FlatList, NativeScrollEvent, NativeSyntheticEvent, Platform, Pressable, Share, StyleSheet, Text, View } from 'react-native'
+import { ActionSheetIOS, Alert, FlatList, NativeScrollEvent, NativeSyntheticEvent, Platform, Pressable, Share, StyleSheet, Text, View, Animated } from 'react-native'
 
 import { type FeedItem, prefetchListing } from '../api'
 import { seedListing } from '../seed'
@@ -21,6 +22,8 @@ import HeartButton from './HeartButton'
  * золотая рамка у платного выделения. Нажатие открывает объявление.
  */
 function ListingCard({ item, width, large = false }: { item: FeedItem; width: number; large?: boolean }) {
+  const press = usePressScale(0.97)
+  const appear = useAppear(0)
   const [index, setIndex] = useState(0)
   // Крупная карточка (одна колонка) — как .l-card сайта: фото 16 : 10,5
   const photoH = Math.round(large ? (width * 10.5) / 16 : width * 1.25) // PLONK 2.0: фото 4:5, как на сайте
@@ -53,7 +56,8 @@ function ListingCard({ item, width, large = false }: { item: FeedItem; width: nu
   }
 
   return (
-    <Pressable onPress={open} onPressIn={warm} onLongPress={menu} delayLongPress={450} style={[styles.card, { width }, large && { borderRadius: 18 }, item.is_highlighted && styles.highlighted]}
+    <Animated.View style={[appear, press.style]}>
+    <Pressable onPress={open} onPressIn={() => { warm(); press.onPressIn() }} onPressOut={press.onPressOut} onLongPress={menu} delayLongPress={450} style={[styles.card, { width }, large && { borderRadius: 18 }, item.is_highlighted && styles.highlighted]}
       accessibilityRole="button" accessibilityLabel={`${item.title}, ${formatPrice(item.price, item.currency, item.is_free)}`}>
       <View style={[styles.photoBox, { height: photoH }]}>
         {list.length > 1 ? (
@@ -113,6 +117,7 @@ function ListingCard({ item, width, large = false }: { item: FeedItem; width: nu
         </View>
       </View>
     </Pressable>
+    </Animated.View>
   )
 }
 

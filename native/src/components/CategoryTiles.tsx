@@ -52,7 +52,7 @@ export default function CategoryTiles({ value, onPick }: { value: string | null;
     if (c === 'all') {
       const on = value === null
       return (
-        <Pressable key="all" style={[styles.tile, styles.allTile]} onPress={() => { select(); onPick(null); router.push('/categories') }} accessibilityRole="button" accessibilityState={{ selected: on }}>
+        <Pressable key="all" style={({ pressed }) => [styles.tile, styles.allTile, pressed && { transform: [{ scale: 0.96 }] }]} onPress={() => { select(); onPick(null); router.push('/categories') }} accessibilityRole="button" accessibilityState={{ selected: on }}>
           <Text style={[styles.label, { color: colors.onInverse }]}>{tr('Все')}</Text>
           <View style={styles.allIcon}><Icon name="grid" size={30} color={colors.onInverse} /></View>
         </Pressable>
@@ -60,7 +60,7 @@ export default function CategoryTiles({ value, onPick }: { value: string | null;
     }
     const on = value === c.slug
     return (
-      <Pressable key={c.slug} style={[styles.tile, { width: widthFor(nameOf(c), c.slug).tile, backgroundColor: TINT[c.slug] ?? colors.tile }, on && styles.tileOn, c.ready === false && styles.soon]} onPress={() => { select(); router.push(`/c/${c.slug}`) }}
+      <Pressable key={c.slug} style={({ pressed }) => [styles.tile, { width: widthFor(nameOf(c), c.slug).tile, backgroundColor: TINT[c.slug] ?? colors.tile }, pressed && { transform: [{ scale: 0.96 }] }, on && styles.tileOn, c.ready === false && styles.soon]} onPress={() => { select(); router.push(`/c/${c.slug}`) }}
         accessibilityRole="button" accessibilityState={{ selected: on }}>
         {/* Одно длинное слово («Недвижимость») не переносим посреди слова — слегка ужимаем */}
         <TileLabelArt uri={`${SITE}${catPath(c.slug)}`} name={nameOf(c)} fit={widthFor(nameOf(c), c.slug)} style={[styles.label, on && styles.labelOn]} />
