@@ -1,4 +1,4 @@
-import { success } from '../../src/haptics'
+import { select, success } from '../../src/haptics'
 import { getLang, tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
@@ -389,7 +389,9 @@ export default function Post() {
               </Pressable>
             )}
             {shots.map((s, i) => (
-              <Pressable key={s.key} style={styles.shot} disabled={s.state !== 'failed'} onPress={() => upload(s)}>
+              <Pressable key={s.key} style={styles.shot} onPress={() => { if (s.state === 'failed') upload(s) }}
+                // удерживать — «Сделать обложкой», как на сайте: фото встаёт первым
+                onLongPress={() => { if (i > 0) { setShots((all) => [s, ...all.filter((x) => x.key !== s.key)]); select() } }} delayLongPress={350}>
                 {s.mime.startsWith('video')
                   ? (s.uploaded?.thumbnail_url ? <Image source={{ uri: mediaUrl(s.uploaded.thumbnail_url) ?? undefined }} style={styles.shotImg} contentFit="cover" /> : <View style={[styles.shotImg, { backgroundColor: colors.ink }]} />)
                   : <Image source={{ uri: s.uri }} style={styles.shotImg} contentFit="cover" />}
@@ -403,6 +405,7 @@ export default function Post() {
               </Pressable>
             ))}
           </ScrollView>
+          {shots.length > 1 && <Text style={styles.coverHint}>{tr('Удерживайте фото, чтобы сделать его обложкой')}</Text>}
           {hint(problems.photos)}
           {!!videoError && <Text style={styles.hint}>{videoError}</Text>}
           {shots.some((x) => x.mime.startsWith('video') && x.state === 'loading') && <Text style={styles.small}>{tr('Обрабатывается — обычно недолго')}</Text>}
@@ -463,6 +466,7 @@ export default function Post() {
 }
 
 const styles = StyleSheet.create({
+  coverHint: { fontFamily: font[600], fontSize: 12.5, color: colors.muted, marginTop: 6 },
   page: { flex: 1, backgroundColor: colors.bg },
   center: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 10 },
   circle: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },

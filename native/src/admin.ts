@@ -80,3 +80,8 @@ export const adminUserSummary = (t: string, id: string) => authed<UserSummary>(`
 export type Login = { id: string; created_at?: string | null; city?: string | null; country?: string | null; ip_address?: string | null; device_guid?: string | null }
 export const adminUserLogins = (t: string, id: string) => authed<{ items: Login[] }>(`/admin/users/${id}/logins`, t)
 export const adminResetName = (t: string, id: string) => authed<{ display_name?: string }>(`/admin/users/${id}/reset-name`, t, 'POST')
+
+export type UserListing = { id: string; title?: string | null; status: string; price?: number | null; currency?: string | null; created_at?: string | null }
+export const adminUserListings = (t: string, id: string) => authed<{ items: UserListing[] }>(`/admin/users/${id}/listings`, t)
+export const adminUserAudit = (t: string, id: string) => authed<{ items: AuditItem[] }>(`/admin/audit?target_id=${id}&limit=30`, t)
+export const adminDeleteUser = (t: string, id: string) => authed<unknown>(`/admin/users/${id}`, t, 'DELETE')

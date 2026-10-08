@@ -172,6 +172,8 @@ export default function Profile() {
           <View style={styles.cardBody}>
             <Text style={styles.cardName}>{name}</Text>
             <Text style={styles.cardMeta}>{tr(pub?.is_company ? 'Компания' : 'Частное лицо')}  ·  {rating}</Text>
+          {/* как на сайте: у проверенного — отметка вместо кнопки «Подтвердить личность» */}
+          {isVerified && <Text style={styles.verifiedTag}>✓ {tr('Проверенный пользователь')}</Text>}
             {/* Подтверждение личности — сразу открываем страницу сервиса проверки; статус обновится при возвращении */}
             {pub && !isVerified && verify?.status === 'pending' && (
               <View style={styles.verifyPending}><Text style={styles.verifyPendingText}>{tr('Проверка личности идёт')}</Text></View>
@@ -351,6 +353,7 @@ export default function Profile() {
 }
 
 const styles = StyleSheet.create({
+  verifiedTag: { fontFamily: font[800], fontSize: 13, color: colors.primaryDeep, marginTop: 6 },
   actions: { flexDirection: 'row', gap: 8, marginHorizontal: 12, marginBottom: 10 },
   action: { flex: 1, height: 96, padding: 14, borderRadius: 22, backgroundColor: colors.surface, justifyContent: 'space-between', shadowColor: '#0F1512', shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 2 },
   actionText: { fontFamily: font[700], fontSize: 14, color: colors.ink },
