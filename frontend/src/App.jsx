@@ -491,7 +491,9 @@ export default function App() {
           история, там обратная логика (виден по умолчанию, прячется на
           десктопе через CSS), и на мобильном его действительно не должно
           быть на этих трёх страницах — там условие оставляем как было. */}
-      <div key={`tint${pathname}`} className={`top-tint${tintHidden ? ' hidden' : ''}`} style={{ backgroundColor: topTint }} aria-hidden="true" />
+      {/* на страницах с фото или видео у верхнего края (объявление, шопсы) полоски нет: в обычной вкладке Safari
+          она лежит поверх страницы, и чёрная полоса в 6 px была видна над фотографией */}
+      {topTint !== '#000000' && <div key={`tint${pathname}`} className={`top-tint${tintHidden ? ' hidden' : ''}`} style={{ backgroundColor: topTint }} aria-hidden="true" />}
       <TopNav />
       <main ref={mainRef} className={hideNav ? '' : 'has-bottomnav'}>
         {/* Пока подгружается страница по требованию — ничего не рисуем.
