@@ -900,7 +900,7 @@ CATEGORY_PAGE = """<!DOCTYPE html>
 <meta property="og:description" content="{description}">
 <meta property="og:url" content="{url}">
 <meta property="og:locale" content="{og_locale}">
-<meta property="og:image" content="{site}/og-cover.png">
+<meta property="og:image" content="{site}/og-cover.png?v=2">
 <script type="application/ld+json">
 {schema}
 </script>
@@ -1245,7 +1245,7 @@ def _plain_page(site: str, path: str, request: Request, lang: str = "sr") -> str
 <meta property="og:title" content="{esc(title)}">
 <meta property="og:url" content="{site}{prefix}{path}">
 <meta property="og:locale" content="{OG_LOCALE.get(lang, 'sr_RS')}">
-<meta property="og:image" content="{site}/og-cover.png">
+<meta property="og:image" content="{site}/og-cover.png?v=2">
 </head>
 <body>
 <h1>{esc(title)}</h1>

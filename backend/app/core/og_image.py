@@ -29,7 +29,7 @@ log = logging.getLogger(__name__)
 W, H = 1200, 630
 PHOTO = 630                      # квадрат фотографии слева
 PAD = 56
-FONT_PATH = Path(__file__).resolve().parent.parent / "assets" / "Manrope.ttf"
+FONT_PATH = Path(__file__).resolve().parent.parent / "assets" / "Onest.ttf"   # шрифт сайта
 # Знак — копия frontend/public/logo-mark.png: бэкенд не должен лазить в
 # папку фронта. Что копия не разошлась с оригиналом, проверяет тест
 # test_og_card_logo_matches_site.
@@ -101,74 +101,97 @@ def _fit_square(img: Image.Image, side: int) -> Image.Image:
 
 def render(*, title: str, price_text: str, meta: str, photo_url: str | None,
            is_free: bool = False, is_fresh: bool = False) -> bytes:
+    """
+    Карточка в стиле сайта (PLONK 2.0): тёплая бумага с мятным и лаймовым свечением, как шапка сайта; фото —
+    скруглённой карточкой с мягкой тенью; справа раздел, крупная цена, заголовок, город капсулой; внизу знак
+    PLONK, домен и мятная кнопка «Смотреть объявление». Шрифт — Onest, как на сайте.
+    """
+    from PIL import ImageFilter
     card = Image.new("RGB", (W, H), BG)
+    # свечение как в шапке сайта: мята слева сверху, лайм справа сверху
+    glow = Image.new("RGB", (W, H), BG)
+    gd = ImageDraw.Draw(glow)
+    gd.ellipse([-260, -320, 560, 380], fill=(214, 238, 225))
+    gd.ellipse([760, -360, 1460, 260], fill=(238, 244, 214))
+    glow = glow.filter(ImageFilter.GaussianBlur(120))
+    card.paste(glow, (0, 0))
     draw = ImageDraw.Draw(card)
 
-    # ——— фотография ———
+    # фото — скруглённая карточка с тенью
+    M, R = 40, 40
+    side = H - 2 * M
+    shadow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    ImageDraw.Draw(shadow).rounded_rectangle([M + 4, M + 14, M + side + 4, M + side + 14], R, fill=(15, 21, 18, 60))
+    shadow = shadow.filter(ImageFilter.GaussianBlur(18))
+    card.paste(shadow, (0, 0), shadow)
+    mask = Image.new("L", (side, side), 0)
+    ImageDraw.Draw(mask).rounded_rectangle([0, 0, side - 1, side - 1], R, fill=255)
     photo = _load_photo(photo_url) if photo_url else None
     if photo is not None:
-        card.paste(_fit_square(photo, PHOTO), (0, 0))
+        card.paste(_fit_square(photo, side), (M, M), mask)
     else:
-        # Объявление без фото: вместо пустоты — бледный знак. Раньше
-        # здесь стояла просто буква «P» шрифтом сайта, к знаку она
-        # отношения не имела.
-        draw.rectangle([0, 0, PHOTO, H], fill=PHOTO_BG)
+        ph = Image.new("RGB", (side, side), PHOTO_BG)
         try:
-            ghost = Image.open(LOGO_PATH).convert("RGBA").resize((176, 176), Image.LANCZOS)
+            ghost = Image.open(LOGO_PATH).convert("RGBA").resize((150, 150), Image.LANCZOS)
             ghost.putalpha(ghost.getchannel("A").point(lambda a: a * 28 // 100))
-            card.paste(ghost, (int(PHOTO / 2 - 88), int(H / 2 - 88)), ghost)
-        except Exception:
+            ph.paste(ghost, (side // 2 - 75, side // 2 - 75), ghost)
+        except Exception:                                # noqa: BLE001
             log.warning("og: знак не открылся", exc_info=True)
-
+        card.paste(ph, (M, M), mask)
     if is_fresh:
-        badge_font = _font(24, 800)
-        text = "НОВОЕ"
-        tw = draw.textlength(text, font=badge_font)
-        draw.rounded_rectangle([28, 28, 28 + tw + 36, 28 + 52], 12, fill=ACCENT)
-        draw.text((28 + 18, 28 + 26), text, font=badge_font, fill=(255, 255, 255), anchor="lm")
+        bf = _font(24, 800)
+        tw = draw.textlength("Новое", font=bf)
+        draw.rounded_rectangle([M + 22, M + 22, M + 22 + tw + 40, M + 22 + 50], 25, fill=ACCENT)
+        draw.text((M + 22 + 20, M + 22 + 25), "Новое", font=bf, fill=(255, 255, 255), anchor="lm")
 
-    # ——— правая часть ———
-    x = PHOTO + PAD
-    right = W - PAD
+    x = M + side + 52
+    right = W - 56
     width = right - x
+    y = 64
+    # раздел — подводкой, как на сайте над заголовком
+    if meta:
+        parts = meta.split(" · ")
+        section = parts[-1] if len(parts) > 1 else ""
+        city = parts[0] if len(parts) > 1 else meta
+    else:
+        section, city = "", ""
+    if section:
+        kf = _font(24, 700)
+        draw.text((x, y), _wrap(draw, section, kf, width, 1)[0] if section else "", font=kf, fill=SOFT)
+        y += 44
+    pf = _font(70 if len(price_text) < 12 else 56, 800)
+    draw.text((x, y), price_text, font=pf, fill=GREEN if is_free else INK)
+    y += 92
+    tf = _font(36, 600)
+    for line in _wrap(draw, title, tf, width, 3):
+        draw.text((x, y), line, font=tf, fill=INK)
+        y += 48
+    # город — белой капсулой с точкой
+    if city:
+        cf = _font(24, 700)
+        y += 18
+        cw = draw.textlength(city, font=cf)
+        draw.rounded_rectangle([x, y, x + cw + 62, y + 50], 25, fill=(255, 255, 255))
+        draw.ellipse([x + 20, y + 18, x + 34, y + 32], outline=GREEN, width=4)
+        draw.text((x + 46, y + 25), city, font=cf, fill=INK, anchor="lm")
 
-    price_font = _font(72, 800)
-    draw.text((x, PAD + 6), price_text, font=price_font,
-              fill=GREEN if is_free else INK)
-
-    y = PAD + 6 + 96
-    title_font = _font(38, 700)
-    for line in _wrap(draw, title, title_font, width, 3):
-        draw.text((x, y), line, font=title_font, fill=INK)
-        y += 50
-
-    meta_font = _font(26, 600)
-    y += 8
-    for line in _wrap(draw, meta, meta_font, width, 2):
-        draw.text((x, y), line, font=meta_font, fill=SOFT)
-        y += 36
-
-    # ——— подвал ———
-    foot_y = H - PAD - 56
-    draw.line([(x, foot_y - 26), (right, foot_y - 26)], fill=LINE, width=2)
-    # Знак вставляем картинкой, а не рисуем заново: нарисованный отстал
-    # от настоящего — у него была зелёная метка сверху справа, а у знака
-    # она снизу и круглая.
+    # низ: знак, домен и мятная «кнопка»
+    fy = H - 56 - 52
     try:
-        logo = Image.open(LOGO_PATH).convert("RGBA").resize((56, 56), Image.LANCZOS)
-        card.paste(logo, (int(x), int(foot_y)), logo)
-    except Exception:
-        # Без знака подпись всё равно читается — карточку не роняем.
-        log.warning("og: знак не открылся", exc_info=True)
-    # Обе подписи от верхней границы, а не от базовой линии: раньше
-    # вторая строка считалась иначе и наезжала на первую.
-    draw.text((x + 70, foot_y + 6), "plonk.rs", font=_font(27, 800), fill=INK, anchor="la")
-    draw.text((x + 70, foot_y + 36), "объявления Сербии", font=_font(20, 600), fill=SOFT, anchor="la")
+        logo = Image.open(LOGO_PATH).convert("RGBA").resize((52, 52), Image.LANCZOS)
+        card.paste(logo, (x, fy), logo)
+    except Exception:                                    # noqa: BLE001
+        pass
+    draw.text((x + 64, fy + 26), "plonk.rs", font=_font(28, 800), fill=INK, anchor="lm")
+    bf = _font(24, 800)
+    label = "Смотреть"
+    bw = draw.textlength(label, font=bf) + 56
+    draw.rounded_rectangle([right - bw, fy, right, fy + 52], 26, fill=(205, 239, 224))
+    draw.text((right - bw / 2, fy + 26), label, font=bf, fill=(8, 80, 65), anchor="mm")
 
     out = BytesIO()
-    card.save(out, "PNG", optimize=True)
+    card.save(out, format="PNG", optimize=True)
     return out.getvalue()
-
 
 def cached(key: str, **kwargs) -> bytes:
     """
@@ -178,7 +201,8 @@ def cached(key: str, **kwargs) -> bytes:
     и имя файла, а старое само вытеснится при очистке каталога.
     """
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    name = hashlib.sha256(key.encode()).hexdigest()[:24] + ".png"
+    # версия рисунка в ключе: после смены оформления старые картинки из кэша не отдаются
+    name = hashlib.sha256(("v2|" + key).encode()).hexdigest()[:24] + ".png"
     path = CACHE_DIR / name
     if path.exists():
         try:
