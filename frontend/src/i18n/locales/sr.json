@@ -363,7 +363,7 @@
   },
   "favorites": {
     "title": "Sačuvano",
-    "need_auth": "Predstavite se da vam sačuvani oglasi ne bi nestali.",
+    "need_auth": "Prijavite se da vam sačuvani oglasi ne bi nestali.",
     "empty": "Još ništa nije sačuvano. Dodirnite srce na oglasu da mu se vratite kasnije.",
     "sort_added": "Nedavno",
     "sort_drop": "Pojeftinilo",
@@ -402,7 +402,7 @@
     "below_market": "Jeftinije od sličnih na PLONK-u"
   },
   "chats": {
-    "need_auth": "Predstavite se da biste videli svoje razgovore.",
+    "need_auth": "Prijavite se da biste videli svoje razgovore.",
     "empty": "Još nema razgovora. Pošaljite poruku prodavcu i pojaviće se ovde.",
     "no_messages": "Još nema poruka",
     "you": "Vi",
@@ -609,7 +609,7 @@
     "title": "Sačuvane pretrage",
     "subscribe": "Prati",
     "done": "Pratite",
-    "need_login": "Predstavite se da biste sačuvali pretrage i dobijali obaveštenja o novom.",
+    "need_login": "Prijavite se da biste sačuvali pretrage i dobijali obaveštenja o novom.",
     "empty": "Još nema sačuvanih pretraga. Podesite filtere i dodirnite „Prati“ — novi oglasi će sami stići do vas.",
     "notify": "Obaveštavaj",
     "kicker": "Novi oglasi stižu sami"

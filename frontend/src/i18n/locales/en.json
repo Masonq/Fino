@@ -358,7 +358,7 @@
   },
   "favorites": {
     "title": "Saved",
-    "need_auth": "Introduce yourself so your saved listings don't get lost.",
+    "need_auth": "Sign in so your saved listings don't get lost.",
     "empty": "Nothing saved yet. Tap the heart on a listing to come back to it later.",
     "sort_added": "Recent",
     "sort_drop": "Price dropped",
@@ -395,7 +395,7 @@
     "below_market": "Cheaper than similar on PLONK"
   },
   "chats": {
-    "need_auth": "Introduce yourself to see your conversations.",
+    "need_auth": "Sign in to see your conversations.",
     "empty": "No conversations yet. Message a seller and it'll show up here.",
     "no_messages": "No messages yet",
     "you": "You",
@@ -594,7 +594,7 @@
     "title": "Saved searches",
     "subscribe": "Notify me",
     "done": "Tracking",
-    "need_login": "Introduce yourself to save searches and get notified about new listings.",
+    "need_login": "Sign in to save searches and get notified about new listings.",
     "empty": "No saved searches yet. Set up filters and tap “Follow” — new listings will find you.",
     "notify": "Notify",
     "kicker": "New listings will come to you"
