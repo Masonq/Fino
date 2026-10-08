@@ -1,52 +1,31 @@
 /**
- * Переключатель языка в шапке — «шар»: круглая кнопка с кодом языка внутри живого кольца (мята → лайм → коралл,
- * медленно вращается). Нажатие раскрывает шар в капсулу с тремя языками и бегунком под выбранным — без
- * выпадающего списка; второе нажатие или выбор сворачивает обратно.
+ * Переключатель языка в шапке — «барабан»: скруглённая кнопка с кодом языка; нажатие прокручивает код вверх,
+ * как барабан игрового автомата (SR → RU → EN → SR), и язык меняется — заголовки страницы при этом
+ * переходят на новый язык волной (LangText). Кружок с кольцом убран по решению владельца.
  */
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { changeLanguage } from './LanguageSwitcher'
 
-const LANGS = [
-  { code: 'sr', label: 'SR', name: 'Srpski' },
-  { code: 'ru', label: 'RU', name: 'Русский' },
-  { code: 'en', label: 'EN', name: 'English' },
-]
+const ORDER = ['sr', 'ru', 'en']
+const NAMES = { sr: 'Srpski', ru: 'Русский', en: 'English' }
 
 export default function LangOrb() {
   const { i18n } = useTranslation()
-  const [open, setOpen] = useState(false)
-  const box = useRef(null)
-  const cur = LANGS.find((l) => i18n.language?.startsWith(l.code)) || LANGS[0]
-  const idx = LANGS.indexOf(cur)
-
-  // нажатие мимо — свернуть
-  useEffect(() => {
-    if (!open) return undefined
-    const off = (e) => { if (box.current && !box.current.contains(e.target)) setOpen(false) }
-    document.addEventListener('pointerdown', off)
-    return () => document.removeEventListener('pointerdown', off)
-  }, [open])
-
+  const cur = ORDER.find((c) => i18n.language?.startsWith(c)) || 'sr'
+  const next = ORDER[(ORDER.indexOf(cur) + 1) % ORDER.length]
+  const [rolling, setRolling] = useState(false)
+  const roll = () => {
+    if (rolling) return
+    setRolling(true)
+    setTimeout(() => { changeLanguage(next); setRolling(false) }, 380)
+  }
   return (
-    <div ref={box} className={`lang-orb${open ? ' open' : ''}`} style={{ '--i': idx }}>
-      {!open ? (
-        <button type="button" className="lang-orb-btn" onClick={() => setOpen(true)} aria-label={`${cur.name} — change language`} aria-expanded="false">
-          <span className="lang-orb-ring" aria-hidden="true" />
-          <span className="lang-orb-code">{cur.label}</span>
-        </button>
-      ) : (
-        <div className="lang-orb-pill" role="radiogroup" aria-label="Language">
-          <span className="lang-orb-thumb" aria-hidden="true" />
-          {LANGS.map((l) => (
-            <button key={l.code} type="button" role="radio" aria-checked={l.code === cur.code} title={l.name}
-              className={l.code === cur.code ? 'on' : ''}
-              onClick={() => { setOpen(false); if (l.code !== cur.code) changeLanguage(l.code) }}>
-              {l.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+    <button type="button" className="lang-drum" onClick={roll} aria-label={`${NAMES[cur]} → ${NAMES[next]}`}>
+      <span className={`lang-drum-reel${rolling ? ' roll' : ''}`} aria-hidden="true">
+        <span>{cur.toUpperCase()}</span>
+        <span>{next.toUpperCase()}</span>
+      </span>
+    </button>
   )
 }

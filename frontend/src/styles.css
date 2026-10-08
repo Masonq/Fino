@@ -8888,3 +8888,12 @@ html[data-theme="dark"] .vol-tile *{ filter:none; }
 .lt-in{ animation:lt-in .42s cubic-bezier(.3,1.4,.5,1) both; }
 @keyframes lt-out{ to{ transform:translateY(-0.45em); opacity:0; } }
 @keyframes lt-in{ from{ transform:translateY(0.5em); opacity:0; } to{ transform:none; opacity:1; } }
+
+/* ===== Язык — «барабан» (вместо кружка с кольцом) ===== */
+.lang-orb, .lang-orb-btn, .lang-orb-pill{ display:none !important; }
+.lang-drum{ flex:none; width:52px; height:46px; border:0; padding:0; border-radius:15px; background:var(--surface); box-shadow:var(--shadow); overflow:hidden; cursor:pointer; display:flex; align-items:flex-start; justify-content:center; }
+.lang-drum:active{ transform:scale(.95); }
+.lang-drum-reel{ display:flex; flex-direction:column; transition:none; }
+.lang-drum-reel > span{ height:46px; line-height:46px; font-size:14px; font-weight:900; letter-spacing:.03em; color:var(--ink); }
+.lang-drum-reel.roll{ transform:translateY(-46px); transition:transform .38s cubic-bezier(.3,1.45,.5,1); }
+@media (prefers-reduced-motion: reduce){ .lang-drum-reel.roll{ transition:none; } }
