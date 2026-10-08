@@ -19,7 +19,7 @@ const SECTIONS = [
   { to: '/admin/alerts', key: 'alerts', tint: '#FFF0D2', icon: 'M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01' },
   { to: '/admin/flagged', key: 'flagged_chats', tint: '#FCEADB', icon: 'M4 22V4a1 1 0 0 1 1-1h12l-2 4 2 4H5' },
   { to: '/admin/shops', key: 'shops', tint: '#DDF0F3', icon: 'M15.5 10.5l6-3.5v10l-6-3.5M2.5 6h13v12h-13z' },
-  { to: '/admin/jobs', key: 'jobs', tint: '#F3EBDB', icon: 'M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2' },
+  { to: '/admin/jobs', key: 'jobs', tint: '#F3EBDB', icon: 'M12 7v5l3 2 M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z' },
   { to: '/admin/team-chats', key: 'team_chats', tint: '#ECF0DD', icon: 'M8 10h8M8 14h5M21 12a9 9 0 0 1-13.4 7.9L3 21l1.1-4.6A9 9 0 1 1 21 12z' },
   { to: '/admin/volunteers', key: 'volunteers', tint: '#F7E4F1', admin: true, icon: 'M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z' },
   { to: '/admin/audit', key: 'audit', tint: '#E5EAF0', admin: true, icon: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 13h8M8 17h5' },
