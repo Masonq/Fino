@@ -389,6 +389,21 @@ export default function App() {
      
   }, [pathname])
 
+  // Проявление страницы при переходе (как в приложениях): вперёд — новая страница въезжает справа с проявлением,
+  // назад — слева; 280 мс, плавное замедление. Без пересоздания страниц — анимация перезапускается на <main>.
+  const mainRef = useRef(null)
+  const idxRef = useRef(window.history.state?.idx ?? 0)
+  useLayoutEffect(() => {
+    const el = mainRef.current
+    if (!el) return
+    const idx = window.history.state?.idx ?? 0
+    const dir = idx < idxRef.current ? 'page-in-back' : 'page-in-fwd'
+    idxRef.current = idx
+    el.classList.remove('page-in-fwd', 'page-in-back')
+    void el.offsetWidth   // перезапуск анимации
+    el.classList.add(dir)
+  }, [location.key])
+
   // «Шторка» при прокрутке: листаешь вниз — полоска уезжает, и Safari показывает под панелью саму страницу
   // (прозрачное стекло); листаешь вверх или ты у самого верха — полоска возвращается, и панель снова в цвет шапки.
   // Сдвиг translateY(-100%) Safari 26 не считает «верхним элементом» — на этом и держится переключение.
@@ -478,7 +493,7 @@ export default function App() {
           быть на этих трёх страницах — там условие оставляем как было. */}
       <div key={`tint${pathname}`} className={`top-tint${tintHidden ? ' hidden' : ''}`} style={{ backgroundColor: topTint }} aria-hidden="true" />
       <TopNav />
-      <main className={hideNav ? '' : 'has-bottomnav'}>
+      <main ref={mainRef} className={hideNav ? '' : 'has-bottomnav'}>
         {/* Пока подгружается страница по требованию — ничего не рисуем.
             Пустая заглушка лучше вертушки: подгрузка занимает доли
             секунды, а вертушка, мелькнувшая на миг, выглядит как

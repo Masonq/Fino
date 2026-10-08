@@ -8923,3 +8923,62 @@ html[data-theme="dark"]{ background:var(--bg) !important; }
   var(--bg) !important; }
 .top-tint{ transition:transform .25s ease; }
 .top-tint.hidden{ transform:translateY(-100%); }
+
+/* =====================================================================
+   ДВИЖЕНИЕ — как в лучших приложениях (Material 3 / iOS): быстрая реакция на нажатие (≤150 мс), пружинящее
+   отпускание, переходы страниц ~280 мс с проявлением и лёгким сдвигом, карточки появляются волной.
+   Всё отключается при «Уменьшении движения».
+   ===================================================================== */
+:root{
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
+  --spring: linear(0, .22 9%, .62 19%, .94 30%, 1.06 40%, 1.07 48%, 1.03 60%, .99 76%, 1);
+}
+/* переход страниц */
+main.page-in-fwd{ animation:page-in-fwd .28s var(--ease-out) both; }
+main.page-in-back{ animation:page-in-back .28s var(--ease-out) both; }
+@keyframes page-in-fwd{ from{ opacity:0; transform:translateX(18px); } to{ opacity:1; transform:none; } }
+@keyframes page-in-back{ from{ opacity:0; transform:translateX(-18px); } to{ opacity:1; transform:none; } }
+/* нажатие / отпускание: нажал — чуть утапливается за 100 мс, отпустил — пружинит обратно */
+:where(button, a, [role="button"], .s-card, .jl-tile, .cats-tile, .chip, .profile-row, .vol-tile, .invite-card, .lang-drum, .avito-fav-pill){
+  transition:transform .32s var(--spring), background-color .15s ease, box-shadow .2s ease, opacity .15s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+:where(button, a, [role="button"], .s-card, .jl-tile, .cats-tile, .chip, .profile-row, .vol-tile, .invite-card, .avito-fav-pill):active:not(:disabled){
+  transform:scale(.97); transition:transform .1s ease-out;
+}
+:where(.s-card, .jl-tile, .cats-tile, .vol-tile, .invite-card):active{ transform:scale(.98); }
+@media (hover: hover){
+  :where(.s-card, .jl-tile, .cats-tile, .invite-card):hover{ transform:translateY(-2px); }
+}
+/* карточки появляются волной: первые 8 — с задержкой по 40 мс */
+:where(.feed-grid, .cats-grid, .lp-grid) > *{ animation:card-in .36s var(--ease-out) both; }
+:where(.feed-grid, .cats-grid, .lp-grid) > :nth-child(2){ animation-delay:.04s; }
+:where(.feed-grid, .cats-grid, .lp-grid) > :nth-child(3){ animation-delay:.08s; }
+:where(.feed-grid, .cats-grid, .lp-grid) > :nth-child(4){ animation-delay:.12s; }
+:where(.feed-grid, .cats-grid, .lp-grid) > :nth-child(5){ animation-delay:.16s; }
+:where(.feed-grid, .cats-grid, .lp-grid) > :nth-child(6){ animation-delay:.2s; }
+:where(.feed-grid, .cats-grid, .lp-grid) > :nth-child(7){ animation-delay:.24s; }
+:where(.feed-grid, .cats-grid, .lp-grid) > :nth-child(8){ animation-delay:.28s; }
+@keyframes card-in{ from{ opacity:0; transform:translateY(10px) scale(.985); } to{ opacity:1; transform:none; } }
+/* шторки и всплывающие окна — снизу с пружиной */
+:where(.sheet-card, .modal-card){ animation:sheet-in .34s var(--spring) both; }
+@keyframes sheet-in{ from{ transform:translateY(24px); opacity:0; } to{ transform:none; opacity:1; } }
+@media (prefers-reduced-motion: reduce){
+  main.page-in-fwd, main.page-in-back, :where(.feed-grid, .cats-grid, .lp-grid) > *, :where(.sheet-card, .modal-card){ animation:none !important; }
+  :where(button, a, [role="button"], .s-card, .jl-tile, .cats-tile, .chip, .profile-row){ transition:none !important; }
+}
+/* на страницах с закреплёнными слоями (шопсы, переписка, карта, объявление, поиск) — только проявление без сдвига:
+   сдвиг на время анимации привязал бы закреплённые слои к странице, и они бы дёрнулись */
+main.page-in-fwd:has(.sh-feed, .map-page, .chat-page, .detail-page, .search-page, .bottom-bar),
+main.page-in-back:has(.sh-feed, .map-page, .chat-page, .detail-page, .search-page, .bottom-bar){ animation:page-fade .22s ease-out both; }
+@keyframes page-fade{ from{ opacity:0; } to{ opacity:1; } }
+/* после анимации на <main> не должно оставаться transform — иначе закреплённые слои страниц (шторки, нижние
+   панели) навсегда привязались бы к странице: только «backwards», без удержания конечного кадра */
+main.page-in-fwd{ animation:page-in-fwd .28s var(--ease-out) backwards; }
+main.page-in-back{ animation:page-in-back .28s var(--ease-out) backwards; }
+:where(.feed-grid, .cats-grid, .lp-grid) > *{ animation-fill-mode:backwards; }
+/* карточки объявлений в любой ленте — волной (задержка по месту в своей сетке, первые 8) */
+.s-card{ animation:card-in .36s var(--ease-out) backwards; }
+.s-card:nth-child(2){ animation-delay:.04s; } .s-card:nth-child(3){ animation-delay:.08s; } .s-card:nth-child(4){ animation-delay:.12s; }
+.s-card:nth-child(5){ animation-delay:.16s; } .s-card:nth-child(6){ animation-delay:.2s; } .s-card:nth-child(7){ animation-delay:.24s; } .s-card:nth-child(8){ animation-delay:.28s; }
+@media (prefers-reduced-motion: reduce){ .s-card{ animation:none !important; } }
