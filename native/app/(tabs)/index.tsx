@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { fetchFeed, type FeedItem, type FeedTab, type Filters, saveSearch } from '../../src/api'
+import LangOrb from '../../src/components/LangOrb'
 import { useAuth } from '../../src/auth'
 import { useChats } from '../../src/chats'
 import CategoryTiles from '../../src/components/CategoryTiles'
@@ -297,6 +298,8 @@ export default function Feed() {
             {activeCount(filters) > 0 && <View style={styles.filterDot}><Text style={styles.filterDotText}>{activeCount(filters)}</Text></View>}
           </Pressable>}
         </View>
+        {/* язык — «шар», как в шапке сайта */}
+        <LangOrb />
         {/* «Избранное» ушло из меню (там теперь «Шопсы») — сердечко рядом с профилем, как на сайте */}
         <Pressable style={styles.avatarPill} onPress={() => router.push('/favorites' as never)} accessibilityRole="button" accessibilityLabel={tr('Избранное')}>
           <Icon name="heart" size={22} color={colors.ink} />

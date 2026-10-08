@@ -24,7 +24,7 @@ export function tr(text: string, params?: Record<string, string | number>): stri
   return out
 }
 
-type Ctx = { lang: Lang; setLang: (l: Lang) => void; ready: boolean }
+type Ctx = { lang: Lang; setLang: (l: Lang, back?: string) => void; ready: boolean }
 const LangCtx = createContext<Ctx>({ lang: 'sr', setLang: () => {}, ready: false })
 
 export function LangProvider({ children }: { children: (lang: Lang) => ReactNode }) {

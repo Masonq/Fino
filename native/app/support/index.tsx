@@ -116,9 +116,9 @@ const styles = StyleSheet.create({
   back: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, shadowColor: '#0F1512', shadowOpacity: 0.07, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
   title: { fontSize: 27, fontFamily: font[800], letterSpacing: -0.8, color: colors.ink, marginLeft: 8 },
   body: { paddingHorizontal: 12 },
-  card: { borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
-  section: { padding: 12, gap: 8 },
-  sep: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
+  card: { gap: 10 },   // поля отдельными карточками (как сайт): без общей рамки и линий-разделителей
+  section: { padding: 14, gap: 8, borderRadius: 20, backgroundColor: colors.surface },
+  sep: {},
   label: { fontSize: 12.5, fontFamily: font[700], color: colors.inkSoft },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   chip: { height: 34, paddingHorizontal: 13, borderRadius: 17, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, justifyContent: 'center' },
