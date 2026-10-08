@@ -26,6 +26,24 @@ export function openNoticeLink(link?: string | null) {
 }
 
 /** Уведомления: новые — с точкой и жирным, нажатие отмечает прочитанным и ведёт по ссылке; «Прочитать все». */
+const KIND_ICON = { chat: 'chat', price: 'wallet', check: 'shield', money: 'wallet', team: 'star', other: 'bell' } as const
+const KIND_BG = { chat: '#E3ECFA', price: '#FFE8DD', check: '#E2F1E6', money: '#FFF1C9', team: '#EDE7FA', other: '#ECEBE6' }
+const DAY_LABEL = { today: 'Сегодня', yesterday: 'Вчера', earlier: 'Ранее' } as const
+function notifKind(n: Notice): keyof typeof KIND_BG {
+  const l = (n as unknown as { link?: string }).link || '', x = (n.text || '').toLowerCase()
+  if (l.startsWith('/chat')) return 'chat'
+  if (/цен|cen|price|подешев|pojeftin/.test(x)) return 'price'
+  if (/провер|документ|verif|dokument|одобр|отклон|odobr|odbij/.test(x)) return 'check'
+  if (/rsd|бонус|bonus|баланс|stanje|balance/.test(x)) return 'money'
+  if (/лент|feed|команд|tim|team/.test(x)) return 'team'
+  return 'other'
+}
+function dayGroup(iso: string): keyof typeof DAY_LABEL {
+  const d = new Date(iso), now = new Date()
+  const days = Math.floor((new Date(now.toDateString()).getTime() - new Date(d.toDateString()).getTime()) / 864e5)
+  return days <= 0 ? 'today' : days === 1 ? 'yesterday' : 'earlier'
+}
+
 export default function Notifications() {
   const insets = useSafeAreaInsets()
   const { token } = useAuth()
@@ -57,12 +75,15 @@ export default function Notifications() {
         <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} hitSlop={10} style={styles.back} accessibilityLabel={tr('Назад')}>
           <Icon name="back" size={22} color={colors.ink} />
         </Pressable>
-        <Text style={styles.h1}>{tr('Уведомления')}</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.kicker}>{unread > 0 ? tr('Есть новое') : ' '}</Text>
+          <Text style={styles.h1}>{tr('Уведомления')}</Text>
+        </View>
         {/* как на сайте: «Прочитать всё» — если есть непрочитанные, «Очистить» — если уведомления есть */}
         <View style={styles.headActions}>
           {unread > 0 && !!token && (
             <Pressable hitSlop={8} onPress={async () => { await markAllNoticesRead(token).catch(() => {}); load() }}>
-              <Text style={styles.all}>{tr('Прочитать всё')}</Text>
+              <Text style={styles.pill}>{tr('Прочитать всё')}</Text>
             </Pressable>
           )}
           {!!items?.length && !!token && (
@@ -70,7 +91,7 @@ export default function Notifications() {
               { text: tr('Отмена'), style: 'cancel' },
               { text: tr('Очистить'), style: 'destructive', onPress: async () => { await clearAllNotifications(token).catch(() => {}); load() } },
             ])}>
-              <Text style={[styles.all, { color: colors.muted }]}>{tr('Очистить')}</Text>
+              <Text style={styles.pill}>{tr('Очистить')}</Text>
             </Pressable>
           )}
         </View>
@@ -81,17 +102,23 @@ export default function Notifications() {
           keyExtractor={(n) => n.id}
           contentContainerStyle={items.length === 0 ? { flexGrow: 1 } : { paddingBottom: 24 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false) }} tintColor={colors.primary} colors={[colors.primary]} />}
-          ItemSeparatorComponent={() => <View style={styles.sep} />}
-          renderItem={({ item }) => (
-            // как .notif-row сайта: непрочитанное — зелёная подложка и точка слева; текст 13,5, время 11 («28 мин»)
-            // свайп влево — «Удалить», как на сайте
+          renderItem={({ item, index }) => (
+            <View>
+            {/* группы по дням, как на сайте: «Сегодня», «Вчера», «Ранее» */}
+            {dayGroup(item.created_at) !== (index ? dayGroup(items[index - 1].created_at) : '') && <Text style={styles.day}>{tr(DAY_LABEL[dayGroup(item.created_at)])}</Text>}
+            <View style={styles.swipeWrap}>
             <SwipeRow right={[{ label: tr('Удалить'), color: '#E5533D', onPress: () => remove(item.id) }]}>
             <Pressable style={[styles.nRow, !item.is_read && styles.nRowUnread]} onPress={() => open(item)}>
-              {!item.is_read && <View style={styles.nDot} />}
-              <Text style={styles.nText}>{plainText(item.text)}</Text>
-              <Text style={styles.nTime}>{timeAgo(item.created_at)}</Text>
+              {/* значок по виду в цветной плитке — как на сайте */}
+              <View style={[styles.ico, { backgroundColor: KIND_BG[notifKind(item)] }]}><Icon name={KIND_ICON[notifKind(item)]} size={19} color="#0F1512" /></View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.nText}>{plainText(item.text)}</Text>
+                <Text style={styles.nTime}>{timeAgo(item.created_at)}</Text>
+              </View>
             </Pressable>
             </SwipeRow>
+            </View>
+            </View>
           )}
           ListEmptyComponent={
             // Как на сайте: значок и текст вверху экрана, без отдельного заголовка
@@ -107,14 +134,18 @@ export default function Notifications() {
 }
 
 const styles = StyleSheet.create({
-  nRow: { paddingVertical: 14, paddingHorizontal: 16, marginHorizontal: 12, marginTop: 8, borderRadius: 20, backgroundColor: colors.surface,
-    shadowColor: '#0F1512', shadowOpacity: 0.05, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 1 },
+  nRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 20, backgroundColor: colors.surface },
   nRowUnread: { borderLeftWidth: 3, borderLeftColor: colors.primary },
   nDot: { position: 'absolute', left: 6, top: 19, width: 7, height: 7, borderRadius: 4, backgroundColor: colors.primary },
-  nText: { fontSize: 13.5, lineHeight: 19, fontFamily: font[500], color: colors.ink, paddingLeft: 14 },
-  nTime: { fontSize: 11, fontFamily: font[500], color: colors.muted, marginTop: 5, paddingLeft: 14 },
+  nText: { fontSize: 14.5, lineHeight: 20, fontFamily: font[500], color: colors.ink },
+  nTime: { fontSize: 12, fontFamily: font[500], color: colors.muted, marginTop: 4 },
   // кнопки «Прочитать всё» и «Очистить» — строкой под заголовком, как на сайте (рядом с ним они сжимали заголовок)
-  headActions: { flexDirection: 'row', alignItems: 'center', gap: 16, width: '100%', paddingLeft: 52, marginTop: 4 },
+  headActions: { flexDirection: 'row', alignItems: 'center', gap: 8, width: '100%', paddingLeft: 56, marginTop: 8 },
+  pill: { height: 38, lineHeight: 38, paddingHorizontal: 14, borderRadius: 19, overflow: 'hidden', backgroundColor: colors.surface, fontFamily: font[800], fontSize: 13.5, color: colors.ink },
+  kicker: { fontFamily: font[600], fontSize: 14, color: colors.inkSoft },
+  day: { marginHorizontal: 20, marginTop: 14, marginBottom: 2, fontFamily: font[800], fontSize: 12.5, color: colors.muted, textTransform: 'uppercase', letterSpacing: 0.6 },
+  swipeWrap: { marginHorizontal: 16, marginTop: 8, borderRadius: 20, overflow: 'hidden' },
+  ico: { width: 40, height: 40, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   page: { flex: 1, backgroundColor: colors.bg },
   head: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 16, paddingHorizontal: 16, paddingTop: 6, paddingBottom: 8 },
   back: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, shadowColor: '#0F1512', shadowOpacity: 0.07, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },

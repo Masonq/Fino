@@ -162,7 +162,7 @@ export default function ProfileEdit() {
                 {avatarUri ? <Image source={{ uri: avatarUri }} style={styles.avatarImg} contentFit="cover" /> : <Text style={styles.avatarLetter}>{letter}</Text>}
                 {photoBusy && <View style={styles.avatarBusy}><ActivityIndicator color="#fff" /></View>}
               </View>
-              <View style={{ flex: 1, gap: 4 }}>
+              <View style={{ alignItems: 'center', gap: 6 }}>
                 <Text style={styles.cardTitle}>{tr('Фото профиля')}</Text>
                 <Pressable onPress={pickPhoto} hitSlop={6}><Text style={styles.action}>{tr('Выбрать фото')}</Text></Pressable>
               </View>
@@ -220,7 +220,7 @@ export default function ProfileEdit() {
             </View>
 
             <View style={styles.card}>
-              <Text style={[styles.cardTitle, { padding: 14, paddingBottom: 0 }]}>{tr('Бизнес-аккаунт')}</Text>
+              <Text style={styles.groupTitle}>{tr('Бизнес-аккаунт')}</Text>
               <View style={styles.row}>
                 <Text style={styles.label}>{tr('Компания')}</Text>
                 <View style={styles.phoneBox}>
@@ -242,7 +242,7 @@ export default function ProfileEdit() {
             </Pressable>
 
             <View style={[styles.card, { padding: 14, gap: 8 }]}>
-              <Text style={styles.cardTitle}>{tr('Проверка документа')}</Text>
+              <Text style={[styles.groupTitle, { padding: 0 }]}>{tr('Проверка документа')}</Text>
               {!verify ? <Text style={styles.note}>{tr('Загружаем…')}</Text>
                 : verify.status === 'verified' ? <Text style={[styles.status, { color: colors.primaryDeep }]}>{tr(VERIFIED)}</Text>
                 : verify.status === 'pending' ? <Text style={[styles.status, { color: '#8A6A1F' }]}>{tr(PENDING)}</Text>
@@ -262,15 +262,16 @@ export default function ProfileEdit() {
 }
 
 const styles = StyleSheet.create({
+  groupTitle: { padding: 14, paddingBottom: 0, fontFamily: font[800], fontSize: 12.5, color: colors.muted, textTransform: 'uppercase', letterSpacing: 0.7 },
   page: { flex: 1, backgroundColor: colors.bg },
   top: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 16, minHeight: 56 },
-  back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: 20, fontFamily: font[800], color: colors.ink, marginLeft: 4 },
+  back: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface },
+  title: { flex: 1, fontFamily: font[800], fontSize: 27, lineHeight: 32, letterSpacing: -0.6, color: colors.ink },
   body: { paddingHorizontal: 12, gap: 12 },
   warn: { padding: 12, borderRadius: 14, backgroundColor: colors.warmBg, color: '#8A6A1F', fontSize: 13.5, lineHeight: 19, fontFamily: font[700] },
-  card: { borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
-  avatarCard: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 14 },
-  avatar: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#7C6CF0', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  card: { borderRadius: 22, backgroundColor: colors.surface, overflow: 'hidden' },
+  avatarCard: { flexDirection: 'column', alignItems: 'center', gap: 10, padding: 20, backgroundColor: '#E9F5EC' },
+  avatar: { width: 84, height: 84, borderRadius: 42, borderWidth: 4, borderColor: colors.surface, backgroundColor: '#7C6CF0', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   avatarImg: { width: 64, height: 64 },
   avatarLetter: { color: '#fff', fontSize: 24, fontFamily: font[800] },
   avatarBusy: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(20,26,22,0.4)', alignItems: 'center', justifyContent: 'center' },
@@ -293,8 +294,8 @@ const styles = StyleSheet.create({
   hint: { fontSize: 12.5, lineHeight: 17, fontFamily: font[500], color: colors.muted },
   note: { fontSize: 13, lineHeight: 18, fontFamily: font[500], color: colors.inkSoft },
   error: { fontSize: 13.5, fontFamily: font[600], color: colors.danger, paddingHorizontal: 14, paddingBottom: 12 },
-  save: { height: 52, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  saveText: { color: '#fff', fontSize: 16, fontFamily: font[800] },
+  save: { height: 52, borderRadius: 16, backgroundColor: colors.inverse, alignItems: 'center', justifyContent: 'center' },
+  saveText: { color: colors.onInverse, fontSize: 16, fontFamily: font[800] },
   status: { fontSize: 14, lineHeight: 19, fontFamily: font[700] },
   secondary: { height: 46, borderRadius: 13, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
   secondaryText: { fontSize: 15, fontFamily: font[800], color: colors.ink },

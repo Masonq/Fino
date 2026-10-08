@@ -62,7 +62,7 @@ export default function TicketScreen() {
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.bg },
   top: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, height: 52, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
-  back: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  back: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface }   // «назад» кружком — как на сайте и на остальных экранах,
   title: { flex: 1, fontSize: 18, fontFamily: font[800], color: colors.ink, marginLeft: 4 },
   bubbleRow: { flexDirection: 'row' },
   bubbleRowMe: { justifyContent: 'flex-end' },
