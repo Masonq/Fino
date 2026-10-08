@@ -44,6 +44,7 @@ export default function SellerScreen() {
   const { token, user } = useAuth()
   const [seller, setSeller] = useState<Seller | null>(null)
   const [items, setItems] = useState<FeedItem[] | null>(null)
+  const [total, setTotal] = useState<number | null>(null)   // всего объявлений у продавца (в ленте — первые 20)
   const [reviews, setReviews] = useState<{ avg: number; count: number; items: Review[] } | null>(null)
   const [subscribed, setSubscribed] = useState(false)
   const [allReviews, setAllReviews] = useState(false)
@@ -53,7 +54,7 @@ export default function SellerScreen() {
 
   useEffect(() => {
     sellerProfile(String(id)).then((x) => { setSeller(x); setSubscribed(!!x.is_subscribed) }).catch(() => setFailed(true))
-    sellerListings(String(id)).then((r) => setItems(r.items)).catch(() => setItems([]))
+    sellerListings(String(id)).then((r) => { setItems(r.items); setTotal(r.total) }).catch(() => setItems([]))
     userReviews(String(id)).then((r) => setReviews({ avg: r.rating_avg, count: r.rating_count, items: r.items })).catch(() => {})
   }, [id])
 
@@ -105,6 +106,16 @@ export default function SellerScreen() {
         )}
       </View>
 
+      {/* отзывы — всегда, как на сайте: нет отзывов — пустые звёзды и «Пока нет отзывов» */}
+      {!!reviews && reviews.count === 0 && (
+        <View style={styles.reviews}>
+          <Text style={styles.reviewsTitle}>{tr('Отзывы')}</Text>
+          <View style={styles.summary}>
+            <View style={{ flexDirection: 'row', gap: 1 }}>{[1, 2, 3, 4, 5].map((k) => <Star key={k} size={14} color={colors.sunken} />)}</View>
+            <Text style={styles.meta}>— {tr('Пока нет отзывов')}</Text>
+          </View>
+        </View>
+      )}
       {!!reviews && reviews.count > 0 && (
         <View style={styles.reviews}>
           <Text style={styles.reviewsTitle}>{tr('Отзывы')}</Text>
@@ -128,7 +139,7 @@ export default function SellerScreen() {
           )}
         </View>
       )}
-      <Text style={styles.h2}>{tr('Объявления')}{items ? ` · ${items.length}` : ''}</Text>
+      <Text style={styles.h2}>{tr('Объявления')}{items ? ` · ${total ?? items.length}` : ''}</Text>
     </View>
   )
 

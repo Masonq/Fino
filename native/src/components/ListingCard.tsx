@@ -1,3 +1,4 @@
+import { cardMeta } from '../cardMeta'
 import * as Haptics from 'expo-haptics'
 import { hideListing, hideSeller, isHidden, useHidden } from '../hidden'
 import { tr } from '../i18n'
@@ -104,6 +105,8 @@ function ListingCard({ item, width, large = false }: { item: FeedItem; width: nu
           {!!item.price_mark && <Ionicons name="flame" size={16} color={colors.accent} accessibilityLabel={tr('Дешевле похожих')} />}
         </View>
         <Text style={[styles.title, large && styles.titleLg]} numberOfLines={2}>{item.title}</Text>
+        {/* характеристики строкой — «2.5-комн. · 45 м²», как на сайте */}
+        {!!cardMeta(item.category_slug, item.attributes) && <Text style={styles.metaLine} numberOfLines={1}>{cardMeta(item.category_slug, item.attributes)}</Text>}
         <View style={styles.meta}>
           <Text style={styles.metaText} numberOfLines={1}>{cityName(item.city)}</Text>
           <Text style={styles.metaText}>{relTime(item.published_at)}</Text>
@@ -116,6 +119,7 @@ function ListingCard({ item, width, large = false }: { item: FeedItem; width: nu
 export default memo(ListingCard)
 
 const styles = StyleSheet.create({
+  metaLine: { fontFamily: font[600], fontSize: 12.5, color: colors.inkSoft, marginTop: 2 },
   card: { backgroundColor: 'transparent' }, // PLONK 2.0: без рамки — фото главное, текст на фоне страницы
   highlighted: {},
   photoBox: { backgroundColor: colors.photo, overflow: 'hidden', borderRadius: radius.card },

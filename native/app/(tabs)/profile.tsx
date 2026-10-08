@@ -228,6 +228,16 @@ export default function Profile() {
           <View style={[styles.stat, { backgroundColor: TINTS.fashion }]}><View><Text style={styles.statValue}>{items ? favs : '—'}</Text><Text style={styles.statLabel}>{tr('в избранном')}</Text></View></View>
         </View>
 
+        {/* PLONK 2.0: профиль — панель продавца: главные действия крупными плитками, как на сайте */}
+        <View style={styles.actions}>
+          {([['plus', 'Разместить', '/post', true], ['grid', 'Витрина', '/vitrina', false], ['video', 'Мои шопсы', '/shops/mine', false]] as const).map(([ic, label, href, dark]) => (
+            <Pressable key={href} style={[styles.action, dark && { backgroundColor: colors.inverse }]} onPress={() => router.push(href as never)} accessibilityRole="button">
+              <Icon name={ic} size={24} color={dark ? colors.onInverse : colors.ink} />
+              <Text style={[styles.actionText, dark && { color: colors.onInverse }]}>{tr(label)}</Text>
+            </Pressable>
+          ))}
+        </View>
+
         <View style={styles.balance}>
           <View style={styles.balanceTop}>
             <View>
@@ -246,17 +256,8 @@ export default function Profile() {
           {!bal?.payments_enabled && <Text style={styles.balanceNote}>{tr('Пополнение картой пока недоступно')}</Text>}
         </View>
 
-        {/* PLONK 2.0: профиль — панель продавца: главные действия крупными плитками, как на сайте */}
-        <View style={styles.actions}>
-          {([['plus', 'Разместить', '/post', true], ['grid', 'Витрина', '/vitrina', false], ['video', 'Мои шопсы', '/shops/mine', false]] as const).map(([ic, label, href, dark]) => (
-            <Pressable key={href} style={[styles.action, dark && { backgroundColor: colors.inverse }]} onPress={() => router.push(href as never)} accessibilityRole="button">
-              <Icon name={ic} size={24} color={dark ? colors.onInverse : colors.ink} />
-              <Text style={[styles.actionText, dark && { color: colors.onInverse }]}>{tr(label)}</Text>
-            </Pressable>
-          ))}
-        </View>
-
         {/* Меню — как на сайте, в том же порядке: сохранённые поиски — в приложении, остальное — страницы сайта */}
+        <Text style={styles.sectionTitle}>{tr('Покупки и продажи')}</Text>
         <View style={styles.menu}>
           {row('heart', 'Избранное', () => router.push('/favorites' as never))}
           {row('doc', 'Мои отклики', () => router.push('/jobs/my' as never))}

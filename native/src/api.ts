@@ -11,6 +11,7 @@ const fetch = async (input: string, init?: RequestInit): Promise<Response> => {
 }
 
 export type FeedItem = {
+  category_slug?: string | null; attributes?: Record<string, unknown> | null   // для строки характеристик на карточке
   id: string
   owner_id?: string | null
   title: string
@@ -68,7 +69,7 @@ export type Listing = Omit<FeedItem, 'photos'> & {
 
 export type FeedTab = 'all' | 'new' | 'free'
 
-async function get<T>(path: string): Promise<T> {
+export async function get<T>(path: string): Promise<T> {
   const res = await fetch(`${API}${path}`, { headers: { Accept: 'application/json' } })
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   return res.json() as Promise<T>
@@ -471,3 +472,9 @@ export const unlinkTelegram = (token: string) => authed<unknown>('/users/me/link
 
 /** «Может быть интересно» — подборка для человека, как на сайте (/listings/for-you). */
 export const forYouList = (token: string) => authed<{ items: FeedItem[] }>(`/listings/for-you?lang=${getLang()}`, token)
+
+// ---------- продвижение объявления (как PromoteButton сайта) ----------
+export type PromoInfo = { prices: Record<'bump' | 'highlight' | 'xl_card', number>; balance: number; money: number; bonus: number; payments_enabled: boolean; items: { type: string; active?: boolean; until?: string | null }[] }
+export const promotions = (token: string, id: string) => authed<PromoInfo>(`/listings/${id}/promotions`, token)
+export const startPromotion = (token: string, id: string, type: string, consent: boolean) =>
+  authed<{ status?: string; confirmation_url?: string }>(`/listings/${id}/promotions`, token, 'POST', { type, pay_method: 'balance', consent_immediate: consent })

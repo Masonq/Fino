@@ -9,6 +9,7 @@ import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, StyleS
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { balance as fetchBalance, deleteListing, type MyListing, myListings, setListingStatus, renewListing } from '../src/api'
+import PromoteSheet from '../src/components/PromoteSheet'
 import { useAuth } from '../src/auth'
 import Icon from '../src/components/Icon'
 import Segmented from '../src/components/Segmented'
@@ -42,6 +43,7 @@ export default function MyListings() {
   // все хуки — до раннего выхода ниже (иначе React #310)
   const [renewing, setRenewing] = useState<string | null>(null)
   const [menu, setMenu] = useState<MyListing | null>(null)
+  const [promoFor, setPromoFor] = useState<string | null>(null)   // «Поднять просмотры» — шторка продвижения
 
   const load = useCallback(async () => {
     if (!token) return
@@ -86,7 +88,10 @@ export default function MyListings() {
         <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/profile'))} hitSlop={10} style={styles.backBtn} accessibilityLabel={tr('Назад')}>
           <Icon name="back" size={22} color={colors.ink} />
         </Pressable>
-        <Text style={styles.topTitle}>{tr('Мои объявления')}</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.kicker}>{tr('Ваши продажи')}</Text>
+          <Text style={styles.topTitle}>{tr('Мои объявления')}</Text>
+        </View>
       </View>
       <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false) }} tintColor={colors.primary} colors={[colors.primary]} />}
         contentContainerStyle={{ paddingBottom: 32 }}>
@@ -115,7 +120,8 @@ export default function MyListings() {
               const st = STATUS[i.status] ?? STATUS.draft
               const photo = mediaUrl(i.cover_photo)
               return (
-                <Pressable key={i.id} style={styles.row} onPress={() => router.push(`/listing/${i.id}`)}>
+                <View key={i.id} style={styles.card}>
+                <Pressable style={styles.row} onPress={() => router.push(`/listing/${i.id}`)}>
                   <View style={styles.thumb}>{photo ? <Image source={{ uri: photo }} style={styles.thumbImg} contentFit="cover" /> : null}</View>
                   <View style={{ flex: 1, gap: 3 }}>
                     <Text style={styles.rowTitle} numberOfLines={2}>{i.title}</Text>
@@ -139,6 +145,17 @@ export default function MyListings() {
                     <Ionicons name="ellipsis-horizontal" size={20} color={colors.inkSoft} />
                   </Pressable>
                 </Pressable>
+                {/* как на сайте: главные действия кнопками под карточкой, остальное — в «…» */}
+                {i.status === 'active' && (
+                  <View style={styles.quick}>
+                    <View style={{ flexDirection: 'row', gap: 8 }}>
+                      <Pressable style={styles.qBtn} onPress={() => act(() => setListingStatus(token as string, i.id, 'sold'))}><Text style={styles.qBtnT}>{tr('Продано')}</Text></Pressable>
+                      <Pressable style={styles.qBtn} onPress={() => act(() => setListingStatus(token as string, i.id, 'archived'))}><Text style={styles.qBtnT}>{tr('Снять с публикации')}</Text></Pressable>
+                    </View>
+                    <Pressable style={[styles.qBtn, styles.qPromo]} onPress={() => setPromoFor(i.id)}><Text style={[styles.qBtnT, { color: colors.onInverse }]}>{tr('Поднять просмотры')}</Text></Pressable>
+                  </View>
+                )}
+                </View>
               )
             })}
           </View>
@@ -164,6 +181,7 @@ export default function MyListings() {
 
 
       </ScrollView>
+      {!!promoFor && !!token && <PromoteSheet token={token} listingId={promoFor} onClose={() => setPromoFor(null)} />}
     </View>
   )
 }
@@ -178,6 +196,7 @@ function expiresIn(n: number): string {
 const daysLeft = (iso?: string | null) => { const d = parseTime(iso); return d ? Math.max(0, Math.ceil((d.getTime() - Date.now()) / 86400000)) : null }
 
 const styles = StyleSheet.create({
+  kicker: { fontFamily: font[600], fontSize: 14, color: colors.inkSoft },
   expiry: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 6, paddingLeft: 10, paddingRight: 4, paddingVertical: 4, borderRadius: 10, backgroundColor: colors.warmBg },
   expiryText: { flex: 1, fontSize: 12.5, fontFamily: font[700], color: '#8A6A1F' },
   renew: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: colors.surface },
@@ -219,7 +238,12 @@ const styles = StyleSheet.create({
   link: { fontSize: 15, fontFamily: font[800], color: colors.primaryDeep },
   empty: { fontFamily: font[400], fontSize: 14.5, color: colors.muted, textAlign: 'center', marginTop: 24, paddingHorizontal: 32 },
   list: { marginHorizontal: 16, marginTop: 12, gap: 10 },
-  row: { flexDirection: 'row', gap: 12, padding: 10, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  row: { flexDirection: 'row', gap: 12, padding: 10, borderRadius: 16, borderWidth: 0 },
+  card: { backgroundColor: colors.surface, borderRadius: 20, overflow: 'hidden' },
+  quick: { gap: 8, paddingHorizontal: 12, paddingBottom: 12 },
+  qBtn: { flex: 1, height: 40, borderRadius: 12, backgroundColor: colors.sunken, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8 },
+  qBtnT: { fontFamily: font[800], fontSize: 13.5, color: colors.ink },
+  qPromo: { flex: 0, flexGrow: 0, flexShrink: 0, flexBasis: 'auto', height: 42, alignSelf: 'stretch', backgroundColor: colors.inverse },
   thumb: { width: 76, height: 76, borderRadius: 12, backgroundColor: colors.photo, overflow: 'hidden' },
   thumbImg: { width: 76, height: 76 },
   rowTitle: { fontSize: 15, color: colors.ink, fontFamily: font[600] },

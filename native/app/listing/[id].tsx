@@ -269,7 +269,7 @@ export default function ListingScreen() {
             </Pressable>
           )}
 
-          {owner && (
+          {owner && (<>
             <Pressable style={styles.seller} onPress={() => router.push(`/seller/${owner.id}`)} accessibilityRole="button" accessibilityLabel={tr('Профиль продавца')}>
               <View style={styles.avatar}>
                 {owner.avatar_url
@@ -298,7 +298,9 @@ export default function ListingScreen() {
               </View>
               <Icon name="forward" size={16} color={colors.muted} />
             </Pressable>
-          )}
+            {/* витрина продавца — сразу под его карточкой, как на сайте (была внизу, после описания) */}
+            {!isResume && (data.attributes as Record<string, unknown> | undefined)?.listing_kind !== 'vacancy' && <StorefrontLink ownerId={owner.id} />}
+          </>)}
 
           {!!data.city && (
             <View style={styles.section}>
@@ -340,7 +342,6 @@ export default function ListingScreen() {
           {(data.attributes as Record<string, unknown> | undefined)?.listing_kind === 'vacancy' && !gone && data.external_source !== 'telegram' && (
             <View style={{ marginTop: 14 }}><JobRespond listingId={data.id} ownerId={owner?.id} /></View>
           )}
-          {!!owner?.id && !isResume && (data.attributes as Record<string, unknown> | undefined)?.listing_kind !== 'vacancy' && <StorefrontLink ownerId={owner.id} />}
           {!mine && (
             <Pressable onPress={() => (token ? setReportOpen(true) : router.push('/login'))} style={styles.report} hitSlop={6}>
               <Text style={styles.reportText}>{tr('Пожаловаться')}</Text>
