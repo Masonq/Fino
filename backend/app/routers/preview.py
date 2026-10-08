@@ -151,7 +151,7 @@ def listing_preview(
     # Собранная карточка вместо голой фотографии: с ценой, городом и
     # домом. Размер указываем явно — иначе Telegram показывает её
     # маленькой иконкой сбоку, а не картинкой во всю ширину.
-    card = f"{base}/api/og/listing/{listing.id}.png"
+    card = f"{base}/api/og/listing/{listing.id}.png?v=2"   # ?v — новый адрес после смены оформления: мессенджеры хранят картинку по адресу
     image_tags = (
         f'<meta property="og:image" content="{html.escape(card)}" />\n'
         f'<meta property="og:image:width" content="1200" />\n'

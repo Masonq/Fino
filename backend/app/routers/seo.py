@@ -697,7 +697,7 @@ def listing_page(listing_id: str, request: Request,
     description = _cut(description, 300) or title
 
     # Собранная карточка 1200×630: фото, цена, город, домен.
-    card = f"{site}/api/og/listing/{listing.id}.png"
+    card = f"{site}/api/og/listing/{listing.id}.png?v=2"   # ?v — новый адрес после смены оформления: мессенджеры хранят картинку по адресу
     image_tag = (
         f'<meta property="og:image" content="{esc(card)}">\n'
         f'<meta property="og:image:width" content="1200">\n'
