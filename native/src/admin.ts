@@ -94,3 +94,7 @@ export const adminCatStats = (t: string, days: number) => authed<{ items: { slug
 export const adminQuality = (t: string, days: number) => authed<{ active: number; no_price: number; no_photo: number; no_city: number; not_translated: number }>(`/admin/stats/quality?days=${days}`, t)
 export const auditActors = (t: string) => authed<{ items: { id: string; name: string; approved: number; rejected: number; blocked: number; total: number }[] }>('/admin/audit/actors?days=30', t)
 export const modBulk = (t: string, ids: string[], approve: boolean, reason?: string) => authed<unknown>('/moderation/bulk', t, 'POST', { ids, approve, reason: reason || null })
+
+export type SearchReport = { total: number; empty: number; top: { q: string; n: number; results: number }[]; zero: { q: string; n: number }[]; fixed: { q: string; to: string; n: number }[] }
+export const searchReport = (t: string, days: number) => authed<SearchReport>(`/search/admin-report?days=${days}`, t)
+export const usersOverview = (t: string) => authed<{ total: number; new_today: number; new_week: number; online: number; blocked: number; business: number }>('/admin/users/overview', t)

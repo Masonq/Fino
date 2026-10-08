@@ -4,30 +4,31 @@ import { useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, FlatList, Modal, Pressable, ScrollView, Share, StyleSheet, Text, useWindowDimensions, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { useAuth } from '../../src/auth'
-import { mediaUrl, SITE } from '../../src/config'
-import { plural, tr } from '../../src/i18n'
-import Icon from '../../src/components/Icon'
-import { Btn, Empty, k, Tabs } from '../../src/components/Kit'
-import ListingCard from '../../src/components/ListingCard'
-import { sfDiscover, sfFollow, sfPublic, sfReport, type StorefrontPublic } from '../../src/social'
-import { colors, font, space } from '../../src/theme'
-import VerifiedMark from '../../src/components/VerifiedMark'
-import Skeleton from '../../src/components/Skeleton'
+import { useAuth } from '../../../src/auth'
+import { mediaUrl, SITE } from '../../../src/config'
+import { plural, tr } from '../../../src/i18n'
+import Icon from '../../../src/components/Icon'
+import { Btn, Empty, k, Tabs } from '../../../src/components/Kit'
+import ListingCard from '../../../src/components/ListingCard'
+import { sfDiscover, sfFollow, sfPublic, sfReport, type StorefrontPublic } from '../../../src/social'
+import { colors, font, space } from '../../../src/theme'
+import VerifiedMark from '../../../src/components/VerifiedMark'
+import Skeleton from '../../../src/components/Skeleton'
 
 const REASONS: [string, string][] = [['spam', 'Спам'], ['fraud', 'Мошенничество'], ['prohibited_item', 'Запрещённые товары'], ['offensive_user', 'Выдаёт себя за другого или оскорбления'], ['other', 'Другое']]
 const items = (n: number) => plural(n, { ru: ['товар', 'товара', 'товаров'], en: ['item', 'items'], sr: ['stvar', 'stvari', 'stvari'] })
 
 /** Витрина продавца — как /s/:slug на сайте: обложка, подписка, «Поделиться», подборки, товары, видео. */
 export default function Storefront() {
-  const { slug } = useLocalSearchParams<{ slug: string }>()
+  // cid — открыта конкретная коллекция или дроп (/s/витрина/c/коллекция — как на сайте, ссылки из уведомлений о дропах)
+  const { slug, cid } = useLocalSearchParams<{ slug: string; cid?: string }>()
   const { token } = useAuth()
   const insets = useSafeAreaInsets()
   const { width } = useWindowDimensions()
   const cardW = Math.floor((width - space.page * 2 - space.gap) / 2)
   const [sf, setSf] = useState<StorefrontPublic | null>(null)
   const [error, setError] = useState(false)
-  const [coll, setColl] = useState<string>('all')
+  const [coll, setColl] = useState<string>(cid ? String(cid) : 'all')
   const [tab, setTab] = useState<'items' | 'video'>('items')
   const [report, setReport] = useState(false)
   const [busy, setBusy] = useState(false)

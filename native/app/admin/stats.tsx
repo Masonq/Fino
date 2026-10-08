@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ScrollView, StyleSheet, Text, View } from 'react-native'
-import { adminCatStats, adminDaily, adminFunnel, adminQuality, adminSources, adminStats, type AdminStats, type DayRow, type Funnel } from '../../src/admin'
+import { adminCatStats, adminDaily, adminFunnel, adminQuality, adminSources, adminStats, searchReport, type SearchReport, type AdminStats, type DayRow, type Funnel } from '../../src/admin'
 import { getLang } from '../../src/i18n'
 import { useAuth } from '../../src/auth'
 import { tr } from '../../src/i18n'
@@ -20,6 +20,7 @@ export default function Stats() {
   const [src, setSrc] = useState<{ source: string; title?: string | null; count: number }[] | null>(null)
   const [cats, setCats] = useState<{ slug: string; count: number; name: Record<string, string> }[] | null>(null)
   const [qual, setQual] = useState<Record<string, number> | null>(null)
+  const [sr, setSr] = useState<SearchReport | null>(null)
   useEffect(() => {
     if (!token) return
     setS(null)
@@ -29,6 +30,7 @@ export default function Stats() {
     adminSources(token, +days).then((r) => setSrc(r.items)).catch(() => setSrc([]))
     adminCatStats(token, +days).then((r) => setCats(r.items)).catch(() => setCats([]))
     adminQuality(token, +days).then(setQual).catch(() => {})
+    searchReport(token, +days).then(setSr).catch(() => {})
   }, [token, days])
   const tiles: [string, number | undefined, string][] = s ? [
     [tr('Объявлений в ленте'), s.listings.active, TINTS['real-estate']], [tr('Новых за период'), s.listings.fresh, TINTS.auto],
@@ -81,6 +83,16 @@ export default function Stats() {
           <View style={st.card}>
             <Text style={st.cardT}>{tr('Откуда объявления')}</Text>
             {src.map((x) => <View key={x.source + (x.title || '')} style={st.fRow}><Text style={st.fL} numberOfLines={1}>{x.source === 'own' ? tr('Размещены на PLONK') : (x.title || x.source)}</Text><Text style={st.fN}>{x.count}</Text></View>)}
+          </View>
+        )}
+        {/* что ищут: самые частые запросы, запросы без результатов, исправленные опечатки — как на сайте */}
+        {!!sr && sr.total > 0 && (
+          <View style={st.card}>
+            <Text style={st.cardT}>{tr('Что ищут')}</Text>
+            <Text style={st.note}>{tr('Запросов: {n}, без результатов: {e} ({p}%)', { n: sr.total, e: sr.empty, p: Math.round((sr.empty / sr.total) * 100) })}</Text>
+            {sr.top.slice(0, 8).map((x) => <View key={x.q} style={st.fRow}><Text style={st.fL} numberOfLines={1}>{x.q}</Text><Text style={[st.fN, x.results === 0 && { color: colors.danger }]}>{x.n}</Text></View>)}
+            {sr.zero.length > 0 && <Text style={[st.note, { marginTop: 6 }]}>{tr('Не нашлось ничего')}: {sr.zero.slice(0, 10).map((x) => x.q).join(', ')}</Text>}
+            {sr.fixed.length > 0 && <Text style={st.note}>{tr('Исправленные опечатки')}: {sr.fixed.slice(0, 6).map((x) => `${x.q} → ${x.to}`).join(', ')}</Text>}
           </View>
         )}
         {!!qual && (

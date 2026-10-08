@@ -1,7 +1,8 @@
 import { router } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
-import { type AdminUser, adminUsers } from '../../../src/admin'
+import { type AdminUser, adminUsers, usersOverview } from '../../../src/admin'
+import { TINTS } from '../../../src/tints'
 import { useAuth } from '../../../src/auth'
 import { timeAgo } from '../../../src/format'
 import { tr } from '../../../src/i18n'
@@ -17,6 +18,8 @@ export default function Users() {
   const { token } = useAuth()
   const [q, setQ] = useState('')
   const [items, setItems] = useState<AdminUser[] | null>(null)
+  const [ov, setOv] = useState<{ total: number; new_week: number; online: number; blocked: number } | null>(null)
+  useEffect(() => { if (token) usersOverview(token).then(setOv).catch(() => {}) }, [token])
   useEffect(() => {
     if (!token) return
     const t = setTimeout(() => { adminUsers(token, q.trim()).then((r) => setItems(r.items)).catch(() => setItems([])) }, 300)
@@ -24,6 +27,17 @@ export default function Users() {
   }, [token, q])
   return (
     <View style={st.page}>
+      {/* сводка над списком — как на сайте */}
+      {!!ov && (
+        <View style={{ flexDirection: 'row', gap: 8, marginHorizontal: 16, marginBottom: 10 }}>
+          {([[ov.total, tr('всего'), TINTS['real-estate']], [ov.new_week, tr('за неделю'), TINTS.auto], [ov.online, tr('сейчас на сайте'), TINTS.fashion], [ov.blocked, tr('заблокировано'), TINTS.electronics]] as [number, string, string][]).map(([n, l, bg]) => (
+            <View key={l} style={{ flex: 1, minHeight: 64, padding: 10, borderRadius: 16, backgroundColor: bg, justifyContent: 'flex-end' }}>
+              <Text style={{ fontFamily: font[800], fontSize: 19, color: colors.ink }}>{n}</Text>
+              <Text style={{ fontFamily: font[700], fontSize: 10.5, color: colors.inkSoft }} numberOfLines={1}>{l}</Text>
+            </View>
+          ))}
+        </View>
+      )}
       <View style={st.search}>
         <Icon name="search" size={17} color={colors.muted} />
         <TextInput style={st.input} value={q} onChangeText={setQ} placeholder={tr('Имя, почта или телефон')} placeholderTextColor={colors.muted} autoCorrect={false} autoCapitalize="none" />
