@@ -1,4 +1,5 @@
 import { select, success } from '../../src/haptics'
+import { clearDraft, type Draft, draftHasContent, loadDraft, saveDraft } from '../../src/draft'
 import { getLang, tr } from '../../src/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
@@ -81,6 +82,36 @@ export default function Post() {
   const [selectField, setSelectField] = useState<AttrField | null>(null)
   const [roots, setRoots] = useState<Category[] | null>(null)
   const [trail, setTrail] = useState<Category[]>([])
+  // черновик — как на сайте: недописанное сохраняется, при следующем открытии — «Продолжить» / «Начать заново»
+  const [found, setFound] = useState<Draft | null>(null)
+  const [draftReady, setDraftReady] = useState(false)
+  useEffect(() => { loadDraft().then((d) => { if (draftHasContent(d)) setFound(d); setDraftReady(true) }) }, [])
+  useEffect(() => {
+    if (!draftReady || found || done) return
+    const t = setTimeout(() => {
+      const d: Draft = {
+        savedAt: Date.now(), step, title, desc, price, currency, negotiable, city, point, hideAddr, attrs,
+        cat: cat ? { slug: cat.c.slug, id: cat.c.id, name: cat.c.name, path: cat.path } : null,
+        shots: shots.filter((x) => x.state === 'done').map((x) => ({ key: x.key, uri: x.uri, mime: x.mime, uploaded: x.uploaded })),
+      }
+      if (draftHasContent(d)) saveDraft(d)
+    }, 600)
+    return () => clearTimeout(t)
+  }, [draftReady, found, done, step, title, desc, price, currency, negotiable, city, point, hideAddr, attrs, cat, shots])
+  const resume = (d: Draft) => {
+    setFound(null)
+    if (d.cat) {
+      setCat({ c: { slug: d.cat.slug, id: d.cat.id, name: d.cat.name } as Category, path: d.cat.path })
+      categorySchema(d.cat.slug).then((r) => setSchema(r.attribute_schema ?? [])).catch(() => setSchema([]))
+    }
+    setTitle(d.title); setDesc(d.desc); setPrice(d.price); setCurrency(d.currency); setNegotiable(d.negotiable)
+    setCity(d.city); setPoint(d.point); setHideAddr(d.hideAddr); setAttrs(d.attrs || {})
+    setShots((d.shots || []).map((x) => ({ ...x, state: 'done' as const, uploaded: x.uploaded as Uploaded })))
+    setStep((d.cat ? Math.max(3, Math.min(5, d.step)) : 1) as 1 | 2 | 3 | 4 | 5)
+  }
+  const startOver = () => { setFound(null); clearDraft() }
+  // начал новое объявление, не ответив на «Продолжить?» — старый черновик заменяется новым
+  useEffect(() => { if (found && step !== 1) setFound(null) }, [found, step])
   useEffect(() => { fetchCategories().then(setRoots).catch(() => setRoots([])) }, [])
   // /post?cat=<раздел> — сразу к параметрам этого раздела (кнопки «Разместить вакансию», «Создайте резюме»)
   const { cat: catParam } = useLocalSearchParams<{ cat?: string }>()
@@ -127,6 +158,7 @@ export default function Post() {
   }
 
   function reset() {
+    clearDraft()
     setStep(1); setTrail([]); setShots([]); setPoint({ lat: null, lng: null }); setHideAddr(false); setAttrs({}); setSchema(null); setCat(null); setTitle(''); setDesc(''); setPrice(''); setNegotiable(false); setTried(false); setDone(null); setError('')
   }
 
@@ -205,6 +237,7 @@ export default function Post() {
       })
       success()
       setDone({ id: res.id })
+      clearDraft()   // опубликовано — черновик больше не нужен
     } catch (e) {
       setError(e instanceof ApiError && e.message ? e.message : tr('Не удалось отправить. Проверьте интернет и попробуйте ещё раз.'))
     } finally {
@@ -231,6 +264,16 @@ export default function Post() {
       <SafeAreaView style={styles.page} edges={['top']}>
         <ScrollView contentContainerStyle={[styles.form, { paddingBottom: 24 + tabInset }]}>
           {dots}
+          {!!found && (
+            <View style={styles.draftCard}>
+              <Text style={styles.draftT}>{tr('Найден незавершённый черновик объявления')}</Text>
+              {!!(found.title || found.cat?.path) && <Text style={styles.draftS} numberOfLines={1}>{found.title || found.cat?.path}</Text>}
+              <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+                <Pressable style={[styles.draftBtn, { backgroundColor: colors.inverse }]} onPress={() => resume(found)}><Text style={[styles.draftBtnT, { color: colors.onInverse }]}>{tr('Продолжить')}</Text></Pressable>
+                <Pressable style={[styles.draftBtn, { backgroundColor: colors.sunken }]} onPress={startOver}><Text style={styles.draftBtnT}>{tr('Начать заново')}</Text></Pressable>
+              </View>
+            </View>
+          )}
           <Text style={styles.stepTitle}>{tr('Что продаёте?')}</Text>
           <Text style={styles.stepHint}>{tr('Выберите раздел — подраздел уточним на следующем шаге')}</Text>
           {roots === null ? <ActivityIndicator style={{ marginTop: 30 }} color={colors.primary} /> : (
@@ -466,6 +509,11 @@ export default function Post() {
 }
 
 const styles = StyleSheet.create({
+  draftCard: { gap: 4, padding: 14, marginBottom: 14, borderRadius: 20, backgroundColor: colors.surface },
+  draftT: { fontFamily: font[800], fontSize: 15, color: colors.ink },
+  draftS: { fontFamily: font[600], fontSize: 13, color: colors.muted },
+  draftBtn: { flex: 1, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  draftBtnT: { fontFamily: font[800], fontSize: 14, color: colors.ink },
   coverHint: { fontFamily: font[600], fontSize: 12.5, color: colors.muted, marginTop: 6 },
   page: { flex: 1, backgroundColor: colors.bg },
   center: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 10 },
