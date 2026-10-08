@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
+import { registerBaseSetter } from './utils/langSwitch'
 import { languageReady } from './i18n'
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
@@ -99,12 +100,22 @@ try {
   if (changed) window.history.replaceState({}, '', u.pathname + u.search + u.hash)
 } catch { /* всё равно ничего не сломает, просто параметры останутся в строке */ }
 
+// Роутер с приставкой языка, которую можно поменять без перезагрузки (utils/langSwitch.js): смена приставки
+// пересоздаёт роутер (key), а адрес уже переписан — страница остаётся та же, только на новом языке.
+function RouterHost() {
+  const [base, setBase] = React.useState(basename)
+  React.useEffect(() => { registerBaseSetter(setBase) }, [])
+  return (
+    <BrowserRouter key={base} basename={base}>
+      <App />
+    </BrowserRouter>
+  )
+}
+
 languageReady.finally(() => ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <BrowserRouter basename={basename}>
-        <App />
-      </BrowserRouter>
+      <RouterHost />
     </ErrorBoundary>
   </React.StrictMode>,
 ))

@@ -4,6 +4,7 @@ import { withoutRemoved } from '../utils/removedListings'
 import TypingHint from '../components/TypingHint'
 import { useTranslation } from 'react-i18next'
 import LangOrb from '../components/LangOrb'
+import LangText from '../components/LangText'
 import { Link, useNavigationType } from 'react-router-dom'
 import { api } from '../api/client'
 import ListingCard from '../components/ListingCard'
@@ -661,8 +662,8 @@ export default function Home() {
         {/* город — справа от приветствия, кнопка постоянной ширины (длинное название обрезается многоточием) */}
         <div className="home-hello-row">
           <div className="home-hello">
-            <span className="home-hello-1">{greeting(t)}{user?.display_name ? `, ${user.display_name.split(' ')[0]}` : ''}</span>
-            <span className="home-hello-2">{t('home.what_today')}</span>
+            <LangText mode="scramble" className="home-hello-1">{`${greeting(t)}${user?.display_name ? `, ${user.display_name.split(' ')[0]}` : ''}`}</LangText>
+            <LangText mode="wave" className="home-hello-2">{t('home.what_today')}</LangText>
           </div>
           <label className="search-city" aria-label={t('post.city')}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" /></svg>

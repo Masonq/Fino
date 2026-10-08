@@ -8882,3 +8882,9 @@ html[data-theme="dark"] .vol-tile *{ filter:none; }
 .support .form-card > .field-row{ background:var(--surface); border-radius:20px; box-shadow:var(--shadow); padding:14px 16px !important; border:0 !important; margin:0 !important; }
 .invite-page .invite-steps{ margin-left:16px !important; margin-right:16px !important; }
 .invite-page .invite-faq{ padding-left:0 !important; padding-right:0 !important; margin-left:16px !important; margin-right:16px !important; } .invite-page .invite-faq-item{ margin-left:0 !important; margin-right:0 !important; }
+/* LangText — переход заголовков при смене языка */
+.lt-ch{ display:inline-block; white-space:pre; }
+.lt-out{ animation:lt-out .26s ease both; }
+.lt-in{ animation:lt-in .42s cubic-bezier(.3,1.4,.5,1) both; }
+@keyframes lt-out{ to{ transform:translateY(-0.45em); opacity:0; } }
+@keyframes lt-in{ from{ transform:translateY(0.5em); opacity:0; } to{ transform:none; opacity:1; } }

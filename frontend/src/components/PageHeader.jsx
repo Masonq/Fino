@@ -1,6 +1,7 @@
 import { goBack } from '../utils/goBack'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+import LangText from './LangText'
 
 /**
  * Шапка внутренней страницы. Кнопка «назад» нужна везде, кроме экранов
@@ -32,8 +33,8 @@ export default function PageHeader({ title, count, back = true, kicker, subtitle
       <div className={`page-hero${back ? ' has-back' : ''}`}>
         {backBtn}
         <div className="ph-text">
-          {kicker && <span className="ph-kicker">{kicker}</span>}
-          <h1 className={`ph-title${String(title || '').length > (children ? 12 : 19) ? ' is-long' : ''}`}><span className="page-title-text">{title}</span>{count > 0 && <span className="fav-count">{count}</span>}</h1>
+          {kicker && (typeof kicker === 'string' ? <LangText mode="scramble" className="ph-kicker">{kicker}</LangText> : <span className="ph-kicker">{kicker}</span>)}
+          <h1 className={`ph-title${String(title || '').length > (children ? 12 : 19) ? ' is-long' : ''}`}>{typeof title === 'string' ? <LangText mode="wave" className="page-title-text">{title}</LangText> : <span className="page-title-text">{title}</span>}{count > 0 && <span className="fav-count">{count}</span>}</h1>
         </div>
         {children && <div className="ph-actions">{children}</div>}
       </div>
