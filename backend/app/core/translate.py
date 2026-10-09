@@ -298,7 +298,11 @@ def _translate_attributes(listing, source_lang: str) -> int:
     без перевода английский интерфейс показывал «Репетитор английского».
     Марку, модель и VIN не трогаем: их пишут одинаково на любом языке.
     """
-    schema = (listing.category.attribute_schema or []) if listing.category else []
+    # поля раздела — с учётом родителей, как в форме и на странице: у большинства подразделов («Шкафы») своих полей нет,
+    # они берут поля раздела выше («Мебель»), и раньше перевод видел пустой список и ничего не переводил
+    schema, node, hops = [], listing.category, 0
+    while node is not None and not schema and hops < 10:
+        schema, node, hops = list(node.attribute_schema or []), node.parent, hops + 1
     # переводим и помеченные «translatable», и любые поля, которые продавец пишет словами (цвет, материал, порода, отрасль…):
     # без этого на русской странице стояло «Цвет: bež-zelena», «Материал: iverica». Не трогаем марки, модели, коды и
     # размеры — их пишут одинаково на любом языке
