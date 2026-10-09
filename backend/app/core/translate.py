@@ -270,6 +270,25 @@ def translate_listing(db, listing) -> int:
     return added
 
 
+def _translate_value(text: str, target: str) -> str | None:
+    """Короткое значение характеристики — Google с автоопределением языка, без «возврата латинских слов» (здесь латиница —
+    это и есть сербское слово, которое надо перевести)."""
+    from urllib import parse
+    params = parse.urlencode({"client": "gtx", "sl": "auto", "tl": GOOGLE_LANG.get(target, target), "dt": "t", "q": text[:300]})
+    req = urlrequest.Request(f"https://translate.googleapis.com/translate_a/single?{params}", headers={"User-Agent": "Mozilla/5.0"})
+    try:
+        with urlrequest.urlopen(req, timeout=TIMEOUT) as resp:
+            data = json.loads(resp.read().decode())
+        out = "".join(c[0] for c in data[0] if c and c[0]).strip()
+        return _fix_script(out, target) if out else None
+    except Exception as exc:  # noqa: BLE001
+        log.info("перевод характеристики не вышел: %s", exc)
+        return None
+
+
+NO_TRANSLATE = {"brand", "model", "vin", "cpu", "gpu", "size", "tyre_size", "wheel_size", "author", "dimensions"}
+
+
 def _translate_attributes(listing, source_lang: str) -> int:
     """
     Переводит атрибуты, которые продавец пишет словами.
@@ -280,21 +299,28 @@ def _translate_attributes(listing, source_lang: str) -> int:
     Марку, модель и VIN не трогаем: их пишут одинаково на любом языке.
     """
     schema = (listing.category.attribute_schema or []) if listing.category else []
-    keys = [a["key"] for a in schema if a.get("translatable") and listing.attributes.get(a["key"])]
+    # переводим и помеченные «translatable», и любые поля, которые продавец пишет словами (цвет, материал, порода, отрасль…):
+    # без этого на русской странице стояло «Цвет: bež-zelena», «Материал: iverica». Не трогаем марки, модели, коды и
+    # размеры — их пишут одинаково на любом языке
+    keys = [a["key"] for a in schema
+            if listing.attributes.get(a["key"]) and isinstance(listing.attributes.get(a["key"]), str)
+            and (a.get("translatable") or (a.get("type") == "text" and not a.get("options") and a["key"] not in NO_TRANSLATE))
+            and any(ch.isalpha() for ch in str(listing.attributes[a["key"]]))]
     if not keys:
         return 0
 
     stored = dict(listing.attributes_i18n or {})
     changed = 0
     for lang in LANGS:
-        if lang == source_lang:
-            continue
         current = dict(stored.get(lang) or {})
         for key in keys:
             if current.get(key):
                 continue
-            value = translate(str(listing.attributes[key]), source_lang, lang)
-            if value:
+            # язык значения определяем по самому значению (sl=auto): продавец пишет описание по-русски, а цвет и
+            # материал — по-сербски («bež-zelena», «iverica»), и перевод «с русского» их просто пропускал
+            raw = str(listing.attributes[key])
+            value = _translate_value(raw, lang)
+            if value and value.strip().lower() != raw.strip().lower():
                 current[key] = value
                 changed += 1
         if current:
