@@ -255,7 +255,7 @@ export default function ListingScreen() {
           <View style={styles.priceRow}>
             <Text style={styles.price}>{formatPrice(data.price, data.currency, data.is_free)}</Text>
             {isResume && data.price != null && <Text style={styles.salaryNote}>{tr('Желаемая зарплата')}</Text>}
-            {!!data.previous_price && !data.is_free && <Text style={styles.oldPrice}>{formatPrice(data.previous_price, data.currency)}</Text>}
+            {Number(data.previous_price) > Number(data.price || 0) && !data.is_free && <Text style={styles.oldPrice}>{formatPrice(Number(data.previous_price), data.currency)}</Text>}
           </View>
           <Text style={styles.title}>{title}</Text>
           {/* факты значками под названием: город, когда, просмотры — как на сайте */}

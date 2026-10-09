@@ -11,7 +11,7 @@ import Icon from '../../../src/components/Icon'
 import Skeleton from '../../../src/components/Skeleton'
 import { colors, font } from '../../../src/theme'
 
-const ROLE: Record<string, string> = { admin: 'Владелец', moderator: 'Модератор', seller_business: 'Компания', buyer: 'Покупатель', seller: 'Продавец' }
+const ROLE: Record<string, string> = { admin: 'Владелец', moderator: 'Модератор', seller_business: 'Компания' }   // обычным людям метка не нужна
 
 /** Пользователи — как на сайте: поиск по имени, почте, телефону; карточки с ролью, отметками и числом объявлений. */
 export default function Users() {
@@ -27,24 +27,27 @@ export default function Users() {
   }, [token, q])
   return (
     <View style={st.page}>
-      {/* сводка над списком — как на сайте */}
-      {!!ov && (
-        <View style={{ flexDirection: 'row', gap: 8, marginHorizontal: 16, marginBottom: 10 }}>
-          {([[ov.total, tr('всего'), TINTS['real-estate']], [ov.new_week, tr('за неделю'), TINTS.auto], [ov.online, tr('сейчас на сайте'), TINTS.fashion], [ov.blocked, tr('заблокировано'), TINTS.electronics]] as [number, string, string][]).map(([n, l, bg]) => (
-            <View key={l} style={{ flex: 1, minHeight: 64, padding: 10, borderRadius: 16, backgroundColor: bg, justifyContent: 'flex-end' }}>
-              <Text style={{ fontFamily: font[800], fontSize: 19, color: colors.ink }}>{n}</Text>
-              <Text style={{ fontFamily: font[700], fontSize: 10.5, color: colors.inkSoft }} numberOfLines={1}>{l}</Text>
-            </View>
-          ))}
-        </View>
-      )}
-      <View style={st.search}>
-        <Icon name="search" size={17} color={colors.muted} />
-        <TextInput style={st.input} value={q} onChangeText={setQ} placeholder={tr('Имя, почта или телефон')} placeholderTextColor={colors.muted} autoCorrect={false} autoCapitalize="none" />
-      </View>
       {!items ? <View style={{ padding: 16, gap: 10 }}>{[0, 1, 2, 3].map((i) => <Skeleton key={i} style={{ height: 76, borderRadius: 20 }} />)}</View> : (
         <FlatList
-          ListHeaderComponent={<Header bleed={16} bleedTop={4} title={tr('Пользователи')} kicker={items ? tr('{n} человек', { n: items.length }) : ' '} fallback="/admin" />}
+          ListHeaderComponent={<>
+            <Header bleed={16} bleedTop={4} title={tr('Пользователи')} kicker={items ? tr('{n} человек', { n: items.length }) : ' '} fallback="/admin" />
+            {/* сводка и поиск — под заголовком (стояли над ним, под часами) */}
+        {/* сводка над списком — как на сайте */}
+        {!!ov && (
+          <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
+            {([[ov.total, tr('всего'), TINTS['real-estate']], [ov.new_week, tr('за неделю'), TINTS.auto], [ov.online, tr('онлайн'), TINTS.fashion], [ov.blocked, tr('заблокировано'), TINTS.electronics]] as [number, string, string][]).map(([n, l, bg]) => (
+              <View key={l} style={{ flex: 1, minHeight: 64, padding: 10, borderRadius: 16, backgroundColor: bg, justifyContent: 'flex-end' }}>
+                <Text style={{ fontFamily: font[800], fontSize: 19, color: colors.ink }}>{n}</Text>
+                <Text style={{ fontFamily: font[700], fontSize: 10.5, lineHeight: 13, color: colors.inkSoft }} numberOfLines={2}>{l}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+        <View style={st.search}>
+          <Icon name="search" size={17} color={colors.muted} />
+          <TextInput style={st.input} value={q} onChangeText={setQ} placeholder={tr('Имя, почта или телефон')} placeholderTextColor={colors.muted} autoCorrect={false} autoCapitalize="none" />
+        </View>
+          </>}
           data={items}
           keyExtractor={(u) => u.id}
           contentContainerStyle={{ padding: 16, paddingTop: 4, gap: 8, paddingBottom: 60 }}
@@ -54,7 +57,7 @@ export default function Users() {
               <View style={{ flex: 1, minWidth: 0 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <Text style={st.name} numberOfLines={1}>{u.company_name || u.display_name || '—'}</Text>
-                  {u.role !== 'buyer' && u.role !== 'seller' && <Text style={st.badge}>{tr(ROLE[u.role] || u.role)}</Text>}
+                  {!!ROLE[u.role] && <Text style={st.badge}>{tr(ROLE[u.role])}</Text>}
                   {u.is_blocked && <Text style={[st.badge, st.bad]}>{tr('Заблокирован')}</Text>}
                 </View>
                 <Text style={st.meta} numberOfLines={1}>{u.email || u.phone || '—'}</Text>
@@ -71,7 +74,7 @@ export default function Users() {
 
 const st = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.bg },
-  search: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 16, marginBottom: 8, height: 46, borderRadius: 18, backgroundColor: colors.surface, paddingHorizontal: 14 },
+  search: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8, height: 46, borderRadius: 18, backgroundColor: colors.surface, paddingHorizontal: 14 },
   input: { flex: 1, fontFamily: font[400], fontSize: 16, color: colors.ink },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 20, backgroundColor: colors.surface },
   ava: { width: 46, height: 46, borderRadius: 23, backgroundColor: colors.sunken, alignItems: 'center', justifyContent: 'center' },

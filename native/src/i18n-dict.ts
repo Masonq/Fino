@@ -1086,6 +1086,7 @@ export const DICT: Record<string, { en?: string; sr?: string }> = {
   "Вчера": { en: "Yesterday", sr: "Juče" },
   "Ранее": { en: "Earlier", sr: "Ranije" },
   "Переписок пока нет. Напишите продавцу — диалог появится здесь.": { en: "No chats yet. Message a seller — the conversation will appear here.", sr: "Još nema razgovora. Pišite prodavcu — razgovor će se pojaviti ovde." },
+  "онлайн": { en: "online", sr: "onlajn" },
   "Оформление": { en: "Appearance", sr: "Izgled" },
   "Ошибка видео": { en: "Video error", sr: "Greška videa" },
   "Пара слов о ролике": { en: "A few words about the video", sr: "Par reči o videu" },

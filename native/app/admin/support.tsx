@@ -41,11 +41,10 @@ export default function Support() {
   const close = async () => { if (!token || !openId) return; setBusy(true); await supportClose(token, openId).catch(() => {}); setBusy(false); setOpenId(null); load() }
   return (
     <KeyboardAvoidingView style={styles.page} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
-        <Segmented stretch options={[{ key: 'open', label: tr('Ждёт ответа') }, { key: 'answered', label: tr('Отвечено') }, { key: 'closed', label: tr('Закрыто') }]} value={tab} onChange={setTab} />
-      </View>
       <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 4, gap: 10, paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
         <Header bleed={16} bleedTop={4} title={tr('Обращения')} fallback="/admin" />
+        {/* вкладки — под заголовком (стояли над ним, под часами) */}
+        <Segmented stretch options={[{ key: 'open', label: tr('Ждёт ответа') }, { key: 'answered', label: tr('Отвечено') }, { key: 'closed', label: tr('Закрыто') }]} value={tab} onChange={setTab} />
         {!items && <Skeleton style={{ height: 76, borderRadius: 22 }} />}
         {items?.length === 0 && <View style={styles.calm}><Text style={styles.calmT}>{tr('Очередь пуста — новые появятся здесь')}</Text></View>}
         {items?.map((tk) => (
