@@ -217,7 +217,7 @@ const s = StyleSheet.create({
   buildTitle: { fontFamily: font[800], fontSize: 20, color: colors.ink },
   url: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10, paddingLeft: 12, paddingRight: 6, paddingVertical: 6, borderRadius: 12, backgroundColor: colors.bg },
   coverOpt: { width: 96, height: 64, borderRadius: 12, overflow: 'hidden', borderWidth: 2, borderColor: 'transparent', backgroundColor: colors.photo },
-  arrow: { width: 32, height: 32, borderRadius: 16, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface },
+  arrow: { width: 32, height: 32, borderRadius: 16, borderWidth: 0, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface },
   arrowText: { fontFamily: font[700], fontSize: 15, color: colors.ink },
   add: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
   check: { width: 20, height: 20, borderRadius: 6, borderWidth: 2, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },

@@ -297,6 +297,6 @@ const styles = StyleSheet.create({
   save: { height: 52, borderRadius: 16, backgroundColor: colors.inverse, alignItems: 'center', justifyContent: 'center' },
   saveText: { color: colors.onInverse, fontSize: 16, fontFamily: font[800] },
   status: { fontSize: 14, lineHeight: 19, fontFamily: font[700] },
-  secondary: { height: 46, borderRadius: 13, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
+  secondary: { height: 46, borderRadius: 13, borderWidth: 0, alignItems: 'center', justifyContent: 'center' },
   secondaryText: { fontSize: 15, fontFamily: font[800], color: colors.ink },
 })

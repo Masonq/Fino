@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
   bubbleRow: { flexDirection: 'row' },
   bubbleRowMe: { justifyContent: 'flex-end' },
   bubble: { maxWidth: '82%', paddingHorizontal: 12, paddingTop: 8, paddingBottom: 6, borderRadius: 18 },
-  staff: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderBottomLeftRadius: 6 },
+  staff: { backgroundColor: colors.surface, borderWidth: 0, borderBottomLeftRadius: 6 },
   me: { backgroundColor: colors.primary, borderBottomRightRadius: 6 },
   staffName: { fontSize: 12, fontFamily: font[800], color: colors.primaryDeep, marginBottom: 2 },
   text: { fontSize: 15.5, lineHeight: 21, fontFamily: font[400], color: colors.ink },

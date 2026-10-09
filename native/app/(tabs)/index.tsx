@@ -408,14 +408,16 @@ export default function Feed() {
             {!q && <CategoryTiles value={category} onPick={setCategory} />}
             {/* шопсы — под разделами, как на сайте */}
             {/* PLONK 2.0: подборки между плитками и лентой, как на сайте */}
-            {!q && !category && cityReady && <HomeSections city={city} />}
             {!q && cityReady && !city && geoAsk && (
               <View style={styles.geo}>
+                {/* как на сайте: значок метки в мятной плитке, «Показать» и крестик */}
+                <View style={styles.geoIco}><Icon name="pin" size={18} color={colors.primaryDeep} /></View>
                 <Text style={styles.geoText}>{tr('Показать объявления рядом с вами?')}</Text>
                 <Pressable style={styles.geoYes} disabled={geoBusy} onPress={detectCity}><Text style={styles.geoYesText}>{geoBusy ? '…' : tr('Показать')}</Text></Pressable>
-                <Pressable style={styles.geoNo} onPress={dismissGeo}><Text style={styles.geoNoText}>{tr('Не надо')}</Text></Pressable>
+                <Pressable style={styles.geoNo} onPress={dismissGeo} hitSlop={10} accessibilityLabel={tr('Не надо')}><Icon name="close" size={16} color={colors.muted} /></Pressable>
               </View>
             )}
+            {!q && !category && cityReady && <HomeSections city={city} />}
             {/* Поиск — как страница поиска сайта: плашки фильтров (+ «Сбросить»), ниже сортировка и «Сохранить поиск»;
                 «Все / Новое / Даром» при поиске нет */}
             {searchActive ? (
@@ -491,6 +493,7 @@ export default function Feed() {
 }
 
 const styles = StyleSheet.create({
+  geoIco: { width: 36, height: 36, borderRadius: 12, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
   popTitle: { fontFamily: font[800], fontSize: 13, color: colors.muted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 },
   helloRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingHorizontal: 16, paddingTop: 4, paddingBottom: 8 },
   cityPill: { width: 140, height: 34, borderRadius: 17, backgroundColor: colors.surface, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, marginTop: 0,
@@ -564,7 +567,9 @@ const styles = StyleSheet.create({
   cityText: { flex: 1, fontSize: 13.5, fontFamily: font[800], color: colors.ink },
   search: {
     flexDirection: 'row', alignItems: 'center', gap: 8, height: 46, paddingHorizontal: 14,
-    borderRadius: radius.field, backgroundColor: colors.sunken, paddingLeft: 5,
+    borderRadius: radius.field, backgroundColor: colors.surface, paddingLeft: 5,
+    // поиск — белый с мягкой тенью, как на сайте (был серой подложкой)
+    shadowColor: '#0F1512', shadowOpacity: 0.07, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2,
   },
   // flexBasis 0 и minWidth 0 — поле сжимается, и кнопка фильтров остаётся внутри строки поиска
   searchInput: { flex: 1, flexBasis: 0, minWidth: 0, fontFamily: font[400], fontSize: 15.5, color: colors.ink, paddingVertical: 0 },

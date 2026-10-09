@@ -285,7 +285,7 @@ const s = StyleSheet.create({
   adText: { fontFamily: font[700], fontSize: 11, color: '#fff' },
   caption: { marginTop: 8, fontFamily: font[500], fontSize: 14, lineHeight: 20, color: '#fff' },
   item: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 6, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.95)' },
-  itemLight: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, marginBottom: 8 },
+  itemLight: { backgroundColor: colors.surface, borderWidth: 0, marginBottom: 8 },
   itemMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
   itemTitle: { fontFamily: font[700], fontSize: 14, color: colors.ink },
   itemPrice: { fontFamily: font[800], fontSize: 14, color: colors.ink, marginTop: 2 },

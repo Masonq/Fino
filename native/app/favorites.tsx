@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   kicker: { fontFamily: font[600], fontSize: 14, color: colors.inkSoft },
   page: { flex: 1, backgroundColor: colors.bg },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 10 },
-  sortChip: { height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, justifyContent: 'center' },
+  sortChip: { height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 0, justifyContent: 'center' },
   sortChipOn: { backgroundColor: colors.inverse, borderColor: colors.inverse },
   sortText: { fontFamily: font[600], fontSize: 14, color: colors.ink },
   headRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: space.page + 4, paddingTop: 10, paddingBottom: 12 },

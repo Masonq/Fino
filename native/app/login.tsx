@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
   methodPrimary: { shadowColor: '#0E9F6E', shadowOpacity: 0.26, shadowRadius: 18, shadowOffset: { width: 0, height: 6 }, elevation: 4 },
   chooseTitle: { fontSize: 21, fontFamily: font[800], color: colors.ink, textAlign: 'center' },
   chooseSub: { fontSize: 13.5, lineHeight: 19.5, fontFamily: font[500], color: colors.muted, textAlign: 'center', maxWidth: 300, marginTop: -2, marginBottom: 16 },
-  methodTg: { height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  methodTg: { height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, borderWidth: 0 },
   methodTgText: { fontSize: 15.5, fontFamily: font[700], color: colors.ink },
   consent: { fontSize: 12.5, lineHeight: 18, fontFamily: font[500], color: colors.muted, textAlign: 'center', marginTop: 4 },
   consentLink: { color: colors.primaryDeep, fontFamily: font[700] },

@@ -157,7 +157,7 @@ const s = StyleSheet.create({
   paused: { marginTop: 10, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, backgroundColor: colors.warmBg },
   pausedText: { fontFamily: font[600], fontSize: 14, color: colors.goldDark },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 14, marginBottom: 8 },
-  more: { width: 44, height: 44, borderRadius: 12, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
+  more: { width: 44, height: 44, borderRadius: 12, borderWidth: 0, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
   videos: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   video: { aspectRatio: 9 / 16, borderRadius: 12, overflow: 'hidden', backgroundColor: '#1c2620' },
   similarTitle: { fontFamily: font[800], fontSize: 20, color: colors.ink, letterSpacing: -0.4, paddingHorizontal: space.page, marginBottom: 10 },

@@ -133,11 +133,11 @@ export function StorefrontLink({ ownerId }: { ownerId: string }) {
 }
 
 const s = StyleSheet.create({
-  bar: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 50, paddingHorizontal: 16, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  bar: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 50, paddingHorizontal: 16, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 0 },
   barText: { flex: 1, fontFamily: font[600], fontSize: 15, color: colors.ink },
   badge: { height: 22, paddingHorizontal: 8, borderRadius: 11, backgroundColor: colors.accent, justifyContent: 'center' },
   badgeText: { fontFamily: font[700], fontSize: 12, color: '#fff' },
   dot: { width: 8, height: 8, borderRadius: 4 },
-  sf: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 12, padding: 10, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  sf: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 12, padding: 10, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 0 },
   sfCover: { width: 44, height: 44, borderRadius: 10, overflow: 'hidden', backgroundColor: colors.primarySoft },
 })

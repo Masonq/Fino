@@ -503,7 +503,7 @@ const styles = StyleSheet.create({
   heroTitle: { fontSize: 24, fontFamily: font[800], color: '#fff', textShadowColor: 'rgba(0,0,0,0.35)', textShadowRadius: 10 },
   heroCount: { fontSize: 13, lineHeight: 17, fontFamily: font[600], color: 'rgba(255,255,255,0.92)', marginTop: 2, textShadowColor: 'rgba(0,0,0,0.35)', textShadowRadius: 8 },
   deal: { marginTop: 2 },
-  roundChip: { minWidth: 44, height: 38, paddingHorizontal: 14, borderRadius: 19, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
+  roundChip: { minWidth: 44, height: 38, paddingHorizontal: 14, borderRadius: 19, borderWidth: 0, backgroundColor: colors.sunken, alignItems: 'center', justifyContent: 'center' },
   roundChipOn: { borderColor: colors.primary, borderWidth: 1.5, backgroundColor: colors.primarySoft },
   roundChipText: { fontSize: 14, fontFamily: font[600], color: colors.ink },
   roundChipTextOn: { color: colors.primaryDeep, fontFamily: font[800] },
@@ -514,7 +514,7 @@ const styles = StyleSheet.create({
   fresh: { fontSize: 16, fontFamily: font[800], color: colors.ink, paddingHorizontal: 12, paddingTop: 14, paddingBottom: 10 },
   subs: { flexDirection: 'row', flexWrap: 'wrap', gap: 9, paddingHorizontal: 12, paddingTop: 20, paddingBottom: 4 },
   // как .landing-sub сайта: 68 высотой, название слева (не шире 60 %), картинка 74 справа, чуть за краем
-  sub: { width: '48.6%', height: 68, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: 'hidden', justifyContent: 'center' },
+  sub: { width: '48.6%', height: 68, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 0, overflow: 'hidden', justifyContent: 'center' },
   subArt: { position: 'absolute', right: -10, top: -3, width: 74, height: 74 },
   // minWidth 0 — длинное слово («электротранспорт») не выталкивает стрелку за край плитки
   subName: { maxWidth: '60%', fontSize: 12.5, lineHeight: 15.5, fontFamily: font[700], color: colors.ink, zIndex: 2 },

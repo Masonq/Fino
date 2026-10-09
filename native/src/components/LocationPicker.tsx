@@ -89,15 +89,15 @@ export default function LocationPicker({ lat, lng, hide, center, onChange, onHid
 }
 
 const styles = StyleSheet.create({
-  wrap: { marginTop: 14, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
+  wrap: { marginTop: 14, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 0, overflow: 'hidden' },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 14, height: 48 },
   headText: { fontSize: 14.5, fontFamily: font[700], color: colors.ink },
   body: { paddingHorizontal: 12, paddingBottom: 12, gap: 8 },
   searchRow: { flexDirection: 'row', gap: 8 },
   search: { flex: 1, height: 44, borderRadius: 12, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 12, fontSize: 15, fontFamily: font[500], color: colors.ink, backgroundColor: colors.surface },
-  mine: { width: 44, height: 44, borderRadius: 12, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
+  mine: { width: 44, height: 44, borderRadius: 12, borderWidth: 0, alignItems: 'center', justifyContent: 'center' },
   small: { fontSize: 12.5, lineHeight: 17, fontFamily: font[500], color: colors.muted },
-  results: { borderRadius: 12, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
+  results: { borderRadius: 12, borderWidth: 0, overflow: 'hidden' },
   result: { paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
   resultText: { fontSize: 13.5, lineHeight: 18, fontFamily: font[500], color: colors.ink },
   check: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 },

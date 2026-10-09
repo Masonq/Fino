@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   back: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, shadowColor: '#0F1512', shadowOpacity: 0.07, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
   title: { flex: 1, fontFamily: font[800], fontSize: 27, letterSpacing: -0.8, color: colors.ink },
   empty: { fontSize: 14.5, lineHeight: 20, fontFamily: font[500], color: colors.muted, textAlign: 'center', marginTop: 24 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 0 },
   avatar: { width: 42, height: 42, borderRadius: 21, backgroundColor: '#B8BDB8', alignItems: 'center', justifyContent: 'center' },
   letter: { color: '#fff', fontSize: 17, fontFamily: font[800] },
   name: { flex: 1, fontSize: 15.5, fontFamily: font[700], color: colors.ink },

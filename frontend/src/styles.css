@@ -9102,3 +9102,5 @@ html[data-theme="dark"] .notif-ico{ filter:brightness(.5) saturate(1.2); }
 .mod-page .ph-kicker{ min-height:1.35em; display:block; }
 .landing.lp-pending .landing-body{ visibility:hidden; }
 .landing:not(.lp-pending) .landing-body{ animation:ui-fade-in .25s ease; }
+/* «Поднять просмотры» в «Моих объявлениях» — мятной, как в приложении (главное действие, было серым как остальные) */
+.my-promote-slot button, .my-promote-slot .promote-btn{ background:var(--inverse) !important; color:var(--on-inverse) !important; border:0 !important; }

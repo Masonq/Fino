@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
   msgMe: { alignSelf: 'flex-end', backgroundColor: colors.primary, borderBottomLeftRadius: 18, borderBottomRightRadius: 6 },
   msgT: { fontFamily: font[400], fontSize: 15, lineHeight: 21, color: colors.ink },
   msgA: { fontFamily: font[600], fontSize: 11.5, color: colors.muted, marginTop: 4 },
-  quick: { height: 34, paddingHorizontal: 12, borderRadius: 17, borderWidth: 1, borderColor: colors.border, justifyContent: 'center', backgroundColor: colors.bg },
+  quick: { height: 34, paddingHorizontal: 12, borderRadius: 17, borderWidth: 0, justifyContent: 'center', backgroundColor: colors.bg },
   quickT: { fontFamily: font[700], fontSize: 13, color: colors.ink },
   input: { minHeight: 70, borderRadius: 16, backgroundColor: colors.sunken, padding: 12, fontFamily: font[400], fontSize: 16, color: colors.ink, textAlignVertical: 'top' },
   btn: { flex: 1, height: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },

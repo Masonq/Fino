@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
   dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.accent, marginTop: 6 },
   pointTitle: { fontSize: 14, fontFamily: font[800], color: colors.ink },
   pointText: { fontSize: 13, lineHeight: 18, fontFamily: font[500], color: colors.inkSoft, marginTop: 1 },
-  status: { marginTop: 18, padding: 14, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, gap: 6 },
+  status: { marginTop: 18, padding: 14, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 0, gap: 6 },
   statusTitle: { fontSize: 14, lineHeight: 19, fontFamily: font[800], color: colors.ink },
   statusNote: { fontSize: 14, lineHeight: 19, fontFamily: font[500], color: colors.ink },
   label: { fontSize: 15, fontFamily: font[800], color: colors.ink, marginTop: 18, marginBottom: 8 },

@@ -153,7 +153,7 @@ export default function Profile() {
           </View>
           <Pressable onPress={() => router.push('/notifications')} hitSlop={8} style={styles.bell} accessibilityLabel={tr('Уведомления')}>
             <Icon name="bell" size={23} color={colors.ink} />
-            {notices > 0 && <View style={styles.bellDot} />}
+            {notices > 0 && <View style={styles.bellDot}><Text style={styles.bellN}>{notices > 9 ? '9+' : notices}</Text></View>}
           </Pressable>
         </View>
 
@@ -381,14 +381,15 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 12 },
   h1: { fontSize: 30, fontFamily: font[800], letterSpacing: -1, color: colors.ink },
   kicker: { fontSize: 15, fontFamily: font[600], color: colors.inkSoft },
-  bell: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  bellDot: { position: 'absolute', top: 8, right: 9, width: 9, height: 9, borderRadius: 5, backgroundColor: colors.accent, borderWidth: 1.5, borderColor: colors.bg },
+  bell: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface },
+  bellDot: { position: 'absolute', top: -2, right: -2, minWidth: 18, height: 18, paddingHorizontal: 4, borderRadius: 9, backgroundColor: '#E5533D', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: colors.bg },
+  bellN: { color: '#fff', fontFamily: font[800], fontSize: 10.5, lineHeight: 12 },
   hint: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 12, marginBottom: 12, padding: 12, borderRadius: 14, backgroundColor: colors.warmBg },
   hintText: { flex: 1, fontSize: 13, lineHeight: 18, fontFamily: font[700], color: '#8A6A1F' },
   hintBtn: { height: 32, paddingHorizontal: 12, borderRadius: 9, backgroundColor: '#F2E2BF', justifyContent: 'center' },
   hintBtnText: { fontSize: 13, fontFamily: font[800], color: '#6B5016' },
   // .profile-card: отступы 0 12 12, внутри 14, скругление 18, аватар 56, имя 17/800, строка 12,5/600
-  card: { flexDirection: 'row', alignItems: 'flex-start', gap: 13, marginHorizontal: 12, marginBottom: 12, padding: 14, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  card: { flexDirection: 'row', alignItems: 'flex-start', gap: 13, marginHorizontal: 12, marginBottom: 12, padding: 14, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 0 },
   avatar: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#7C6CF0', alignItems: 'center', justifyContent: 'center' },
   avatarLetter: { color: '#fff', fontSize: 21, fontFamily: font[800] },
   cardBody: { flex: 1, paddingRight: 34 },
@@ -408,7 +409,7 @@ const styles = StyleSheet.create({
   statValue: { fontSize: 18, fontFamily: font[800], color: colors.ink },
   statLabel: { fontSize: 11.5, fontFamily: font[600], color: colors.muted, marginTop: 1 },
   // .balance-card: отступы 0 12 10, внутри 16/14/14, скругление 18; .balance-bar 10, .balance-part 10/12/11, скругление 14
-  balance: { marginHorizontal: 12, marginBottom: 10, paddingTop: 16, paddingHorizontal: 14, paddingBottom: 14, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  balance: { marginHorizontal: 12, marginBottom: 10, paddingTop: 16, paddingHorizontal: 14, paddingBottom: 14, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 0 },
   balanceTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   balanceLabel: { fontSize: 13, fontFamily: font[700], color: colors.muted },
   balanceValue: { fontSize: 26, fontFamily: font[800], letterSpacing: -0.3, color: colors.ink, marginTop: 2 },
@@ -426,7 +427,7 @@ const styles = StyleSheet.create({
   partAmount: { marginTop: 4, fontSize: 18, lineHeight: 24, fontFamily: font[800], letterSpacing: -0.2 },
   partNote: { marginTop: 2, fontSize: 11.5, lineHeight: 15, fontFamily: font[500], opacity: 0.82 },
   balanceNote: { marginTop: 10, fontSize: 12, fontFamily: font[500], color: colors.muted, textAlign: 'center' },
-  menu: { marginHorizontal: 12, marginBottom: 10, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
+  menu: { marginHorizontal: 12, marginBottom: 10, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 0, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, minHeight: 56, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
   rowLast: { borderBottomWidth: 0 },
   rowIcon: { width: 32, height: 32, borderRadius: 10, backgroundColor: colors.sunken, alignItems: 'center', justifyContent: 'center' },

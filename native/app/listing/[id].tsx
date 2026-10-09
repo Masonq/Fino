@@ -597,7 +597,7 @@ const styles = StyleSheet.create({
   mapLink: { fontSize: 13.5, fontFamily: font[700], color: colors.primaryDeep },
   mapPage: { flex: 1, backgroundColor: colors.bg },
   mapHead: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 8 },
-  mapBack: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
+  mapBack: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 0, alignItems: 'center', justifyContent: 'center' },
   mapTitle: { flex: 1, fontSize: 16, fontFamily: font[800], color: colors.ink },
   mapAddr: { paddingHorizontal: 16, paddingTop: 14, backgroundColor: colors.surface, borderTopLeftRadius: 20, borderTopRightRadius: 20, marginTop: -16, gap: 4 },
   mapAddrLabel: { fontSize: 12.5, fontFamily: font[700], color: colors.muted },
