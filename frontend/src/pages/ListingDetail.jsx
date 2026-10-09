@@ -709,10 +709,8 @@ export default function ListingDetail() {
     }
     // Атрибуты, заполненные словами («Вид услуги»), переводятся вместе с
     // объявлением — берём перевод, если он есть на нужном языке.
-    if (field?.translatable) {
-      return listing?.attributes_i18n?.[lang]?.[key] || value
-    }
-    return value
+    // перевод есть у любого поля, написанного словами (цвет, материал…), — не только у помеченных translatable
+    return listing?.attributes_i18n?.[lang]?.[key] || value
   }
 
   // Готовые вопросы — не всегда одни и те же: торг и доставка

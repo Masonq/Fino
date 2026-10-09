@@ -150,7 +150,7 @@ export default function ListingScreen() {
   if (data.delivery_available) chips.push({ label: 'Доставка', tone: 'plain' })
   if (data.price_negotiable) chips.push({ label: 'Торг уместен', tone: 'plain' })
   if ((data as unknown as { safe_deal_available?: boolean }).safe_deal_available) chips.push({ label: 'Безопасная сделка', tone: 'primary' })
-  const attrs = attrRows(data.attributes as Record<string, unknown> | undefined, schema)
+  const attrs = attrRows(data.attributes as Record<string, unknown> | undefined, schema, (data as unknown as { attributes_i18n?: Record<string, Record<string, string>> }).attributes_i18n)
   const keyFacts = factChips(rootSlug(data), data.attributes as Record<string, unknown> | undefined, schema)
   const verdict = VERDICTS[(data as unknown as { price_check?: { verdict?: string } }).price_check?.verdict ?? '']
   const mine = !!(user && owner && user.id === owner.id)

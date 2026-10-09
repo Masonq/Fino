@@ -308,7 +308,7 @@ export const categorySchema = (slug: string) => get<{ attribute_schema?: AttrFie
 export const ru = (l?: Label | null) => (!l ? '' : typeof l === 'string' ? l : l[getLang()] || l.ru || l.en || Object.values(l)[0] || '')
 
 /** Характеристики объявления с подписями из схемы раздела: «Комнат — 2», «Площадь, м² — 62». */
-export function attrRows(attrs: Record<string, unknown> | undefined, schema: AttrField[]): { label: string; value: string }[] {
+export function attrRows(attrs: Record<string, unknown> | undefined, schema: AttrField[], i18n?: Record<string, Record<string, string>> | null): { label: string; value: string }[] {
   if (!attrs) return []
   const out: { label: string; value: string }[] = []
   // порядок — как на сайте: в каком порядке поля лежат в объявлении (Object.entries(attributes)), только поля схемы
@@ -321,7 +321,9 @@ export function attrRows(attrs: Record<string, unknown> | undefined, schema: Att
       const opt = f.options?.find((o) => String(o.value) === String(v))
       if (opt) return ru(opt.label)
       if (typeof v === 'boolean') return v ? tr('да') : tr('нет')
-      return String(v)
+      // перевод значения, написанного словами (цвет, материал…), — как на сайте; сервер хранит его в attributes_i18n
+      const t = i18n?.[getLang()]?.[f.key]
+      return t && !Array.isArray(raw) ? String(t) : String(v)
     }
     const value = Array.isArray(raw) ? raw.map(one).join(', ') : one(raw)
     if (value) out.push({ label: ru(f.label) || f.key, value })
