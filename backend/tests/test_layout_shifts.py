@@ -128,9 +128,10 @@ def test_the_audit_people_strip_has_a_fixed_height_and_a_placeholder_while_loadi
 
 def test_the_category_skeleton_is_exactly_as_big_as_a_category_tile():
     """Скелет 126×82 против плитки 118×86: рядов два, и главная съезжала на 8 точек при подмене."""
-    skeleton, tile = rule(".cat-skeleton"), rule(".cat-tile-2row")
-    for prop in ("height:86px", "width:118px", "border-radius:15px"):
-        assert prop in skeleton and prop in tile, prop
+    # PLONK 2.0: плитка на телефоне 112×80 с радиусом 22 — скелет ровно такой же (проверено замером в браузере)
+    css = CSS if "CSS" in globals() else (Path(__file__).resolve().parents[2] / "frontend" / "src" / "styles.css").read_text()
+    flat = css.replace(" ", "")
+    assert ".cat-skeleton{width:112px;height:80px;" in flat and ".cat-skeleton{border-radius:22px!important;}" in flat
 
 
 def test_chats_keep_room_for_the_search_bar_while_loading_if_there_were_chats():

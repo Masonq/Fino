@@ -8,6 +8,7 @@
 бонусы и за уже внесённый баланс: деньги, которые человек внёс раньше, у него не отбирают.
 """
 import os
+from pathlib import Path
 import subprocess
 import sys
 import uuid
@@ -159,8 +160,10 @@ def test_the_settings_page_is_wired_for_the_owner_only():
     app = (FRONT / "App.jsx").read_text(encoding="utf-8")
     assert 'path="/admin/settings"' in app
     profile = (FRONT / "pages" / "Profile.jsx").read_text(encoding="utf-8")
-    i = profile.index('to="/admin/settings"')
-    assert "user.role === 'admin'" in profile[max(0, i - 120):i], "строка «Настройки» видна только владельцу"
+    # вход в настройки — плиткой на панели команды, только для владельца (admin: true)
+    hub = read_front("pages/AdminHome.jsx") if "read_front" in globals() else (Path(__file__).resolve().parents[2] / "frontend" / "src" / "pages" / "AdminHome.jsx").read_text()
+    line = next(l for l in hub.split("\n") if "'/admin/settings'" in l)
+    assert "admin: true" in line, "плитка «Настройки» видна только владельцу"
     page = (FRONT / "pages" / "AdminSettings.jsx").read_text(encoding="utf-8")
     assert "window.confirm" not in page, "системные диалоги в приложении на главном экране iPhone подавляются"
     assert "setting-confirm" in page and "confirm_on" in page, "включение оплаты — с вопросом, но на самой странице"

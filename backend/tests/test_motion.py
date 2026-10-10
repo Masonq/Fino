@@ -41,7 +41,9 @@ def test_page_transitions_on_the_main_navigation_and_a_still_bottom_menu():
     nav = (SRC / "components" / "BottomNav.jsx").read_text(encoding="utf-8")
     assert "<Link\n          viewTransition" in nav
     profile = (SRC / "pages" / "Profile.jsx").read_text(encoding="utf-8")
-    assert profile.count('<Link viewTransition className="profile-row"') >= 15
+    # меню профиля сократилось (разделы команды переехали на панель команды) — все оставшиеся строки с переходом
+    rows = profile.count('className="profile-row"') - profile.count('<button type="button" className="profile-row"')
+    assert profile.count('<Link viewTransition className="profile-row"') == rows >= 10
     assert "view-transition-name:bottom-nav" in BLOCK.replace(" ", "")
     assert "::view-transition-new(root){ animation:vt-page-in" in BLOCK
 

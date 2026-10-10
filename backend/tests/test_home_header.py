@@ -49,7 +49,8 @@ def test_stories_live_below_the_sticky_header_not_inside_it():
     got = json.loads(result.stdout)
     assert got["found"], "липкая шапка не найдена"
     assert got["inside"] == 0, "истории снова внутри липкой шапки"
-    assert got["outside"] == 1
+    # истории с главной убраны (шопсы — своей вкладкой); если вернутся — только под шапкой, одним блоком
+    assert got["outside"] <= 1
 
 
 def test_the_sticky_header_animates_nothing_that_changes_page_height():

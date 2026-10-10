@@ -182,7 +182,8 @@ def test_whats_new_is_shown_per_version_in_sidestore(store):
     versions = TestClient(app).get("/api/app-updates/sidestore.json").json()["apps"][0]["versions"]
     by = {v["buildVersion"]: v["localizedDescription"] for v in versions}
     assert by["29"].startswith("Фото на весь экран") and "щипок" in by["29"]
-    assert by["28"] == "Сборка 28.", "без текста — нейтрально, без обещаний про обновления по воздуху"
+    # в источнике SideStore только последняя сборка (на GitHub лежит одна, актуальная) — у неё свой текст «что нового»
+    assert "28" not in by
 
 
 def test_sync_fetches_whats_new_by_build_number(store, monkeypatch):
