@@ -3,7 +3,8 @@
 динарами, и Jeep стоил 18 000 RSD (≈150 €). Машину или квартиру за такие деньги не продают — это евро.
 Берём только объявления из внешних источников, в разделах «Авто» и «Недвижимость» (продажа), в динарах и дешевле
 150 000 RSD; переводим в евро то же число. В журнал — каждое исправление.
-Запуск: ./venv/bin/python -m app.core.price_fix_backfill — без --apply только показывает, с --apply исправляет.
+Запуск: ./venv/bin/python -m app.core.price_fix_backfill — без --apply только показывает, с --apply исправляет;
+--ids=id1,id2 — только эти объявления (спорные — аренду, запчасти — оставить как есть).
 """
 import sys
 
@@ -22,7 +23,7 @@ def _root(cat: Category | None) -> Category | None:
     return n
 
 
-def main(apply: bool) -> None:
+def main(apply: bool, only: set[str] | None = None) -> None:
     db = SessionLocal()
     rows = (db.query(Listing).filter(Listing.status == ListingStatus.active, Listing.external_source.isnot(None),
                                      Listing.currency == Currency.rsd, Listing.price.isnot(None), Listing.price < 150000,
@@ -35,6 +36,8 @@ def main(apply: bool) -> None:
         slug = (l.category.slug if l.category else "") + " " + str((l.attributes or {}).get("deal_type", ""))
         if any(w in slug for w in SKIP):
             continue
+        if only and str(l.id) not in only:
+            continue
         hits.append(l)
         print(f"{l.id} · {l.category.slug} · {float(l.price):,.0f} RSD → {float(l.price):,.0f} EUR")
         if apply:
@@ -45,4 +48,5 @@ def main(apply: bool) -> None:
 
 
 if __name__ == "__main__":
-    main("--apply" in sys.argv)
+    ids = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--ids=")), "")
+    main("--apply" in sys.argv, {i.strip() for i in ids.split(",") if i.strip()} or None)
