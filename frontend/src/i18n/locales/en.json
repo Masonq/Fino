@@ -2053,5 +2053,26 @@
     "want": "I want to adopt",
     "row_title": "Looking for a home",
     "row_sub": "Owners are giving them to loving homes — for free"
+  },
+  "year": {
+    "title": "My {{year}} on PLONK",
+    "kicker": "Year in review",
+    "hero_kicker": "Your year in numbers",
+    "hero_sold": "You sold {{n}} items — great year!",
+    "hero_posted": "You posted {{n}} listings — not bad at all!",
+    "hero_start": "The year is just starting — post your first item",
+    "posted": "posted",
+    "sold": "sold",
+    "earned": "earned",
+    "views": "views",
+    "saves": "saves",
+    "top_category": "Favorite section",
+    "top_listing": "Most popular",
+    "top_views": "{{n}} views",
+    "share": "Share my year",
+    "share_title": "My {{year}} on PLONK",
+    "share_text": "My {{year}} on PLONK",
+    "entry": "My {{year}} on PLONK",
+    "entry_sub": "Year in review — what you sold and earned"
   }
 }

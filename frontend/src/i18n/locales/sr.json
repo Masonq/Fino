@@ -2108,5 +2108,26 @@
     "want": "Želim da udomim",
     "row_title": "Traže dom",
     "row_sub": "Vlasnici ih poklanjaju u dobre ruke — besplatno"
+  },
+  "year": {
+    "title": "Moja {{year}} na PLONK-u",
+    "kicker": "Godišnji pregled",
+    "hero_kicker": "Vaša godina u brojkama",
+    "hero_sold": "Prodali ste {{n}} stvari — sjajna godina!",
+    "hero_posted": "Objavili ste {{n}} oglasa — nije loše!",
+    "hero_start": "Godina tek počinje — objavite prvu stvar",
+    "posted": "objavljeno",
+    "sold": "prodato",
+    "earned": "zarađeno",
+    "views": "pregleda",
+    "saves": "sačuvano",
+    "top_category": "Omiljena kategorija",
+    "top_listing": "Najpopularniji",
+    "top_views": "{{n}} pregleda",
+    "share": "Podeli pregled",
+    "share_title": "Moja {{year}} na PLONK-u",
+    "share_text": "Moja {{year}} na PLONK-u",
+    "entry": "Moja {{year}} na PLONK-u",
+    "entry_sub": "Godišnji pregled — šta ste prodali i zaradili"
   }
 }

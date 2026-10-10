@@ -53,6 +53,7 @@ const ComingSoon = lazy(() => import('./pages/ComingSoon'))
 const Favorites = lazy(() => import('./pages/Favorites'))
 const BlockedUsers = lazy(() => import('./pages/BlockedUsers'))
 const InviteFriend = lazy(() => import('./pages/InviteFriend'))
+const MyYear = lazy(() => import('./pages/MyYear'))
 const Notifications = lazy(() => import('./pages/Notifications'))
 const ListingDashboard = lazy(() => import('./pages/ListingDashboard'))
 const WaitingReviews = lazy(() => import('./pages/WaitingReviews'))
@@ -533,6 +534,7 @@ export default function App() {
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/profile/blocked" element={<BlockedUsers />} />
           <Route path="/profile/invite" element={<InviteFriend />} />
+          <Route path="/profile/year" element={<MyYear />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/my/:id/stats" element={<ListingDashboard />} />
           <Route path="/reviews/waiting" element={<WaitingReviews />} />

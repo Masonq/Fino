@@ -9257,3 +9257,27 @@ html[data-theme="dark"] .pets-homes{ background:#3A2A1E; }
 .pets-homes-sub{ margin:-4px 0 12px; font-size:13.5px; color:var(--ink-soft); }
 .pets-homes h2{ margin:0 !important; font-size:20px !important; }
 .pets-homes-sub{ margin:4px 0 14px !important; }
+
+/* ===== Мой год на PLONK ===== */
+.year-entry{ display:flex; align-items:center; gap:12px; margin:0 0 12px; padding:14px 16px; border-radius:22px; color:var(--ink);
+  background:radial-gradient(120% 120% at 0% 0%, #CDEFE0, transparent 60%), radial-gradient(120% 120% at 100% 0%, #ECF4CE, transparent 60%), var(--surface); box-shadow:var(--shadow); }
+.year-entry-ico{ flex:none; width:44px; height:44px; border-radius:14px; background:var(--surface); display:flex; align-items:center; justify-content:center; font-size:22px; }
+.year-entry-txt{ flex:1; min-width:0; display:flex; flex-direction:column; } .year-entry-txt b{ font-size:16px; font-weight:800; } .year-entry-txt span{ font-size:13px; color:var(--ink-soft); }
+html[data-theme="dark"] .year-entry{ background:radial-gradient(120% 120% at 0% 0%, rgba(15,163,106,.25), transparent 60%), var(--surface); }
+.year-hero{ margin:4px 0 12px; padding:20px 18px; border-radius:26px; background:linear-gradient(135deg, #CDEFE0, #ECF4CE); color:#0F1512; }
+.year-hero span{ font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:#085041; } .year-hero b{ display:block; margin-top:6px; font-size:24px; font-weight:900; line-height:1.15; letter-spacing:-0.02em; }
+html[data-theme="dark"] .year-hero{ background:linear-gradient(135deg, #1F3328, #2B3A1E); color:#EEF2EE; } html[data-theme="dark"] .year-hero span{ color:#B8E6CC; }
+.year-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.year-tile{ min-height:104px; padding:16px; border-radius:22px; display:flex; flex-direction:column; justify-content:flex-end; color:#0F1512; }
+.year-tile b{ font-size:32px; font-weight:900; letter-spacing:-0.03em; line-height:1; } .year-tile span{ margin-top:6px; font-size:13.5px; font-weight:700; color:#434B46; }
+.year-tile:nth-child(5){ grid-column:span 2; }
+html[data-theme="dark"] .year-tile{ filter:none; } html[data-theme="dark"] .year-tile:nth-child(1){ background:#24324A !important; } html[data-theme="dark"] .year-tile:nth-child(2){ background:#213A2C !important; }
+html[data-theme="dark"] .year-tile:nth-child(3){ background:#3D3520 !important; } html[data-theme="dark"] .year-tile:nth-child(4){ background:#2F2A44 !important; } html[data-theme="dark"] .year-tile:nth-child(5){ background:#3E2632 !important; }
+html[data-theme="dark"] .year-tile, html[data-theme="dark"] .year-tile span{ color:#EEF2EE; }
+.year-row{ display:flex; flex-direction:column; gap:2px; margin-top:10px; padding:14px 16px; border-radius:20px; background:var(--surface); box-shadow:var(--shadow); color:var(--ink); }
+.year-row span{ font-size:12.5px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; } .year-row b{ font-size:16px; font-weight:800; } .year-row i{ font-style:normal; font-size:13px; color:var(--ink-soft); }
+.year-share{ width:100%; height:52px; margin:16px 0 8px; border:0; border-radius:16px; background:var(--inverse); color:var(--on-inverse); font:inherit; font-size:16px; font-weight:800; cursor:pointer; }
+.year-tile:last-child:nth-child(odd){ grid-column:span 2; }
+.year-tile:nth-child(5){ grid-column:auto; }
+.year-tile:nth-child(5):last-child{ grid-column:span 2; }
+.profile-sidebar > .year-entry{ margin-left:var(--gutter); margin-right:var(--gutter); }   /* по общему краю с балансом и плитками */

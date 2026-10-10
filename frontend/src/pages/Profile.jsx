@@ -283,6 +283,12 @@ export default function Profile() {
             </Link>
           </div>
 
+          {/* итог года (105) — повод заглянуть и поделиться */}
+          <Link to="/profile/year" className="year-entry">
+            <span className="year-entry-ico" aria-hidden="true">✨</span>
+            <span className="year-entry-txt"><b>{t('year.entry', { year: new Date().getFullYear() })}</b><span>{t('year.entry_sub')}</span></span>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
+          </Link>
           <BalanceCard onReady={markBalanceReady} />
         </div>
 

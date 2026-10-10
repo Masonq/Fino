@@ -547,3 +547,42 @@ def toggle_pin(payload: PinIn, user: User = Depends(get_current_user), db: Sessi
     flag_modified(user, "notify_prefs")
     db.commit()
     return {"pinned": pinned, "pins": pins}
+
+
+@router.get("/me/year")
+def my_year(year: int | None = None, lang: str = "ru", user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """
+    «Мой год на PLONK» — итог года, как Spotify Wrapped: сколько выложил, продал, заработал, сколько раз смотрели и
+    сохраняли, любимый раздел и самое популярное объявление. Картинка-итог — повод поделиться и вернуться.
+    Проданное считаем по объявлениям со статусом «продано» за год (по дате обновления).
+    """
+    from collections import Counter
+    from datetime import datetime
+    from app.models import Listing, ListingStatus
+    from app.core.clock import utcnow
+
+    y = year or utcnow().year
+    start, end = datetime(y, 1, 1), datetime(y + 1, 1, 1)
+    rows = db.query(Listing).filter(Listing.owner_id == user.id, Listing.created_at >= start, Listing.created_at < end).all()
+    sold = [l for l in rows if l.status == ListingStatus.sold]
+    def eur(l):
+        return float(l.price or 0) if (l.currency and l.currency.value == "EUR") else float(l.price or 0) / 117.0
+    cats = Counter()
+    for l in rows:
+        c = l.category
+        while c is not None and c.parent is not None:
+            c = c.parent
+        if c is not None:
+            cats[(c.name or {}).get(lang) or (c.name or {}).get("ru") or c.slug] += 1
+    top = max(rows, key=lambda l: (l.views_count or 0), default=None)
+    top_title = None
+    if top is not None:
+        tr = next((t for t in (top.translations or []) if t.language == lang), None) or next(iter(top.translations or []), None)
+        top_title = getattr(tr, "title", None)
+    return {
+        "year": y, "posted": len(rows), "sold": len(sold), "earned_eur": round(sum(eur(l) for l in sold)),
+        "views": sum(l.views_count or 0 for l in rows), "saves": sum(l.favorites_count or 0 for l in rows),
+        "top_category": cats.most_common(1)[0][0] if cats else None,
+        "top_listing": {"id": str(top.id), "title": top_title, "views": top.views_count or 0} if top is not None and (top.views_count or 0) > 0 else None,
+        "member_since": user.created_at.isoformat() if getattr(user, "created_at", None) else None,
+    }
