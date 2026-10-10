@@ -215,7 +215,9 @@ export default function SellerProfile() {
           </div>
           <div className="infinite-grid no-pad">
             {(expanded ? listings : listings.slice(0, PREVIEW_COUNT)).map((l) => (
-              <ListingCard key={l.id} listing={l} />
+              (profile?.pinned_ids || []).includes(l.id)
+                ? <div key={l.id} className="pinned-wrap"><span className="pinned-tag">📌 {t('pins.tag')}</span><ListingCard listing={l} /></div>
+                : <ListingCard key={l.id} listing={l} />
             ))}
           </div>
           {!expanded && total > PREVIEW_COUNT ? (

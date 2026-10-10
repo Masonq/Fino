@@ -1894,6 +1894,17 @@ def similar_listings(
     return {"items": [serialize(l) for l in picked]}
 
 
+def _pins(db, owner_id) -> list:
+    owner = db.query(User).get(owner_id)
+    out = []
+    for p in ((owner.notify_prefs or {}).get("pins") or []) if owner else []:
+        try:
+            out.append(uuid.UUID(p))
+        except ValueError:
+            pass
+    return out or [uuid.UUID(int=0)]
+
+
 @router.get("/by-seller/{seller_id}")
 def seller_listings(
     seller_id: uuid.UUID,
@@ -1919,7 +1930,8 @@ def seller_listings(
     )
     total = q.count()
     items = (
-        q.order_by(Listing.published_at.desc().nullslast())
+        # закреплённые продавцом (до трёх) — первыми
+        q.order_by(case((Listing.id.in_(_pins(db, seller_id)), 0), else_=1), Listing.published_at.desc().nullslast())
         .offset(offset)
         .limit(limit)
         .all()

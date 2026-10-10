@@ -66,6 +66,20 @@ export default function MyListings() {
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()
 
+  // закреплённые в профиле (до трёх) и «поделиться карточкой» — готовая картинка с фото, ценой и ссылкой для сторис и постов
+  const [pins, setPins] = useState([])
+  useEffect(() => { if (user?.id) api.sellerProfile(user.id, i18n.language).then((p) => setPins(p.pinned_ids || [])).catch(() => {}) }, [user?.id, i18n.language])
+  const shareCard = async (l) => {
+    const url = `${window.location.origin}${l.public_path || `/go/${l.id}`}`
+    const img = `/api/og/listing/${l.id}.png?v=3&lang=${i18n.language}`
+    try {
+      const blob = await (await fetch(img)).blob()
+      const file = new File([blob], 'plonk.png', { type: 'image/png' })
+      if (navigator.canShare?.({ files: [file] })) { await navigator.share({ files: [file], text: `${l.title} — ${url}` }); return }
+    } catch { /* не вышло файлом — делимся ссылкой */ }
+    try { await navigator.share({ title: l.title, url }) } catch { window.open(img, '_blank') }
+  }
+
   const [items, setItems] = useState([])
   const [renewing, setRenewing] = useState(null)
 
@@ -250,6 +264,18 @@ export default function MyListings() {
                     да и закрывают собой сам товар) и не в тесном ряду
                     кнопок снизу. */}
                 <div className="my-quick-actions">
+                  {l.status === 'active' && (
+                    <button className={`my-quick-icon${pins.includes(l.id) ? ' is-on' : ''}`} aria-label={t(pins.includes(l.id) ? 'pins.unpin' : 'pins.pin')}
+                      onClick={async (e) => { e.preventDefault(); e.stopPropagation(); try { const r = await api.togglePin(l.id); setPins(r.pins) } catch (err) { confirmSheet({ title: t(err?.code === 'pins_limit' ? 'pins.limit' : 'support.failed'), confirm: 'OK' }) } }}>
+                      <svg viewBox="0 0 24 24" fill={pins.includes(l.id) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 17v5" /><path d="M9 10.8V4h6v6.8l2.6 3.2H6.4Z" /></svg>
+                    </button>
+                  )}
+                  {l.status === 'active' && (
+                    <button className="my-quick-icon" aria-label={t('pins.share')}
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); shareCard(l) }}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" /><path d="m16 6-4-4-4 4" /><path d="M12 2v13" /></svg>
+                    </button>
+                  )}
                   <button
                     className="my-quick-icon"
                     aria-label={t('ldash.short')}

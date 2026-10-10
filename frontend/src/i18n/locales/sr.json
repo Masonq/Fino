@@ -2065,5 +2065,12 @@
     "rent_memo_text": "Šta proveriti i koja dokumenta trebaju — ugovor, beli karton, depozit. Vodič →",
     "co2": "Kupovinom polovne stvari uštedeli ste ~{{kg}} kg CO₂ — koliko bi otišlo na proizvodnju nove",
     "charity_check": "💚 Novac od prodaje ide u dobre svrhe"
+  },
+  "pins": {
+    "tag": "Zakačeno",
+    "pin": "Zakači na profil",
+    "unpin": "Otkači",
+    "limit": "Možete zakačiti do tri oglasa — prvo otkačite jedan",
+    "share": "Podeli kao karticu"
   }
 }

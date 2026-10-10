@@ -428,6 +428,7 @@ export const api = {
   similarListings: (id, lang) => request(`/listings/${id}/similar?${new URLSearchParams({ lang })}`),
   myListings: (lang) => request(`/listings/my/list?${new URLSearchParams({ lang })}`),
   sellerProfile: (userId, lang) => request(`/users/${userId}/public?${new URLSearchParams({ lang })}`),
+  togglePin: (listingId) => request('/users/me/pins', { method: 'POST', body: JSON.stringify({ listing_id: listingId }) }),
   sellerListings: (userId, lang, offset = 0) => request(`/listings/by-seller/${userId}?${new URLSearchParams({ lang, offset })}`),
   subscribeToSeller: (userId) => request(`/users/${userId}/subscribe`, { method: 'POST' }),
   vapidPublicKey: () => request('/push/vapid-public-key'),

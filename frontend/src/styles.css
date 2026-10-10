@@ -9165,3 +9165,8 @@ html[data-theme="dark"] .vol-hero, html[data-theme="dark"] .sup-hero, html[data-
 .detail-charity b, .detail-memo b{ font-size:15px; font-weight:800; } .detail-charity div span, .detail-memo span{ font-size:13.5px; color:var(--ink-soft); line-height:1.4; }
 .detail-memo{ align-items:flex-start; background:#E3ECFA; } html[data-theme="dark"] .detail-memo{ background:#24324A; }
 .detail-co2{ font-size:13.5px; font-weight:600; color:var(--ink-soft); background:#E2F1E6; box-shadow:none; } html[data-theme="dark"] .detail-co2{ background:#213A2C; }
+.my-quick-icon.is-on{ background:var(--inverse) !important; color:var(--on-inverse) !important; }
+.pinned-wrap{ position:relative; } .pinned-wrap .s-card{ height:100%; }
+.pinned-tag{ position:absolute; z-index:3; left:8px; top:8px; padding:4px 9px; border-radius:11px; background:var(--inverse); color:var(--on-inverse); font-size:11.5px; font-weight:800; pointer-events:none; }
+/* четыре значка у объявления (закрепить, поделиться, статистика, правка) — квадратом 2×2, а не столбиком: карточка не вытягивается */
+.my-quick-actions{ display:grid !important; grid-template-columns:repeat(2, auto); gap:6px !important; align-content:start; }

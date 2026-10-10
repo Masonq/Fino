@@ -65,6 +65,7 @@ def public_profile(user_id: uuid.UUID, lang: str = "ru", db: Session = Depends(g
         "id": str(user.id),
         "display_name": user.display_name,
         "avatar_url": user.avatar_url,
+        "pinned_ids": list((user.notify_prefs or {}).get("pins") or [])[:3],   # закреплённые продавцом объявления
         "is_company": user.role == UserRole.seller_business,
         "company_name": user.company_name if user.role == UserRole.seller_business else None,
         "company_description": user.company_description if user.role == UserRole.seller_business else None,
@@ -514,3 +515,35 @@ def set_notify_prefs(body: NotifyPrefsIn, user: User = Depends(get_current_user)
     user.notify_prefs = p
     db.commit()
     return {k: p.get(k, True) is not False for k in NOTIFY_KINDS}
+
+
+class PinIn(BaseModel):
+    listing_id: uuid.UUID
+
+
+@router.post("/me/pins")
+def toggle_pin(payload: PinIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """
+    «Закрепить в профиле»: до трёх своих объявлений всегда первыми на странице продавца и в его списке.
+    Храним в настройках пользователя (без новых полей базы). Повторное нажатие — открепить.
+    """
+    from sqlalchemy.orm.attributes import flag_modified
+    from app.models import Listing, ListingStatus
+
+    listing = db.query(Listing).get(payload.listing_id)
+    if not listing or listing.owner_id != user.id:
+        raise HTTPException(403, "not_owner")
+    prefs = dict(user.notify_prefs or {})
+    pins = [p for p in (prefs.get("pins") or []) if p != str(listing.id)]
+    pinned = len(pins) == len(prefs.get("pins") or [])   # не было в списке — закрепляем
+    if pinned:
+        if listing.status != ListingStatus.active:
+            raise HTTPException(400, "not_active")
+        if len(pins) >= 3:
+            raise HTTPException(400, "pins_limit")
+        pins.insert(0, str(listing.id))
+    prefs["pins"] = pins
+    user.notify_prefs = prefs
+    flag_modified(user, "notify_prefs")
+    db.commit()
+    return {"pinned": pinned, "pins": pins}

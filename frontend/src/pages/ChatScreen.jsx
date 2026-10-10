@@ -620,13 +620,13 @@ export default function ChatScreen() {
         if (/jobs|vacanc|resume|cv\b/.test(chat.listing_category || '')) return null
         return (
           <div className="chat-deal" role="group" aria-label={t('deal.aria')}>
+            {big && <button type="button" className="chat-deal-video" onClick={async () => { try { await api.videoView(id) } catch { /* — */ } }}>🎥 {t('deal.video_btn')}</button>}
             {order.map((st, i) => (
               <button key={st} type="button" className={`chat-deal-step${i <= at ? ' done' : ''}${i === at + 1 ? ' next' : ''}`}
                 disabled={i !== at + 1} onClick={async () => { try { await api.dealStage(id, st) } catch { /* сообщение придёт по сокету */ } }}>
                 <i aria-hidden="true">{i <= at ? '✓' : i + 1}</i>{t(`deal.step_${st}`)}
               </button>
             ))}
-            {big && <button type="button" className="chat-deal-video" onClick={async () => { try { await api.videoView(id) } catch { /* — */ } }}>🎥 {t('deal.video_btn')}</button>}
           </div>
         )
       })()}

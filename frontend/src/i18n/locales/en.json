@@ -2010,5 +2010,12 @@
     "rent_memo_text": "What to check and which papers you need — contract, “beli karton”, deposit. Guide →",
     "co2": "Buying second-hand saves ~{{kg}} kg of CO₂ — what making a new one would emit",
     "charity_check": "💚 Proceeds go to a good cause"
+  },
+  "pins": {
+    "tag": "Pinned",
+    "pin": "Pin to profile",
+    "unpin": "Unpin",
+    "limit": "You can pin up to three listings — unpin one first",
+    "share": "Share as a card"
   }
 }
