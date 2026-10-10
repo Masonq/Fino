@@ -65,7 +65,7 @@ export default function InviteFriend() {
             прыгает вниз, когда она приезжает. fetchPriority — чтобы
             она грузилась первой, это главная картинка экрана. */}
         <img src="/invite/hero.webp" alt="" width="1000" height="604"
-             fetchPriority="high" decoding="async" />
+             fetchpriority="high" decoding="async" />
         <div className="invite-hero-badges">
           <span className="invite-badge">+{BONUS} RSD <small>{t('invite.card_you')}</small></span>
           <span className="invite-badge alt">+{BONUS} RSD <small>{t('invite.card_friend')}</small></span>

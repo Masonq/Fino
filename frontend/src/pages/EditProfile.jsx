@@ -183,6 +183,8 @@ export default function EditProfile() {
     setVerifyBusy(true); setVerifyError('')
     try {
       const { url } = await api.startVerification()
+      // без адреса не уводим: иначе страница уходила на «undefined» и становилась пустой
+      if (!url) throw Object.assign(new Error('no_url'), { code: 'no_url' })
       // Уводим на сторону Didit целиком — снимок документа и селфи
       // происходят там, не на нашей странице.
       window.location.href = url
