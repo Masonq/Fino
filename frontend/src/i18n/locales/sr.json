@@ -2071,6 +2071,11 @@
     "pin": "Zakači na profil",
     "unpin": "Otkači",
     "limit": "Možete zakačiti do tri oglasa — prvo otkačite jedan",
-    "share": "Podeli kao karticu"
+    "share": "Podeli kao karticu",
+    "pin_btn": "📌 Zakači",
+    "pinned_btn": "✓ Zakačeno",
+    "share_btn": "Podeli",
+    "tag_profile": "📌 Zakačeno na profil",
+    "section": "Zakačeno od prodavca"
   }
 }

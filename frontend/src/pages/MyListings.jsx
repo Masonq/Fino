@@ -219,6 +219,7 @@ export default function MyListings() {
                 <div className="my-body">
                   <div className="my-title-row">
                     <div className="my-title">{l.title}</div>
+                    {pins.includes(l.id) && <span className="my-pinned">{t('pins.tag_profile')}</span>}
                     {l.active_promotions?.length > 0 && (
                       <div className="my-promo-icons">
                         {l.active_promotions.map((p) => (
@@ -264,18 +265,6 @@ export default function MyListings() {
                     да и закрывают собой сам товар) и не в тесном ряду
                     кнопок снизу. */}
                 <div className="my-quick-actions">
-                  {l.status === 'active' && (
-                    <button className={`my-quick-icon${pins.includes(l.id) ? ' is-on' : ''}`} aria-label={t(pins.includes(l.id) ? 'pins.unpin' : 'pins.pin')}
-                      onClick={async (e) => { e.preventDefault(); e.stopPropagation(); try { const r = await api.togglePin(l.id); setPins(r.pins) } catch (err) { confirmSheet({ title: t(err?.code === 'pins_limit' ? 'pins.limit' : 'support.failed'), confirm: 'OK' }) } }}>
-                      <svg viewBox="0 0 24 24" fill={pins.includes(l.id) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 17v5" /><path d="M9 10.8V4h6v6.8l2.6 3.2H6.4Z" /></svg>
-                    </button>
-                  )}
-                  {l.status === 'active' && (
-                    <button className="my-quick-icon" aria-label={t('pins.share')}
-                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); shareCard(l) }}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" /><path d="m16 6-4-4-4 4" /><path d="M12 2v13" /></svg>
-                    </button>
-                  )}
                   <button
                     className="my-quick-icon"
                     aria-label={t('ldash.short')}
@@ -302,6 +291,11 @@ export default function MyListings() {
                     <button disabled={busyId === l.id} onClick={() => changeStatus(l.id, 'archived')}>
                       {t('my.archive')}
                     </button>
+                    <button className={pins.includes(l.id) ? 'is-pinned' : ''}
+                      onClick={async () => { try { const r = await api.togglePin(l.id); setPins(r.pins) } catch (err) { confirmSheet({ title: t(err?.code === 'pins_limit' ? 'pins.limit' : 'support.failed'), confirm: 'OK' }) } }}>
+                      {pins.includes(l.id) ? t('pins.pinned_btn') : t('pins.pin_btn')}
+                    </button>
+                    <button onClick={() => shareCard(l)}>{t('pins.share_btn')}</button>
                   </>
                 )}
                 {(l.status === 'sold' || l.status === 'archived') && (

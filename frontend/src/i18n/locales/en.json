@@ -2016,6 +2016,11 @@
     "pin": "Pin to profile",
     "unpin": "Unpin",
     "limit": "You can pin up to three listings — unpin one first",
-    "share": "Share as a card"
+    "share": "Share as a card",
+    "pin_btn": "📌 Pin",
+    "pinned_btn": "✓ Pinned",
+    "share_btn": "Share",
+    "tag_profile": "📌 Pinned to profile",
+    "section": "Pinned by the seller"
   }
 }

@@ -87,6 +87,11 @@ export default function SellerProfile() {
     return () => io.disconnect()
   }, [expanded, listings.length, total, loadMore])
 
+  // закреплённые продавцом — отдельным блоком сверху, в общем списке их не повторяем
+  const pinIds = profile?.pinned_ids || []
+  const pinned = listings.filter((l) => pinIds.includes(l.id))
+  const rest = listings.filter((l) => !pinIds.includes(l.id))
+
   if (failed) {
     return (
       <div className="page page-wide">
@@ -208,16 +213,22 @@ export default function SellerProfile() {
         <SellerReviews sellerId={profile.id} expected={profile.rating_count ?? profile.reviews_count} />
       </div>
 
-      {listings.length > 0 && (
+      {listings.length > 0 && (<>
+        {pinned.length > 0 && (
+          <div className="seller-section seller-pinned">
+            <div className="seller-section-title">{t('pins.section')}</div>
+            <div className="infinite-grid no-pad">
+              {pinned.map((l) => <ListingCard key={l.id} listing={l} />)}
+            </div>
+          </div>
+        )}
         <div className="seller-section">
           <div className="seller-section-title">
             {t('seller.listings')} · {total}
           </div>
           <div className="infinite-grid no-pad">
-            {(expanded ? listings : listings.slice(0, PREVIEW_COUNT)).map((l) => (
-              (profile?.pinned_ids || []).includes(l.id)
-                ? <div key={l.id} className="pinned-wrap"><span className="pinned-tag">📌 {t('pins.tag')}</span><ListingCard listing={l} /></div>
-                : <ListingCard key={l.id} listing={l} />
+            {(expanded ? rest : rest.slice(0, PREVIEW_COUNT)).map((l) => (
+              <ListingCard key={l.id} listing={l} />
             ))}
           </div>
           {!expanded && total > PREVIEW_COUNT ? (
@@ -230,7 +241,7 @@ export default function SellerProfile() {
             </div>
           )}
         </div>
-      )}
+      </>)}
     </div>
   )
 }

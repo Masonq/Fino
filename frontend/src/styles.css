@@ -9170,3 +9170,14 @@ html[data-theme="dark"] .vol-hero, html[data-theme="dark"] .sup-hero, html[data-
 .pinned-tag{ position:absolute; z-index:3; left:8px; top:8px; padding:4px 9px; border-radius:11px; background:var(--inverse); color:var(--on-inverse); font-size:11.5px; font-weight:800; pointer-events:none; }
 /* четыре значка у объявления (закрепить, поделиться, статистика, правка) — квадратом 2×2, а не столбиком: карточка не вытягивается */
 .my-quick-actions{ display:grid !important; grid-template-columns:repeat(2, auto); gap:6px !important; align-content:start; }
+/* закрепление: понятные кнопки с подписью, метка на карточке и отдельный блок у продавца (вместо значка-загадки и наклейки поверх фото) */
+.my-actions button.is-pinned{ background:var(--inverse) !important; color:var(--on-inverse) !important; }
+.my-pinned{ display:inline-flex; align-self:flex-start; margin-top:4px; padding:3px 9px; border-radius:10px; background:var(--inverse); color:var(--on-inverse); font-size:12px; font-weight:800; }
+.my-quick-actions{ grid-template-columns:auto !important; }
+.seller-pinned{ background:var(--surface); border-radius:22px; box-shadow:var(--shadow); padding:14px 12px 4px; }
+.seller-pinned .seller-section-title{ padding:0 4px; }
+.my-actions{ flex-wrap:wrap; }
+.my-actions > button{ flex:1 1 calc(50% - 4px); }
+/* метка «Закреплено» — своей строкой под заголовком, а не рядом с ним (сжимала заголовок) */
+.my-title-row{ flex-wrap:wrap; }
+.my-pinned{ order:9; flex-basis:100%; max-width:max-content; margin-top:6px; }
