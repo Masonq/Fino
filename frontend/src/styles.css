@@ -9181,3 +9181,18 @@ html[data-theme="dark"] .vol-hero, html[data-theme="dark"] .sup-hero, html[data-
 /* метка «Закреплено» — своей строкой под заголовком, а не рядом с ним (сжимала заголовок) */
 .my-title-row{ flex-wrap:wrap; }
 .my-pinned{ order:9; flex-basis:100%; max-width:max-content; margin-top:6px; }
+/* ===== Цена на рынке (машины) ===== */
+.market-card{ margin:10px 0 0; padding:16px; border-radius:22px; background:var(--surface); box-shadow:var(--shadow); }
+.market-head{ display:flex; flex-direction:column; gap:2px; } .market-head b{ font-size:17px; font-weight:800; } .market-head span{ font-size:12.5px; color:var(--muted); }
+.market-range{ margin-top:10px; font-size:14.5px; color:var(--ink-soft); } .market-range b{ color:var(--ink); }
+.market-verdict{ display:inline-flex; margin-top:8px; padding:5px 10px; border-radius:12px; background:var(--surface-sunken); font-size:13px; font-weight:800; }
+.market-verdict.good{ background:#E2F1E6; color:#085041; } .market-verdict.high{ background:#FFE8DD; color:#9A3412; }
+html[data-theme="dark"] .market-verdict.good{ background:#213A2C; color:#B8E6CC; } html[data-theme="dark"] .market-verdict.high{ background:#43301F; color:#FFC9A8; }
+.market-bars{ display:flex; align-items:flex-end; gap:6px; height:110px; margin-top:14px; }
+.market-bar{ flex:1; height:100%; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; gap:4px; }
+.market-bar i{ display:block; width:100%; max-width:26px; border-radius:7px 7px 3px 3px; background:var(--inverse); }
+.market-bar span{ font-size:10.5px; color:var(--muted); }
+.market-range .nw{ white-space:nowrap; }
+.market-bar{ flex:1 1 0; min-width:0; }
+.market-bar i{ max-width:none; background:linear-gradient(180deg, #2BB57F, #0FA36A); }
+.market-bar span{ white-space:nowrap; font-size:10px; }

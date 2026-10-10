@@ -3,6 +3,7 @@ import SheetCard from '../components/SheetCard'
 import Presence from '../components/Presence'
 import Stars from '../components/Stars'
 import PriceGauge from '../components/PriceGauge'
+import MarketChart from '../components/MarketChart'
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import RichText from '../components/RichText'
 import Avatar from '../components/Avatar'
@@ -1203,6 +1204,8 @@ export default function ListingDetail() {
           </Link>
         )}
 
+        {/* машины (65): цена на рынке за год — медиана таких же по месяцам и где на этой вилке эта машина */}
+        {/(^|\s)(auto|cars|moto)(\s|$)/.test(paths) && listing.price != null && <MarketChart listingId={listing.id} />}
         {/* благотворительность (102): продавец отметил «деньги идут на доброе дело» */}
         {listing?.attributes?.charity && (
           <div className="detail-charity"><span aria-hidden="true">💚</span><div><b>{t('extras.charity_title')}</b><span>{listing.attributes.charity_note || t('extras.charity_text')}</span></div></div>

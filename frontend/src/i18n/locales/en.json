@@ -2022,5 +2022,17 @@
     "share_btn": "Share",
     "tag_profile": "📌 Pinned to profile",
     "section": "Pinned by the seller"
+  },
+  "market": {
+    "title": "Market price over the year",
+    "scope_model": "based on {{count}} identical cars",
+    "scope_brand": "based on {{count}} cars of this make",
+    "scope_category": "based on {{count}} cars in this section",
+    "usual": "Usually",
+    "median": "median",
+    "below": "{{n}}% below market",
+    "above": "{{n}}% above market",
+    "fair": "In line with the market",
+    "too_cheap": "{{n}}% below market — suspiciously cheap: ask about condition and papers, never prepay"
   }
 }

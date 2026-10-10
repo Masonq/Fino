@@ -1894,6 +1894,43 @@ def similar_listings(
     return {"items": [serialize(l) for l in picked]}
 
 
+@router.get("/{listing_id}/market")
+def market_history(listing_id: uuid.UUID, db: Session = Depends(get_db)):
+    """
+    «Цена на рынке за год» для машины: медиана цен таких же машин (та же марка и модель, если указаны, иначе — тот же
+    раздел) по месяцам за 12 месяцев, в евро. Помогает торговаться и понять, справедлива ли цена. Меньше 5 похожих —
+    не показываем: по двум машинам «рынок» не построить.
+    """
+    from statistics import median
+    from datetime import timedelta
+
+    listing = db.query(Listing).get(listing_id)
+    if not listing:
+        raise HTTPException(404, "not_found")
+    attrs = listing.attributes or {}
+    q = db.query(Listing).filter(Listing.category_id == listing.category_id, Listing.price.isnot(None),
+                                 Listing.created_at >= utcnow() - timedelta(days=365))
+    brand, model = str(attrs.get("brand") or "").strip().lower(), str(attrs.get("model") or "").strip().lower()
+    rows = [l for l in q.all() if (not brand or str((l.attributes or {}).get("brand") or "").strip().lower() == brand)
+            and (not model or str((l.attributes or {}).get("model") or "").strip().lower() == model)]
+    if len(rows) < 5 and (brand or model):     # мало точных совпадений — берём марку целиком
+        rows = [l for l in q.all() if brand and str((l.attributes or {}).get("brand") or "").strip().lower() == brand]
+    def eur(l):
+        v = float(l.price)
+        return v if (l.currency and l.currency.value == "EUR") else v / 117.0
+    by_month: dict[str, list[float]] = {}
+    for l in rows:
+        by_month.setdefault(l.created_at.strftime("%Y-%m"), []).append(eur(l))
+    points = [{"month": m, "median": round(median(v)), "count": len(v)} for m, v in sorted(by_month.items())]
+    if len(rows) < 5:
+        return {"enough": False, "points": [], "count": len(rows)}
+    allp = sorted(eur(l) for l in rows)
+    return {"enough": True, "points": points, "count": len(rows), "median": round(median(allp)),
+            "low": round(allp[len(allp) // 4]), "high": round(allp[(len(allp) * 3) // 4]),
+            "this": round(eur(listing)) if listing.price is not None else None,
+            "scope": "model" if model and all(str((l.attributes or {}).get("model") or "").strip().lower() == model for l in rows) else ("brand" if brand else "category")}
+
+
 def _pins(db, owner_id) -> list:
     owner = db.query(User).get(owner_id)
     out = []

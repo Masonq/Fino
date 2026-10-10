@@ -2077,5 +2077,17 @@
     "share_btn": "Podeli",
     "tag_profile": "📌 Zakačeno na profil",
     "section": "Zakačeno od prodavca"
+  },
+  "market": {
+    "title": "Tržišna cena tokom godine",
+    "scope_model": "na osnovu {{count}} istih automobila",
+    "scope_brand": "na osnovu {{count}} automobila ove marke",
+    "scope_category": "na osnovu {{count}} automobila u kategoriji",
+    "usual": "Obično",
+    "median": "prosečno",
+    "below": "{{n}}% jeftinije od tržišta",
+    "above": "{{n}}% skuplje od tržišta",
+    "fair": "Cena u skladu sa tržištem",
+    "too_cheap": "{{n}}% ispod tržišta — sumnjivo jeftino: pitajte za stanje i papire, ne plaćajte unapred"
   }
 }
