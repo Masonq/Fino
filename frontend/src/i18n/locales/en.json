@@ -1518,9 +1518,10 @@
     "open_external": "Open on the map",
     "no_webgl": "This browser can’t show the map",
     "title": "Listings on the map",
-    "count": "{{count}} listings",
     "list": "List",
-    "on_map": "On the map"
+    "on_map": "On the map",
+    "count_one": "{{count}} listing",
+    "count_other": "{{count}} listings"
   },
   "landing_q": {
     "real-estate": "What property are you looking for?",
@@ -1977,12 +1978,12 @@
     "messages": "Messages",
     "messages_hint": "New messages and replies",
     "price_drop": "Price drops",
-    "price_drop_hint": "Something in your favourites got cheaper",
+    "price_drop_hint": "Something in your favorites got cheaper",
     "searches": "Saved searches",
     "searches_hint": "New listings for your search",
     "following": "Following",
     "following_hint": "News from sellers and shops you follow, comments on your shops",
     "digest": "Seller summary",
-    "digest_hint": "How your listings are doing: views, favourites"
+    "digest_hint": "How your listings are doing: views, favorites"
   }
 }

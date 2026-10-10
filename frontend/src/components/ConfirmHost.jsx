@@ -12,11 +12,12 @@ import { useTranslation } from 'react-i18next'
 export default function ConfirmHost() {
   const { t } = useTranslation()
   const [req, setReq] = useState(null)
+  const [value, setValue] = useState('')
   const [leaving, setLeaving] = useState(false)
   const okRef = useRef(null)
 
   useEffect(() => {
-    const onAsk = (e) => { setLeaving(false); setReq(e.detail) }
+    const onAsk = (e) => { setLeaving(false); setReq(e.detail); setValue(e.detail.value ?? '') }
     window.addEventListener('plonk:confirm', onAsk)
     window.__plonkConfirmReady = true
     return () => { window.removeEventListener('plonk:confirm', onAsk); window.__plonkConfirmReady = false }
@@ -24,7 +25,8 @@ export default function ConfirmHost() {
 
   const close = useCallback((answer) => {
     if (!req) return
-    req.resolve(answer)
+    // окно с полем ввода отдаёт введённый текст (или null при отмене), обычное — да / нет
+    req.resolve(req.input ? (answer ? value : null) : answer)
     setLeaving(true)
     setTimeout(() => { setReq(null); setLeaving(false) }, 220)
   }, [req])
@@ -46,6 +48,10 @@ export default function ConfirmHost() {
       <div className="cs-sheet" role="alertdialog" aria-modal="true" aria-labelledby="cs-title" aria-describedby={req.text ? 'cs-text' : undefined}>
         <span className="cs-handle" aria-hidden="true" />
         <h3 id="cs-title" className="cs-title">{req.title}</h3>
+        {req.input && (
+          <textarea className="cs-input" value={value} onChange={(e) => setValue(e.target.value)} rows={3} autoFocus
+            placeholder={req.placeholder || ''} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); close(true) } }} />
+        )}
         {req.text && <p id="cs-text" className="cs-text">{req.text}</p>}
         <button ref={okRef} type="button" className={req.danger ? 'cs-btn is-danger' : 'cs-btn is-primary'} onClick={() => close(true)}>
           {req.confirm || t('confirm.yes')}

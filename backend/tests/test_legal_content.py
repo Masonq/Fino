@@ -160,6 +160,11 @@ BACKEND_HOSTS = {
     "verification.didit.me": ("Didit",),
 
     "accounts.google.com": ("Google",),
+    "appleid.apple.com": ("Apple",),                       # «Войти с Apple»
+    "api.storekit.itunes.apple.com": ("App Store",),       # проверка покупок в приложении для iPhone
+    "api.storekit-sandbox.itunes.apple.com": ("App Store",),
+    "androidpublisher.googleapis.com": ("Google Play",),   # проверка покупок в приложении для Android
+    "oauth2.googleapis.com": ("Google Play",),
 }
 # Внешние ресурсы, которые подгружает браузер посетителя, — они в разделе про cookie.
 FRONT_HOSTS = {
@@ -192,6 +197,7 @@ def test_backend_does_not_talk_to_unlisted_services():
     known = set(BACKEND_HOSTS) | {
         "plonk.rs", "schema.org", "www.cbr.ru", "www.googleapis.com", "shop.rs",
         "api.frankfurter.app",      # курсы валют: персональных данных не получает
+        "github.com", "api.indexnow.org",   # сборки приложения и уведомление поисковиков об обновлении страниц — без данных пользователей
         "api.github.com",           # сервер скачивает сборки своего приложения; данных пользователей не передаёт
         "t.me",                     # только ссылки на Telegram, не запросы
     }

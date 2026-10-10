@@ -900,7 +900,7 @@ CATEGORY_PAGE = """<!DOCTYPE html>
 <meta property="og:description" content="{description}">
 <meta property="og:url" content="{url}">
 <meta property="og:locale" content="{og_locale}">
-<meta property="og:image" content="{site}/og-cover{'' if lang == 'ru' else '-' + lang}.png?v=3">
+<meta property="og:image" content="{og_cover}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
@@ -1069,7 +1069,7 @@ def _section_page(db: Session, request: Request, slug: str, lang: str, city: str
     # индекс не идут: это «тонкие» страницы.
     thin = total == 0 or (city is not None and total < MIN_CITY_LISTINGS)
 
-    return HTMLResponse(CATEGORY_PAGE.format(
+    return HTMLResponse(CATEGORY_PAGE.format(og_cover=f"{site}/og-cover{'' if lang == 'ru' else '-' + lang}.png?v=3", 
         lang=lang,
         site=site,
         alternates=_alternates_html(site, path, LANGS, query),

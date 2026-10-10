@@ -1,3 +1,4 @@
+import { confirmSheet } from '../utils/confirm'
 import { showIsland } from '../utils/island'
 import { useEffect, useState } from 'react'
 import Avatar from '../components/Avatar'
@@ -430,8 +431,8 @@ export default function EditProfile() {
 
       {/* удаление аккаунта — по просьбе самого человека (в приложении было, на сайте не было) */}
       <button type="button" className="edit-delete-account" onClick={async () => {
-        if (!window.confirm(t('profile.delete_confirm'))) return
-        try { await api.deleteMe(); signOut?.(); window.location.href = '/' } catch { window.alert(t('support.failed')) }
+        if (!(await confirmSheet({ title: t('profile.delete_confirm'), danger: true }))) return
+        try { await api.deleteMe(); signOut?.(); window.location.href = '/' } catch { confirmSheet({ title: t('support.failed'), confirm: 'OK' }) }
       }}>{t('profile.delete_account')}</button>
     </div>
   )

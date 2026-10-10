@@ -1,3 +1,4 @@
+import { promptSheet } from '../utils/confirm'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import Comments from '../components/ShopComments'
@@ -164,7 +165,7 @@ function Slide({ shop, index, active, near, muted, onActive }) {
     const url = `${window.location.origin}/shops?start=${shop.id}`
     const title = shop.caption || shop.items[0]?.title || 'PLONK'
     try { if (navigator.share) { await navigator.share({ title, url }); return } } catch { return }
-    try { await navigator.clipboard.writeText(url); toast(t('shops.link_copied')) } catch { window.prompt('', url) }
+    try { await navigator.clipboard.writeText(url); toast(t('shops.link_copied')) } catch { promptSheet({ title: t('shops.share'), value: url }) }
   }
 
   // просмотр — после 2 секунд на экране, досмотр — 90% ролика

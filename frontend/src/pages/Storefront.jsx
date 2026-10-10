@@ -1,3 +1,4 @@
+import { promptSheet } from '../utils/confirm'
 import { goBack } from '../utils/goBack'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -63,7 +64,7 @@ export default function Storefront() {
     try {
       if (navigator.share) { await navigator.share({ title, url }); return }
     } catch { return }
-    try { await navigator.clipboard.writeText(url); flash(t('sf.link_copied')) } catch { window.prompt(t('sf.copy_link'), url) }
+    try { await navigator.clipboard.writeText(url); flash(t('sf.link_copied')) } catch { promptSheet({ title: t('sf.copy_link'), value: url }) }
   }
   const sendReport = (reason) => {
     if (!user?.id) { navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`); return }

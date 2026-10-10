@@ -1,3 +1,4 @@
+import { confirmSheet } from '../utils/confirm'
 import EmptyArt from '../components/EmptyArt'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -164,7 +165,7 @@ export default function StorefrontManage() {
             })}
           </div>
           <div className="jr-actions">
-            {coll.id && <button type="button" className="jr-btn danger" onClick={() => { if (window.confirm(t('sf.confirm_delete_coll'))) run(api.sfDeleteCollection(coll.id, lang)).then((ok) => ok && setColl(null)) }}>{t('shops.remove')}</button>}
+            {coll.id && <button type="button" className="jr-btn danger" onClick={async () => { if (await confirmSheet({ title: t('sf.confirm_delete_coll'), danger: true })) run(api.sfDeleteCollection(coll.id, lang)).then((ok) => ok && setColl(null)) }}>{t('shops.remove')}</button>}
             <button type="button" className="jr-btn ghost" onClick={() => setColl(null)}>{t('jobresp.cancel')}</button>
             <button type="button" className="jr-btn primary" onClick={() => {
               const body = { title: coll.title, description: coll.description, status: coll.status, sort: coll.sort, listing_ids: coll.listing_ids, drop_at: coll.drop_at || null }

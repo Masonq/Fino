@@ -1562,9 +1562,12 @@
     "open_external": "Otvori na mapi",
     "no_webgl": "Ovaj pregledač ne prikazuje mapu",
     "title": "Oglasi na mapi",
-    "count": "{{count}} oglasa",
     "list": "Lista",
-    "on_map": "Na mapi"
+    "on_map": "Na mapi",
+    "count_one": "{{count}} oglas",
+    "count_few": "{{count}} oglasa",
+    "count_many": "{{count}} oglasa",
+    "count_other": "{{count}} oglasa"
   },
   "landing_q": {
     "real-estate": "Kakvu nekretninu tražite?",

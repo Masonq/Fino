@@ -540,7 +540,8 @@ def test_flagged_chats_have_their_own_screen():
     assert '"flagged_chats"' in api               # счётчик рядом с обращениями
     assert '"messages": [' in api                 # разговор целиком
     assert "chat.messages.map" in page
-    assert 'to="/admin/flagged"' in profile
+    hub = (Path(__file__).resolve().parents[2] / "frontend" / "src" / "pages" / "AdminHome.jsx").read_text()
+    assert 'to="/admin/flagged"' in profile or "'/admin/flagged'" in hub   # вход — с панели команды
 
 
 def test_cleared_flag_is_kept_not_erased():

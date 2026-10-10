@@ -1,3 +1,4 @@
+import { promptSheet, confirmSheet } from '../utils/confirm'
 import EmptyArt from '../components/EmptyArt'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
@@ -67,7 +68,7 @@ function MyShops({ data, reload }) {
         <div className="jr-actions">
           {s.status === 'active' && <Link className="jr-btn ghost sm" to={`/shops?start=${s.id}`}>{t('shops.watch')}</Link>}
           {s.status !== 'processing' && <Link className="jr-btn ghost sm" to={`/shops/${s.id}/edit`}>{t('shops.edit')}</Link>}
-          <button type="button" className="jr-btn danger sm" onClick={() => { if (window.confirm(t('shops.confirm_remove'))) api.shopRemove(s.id).then(reload) }}>{t('shops.remove')}</button>
+          <button type="button" className="jr-btn danger sm" onClick={async () => { if (await confirmSheet({ title: t('shops.confirm_remove'), danger: true })) api.shopRemove(s.id).then(reload) }}>{t('shops.remove')}</button>
         </div>
       </div>
     </div>
@@ -197,8 +198,8 @@ export function AdminShops() {
   const [q, setQ] = useState(null)
   const reload = () => api.shopAdminQueue().then(setQ).catch(() => setQ({ shops: [], creators: [] }))
   useEffect(() => { reload() }, [])
-  const decide = (fn, id, approve) => {
-    const reason = approve ? null : window.prompt(t('shops.reject_reason'))
+  const decide = async (fn, id, approve) => {
+    const reason = approve ? null : await promptSheet({ title: t('shops.reject_reason') })
     if (!approve && reason === null) return
     fn(id, { approve, reason }).then(reload)
   }

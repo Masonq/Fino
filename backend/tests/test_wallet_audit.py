@@ -226,7 +226,7 @@ def test_only_the_wallet_and_the_split_write_to_the_bonus_account():
 
 
 def test_gifts_are_granted_only_by_the_welcome_and_the_referral_functions():
-    assert set(_hits(r"\bgrant_bonus\(")) <= {"wallet.py", "welcome_bonus.py", "referrals.py"}
+    assert set(_hits(r"\bgrant_bonus\(")) <= {"wallet.py", "welcome_bonus.py", "referrals.py", "welcome_backfill.py"}  # + разовая довыдача подарка тем, кто его не получил
 
 
 def test_money_is_deposited_only_by_the_payment_webhook():

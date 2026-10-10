@@ -14,3 +14,11 @@ export function confirmSheet({ title, text = '', confirm = '', cancel = '', dang
     window.dispatchEvent(new CustomEvent('plonk:confirm', { detail: { title, text, confirm, cancel, danger, resolve } }))
   })
 }
+
+/** Своё окно с полем ввода вместо window.prompt: вернёт текст или null, если отменили. */
+export function promptSheet({ title, value = '', placeholder = '', confirm = '', cancel = '' }) {
+  if (!window.__plonkConfirmReady) return Promise.resolve(null)
+  return new Promise((resolve) => {
+    window.dispatchEvent(new CustomEvent('plonk:confirm', { detail: { title, value, placeholder, confirm, cancel, input: true, resolve } }))
+  })
+}

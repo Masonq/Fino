@@ -1,5 +1,5 @@
 import { goBack } from '../utils/goBack'
-import { confirmSheet } from '../utils/confirm'
+import { confirmSheet, promptSheet } from '../utils/confirm'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -745,9 +745,9 @@ export default function ChatScreen() {
                   )}
                   {/* своё текстовое сообщение можно исправить — в течение суток, у обоих с пометкой «изменено» */}
                   {menuFor.sender_id === myId && menuFor.kind === 'user' && menuFor.text && (Date.now() - new Date(menuFor.created_at).getTime() < 864e5) && (
-                    <button type="button" className="msg-menu-item" onClick={() => {
+                    <button type="button" className="msg-menu-item" onClick={async () => {
                       const m = menuFor; setMenuFor(null)
-                      const next = window.prompt(t('chat.edit_prompt'), m.text)
+                      const next = await promptSheet({ title: t('chat.edit_prompt'), value: m.text })
                       if (next == null || !next.trim() || next.trim() === m.text) return
                       setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, text: next.trim(), edited_at: new Date().toISOString() } : x)))
                       api.editMessage(id, m.id, next.trim()).catch(() => setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, text: m.text, edited_at: m.edited_at } : x))))
@@ -758,9 +758,9 @@ export default function ChatScreen() {
                   )}
                   {/* своё сообщение можно удалить — у обоих (раньше отправленное было не убрать) */}
                   {menuFor.sender_id === myId && (menuFor.kind === 'user' || menuFor.kind === 'voice') && (
-                    <button type="button" className="msg-menu-item danger" onClick={() => {
+                    <button type="button" className="msg-menu-item danger" onClick={async () => {
                       const m = menuFor; setMenuFor(null)
-                      if (!window.confirm(t('chat.delete_confirm'))) return
+                      if (!(await confirmSheet({ title: t('chat.delete_confirm'), danger: true }))) return
                       setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, kind: 'deleted', text: null, audio_url: null, reactions: null } : x)))
                       api.deleteMessage(id, m.id).catch(() => {})
                     }}>

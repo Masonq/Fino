@@ -9119,3 +9119,4 @@ html[data-theme="dark"] .notif-ico{ filter:brightness(.5) saturate(1.2); }
   a{ transition:background-color .15s ease, opacity .15s ease !important; }
   :where(.jl-tile, .cats-tile, .chip, .profile-row, .vol-tile, .sup-q):active{ transform:scale(.97) !important; }
 }
+.cs-input{ width:100%; box-sizing:border-box; margin:4px 0 12px; padding:12px 14px; border-radius:14px; border:0; background:var(--surface-sunken); font:inherit; font-size:16px; color:var(--ink); resize:none; outline:none; }

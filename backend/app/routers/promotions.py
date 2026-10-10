@@ -203,7 +203,7 @@ def start_promotion(
 
         if wallet._d(fresh.bonus_balance) < wallet._d(price):
             raise HTTPException(400, "insufficient_bonus")
-        fresh.bonus_balance = wallet._d(fresh.bonus_balance) - wallet._d(price)
+        wallet.charge(fresh, price)   # бонусов хватает — charge спишет только их (запись в счёт — только через кошелёк)
         promo = Promotion(listing_id=listing_id, user_id=user.id, type=payload.type,
                           status=PromotionStatus.pending, price_paid=price, currency="RSD")
         db.add(promo)
