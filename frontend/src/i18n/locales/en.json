@@ -2038,5 +2038,16 @@
     "legend_median": "median price",
     "legend_band": "typical range",
     "tap": "Tap a month"
+  },
+  "pets": {
+    "home": "Needs a home",
+    "title": "Needs a home",
+    "sub": "The owner is giving it to a loving home — for free",
+    "vaccinated": "Vaccinated",
+    "vaccinated_unknown": "Ask the owner about vaccinations",
+    "age": "Age",
+    "tip_meet": "Meet the animal in person, ideally more than once",
+    "tip_ask": "Ask about vaccinations, neutering, chip and temperament",
+    "tip_pay": "Never pay “for transport” or “for papers” — the most common scam"
   }
 }

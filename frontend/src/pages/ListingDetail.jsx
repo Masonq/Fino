@@ -1062,7 +1062,7 @@ export default function ListingDetail() {
           {listing.price != null
             ? formatPrice(listing.price, listing.currency, lang)
             : listing.is_free
-              ? <span className="price-free">{t('detail.free')}</span>
+              ? <span className="price-free">{/(^|\s)pets(-dogs|-cats|-birds|-other|-farm)?(\s|$)/.test(paths) && !/pets-supplies/.test(paths) && listing.attributes?.listing_kind !== 'supplies' ? t('pets.home') : t('detail.free')}</span>
               : t(isResume ? 'detail.no_salary' : 'detail.no_price')}
           {listing.previous_price && (
             <span className="price-old">
@@ -1206,6 +1206,19 @@ export default function ListingDetail() {
 
         {/* машины (65): цена на рынке за год — медиана таких же по месяцам и где на этой вилке эта машина */}
         {/(^|\s)(auto|cars|moto)(\s|$)/.test(paths) && listing.price != null && <MarketChart listingId={listing.id} />}
+        {/* пристрой животных (123): животное отдают даром — блок «Ищет дом» с тем, что известно, и памяткой для того, кто берёт */}
+        {/(^|\s)pets(-dogs|-cats|-birds|-other|-farm)?(\s|$)/.test(paths) && !/pets-supplies/.test(paths) && listing.is_free && listing.attributes?.listing_kind !== 'supplies' && (
+          <div className="pet-home">
+            <div className="pet-home-head"><span aria-hidden="true">🏠</span><div><b>{t('pets.title')}</b><span>{t('pets.sub')}</span></div></div>
+            <div className="pet-home-facts">
+              <span className={listing.attributes?.vaccinated ? 'yes' : 'unk'}>{listing.attributes?.vaccinated ? `✓ ${t('pets.vaccinated')}` : `? ${t('pets.vaccinated_unknown')}`}</span>
+              {listing.attributes?.age && <span className="yes">{t('pets.age')}: {listing.attributes.age}</span>}
+            </div>
+            <ul className="pet-home-tips">
+              <li>{t('pets.tip_meet')}</li><li>{t('pets.tip_ask')}</li><li>{t('pets.tip_pay')}</li>
+            </ul>
+          </div>
+        )}
         {/* благотворительность (102): продавец отметил «деньги идут на доброе дело» */}
         {listing?.attributes?.charity && (
           <div className="detail-charity"><span aria-hidden="true">💚</span><div><b>{t('extras.charity_title')}</b><span>{listing.attributes.charity_note || t('extras.charity_text')}</span></div></div>

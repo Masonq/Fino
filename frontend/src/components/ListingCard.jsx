@@ -176,7 +176,10 @@ export default function ListingCard({ listing, large = false, priority = false }
         {/* «Бесплатно» и «цена не указана» — разные вещи: мимо второго
             читатель проходит, а первое как раз и ищут. */}
         {listing.is_free
-          ? <span className="price-free">{t('detail.free')}</span>
+          // животное даром — не «бесплатно», а «ищет дом» (123): про животное, а не про вещь
+          ? <span className={`price-free${/^pets-(dogs|cats|birds|other|farm)$|^pets$/.test(listing.category_slug || '') && (listing.attributes?.listing_kind || 'animal') !== 'supplies' ? ' is-home' : ''}`}>
+              {/^pets-(dogs|cats|birds|other|farm)$|^pets$/.test(listing.category_slug || '') && (listing.attributes?.listing_kind || 'animal') !== 'supplies' ? t('pets.home') : t('detail.free')}
+            </span>
           : formatPrice(listing.price, listing.currency, i18n.language)
             || <span className="price-none">{t('detail.no_price')}</span>}
         {priceDirection && (

@@ -9213,3 +9213,15 @@ html[data-theme="dark"] .market-verdict.good{ background:#213A2C; color:#B8E6CC;
 .mk-legend span{ display:inline-flex; align-items:center; gap:6px; }
 .mk-legend i{ display:inline-block; width:16px; height:3px; border-radius:2px; }
 .lg-line{ background:#0FA36A; } .lg-band{ height:10px !important; background:rgba(15,163,106,.15); } .lg-this{ background:repeating-linear-gradient(90deg,#E5533D 0 5px,transparent 5px 9px); }
+/* ===== Пристрой животных ===== */
+.price-free.is-home{ background:#FFE8DD !important; color:#9A3412 !important; }
+html[data-theme="dark"] .price-free.is-home{ background:#43301F !important; color:#FFC9A8 !important; }
+.pet-home{ margin:10px 0 0; padding:16px; border-radius:22px; background:#FFF4EC; display:flex; flex-direction:column; gap:10px; }
+html[data-theme="dark"] .pet-home{ background:#3A2A1E; }
+.pet-home-head{ display:flex; gap:12px; align-items:center; } .pet-home-head > span{ font-size:26px; }
+.pet-home-head b{ display:block; font-size:17px; font-weight:800; } .pet-home-head div span{ font-size:13.5px; color:var(--ink-soft); }
+.pet-home-facts{ display:flex; flex-wrap:wrap; gap:6px; }
+.pet-home-facts span{ padding:5px 10px; border-radius:12px; font-size:13px; font-weight:700; background:var(--surface); }
+.pet-home-facts .yes{ color:#085041; } .pet-home-facts .unk{ color:var(--muted); }
+.pet-home-tips{ margin:0; padding-left:18px; display:flex; flex-direction:column; gap:4px; font-size:13.5px; line-height:1.4; color:var(--ink-soft); }
+.s-card .price-free.is-home{ display:inline-flex; align-items:center; padding:3px 10px; border-radius:10px; font-size:14px; line-height:1.3; }

@@ -2093,5 +2093,16 @@
     "legend_median": "prosečna cena",
     "legend_band": "uobičajena cena",
     "tap": "Dodirnite mesec"
+  },
+  "pets": {
+    "home": "Traži dom",
+    "title": "Traži dom",
+    "sub": "Vlasnik ga poklanja u dobre ruke — besplatno",
+    "vaccinated": "Vakcinisan",
+    "vaccinated_unknown": "Pitajte vlasnika o vakcinama",
+    "age": "Uzrast",
+    "tip_meet": "Upoznajte životinju uživo, najbolje više puta",
+    "tip_ask": "Pitajte za vakcine, sterilizaciju, čip i narav",
+    "tip_pay": "Ne plaćajte „za prevoz” ili „za papire” — najčešća prevara"
   }
 }
