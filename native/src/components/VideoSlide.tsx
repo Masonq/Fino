@@ -1,6 +1,7 @@
 import { useVideoPlayer, VideoView } from 'expo-video'
 import { useEffect, useState } from 'react'
-import { Pressable, StyleSheet, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
+import Pressable from './Pressable'
 
 import { tr } from '../i18n'
 import Icon from './Icon'

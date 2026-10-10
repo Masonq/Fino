@@ -1,6 +1,7 @@
 import { tr } from '../i18n'
 import { useEffect, useState } from 'react'
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { ActivityIndicator, StyleSheet, Text, TextInput, View } from 'react-native'
+import Pressable from './Pressable'
 
 import { ApiError, type ReportReason, sendReport } from '../api'
 import { colors, font } from '../theme'

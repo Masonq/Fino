@@ -4,7 +4,8 @@
  * верхняя часть (полоска и заголовок), поэтому листание и смахивание не мешают друг другу.
  */
 import { type ReactNode, useEffect, useRef } from 'react'
-import { Animated, Dimensions, Modal, PanResponder, Pressable, StyleSheet, View } from 'react-native'
+import { Animated, Dimensions, Modal, PanResponder, StyleSheet, View } from 'react-native'
+import Pressable from './Pressable'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { colors } from '../theme'
 
@@ -45,7 +46,7 @@ export default function BottomSheet({ visible, onClose, header, children }: {
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={close} statusBarTranslucent>
       <Animated.View style={[StyleSheet.absoluteFill, st.back, { opacity: fade }]}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={close} accessibilityLabel="Закрыть" />
+        <Pressable scale={1} style={StyleSheet.absoluteFill} onPress={close} accessibilityLabel="Закрыть" />
       </Animated.View>
       <Animated.View style={[st.sheet, { paddingBottom: Math.max(insets.bottom, 16), transform: [{ translateY: y }] }]}>
         <View {...pan.panHandlers} style={st.grabZone}>

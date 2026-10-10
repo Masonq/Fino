@@ -1,6 +1,7 @@
 import { router } from 'expo-router'
 import { useEffect, useState } from 'react'
-import { Pressable, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
+import Pressable from '../../src/components/Pressable'
 import { type TeamChat, teamChats } from '../../src/admin'
 import { useAuth } from '../../src/auth'
 import { timeAgo } from '../../src/format'

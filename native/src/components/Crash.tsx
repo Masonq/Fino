@@ -1,7 +1,8 @@
 import { font, colors } from '../theme'
 import * as Updates from 'expo-updates'
 import { Component, type ReactNode, useEffect, useState } from 'react'
-import { DevSettings, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { DevSettings, ScrollView, StyleSheet, Text, View } from 'react-native'
+import Pressable from './Pressable'
 
 /**
  * Вместо молчаливого закрытия приложения — экран с текстом ошибки и «Перезапустить»: по скриншоту видно

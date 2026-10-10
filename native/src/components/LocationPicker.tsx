@@ -1,6 +1,7 @@
 import * as Location from 'expo-location'
 import { useEffect, useRef, useState } from 'react'
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { ActivityIndicator, StyleSheet, Text, TextInput, View } from 'react-native'
+import Pressable from './Pressable'
 
 import { getLang, tr } from '../i18n'
 import { colors, font } from '../theme'

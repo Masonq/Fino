@@ -1,6 +1,9 @@
+import { mediaUrl } from '../../../src/config'
+import { Image } from 'expo-image'
 import { router } from 'expo-router'
 import { useEffect, useState } from 'react'
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { FlatList, StyleSheet, Text, TextInput, View } from 'react-native'
+import Pressable from '../../../src/components/Pressable'
 import { type AdminUser, adminUsers, usersOverview } from '../../../src/admin'
 import { TINTS } from '../../../src/tints'
 import { useAuth } from '../../../src/auth'
@@ -53,7 +56,7 @@ export default function Users() {
           contentContainerStyle={{ padding: 16, paddingTop: 4, gap: 8, paddingBottom: 60 }}
           renderItem={({ item: u }) => (
             <Pressable style={st.row} onPress={() => router.push(`/admin/users/${u.id}` as never)}>
-              <View style={st.ava}><Text style={st.avaT}>{(u.display_name || u.email || '?').slice(0, 1).toUpperCase()}</Text></View>
+              <View style={[st.ava, { overflow: 'hidden' }]}>{u.avatar_url ? <Image source={{ uri: mediaUrl(u.avatar_url) ?? undefined }} style={StyleSheet.absoluteFill} contentFit="cover" /> : <Text style={st.avaT}>{(u.display_name || u.email || '?').slice(0, 1).toUpperCase()}</Text>}</View>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <Text style={st.name} numberOfLines={1}>{u.company_name || u.display_name || '—'}</Text>

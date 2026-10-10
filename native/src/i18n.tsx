@@ -37,6 +37,7 @@ export function LangProvider({ children }: { children: (lang: Lang) => ReactNode
     })
   }, [])
   const setLang = useCallback((l: Lang, back: string = '/profile') => {
+    langChangedAt = Date.now()   // заголовки после смены языка проявляются волной (LangText)
     current = l
     setLangState(l)
     prefs.set('plonk_lang', l)
@@ -49,6 +50,8 @@ export function LangProvider({ children }: { children: (lang: Lang) => ReactNode
 }
 
 export const useLang = () => useContext(LangCtx)
+/** Когда язык меняли в последний раз — экраны пересоздаются, и LangText по этому времени понимает, что надо сыграть переход. */
+export let langChangedAt = 0
 
 /** Склонение по числу: ru — 1 объявление / 2 объявления / 5 объявлений; sr — 1 oglas / 2 oglasa / 5 oglasa; en — 1 / many. */
 export function plural(n: number, forms: Record<Lang, string[]>): string {

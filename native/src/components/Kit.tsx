@@ -1,11 +1,13 @@
 import EmptyArt, { type EmptyArtName } from './EmptyArt'
 import { router } from 'expo-router'
 import type { ReactNode } from 'react'
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, type TextInputProps, View, Animated } from 'react-native'
+import { ActivityIndicator, StyleSheet, Text, TextInput, type TextInputProps, View, Animated } from 'react-native'
+import Pressable from './Pressable'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { tr } from '../i18n'
 import { usePressScale } from '../motion'
+import LangText from './LangText'
 import { colors, font } from '../theme'
 import Icon from './Icon'
 
@@ -20,8 +22,8 @@ export function Header({ title, right, fallback = '/profile', kicker, bleed = 0,
         <Icon name="back" size={21} color={colors.ink} />
       </Pressable>
       <View style={{ flex: 1, minWidth: 0 }}>
-        {!!kicker && <Text style={k.kicker} numberOfLines={1}>{kicker}</Text>}
-        <Text style={[k.title, title.length > 19 && { fontSize: 22 }]} numberOfLines={1} adjustsFontSizeToFit>{title}</Text>
+        {!!kicker && <LangText mode="scramble" style={k.kicker} numberOfLines={1}>{String(kicker)}</LangText>}
+        <LangText style={[k.title, title.length > 19 && { fontSize: 22 }]} numberOfLines={1}>{title}</LangText>
       </View>
       {right}
     </View>
@@ -33,7 +35,7 @@ export function Btn({ label, onPress, kind = 'primary', small, wide, disabled, b
   const press = usePressScale(0.96)   // нажатие утапливает, отпускание пружинит (как на сайте)
   return (
     <Animated.View style={[press.style, wide && { alignSelf: 'stretch' }]}>
-    <Pressable onPress={onPress} disabled={disabled || busy} accessibilityRole="button" onPressIn={press.onPressIn} onPressOut={press.onPressOut}
+    <Pressable scale={1} onPress={onPress} disabled={disabled || busy} accessibilityRole="button" onPressIn={press.onPressIn} onPressOut={press.onPressOut}
       style={[k.btn, small && k.btnSm, wide && k.btnWide, k[kind], (disabled || busy) && { opacity: 0.55 }]}>
       {busy ? <ActivityIndicator color={kind === 'primary' ? colors.onInverse : colors.primary} /> : (
         <Text style={[k.btnText, small && k.btnTextSm, { color: kind === 'primary' ? colors.onInverse : kind === 'danger' ? '#C93C3C' : colors.ink }]}>{label}</Text>

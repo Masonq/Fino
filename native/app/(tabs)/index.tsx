@@ -5,8 +5,8 @@ import { API } from '../../src/config'
 import { tr, getLang } from '../../src/i18n'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import {
-  ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, useWindowDimensions, View, ScrollView, Keyboard, LayoutAnimation } from 'react-native'
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, TextInput, useWindowDimensions, View, ScrollView, Keyboard, LayoutAnimation } from 'react-native'
+import Pressable from '../../src/components/Pressable'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { fetchFeed, type FeedItem, type FeedTab, type Filters, saveSearch } from '../../src/api'
@@ -22,6 +22,7 @@ import Skeleton from '../../src/components/Skeleton'
 import { useTabInset } from '../../src/tabInset'
 import HomeSections from '../../src/components/HomeSections'
 import { markHomeReady } from '../../src/ready'
+import LangText from '../../src/components/LangText'
 import { cityName } from '../../src/format'
 import { prefs } from '../../src/prefs'
 import * as Location from 'expo-location'
@@ -316,8 +317,8 @@ export default function Feed() {
       {!focused && !query && (
         <View style={styles.helloRow}>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={styles.hello1} numberOfLines={1}>{greeting()}{user?.display_name ? `, ${user.display_name.split(' ')[0]}` : ''}</Text>
-            <Text style={styles.hello2} numberOfLines={1} adjustsFontSizeToFit>{tr('Что ищем сегодня?')}</Text>
+            <LangText mode="scramble" style={styles.hello1} numberOfLines={1}>{`${greeting()}${user?.display_name ? `, ${user.display_name.split(' ')[0]}` : ''}`}</LangText>
+            <LangText style={styles.hello2} numberOfLines={1}>{tr('Что ищем сегодня?')}</LangText>
           </View>
           <Pressable style={styles.cityPill} onPress={() => setCityOpen(true)} accessibilityRole="button"
             accessibilityLabel={`${tr('Выбрать город')}: ${city ? cityName(city) : tr('Все города')}`}>

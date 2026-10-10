@@ -1,6 +1,7 @@
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native'
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native'
+import Pressable from '../src/components/Pressable'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { authed, volunteerApply, type VolunteerApp, volunteerMine } from '../src/api'

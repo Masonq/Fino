@@ -1,6 +1,7 @@
 import { Image } from 'expo-image'
 import type { ComponentType } from 'react'
-import { Modal, Pressable, StyleSheet, View } from 'react-native'
+import { Modal, StyleSheet, View } from 'react-native'
+import Pressable from './Pressable'
 
 /** Только веб-превью: у react-native-image-viewing нет браузерной версии — простой просмотр без увеличения. */
 type Props = {

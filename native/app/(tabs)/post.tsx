@@ -6,9 +6,8 @@ import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
-import {
-  ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View,
-} from 'react-native'
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native'
+import Pressable from '../../src/components/Pressable'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { ApiError, type Category, createListing, fetchCategories, type Uploaded, uploadPhoto, type AttrField, categorySchema, uploadVideo } from '../../src/api'

@@ -5,8 +5,8 @@ import { Image } from 'expo-image'
 import * as Linking from 'expo-linking'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useState, useRef } from 'react'
-import {
-  Alert, FlatList, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, Share, StyleSheet, Text, useWindowDimensions, View, Modal } from 'react-native'
+import { Alert, FlatList, NativeScrollEvent, NativeSyntheticEvent, ScrollView, Share, StyleSheet, Text, useWindowDimensions, View, Modal } from 'react-native'
+import Pressable from '../../src/components/Pressable'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { JobRespond, StorefrontLink } from '../../src/components/ListingExtras'

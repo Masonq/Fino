@@ -5,7 +5,8 @@
  */
 import * as Haptics from 'expo-haptics'
 import { type ReactNode, useRef } from 'react'
-import { Animated, Dimensions, PanResponder, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Animated, Dimensions, PanResponder, StyleSheet, Text, View } from 'react-native'
+import Pressable from './Pressable'
 import { font } from '../theme'
 
 export type SwipeAction = { label: string; color: string; onPress: () => void }

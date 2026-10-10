@@ -3,7 +3,8 @@
  * потом звёзды и необязательный комментарий; «Не сейчас» прячет приглашение.
  */
 import { useState } from 'react'
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { ActivityIndicator, StyleSheet, Text, TextInput, View } from 'react-native'
+import Pressable from './Pressable'
 import { authed, createReview } from '../api'
 import { tr } from '../i18n'
 import { colors, font } from '../theme'

@@ -4,9 +4,8 @@ import { Ionicons } from '@expo/vector-icons'
 import { router, useFocusEffect } from 'expo-router'
 import Icon from '../src/components/Icon'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import {
-  FlatList, LayoutAnimation, ScrollView, Platform, Pressable, RefreshControl, StyleSheet, Text, UIManager, useWindowDimensions, View,
-} from 'react-native'
+import { FlatList, LayoutAnimation, ScrollView, Platform, RefreshControl, StyleSheet, Text, UIManager, useWindowDimensions, View } from 'react-native'
+import Pressable from '../src/components/Pressable'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { favoriteList, type FeedItem } from '../src/api'

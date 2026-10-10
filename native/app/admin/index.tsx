@@ -1,6 +1,7 @@
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
-import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native'
+import Pressable from '../../src/components/Pressable'
 import { counters, type Counters, daily, stats } from '../../src/admin'
 import { useAuth } from '../../src/auth'
 import { SITE } from '../../src/config'

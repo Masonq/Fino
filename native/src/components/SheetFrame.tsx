@@ -1,5 +1,6 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react'
-import { Animated, Easing, KeyboardAvoidingView, Modal, PanResponder, Platform, Pressable, StyleSheet } from 'react-native'
+import { Animated, Easing, KeyboardAvoidingView, Modal, PanResponder, Platform, StyleSheet } from 'react-native'
+import Pressable from './Pressable'
 
 import { tr } from '../i18n'
 

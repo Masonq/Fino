@@ -1,7 +1,8 @@
 import { Image } from 'expo-image'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useMemo, useState } from 'react'
-import { ActivityIndicator, FlatList, Modal, Pressable, ScrollView, Share, StyleSheet, Text, useWindowDimensions, View } from 'react-native'
+import { ActivityIndicator, FlatList, Modal, ScrollView, Share, StyleSheet, Text, useWindowDimensions, View } from 'react-native'
+import Pressable from '../../../src/components/Pressable'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { useAuth } from '../../../src/auth'

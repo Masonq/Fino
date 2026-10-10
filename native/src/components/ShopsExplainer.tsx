@@ -1,6 +1,7 @@
 import type React from 'react'
 import { router } from 'expo-router'
-import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
+import Pressable from './Pressable'
 import Svg, { Circle, Path, Rect } from 'react-native-svg'
 
 import { tr } from '../i18n'

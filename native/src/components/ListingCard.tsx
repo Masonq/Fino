@@ -7,7 +7,8 @@ import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import { router } from 'expo-router'
 import { memo, useState } from 'react'
-import { ActionSheetIOS, Alert, FlatList, NativeScrollEvent, NativeSyntheticEvent, Platform, Pressable, Share, StyleSheet, Text, View, Animated } from 'react-native'
+import { ActionSheetIOS, Alert, FlatList, NativeScrollEvent, NativeSyntheticEvent, Platform, Share, StyleSheet, Text, View, Animated } from 'react-native'
+import Pressable from './Pressable'
 
 import { type FeedItem, prefetchListing } from '../api'
 import { seedListing } from '../seed'
@@ -57,7 +58,7 @@ function ListingCard({ item, width, large = false }: { item: FeedItem; width: nu
 
   return (
     <Animated.View style={[appear, press.style]}>
-    <Pressable onPress={open} onPressIn={() => { warm(); press.onPressIn() }} onPressOut={press.onPressOut} onLongPress={menu} delayLongPress={450} style={[styles.card, { width }, large && { borderRadius: 18 }, item.is_highlighted && styles.highlighted]}
+    <Pressable scale={1} onPress={open} onPressIn={() => { warm(); press.onPressIn() }} onPressOut={press.onPressOut} onLongPress={menu} delayLongPress={450} style={[styles.card, { width }, large && { borderRadius: 18 }, item.is_highlighted && styles.highlighted]}
       accessibilityRole="button" accessibilityLabel={`${item.title}, ${formatPrice(item.price, item.currency, item.is_free)}`}>
       <View style={[styles.photoBox, { height: photoH }]}>
         {list.length > 1 ? (

@@ -1,10 +1,13 @@
+import { mediaUrl } from '../../../src/config'
+import { Image } from 'expo-image'
 import { router } from 'expo-router'
 import { formatPrice } from '../../../src/format'
 import Segmented from '../../../src/components/Segmented'
 import { useLocalSearchParams } from 'expo-router'
 import * as Linking from 'expo-linking'
 import { useEffect, useState } from 'react'
-import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native'
+import { Alert, ScrollView, StyleSheet, Switch, Text, View } from 'react-native'
+import Pressable from '../../../src/components/Pressable'
 import { type AuditItem, adminDeleteUser, adminUserAudit, adminUserListings, type UserListing, adminBlock, adminResetName, adminSetRole, adminUnblock, type AdminUser, adminUser, adminUserLogins, adminUserSummary, adminVerify, type Login, type UserSummary } from '../../../src/admin'
 import { useAuth } from '../../../src/auth'
 import { timeAgo } from '../../../src/format'
@@ -49,7 +52,7 @@ export default function UserScreen() {
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 60, gap: 12 }}>
         <Header bleed={16} bleedTop={16} title={tr('Пользователь')} fallback="/admin/users" />
         <View style={st.card}>
-          <View style={st.ava}><Text style={st.avaT}>{name.slice(0, 1).toUpperCase()}</Text></View>
+          <View style={[st.ava, { overflow: 'hidden' }]}>{u.avatar_url ? <Image source={{ uri: mediaUrl(u.avatar_url) ?? undefined }} style={StyleSheet.absoluteFill} contentFit="cover" /> : <Text style={st.avaT}>{name.slice(0, 1).toUpperCase()}</Text>}</View>
           <Text style={st.name}>{name}</Text>
           <View style={st.badges}>
             <Text style={st.badge}>{tr(ROLE[u.role] || u.role)}</Text>

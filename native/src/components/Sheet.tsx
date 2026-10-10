@@ -1,7 +1,8 @@
 import SheetFrame from './SheetFrame'
 import { tr } from '../i18n'
 import type { ReactNode } from 'react'
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Platform, StyleSheet, Text, View } from 'react-native'
+import Pressable from './Pressable'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { colors, font } from '../theme'

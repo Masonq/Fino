@@ -1,9 +1,8 @@
 import { tr } from '../src/i18n'
 import { router } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
-import {
-  ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View,
-} from 'react-native'
+import { ActivityIndicator, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native'
+import Pressable from '../src/components/Pressable'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { ApiError, requestCode, verifyCode } from '../src/api'

@@ -5,10 +5,8 @@ import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
-import {
-  ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View,
-  ActionSheetIOS as _ASheet, Switch as _Switch,
-} from 'react-native'
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Switch, Text, TextInput, View, ActionSheetIOS as _ASheet, Switch as _Switch } from 'react-native'
+import Pressable from '../../src/components/Pressable'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import {

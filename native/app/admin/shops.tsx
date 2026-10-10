@@ -1,6 +1,7 @@
 import { Image } from 'expo-image'
 import { useEffect, useState } from 'react'
-import { Pressable, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
+import Pressable from '../../src/components/Pressable'
 import { creatorDecide, shopDecide, shopQueue, type ShopQ } from '../../src/admin'
 import { useAuth } from '../../src/auth'
 import { SITE } from '../../src/config'

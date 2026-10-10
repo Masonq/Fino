@@ -1,7 +1,8 @@
 import { Image } from 'expo-image'
 import { router } from 'expo-router'
 import { useEffect, useState } from 'react'
-import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, View } from 'react-native'
+import Pressable from './Pressable'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { myListings, type MyListing } from '../api'

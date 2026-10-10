@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import Pressable from '../../src/components/Pressable'
 import { supportAnswer, supportClose, supportQueue, supportTicket, type Ticket } from '../../src/admin'
 import { useAuth } from '../../src/auth'
 import { tr } from '../../src/i18n'

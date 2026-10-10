@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text } from 'react-native'
+import { StyleSheet, Text } from 'react-native'
+import Pressable from './Pressable'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { tr } from '../i18n'

@@ -5,8 +5,8 @@ import { tr } from '../../src/i18n'
 import { Image } from 'expo-image'
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import {
-  ActivityIndicator, Alert, AppState, FlatList, Modal, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View, Linking, ScrollView } from 'react-native'
+import { ActivityIndicator, Alert, AppState, FlatList, Modal, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View, Linking, ScrollView } from 'react-native'
+import Pressable from '../../src/components/Pressable'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { allowCall, blockChat, cancelReservation, type Chat, chatInfo, chatMessages, chatWsUrl, declineCall, markChatRead, type Message, requestCall, reserveListing, respondOffer, revokeCall, sendMessage, sendOffer, isOffer, reactMessage, translateMessage, deleteMessage, editMessage } from '../../src/api'

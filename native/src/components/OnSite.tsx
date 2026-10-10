@@ -1,7 +1,8 @@
 import { tr } from '../i18n'
 import { Ionicons } from '@expo/vector-icons'
 import * as Linking from 'expo-linking'
-import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
+import Pressable from './Pressable'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { SITE } from '../config'

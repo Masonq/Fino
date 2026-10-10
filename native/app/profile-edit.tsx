@@ -3,7 +3,8 @@ import * as ImagePicker from 'expo-image-picker'
 import * as Linking from 'expo-linking'
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import Pressable from '../src/components/Pressable'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import {

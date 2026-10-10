@@ -6,7 +6,8 @@
  * Отдельный файл, подключается только на телефоне: в веб-сборке модуля магазина нет.
  */
 import { useEffect, useState } from 'react'
-import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, Platform, StyleSheet, Text, View } from 'react-native'
+import Pressable from './Pressable'
 import { useIAP } from 'expo-iap'
 import { IAP_SKU, iapVerify, type PromoInfo, startPromotion } from '../api'
 import { tr } from '../i18n'

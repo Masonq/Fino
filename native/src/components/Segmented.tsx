@@ -1,6 +1,7 @@
 import { select } from '../haptics'
 import { useEffect, useRef, useState } from 'react'
-import { Animated, LayoutChangeEvent, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Animated, LayoutChangeEvent, StyleSheet, Text, View } from 'react-native'
+import Pressable from './Pressable'
 
 import { tr } from '../i18n'
 import { colors, font } from '../theme'

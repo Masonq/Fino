@@ -1,6 +1,7 @@
 import { router } from 'expo-router'
 import { useEffect, useState } from 'react'
-import { Pressable, Text } from 'react-native'
+import { Text } from 'react-native'
+import Pressable from '../../src/components/Pressable'
 import { type Alert, adminAlerts } from '../../src/admin'
 import { useAuth } from '../../src/auth'
 import { tr } from '../../src/i18n'

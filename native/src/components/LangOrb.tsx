@@ -3,7 +3,8 @@
  * (SR → RU → EN → SR) и меняет язык. Кружок с кольцом убран по решению владельца.
  */
 import { useRef, useState } from 'react'
-import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Animated, Easing, StyleSheet, Text, View } from 'react-native'
+import Pressable from './Pressable'
 import { select } from '../haptics'
 import { useLang } from '../i18n'
 import { colors, font } from '../theme'

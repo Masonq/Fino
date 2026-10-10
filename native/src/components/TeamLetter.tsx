@@ -1,6 +1,7 @@
 import { router } from 'expo-router'
 import type { ReactElement } from 'react'
-import { Linking, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Linking, StyleSheet, Text, View } from 'react-native'
+import Pressable from './Pressable'
 
 import { colors, font } from '../theme'
 

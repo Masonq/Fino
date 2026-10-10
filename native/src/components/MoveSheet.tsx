@@ -1,7 +1,8 @@
 import SheetFrame from './SheetFrame'
 /** «Перенести в раздел» для сотрудников — как на сайте: поиск по всем разделам с путём, список листается. */
 import { useEffect, useMemo, useState } from 'react'
-import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { FlatList, Modal, StyleSheet, Text, TextInput, View } from 'react-native'
+import Pressable from './Pressable'
 import { type Category, fetchCategories } from '../api'
 import { modMove } from '../admin'
 import { getLang, tr } from '../i18n'

@@ -4,7 +4,8 @@ import { Image } from 'expo-image'
 import { router } from 'expo-router'
 import { useVideoPlayer, VideoView } from 'expo-video'
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
-import { ActivityIndicator, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Share, StatusBar, StyleSheet, Text, TextInput, useWindowDimensions, View, type ViewToken } from 'react-native'
+import { ActivityIndicator, FlatList, KeyboardAvoidingView, Modal, Platform, ScrollView, Share, StatusBar, StyleSheet, Text, TextInput, useWindowDimensions, View, type ViewToken } from 'react-native'
+import Pressable from './Pressable'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { startChat, subscribeSeller } from '../api'
@@ -199,7 +200,7 @@ const Slide = memo(function Slide({ shop, active, near, muted, width, height, bo
   return (
     <View style={{ width, height, backgroundColor: '#000' }}>
       {!!shop.poster_url && <Image source={{ uri: mediaUrl(shop.poster_url) ?? undefined }} style={StyleSheet.absoluteFill} contentFit="cover" />}
-      <Pressable style={StyleSheet.absoluteFill} onPress={onTap} accessibilityLabel={tr(paused ? 'Смотреть' : 'Пауза')}>
+      <Pressable scale={1} style={StyleSheet.absoluteFill} onPress={onTap} accessibilityLabel={tr(paused ? 'Смотреть' : 'Пауза')}>
         <VideoView player={player} style={StyleSheet.absoluteFill} contentFit="cover" nativeControls={false} allowsPictureInPicture={false} allowsVideoFrameAnalysis={false} />
       </Pressable>
       {paused && <View pointerEvents="none" style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}><Icon name="play" size={56} color="rgba(255,255,255,0.9)" filled /></View>}

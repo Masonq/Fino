@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { router, useLocalSearchParams } from 'expo-router'
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import Pressable from '../../src/components/Pressable'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import Icon from '../../src/components/Icon'

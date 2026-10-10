@@ -9104,3 +9104,11 @@ html[data-theme="dark"] .notif-ico{ filter:brightness(.5) saturate(1.2); }
 .landing:not(.lp-pending) .landing-body{ animation:ui-fade-in .25s ease; }
 /* «Поднять просмотры» в «Моих объявлениях» — мятной, как в приложении (главное действие, было серым как остальные) */
 .my-promote-slot button, .my-promote-slot .promote-btn{ background:var(--inverse) !important; color:var(--on-inverse) !important; border:0 !important; }
+
+/* Нажатие и свайп фото в карточке: утапливание карточки (transform на её ссылке) во время касания ломало
+   горизонтальную прокрутку фотографий на телефоне — Safari бросал жест. На телефоне карточки и ссылки с
+   галереей внутри не утапливаются; утапливание остаётся у кнопок, чипов, плиток и на компьютере. */
+@media (hover: none){
+  .s-card, .s-card *, a:has(.s-gallery, .s-photos, [class*="gallery"], [class*="carousel"]){ transition:none !important; }
+  .s-card:active, .s-card a:active, .s-card :active, a:has(.s-gallery, .s-photos, [class*="gallery"], [class*="carousel"]):active{ transform:none !important; }
+}
