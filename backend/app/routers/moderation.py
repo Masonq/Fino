@@ -335,6 +335,46 @@ def move_to_category(
     return {"status": "ok", "moved": True, "category": target.slug}
 
 
+class PriceIn(BaseModel):
+    price: float | None = None
+    currency: str = "EUR"
+    is_free: bool = False
+
+
+@router.post("/{listing_id}/price")
+def fix_price(
+    listing_id: uuid.UUID,
+    payload: PriceIn,
+    moderator: User = Depends(require_moderator),
+    db: Session = Depends(get_db),
+):
+    """
+    Исправляет цену объявления командой. Объявления из Telegram приезжают с ценой, разобранной из текста, и разбор
+    ошибается: «18 000 €» за Jeep превращается в «18 000 RSD», «договорная» — в число из телефона. Меняем только цену,
+    валюту и «Бесплатно»; остальное (заголовок, фото, автор, переписка) — как было; в журнале — было / стало.
+    """
+    from app.models.listing import Currency
+
+    listing = db.query(Listing).get(listing_id)
+    if not listing:
+        raise HTTPException(404, "not_found")
+    cur = (payload.currency or "EUR").upper()
+    if cur not in ("RSD", "EUR"):
+        raise HTTPException(400, "bad_currency")
+    currency = Currency(cur)
+    if not payload.is_free and (payload.price is None or payload.price <= 0 or payload.price > 1e10):
+        raise HTTPException(400, "bad_price")
+    was = f"{listing.price} {listing.currency.value if listing.currency else ''}{' free' if listing.is_free else ''}"
+    listing.is_free = bool(payload.is_free)
+    listing.price = None if payload.is_free else payload.price
+    listing.currency = currency
+    record(db, moderator, "listing.price", target_type="listing", target_id=listing.id, owner=str(listing.owner_id),
+           was=was, now=f"{listing.price} {currency.value}{' free' if listing.is_free else ''}")
+    db.commit()
+    return {"status": "ok", "price": float(listing.price) if listing.price is not None else None,
+            "currency": currency.value, "is_free": listing.is_free}
+
+
 @router.post("/{listing_id}/approve")
 def approve(
     listing_id: uuid.UUID,

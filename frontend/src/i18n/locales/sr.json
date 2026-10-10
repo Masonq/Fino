@@ -550,7 +550,8 @@
     "picked_other": "{{count}} označenih",
     "duplicate_hint": "Liči na duplikat: prodavac već ima ovo aktivno",
     "kicker_n": "{{count}} čeka proveru",
-    "kicker_empty": "Red je prazan"
+    "kicker_empty": "Red je prazan",
+    "fix_price": "Ispravi cenu"
   },
   "rev": {
     "title": "Recenzije",

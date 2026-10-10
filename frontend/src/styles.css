@@ -9127,3 +9127,4 @@ html[data-theme="dark"] .notif-ico{ filter:brightness(.5) saturate(1.2); }
 .feed-tabs-pill{ transition:transform .38s cubic-bezier(.3,1.35,.5,1), width .38s cubic-bezier(.3,1.35,.5,1); }
 .home{ overflow-x:clip; }
 .badge-fresh{ border-radius:999px; }   /* метка «Новое» — капсулой с точкой, как на скриншотах */
+.price-fix{ display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; margin-left:8px; vertical-align:middle; border:0; border-radius:50%; background:var(--surface-sunken); color:var(--ink-soft); cursor:pointer; }

@@ -5,7 +5,7 @@ import { Image } from 'expo-image'
 import * as Linking from 'expo-linking'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useState, useRef } from 'react'
-import { Alert, FlatList, NativeScrollEvent, NativeSyntheticEvent, ScrollView, Share, StyleSheet, Text, useWindowDimensions, View, Modal } from 'react-native'
+import { Alert, FlatList, Platform, NativeScrollEvent, NativeSyntheticEvent, ScrollView, Share, StyleSheet, Text, useWindowDimensions, View, Modal } from 'react-native'
 import Pressable from '../../src/components/Pressable'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -13,7 +13,7 @@ import { JobRespond, StorefrontLink } from '../../src/components/ListingExtras'
 import { attrRows, type AttrField, ru, categorySchema, type FeedItem, loadListing, type Listing, sellerListings, similarListings, startChat, textOf, sendMessage } from '../../src/api'
 import { useAuth } from '../../src/auth'
 import { listingSignal } from '../../src/api'
-import { deleteListingStaff, modApprove, modReject, modReturn, MOD_REASONS } from '../../src/admin'
+import { deleteListingStaff, modApprove, modPrice, modReject, modReturn, MOD_REASONS } from '../../src/admin'
 import MoveSheet from '../../src/components/MoveSheet'
 import { readCache } from '../../src/cache'
 import { rememberViewed } from '../../src/history'
@@ -254,8 +254,25 @@ export default function ListingScreen() {
           )}
           <View style={styles.priceRow}>
             <Text style={styles.price}>{formatPrice(data.price, data.currency, data.is_free)}</Text>
+            {/* команда: исправить цену (разбор из Telegram ошибается: «18 000 €» → «18 000 RSD») */}
+            {staff && Platform.OS === 'ios' && (
+              <Pressable style={styles.priceFix} hitSlop={8} accessibilityLabel={tr('Исправить цену')} onPress={() => Alert.prompt(tr('Исправить цену'), tr('Например: 18000 EUR, 2 500 000 дин или 0 — бесплатно'), async (raw) => {
+                if (raw == null || !token) return
+                const txt = String(raw).toLowerCase()
+                const free = /^(0|даром|бесплатно|besplatno|free)$/.test(txt.trim())
+                const num = parseFloat(txt.replace(/[^\d.,]/g, '').replace(/[.,](?=\d{3}\b)/g, '').replace(',', '.'))
+                const currency = /€|eur|евро/.test(txt) ? 'EUR' : /rsd|дин|din/.test(txt) ? 'RSD' : (data.currency || 'EUR')
+                if (!free && !(num > 0)) return
+                try {
+                  const r = await modPrice(token, data.id, { price: free ? null : num, currency, is_free: free })
+                  setData((d) => (d ? { ...d, price: r.price, currency: r.currency as never, is_free: r.is_free } : d))
+                } catch { Alert.alert(tr('Не получилось')) }
+              }, 'plain-text', data.is_free ? '0' : `${data.price ?? ''} ${data.currency || 'EUR'}`.trim())}>
+                <Icon name="edit" size={15} color={colors.inkSoft} />
+              </Pressable>
+            )}
             {isResume && data.price != null && <Text style={styles.salaryNote}>{tr('Желаемая зарплата')}</Text>}
-            {Number(data.previous_price) > Number(data.price || 0) && !data.is_free && <Text style={styles.oldPrice}>{formatPrice(Number(data.previous_price), data.currency)}</Text>}
+            {!!(data as unknown as { previous_price?: { price?: number } }).previous_price?.price && !data.is_free && <Text style={styles.oldPrice}>{formatPrice(Number((data as unknown as { previous_price: { price: number; currency?: string } }).previous_price.price), ((data as unknown as { previous_price: { currency?: string } }).previous_price.currency || data.currency) as never)}</Text>}
           </View>
           <Text style={styles.title}>{title}</Text>
           {/* факты значками под названием: город, когда, просмотры — как на сайте */}
@@ -564,6 +581,7 @@ const toneStyle = StyleSheet.create({
 })
 
 const styles = StyleSheet.create({
+  priceFix: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.sunken, alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginLeft: 8 },
   salaryNote: { fontFamily: font[600], fontSize: 13, color: colors.muted, alignSelf: 'flex-end', marginBottom: 6 },
   modBar: { gap: 10, padding: 14, marginBottom: 14, borderRadius: 18, backgroundColor: colors.warmBg },
   modBarT: { fontFamily: font[800], fontSize: 14.5, color: colors.ink },

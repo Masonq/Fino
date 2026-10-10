@@ -536,7 +536,8 @@
     "picked_other": "{{count}} selected",
     "duplicate_hint": "Looks like a duplicate: seller already has this live",
     "kicker_n": "{{count}} awaiting review",
-    "kicker_empty": "Queue is empty"
+    "kicker_empty": "Queue is empty",
+    "fix_price": "Fix the price"
   },
   "rev": {
     "title": "Reviews",

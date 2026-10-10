@@ -558,7 +558,8 @@
     "picked_other": "{{count}} отмечено",
     "duplicate_hint": "Похоже на дубль: у продавца уже есть такое в ленте",
     "kicker_n": "{{count}} ждут проверки",
-    "kicker_empty": "Очередь пуста"
+    "kicker_empty": "Очередь пуста",
+    "fix_price": "Исправить цену"
   },
   "rev": {
     "title": "Отзывы",

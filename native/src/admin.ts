@@ -98,3 +98,6 @@ export const modBulk = (t: string, ids: string[], approve: boolean, reason?: str
 export type SearchReport = { total: number; empty: number; top: { q: string; n: number; results: number }[]; zero: { q: string; n: number }[]; fixed: { q: string; to: string; n: number }[] }
 export const searchReport = (t: string, days: number) => authed<SearchReport>(`/search/admin-report?days=${days}`, t)
 export const usersOverview = (t: string) => authed<{ total: number; new_today: number; new_week: number; online: number; blocked: number; business: number }>('/admin/users/overview', t)
+
+export const modPrice = (t: string, id: string, body: { price: number | null; currency: string; is_free: boolean }) =>
+  authed<{ price: number | null; currency: string; is_free: boolean }>(`/moderation/${id}/price`, t, 'POST', body)

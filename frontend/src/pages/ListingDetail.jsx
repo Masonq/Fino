@@ -1,3 +1,4 @@
+import { promptSheet, confirmSheet } from '../utils/confirm'
 import SheetCard from '../components/SheetCard'
 import Presence from '../components/Presence'
 import Stars from '../components/Stars'
@@ -456,6 +457,21 @@ export default function ListingDetail() {
   }, [listing?.id])
 
   const isStaff = user?.role === 'admin' || user?.role === 'moderator'
+  // команда исправляет цену: «18000 EUR», «18000 €», «2 500 000 дин», «0» или «даром» — бесплатно
+  const fixPrice = async () => {
+    const cur = listing.is_free ? '0' : `${listing.price ?? ''} ${listing.currency || 'EUR'}`.trim()
+    const raw = await promptSheet({ title: t('mod.fix_price'), value: cur, placeholder: '18000 EUR' })
+    if (raw == null) return
+    const txt = String(raw).toLowerCase()
+    const free = /^(0|даром|бесплатно|besplatno|free)$/.test(txt.trim())
+    const num = parseFloat(txt.replace(/[^\d.,]/g, '').replace(/[.,](?=\d{3}\b)/g, '').replace(',', '.'))
+    const currency = /€|eur|евро/.test(txt) ? 'EUR' : /rsd|дин|din/.test(txt) ? 'RSD' : (listing.currency || 'EUR')
+    if (!free && !(num > 0)) return
+    try {
+      const r = await api.modPrice(listing.id, { price: free ? null : num, currency, is_free: free })
+      setListing((l) => ({ ...l, price: r.price, currency: r.currency, is_free: r.is_free }))
+    } catch { confirmSheet({ title: t('support.failed'), confirm: 'OK' }) }
+  }
   // Продвигать может только сам владелец, и только пока объявление
   // реально в выдаче — снятое или ждущее модерации продвигать бы
   // впустую, покупатель его всё равно не увидит (та же проверка,
@@ -1046,6 +1062,12 @@ export default function ListingDetail() {
             <span className="price-old">
               {formatPrice(listing.previous_price.price, listing.previous_price.currency, lang)}
             </span>
+          )}
+          {/* команда: исправить цену — разбор цены из Telegram ошибается («18 000 €» → «18 000 RSD») */}
+          {isStaff && (
+            <button type="button" className="price-fix" onClick={fixPrice} aria-label={t('mod.fix_price')}>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+            </button>
           )}
         </div>
         {isResume && listing.price != null && (

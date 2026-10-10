@@ -304,6 +304,7 @@ export const api = {
 
   modApprove: (id) => request(`/moderation/${id}/approve`, { method: 'POST' }),
   modReturn: (id) => request(`/moderation/${id}/return`, { method: 'POST' }),
+  modPrice: (id, body) => request(`/moderation/${id}/price`, { method: 'POST', body: JSON.stringify(body) }),
   modBulk: (ids, approve, reason) => request('/moderation/bulk', {
     method: 'POST',
     body: JSON.stringify({ ids, approve, reason: reason || null }),
