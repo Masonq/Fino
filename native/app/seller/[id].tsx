@@ -108,6 +108,8 @@ export default function SellerScreen() {
       </View>
 
       {/* отзывы — всегда, как на сайте: нет отзывов — пустые звёзды и «Пока нет отзывов» */}
+      {/* пока отзывы грузятся — место той же высоты, иначе объявления ниже съезжали на 89 px */}
+      {reviews === null && <View style={[styles.reviews, { height: 89, opacity: 0.5 }]} />}
       {!!reviews && reviews.count === 0 && (
         <View style={styles.reviews}>
           <Text style={styles.reviewsTitle}>{tr('Отзывы')}</Text>

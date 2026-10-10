@@ -145,6 +145,10 @@ function CategoryScreen() {
   const [sheet, setSheet] = useState<null | 'rooms' | 'price'>(null) // Недвижимость: шторки «Комнаты» и «Цена»
   const [moreFilters, setMoreFilters] = useState(false) // Недвижимость: кнопка «фильтры» раскрывает остальные поля
   const [items, setItems] = useState<FeedItem[] | null>(null)
+  // экран раздела собирается из нескольких запросов (раздел, поля, лента) — пока не пришли, держим его прозрачным с
+  // кружком загрузки и потом проявляем целиком: иначе плитки, фильтры и лента досаживались и прыгали на сотни точек
+  const [waitOver, setWaitOver] = useState(false)
+  useEffect(() => { setWaitOver(false); const t = setTimeout(() => setWaitOver(true), 2500); return () => clearTimeout(t) }, [slug])
   const [total, setTotal] = useState(0)
   const [q, setQ] = useState('')
   const [sort, setSort] = useState<Filters['sort']>('')
@@ -468,7 +472,9 @@ function CategoryScreen() {
           </ScrollView>
         </View>
       </SheetFrame>
+      {!(node && items !== null) && !waitOver && <ActivityIndicator style={{ position: 'absolute', top: 160, alignSelf: 'center', zIndex: 2 }} color={colors.primary} />}
       <FlatList
+        style={{ opacity: (node && items !== null) || waitOver ? 1 : 0 }}
         ref={listRef}
         onScrollToIndexFailed={() => listRef.current?.scrollToEnd({ animated: true })}
         data={items ?? []}
