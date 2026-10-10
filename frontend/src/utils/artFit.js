@@ -71,7 +71,7 @@ export function tileFor(name, T = TILE) {
  * уменьшаются до общего размера ART_TARGET, мелкие берут всё доступное место — так плитки ровнее друг с другом.
  */
 /** Адрес картинки раздела с меткой содержимого: картинку заменили — адрес другой, старая из кэша не покажется. */
-export const catSrc = (slug) => `/cat/${slug}.png${CAT_ART[slug] ? `?v=${CAT_ART[slug][2]}` : ''}`
+export const catSrc = (slug) => `/cat/${slug}.webp${CAT_ART[slug] ? `?v=${CAT_ART[slug][2]}` : ''}`
 
 /** Картинка «Работы»: новая (/cat/jobs-<ключ>.png, в стиле разделов), пока её нет — прежняя /jobs/<ключ>.webp. */
 export const jobArt = (key) => (CAT_ART[`jobs-${key}`] ? catSrc(`jobs-${key}`) : `/jobs/${key}.webp`)

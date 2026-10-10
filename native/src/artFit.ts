@@ -90,7 +90,7 @@ export function tileFor(name: string, T: typeof TILE = TILE): TileFit {
  * уменьшаются до общего размера ART_TARGET, мелкие берут всё доступное место — так плитки ровнее друг с другом.
  */
 /** Адрес картинки раздела с меткой содержимого (как на сайте): картинку заменили — адрес другой, кэш не мешает. */
-export const catPath = (slug: string) => `/cat/${slug}.png${CAT_ART[slug] ? `?v=${CAT_ART[slug][2]}` : ''}`
+export const catPath = (slug: string) => `/cat/${slug}.webp${CAT_ART[slug] ? `?v=${CAT_ART[slug][2]}` : ''}`
 
 /** Картинка «Работы»: новая (/cat/jobs-<ключ>.png, в стиле разделов), пока её нет — прежняя /jobs/<ключ>.webp. */
 export const jobPath = (key: string) => (CAT_ART[`jobs-${key}`] ? catPath(`jobs-${key}`) : `/jobs/${key}.webp`)
