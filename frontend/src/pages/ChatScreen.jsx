@@ -440,23 +440,6 @@ export default function ChatScreen() {
       </div>
       <div className="chats-content-pane">
       <div className="chat-page">
-      {chat && (() => {
-        const last = [...messages].reverse().find((x) => x.kind?.startsWith('deal_'))?.kind?.slice(5)
-        const order = ['agreed', 'meeting', 'handed']
-        const at = last ? order.indexOf(last) : -1
-        const big = /real-estate|flats|houses|auto|cars|moto/.test(chat.listing_category || chat.listing?.category_slug || '')
-        return (
-          <div className="chat-deal" role="group" aria-label={t('deal.aria')}>
-            {order.map((st, i) => (
-              <button key={st} type="button" className={`chat-deal-step${i <= at ? ' done' : ''}${i === at + 1 ? ' next' : ''}`}
-                disabled={i !== at + 1} onClick={async () => { try { await api.dealStage(id, st) } catch { /* сообщение придёт по сокету */ } }}>
-                <i aria-hidden="true">{i <= at ? '✓' : i + 1}</i>{t(`deal.step_${st}`)}
-              </button>
-            ))}
-            {big && <button type="button" className="chat-deal-video" onClick={async () => { try { await api.videoView(id) } catch { /* — */ } }}>🎥 {t('deal.video_btn')}</button>}
-          </div>
-        )
-      })()}
       <div className="chat-head">
         <button className="cats-back" onClick={() => goBack(navigate, '/chats')} aria-label={t('actions.back')}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
@@ -628,6 +611,25 @@ export default function ChatScreen() {
           <svg className="chat-listing-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6" /></svg>
         </Link>
       )}
+        {chat && (() => {
+        const last = [...messages].reverse().find((x) => x.kind?.startsWith('deal_'))?.kind?.slice(5)
+        const order = ['agreed', 'meeting', 'handed']
+        const at = last ? order.indexOf(last) : -1
+        const big = /real-estate|flats|houses|auto|cars|moto/.test(chat.listing_category || chat.listing?.category_slug || '')
+        // в переписке по вакансии / резюме сделки «передано» нет — полосу не показываем
+        if (/jobs|vacanc|resume|cv\b/.test(chat.listing_category || '')) return null
+        return (
+          <div className="chat-deal" role="group" aria-label={t('deal.aria')}>
+            {order.map((st, i) => (
+              <button key={st} type="button" className={`chat-deal-step${i <= at ? ' done' : ''}${i === at + 1 ? ' next' : ''}`}
+                disabled={i !== at + 1} onClick={async () => { try { await api.dealStage(id, st) } catch { /* сообщение придёт по сокету */ } }}>
+                <i aria-hidden="true">{i <= at ? '✓' : i + 1}</i>{t(`deal.step_${st}`)}
+              </button>
+            ))}
+            {big && <button type="button" className="chat-deal-video" onClick={async () => { try { await api.videoView(id) } catch { /* — */ } }}>🎥 {t('deal.video_btn')}</button>}
+          </div>
+        )
+      })()}
 
       <div
         className="chat-messages"
