@@ -46,6 +46,26 @@ def _active_ids(db: Session, owner_id) -> list[uuid.UUID]:
     return [r[0] for r in rows]
 
 
+_CAT_NAMES: dict[str, dict] = {}
+
+
+def _coll_title(db: Session, title: str, lang: str) -> str:
+    """
+    Подборки, которые витрина собрала сама, названы по разделам («Квартиры», «Женская одежда») на языке, на котором
+    их создали. Если название — это название раздела на каком-то из языков, показываем его на языке страницы
+    (на английской витрине — «Flats», а не «Квартиры»). Свои названия продавца не трогаем.
+    """
+    if not _CAT_NAMES:
+        from app.models import Category
+
+        for cat in db.query(Category).all():
+            for v in (cat.name or {}).values():
+                if v:
+                    _CAT_NAMES[v.strip().lower()[:40]] = cat.name
+    names = _CAT_NAMES.get((title or "").strip().lower())
+    return (names or {}).get(lang) or title
+
+
 def _cards(db: Session, ids, lang: str) -> list[dict]:
     out = []
     ids = [str(i) for i in ids]
@@ -150,7 +170,7 @@ def _owner_view(db: Session, sf: Storefront, lang: str) -> dict:
         "status": sf.status, "pause_until": sf.pause_until.isoformat() if sf.pause_until else None,
         "pause_note": sf.pause_note, "views": sf.views, "followers": _followers(db, sf.owner_id),
         "items": _cards(db, live, lang), "not_added": _cards(db, others, lang),
-        "collections": [{"id": str(c.id), "title": c.title, "description": c.description, "status": c.status,
+        "collections": [{"id": str(c.id), "title": _coll_title(db, c.title, lang), "description": c.description, "status": c.status,
                          "sort": c.sort, "listing_ids": [str(i) for i in _coll_ids(c)],
                          "drop_at": c.drop_at.isoformat() if c.drop_at else None} for c in sf.collections],
         "cover_options": list(dict.fromkeys(filter(None, (_cover_of(it.listing) for it in sf.items if it.listing))))[:12],
@@ -471,7 +491,7 @@ def public(slug: str, request: Request, lang: str = "ru", user: User | None = De
         "mine": bool(user and user.id == sf.owner_id),
         "followers": followers if followers >= FOLLOWERS_PUBLIC_FROM else None, "following": following,
         "items": _cards(db, live, lang),
-        "collections": [{"id": str(c.id), "title": c.title, "description": c.description,
+        "collections": [{"id": str(c.id), "title": _coll_title(db, c.title, lang), "description": c.description,
                          "drop_at": c.drop_at.isoformat() if c.drop_at and c.drop_at > now_local else None,
                          "listing_ids": [] if c.drop_at and c.drop_at > now_local else [str(i) for i in _coll_ids(c)],
                          "count": len(_coll_ids(c))}
