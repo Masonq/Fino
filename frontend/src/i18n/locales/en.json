@@ -2044,10 +2044,11 @@
     "title": "Needs a home",
     "sub": "The owner is giving it to a loving home — for free",
     "vaccinated": "Vaccinated",
-    "vaccinated_unknown": "Ask the owner about vaccinations",
+    "vaccinated_unknown": "Ask about vaccinations",
     "age": "Age",
     "tip_meet": "Meet the animal in person, ideally more than once",
     "tip_ask": "Ask about vaccinations, neutering, chip and temperament",
-    "tip_pay": "Never pay “for transport” or “for papers” — the most common scam"
+    "tip_pay": "Never pay “for transport” or “for papers” — the most common scam",
+    "tips_title": "Before you take it home"
   }
 }

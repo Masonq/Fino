@@ -2099,10 +2099,11 @@
     "title": "Traži dom",
     "sub": "Vlasnik ga poklanja u dobre ruke — besplatno",
     "vaccinated": "Vakcinisan",
-    "vaccinated_unknown": "Pitajte vlasnika o vakcinama",
+    "vaccinated_unknown": "Pitajte za vakcine",
     "age": "Uzrast",
     "tip_meet": "Upoznajte životinju uživo, najbolje više puta",
     "tip_ask": "Pitajte za vakcine, sterilizaciju, čip i narav",
-    "tip_pay": "Ne plaćajte „za prevoz” ili „za papire” — najčešća prevara"
+    "tip_pay": "Ne plaćajte „za prevoz” ili „za papire” — najčešća prevara",
+    "tips_title": "Pre nego što ga uzmete"
   }
 }

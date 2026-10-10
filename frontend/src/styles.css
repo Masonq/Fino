@@ -9225,3 +9225,25 @@ html[data-theme="dark"] .pet-home{ background:#3A2A1E; }
 .pet-home-facts .yes{ color:#085041; } .pet-home-facts .unk{ color:var(--muted); }
 .pet-home-tips{ margin:0; padding-left:18px; display:flex; flex-direction:column; gap:4px; font-size:13.5px; line-height:1.4; color:var(--ink-soft); }
 .s-card .price-free.is-home{ display:inline-flex; align-items:center; padding:3px 10px; border-radius:10px; font-size:14px; line-height:1.3; }
+
+/* ===== «Ищет дом» v2: бейдж на фото в стиле «Новое», блок — обычная белая карточка ===== */
+.badge-home{ position:absolute; z-index:2; left:8px; bottom:12px; display:inline-flex; align-items:center; gap:5px; height:26px; padding:0 10px 0 8px; border-radius:13px;
+  background:#FFE3D6; color:#9A3412; font-size:12px; font-weight:800; box-shadow:0 1px 3px rgba(0,0,0,.12); }
+html[data-theme="dark"] .badge-home{ background:#4A3020; color:#FFC9A8; }
+.pet-home{ background:var(--surface) !important; box-shadow:var(--shadow); gap:12px !important; }
+html[data-theme="dark"] .pet-home{ background:var(--surface) !important; }
+.pet-home-head{ display:flex; gap:12px; align-items:center; }
+.pet-home-ico{ flex:none; width:44px; height:44px; border-radius:14px; background:#FFE3D6; color:#C2410C; display:flex; align-items:center; justify-content:center; }
+html[data-theme="dark"] .pet-home-ico{ background:#4A3020; color:#FFC9A8; }
+.pet-home-head b{ display:block; font-size:17px; font-weight:800; letter-spacing:-0.01em; }
+.pet-home-head div span{ display:block; font-size:13.5px; color:var(--muted); margin-top:1px; }
+.pet-home-facts{ display:flex; flex-wrap:wrap; gap:8px; }
+.pet-home-facts span{ display:inline-flex; align-items:center; gap:6px; height:32px; padding:0 12px; border-radius:16px; background:var(--surface-sunken); font-size:13.5px; font-weight:700; color:var(--ink-soft); }
+.pet-home-facts span.is-yes{ background:#E2F1E6; color:#085041; }
+html[data-theme="dark"] .pet-home-facts span.is-yes{ background:#213A2C; color:#B8E6CC; }
+.pet-home-tips-title{ font-size:13px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-top:2px; }
+.pet-home-tips{ list-style:none; margin:0; padding:0 !important; display:flex; flex-direction:column; gap:8px; }
+.pet-home-tips li{ display:flex; gap:10px; align-items:flex-start; font-size:14px; line-height:1.4; color:var(--ink); }
+.pet-home-tips li i{ flex:none; width:22px; height:22px; border-radius:50%; background:var(--surface-sunken); display:inline-flex; align-items:center; justify-content:center; font-style:normal; font-size:12px; font-weight:900; color:var(--ink-soft); margin-top:-1px; }
+.pet-home-tips li.is-warn i{ background:#FBEAE7; color:#C0392B; } .pet-home-tips li.is-warn span{ color:#9B2C1F; }
+html[data-theme="dark"] .pet-home-tips li.is-warn i{ background:#3E2632; color:#FFB4A8; } html[data-theme="dark"] .pet-home-tips li.is-warn span{ color:#FFB4A8; }

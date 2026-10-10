@@ -24,6 +24,7 @@ export default function ListingCard({ listing, large = false, priority = false }
   const { isFavorite, toggle } = useFavorites()
   const fav = isFavorite(listing.id)
   const meta = cardMeta(listing.category_slug, listing.attributes, t)
+  const petHome = listing.is_free && /^pets(-dogs|-cats|-birds|-other|-farm)?$/.test(listing.category_slug || '') && (listing.attributes?.listing_kind || 'animal') !== 'supplies'
   // XL-карточка (куплена продвижением) — крупнее соседних и занимает
   // обе колонки сетки, тот же приём, что и large, только для конкретной
   // карточки, а не для всего списка разом. Выделение цветом — можно
@@ -136,7 +137,13 @@ export default function ListingCard({ listing, large = false, priority = false }
           {/* Свежее — заметно. Лента должна показывать, что площадка
               живая: на карточках моложе суток — метка внизу фото. Внизу,
               а не сверху: сверху стоят «Продвинуто» и сердечко. */}
-          {isFresh(listing.published_at) && <div className="badge-fresh"><span className="badge-dot" aria-hidden="true" />{t('fresh.badge')}</div>}
+          {/* животное отдают даром (123) — бейдж «Ищет дом» на фото, в одном стиле с «Новое» */}
+          {petHome ? (
+            <div className="badge-home">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true"><circle cx="5.5" cy="10" r="2.2" /><circle cx="9.5" cy="6" r="2.2" /><circle cx="14.5" cy="6" r="2.2" /><circle cx="18.5" cy="10" r="2.2" /><path d="M12 11.5c-3 0-5.5 3.6-5.5 5.6 0 1.6 1.2 2.4 2.7 2.4 1.1 0 1.8-.5 2.8-.5s1.7.5 2.8.5c1.5 0 2.7-.8 2.7-2.4 0-2-2.5-5.6-5.5-5.6Z" /></svg>
+              {t('pets.home')}
+            </div>
+          ) : isFresh(listing.published_at) && <div className="badge-fresh"><span className="badge-dot" aria-hidden="true" />{t('fresh.badge')}</div>}
           {listing.photos?.length > 1 && !(listing.cover_is_video && listing.cover_video_url) && (
             <span className="s-photos-bars" aria-hidden="true">
               {listing.photos.map((src, i) => <span key={src} className={i === photoIndex ? 'on' : ''} />)}
@@ -176,10 +183,7 @@ export default function ListingCard({ listing, large = false, priority = false }
         {/* «Бесплатно» и «цена не указана» — разные вещи: мимо второго
             читатель проходит, а первое как раз и ищут. */}
         {listing.is_free
-          // животное даром — не «бесплатно», а «ищет дом» (123): про животное, а не про вещь
-          ? <span className={`price-free${/^pets-(dogs|cats|birds|other|farm)$|^pets$/.test(listing.category_slug || '') && (listing.attributes?.listing_kind || 'animal') !== 'supplies' ? ' is-home' : ''}`}>
-              {/^pets-(dogs|cats|birds|other|farm)$|^pets$/.test(listing.category_slug || '') && (listing.attributes?.listing_kind || 'animal') !== 'supplies' ? t('pets.home') : t('detail.free')}
-            </span>
+          ? <span className="price-free">{t('detail.free')}</span>
           : formatPrice(listing.price, listing.currency, i18n.language)
             || <span className="price-none">{t('detail.no_price')}</span>}
         {priceDirection && (

@@ -1209,14 +1209,30 @@ export default function ListingDetail() {
         {/* пристрой животных (123): животное отдают даром — блок «Ищет дом» с тем, что известно, и памяткой для того, кто берёт */}
         {/(^|\s)pets(-dogs|-cats|-birds|-other|-farm)?(\s|$)/.test(paths) && !/pets-supplies/.test(paths) && listing.is_free && listing.attributes?.listing_kind !== 'supplies' && (
           <div className="pet-home">
-            <div className="pet-home-head"><span aria-hidden="true">🏠</span><div><b>{t('pets.title')}</b><span>{t('pets.sub')}</span></div></div>
-            <div className="pet-home-facts">
-              <span className={listing.attributes?.vaccinated ? 'yes' : 'unk'}>{listing.attributes?.vaccinated ? `✓ ${t('pets.vaccinated')}` : `? ${t('pets.vaccinated_unknown')}`}</span>
-              {listing.attributes?.age && <span className="yes">{t('pets.age')}: {listing.attributes.age}</span>}
+            <div className="pet-home-head">
+              <span className="pet-home-ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><circle cx="5.5" cy="10" r="2.2" /><circle cx="9.5" cy="6" r="2.2" /><circle cx="14.5" cy="6" r="2.2" /><circle cx="18.5" cy="10" r="2.2" /><path d="M12 11.5c-3 0-5.5 3.6-5.5 5.6 0 1.6 1.2 2.4 2.7 2.4 1.1 0 1.8-.5 2.8-.5s1.7.5 2.8.5c1.5 0 2.7-.8 2.7-2.4 0-2-2.5-5.6-5.5-5.6Z" /></svg>
+              </span>
+              <div><b>{t('pets.title')}</b><span>{t('pets.sub')}</span></div>
             </div>
-            <ul className="pet-home-tips">
-              <li>{t('pets.tip_meet')}</li><li>{t('pets.tip_ask')}</li><li>{t('pets.tip_pay')}</li>
-            </ul>
+            <div className="pet-home-facts">
+              <span className={listing.attributes?.vaccinated ? 'is-yes' : ''}>
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3 4 6.5v5c0 4.6 3.4 8.4 8 9.5 4.6-1.1 8-4.9 8-9.5v-5z" />{listing.attributes?.vaccinated && <path d="m9 12 2 2 4-4" />}</svg>
+                {listing.attributes?.vaccinated ? t('pets.vaccinated') : t('pets.vaccinated_unknown')}
+              </span>
+              {listing.attributes?.age && (
+                <span>
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>
+                  {t('pets.age')}: {listing.attributes.age}
+                </span>
+              )}
+            </div>
+            <div className="pet-home-tips-title">{t('pets.tips_title')}</div>
+            <ol className="pet-home-tips">
+              <li><i>1</i><span>{t('pets.tip_meet')}</span></li>
+              <li><i>2</i><span>{t('pets.tip_ask')}</span></li>
+              <li className="is-warn"><i>!</i><span>{t('pets.tip_pay')}</span></li>
+            </ol>
           </div>
         )}
         {/* благотворительность (102): продавец отметил «деньги идут на доброе дело» */}
