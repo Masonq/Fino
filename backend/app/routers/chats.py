@@ -98,6 +98,9 @@ def _serialize_chat(chat: Chat, db: Session, lang: str = "ru", viewer_id=None):
         "id": str(chat.id),
         "listing_id": str(chat.listing_id) if chat.listing_id else None,
         "listing_title": title,
+        # раздел и его корень — переписка по квартире или машине предлагает видеопросмотр
+        "listing_category": " ".join(filter(None, [getattr(getattr(listing, "category", None), "slug", None),
+                                                   getattr(getattr(getattr(listing, "category", None), "parent", None), "slug", None)])) if listing else None,
         "listing_price": float(listing.price) if listing and listing.price is not None else None,
         "listing_currency": listing.currency.value if listing and listing.currency else None,
         "listing_price_negotiable": bool(listing.price_negotiable) if listing else False,
@@ -460,6 +463,74 @@ def _notify_chat_event(db: Session, chat: Chat, actor_id, other_id, text: str, m
                           listing_title=listing_title)
     except Exception:
         pass
+
+
+class StageIn(BaseModel):
+    stage: str   # agreed | meeting | handed
+
+
+DEAL_STAGES = ("agreed", "meeting", "handed")
+
+
+@router.post("/{chat_id}/stage")
+async def deal_stage(
+    chat_id: uuid.UUID,
+    payload: StageIn,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Ход сделки прямо в переписке: «Договорились» → «Встреча назначена» → «Передано». Любая сторона отмечает шаг —
+    в переписке появляется служебная строка (kind="deal_<шаг>"), обе стороны видят, где сделка. После «Передано»
+    сразу приглашаем обоих оставить отзыв — отзывов больше, и они честнее (сделка точно была).
+    Хранится сообщениями — без новых полей в базе; текущий шаг — последнее такое сообщение.
+    """
+    if payload.stage not in DEAL_STAGES:
+        raise HTTPException(400, "bad_stage")
+    chat = _require_participant(chat_id, user, db)
+    message = Message(id=uuid.uuid4(), chat_id=chat_id, sender_id=user.id, kind=f"deal_{payload.stage}")
+    db.add(message)
+    chat.last_message_at = utcnow()
+    db.commit()
+    db.refresh(message)
+    await manager.broadcast(str(chat_id), {"type": "message", "message": _serialize_message(message)})
+    await manager.broadcast(str(chat_id), {"type": "chat_updated"})
+    other_id = _other_id(chat, user.id)
+    _notify_chat_event(db, chat, user.id, other_id, {"agreed": "отметил: договорились", "meeting": "назначил встречу",
+                                                     "handed": "отметил: вещь передана"}[payload.stage], message.id)
+    if payload.stage == "handed":
+        try:
+            from app.core.review_invites import send_invite
+            send_invite(db, chat, 100, {"deal": "handed"})
+        except Exception:  # noqa: BLE001
+            pass
+    return {"status": "ok", "stage": payload.stage}
+
+
+@router.post("/{chat_id}/video-view")
+async def video_view(
+    chat_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Видеопросмотр: в переписку приходит ссылка на видеозвонок (Jitsi Meet — бесплатно, без регистрации, прямо в
+    браузере). Для квартир и машин: можно «показать» не приезжая. Комната — по чату, одна и та же для обоих.
+    """
+    import hashlib
+
+    chat = _require_participant(chat_id, user, db)
+    room = "plonk-" + hashlib.sha256(f"{chat.id}:plonk-video".encode()).hexdigest()[:16]
+    message = Message(id=uuid.uuid4(), chat_id=chat_id, sender_id=user.id, kind="video_view",
+                      text=f"https://meet.jit.si/{room}")
+    db.add(message)
+    chat.last_message_at = utcnow()
+    db.commit()
+    db.refresh(message)
+    await manager.broadcast(str(chat_id), {"type": "message", "message": _serialize_message(message)})
+    await manager.broadcast(str(chat_id), {"type": "chat_updated"})
+    _notify_chat_event(db, chat, user.id, _other_id(chat, user.id), "предлагает видеопросмотр", message.id)
+    return {"status": "ok", "url": message.text}
 
 
 @router.post("/{chat_id}/call-request")

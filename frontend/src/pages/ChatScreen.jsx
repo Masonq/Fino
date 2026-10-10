@@ -12,6 +12,25 @@ import { formatPrice } from '../utils/money'
 import teamText from '../utils/teamText'
 import useScrollFade from '../hooks/useScrollFade'
 
+// Ссылки в сообщениях — нажимаются, но чужие открываются через предупреждение: главный приём мошенников —
+// поддельные страницы «доставки» и «оплаты», присланные в переписке
+function LinkedText({ text }) {
+  const { t } = useTranslation()
+  if (!text) return null
+  const parts = String(text).split(/(https?:\/\/[^\s]+)/g)
+  return parts.map((p, i) => {
+    if (!/^https?:\/\//.test(p)) return p
+    const own = /^https?:\/\/([a-z0-9-]+\.)*plonk\.rs(\/|$)/i.test(p)
+    const open = async (e) => {
+      e.preventDefault()
+      if (own || await confirmSheet({ title: t('chat.link_warn_title'), text: t('chat.link_warn_text', { host: (p.split('/')[2] || '') }), confirm: t('chat.link_warn_open'), danger: true })) {
+        window.open(p, '_blank', 'noopener,noreferrer')
+      }
+    }
+    return <a key={i} href={p} className={own ? 'msg-link' : 'msg-link is-external'} onClick={open} rel="noopener noreferrer">{p.replace(/^https?:\/\//, '')}</a>
+  })
+}
+
 export default function ChatScreen() {
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
@@ -421,6 +440,23 @@ export default function ChatScreen() {
       </div>
       <div className="chats-content-pane">
       <div className="chat-page">
+      {chat && (() => {
+        const last = [...messages].reverse().find((x) => x.kind?.startsWith('deal_'))?.kind?.slice(5)
+        const order = ['agreed', 'meeting', 'handed']
+        const at = last ? order.indexOf(last) : -1
+        const big = /real-estate|flats|houses|auto|cars|moto/.test(chat.listing_category || chat.listing?.category_slug || '')
+        return (
+          <div className="chat-deal" role="group" aria-label={t('deal.aria')}>
+            {order.map((st, i) => (
+              <button key={st} type="button" className={`chat-deal-step${i <= at ? ' done' : ''}${i === at + 1 ? ' next' : ''}`}
+                disabled={i !== at + 1} onClick={async () => { try { await api.dealStage(id, st) } catch { /* сообщение придёт по сокету */ } }}>
+                <i aria-hidden="true">{i <= at ? '✓' : i + 1}</i>{t(`deal.step_${st}`)}
+              </button>
+            ))}
+            {big && <button type="button" className="chat-deal-video" onClick={async () => { try { await api.videoView(id) } catch { /* — */ } }}>🎥 {t('deal.video_btn')}</button>}
+          </div>
+        )
+      })()}
       <div className="chat-head">
         <button className="cats-back" onClick={() => goBack(navigate, '/chats')} aria-label={t('actions.back')}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
@@ -616,6 +652,16 @@ export default function ChatScreen() {
                   </svg>
                   <span>{t('chat.safety_note')}</span>
                 </div>
+              ) : m.kind?.startsWith('deal_') ? (
+                <div key={m.id} className={`chat-deal-line is-${m.kind.slice(5)}`}>
+                  <span>{t(`deal.line_${m.kind.slice(5)}`)}</span>
+                </div>
+              ) : m.kind === 'video_view' ? (
+                <div key={m.id} className="chat-video-card">
+                  <b>{t('deal.video_title')}</b>
+                  <span>{t('deal.video_text')}</span>
+                  <a className="chat-video-btn" href={m.text} target="_blank" rel="noopener noreferrer">{t('deal.video_join')}</a>
+                </div>
               ) : m.kind === 'review_request' ? (
                 <ReviewRequest
                   key={m.id}
@@ -674,7 +720,7 @@ export default function ChatScreen() {
                   )}
                   {m.kind === 'deleted' ? <span className="msg-deleted">{t('chat.deleted')}</span>
                     : m.kind === 'voice' ? <VoicePlayer src={m.audio_url} seconds={m.audio_seconds} mine={m.sender_id === myId} />
-                    : (m.kind === 'team' ? teamText(m.text) : m.text)}
+                    : (m.kind === 'team' ? teamText(m.text) : <LinkedText text={m.text} />)}
                   {m.edited_at && m.kind !== 'deleted' && <span className="msg-edited">{t('chat.edited')}</span>}
                   {translated[m.id] && <div className="msg-translated"><span>{t('chat.translated')}</span>{translated[m.id]}</div>}
                   {/* Галочка у своих сообщений: одна — доставлено,

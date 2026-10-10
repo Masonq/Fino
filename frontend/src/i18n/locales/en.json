@@ -179,7 +179,10 @@
     "deleted": "Message deleted",
     "edit": "Edit",
     "edit_prompt": "Edit message",
-    "edited": "edited"
+    "edited": "edited",
+    "link_warn_title": "This link leads outside PLONK",
+    "link_warn_text": "Open {{host}}? Scammers send fake “delivery” and “payment” pages. Never enter card details there.",
+    "link_warn_open": "Open"
   },
   "promo": {
     "safe_deal": "Safe deal",
@@ -1986,5 +1989,18 @@
     "following_hint": "News from sellers and shops you follow, comments on your shops",
     "digest": "Seller summary",
     "digest_hint": "How your listings are doing: views, favorites"
+  },
+  "deal": {
+    "aria": "Deal progress",
+    "step_agreed": "Agreed",
+    "step_meeting": "Meeting",
+    "step_handed": "Handed over",
+    "line_agreed": "✓ Deal agreed",
+    "line_meeting": "📅 Meeting arranged",
+    "line_handed": "🤝 Item handed over — rate each other",
+    "video_btn": "Video viewing",
+    "video_title": "Video viewing",
+    "video_text": "Video call right in the browser — no sign-up",
+    "video_join": "Join"
   }
 }

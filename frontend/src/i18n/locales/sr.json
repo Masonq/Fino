@@ -180,7 +180,10 @@
     "deleted": "Poruka je obrisana",
     "edit": "Izmeni",
     "edit_prompt": "Izmeni poruku",
-    "edited": "izmenjeno"
+    "edited": "izmenjeno",
+    "link_warn_title": "Link ne vodi na PLONK",
+    "link_warn_text": "Otvoriti {{host}}? Prevaranti šalju lažne stranice „dostave” i „plaćanja”. Nikada tamo ne unosite podatke kartice.",
+    "link_warn_open": "Otvori"
   },
   "promo": {
     "safe_deal": "Sigurna kupovina",
@@ -2041,5 +2044,18 @@
     "following_hint": "Novo kod prodavaca i izloga koje pratite, komentari na šopsove",
     "digest": "Pregled za prodavca",
     "digest_hint": "Kako idu vaši oglasi: pregledi, omiljeni"
+  },
+  "deal": {
+    "aria": "Tok dogovora",
+    "step_agreed": "Dogovoreno",
+    "step_meeting": "Sastanak",
+    "step_handed": "Predato",
+    "line_agreed": "✓ Dogovor postignut",
+    "line_meeting": "📅 Sastanak zakazan",
+    "line_handed": "🤝 Stvar predata — ocenite jedni druge",
+    "video_btn": "Video razgledanje",
+    "video_title": "Video razgledanje",
+    "video_text": "Video poziv u pregledaču — bez registracije",
+    "video_join": "Pridruži se"
   }
 }

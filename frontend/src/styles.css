@@ -9146,3 +9146,17 @@ html[data-theme="dark"] .notif-ico.k-check{ background:#213A2C !important; } htm
 html[data-theme="dark"] .notif-ico.k-team{ background:#2F2A44 !important; }
 html[data-theme="dark"] .vol-hero, html[data-theme="dark"] .sup-hero, html[data-theme="dark"] .invite-hero, html[data-theme="dark"] .edit-profile .form-card:has(.profile-avatar){
   background:radial-gradient(120% 90% at 0% 0%, rgba(15,163,106,.18), transparent 60%), var(--surface) !important; }
+
+/* ===== Ход сделки в переписке ===== */
+.chat-deal{ display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; padding:8px var(--gutter); }
+.chat-deal::-webkit-scrollbar{ display:none; }
+.chat-deal-step, .chat-deal-video{ flex:none; display:inline-flex; align-items:center; gap:6px; height:34px; padding:0 12px; border:0; border-radius:17px; background:var(--surface); box-shadow:0 1px 2px rgba(15,21,18,.06); font:inherit; font-size:13px; font-weight:700; color:var(--muted); }
+.chat-deal-step i{ font-style:normal; display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; background:var(--surface-sunken); font-size:11px; font-weight:900; }
+.chat-deal-step.done{ color:var(--on-inverse); background:var(--inverse); } .chat-deal-step.done i{ background:rgba(255,255,255,.55); }
+.chat-deal-step.next{ color:var(--ink); cursor:pointer; box-shadow:inset 0 0 0 2px var(--primary); }
+.chat-deal-video{ color:var(--ink); cursor:pointer; }
+.chat-deal-line{ display:flex; justify-content:center; margin:8px 0; } .chat-deal-line span{ padding:6px 12px; border-radius:14px; background:var(--inverse); color:var(--on-inverse); font-size:13px; font-weight:700; }
+.chat-video-card{ display:flex; flex-direction:column; gap:4px; align-self:center; max-width:300px; margin:8px auto; padding:14px; border-radius:18px; background:var(--surface); box-shadow:var(--shadow); text-align:center; }
+.chat-video-card b{ font-size:15px; } .chat-video-card span{ font-size:13px; color:var(--muted); }
+.chat-video-btn{ margin-top:6px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:14px; background:var(--inverse); color:var(--on-inverse); font-weight:800; }
+.msg-link{ color:inherit; text-decoration:underline; word-break:break-all; } .msg-link.is-external{ text-decoration-style:dashed; }
