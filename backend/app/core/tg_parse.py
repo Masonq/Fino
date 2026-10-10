@@ -557,6 +557,14 @@ _CHEAP_RE = re.compile(
     r"крем|шампун|масл|духи|помад|тушь|лак\b)", re.I)
 
 
+_BIG_TICKET_RE = re.compile(
+    r"(авто(?!бус)|машин|автомобил|пробег|км\b|двигател|коробк|механик|автомат|кузов|седан|хэтчбек|кроссовер|внедорожник|"
+    r"automobil|kilometra|menja[cč]|dizel|benzin|"
+    r"\b(jeep|bmw|audi|mercedes|volkswagen|vw|toyota|skoda|škoda|opel|peugeot|renault|fiat|ford|hyundai|kia|mazda|honda|nissan|"
+    r"volvo|citro[eë]n|dacia|seat|suzuki|mitsubishi|lexus|tesla|land rover|range rover|porsche|mini|chevrolet)\b|"
+    r"квартир|апартамент|дом\b|участ|кв\.?\s?м|м2|m2|kvadrat|stan\b|ku[cć]a|plac)", re.I)
+
+
 def _currency_by_sense(value: float, text: str) -> str:
     """
     Валюта, когда её не написали.
@@ -573,6 +581,10 @@ def _currency_by_sense(value: float, text: str) -> str:
         return "EUR"
     # Дорогая вещь по цене мелочи — значит валюту недописали.
     if value <= 5000 and _PRICEY_RE.search(text[:300]):
+        return "EUR"
+    # машины и недвижимость в Сербии продают в евро: «Jeep Avenger, 18000» — это 18 000 €, а не динары
+    # (машина за 18 000 дин — 150 €). До миллиона — евро; дороже — так пишут только динары
+    if value <= 1_000_000 and _BIG_TICKET_RE.search(text[:400]):
         return "EUR"
     return "RSD"
 
