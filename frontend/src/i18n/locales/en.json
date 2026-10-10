@@ -2033,6 +2033,10 @@
     "below": "{{n}}% below market",
     "above": "{{n}}% above market",
     "fair": "In line with the market",
-    "too_cheap": "{{n}}% below market — suspiciously cheap: ask about condition and papers, never prepay"
+    "too_cheap": "{{n}}% below market — suspiciously cheap: ask about condition and papers, never prepay",
+    "this_car": "This car",
+    "legend_median": "median price",
+    "legend_band": "typical range",
+    "tap": "Tap a month"
   }
 }

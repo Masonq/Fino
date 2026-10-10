@@ -2088,6 +2088,10 @@
     "below": "{{n}}% jeftinije od tržišta",
     "above": "{{n}}% skuplje od tržišta",
     "fair": "Cena u skladu sa tržištem",
-    "too_cheap": "{{n}}% ispod tržišta — sumnjivo jeftino: pitajte za stanje i papire, ne plaćajte unapred"
+    "too_cheap": "{{n}}% ispod tržišta — sumnjivo jeftino: pitajte za stanje i papire, ne plaćajte unapred",
+    "this_car": "Ovaj automobil",
+    "legend_median": "prosečna cena",
+    "legend_band": "uobičajena cena",
+    "tap": "Dodirnite mesec"
   }
 }

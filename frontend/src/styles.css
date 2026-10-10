@@ -9196,3 +9196,20 @@ html[data-theme="dark"] .market-verdict.good{ background:#213A2C; color:#B8E6CC;
 .market-bar{ flex:1 1 0; min-width:0; }
 .market-bar i{ max-width:none; background:linear-gradient(180deg, #2BB57F, #0FA36A); }
 .market-bar span{ white-space:nowrap; font-size:10px; }
+/* график рынка: линия с заливкой, полоса обычной цены, пунктир «эта», подписи осей */
+.market-chart{ margin-top:12px; }
+.market-chart svg{ width:100%; height:auto; display:block; overflow:visible; }
+.mk-grid{ stroke:var(--border, rgba(15,21,18,.08)); stroke-width:1; }
+.mk-axis{ font-size:10px; fill:var(--muted); font-family:inherit; }
+.mk-band{ fill:#0FA36A; opacity:.08; }
+.mk-line{ fill:none; stroke:#0FA36A; stroke-width:2.6; stroke-linejoin:round; stroke-linecap:round; }
+.mk-dot{ fill:var(--surface); stroke:#0FA36A; stroke-width:2.2; }
+.mk-this{ stroke:#E5533D; stroke-width:1.6; stroke-dasharray:5 4; }
+.mk-this-t{ font-size:10.5px; font-weight:800; fill:#E5533D; font-family:inherit; }
+.mk-tip{ fill:var(--ink); }
+.mk-tip-a{ font-size:11.5px; font-weight:800; fill:var(--surface); font-family:inherit; }
+.mk-tip-b{ font-size:9.5px; fill:var(--surface); opacity:.8; font-family:inherit; }
+.mk-legend{ display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:6px; font-size:12px; color:var(--muted); }
+.mk-legend span{ display:inline-flex; align-items:center; gap:6px; }
+.mk-legend i{ display:inline-block; width:16px; height:3px; border-radius:2px; }
+.lg-line{ background:#0FA36A; } .lg-band{ height:10px !important; background:rgba(15,163,106,.15); } .lg-this{ background:repeating-linear-gradient(90deg,#E5533D 0 5px,transparent 5px 9px); }
