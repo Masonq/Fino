@@ -9112,3 +9112,10 @@ html[data-theme="dark"] .notif-ico{ filter:brightness(.5) saturate(1.2); }
   .s-card, .s-card *, a:has(.s-gallery, .s-photos, [class*="gallery"], [class*="carousel"]){ transition:none !important; }
   .s-card:active, .s-card a:active, .s-card :active, a:has(.s-gallery, .s-photos, [class*="gallery"], [class*="carousel"]):active{ transform:none !important; }
 }
+/* На телефоне ссылки вообще не утапливаем (кроме плиток, чипов и строк меню): внутри ссылок бывают листаемые
+   фото, и на iPhone смена transform у ссылки в момент касания обрывает жест листания */
+@media (hover: none){
+  a:active{ transform:none !important; }
+  a{ transition:background-color .15s ease, opacity .15s ease !important; }
+  :where(.jl-tile, .cats-tile, .chip, .profile-row, .vol-tile, .sup-q):active{ transform:scale(.97) !important; }
+}
