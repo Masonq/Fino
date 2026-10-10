@@ -2049,6 +2049,9 @@
     "tip_meet": "Meet the animal in person, ideally more than once",
     "tip_ask": "Ask about vaccinations, neutering, chip and temperament",
     "tip_pay": "Never pay “for transport” or “for papers” — the most common scam",
-    "tips_title": "Before you take it home"
+    "tips_title": "Before you take it home",
+    "want": "I want to adopt",
+    "row_title": "Looking for a home",
+    "row_sub": "Owners are giving them to loving homes — for free"
   }
 }

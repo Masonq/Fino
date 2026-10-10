@@ -460,6 +460,8 @@ export default function ListingDetail() {
   const isStaff = user?.role === 'admin' || user?.role === 'moderator'
   // разделы объявления одной строкой и примерный CO₂, сбережённый покупкой б/у (по средним оценкам для новых вещей)
   const paths = (listing?.category_path || []).map((c) => c.slug).join(' ')
+  // животное отдают даром — «Ищет дом»: своя кнопка связи и блок
+  const petHome = !!listing?.is_free && /(^|\s)pets(-dogs|-cats|-birds|-other|-farm)?(\s|$)/.test(paths) && !/pets-supplies/.test(paths) && listing?.attributes?.listing_kind !== 'supplies'
   const co2 = !listing ? 0 : /phones|smartphone/.test(paths) ? 60 : /laptop|computers|notebook/.test(paths) ? 200 : /electronics/.test(paths) ? 80
     : /furniture|furn-|home-garden/.test(paths) ? 90 : /fashion|clothes|shoes|kids-clothes/.test(paths) ? 15 : /kids|toys/.test(paths) ? 20
     : /bikes|bicycle|hobby-sport|sport/.test(paths) ? 40 : 0
@@ -1342,7 +1344,7 @@ export default function ListingDetail() {
         </button>
         )}
         <button className="cta-btn primary" disabled={starting} onClick={handleWriteToSeller}>
-          {starting ? '...' : t(isResume ? 'detail.write_person' : 'detail.write_seller')}
+          {starting ? '...' : t(isResume ? 'detail.write_person' : petHome ? 'pets.want' : 'detail.write_seller')}
         </button>
       </div>
       )}

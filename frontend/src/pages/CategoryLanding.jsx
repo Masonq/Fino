@@ -120,6 +120,16 @@ function CategoryLandingPage() {
   // замерил уже существующий блок.
   const sidebar = useStickyColumn(28, Boolean(category))
 
+  // «Ищут дом»: в разделе «Животные» и его подразделах — животные, которых отдают даром
+  const [homes, setHomes] = useState([])
+  useEffect(() => {
+    setHomes([])
+    if (!/^pets(-dogs|-cats|-birds|-other|-farm)?$/.test(slug)) return
+    api.searchListings({ lang: i18n.language, limit: 12, offset: 0, category_slug: slug, only_free: true })
+      .then((r) => setHomes((r.items || []).filter((l) => (l.attributes?.listing_kind || 'animal') !== 'supplies')))
+      .catch(() => {})
+  }, [slug, i18n.language])
+
   const [fresh, setFresh] = useState([])
   const [freshLoading, setFreshLoading] = useState(true)
   // Число объявлений — из того же поиска, что откроется по кнопке (с
@@ -982,6 +992,16 @@ function CategoryLandingPage() {
         </div>
       )}
 
+      {homes.length > 0 && (
+        <div className="landing-fresh pets-homes">
+          <div className="landing-fresh-head">
+            <h2>{t('pets.row_title')} <span className="pets-homes-n">{homes.length}</span></h2>
+          </div>
+          <p className="pets-homes-sub">{t('pets.row_sub')}</p>
+          <div className="feed-grid">{homes.slice(0, 4).map((l) => <ListingCard key={l.id} listing={l} />)}</div>
+        </div>
+      )}
+
       {freshLoading && (
         <div className="landing-fresh">
           <h2>{t('landing.fresh')}</h2>
@@ -995,7 +1015,7 @@ function CategoryLandingPage() {
             <h2>{t('landing.fresh')}</h2>
           </div>
           <div className="feed-grid">
-            {fresh.map((l, i) => <ListingCard key={l.id} listing={l} priority={i < 4} />)}
+            {fresh.filter((l) => !homes.slice(0, 4).some((h) => h.id === l.id)).map((l, i) => <ListingCard key={l.id} listing={l} priority={i < 4} />)}
           </div>
         </div>
       )}

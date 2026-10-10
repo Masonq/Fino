@@ -9247,3 +9247,13 @@ html[data-theme="dark"] .pet-home-facts span.is-yes{ background:#213A2C; color:#
 .pet-home-tips li i{ flex:none; width:22px; height:22px; border-radius:50%; background:var(--surface-sunken); display:inline-flex; align-items:center; justify-content:center; font-style:normal; font-size:12px; font-weight:900; color:var(--ink-soft); margin-top:-1px; }
 .pet-home-tips li.is-warn i{ background:#FBEAE7; color:#C0392B; } .pet-home-tips li.is-warn span{ color:#9B2C1F; }
 html[data-theme="dark"] .pet-home-tips li.is-warn i{ background:#3E2632; color:#FFB4A8; } html[data-theme="dark"] .pet-home-tips li.is-warn span{ color:#FFB4A8; }
+/* раздел «Животные»: ряд «Ищут дом» — мягкая персиковая подложка, чтобы выделялся среди обычной ленты */
+.pets-homes{ margin:0 var(--gutter) 18px !important; padding:16px 0 6px !important; border-radius:24px; background:#FFF4EC; }
+html[data-theme="dark"] .pets-homes{ background:#3A2A1E; }
+.pets-homes .landing-fresh-head, .pets-homes .pets-homes-sub{ padding:0 14px !important; }
+.pets-homes .feed-grid{ padding:0 14px !important; }
+.pets-homes h2{ display:flex; align-items:center; gap:8px; }
+.pets-homes-n{ display:inline-flex; align-items:center; justify-content:center; min-width:24px; height:24px; padding:0 7px; border-radius:12px; background:#FFE3D6; color:#9A3412; font-size:13px; font-weight:800; }
+.pets-homes-sub{ margin:-4px 0 12px; font-size:13.5px; color:var(--ink-soft); }
+.pets-homes h2{ margin:0 !important; font-size:20px !important; }
+.pets-homes-sub{ margin:4px 0 14px !important; }
