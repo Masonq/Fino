@@ -12,7 +12,7 @@ import { formatPrice } from '../../src/format'
 import { tr } from '../../src/i18n'
 import { Header } from '../../src/components/Kit'
 import Skeleton from '../../src/components/Skeleton'
-import { colors, font } from '../../src/theme'
+import { colors, font, tint } from '../../src/theme'
 
 const REPORT_REASON: Record<string, string> = { fraud: 'Мошенничество', prohibited_item: 'Запрещённый товар', spam: 'Спам', duplicate: 'Дубликат', wrong_category: 'Не та категория', other: 'Другое', offensive_user: 'Оскорбительное поведение' }
 const REASONS = ['Непонятный заголовок', 'Плохие или чужие фото', 'Запрещённый товар', 'Дубль объявления', 'Не тот раздел']
@@ -52,8 +52,8 @@ export default function Moderation() {
       <Header bleed={16} bleedTop={16} title={tr('Модерация')} kicker={items ? (items.length ? tr('{n} ждут проверки', { n: items.length }) : tr('Очередь пуста')) : ' '} fallback="/admin" />
       <Segmented options={[{ key: 'listings', label: `${tr('Объявления')}${items?.length ? ` ${items.length}` : ''}` }, { key: 'reports', label: `${tr('Жалобы')}${reports?.length ? ` ${reports.length}` : ''}` }]} value={tab} onChange={(v) => setTab(v as 'listings' | 'reports')} />
       <View style={{ flexDirection: 'row', gap: 8 }}>
-        {([[day ? day.mine.approved + day.mine.rejected : '—', tr('мои за сутки'), '#E2F1E6'], [day ? day.team.approved + day.team.rejected : '—', tr('всего за сутки'), '#E3ECFA'],
-          [day?.oldest_waiting_hours != null ? (day.oldest_waiting_hours < 1 ? '<1' : Math.round(day.oldest_waiting_hours)) : '—', tr('ч ждёт старейшее'), '#FAE5EE']] as [string | number, string, string][]).map(([n, l, bg], i) => (
+        {([[day ? day.mine.approved + day.mine.rejected : '—', tr('мои за сутки'), tint('#E2F1E6')], [day ? day.team.approved + day.team.rejected : '—', tr('всего за сутки'), tint('#E3ECFA')],
+          [day?.oldest_waiting_hours != null ? (day.oldest_waiting_hours < 1 ? '<1' : Math.round(day.oldest_waiting_hours)) : '—', tr('ч ждёт старейшее'), tint('#FAE5EE')]] as [string | number, string, string][]).map(([n, l, bg], i) => (
           <View key={l} style={[styles.dayTile, { backgroundColor: bg }]}><Text style={[styles.dayN, i === 2 && Number(n) >= 24 && { color: '#C0392B' }]}>{n}</Text><Text style={styles.dayL}>{l}</Text></View>
         ))}
       </View>
@@ -135,8 +135,8 @@ const styles = StyleSheet.create({
   bulkBar: { position: 'absolute', left: 12, right: 12, bottom: 28, flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, borderRadius: 22, backgroundColor: colors.surface, shadowColor: '#0F1512', shadowOpacity: 0.18, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 6 },
   bulkT: { flex: 1, fontFamily: font[800], fontSize: 14.5, color: colors.ink, paddingLeft: 6 },
   dayTile: { flex: 1, minHeight: 72, padding: 10, borderRadius: 16, justifyContent: 'flex-end' },
-  dayN: { fontFamily: font[800], fontSize: 22, color: '#0F1512' },
-  dayL: { fontFamily: font[700], fontSize: 11, color: '#434B46' },
+  dayN: { fontFamily: font[800], fontSize: 22, color: colors.ink },
+  dayL: { fontFamily: font[700], fontSize: 11, color: colors.inkSoft },
   repCard: { padding: 14, borderRadius: 22, backgroundColor: colors.surface, gap: 6 },
   repReason: { fontFamily: font[800], fontSize: 12.5, color: colors.danger, textTransform: 'uppercase', letterSpacing: 0.4 },
   page: { flex: 1, backgroundColor: colors.bg },

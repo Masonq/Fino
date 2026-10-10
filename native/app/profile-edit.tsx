@@ -16,7 +16,7 @@ import Icon from '../src/components/Icon'
 import { mediaUrl } from '../src/config'
 import { success } from '../src/haptics'
 import { getLang, tr } from '../src/i18n'
-import { colors, font } from '../src/theme'
+import { colors, font, tint } from '../src/theme'
 
 // Тексты — из словаря сайта (edit_profile.*, verify.*)
 const MUST_RENAME = "Модератор сбросил ваше имя: прежнее не читалось. Введите новое — до этого нельзя выкладывать объявления и писать продавцам."
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   body: { paddingHorizontal: 12, gap: 12 },
   warn: { padding: 12, borderRadius: 14, backgroundColor: colors.warmBg, color: '#8A6A1F', fontSize: 13.5, lineHeight: 19, fontFamily: font[700] },
   card: { borderRadius: 22, backgroundColor: colors.surface, overflow: 'hidden' },
-  avatarCard: { flexDirection: 'column', alignItems: 'center', gap: 10, padding: 20, backgroundColor: '#E9F5EC' },
+  avatarCard: { flexDirection: 'column', alignItems: 'center', gap: 10, padding: 20, backgroundColor: tint('#E9F5EC') },
   avatar: { width: 84, height: 84, borderRadius: 42, borderWidth: 4, borderColor: colors.surface, backgroundColor: '#7C6CF0', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   avatarImg: { width: 64, height: 64 },
   avatarLetter: { color: '#fff', fontSize: 24, fontFamily: font[800] },

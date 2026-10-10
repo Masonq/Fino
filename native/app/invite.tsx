@@ -12,7 +12,7 @@ import Icon from '../src/components/Icon'
 import { SITE } from '../src/config'
 import { success } from '../src/haptics'
 import { tr } from '../src/i18n'
-import { colors, font } from '../src/theme'
+import { colors, font, tint } from '../src/theme'
 
 type Ref = { invited: number; posted: number; rewarded: number; earned: number; bonus: number; people?: { name?: string | null; state?: string }[] }
 
@@ -43,7 +43,7 @@ export default function Invite() {
           <Image source={{ uri: `${SITE}/invite/hero.webp` }} style={styles.hero} contentFit="contain" />
           <View style={styles.badges}>
             <View style={styles.badge}><Text style={styles.badgeT}>+{bonus} RSD</Text><Text style={styles.badgeS}>{tr('Вам')}</Text></View>
-            <View style={[styles.badge, { backgroundColor: '#FFE3D6' }]}><Text style={[styles.badgeT, { color: '#9A3412' }]}>+{bonus} RSD</Text><Text style={[styles.badgeS, { color: '#9A3412' }]}>{tr('Другу')}</Text></View>
+            <View style={[styles.badge, { backgroundColor: tint('#FFE3D6') }]}><Text style={[styles.badgeT, { color: '#9A3412' }]}>+{bonus} RSD</Text><Text style={[styles.badgeS, { color: '#9A3412' }]}>{tr('Другу')}</Text></View>
           </View>
           <Text style={styles.heroTitle}>{tr('Приглашайте друзей')}</Text>
           <Text style={styles.heroText}>{tr('Друг разместит первое объявление — вам обоим по {n} RSD', { n: bonus })}</Text>
@@ -57,7 +57,7 @@ export default function Invite() {
           </View>
         </View>
         <View style={{ flexDirection: 'row', gap: 10 }}>
-          {([['you', 'Вам', '{n} RSD — это поднятие объявления с запасом', '#E2F1E6'], ['friend', 'Другу', 'Столько же — начнёт не с пустого счёта', '#FFE8DD']] as const).map(([img, label, text, bg]) => (
+          {([['you', 'Вам', '{n} RSD — это поднятие объявления с запасом', tint('#E2F1E6')], ['friend', 'Другу', 'Столько же — начнёт не с пустого счёта', tint('#FFE8DD')]] as const).map(([img, label, text, bg]) => (
             <View key={img} style={[styles.card, { backgroundColor: bg }]}>
               <Image source={{ uri: `${SITE}/invite/${img}.webp` }} style={styles.cardImg} contentFit="contain" />
               <Text style={styles.cardLabel}>{tr(label)}</Text>
@@ -91,7 +91,7 @@ export default function Invite() {
 }
 
 const styles = StyleSheet.create({
-  heroCard: { borderRadius: 28, padding: 16, backgroundColor: '#E9F5EC', gap: 8, alignItems: 'center', marginBottom: 10 },
+  heroCard: { borderRadius: 28, padding: 16, backgroundColor: tint('#E9F5EC'), gap: 8, alignItems: 'center', marginBottom: 10 },
   badges: { flexDirection: 'row', gap: 8 },
   badge: { flexDirection: 'row', alignItems: 'baseline', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16, backgroundColor: colors.inverse },
   badgeT: { fontFamily: font[800], fontSize: 18, color: colors.onInverse, letterSpacing: -0.4 },
@@ -108,8 +108,8 @@ const styles = StyleSheet.create({
   heroText: { fontSize: 14, lineHeight: 20, fontFamily: font[600], color: colors.muted, textAlign: 'center', marginTop: 6, marginBottom: 14, paddingHorizontal: 12 },
   card: { flex: 1, flexDirection: 'column', alignItems: 'flex-start', borderRadius: 22, padding: 14, gap: 6 },   // плитка «вам / другу» — колонкой, две рядом
   cardImg: { width: 52, height: 52 },
-  cardLabel: { fontSize: 12, fontFamily: font[800], color: '#434B46', textTransform: 'uppercase', letterSpacing: 0.5 },
-  cardText: { fontSize: 14, lineHeight: 19, fontFamily: font[700], color: '#0F1512' },
+  cardLabel: { fontSize: 12, fontFamily: font[800], color: colors.inkSoft, textTransform: 'uppercase', letterSpacing: 0.5 },
+  cardText: { fontSize: 14, lineHeight: 19, fontFamily: font[700], color: colors.ink },
   h2: { fontSize: 16, fontFamily: font[800], color: colors.ink, marginTop: 14, marginBottom: 10 },
   step: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
   stepNum: { width: 24, height: 24, borderRadius: 12, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },

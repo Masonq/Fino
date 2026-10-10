@@ -1,3 +1,4 @@
+import { colors } from '../../src/theme'
 import { router } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { Text, View } from 'react-native'
@@ -24,7 +25,7 @@ export default function Team() {
             <Text style={adm.title} numberOfLines={1}>{c.person?.name || '—'}</Text>
             <Text style={adm.meta}>{c.last_at ? timeAgo(c.last_at) : ''}</Text>
           </View>
-          <Text style={[adm.text, (c.unread ?? 0) > 0 && { fontWeight: '800', color: '#0F1512' }]} numberOfLines={2}>{c.last_from_team ? `${tr('Вы')}: ` : ''}{c.last_text || ''}</Text>
+          <Text style={[adm.text, (c.unread ?? 0) > 0 && { fontWeight: '800', color: colors.ink }]} numberOfLines={2}>{c.last_from_team ? `${tr('Вы')}: ` : ''}{c.last_text || ''}</Text>
         </Pressable>
       )} />
   )

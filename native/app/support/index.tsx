@@ -9,7 +9,7 @@ import { useAuth } from '../../src/auth'
 import Icon from '../../src/components/Icon'
 import { success } from '../../src/haptics'
 import { tr } from '../../src/i18n'
-import { colors, font } from '../../src/theme'
+import { colors, font, tint } from '../../src/theme'
 
 const TOPICS: [string, string][] = [['listing', 'Объявление'], ['account', 'Вход и профиль'], ['payment', 'Оплата'], ['abuse', 'Обман'], ['other', 'Другое']]
 const STATUS: Record<string, string> = { open: 'Ждёт ответа', answered: 'Отвечено', closed: 'Закрыто' }
@@ -65,8 +65,8 @@ export default function Support() {
             <View style={{ flex: 1 }}><Text style={styles.supT}>{tr('Мы на связи')}</Text><Text style={styles.supS}>{tr('Отвечают живые люди из команды — обычно в течение дня.')}</Text></View>
           </View>
           <View style={{ flexDirection: 'row', gap: 10, marginBottom: 10 }}>
-            <Pressable style={[styles.supQ, { backgroundColor: '#E3ECFA' }]} onPress={() => router.push('/legal/rules' as never)}><Text style={styles.supQT}>{tr('Правила')}</Text><Text style={styles.supQS}>{tr('Что можно продавать')}</Text></Pressable>
-            <Pressable style={[styles.supQ, { backgroundColor: '#E2F1E6' }]} onPress={() => router.push('/vodic' as never)}><Text style={styles.supQT}>{tr('Полезное')}</Text><Text style={styles.supQS}>{tr('Как продать быстрее')}</Text></Pressable>
+            <Pressable style={[styles.supQ, { backgroundColor: tint('#E3ECFA') }]} onPress={() => router.push('/legal/rules' as never)}><Text style={styles.supQT}>{tr('Правила')}</Text><Text style={styles.supQS}>{tr('Что можно продавать')}</Text></Pressable>
+            <Pressable style={[styles.supQ, { backgroundColor: tint('#E2F1E6') }]} onPress={() => router.push('/vodic' as never)}><Text style={styles.supQT}>{tr('Полезное')}</Text><Text style={styles.supQS}>{tr('Как продать быстрее')}</Text></Pressable>
           </View>
           <View style={styles.card}>
             <View style={styles.section}>
@@ -121,13 +121,13 @@ export default function Support() {
 }
 
 const styles = StyleSheet.create({
-  supHero: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 24, backgroundColor: '#E9F5EC', marginBottom: 10 },
+  supHero: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 24, backgroundColor: tint('#E9F5EC'), marginBottom: 10 },
   supIcon: { width: 52, height: 52, borderRadius: 16, backgroundColor: colors.inverse, alignItems: 'center', justifyContent: 'center' },
   supT: { fontFamily: font[800], fontSize: 18, color: colors.ink, letterSpacing: -0.4 },
   supS: { fontFamily: font[400], fontSize: 13.5, color: colors.inkSoft, marginTop: 2, lineHeight: 18 },
   supQ: { flex: 1, padding: 14, borderRadius: 20, gap: 2 },
-  supQT: { fontFamily: font[800], fontSize: 15, color: '#0F1512' },
-  supQS: { fontFamily: font[400], fontSize: 12.5, color: '#434B46' },
+  supQT: { fontFamily: font[800], fontSize: 15, color: colors.ink },
+  supQS: { fontFamily: font[400], fontSize: 12.5, color: colors.inkSoft },
   page: { flex: 1, backgroundColor: colors.bg },
   top: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 16, minHeight: 56 },
   back: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, shadowColor: '#0F1512', shadowOpacity: 0.07, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },

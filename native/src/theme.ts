@@ -83,3 +83,10 @@ export const font = {
 } as const
 export const mono = 'Onest_800ExtraBold' // цены — тем же шрифтом (Onest), цифры одинаковой ширины
 
+
+// пастельные подложки (плитки, значки) — в тёмной теме своими тёмными оттенками, а не светлыми пятнами
+const DARK_TINT: Record<string, string> = {
+  '#E9F5EC': '#1F3328', '#E3ECFA': '#24324A', '#E2F1E6': '#213A2C', '#FAE5EE': '#3E2632', '#FFE8DD': '#43301F',
+  '#FFE3D6': '#43301F', '#FFF1C9': '#3D3520', '#EDE7FA': '#2F2A44', '#ECEBE6': '#2F3833',
+}
+export function tint(hex: string): string { return isDark ? (DARK_TINT[hex.toUpperCase()] ?? DARK_TINT[hex] ?? hex) : hex }

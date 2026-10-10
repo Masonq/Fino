@@ -9128,3 +9128,21 @@ html[data-theme="dark"] .notif-ico{ filter:brightness(.5) saturate(1.2); }
 .home{ overflow-x:clip; }
 .badge-fresh{ border-radius:999px; }   /* метка «Новое» — капсулой с точкой, как на скриншотах */
 .price-fix{ display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; margin-left:8px; vertical-align:middle; border:0; border-radius:50%; background:var(--surface-sunken); color:var(--ink-soft); cursor:pointer; }
+
+/* Тёмная тема: пастельные плитки — своими тёмными оттенками (раньше затемнялись фильтром вместе с текстом —
+   тёмный текст на тёмном). Текст в них — светлый. */
+html[data-theme="dark"] .vol-tile, html[data-theme="dark"] .sup-q, html[data-theme="dark"] .invite-card, html[data-theme="dark"] .notif-ico{ filter:none !important; }
+html[data-theme="dark"] .vol-tile:nth-child(1), html[data-theme="dark"] .sup-q:nth-child(1){ background:#24324A !important; }
+html[data-theme="dark"] .vol-tile:nth-child(2), html[data-theme="dark"] .sup-q:nth-child(2), html[data-theme="dark"] .invite-card:first-child{ background:#213A2C !important; }
+html[data-theme="dark"] .vol-tile:nth-child(3){ background:#3E2632 !important; }
+html[data-theme="dark"] .invite-card:last-child{ background:#43301F !important; }
+html[data-theme="dark"] .invite-badge.alt{ background:#43301F !important; color:#FFC9A8 !important; }
+html[data-theme="dark"] :is(.vol-tile, .sup-q, .invite-card) :is(b, span, div){ color:#EEF2EE !important; }
+html[data-theme="dark"] :is(.vol-tile-text, .sup-q span, .invite-card-title){ color:#B9C2BC !important; }
+html[data-theme="dark"] .vol-tile-icon{ background:rgba(255,255,255,.1) !important; color:#EEF2EE !important; }
+html[data-theme="dark"] .notif-ico{ background:#2F3833 !important; color:#EEF2EE !important; }
+html[data-theme="dark"] .notif-ico.k-chat{ background:#24324A !important; } html[data-theme="dark"] .notif-ico.k-price{ background:#43301F !important; }
+html[data-theme="dark"] .notif-ico.k-check{ background:#213A2C !important; } html[data-theme="dark"] .notif-ico.k-money{ background:#3D3520 !important; }
+html[data-theme="dark"] .notif-ico.k-team{ background:#2F2A44 !important; }
+html[data-theme="dark"] .vol-hero, html[data-theme="dark"] .sup-hero, html[data-theme="dark"] .invite-hero, html[data-theme="dark"] .edit-profile .form-card:has(.profile-avatar){
+  background:radial-gradient(120% 90% at 0% 0%, rgba(15,163,106,.18), transparent 60%), var(--surface) !important; }

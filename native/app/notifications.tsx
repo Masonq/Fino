@@ -14,7 +14,7 @@ import { useAuth } from '../src/auth'
 import Icon from '../src/components/Icon'
 import { SITE } from '../src/config'
 import { plainText, relTime, timeAgo } from '../src/format'
-import { colors, font } from '../src/theme'
+import { colors, font, tint } from '../src/theme'
 
 /** Куда ведёт уведомление: переписка и объявление — внутри приложения, остальное — на сайте. */
 export function openNoticeLink(link?: string | null) {
@@ -28,7 +28,7 @@ export function openNoticeLink(link?: string | null) {
 
 /** Уведомления: новые — с точкой и жирным, нажатие отмечает прочитанным и ведёт по ссылке; «Прочитать все». */
 const KIND_ICON = { chat: 'chat', price: 'wallet', check: 'shield', money: 'wallet', team: 'star', other: 'bell' } as const
-const KIND_BG = { chat: '#E3ECFA', price: '#FFE8DD', check: '#E2F1E6', money: '#FFF1C9', team: '#EDE7FA', other: '#ECEBE6' }
+const KIND_BG = { chat: tint('#E3ECFA'), price: tint('#FFE8DD'), check: tint('#E2F1E6'), money: tint('#FFF1C9'), team: tint('#EDE7FA'), other: tint('#ECEBE6') }
 const DAY_LABEL = { today: 'Сегодня', yesterday: 'Вчера', earlier: 'Ранее' } as const
 function notifKind(n: Notice): keyof typeof KIND_BG {
   const l = (n as unknown as { link?: string }).link || '', x = (n.text || '').toLowerCase()
@@ -111,7 +111,7 @@ export default function Notifications() {
             <SwipeRow right={[{ label: tr('Удалить'), color: '#E5533D', onPress: () => remove(item.id) }]}>
             <Pressable style={[styles.nRow, !item.is_read && styles.nRowUnread]} onPress={() => open(item)}>
               {/* значок по виду в цветной плитке — как на сайте */}
-              <View style={[styles.ico, { backgroundColor: KIND_BG[notifKind(item)] }]}><Icon name={KIND_ICON[notifKind(item)]} size={19} color="#0F1512" /></View>
+              <View style={[styles.ico, { backgroundColor: KIND_BG[notifKind(item)] }]}><Icon name={KIND_ICON[notifKind(item)]} size={19} color={colors.ink} /></View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.nText}>{plainText(item.text)}</Text>
                 <Text style={styles.nTime}>{timeAgo(item.created_at)}</Text>
