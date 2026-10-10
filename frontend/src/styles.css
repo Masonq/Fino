@@ -9160,3 +9160,8 @@ html[data-theme="dark"] .vol-hero, html[data-theme="dark"] .sup-hero, html[data-
 .chat-video-card b{ font-size:15px; } .chat-video-card span{ font-size:13px; color:var(--muted); }
 .chat-video-btn{ margin-top:6px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:14px; background:var(--inverse); color:var(--on-inverse); font-weight:800; }
 .msg-link{ color:inherit; text-decoration:underline; word-break:break-all; } .msg-link.is-external{ text-decoration-style:dashed; }
+.detail-charity, .detail-memo, .detail-co2{ display:flex; gap:12px; align-items:center; margin:10px 0 0; padding:14px 16px; border-radius:20px; background:var(--surface); box-shadow:var(--shadow); color:var(--ink); }
+.detail-charity > span{ font-size:22px; } .detail-charity div, .detail-memo{ display:flex; flex-direction:column; gap:2px; }
+.detail-charity b, .detail-memo b{ font-size:15px; font-weight:800; } .detail-charity div span, .detail-memo span{ font-size:13.5px; color:var(--ink-soft); line-height:1.4; }
+.detail-memo{ align-items:flex-start; background:#E3ECFA; } html[data-theme="dark"] .detail-memo{ background:#24324A; }
+.detail-co2{ font-size:13.5px; font-weight:600; color:var(--ink-soft); background:#E2F1E6; box-shadow:none; } html[data-theme="dark"] .detail-co2{ background:#213A2C; }

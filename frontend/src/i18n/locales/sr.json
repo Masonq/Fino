@@ -2057,5 +2057,13 @@
     "video_title": "Video razgledanje",
     "video_text": "Video poziv u pregledaču — bez registracije",
     "video_join": "Pridruži se"
+  },
+  "extras": {
+    "charity_title": "Za dobro delo",
+    "charity_text": "Prodavac novac od prodaje daje u dobrotvorne svrhe",
+    "rent_memo_title": "Iznajmljujete stan u Srbiji?",
+    "rent_memo_text": "Šta proveriti i koja dokumenta trebaju — ugovor, beli karton, depozit. Vodič →",
+    "co2": "Kupovinom polovne stvari uštedeli ste ~{{kg}} kg CO₂ — koliko bi otišlo na proizvodnju nove",
+    "charity_check": "💚 Novac od prodaje ide u dobre svrhe"
   }
 }

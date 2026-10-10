@@ -2002,5 +2002,13 @@
     "video_title": "Video viewing",
     "video_text": "Video call right in the browser — no sign-up",
     "video_join": "Join"
+  },
+  "extras": {
+    "charity_title": "For a good cause",
+    "charity_text": "The seller gives the money from this sale to charity",
+    "rent_memo_title": "Renting in Serbia?",
+    "rent_memo_text": "What to check and which papers you need — contract, “beli karton”, deposit. Guide →",
+    "co2": "Buying second-hand saves ~{{kg}} kg of CO₂ — what making a new one would emit",
+    "charity_check": "💚 Proceeds go to a good cause"
   }
 }

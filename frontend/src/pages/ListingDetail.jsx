@@ -457,6 +457,11 @@ export default function ListingDetail() {
   }, [listing?.id])
 
   const isStaff = user?.role === 'admin' || user?.role === 'moderator'
+  // разделы объявления одной строкой и примерный CO₂, сбережённый покупкой б/у (по средним оценкам для новых вещей)
+  const paths = (listing?.category_path || []).map((c) => c.slug).join(' ')
+  const co2 = !listing ? 0 : /phones|smartphone/.test(paths) ? 60 : /laptop|computers|notebook/.test(paths) ? 200 : /electronics/.test(paths) ? 80
+    : /furniture|furn-|home-garden/.test(paths) ? 90 : /fashion|clothes|shoes|kids-clothes/.test(paths) ? 15 : /kids|toys/.test(paths) ? 20
+    : /bikes|bicycle|hobby-sport|sport/.test(paths) ? 40 : 0
   // команда исправляет цену: «18000 EUR», «18000 €», «2 500 000 дин», «0» или «даром» — бесплатно
   const fixPrice = async () => {
     const cur = listing.is_free ? '0' : `${listing.price ?? ''} ${listing.currency || 'EUR'}`.trim()
@@ -1198,6 +1203,21 @@ export default function ListingDetail() {
           </Link>
         )}
 
+        {/* благотворительность (102): продавец отметил «деньги идут на доброе дело» */}
+        {listing?.attributes?.charity && (
+          <div className="detail-charity"><span aria-hidden="true">💚</span><div><b>{t('extras.charity_title')}</b><span>{listing.attributes.charity_note || t('extras.charity_text')}</span></div></div>
+        )}
+        {/* аренда жилья (60): памятка о документах — главный вопрос приезжих */}
+        {/flats|houses|rooms|real-estate/.test(paths) && /rent|najam|arend|daily/.test(`${listing.category_path?.map((c) => c.slug).join(' ')} ${listing.attributes?.deal_type || ''}`) && (
+          <Link to="/vodic" className="detail-memo">
+            <b>{t('extras.rent_memo_title')}</b>
+            <span>{t('extras.rent_memo_text')}</span>
+          </Link>
+        )}
+        {/* б/у вместо нового (101): сколько CO₂ не выбросили — повод гордиться покупкой */}
+        {co2 > 0 && listing.condition !== 'new' && (
+          <div className="detail-co2"><span aria-hidden="true">🌱</span>{t('extras.co2', { kg: co2 })}</div>
+        )}
         {listing?.owner?.id && listing?.attributes?.listing_kind !== 'vacancy' && listing?.attributes?.listing_kind !== 'resume' && (
           <StorefrontLink ownerId={listing.owner.id} listingId={listing.id} initial={listing.owner_storefront} />
         )}

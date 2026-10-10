@@ -885,6 +885,27 @@ def _nice_path(db: Session, listing) -> str:
 
 # Страница раздела для поисковика: заголовок, текст раздела, путь,
 # подразделы, города, объявления по страницам и разметка списка.
+def _faq_ld(name: str, city_in: str, total: int, lang: str) -> dict:
+    """
+    Вопросы и ответы раздела в разметке FAQPage: Google может показать их прямо в выдаче под ссылкой — больше места
+    в результатах поиска и ответ на частый вопрос ещё до перехода.
+    """
+    where = f" {city_in}".rstrip()
+    qa = {
+        "ru": [(f"Сколько объявлений в разделе «{name}»{where}?", f"Сейчас на PLONK {total} объявлений в разделе «{name}»{where}. Новые появляются каждый день."),
+               ("Как разместить объявление?", "Бесплатно: нажмите «Разместить», добавьте фото и цену — объявление появится после быстрой проверки."),
+               ("Как купить безопасно?", "Общайтесь в переписке PLONK, встречайтесь в людных местах и не переводите предоплату незнакомым. Ссылки не на plonk.rs PLONK помечает предупреждением.")],
+        "en": [(f"How many listings are in “{name}”{where}?", f"PLONK has {total} listings in “{name}”{where} right now. New ones appear every day."),
+               ("How do I post a listing?", "For free: tap “Post”, add photos and a price — it goes live after a quick check."),
+               ("How do I buy safely?", "Chat on PLONK, meet in busy places and never prepay strangers. PLONK warns you about links that don’t lead to plonk.rs.")],
+        "sr": [(f"Koliko oglasa ima u kategoriji „{name}”{where}?", f"Na PLONK-u trenutno ima {total} oglasa u kategoriji „{name}”{where}. Novi stižu svakog dana."),
+               ("Kako da postavim oglas?", "Besplatno: dodirnite „Postavi”, dodajte fotografije i cenu — oglas je vidljiv posle brze provere."),
+               ("Kako da kupim bezbedno?", "Dopisujte se na PLONK-u, nalazite se na prometnim mestima i ne plaćajte unapred nepoznatima. PLONK upozorava na linkove koji ne vode na plonk.rs.")],
+    }.get(lang) or []
+    return {"@context": "https://schema.org", "@type": "FAQPage",
+            "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in qa]}
+
+
 CATEGORY_PAGE = """<!DOCTYPE html>
 <html lang="{lang}">
 <head>
@@ -1063,6 +1084,7 @@ def _section_page(db: Session, request: Request, slug: str, lang: str, city: str
         {"@context": "https://schema.org", "@type": "BreadcrumbList",
          "itemListElement": [{"@type": "ListItem", "position": i + 1, "name": label, "item": href}
                              for i, (label, href) in enumerate(crumb_pairs)]},
+        _faq_ld(name, city_in, total, lang),
     ], ensure_ascii=False, indent=1)
 
     # Пустой раздел и «город» с парой объявлений — открываются, но в

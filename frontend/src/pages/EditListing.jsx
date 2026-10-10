@@ -201,7 +201,7 @@ export default function EditListing() {
         location_lat: locationLat,
         location_lng: locationLng,
         hide_exact_address: hideExactAddress,
-        ...(schema.length ? { attributes: attrs } : {}),
+        ...(schema.length || attrs.charity !== undefined ? { attributes: attrs } : {}),
         ...(catSlug && catSlug !== (listing?.category_slug || listing?.category?.slug) ? { category_slug: catSlug } : {}),
       })
       setSaved(true)
@@ -373,6 +373,11 @@ export default function EditListing() {
         <label className="filter-check">
           <input type="checkbox" checked={negotiable} onChange={(e) => setNegotiable(e.target.checked)} />
           {t('post.negotiable')}
+        </label>
+        {/* доброе дело (102): деньги с продажи — на благотворительность; на объявлении — зелёная плашка */}
+        <label className="filter-check">
+          <input type="checkbox" checked={!!attrs.charity} onChange={(e) => setAttrs((x) => ({ ...x, charity: e.target.checked || undefined }))} />
+          {t('extras.charity_check')}
         </label>
 
         <div className="post-field">
