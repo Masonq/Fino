@@ -9289,7 +9289,7 @@ html[data-theme="dark"] .year-tile, html[data-theme="dark"] .year-tile span{ col
 .partners-card .partner-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 0; border-top:1px solid var(--surface-sunken); }
 .partners-card .partner-row div{ display:flex; flex-direction:column; min-width:0; } .partners-card .partner-row span{ font-size:12.5px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .partner-form{ display:flex; flex-direction:column; gap:8px; margin-top:10px; }
-.partner-form input, .partner-form select{ height:44px; padding:0 12px; border:0; border-radius:12px; background:var(--surface-sunken); font:inherit; font-size:15px; color:var(--ink); }
+.partner-form input, .partner-form select{ height:44px; padding:0 12px; border:0; border-radius:12px; background:var(--surface-sunken); font:inherit; font-size:16px; color:var(--ink); }   /* 16 px — иначе iPhone увеличивает страницу при вводе */
 .partners-card h3{ margin:0 0 4px; font-size:17px; font-weight:800; }
 .partners-card .setting-hint{ margin:0 0 6px; font-size:13.5px !important; line-height:1.45; color:var(--ink-soft) !important; }
 .partner-offer{ margin:14px 0 10px; }
