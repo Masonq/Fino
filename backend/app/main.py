@@ -54,6 +54,8 @@ app.include_router(notifications.router)
 app.include_router(verification.router)
 app.include_router(promotions.router)
 from app.routers import iap as _iap   # встроенные покупки App Store / Google Play
+from app.routers import admin_settings as _adm_set   # партнёрские предложения — публичное чтение
+app.include_router(_adm_set.public_router)
 app.include_router(_iap.router)
 app.include_router(reviews.router)
 app.include_router(reports.router)

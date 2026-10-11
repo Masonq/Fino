@@ -17,7 +17,9 @@ from sqlalchemy.orm import Session
 from app.models import SiteSetting, User
 
 CARD_PAYMENTS = "card_payments_enabled"
-DEFAULTS = {CARD_PAYMENTS: False}
+# партнёрские предложения в нужный момент (128): {раздел: {title, text, cta, url}} — владелец заводит в админке
+PARTNERS = "partner_offers"
+DEFAULTS = {CARD_PAYMENTS: False, PARTNERS: {}}
 
 
 def get(db: Session, key: str):
@@ -52,6 +54,7 @@ def describe(db: Session) -> dict:
         user = db.get(User, row.updated_by)
         who = user.display_name if user else None
     return {
+        "partners": get(db, PARTNERS) or {},
         CARD_PAYMENTS: card_payments_enabled(db),
         "updated_at": row.updated_at.isoformat() if row is not None and row.updated_at else None,
         "updated_by": who,

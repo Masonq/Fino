@@ -2074,5 +2074,15 @@
     "share_text": "My {{year}} on PLONK",
     "entry": "My {{year}} on PLONK",
     "entry_sub": "Year in review — what you sold and earned"
+  },
+  "partners": {
+    "tag": "PLONK partner",
+    "admin_title": "Partner offers",
+    "admin_hint": "A card under listings in a section: insurance for cars, internet for flats. https links only; empty link removes it.",
+    "remove": "Remove",
+    "f_title": "Title",
+    "f_text": "Text",
+    "f_cta": "Button",
+    "save": "Save for section"
   }
 }

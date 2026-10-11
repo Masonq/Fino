@@ -460,6 +460,9 @@ export default function ListingDetail() {
   const isStaff = user?.role === 'admin' || user?.role === 'moderator'
   // разделы объявления одной строкой и примерный CO₂, сбережённый покупкой б/у (по средним оценкам для новых вещей)
   const paths = (listing?.category_path || []).map((c) => c.slug).join(' ')
+  const [partner, setPartner] = useState(null)
+  const rootSec = listing?.category_path?.[0]?.slug
+  useEffect(() => { setPartner(null); if (rootSec) api.partnerOffer(rootSec).then((r) => setPartner(r.offer || null)).catch(() => {}) }, [rootSec])
   // животное отдают даром — «Ищет дом»: своя кнопка связи и блок
   const petHome = !!listing?.is_free && /(^|\s)pets(-dogs|-cats|-birds|-other|-farm)?(\s|$)/.test(paths) && !/pets-supplies/.test(paths) && listing?.attributes?.listing_kind !== 'supplies'
   const co2 = !listing ? 0 : /phones|smartphone/.test(paths) ? 60 : /laptop|computers|notebook/.test(paths) ? 200 : /electronics/.test(paths) ? 80
@@ -1550,6 +1553,15 @@ export default function ListingDetail() {
             «Написать продавцу») оставалось пустым белым фоном под
             высоту фото слева, если описание короткое. На мобильном
             просто ещё один блок в общей ленте, ничего не меняется. */}
+        {/* партнёр раздела (128) — внизу, после описания и характеристик: сначала объявление, потом предложение */}
+        {partner && (
+          <a className="partner-offer" href={partner.url} target="_blank" rel="sponsored noopener noreferrer">
+            <span className="partner-tag">{t('partners.tag')}</span>
+            <b>{partner.title}</b>
+            {partner.text && <span className="partner-text">{partner.text}</span>}
+            {partner.cta && <span className="partner-cta">{partner.cta} →</span>}
+          </a>
+        )}
         <ReportButton listingId={listing.id} ownerId={listing.owner?.id} />
 
         {/* Просмотры/дата/номер — в самом низу страницы, тем же

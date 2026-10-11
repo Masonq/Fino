@@ -97,7 +97,48 @@ export default function AdminSettings() {
         </div>
       )}
 
+      {state && <PartnersCard partners={state.partners || {}} onSaved={load} />}
+
       {error && <p className="form-error">{error}</p>}
+    </div>
+  )
+}
+
+const SECTIONS = ['auto', 'real-estate', 'electronics', 'home-garden', 'services', 'pets', 'kids', 'fashion', 'jobs']
+// названия разделов по-человечески, а не служебные slug
+const SECTION_NAMES = {
+  ru: { auto: 'Авто', 'real-estate': 'Недвижимость', electronics: 'Электроника', 'home-garden': 'Дом и сад', services: 'Услуги', pets: 'Животные', kids: 'Детские товары', fashion: 'Одежда и обувь', jobs: 'Работа' },
+  en: { auto: 'Cars', 'real-estate': 'Real estate', electronics: 'Electronics', 'home-garden': 'Home & garden', services: 'Services', pets: 'Pets', kids: 'Kids', fashion: 'Fashion', jobs: 'Jobs' },
+  sr: { auto: 'Auto', 'real-estate': 'Nekretnine', electronics: 'Elektronika', 'home-garden': 'Kuća i bašta', services: 'Usluge', pets: 'Ljubimci', kids: 'Za decu', fashion: 'Odeća i obuća', jobs: 'Posao' },
+}
+
+// Партнёрские предложения в нужный момент (128): владелец заводит для раздела — под объявлениями раздела
+// появляется карточка «Партнёр PLONK» (страховка к машине, интернет к квартире…). Пустой адрес — убрать.
+function PartnersCard({ partners, onSaved }) {
+  const { t, i18n } = useTranslation()
+  const nm = (x) => (SECTION_NAMES[i18n.language] || SECTION_NAMES.ru)[x] || x
+  const [f, setF] = useState({ section: 'auto', title: '', text: '', cta: '', url: '' })
+  const [busy, setBusy] = useState(false)
+  const set = (k) => (e) => setF((x) => ({ ...x, [k]: e.target.value }))
+  const save = async (body) => { setBusy(true); try { await api.setPartner(body); await onSaved() } catch { /* — */ } setBusy(false) }
+  return (
+    <div className="setting-card partners-card">
+      <h3>{t('partners.admin_title')}</h3>
+      <p className="setting-hint">{t('partners.admin_hint')}</p>
+      {Object.entries(partners).map(([sec, o]) => (
+        <div key={sec} className="partner-row">
+          <div><b>{nm(sec)}</b><span>{o.title} → {o.url}</span></div>
+          <button type="button" className="jr-btn ghost sm" disabled={busy} onClick={() => save({ section: sec, url: '' })}>{t('partners.remove')}</button>
+        </div>
+      ))}
+      <div className="partner-form">
+        <select value={f.section} onChange={set('section')}>{SECTIONS.map((x) => <option key={x} value={x}>{nm(x)}</option>)}</select>
+        <input placeholder={t('partners.f_title')} value={f.title} onChange={set('title')} maxLength={60} />
+        <input placeholder={t('partners.f_text')} value={f.text} onChange={set('text')} maxLength={160} />
+        <input placeholder={t('partners.f_cta')} value={f.cta} onChange={set('cta')} maxLength={30} />
+        <input placeholder="https://…" value={f.url} onChange={set('url')} />
+        <button type="button" className="jr-btn primary" disabled={busy || !f.url.startsWith('https://') || !f.title} onClick={() => save(f)}>{t('partners.save')}</button>
+      </div>
     </div>
   )
 }

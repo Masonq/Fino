@@ -2129,5 +2129,15 @@
     "share_text": "Moja {{year}} na PLONK-u",
     "entry": "Moja {{year}} na PLONK-u",
     "entry_sub": "Godišnji pregled — šta ste prodali i zaradili"
+  },
+  "partners": {
+    "tag": "PLONK partner",
+    "admin_title": "Partnerske ponude",
+    "admin_hint": "Kartica ispod oglasa u kategoriji: osiguranje za auto, internet za stan. Samo https linkovi; prazan link — ukloni.",
+    "remove": "Ukloni",
+    "f_title": "Naslov",
+    "f_text": "Tekst",
+    "f_cta": "Dugme",
+    "save": "Sačuvaj za kategoriju"
   }
 }

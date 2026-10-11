@@ -486,6 +486,8 @@ export const api = {
     body: JSON.stringify({ email, code }),
   }),
   adminSettings: () => request('/admin/settings'),
+  setPartner: (body) => request('/admin/settings/partners', { method: 'POST', body: JSON.stringify(body) }),
+  partnerOffer: (section) => request(`/partners/${section}`),
   setCardPayments: (enabled) => request('/admin/settings/card-payments', { method: 'POST', body: JSON.stringify({ enabled }) }),
   adminJobs: (days = 7) => request(`/admin/audit/jobs?days=${days}`),
   tgSiteLink: (initData, next) => request('/tg/site-link', {
